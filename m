@@ -1,131 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbYIRLWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbYIRLXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbYIRLWq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 07:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbYIRLWc
+	id S1755890AbYIRLXR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 07:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYIRLW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 07:22:32 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34010 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbYIRLWa (ORCPT
+	Thu, 18 Sep 2008 07:22:58 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:48122 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752940AbYIRLW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 07:22:30 -0400
-Date: Thu, 18 Sep 2008 13:18:45 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Greg KH <greg@kroah.com>
-Cc: Tejun Heo <tj@kernel.org>, Shem Multinymous <multinymous@gmail.com>,
-       Elias Oltmanns <eo@nebensachen.de>, Thomas Renninger <trenn@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: Laptop shock detection and harddisk protection
-Message-ID: <20080918111845.GH27832@elf.ucw.cz>
-References: <48C7FCEE.8060404@kernel.org> <41840b750809110908o54a61f55w7b1b9793abf55634@mail.gmail.com> <48C948A6.3080404@kernel.org> <41840b750809111325t30f8ffe2sa4572d401d43dc5a@mail.gmail.com> <48C9AB5A.705@kernel.org> <20080912165947.GB5094@kroah.com> <20080817194520.GB4043@ucw.cz> <20080917180405.GB3162@kroah.com>
+	Thu, 18 Sep 2008 07:22:57 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Greg K-H <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
+References: <20080917130805.6260ba9c@gondolin.boeblingen.de.ibm.com>
+	<m1r67i61rh.fsf@frodo.ebiederm.org>
+	<20080918090705.6985cced@gondolin.boeblingen.de.ibm.com>
+Date: Thu, 18 Sep 2008 03:00:31 -0700
+In-Reply-To: <20080918090705.6985cced@gondolin.boeblingen.de.ibm.com>
+	(Cornelia Huck's message of "Thu, 18 Sep 2008 09:07:05 +0200")
+Message-ID: <m17i99wz7k.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080917180405.GB3162@kroah.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: cornelia.huck@de.ibm.com, linux-kernel@vger.kernel.org, greg@kroah.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Cornelia Huck <cornelia.huck@de.ibm.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4082]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH]sysfs: Don't emit a warning when sysfs_rename_link() fails.
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-09-17 11:04:05, Greg KH wrote:
-> On Sun, Aug 17, 2008 at 09:45:21PM +0200, Pavel Machek wrote:
-> > On Fri 2008-09-12 09:59:47, Greg KH wrote:
-> > > On Fri, Sep 12, 2008 at 01:35:54AM +0200, Tejun Heo wrote:
-> > > > Shem Multinymous wrote:
-> > > > >> That reduction comes because input device supports poll and
-> > > > >> sysfs_notify_event() does about the same thing.  The uesrland daemon
-> > > > >> can just poll on a node and read data nodes when poll event on the
-> > > > >> node triggeres.
-> > > > > 
-> > > > > Agreed.
-> > > > > There's another issue with the current sysfs interface, though: hdapsd
-> > > > > needs to read (x,y,timestamp) tuples, whereas sysfs provides just x
-> > > > > and y in separate attributes which cannot be read atomically together.
-> > > > > We can add a sysfs file with "x y timestamp" readouts, though this is
-> > > > > unusual for sysfs (and certainly incompatible with hwmon).
-> > > > 
-> > > > Yes, right.  Forgot about the atomicity part altogether.  Thanks for
-> > > > bringing it up.
-> > > > 
-> > > > >> Unloading heads will be simple.  Just echoing timeout in ms to sysfs
-> > > > >> nodes, so I don't think it's a good idea to push out actual unloading
-> > > > >> to another process especially as fork doesn't inherit mlockall.
-> > > > > 
-> > > > > I had in mind another daemon listening for "unload now" events, so no
-> > > > > forking needed.
-> > > > > This second daemon might make sense if we push the logic of deciding
-> > > > > *which* disks to unload into userspace, since this logic is the same
-> > > > > for the ThinkPad style and the HP style.
-> > > > 
-> > > > Hmmm... I can't (yet) see the benefit of having two separate userland
-> > > > daemons.
-> > > > 
-> > > > >> On a related note, is there any plan to merge tp_smapi to mainline?
-> > > > >> It seems you put a lot of work into it and I don't really see why it
-> > > > >> should stay out of tree.
-> > > > > 
-> > > > > The only issue I'm aware of is finding a reasonably-named maintainer.
-> > > > > On the technical side, the reviews on my lkml submission of
-> > > > > thinkpad_ec+hdaps seemed good and all technical comments are since
-> > > > > addressed. The code has been stable, well-tested and packaged by major
-> > > > > distros for years.
-> > > > 
-> > > > Cool, can you please post the patch to the lkml and cc Greg
-> > > > Kroah-Hartman <gregkh@suse.de>, Andrew Morton
-> > > > <akpm@linux-foundation.org> and me?
-> > > 
-> > > Sorry, but no, I can't accept this code as it is coming from a "known
-> > > anonymous" person containing information that it is not known where it
-> > > came from.
-> > 
-> > So... what are you worried about?
-> 
-> Code created by access to specs that were not allowed to be published in
-> GPL form by someone who wants to remain anonymous.
+Cornelia Huck <cornelia.huck@de.ibm.com> writes:
 
-That anonymous person may have problems if they signed NDA.
+> On Wed, 17 Sep 2008 11:55:14 -0700,
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+>> Cornelia Huck <cornelia.huck@de.ibm.com> writes:
 
-I don't think they did, they even list the sources:
 
- *  The embedded controller on ThinkPad laptops has a non-standard interface,
- *  where LPC channel 3 of the H8S EC chip is hooked up to IO ports
- *  0x1600-0x161F and implements (a special case of) the H8S LPC protocol.
- *  The EC LPC interface provides various system management services (currently
- *  known: battery information and accelerometer readouts). This driver
- *  provides access and mutual exclusion for the EC interface.
-*
- *  The LPC protocol and terminology is documented here:
- *  "H8S/2104B Group Hardware Manual",
- *  http://documentation.renesas.com/eng/products/mpumcu/rej09b0300_2140bhm.pdf
+>> Or we are actually using a conflicting name.  In which case it is a
+>> real and valid problem. 
+>
+> Which may be in userspace as well. In the past the networking folks
+> were unhappy about the sysfs warning, claiming that failures should
+> rather be handled in their layer.
 
-H8S chip seems to be documented.
+Because the failures have always been handled in the networking
+stack.
 
-...even if you are right, why is it problem for _us_. We are not
-covered by NDAs we did not sign.
+The only case that was ever warned about by sysfs were noop
+renames.
 
-So can you list your concerns for _us_? Copyrights? Patents? Trade
-secrets? Contracts?
+So no we will not catch any userspace bugs with this code.
 
-> If people want to get this kind of code into the tree, they can write a
-> new driver from scratch, based on public information on these chips.
-> And you will have to defend exactly where this information was found
-> as
+>> The netdev layer especially since the
+>> networking layer already has validated that the rename is valid
+>> before calling device_rename.
+>
+> Does it? Or do I just don't get it because of lack of coffee?
 
-These are rather bigger requirements than signed-off-by and then what
-Novell legal people require before putting stuff in distribution. So
-you should explain why this bigger requirements are warranted.
+In the dev_change_name we either do dev_alloc_name
+which generates a unique device name or __dev_get_by_name
+which looks to see if we are already using that name.
 
-> you can not do it by information found in this "tainted" driver, sorry,
-> that's not a legally viable way forward.
+The code in cfg80211_dev_rename is a trivial probe so I
+don't think that is subtle.
 
-As far as I can see, using any information I find anywhere is
-perfectly legal for writing a driver, as long as I don't sign &
-violate a NDA. sourceforge.net is rather well-known, public source of
-information. Why should it be treated specially?!
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>> > The following patch switches sysfs_rename_link() to non-warning symlink
+>> > creation again. It is on top of the current driver core series.
+>> 
+>> We don't need this.  Using the non-warning symlink creation is unnecessary.
+>> Using non-warning symlink creation hides real errors.
+>
+> For most cases, yes.
+
+In these cases especially.
+
+>> In practice any errors that show up will be errors in sysfs, because
+>> the network subsystem validates everything before calling us.
+>
+> I was under the impression that no checks are done if the rename is
+> triggered via ioctl. And it makes more sense to have the caller of the
+> ioctl get an error than to spit a sysfs warning.
+
+Currently there are exactly 2 callers of device_rename.
+net/core/dev.c:dev_change_name 
+net/wireless/core.c:cfg80211_dev_rename
+
+Both of which verify that the rename is valid before
+they call device_rename.  In fact that they have to because
+the kobject layer does not have enough information to verify
+that the rename is valid, and sysfs is not necessarily compiled in.
+
+Eric
