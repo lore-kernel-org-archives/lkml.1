@@ -1,69 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbYIRXMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbYIRXQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757429AbYIRXMf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 19:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757295AbYIRXMY
+	id S1756874AbYIRXQy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 19:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbYIRXQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 19:12:24 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:14500 "EHLO
+	Thu, 18 Sep 2008 19:16:45 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:14825 "EHLO
 	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757293AbYIRXMX (ORCPT
+	with ESMTP id S1753368AbYIRXQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 19:12:23 -0400
+	Thu, 18 Sep 2008 19:16:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=uHFJdke4kphmgGFJ+ZD/j3pV8AtzxdlTGZrrKKba38/qE8kQCoaNdUTnp3tG7aE5uc
-         CimchlQbfL2gOyQtebIxCY6CeVYN+6b0r6ivIYGRTH8e3bpTyDdsPBFmZ4Y51aNf/9QO
-         rnBTpu7nur1/tCUnu55HsZuQ61ETRIkhPqei8=
-Message-ID: <43e72e890809181612s1b5016ebsf2b145def401b9cd@mail.gmail.com>
-Date: Thu, 18 Sep 2008 16:12:21 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: "Steven Noonan" <steven@uplinklabs.net>
-Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5, rc6, probably others)
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Luis Rodriguez" <Luis.Rodriguez@atheros.com>
-In-Reply-To: <f488382f0809181608y3e9fc530k3e770488985e9fe9@mail.gmail.com>
+         :references;
+        b=L3guH6gGYcWggEcXfuP7+ZyyxmGcPkxK6vp0cedAuwIlYWIqJ8i70XT3Ceu39lmKHh
+         h/k+aYY2ERGUI5EgmFnhpKeiaSP/VDG7lRRmbF922ArVJvncky1IgvRhUYwd+DZMdAQt
+         nqmfaePAEe/OnkX+7lKmilvnAAzDG8ZCJLxHo=
+Message-ID: <28c262360809181616p481f9126p50c9a8c971fbbf9e@mail.gmail.com>
+Date: Fri, 19 Sep 2008 08:16:43 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "Chris Snook" <csnook@redhat.com>
+Subject: Re: Populating multiple ptes at fault time
+Cc: "Christoph Lameter" <cl@linux-foundation.org>,
+       "Martin Bligh" <mbligh@google.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Hugh Dickens" <hugh@veritas.com>,
+       "Linux Memory Management List" <linux-mm@kvack.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Avi Kivity" <avi@qumranet.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>
+In-Reply-To: <48D2D4C7.8080209@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <f488382f0809181123n55a4979eg1996bbc30fa47d54@mail.gmail.com>
-	 <43e72e890809181134ybbec8fdxcb2a466aa17fe390@mail.gmail.com>
-	 <43e72e890809181142n7738cd99g522e6688e68d11ce@mail.gmail.com>
-	 <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com>
-	 <43e72e890809181344q416b5944w3332ee5a33db048c@mail.gmail.com>
-	 <f488382f0809181449x7343aa7endff066cb5836a73c@mail.gmail.com>
-	 <20080918220102.GE7408@tesla>
-	 <f488382f0809181608y3e9fc530k3e770488985e9fe9@mail.gmail.com>
-X-Google-Sender-Auth: 7237fd802bb9c5ec
+References: <48D142B2.3040607@goop.org>
+	 <33307c790809181411j41a6fc4ev8560a13ed8661ec2@mail.gmail.com>
+	 <48D2C46A.5030702@linux-foundation.org>
+	 <33307c790809181421k52ed6a36h9d4ee40d5799a536@mail.gmail.com>
+	 <48D2C8DD.4040303@linux-foundation.org>
+	 <28c262360809181449v1050c1f7ndf17dadba9fac0bf@mail.gmail.com>
+	 <48D2CEF3.6060308@linux-foundation.org>
+	 <33307c790809181508v2e64c0a4j8f0e93df99673e63@mail.gmail.com>
+	 <48D2D22B.2070408@linux-foundation.org> <48D2D4C7.8080209@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 18, 2008 at 4:08 PM, Steven Noonan
-> Will do! And actually, to be precise, the issue occurred not on the
-> rmmod, but on the following modprobe for ath9k.
-
-Ah -- it makes it even more interesting now..
-
->>> Which is far more important, I agree. It's annoying to get speeds
->>> <802.11b on my pre-802.11n capable chipset and network. ;)
+On Fri, Sep 19, 2008 at 7:23 AM, Chris Snook <csnook@redhat.com> wrote:
+> Christoph Lameter wrote:
 >>
->> Yeah exactly, I hope the work we do will get in for 27. We'll see.
+>> Martin Bligh wrote:
+>>>>
+>>>> My patches were only for anonymous pages not for file backed because
+>>>> readahead
+>>>> is available for file backed mappings.
+>>>
+>>> Do we populate the PTEs though? I didn't think that was batched, but I
+>>> might well be wrong.
+>>
+>> We do not populate the PTEs and AFAICT PTE population was assumed not to
+>> be
+>> performance critical since the backing media is comparatively slow.
+>>
 >
-> Linus has been fairly strict lately, so I am as uncertain as you are.
-> It really should get merged, because having 2.6.27 with [partially]
-> broken wireless networking is kind of stupid. In the worst case, isn't
-> it possible to do a revert to get the old aggregation crap back in?
+> Perhaps we should.  In a virtual guest, the backing media is often an
+> emulated IDE device, or something similarly inefficient, such that the
+> bottleneck is the CPU.
 
-Well let us finish the patch first in a way that we are happy with it
-:) But yeah if its not merged distributions will probably just pick it
-up anyway.
+In embedded environment, many people use nand-like device as storage.
+Read cost of nand-like device is less than IDE's one.
+Also, Nowaday Embedded stuff would like to use multi-core step by step.
+So, pte population become important more and more.
 
-  Luis
+
+> -- Chris
+>
+
+
+
+-- 
+Kinds regards,
+MinChan Kim
