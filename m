@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbYIREaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbYIREb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235AbYIREaa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 00:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYIREaW
+	id S1755569AbYIREb1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 00:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYIREbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 00:30:22 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:35664 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbYIREaV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 00:30:21 -0400
-Date: Thu, 18 Sep 2008 14:30:19 +1000
-From: Simon Horman <horms@verge.net.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Steel <jon.steel@esentire.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kexec: segmentation fault in kimage_add_entry
-Message-ID: <20080918043018.GD32516@verge.net.au>
-References: <48D0067F.3020007@esentire.com> <m1d4j3g29q.fsf@frodo.ebiederm.org>
+	Thu, 18 Sep 2008 00:31:19 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:52854 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750710AbYIREbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 00:31:18 -0400
+Date: Thu, 18 Sep 2008 06:31:15 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: blk: queue cleanup at device shutdown
+Message-ID: <20080918043114.GG20055@kernel.dk>
+References: <48C97CD9.8000808@am.sony.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1d4j3g29q.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <48C97CD9.8000808@am.sony.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 03:21:53PM -0700, Eric W. Biederman wrote:
-> From: Jonathan Steel <jon.steel@esentire.com>
+On Thu, Sep 11 2008, Geoff Levand wrote:
+> Hi Jens,
 > 
-> A segmentation fault can occur in kimage_add_entry in kexec.c when
-> loading a kernel image into memory. The fault occurs because a page is
-> requested by calling kimage_alloc_page with gfp_mask GFP_KERNEL and the
-> function may actually return a page with gfp_mask GFP_HIGHUSER. The high
-> mem page is returned because it was swapped with the kernel page due to
-> the kernel page being a page that will shortly be copied to.
+> I'm wondering about what is needed in ps3disk_remove(), to clean
+> up the request_queue (priv->queue) the driver uses.
+> ps3disk_remove() is called from the main device_shutdown()
+> routine via the ps3_system_bus remove routine.
 > 
-> This patch ensures that kimage_alloc_page returns a page that was
-> created with the correct gfp flags.
-> 
-> 
-> I have verified the change and fixed the whitespace damage of the
-> original patch.  Jonathan did a great job of tracking this down
-> after he hit the problem. -- Eric
-> 
-> Signed-off-by: Jonathan Steel <jon.steel@esentire.com>
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> The current code follows, and as can be seen, there is no check
+> or handling of the queue before blk_cleanup_queue() is called.
+> Can it be assumed that the queue is empty at this point,
+> or is something else needed here?
 
-For what it is worth: Acked-by: Simon Horman <horms@verge.net.au>
+The queue should be empty, at least there should be no one else
+submitting IO for the device given the contet in which it is called. But
+I suppose we could have pending IO (given the kexec context you
+explained to me in person), so the below patch could be needed. It may
+actually be a good idea to put this into blk_cleanup_queue(), since we
+should have process context there anyway.
 
-> ---
->  kernel/kexec.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/kexec.c b/kernel/kexec.c
-> index 59f3f0d..aef2653 100644
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-> @@ -753,8 +753,14 @@ static struct page *kimage_alloc_page(struct kimage *image,
->  			*old = addr | (*old & ~PAGE_MASK);
->  
->  			/* The old page I have found cannot be a
-> -			 * destination page, so return it.
-> +			 * destination page, so return it if it's
-> +			 * gfp_flags honor the ones passed in.
->  			 */
-> +			if (!(gfp_mask & __GFP_HIGHMEM) &&
-> +			    PageHighMem(old_page)) {
-> +				kimage_free_pages(old_page);
-> +				continue;
-> +			}
->  			addr = old_addr;
->  			page = old_page;
->  			break;
-> -- 
-> 1.5.3.rc6.17.g1911
-> 
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
+index d797e20..dce64d0 100644
+--- a/drivers/block/ps3disk.c
++++ b/drivers/block/ps3disk.c
+@@ -537,6 +537,8 @@ static int ps3disk_remove(struct ps3_system_bus_device *_dev)
+ 	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+ 	struct ps3disk_private *priv = dev->sbd.core.driver_data;
+ 
++	blk_sync_queue(priv->queue);
++
+ 	mutex_lock(&ps3disk_mask_mutex);
+ 	__clear_bit(priv->gendisk->first_minor / PS3DISK_MINORS,
+ 		    &ps3disk_mask);
 
 -- 
-Simon Horman
-  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
-  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
+Jens Axboe
 
