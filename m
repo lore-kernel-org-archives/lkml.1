@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbYIRWpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYIRXE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756800AbYIRWpu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 18:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbYIRWpm
+	id S1756694AbYIRXE7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 19:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbYIRXEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 18:45:42 -0400
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:47318 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755401AbYIRWpl (ORCPT
+	Thu, 18 Sep 2008 19:04:49 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:6489 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755501AbYIRXEs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 18:45:41 -0400
-Message-ID: <48D2DA0D.4060300@nortel.com>
-Date: Thu, 18 Sep 2008 16:45:33 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Thu, 18 Sep 2008 19:04:48 -0400
+Message-ID: <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com>
+Date: Thu, 18 Sep 2008 16:04:47 -0700
+From: "Steven Noonan" <steven@uplinklabs.net>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5, rc6, probably others)
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Luis Rodriguez" <Luis.Rodriguez@atheros.com>
+In-Reply-To: <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: unpredictability in scheduler test results
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Sep 2008 22:45:37.0400 (UTC) FILETIME=[44C68780:01C919E0]
+Content-Disposition: inline
+References: <f488382f0809181123n55a4979eg1996bbc30fa47d54@mail.gmail.com>
+	 <43e72e890809181134ybbec8fdxcb2a466aa17fe390@mail.gmail.com>
+	 <43e72e890809181142n7738cd99g522e6688e68d11ce@mail.gmail.com>
+	 <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com>
+	 <43e72e890809181344q416b5944w3332ee5a33db048c@mail.gmail.com>
+	 <f488382f0809181449x7343aa7endff066cb5836a73c@mail.gmail.com>
+	 <20080918220102.GE7408@tesla>
+	 <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was running some tests with the "fairtest" testcase and noticed that 
-successive runs could give wildly different results.
+On Thu, Sep 18, 2008 at 3:08 PM, Luis R. Rodriguez
+<lrodriguez@atheros.com> wrote:
+> On Thu, Sep 18, 2008 at 3:01 PM, Luis R. Rodriguez
+>
+>>> Which is far more important, I agree. It's annoying to get speeds
+>>> <802.11b on my pre-802.11n capable chipset and network. ;)
+>
+> Oh and you should at least get some 11n rates, just not aggregation :)
+>
+>  Luis
+>
 
-I was originally using the tip/master tree as of Sep 16, but I also 
-confirmed the behaviour with Linus' tree as of Sep 14 (with the 
-__load_balance_iterator() fix applied).  The same behaviour is present 
-in both cases.
+I always get "1 megabit/sec". It actually measures (at best) to be a
+throughput of 8mbits/sec, though the average (due to strange random
+packet loss) is about 4mbits/sec. -- And that was with aggregation
+re-enabled via your patch. Without, it never exceeds 1mbit/sec
+(actual, not just as indicated by iwconfig.
 
-I'm using the test config listed at the bottom.  It's pretty 
-straightforward.
-
-The first run gave the following results.  As expected, the system 
-picked a static task distribution and didn't migrate tasks during the test.
-
-group       actual(%)     expected(%)  avg latency(ms) max_latency(ms)
-     1   33.31(33.33/33.2    30.00      23/23            37/37
-     2        36.29          40.00       5               25
-     3   30.40(27.40/33.40)  30.00      22/23            60/40
-
-
-
-On the second run, the task distribution is almost perfect, but the 
-system was only using one of the two cpus as seen by the difference 
-between actual and expected cpu time.
-
-Warning, actual cpu time different than expected. actual: 10033.011108, 
-expected: 20000.000000
-group       actual(%)     expected(%)  avg latency(ms) max_latency(ms)
-     1   0.24(30.59/29.88)    30.00      26/27             68/58
-     2       39.87            40.00       20                36
-     3   29.89(29.87/29.91)   30.00      28/27             47/60
-
-
-Any ideas what's going on?
-
-Chris
-
-
-
-test config file:
-#delay (secs)
-1
-
-#duration (secs)
-10
-
-#groupname,share,numhogs
-1,750,n
-2,1000,1
-3,750,n
-
-
+- Steven
