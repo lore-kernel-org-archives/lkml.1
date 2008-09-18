@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbYIRKmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYIRKvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755306AbYIRKmY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 06:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYIRKmM
+	id S1755205AbYIRKvo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 06:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYIRKvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 06:42:12 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:61461 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbYIRKmL (ORCPT
+	Thu, 18 Sep 2008 06:51:36 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:58864 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753972AbYIRKvf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 06:42:11 -0400
-In-Reply-To: <20080918112713.75872c95@bull.net>
-References: <20080915100406.342e027a@bull.net>	<OF39C3BF0F.17B60FAA-ONC12574C8.002AE138-C12574C8.002B6422@de.ibm.com> <20080918112713.75872c95@bull.net>
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with hardirq
- preemption, eHCA is close
-X-KeepSent: D7842B7A:ADC47EED-C12574C8:003A2CB3;
- type=4; name=$KeepSent
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: Benjamin Herrenschmidt <bherren@au1.ibm.com>, gilles.carry@ext.bull.net,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>, jean-pierre.dion@bull.net,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux-rt <linux-rt-users@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
-       Thomas Q Klein <TKLEIN@de.ibm.com>, tinytim@us.ibm.com,
-       Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-X-Mailer: Lotus Notes Release 8.0.1 HF105 April 10, 2008
-Message-ID: <OFD7842B7A.ADC47EED-ONC12574C8.003A2CB3-C12574C8.003AC948@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Thu, 18 Sep 2008 12:42:05 +0200
-X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 8.0.1|February 07, 2008) at
- 18/09/2008 12:42:06
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	Thu, 18 Sep 2008 06:51:35 -0400
+Date: Thu, 18 Sep 2008 12:50:56 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Greg K-H <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]sysfs: Don't emit a warning when sysfs_rename_link()
+ fails.
+Message-ID: <20080918125056.03c404e8@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <m17i99wz7k.fsf@frodo.ebiederm.org>
+References: <20080917130805.6260ba9c@gondolin.boeblingen.de.ibm.com>
+	<m1r67i61rh.fsf@frodo.ebiederm.org>
+	<20080918090705.6985cced@gondolin.boeblingen.de.ibm.com>
+	<m17i99wz7k.fsf@frodo.ebiederm.org>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 18 Sep 2008 03:00:31 -0700,
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-Sebastien Dugue <sebastien.dugue@bull.net> wrote on 18.09.2008 11:27:13:
+> In the dev_change_name we either do dev_alloc_name
+> which generates a unique device name or __dev_get_by_name
+> which looks to see if we are already using that name.
 
->
->   It would be really interresting to know if the eHCA exhibits the same
-> problem under -rt as it's the only other user of the ibmebus.
-> Unfortunately I don't have the hardware to test.
->
+Duh, I overlooked that, sorry about the noise.
 
-eHCA is very close from the interrupt generation and handling perspective,
-so yes, could be an issue there as well.
-
-
-Gruss / Regards
-Christoph Raisch
-
-
+(OTOH, we should get of sysfs_do_create_link() then, since it's an
+unneed indirection).
