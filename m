@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbYIRWQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYIRWST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756832AbYIRWQa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 18:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbYIRWQX
+	id S1757228AbYIRWST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 18:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbYIRWSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 18:16:23 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:59430 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754235AbYIRWQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 18:16:23 -0400
-Date: Fri, 19 Sep 2008 07:15:59 +0900
-To: andi@firstfloor.org
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, joerg.roedel@amd.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about
- virtual mappings
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080918182029.GO25711@one.firstfloor.org>
-References: <20080917002404.GG25711@one.firstfloor.org>
-	<20080918035726F.fujita.tomonori@lab.ntt.co.jp>
-	<20080918182029.GO25711@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 18 Sep 2008 18:18:09 -0400
+Received: from qb-out-0506.google.com ([72.14.204.224]:24239 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755022AbYIRWSI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 18:18:08 -0400
+Message-ID: <8f3aa8d60809181518r697b5d7cp9e154fe73f804cc7@mail.gmail.com>
+Date: Thu, 18 Sep 2008 15:18:05 -0700
+From: "Martin Bligh" <mbligh@mbligh.org>
+To: "Christoph Lameter" <cl@linux-foundation.org>
+Subject: Re: Populating multiple ptes at fault time
+Cc: "Martin Bligh" <mbligh@google.com>, "MinChan Kim" <minchan.kim@gmail.com>,
+       "Chris Snook" <csnook@redhat.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Hugh Dickens" <hugh@veritas.com>,
+       "Linux Memory Management List" <linux-mm@kvack.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Avi Kivity" <avi@qumranet.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>
+In-Reply-To: <48D2D22B.2070408@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080919071534C.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+References: <48D142B2.3040607@goop.org> <48D2BFB8.6010503@redhat.com>
+	 <33307c790809181411j41a6fc4ev8560a13ed8661ec2@mail.gmail.com>
+	 <48D2C46A.5030702@linux-foundation.org>
+	 <33307c790809181421k52ed6a36h9d4ee40d5799a536@mail.gmail.com>
+	 <48D2C8DD.4040303@linux-foundation.org>
+	 <28c262360809181449v1050c1f7ndf17dadba9fac0bf@mail.gmail.com>
+	 <48D2CEF3.6060308@linux-foundation.org>
+	 <33307c790809181508v2e64c0a4j8f0e93df99673e63@mail.gmail.com>
+	 <48D2D22B.2070408@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Sep 2008 20:20:29 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+>>> My patches were only for anonymous pages not for file backed because readahead
+>>> is available for file backed mappings.
+>>
+>> Do we populate the PTEs though? I didn't think that was batched, but I
+>> might well be wrong.
+>
+> We do not populate the PTEs and AFAICT PTE population was assumed not to be
+> performance critical since the backing media is comparatively slow.
 
-> > The falling back mechanism was moved to pci-nommu from the common code
-> > since it doesn't work for other IOMMUs that always need virtual
-> 
-> There's no fallback for _map_sg/_map_single. All the fallback to GFP
-> only works for coherent allocations, but not for streaming mappings.
+I think the times when this matters are things like glibc, which are
+heavily shared -
+we were only 'prefaulting' when the pagecache was already there. So it's a case
+for a "readahead like algorithm", not necessarily a direct hook.
 
-Yeah, so the falling back mechanism was moved to pci-nommu's
-alloc_coherent.
+Anonymous pages seem much riskier, as presumably there's a no backing page
+except in the fork case.
 
-
-> To make this "fully robust" for masks < 32bit you would need to implement 
-> a new swiotlb that uses GFP_DMA allocations as fallback (or use the DMA 
-> allocator's swiotlb which can actually handle this)
-
-Do you mean if GART's alloc_coherent can't find a virtual address that
-a device can access to, it should try GFP_DMA allocations as fallback?
-
-GART could but why GART should do? If full IOMMUs' alloc_coherent
-can't find a virtual address that a device can access to, it's
-failure. No fallback is for them. Why can't GART use the same logic?
-Yeah, GART is not a full IOMMU, so it can have a fallback for this
-case. But why can't GART work in the same way other IOMMUs?
-
-
-> So you're right now basically checking for something that you cannot
-> fix. And also you try to check for (but not handle) something that even 
-> 32bit x86 doesn't handle. So if some driver relied on you checking
-> for it on 64bit it wouldn't work on 32bit x86 which would be a bad 
-> thing.
-
-What does '32bit x86 doesn't handle' mean? pci-nommu's alloc_coherent
-can handle < 32bit bit mask in the fallback path.
-
-Or you are talking about '_map_sg/_map_single'? If so, as we
-discussed, < 32bit bit mask can be handled in else where. The patch
-just tries to return an address that such tricks are not necessary
-with.
+I presume the reason Jeremy is interested is because his pagefaults are more
+expensive than most (under virtualization), so he may well find a
+different tradeoff
+than I did (try running kernbench?)
