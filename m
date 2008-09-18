@@ -1,98 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYIROHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYIROOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbYIROHZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 10:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbYIROHF
+	id S1756005AbYIROOO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 10:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYIRON7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 10:07:05 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:36609 "EHLO
-	orion.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756215AbYIROHD (ORCPT
+	Thu, 18 Sep 2008 10:13:59 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:12297 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbYIRON6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 10:07:03 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 10:07:02 EDT
-Message-ID: <48D25F4E.4050405@cateee.net>
-Date: Thu, 18 Sep 2008 16:01:50 +0200
-From: "Giacomo A. Catenazzi" <cate@cateee.net>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Thu, 18 Sep 2008 10:13:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Lb5fJrHGrNtw/OYCFoB0CLjdWOkLMRXzPg/Mnh52NDIKyd6hN71nYKKI60BXI4aK2u
+         3SMvxdZqBZbC1bajRf3cxXG5yp/Caky0SuZ4Zy8VzYoKnkPlnDIP2msA/TMPLzHSDFHH
+         +sDRKoq83xEHsa2SbeE9RbN7NsG17tko9KDfk=
+Message-ID: <ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>
+Date: Thu, 18 Sep 2008 09:13:56 -0500
+From: "Timur Tabi" <timur@freescale.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Subject: Re: dmaengine.c: question about device_alloc_chan_resources
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
+In-Reply-To: <e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: diet-kconfig: a script to trim unneeded kconfigs
-References: <s5hbpyny7bl.wl%tiwai@suse.de>
-In-Reply-To: <s5hbpyny7bl.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48D02589.8070601@freescale.com>
+	 <e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
+X-Google-Sender-Auth: 40f9ba5b8ff115c4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> Hi,
-> 
-> a topic that just came up in kernel summit is a script to remove
-> unneeded kernel configs automatically to reduce the compile time.
-> Incidentally, I already wrote such a script during the last SUSE hack
-> week a couple of weeks ago, so I'd like to share here, hopefully to
-> give an idea for further improvements.
-> 
-> The script checks the currently loaded modules and trims other
-> CONFIG_XXX=m simply, and tries make oldconfig, and writes out the
-> resultant .config in the current directory after some checks. 
-> You can specify the config file via option,  as default, it reads from
-> /proc/config.gz. 
-> 
-> The script is VERY hackish.  I should have begun with perl or whatever
-> better script language, but I chose bash and co.  So, don't expect
-> much code quality.  I'm no script guy after all :)
+On Wed, Sep 17, 2008 at 5:36 PM, Dan Williams <dan.j.williams@intel.com> wrote:
 
-Check my AutoKernConf (http://cateee.net/autokernconf/), it has
-huge (and automatically generated) database about drivers, modules,
-and configuration, and it gives a minimal kernel configuration for the
-most of the hardware hardware.
+> I believe the problem is that dmatest is telling the core to take
+> multiple references on a channel.  Take a look at
+> net/core/dev.c:netdev_dma_event and
+> crypto:asynx_tx/async_tx.c:dma_channel_add_remove both of those check
+> to see if they already have a refence to the channel.
 
-It needs a real maintainer and tools for non-hardware drivers
-(fs, net, ...) and special hardware (CPU capabilities,
-architecture specific drivers, etc).
+Ok, I see what these functions are doing, and dmatest_add_channel() is
+not doing it.  dmatest_add_channel() should not assume that it will
+only receive one and only one DMA_RESOURCE_AVAILABLE for each channel.
 
+I'll post a patch, if Haavard doesn't do it first.  Thanks for looking
+into this and getting back to me.  I've spent the entire week
+debugging this.
 
-> 
-> 
-> Takashi
-> ---
-> 
-> #!/bin/sh
-> 
-> # this magic makes grep and co a lot faster
-> export LANG=C
-> 
-> kroot=
-> subarch=$(uname -i)
-
--i is wrong (gives "unkwnown" on Debian).
-Check the main Makefile how to extract the architecture from uname.
-
-> 	c)
-> 	    oldconfig="$OPTARG"
-> 	    if [ ! -f "$oldconfig" ]; then
-> 		echo "Cannot find old config $oldconfig"
-> 		exit 1
-> 	    fi
-
-Check also the config-* in /boot
-
-> find_kconfig () {
->     module=$1
->     modregex=$(echo $1 | sed -e's/_/[_-]/g')
-> 
->     grep -E '^[[:space:]]*obj-\$\([A-Za-z0-9_]*\)[[:space:]]*[+:]=.*[[:space:]]'"$modregex"'\.o' $tmpd/makefiles | \
-> 	sed -e's/^.*://g' -e's/^[[:space:]]*obj-\$(\(.*\)).*$/\1/g'
-> }
-
-My python code works better (handle "alias", etc.).
-Anyway I should send some cleanup patches to correct and
-improve some ugly kernel Makefile.
-
-
-ciao
-	cate
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
