@@ -1,63 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbYIRFoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbYIRFp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755831AbYIRFoU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 01:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYIRFoL
+	id S1754093AbYIRFp0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 01:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbYIRFpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 01:44:11 -0400
-Received: from ik-out-1112.google.com ([66.249.90.178]:52926 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751210AbYIRFoK (ORCPT
+	Thu, 18 Sep 2008 01:45:13 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:42612 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751146AbYIRFpM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 01:44:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dGn7MptK2rfp+wQveLDAP8DiDUQucMpH5jU147oB30bloD0/3BHBehCKyT4PD8Byil
-         nDWL/VulJGiKEB8X3xKWQ1rmKcgeJtS/BSlsianow5DCJiBZVzi2QkPh4E/Zdcj1Y63i
-         Zuy2lYZEEHSnfD/jES1/J672bYrwDd8wjGiy0=
-Message-ID: <3877989d0809172244h196c79d6k67a9a024221b104a@mail.gmail.com>
-Date: Thu, 18 Sep 2008 13:44:07 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: "Roland McGrath" <roland@redhat.com>
-Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
-Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <20080917170122.7797E640A5@pipsqueak.localdomain>
+	Thu, 18 Sep 2008 01:45:12 -0400
+Message-ID: <48D1EA9E.9030309@linux.vnet.ibm.com>
+Date: Wed, 17 Sep 2008 22:43:58 -0700
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, xemul@openvz.org
+Subject: Re: [PATCH -mm] memcg: fix handling of shmem migration(v2)
+References: <20080917133149.b012a1c2.nishimura@mxp.nes.nec.co.jp> <20080917144659.2e363edc.kamezawa.hiroyu@jp.fujitsu.com> <20080917145003.fb4d0b95.kamezawa.hiroyu@jp.fujitsu.com> <20080917151951.9a181e7d.nishimura@mxp.nes.nec.co.jp> <20080917153826.8efbdc4b.kamezawa.hiroyu@jp.fujitsu.com> <20080917154511.683691d1.nishimura@mxp.nes.nec.co.jp> <20080917165544.3873bbb2.nishimura@mxp.nes.nec.co.jp> <20080917155112.eefd2f8a.akpm@linux-foundation.org> <20080918113851.16082bb7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080918113851.16082bb7.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-	 <3877989d0806031916wf11bb2t3847aa630fb39e60@mail.gmail.com>
-	 <48465D5C.8000804@suse.cz>
-	 <3877989d0806041849vb903aaw221de929e2ab8cb9@mail.gmail.com>
-	 <1212664605.15747.16.camel@elijah.suse.cz>
-	 <20080627204954.34F8B154231@magilla.localdomain>
-	 <3877989d0809082006v496bae4i1c0736f5d55e9b9f@mail.gmail.com>
-	 <20080910055504.9A2A41541FE@magilla.localdomain>
-	 <3877989d0809160150y385edd59i231aca8b1073ce14@mail.gmail.com>
-	 <20080917170122.7797E640A5@pipsqueak.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The another mysterious that I completely don't understand  probably
-needs your help.
-Why kernels with utrace patch applied on ia64 just work?
-Sounds like utrace delivers an extra SIGTRAP comparing with kernel
-without utrace code..
-Dose it make sense? Hmm.. Sounds like a bug to me..
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 17 Sep 2008 15:51:12 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+>> On Wed, 17 Sep 2008 16:55:44 +0900
+>> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+>>
+>>> Before this patch, if migrating shmem/tmpfs pages, newpage would be
+>>> charged with PAGE_CGROUP_FLAG_FILE set, while oldpage has been charged
+>>> without the flag.
+>>>
+>>> The problem here is mem_cgroup_move_lists doesn't clear(or set)
+>>> the PAGE_CGROUP_FLAG_FILE flag, so pc->flags of the newpage
+>>> remains PAGE_CGROUP_FLAG_FILE set even when the pc is moved to
+>>> another lru(anon) by mem_cgroup_move_lists. And this leads to
+>>> incorrect MEM_CGROUP_ZSTAT.
+>>> (In my test, I see an underflow of MEM_CGROUP_ZSTAT(active_file).
+>>> As a result, mem_cgroup_calc_reclaim returns very huge number and
+>>> causes soft lockup on page reclaim.)
+>>>
+>>> I'm not sure if mem_cgroup_move_lists should handle PAGE_CGROUP_FLAG_FILE
+>>> or not(I suppose it should be used to move between active <-> inactive,
+>>> not anon <-> file), I added MEM_CGROUP_CHARGE_TYPE_SHMEM for precharge
+>>> at shmem's page migration.
+>>>
+>>>
+>>> ChangeLog: v1->v2
+>>> - instead of modifying migrate.c, modify memcontrol.c only.
+>>> - add MEM_CGROUP_CHARGE_TYPE_SHMEM.
+>>>
+>>>
+>>> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+>>> ---
+>>>  mm/memcontrol.c |   13 ++++++++++---
+>>>  1 files changed, 10 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+>>> index 2979d22..ef8812d 100644
+>>> --- a/mm/memcontrol.c
+>>> +++ b/mm/memcontrol.c
+>>> @@ -179,6 +179,7 @@ enum charge_type {
+>>>  	MEM_CGROUP_CHARGE_TYPE_CACHE = 0,
+>>>  	MEM_CGROUP_CHARGE_TYPE_MAPPED,
+>>>  	MEM_CGROUP_CHARGE_TYPE_FORCE,	/* used by force_empty */
+>>> +	MEM_CGROUP_CHARGE_TYPE_SHMEM,	/* used by page migration of shmem */
+>>>  };
+>>>  
+>>>  /*
+>>> @@ -579,8 +580,10 @@ static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
+>>>  			pc->flags |= PAGE_CGROUP_FLAG_FILE;
+>>>  		else
+>>>  			pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
+>>> -	} else
+>>> +	} else if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+>>>  		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
+>>> +	else /* MEM_CGROUP_CHARGE_TYPE_SHMEM */
+>>> +		pc->flags = PAGE_CGROUP_FLAG_CACHE | PAGE_CGROUP_FLAG_ACTIVE;
+>>>  
+>>>  	lock_page_cgroup(page);
+>>>  	if (unlikely(page_get_page_cgroup(page))) {
+>>> @@ -739,8 +742,12 @@ int mem_cgroup_prepare_migration(struct page *page, struct page *newpage)
+>>>  	if (pc) {
+>>>  		mem = pc->mem_cgroup;
+>>>  		css_get(&mem->css);
+>>> -		if (pc->flags & PAGE_CGROUP_FLAG_CACHE)
+>>> -			ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
+>>> +		if (pc->flags & PAGE_CGROUP_FLAG_CACHE) {
+>>> +			if (page_is_file_cache(page))
+>>> +				ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
+>>> +			else
+>>> +				ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
+>>> +		}
+>>>  	}
+>>>  	unlock_page_cgroup(page);
+>>>  	if (mem) {
+>> I queued this as a fix against
+>> vmscan-split-lru-lists-into-anon-file-sets.patch.  Was that appropriate?
+>>
+>> If the bug you're fixing here is also present in mainline then I'll
+>> need to ask for a tested patch against mainline, please.
+>>
+> I think this bug depends on split-lru patch set.
+> Mayne not in mainline yet...?
 
-On Thu, Sep 18, 2008 at 1:01 AM, Roland McGrath <roland@redhat.com> wrote:
-> So is there or is there not any regression (change) in the kernel's behavior?
->
-> If you are now just talking about strace's own code, then the place for
-> that is strace-devel@lists.sourceforge.net, not any kernel lists.
->
->
-> Thanks,
-> Roland
->
+Yes, that sounds correct to me, this should be a -mm only patch.
+
+-- 
+	Balbir
