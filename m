@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbYIRSGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbYIRSMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403AbYIRSGR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 14:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbYIRSGH
+	id S1756591AbYIRSMe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 14:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbYIRSMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 14:06:07 -0400
-Received: from relay04.mail-hub.dodo.com.au ([123.2.6.239]:65316 "EHLO
-	relay04.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754235AbYIRSGG (ORCPT
+	Thu, 18 Sep 2008 14:12:24 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:46506 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755412AbYIRSMY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 14:06:06 -0400
-From: Grant Coady <grant_lkml@dodo.com.au>
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ACPI idea: override max. frequency
-Date: Fri, 19 Sep 2008 04:05:40 +1000
-Organization: http://bugsplatter.id.au/
-Reply-To: Grant Coady <gcoady.lk@gmail.com>
-Message-ID: <ku55d4pjvn5avnisj951vtcics1qen8a90@4ax.com>
-References: <20080918153032.GU4323@vanheusden.com>
-In-Reply-To: <20080918153032.GU4323@vanheusden.com>
-X-Mailer: Forte Agent 2.0/32.652
+	Thu, 18 Sep 2008 14:12:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=IEcDPMmm/CQEIrEnmfAle3J/euxQymbr6lvbFfAXDYjUh9wCqce6xfgb/Sy0u57Sq4
+         iEM10YisRg6zJMt8bHboCuMKO7ZiYyippFmrQGNSMYT02wqokKh1XQlDVLdorOhsMXRO
+         8lq+RU2n2DebeIPxgLdAre+XRms7OjWkmiDBM=
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] rfkill: clarify usage of rfkill_force_state() and rfkill->get_state()
+Date: Thu, 18 Sep 2008 20:12:18 +0200
+User-Agent: KMail/1.9.9
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       John Linville <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Larry Finger <Larry.Finger@lwfinger.net>
+References: <20080918145236.GJ1583@khazad-dum.debian.net> <200809181932.58272.IvDoorn@gmail.com> <1221760328.9262.94.camel@johannes.berg>
+In-Reply-To: <1221760328.9262.94.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809182012.18723.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Sep 2008 17:30:32 +0200, Folkert van Heusden <folkert@vanheusden.com> wrote:
+On Thursday 18 September 2008, Johannes Berg wrote:
+> On Thu, 2008-09-18 at 19:32 +0200, Ivo van Doorn wrote:
+> 
+> > Ideal situation would indeed be that mac80211 registers a rfkill structure
+> > and listens to rfkill events. This would help drivers by only needing to
+> > register a rfkill structure for state-change events without any need for
+> > listeners.
+> 
+> Yup.
+> 
+> > I was considering such a patch some time ago, but needed to figure out
+> > how to work with the state-override capabilities (HW_BLOCK and SOFT_BLOCK)
+> > and didn't work on it any further since.
+> 
+> So make the struct part of the hw structure? Then drivers can just use
+> that to force hard events. Or actually, no, don't do this, make a new
+> mac80211 call:
+> 
+> 	ieee80211_inform_hardblocked(BLOCK/OPEN)
+> 
+> which makes sure we can also try to not associate in this case in the
+> future...
 
->Hi,
->
->The bios of the motherboard in my pc (a Gigabyte 965G-DS3) says the
->processor can go no faster than 2.133GHz while in reality this is 2.6GHz
->(it is an Intel(R) Core(TM)2 Quad CPU Q9450 @ 2.66GHz). No newer bios is
->available so I was thinking: maybe an override switch can be added?
->Losing 0.5GHz is a bit of a waste.
+Yeah, unfortunately that wasn't the probablematic part. ;)
+Anyway when I have some time available I'll see if I can sort it out and
+make it work. But that will not be for another week or 2.
 
-Nothing to do with the kernel, your mobo is 1066MHz and the Q9450 is 
-1333Mhz bus, you could have bought a Q6700 for 2.66GHz on 1066MHz bus 
-operation.
-
-Grant.
+Ivo
