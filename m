@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbYIRRCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbYIRRK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbYIRRCo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 13:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYIRRCh
+	id S1755974AbYIRRK0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 13:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbYIRRKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 13:02:37 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:33087 "EHLO mo11.iij4u.or.jp"
+	Thu, 18 Sep 2008 13:10:13 -0400
+Received: from ryu.zarb.org ([212.85.158.22]:50145 "EHLO ryu.zarb.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752266AbYIRRCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 13:02:36 -0400
-Date: Fri, 19 Sep 2008 02:02:05 +0900
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com
-Subject: [PATCH] convert swiotlb to use dma_get_mask
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	id S1753477AbYIRRKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 13:10:12 -0400
+Subject: Re: edd breaking vesafb
+From: Pascal Terjan <pterjan@mandriva.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <48D2811B.8090602@zytor.com>
+References: <1221751035.26693.8.camel@plop>  <48D2811B.8090602@zytor.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Mandriva
+Date: Thu, 18 Sep 2008 19:10:06 +0200
+Message-Id: <1221757806.26693.14.camel@plop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080919020137Q.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Evolution 2.23.92-1mdv2009.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is against tip/x86/iommu.
+Le jeudi 18 septembre 2008 à 09:26 -0700, H. Peter Anvin a écrit :
+> Pascal Terjan wrote:
+> > Hello
+> > 
+> > I got a report of vesafb no longer working since edd is used on a
+> > machine (Shuttle FN41SP).
+> > It's a BIOS bug that was easily workarounded by calling set_video before
+> > query_edd.
+> > Does someone see some issue in doing that ?
+> > 
+> 
+> Yes, it means that we won't get the status and error messages from 
+> query_edd.  In fact, we changed the ordering specifically for this reason.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] convert swiotlb to use dma_get_mask
+Indeed
 
-swiotlb can use dma_get_mask() instead of the homegrown function.
+> The VESA code and EDD code both use the boot code heap.  One could guess 
+> that the problem is data left on the heap by the EDD code causing a 
+> failure when combined with a bad BIOS.
+> 
+> Does this patch work for you?
+> 
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- include/linux/dma-mapping.h |    2 +-
- lib/swiotlb.c               |    6 +-----
- 2 files changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 0dba743..ba9114e 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -65,7 +65,7 @@ static inline int is_buffer_dma_capable(u64 mask, dma_addr_t addr, size_t size)
- 
- static inline u64 dma_get_mask(struct device *dev)
- {
--	if (dev->dma_mask && *dev->dma_mask)
-+	if (dev && dev->dma_mask && *dev->dma_mask)
- 		return *dev->dma_mask;
- 	return DMA_32BIT_MASK;
- }
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 240a67c..f8eebd4 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -276,11 +276,7 @@ cleanup1:
- static int
- address_needs_mapping(struct device *hwdev, dma_addr_t addr, size_t size)
- {
--	dma_addr_t mask = 0xffffffff;
--	/* If the device has a mask, use it, otherwise default to 32 bits */
--	if (hwdev && hwdev->dma_mask)
--		mask = *hwdev->dma_mask;
--	return !is_buffer_dma_capable(mask, addr, size);
-+	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
- }
- 
- static int is_swiotlb_buffer(char *addr)
--- 
-1.5.4.2
+No it does not help
 
