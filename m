@@ -1,79 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbYIRMy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbYIRND7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755181AbYIRMy5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 08:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYIRMyt
+	id S1755410AbYIRND7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 09:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYIRNDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 08:54:49 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:58960 "EHLO tac.ki.iif.hu"
+	Thu, 18 Sep 2008 09:03:49 -0400
+Received: from zombie2.ncsc.mil ([144.51.88.133]:44097 "EHLO zombie2.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752773AbYIRMyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 08:54:49 -0400
-X-Greylist: delayed 1715 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 08:54:48 EDT
-From: Ferenc Wagner <wferi@niif.hu>
-To: linux-kernel@vger.kernel.org
-Subject: doubled idle count
-Date: Thu, 18 Sep 2008 14:26:11 +0200
-Message-ID: <87vdwtfxng.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752717AbYIRNDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 09:03:48 -0400
+X-Greylist: delayed 1443 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 09:03:47 EDT
+Subject: Re: [Bug #11500] /proc/net bug related to selinux
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Moore <paul.moore@hp.com>,
+       jmorris@namei.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <1221741521.24048.17.camel@moss-spartans.epoch.ncsc.mil>
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
+	 <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
+	 <20080917125053.1f9ecf37.akpm@linux-foundation.org>
+	 <200809171724.36269.paul.moore@hp.com>
+	 <20080917144842.7df59f9e.akpm@linux-foundation.org>
+	 <m17i9axv1q.fsf@frodo.ebiederm.org>
+	 <1221741521.24048.17.camel@moss-spartans.epoch.ncsc.mil>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Thu, 18 Sep 2008 09:03:00 -0400
+Message-Id: <1221742980.24048.26.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-After upgrading a Xen virtual machine to Debian's 2.6.26-4 kernel, I
-noticed that the idle counter doubled its pace on one of the machines:
+On Thu, 2008-09-18 at 08:38 -0400, Stephen Smalley wrote:
+> On Wed, 2008-09-17 at 15:32 -0700, Eric W. Biederman wrote:
+> > Andrew Morton <akpm@linux-foundation.org> writes:
+> > 
+> > > We don't even know the extent of the damage yet.  Which distros were
+> > > affected? With which versions of which userspace packages?
+> > 
+> > This seems to me to be an extremely fragile selinux user space policy.
+> > In their code that derives security labels from path names.
+> > Why don't we have AppArmor in the kernel again?
+> 
+> I think I explained that one before - in the case of /proc, the only
+> stable basis we have for deducing the security properties / protection
+> requirements for a given entry is its name, and its name can be reliably
+> constructed from the kernel's internal proc_dir_entry tree w/o any
+> ambiguity or potential for userspace manipulation (unlike the pathname
+> returned by d_path for a normal file).  I'd agree that it isn't optimal,
+> but it is what we have.
+> 
+> > Further I don't see how we could have possibly have supported that user space
+> > policy.  How can we apply a user space defined label required by the selinux
+> > policy to a symlink that did not exist?
+> 
+> I'm not blaming anyone here, or trying to argue that the /proc/net
+> changes should be reverted.  What happened here is that a kernel
+> interface (/proc/net) changed in a subtle way that had a side effect on
+> permission checking, and we tried to hide that change at the time (in
+> terms of ensuring that the new /proc/self/net tree would still be
+> labeled correctly), and we missed the fact that there would still be a
+> new check on the symlink read that wouldn't be covered by existing
+> policy.
+> 
+> > Everything here sounds to me like that selinux policy is impossibly brittle.
+> > And anything that is that brittle I have no intention in claiming is a bug
+> > in proc.
+> 
+> I'm not arguing that this is a bug in proc or in selinux for that
+> matter.
+> 
+> I do however think that the mantra that we can't require users to update
+> policy for kernel changes is unsupportable in general.  The precise set
+> of permission checks on a given operation is not set in stone and it is
+> not part of the kernel/userland interface/contract.  Policy isn't
+> "userspace"; it governs what userspace can do, and it has to adapt to
+> kernel changes.
 
-service2:~# yes >/dev/null &
-[1] 32578
-service2:~# grep cpu0 /proc/stat; sleep 1; grep cpu0 /proc/stat
-cpu0 141208 9113 57273 13379659 61012 0 792 2350 0
-cpu0 141310 9113 57274 13379659 61012 0 792 2350 0
-service2:~# fg
-yes > /dev/null
-^C
-service2:~# grep cpu0 /proc/stat; sleep 1; grep cpu0 /proc/stat
-cpu0 141952 9113 57277 13383481 61012 0 792 2350 0
-cpu0 141953 9113 57278 13383681 61012 0 792 2350 0
+I should note here that for changes to SELinux, we have gone out of our
+way to avoid such breakage to date through the introduction of
+compatibility switches, policy flags to enable any new checks, etc
+(albeit at a cost in complexity and ever creeping compatibility code).
+But changes to the rest of the kernel can just as easily alter the set
+of permission checks that get applied on a given operation, and I don't
+think we are always going to be able to guarantee that new kernel + old
+policy will Just Work. 
 
-One out of three machines show this effect, with the exact same kernel
-and Xen versions (3.2.0, dom0 is Debian's stock Etch 2.6.18 kernel).
-They aren't hosted by the same machine, though: the misbehaving one is
-on a different installation with very similar hardware (3 vs 2 GHz).
-All the guest are paravirtual.
+> Users who are willing/able to run the latest kernel on their own w/o
+> waiting for a coordinated update of kernel and policy from their
+> distribution ought to be able to create a local policy module - it isn't
+> rocket science, and they can always fall back on audit2allow if they
+> need to do so.
 
-service2:~# cat /proc/cpuinfo 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 2
-model name	: Intel(R) Xeon(TM) CPU 3.06GHz
-stepping	: 5
-cpu MHz		: 3056.482
-cache size	: 1024 KB
-physical id	: 0
-siblings	: 1
-core id		: 0
-cpu cores	: 1
-apicid		: 1
-initial apicid	: 1
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 2
-wp		: yes
-flags		: fpu de tsc msr pae cx8 cmov pat pse36 clflush dts mmx fxsr sse sse2 ss ht pbe up pebs bts cid xtpr
-bogomips	: 6128.11
-clflush size	: 64
-power management:
-
-I don't know what else would be useful, please ask.
 -- 
-Thanks,
-Feri.
+Stephen Smalley
+National Security Agency
+
