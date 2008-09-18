@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbYIRTiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbYIRTkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757070AbYIRTiR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 15:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbYIRTiD
+	id S1756904AbYIRTkG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 15:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbYIRTj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 15:38:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:23697 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754715AbYIRTiA (ORCPT
+	Thu, 18 Sep 2008 15:39:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34383 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754293AbYIRTjz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 15:38:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=YLlLy/6naJWFOC1lwRaSS8mHBhMy001Ly0YfQDbFBoypQqRzYxz+Dv5mDToQMjbcu2
-         KkEiwCHlfkaUJmKKepagjqD9v5tIYppfAvIxCTMEH25rY1ENvgNigIwptVxQVHfQMHcN
-         sNo+zN6f7TiVepVYui9Xt79zNukMHOX72Ph1Y=
-Date: Thu, 18 Sep 2008 23:37:57 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip/master] x86: io-apic - restore_IO_APIC_setup NULL
-	pointer quick fix
-Message-ID: <20080918193757.GB7294@lenovo>
+	Thu, 18 Sep 2008 15:39:55 -0400
+Message-ID: <48D2AE6C.7060507@linux-foundation.org>
+Date: Thu, 18 Sep 2008 14:39:24 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Chris Snook <csnook@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Hugh Dickens <hugh@veritas.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, "Martin J. Bligh" <mbligh@google.com>
+Subject: Re: Populating multiple ptes at fault time
+References: <48D142B2.3040607@goop.org> <48D1625C.7000309@redhat.com> <48D17A93.4000803@goop.org> <48D29AFB.5070409@linux-foundation.org> <48D2A392.6010308@goop.org>
+In-Reply-To: <48D2A392.6010308@goop.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check if memory was granted first - we don't like NULL deref.
-It's a *quick* fix. Actually it's better to hadle this error
-at moment of memory allocation. It's save_mask_IO_APIC_setup
-route who allocates this memory (just for the record).
+Jeremy Fitzhardinge wrote:
+> Thanks, that was exactly what I was hoping to see.  I didn't see any
+> definitive statements against the patch set, other than a concern that
+> it could make things worse.  Was the upshot that no consensus was
+> reached about how to detect when its beneficial to preallocate anonymous
+> pages?
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+There were multiple discussions on the subject. The consensus was that it was
+difficult to generalize this and it would only work on special loads. Plus it
+would add some overhead to the general case.
 
-I'll handle this in _normal_ way tomorrow. Please review.
+> Christoph (and others): do you think vm changes in the last 4 years
+> would have changed the outcome of these results?
 
-Index: linux-2.6.git/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-18 19:17:16.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-18 23:34:40.000000000 +0400
-@@ -852,10 +852,14 @@ void restore_IO_APIC_setup(void)
- {
- 	int apic, pin;
- 
--	for (apic = 0; apic < nr_ioapics; apic++)
-+	for (apic = 0; apic < nr_ioapics; apic++) {
-+		/* FIXME: it should be handled at allocation time --cvg */
-+		if (!early_ioapic_entries[apic])
-+			break;
- 		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++)
- 			ioapic_write_entry(apic, pin,
- 					   early_ioapic_entries[apic][pin]);
-+	}
- }
- 
- void reinit_intr_remapped_IO_APIC(int intr_remapping)
+Seems that the code today is similar. So it would still work.
