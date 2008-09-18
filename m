@@ -1,40 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755663AbYIROb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbYIROhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755663AbYIROb6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 10:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbYIRObw
+	id S1755468AbYIROhy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 10:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbYIROhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 10:31:52 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:48900 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752989AbYIRObv (ORCPT
+	Thu, 18 Sep 2008 10:37:46 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:28872 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbYIROhp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 10:31:51 -0400
-Message-ID: <48D2664D.7040204@freescale.com>
-Date: Thu, 18 Sep 2008 09:31:41 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Thu, 18 Sep 2008 10:37:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=wkhYpHoIjCXoL8IjAQcC1UlgBYx1jD6Lv8GJsVAJ7UjAcMcd92QJdHSN3V/FG8mF4z
+         UyIkGzdEx2Zq8cd61wwe3vq/Uezk7ElxfVPAG8hTRJS7+r7KRy4xVbhLoRBx/s5gXwNe
+         K4pre6ro4oX7NEcUqi/MtgqLsYqRcRaFq5jzI=
+Message-ID: <48D267B5.20402@gmail.com>
+Date: Thu, 18 Sep 2008 16:37:41 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-CC: Dan Williams <dan.j.williams@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: dmaengine.c: question about device_alloc_chan_resources
-References: <48D02589.8070601@freescale.com>	<e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>	<ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com> <20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+References: <20080918.210418.226794540.ryov@valinux.co.jp> <20080918131554.GB20640@redhat.com>
+In-Reply-To: <20080918131554.GB20640@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen wrote:
+Vivek Goyal wrote:
+> On Thu, Sep 18, 2008 at 09:04:18PM +0900, Ryo Tsuruta wrote:
+>> Hi All,
+>>
+>> I have got excellent results of dm-ioband, that controls the disk I/O
+>> bandwidth even when it accepts delayed write requests.
+>>
+>> In this time, I ran some benchmarks with a high-end storage. The
+>> reason was to avoid a performance bottleneck due to mechanical factors
+>> such as seek time.
+>>
+>> You can see the details of the benchmarks at:
+>> http://people.valinux.co.jp/~ryov/dm-ioband/hps/
+>>
+> 
+> Hi Ryo,
+> 
+> I had a query about dm-ioband patches. IIUC, dm-ioband patches will break
+> the notion of process priority in CFQ because now dm-ioband device will
+> hold the bio and issue these to lower layers later based on which bio's
+> become ready. Hence actual bio submitting context might be different and
+> because cfq derives the io_context from current task, it will be broken.
+> 
+> To mitigate that problem, we probably need to implement Fernando's
+> suggestion of putting io_context pointer in bio. 
+> 
+> Have you already done something to solve this issue?
+> 
+> Secondly, why do we have to create an additional dm-ioband device for 
+> every device we want to control using rules. This looks little odd
+> atleast to me. Can't we keep it in line with rest of the controllers
+> where task grouping takes place using cgroup and rules are specified in
+> cgroup itself (The way Andrea Righi does for io-throttling patches)?
+> 
+> To avoid creation of stacking another device (dm-ioband) on top of every
+> device we want to subject to rules, I was thinking of maintaining an
+> rb-tree per request queue. Requests will first go into this rb-tree upon
+> __make_request() and then will filter down to elevator associated with the
+> queue (if there is one). This will provide us the control of releasing
+> bio's to elevaor based on policies (proportional weight, max bandwidth
+> etc) and no need of stacking additional block device.
+> 
+> I am working on some experimental proof of concept patches. It will take
+> some time though.
+> 
+> I was thinking of following.
+> 
+> - Adopt the Andrea Righi's style of specifying rules for devices and
+>   group the tasks using cgroups.
+> 
+> - To begin with, adopt dm-ioband's approach of proportional bandwidth
+>   controller. It makes sense to me limit the bandwidth usage only in
+>   case of contention. If there is really a need to limit max bandwidth,
+>   then probably we can do something to implement additional rules or
+>   implement some policy switcher where user can decide what kind of
+>   policies need to be implemented.
+> 
+> - Get rid of dm-ioband and instead buffer requests on an rb-tree on every
+>   request queue which is controlled by some kind of cgroup rules.
+> 
+> It would be good to discuss above approach now whether it makes sense or 
+> not. I think it is kind of fusion of io-throttling and dm-ioband patches
+> with additional idea of doing io-control just above elevator on the request
+> queue using an rb-tree.
 
-> Wouldn't it be better if the dmaengine layer made sure it didn't pass
-> the same channel several times to a client?
+Thanks Vivek. All sounds reasonable to me and I think this is be the right way
+to proceed.
 
-Wouldn't that require it to keep track of which clients have already seen which
-channels?  It might make more sense, but it's probably easier the current way.
+I'll try to design and implement your rb-tree per request-queue idea into my
+io-throttle controller, maybe we can reuse it also for a more generic solution.
+Feel free to send me your experimental proof of concept if you want, even if
+it's not yet complete, I can review it, test and contribute.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+-Andrea
