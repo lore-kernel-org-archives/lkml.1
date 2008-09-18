@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYIRNxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYIROAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbYIRNxo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 09:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYIRNxf
+	id S1755239AbYIROAj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 10:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYIROAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 09:53:35 -0400
-Received: from main.gmane.org ([80.91.229.2]:51754 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753051AbYIRNxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 09:53:34 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: ACPI "Soft-off" power button only rebooting system, not powering
-     off
-Date: Thu, 18 Sep 2008 09:53:21 -0400
-Message-ID: <48D25D51.8050701@tmr.com>
-References: <76366b180809162150o51701a1fk209af4e84ffc5674@mail.gmail.com> <20080917101809.GA4771@elf.ucw.cz> <76366b180809170533t6962f3d0qf67278b2e9ff6bd0@mail.gmail.com> <20080918110635.GF27832@elf.ucw.cz> <48D245BF.7060902@earthlink.net> <48D248D4.40103@farnz.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@suse.cz>,
-       Andrew Paprocki <andrew@ishiboo.com>
-X-Gmane-NNTP-Posting-Host: pool-71-245-142-197.albyny.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080716 Fedora/1.1.11-1.fc9 pango-text SeaMonkey/1.1.11
-In-Reply-To: <48D248D4.40103@farnz.org.uk>
+	Thu, 18 Sep 2008 10:00:31 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:47220 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753368AbYIROAa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 10:00:30 -0400
+Date: Thu, 18 Sep 2008 15:59:50 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<ukleinek@informatik.uni-freiburg.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       david-b@pacbell.net, linux-mips@linux-mips.org,
+       g.liakhovetski@pengutronix.de, greg@kroah.com, kay.sievers@vrfy.org,
+       rmk+kernel@arm.linux.org.uk
+Subject: Re: [PATCH] gpio_free might sleep, mips architecture
+Message-ID: <20080918135950.GA8104@linux-mips.org>
+References: <1216884515-12084-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1221508963-27259-1-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-2-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-3-git-send-email-ukleinek@informatik.uni-freiburg.de> <20080917143955.2d3727e5.akpm@linux-foundation.org> <20080918093242.GA7627@informatik.uni-freiburg.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080918093242.GA7627@informatik.uni-freiburg.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Farnsworth wrote:
-> Stephen Clark wrote:
->> Pavel Machek wrote:
->>> On Wed 2008-09-17 08:33:50, Andrew Paprocki wrote:
->>>> On Wed, Sep 17, 2008 at 6:18 AM, Pavel Machek <pavel@suse.cz> wrote:
->>>>> On Wed 2008-09-17 00:50:03, Andrew Paprocki wrote:
->>>>>> I have an AMD / Award BIOS based system which does not properly shut
->>>>>> off when I hold down the power button for 4 seconds. The BIOS is
->>>>>> configured to have "Soft-off" set to "Delay for 4 seconds" which is
->>>>>> supposed to power the machine off if the button is held that long.
->>>>>>
->>>>>> I first thought this could be a BIOS bug, but this *only* appears to
->>>>>> happen while Linux is running. If the computer is running WinXP, it
->>>>> Well, so the BIOS is broken. 4second hold should power down the
->>>>> machine regardless of the operating system.
->>>> Yes, I agree.. I just find it strange that it works on the BIOS screen
->>>> as well as in GRUB, but as soon as Linux boots, it no longer works.
->>>> Since it works under WinXP, there must be some way to get it to work
->>>> properly from the OS side even it if means working around the bug
->>>> somehow.
->>> Try noapic/nolapic/nosmp etc... and ask your vendor to fix the bios ;-).
->>>
->> Why do you say it is the BIOS when it shuts down properly from the GRUB
->> prompt or from in WINXP?
->>
-> Because it's only the BIOS that can cause this behaviour.
-> 
-> When you push the power button, the BIOS is invoked. If you release
-> within 4 seconds, the BIOS sends an ACPI event to the running OS,
-> telling it that the power button has been pushed.
-> 
-> If you hold it down for 4 or more seconds, the BIOS is supposed to shut
-> the machine down without the OS knowing what's happening (no ACPI
-> events, just a loss of power). From your problem description, the BIOS
-> is noticing *something* about the way Linux sets things up, and
-> *choosing* to reboot instead of cutting the power.
-> 
-Such as setting a bit to reboot instead of powering off? There are lots of bits 
-down in low memory which one BIOS or another use, so it may be functioning as 
-intended. You might look for an additional option to reboot instead of power 
-down, a feature I think may have been intended for systems without a hardware 
-RESET button.
+On Thu, Sep 18, 2008 at 11:32:42AM +0200, Uwe Kleine-König wrote:
 
-> GRUB doesn't touch hardware without BIOS help, so is unlikely to change
-> the system state in a way that tickles this BIOS bug; similarly, BIOSes
-> are tested against current Windows versions by vendors, so they'll have
-> hacked it around until it worked there.
+> Andrew Morton wrote:
+> > > diff --git a/include/asm-mips/mach-rc32434/gpio.h b/include/asm-mips/mach-rc32434/gpio.h
+> > > index f946f5f..9b4722e 100644
+> > > --- a/include/asm-mips/mach-rc32434/gpio.h
+> > > +++ b/include/asm-mips/mach-rc32434/gpio.h
+> > > @@ -13,6 +13,7 @@
+> > >  #ifndef _RC32434_GPIO_H_
+> > >  #define _RC32434_GPIO_H_
+> > >  
+> > > +#include <linux/kernel.h>
+> > >  #include <linux/types.h>
+> > >  
+> > >  struct rb532_gpio_reg {
+> > > @@ -88,6 +89,7 @@ static inline int gpio_request(unsigned gpio, const char *label)
+> > >  static inline void gpio_free(unsigned gpio)
+> > >  {
+> > >  	/* Not yet implemented */
+> > > +	might_sleep();
+> > >  }
+> > >  
+> > 
+> > There is no gpio_free() in linux-next's include/asm-mips/mach-rc32434/gpio.h
+> This is OK.  This machine type is converted to GPIO lib in linus-next.
+> So just drop the two hunks for this file.  (Note, you only dropped the
+> addition of might_sleep, but then including linux/kernel.h isn't needed
+> either.)
 
-This certainly may be a bug (ie. unintended behavior), but it may be a feature 
-which Linux is enabling unintentionally. Having to use the power button on a 
-Linux system would worry me more than having to press the button a second time 
-during reboot.
+A few days ago I've put a patch to move include/asm-mips/ to arch/ like
+several other architectures already did so you patch may conflict ...
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
-
+  Ralf
