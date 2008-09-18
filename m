@@ -1,42 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbYIROtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbYIROuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbYIROtn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 10:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbYIROte
+	id S1756811AbYIROuA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 10:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbYIROtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 10:49:34 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:34176 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753701AbYIROtd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 10:49:33 -0400
-Message-ID: <48D26A74.4030104@freescale.com>
-Date: Thu, 18 Sep 2008 09:49:24 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-CC: Dan Williams <dan.j.williams@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: dmaengine.c: question about device_alloc_chan_resources
-References: <48D02589.8070601@freescale.com>	<e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>	<ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>	<20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>	<48D2664D.7040204@freescale.com> <20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 18 Sep 2008 10:49:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58022 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753701AbYIROts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 10:49:48 -0400
+Date: Thu, 18 Sep 2008 10:46:13 -0400 (EDT)
+Message-Id: <20080918.104613.104028583.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: [PATCH 3/3] block: add a queue flag for request stacking support
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20080918.104356.74754407.k-ueda@ct.jp.nec.com>
+References: <20080918.104356.74754407.k-ueda@ct.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen wrote:
+This patch adds a queue flag to indicate the block device can be
+used for request stacking.
 
-> I guess so. What would be even more simple is to simply prevent other
-> clients from taking a channel once someone has acked it, which would be
-> perfect for my purposes, but perhaps not everyone else's...
+Request stacking drivers need to stack their devices on top of
+only devices of which q->request_fn is functional.
+Since bio stacking drivers (e.g. md, loop) basically initialize
+their queue using blk_alloc_queue() and don't set q->request_fn,
+the check of (q->request_fn == NULL) looks enough for that purpose.
 
-I'm not clear on how your driver works, but doesn't it run continuous tests on
-all channels all the time?  If so, wouldn't your proposal prevent other drivers
-from ever getting a DMA channel?
+However, dm will become both types of stacking driver (bio-based and
+request-based).  And dm will always set q->request_fn even if the dm
+device is bio-based of which q->request_fn is not functional actually.
+So we need something else to distinguish the type of the device.
+Adding a queue flag is a solution for that.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+
+The reason why dm always sets q->request_fn is to keep
+the compatibility of dm user-space tools.
+Currently, all dm user-space tools are using bio-based dm without
+specifying the type of the dm device they use.
+To use request-based dm without changing such tools, the kernel
+must decide the type of the dm device automatically.
+The automatic type decision can't be done at the device creation time
+and needs to be deferred until such tools load a mapping table,
+since the actual type is decided by dm target type included in
+the mapping table.
+
+So a dm device has to be initialized using blk_init_queue()
+so that we can load either type of table.
+Then, all queue stuffs are set (e.g. q->request_fn) and we have
+no element to distinguish that it is bio-based or request-based,
+even after a table is loaded and the type of the device is decided.
+
+By the way, some stuffs of the queue (e.g. request_list, elevator)
+are needless when the dm device is used as bio-based.
+But the memory size is not so large (about 20[KB] per queue on ia64),
+so I hope the memory loss can be acceptable for bio-based dm users.
+
+
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+---
+ block/blk-core.c       |    3 ++-
+ include/linux/blkdev.h |    3 +++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-block/block/blk-core.c
+===================================================================
+--- linux-2.6-block.orig/block/blk-core.c
++++ linux-2.6-block/block/blk-core.c
+@@ -566,7 +566,8 @@ blk_init_queue_node(request_fn_proc *rfn
+ 	q->request_fn		= rfn;
+ 	q->prep_rq_fn		= NULL;
+ 	q->unplug_fn		= generic_unplug_device;
+-	q->queue_flags		= (1 << QUEUE_FLAG_CLUSTER);
++	q->queue_flags		= (1 << QUEUE_FLAG_CLUSTER |
++				   1 << QUEUE_FLAG_STACKABLE);
+ 	q->queue_lock		= lock;
+ 
+ 	blk_queue_segment_boundary(q, 0xffffffff);
+Index: linux-2.6-block/include/linux/blkdev.h
+===================================================================
+--- linux-2.6-block.orig/include/linux/blkdev.h
++++ linux-2.6-block/include/linux/blkdev.h
+@@ -441,6 +441,7 @@ struct request_queue
+ #define QUEUE_FLAG_NOMERGES    10	/* disable merge attempts */
+ #define QUEUE_FLAG_SAME_COMP   11	/* force complete on same CPU */
+ #define QUEUE_FLAG_FAIL_IO     12	/* fake timeout */
++#define QUEUE_FLAG_STACKABLE   13	/* supports request stacking */
+ 
+ static inline int queue_is_locked(struct request_queue *q)
+ {
+@@ -547,6 +548,8 @@ enum {
+ #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
+ #define blk_queue_nomerges(q)	test_bit(QUEUE_FLAG_NOMERGES, &(q)->queue_flags)
+ #define blk_queue_flushing(q)	((q)->ordseq)
++#define blk_queue_stackable(q)	\
++	test_bit(QUEUE_FLAG_STACKABLE, &(q)->queue_flags)
+ 
+ #define blk_fs_request(rq)	((rq)->cmd_type == REQ_TYPE_FS)
+ #define blk_pc_request(rq)	((rq)->cmd_type == REQ_TYPE_BLOCK_PC)
