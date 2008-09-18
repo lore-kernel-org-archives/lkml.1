@@ -1,83 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYIRTwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYIRTyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYIRTwR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 15:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754946AbYIRTwF
+	id S1756731AbYIRTyZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 15:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbYIRTyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 15:52:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39106 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755047AbYIRTwE (ORCPT
+	Thu, 18 Sep 2008 15:54:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:51174 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754575AbYIRTyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 15:52:04 -0400
-Date: Thu, 18 Sep 2008 12:51:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] printk: Print cpuid along with the timestamp with
- CONFIG_PRINTK_TIME
-Message-Id: <20080918125123.1a76978f.akpm@linux-foundation.org>
-In-Reply-To: <20080918193720.GA21915@localdomain>
-References: <20080918193720.GA21915@localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 18 Sep 2008 15:54:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Cnab6G1GtIvShgYhHMxwA49zCMxQqYwbI5ka5AVvIORy8vULHR3H0eV6s4NSVTHLUI
+         ukf39qU7qXQX3WiyeWg84+0PThlKxHetRvWBuu5Ct+j+faum/rHCaDhCwY7g3oOTLgte
+         +dbfH1BRkMwJwvVK8reyKeFmETTrvq+Zpzp1M=
+Message-ID: <48D2B1E1.3030700@gmail.com>
+Date: Thu, 18 Sep 2008 21:54:09 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+References: <20080918.210418.226794540.ryov@valinux.co.jp> <20080918131554.GB20640@redhat.com> <48D267B5.20402@gmail.com> <20080918150634.GH20640@redhat.com> <48D2715A.6060002@gmail.com> <20080918162010.GJ20640@redhat.com>
+In-Reply-To: <20080918162010.GJ20640@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Sep 2008 12:37:20 -0700
-Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+Vivek Goyal wrote:
+> On Thu, Sep 18, 2008 at 05:18:50PM +0200, Andrea Righi wrote:
+>> Vivek Goyal wrote:
+>>> On Thu, Sep 18, 2008 at 04:37:41PM +0200, Andrea Righi wrote:
+>>>> Vivek Goyal wrote:
+>>>>> On Thu, Sep 18, 2008 at 09:04:18PM +0900, Ryo Tsuruta wrote:
+>>>>>> Hi All,
+>>>>>>
+>>>>>> I have got excellent results of dm-ioband, that controls the disk I/O
+>>>>>> bandwidth even when it accepts delayed write requests.
+>>>>>>
+>>>>>> In this time, I ran some benchmarks with a high-end storage. The
+>>>>>> reason was to avoid a performance bottleneck due to mechanical factors
+>>>>>> such as seek time.
+>>>>>>
+>>>>>> You can see the details of the benchmarks at:
+>>>>>> http://people.valinux.co.jp/~ryov/dm-ioband/hps/
+>>>>>>
+>>>>> Hi Ryo,
+>>>>>
+>>>>> I had a query about dm-ioband patches. IIUC, dm-ioband patches will break
+>>>>> the notion of process priority in CFQ because now dm-ioband device will
+>>>>> hold the bio and issue these to lower layers later based on which bio's
+>>>>> become ready. Hence actual bio submitting context might be different and
+>>>>> because cfq derives the io_context from current task, it will be broken.
+>>>>>
+>>>>> To mitigate that problem, we probably need to implement Fernando's
+>>>>> suggestion of putting io_context pointer in bio. 
+>>>>>
+>>>>> Have you already done something to solve this issue?
+>>>>>
+>>>>> Secondly, why do we have to create an additional dm-ioband device for 
+>>>>> every device we want to control using rules. This looks little odd
+>>>>> atleast to me. Can't we keep it in line with rest of the controllers
+>>>>> where task grouping takes place using cgroup and rules are specified in
+>>>>> cgroup itself (The way Andrea Righi does for io-throttling patches)?
+>>>>>
+>>>>> To avoid creation of stacking another device (dm-ioband) on top of every
+>>>>> device we want to subject to rules, I was thinking of maintaining an
+>>>>> rb-tree per request queue. Requests will first go into this rb-tree upon
+>>>>> __make_request() and then will filter down to elevator associated with the
+>>>>> queue (if there is one). This will provide us the control of releasing
+>>>>> bio's to elevaor based on policies (proportional weight, max bandwidth
+>>>>> etc) and no need of stacking additional block device.
+>>>>>
+>>>>> I am working on some experimental proof of concept patches. It will take
+>>>>> some time though.
+>>>>>
+>>>>> I was thinking of following.
+>>>>>
+>>>>> - Adopt the Andrea Righi's style of specifying rules for devices and
+>>>>>   group the tasks using cgroups.
+>>>>>
+>>>>> - To begin with, adopt dm-ioband's approach of proportional bandwidth
+>>>>>   controller. It makes sense to me limit the bandwidth usage only in
+>>>>>   case of contention. If there is really a need to limit max bandwidth,
+>>>>>   then probably we can do something to implement additional rules or
+>>>>>   implement some policy switcher where user can decide what kind of
+>>>>>   policies need to be implemented.
+>>>>>
+>>>>> - Get rid of dm-ioband and instead buffer requests on an rb-tree on every
+>>>>>   request queue which is controlled by some kind of cgroup rules.
+>>>>>
+>>>>> It would be good to discuss above approach now whether it makes sense or 
+>>>>> not. I think it is kind of fusion of io-throttling and dm-ioband patches
+>>>>> with additional idea of doing io-control just above elevator on the request
+>>>>> queue using an rb-tree.
+>>>> Thanks Vivek. All sounds reasonable to me and I think this is be the right way
+>>>> to proceed.
+>>>>
+>>>> I'll try to design and implement your rb-tree per request-queue idea into my
+>>>> io-throttle controller, maybe we can reuse it also for a more generic solution.
+>>>> Feel free to send me your experimental proof of concept if you want, even if
+>>>> it's not yet complete, I can review it, test and contribute.
+>>> Currently I have taken code from bio-cgroup to implement cgroups and to
+>>> provide functionality to associate a bio to a cgroup. I need this to be
+>>> able to queue the bio's at right node in the rb-tree and then also to be
+>>> able to take a decision when is the right time to release few requests.
+>>>
+>>> Right now in crude implementation, I am working on making system boot.
+>>> Once patches are at least in little bit working shape, I will send it to you
+>>> to have a look.
+>>>
+>>> Thanks
+>>> Vivek
+>> I wonder... wouldn't be simpler to just use the memory controller
+>> to retrieve this information starting from struct page?
+>>
+>> I mean, following this path (in short, obviously using the appropriate
+>> interfaces for locking and referencing the different objects):
+>>
+>> cgrp = page->page_cgroup->mem_cgroup->css.cgroup
+>>
+> 
+> Andrea,
+> 
+> Ok, you are first retrieving cgroup associated page owner and then 
+> retrieving repsective iothrottle state using that
+> cgroup, (cgroup_to_iothrottle). I have yet to dive deeper into cgroup
 
-> I found it useful to have the cpuid of the printing cpu along with the
-> timestamp -- especially while debugging hangs during bootups.
-> 
-> I don't know why this hasn't been implemened in the kernel yet, and
-> cannot think of a strong reason not to have it.  Yes, the cpuid prefix will
-> take 5 more characters per line,  but having  the cpuid info is worth it,
-> I think.
-> 
-> Thanks,
-> Kiran
-> 
-> ---
-> 
-> 
-> Add cpuid information to printk if CONFIG_PRINTK_TIME is enabled.
-> This information is useful to debug hangs and bootup issues.
-> 
-> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-> 
-> Index: linux-git/kernel/printk.c
-> ===================================================================
-> --- linux-git.orig/kernel/printk.c	2008-09-16 15:37:48.000000000 -0700
-> +++ linux-git/kernel/printk.c	2008-09-18 12:27:10.489662938 -0700
-> @@ -739,9 +739,10 @@ asmlinkage int vprintk(const char *fmt, 
->  
->  				t = cpu_clock(printk_cpu);
->  				nanosec_rem = do_div(t, 1000000000);
-> -				tlen = sprintf(tbuf, "[%5lu.%06lu] ",
-> +				tlen = sprintf(tbuf, "[%5lu.%06lu:%d] ",
->  						(unsigned long) t,
-> -						nanosec_rem / 1000);
-> +						nanosec_rem / 1000,
-> +						printk_cpu);
->  
->  				for (tp = tbuf; tp < tbuf + tlen; tp++)
->  					emit_log_char(*tp);
+Correct.
 
-Yes, I guess it could be useful sometimes.  otoh anyone who is down at
-that level of detail and is using printk to debug something can add
-their own %d/smp_processor_id().
+> data structures but does it work if iothrottle and memory controller
+> are mounted on separate hierarchies?
 
-Your patch illogically ties the cpu-id-printing feature to the
-printk.time feature.  I guess that's liveable with, but
-Documentation/kernel-parameters.txt should be updated.
+ehm... I've to check. I usually mount all the controllers into the same
+hierarchy. :P
 
-Anyone who was parsing that output might get a shock, but that's
-liveable with too.  Probably their parser will continue to work anwyay.
+> bio-cgroup guys are also doing similar thing in the sense retrieving
+> relevant pointer through page and page_cgroup and use that to reach
+> bio_cgroup strucutre. The difference is that they don't retrieve first
+> css object of mem_cgroup instead they directly store the pointer of
+> bio_cgroup in page_cgroup (When page is being charged in memory controller).
+> 
+> While page is being charged, determine the bio_cgroup, associated with
+> the task and store this info in page->page_cgroup->bio_cgroup.
+> 
+> static inline struct bio_cgroup *bio_cgroup_from_task(struct task_struct
+> *p)
+> {
+>        return container_of(task_subsys_state(p, bio_cgroup_subsys_id),
+>                                struct bio_cgroup, css);
+> }
+> 
+> At any later point, one can look at bio and reach respective bio_cgroup
+> by.
+> 
+> bio->page->page_cgroup->bio_cgroup.
+> 
+> Looks like now we are getting rid of page_cgroup pointer in "struct page"
+> and we shall have to change the implementation accordingly.
 
+Actually, only page_get_page_cgroup() implementation would change. And
+we don't have to worry about the particular implementation (hash,
+radix_tree, whatever..), in any case bio-cgroup has to simply use the
+opportune interface: page_get_page_cgroup(struct *page).
 
-I don't know whether the usefulness of this feature outweighs its
-various costs.  Input is sought.
+-Andrea
