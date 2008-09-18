@@ -1,37 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbYIREzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbYIRE7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756046AbYIREzs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 00:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYIREzi
+	id S1754296AbYIRE7f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 00:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYIRE71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 00:55:38 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:34408 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755447AbYIREzh (ORCPT
+	Thu, 18 Sep 2008 00:59:27 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:58383 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750710AbYIRE70 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 00:55:37 -0400
-Message-ID: <48D1DF43.4090804@davidnewall.com>
-Date: Thu, 18 Sep 2008 14:25:31 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Thu, 18 Sep 2008 00:59:26 -0400
+Message-ID: <48D1DFE0.5010208@linux.vnet.ibm.com>
+Date: Wed, 17 Sep 2008 21:58:08 -0700
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
 MIME-Version: 1.0
-To: Halesh S <halesh.s@india.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: execve exit status on MIPS
-References: <loom.20080918T041321-307@post.gmane.org>
-In-Reply-To: <loom.20080918T041321-307@post.gmane.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page (v3)
+References: <200809091500.10619.nickpiggin@yahoo.com.au> <20080909141244.721dfd39.kamezawa.hiroyu@jp.fujitsu.com> <30229398.1220963412858.kamezawa.hiroyu@jp.fujitsu.com> <20080910012048.GA32752@balbir.in.ibm.com> <1221085260.6781.69.camel@nimitz> <48C84C0A.30902@linux.vnet.ibm.com> <1221087408.6781.73.camel@nimitz> <20080911103500.d22d0ea1.kamezawa.hiroyu@jp.fujitsu.com> <48C878AD.4040404@linux.vnet.ibm.com> <20080911105638.1581db90.kamezawa.hiroyu@jp.fujitsu.com> <20080917232826.GA19256@balbir.in.ibm.com> <20080917184008.92b7fc4c.akpm@linux-foundation.org> <20080918134304.93985542.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080918134304.93985542.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Halesh S wrote:
-> char e2BIG[ARG_MAX+1][10];
-> ...
->   for(ind = 0; ind < ARG_MAX+1; ind++)
->     strcpy(e2BIG[ind], "helloworld");
->   
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 17 Sep 2008 18:40:08 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+>>> Advantages of the patch
+>>>
+>>> 1. It removes the extra pointer in struct page
+>>>
+>>> Disadvantages
+>>>
+>>> 1. Radix tree lookup is not an O(1) operation, once the page is known
+>>>    getting to the page_cgroup (pc) is a little more expensive now.
+>> Why are we doing this?  I can guess, but I'd rather not have to.
+>>
+>> a) It's slower.
+>>
+>> b) It uses even more memory worst-case.
+>>
+>> c) It uses less memory best-case.
+>>
+>> someone somewhere decided that (Aa + Bb) / Cc < 1.0.  What are the values
+>> of A, B and C and where did they come from? ;)
+>>
+> 
+> Balbir, don't you like pre-allocate-page-cgroup-at-boot at all ?
+> I don't like radix-tree for objects which can spread to very vast/sparse area ;)
+> 
 
-Did you intend to overflow e2BIG?  You're copying 11 bytes (including
-terminating NUL) into a 10 byte array.
+I tried one version, but before trying a pre-allocation version, I wanted to
+spread out the radix-tree and try and the results seemed quite impressive. We
+can still do pre-allocation, but it gets more complicated as we start supporting
+all memory models. I do have a design on paper, but it is much more complex than
+this.
+
+> BTW, I already have lazy-lru-by-pagevec protocol on my patch(hash version) and
+> seems to work well. I'm now testing it and will post today if I'm enough lucky.
+
+cool! Please do post what numbers you see as well. I would appreciate if you can
+try this version and see what sort of performance issues you see.
+
+-- 
+	Balbir
