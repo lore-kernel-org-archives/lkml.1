@@ -1,83 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYIREeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbYIREjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbYIREeS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 00:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750854AbYIREeJ
+	id S1754309AbYIREjP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 00:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbYIREi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 00:34:09 -0400
-Received: from main.gmane.org ([80.91.229.2]:55016 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750781AbYIREeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 00:34:08 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Halesh S <halesh.s@india.com>
-Subject: execve exit status on MIPS
-Date: Thu, 18 Sep 2008 04:33:52 +0000 (UTC)
-Message-ID: <loom.20080918T041321-307@post.gmane.org>
+	Thu, 18 Sep 2008 00:38:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54043 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751066AbYIREi7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 00:38:59 -0400
+Date: Wed, 17 Sep 2008 21:37:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>, manfred@colorfullife.com
+Subject: Re: [RFC PATCH] rcu: introduce kfree_rcu()
+Message-Id: <20080917213748.7571fbdf.akpm@linux-foundation.org>
+In-Reply-To: <48D1D694.9010802@cn.fujitsu.com>
+References: <48D1D694.9010802@cn.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 121.100.32.51 (Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1))
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 18 Sep 2008 12:18:28 +0800 Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-Hi all,
+> 
+> sometimes a rcu callback is just calling kfree() to free a struct's memory
+> (we say this callback is a trivial callback.).
+> this patch introduce kfree_rcu() to do these things directly, easily.
+> 
+> There are 4 reasons that we need kfree_rcu():
+> 
+> 1) unloadable modules:
+>    a module(rcu callback is defined in this module) using rcu must
+>    call rcu_barrier() when unload. rcu_barrier() will increase
+>    the system's overhead(the more cpus the worse) and
+>    rcu_barrier() is very time-consuming. if all rcu callback defined
+>    in this module are trivial callback, we can just call kfree_rcu()
+>    instead, save a rcu_barrier() when unload.
+> 
+> 2) duplicate code:
+>    all trivial callback are duplicate code though the structs to be freed
+>    are different. it's just a container_of() and a kfree().
+>    There are about 50% callbacks are trivial callbacks for call_rcu() in
+>    current kernel code.
+> 
+> 3) cache:
+>    the instructions of trivial callback is not in the cache supposedly.
+>    calling a trivial callback will let to cache missing very likely.
+>    the more trivial callback the more cache missing. OK, this is
+>    not a problem now or in a few days: Only less than 1% trivial callback
+>    are called in running kernel.
+> 
+> 4) future:
+>    the number of user of rcu is increasing. new code for rcu is
+>    trivial callback very likely. it means more modules using rcu
+>    and more duplicate code(may come to 90% of callbacks is trivial
+>    callbacks) and more cache missing.
+> 
+> Implementation:
+>    there were a lot of ideas came out when i implemented kfree_rcu().
+>    I chose the simplest one as this patch shows. but these implementation
+>    may cannot be used for to free a struct larger than 16KBytes.
+> 
+> kfree_rcu_bh()? kfree_rcu_sched()?
+>    these two are not need current. call_rcu_bh() & call_rcu_sched()
+>    are hardly be called(and hardly be called for trivial callback).
+> 
+> vfree_rcu()?
+>    No, vfree() is not atomic function, will not be called in softirq.
+> 
 
-Please find the below testcase..
+This is all rather mysterious.
 
-#include <stdio.h>
-#include <limits.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+> ---
+> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+> index e8b4039..04c654f 100644
+> --- a/include/linux/rcupdate.h
+> +++ b/include/linux/rcupdate.h
+> @@ -253,4 +253,25 @@ extern void rcu_barrier_sched(void);
+>  extern void rcu_init(void);
+>  extern int rcu_needs_cpu(int cpu);
+>  
+> +#define __KFREE_RCU_MAX_OFFSET 4095
+> +#define KFREE_RCU_MAX_OFFSET (sizeof(void *) * __KFREE_RCU_MAX_OFFSET)
+> +
+> +#define __rcu_reclaim(head) \
+> +do { \
+> +	unsigned long __offset = (unsigned long)head->func; \
+> +	if (__offset <= __KFREE_RCU_MAX_OFFSET) \
+> +		kfree((void *)head - sizeof(void *) * __offset); \
+> +	else \
+> +		head->func(head); \
+> +} while(0)
 
-#define EXE_NAME "./exe"
+All the above could do with some comments explaining what it does.
 
-char e2BIG[ARG_MAX+1][10];
-char *envList[]={NULL};
+Please use checkpatch.
 
-int main(void)
-{
-  int ret,ind;
+Surely it cannot be resirable to have a "function" which can call kfree
+either synchronously or asynchronously depending upon the size of the
+object which was passed to it?  If the caller wants rcu treatment of
+the freeing then that is what the caller must be given.  I mean, if the
+caller can tolerate a synchrnous call to kfree() then the caller should
+have directly called kfree?
 
-  for(ind = 0; ind < ARG_MAX+1; ind++)
-    strcpy(e2BIG[ind], "helloworld");
+I think (and pray) that the above could have been implemented as an
+out-of-line C function?
 
-  if ((ret = chmod(EXE_NAME,0744)) != 0){
-    printf("chmod failed\n");
-    exit(1);
-  }
+> +
+> +/**
+> + * kfree_rcu - free previously allocated memory after a grace period.
+> + * @ptr:  pointer returned by kmalloc.
+> + * @head: structure to be used for queueing the RCU updates. This structure
+> + *        is a part of previously allocated memory @ptr.
+> + */
+> +extern void kfree_rcu(const void *ptr, struct rcu_head *head);
 
-  /* whne arg list is too long */
-  if ((ret = execve(EXE_NAME,e2BIG,envList)) == -1) {
-    if ( errno == E2BIG)
-      printf("Test Pass\n");
-    else
-      printf("Test Fail : Got Errno %d\n", errno);
-    exit(0);
-  }
-  else
-    printf("execve worked out of limit\n");
-  exit(1);
-}
+rcu kerneldoc is implemented in the .c file, not in the .h file.
 
+>  #endif /* __LINUX_RCUPDATE_H */
+> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+> index aad93cd..5a14190 100644
+> --- a/kernel/rcuclassic.c
+> +++ b/kernel/rcuclassic.c
+> @@ -232,7 +232,7 @@ static void rcu_do_batch(struct rcu_data *rdp)
+>  	while (list) {
+>  		next = list->next;
+>  		prefetch(next);
+> -		list->func(list);
+> +		__rcu_reclaim(list);
+>  		list = next;
+>  		if (++count >= rdp->blimit)
+>  			break;
+> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> index 467d594..aa9b56a 100644
+> --- a/kernel/rcupdate.c
+> +++ b/kernel/rcupdate.c
+> @@ -162,6 +162,18 @@ void rcu_barrier_sched(void)
+>  }
+>  EXPORT_SYMBOL_GPL(rcu_barrier_sched);
+>  
+> +void kfree_rcu(const void *ptr, struct rcu_head *head)
+> +{
+> +	unsigned long offset;
+> +	typedef void (*rcu_callback)(struct rcu_head *);
+> +
+> +	offset = (void *)head - (void *)ptr;
+> +	BUG_ON(offset > KFREE_RCU_MAX_OFFSET);
+> +
+> +	call_rcu(head, (rcu_callback)(offset / sizeof(void *)));
 
-On MIPS E2BIG is not getting set as errno instead EFAULT is set, while on 
-other archs like ARM, PowerPC and i686 I am able to get E2BIG.
+How can this work?  We take the difference between two pointers, divide
+that by 4 or 8, then treat the resulting number as the address of an
+RCU callback function.
 
-Please let me know about the issue...
+I think I'm missing something here.
 
-Let EXE_NAME be any executable....
-
-Thanks,
-Halesh
-
+> +}
+> +EXPORT_SYMBOL_GPL(kfree_rcu);
+> +
+>  void __init rcu_init(void)
+>  {
+>  	__rcu_init();
+> diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
+> index 2782793..62a9e54 100644
+> --- a/kernel/rcupreempt.c
+> +++ b/kernel/rcupreempt.c
+> @@ -1108,7 +1108,7 @@ static void rcu_process_callbacks(struct softirq_action *unused)
+>  	spin_unlock_irqrestore(&rdp->lock, flags);
+>  	while (list) {
+>  		next = list->next;
+> -		list->func(list);
+> +		__rcu_reclaim(list);
+>  		list = next;
+>  		RCU_TRACE_ME(rcupreempt_trace_invoke);
+>  	}
