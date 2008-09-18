@@ -1,58 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbYIRP54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbYIRP60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756329AbYIRP54 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 11:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYIRP5s
+	id S1756701AbYIRP60 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 11:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbYIRP6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 11:57:48 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:59283 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754110AbYIRP5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 11:57:47 -0400
-Date: Fri, 19 Sep 2008 00:57:36 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 18/23] AMD IOMMU: simplify dma_mask_to_pages
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080918073232.GB24392@amd.com>
-References: <1221670377-19295-19-git-send-email-joerg.roedel@amd.com>
-	<20080918041717S.fujita.tomonori@lab.ntt.co.jp>
-	<20080918073232.GB24392@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 18 Sep 2008 11:58:17 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:3929 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754827AbYIRP6Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 11:58:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Fkroq0HzZHmwdmHw9Ibgoi6ljymRmgPCzZQjuMIQuwtTO1IsOIa00mds1+F/jE1OOV
+         rXYoKLTdO6cBQXBeTTWRzNERRYV9TmdvYOdwGE/Stz2ho63zej/94771fX2Sy82JPphk
+         4R1I79sAed/w0QR/quBRdvx0PdmP8IStcvq10=
+Message-ID: <5767b9100809180858r3bb9952el3bc76dab18930713@mail.gmail.com>
+Date: Thu, 18 Sep 2008 23:58:14 +0800
+From: "Conke Hu" <conke.hu@gmail.com>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: Re: s3c24xx nand: add command line partition table parsing support (resend)
+Cc: Linux-arm-kernel@lists.arm.linux.org.uk, "Ben Dooks" <ben-linux@fluff.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <5767b9100809180855j58150b4ct4e2a4b9bb5ac7885@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080919005651C.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+References: <5767b9100809171813u7e26d516x12558a178b78f852@mail.gmail.com>
+	 <20080918112703.GA25491@flint.arm.linux.org.uk>
+	 <5767b9100809180855j58150b4ct4e2a4b9bb5ac7885@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Sep 2008 09:32:32 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+Add mtd id and  command line partition table parsing support for
+s3c24xx nand driver.
 
-> On Thu, Sep 18, 2008 at 04:20:20AM +0900, FUJITA Tomonori wrote:
-> > On Wed, 17 Sep 2008 18:52:52 +0200
-> > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > 
-> > > The current calculation is very complicated. This patch replaces it with
-> > > a much simpler version.
-> > > 
-> > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > > ---
-> > >  arch/x86/kernel/amd_iommu.c |    3 +--
-> > >  1 files changed, 1 insertions(+), 2 deletions(-)
-> > 
-> > I think that you can use iommu_device_max_index() for what
-> > dma_mask_to_pages does.
-> 
-> Hmm, in theory yes. But iommu_device_max_index() returns a size in bytes
-> and not in pages.
+Signed-off-by: Conke Hu <conke.hu@gmail.com>
+Signed-off-by: Linke Wang <linke.wang@gmail.com>
+------------------
+diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
+index 556139e..db0d331 100644
+--- a/drivers/mtd/nand/s3c2410.c
++++ b/drivers/mtd/nand/s3c2410.c
+@@ -48,6 +48,8 @@
+ #include <asm/plat-s3c/regs-nand.h>
+ #include <asm/plat-s3c/nand.h>
 
-It doesn't return a size in bytes. You could use like:
++#define S3C_NAND_NAME_LEN 16
++
+ #ifdef CONFIG_MTD_NAND_S3C2410_HWECC
+ static int hardware_ecc = 1;
+ #else
+@@ -60,6 +62,9 @@ static int clock_stop = 1;
+ static const int clock_stop = 0;
+ #endif
 
-limit = iommu_device_max_index(dom->aperture_size >> PAGE_SHIFT, 0,
-				dma_get_mask(dev) >> PAGE_SHIFT);
++#ifdef CONFIG_MTD_PARTITIONS
++static const char *s3c_part_probes[] = {"cmdlinepart", NULL};
++#endif
 
+ /* new oob placement block for use with hardware ecc generation
+  */
+@@ -80,6 +85,7 @@ struct s3c2410_nand_mtd {
+ 	struct s3c2410_nand_set		*set;
+ 	struct s3c2410_nand_info	*info;
+ 	int				scan_res;
++	char			name[S3C_NAND_NAME_LEN];
+ };
 
-Anyway, it's not urgent at all. I'll send a patch for this after your
-patchset is merged.
+ enum s3c_cpu_type {
+@@ -649,6 +655,15 @@ static int s3c2410_nand_add_partition(struct
+s3c2410_nand_info *info,
+ 				      struct s3c2410_nand_mtd *mtd,
+ 				      struct s3c2410_nand_set *set)
+ {
++#ifdef CONFIG_MTD_CMDLINE_PARTS
++	int nr_parts;
++	struct mtd_partition *partitions;
++
++	nr_parts = parse_mtd_partitions(&mtd->mtd, s3c_part_probes, &partitions, 0);
++	if (nr_parts > 0 && partitions != NULL)
++		return add_mtd_partitions(&mtd->mtd, partitions, nr_parts);
++#endif
++
+ 	if (set == NULL)
+ 		return add_mtd_device(&mtd->mtd);
+
+@@ -892,6 +907,9 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
+ 	for (setno = 0; setno < nr_sets; setno++, nmtd++) {
+ 		pr_debug("initialising set %d (%p, info %p)\n", setno, nmtd, info);
+
++		snprintf(nmtd->name, sizeof(nmtd->name), "s3c_nand%d", setno);
++		nmtd->mtd.name = nmtd->name;
++
+ 		s3c2410_nand_init_chip(info, nmtd, sets);
+
+ 		nmtd->scan_res = nand_scan_ident(&nmtd->mtd,
