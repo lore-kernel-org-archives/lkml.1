@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbYIRPBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbYIRPD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbYIRPBl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 11:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbYIRPBd
+	id S1755301AbYIRPD3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 11:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbYIRPDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 11:01:33 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:38583 "EHLO bagnes.atmel.com"
+	Thu, 18 Sep 2008 11:03:22 -0400
+Received: from mx1.suse.de ([195.135.220.2]:42968 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753252AbYIRPBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 11:01:32 -0400
-Date: Thu, 18 Sep 2008 17:00:58 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: dmaengine.c: question about device_alloc_chan_resources
-Message-ID: <20080918170058.70b562c9@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <48D26A74.4030104@freescale.com>
-References: <48D02589.8070601@freescale.com>
-	<e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
-	<ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>
-	<20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>
-	<48D2664D.7040204@freescale.com>
-	<20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com>
-	<48D26A74.4030104@freescale.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1753701AbYIRPDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 11:03:21 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, hjk@linutronix.de, gregkh@suse.de
+Subject: Re: [PATCH] [UIO] Add alignment warnings for uio-mem
+References: <20080918144615.GD4226@pengutronix.de>
+X-Yow: I put aside my copy of ``BOWLING WORLD'' and think
+ about GUN CONTROL legislation..
+Date: Thu, 18 Sep 2008 17:03:19 +0200
+In-Reply-To: <20080918144615.GD4226@pengutronix.de> (Wolfram Sang's message of
+	"Thu, 18 Sep 2008 16:46:15 +0200")
+Message-ID: <jeljxpfqdk.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 18 Sep 2008 15:00:49.0268 (UTC) FILETIME=[56274B40:01C9199F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Timur Tabi <timur@freescale.com> wrote:
-> Haavard Skinnemoen wrote:
-> 
-> > I guess so. What would be even more simple is to simply prevent other
-> > clients from taking a channel once someone has acked it, which would be
-> > perfect for my purposes, but perhaps not everyone else's...  
-> 
-> I'm not clear on how your driver works, but doesn't it run continuous tests on
-> all channels all the time?  If so, wouldn't your proposal prevent other drivers
-> from ever getting a DMA channel?
+Wolfram Sang <w.sang@pengutronix.de> writes:
 
-You can explicitly tell it which channel(s) to use. If you run it on
-all channels, it will already prevent any dmaslave clients from ever
-getting a channel.
+> +			dev_warn(idev->dev, "mem[%d] not page aligned!"
+> +				"Fixing values.\n", mem - info->mem);
 
-dmatest is meant for testing only, and has a major impact on system
-performance when it's running, so it's IMO not a very interesting use
-case.
+Minor nit: please add a space to the message.
 
-Haavard
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
