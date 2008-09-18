@@ -1,93 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbYIRTGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbYIRTH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756445AbYIRTGj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 15:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbYIRTGa
+	id S1756800AbYIRTH1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 15:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYIRTHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 15:06:30 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:32716 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753963AbYIRTG3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 15:06:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hlRmfBJnDn9KLauXuK5aGOXKf4lmWKXeUK5O7ZEfrEvBGQZeDH7Yka9XQZ1brULRwS
-         XTa9v0SUCrwHkIcRKqtl9Ejnxojwv4d1rWeoZK+Ka3PW+uQApbSwL0Ysp1oguzS+cj8X
-         FnLzjaIwpIMQXEZleGt3th+3lXSLCRVk/DBCI=
-Message-ID: <86802c440809181206h7654077dr7d56e55817926119@mail.gmail.com>
-Date: Thu, 18 Sep 2008 12:06:28 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 0/6] loglevel=pci:8,acpi:8,apic=8 support v6
-Cc: "Jason Baron" <jbaron@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <48D2A045.5000907@zytor.com>
+	Thu, 18 Sep 2008 15:07:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46127 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754236AbYIRTHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 15:07:09 -0400
+Message-ID: <48D2A5E5.1080100@redhat.com>
+Date: Thu, 18 Sep 2008 15:03:01 -0400
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20080715)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Chuck Lever <chucklever@gmail.com>
+CC: Martin Knoblauch <knobi@knobisoft.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Banks <gnb@melbourne.sgi.com>,
+       linux-nfs list <linux-nfs@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Peter zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+References: <688309.69831.qm@web32604.mail.mud.yahoo.com> <76bd70e30809181124t78c0d574gaed5702095c02921@mail.gmail.com>
+In-Reply-To: <76bd70e30809181124t78c0d574gaed5702095c02921@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080917092732.GB32107@elte.hu> <20080917184618.GB6486@redhat.com>
-	 <48D159A7.5080907@zytor.com> <20080918105728.GF20967@elte.hu>
-	 <48D2758B.1000004@zytor.com> <20080918155041.GB3097@redhat.com>
-	 <48D27A7E.8090403@zytor.com> <20080918161957.GC3097@redhat.com>
-	 <48D2A045.5000907@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 18, 2008 at 11:39 AM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Jason Baron wrote:
+Chuck Lever wrote:
+> On Thu, Sep 18, 2008 at 6:53 AM, Martin Knoblauch <knobi@knobisoft.de> wrote:
+>   
+>> ----- Original Message ----
 >>
->> in my testing there was no significant difference between pre-filtering
->> vs. not built in. However, there was a measureable affect of having them
->> built in vs. not built in.
->>
+>>     
+>>> From: Andrew Morton <akpm@linux-foundation.org>
+>>> To: Martin Knoblauch <knobi@knobisoft.de>
+>>> Cc: Greg Banks <gnb@melbourne.sgi.com>; linux-nfs list <linux-nfs@vger.kernel.org>; linux-kernel@vger.kernel.org; Peter zijlstra <a.p.zijlstra@chello.nl>
+>>> Sent: Thursday, September 18, 2008 10:47:33 AM
+>>> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+>>>
+>>> On Thu, 18 Sep 2008 01:38:57 -0700 (PDT) Martin Knoblauch
+>>> wrote:
+>>>
+>>>       
+>>>>> No.  mount(8) will pass unrecognised options straight down into the
+>>>>> filesystem driver.
+>>>>>
+>>>>>           
+>>>>  Has that always been the case, or is it a recent change? I have to support
+>>>>         
+>>> RHEL4 userland, which is not really new.
+>>>
+>>> It's been that way for ever and ever.  It's how all these guys:
+>>>
+>>> y:/usr/src/25> grep Opt_ fs/*/super.c|wc
+>>>     781    2626   33703
+>>>
+>>> get handled.
+>>>       
+>>  while that seems to be not to complicated, I seem to have a problem passing the mount options to the kernel. They come down as mount data version "6". Apparently mount(8) or mount.nfs(8) are doing the parsing and send down the legacy data block. So, what is the minimum version of mount or mount.nfs that pass the options down unaltered?
+>>     
 >
-> <somewhat irrelevant rant>
+> The mount command has passed a string of options to the kernel for
+> particular file systems for a while, but the facility for the NFS
+> client to parse a string of mount options in the kernel was added only
+> recently -- at least 2.6.23 or 2.6.24 is required to support this.
+> Before this, the mount command parsed these options.
 >
-> Okay, I'm so bloody sick of hearing people justifying bloat by saying "no
-> measurable difference."  That only means that you don't have GROSS bloat.
->  Unless you have real statistics to the contrary, most people's performance
-> testing is at the very best accurate to 5-10%.  This is hardly "no bloat".
+> For RHEL 4, based on 2.6.9, you are stuck.  It uses a binary structure
+> whose fields must match between the kernel and user space.  For RH
+> enterprise kernels, the ABI cannot change in a given release, so RH
+> wouldn't take a patch to change the data structure that mount uses.
+> You would have to maintain such a change yourself, and build your own
+> kernels and mount command after each RHEL 4 update is released.
 >
-> </somewhat irrelevant rant>
+> I agree that a mount option would allow more fine-grained control over
+> readahead.  A system wide parameter controlling readahead has always
+> been a weakness.  Readahead, as implemented in the VFS, has a
+> *per-file descriptor* context, however, which operates automatically
+> (and can be tuned at run-time by an application with [mf]advise(2).
+>
+> As a future feature, this might work in better combination with the
+> per-mount bdi changes proposed by Peter to provide maximal flexibility
+> without exposing yet another confusing knob that could help some
+> workloads but hurt others.
 
-about performance difference:
-1. will have printk(KERN_level KERN_tag "...\n");
-2. will have tag_printk like
-    #define dev_printk(level, dev, format, arg...)  \
-           printk(level KERN_DEV "%s %s: " format , dev_driver_string(dev) , \
-                   dev_name(dev) , ## arg)
-3. still can use MACRO for compiling time
-    #ifdef DEBUG
-    #define dev_dbg(dev, format, arg...)            \
-           dev_printk(KERN_DEBUG , dev , format , ## arg)
-    #else
-    #define dev_dbg(dev, format, arg...)            \
-           ({ if (0) dev_printk(KERN_DEBUG, dev, format, ##arg); 0; })
-    #endif
-4. with /proc/sys/kernel/printk_tag/dev could modify run-time level.
-5. for big chunk dump or spew, caller could use
-       level = get_tag_level(KERN_DEV, &len) and compare level to
-KERN_SPEW_LEVEL or etc
-   to decide if need to dump it.
-6. other overhead to put tag like <dev> should be ok just like
-loglevel aready in the buffer
+And perhaps add some dynamic tuning capabilities to the NFS client
+code to just make it do "the right thing".  This would be better
+than any tunables and would help to serve in other situations, such
+as high bandwidth/latency networks, overloaded servers who don't
+need more read-ahead READ requests piled on, etc...
 
-current only have one struct  {
-   char *tag;
-   char *name;  /* with extra : */
-   int level;
-}
-the level is some kind of console_loglevel for that tag.
-
-if want to go further, let every dev_printk check that. then will not
-have them in log buffer
-
-YH
+       ps
