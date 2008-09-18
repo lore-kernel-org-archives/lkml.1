@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYIRPoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbYIRPvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbYIRPoO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 11:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbYIRPn7
+	id S1755790AbYIRPvv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 11:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbYIRPvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 11:43:59 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:33123 "EHLO
-	orion.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbYIRPn6 (ORCPT
+	Thu, 18 Sep 2008 11:51:43 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:6335 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753988AbYIRPvm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 11:43:58 -0400
-Message-ID: <48D27734.3040600@cateee.net>
-Date: Thu, 18 Sep 2008 17:43:48 +0200
-From: "Giacomo A. Catenazzi" <cate@cateee.net>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: diet-kconfig: a script to trim unneeded kconfigs
-References: <s5hbpyny7bl.wl%tiwai@suse.de> <20080918122541.2c3c7b39@areia.chehab.org>
-In-Reply-To: <20080918122541.2c3c7b39@areia.chehab.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Sep 2008 11:51:42 -0400
+Message-Id: <48D29554.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
+Date: Thu, 18 Sep 2008 16:52:20 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v3)
+References: <48D21BA3.76E4.0078.0@novell.com>
+ <20080918071852.GA7639@elte.hu> <20080918091003.GA3751@elte.hu>
+ <48D23BF6.76E4.0078.0@novell.com> <48D272F9.3090001@zytor.com>
+In-Reply-To: <48D272F9.3090001@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> Hi Takashi,
-> 
-> On Wed, 17 Sep 2008 01:55:26 +0200
-> Takashi Iwai <tiwai@suse.de> wrote:
+>>> "H. Peter Anvin" <hpa@zytor.com> 18.09.08 17:25 >>>
+>Jan Beulich wrote:
+>> +
+>> +#ifdef CONFIG_X86_32
+>> +	if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
+>> +		c->x86_phys_bits = 36;
+>> +#endif
+>>  }
+>>  
+>
+>I'm confused about this.
+>
+>There is no reason for this to be #ifdef'd; but it should be conditional 
+>on this information not being otherwise available (which will always be 
+>the case on 64 bits), I would assume.  If we are setting a value there, 
+>we should presumably also set 32 in the other case.
 
->> The script is VERY hackish.  I should have begun with perl or whatever
->> better script language, but I chose bash and co.  So, don't expect
->> much code quality.  I'm no script guy after all :)
-> 
-> Using just a shellscript and binutils seems to be better than using other
-> tools, since it allows the usage on minimal configured systems where the user
-> might not have perl or other scripting languages.
+It does get set to 32 first (and only for 32-bits - 64bits didn't set any
+default so far, so I didn't want to make it to now), and the code fragment
+above updates that default after feature flags have been obtained, but
+before other capabilities (including the phys/virt bit widths) are being
+gathered.
 
-But very slow, complex and not enough powerful:
-The tools should have extensive knowledge about Kconfig,
-and the CONFIG_ dependencies; it should handle a lot of
-structures (text/binary; line/record oriented; etc.), which
-it is not easy in shell (awk, od, sed with extended regexp are
-not core utilities).
-
-So my suggestion is: do it in a high level language, to find and
-stabilize the design, and then integrate it in kconfig later (using
-C).
-
-ciao
-	cate
+Jan
 
