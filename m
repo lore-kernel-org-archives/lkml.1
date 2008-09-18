@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbYIRPRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbYIRPSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756564AbYIRPRo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 11:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbYIRPRc
+	id S1755298AbYIRPSG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 11:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbYIRPRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 11:17:32 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:9304 "EHLO
+	Thu, 18 Sep 2008 11:17:40 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:9312 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754236AbYIRPRb (ORCPT
+	by vger.kernel.org with ESMTP id S1756500AbYIRPRj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 11:17:31 -0400
-Date: Thu, 18 Sep 2008 19:17:29 +0400
+	Thu, 18 Sep 2008 11:17:39 -0400
+Date: Thu, 18 Sep 2008 19:17:35 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
@@ -19,8 +19,9 @@ Cc: David Brownell <dbrownell@users.sourceforge.net>,
        Timur Tabi <timur@freescale.com>, Li Yang <leoli@freescale.com>,
        Laurent Pinchart <laurentp@cse-semaphore.com>, linuxppc-dev@ozlabs.org,
        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] gpiolib: make gpio_to_chip() public
-Message-ID: <20080918151729.GA31187@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/3] powerpc/qe: new call to revert a gpio to a dedicated
+	function
+Message-ID: <20080918151735.GB31187@oksana.dev.rtsoft.ru>
 References: <20080918151659.GA20140@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -31,95 +32,101 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We'll need this function to write platform-specific hooks to deal
-with pin's dedicated functions. Quite obviously this will work only
-for the platforms with 1-to-1 GPIO to PIN mapping.
+qe_gpio_set_dedicated() is a platform specific function, which is used
+to revert a pin to a dedicated function. Caller should have already
+obtained the gpio via gpio_request().
 
-This is stopgap solution till we think out and implement a proper
-api (pinlib?).
-
-p.s. This patch actually exports gpio_desc and places gpio_to_chip
-into the asm-generic/gpio.h as `static inline'. This is needed
-to not cause function calls for this trivial translation.
-
-Also, the patch does not export FLAG_*s... the names are too
-generic, and nobody is using them outside of gpiolib.c.
+This is needed to support Freescale USB Host Controller.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/gpio/gpiolib.c     |   16 ++--------------
- include/asm-generic/gpio.h |   17 +++++++++++++++++
- 2 files changed, 19 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/qe.h     |    1 +
+ arch/powerpc/sysdev/qe_lib/gpio.c |   46 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 47 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 8d29405..fb36a90 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -40,9 +40,6 @@
-  */
- static DEFINE_SPINLOCK(gpio_lock);
+diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
+index edee15d..c926147 100644
+--- a/arch/powerpc/include/asm/qe.h
++++ b/arch/powerpc/include/asm/qe.h
+@@ -111,6 +111,7 @@ extern void __par_io_config_pin(struct qe_pio_regs __iomem *par_io, u8 pin,
+ extern int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
+ 			     int assignment, int has_irq);
+ extern int par_io_data_set(u8 port, u8 pin, u8 val);
++extern int qe_gpio_set_dedicated(unsigned int gpio);
  
--struct gpio_desc {
--	struct gpio_chip	*chip;
--	unsigned long		flags;
- /* flag symbols are bit numbers */
- #define FLAG_REQUESTED	0
- #define FLAG_IS_OUT	1
-@@ -50,11 +47,8 @@ struct gpio_desc {
- #define FLAG_EXPORT	3	/* protected by sysfs_lock */
- #define FLAG_SYSFS	4	/* exported via /sys/class/gpio/control */
+ /* QE internal API */
+ int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol, u32 cmd_input);
+diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
+index 8e5a0bc..bd7278f 100644
+--- a/arch/powerpc/sysdev/qe_lib/gpio.c
++++ b/arch/powerpc/sysdev/qe_lib/gpio.c
+@@ -26,6 +26,9 @@ struct qe_gpio_chip {
  
--#ifdef CONFIG_DEBUG_FS
--	const char		*label;
--#endif
--};
--static struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
-+struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
-+EXPORT_SYMBOL_GPL(gpio_desc);
- 
- static inline void desc_set_label(struct gpio_desc *d, const char *label)
- {
-@@ -80,12 +74,6 @@ static void gpio_ensure_requested(struct gpio_desc *desc)
- 	}
- }
- 
--/* caller holds gpio_lock *OR* gpio is marked as requested */
--static inline struct gpio_chip *gpio_to_chip(unsigned gpio)
--{
--	return gpio_desc[gpio].chip;
--}
--
- /* dynamic allocation of GPIOs, e.g. on a hotplugged device */
- static int gpiochip_find_base(int ngpio)
- {
-diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-index 0f99ad3..88962f0 100644
---- a/include/asm-generic/gpio.h
-+++ b/include/asm-generic/gpio.h
-@@ -81,6 +81,23 @@ struct gpio_chip {
- 	unsigned		exported:1;
+ 	/* shadowed data register to clear/set bits safely */
+ 	u32 cpdata;
++
++	/* saved_regs used to restore dedicated functions */
++	struct qe_pio_regs saved_regs;
  };
  
-+struct gpio_desc {
-+	struct gpio_chip	*chip;
-+	unsigned long		flags;
-+
-+#ifdef CONFIG_DEBUG_FS
-+	const char		*label;
-+#endif
-+};
-+
-+extern struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
-+
-+/* caller holds gpio_lock *OR* gpio is marked as requested */
-+static inline struct gpio_chip *gpio_to_chip(unsigned gpio)
+ static inline struct qe_gpio_chip *
+@@ -40,6 +43,12 @@ static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
+ 	struct qe_pio_regs __iomem *regs = mm_gc->regs;
+ 
+ 	qe_gc->cpdata = in_be32(&regs->cpdata);
++	qe_gc->saved_regs.cpdata = qe_gc->cpdata;
++	qe_gc->saved_regs.cpdir1 = in_be32(&regs->cpdir1);
++	qe_gc->saved_regs.cpdir2 = in_be32(&regs->cpdir2);
++	qe_gc->saved_regs.cppar1 = in_be32(&regs->cppar1);
++	qe_gc->saved_regs.cppar2 = in_be32(&regs->cppar2);
++	qe_gc->saved_regs.cpodr = in_be32(&regs->cpodr);
+ }
+ 
+ static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+@@ -103,6 +112,43 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	return 0;
+ }
+ 
++int qe_gpio_set_dedicated(unsigned int gpio)
 +{
-+	return gpio_desc[gpio].chip;
-+}
++	struct gpio_chip *gc = gpio_to_chip(gpio);
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
++	struct qe_pio_regs __iomem *regs = mm_gc->regs;
++	struct qe_pio_regs *sregs = &qe_gc->saved_regs;
++	u8 pin = gpio - gc->base;
++	u32 mask1 = 1 << (QE_PIO_PINS - (pin + 1));
++	u32 mask2 = 0x3 << (QE_PIO_PINS - (pin % (QE_PIO_PINS / 2) + 1) * 2);
++	bool second_reg = pin > (QE_PIO_PINS / 2) - 1;
++	unsigned long flags;
 +
- extern const char *gpiochip_is_requested(struct gpio_chip *chip,
- 			unsigned offset);
- extern int __must_check gpiochip_reserve(int start, int ngpio);
++	spin_lock_irqsave(&qe_gc->lock, flags);
++
++	if (second_reg) {
++		clrsetbits_be32(&regs->cpdir2, mask2, sregs->cpdir2 & mask2);
++		clrsetbits_be32(&regs->cppar2, mask2, sregs->cppar2 & mask2);
++	} else {
++		clrsetbits_be32(&regs->cpdir1, mask2, sregs->cpdir1 & mask2);
++		clrsetbits_be32(&regs->cppar1, mask2, sregs->cppar1 & mask2);
++	}
++
++	if (sregs->cpdata & mask1)
++		qe_gc->cpdata |= mask1;
++	else
++		qe_gc->cpdata &= ~mask1;
++
++	out_be32(&regs->cpdata, qe_gc->cpdata);
++	clrsetbits_be32(&regs->cpodr, mask1, sregs->cpodr & mask1);
++
++	spin_unlock_irqrestore(&qe_gc->lock, flags);
++
++	return 0;
++}
++EXPORT_SYMBOL(qe_gpio_set_dedicated);
++
+ static int __init qe_add_gpiochips(void)
+ {
+ 	struct device_node *np;
 -- 
 1.5.6.3
 
