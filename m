@@ -1,148 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbYIRJCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbYIRJI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbYIRJCR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 05:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYIRJCF
+	id S1754843AbYIRJI2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 05:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYIRJIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 05:02:05 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59016 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752940AbYIRJCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 05:02:04 -0400
-Message-ID: <48D21875.7030605@cn.fujitsu.com>
-Date: Thu, 18 Sep 2008 16:59:33 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, manfred@colorfullife.com
-Subject: Re: [RFC PATCH] rcu: introduce kfree_rcu()
-References: <48D1D694.9010802@cn.fujitsu.com> <20080918064406.GC6397@linux.vnet.ibm.com>
-In-Reply-To: <20080918064406.GC6397@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Sep 2008 05:08:20 -0400
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:3255 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752147AbYIRJIU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 05:08:20 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiQFAE+30UhR9R6M/2dsb2JhbACBZLgVgWc
+Date: Thu, 18 Sep 2008 11:08:14 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Oliver Schuster <olivers137@aol.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add watchdog driver IT8716 IT8718 IT8726 IT8712J/K
+Message-ID: <20080918090814.GD22550@infomag.infomag.iguana.be>
+References: <47C579FA.7060403@aol.com> <20080229155136.49c34bed.akpm@linux-foundation.org> <47D72865.1010304@aol.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D72865.1010304@aol.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How to usage kfree_rcu:
+Hi Oliver,
 
-struct my_struct {
-	int data;
-	struct rcu_head rcu;
-};
+> But first: Add support for it8718, which made the driver slightly more
+> complex.
+> Now the driver supports it8716, it8718, it8726, it8712-j and it8712-k,
+> which are all 16-bit watchdog timer on ITE lpc-super-io-chips.
 
-----------------original code:--------------------------
-void my_struct_release_rcu(struct rcu_head *rcu)
-{
-	struct my_struct *p;
+I added it into my linux-2.6-watchdog-mm tree. I noticed that the initialization
+sequence should be done differenly (the misc_device should be registered last
+because that opens up userspace to your driver).
 
-	item = container_of(rcu, struct my_struct, rcu);
-	kfree(p);
-}
+Could you therefor test my patch and 2 check if the "misc_register(&wdt_miscdev);"
+can be moved after the "/* Initialize CIR to use it as keepalive source */" part
+(just before the printk(...)?
 
-void some_fuction()
-{
-	struct my_struct *p;
-	.....;
-	call_rcu(&p->rcu, my_struct_release_rcu);
-	.....;
-}
----end---
+Thanks in advance,
+Wim.
 
------------------after use kfree_rcu:--------------------
+-------------------------------------------------------------------------------------
+commit b8a047e5a678357ef2bc8c79ce539957579965dd
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Thu Sep 18 08:58:27 2008 +0000
 
-/* my_struct_release_rcu() was removed */
+    [WATCHDOG] it87_wdt.c - fix initialization sequence
+    
+    register_miscdevice gives userspace access to the device (via /dev/watchdog).
+    It should therfore be done after the setting og the default value for the timeout
+    and after the reboot_notifier registration.
+    
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
 
-void some_fuction()
-{
-	struct my_struct *p;
-	.....;
-	kfree_rcu(p, &p->rcu);
-	.....;
-}
----end---
-
-1) unloadable modules:
-   A) use my_struct_release_rcu():
-      when we unload this modules, we need call rcu_barrier() to wait
-      all my_struct_release_rcu() had called.
-   B) use kfree_rcu():
-      if all trivial callback are removed and kfree_rcu() are used instead,
-      we do not need to wait anything. just quick finish unloading.
-
-2) duplicate code:
-   A) use my_struct_release_rcu():
-      All trivial callback are very like my_struct_release_rcu(),
-      all are duplicate code.
-   B) use kfree_rcu():
-      all trivial callback are removed, not duplicate code like
-      my_struct_release_rcu().
-
-3) cache:
-   A) use my_struct_release_rcu():
-      my_struct_release_rcu() is called rarely, when my_struct_release_rcu()
-      is being called, cache missing will occur.
-   B) use kfree_rcu():
-      my_struct_release_rcu() is removed, not such cache missing.
-
-4) future:
-   A) use my_struct_release_rcu():
-      when new user use rcu, the most callback is trivial callback
-      like my_struct_release_rcu(). this is the common of using rcu.
-      so the problems of above are more and more heavy.
-   B) use kfree_rcu():
-      fix these problems for ever.
-
-
-Paul E. McKenney wrote:
-> On Thu, Sep 18, 2008 at 12:18:28PM +0800, Lai Jiangshan wrote:
->> sometimes a rcu callback is just calling kfree() to free a struct's memory
->> (we say this callback is a trivial callback.).
->> this patch introduce kfree_rcu() to do these things directly, easily.
-> 
-> Interesting!  Please see questions and comments below.
-> 
->> There are 4 reasons that we need kfree_rcu():
->>
->> 1) unloadable modules:
->>    a module(rcu callback is defined in this module) using rcu must
->>    call rcu_barrier() when unload. rcu_barrier() will increase
->>    the system's overhead(the more cpus the worse) and
->>    rcu_barrier() is very time-consuming. if all rcu callback defined
->>    in this module are trivial callback, we can just call kfree_rcu()
->>    instead, save a rcu_barrier() when unload.
-> 
-> You lost me on this one.  Suppose that the following sequence of
-> events occurred:
-> 
-> a.	The module invokes call_rcu() or kfree_rcu().  The callback
-> 	is queued on CPU 0.
-> 
-> b.	Perhaps a grace period completes, and the callback is therefore
-> 	moved to CPU 0's donelist.  But CPU 0 is busy, so doesn't get
-> 	around to invoking the callback.  (For example, ksoftirqd.)
-> 
-> c.	The module is unloaded, and uses kfree_rcu() instead of
-> 	rcu_barrier().  The callback is queued on CPU 1.
-
-uses kfree_rcu() instead of trivial callback, not rcu_barrier()
-
-> 
-> d.	A grace period completes, and CPU 1 is relatively idle, so
-> 	invokes its callback quickly.  The module is therefore unloaded.
-> 
-> e.	CPU 0 finally gets around to executing its callback, but the
-> 	module has been unloaded, so there is nothingness where the
-> 	callback function used to be.  We get an oops.
-> 
-
-we done need wait anything if not callback is defined in this module.
-
-> What prevents this sequence of events from happening?
-> 
-
+diff --git a/drivers/watchdog/it87_wdt.c b/drivers/watchdog/it87_wdt.c
+index cbf5e83..5cd8473 100644
+--- a/drivers/watchdog/it87_wdt.c
++++ b/drivers/watchdog/it87_wdt.c
+@@ -625,26 +625,26 @@ static int __init it87_wdt_init(void)
+ 		spin_unlock_irqrestore(&spinlock, flags);
+ 	}
+ 
+-	rc = misc_register(&wdt_miscdev);
+-	if (rc) {
+-		printk(KERN_ERR PFX
+-		       "Cannot register miscdev on minor=%d (err=%d)\n",
+-			wdt_miscdev.minor, rc);
+-		goto err_out_region;
++	if (timeout < 1 || timeout > 65535) {
++		timeout = DEFAULT_TIMEOUT;
++		printk(KERN_WARNING PFX
++		       "Timeout value out of range, use default %d sec\n",
++		       DEFAULT_TIMEOUT);
+ 	}
+ 
+ 	rc = register_reboot_notifier(&wdt_notifier);
+ 	if (rc) {
+ 		printk(KERN_ERR PFX
+ 		       "Cannot register reboot notifier (err=%d)\n", rc);
+-		goto err_out_miscdev;
++		goto err_out_region;
+ 	}
+ 
+-	if (timeout < 1 || timeout > 65535) {
+-		timeout = DEFAULT_TIMEOUT;
+-		printk(KERN_WARNING PFX
+-		       "Timeout value out of range, use default %d sec\n",
+-		       DEFAULT_TIMEOUT);
++	rc = misc_register(&wdt_miscdev);
++	if (rc) {
++		printk(KERN_ERR PFX
++		       "Cannot register miscdev on minor=%d (err=%d)\n",
++			wdt_miscdev.minor, rc);
++		goto err_out_reboot;
+ 	}
+ 
+ 	/* Initialize CIR to use it as keepalive source */
+@@ -665,8 +665,8 @@ static int __init it87_wdt_init(void)
+ 
+ 	return 0;
+ 
+-err_out_miscdev:
+-	misc_deregister(&wdt_miscdev);
++err_out_reboot:
++	unregister_reboot_notifier(&wdt_notifier);
+ err_out_region:
+ 	release_region(base, test_bit(WDTS_USE_GP, &wdt_status) ? 1 : 8);
+ 	if (!test_bit(WDTS_USE_GP, &wdt_status)) {
