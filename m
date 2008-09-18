@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbYIRTNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbYIRTWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754AbYIRTNG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 15:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYIRTMy
+	id S1756508AbYIRTWi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 15:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbYIRTWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 15:12:54 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:16825 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754428AbYIRTMx (ORCPT
+	Thu, 18 Sep 2008 15:22:31 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59478 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752983AbYIRTWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 15:12:53 -0400
-X-BigFish: VPS-3(zz4015Mzz10d3izzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K7EO0U-02-X1M-01
-Date: Thu, 18 Sep 2008 21:12:10 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: c1e_idle: don't mark TSC unstable if CPU has
-	invariant TSC
-Message-ID: <20080918191210.GD23287@alberich.amd.com>
+	Thu, 18 Sep 2008 15:22:30 -0400
+Message-ID: <48D2A973.1050201@zytor.com>
+Date: Thu, 18 Sep 2008 12:18:11 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 18 Sep 2008 19:12:37.0362 (UTC) FILETIME=[83477D20:01C919C2]
+To: Dean Nelson <dcn@sgi.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       Alan Mayer <ajm@sgi.com>, Dimitri Sivanich <sivanich@sgi.com>,
+       jeremy@goop.org, rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <Yinghai.lu@amd.com>
+Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
+References: <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com> <20080914153522.GJ29290@elte.hu> <20080915215053.GA11657@sgi.com> <20080916082448.GA17287@elte.hu> <20080916204654.GA3532@sgi.com> <20080917173032.GA5674@sgi.com> <m17i9a61l2.fsf@frodo.ebiederm.org> <20080918133733.GA8830@sgi.com>
+In-Reply-To: <20080918133733.GA8830@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.. otherwise TSC is marked unstable on AMD family 0x10 and 0x11 CPUs.
-This would be wrong because for those CPUs "invariant TSC" means:
+Dean Nelson wrote:
+> On Wed, Sep 17, 2008 at 11:59:05AM -0700, Eric W. Biederman wrote:
+>> I need to look at these patches some more (apologies I got busy).
+> 
+> Thanks for taking a look.
+> 
+> I've got a not-quite-complete new version of the patchset that addresses
+> most of the issues raised by Ingo. At it's heart is the following:
+> 
 
-   "The TSC counts at the same rate in all P-states, all C states, S0,
-   or S1"
+What would seem most intuitive to me would have been, in this case, to
+add this as a new MSI IRQ chip type.  We already have several of those
+(PCI vs HT), and this *should* give you all the hooks you need.
 
-(See "Processor BIOS and Kernel Developer's Guides" for those CPUs.)
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-
----
- arch/x86/kernel/process.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-Please apply for 2.6.27.
-
-Thanks,
-
-
-Andreas
-
-
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 7fc4d5b..ba6b16b 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -265,7 +265,8 @@ static void c1e_idle(void)
- 		rdmsr(MSR_K8_INT_PENDING_MSG, lo, hi);
- 		if (lo & K8_INTP_C1E_ACTIVE_MASK) {
- 			c1e_detected = 1;
--			mark_tsc_unstable("TSC halt in C1E");
-+			if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
-+				mark_tsc_unstable("TSC halt in C1E");
- 			printk(KERN_INFO "System has C1E enabled\n");
- 		}
- 	}
--- 
-1.6.0.1
-
-
+	-hpa
 
