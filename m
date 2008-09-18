@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYIRPiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYIRPoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702AbYIRPiO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 11:38:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbYIRPh6
+	id S1756138AbYIRPoO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 11:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbYIRPn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 11:37:58 -0400
-Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:2501 "EHLO
-	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbYIRPh5 (ORCPT
+	Thu, 18 Sep 2008 11:43:59 -0400
+Received: from orion2.pixelized.ch ([195.190.190.13]:33123 "EHLO
+	orion.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752800AbYIRPn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 11:37:57 -0400
-X-Greylist: delayed 443 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 11:37:57 EDT
-Date: Thu, 18 Sep 2008 17:30:32 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Subject: ACPI idea: override max. frequency
-Message-ID: <20080918153032.GU4323@vanheusden.com>
+	Thu, 18 Sep 2008 11:43:58 -0400
+Message-ID: <48D27734.3040600@cateee.net>
+Date: Thu, 18 Sep 2008 17:43:48 +0200
+From: "Giacomo A. Catenazzi" <cate@cateee.net>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Reply-By: Wed Sep 17 21:27:26 CEST 2008
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
-	key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: diet-kconfig: a script to trim unneeded kconfigs
+References: <s5hbpyny7bl.wl%tiwai@suse.de> <20080918122541.2c3c7b39@areia.chehab.org>
+In-Reply-To: <20080918122541.2c3c7b39@areia.chehab.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Mauro Carvalho Chehab wrote:
+> Hi Takashi,
+> 
+> On Wed, 17 Sep 2008 01:55:26 +0200
+> Takashi Iwai <tiwai@suse.de> wrote:
 
-The bios of the motherboard in my pc (a Gigabyte 965G-DS3) says the
-processor can go no faster than 2.133GHz while in reality this is 2.6GHz
-(it is an Intel(R) Core(TM)2 Quad CPU Q9450 @ 2.66GHz). No newer bios is
-available so I was thinking: maybe an override switch can be added?
-Losing 0.5GHz is a bit of a waste.
+>> The script is VERY hackish.  I should have begun with perl or whatever
+>> better script language, but I chose bash and co.  So, don't expect
+>> much code quality.  I'm no script guy after all :)
+> 
+> Using just a shellscript and binutils seems to be better than using other
+> tools, since it allows the usage on minimal configured systems where the user
+> might not have perl or other scripting languages.
 
+But very slow, complex and not enough powerful:
+The tools should have extensive knowledge about Kconfig,
+and the CONFIG_ dependencies; it should handle a lot of
+structures (text/binary; line/record oriented; etc.), which
+it is not easy in shell (awk, od, sed with extended regexp are
+not core utilities).
 
-Folkert van Heusden
+So my suggestion is: do it in a high level language, to find and
+stabilize the design, and then integrate it in kconfig later (using
+C).
 
--- 
-Ever wonder what is out there? Any alien races? Then please support
-the seti@home project: setiathome.ssl.berkeley.edu
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+ciao
+	cate
+
