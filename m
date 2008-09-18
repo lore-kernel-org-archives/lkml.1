@@ -1,73 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbYIRBoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbYIRCO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755427AbYIRBoi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 21:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYIRBoa
+	id S1754731AbYIRCO1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 22:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYIRCOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 21:44:30 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:58808 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753149AbYIRBo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 21:44:29 -0400
-Message-ID: <48D1B21E.3060509@melbourne.sgi.com>
-Date: Thu, 18 Sep 2008 11:42:54 +1000
-From: Greg Banks <gnb@melbourne.sgi.com>
-Organization: File Serving Technologies ; Silicon Graphics Inc.
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Martin Knoblauch <knobi@knobisoft.de>
-CC: linux-nfs list <linux-nfs@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
-References: <997439.5560.qm@web32601.mail.mud.yahoo.com>
-In-Reply-To: <997439.5560.qm@web32601.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Sep 2008 22:14:18 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:64203 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752800AbYIRCOS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 22:14:18 -0400
+Date: Thu, 18 Sep 2008 11:03:53 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: nishimura@mxp.nes.nec.co.jp, kamezawa.hiroyu@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org
+Subject: Re: [PATCH -mm] memcg: fix handling of shmem migration(v2)
+Message-Id: <20080918110353.2c8d0602.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20080917155112.eefd2f8a.akpm@linux-foundation.org>
+References: <20080917133149.b012a1c2.nishimura@mxp.nes.nec.co.jp>
+	<20080917144659.2e363edc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080917145003.fb4d0b95.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080917151951.9a181e7d.nishimura@mxp.nes.nec.co.jp>
+	<20080917153826.8efbdc4b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080917154511.683691d1.nishimura@mxp.nes.nec.co.jp>
+	<20080917165544.3873bbb2.nishimura@mxp.nes.nec.co.jp>
+	<20080917155112.eefd2f8a.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Knoblauch wrote:
-> Hi,
->
-> the following/attached patch works around a [obscure] problem when an 2.6 (not sure/caring about 2.4) NFS client accesses an "offline" file on a Sun/Solaris-10 NFS server when the underlying filesystem is of type SAM-FS. Happens with RHEL4/5 and mainline kernels. Frankly, it is not a Linux problem, but the chance for a short-/mid-term solution from Sun are very slim. So, being lazy, I would love to get this patch into Linux. If not, I just will have to maintain it for eternity out of tree.
->
-> The problem: SAM-FS is Suns proprietary HSM filesystem. It stores meta-data and a relatively small amount of data "online" on disk and pushes old or infrequently used data to "offline" media like e.g. tape. This is completely transparent to the users. If the date for an "offline" file is needed, the so called "stager daemon" copies it back from the offline medium. All of this works great most of the time. Now, if an Linux NFS client tries to read such an offline file, performance drops to "extremely slow". 
-By "extremely slow" do you mean "tape read speed"?
-> After lengthly investigation of tcp-dumps, mount options and procedures involving black cats at midnight, we found out that the readahead behaviour of the Linux NFS client causes the problem. Basically it seems to issue read requests up to 15*rsize to the server. In the case of the "offline" files, this behaviour causes heavy competition for the inode lock between the NFSD process and the stager daemon on the Solaris server.
->   
-So, you need to
+On Wed, 17 Sep 2008 15:51:12 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 17 Sep 2008 16:55:44 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> 
+> > Before this patch, if migrating shmem/tmpfs pages, newpage would be
+> > charged with PAGE_CGROUP_FLAG_FILE set, while oldpage has been charged
+> > without the flag.
+> > 
+> > The problem here is mem_cgroup_move_lists doesn't clear(or set)
+> > the PAGE_CGROUP_FLAG_FILE flag, so pc->flags of the newpage
+> > remains PAGE_CGROUP_FLAG_FILE set even when the pc is moved to
+> > another lru(anon) by mem_cgroup_move_lists. And this leads to
+> > incorrect MEM_CGROUP_ZSTAT.
+> > (In my test, I see an underflow of MEM_CGROUP_ZSTAT(active_file).
+> > As a result, mem_cgroup_calc_reclaim returns very huge number and
+> > causes soft lockup on page reclaim.)
+> > 
+> > I'm not sure if mem_cgroup_move_lists should handle PAGE_CGROUP_FLAG_FILE
+> > or not(I suppose it should be used to move between active <-> inactive,
+> > not anon <-> file), I added MEM_CGROUP_CHARGE_TYPE_SHMEM for precharge
+> > at shmem's page migration.
+> > 
+> > 
+> > ChangeLog: v1->v2
+> > - instead of modifying migrate.c, modify memcontrol.c only.
+> > - add MEM_CGROUP_CHARGE_TYPE_SHMEM.
+> > 
+> > 
+> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > ---
+> >  mm/memcontrol.c |   13 ++++++++++---
+> >  1 files changed, 10 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > index 2979d22..ef8812d 100644
+> > --- a/mm/memcontrol.c
+> > +++ b/mm/memcontrol.c
+> > @@ -179,6 +179,7 @@ enum charge_type {
+> >  	MEM_CGROUP_CHARGE_TYPE_CACHE = 0,
+> >  	MEM_CGROUP_CHARGE_TYPE_MAPPED,
+> >  	MEM_CGROUP_CHARGE_TYPE_FORCE,	/* used by force_empty */
+> > +	MEM_CGROUP_CHARGE_TYPE_SHMEM,	/* used by page migration of shmem */
+> >  };
+> >  
+> >  /*
+> > @@ -579,8 +580,10 @@ static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
+> >  			pc->flags |= PAGE_CGROUP_FLAG_FILE;
+> >  		else
+> >  			pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
+> > -	} else
+> > +	} else if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+> >  		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
+> > +	else /* MEM_CGROUP_CHARGE_TYPE_SHMEM */
+> > +		pc->flags = PAGE_CGROUP_FLAG_CACHE | PAGE_CGROUP_FLAG_ACTIVE;
+> >  
+> >  	lock_page_cgroup(page);
+> >  	if (unlikely(page_get_page_cgroup(page))) {
+> > @@ -739,8 +742,12 @@ int mem_cgroup_prepare_migration(struct page *page, struct page *newpage)
+> >  	if (pc) {
+> >  		mem = pc->mem_cgroup;
+> >  		css_get(&mem->css);
+> > -		if (pc->flags & PAGE_CGROUP_FLAG_CACHE)
+> > -			ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
+> > +		if (pc->flags & PAGE_CGROUP_FLAG_CACHE) {
+> > +			if (page_is_file_cache(page))
+> > +				ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
+> > +			else
+> > +				ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
+> > +		}
+> >  	}
+> >  	unlock_page_cgroup(page);
+> >  	if (mem) {
+> 
+> I queued this as a fix against
+> vmscan-split-lru-lists-into-anon-file-sets.patch.  Was that appropriate?
+> 
+Yes, thanks.
 
-a) make your stager daemon do IO more sensibly, and
+> If the bug you're fixing here is also present in mainline then I'll
+> need to ask for a tested patch against mainline, please.
+> 
+I don't think this bug exist in mainline, where memcg have
+only two ZSTAT(active/inactive) and mem_cgroup_move_lists can handle
+them properly.
 
-b) apply something like this patch which adds O_NONBLOCK when knfsd does
-reads writes and truncates and translates -EAGAIN into NFS3ERR_JUKEBOX
 
-http://kerneltrap.org/mailarchive/linux-fsdevel/2006/5/5/312567
-
-and
-
-c) make your filesystem IO interposing layer report -EAGAIN when a
-process tries to do IO to an offline region in a file and O_NONBLOCK is
-present.
-> - The real solution: fixing SAM-FS/NFSD interaction. Sun engineering acks the problem, but a solution will need time. Lots of it.
-> - The working solution: disable the client side readahead, or make it tunable. The patch does that by introducing a NFS module parameter "ra_factor" which can take values between 1 and 15 (default 15) and a tunable "/proc/sys/fs/nfs/nfs_ra_factor" with the same range and default.
->   
-I think having a tunable for client readahead is an excellent idea,
-although not to solve your particular problem.  The SLES10 kernel has a
-patch which does precisely that, perhaps Neil could post it.
-
-I don't think there's a lot of point having both a module parameter and
-a sysctl.
-
-A maximum of 15 is unwise.  I've found that (at least with the older
-readahead mechanisms in SLES10) a multiple of 4 is required to preserve
-rsize-alignment of READ rpcs to the server, which helps a lot with wide
-RAID backends.  So in SGI we tune client readahead to 16.
-
-Your patch seems to have a bunch of other unrelated stuff mixed in.
-
--- 
-Greg Banks, P.Engineer, SGI Australian Software Group.
-Be like the squirrel.
-I don't speak for SGI.
-
+Thanks,
+Daisuke Nishimura.
