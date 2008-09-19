@@ -1,96 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbYISMbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYISMdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493AbYISMbi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 08:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYISMba
+	id S1753905AbYISMdi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 08:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYISMda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 08:31:30 -0400
-Received: from mailer1.option.com ([81.246.70.162]:53937 "EHLO
-	mailer1.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbYISMb3 (ORCPT
+	Fri, 19 Sep 2008 08:33:30 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:12171 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751161AbYISMda (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 08:31:29 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmEBAJ8400gKAAAZ/2dsb2JhbAAIsicIhm5eAwh8
-Message-ID: <48D39B9F.8010404@option.com>
-Date: Fri, 19 Sep 2008 14:31:27 +0200
-From: Denis Joseph Barrow <D.Barow@option.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 19 Sep 2008 08:33:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=UIT9+Pq3a+Nyelxq0oShywNU+U6uLw6tcHM+wG2ieg420sen4F6tSI4mm/F8ti6DlB
+         TUU14YxTglu8qYI6xRKkPS1MoWWNpgI+2fa9IgZYE4aXNwVlcMx4Rxc2lghkZ6qQif66
+         o7VlJTkGwDDcRbVTfkYWrCkphyTJ+Om4ocAG4=
+Date: Fri, 19 Sep 2008 16:33:20 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: [PATCH -tip/master] x86: io-apic - interrupt remapping fix
+Message-ID: <20080919123320.GF7222@lenovo>
 MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: KGDB Mailing List <kgdb-bugreport@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, gareth@valinux.com,
-       markus.t.metzger@intel.com
-Subject: Re: getting false SIGTRAP breakpoints in kernel i.e. kernel hung
- unless gdb remotely attached on x86 & cont is issued
-References: <48D10A70.8050202@option.com> <48D10C43.90605@windriver.com> <48D1122F.6080101@option.com> <48D26B64.5080605@windriver.com>
-In-Reply-To: <48D26B64.5080605@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Sep 2008 12:31:27.0080 (UTC) FILETIME=[A2AFAE80:01C91A53]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jason,
-Sorry for nitpicking & a big thanks for your patch.
-While this patch stops the big problem, the kernel halting, gdb
-debugging the userland code still doesn't behave correctly
-now. Trying to stepi over a sysenter call in gdb doesn't return
-to the gdb debugger ctrl-c in the debugger still works however. 
-Some code probably needs to be also fixed in arch/x86/kernel/ptrace.c
-or ideally the generic kernel/ptrace.c, seeing as this works
-with gdb on a normal kernel it's not a gdb issue even if
-it can be kludge fixed there.
-I'm running GNU gdb 6.8-debian from ubuntu 8.04 hardy heron
+Interrupt remapping could lead to NULL dereference in case of
+kzalloc failed and memory leak in other way. So fix the
+both cases.
 
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
+Ingo, the patch is on top of applied one.
 
+If I remember correctly Suresh was involved in
+this - so I think he could take a look and review
+the patch (please).
 
-Jason Wessel wrote:
-> Denis Joseph Barrow wrote:
->> Hi Jason,
->> The problem I believe is very reproducable.
-> 
-> It can be reproduced quite easily as it is a generic problem that
-> appears to have existed for quite a long time.
-> 
->> I'm doing nothing special with kgdb just using it to help me with 3g
->> modem driver development & my driver wasn't loaded when the problem
->> occured.  I have the following command in my /boot/grub/menu.lst
->> kernel parameter to enable gdb.
->>
->> kgdboc=/dev/ttyS0,115200 maxcpus=1
-> 
-> 
-> This was the key detail that was missing.  Along with the program and
-> other gdb details provided the source of the problem was not too hard
-> to track down.
-> 
-> When you attach to the running program with ptrace (via gdb), it
-> interrupts the system call and executing the high level "step" will
-> result in gdb executing a number of instruction step operations to try
-> to get back to an instruction which corresponds to the next valid line
-> of high level source code.
-> 
-> It was the 3rd or 4th instruction step that jumped back into the
-> kernel space because gdb ultimately tries to single step a system call
-> in your example.  For the kernel, single stepping a system call is a
-> special operation in that the system call must appear to complete
-> atomically and the user space ends up on the next user space assembly
-> instruction after the system call.  Behind the scenes the kernel
-> executes the system call and tracks this condition.
-> 
-> It appears kgdb needs to account for this condition as well, by simply
-> ignoring it when it occurs.
-> 
-> Please try the attached patch, as it will hopefully address the
-> problem.
-> 
-> Jason.
-> 
+LKML list restored in CC.
 
-
--- 
-best regards,
-D.J. Barrow
+Index: linux-2.6.git/arch/x86/kernel/apic.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic.c	2008-09-19 12:12:54.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/apic.c	2008-09-19 13:57:04.000000000 +0400
+@@ -1360,7 +1360,12 @@ void enable_IR_x2apic(void)
+ 
+ 	local_irq_save(flags);
+ 	mask_8259A();
+-	save_mask_IO_APIC_setup();
++
++	ret = save_mask_IO_APIC_setup();
++	if (ret) {
++		printk(KERN_INFO "Saving IO-APIC state failed: %d\n", ret);
++		goto end;
++	}
+ 
+ 	ret = enable_intr_remapping(1);
+ 
+@@ -1370,14 +1375,15 @@ void enable_IR_x2apic(void)
+ 	}
+ 
+ 	if (ret)
+-		goto end;
++		goto end_restore;
+ 
+ 	if (!x2apic) {
+ 		x2apic = 1;
+ 		apic_ops = &x2apic_ops;
+ 		enable_x2apic();
+ 	}
+-end:
++
++end_restore:
+ 	if (ret)
+ 		/*
+ 		 * IR enabling failed
+@@ -1386,6 +1392,7 @@ end:
+ 	else
+ 		reinit_intr_remapped_IO_APIC(x2apic_preenabled);
+ 
++end:
+ 	unmask_8259A();
+ 	local_irq_restore(flags);
+ 
+Index: linux-2.6.git/arch/x86/kernel/io_apic.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-19 12:12:54.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-19 13:33:01.000000000 +0400
+@@ -831,7 +831,7 @@ int save_mask_IO_APIC_setup(void)
+ 			kzalloc(sizeof(struct IO_APIC_route_entry) *
+ 				nr_ioapic_registers[apic], GFP_KERNEL);
+ 		if (!early_ioapic_entries[apic])
+-			return -ENOMEM;
++			goto nomem;
+ 	}
+ 
+ 	for (apic = 0; apic < nr_ioapics; apic++)
+@@ -845,7 +845,17 @@ int save_mask_IO_APIC_setup(void)
+ 				ioapic_write_entry(apic, pin, entry);
+ 			}
+ 		}
++
+ 	return 0;
++
++nomem:
++	for (; apic > 0; apic--)
++		kfree(early_ioapic_entries[apic]);
++	kfree(early_ioapic_entries[apic]);
++	memset(early_ioapic_entries, 0,
++		ARRAY_SIZE(early_ioapic_entries));
++
++	return -ENOMEM;
+ }
+ 
+ void restore_IO_APIC_setup(void)
+@@ -853,12 +863,13 @@ void restore_IO_APIC_setup(void)
+ 	int apic, pin;
+ 
+ 	for (apic = 0; apic < nr_ioapics; apic++) {
+-		/* FIXME: it should be handled at allocation time --cvg */
+ 		if (!early_ioapic_entries[apic])
+ 			break;
+ 		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++)
+ 			ioapic_write_entry(apic, pin,
+ 					   early_ioapic_entries[apic][pin]);
++		kfree(early_ioapic_entries[apic]);
++		early_ioapic_entries[apic] = NULL;
+ 	}
+ }
+ 
