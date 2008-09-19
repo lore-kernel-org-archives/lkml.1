@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751081AbYISNIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbYISNMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751081AbYISNIV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 09:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYISNIH
+	id S1753512AbYISNMV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 09:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYISNMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 09:08:07 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35003 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751415AbYISNIG (ORCPT
+	Fri, 19 Sep 2008 09:12:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52221 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751421AbYISNMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 09:08:06 -0400
-Date: Fri, 19 Sep 2008 06:07:52 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Peter Oruba <peter.oruba@amd.com>
-Cc: cate@debian.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [patch 05/11] [PATCH 05/11] x86: Moved microcode.c to
- microcode_intel.c.
-Message-ID: <20080919060752.57542a50@infradead.org>
-In-Reply-To: <48D3942B.1050901@amd.com>
-References: <20080728164411.490752571@amd.com>
-	<20080728164448.492961653@amd.com>
-	<20080907120823.59f8fa47@infradead.org>
-	<48CA586C.2010104@amd.com>
-	<20080912063517.783b7f85@infradead.org>
-	<48D3942B.1050901@amd.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 19 Sep 2008 09:12:13 -0400
+Message-ID: <48D3A4F5.9010804@linux-foundation.org>
+Date: Fri, 19 Sep 2008 08:11:17 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org, jeremy@goop.org, ebiederm@xmission.com,
+       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org
+Subject: Re: [patch 3/4] cpu alloc: The allocator
+References: <20080918233648.581696416@quilx.com>	 <20080918233701.599037712@quilx.com> <84144f020809190058j425eb995y7f441da18079dc8d@mail.gmail.com>
+In-Reply-To: <84144f020809190058j425eb995y7f441da18079dc8d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 13:59:39 +0200
-Peter Oruba <peter.oruba@amd.com> wrote:
-
-> Some additonal words regarding the current user space issues:
+Pekka Enberg wrote:
 > 
-> IMHO the most convenient way to update microcode is through the
-> firmware loading interface instead of microcode_ctl. This reduces
-> user-space responsibilities to loading the correct module at boot
-> time and to place the microcode patch file at the right location via
-> package installation. The problems mentioned in this thread would
-> then probably disappear as well. What do you guys think?
+>> + *
+>> + * (C) 2008 SGI, Christoph Lameter <clameter@sgi.com>
+> 
+> You probably want to drop that defunct email address.
 
-while I absolutely don't disagree with what you say, breaking existing
-userspace is not an option.
-Yes I very much would like for microcode_ctl to die as well (in fact,
-that was one of the reasons we had the microcode code use
-request_firmware), but that doesn't mean we can just ditch
-compatibility ;(
+Ok.
+
+
+> I found the first sentence a bit misleading. You can be easily fooled
+> into thinking "simultaneously" means there's no global locking (well,
+> I was).
+
+Reformulated the sentence.
+
+
+>> +       BUG_ON(index >= nr_units ||
+>> +               !test_bit(index, cpu_alloc_map) ||
+>> +               !test_bit(index + units - 1, cpu_alloc_map));
+> 
+> Why not turn this into three separate BUG_ON() calls? It's much easier
+> to figure out the offending expression like that. Also, maybe we want
+> these to be WARN_ON() calls (and early return) to avoid early boot
+> panic?
+
+Ok these are basically for two error conditions:
+
+1. Size to large
+
+2. address out of bounds
+
+So I made them into two bugs.
+
+I thought we could handle early boot panics with early_printk?
+
+
+>> Index: linux-2.6/arch/x86/kernel/setup_percpu.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/setup_percpu.c       2008-09-16 19:04:30.000000000 -0700
+>> +++ linux-2.6/arch/x86/kernel/setup_percpu.c    2008-09-16 19:04:48.000000000 -0700
+>> @@ -144,6 +144,7 @@ void __init setup_per_cpu_areas(void)
+>>        char *ptr;
+>>        int cpu;
+>>
+>> +       cpu_alloc_init();
+>>        /* Setup cpu_pda map */
+>>        setup_cpu_pda_map();
+> 
+> We need to do sparc, powerpc, and ia64 too, right?
+
+Correct.
