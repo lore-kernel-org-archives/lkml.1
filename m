@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbYISGMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757120AbYISCw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160AbYISGMf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 02:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbYISGM1
+	id S1757120AbYISCw3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 22:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbYISCwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 02:12:27 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:51082 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750842AbYISGM0 (ORCPT
+	Thu, 18 Sep 2008 22:52:19 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:26421 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754180AbYISCwS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 02:12:26 -0400
-Date: Fri, 19 Sep 2008 15:12:21 +0900 (JST)
-Message-Id: <20080919.151221.49666828.taka@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
-       righi.andrea@gmail.com, jens.axboe@oracle.com
-Subject: Re: dm-ioband + bio-cgroup benchmarks
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <20080918131554.GB20640@redhat.com>
-References: <20080918.210418.226794540.ryov@valinux.co.jp>
-	<20080918131554.GB20640@redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 18 Sep 2008 22:52:18 -0400
+Message-ID: <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com>
+Date: Thu, 18 Sep 2008 19:52:16 -0700
+From: "Steven Noonan" <steven@uplinklabs.net>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5, rc6, probably others)
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Luis Rodriguez" <Luis.Rodriguez@atheros.com>
+In-Reply-To: <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f488382f0809181123n55a4979eg1996bbc30fa47d54@mail.gmail.com>
+	 <43e72e890809181134ybbec8fdxcb2a466aa17fe390@mail.gmail.com>
+	 <43e72e890809181142n7738cd99g522e6688e68d11ce@mail.gmail.com>
+	 <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com>
+	 <43e72e890809181344q416b5944w3332ee5a33db048c@mail.gmail.com>
+	 <f488382f0809181449x7343aa7endff066cb5836a73c@mail.gmail.com>
+	 <20080918220102.GE7408@tesla>
+	 <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com>
+	 <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com>
+	 <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This IRQ debugging is lots of fun. My /var/log/messages jumped in size
+to 241MB. :)
 
-> > Hi All,
-> > 
-> > I have got excellent results of dm-ioband, that controls the disk I/O
-> > bandwidth even when it accepts delayed write requests.
-> > 
-> > In this time, I ran some benchmarks with a high-end storage. The
-> > reason was to avoid a performance bottleneck due to mechanical factors
-> > such as seek time.
-> > 
-> > You can see the details of the benchmarks at:
-> > http://people.valinux.co.jp/~ryov/dm-ioband/hps/
-> > 
-> 
-> Hi Ryo,
-> 
-> I had a query about dm-ioband patches. IIUC, dm-ioband patches will break
-> the notion of process priority in CFQ because now dm-ioband device will
-> hold the bio and issue these to lower layers later based on which bio's
-> become ready. Hence actual bio submitting context might be different and
-> because cfq derives the io_context from current task, it will be broken.
+My test case was a file transfer that basically copies 50MB from a
+remote machine's /dev/urandom and writes it to /dev/null locally. That
+should be a pretty nice large RX. And jeez, I'm seeing tremendous
+download speeds now and I have no idea what is different about my
+configuration. I'm getting up to 24 megabit per second transfer rates
+(actual), which is incredibly unusual for ath9k.
 
-This is completely another problem we have to solve.
-The CFQ scheduler has really bad assumption that the current process
-must be the owner. This problem occurs when you use some of device
-mapper devices or use linux aio.
+I wasn't able to reproduce the IRQ problems on -tip or Linus' current
+tree (both with the group rekeying fix applied, which may or may not
+be a good idea for reproducing the issue). Even tried doing
+rmmod/modprobe in fast succession multiple times. Couldn't get it to
+throw up.
 
-> To mitigate that problem, we probably need to implement Fernando's
-> suggestion of putting io_context pointer in bio. 
-> 
-> Have you already done something to solve this issue?
+I wonder... My rmmod/modprobe originally was used after the improper
+group rekeying before in order to get it back to normal. Perhaps the
+encryption has to go wonky before this IRQ issue surfaces? Another
+possibility is the earlier mentioned "ACPI: EC: GPE storm detected,
+disabling EC GPE". I don't know if it's related or not, but I haven't
+waited for it to show up before testing.
 
-Actually, I already have a patch to solve this problem, which make
-each bio have a pointer to the io_context of the owner process.
-Would you take a look at the thread whose subject is "I/O context
-inheritance" in:
-http://www.uwsg.iu.edu/hypermail/linux/kernel/0804.2/index.html#2850
-
-Fernando also knows this.
-
-Thank you,
-Hirokazu Takahashi.
+Oh well, if the IRQ problem resurfaces (or if I get a ridiculous
+latency tomorrow morning with irqpoll off), I'll try to get some
+useful data to help debug it.
