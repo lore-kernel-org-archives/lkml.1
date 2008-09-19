@@ -1,82 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYISOu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbYISOv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbYISOu6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 10:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYISOut
+	id S1754852AbYISOv0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 10:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYISOvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 10:50:49 -0400
-Received: from mail91.analogic.com ([208.224.220.31]:49240 "EHLO
-	mail01.analogic.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752764AbYISOus convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 10:50:48 -0400
-X-AuditID: 0a770115-ac680bb0000014a6-27-48d3bc47e122
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-x-mimeole: Produced By Microsoft Exchange V6.5
-x-originalarrivaltime: 19 Sep 2008 14:50:26.0669 (UTC) FILETIME=[0D77F9D0:01C91A67]
-Content-class: urn:content-classes:message
-Subject: Re: dmaengine.c: question about device_alloc_chan_resources
-Date: Fri, 19 Sep 2008 10:50:26 -0400
-Message-ID: <Pine.LNX.4.61.0809191042020.11905@chaos.analogic.com>
-In-Reply-To: <48D3B880.3070607@freescale.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: dmaengine.c: question about device_alloc_chan_resources
-Thread-Index: AckaZw1/t4hh8Tp0RgOwcsF7ZKUCMA==
-References: <48D02589.8070601@freescale.com> <e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com> <ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com> <20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com> <48D2664D.7040204@freescale.com> <20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com> <e9c3a7c20809182120r5e056dd7h170959dc1171af84@mail.gmail.com> <20080919132544.533ab7d0@hskinnemo-gx745.norway.atmel.com> <48D3B880.3070607@freescale.com>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Timur Tabi" <timur@freescale.com>
-Cc: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
-       "Dan Williams" <dan.j.williams@intel.com>,
-       "lkml" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-X-Brightmail-Tracker: AAAAAA==
+	Fri, 19 Sep 2008 10:51:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45247 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752721AbYISOvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 10:51:15 -0400
+Date: Fri, 19 Sep 2008 10:48:54 -0400 (EDT)
+Message-Id: <20080919.104854.71084447.k-ueda@ct.jp.nec.com>
+To: James.Bottomley@HansenPartnership.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: [PATCH 1/2] lld busy status exporting interface
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20080919.104756.41628866.k-ueda@ct.jp.nec.com>
+References: <20080919.104756.41628866.k-ueda@ct.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008, Timur Tabi wrote:
-
-> Haavard Skinnemoen wrote:
->
->> Yes, or maybe provide an interface for simply requesting a channel
->> without having to register any callbacks.
->
-> I could use this feature.  The sound drivers for our MPC8610 processor use DMA,
-> but the drivers need to control the DMA hardware directly, so I can't use
-> dmaengine.  I would like to be able to just reserve the channels and program
-> them as I see fit.
->
-> -- 
-> Timur Tabi
-> Linux kernel developer at Freescale
-
-The hardware on the PC/AT machines won't allow you to
-reserve a specific channel and program it as you see fit,
-because there are two devices, one for the low DMA
-channels and another for the high ones. Even the low
-DMA device has a channel in use as a cascade so, if
-you were to touch any of its registers while a DMA
-was in progress, the result will be undefined. That's
-why there needs to be a central procedure to handle
-this shared resource and why drivers need to interface
-through it and not touch the hardware. Bus Master
-DMA from PCI boards is an entirely different matter.
-Nobody but the driver for the board is going to muck
-with its DMA so it does not need to be protected as a
-shared resource.
+This patch adds an interface to check lld's busy status
+from the block layer.
+This resolves a performance problem on request stacking devices below.
 
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.25.17 on an i686 machine (4786.70 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+Some drivers like scsi mid layer stop dispatching request when
+they detect busy state on its low-level device like host/bus/device.
+It allows other requests to stay in the I/O scheduler's queue
+for a chance of merging.
+
+Request stacking drivers like request-based dm should follow
+the same logic.
+However, there is no generic interface for the stacked device
+to check if the underlying device(s) are busy.
+If the request stacking driver dispatches and submits requests to
+the busy underlying device, the requests will stay in
+the underlying device's queue without a chance of merging.
+This causes performance problem on burst I/O load.
+
+With this patch, busy state of the underlying device is exported
+via the state flag of queue's backing_dev_info.  So the request
+stacking driver can check it and stop dispatching requests if busy.
+
+The underlying device driver must set/clear the flag appropriately:
+   ON:  when the device driver can't process requests immediately.
+   OFF: when the device driver can process requests immediately,
+        including abnormal situations where the device driver needs
+        to kill all requests.
 
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged. Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited. If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ include/linux/backing-dev.h |    8 ++++++++
+ mm/backing-dev.c            |   12 ++++++++++++
+ 2 files changed, 20 insertions(+)
 
-Thank you.
+Index: scsi-misc-2.6/include/linux/backing-dev.h
+===================================================================
+--- scsi-misc-2.6.orig/include/linux/backing-dev.h
++++ scsi-misc-2.6/include/linux/backing-dev.h
+@@ -26,6 +26,7 @@ enum bdi_state {
+ 	BDI_pdflush,		/* A pdflush thread is working this device */
+ 	BDI_write_congested,	/* The write queue is getting full */
+ 	BDI_read_congested,	/* The read queue is getting full */
++	BDI_lld_congested,	/* The device/host is busy */
+ 	BDI_unused,		/* Available bits start here */
+ };
+ 
+@@ -226,8 +227,15 @@ static inline int bdi_rw_congested(struc
+ 				  (1 << BDI_write_congested));
+ }
+ 
++static inline int bdi_lld_congested(struct backing_dev_info *bdi)
++{
++	return bdi_congested(bdi, 1 << BDI_lld_congested);
++}
++
+ void clear_bdi_congested(struct backing_dev_info *bdi, int rw);
+ void set_bdi_congested(struct backing_dev_info *bdi, int rw);
++void clear_bdi_lld_congested(struct backing_dev_info *bdi);
++void set_bdi_lld_congested(struct backing_dev_info *bdi);
+ long congestion_wait(int rw, long timeout);
+ 
+ 
+Index: scsi-misc-2.6/mm/backing-dev.c
+===================================================================
+--- scsi-misc-2.6.orig/mm/backing-dev.c
++++ scsi-misc-2.6/mm/backing-dev.c
+@@ -279,6 +279,18 @@ void set_bdi_congested(struct backing_de
+ }
+ EXPORT_SYMBOL(set_bdi_congested);
+ 
++void clear_bdi_lld_congested(struct backing_dev_info *bdi)
++{
++	clear_bit(BDI_lld_congested, &bdi->state);
++}
++EXPORT_SYMBOL_GPL(clear_bdi_lld_congested);
++
++void set_bdi_lld_congested(struct backing_dev_info *bdi)
++{
++	set_bit(BDI_lld_congested, &bdi->state);
++}
++EXPORT_SYMBOL_GPL(set_bdi_lld_congested);
++
+ /**
+  * congestion_wait - wait for a backing_dev to become uncongested
+  * @rw: READ or WRITE
