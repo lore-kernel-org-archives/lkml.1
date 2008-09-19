@@ -1,101 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbYISMz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753044AbYISM5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753757AbYISMz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 08:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYISMzR
+	id S1753044AbYISM5r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 08:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYISM5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 08:55:17 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:40764 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751116AbYISMzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 08:55:16 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: efi vendor_reserved memory type
-Cc: hpa@zytor.com, ying.huang@intel.com
-Message-Id: <E1KgfWE-0006lU-7s@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Fri, 19 Sep 2008 07:55:30 -0500
+	Fri, 19 Sep 2008 08:57:39 -0400
+Received: from mail.windriver.com ([147.11.1.11]:38863 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750880AbYISM5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 08:57:38 -0400
+Message-ID: <48D3A1B4.8000505@windriver.com>
+Date: Fri, 19 Sep 2008 07:57:24 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Denis Joseph Barrow <D.Barow@option.com>
+CC: KGDB Mailing List <kgdb-bugreport@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org, gareth@valinux.com,
+       markus.t.metzger@intel.com
+Subject: Re: getting false SIGTRAP breakpoints in kernel i.e. kernel hung
+ unless gdb remotely attached on x86 & cont is issued
+References: <48D10A70.8050202@option.com> <48D10C43.90605@windriver.com> <48D1122F.6080101@option.com> <48D26B64.5080605@windriver.com> <48D39B9F.8010404@option.com>
+In-Reply-To: <48D39B9F.8010404@option.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Sep 2008 12:57:25.0487 (UTC) FILETIME=[4391B7F0:01C91A57]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cliff Wickman <cpw@sgi.com>
+Denis Joseph Barrow wrote:
+> Hi Jason,
+> Sorry for nitpicking & a big thanks for your patch.
+> While this patch stops the big problem, the kernel halting, gdb
+> debugging the userland code still doesn't behave correctly
+> now. Trying to stepi over a sysenter call in gdb doesn't return
+> to the gdb debugger ctrl-c in the debugger still works however.
+> Some code probably needs to be also fixed in arch/x86/kernel/ptrace.c
+> or ideally the generic kernel/ptrace.c, seeing as this works
+> with gdb on a normal kernel it's not a gdb issue even if
+> it can be kludge fixed there.
+> I'm running GNU gdb 6.8-debian from ubuntu 8.04 hardy heron
+>
+>
 
-Add an EFI_VENDOR_RESERVED memory type.
-This supports memory available only to special devices. Such memory will
-not be used as general RAM by the OS.
+The patch I sent is not yet included the kgdb stream because I was
+waiting for further comment.  I do not see any issues however in the
+case that you describe, so I will describe how I tested it and then
+perhaps you can explain further the case that does not work.
 
-And add a method for a device driver to locate that memory. The walk()
-function scans the EFI memory map and does a callback to a specified
-function for each memory area of a specified type.
-efi_memmap_walk_vr() is made available for a module to scan for
-type EFI_VENDOR_RESERVED.
+Given that I still had your test program, I used it to set a
+breakpoint at read(), after performing an attach as you described
+previous with attaching to the running process.  At this point kgdboc
+is loaded and configured.
 
-A UV driver will be posted later that will use these routines.
+gdb commands:
 
-Diffed against 2.6.27-rc1-mm1-dirty
+att PID_OF_randsleep
+break read
+continue
 
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
----
- arch/x86/kernel/efi.c |   36 ++++++++++++++++++++++++++++++++++++
- include/linux/efi.h   |    3 ++-
- 2 files changed, 38 insertions(+), 1 deletion(-)
+At this point to hit the breakpoint, I had to type some input on the
+ttyS0 which randsleep where randsleep was connected.  At that point I
+was able to step the system call with enough "si" commands.  In the
+example shown below I did have to provide some more input after the
+"si" for address 0xffffe419 so that the system call would come out of
+the sleep state because it happened to be a blocking read.
 
-Index: linux/arch/x86/kernel/efi.c
-===================================================================
---- linux.orig/arch/x86/kernel/efi.c
-+++ linux/arch/x86/kernel/efi.c
-@@ -568,3 +568,39 @@ u64 efi_mem_attributes(unsigned long phy
- 	}
- 	return 0;
- }
-+
-+static void
-+walk(efi_freemem_callback_t callback, void *arg, int type)
-+{
-+	efi_memory_desc_t *md;
-+	void *p;
-+	int size;
-+
-+	/*
-+	 * memmap.map is zeroed in efi_enter_virtual_mode()
-+	 * but we can use the physical address (phys_map)
-+	 */
-+	size = memmap.nr_map*memmap.desc_size;
-+	for (p = memmap.phys_map; p < memmap.phys_map+size;
-+						p += memmap.desc_size) {
-+		md = (efi_memory_desc_t *)__va(p);
-+		if (md->type != type)
-+			continue;
-+		if ((*callback)(md->phys_addr,
-+		     md->phys_addr + (md->num_pages << EFI_PAGE_SHIFT) - 1,
-+		     arg) < 0)
-+			return;
-+	}
-+}
-+
-+/*
-+ * Walk the EFI memory map and call "callback" once for each EFI memory
-+ * descriptor of type VENDOR_RESERVED.
-+ */
-+void
-+efi_memmap_walk_vr(efi_freemem_callback_t callback, void *arg)
-+{
-+	walk(callback, arg, EFI_VENDOR_RESERVED);
-+}
-+
-+EXPORT_SYMBOL_GPL(efi_memmap_walk_vr);
-Index: linux/include/linux/efi.h
-===================================================================
---- linux.orig/include/linux/efi.h
-+++ linux/include/linux/efi.h
-@@ -77,7 +77,8 @@ typedef	struct {
- #define EFI_MEMORY_MAPPED_IO		11
- #define EFI_MEMORY_MAPPED_IO_PORT_SPACE	12
- #define EFI_PAL_CODE			13
--#define EFI_MAX_MEMORY_TYPE		14
-+#define EFI_VENDOR_RESERVED		14
-+#define EFI_MAX_MEMORY_TYPE		15
- 
- /* Attribute values: */
- #define EFI_MEMORY_UC		((u64)0x0000000000000001ULL)	/* uncached */
+Example:
+(gdb) continue
+Continuing.
+
+Breakpoint 1, 0x08056b30 in read ()
+(gdb) si
+0x08056b38 in read ()
+(gdb)
+0x08056b3a in __read_nocancel ()
+(gdb)
+0x08056b3b in __read_nocancel ()
+(gdb)
+0x08056b3f in __read_nocancel ()
+(gdb)
+0x08056b43 in __read_nocancel ()
+(gdb)
+0x08056b47 in __read_nocancel ()
+(gdb)
+0x08056b4c in __read_nocancel ()
+(gdb)
+0xffffe414 in __kernel_vsyscall ()
+(gdb) disas $pc $pc+8
+Dump of assembler code from 0xffffe414 to 0xffffe41c:
+0xffffe414 <__kernel_vsyscall+0>:       push   %ecx
+0xffffe415 <__kernel_vsyscall+1>:       push   %edx
+0xffffe416 <__kernel_vsyscall+2>:       push   %ebp
+0xffffe417 <__kernel_vsyscall+3>:       mov    %esp,%ebp
+0xffffe419 <__kernel_vsyscall+5>:       sysenter
+0xffffe41b <__kernel_vsyscall+7>:       nop  
+End of assembler dump.
+(gdb) si
+0xffffe415 in __kernel_vsyscall ()
+(gdb)
+0xffffe416 in __kernel_vsyscall ()
+(gdb)
+0xffffe417 in __kernel_vsyscall ()
+(gdb)
+0xffffe419 in __kernel_vsyscall ()
+(gdb)
+0xffffe424 in __kernel_vsyscall ()
+(gdb)
+
+
+At least this case appears to work fine with or without kgdb
+loaded.  Perhaps you have a different case you can describe?
+
+Thanks,
+Jason.
+
+
+
+
+
+
