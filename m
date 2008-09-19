@@ -1,157 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYISLEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYISLFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbYISLEX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 07:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbYISLEN
+	id S1754725AbYISLFQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 07:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYISLFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 07:04:13 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:41591 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752694AbYISLEM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 07:04:12 -0400
-Date: Fri, 19 Sep 2008 20:04:11 +0900 (JST)
-Message-Id: <20080919.200411.112604325.ryov@valinux.co.jp>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Cc: fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com, xemul@openvz.org,
-       agk@sourceware.org
-Subject: [PATCH 5/5] bio-cgroup: Dirty page tracking
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20080919.200338.189705888.ryov@valinux.co.jp>
-References: <20080919.200226.71109122.ryov@valinux.co.jp>
-	<20080919.200301.104053955.ryov@valinux.co.jp>
-	<20080919.200338.189705888.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Sep 2008 07:05:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40611 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752815AbYISLFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 07:05:00 -0400
+Date: Fri, 19 Sep 2008 13:04:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Steven Noonan <steven@uplinklabs.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip FIXED] ftrace: add nop tracer
+Message-ID: <20080919110449.GB30624@elte.hu>
+References: <1221818803-9616-1-git-send-email-steven@uplinklabs.net> <c62985530809190348h3a74de3aqd0ca2e893b11bb8c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530809190348h3a74de3aqd0ca2e893b11bb8c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch supports migrating pages between bio-cgroups with minimum overhead,
 
-Based on 2.6.27-rc1-mm1
-Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
-Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 
-diff -Ndupr linux-2.6.27-rc1-mm1.cg3/fs/buffer.c linux-2.6.27-rc1-mm1.cg4/fs/buffer.c
---- linux-2.6.27-rc1-mm1.cg3/fs/buffer.c	2008-09-19 10:54:42.000000000 +0900
-+++ linux-2.6.27-rc1-mm1.cg4/fs/buffer.c	2008-09-19 18:51:01.000000000 +0900
-@@ -36,6 +36,7 @@
- #include <linux/buffer_head.h>
- #include <linux/task_io_accounting_ops.h>
- #include <linux/bio.h>
-+#include <linux/biocontrol.h>
- #include <linux/notifier.h>
- #include <linux/cpu.h>
- #include <linux/bitops.h>
-@@ -723,6 +724,7 @@ static int __set_page_dirty(struct page 
- 			__inc_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
- 			task_io_account_write(PAGE_CACHE_SIZE);
-+			bio_cgroup_recharge(page, current->mm);
- 		}
- 		radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
-diff -Ndupr linux-2.6.27-rc1-mm1.cg3/include/linux/biocontrol.h linux-2.6.27-rc1-mm1.cg4/include/linux/biocontrol.h
---- linux-2.6.27-rc1-mm1.cg3/include/linux/biocontrol.h	2008-09-19 18:51:00.000000000 +0900
-+++ linux-2.6.27-rc1-mm1.cg4/include/linux/biocontrol.h	2008-09-19 18:51:01.000000000 +0900
-@@ -100,6 +100,8 @@ static inline struct bio_cgroup *mm_get_
- 
- extern struct io_context *get_bio_cgroup_iocontext(struct bio *bio);
- 
-+extern void bio_cgroup_recharge(struct page *page, struct mm_struct *mm);
-+
- #else	/* CONFIG_CGROUP_BIO */
- 
- struct bio_cgroup;
-@@ -154,6 +156,10 @@ static inline struct io_context *get_bio
- 	return NULL;
- }
- 
-+static inline void bio_cgroup_recharge(struct page *page, struct mm_struct *mm)
-+{
-+}
-+
- #endif	/* CONFIG_CGROUP_BIO */
- 
- #endif /* _LINUX_BIOCONTROL_H */
-diff -Ndupr linux-2.6.27-rc1-mm1.cg3/mm/biocontrol.c linux-2.6.27-rc1-mm1.cg4/mm/biocontrol.c
---- linux-2.6.27-rc1-mm1.cg3/mm/biocontrol.c	2008-09-19 18:51:00.000000000 +0900
-+++ linux-2.6.27-rc1-mm1.cg4/mm/biocontrol.c	2008-09-19 18:51:01.000000000 +0900
-@@ -217,3 +217,52 @@ struct cgroup_subsys bio_cgroup_subsys =
- 	.attach		= bio_cgroup_move_task,
- 	.early_init	= 0,
- };
-+
-+/*
-+ * Change the owner of a given page.
-+ */
-+void bio_cgroup_recharge(struct page *page, struct mm_struct *mm)
-+{
-+	struct page_cgroup *pc;
-+	struct bio_cgroup *biog;
-+
-+	if (bio_cgroup_disabled() || !mm)
-+		return;
-+	if (PageSwapCache(page) || PageAnon(page))
-+		return;
-+	/* Check if the owner should be changed without any lock. */
-+	pc = page_get_page_cgroup(page);
-+	if (unlikely(!pc))
-+		return;
-+	rcu_read_lock();
-+	biog = bio_cgroup_from_task(rcu_dereference(mm->owner));
-+	rcu_read_unlock();
-+	/*
-+	 * This won't cause any trouble even when the page_cgroup has been
-+	 * released since its memory still exists where it was.
-+	 */
-+	if (biog == pc->bio_cgroup)
-+		return;
-+
-+	/* Re-check if the owner should be changed with the lock. */
-+	lock_page_cgroup(page);
-+	pc = page_get_page_cgroup(page);
-+	if (unlikely(!pc))
-+		goto out;
-+	rcu_read_lock();
-+	biog = mm_get_bio_cgroup(mm);
-+	rcu_read_unlock();
-+	if (biog == pc->bio_cgroup) {
-+		put_bio_cgroup(biog);
-+		goto out;
-+	}
-+
-+	/* Move the page into the bio_cgroup associating with "mm." */
-+	bio_cgroup_remove_page(pc);
-+	clear_bio_cgroup(pc);
-+	set_bio_cgroup(pc, biog);
-+	bio_cgroup_add_page(pc);
-+out:
-+	unlock_page_cgroup(page);
-+}
-+
-diff -Ndupr linux-2.6.27-rc1-mm1.cg3/mm/page-writeback.c linux-2.6.27-rc1-mm1.cg4/mm/page-writeback.c
---- linux-2.6.27-rc1-mm1.cg3/mm/page-writeback.c	2008-09-19 10:54:43.000000000 +0900
-+++ linux-2.6.27-rc1-mm1.cg4/mm/page-writeback.c	2008-09-19 18:51:01.000000000 +0900
-@@ -23,6 +23,7 @@
- #include <linux/init.h>
- #include <linux/backing-dev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/biocontrol.h>
- #include <linux/blkdev.h>
- #include <linux/mpage.h>
- #include <linux/rmap.h>
-@@ -1094,6 +1095,7 @@ int __set_page_dirty_nobuffers(struct pa
- 				__inc_bdi_stat(mapping->backing_dev_info,
- 						BDI_RECLAIMABLE);
- 				task_io_account_write(PAGE_CACHE_SIZE);
-+				bio_cgroup_recharge(page, current->mm);
- 			}
- 			radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
+> It seems we have two "none" tracers now. Why not seeing this nop 
+> tracer as an improvment of the current "none tracer" ?
+> 
+> As a result the none tracer contained in trace.c could be replaced by 
+> this new one as the default tracer. And that's said, that will enable 
+> trace_printk by default even when no tracer is selected by the user.
+> 
+> What do you think about it?
+
+hmm ... good idea. There are some special properties of the none tracer 
+(it inhibits trace output for example), and those should be discontinued 
+i guess.
+
+	Ingo
