@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYISIvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbYISIyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757450AbYISIvg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 04:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYISIv1
+	id S1757385AbYISIyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 04:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYISIyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 04:51:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40087 "EHLO mx3.mail.elte.hu"
+	Fri, 19 Sep 2008 04:54:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47896 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbYISIv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 04:51:26 -0400
-Date: Fri, 19 Sep 2008 10:51:06 +0200
+	id S1750792AbYISIyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 04:54:10 -0400
+Date: Fri, 19 Sep 2008 10:53:55 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Noonan <steven@uplinklabs.net>
-Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27
-	(rc5, rc6, probably others)
-Message-ID: <20080919085105.GG17592@elte.hu>
-References: <20080918220102.GE7408@tesla> <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com> <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com> <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com> <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com> <20080919030125.GG7408@tesla> <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com> <20080919081733.GC19491@elte.hu> <f488382f0809190122k1b30cd9q22fd076c1e3eaa18@mail.gmail.com> <f488382f0809190145s1b5407d4s9d97ae594bcc3379@mail.gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
+Subject: Re: [PATCH -tip] uaccess: fix parameters inversion for
+	__copy_from_user_inatomic()
+Message-ID: <20080919085355.GA21043@elte.hu>
+References: <48CF061A.5060002@ct.jp.nec.com> <20080918151908.9857ba64.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <f488382f0809190145s1b5407d4s9d97ae594bcc3379@mail.gmail.com>
+In-Reply-To: <20080918151908.9857ba64.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,45 +36,93 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Noonan <steven@uplinklabs.net> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Fri, Sep 19, 2008 at 1:22 AM, Steven Noonan <steven@uplinklabs.net> wrote:
-> > On Fri, Sep 19, 2008 at 1:17 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >> in tip/master there's an ftrace_printk() facility. You can just replace
-> >> the verbose printk()s with ftrace_printk() and see the result in
-> >> /debug/tracing/trace.
-> >>
-> >> This sort of tracing has very low overhead and can be used in an easy
-> >> ad-hoc manner with no extra infrastructure. Here's a few quick-start
-> >> links about how to enable the scheduler tracer:
-> >>
-> >>  http://redhat.com/~mingo/sched-devel.git/readme-tracer.txt
-> >>  http://redhat.com/~mingo/sched-devel.git/howto-trace-latencies.txt
-> >>
-> >> any ftrace_printk() you add in the kernel will show up in that trace.
-> >>
-> >> (If the scheduling events are uninteresting and clutter the output then
-> >> you might want to remove the scheduler tracing entries from kernel/*.c
-> >> by removing the trace_sched_*() calls or use a less noisy tracer.)
-> >>
-> >> to get enough of a trace history you might want to increase the number
-> >> of trace entries in /debug/tracing/trace_entries from 16K to 128K or so.
-> >>
-> >
-> > Thanks for the suggestion, I'll do that. :)
-> >
+> On Mon, 15 Sep 2008 18:04:26 -0700
+> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 > 
-> It'd be extremely convenient to have a tracer that did absolutely 
-> nothing but display ftrace_printk()s.
+> > From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> > 
+> > The following patch changes to use __copy_from_user_inatomic(),
+> > but the passing parameters incorrect.
+> > 
+> >     x86: some lock annotations for user copy paths, v3
+> > 
+> >     - add annotation back to clear_user()
+> >     - change probe_kernel_address() to _inatomic*() method
+> > 
+> > Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> > ---
+> >  include/linux/uaccess.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+> > index 2062293..6b58367 100644
+> > --- a/include/linux/uaccess.h
+> > +++ b/include/linux/uaccess.h
+> > @@ -78,7 +78,7 @@ static inline unsigned long __copy_from_user_nocache(void *to,
+> >  							\
+> >  		set_fs(KERNEL_DS);			\
+> >  		pagefault_disable();			\
+> > -		ret = __copy_from_user_inatomic((__force typeof(retval) __user *)(addr), &(retval), sizeof(retval));		\
+> > +		ret = __copy_from_user_inatomic(&(retval), (__force typeof(retval) __user *)(addr), sizeof(retval));		\
+> >  		pagefault_enable();			\
+> >  		set_fs(old_fs);				\
+> >  		ret;					\
+> 
+> The bug which this fixes was merged into linux-next-20080918, and
+> manifests as squillions of messages like
+> 
+> [   58.693759] SLAB: cache with size 65536 has lost its name
+> [   58.693926] SLAB: cache with size 65536 has lost its name
+> [   58.694095] SLAB: cache with size 32768 has lost its name
+> [   58.694261] SLAB: cache with size 32768 has lost its name
+> [   58.694434] SLAB: cache with size 16384 has lost its name
+> [   58.694606] SLAB: cache with size 16384 has lost its name
+> [   58.694773] SLAB: cache with size 8192 has lost its name
+> [   58.694940] SLAB: cache with size 8192 has lost its name
+> [   58.695101] SLAB: cache with size 4096 has lost its name
+> 
+> so this version of linux-next (which will be the most-recent
+> version of linux-next for the next three weeks) will need this patch:
 
-yeah, had the same thought.
-
-Could you please contribute one? :) I'd suggest you take the smallest 
-tracer as a template: trace_sched_switch.c and turn that into 
-trace_nop.c - and change all the function names and ASCII and kconfig 
-glue to 'nop'/'NOP'?
-
-That can then be used as a basis for additional ftrace plugins, or for 
-ad-hoc temporary tracing.
+that's already fixed via the commit below 4 days ago - i should have 
+pushed it into tip/auto-core-next - did that now.
 
 	Ingo
+
+------------------->
+>From fb71e45338453698bd7460f7e8f171ea0304d218 Mon Sep 17 00:00:00 2001
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Date: Mon, 15 Sep 2008 18:04:26 -0700
+Subject: [PATCH] uaccess: fix parameters inversion for __copy_from_user_inatomic()
+
+The following patch changes to use __copy_from_user_inatomic(),
+but the passing parameters incorrect:
+
+    x86: some lock annotations for user copy paths, v3
+
+This fixes the netfilter crash reported by Steven Noonan.
+
+Reported-by: Steven Noonan <steven@uplinklabs.net>
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Tested-by: Steven Noonan <steven@uplinklabs.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/uaccess.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+index 2062293..6b58367 100644
+--- a/include/linux/uaccess.h
++++ b/include/linux/uaccess.h
+@@ -78,7 +78,7 @@ static inline unsigned long __copy_from_user_nocache(void *to,
+ 							\
+ 		set_fs(KERNEL_DS);			\
+ 		pagefault_disable();			\
+-		ret = __copy_from_user_inatomic((__force typeof(retval) __user *)(addr), &(retval), sizeof(retval));		\
++		ret = __copy_from_user_inatomic(&(retval), (__force typeof(retval) __user *)(addr), sizeof(retval));		\
+ 		pagefault_enable();			\
+ 		set_fs(old_fs);				\
+ 		ret;					\
+
