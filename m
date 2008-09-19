@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbYISOss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYISOua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754071AbYISOss (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 10:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYISOsl
+	id S1754217AbYISOua (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 10:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYISOuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 10:48:41 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:34575 "EHLO bagnes.atmel.com"
+	Fri, 19 Sep 2008 10:50:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45193 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750927AbYISOsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 10:48:40 -0400
-Date: Fri, 19 Sep 2008 16:47:57 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Anti Sullin <anti.sullin@artecdesign.ee>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] AT91 Serial: update the powersave handler to match
- serial core
-Message-ID: <20080919164757.2ee78a09@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080919161625.360e514d@hskinnemo-gx745.norway.atmel.com>
-References: <48CE42C8.1090608@artecdesign.ee>
-	<20080919150938.08b2c7be@hskinnemo-gx745.norway.atmel.com>
-	<48D3AE78.207@artecdesign.ee>
-	<20080919161625.360e514d@hskinnemo-gx745.norway.atmel.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+	id S1750908AbYISOuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 10:50:19 -0400
+Date: Fri, 19 Sep 2008 10:47:56 -0400 (EDT)
+Message-Id: <20080919.104756.41628866.k-ueda@ct.jp.nec.com>
+To: James.Bottomley@HansenPartnership.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: [PATCH 0/2] Add lld-congestion bit for backing_dev_info
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 19 Sep 2008 14:47:47.0359 (UTC) FILETIME=[AE8332F0:01C91A66]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> > > Are both of these checks necessary? It doesn't look like
-> > > atmel_console_putchar() can be called from anywhere else than
-> > > atmel_console_write().  
-> > Actually, not so much. I added them for protection so that we wouldn't run into
-> > a deadlock loop if something changes again. Those while() loops make me cautious.
-> > And I didn't have the time to look up if the suspend code is thread-safe without this.  
-> 
-> I don't think it's much safer with that extra check if suspend can be
-> called in parallel with this. In that case, the only way to make
-> _absolutely_ sure would be to move the test inside the while loops.
-> 
-> And I only think this actually matters if console suspend is disabled,
-> which should probably never happen on a production system. So I'm
-> wondering if we really need any of those checks.
+Hi James,
 
-After looking at the serial core code, I don't think they are needed.
-The serial core shuts down the port completely before changing the pm
-state, and it also calls console_stop() which ensures that
-atmel_console_write() will never get called.
+The following patches exports busy-status of SCSI LLD to
+request-based dm-multipath for proper I/O scheduling.
+The patches are created on the following commit of scsi-misc-2.6.
+---------------------------------------------------------------
+commit 7d36ee8aefec15ab00ac08dc5611d6b5eab38d7f
+Author: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Date:   Thu Sep 11 21:22:54 2008 -0700
 
-And I think this is by far the best way to deal with this. As long as
-the console is disabled at a higher level, we don't need those
-potentially racy checks in the low-level code. So I think I'm going to
-remove them before submitting this patch upstream.
+    [SCSI] qla2xxx: Update version number to 8.02.01-k8.
+---------------------------------------------------------------
 
-If no_console_suspend is set, none of this will happen, and the clock
-will keep running until it eventually gets cut off when entering slow
-clock mode. This could have potential issues, but I'm not sure if it's
-worth dealing with them since no_console_suspend is purely a debugging
-aid.
+No major changes since the last post (http://lkml.org/lkml/2008/9/12/100),
+except for rebasing on top of scsi-misc-2.6 from 2.6.27-rc6.
 
-I also suspect that disabling interrupts is unnecessary since the
-serial core calls ->shutdown() which will also disable interrupts. But
-it's probably safest to keep that part since the pm state may get
-changed by other things than suspend.
+Summary of the patches:
+  1/2: lld busy status exporting interface
+  2/2: scsi: exports busy status via bdi_lld_congested
 
-Haavard
+Please review and apply.
+
+The 1st patch changes generic part and not specific to scsi,
+so I'm not sure whether it is appropriate to ask you about merging
+this patch.
+If I should push the 1st patch separately to other person,
+please let me know.
+
+Thanks,
+Kiyoshi Ueda
