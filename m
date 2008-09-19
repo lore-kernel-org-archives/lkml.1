@@ -1,94 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYISX0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYISX3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbYISX0v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 19:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYISX0m
+	id S1754760AbYISX3T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 19:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYISX3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 19:26:42 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:40173 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750846AbYISX0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 19:26:42 -0400
-Date: Fri, 19 Sep 2008 18:26:40 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Alan Mayer <ajm@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
-       suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <Yinghai.lu@amd.com>
-Subject: Re: [PATCH 1/3] switch vector_irq[] from irq number to irq_desc pointer v2
-Message-ID: <20080919232640.GB10245@sgi.com>
-References: <20080919200212.GA6528@sgi.com> <20080919200449.GB6528@sgi.com> <86802c440809191340t75104d48g1f5cf5cf0e55035a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440809191340t75104d48g1f5cf5cf0e55035a@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 19 Sep 2008 19:29:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53760 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750876AbYISX3F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 19:29:05 -0400
+Date: Fri, 19 Sep 2008 16:23:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: dbrownell@users.sourceforge.net, greg@kroah.com, galak@kernel.crashing.org,
+       timur@freescale.com, leoli@freescale.com, laurentp@cse-semaphore.com,
+       linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] USB: driver for Freescale QUICC Engine USB Host
+ Controller
+Message-Id: <20080919162324.e354ed2f.akpm@linux-foundation.org>
+In-Reply-To: <20080918151746.GC31187@oksana.dev.rtsoft.ru>
+References: <20080918151659.GA20140@oksana.dev.rtsoft.ru>
+	<20080918151746.GC31187@oksana.dev.rtsoft.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 01:40:23PM -0700, Yinghai Lu wrote:
-> On Fri, Sep 19, 2008 at 1:04 PM, Dean Nelson <dcn@sgi.com> wrote:
-> > Change per_cpu variable vector_irq[] from holding an 'int' irq number to
-> > holding a 'struct irq_desc' pointer.
-> 
-> why?
-> 
-> Eric wants to change int irq to some struct irq later?
+On Thu, 18 Sep 2008 19:17:46 +0400
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-Well, it was my take on what Eric was saying in the following:
-
-On Mon, Aug 11, 2008 at 12:39:22PM -0700, Eric W. Biederman wrote:
+> This patch adds support for the FHCI USB controller, as found
+> in the Freescale MPC836x and MPC832x processors. It can support
+> Full or Low speed modes.
+> 
+> Quite a lot the hardware is doing by itself (SOF generation, CRC
+> generation and checking), though scheduling and retransmission is on
+> software's shoulders.
+> 
+> This controller does not integrate the root hub, so this driver also
+> fakes one-port hub. External hub is required to support more than
+> one device.
 >
-> We create a common factor of assign_irq_vector that looks something like:
-> 
-> bool __grab_irq_vector(struct irq_desc *desc, unsigned vector, cpumask_t new_domain)
-> {
->         /* Must be called with vector lock */
->         struct irq_cfg *cfg;
->         bool grabbed = false;
->         unsigned int old_vector;
->         cpumask_t mask;
->         int cpu;
-> 
->         cfg = get_irqp_cfg(irq);
->         old_vector = cfg->vector;
->         cpus_and(mask, new_domain, cpu_online_map);
-> 
->         for_each_cpu_mask_nr(cpu, mask) {
->               if (per_cpu(vector_irq, cpu)[vector])
->                       goto out;
->         }
->         /* Available reserve it */
->         for_each_cpu_mask_nr(cpu, mask)
->             per_cpu(vector_irq, cpu)[vector] = desc;
+> ...
+>
 
-The previous line made me think that was what he wanted....
+Please, no.
 
->         if (cfg->vector) {
->               cfg->move_in_progress;
->                 cfg->old_domain = cfg->domain;
->         }
->         cfg->vector = vector;
->         cfg->domain = mask;
->         grabbed = true;
->         
-> out:
->         return grabbed;
-> }
+> new file mode 100644
+> index 0000000..23716fa
+> --- /dev/null
+> +++ b/drivers/usb/host/fhci-cq.c
+> @@ -0,0 +1,105 @@
+> +/*
+> + * Freescale QUICC Engine USB Host Controller Driver
+> + *
+> + * Copyright (c) Freescale Semicondutor, Inc. 2006.
+> + *               Shlomi Gridish <gridish@freescale.com>
+> + *               Jerry Huang <Chang-Ming.Huang@freescale.com>
+> + * Copyright (c) Logic Product Development, Inc. 2007
+> + *               Peter Barada <peterb@logicpd.com>
+> + * Copyright (c) MontaVista Software, Inc. 2008.
+> + *               Anton Vorontsov <avorontsov@ru.mvista.com>
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +/* circular queue structure */
 
-... Along with the following paragraph.
+Yet another private ringbuffer implementation.  Sigh.
 
-> I think vector_irq should return an irq_desc and have an entry for
-> all of the static vectors as well (if we are going to do weird
-> things with dynamic high priority vector allocation, and dynamic
-> detection of which vectors assign_irq_vector may use).
+> +struct cir_q {
+> +       int max;		/* size of queue */
+> +       int max_in;	/* max items in queue */
+> +       int first;	/* index of first in queue */
+> +       int last;	/* index after last in queue */
+> +       int read;	/* current reading position */
+> +       void *table[1];	/* fake size */
+> +};
+> +
+> +/* circular queue handle */
+> +static int cq_howmany(struct cir_q *cq)
+> +{
+> +	int l = cq->last;
+> +	int f = cq->first;
+> +
+> +	return l >= f ? l - f : l + cq->max - f;
+> +}
+> +
+> +static struct cir_q *cq_new(int size)
+> +{
+> +	struct cir_q *cq;
+> +
+> +	cq = kzalloc((sizeof(*cq) + size * sizeof(void *)), GFP_KERNEL);
+> +	if (cq) {
+> +		cq->max = size;
+> +		cq->first = 0;
+> +		cq->last = 0;
+> +		cq->read = 0;
+> +		cq->max_in = 0;
 
-If that's not what Eric meant, then I got it wrong and you can reject
-the patchset.
+The above four statements are unneeded.
 
-Dean
+> +	}
+> +
+> +	return cq;
+> +}
+>
+> ...
+>
+> +++ b/drivers/usb/host/fhci-hcd.c
+> @@ -0,0 +1,798 @@
+> +/*
+> + * Freescale QUICC Engine USB Host Controller Driver
+> + *
+> + * Copyright (c) Freescale Semicondutor, Inc. 2006.
+> + *               Shlomi Gridish <gridish@freescale.com>
+> + *               Jerry Huang <Chang-Ming.Huang@freescale.com>
+> + * Copyright (c) Logic Product Development, Inc. 2007
+> + *               Peter Barada <peterb@logicpd.com>
+> + * Copyright (c) MontaVista Software, Inc. 2008.
+> + *               Anton Vorontsov <avorontsov@ru.mvista.com>
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +#if defined(CONFIG_FHCI_DEBUG) && !defined(DEBUG)
+> +#define DEBUG
+> +#endif
+> +
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/delay.h>
+> +#include <linux/errno.h>
+> +#include <linux/list.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/io.h>
+> +#include <linux/usb.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/of_gpio.h>
+> +#include <asm/qe.h>
+> +#include <asm/fsl_gtm.h>
+> +#include "../core/hcd.h"
+> +#include "fhci.h"
+> +#include "fhci-hub.c"
+> +#include "fhci-q.c"
+> +#include "fhci-dbg.c"
+> +#include "fhci-mem.c"
+> +#include "fhci-cq.c"
+> +#include "fhci-tds.c"
+> +#include "fhci-sched.c"
 
+hack, gack, nack.
+
+We know that USB likes to prevertedly #include C files all over the
+place, but this doesn't mean that it's a sane, tasteful or desirable
+thing to do.
+
+I stopped looking there.  Guys - get a grip :(
