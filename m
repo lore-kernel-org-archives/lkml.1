@@ -1,55 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbYISXSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbYISXUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754912AbYISXSA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 19:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYISXRw
+	id S1755199AbYISXUy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 19:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbYISXUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 19:17:52 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36515 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752138AbYISXRw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 19:17:52 -0400
-Date: Fri, 19 Sep 2008 18:17:49 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Alan Mayer <ajm@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
-       suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <Yinghai.lu@amd.com>
-Subject: Re: [PATCH 1/3] switch vector_irq[] from irq number to irq_desc pointer v2
-Message-ID: <20080919231749.GA10245@sgi.com>
-References: <20080919200212.GA6528@sgi.com> <20080919200449.GB6528@sgi.com> <48D40A97.2000402@sgi.com>
-MIME-Version: 1.0
+	Fri, 19 Sep 2008 19:20:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57166 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751153AbYISXUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 19:20:41 -0400
+Date: Fri, 19 Sep 2008 19:18:41 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Martin Bligh <mbligh@google.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Steven Rostedt <rostedt@goodmis.org>, od@novell.com
+Subject: Re: Unified tracing buffer
+Message-ID: <20080919231841.GB3456@redhat.com>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48D40A97.2000402@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 01:24:55PM -0700, Mike Travis wrote:
+Hi -
+
+
+On Fri, Sep 19, 2008 at 02:33:42PM -0700, Martin Bligh wrote:
+
+> During kernel summit and Plumbers conference, Linus and others
+> expressed a desire for a unified tracing buffer system for multiple
+> tracing applications (eg ftrace, lttng, systemtap, blktrace, etc) to
+> use.
+
+OK.
+
+
+> [...]
+> STORAGE
+> -------
 > 
-> Note that my recent patch from a couple of weeks ago, stripped almost all of
-> the cpumask_t's from the io_apic functions.  Any chance we can apply them
-> before we add more?
+> We will support multiple buffers for different tracing systems, with
+> separate names, event id spaces. [...]
+
+OK.  This is completely orthogonal to ...
+
+
+> INPUT_FUNCTIONS
+> ---------------
 > 
-> I'd be willing to merge in Dean's patch over the top of mine (or vice-versa).
+> allocate_buffer (name, size)
+>         return buffer_handle
+> 
+> register_event (buffer_handle, event_id, print_function)
+>         You can pass in a requested event_id from a fixed set, and
+> will be given it, or an error
+>         0 means allocate me one dynamically
+>         returns event_id     (or -E_ERROR)
+> 
+> record_event (buffer_handle, event_id, length, *buf)
 
-Sorry Mike, I didn't realize you had any patches against io_apic functions.
-You might take a look at the second patch in this patchset, I tried to
-eliminate some of the cpumask_t's from being defined on the stack and to
-pass only pointers to them as args. I didn't do all that could be done,
-but just the ones near the main functions I was touching. You may have a
-better way of doing it then I did.
+How do you imagine record_event() being used from the point of view of
+the instrumented module?  Is it to be protected by some sort of test
+of the control variable?  Is the little binary event buffer supposed
+to be constructed unconditionally?  (On the stack?)
 
-Feel free to do whatever with this patchset. (I'm not going to be
-reachable until Monday.)
 
-FYI, this patchset was built against linux-next.
+You should compare this to markers and tracepoints.  It sounds to me like
+this is not that different from
 
-Thanks,
-Dean
+     trace_mark (event_name, "%*b", length, buf);
+
+where the goofy "%*b" could be some magic to identify the proposed
+"everything is a short blob" event record type.
+
+By the way, systemtap supports formatted printing that generates
+binary records via directives like "%4b" for 4-byte ints.  I wonder if
+that would be a suitable facility for this and/or markers to allow
+instrumentation code to *generate* those binary event records.
+
+
+Do you believe that fans of tracepoints would support a single
+void*/length struct parametrization?
+
+
+
+> Data will be output via debugfs, and provide the following output streams:
+> 
+> /debugfs/tracing/<name>/buffers/text
+>     clear text stream (will merge the per-cpu streams via insertion
+> sort, and use the print functions)
+
+Can you spell out this part a little more?  I wonder because at the
+tracing miniconf on Wednesday we talked about systemtap's likely need
+to *consume* these trace events as they are being generated.
+
+If systemtap can only see them as a binary blob or a rendered ascii
+string, they would not be as useful as if the record was decomposable
+in kernel.  Perhaps the event-type-registration call can declare the
+binary struct, like a perl pack directive ... or a marker (binary)
+format string.
+
+
+> CONTROL
+> 
+> Sysfs style tree under debugfs
+> 
+> /debugfs/tracing/<name>/buffers/enabed         <--- binary value
+> 
+> /debugfs/tracing/<name>/<event1>
+> /debugfs/tracing/<name>/<event2>
+>     etc ...
+>     provides a way to enable/disable events, see what's available, and
+> what's enabled.
+
+This sort of control is (or should be) already available for markers.
+
+
+- FChE
