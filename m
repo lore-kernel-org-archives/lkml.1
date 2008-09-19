@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbYISSru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbYISSsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbYISSru (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 14:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbYISSrm
+	id S1755552AbYISSsH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 14:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYISSrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 14:47:42 -0400
-Received: from mga02.intel.com ([134.134.136.20]:54827 "EHLO mga02.intel.com"
+	Fri, 19 Sep 2008 14:47:47 -0400
+Received: from mga01.intel.com ([192.55.52.88]:45595 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753699AbYISSrl convert rfc822-to-8bit (ORCPT
+	id S1754073AbYISSrq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 14:47:41 -0400
+	Fri, 19 Sep 2008 14:47:46 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.32,432,1217833200"; 
-   d="scan'208";a="441359630"
+   d="scan'208";a="382276910"
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
@@ -20,25 +20,35 @@ Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Subject: RE: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
-Date: Fri, 19 Sep 2008 11:47:27 -0700
-Message-ID: <8A3E977AB3C24845947ADAAE0526E3950519254C@orsmsx419.amr.corp.intel.com>
-In-Reply-To: <20080919174339.GA29039@8bytes.org>
+Date: Fri, 19 Sep 2008 11:47:43 -0700
+Message-ID: <8A3E977AB3C24845947ADAAE0526E3950519254D@orsmsx419.amr.corp.intel.com>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 Thread-Topic: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
-Thread-Index: Ackaf0OoIJYVYajGRNKHVXy+sb1EuAACK4oQ
-References: <1221670377-19295-4-git-send-email-joerg.roedel@amd.com> <20080918041104K.fujita.tomonori@lab.ntt.co.jp> <20080917192827.GA18515@8bytes.org> <20080918102931Z.fujita.tomonori@lab.ntt.co.jp> <20080918140350.GE24392@amd.com> <20080919174339.GA29039@8bytes.org>
+Thread-Index: Ackaf0OoIJYVYajGRNKHVXy+sb1EuAACK4oQAAAPk6A=
+References: <1221670377-19295-4-git-send-email-joerg.roedel@amd.com> <20080918041104K.fujita.tomonori@lab.ntt.co.jp> <20080917192827.GA18515@8bytes.org> <20080918102931Z.fujita.tomonori@lab.ntt.co.jp> <20080918140350.GE24392@amd.com> <20080919174339.GA29039@8bytes.org> 
 From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: "Joerg Roedel" <joro@8bytes.org>, "Raj, Ashok" <ashok.raj@intel.com>,
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       "Joerg Roedel" <joro@8bytes.org>, "Raj, Ashok" <ashok.raj@intel.com>,
        "Li, Shaohua" <shaohua.li@intel.com>, <muli@il.ibm.com>
 Cc: "Joerg Roedel" <joerg.roedel@amd.com>,
        "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
        <iommu@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>,
        "Ingo Molnar" <mingo@elte.hu>
-X-OriginalArrivalTime: 19 Sep 2008 18:47:28.0440 (UTC) FILETIME=[2A4E0380:01C91A88]
+X-OriginalArrivalTime: 19 Sep 2008 18:47:43.0971 (UTC) FILETIME=[338FDB30:01C91A88]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+
+
+-----Original Message-----
+From: Keshavamurthy, Anil S 
+Sent: Friday, September 19, 2008 11:47 AM
+To: 'Joerg Roedel'; Raj, Ashok; Li, Shaohua; muli@il.ibm.com
+Cc: Joerg Roedel; FUJITA Tomonori; iommu@lists.linux-foundation.org;
+linux-kernel@vger.kernel.org; Ingo Molnar
+Subject: RE: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
 
 
 
