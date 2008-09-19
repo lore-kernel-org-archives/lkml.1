@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbYISVXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbYISVa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbYISVXw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 17:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYISVXo
+	id S1753501AbYISVa4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 17:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYISVar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 17:23:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34952 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750945AbYISVXo (ORCPT
+	Fri, 19 Sep 2008 17:30:47 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:43666 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbYISVaq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 17:23:44 -0400
-Date: Fri, 19 Sep 2008 14:23:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Noonan <steven@uplinklabs.net>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, steven@uplinklabs.net
-Subject: Re: [PATCH -tip FIXED] ftrace: add nop tracer
-Message-Id: <20080919142326.29834d11.akpm@linux-foundation.org>
-In-Reply-To: <1221818803-9616-1-git-send-email-steven@uplinklabs.net>
-References: <1221818803-9616-1-git-send-email-steven@uplinklabs.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 19 Sep 2008 17:30:46 -0400
+Message-ID: <48D4196D.6050003@linux.vnet.ibm.com>
+Date: Fri, 19 Sep 2008 14:28:13 -0700
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-mm@kvack.org, skumar@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
+       menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com, mingo@elte.hu
+Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and control
+ (v4)
+References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain> <20080514130951.24440.73671.sendpatchset@localhost.localdomain> <20080918135430.e2979ab1.akpm@linux-foundation.org> <20080919063823.GA27639@balbir.in.ibm.com> <20080919131405.1a95c491.akpm@linux-foundation.org>
+In-Reply-To: <20080919131405.1a95c491.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 03:06:43 -0700
-Steven Noonan <steven@uplinklabs.net> wrote:
+Andrew Morton wrote:
+> On Thu, 18 Sep 2008 23:38:23 -0700
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> * Andrew Morton <akpm@linux-foundation.org> [2008-09-18 13:54:30]:
+>>
+>>> On Wed, 14 May 2008 18:39:51 +0530
+>>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>>
+>>>> This patch adds support for accounting and control of virtual address space
+>>>> limits.
+>>>
+>>> Large changes in linux-next's arch/x86/kernel/ptrace.c caused damage to
+>>> the memrlimit patches.
+>>>
+>>> I decided to retain the patches because it looks repairable.  The
+>>> problem is this reject from
+>>> memrlimit-add-memrlimit-controller-accounting-and-control.patch:
+>>>
+>> Andrew,
+>>
+>> I could not apply mmotm to linux-next (both downloaded right now).
+> 
+> mmotm includes linux-next.patch.  mmotm is based upon the most recent
+> 2.6.x-rcy.
+> 
 
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -339,6 +339,10 @@ extern int trace_selftest_startup_preemptirqsoff(struct tracer *trace,
->  extern int trace_selftest_startup_wakeup(struct tracer *trace,
->  					 struct trace_array *tr);
->  #endif
-> +#ifdef CONFIG_NOP_TRACER
-> +extern int trace_selftest_startup_nop(struct tracer *trace,
-> +					 struct trace_array *tr);
-> +#endif
->  #ifdef CONFIG_CONTEXT_SWITCH_TRACER
->  extern int trace_selftest_startup_sched_switch(struct tracer *trace,
->  					       struct trace_array *tr);
+Thanks for the info
 
-Consider omitting the ifdefs around the declarations.
+[snip]
 
-pro: the code looks nicer and is less likely to suffer build errors
-with weird config combinations.
+> OK, we'll give it a shot, thanks.
+> 
 
-con: build errors are reported at link-time rather than at compile-time.
+Thanks!
 
-Personally, I think pro>con here.
+-- 
+	Balbir
