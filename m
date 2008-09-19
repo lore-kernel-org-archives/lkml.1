@@ -1,75 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYIST1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbYISTjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbYIST1n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 15:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYIST1f
+	id S1754852AbYISTjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 15:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbYISTjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 15:27:35 -0400
-Received: from 8bytes.org ([88.198.83.132]:41075 "EHLO 8bytes.org"
+	Fri, 19 Sep 2008 15:39:05 -0400
+Received: from mail.windriver.com ([147.11.1.11]:60396 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753624AbYIST1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 15:27:34 -0400
-Date: Fri, 19 Sep 2008 21:27:32 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: ashok.raj@intel.com, shaohua.li@intel.com, anil.s.keshavamurthy@intel.com,
-       muli@il.ibm.com, joerg.roedel@amd.com, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu,
-       "Woodhouse, David" <david.woodhouse@intel.com>
-Subject: Re: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
-Message-ID: <20080919192732.GI27426@8bytes.org>
-References: <20080918102931Z.fujita.tomonori@lab.ntt.co.jp> <20080918140350.GE24392@amd.com> <20080919174339.GA29039@8bytes.org> <20080920034028S.fujita.tomonori@lab.ntt.co.jp>
+	id S1751153AbYISTjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 15:39:04 -0400
+Message-ID: <48D3FFC9.5080701@windriver.com>
+Date: Fri, 19 Sep 2008 14:38:49 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080920034028S.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Denis Joseph Barrow <D.Barow@option.com>
+CC: KGDB Mailing List <kgdb-bugreport@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org, gareth@valinux.com,
+       markus.t.metzger@intel.com
+Subject: Re: getting false SIGTRAP breakpoints in kernel i.e. kernel hung
+ unless gdb remotely attached on x86 & cont is issued
+References: <48D10A70.8050202@option.com> <48D10C43.90605@windriver.com> <48D1122F.6080101@option.com> <48D26B64.5080605@windriver.com> <48D39B9F.8010404@option.com> <48D3A1B4.8000505@windriver.com> <48D3AAB0.3010504@option.com>
+In-Reply-To: <48D3AAB0.3010504@option.com>
+Content-Type: multipart/mixed;
+ boundary="------------010808030701020503020906"
+X-OriginalArrivalTime: 19 Sep 2008 19:38:49.0637 (UTC) FILETIME=[56D75D50:01C91A8F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 20, 2008 at 03:40:34AM +0900, FUJITA Tomonori wrote:
-> On Fri, 19 Sep 2008 19:43:39 +0200
-> Joerg Roedel <joro@8bytes.org> wrote:
-> 
-> > Hi All,
-> > 
-> > FUJITA mentioned that I forgot to discuss this patch with you guys, the
-> > implementers and maintainers for Intel VT-d and Calgary IOMMU drivers. I
-> > would like to hear your opinion on that patch. He is right with that.
-> > The patch is already in tip/iommu but can easily be reverted if there
-> > are fundamental objections.
-> > The patch basically moves the iommu=fullflush and iommu=nofullflush
-> > option from the GART code to pci-dma.c. So we can use these parameters
-> > in other IOMMU implementations too. Since Intel VT-d is implementing
-> > also lazy IO/TLB flushing it would benefit from this generic parameter
-> > too. I am not so sure about Calgary, but we have other parameters for
-> > iommu= which doesn't affect all hardware IOMMUs.
-> 
-> nofullflush is pointless. It doesn't change any kernel behavior. Yes,
-> GART has it and we can't remove it because we exported it to
-> users. But please don't add such pointless option to the generic
-> options just for GART compatibility.
+This is a multi-part message in MIME format.
+--------------010808030701020503020906
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I think maybe we can remove it completly. It doesn't change any behavior
-for GART too and as an unknown option it will be silently ignored by the
-command line parser. So removing this option completly will not break
-the user interface, imho.
+Denis Joseph Barrow wrote:
+>
+> The patch gets my full blessing even if my blessing is unimportant.
+>
+
+Full regression testing has turned up another problem.  If you single
+step a system call with kgdb which is the same system call that ptrace
+is stepping kgdb silently fails.
+
+The complete fix to both problems is implemented in this patch, and it
+has been regression tested across all the architectures.
+
+This patch will be queued to the 2.6.27 fixes.
+
+Jason.
+
+
+--------------010808030701020503020906
+Content-Type: text/x-diff;
+ name="user_space_single_step_check_v2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="user_space_single_step_check_v2.patch"
+
+From: Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH] kgdb, x86, arm, mips, powerpc: ignore user space single stepping
+
+On the x86 arch, user space single step exceptions should be ignored
+if they occur in the kernel space, such as ptrace stepping through a
+system call.
+
+First check if it is kgdb that is executing a single step, then ensure
+it is not an accidental traversal into the user space, while in kgdb,
+any other time the TIF_SINGLESTEP is set, kgdb should ignore the
+exception.
+
+On x86, arm, mips and powerpc, the kgdb_contthread usage was
+inconsistent with the way single stepping is implemented in the kgdb
+core.  The arch specific stub should always set the
+kgdb_cpu_doing_single_step correctly if it is single stepping.  This
+allows kgdb to correctly process an instruction steps if ptrace
+happens to be requesting an instruction step over a system call.
+
+
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+
+---
+ arch/arm/kernel/kgdb.c     |    2 --
+ arch/mips/kernel/kgdb.c    |    3 +--
+ arch/powerpc/kernel/kgdb.c |    5 ++---
+ arch/x86/kernel/kgdb.c     |   18 +++++++++++-------
+ kernel/kgdb.c              |    8 ++++----
+ 5 files changed, 18 insertions(+), 18 deletions(-)
+
+--- a/arch/x86/kernel/kgdb.c
++++ b/arch/x86/kernel/kgdb.c
+@@ -378,10 +378,8 @@ int kgdb_arch_handle_exception(int e_vec
+ 		if (remcomInBuffer[0] == 's') {
+ 			linux_regs->flags |= X86_EFLAGS_TF;
+ 			kgdb_single_step = 1;
+-			if (kgdb_contthread) {
+-				atomic_set(&kgdb_cpu_doing_single_step,
+-					   raw_smp_processor_id());
+-			}
++			atomic_set(&kgdb_cpu_doing_single_step,
++				   raw_smp_processor_id());
+ 		}
  
-> fullflush might be useful as a generic option to disable lazy IOTLB
-> flushing. But I'm not sure that Calgary uses it. VT-d already has
-> 'strict' option for it and we can't change it. If VT-d wants to
-> support both 'strict' and 'fullflush' for disabling lazy IOTLB
-> flushing, it would make sense. But if VT-d doesn't want, it is useful
-> only for GART and AMD IOMMU. If so, I don't think that it is very
-> useful but I'm not against adding it.
+ 		get_debugreg(dr6, 6);
+@@ -466,9 +464,15 @@ static int __kgdb_notify(struct die_args
+ 
+ 	case DIE_DEBUG:
+ 		if (atomic_read(&kgdb_cpu_doing_single_step) ==
+-			raw_smp_processor_id() &&
+-			user_mode(regs))
+-			return single_step_cont(regs, args);
++		    raw_smp_processor_id()) {
++			if (user_mode(regs))
++				return single_step_cont(regs, args);
++			break;
++		} else if (test_thread_flag(TIF_SINGLESTEP))
++			/* This means a user thread is single stepping
++			 * a system call which should be ignored
++			 */
++			return NOTIFY_DONE;
+ 		/* fall through */
+ 	default:
+ 		if (user_mode(regs))
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -1462,7 +1462,7 @@ acquirelock:
+ 	 * Get the passive CPU lock which will hold all the non-primary
+ 	 * CPU in a spin state while the debugger is active
+ 	 */
+-	if (!kgdb_single_step || !kgdb_contthread) {
++	if (!kgdb_single_step) {
+ 		for (i = 0; i < NR_CPUS; i++)
+ 			atomic_set(&passive_cpu_wait[i], 1);
+ 	}
+@@ -1475,7 +1475,7 @@ acquirelock:
+ 
+ #ifdef CONFIG_SMP
+ 	/* Signal the other CPUs to enter kgdb_wait() */
+-	if ((!kgdb_single_step || !kgdb_contthread) && kgdb_do_roundup)
++	if ((!kgdb_single_step) && kgdb_do_roundup)
+ 		kgdb_roundup_cpus(flags);
+ #endif
+ 
+@@ -1494,7 +1494,7 @@ acquirelock:
+ 	kgdb_post_primary_code(ks->linux_regs, ks->ex_vector, ks->err_code);
+ 	kgdb_deactivate_sw_breakpoints();
+ 	kgdb_single_step = 0;
+-	kgdb_contthread = NULL;
++	kgdb_contthread = current;
+ 	exception_level = 0;
+ 
+ 	/* Talk to debugger with gdbserial protocol */
+@@ -1508,7 +1508,7 @@ acquirelock:
+ 	kgdb_info[ks->cpu].task = NULL;
+ 	atomic_set(&cpu_in_kgdb[ks->cpu], 0);
+ 
+-	if (!kgdb_single_step || !kgdb_contthread) {
++	if (!kgdb_single_step) {
+ 		for (i = NR_CPUS-1; i >= 0; i--)
+ 			atomic_set(&passive_cpu_wait[i], 0);
+ 		/*
+--- a/arch/arm/kernel/kgdb.c
++++ b/arch/arm/kernel/kgdb.c
+@@ -111,8 +111,6 @@ int kgdb_arch_handle_exception(int excep
+ 	case 'D':
+ 	case 'k':
+ 	case 'c':
+-		kgdb_contthread = NULL;
+-
+ 		/*
+ 		 * Try to read optional parameter, pc unchanged if no parm.
+ 		 * If this was a compiled breakpoint, we need to move
+--- a/arch/mips/kernel/kgdb.c
++++ b/arch/mips/kernel/kgdb.c
+@@ -236,8 +236,7 @@ int kgdb_arch_handle_exception(int vecto
+ 
+ 		atomic_set(&kgdb_cpu_doing_single_step, -1);
+ 		if (remcom_in_buffer[0] == 's')
+-			if (kgdb_contthread)
+-				atomic_set(&kgdb_cpu_doing_single_step, cpu);
++			atomic_set(&kgdb_cpu_doing_single_step, cpu);
+ 
+ 		return 0;
+ 	}
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -347,9 +347,8 @@ int kgdb_arch_handle_exception(int vecto
+ 			linux_regs->msr |= MSR_SE;
+ #endif
+ 			kgdb_single_step = 1;
+-			if (kgdb_contthread)
+-				atomic_set(&kgdb_cpu_doing_single_step,
+-					   raw_smp_processor_id());
++			atomic_set(&kgdb_cpu_doing_single_step,
++				   raw_smp_processor_id());
+ 		}
+ 		return 0;
+ 	}
 
-I think it will be usefull for VT-d too. As Ingo stated some time ago,
-it makes sense to have a common set of options independent of the
-specific type of hardware IOMMU in the system. And all hardware IOMMUs
-for x86 implement lazy IO/TLB flushing. Only Calgary does not allow to
-disable it. So iommu=fullflush is a good candidate for a common
-parameter.
-
-Joerg
-
+--------------010808030701020503020906--
