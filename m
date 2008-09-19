@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbYISWOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbYISWSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbYISWOv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 18:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYISWOn
+	id S1753731AbYISWSl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 18:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYISWSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 18:14:43 -0400
-Received: from ns.suse.de ([195.135.220.2]:57856 "EHLO mx1.suse.de"
+	Fri, 19 Sep 2008 18:18:34 -0400
+Received: from sh.osrg.net ([192.16.179.4]:55592 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751389AbYISWOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 18:14:42 -0400
-Date: Sat, 20 Sep 2008 00:41:10 +0200
-From: Olaf Dabrunz <od@suse.de>
-To: Martin Bligh <mbligh@google.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "od Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: Unified tracing buffer
-Message-ID: <20080919224109.GB4491@suse.de>
-Mail-Followup-To: Martin Bligh <mbligh@google.com>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	"od Frank Ch. Eigler" <fche@redhat.com>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <20080919144258.ac787fdf.randy.dunlap@oracle.com> <33307c790809191457y3ebffa28xa6d9ab6431554618@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <33307c790809191457y3ebffa28xa6d9ab6431554618@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1751153AbYISWSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 18:18:33 -0400
+Date: Sat, 20 Sep 2008 07:18:11 +0900
+To: joerg.roedel@amd.com
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic
+ option
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080919220946.GB11410@amd.com>
+References: <20080919201909.GC10692@amd.com>
+	<20080920065630N.fujita.tomonori@lab.ntt.co.jp>
+	<20080919220946.GB11410@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080920071825A.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19-Sep-08, Martin Bligh wrote:
-> >> Event ids are 16 bit, dynamically allocated.
-> >
-> > What are these (like)?
+On Sat, 20 Sep 2008 00:09:46 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
+
+> On Sat, Sep 20, 2008 at 06:56:21AM +0900, FUJITA Tomonori wrote:
+> > 
+> > Because you did things int the wrong way, I said again and again.
+> > 
+> > I can't see why you refuse to do the things in the proper way.
+> > 
+> > 
+> > > objections agains the generic iommu=fullflush come up. The patch does
+> > > not break anything and just moves the iommu=flush parameter (which is
+> > > already available) to pci-dma.c to make it useable by AMD IOMMU too.
+> > 
+> > Breaking anything does mean that it's fine. My patch doesn't break
+> > anything too.
+> > 
+> > I'm not against fullflush (as I said again and again). I guess that
+> > it's the right move though it might be not so useful if VT-d doesn't
+> > support it.
+> > 
+> > I'm against totally pointless nofullflush and the way you changed the
+> > generic IOMMU code.
 > 
-> u16
->
-> Sorry, probably lots of implicit assumptions in there that I forgot to explain
+> Then submit a patch that changes it to the version you prefer. I already
+> said that I am fine with the removal of nofullflush. But completly
 
-Ids for event types. Either allocated dynamically, if the tracer needs
-new ids on each use, or statically assigned for others (like my fctrace
-or Steven's ftrace, I believe). Should we have a reserved range / registry
-for static allocation, maybe something like a very simple version of
-devices.txt?
+I don't know it's acceptable if removing the exported interface even
+if the maintainer of it wants to remove it and it's totally
+meaningless.
 
-> > Arch-specific "word"?
-> > or some fixed-size-for-all-systems (so that trace buffers can be
-> > shared/used on other systems?)  Preferably the latter.
-> 
-> Mmmm. I don't see anything wrong with making it just 8 byte aligned, personally.
-> Steven - this was your thing?
 
-Unaligned can be much slower. I guess some very quick tracers can
-benefit from alignment.
+> reverting is the wrong way. For AMD IOMMU I want to use the
+> iommu=fullflush way because I want to reuse a parameter thats already
+> there. Thats why I am against your reverting patch.
+> So now I stop repeating my points again and again. EOD.
 
-> as long as we record it in the buffer header at trace start. I guess we should
-> document the buffer header ;-)
+I understood you want to use iommu=fullflush but you can't touch the
+generic code without any discussion.
 
-Yes. :)
-
--- 
-Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
-
+And even if everyone is happy about the change, it's much better to
+start from scratch rather than try to fix the things done in the wrong
+way.
