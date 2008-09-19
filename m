@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbYISTZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYIST1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756000AbYISTZd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 15:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbYISTZR
+	id S1755537AbYIST1n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 15:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYIST1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 15:25:17 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2804 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751153AbYISTZQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 15:25:16 -0400
-Date: Fri, 19 Sep 2008 20:25:14 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org,
-       alsa-devel@alsa-project.org
-Subject: Re: [PATCH] ASoC: Fix at32-pcm build breakage with PM enabled
-Message-ID: <20080919192513.GA18851@sirena.org.uk>
-Mail-Followup-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-	lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org,
-	alsa-devel@alsa-project.org
-References: <1221843045-18093-1-git-send-email-haavard.skinnemoen@atmel.com> <20080919182036.GA16316@sirena.org.uk> <20080919211437.08db455c@hskinnemo-gx745.norway.atmel.com>
+	Fri, 19 Sep 2008 15:27:35 -0400
+Received: from 8bytes.org ([88.198.83.132]:41075 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753624AbYIST1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 15:27:34 -0400
+Date: Fri, 19 Sep 2008 21:27:32 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: ashok.raj@intel.com, shaohua.li@intel.com, anil.s.keshavamurthy@intel.com,
+       muli@il.ibm.com, joerg.roedel@amd.com, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       "Woodhouse, David" <david.woodhouse@intel.com>
+Subject: Re: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
+Message-ID: <20080919192732.GI27426@8bytes.org>
+References: <20080918102931Z.fujita.tomonori@lab.ntt.co.jp> <20080918140350.GE24392@amd.com> <20080919174339.GA29039@8bytes.org> <20080920034028S.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080919211437.08db455c@hskinnemo-gx745.norway.atmel.com>
-X-Cookie: Happy feast of the pig!
+In-Reply-To: <20080920034028S.fujita.tomonori@lab.ntt.co.jp>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 09:14:37PM +0200, Haavard Skinnemoen wrote:
-> Mark Brown <broonie@sirena.org.uk> wrote:
+On Sat, Sep 20, 2008 at 03:40:34AM +0900, FUJITA Tomonori wrote:
+> On Fri, 19 Sep 2008 19:43:39 +0200
+> Joerg Roedel <joro@8bytes.org> wrote:
+> 
+> > Hi All,
+> > 
+> > FUJITA mentioned that I forgot to discuss this patch with you guys, the
+> > implementers and maintainers for Intel VT-d and Calgary IOMMU drivers. I
+> > would like to hear your opinion on that patch. He is right with that.
+> > The patch is already in tip/iommu but can easily be reverted if there
+> > are fundamental objections.
+> > The patch basically moves the iommu=fullflush and iommu=nofullflush
+> > option from the GART code to pci-dma.c. So we can use these parameters
+> > in other IOMMU implementations too. Since Intel VT-d is implementing
+> > also lazy IO/TLB flushing it would benefit from this generic parameter
+> > too. I am not so sure about Calgary, but we have other parameters for
+> > iommu= which doesn't affect all hardware IOMMUs.
+> 
+> nofullflush is pointless. It doesn't change any kernel behavior. Yes,
+> GART has it and we can't remove it because we exported it to
+> users. But please don't add such pointless option to the generic
+> options just for GART compatibility.
 
-> > Please submit all ALSA patches to alsa-devel (added to the CC).
+I think maybe we can remove it completly. It doesn't change any behavior
+for GART too and as an unknown option it will be silently ignored by the
+command line parser. So removing this option completly will not break
+the user interface, imho.
+ 
+> fullflush might be useful as a generic option to disable lazy IOTLB
+> flushing. But I'm not sure that Calgary uses it. VT-d already has
+> 'strict' option for it and we can't change it. If VT-d wants to
+> support both 'strict' and 'fullflush' for disabling lazy IOTLB
+> flushing, it would make sense. But if VT-d doesn't want, it is useful
+> only for GART and AMD IOMMU. If so, I don't think that it is very
+> useful but I'm not against adding it.
 
-> I would if it wasn't listed as subscribers-only...but from a closer
-> look, it appears like it's only moderated for non-subscribers. Should I
-> resend the patch?
+I think it will be usefull for VT-d too. As Ingo stated some time ago,
+it makes sense to have a common set of options independent of the
+specific type of hardware IOMMU in the system. And all hardware IOMMUs
+for x86 implement lazy IO/TLB flushing. Only Calgary does not allow to
+disable it. So iommu=fullflush is a good candidate for a common
+parameter.
 
-Probably best, yes.  Or if the subscribers thing is an issue you could
-send it to Takashi directly.
+Joerg
 
-> Btw, Liam Girdwood's mail address from MAINTAINERS doesn't work.
-
-Yup, he's now lrg@slimlogic.co.uk (I'd updated the address for this
-thread when I replied).  He's submitted a patch for MAINTAINERS already
-but it's not propagated beyond ALSA git yet.
