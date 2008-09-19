@@ -1,309 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYISP0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbYISP2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbYISP0V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 11:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbYISP0M
+	id S1754455AbYISP2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 11:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbYISP2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 11:26:12 -0400
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:24197 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751991AbYISP0L (ORCPT
+	Fri, 19 Sep 2008 11:28:06 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:1724 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752054AbYISP2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 11:26:11 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiMFAABg00hR92YU/2dsb2JhbACBZLdqgWU
-Date: Fri, 19 Sep 2008 17:26:03 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Cc: linux-kernel@vger.kernel.org,
-       Sylver Bruneau <sylver.bruneau@googlemail.com>,
-       Nicolas Pitre <nico@cam.org>, Martin Michlmayr <tbm@cyrius.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][WATCHDOG] Orion: add hardware watchdog support
-Message-ID: <20080919152603.GI22550@infomag.infomag.iguana.be>
-References: <20080626084745.GB10320@xi.wantstofly.org> <20080813161506.GA29953@xi.wantstofly.org>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="R3G7APHDIzY6R/pk"
+	Fri, 19 Sep 2008 11:28:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=qRITlXbtipHO1sUiO+NmGNoDXn5tjzYkGe14UXJy7JLnCYBlutgaO6H2lDkHh2/Anf
+         0D5MuxjhkjlPU42gFGf2nkA8qwcu54KvwlXkwcV3E/93Zkpa+/ZG581IdAkKkVHs7q7u
+         jtDNzPNHndGCPjQQXzfT0OI4+7lZAEOrLY1FU=
+Message-ID: <2f11576a0809190828s4b74ac5y8cd6dd201332fbe2@mail.gmail.com>
+Date: Sat, 20 Sep 2008 00:28:02 +0900
+From: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
+To: "Christoph Lameter" <cl@linux-foundation.org>
+Subject: Re: [patch 0/4] Cpu alloc V5: Replace percpu allocator in modules.c
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, jeremy@goop.org, ebiederm@xmission.com,
+       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org,
+       penberg@cs.helsinki.fi
+In-Reply-To: <20080919145859.062069850@quilx.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080813161506.GA29953@xi.wantstofly.org>
-User-Agent: Mutt/1.4.2.1i
+References: <20080919145859.062069850@quilx.com>
+X-Google-Sender-Auth: aaa8f9b8bb0d5dee
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Cristoph,
 
---R3G7APHDIzY6R/pk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> Just do the bare mininum to establish a per cpu allocator. Later patchsets
+> will gradually build out the functionality.
+>
+> The most critical issue that came up on the last round is how to configure
+> the size of the percpu area. Here we simply use a kernel parameter and use
+> the static size of the existing percpu allocator for modules as a default.
+>
+> The effect of this patchset is to make the size of percpu data for modules
+> configurable. Its no longer fixed at 8000 bytes.
 
-Hi Lennert,
+I don't know so much this area.
+Could you please what are the problem that you think　about?
 
-> > From: Sylver Bruneau <sylver.bruneau@googlemail.com>
-> > 
-> > This patch allows the use of the hardware watchdog in the
-> > Marvell Orion series of ARM SoCs.
-> 
-> Ping..
-> 
-> FWIW, here's a version that applies cleanly to 2.6.27-rc3 after all
-> the include file reshuffling:
-
-I added spin_locking (to prevent races). Could you test the attached code?
-
-Thanks in advance,
-Kind regards,
-Wim.
-
-
---R3G7APHDIzY6R/pk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="orion5x_wdt.c"
-
-/*
- * drivers/watchdog/orion5x_wdt.c
- *
- * Watchdog driver for Orion5x processors
- *
- * Author: Sylver Bruneau <sylver.bruneau@googlemail.com>
- *
- * This file is licensed under  the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
- */
-
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/types.h>
-#include <linux/kernel.h>
-#include <linux/fs.h>
-#include <linux/miscdevice.h>
-#include <linux/watchdog.h>
-#include <linux/init.h>
-#include <linux/uaccess.h>
-#include <linux/io.h>
-#include <linux/spinlock.h>
-
-/*
- * Watchdog timer block registers.
- */
-#define TIMER_CTRL		(TIMER_VIRT_BASE + 0x0000)
-#define  WDT_EN			0x0010
-#define WDT_VAL			(TIMER_VIRT_BASE + 0x0024)
-
-#define WDT_MAX_DURATION	(0xffffffff / ORION5X_TCLK)
-#define WDT_IN_USE		0
-#define WDT_OK_TO_CLOSE		1
-
-static int nowayout = WATCHDOG_NOWAYOUT;
-static int heartbeat =  WDT_MAX_DURATION;	/* (seconds) */
-static unsigned long wdt_status;
-static spinlock_t wdt_lock;
-
-static void wdt_enable(void)
-{
-	u32 reg;
-
-	spin_lock(&wdt_lock);
-
-	/* Set watchdog duration */
-	writel(ORION5X_TCLK * heartbeat, WDT_VAL);
-
-	/* Clear watchdog timer interrupt */
-	reg = readl(BRIDGE_CAUSE);
-	reg &= ~WDT_INT_REQ;
-	writel(reg, BRIDGE_CAUSE);
-
-	/* Enable watchdog timer */
-	reg = readl(TIMER_CTRL);
-	reg |= WDT_EN;
-	writel(reg, TIMER_CTRL);
-
-	/* Enable reset on watchdog */
-	reg = readl(CPU_RESET_MASK);
-	reg |= WDT_RESET;
-	writel(reg, CPU_RESET_MASK);
-
-	spin_unlock(&wdt_lock);
-}
-
-static void wdt_disable(void)
-{
-	u32 reg;
-
-	spin_lock(&wdt_lock);
-
-	/* Disable reset on watchdog */
-	reg = readl(CPU_RESET_MASK);
-	reg &= ~WDT_RESET;
-	writel(reg, CPU_RESET_MASK);
-
-	/* Disable watchdog timer */
-	reg = readl(TIMER_CTRL);
-	reg &= ~WDT_EN;
-	writel(reg, TIMER_CTRL);
-
-	spin_unlock(&wdt_lock);
-}
-
-static int orion5x_wdt_get_timeleft(int *time_left)
-{
-	spin_lock(&wdt_lock);
-	*time_left = readl(WDT_VAL) / ORION5X_TCLK;
-	spin_unlock(&wdt_lock);
-	return 0;
-}
-
-static int orion5x_wdt_open(struct inode *inode, struct file *file)
-{
-	if (test_and_set_bit(WDT_IN_USE, &wdt_status))
-		return -EBUSY;
-	clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
-	wdt_enable();
-	return nonseekable_open(inode, file);
-}
-
-static ssize_t orion5x_wdt_write(struct file *file, const char *data,
-					size_t len, loff_t *ppos)
-{
-	if (len) {
-		if (!nowayout) {
-			size_t i;
-
-			clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
-			for (i = 0; i != len; i++) {
-				char c;
-
-				if (get_user(c, data + i))
-					return -EFAULT;
-				if (c == 'V')
-					set_bit(WDT_OK_TO_CLOSE, &wdt_status);
-			}
-		}
-		wdt_enable();
-	}
-	return len;
-}
-
-static struct watchdog_info ident = {
-	.options	= WDIOF_MAGICCLOSE | WDIOF_SETTIMEOUT |
-			  WDIOF_KEEPALIVEPING,
-	.identity	= "Orion5x Watchdog",
-};
-
-
-static long orion5x_wdt_ioctl(struct file *file, unsigned int cmd,
-				unsigned long arg)
-{
-	int ret = -ENOTTY;
-	int time;
-
-	switch (cmd) {
-	case WDIOC_GETSUPPORT:
-		ret = copy_to_user((struct watchdog_info *)arg, &ident,
-				   sizeof(ident)) ? -EFAULT : 0;
-		break;
-
-	case WDIOC_GETSTATUS:
-	case WDIOC_GETBOOTSTATUS:
-		ret = put_user(0, (int *)arg);
-		break;
-
-	case WDIOC_KEEPALIVE:
-		wdt_enable();
-		ret = 0;
-		break;
-
-	case WDIOC_SETTIMEOUT:
-		ret = get_user(time, (int *)arg);
-		if (ret)
-			break;
-
-		if (time <= 0 || time > WDT_MAX_DURATION) {
-			ret = -EINVAL;
-			break;
-		}
-		heartbeat = time;
-		wdt_enable();
-		/* Fall through */
-
-	case WDIOC_GETTIMEOUT:
-		ret = put_user(heartbeat, (int *)arg);
-		break;
-
-	case WDIOC_GETTIMELEFT:
-		if (orion5x_wdt_get_timeleft(&time)) {
-			ret = -EINVAL;
-			break;
-		}
-		ret = put_user(time, (int *)arg);
-		break;
-	}
-	return ret;
-}
-
-static int orion5x_wdt_release(struct inode *inode, struct file *file)
-{
-	if (test_bit(WDT_OK_TO_CLOSE, &wdt_status))
-		wdt_disable();
-	else
-		printk(KERN_CRIT "WATCHDOG: Device closed unexpectedly - "
-					"timer will not stop\n");
-	clear_bit(WDT_IN_USE, &wdt_status);
-	clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
-
-	return 0;
-}
-
-
-static const struct file_operations orion5x_wdt_fops = {
-	.owner		= THIS_MODULE,
-	.llseek		= no_llseek,
-	.write		= orion5x_wdt_write,
-	.unlocked_ioctl	= orion5x_wdt_ioctl,
-	.open		= orion5x_wdt_open,
-	.release	= orion5x_wdt_release,
-};
-
-static struct miscdevice orion5x_wdt_miscdev = {
-	.minor		= WATCHDOG_MINOR,
-	.name		= "watchdog",
-	.fops		= &orion5x_wdt_fops,
-};
-
-static int __init orion5x_wdt_init(void)
-{
-	int ret;
-
-	spin_lock_init(&wdt_lock);
-
-	ret = misc_register(&orion5x_wdt_miscdev);
-	if (ret == 0)
-		printk("Orion5x Watchdog Timer: heartbeat %d sec\n",
-								heartbeat);
-
-	return ret;
-}
-
-static void __exit orion5x_wdt_exit(void)
-{
-	misc_deregister(&orion5x_wdt_miscdev);
-}
-
-module_init(orion5x_wdt_init);
-module_exit(orion5x_wdt_exit);
-
-MODULE_AUTHOR("Sylver Bruneau <sylver.bruneau@googlemail.com>");
-MODULE_DESCRIPTION("Orion5x Processor Watchdog");
-
-module_param(heartbeat, int, 0);
-MODULE_PARM_DESC(heartbeat, "Watchdog heartbeat in seconds (default is "
-					__MODULE_STRING(WDT_MAX_DURATION) ")");
-
-module_param(nowayout, int, 0);
-MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started");
-
-MODULE_LICENSE("GPL");
-MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
-
---R3G7APHDIzY6R/pk--
+performance?
+fixed-size cause per-cpu starvation by huge user?
