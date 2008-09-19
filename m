@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYISXGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYISXLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbYISXGm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 19:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbYISXGe
+	id S1754215AbYISXLH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 19:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYISXKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 19:06:34 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46081 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751333AbYISXGd (ORCPT
+	Fri, 19 Sep 2008 19:10:55 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:34870 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbYISXKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 19:06:33 -0400
+	Fri, 19 Sep 2008 19:10:54 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references:x-gmailtapped-by;
+	b=cVrmq6xDQL3HhguK+dB+HvU65laT4vX4tjlWONTGkk8JqII+hMo92B4OJw7UZoeya
+	sJjtVCUhkIkH3BayjBIhQ==
+Message-ID: <65dd6fd50809191610o566b6747o3813255e0d6a2143@mail.gmail.com>
+Date: Fri, 19 Sep 2008 16:10:45 -0700
+From: "Ollie Wild" <aaw@google.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
 Subject: Re: [PATCH] fix count(), compat_count() bounds checking
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, aaw <aaw@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20080919155003.GB3114@redhat.com>
-References: <20080919155003.GB3114@redhat.com>
-Content-Type: text/plain
-Date: Sat, 20 Sep 2008 01:06:13 +0200
-Message-Id: <1221865573.8359.2.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Cc: "Jason Baron" <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <1221865573.8359.2.camel@lappy.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080919155003.GB3114@redhat.com>
+	 <1221865573.8359.2.camel@lappy.programming.kicks-ass.net>
+X-GMailtapped-By: 172.25.146.77
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-19 at 11:50 -0400, Jason Baron wrote:
-> hi,
-> 
-> With MAX_ARG_STRINGS set to 0x7FFFFFFF, and being passed to 'count()'
-> and compat_count(), it would appear that the current max bounds check
-> of fs/exec.c:394:
-> 
-> 	if(++i > max)
-> 		return -E2BIG;
-> 
-> would never trigger. Since 'i' is of type int, so values would wrap and the
-> function would continue looping.
-> 
-> Simple fix seems to be chaning ++i to i++ and checking for '>='.
-> 
-> thanks,
-> 
-> -Jason
+On Fri, Sep 19, 2008 at 4:06 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>
+> On Fri, 2008-09-19 at 11:50 -0400, Jason Baron wrote:
+> >
+> > Simple fix seems to be chaning ++i to i++ and checking for '>='.
+>
+> Right - looks sane enough, although in practise I'm not sure we'll ever
+> care since I suspect we'll hit the target stack limit before this.
+>
+> Ollie?
 
-Right - looks sane enough, although in practise I'm not sure we'll ever
-care since I suspect we'll hit the target stack limit before this.
+Sounds reasonable to me.  I'd also be ok with changing MAX_ARG_STRINGS
+to 0x7FFFFFFE to help prevent people from making this mistake in the
+future.
 
-Ollie?
-
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> 
-> ---
-> 
->  fs/compat.c |    2 +-
->  fs/exec.c   |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> 
-> diff --git a/fs/compat.c b/fs/compat.c
-> index 3d4d57a..2c68dd7 100644
-> --- a/fs/compat.c
-> +++ b/fs/compat.c
-> @@ -1233,7 +1233,7 @@ static int compat_count(compat_uptr_t __user *argv, int max)
->  			if (!p)
->  				break;
->  			argv++;
-> -			if(++i > max)
-> +			if (i++ >= max)
->  				return -E2BIG;
->  		}
->  	}
-> diff --git a/fs/exec.c b/fs/exec.c
-> index 9bf0476..7766839 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -389,7 +389,7 @@ static int count(char __user * __user * argv, int max)
->  			if (!p)
->  				break;
->  			argv++;
-> -			if(++i > max)
-> +			if (i++ >= max)
->  				return -E2BIG;
->  			cond_resched();
->  		}
-
+Ollie
