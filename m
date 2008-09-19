@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbYISVj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYISVoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754362AbYISVj5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 17:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYISVjs
+	id S1754574AbYISVoJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 17:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYISVn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 17:39:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51060 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750842AbYISVjs (ORCPT
+	Fri, 19 Sep 2008 17:43:56 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:25907 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbYISVn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 17:39:48 -0400
-Date: Fri, 19 Sep 2008 14:38:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Pirko <jpirko@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] audit: removed bogus newline
-Message-Id: <20080919143847.0589646f.akpm@linux-foundation.org>
-In-Reply-To: <20080919165146.0aa2ab80@psychotron.englab.brq.redhat.com>
-References: <20080919165146.0aa2ab80@psychotron.englab.brq.redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 19 Sep 2008 17:43:56 -0400
+Date: Fri, 19 Sep 2008 14:42:58 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Martin Bligh" <mbligh@google.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: Unified tracing buffer
+Message-Id: <20080919144258.ac787fdf.randy.dunlap@oracle.com>
+In-Reply-To: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 16:51:46 +0200
-Jiri Pirko <jpirko@redhat.com> wrote:
+On Fri, 19 Sep 2008 14:33:42 -0700 Martin Bligh wrote:
 
-> Hi.
+> STORAGE
+> -------
 > 
-> PATH records, as output by the kernel, contain a newline after the
-> flags fields, which is in the middle of the record. EXECVE records
-> contain a newline after every argument. auditd seems to hide this,
-> but they're there nevertheless. If you're not using auditd, you
-> need to work round them.
-> 
-> What do you think about it?
-> 
+> We will support multiple buffers for different tracing systems, with
+> separate names, event id spaces.
+> Event ids are 16 bit, dynamically allocated.
 
-It would be easier to understand your proposal if you were to include
-before- and after- samples of the log record.
+What are these (like)?
+
+> A "one line of text" print function will be provided for each event,
+> or use the default (probably hex printf)
+> Will provide a "flight data recorder" mode, and a "spool to disk" mode.
+> 
+> Circular buffer per cpu, protected by per-cpu spinlock_irq
+> Word aligned records.
+
+Arch-specific "word"?
+or some fixed-size-for-all-systems (so that trace buffers can be
+shared/used on other systems?)  Preferably the latter.
 
 
-> 
-> 
-> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-> 
-> diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-> index 59cedfb..bf10cb0 100644
-> --- a/kernel/auditsc.c
-> +++ b/kernel/auditsc.c
-> @@ -1119,7 +1119,7 @@ static int audit_log_single_execve_arg(struct audit_context *context,
->  			audit_log_n_hex(*ab, buf, to_send);
->  		else
->  			audit_log_format(*ab, "\"%s\"", buf);
-> -		audit_log_format(*ab, "\n");
-> +		audit_log_format(*ab, " ");
->  
->  		p += to_send;
->  		len_left -= to_send;
+> Variable record length, header will start with length record.
+> Timestamps in fixed timebase, monotonically increasing (across all CPUs)
 
-Is no newline needed after this loop has terminated?
+what timestamp resolution?
+
+
+---
+~Randy
