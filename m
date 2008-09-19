@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbYISIBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbYISIFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756845AbYISIBM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 04:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbYISIA5
+	id S1756619AbYISIFy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 04:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbYISIFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 04:00:57 -0400
-Received: from mail.cavein.org ([66.245.249.51]:49289 "EHLO mail.cavein.org"
+	Fri, 19 Sep 2008 04:05:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47199 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbYISIA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 04:00:56 -0400
-X-DKIM: Sendmail DKIM Filter v2.6.0 smtp.cavein.org m8J80hRF015092
-X-DomainKeys: Sendmail DomainKeys Filter v1.0.0 smtp.cavein.org m8J80hRF015092
-DomainKey-Signature: a=rsa-sha1; s=2008; d=cavein.org; c=nofws; q=dns;
-	h=date:from:to:cc:subject:in-reply-to:message-id:references:
-	user-agent:mime-version:content-type;
-	b=mTMRIqxkWUxmkuIcT0QuDzEmU2G2r/YMzKiM0MSzv90D27//bo49voBOHfvRgjOwp
-	7x1uesfv9wI+kl5IKJnGuujBvKOh05PJpQ1WHN9FKMrHYsOCipE6JJ09txsPmFWTVNW
-	sKB7Nm/H9zDBSAaMo/h3qWghLPiNQQGN7B46B2s=
-Date: Fri, 19 Sep 2008 01:00:43 -0700 (PDT)
-From: Richard A Nelson <cowboy@cavein.org>
-To: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: NFS root + iptables in 2.6.25
-In-Reply-To: <48D3451D.1080807@dgt.com.pl>
-Message-ID: <alpine.DEB.2.00.0809190057200.14395@hygvzn-guhyr.pnirva.bet>
-References: <48D3451D.1080807@dgt.com.pl>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1751053AbYISIFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 04:05:37 -0400
+Date: Fri, 19 Sep 2008 10:05:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip/master] x86: io-apic - restore_IO_APIC_setup NULL
+	pointer quick fix
+Message-ID: <20080919080520.GA19491@elte.hu>
+References: <20080918193757.GB7294@lenovo>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (smtp.cavein.org [127.0.0.1]); Fri, 19 Sep 2008 08:00:50 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080918193757.GB7294@lenovo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0014]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008, Wojciech Kromer wrote:
 
-> # modprobe iptable_nat
-> nf_conntrack version 0.5.0 (1024 buckets, 4096 max)
-> nfs: RPC call returned error 1
->
-> Probably iptables changed it's default behavior from "allow all" to
-> "deny all" at startup.
-> Is there any way to change it back?
-> I can't change anything after loading any iptable module, because all
-> programs on filesystem are not accessible after loading...
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-NFS and iptables definitely takes some care - and there are still holes
-- no way to specify ports for all requests...
+> Check if memory was granted first - we don't like NULL deref.
+> It's a *quick* fix. Actually it's better to hadle this error
+> at moment of memory allocation. It's save_mask_IO_APIC_setup
+> route who allocates this memory (just for the record).
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
+> 
+> I'll handle this in _normal_ way tomorrow. Please review.
 
-but this seems odd...  you must've had some extant rules that suddenly
-seemingly changed behaviour before the modprobe was done
+ok, i've applied the quick fix to tip/master - the patch will drop from 
+there on the next integration run.
 
-
--- 
-Rick Nelson
-[In 'Doctor' mode], I spent a good ten minutes telling Emacs what I
-thought of it.  (The response was, 'Perhaps you could try to be less
-abusive.')
- 		-- Matt Welsh
+	Ingo
