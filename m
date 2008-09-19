@@ -1,342 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbYISEiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbYISEnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752428AbYISEiq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 00:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbYISEih
+	id S1753405AbYISEnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 00:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbYISEnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 00:38:37 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58716 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbYISEif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 00:38:35 -0400
-Date: Fri, 19 Sep 2008 14:38:20 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for September 19
-Message-Id: <20080919143820.51d1a5d9.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__19_Sep_2008_14_38_20_+1000_Kdn7ZuRudsGMUe8o"
+	Fri, 19 Sep 2008 00:43:09 -0400
+Received: from hqemgate04.nvidia.com ([216.228.112.152]:12975 "EHLO
+	hqemgate04.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYISEnI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 00:43:08 -0400
+X-PGP-Universal: processed;
+	by hqnvupgp04.nvidia.com on Thu, 18 Sep 2008 21:42:56 -0700
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+MIME-Version: 1.0
+Subject: RE: [alsa-devel] [PATCH] add the nvidia HDMI codec driverfor	MCP77/79
+Date: Fri, 19 Sep 2008 12:42:52 +0800
+Message-ID: <15F501D1A78BD343BE8F4D8DB854566B331D47A6@hkemmail01.nvidia.com>
+In-Reply-To: <s5h63ouvpfc.wl%tiwai@suse.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [alsa-devel] [PATCH] add the nvidia HDMI codec driverfor	MCP77/79
+thread-index: AckY0MsCWwBjEcnEQ2y7cJdVom2CewBO/dbw
+References: <200809031558156739794@gmail.com><s5hhc8xpq6z.wl%tiwai@suse.de><15F501D1A78BD343BE8F4D8DB854566B31F8F744@hkemmail01.nvidia.com><s5h4p4xph6x.wl%tiwai@suse.de><48BE7EE4.8020800@insite.cz> <s5h63ouvpfc.wl%tiwai@suse.de>
+From: "Wei Ni" <wni@nvidia.com>
+To: "Takashi Iwai" <tiwai@suse.de>, "peerchen" <peerchen@gmail.com>
+Cc: "Pavel Hofman" <pavel.hofman@insite.cz>, "Peer Chen" <pchen@nvidia.com>,
+       "alsa-devel" <alsa-devel@alsa-project.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "akpm" <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 19 Sep 2008 04:42:56.0439 (UTC) FILETIME=[2F704470:01C91A12]
+Content-class: urn:content-classes:message
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__19_Sep_2008_14_38_20_+1000_Kdn7ZuRudsGMUe8o
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks for your reply.
 
-Hi all,
+About the "long delay", we had some problems on reading RIRB buffer when
+testing this driver, so we add this "delay"
+We will try to find a best way to fix this issue.
 
-Changes since next-20080918:
+And we didn't familiar with git, we will research it more such as
+"rebase" and then submit the patch file again.
 
-Dropped tree: pxa (too any conflicts with the arm tree).
-	bdev (clashes with the device-mapper tree).
+Thanks
 
-The arm tree inherited a build fix patch from the pxa tree.
+-----Original Message-----
+From: Takashi Iwai [mailto:tiwai@suse.de] 
+Sent: Wednesday, September 17, 2008 10:05 PM
+To: peerchen
+Cc: Wei Ni; Pavel Hofman; Peer Chen; alsa-devel; linux-kernel; akpm
+Subject: Re: [alsa-devel] [PATCH] add the nvidia HDMI codec driverfor
+MCP77/79
 
-The pxa tree gained several conflicts against the arm tree so I had to
-drop it.
+At Wed, 17 Sep 2008 17:00:04 +0800,
+peerchen wrote:
+> 
+> new patch base on git tree.
+> 
+> Signed-off-by: Wei Ni <wni@nvidia.com>
+> Signed-off-by: Peer Chen <peerchen@gmail.com>
 
-The block tree lost a build fix patch.
+Thanks!
 
-The ttydev tree gained a conflict against each of the driver-core and usb
-trees but also lost a conflict.
+But, the patch looks like no "rebase".  You secretly added a new
+function call that wasn't in your previous patch, namely...
 
-I have also applied the following patches for known problems:
+> diff -uprN -X linux-2.6-tiwai-sound/Documentation/dontdiff
+linux-2.6-tiwai-sound/sound/pci/hda/hda_intel.c
+linux-2.6-tiwai-sound-niwei/sound/pci/hda/hda_intel.c
+> --- linux-2.6-tiwai-sound/sound/pci/hda/hda_intel.c	2008-09-10
+17:40:52.000000000 +0800
+> +++ linux-2.6-tiwai-sound-niwei/sound/pci/hda/hda_intel.c
+2008-09-10 17:49:31.000000000 +0800
+> @@ -1220,6 +1220,9 @@ static int __devinit azx_codec_create(st
+>  	if (err < 0)
+>  		return err;
+>  
+> +	if (chip->driver_type == AZX_DRIVER_NVIDIA)
+> +		chip->bus->needs_damn_long_delay = 1;
+> +
 
-	sparc: qlogicpti fallout from sbus removal
-	fix IXGBE dependencies
-	uaccess: fix parameters inversion for __copy_from_user_inatomic()
+Do we really need this inevitably?  I don't think so -- otherwise I
+would have far more bug reports.
 
-----------------------------------------------------------------------------
+This flag is the last resort and should be avoided as much as
+possible.  This results in a significant slow down of suspend/resume
+speed, for example.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+If it's really needed with some devices and there is no other way to
+fix it, add this flag rather in the codec-initialization part.
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+Also, if you resend a patch, please add the original patch description 
+again.  This helps my patch work a lot indeed.
 
-Below is a summary of the state of the merge.
 
-We are up to 117 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
+thanks,
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging dwmw2/master
-Merging arm/devel
-Applying pxa: LCD_CORGI is currently BROKEN
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging quilt/m68k
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-CONFLICT (rename/delete): Renamed include/asm-parisc/a.out.h->arch/parisc/i=
-nclude/asm/a.out.h in parisc/master and deleted in HEAD
-$ git rm -f arch/parisc/include/asm/a.out.h
-Merging powerpc/powerpc-next
-Merging 4xx/next
-Merging galak/powerpc-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in include/asm-x86/statfs.h
-Applying x86: fix arch/x86/kernel/k8.c
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-CONFLICT (content): Merge conflict in include/asm-x86/smp.h
-Merging ftrace/auto-ftrace-next
-CONFLICT (content): Merge conflict in kernel/module.c
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-CONFLICT (content): Merge conflict in include/asm-x86/pda.h
-CONFLICT (content): Merge conflict in kernel/fork.c
-Merging timers/auto-timers-next
-CONFLICT (delete/modify): arch/x86/kernel/apic_64.c deleted in timers/auto-=
-timers-next and modified in HEAD. Version HEAD of arch/x86/kernel/apic_64.c=
- left in tree.
-CONFLICT (content): Merge conflict in arch/x86/xen/spinlock.c
-CONFLICT (content): Merge conflict in drivers/pci/probe.c
-CONFLICT (content): Merge conflict in include/linux/pci_ids.h
-$ git rm arch/x86/kernel/apic_64.c
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-CONFLICT (content): Merge conflict in drivers/hid/usbhid/hid-core.c
-Applying HID: fix for warn() removal
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/stable
-CONFLICT (content): Merge conflict in drivers/media/video/Kconfig
-CONFLICT (content): Merge conflict in drivers/media/video/zr364xx.c
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in drivers/misc/acer-wmi.c
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (rename/modify): Merge conflict in include/linux/intel-iommu.h
-CONFLICT (content): Merge conflict in arch/x86/kvm/i8254.c
-CONFLICT (content): Merge conflict in drivers/pci/dmar.c
-CONFLICT (content): Merge conflict in include/asm-x86/kvm.h
-CONFLICT (content): Merge conflict in include/asm-x86/msr-index.h
-Applying kvm: fixup merge for intel_iommu.h move
-Merging dlm/next
-Merging scsi/master
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging mtd/master
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/mac80211_hwsim.c
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in kernel/module.c
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-Merging bkl-removal/bkl-removal
-Merging trivial/next
-CONFLICT (content): Merge conflict in Documentation/edac.txt
-CONFLICT (content): Merge conflict in include/linux/securebits.h
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in drivers/base/class.c
-CONFLICT (content): Merge conflict in drivers/ide/ide-disk.c
-CONFLICT (content): Merge conflict in drivers/md/dm-mpath.c
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/scsi/qlogicpti.c
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/traps_64.c
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in mm/Makefile
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/reg-for-linus
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
-e.txt
-CONFLICT (content): Merge conflict in drivers/char/ip2/ip2main.c
-CONFLICT (content): Merge conflict in drivers/char/tty_io.c
-CONFLICT (content): Merge conflict in drivers/char/vt.c
-CONFLICT (content): Merge conflict in drivers/serial/68328serial.c
-CONFLICT (content): Merge conflict in drivers/serial/8250.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/aircable.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/keyspan_pda.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/safe_serial.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
-Merging agp/agp-next
-Merging creds/next-creds
-CONFLICT (content): Merge conflict in drivers/net/wan/sbni.c
-CONFLICT (content): Merge conflict in fs/namespace.c
-CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_linux.h
-CONFLICT (content): Merge conflict in fs/xfs/xfs_inode.c
-CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.c
-CONFLICT (content): Merge conflict in include/linux/capability.h
-CONFLICT (add/add): Merge conflict in include/linux/cred.h
-CONFLICT (content): Merge conflict in include/linux/security.h
-CONFLICT (content): Merge conflict in kernel/exit.c
-CONFLICT (content): Merge conflict in kernel/fork.c
-CONFLICT (content): Merge conflict in security/commoncap.c
-CONFLICT (content): Merge conflict in security/selinux/hooks.c
-CONFLICT (content): Merge conflict in security/smack/smack_lsm.c
-Merging oprofile/auto-oprofile-next
-CONFLICT (content): Merge conflict in arch/x86/oprofile/nmi_int.c
-Merging fastboot/auto-fastboot-next
-CONFLICT (content): Merge conflict in include/linux/init.h
-Merging sparseirq/auto-sparseirq-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/ptrace.c
-CONFLICT (content): Merge conflict in arch/x86/kvm/vmx.h
-CONFLICT (content): Merge conflict in drivers/pci/probe.c
-CONFLICT (content): Merge conflict in include/asm-x86/msr-index.h
-Merging uwb/for-upstream
-$ git checkout -b temp scsi-post-merge/master
-Applying [SCSI] Add helper code so transport classes/driver can control que=
-ueing (v3)
-Applying [SCSI] qla4xxx: return SCSI_MLQUEUE_TARGET_BUSY when driver has de=
-tected session error
-Applying [SCSI] qla2xxx: return SCSI_MLQUEUE_TARGET_BUSY when driver has de=
-tected rport error or race
-Applying [SCSI] libiscsi: Use SCSI_MLQUEUE_TARGET_BUSY
-Applying [SCSI] lpfc: use SCSI_MLQUEUE_TARGET_BUSY when catching the rport =
-transition race
-Applying [SCSI] fc class: unblock target after calling terminate callback (=
-take 2)
-Applying [SCSI] ibmvfc, qla2xxx, lpfc: remove scsi_target_unblock calls in =
-terminate callbacks
-Applying [SCSI] scsi: add transport host byte errors (v3)
-Applying [SCSI] iscsi class, libiscsi and qla4xxx: convert to new transport=
- host byte values
-Applying [SCSI] fc class: Add support for new transport errors
-Applying [SCSI] qla2xxx: use new host byte transport errors.
-Applying [SCSI] block: separate failfast into multiple bits.
-Applying [SCSI] modify scsi to handle new fail fast flags.
-Applying [SCSI] lpfc 8.2.8 : Add kernel-doc function headers
-Applying [SCSI] lpfc 8.2.8 : Miscellaneous Discovery Fixes
-Applying [SCSI] lpfc 8.2.8 : Update driver for new SLI-3 features
-Applying [SCSI] lpfc 8.2.8 : Miscellaneous Bug Fixes
-Applying [SCSI] lpfc 8.2.8 : Add new FCOE hardware support
-Applying [SCSI] lpfc 8.2.8 : Add support for PCI-EEH permanent disabling
-Applying [SCSI] lpfc 8.2.8 : Update driver to use new Host byte error code =
-DID_TRANSPORT_DISRUPTED
-Applying [SCSI] lpfc 8.2.8 : Add MSI-X support
-Applying [SCSI] lpfc 8.2.8 : update driver version to 8.2.8
-Applying [SCSI] scsi_dh_alua: remove REQ_NOMERGE
-Applying [SCSI] lpfc 8.2.8 v2 : Revert target busy in favor of transport di=
-srupted
-Applying [SCSI] lpfc 8.2.8 v2 : Add sysfs control of target queue depth han=
-dling
-Applying [SCSI] lpfc 8.2.8 v2 : Add statistical reporting control and addit=
-ional fc vendor events
-Applying [SCSI] scsi_error: fix target reset handling
-$ git checkout master
-Applying sparc: qlogicpti fallout from sbus removal
-Applying fix IXGBE dependencies
-Applying uaccess: fix parameters inversion for __copy_from_user_inatomic()
-
---Signature=_Fri__19_Sep_2008_14_38_20_+1000_Kdn7ZuRudsGMUe8o
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjTLLwACgkQjjKRsyhoI8w3cACfYGoljJwAXnsRkYc1/xXQTaLI
-GYkAnAmyKcEua2idcV5F7wSoU9kYkN46
-=GQ7C
------END PGP SIGNATURE-----
-
---Signature=_Fri__19_Sep_2008_14_38_20_+1000_Kdn7ZuRudsGMUe8o--
+Takashi
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
