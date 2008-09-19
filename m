@@ -1,233 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbYISUjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbYISUkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbYISUjX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 16:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYISUjP
+	id S1755199AbYISUkL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 16:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbYISUj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 16:39:15 -0400
-Received: from mail.windriver.com ([147.11.1.11]:52202 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752176AbYISUjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 16:39:14 -0400
-Message-ID: <48D40DE7.8010107@windriver.com>
-Date: Fri, 19 Sep 2008 15:39:03 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: sonic zhang <sonic.adi@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       kgdb mailing list <kgdb-bugreport@lists.sourceforge.net>
-Subject: Re: [PATCH] [kgdb]switch master cpu after gdb thread command for
- SMP
-References: <1221554235.15380.16.camel@eight.analog.com>
-In-Reply-To: <1221554235.15380.16.camel@eight.analog.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Sep 2008 20:39:02.0894 (UTC) FILETIME=[C082A0E0:01C91A97]
+	Fri, 19 Sep 2008 16:39:58 -0400
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:34610 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754231AbYISUj5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 16:39:57 -0400
+Message-Id: <20080919203724.240858174@quilx.com>
+References: <20080919203703.312007962@quilx.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 19 Sep 2008 13:37:05 -0700
+From: Christoph Lameter <cl@linux-foundation.org>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
+CC: linux-mm@kvack.org
+Cc: jeremy@goop.org
+Cc: ebiederm@xmission.com
+Cc: travis@sgi.com
+Cc: herbert@gondor.apana.org.au
+Cc: xemul@openvz.org
+Cc: penberg@cs.helsinki.fi
+Subject: [patch 2/3] cpu alloc: Remove slub fields
+Content-Disposition: inline; filename=cpu_alloc_remove_slub_fields
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sonic zhang wrote:
->  In blackfin SMP architecture, different core has its own L1 SRAM and MMR
->  memory, which code running on the other core can't access. In current kgdb
->  impelemntation, cpus are represented by thread with minus prefix.
->
-> If user wants gdb to switch to the thread of the other cpu, kgdb should:
-> 1. signal current master cpu to enter kgdb_wait
-> 2. release the specific waiting passive cpu
-> 3. exit kgdb exception loop on current master cpu
-> 4. trap the release cpu into kgdb exception loop
->
+Remove the fields in kmem_cache_cpu that were used to cache data from
+kmem_cache when they were in different cachelines. The cacheline that holds
+the per cpu array pointer now also holds these values. We can cut down the
+struct kmem_cache_cpu size to almost half.
 
-This definitely seems reasonable for the blackfin architecture, but
-will definitely not work correctly for the present set of kgdb
-architectures.
+The get_freepointer() and set_freepointer() functions that used to be only
+intended for the slow path now are also useful for the hot path since access
+to the field does not require accessing an additional cacheline anymore. This
+results in consistent use of setting the freepointer for objects throughout
+SLUB.
 
-Each architecture specific stub can make use of a flags variable IE:
+Also we initialize all possible kmem_cache_cpu structures when a slab is
+created. No need to initialize them when a processor or node comes online.
+And all fields are set to zero. So just use __GFP_ZERO on cpu alloc.
 
-struct kgdb_arch arch_kgdb_ops = {
-    /* Breakpoint instruction: */
-    .gdb_bpt_instr        = { 0xcc },
-    .flags            = KGDB_HW_BREAKPOINT,
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-Given that other architectures might want to make use of the swapping
-functionality can be enabled / disabled by adding another flag to the
-bit mask in include/linux/kgdb.h
+Index: linux-2.6/include/linux/slub_def.h
+===================================================================
+--- linux-2.6.orig/include/linux/slub_def.h	2008-09-19 14:57:50.000000000 -0500
++++ linux-2.6/include/linux/slub_def.h	2008-09-19 14:57:51.000000000 -0500
+@@ -36,8 +36,6 @@
+ 	void **freelist;	/* Pointer to first free per cpu object */
+ 	struct page *page;	/* The slab from which we are allocating */
+ 	int node;		/* The node of the page (or -1 for debug) */
+-	unsigned int offset;	/* Freepointer offset (in word units) */
+-	unsigned int objsize;	/* Size of an object (from kmem_cache) */
+ #ifdef CONFIG_SLUB_STATS
+ 	unsigned stat[NR_SLUB_STAT_ITEMS];
+ #endif
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2008-09-19 14:57:50.000000000 -0500
++++ linux-2.6/mm/slub.c	2008-09-19 15:28:00.000000000 -0500
+@@ -244,13 +244,6 @@
+ 	return 1;
+ }
+ 
+-/*
+- * Slow version of get and set free pointer.
+- *
+- * This version requires touching the cache lines of kmem_cache which
+- * we avoid to do in the fast alloc free paths. There we obtain the offset
+- * from the page struct.
+- */
+ static inline void *get_freepointer(struct kmem_cache *s, void *object)
+ {
+ 	return *(void **)(object + s->offset);
+@@ -1415,10 +1408,10 @@
+ 
+ 		/* Retrieve object from cpu_freelist */
+ 		object = c->freelist;
+-		c->freelist = c->freelist[c->offset];
++		c->freelist = get_freepointer(s, c->freelist);
+ 
+ 		/* And put onto the regular freelist */
+-		object[c->offset] = page->freelist;
++		set_freepointer(s, object, page->freelist);
+ 		page->freelist = object;
+ 		page->inuse--;
+ 	}
+@@ -1514,7 +1507,7 @@
+ 	if (unlikely(SLABDEBUG && PageSlubDebug(c->page)))
+ 		goto debug;
+ 
+-	c->freelist = object[c->offset];
++	c->freelist = get_freepointer(s, object);
+ 	c->page->inuse = c->page->objects;
+ 	c->page->freelist = NULL;
+ 	c->node = page_to_nid(c->page);
+@@ -1558,7 +1551,7 @@
+ 		goto another_slab;
+ 
+ 	c->page->inuse++;
+-	c->page->freelist = object[c->offset];
++	c->page->freelist = get_freepointer(s, object);
+ 	c->node = -1;
+ 	goto unlock_out;
+ }
+@@ -1588,7 +1581,7 @@
+ 		object = __slab_alloc(s, gfpflags, node, addr, c);
+ 
+ 	else {
+-		c->freelist = object[c->offset];
++		c->freelist = get_freepointer(s, object);
+ 		stat(c, ALLOC_FASTPATH);
+ 	}
+ 	local_irq_restore(flags);
+@@ -1622,7 +1615,7 @@
+  * handling required then we can return immediately.
+  */
+ static void __slab_free(struct kmem_cache *s, struct page *page,
+-				void *x, void *addr, unsigned int offset)
++				void *x, void *addr)
+ {
+ 	void *prior;
+ 	void **object = (void *)x;
+@@ -1636,7 +1629,8 @@
+ 		goto debug;
+ 
+ checks_ok:
+-	prior = object[offset] = page->freelist;
++	prior = page->freelist;
++	set_freepointer(s, object, prior);
+ 	page->freelist = object;
+ 	page->inuse--;
+ 
+@@ -1700,15 +1694,15 @@
+ 
+ 	local_irq_save(flags);
+ 	c = __THIS_CPU(s->cpu_slab);
+-	debug_check_no_locks_freed(object, c->objsize);
++	debug_check_no_locks_freed(object, s->objsize);
+ 	if (!(s->flags & SLAB_DEBUG_OBJECTS))
+ 		debug_check_no_obj_freed(object, s->objsize);
+ 	if (likely(page == c->page && c->node >= 0)) {
+-		object[c->offset] = c->freelist;
++		set_freepointer(s, object, c->freelist);
+ 		c->freelist = object;
+ 		stat(c, FREE_FASTPATH);
+ 	} else
+-		__slab_free(s, page, x, addr, c->offset);
++		__slab_free(s, page, x, addr);
+ 
+ 	local_irq_restore(flags);
+ }
+@@ -1889,19 +1883,6 @@
+ 	return ALIGN(align, sizeof(void *));
+ }
+ 
+-static void init_kmem_cache_cpu(struct kmem_cache *s,
+-			struct kmem_cache_cpu *c)
+-{
+-	c->page = NULL;
+-	c->freelist = NULL;
+-	c->node = 0;
+-	c->offset = s->offset / sizeof(void *);
+-	c->objsize = s->objsize;
+-#ifdef CONFIG_SLUB_STATS
+-	memset(c->stat, 0, NR_SLUB_STAT_ITEMS * sizeof(unsigned));
+-#endif
+-}
+-
+ static void
+ init_kmem_cache_node(struct kmem_cache_node *n, struct kmem_cache *s)
+ {
+@@ -1926,20 +1907,6 @@
+ #endif
+ }
+ 
+-static int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
+-{
+-	int cpu;
+-
+-	s->cpu_slab = CPU_ALLOC(struct kmem_cache_cpu, flags);
+-
+-	if (!s->cpu_slab)
+-		return 0;
+-
+-	for_each_possible_cpu(cpu)
+-		init_kmem_cache_cpu(s, CPU_PTR(s->cpu_slab, cpu));
+-	return 1;
+-}
+-
+ #ifdef CONFIG_NUMA
+ /*
+  * No kmalloc_node yet so do it by hand. We know that this is the first
+@@ -2196,8 +2163,11 @@
+ 	if (!init_kmem_cache_nodes(s, gfpflags & ~SLUB_DMA))
+ 		goto error;
+ 
+-	if (alloc_kmem_cache_cpus(s, gfpflags & ~SLUB_DMA))
++	s->cpu_slab = CPU_ALLOC(struct kmem_cache_cpu,
++				(flags & ~SLUB_DMA) | __GFP_ZERO);
++	if (!s->cpu_slab)
+ 		return 1;
++
+ 	free_kmem_cache_nodes(s);
+ error:
+ 	if (flags & SLAB_PANIC)
+@@ -2977,8 +2947,6 @@
+ 	down_write(&slub_lock);
+ 	s = find_mergeable(size, align, flags, name, ctor);
+ 	if (s) {
+-		int cpu;
+-
+ 		s->refcount++;
+ 		/*
+ 		 * Adjust the object sizes so that we clear
+@@ -2986,13 +2954,6 @@
+ 		 */
+ 		s->objsize = max(s->objsize, (int)size);
+ 
+-		/*
+-		 * And then we need to update the object size in the
+-		 * per cpu structures
+-		 */
+-		for_each_online_cpu(cpu)
+-			CPU_PTR(s->cpu_slab, cpu)->objsize = s->objsize;
+-
+ 		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
+ 		up_write(&slub_lock);
+ 
+@@ -3037,14 +2998,6 @@
+ 	unsigned long flags;
+ 
+ 	switch (action) {
+-	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
+-		down_read(&slub_lock);
+-		list_for_each_entry(s, &slab_caches, list)
+-			init_kmem_cache_cpu(s, CPU_PTR(s->cpu_slab, cpu));
+-		up_read(&slub_lock);
+-		break;
+-
+ 	case CPU_UP_CANCELED:
+ 	case CPU_UP_CANCELED_FROZEN:
+ 	case CPU_DEAD:
 
-Right now the only flag is KGDB_HW_BREAKPOINT, but you can add something
-like:
-
-#define KGDB_HW_BREAKPOINT 0x1
-#define KGDB_THR_PROC_SWAP 0x2
-
-
-> The kgdb arch implementation with SMP support should include function
-> kgdb_roundup_cpu().
-
-
-Yup I agree.
-
-
->
->
-> Signed-off-by: Sonic Zhang <sonic.adi@gmail.com>
-> ---
->  kernel/kgdb.c        |   32 ++++++++++++++++++++++++++++++--
->
-> --- a/kernel/kgdb.c
-> +++ b/kernel/kgdb.c
-> @@ -566,6 +566,7 @@ static void kgdb_wait(struct pt_regs *regs)
->  {
->      unsigned long flags;
->      int cpu;
-> +    struct task_struct *thread;
-> 
->      local_irq_save(flags);
->      cpu = raw_smp_processor_id();
-> @@ -585,6 +586,15 @@ static void kgdb_wait(struct pt_regs *regs)
->      kgdb_info[cpu].debuggerinfo = NULL;
->      kgdb_info[cpu].task = NULL;
-> 
-
-
-This would have to be enclosed in:
-
-if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) {
-  ...
-
-
-
-> +    /* Trap into kgdb as the active CPU if gdb asks to switch. */
-> +    thread = getthread(regs, -raw_smp_processor_id() - 2);
-> +    if (kgdb_usethread && kgdb_usethread == thread) {
-> +        kgdb_breakpoint();
-> +        clocksource_touch_watchdog();
-> +        local_irq_restore(flags);
-> +        return;
-> +    }
-> +
->      /* fix up hardware debug registers on local cpu */
->      if (arch_kgdb_ops.correct_hw_break)
->          arch_kgdb_ops.correct_hw_break();
-> @@ -1072,7 +1082,7 @@ static void gdb_cmd_query(struct kgdb_state *ks)
->  }
-> 
->  /* Handle the 'H' task query packets */
-> -static void gdb_cmd_task(struct kgdb_state *ks)
-> +static int gdb_cmd_task(struct kgdb_state *ks)
->  {
->      struct task_struct *thread;
->      char *ptr;
-> @@ -1089,6 +1099,13 @@ static void gdb_cmd_task(struct kgdb_state *ks)
->          kgdb_usethread = thread;
->          ks->kgdb_usethreadid = ks->threadid;
->          strcpy(remcom_out_buffer, "OK");
-
-if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) {
-  ...
-
-
-> +#ifdef CONFIG_SMP
-> +        if (ks->kgdb_usethreadid < -1 &&
-> +            ks->kgdb_usethreadid + 2 != -raw_smp_processor_id()) {
-> +            kgdb_roundup_cpu(-ks->kgdb_usethreadid - 2);
-> +            return 1;
-> +        }
-> +#endif
->          break;
->      case 'c':
->          ptr = &remcom_in_buffer[2];
-> @@ -1106,6 +1123,8 @@ static void gdb_cmd_task(struct kgdb_state *ks)
->          strcpy(remcom_out_buffer, "OK");
->          break;
->      }
-> +
-> +    return 0;
->  }
-> 
->  /* Handle the 'T' thread query packets */
-> @@ -1284,7 +1303,8 @@ static int gdb_serial_stub(struct kgdb_state *ks)
->              gdb_cmd_query(ks);
->              break;
->          case 'H': /* task related */
-> -            gdb_cmd_task(ks);
-> +            if (gdb_cmd_task(ks))
-> +                goto default_handle;
->              break;
->          case 'T': /* Query thread status */
->              gdb_cmd_thread(ks);
-> @@ -1509,6 +1529,14 @@ acquirelock:
->      kgdb_info[ks->cpu].task = NULL;
->      atomic_set(&cpu_in_kgdb[ks->cpu], 0);
-> 
-
-And you need to stick this logic in here too.
-
-if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) {
-  ...
-
-
-> +#ifdef CONFIG_SMP
-> +    i = -(ks->kgdb_usethreadid + 2);
-> +    if (ks->kgdb_usethreadid < -1 && i != cpu) {
-> +        atomic_set(&passive_cpu_wait[i], 0);
-> +        while (atomic_read(&cpu_in_kgdb[i]))
-> +            cpu_relax();
-> +    } else
-> +#endif
->      if (!kgdb_single_step || !kgdb_contthread) {
->          for (i = NR_CPUS-1; i >= 0; i--)
->              atomic_set(&passive_cpu_wait[i], 0);
-
-
-
-I am going ask if you tested switching back and forth between threads
-several times? 
-
-It was not immediately obvious it would actually work by looking at
-the top level kernel/kgdb.c file.  For the non-black blackfin
-architectures this would cause nested exceptions with the second kgdb
-roundup call as well as exec'ing a breakpoint from the kgdb_wait()
-which is already in the exception context on non blackfin archs. For
-the blackfin arch you would obviously have to have something that to
-recover from the nested exceptions, which is arch specific.
-
-The current incarnation of kgdb just doesn't have support in it to
-switch core context and make a different core the "master".  If you
-want to consider doing something more generic, it would require a bit
-of refactoring such that all the cores get into the same busy loop and
-the master core can return to this loop while another is changed to
-the master core.  This will allow you to not have to issue a
-breakpoint, and you can keep the system stopped, while you switch to a
-different core context.
-
-
-The design would look something like what is shown below, noting that
-you will still need to do something special to elect the first
-processor and deal with the race of a cpu making it back in before
-others are done.
-
-all_cpu_handle_exception() {
-   handle_race_of_re_entering_processor_while_others_are_exiting;
-
-   master = ATOMIC_FIRST_CPU_X;
-   signal_all_other_cpus_to_stop_if_I_am_the_master();
-
-   while(keep_debugging) {
-      if (all_processors_here) {
-          if (i_am_master)
-              gdb_stub();
-      /* A master can elect a new master
-           * and return here */
-      }
-      cpu_relax();
-   }
-
-   helper_loop_to_handle_re_entry_race;
-
-   return system_to_good_state;
-}
-
-Jason.
-
+-- 
