@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYISHk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751180AbYISHks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbYISHk3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 03:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYISHkV
+	id S1751180AbYISHks (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 03:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757052AbYISHkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 03:40:21 -0400
-Received: from smtp2e.orange.fr ([80.12.242.112]:44994 "EHLO smtp2e.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbYISHkV convert rfc822-to-8bit (ORCPT
+	Fri, 19 Sep 2008 03:40:37 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:57715 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757047AbYISHkh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 03:40:21 -0400
-X-ME-UUID: 20080919074017937.E4BE2700008E@mwinf2e13.orange.fr
-Message-ID: <48D3574B.40209@cosmosbay.com>
-Date: Fri, 19 Sep 2008 09:39:55 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 19 Sep 2008 03:40:37 -0400
+Date: Fri, 19 Sep 2008 09:40:34 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Magnus Damm <damm@igel.co.jp>
+Subject: Re: [PATCH] UIO: Resend: Change driver name of uio_pdrv
+Message-ID: <20080919074034.GA8945@strlen.de>
+References: <20080918210306.GC2991@local>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@vger.kernel.org,
-       jeremy@goop.org, ebiederm@xmission.com, travis@sgi.com,
-       herbert@gondor.apana.org.au, xemul@openvz.org
-Subject: Re: [patch 4/4] cpu alloc: Use cpu allocator instead of the builtin
- modules per cpu allocator
-References: <20080918233648.581696416@quilx.com> <20080918233701.832528677@quilx.com>
-In-Reply-To: <20080918233701.832528677@quilx.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080918210306.GC2991@local>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> Remove the builtin per cpu allocator from modules.c and use cpu_alloc instead.
+Hello Hans,
+
+[Added Magnus Damm (= author of uio_pdrv_genirq) to Cc:]
+
+On Thu, Sep 18, 2008 at 11:03:07PM +0200, Hans J. Koch wrote:
+> The patch below was already discussed and accepted:
+> http://lkml.org/lkml/2008/7/7/409
 > 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> It somehow got lost (probably because I forgot it when I sent my queue
+> to Greg...). So, here it is again:
+> 
+> -------------8<------------------------
+> 
+> The generic UIO platform device driver should be given a unique driver ID and
+> not just "uio". This is especially important since we now have a similar driver
+> named uio_pdrv_genirq. Currently, there's no user of this driver in the
+> mainline kernel.
+I want to suggest to rename uio_pdrv_genirq to uio_genirq instead.  In
+my eyes this would be more clear.  IMHO the pdrv suffix doesn't yield
+more clearity because it is only used in a certain namespace---namely
+that of platform devices.  So e.g.
 
-> +		percpu_size = sechdrs[pcpuindex].sh_size;
-> +
-> +		if (align > PAGE_SIZE) {
-> +			printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
-> +			      	mod->name, align, PAGE_SIZE);
-> +			align = PAGE_SIZE;
-> +		}
+	/sys/bus/platform/devices/uio_pdrv.0
 
-Minor question : Wy do you have to keep this cap of alignment ?
+isn't any better than
 
-I could not find such a limit in the allocator
+	/sys/bus/platform/devices/uio.0
 
+.  Looking at the name of other platform drivers using
 
+	git grep -E '_pdrv(_.*)?"' 
 
+I get three false positives[1] and uio_pdrv_genirq (driver and some
+users in arch/sh/kernel/cpu/sh4a/setup-sh7343.c).  So the _pdrv suffix
+doesn't seem very common.
 
+Just my 0.02â‚¬
+
+Best regards
+Uwe
+
+[1] in drivers/scsi/megaraid.c
