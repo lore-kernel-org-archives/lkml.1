@@ -1,137 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYISR6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYISSBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbYISR6j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 13:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYISR6b
+	id S1754539AbYISSBl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 14:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbYISSBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 13:58:31 -0400
-Received: from mail.atheros.com ([12.36.123.2]:39138 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbYISR6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 13:58:30 -0400
-Date: Fri, 19 Sep 2008 23:28:24 +0530
-From: Senthil Balasubramanian <senthilkumar@atheros.com>
-To: Steven Noonan <steven@uplinklabs.net>
-CC: Senthilkumar Balasubramanian 
-	<Senthilkumar.Balasubramanian@atheros.com>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27
-	(rc5, rc6, probably others)
-Message-ID: <20080919175824.GA5626@senthil-lnx.users.atheros.com>
-References: <f488382f0809181449x7343aa7endff066cb5836a73c@mail.gmail.com> <20080918220102.GE7408@tesla> <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com> <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com> <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com> <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com> <20080919030125.GG7408@tesla> <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com> <20080919142801.GA5816@senthil-lnx.users.atheros.com> <alpine.LNX.2.00.0809190934001.22989@alcarin.uplinklabs.net>
+	Fri, 19 Sep 2008 14:01:33 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:21921 "EHLO
+	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbYISSBc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 14:01:32 -0400
+X-BigFish: VPS-34(z1039oz146fK1418M1432R98dR1805M179dR936fQ873fnzz10d3izz2f39iz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K7GFE2-03-WUO-01
+Date: Fri, 19 Sep 2008 20:01:18 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic option
+Message-ID: <20080919180118.GV24392@amd.com>
+References: <20080919164541.GS24392@amd.com> <20080920020917O.fujita.tomonori@lab.ntt.co.jp> <20080919173004.GA9837@amd.com> <20080920024046W.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0809190934001.22989@alcarin.uplinklabs.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080920024046W.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 19 Sep 2008 18:01:19.0094 (UTC) FILETIME=[B7A55960:01C91A81]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 10:12:04PM +0530, Steven Noonan wrote:
+On Sat, Sep 20, 2008 at 02:40:35AM +0900, FUJITA Tomonori wrote:
+> On Fri, 19 Sep 2008 19:30:04 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
-> 
-> On Fri, 19 Sep 2008, Senthil Balasubramanian wrote:
-> 
-> > On Fri, Sep 19, 2008 at 12:59:29PM +0530, Steven Noonan wrote:
-> > > On Thu, Sep 18, 2008 at 8:01 PM, Luis R. Rodriguez
-> > > <lrodriguez@atheros.com> wrote:
-> > > > Thanks for testing, and glad to see this is resolved.
-> > > >
+> > On Sat, Sep 20, 2008 at 02:09:21AM +0900, FUJITA Tomonori wrote:
+> > > 
+> > > Please keep it for AMD option for now. Please send a patch to make it
+> > > generic to other IOMMU people and give them a chance to discuss on
+> > > it.
 > > >
-> > > Damn. It's back. I was using wireless normally this evening. Browsing
-> > > the web, that kind of thing, and then the wireless inexplicably
-> > > dropped (even with the group rekeying patch), so I unloaded/reloaded
-> > > the module. This popped up in dmesg:
-> > >
-> > > [ 3834.375658] vendor=8086 device=27d2
-> > > [ 3834.375666] ath9k 0000:03:00.0: PCI INT A disabled
-> > > [ 3834.375716] ath9k: driver unloaded
-> > > [ 3838.552419] ath9k: 0.1
-> > > [ 3838.552502] vendor=8086 device=27d2
-> > > [ 3838.552511] ath9k 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> > > [ 3838.552532] ath9k 0000:03:00.0: setting latency timer to 64
-> > > [ 3838.688924] phy1: Selected rate control algorithm 'ath9k_rate_control'
-> > > [ 3838.693652] phy1: Atheros 5416: mem=0xffffc20000060000, irq=17
-> > > [ 3839.427125] irq 17: nobody cared (try booting with the "irqpoll" option)
-> > > [ 3839.427136] Pid: 0, comm: swapper Tainted: P
-> > > 2.6.27-rc6-tip-00478-g74f1a36 #1
-> > > [ 3839.427141] Call Trace:
-> > > [ 3839.427145]  <IRQ>  [<ffffffff802219c5>] ? read_hpet+0x9/0x1c
-> > > [ 3839.427165]  [<ffffffff8026af71>] __report_bad_irq+0x3d/0x8c
-> > > [ 3839.427172]  [<ffffffff8026b0c6>] note_interrupt+0x106/0x160
-> > > [ 3839.427180]  [<ffffffff8026b801>] handle_fasteoi_irq+0xad/0xda
-> > > [ 3839.427188]  [<ffffffff8020f7b0>] do_IRQ+0x10c/0x190
-> > > [ 3839.427194]  [<ffffffff8020c551>] ret_from_intr+0x0/0xa
-> > > [ 3839.427198]  <EOI>  [<ffffffff8026c6f0>] rcu_pending+0x62/0x6e
-> > > [ 3839.427211]  [<ffffffff8025bc11>] ? tick_nohz_stop_sched_tick+0x2e4/0x2f3
-> > > [ 3839.427218]  [<ffffffff8020ad94>] cpu_idle+0x7b/0xdb
-> > > [ 3839.427226]  [<ffffffff8060c921>] rest_init+0x75/0x77
-> > > [ 3839.427231] handlers:
-> > > [ 3839.427234] [<ffffffffa0240238>] (ath_isr+0x0/0x170 [ath9k])
-> > > [ 3839.427263] Disabling IRQ #17
-> > > [ 3842.263699] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> > > [ 3848.035003] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> > > [ 3848.432701] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> > > [ 3850.216947] wlan0: authenticate with AP 00:1e:52:79:4d:01
-> > > [ 3850.217027] wlan0: authenticate with AP 00:1e:52:79:4d:01
-> > > [ 3850.228326] wlan0: authenticated
-> > > [ 3850.228336] wlan0: associate with AP 00:1e:52:79:4d:01
-> > > [ 3850.428140] wlan0: associate with AP 00:1e:52:79:4d:01
-> > > [ 3850.628151] wlan0: associate with AP 00:1e:52:79:4d:01
-> > > [ 3850.728305] wlan0: RX AssocResp from 00:1e:52:79:4d:01 (capab=0x431
-> > > status=0 aid=1)
-> > > [ 3850.728314] wlan0: associated
-> > > [ 3850.728655] wlan0 (WE) : Wireless Event too big (320)
-> > > [ 3850.743377] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-> > > [ 3860.855104] wlan0: no IPv6 routers present
-> > >
-> > > I rebuilt the module with DBG_ATH_INTERRUPT, but it somehow stumbled
-> > > itself back into working order while I was compiling. I can't keep the
-> > > interrupt debugging on all the time because it's just -too verbose-,
-> > > and when I pop a debug version of the module in, then it's too late to
-> > > track the issue....
-> >
-> > I am able to reproduce this IRQ nobody cared issue in my setup and the
-> > following patch seems to be fixing the issue. Please try it out and let
-> > me know if it solves your issue in your setup.
+> > 
+> > Btw, you already agreed with a generic iommu= parameter for lazy IO/TLB
+> > flushing"
+> > 
+> > 
+> >  > True. We should merge common parameters across IOMMUs into the
+> >  > iommu= parameter some time in the future, I think. It would also be the
+> >  > place for the IOMMU size parameter.
+> > 
+> >  Hmm, now is better than the future? I think that now you can add
+> >  something like 'disable_batching_flush' as a common parameter and
+> >  change AMD IOMMU to use it.
+> > 
+> > in http://lkml.org/lkml/2008/9/17/376
+> > 
+> > And since we already have a iommu=fullflush parameter it makes sense of
+> > make it generic.
 > 
-> The patch you prvide doesn't want to apply. What code did you base this
-> on?
-> 
-> The first change listed doesn't work because there is no tasklet_kill() in
-> core.c, and the line immediately after ath_stop there has
-> "!sc->sc_invalid" instead of the "!(sc->sc_flags & SC_OP_INVALID)".
-> 
-> The second fails because SC_OP_INVALID isn't defined.
-> 
-> However, if your patch did apply to my code, I bet it'd solve the issue,
-> based on what it says it does.
+> I'm not against fullflush but we need to discuss it with other people
+> before making the change.
 
-I am on 2.6.27-rc6 and this patch is on top of my earlier patch
-titled "[PATCH] ath9k: connectivity is lost after Group rekeying is
-done". However this patch can be applied on top of latest wireless testing
-too. I could apply this patch succesfully on top of wireless testing
-git tree.
+Weird. Just 2 hours ago you wrote:
 
-My git-describe says v2.6.27-rc6-1378-g34e512f.
+|http://lkml.org/lkml/2008/9/19/106
+|
+|For me, adding these boot parameters doesn't make sense.
 
-There is no sc_invalid flag in "struct ath_softc" today. Where did
-you get this variable from? It was removed in the following commit
+Anyway, I wrote to the Intel and Calgary developers and asked them for
+their opinion. If they have real objections I am the last person NACKing
+your original patch in this thread again.
+The reason why I queued this patch in AMD IOMMU updates was that I
+didn't wanted to implement an option specificly for AMD IOMMU when there
+will be a generic one soon. This is double work I prefered to do it
+right in the first step. The change does not break anything on Intel and
+Calgary.
 
------------------------------------------------
-commit f2c9705a05ecbc0d94216a3b042d5641e8bf70b1
-Author: Sujith <Sujith.Manoharan@atheros.com>
-Date:   Mon Aug 11 14:05:08 2008 +0530
+Joerg
 
-    ath9k: Use bitfields for sc operations
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-    Signed-off-by: Sujith Manoharan <Sujith.Manoharan@atheros.com>
-    Signed-off-by: John W. Linville <linville@tuxdriver.com>
------------------------------------------------
-
-Which code base are you using?
