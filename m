@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbYISNUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbYISNYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbYISNUu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 09:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYISNUj
+	id S1753493AbYISNYZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 09:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYISNYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 09:20:39 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:41286 "EHLO tac.ki.iif.hu"
+	Fri, 19 Sep 2008 09:24:19 -0400
+Received: from smtp27.orange.fr ([80.12.242.96]:38605 "EHLO smtp27.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753623AbYISNUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 09:20:37 -0400
-From: Ferenc Wagner <wferi@niif.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: doubled idle count
-References: <87vdwtfxng.fsf@tac.ki.iif.hu> <48D2AD5E.7040602@goop.org>
-Date: Fri, 19 Sep 2008 15:20:28 +0200
-In-Reply-To: <48D2AD5E.7040602@goop.org> (Jeremy Fitzhardinge's message of
-	"Thu, 18 Sep 2008 12:34:54 -0700")
-Message-ID: <87wsh8nug3.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	id S1751185AbYISNYS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 09:24:18 -0400
+X-ME-UUID: 20080919132415660.A14351C00095@mwinf2726.orange.fr
+Message-ID: <48D3A7EF.5030309@cosmosbay.com>
+Date: Fri, 19 Sep 2008 15:23:59 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@vger.kernel.org,
+       jeremy@goop.org, ebiederm@xmission.com, travis@sgi.com,
+       herbert@gondor.apana.org.au, xemul@openvz.org
+Subject: Re: [patch 4/4] cpu alloc: Use cpu allocator instead of the builtin
+ modules per cpu allocator
+References: <20080918233648.581696416@quilx.com> <20080918233701.832528677@quilx.com> <48D3574B.40209@cosmosbay.com> <48D3A22A.40508@linux-foundation.org>
+In-Reply-To: <48D3A22A.40508@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+Christoph Lameter a écrit :
+> Eric Dumazet wrote:
+>> Christoph Lameter a écrit :
+>>> Remove the builtin per cpu allocator from modules.c and use cpu_alloc
+>>> instead.
+>>>
+>>> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+>>> +        percpu_size = sechdrs[pcpuindex].sh_size;
+>>> +
+>>> +        if (align > PAGE_SIZE) {
+>>> +            printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
+>>> +                      mod->name, align, PAGE_SIZE);
+>>> +            align = PAGE_SIZE;
+>>> +        }
+>> Minor question : Wy do you have to keep this cap of alignment ?
+>>
+>> I could not find such a limit in the allocator
+> 
+> The per cpu areas are allocated on page boundaries and there are multiple of
+> those per cpu areas all aligned to page boundary. The alignment can therefore
+> only make sense up to a page. Maybe I need to put that into the cpu allocator?
 
-> Ferenc Wagner wrote:
->
->> After upgrading a Xen virtual machine to Debian's 2.6.26-4 kernel, I
->> noticed that the idle counter doubled its pace on one of the machines:
->> [...]
->> One out of three machines show this effect, with the exact same kernel
->> and Xen versions (3.2.0, dom0 is Debian's stock Etch 2.6.18 kernel).
->> They aren't hosted by the same machine, though: the misbehaving one is
->> on a different installation with very similar hardware (3 vs 2 GHz).
->> All the guest are paravirtual.
->
-> So you're saying that they are identical Xen and guest kernel binaries,
-> but one of three is showing doubled idle time?
+Ah... I missed this page boundaries on the allocator, you are right.
 
-Now I upgraded another domU, and that also shows this doubling effect,
-so I've got two domUs (running on xen2-ha) misbehaving, and other two
-(running on xen2) behaving correctly.  On the first:
+So caping is OK in modules code, in order to mimic previous behavior.
 
-wferi@xen2-ha:~$ sudo xm info
-host                   : xen2-ha
-release                : 2.6.18-6-xen-686
-version                : #1 SMP Mon Aug 18 12:56:50 UTC 2008
-machine                : i686
-nr_cpus                : 4
-nr_nodes               : 1
-cores_per_socket       : 1
-threads_per_core       : 2
-cpu_mhz                : 3056
-hw_caps                : bfebfbff:00000000:00000000:00000080:00004400
-total_memory           : 3071
-free_memory            : 991
-node_to_cpu            : node0:0-3
-xen_major              : 3
-xen_minor              : 2
-xen_extra              : -1
-xen_caps               : xen-3.0-x86_32p 
-xen_scheduler          : credit
-xen_pagesize           : 4096
-platform_params        : virt_start=0xf5800000
-xen_changeset          : unavailable
-cc_compiler            : gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)
-cc_compile_by          : fs
-cc_compile_domain      : debian.org
-cc_compile_date        : Mon Mar 10 15:50:27 UTC 2008
-xend_config_format     : 4
+Adding an error case in cpu allocator (for align > PAGE_SIZE) might avoid some errors...
 
-while on the other the differing lines are:
 
-host                   : xen2
-cpu_mhz                : 1993
-total_memory           : 4991
-free_memory            : 2464
 
-Hope this adds some useful info.
--- 
-Regards,
-Feri.
+
