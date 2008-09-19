@@ -1,79 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbYISOQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752598AbYISORV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753226AbYISOQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 10:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYISOQv
+	id S1752598AbYISORV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 10:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYISORE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 10:16:51 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:51187 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbYISOQu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 10:16:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=GFVtIgQlT40Kn7U0oONUTLr4zVhm6K3xOlP8/3DFsBYdcEFiMHjidRd93xtZ0D9zB8
-         h2OVS29nR+PbXxzqR5X82hBGZFVEJwhrpKZ1zPyudoSHWLzcsX12eYQ3a8rEzBUUfR/D
-         DK+/XqIZCdDasEiaqsiaTgx90lKsgpk8viNGs=
-Message-ID: <48D3B3EE.70702@gmail.com>
-Date: Fri, 19 Sep 2008 07:15:10 -0700
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Elias Oltmanns <eo@nebensachen.de>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4 v2] libata: Implement disk shock protection support
-References: <87d4j2n3dn.fsf@denkblock.local>	<20080917163144.9870.97008.stgit@denkblock.local>	<48D147E2.3020601@gmail.com> <87skrwmpng.fsf@denkblock.local>	<48D3979F.10305@gmail.com> <87ljxokz67.fsf@denkblock.local>
-In-Reply-To: <87ljxokz67.fsf@denkblock.local>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Sep 2008 10:17:04 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:33252 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753343AbYISORA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 10:17:00 -0400
+Date: Fri, 19 Sep 2008 16:16:25 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Anti Sullin <anti.sullin@artecdesign.ee>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] AT91 Serial: update the powersave handler to match
+ serial core
+Message-ID: <20080919161625.360e514d@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <48D3AE78.207@artecdesign.ee>
+References: <48CE42C8.1090608@artecdesign.ee>
+	<20080919150938.08b2c7be@hskinnemo-gx745.norway.atmel.com>
+	<48D3AE78.207@artecdesign.ee>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 19 Sep 2008 14:16:16.0868 (UTC) FILETIME=[47B12A40:01C91A62]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Elias Oltmanns wrote:
->> This should basically work but completion isn't really designed for
->> this type of continuous events where single consumption should clear
->> all pending events.  INIT_COMPLETION comes close but it doesn't lock,
->> so can't guarantee anything.  What's necessary is the counterpart for
->> complete_all() for the wait.
-> 
-> You are right that it isn't designed for this use case and my approach
-> is somewhat hackish. Still, it really does exactly what we want. Please
-> note that ap->park_req_pending is protected by the host lock; the call
-> to complete() is atomic wrt the setting of ATA_EH_PARK for one of the
-> devices on the port and so is the call to INIT_COMPLETION() wrt clearing
-> ATA_EH_PARK requests for *all* devices on the port.
-> 
->> Well, anyways, I think the issue is slightly out of scope for this
->> patch and the only side effect is possibly looping over the do {}
->> while () block several times unnecessarily on certain cases, so I
->> think just noting about it should be enough for now.
->>
->> Can you please add explanation above wait_for_complete_timeout() that
->> all done counts should be cleared here but aren't and as a result the
->> loop might repeat determinate number of times unnecessarily and resend
->> as proper patch?
-> 
-> Well, we don't really care about the done count after
-> wait_for_completion_timeout() has returned. All that matters is that the
-> done counter is cleared when all ATA_EH_PARK actions have been pulled in
-> which happens at the start of each cycle over the loop.
-> 
-> Perhaps I should add comments to this effect before
-> wait_for_completion_timeout() as well as INIT_COMPLETION()?
+Anti Sullin <anti.sullin@artecdesign.ee> wrote:
+> Haavard Skinnemoen wrote:
+> > Not good. I suspect we need to stop DMA as well though...or wait until
+> > it's drained.
+> Right... I found independently the DMA problem with video controller DMA and suspend a week ago (but as I left some devices
+> to do automated testing for the weekend, your patch had fixed it when I looked the kernel on monday morning... how ironic) and
+> we wouldn't want another such bug.
+> But the serial driver had already switched off the clocks for ages and so long I haven't found any crashes...
 
-Ah... I missed the pull_park_action part.  Yes, in that case, it's
-correct now but I would really appreciate you explain amply what's
-going on inside the pull function and why it's needed.
+Maybe the tty layer ensures that the buffer is empty before
+suspending...would be interesting to know. In any case, any such bug
+would probably be insanely difficult to trigger, so I think we should
+stop the PDC just in case.
 
-Thanks.
+> > 
+> >> The patch is against 2.6.25.3 + at91 patchset at maxim.org.za. 
+> > 
+> > It doesn't apply to latest mainline, but I'll try to cram it in somehow.
+> Sorry, my production devices are currently using 25.3...
+> Use this e-mail just as bug report.
 
--- 
-tejun
+Ok, I think I managed to apply it correctly. I'm going to test it now;
+you'll see the result when I send it upstream (this is 2.6.27 material,
+I think.)
+
+> After I fixed this and the LCDC DMA, i did 400k suspend cycles on parallel with multiple devices for testing and
+> I did not get any crashes.
+
+Nice.
+
+> > A few questions though...
+> > 
+> >> diff -purN linux-2.6.25.3/drivers/serial/atmel_serial.c linux-2.6.25.3_ok/drivers/serial/atmel_serial.c
+> >> --- linux-2.6.25.3/drivers/serial/atmel_serial.c	2008-05-10 07:48:50.000000000 +0300
+> >> +++ linux-2.6.25.3_ok/drivers/serial/atmel_serial.c	2008-09-08 12:35:35.000000000 +0300
+> >> @@ -132,7 +132,8 @@ struct atmel_uart_char {
+> >>  struct atmel_uart_port {
+> >>  	struct uart_port	uart;		/* uart */
+> >>  	struct clk		*clk;		/* uart clock */
+> >> -	unsigned short		suspended;	/* is port suspended? */
+> >> +	int			may_wakeup;		/* cached value of device_may_wakeup for times we need to disable it */
+> >> +	int			backup_imr;		/* back up the IMR during suspend */
+> > 
+> > Since this is a hardware register, shouldn't it be u32?
+> Yep...
+
+I'll change it.
+
+> > 
+> >> @@ -1264,6 +1273,8 @@ void __init atmel_register_uart_fns(stru
+> >>  #ifdef CONFIG_SERIAL_ATMEL_CONSOLE
+> >>  static void atmel_console_putchar(struct uart_port *port, int ch)
+> >>  {
+> >> +	if (port->suspended) return;
+> >> +
+> >>  	while (!(UART_GET_CSR(port) & ATMEL_US_TXRDY))
+> >>  		cpu_relax();
+> >>  	UART_PUT_CHAR(port, ch);
+> >> @@ -1278,6 +1289,8 @@ static void atmel_console_write(struct c
+> >>  	unsigned int status, imr;
+> >>  	unsigned int pdc_tx;
+> >>  
+> >> +	if (port->suspended) return;
+> >> +
+> > 
+> > Are both of these checks necessary? It doesn't look like
+> > atmel_console_putchar() can be called from anywhere else than
+> > atmel_console_write().
+> Actually, not so much. I added them for protection so that we wouldn't run into
+> a deadlock loop if something changes again. Those while() loops make me cautious.
+> And I didn't have the time to look up if the suspend code is thread-safe without this.
+
+I don't think it's much safer with that extra check if suspend can be
+called in parallel with this. In that case, the only way to make
+_absolutely_ sure would be to move the test inside the while loops.
+
+And I only think this actually matters if console suspend is disabled,
+which should probably never happen on a production system. So I'm
+wondering if we really need any of those checks.
+
+> I had once a bug in my RTT driver (before there was any RTT driver in mainline),
+> that left the RTT interrupt flag set and this blocked the sysc interrupt. This was
+> a pain to debug and I try to avoid such problems as much as I can.
+> With RTT, even the WDT did not help as the WDT does not reset RTT and so if this
+> happened, the device just ran into WDT resetting loop until the battery died.
+
+Understand. 
+
+> > 
+> > Also, does the no_console_suspend parameter still work after this?
+> Didn't try that one as I do only slow clock suspend, not standby.
+
+Ok, I'll try it.
+
+> Actually, I had an idea to implement the wakeup with GPIO interrupt. So that
+> we could wake up even when we're running on slow clock.
+
+Yes, that would be pretty cool.
+
+Haavard
