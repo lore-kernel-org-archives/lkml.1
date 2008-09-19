@@ -1,248 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYISQYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYISQ14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYISQYP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 12:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYISQYA
+	id S1754736AbYISQ14 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 12:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYISQ1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 12:24:00 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:55073 "EHLO mo10.iij4u.or.jp"
+	Fri, 19 Sep 2008 12:27:48 -0400
+Received: from smtp21.orange.fr ([80.12.242.46]:37323 "EHLO smtp21.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751294AbYISQX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 12:23:59 -0400
-Date: Sat, 20 Sep 2008 01:23:30 +0900
-To: mingo@elte.hu
-Cc: joerg.roedel@amd.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] remove fullflush and nofullflush in IOMMU generic option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080920012322R.fujita.tomonori@lab.ntt.co.jp>
+	id S1752538AbYISQ1r convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 12:27:47 -0400
+X-ME-UUID: 20080919162740517.7E5D61C0008C@mwinf2103.orange.fr
+Message-ID: <48D3D2EF.5090808@cosmosbay.com>
+Date: Fri, 19 Sep 2008 18:27:27 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, jeremy@goop.org, ebiederm@xmission.com,
+       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org,
+       penberg@cs.helsinki.fi
+Subject: Re: [patch 3/4] cpu alloc: The allocator
+References: <20080919145859.062069850@quilx.com> <20080919145929.158651064@quilx.com>
+In-Reply-To: <20080919145929.158651064@quilx.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch against tip/x86/iommu virtually reverts
-2842e5bf3115193f05dc9dac20f940e7abf44c1a. But just reverting the
-commit breaks AMD IOMMU so this patch also includes some fixes.
+Christoph Lameter a écrit :
+> The per cpu allocator allows dynamic allocation of memory on all
+> processors simultaneously. A bitmap is used to track used areas.
+> The allocator implements tight packing to reduce the cache footprint
+> and increase speed since cacheline contention is typically not a concern
+> for memory mainly used by a single cpu. Small objects will fill up gaps
+> left by larger allocations that required alignments.
+> 
+> The size of the cpu_alloc area can be changed via the percpu=xxx
+> kernel parameter.
+> 
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+> ---
+>  include/linux/percpu.h |   46 ++++++++++++
+>  include/linux/vmstat.h |    2 
+>  mm/Makefile            |    2 
+>  mm/cpu_alloc.c         |  181 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  mm/vmstat.c            |    1 
+>  5 files changed, 230 insertions(+), 2 deletions(-)
+>  create mode 100644 include/linux/cpu_alloc.h
+>  create mode 100644 mm/cpu_alloc.c
+> 
+> Index: linux-2.6/include/linux/vmstat.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/vmstat.h	2008-09-19 09:45:02.000000000 -0500
+> +++ linux-2.6/include/linux/vmstat.h	2008-09-19 09:49:05.000000000 -0500
+> @@ -37,7 +37,7 @@
+>  		FOR_ALL_ZONES(PGSCAN_KSWAPD),
+>  		FOR_ALL_ZONES(PGSCAN_DIRECT),
+>  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
+> -		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
+> +		PAGEOUTRUN, ALLOCSTALL, PGROTATED, CPU_BYTES,
+>  #ifdef CONFIG_HUGETLB_PAGE
+>  		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
+>  #endif
+> Index: linux-2.6/mm/Makefile
+> ===================================================================
+> --- linux-2.6.orig/mm/Makefile	2008-09-19 09:45:02.000000000 -0500
+> +++ linux-2.6/mm/Makefile	2008-09-19 09:49:05.000000000 -0500
+> @@ -11,7 +11,7 @@
+>  			   maccess.o page_alloc.o page-writeback.o pdflush.o \
+>  			   readahead.o swap.o truncate.o vmscan.o \
+>  			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
+> -			   page_isolation.o mm_init.o $(mmu-y)
+> +			   page_isolation.o mm_init.o cpu_alloc.o $(mmu-y)
+>  
+>  obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
+>  obj-$(CONFIG_BOUNCE)	+= bounce.o
+> Index: linux-2.6/mm/cpu_alloc.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6/mm/cpu_alloc.c	2008-09-19 09:49:59.000000000 -0500
+> @@ -0,0 +1,182 @@
+> +/*
+> + * Cpu allocator - Manage objects allocated for each processor
+> + *
+> + * (C) 2008 SGI, Christoph Lameter <cl@linux-foundation.org>
+> + * 	Basic implementation with allocation and free from a dedicated per
+> + * 	cpu area.
+> + *
+> + * The per cpu allocator allows a dynamic allocation of a piece of memory on
+> + * every processor. A bitmap is used to track used areas.
+> + * The allocator implements tight packing to reduce the cache footprint
+> + * and increase speed since cacheline contention is typically not a concern
+> + * for memory mainly used by a single cpu. Small objects will fill up gaps
+> + * left by larger allocations that required alignments.
+> + */
+> +#include <linux/mm.h>
+> +#include <linux/mmzone.h>
+> +#include <linux/module.h>
+> +#include <linux/percpu.h>
+> +#include <linux/bitmap.h>
+> +#include <asm/sections.h>
+> +#include <linux/bootmem.h>
+> +
+> +/*
+> + * Basic allocation unit. A bit map is created to track the use of each
+> + * UNIT_SIZE element in the cpu area.
+> + */
+> +#define UNIT_TYPE int
+> +#define UNIT_SIZE sizeof(UNIT_TYPE)
+> +
+> +int units;	/* Actual available units */
+> +
+> +/*
+> + * How many units are needed for an object of a given size
+> + */
+> +static int size_to_units(unsigned long size)
+> +{
+> +	return DIV_ROUND_UP(size, UNIT_SIZE);
+> +}
+> +
+> +/*
+> + * Lock to protect the bitmap and the meta data for the cpu allocator.
+> + */
+> +static DEFINE_SPINLOCK(cpu_alloc_map_lock);
+> +static unsigned long *cpu_alloc_map;
+> +static int nr_units;		/* Number of available units */
+> +static int first_free;		/* First known free unit */
+> +
+> +/*
+> + * Mark an object as used in the cpu_alloc_map
+> + *
+> + * Must hold cpu_alloc_map_lock
+> + */
+> +static void set_map(int start, int length)
+> +{
+> +	while (length-- > 0)
+> +		__set_bit(start++, cpu_alloc_map);
+> +}
+> +
+> +/*
+> + * Mark an area as freed.
+> + *
+> + * Must hold cpu_alloc_map_lock
+> + */
+> +static void clear_map(int start, int length)
+> +{
+> +	while (length-- > 0)
+> +		__clear_bit(start++, cpu_alloc_map);
+> +}
+> +
+> +/*
+> + * Allocate an object of a certain size
+> + *
+> + * Returns a special pointer that can be used with CPU_PTR to find the
+> + * address of the object for a certain cpu.
+> + */
+> +void *cpu_alloc(unsigned long size, gfp_t gfpflags, unsigned long align)
+> +{
+> +	unsigned long start;
+> +	int units = size_to_units(size);
+> +	void *ptr;
+> +	int first;
+> +	unsigned long flags;
+> +
+> +	if (!size)
+> +		return ZERO_SIZE_PTR;
+> +
+> +	WARN_ON(align > PAGE_SIZE);
 
-The above commit adds new two options to x86 IOMMU generic kernel boot
-options, fullflush and nofullflush. But such change that affects all
-the IOMMUs needs more discussion (all IOMMU parties need the chance to
-discuss it):
+if (align < UNIT_SIZE)
+	align = UNIT_SIZE;
 
-http://lkml.org/lkml/2008/9/19/106
+> +
+> +	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
+> +
+> +	first = 1;
+> +	start = first_free;
+> +
+> +	for ( ; ; ) {
+> +
+> +		start = find_next_zero_bit(cpu_alloc_map, nr_units, start);
+> +		if (start >= nr_units)
+> +			goto out_of_memory;
+> +
+> +		if (first)
+> +			first_free = start;
+> +
+> +		/*
+> +		 * Check alignment and that there is enough space after
+> +		 * the starting unit.
+> +		 */
+> +		if (start % (align / UNIT_SIZE) == 0 &&
 
-For me, adding these boot parameters doesn't make sense.
+or else... divide per 0 ?
 
-All the hardware IOMMUs could use 'fullflush' for lazy IOTLB flushing
-but Calgary doesn't support it. Intel VT-d has the different option
-for it (and we can't rename it). So it might be useful for only GART
-and AMD IOMMU.
+> +			find_next_bit(cpu_alloc_map, nr_units, start + 1)
+> +					>= start + units)
+> +				break;
+> +		start++;
+> +		first = 0;
+> +	}
 
-'nofullflush' definitely is pointless. 'nofullflush' option doesn't
-change any kernel behavior and it was added just for GART
-compatibility. We should not have such generic meaningless option just
-for GART.
 
-This patch removes the fullflush and nofullflush from the generic
-kernel boot options and adds 'fullflush' support for AMD IOMMU.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- Documentation/kernel-parameters.txt       |    9 +++++----
- Documentation/x86/x86_64/boot-options.txt |    2 ++
- arch/x86/kernel/amd_iommu.c               |    4 ++--
- arch/x86/kernel/amd_iommu_init.c          |    5 ++++-
- arch/x86/kernel/pci-dma.c                 |   13 -------------
- arch/x86/kernel/pci-gart_64.c             |   13 +++++++++++++
- include/asm-x86/amd_iommu_types.h         |    6 ++++++
- include/asm-x86/iommu.h                   |    1 -
- 8 files changed, 32 insertions(+), 21 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 569527e..4b9ee9b 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -284,6 +284,11 @@ and is between 256 and 4096 characters. It is defined in the file
- 			isolate - enable device isolation (each device, as far
- 			          as possible, will get its own protection
- 			          domain)
-+			fullflush - enable flushing of IO/TLB entries when
-+				    they are unmapped. Otherwise they are
-+				    flushed before they will be reused, which
-+				    is a lot of faster
-+
- 	amd_iommu_size= [HW,X86-64]
- 			Define the size of the aperture for the AMD IOMMU
- 			driver. Possible values are:
-@@ -888,10 +893,6 @@ and is between 256 and 4096 characters. It is defined in the file
- 		nomerge
- 		forcesac
- 		soft
--		fullflush
--			Flush IO/TLB at every deallocation
--		nofullflush
--			Flush IO/TLB only when addresses are reused (default)
- 
- 
- 	intel_iommu=	[DMAR] Intel IOMMU driver (DMAR) option
-diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
-index 42c887b..72ffb53 100644
---- a/Documentation/x86/x86_64/boot-options.txt
-+++ b/Documentation/x86/x86_64/boot-options.txt
-@@ -229,6 +229,8 @@ IOMMU (input/output memory management unit)
-   iommu options only relevant to the AMD GART hardware IOMMU:
-     <size>             Set the size of the remapping area in bytes.
-     allowed            Overwrite iommu off workarounds for specific chipsets.
-+    fullflush          Flush IOMMU on each allocation (default).
-+    nofullflush        Don't use IOMMU fullflush.
-     leak               Turn on simple iommu leak tracing (only when
-                        CONFIG_IOMMU_LEAK is on). Default number of leak pages
-                        is 20.
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 853b614..523e113 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -958,7 +958,7 @@ static dma_addr_t __map_single(struct device *dev,
- 	}
- 	address += offset;
- 
--	if (unlikely(dma_dom->need_flush && !iommu_fullflush)) {
-+	if (unlikely(dma_dom->need_flush && !amd_iommu_unmap_flush)) {
- 		iommu_flush_tlb(iommu, dma_dom->domain.id);
- 		dma_dom->need_flush = false;
- 	} else if (unlikely(iommu_has_npcache(iommu)))
-@@ -995,7 +995,7 @@ static void __unmap_single(struct amd_iommu *iommu,
- 
- 	dma_ops_free_addresses(dma_dom, dma_addr, pages);
- 
--	if (iommu_fullflush)
-+	if (amd_iommu_unmap_flush)
- 		iommu_flush_pages(iommu, dma_dom->domain.id, dma_addr, size);
- }
- 
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index db0c83a..148fcfe 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -122,6 +122,7 @@ LIST_HEAD(amd_iommu_unity_map);		/* a list of required unity mappings
- 					   we find in ACPI */
- unsigned amd_iommu_aperture_order = 26; /* size of aperture in power of 2 */
- int amd_iommu_isolate;			/* if 1, device isolation is enabled */
-+bool amd_iommu_unmap_flush;		/* if true, flush on every unmap */
- 
- LIST_HEAD(amd_iommu_list);		/* list of all AMD IOMMUs in the
- 					   system */
-@@ -1144,7 +1145,7 @@ int __init amd_iommu_init(void)
- 	else
- 		printk("disabled\n");
- 
--	if (iommu_fullflush)
-+	if (amd_iommu_unmap_flush)
- 		printk(KERN_INFO "AMD IOMMU: IO/TLB flush on unmap enabled\n");
- 	else
- 		printk(KERN_INFO "AMD IOMMU: Lazy IO/TLB flushing enabled\n");
-@@ -1214,6 +1215,8 @@ static int __init parse_amd_iommu_options(char *str)
- 	for (; *str; ++str) {
- 		if (strncmp(str, "isolate", 7) == 0)
- 			amd_iommu_isolate = 1;
-+		if (strncmp(str, "fullflush", 11) == 0)
-+			amd_iommu_unmap_flush = true;
- 	}
- 
- 	return 1;
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 6dae123..23882c4 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -16,15 +16,6 @@ EXPORT_SYMBOL(dma_ops);
- 
- static int iommu_sac_force __read_mostly;
- 
--/*
-- * If this is disabled the IOMMU will use an optimized flushing strategy
-- * of only flushing when an mapping is reused. With it true the GART is
-- * flushed for every mapping. Problem is that doing the lazy flush seems
-- * to trigger bugs with some popular PCI cards, in particular 3ware (but
-- * has been also also seen with Qlogic at least).
-- */
--int iommu_fullflush;
--
- #ifdef CONFIG_IOMMU_DEBUG
- int panic_on_overflow __read_mostly = 1;
- int force_iommu __read_mostly = 1;
-@@ -180,10 +171,6 @@ static __init int iommu_setup(char *p)
- 		}
- 		if (!strncmp(p, "nomerge", 7))
- 			iommu_merge = 0;
--		if (!strncmp(p, "fullflush", 8))
--			iommu_fullflush = 1;
--		if (!strncmp(p, "nofullflush", 11))
--			iommu_fullflush = 0;
- 		if (!strncmp(p, "forcesac", 8))
- 			iommu_sac_force = 1;
- 		if (!strncmp(p, "allowdac", 8))
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index 508ef47..9739d56 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -45,6 +45,15 @@ static unsigned long iommu_pages;	/* .. and in pages */
- 
- static u32 *iommu_gatt_base;		/* Remapping table */
- 
-+/*
-+ * If this is disabled the IOMMU will use an optimized flushing strategy
-+ * of only flushing when an mapping is reused. With it true the GART is
-+ * flushed for every mapping. Problem is that doing the lazy flush seems
-+ * to trigger bugs with some popular PCI cards, in particular 3ware (but
-+ * has been also also seen with Qlogic at least).
-+ */
-+int iommu_fullflush = 1;
-+
- /* Allocation bitmap for the remapping area: */
- static DEFINE_SPINLOCK(iommu_bitmap_lock);
- /* Guarded by iommu_bitmap_lock: */
-@@ -892,6 +901,10 @@ void __init gart_parse_options(char *p)
- #endif
- 	if (isdigit(*p) && get_option(&p, &arg))
- 		iommu_size = arg;
-+	if (!strncmp(p, "fullflush", 8))
-+		iommu_fullflush = 1;
-+	if (!strncmp(p, "nofullflush", 11))
-+		iommu_fullflush = 0;
- 	if (!strncmp(p, "noagp", 5))
- 		no_agp = 1;
- 	if (!strncmp(p, "noaperture", 10))
-diff --git a/include/asm-x86/amd_iommu_types.h b/include/asm-x86/amd_iommu_types.h
-index d90b66a..b308586 100644
---- a/include/asm-x86/amd_iommu_types.h
-+++ b/include/asm-x86/amd_iommu_types.h
-@@ -376,6 +376,12 @@ extern unsigned long *amd_iommu_pd_alloc_bitmap;
- /* will be 1 if device isolation is enabled */
- extern int amd_iommu_isolate;
- 
-+/*
-+ * If true, the addresses will be flushed on unmap time, not when
-+ * they are reused
-+ */
-+extern bool amd_iommu_unmap_flush;
-+
- /* takes a PCI device id and prints it out in a readable form */
- static inline void print_devid(u16 devid, int nl)
- {
-diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
-index bcebc37..546ad31 100644
---- a/include/asm-x86/iommu.h
-+++ b/include/asm-x86/iommu.h
-@@ -7,7 +7,6 @@ extern struct dma_mapping_ops nommu_dma_ops;
- extern int force_iommu, no_iommu;
- extern int iommu_detected;
- extern int dmar_disabled;
--extern int iommu_fullflush;
- 
- extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
- 
--- 
-1.5.4.2
 
