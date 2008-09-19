@@ -1,106 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYISAkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757226AbYISAmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbYISAkR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 20:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbYISAkE
+	id S1757226AbYISAmd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 20:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbYISAmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 20:40:04 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:51485 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755788AbYISAkD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 20:40:03 -0400
-Date: Fri, 19 Sep 2008 02:44:31 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: andi@firstfloor.org, mingo@elte.hu, joerg.roedel@amd.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about virtual mappings
-Message-ID: <20080919004431.GS25711@one.firstfloor.org>
-References: <20080917002404.GG25711@one.firstfloor.org> <20080918035726F.fujita.tomonori@lab.ntt.co.jp> <20080918182029.GO25711@one.firstfloor.org> <20080919071534C.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080919071534C.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 18 Sep 2008 20:42:25 -0400
+Received: from gw.goop.org ([64.81.55.164]:54526 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755623AbYISAmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 20:42:24 -0400
+Message-ID: <48D2F571.4010504@goop.org>
+Date: Thu, 18 Sep 2008 17:42:25 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickens <hugh@veritas.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: Populating multiple ptes at fault time
+References: <48D142B2.3040607@goop.org> <48D17E75.80807@redhat.com> <48D1851B.70703@goop.org> <48D18919.9060808@redhat.com> <48D18C6B.5010407@goop.org> <48D2B970.7040903@redhat.com> <48D2D3B2.10503@goop.org> <48D2E65A.6020004@redhat.com> <48D2EBBB.205@goop.org> <48D2F05C.4040000@redhat.com>
+In-Reply-To: <48D2F05C.4040000@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 07:15:59AM +0900, FUJITA Tomonori wrote:
-> On Thu, 18 Sep 2008 20:20:29 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > The falling back mechanism was moved to pci-nommu from the common code
-> > > since it doesn't work for other IOMMUs that always need virtual
-> > 
-> > There's no fallback for _map_sg/_map_single. All the fallback to GFP
-> > only works for coherent allocations, but not for streaming mappings.
-> 
-> Yeah, so the falling back mechanism was moved to pci-nommu's
-> alloc_coherent.
+Avi Kivity wrote:
+>>
+>> The only direct use of pte_young() is in zap_pte_range, within a
+>> mmu_lazy region.  So syncing the A bit state on entering lazy mmu mode
+>> would work fine there.
+>>
+>>   
+>
+> Ugh, leaving lazy pte.a mode when entering lazy mmu mode?
 
-Sure, but that doesn't help for map_single/map_sg. The two cases are
-quite different.
+Well, sort of but not quite.  The kernel's announcing its about to start
+processing a batch of ptes, so the hypervisor can take the opportunity
+to update their state before processing.  "Lazy-mode" is from the
+perspective of the kernel lazily updating some state the hypervisor
+might care about, and the sync happens when leaving mode.
 
-> > To make this "fully robust" for masks < 32bit you would need to implement 
-> > a new swiotlb that uses GFP_DMA allocations as fallback (or use the DMA 
-> > allocator's swiotlb which can actually handle this)
-> 
-> Do you mean if GART's alloc_coherent can't find a virtual address that
-> a device can access to, it should try GFP_DMA allocations as fallback?
+The flip-side is when the hypervisor is lazily updating some state the
+kernel cares about, so it makes sense that the sync when the kernel
+enters its lazy mode.  But the analogy isn't very good because we don't
+really have an explicit notion of "hypervisor lazy mode", or a formal
+handoff of shared state between the kernel and hypervisor.  But in this
+case the behaviour isn't too bad.
 
-It used to at least, that is how I wrote it. That is it did all GFP_DMA,
-GFP_DMA32, swiotlb, ZONE_NORMAL based on a fallback scheme.
+>> The call via page_referenced_one() doesn't seem to have a very
+>> convenient hook though.  Perhaps putting something in
+>> page_check_address() would do the job.
+>>
+>>   
+>
+> Why there?
+>
+> Why not explicitly in the callers?  We need more than to exit lazy
+> pte.a mode, we also need to enter it again later.
+>
 
+Because that's the code that actually walks the pagetable and has the
+address of the pte; it just returns a pte_t, not a pte_t *.  It depends
+on whether you want fetch the A bit via ptep or vaddr (in general we
+pass mm, ptep and vaddr to ops which operate on the current pagetable).
 
-
-> 
-> GART could but why GART should do? If full IOMMUs' alloc_coherent
-
-The GART is somewhere in the 4GB range so you cannot use it to 
-map anything < 4GB.
-
-Also GART is pretty small (and it's not a isolating) IOMMU so 
-if you can get direct memory allocation that fits you should 
-definitely do that.
-
-
-> can't find a virtual address that a device can access to, it's
-> failure. No fallback is for them. Why can't GART use the same logic?
-
-GART uses the same logic, but only for alloc_cohernet, not for
- map_sg/map_single and masks < 4GB.
-
-> Yeah, GART is not a full IOMMU, so it can have a fallback for this
-> case. But why can't GART work in the same way other IOMMUs?
-
-Because GART cannot remap to addresses < 4GB reliably.
-
-The big difference to the other IOMMUs is that it's only a tiny memory
-hole somewhere near the 4GB boundary, not a full remapper of the full 
-4GB space.
-
-
-> 
-> > So you're right now basically checking for something that you cannot
-> > fix. And also you try to check for (but not handle) something that even 
-> > 32bit x86 doesn't handle. So if some driver relied on you checking
-> > for it on 64bit it wouldn't work on 32bit x86 which would be a bad 
-> > thing.
-> 
-> What does '32bit x86 doesn't handle' mean? pci-nommu's alloc_coherent
-> can handle < 32bit bit mask in the fallback path.
-
-Yes it does, just map_sg/map_single doesn't.  And your patch changed
-that in GART and that is what I objected too.
-
-> 
-> Or you are talking about '_map_sg/_map_single'? If so, as we
-> discussed, < 32bit bit mask can be handled in else where. The patch
-
-I don't hink it can, unless you want to write another swiotlb using
-GFP_DMA (or use the dma allocator). That is because the swiotlb
-has the same limitation as GART. It cannot reliably remap to < 4GB.
-
--Andi
+    J
