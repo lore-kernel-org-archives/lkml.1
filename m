@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYISRCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbYISRF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbYISRCF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 13:02:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYISRBz
+	id S1754612AbYISRF7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 13:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbYISRFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 13:01:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42696 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751389AbYISRBz (ORCPT
+	Fri, 19 Sep 2008 13:05:51 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:46119 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752660AbYISRFt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 13:01:55 -0400
-Message-ID: <48D3DAC5.9090308@linux-foundation.org>
-Date: Fri, 19 Sep 2008 12:00:53 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 19 Sep 2008 13:05:49 -0400
+Date: Fri, 19 Sep 2008 13:05:49 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Justin Mattock <justinmattock@gmail.com>
+cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Chris Snook <csnook@redhat.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Linux-usb <linux-usb@vger.kernel.org>
+Subject: Re: [19.666764] Disabling IRQ #23
+In-Reply-To: <dd18b0c30809190941g8b44175haf3e3a7c354fe01c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0809191304050.2142-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, jeremy@goop.org, ebiederm@xmission.com,
-       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org,
-       penberg@cs.helsinki.fi
-Subject: Re: [patch 3/4] cpu alloc: The allocator
-References: <20080919145859.062069850@quilx.com> <20080919145929.158651064@quilx.com> <48D3D2EF.5090808@cosmosbay.com> <48D3D836.40306@linux-foundation.org>
-In-Reply-To: <48D3D836.40306@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Completely wrong. We need this patch that Eric suggested:
+On Fri, 19 Sep 2008, Justin Mattock wrote:
 
+> The disable irq #23 message.
+> 
+> As for the HC died; cleaning up
+> (where did you see that, can't seem to find that?)
 
-Subject: cpu_alloc: Allow alignment < UNIT_SIZE
+It's in your original message:
 
-Limit the minimum alignment to UNIT_SIZE.
+	http://marc.info/?l=linux-kernel&m=122107367715361&w=2
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+The line with timestamp 16.068174.
 
-Index: linux-2.6/mm/cpu_alloc.c
-===================================================================
---- linux-2.6.orig/mm/cpu_alloc.c	2008-09-19 11:47:30.000000000 -0500
-+++ linux-2.6/mm/cpu_alloc.c	2008-09-19 11:56:47.000000000 -0500
-@@ -86,6 +86,9 @@
+Alan Stern
 
- 	WARN_ON(align > PAGE_SIZE);
-
-+	if (align < UNIT_SIZE)
-+		align = UNIT_SIZE;
-+
- 	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
-
- 	first = 1
