@@ -1,207 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbYISK6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbYISLBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbYISK6u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 06:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbYISK6n
+	id S1753754AbYISLBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 07:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbYISLBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 06:58:43 -0400
-Received: from smtp.work.de ([212.12.32.49]:56595 "EHLO smtp.work.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751615AbYISK6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 06:58:41 -0400
-From: Julian Scheel <julian@jusst.de>
-To: "Michael Krufky" <mkrufky@linuxtv.org>
-Subject: Re: [linux-dvb] Multiproto API/Driver Update
-Date: Fri, 19 Sep 2008 12:58:35 +0200
-User-Agent: KMail/1.10.1 (Linux/2.6.24-19-generic; KDE/4.1.1; i686; ; )
-Cc: "Andy Walls" <awalls@radix.net>, linux-dvb@linuxtv.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Manu Abraham" <abraham.manu@gmail.com>
-References: <466109.26020.qm@web46101.mail.sp1.yahoo.com> <48CDF7A1.2020905@jusst.de> <37219a840809150842l3a6260j4b57f14026e5c40a@mail.gmail.com>
-In-Reply-To: <37219a840809150842l3a6260j4b57f14026e5c40a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 9416
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 19 Sep 2008 07:01:09 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:41166 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751081AbYISLBI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 07:01:08 -0400
+Date: Fri, 19 Sep 2008 20:01:07 +0900 (JST)
+Message-Id: <20080919.200107.193703747.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Cc: fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com, xemul@openvz.org,
+       agk@sourceware.org
+Subject: [PATCH 0/5] bio-cgroup: Introduction
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200809191258.35827.julian@jusst.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael,
+Hi everyone,
 
-On Monday 15 September 2008 17:42:06 Michael Krufky wrote:
-> In summary, the bottom line is this:
->
-> Manu did a great job with the multiproto API, people were happy using
-> it, and all of the LinuxDVB developer community was happy with the
-> work that was done, and we all wanted to merge it ~ two years ago.
->
-> Back then, Manu said that it wasnt ready, so for some time we waited
-> for him in hopes that he would agree that it was ready for merge.
->
-> As more months went by, Manu was asked if he would be merging his
-> changes, and he kept answering to the effect of "it's not ready yet,
-> but should be in a few weeks"
->
-> Months and months and months went by since then, with an occasional
-> ping to Manu, with the reply "not ready yet" ...
->
-> Two years is a very long time to wait for a new API, especially
-> considering that it was functional from the start.  It was looking
-> like Manu may not have had any intention at all to merge his work into
-> the master v4l/dvb development repository --  It should be not be
-> surprising at all that Steven Toth felt the need to come up with his
-> own solution.
->
-> Steven posted a proposal for his API expansion solution, and he
-> received positive feedback.  Immediately, Manu broke out of his
-> silence and sent in a pull request.
->
->
-> Is there malice here??  No.  There is development, and developers
-> looking to move forward.  Nobody is at fault.
->
->
-> I have posted the above just to clarify what the "politics" actually
-> are, here.  The only real politics going around are those that are
-> accusing others of politics themselves.
->
-> Had Manu been willing to merge his work earlier, this would have all
-> been a non-issue.  However, now there is an alternative proposal on
-> the table, which appears to be more robust and may have more potential
-> that the multiproto proposal.
->
-> Does that mean multiproto is disqualified?   Absolutely not.
->
-> Does the fact that multiproto was there first mean that it will be
-> merged without question now that it is suddenly available?  No, not
-> necessarily.
->
-> What does it mean?  It means that now there are two proposals on the
-> table.  Two ways to solve a problem using different ideas and methods.
->
-> The end users that have piped into the discussion are mostly concerned
-> with which API demonstration repository already contains support for
-> their device.  This should have no bearing whatsoever on the decision
-> of the linuxDVB API extension.  All drivers will be ported to
-> whichever solution is decided upon.
->
-> Now is the time to examine these solutions from a developer point of
-> view, in terms of how this affects kernel developers and application
-> developers alike.  There is no reason to rush into things just because
-> a pull request has been made -- the outcome of this decision is highly
-> important, and we will have to live with the decision for a good long
-> time.
+Here are new releases of bio-cgroup.
+Changes from the previous version are as follows:
 
-Thanks for your version of the history. I just have to say I can't really 
-agree with the way you describe the history. To point this out I looked up 
-some of the old threads...
+- Accurate dirty-page tracking
+  Support migrating pages between bio-cgroups with minimum overhead,
+  but I think such a situation is quite rare.
 
-So everything started in 2005 with initial proposals for a DVB-S2 extension of 
-the API by Marcel. In early 2006 there were some discussions about it on the 
-lists:
-http://thread.gmane.org/gmane.linux.drivers.dvb/23914/focus=24030
-http://thread.gmane.org/gmane.linux.drivers.dvb/24239
+- Fix a bug of swapcache page handling
+  Sometimes, "bad page state" is occurred since the memory controller
+  has temporarily changed the swapcache page handling.
 
-At that thought not much (if any) capable hardware was available, so the idea 
-was put off for the moment.
-Then in April 2006 Manu started to work at the things and provided a first 
-draft based on the changes from Marcel:
-http://thread.gmane.org/gmane.linux.drivers.dvb/25401
+The following is the list of patches:
 
-An initial driver for KNC cards was provided by Manu based on this API 
-proposal. After some discussions on 05 May 2006 Manu requested for a pull of 
-the API:
-http://www.linuxtv.org/pipermail/v4l-dvb-maintainer/2006-May/001006.html
+  [PATCH 0/5] bio-cgroup: Introduction
+  [PATCH 1/5] bio-cgroup: Split the cgroup memory subsystem into two parts
+  [PATCH 2/5] bio-cgroup: Remove a lot of "#ifdef"s
+  [PATCH 3/5] bio-cgroup: Implement the bio-cgroup
+  [PATCH 4/5] bio-cgroup: Add a cgroup support to dm-ioband
+  [PATCH 5/5] bio-cgroup: Dirty page tracking
 
-Immediately followed by Johannes stating that he is not satisfied with the API 
-yet and suggested a rework:
-http://www.linuxtv.org/pipermail/v4l-dvb-maintainer/2006-May/001007.html
+You have to apply the patch dm-ioband v1.5.0 before applying this
+series of patches. The dm-ioband patch can be found at:
+http://people.valinux.co.jp/~ryov/dm-ioband/
 
-At that time rework began while in parallel some people (including jusst 
-technologies) started testing the first drivers. As expected they were still 
-far away from running perfect.
+And you have to select the following config options when compiling kernel:
+  CONFIG_CGROUPS=y
+  CONFIG_CGROUP_BIO=y
+And I recommend you should also select the options for cgroup memory
+subsystem, because it makes it possible to give some I/O bandwidth
+and some memory to a certain cgroup to control delayed write requests
+and the processes in the cgroup will be able to make pages dirty only
+inside the cgroup even when the given bandwidth is narrow.
+  CONFIG_RESOURCE_COUNTERS=y
+  CONFIG_CGROUP_MEM_RES_CTLR=y
 
-So it took a while to come to obvious progress. In January 2007 Manu announced 
-the mp-stb0899-c5 tree - not even the current multiproto tree - which included 
-the results of the rework. Some testing was done on that by more people.
-http://thread.gmane.org/gmane.linux.drivers.dvb/31146/focus=31159
+Please see the following site for more information:
+http://people.valinux.co.jp/~ryov/bio-cgroup/
 
-In February Steven came up with initial support for HVR 4000 in the multiproto 
-tree.
-http://thread.gmane.org/gmane.linux.drivers.dvb/31605/focus=31644
+ --------------------------------------------------------
 
-Furthermore at this time the dvb-apps (at least parts of) were started to be 
-extended by multiproto support, so that more people (which do not write their 
-own applications...) could start testing.
-http://thread.gmane.org/gmane.linux.drivers.dvb/31726/focus=31729
+The following shows how to use dm-ioband with cgroups.
+Please assume that you want make two cgroups, which we call "bio cgroup"
+here, to track down block I/Os and assign them to ioband device "ioband1".
 
-In March Steven asked for the status of multiproto. Manu noted that the API 
-should be fine, but also asked Steve to look into dvb_frontend where Manu was 
-not sure of not having introduced new issues.
-http://thread.gmane.org/gmane.linux.drivers.dvb/31938/focus=32144
+First, mount the bio cgroup filesystem.
 
-End of May 2007 still problems in dvb-core, which were related to the new API 
-came up and were fixed:
-http://thread.gmane.org/gmane.linux.drivers.dvb/33893
+ # mount -t cgroup -o bio none /cgroup/bio
 
-Then in Sept 2007 discussions came up how to integrate the multiproto API, 
-doing this as experimental or non-experimental.
-http://thread.gmane.org/gmane.linux.drivers.dvb/36082/focus=36411
+Then, make new bio cgroups and put some processes in them.
 
-In Oct 2007 Steven abandons his support for multiproto, due to delays caused 
-by several reasons. Political, surely also personal, but also technical.
-http://thread.gmane.org/gmane.linux.drivers.dvb/36583/focus=36670
+ # mkdir /cgroup/bio/bgroup1
+ # mkdir /cgroup/bio/bgroup2
+ # echo 1234 > /cgroup/bio/bgroup1/tasks
+ # echo 5678 > /cgroup/bio/bgroup1/tasks
 
-At the same time some more sophisticated DVB-S2 featues were requestes by the 
-users:
-http://thread.gmane.org/gmane.linux.drivers.dvb/36785/focus=36789
+Now, check the ID of each bio cgroup which is just created.
 
-Finally in Nov 2007 Oliver did a full review of the new code, which was 
-necessary for merging. Still he asked for more reviewers.
-http://article.gmane.org/gmane.linux.drivers.dvb/37665
+ # cat /cgroup/bio/bgroup1/bio.id
+   1
+ # cat /cgroup/bio/bgroup2/bio.id
+   2
 
-In January 2008 another user-initialised thread came up:
-http://thread.gmane.org/gmane.linux.drivers.dvb/38529/focus=38544
-Still testing is obviously needed as bugs still come up.
+Finally, attach the cgroups to "ioband1" and assign them weights.
 
-In Apr 2008 VDR announced support for multiproto tree, so that more testing 
-can be done by many users.
+ # dmsetup message ioband1 0 type cgroup
+ # dmsetup message ioband1 0 attach 1
+ # dmsetup message ioband1 0 attach 2
+ # dmsetup message ioband1 0 weight 1:30
+ # dmsetup message ioband1 0 weight 2:60
 
-End of May Manu left for travelling and personal stuff until August, just with 
-short breaks apllying some minor patches. Still some users report issues with 
-multiproro, which were not fully taken care of.
+You can also make use of the dm-ioband administration tool if you want.
+The tool will be found here:
+http://people.valinux.co.jp/~kaizuka/dm-ioband/iobandctl/manual.html
+You can set up the device with the tool as follows.
+In this case, you don't need to know the IDs of the cgroups.
 
-After his vacation Manu came back on this topic and did another shot at a pull 
-request.
+ # iobandctl.py group /dev/mapper/ioband1 cgroup /cgroup/bio/bgroup1:30 /cgroup/bio/bgroup2:60
 
----
-
-So this is how I see the history. Still 2 years is a very long time, but 
-everyone should keep in mind that introduction of DVB-S2 support has been 
-(still is) a big task with many problems. At first of course it is a big API 
-extension, which is always problematic.
-Furthermore it is an API extension for a hardware which still is not spread 
-too widely and especially was not spread in 2006. And even those who had 
-proper cards for receiving DVB-S2 still were not able to make any use out of 
-the received data. To properly do testing at user side it was really necessary 
-to at least have a way to watch some of the distributed content, just to be 
-sure it is working well.
-This was not possible for a long time due to lacing features in ffmpeg and 
-missing alternatives. Still I think the only really working way is using a 
-binary Windows codec named CoreAVC.
-
-Keeping all this in mind two years are not too long in my eyes.
-
-So this are just my 2 cents on this topic. All that I am interested in is a 
-properly working API with wide application and driver support. Which proposal 
-ever fits better - but decided on a technical base and not on historical or 
-personal terms.
-
-Regards,
-Julian
-
-
+Thanks,
+Ryo Tsuruta
