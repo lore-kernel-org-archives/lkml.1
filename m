@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbYISPd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYISPe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754795AbYISPd6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 11:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYISPdr
+	id S1754603AbYISPe3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 11:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbYISPeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 11:33:47 -0400
-Received: from web26208.mail.ukl.yahoo.com ([217.12.10.245]:20418 "HELO
-	web26208.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750927AbYISPdq convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 11:33:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=26NYPtgzzkOeWcdMIgYOzj4Al4ufEVYj+tJFGx6F/3zSpow/zOxsntH0lo59T1T7mFE+QdDgE+dpVhWKoWfSK3Ykx9jS7o4rUcKI4ZGgbINlmIqV1L86aMQNTQ3Cu+f9XKoG05eOEmL2modpkVB7adQpKCCTJRuuMHzRKt1hz/c=;
-X-YMail-OSG: zh1SAHEVM1lMkPav0nnI3GDjHF85jX0a8050UdEpfMZBmICPZytZoQlBk4pYKHgUY13RDeXxN5lzAtT_36Nd_Yk7pkYAbR84iqZoOD0uym8BloHrdv0zlCS2arKMI8BPCf5pO53kozUNo8XTaJc-
-X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
-Date: Fri, 19 Sep 2008 15:33:44 +0000 (GMT)
-From: Michael Trimarchi <trimarchimichael@yahoo.it>
-Subject: Re: [PATCH] atmel_serial: update the powersave handler to match serial core
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Andrew Victor <linux@maxim.org.za>,
-       Anti Sullin <anti.sullin@artecdesign.ee>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+	Fri, 19 Sep 2008 11:34:20 -0400
+Received: from pih-relay06.plus.net ([212.159.14.19]:60951 "EHLO
+	pih-relay06.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752229AbYISPeT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 11:34:19 -0400
+Message-ID: <48D3C67B.70909@yahoo.com>
+Date: Fri, 19 Sep 2008 16:34:19 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <393.6138.qm@web26208.mail.ukl.yahoo.com>
+To: rankincj@yahoo.com
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Thinkpad T60p does not recover from Suspend when docked.
+References: <fa.C7YhwtyrMiD4q9ieD9AI3xtKz1U@ifi.uio.no>
+In-Reply-To: <fa.C7YhwtyrMiD4q9ieD9AI3xtKz1U@ifi.uio.no>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Plusnet-Relay: 274e18b0ab964d7bff6fd291ad3e0b2d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Chris Rankin wrote:
+> My user-space environment is Fedora 9, which automatically mounts the
+> docking station's drive under /media when I login. However, it
+> doesn't make any difference if I unmount this drive before suspending
+> - the laptop fails to recover regardless.
+> 
+> I am running a 2.6.25.17-SMP kernel (for graphics card reasons), and
 
+If you are using binary only graphics card drivers does the problem also 
+happen without them never loaded at all?
 
-
-
-> +    /* we can not wake up if we're running on slow clock */
-> +    atmel_port->may_wakeup = device_may_wakeup(&pdev->dev);
-> +    if (atmel_serial_clk_will_stop())
-> +        device_set_wakeup_enable(&pdev->dev, 0);
-> +
-This is not true, the wakeup in the slow clock is possible, configure the
-input pin of the serial device as a gpio, and wake up on gpio. Then you
-must reconfigure as a serial pin, and you can wake up on slow clock.
-
-Regards Michael
-
-__________________________________________________
-Do You Yahoo!?
-Poco spazio e tanto spam? Yahoo! Mail ti protegge dallo spam e ti da tanto spazio gratuito per i tuoi file e i messaggi 
-http://mail.yahoo.it 
+I had a machine that would not suspend properly until some time part way 
+through the 2.6.25 kernel. It might be worth reporting whether you have 
+the same problem (perhaps by using a live cd) when you use a 2.6.26 or 
+later kernel...
