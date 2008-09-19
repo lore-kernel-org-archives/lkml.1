@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYISV5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbYISV6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbYISV5q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 17:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYISV5f
+	id S1755189AbYISV6W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 17:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYISV6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 17:57:35 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:11862 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbYISV5e (ORCPT
+	Fri, 19 Sep 2008 17:58:08 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:26661 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbYISV6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 17:57:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hmvprPnQqqoCUAIeVULgPHrW1eimdMcbANemCrHZDN+Q48j46T1x8V+uhh4s9sHhc2
-         3MKpT7iNIKH9YnyBf9CMVuFJnZxpEPyEkN75aneiGgfHRJupC9ORlDVviNWomrBC/cPm
-         T7zqKlVfqjrfEDlSufMWmmOX7IIOxqw/zugao=
-Message-ID: <86802c440809191457g19e2cbbeo26aa3dff613b057f@mail.gmail.com>
-Date: Fri, 19 Sep 2008 14:57:34 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Chris Li" <lkml@chrisli.org>
-Subject: Re: irq 19: nobody cared
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <70318cbf0809191413v70c49eccq9ed16ae50864a1a5@mail.gmail.com>
+	Fri, 19 Sep 2008 17:58:06 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references:x-gmailtapped-by;
+	b=QQ3+fvgCOTpjAoZNGauaKtd0VtCY8p77nZ4mHi8lxh3lAPvSAeqvQkMmz+jusqp2D
+	M2Khi+yUAlIbXSynsI0Bw==
+Message-ID: <33307c790809191457y3ebffa28xa6d9ab6431554618@mail.gmail.com>
+Date: Fri, 19 Sep 2008 14:57:56 -0700
+From: "Martin Bligh" <mbligh@google.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: Unified tracing buffer
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>
+In-Reply-To: <20080919144258.ac787fdf.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com>
-	 <86802c440809191350h21327c76l55d2134d7667f5d0@mail.gmail.com>
-	 <70318cbf0809191413v70c49eccq9ed16ae50864a1a5@mail.gmail.com>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+	 <20080919144258.ac787fdf.randy.dunlap@oracle.com>
+X-GMailtapped-By: 172.24.198.81
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 2:13 PM, Chris Li <lkml@chrisli.org> wrote:
-> On Fri, Sep 19, 2008 at 1:50 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->>
->> can you boot with pci=earlydump ?
->>
->> YH
->>
+>> Event ids are 16 bit, dynamically allocated.
 >
-> Here we go. I attached the new dmesg with pci=earlydump.
+> What are these (like)?
+
+u16
+
+Sorry, probably lots of implicit assumptions in there that I forgot to explain
+
+> Arch-specific "word"?
+> or some fixed-size-for-all-systems (so that trace buffers can be
+> shared/used on other systems?)  Preferably the latter.
+
+Mmmm. I don't see anything wrong with making it just 8 byte aligned, personally.
+Steven - this was your thing?
+
+>> Variable record length, header will start with length record.
+>> Timestamps in fixed timebase, monotonically increasing (across all CPUs)
 >
+> what timestamp resolution?
 
-0x1a.2
-0x1d.1
-0x1f.2
-0x1f.5
-
-are sharing pin 0x19...
-
-but early dump can not find 0x1a.2, 0x1f.2, 0x1f.5
-
-YH
+ns is probably sufficient for output, but may need to be higher
+internally to get
+correct ordering of events across CPUs. So, as long as we record this in
+the buffer header, the internal resolution shouldn't be critical. The text
+print output ... I'd say ns? We can put it relative to wall time in there,
+as long as we record it in the buffer header at trace start. I guess we should
+document the buffer header ;-)
