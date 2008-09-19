@@ -1,295 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755852AbYISStH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbYISSxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755852AbYISStH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 14:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbYISSsx
+	id S1755314AbYISSxw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 14:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYISSxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 14:48:53 -0400
-Received: from mga11.intel.com ([192.55.52.93]:39218 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753818AbYISSsw convert rfc822-to-8bit (ORCPT
+	Fri, 19 Sep 2008 14:53:44 -0400
+Received: from lana.hrz.tu-chemnitz.de ([134.109.132.3]:45323 "EHLO
+	lana.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129AbYISSxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 14:48:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,432,1217833200"; 
-   d="scan'208";a="382277082"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 19 Sep 2008 14:53:44 -0400
+From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
+Organization: Chemnitz University of Technology
+To: Janne Grunau <j@jannau.net>
+Subject: Re: [PATCH 02/18] lirc serial port receiver/transmitter device driver
+Date: Fri, 19 Sep 2008 20:53:36 +0200
+User-Agent: KMail/1.9.5
+Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
+       Christoph Bartelmus <lirc@bartelmus.de>
+References: <200809112149.25762.stefan.bauer@cs.tu-chemnitz.de> <200809192005.12068.stefan.bauer@cs.tu-chemnitz.de> <200809192026.21107.j@jannau.net>
+In-Reply-To: <200809192026.21107.j@jannau.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
-Date: Fri, 19 Sep 2008 11:48:50 -0700
-Message-ID: <8A3E977AB3C24845947ADAAE0526E39505192554@orsmsx419.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
-Thread-Index: Ackaf0OoIJYVYajGRNKHVXy+sb1EuAACK4oQAAARDvA=
-References: <1221670377-19295-4-git-send-email-joerg.roedel@amd.com> <20080918041104K.fujita.tomonori@lab.ntt.co.jp> <20080917192827.GA18515@8bytes.org> <20080918102931Z.fujita.tomonori@lab.ntt.co.jp> <20080918140350.GE24392@amd.com> <20080919174339.GA29039@8bytes.org> 
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       "Joerg Roedel" <joro@8bytes.org>, "Raj, Ashok" <ashok.raj@intel.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>, <muli@il.ibm.com>,
-       "Woodhouse, David" <david.woodhouse@intel.com>
-Cc: "Joerg Roedel" <joerg.roedel@amd.com>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       <iommu@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-X-OriginalArrivalTime: 19 Sep 2008 18:48:51.0167 (UTC) FILETIME=[5B9D26F0:01C91A88]
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809192053.36760.stefan.bauer@cs.tu-chemnitz.de>
+X-Spam-Score: -1.4 (-)
+X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
+	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
+	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
+	weitergeleitet
+	--- Ende der SpamAssassin Textanalyse
+X-Scan-Signature: 7a8bfbfb0f841b0156073f42c525b1a9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 19 September 2008 20:26, Janne Grunau wrote:
+> On Friday 19 September 2008 20:05:11 Stefan Bauer wrote:
+> > Thank you for keeping me up to date, here are my test results with
+> > todays (36e60bd457588b2a2fd37e0c1d0652a9fe214d85) git:
+> >
+> > - But lircd crashes immediately every time irexec/irw tries to
+> > connect:
+> >
+> > BUG: unable to handle kernel NULL pointer dereference at 0000000c
+>
+> not necessary, it is
+> commit bc2039245c6390bd414a61c9395604c4155a58c6
+> Author: Janne Grunau <j@jannau.net>
+> Date:   Thu Sep 18 20:49:19 2008 +0200
+>
+>     reimplement lirc_buffer as kfifo wrapper
 
-Adding David Wookhouse who is now the official maintainer for intel VT-d
-driver.
------Original Message-----
-From: Keshavamurthy, Anil S 
-Sent: Friday, September 19, 2008 11:47 AM
-To: 'Joerg Roedel'; Raj, Ashok; Li, Shaohua; muli@il.ibm.com
-Cc: Joerg Roedel; FUJITA Tomonori; iommu@lists.linux-foundation.org;
-linux-kernel@vger.kernel.org; Ingo Molnar
-Subject: RE: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
+Thank you for pointing me, but bc2039245c6390bd414a61c9395604c4155a58c6~1 
+(lirc_streamzap can use lirc_buffer_clear) also crashes lircd when irexec is 
+started.
+
+BUG: unable to handle kernel NULL pointer dereference at 00000000
+IP: [<c01118ce>] try_to_wake_up+0x16/0x7c
+*pde = 00000000 
+Oops: 0000 [#1] 
+Modules linked in: lirc_serial lirc_dev ves1820 arc4 ecb crypto_blkcipher 
+cryptomgr crypto_algapi rt61pci rt2x00pci rt2x00lib led_class dvb_ttpci 
+saa7146_vv saa7146 mac80211 videobuf_dma_sg ehci_hcd uhci_hcd videobuf_core 
+videodev v4l1_compat ttpci_eeprom cfg80211 eeprom_93cx6
+
+Pid: 2939, comm: lircd Not tainted (2.6.27-rc5 #7)
+EIP: 0060:[<c01118ce>] EFLAGS: 00010046 CPU: 0
+EIP is at try_to_wake_up+0x16/0x7c
+EAX: c04091c0 EBX: 0000000f ECX: 00000000 EDX: c3e85e98
+ESI: c04091c0 EDI: 00000000 EBP: 00000000 ESP: c3e85e98
+ DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+Process lircd (pid: 2939, ti=c3e84000 task=c3e866c0 task.ti=c3e84000)
+Stack: 00000246 c6a16000 00000000 c691905c c6bed400 cadc05b3 00000000 c6a1607c 
+       c014e15c 00000000 c6bed400 c691905c 00000000 c014e09b c014b052 c78c2a00 
+       c774c180 c3e85f14 c6bed400 c3e85f14 00000003 c014b156 c6bed400 00000000 
+Call Trace:
+ [<cadc05b3>] irctl_open+0xdd/0x13c [lirc_dev]
+ [<c014e15c>] chrdev_open+0xc1/0xf6
+ [<c014e09b>] chrdev_open+0x0/0xf6
+ [<c014b052>] __dentry_open+0xf2/0x1da
+ [<c014b156>] nameidata_to_filp+0x1c/0x2c
+ [<c01544ae>] do_filp_open+0x28b/0x545
+ [<c015bc37>] alloc_fd+0x46/0xad
+ [<c014ae8d>] do_sys_open+0x42/0xb6
+ [<c014af45>] sys_open+0x1e/0x23
+ [<c010297d>] sysenter_do_call+0x12/0x25
+ [<c02f0000>] ioctl_standard_iw_point+0x12d/0x200
+ =======================
+Code: 00 00 00 00 5b 5e 5f c3 53 9c 5b fa e8 bb ff ff ff 53 9d 5b c3 55 57 89 
+c7 56 53 89 d3 83 ec 04 89 e2 31 ed e8 3a fd ff ff 89 c6 <8b> 07 85 d8 74 41 
+83 7f 48 00 75 25 31 c0 66 bd 01 00 e8 ba 40 
+EIP: [<c01118ce>] try_to_wake_up+0x16/0x7c SS:ESP 0068:c3e85e98
+---[ end trace 344ec27be5d90ccf ]---
 
 
-
------Original Message-----
-From: Joerg Roedel [mailto:joro@8bytes.org] 
-Sent: Friday, September 19, 2008 10:44 AM
-To: Raj, Ashok; Li, Shaohua; Keshavamurthy, Anil S; muli@il.ibm.com
-Cc: Joerg Roedel; FUJITA Tomonori; iommu@lists.linux-foundation.org;
-linux-kernel@vger.kernel.org; Ingo Molnar
-Subject: Re: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
-
-Hi All,
-
-FUJITA mentioned that I forgot to discuss this patch with you guys, the
-implementers and maintainers for Intel VT-d and Calgary IOMMU drivers. I
-would like to hear your opinion on that patch. He is right with that.
-The patch is already in tip/iommu but can easily be reverted if there
-are fundamental objections.
-The patch basically moves the iommu=fullflush and iommu=nofullflush
-option from the GART code to pci-dma.c. So we can use these parameters
-in other IOMMU implementations too. Since Intel VT-d is implementing
-also lazy IO/TLB flushing it would benefit from this generic parameter
-too. I am not so sure about Calgary, but we have other parameters for
-iommu= which doesn't affect all hardware IOMMUs.
-
-Joerg
-
-On Thu, Sep 18, 2008 at 04:03:50PM +0200, Joerg Roedel wrote:
-> On Thu, Sep 18, 2008 at 10:29:24AM +0900, FUJITA Tomonori wrote:
-> > On Wed, 17 Sep 2008 21:28:27 +0200
-> > Joerg Roedel <joro@8bytes.org> wrote:
-> > 
-> > > On Thu, Sep 18, 2008 at 04:20:18AM +0900, FUJITA Tomonori wrote:
-> > > > On Wed, 17 Sep 2008 18:52:37 +0200
-> > > > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > > 
-> > > > > The IO/TLB flushing on every unmaping operation is the most
-expensive
-> > > > > part there and not strictly necessary. It is sufficient to do
-the flush
-> > > > > before any entries are reused. This is patch implements lazy
-IO/TLB
-> > > > > flushing which does exactly this.
-> > > > > 
-> > > > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > > > > ---
-> > > > >  Documentation/kernel-parameters.txt |    5 +++++
-> > > > >  arch/x86/kernel/amd_iommu.c         |   26
-++++++++++++++++++++++----
-> > > > >  arch/x86/kernel/amd_iommu_init.c    |   10 +++++++++-
-> > > > >  include/asm-x86/amd_iommu_types.h   |    9 +++++++++
-> > > > >  4 files changed, 45 insertions(+), 5 deletions(-)
-> > > > > 
-> > > > > diff --git a/Documentation/kernel-parameters.txt
-b/Documentation/kernel-parameters.txt
-> > > > > index c2e00ee..5f0aefe 100644
-> > > > > --- a/Documentation/kernel-parameters.txt
-> > > > > +++ b/Documentation/kernel-parameters.txt
-> > > > > @@ -284,6 +284,11 @@ and is between 256 and 4096 characters.
-It is defined in the file
-> > > > >  			isolate - enable device isolation (each
-device, as far
-> > > > >  			          as possible, will get its own
-protection
-> > > > >  			          domain)
-> > > > > +			unmap_flush - enable flushing of IO/TLB
-entries when
-> > > > > +			              they are unmapped.
-Otherwise they are
-> > > > > +				      flushed before they will
-be reused, which
-> > > > > +				      is a lot of faster
-> > > > > +
-> > > > 
-> > > > Would it be nice to have consistency of IOMMU parameters?
-> > > 
-> > > True. We should merge common parameters across IOMMUs into the
-> > > iommu= parameter some time in the future, I think. It would also
-be the
-> > > place for the IOMMU size parameter.
-> > 
-> > Hmm, now is better than the future? I think that now you can add
-> > something like 'disable_batching_flush' as a common parameter and
-> > change AMD IOMMU to use it.
-> 
-> Ok, I queued the following patch in the AMD IOMMU updates and changed
-> this patch to use iommu_fullflush instead. Is this patch ok? It
-changes
-> the behavior of GART to use lazy flushing by default. But I don't
-think
-> that this is a problem.
-> 
-> commit 9769771290fddcfc0362c5d30242151d4eb1cc46
-> Author: Joerg Roedel <joerg.roedel@amd.com>
-> Date:   Thu Sep 18 15:23:43 2008 +0200
-> 
->     x86: move GART TLB flushing options to generic code
->     
->     The GART currently implements the iommu=[no]fullflush command line
->     parameters which influence its IO/TLB flushing strategy. This
-patch
->     makes these parameters generic so that they can be used by the AMD
-IOMMU
->     too.
->     
->     Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> 
-> diff --git a/Documentation/kernel-parameters.txt
-b/Documentation/kernel-parameters.txt
-> index c2e00ee..569527e 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -888,6 +888,10 @@ and is between 256 and 4096 characters. It is
-defined in the file
->  		nomerge
->  		forcesac
->  		soft
-> +		fullflush
-> +			Flush IO/TLB at every deallocation
-> +		nofullflush
-> +			Flush IO/TLB only when addresses are reused
-(default)
->  
->  
->  	intel_iommu=	[DMAR] Intel IOMMU driver (DMAR) option
-> diff --git a/Documentation/x86/x86_64/boot-options.txt
-b/Documentation/x86/x86_64/boot-options.txt
-> index 72ffb53..42c887b 100644
-> --- a/Documentation/x86/x86_64/boot-options.txt
-> +++ b/Documentation/x86/x86_64/boot-options.txt
-> @@ -229,8 +229,6 @@ IOMMU (input/output memory management unit)
->    iommu options only relevant to the AMD GART hardware IOMMU:
->      <size>             Set the size of the remapping area in bytes.
->      allowed            Overwrite iommu off workarounds for specific
-chipsets.
-> -    fullflush          Flush IOMMU on each allocation (default).
-> -    nofullflush        Don't use IOMMU fullflush.
->      leak               Turn on simple iommu leak tracing (only when
->                         CONFIG_IOMMU_LEAK is on). Default number of
-leak pages
->                         is 20.
-> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> index 23882c4..6dae123 100644
-> --- a/arch/x86/kernel/pci-dma.c
-> +++ b/arch/x86/kernel/pci-dma.c
-> @@ -16,6 +16,15 @@ EXPORT_SYMBOL(dma_ops);
->  
->  static int iommu_sac_force __read_mostly;
->  
-> +/*
-> + * If this is disabled the IOMMU will use an optimized flushing
-strategy
-> + * of only flushing when an mapping is reused. With it true the GART
-is
-> + * flushed for every mapping. Problem is that doing the lazy flush
-seems
-> + * to trigger bugs with some popular PCI cards, in particular 3ware
-(but
-> + * has been also also seen with Qlogic at least).
-> + */
-> +int iommu_fullflush;
-> +
->  #ifdef CONFIG_IOMMU_DEBUG
->  int panic_on_overflow __read_mostly = 1;
->  int force_iommu __read_mostly = 1;
-> @@ -171,6 +180,10 @@ static __init int iommu_setup(char *p)
->  		}
->  		if (!strncmp(p, "nomerge", 7))
->  			iommu_merge = 0;
-> +		if (!strncmp(p, "fullflush", 8))
-> +			iommu_fullflush = 1;
-> +		if (!strncmp(p, "nofullflush", 11))
-> +			iommu_fullflush = 0;
->  		if (!strncmp(p, "forcesac", 8))
->  			iommu_sac_force = 1;
->  		if (!strncmp(p, "allowdac", 8))
-> diff --git a/arch/x86/kernel/pci-gart_64.c
-b/arch/x86/kernel/pci-gart_64.c
-> index 9739d56..508ef47 100644
-> --- a/arch/x86/kernel/pci-gart_64.c
-> +++ b/arch/x86/kernel/pci-gart_64.c
-> @@ -45,15 +45,6 @@ static unsigned long iommu_pages;	/* .. and in
-pages */
->  
->  static u32 *iommu_gatt_base;		/* Remapping table */
->  
-> -/*
-> - * If this is disabled the IOMMU will use an optimized flushing
-strategy
-> - * of only flushing when an mapping is reused. With it true the GART
-is
-> - * flushed for every mapping. Problem is that doing the lazy flush
-seems
-> - * to trigger bugs with some popular PCI cards, in particular 3ware
-(but
-> - * has been also also seen with Qlogic at least).
-> - */
-> -int iommu_fullflush = 1;
-> -
->  /* Allocation bitmap for the remapping area: */
->  static DEFINE_SPINLOCK(iommu_bitmap_lock);
->  /* Guarded by iommu_bitmap_lock: */
-> @@ -901,10 +892,6 @@ void __init gart_parse_options(char *p)
->  #endif
->  	if (isdigit(*p) && get_option(&p, &arg))
->  		iommu_size = arg;
-> -	if (!strncmp(p, "fullflush", 8))
-> -		iommu_fullflush = 1;
-> -	if (!strncmp(p, "nofullflush", 11))
-> -		iommu_fullflush = 0;
->  	if (!strncmp(p, "noagp", 5))
->  		no_agp = 1;
->  	if (!strncmp(p, "noaperture", 10))
-> diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
-> index 546ad31..bcebc37 100644
-> --- a/include/asm-x86/iommu.h
-> +++ b/include/asm-x86/iommu.h
-> @@ -7,6 +7,7 @@ extern struct dma_mapping_ops nommu_dma_ops;
->  extern int force_iommu, no_iommu;
->  extern int iommu_detected;
->  extern int dmar_disabled;
-> +extern int iommu_fullflush;
->  
->  extern unsigned long iommu_num_pages(unsigned long addr, unsigned
-long len);
->  
-> 
-> -- 
->            |           AMD Saxony Limited Liability Company & Co. KG
->  Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
->  System    |                  Register Court Dresden: HRA 4896
->  Research  |              General Partner authorized to represent:
->  Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
->            | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe,
-Thomas McCoy
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe
-linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Regards,
+Stefan
