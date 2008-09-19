@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYISWv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYISWxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbYISWv7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 18:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYISWvt
+	id S1754691AbYISWxa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 18:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYISWxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 18:51:49 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40056 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751333AbYISWvt (ORCPT
+	Fri, 19 Sep 2008 18:53:22 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60236 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750846AbYISWxV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 18:51:49 -0400
-Date: Fri, 19 Sep 2008 23:51:29 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: Felipe Balbi <felipe.balbi@nokia.com>, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-       Wim Van Sebroeck <wim@iguana.be>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "George G. Davis" <gdavis@mvista.com>
-Subject: Re: [PATCH 5/5] watchdog: introduce platform_data and remove cpu conditional code
-Message-ID: <20080919225129.GD9675@flint.arm.linux.org.uk>
-References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-2-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-3-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-4-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-5-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-6-git-send-email-felipe.balbi@nokia.com> <20080919190431.GA9675@flint.arm.linux.org.uk> <20080919213331.GA10156@frodo>
+	Fri, 19 Sep 2008 18:53:21 -0400
+Date: Fri, 19 Sep 2008 15:53:21 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: sparse_irq: userspace ABI breakage in -tip tree
+Message-ID: <20080919155321.1181638a@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080919213331.GA10156@frodo>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 20, 2008 at 12:33:34AM +0300, Felipe Balbi wrote:
-> Well, patches 4 and 5 should be ignored. Should I resend or could I rely
-> on the fact that people won't pick them up ?
 
-Given my comments on patch 1, it's probably a good idea to resend
-just 1 to 3.  We can then talk about 4 and 5 some more.
+commit 70426a06a58561c401e64c5767d71a011d4b978b
+Author: Yinghai Lu <yhlu.kernel@gmail.com>
+Date:   Tue Aug 19 20:50:27 2008 -0700
 
-Wim - can you let me know when you merge the followup patches into your
-tree please?
+    x86: make 32 bit to use sparse_irq
+
+@@ -285,7 +303,7 @@ int show_interrupts(struct seq_file *p, void *v)
+                action = desc->action;
+                if (!action && !any_count)
+                        goto skip;
+-               seq_printf(p, "%3d: ",i);
++               seq_printf(p, "%#x: ",i);
+ #ifndef CONFIG_SMP
+                seq_printf(p, "%10u ", kstat_irqs(i));
+ #else
+
+
+this is a userspace ABI breakage; you're changing /proc/interrupts from
+decimal to hex! This file is used by both humans and computer programs,
+and the humans will get confused, but the computer programs will break.
+Not a good idea to put into mainline.
+
+(I'm not so convinced of sparse_irq as a whole to be honest, but that's
+a different story)
