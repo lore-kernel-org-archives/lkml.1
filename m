@@ -1,98 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbYISOUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbYISO2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754440AbYISOUj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 10:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYISOU1
+	id S1753486AbYISO2V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 10:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYISO2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 10:20:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56932 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754031AbYISOU0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 10:20:26 -0400
-Subject: Re: How how latent should non-preemptive scheduling be?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <48D39312.9000400@yahoo.com>
-References: <fa.ERZTl/6uH+mhNoef5fPJKTRjJag@ifi.uio.no>
-	 <fa.C6WSm5Rh2Nb+Qho7b0qDOZ9RPV8@ifi.uio.no>
-	 <fa.ch6j4qXs/2sFpLkHz5fXrtjTR8c@ifi.uio.no>
-	 <fa.Jx/Ygtm46CVRawlA6OnfYNn6cN0@ifi.uio.no>
-	 <fa.iIHgL48F3T5VAqFw3mqaf9Pzrs4@ifi.uio.no>
-	 <fa.Td8xkKZKMSMghlJmEYefTRVF2kc@ifi.uio.no>  <48D39312.9000400@yahoo.com>
-Content-Type: text/plain
-Date: Fri, 19 Sep 2008 16:20:05 +0200
-Message-Id: <1221834006.5537.3.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Sep 2008 10:28:11 -0400
+Received: from mail.atheros.com ([12.36.123.2]:39383 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750846AbYISO2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 10:28:08 -0400
+Date: Fri, 19 Sep 2008 19:58:01 +0530
+From: Senthil Balasubramanian <senthilkumar@atheros.com>
+To: Steven Noonan <steven@uplinklabs.net>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>, Ingo Molnar <mingo@elte.hu>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27
+	(rc5, rc6, probably others)
+Message-ID: <20080919142801.GA5816@senthil-lnx.users.atheros.com>
+References: <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com> <43e72e890809181344q416b5944w3332ee5a33db048c@mail.gmail.com> <f488382f0809181449x7343aa7endff066cb5836a73c@mail.gmail.com> <20080918220102.GE7408@tesla> <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com> <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com> <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com> <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com> <20080919030125.GG7408@tesla> <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-19 at 12:54 +0100, Sitsofe Wheeler wrote:
-> Ingo Molnar wrote:
-> > here's two quick howtos:
-> > 
-> >   http://redhat.com/~mingo/sched-devel.git/readme-tracer.txt
-> >   http://redhat.com/~mingo/sched-devel.git/howto-trace-latencies.txt
+On Fri, Sep 19, 2008 at 12:59:29PM +0530, Steven Noonan wrote:
+> On Thu, Sep 18, 2008 at 8:01 PM, Luis R. Rodriguez
+> <lrodriguez@atheros.com> wrote:
+> > Thanks for testing, and glad to see this is resolved.
+> >
 > 
-> These two files appear to be identical. Is this intentional?
+> Damn. It's back. I was using wireless normally this evening. Browsing
+> the web, that kind of thing, and then the wireless inexplicably
+> dropped (even with the group rekeying patch), so I unloaded/reloaded
+> the module. This popped up in dmesg:
 > 
-> Anyway after following your instructions a putting together a small 
-> script to dice the output, I collated the 10 switches which took the 
-> longest:
+> [ 3834.375658] vendor=8086 device=27d2
+> [ 3834.375666] ath9k 0000:03:00.0: PCI INT A disabled
+> [ 3834.375716] ath9k: driver unloaded
+> [ 3838.552419] ath9k: 0.1
+> [ 3838.552502] vendor=8086 device=27d2
+> [ 3838.552511] ath9k 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> [ 3838.552532] ath9k 0000:03:00.0: setting latency timer to 64
+> [ 3838.688924] phy1: Selected rate control algorithm 'ath9k_rate_control'
+> [ 3838.693652] phy1: Atheros 5416: mem=0xffffc20000060000, irq=17
+> [ 3839.427125] irq 17: nobody cared (try booting with the "irqpoll" option)
+> [ 3839.427136] Pid: 0, comm: swapper Tainted: P
+> 2.6.27-rc6-tip-00478-g74f1a36 #1
+> [ 3839.427141] Call Trace:
+> [ 3839.427145]  <IRQ>  [<ffffffff802219c5>] ? read_hpet+0x9/0x1c
+> [ 3839.427165]  [<ffffffff8026af71>] __report_bad_irq+0x3d/0x8c
+> [ 3839.427172]  [<ffffffff8026b0c6>] note_interrupt+0x106/0x160
+> [ 3839.427180]  [<ffffffff8026b801>] handle_fasteoi_irq+0xad/0xda
+> [ 3839.427188]  [<ffffffff8020f7b0>] do_IRQ+0x10c/0x190
+> [ 3839.427194]  [<ffffffff8020c551>] ret_from_intr+0x0/0xa
+> [ 3839.427198]  <EOI>  [<ffffffff8026c6f0>] rcu_pending+0x62/0x6e
+> [ 3839.427211]  [<ffffffff8025bc11>] ? tick_nohz_stop_sched_tick+0x2e4/0x2f3
+> [ 3839.427218]  [<ffffffff8020ad94>] cpu_idle+0x7b/0xdb
+> [ 3839.427226]  [<ffffffff8060c921>] rest_init+0x75/0x77
+> [ 3839.427231] handlers:
+> [ 3839.427234] [<ffffffffa0240238>] (ath_isr+0x0/0x170 [ath9k])
+> [ 3839.427263] Disabling IRQ #17
+> [ 3842.263699] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> [ 3848.035003] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> [ 3848.432701] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> [ 3850.216947] wlan0: authenticate with AP 00:1e:52:79:4d:01
+> [ 3850.217027] wlan0: authenticate with AP 00:1e:52:79:4d:01
+> [ 3850.228326] wlan0: authenticated
+> [ 3850.228336] wlan0: associate with AP 00:1e:52:79:4d:01
+> [ 3850.428140] wlan0: associate with AP 00:1e:52:79:4d:01
+> [ 3850.628151] wlan0: associate with AP 00:1e:52:79:4d:01
+> [ 3850.728305] wlan0: RX AssocResp from 00:1e:52:79:4d:01 (capab=0x431
+> status=0 aid=1)
+> [ 3850.728314] wlan0: associated
+> [ 3850.728655] wlan0 (WE) : Wireless Event too big (320)
+> [ 3850.743377] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
+> [ 3860.855104] wlan0: no IPv6 routers present
 > 
-> # Top ten longest switches
-> # Rel TS Process   Abs TS
-> 0.122161 hald-3423 1867.821170 ***
-> 0.039438 <idle>-0  1867.379054
-> 0.036318 hald-3423 1867.669009
-> 0.031362 <idle>-0  1868.002762
-> 0.030000 hald-3423 1867.699009
-> 0.028933 <idle>-0  1867.529238
-> 0.028539 <idle>-0  1867.228861
-> 0.028196 <idle>-0  1867.128731
-> 0.027763 <idle>-0  1868.101449
-> 0.027513 <idle>-0  1867.028606
-> 
-> # tracer: sched_switch from around longest switch
-> #
-> #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
-> #              | |      |          |         |
->            <idle>-0     [00]  1867.608017:      0:140:R   +     3:115:S
->            <idle>-0     [00]  1867.608038:      0:140:R   +  3423:120:D
->            <idle>-0     [00]  1867.608045:      0:140:R ==>     3:115:R
->       ksoftirqd/0-3     [00]  1867.608048:      3:115:S ==>  3423:120:R
->              hald-3423  [00]  1867.629350:   3423:120:R   +  6096:120:S
->              hald-3423  [00]  1867.632691:   3423:120:R   +  3827:120:S
->              hald-3423  [00]  1867.669009:   3423:120:R   +  3998:120:S
->              hald-3423  [00]  1867.699009:   3423:120:R   +  6097:120:S
->           ***hald-3423  [00]  1867.821170:   3423:120:R ==>  6096:120:R
->         rhythmbox-6096  [00]  1867.821219:   6096:120:S ==>  6097:120:R
->         rhythmbox-6097  [00]  1867.821262:   6097:120:R   +  3826:120:S
->         rhythmbox-6097  [00]  1867.821289:   6097:120:S ==>  3826:120:R
->        pulseaudio-3826  [00]  1867.821332:   3826:120:R   +  6097:120:S
->        pulseaudio-3826  [00]  1867.821374:   3826:120:S ==>  6097:120:R
->         rhythmbox-6097  [00]  1867.821380:   6097:120:S ==>  3998:120:R
->         rhythmbox-3998  [00]  1867.821709:   3998:120:S ==>  3827:120:R
->        pulseaudio-3827  [00]  1867.824041:   3827:120:R   +  3826:120:S
-> 
+> I rebuilt the module with DBG_ATH_INTERRUPT, but it somehow stumbled
+> itself back into working order while I was compiling. I can't keep the
+> interrupt debugging on all the time because it's just -too verbose-,
+> and when I pop a debug version of the module in, then it's too late to
+> track the issue....
 
-Its actually function tracer output I'm interested in.. that shows what
-all its doing to make it take 120+ms.
+I am able to reproduce this IRQ nobody cared issue in my setup and the
+following patch seems to be fixing the issue. Please try it out and let
+me know if it solves your issue in your setup.
 
-I thought we had a wakeup latency tracer exacty like we have preempt and
-irq off latency tracers, Steve, where'd that go?
+**********
+IRQs should be disabled before calling free_irq. Also clear pending IRQs.
 
-> > sounds like potential SMM triggered latencies.
-> 
-> I have just gone away and read about the SMM ( 
-> http://blogs.msdn.com/carmencr/archive/2005/08/31/458609.aspx ). If 
-> you're right there is pretty much nothing that can be done about the 
-> problem : (
+Signed-off-by: Senthil Balasubramanian <senthilkumar@atheros.com>
+---
+ drivers/net/wireless/ath9k/core.c |    2 ++
+ drivers/net/wireless/ath9k/main.c |    8 +++++++-
+ 2 files changed, 9 insertions(+), 1 deletions(-)
 
-Yeah, SMM/SMI is nasty stuff :-(
+diff --git a/drivers/net/wireless/ath9k/core.c b/drivers/net/wireless/ath9k/core.c
+index c262ef2..c007dd2 100644
+--- a/drivers/net/wireless/ath9k/core.c
++++ b/drivers/net/wireless/ath9k/core.c
+@@ -1183,6 +1183,8 @@ void ath_deinit(struct ath_softc *sc)
+ 
+ 	DPRINTF(sc, ATH_DBG_CONFIG, "%s\n", __func__);
+ 
++	tasklet_kill(&sc->intr_tq);
++	tasklet_kill(&sc->bcon_tasklet);
+ 	ath_stop(sc);
+ 	if (!(sc->sc_flags & SC_OP_INVALID))
+ 		ath9k_hw_setpower(sc->sc_ah, ATH9K_PM_AWAKE);
+diff --git a/drivers/net/wireless/ath9k/main.c b/drivers/net/wireless/ath9k/main.c
+index aca893a..559e0e8 100644
+--- a/drivers/net/wireless/ath9k/main.c
++++ b/drivers/net/wireless/ath9k/main.c
+@@ -1781,10 +1781,16 @@ static void ath_pci_remove(struct pci_dev *pdev)
+ {
+ 	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
+ 	struct ath_softc *sc = hw->priv;
++	enum ath9k_int status;
+ 
+-	if (pdev->irq)
++	if (pdev->irq) {
++		ath9k_hw_set_interrupts(sc->sc_ah, 0);
++		ath9k_hw_getisr(sc->sc_ah, &status);	/* NB: clears ISR too */
++		sc->sc_flags |= SC_OP_INVALID;
+ 		free_irq(pdev->irq, sc);
++	}
+ 	ath_detach(sc);
++
+ 	pci_iounmap(pdev, sc->mem);
+ 	pci_release_region(pdev, 0);
+ 	pci_disable_device(pdev);
+-- 
+1.5.5
 
