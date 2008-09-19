@@ -1,58 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYISRxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYISR6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbYISRxv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 13:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYISRxo
+	id S1754633AbYISR6j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 13:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYISR6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 13:53:44 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:39955 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbYISRxn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 13:53:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=PJyxnQG3TwkMP9l2FVylnPJMq2pKo8vA31wS8ydM6xu0zBKkjjf97LI3za1oQJQC2n
-         /6Y1J47uOFjqKM3mmQNVVhM7PhsF00lLeXtp0wLzk9azZOasTd/xv7T1ThSmiUq5LAns
-         T4JOrHlHjrjiuphGyUkhQuPVVSR77DSyKl2yo=
-Date: Fri, 19 Sep 2008 21:55:44 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Russ Dill <russ.dill@gmail.com>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org
-Subject: Re: kernel.h: add ARRAY_AND_SIZE() macro to complement
-	ARRAY_SIZE().
-Message-ID: <20080919175544.GA3228@x200.localdomain>
-References: <20080918132447.516309749@fluff.org.uk> <20080918150624.GA3421@x200.localdomain> <f17812d70809181138xb0e4d4bs8a6361bb038b5a6e@mail.gmail.com> <20080919065426.GA7222@lenovo> <f17812d70809190022u6c862ae8j43b1c1a942e22497@mail.gmail.com> <f9d2a5e10809190828g54a824b9od1ade53c96a518c8@mail.gmail.com>
+	Fri, 19 Sep 2008 13:58:31 -0400
+Received: from mail.atheros.com ([12.36.123.2]:39138 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751235AbYISR6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 13:58:30 -0400
+Date: Fri, 19 Sep 2008 23:28:24 +0530
+From: Senthil Balasubramanian <senthilkumar@atheros.com>
+To: Steven Noonan <steven@uplinklabs.net>
+CC: Senthilkumar Balasubramanian 
+	<Senthilkumar.Balasubramanian@atheros.com>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27
+	(rc5, rc6, probably others)
+Message-ID: <20080919175824.GA5626@senthil-lnx.users.atheros.com>
+References: <f488382f0809181449x7343aa7endff066cb5836a73c@mail.gmail.com> <20080918220102.GE7408@tesla> <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com> <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com> <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com> <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com> <20080919030125.GG7408@tesla> <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com> <20080919142801.GA5816@senthil-lnx.users.atheros.com> <alpine.LNX.2.00.0809190934001.22989@alcarin.uplinklabs.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <f9d2a5e10809190828g54a824b9od1ade53c96a518c8@mail.gmail.com>
+In-Reply-To: <alpine.LNX.2.00.0809190934001.22989@alcarin.uplinklabs.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 08:28:45AM -0700, Russ Dill wrote:
-> My vote is for ARRAY_AND_SIZE to spread far and wide across the land.
-> ARRAY_SIZE is already very safe, as it has a __must_be_array macro
-> built in. So ARRAY_AND_SIZE is even safer, as it prevents you from
-> mixing up two different arrays. It also reduces line length and makes
-> driver and device (usually platform_device) registration code easier
-> to read.
+On Fri, Sep 19, 2008 at 10:12:04PM +0530, Steven Noonan wrote:
+> 
+> 
+> On Fri, 19 Sep 2008, Senthil Balasubramanian wrote:
+> 
+> > On Fri, Sep 19, 2008 at 12:59:29PM +0530, Steven Noonan wrote:
+> > > On Thu, Sep 18, 2008 at 8:01 PM, Luis R. Rodriguez
+> > > <lrodriguez@atheros.com> wrote:
+> > > > Thanks for testing, and glad to see this is resolved.
+> > > >
+> > >
+> > > Damn. It's back. I was using wireless normally this evening. Browsing
+> > > the web, that kind of thing, and then the wireless inexplicably
+> > > dropped (even with the group rekeying patch), so I unloaded/reloaded
+> > > the module. This popped up in dmesg:
+> > >
+> > > [ 3834.375658] vendor=8086 device=27d2
+> > > [ 3834.375666] ath9k 0000:03:00.0: PCI INT A disabled
+> > > [ 3834.375716] ath9k: driver unloaded
+> > > [ 3838.552419] ath9k: 0.1
+> > > [ 3838.552502] vendor=8086 device=27d2
+> > > [ 3838.552511] ath9k 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> > > [ 3838.552532] ath9k 0000:03:00.0: setting latency timer to 64
+> > > [ 3838.688924] phy1: Selected rate control algorithm 'ath9k_rate_control'
+> > > [ 3838.693652] phy1: Atheros 5416: mem=0xffffc20000060000, irq=17
+> > > [ 3839.427125] irq 17: nobody cared (try booting with the "irqpoll" option)
+> > > [ 3839.427136] Pid: 0, comm: swapper Tainted: P
+> > > 2.6.27-rc6-tip-00478-g74f1a36 #1
+> > > [ 3839.427141] Call Trace:
+> > > [ 3839.427145]  <IRQ>  [<ffffffff802219c5>] ? read_hpet+0x9/0x1c
+> > > [ 3839.427165]  [<ffffffff8026af71>] __report_bad_irq+0x3d/0x8c
+> > > [ 3839.427172]  [<ffffffff8026b0c6>] note_interrupt+0x106/0x160
+> > > [ 3839.427180]  [<ffffffff8026b801>] handle_fasteoi_irq+0xad/0xda
+> > > [ 3839.427188]  [<ffffffff8020f7b0>] do_IRQ+0x10c/0x190
+> > > [ 3839.427194]  [<ffffffff8020c551>] ret_from_intr+0x0/0xa
+> > > [ 3839.427198]  <EOI>  [<ffffffff8026c6f0>] rcu_pending+0x62/0x6e
+> > > [ 3839.427211]  [<ffffffff8025bc11>] ? tick_nohz_stop_sched_tick+0x2e4/0x2f3
+> > > [ 3839.427218]  [<ffffffff8020ad94>] cpu_idle+0x7b/0xdb
+> > > [ 3839.427226]  [<ffffffff8060c921>] rest_init+0x75/0x77
+> > > [ 3839.427231] handlers:
+> > > [ 3839.427234] [<ffffffffa0240238>] (ath_isr+0x0/0x170 [ath9k])
+> > > [ 3839.427263] Disabling IRQ #17
+> > > [ 3842.263699] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> > > [ 3848.035003] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> > > [ 3848.432701] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> > > [ 3850.216947] wlan0: authenticate with AP 00:1e:52:79:4d:01
+> > > [ 3850.217027] wlan0: authenticate with AP 00:1e:52:79:4d:01
+> > > [ 3850.228326] wlan0: authenticated
+> > > [ 3850.228336] wlan0: associate with AP 00:1e:52:79:4d:01
+> > > [ 3850.428140] wlan0: associate with AP 00:1e:52:79:4d:01
+> > > [ 3850.628151] wlan0: associate with AP 00:1e:52:79:4d:01
+> > > [ 3850.728305] wlan0: RX AssocResp from 00:1e:52:79:4d:01 (capab=0x431
+> > > status=0 aid=1)
+> > > [ 3850.728314] wlan0: associated
+> > > [ 3850.728655] wlan0 (WE) : Wireless Event too big (320)
+> > > [ 3850.743377] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
+> > > [ 3860.855104] wlan0: no IPv6 routers present
+> > >
+> > > I rebuilt the module with DBG_ATH_INTERRUPT, but it somehow stumbled
+> > > itself back into working order while I was compiling. I can't keep the
+> > > interrupt debugging on all the time because it's just -too verbose-,
+> > > and when I pop a debug version of the module in, then it's too late to
+> > > track the issue....
+> >
+> > I am able to reproduce this IRQ nobody cared issue in my setup and the
+> > following patch seems to be fixing the issue. Please try it out and let
+> > me know if it solves your issue in your setup.
+> 
+> The patch you prvide doesn't want to apply. What code did you base this
+> on?
+> 
+> The first change listed doesn't work because there is no tasklet_kill() in
+> core.c, and the line immediately after ath_stop there has
+> "!sc->sc_invalid" instead of the "!(sc->sc_flags & SC_OP_INVALID)".
+> 
+> The second fails because SC_OP_INVALID isn't defined.
+> 
+> However, if your patch did apply to my code, I bet it'd solve the issue,
+> based on what it says it does.
 
-It also spreads ARRAY_SIZE misnaming futher.
+I am on 2.6.27-rc6 and this patch is on top of my earlier patch
+titled "[PATCH] ath9k: connectivity is lost after Group rekeying is
+done". However this patch can be applied on top of latest wireless testing
+too. I could apply this patch succesfully on top of wireless testing
+git tree.
 
-It introduces one more core macro and quite pointless one. I can't
-personally recall a single bug where sizeof() was taken from another
-array.
+My git-describe says v2.6.27-rc6-1378-g34e512f.
 
-It creates interesting confusion point: ARRAY_AND_SIZE is about array
-and it's size. What ARRAY_SIZE is about then?
+There is no sc_invalid flag in "struct ath_softc" today. Where did
+you get this variable from? It was removed in the following commit
 
-You want default argument values in fact, but C is C.
+-----------------------------------------------
+commit f2c9705a05ecbc0d94216a3b042d5641e8bf70b1
+Author: Sujith <Sujith.Manoharan@atheros.com>
+Date:   Mon Aug 11 14:05:08 2008 +0530
 
-	Alexey "(array (nr (length array)))" Dobriyan
+    ath9k: Use bitfields for sc operations
+
+    Signed-off-by: Sujith Manoharan <Sujith.Manoharan@atheros.com>
+    Signed-off-by: John W. Linville <linville@tuxdriver.com>
+-----------------------------------------------
+
+Which code base are you using?
