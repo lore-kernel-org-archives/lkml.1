@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbYISV6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754587AbYISWCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbYISV6W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 17:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYISV6I
+	id S1754587AbYISWCU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 18:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYISWCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 17:58:08 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:26661 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbYISV6G (ORCPT
+	Fri, 19 Sep 2008 18:02:11 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:41768 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbYISWCK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 17:58:06 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references:x-gmailtapped-by;
-	b=QQ3+fvgCOTpjAoZNGauaKtd0VtCY8p77nZ4mHi8lxh3lAPvSAeqvQkMmz+jusqp2D
-	M2Khi+yUAlIbXSynsI0Bw==
-Message-ID: <33307c790809191457y3ebffa28xa6d9ab6431554618@mail.gmail.com>
-Date: Fri, 19 Sep 2008 14:57:56 -0700
-From: "Martin Bligh" <mbligh@google.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: Unified tracing buffer
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>, od@novell.com,
-       "Frank Ch. Eigler" <fche@redhat.com>
-In-Reply-To: <20080919144258.ac787fdf.randy.dunlap@oracle.com>
+	Fri, 19 Sep 2008 18:02:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=WWOtnobG4bRIPd8o6Zm78QC9esDfp5BO6g9ZqhTXrv/jKmcNlxNxIqWjbR7C15niyk
+         yiAol9Nxhugd5gxCAUE7BaPBDLrWaP6gYB8JeWLkNx3eC5oAfC0zuZpZldHHPD5TOptA
+         E+Zo4J0FJBcZ0bUtQ1p+szw+b1zs0dWQMjEWc=
+Message-ID: <84144f020809191502i35805980n97dc3073ab8a52bc@mail.gmail.com>
+Date: Sat, 20 Sep 2008 01:02:09 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <cl@linux-foundation.org>
+Subject: Re: [patch 3/3] Increase default reserve percpu area
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, jeremy@goop.org, ebiederm@xmission.com,
+       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org
+In-Reply-To: <20080919203724.474751340@quilx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
-	 <20080919144258.ac787fdf.randy.dunlap@oracle.com>
-X-GMailtapped-By: 172.24.198.81
+References: <20080919203703.312007962@quilx.com>
+	 <20080919203724.474751340@quilx.com>
+X-Google-Sender-Auth: 0a1a6210ce833d56
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Event ids are 16 bit, dynamically allocated.
+On Fri, Sep 19, 2008 at 11:37 PM, Christoph Lameter
+<cl@linux-foundation.org> wrote:
+> SLUB now requires a portion of the per cpu reserve. There are on average
+> about 70 real slabs on a system (aliases do not count) and each needs 12 bytes
+> of per cpu space. Thats 840 bytes. In debug mode all slabs will be real slabs
+> which will make us end up with 150 -> 1800. Give it some slack and add 2000
+> bytes to the default size.
 >
-> What are these (like)?
+> Things work fine without this patch but then slub will reduce the percpu reserve
+> for modules.
 
-u16
-
-Sorry, probably lots of implicit assumptions in there that I forgot to explain
-
-> Arch-specific "word"?
-> or some fixed-size-for-all-systems (so that trace buffers can be
-> shared/used on other systems?)  Preferably the latter.
-
-Mmmm. I don't see anything wrong with making it just 8 byte aligned, personally.
-Steven - this was your thing?
-
->> Variable record length, header will start with length record.
->> Timestamps in fixed timebase, monotonically increasing (across all CPUs)
->
-> what timestamp resolution?
-
-ns is probably sufficient for output, but may need to be higher
-internally to get
-correct ordering of events across CPUs. So, as long as we record this in
-the buffer header, the internal resolution shouldn't be critical. The text
-print output ... I'd say ns? We can put it relative to wall time in there,
-as long as we record it in the buffer header at trace start. I guess we should
-document the buffer header ;-)
+Hmm, shouldn't this be dynamically configured at runtime by
+multiplying the number of possible CPUs with some constant?
