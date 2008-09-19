@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753681AbYISLbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbYISLcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753681AbYISLbH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 07:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYISLaz
+	id S1754025AbYISLcG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 07:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbYISLbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 07:30:55 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:10720 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750800AbYISLaz convert rfc822-to-8bit (ORCPT
+	Fri, 19 Sep 2008 07:31:55 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:40273 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752054AbYISLby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 07:30:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=k+8dBR+e5NpBkB0gcmuCex4cBpM4XlVqijtlTS86xljfoLpkvZo2l8uv8nGcgVFY5x
-         GhMURS7JoxehaeQzPSbJtf4KgxirvuTKB6WBYKrm1kkHAtTJ34j0lS/gRxP9CyFunHIJ
-         qXPoP99KWUi7cxYZ6laoHACBc8XHbQKEeVz+w=
-Message-ID: <c62985530809190430sbdfd4c2l55348653459b7250@mail.gmail.com>
-Date: Fri, 19 Sep 2008 13:30:53 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH -tip FIXED] ftrace: add nop tracer
-Cc: "Steven Noonan" <steven@uplinklabs.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080919110449.GB30624@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <1221818803-9616-1-git-send-email-steven@uplinklabs.net>
-	 <c62985530809190348h3a74de3aqd0ca2e893b11bb8c@mail.gmail.com>
-	 <20080919110449.GB30624@elte.hu>
+	Fri, 19 Sep 2008 07:31:54 -0400
+Date: Fri, 19 Sep 2008 20:31:53 +0900 (JST)
+Message-Id: <20080919.203153.183041336.ryov@valinux.co.jp>
+To: yoshikawa.takuya@oss.ntt.co.jp
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org,
+       kamezawa.hiroyu@jp.fujitsu.com, agk@sourceware.org
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <48D36794.6010002@oss.ntt.co.jp>
+References: <20080918.210418.226794540.ryov@valinux.co.jp>
+	<48D36794.6010002@oss.ntt.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/19 Ingo Molnar <mingo@elte.hu>:
->
-> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
->
->> It seems we have two "none" tracers now. Why not seeing this nop
->> tracer as an improvment of the current "none tracer" ?
->>
->> As a result the none tracer contained in trace.c could be replaced by
->> this new one as the default tracer. And that's said, that will enable
->> trace_printk by default even when no tracer is selected by the user.
->>
->> What do you think about it?
->
-> hmm ... good idea. There are some special properties of the none tracer
-> (it inhibits trace output for example), and those should be discontinued
-> i guess.
->
->        Ingo
->
+Hi Yoshikawa-san,
 
-Ok. I will prepare a patch to submit this idea.
+> When you have time, would you explain me how you succeeded to check the
+> time, bandwidth, especially when you did write() tests? Actually, I tried
+> similar tests and failed to check the bandwidth correctly. Did you insert
+> something in the kernel source?
+
+I'm using our own tool, which issues I/Os in prallel in a specified
+period and counts up how many I/Os are issued and how many bytes are
+transferred in the period.
+
+I'm also using our own tool for measurement of throughput variation to
+see the internal data of dm-ioband. This tool is implemented as a
+kernel module.
+
+Thanks,
+Ryo Tsuruta
