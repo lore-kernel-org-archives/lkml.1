@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbYISK2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbYISKeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756845AbYISK2q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 06:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbYISK2h
+	id S1757342AbYISKeQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 06:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYISKeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 06:28:37 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:37804 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750836AbYISK2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 06:28:37 -0400
-Date: Fri, 19 Sep 2008 19:28:13 +0900
-To: joerg.roedel@amd.com
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] AMD IOMMU updates for 2.6.28
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080919100711.GH24392@amd.com>
-References: <20080919100711.GH24392@amd.com>
+	Fri, 19 Sep 2008 06:34:01 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43290 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751263AbYISKeA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 06:34:00 -0400
+Date: Fri, 19 Sep 2008 11:33:56 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Bryan Donlan" <bdonlan@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Kernel OOPS and panic on boot in advantech watchdog init
+Message-ID: <20080919113356.111ce79f@lxorguk.ukuu.org.uk>
+In-Reply-To: <3e8340490809181902q31e8227fq72a7bea688b594c1@mail.gmail.com>
+References: <3e8340490809181902q31e8227fq72a7bea688b594c1@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080919192804A.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 12:07:11 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Thu, 18 Sep 2008 22:02:16 -0400
+"Bryan Donlan" <bdonlan@gmail.com> wrote:
 
-> Hi Ingo,
-> 
-> please pull the updates for the AMD IOMMU driver for the 2.6.28 merge
-> window. Most of the patches had been sent to LKML for review and got
-> comments. One patch touches the GART driver and was added after an
-> objection with a patch previously in this series. Please pull.
-> 
-> The following changes since commit 74546a8cd9a4e2c26a15a534f0be2f9cc08ae675:
->   Ingo Molnar (1):
->         Revert "fix warning in: "x86: HPET_MSI Initialise per-cpu HPET timers""
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-updates-2.6.28
-> 
-> FUJITA Tomonori (1):
->       AMD IOMMU: avoid unnecessary low zone allocation in alloc_coherent
-> 
-> Joerg Roedel (24):
->       AMD IOMMU: check for invalid device pointers
->       AMD IOMMU: move TLB flushing to the map/unmap helper functions
->       x86: move GART TLB flushing options to generic code
+> When testing a non-modular kernel on i386 with many of the default
+> drivers left on under Xen, I got the following oops and panic on boot:
 
-As I wrote, I don't think that this GART patch is the right approach.
+Looks like yet another Xen bug
+
+> [   30.328280] BUG: unable to handle kernel paging request at d6023220
+> [   30.332244] IP: [<c021f6f3>] xen_set_pte+0x3/0x10
+
+sc520 tries to make an ioremap to read 0xfffefcb0
+
+> [   30.332244]  [<c037be42>] ioremap_page_range+0x1e2/0x280
+> [   30.332244]  [<c023d311>] __ioremap_caller+0x1e1/0x340
+
+The Xen glue should have either permitted the mapping or failed the
+ioremap attempt with NULL.
+
+Alan
