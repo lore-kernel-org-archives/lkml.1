@@ -1,51 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbYISKeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbYISKih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757342AbYISKeQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 06:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYISKeB
+	id S1753489AbYISKih (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 06:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYISKiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 06:34:01 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43290 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751263AbYISKeA (ORCPT
+	Fri, 19 Sep 2008 06:38:23 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:42427 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750983AbYISKiV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 06:34:00 -0400
-Date: Fri, 19 Sep 2008 11:33:56 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Bryan Donlan" <bdonlan@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Kernel OOPS and panic on boot in advantech watchdog init
-Message-ID: <20080919113356.111ce79f@lxorguk.ukuu.org.uk>
-In-Reply-To: <3e8340490809181902q31e8227fq72a7bea688b594c1@mail.gmail.com>
-References: <3e8340490809181902q31e8227fq72a7bea688b594c1@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Sep 2008 06:38:21 -0400
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Wim Van Sebroeck <wim@iguana.be>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "George G. Davis" <gdavis@mvista.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: [PATCH 4/5] watchdog: move omap_wdt.h to include/linux/watchdog
+Date: Fri, 19 Sep 2008 13:32:38 +0300
+Message-Id: <1221820359-8943-5-git-send-email-felipe.balbi@nokia.com>
+X-Mailer: git-send-email 1.6.0.1.308.gede4c
+In-Reply-To: <1221820359-8943-4-git-send-email-felipe.balbi@nokia.com>
+References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com>
+ <1221820359-8943-2-git-send-email-felipe.balbi@nokia.com>
+ <1221820359-8943-3-git-send-email-felipe.balbi@nokia.com>
+ <1221820359-8943-4-git-send-email-felipe.balbi@nokia.com>
+X-OriginalArrivalTime: 19 Sep 2008 10:32:44.0717 (UTC) FILETIME=[0D6D55D0:01C91A43]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Sep 2008 22:02:16 -0400
-"Bryan Donlan" <bdonlan@gmail.com> wrote:
+Create a new include/linux/watchdog directory
+for holding watchdog chips headers, move omap_wdt.h
+to the new location and update the include path in
+the driver source.
 
-> When testing a non-modular kernel on i386 with many of the default
-> drivers left on under Xen, I got the following oops and panic on boot:
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/watchdog/omap_wdt.c       |    3 +-
+ drivers/watchdog/omap_wdt.h       |   54 -------------------------------------
+ include/linux/watchdog/omap_wdt.h |   54 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 55 insertions(+), 56 deletions(-)
+ delete mode 100644 drivers/watchdog/omap_wdt.h
+ create mode 100644 include/linux/watchdog/omap_wdt.h
 
-Looks like yet another Xen bug
+diff --git a/drivers/watchdog/omap_wdt.c b/drivers/watchdog/omap_wdt.c
+index b670ad5..8b68bc0 100644
+--- a/drivers/watchdog/omap_wdt.c
++++ b/drivers/watchdog/omap_wdt.c
+@@ -33,6 +33,7 @@
+ #include <linux/mm.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
++#include <linux/watchdog/omap_wdt.h>
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+ #include <linux/err.h>
+@@ -46,8 +47,6 @@
+ #include <mach/hardware.h>
+ #include <mach/prcm.h>
+ 
+-#include "omap_wdt.h"
+-
+ static struct platform_device *omap_wdt_dev;
+ 
+ static unsigned timer_margin;
+diff --git a/drivers/watchdog/omap_wdt.h b/drivers/watchdog/omap_wdt.h
+deleted file mode 100644
+index fc02ec6..0000000
+--- a/drivers/watchdog/omap_wdt.h
++++ /dev/null
+@@ -1,54 +0,0 @@
+-/*
+- *  linux/drivers/char/watchdog/omap_wdt.h
+- *
+- *  BRIEF MODULE DESCRIPTION
+- *      OMAP Watchdog timer register definitions
+- *
+- *  Copyright (C) 2004 Texas Instruments.
+- *
+- *  This program is free software; you can redistribute  it and/or modify it
+- *  under  the terms of  the GNU General  Public License as published by the
+- *  Free Software Foundation;  either version 2 of the  License, or (at your
+- *  option) any later version.
+- *
+- *  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR IMPLIED
+- *  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
+- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
+- *  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY   DIRECT, INDIRECT,
+- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE GOODS  OR SERVICES; LOSS OF
+- *  USE, DATA,  OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+- *  ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
+- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+- *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- *
+- *  You should have received a copy of the  GNU General Public License along
+- *  with this program; if not, write  to the Free Software Foundation, Inc.,
+- *  675 Mass Ave, Cambridge, MA 02139, USA.
+- */
+-
+-#ifndef _OMAP_WATCHDOG_H
+-#define _OMAP_WATCHDOG_H
+-
+-#define OMAP_WATCHDOG_REV		(0x00)
+-#define OMAP_WATCHDOG_SYS_CONFIG	(0x10)
+-#define OMAP_WATCHDOG_STATUS		(0x14)
+-#define OMAP_WATCHDOG_CNTRL		(0x24)
+-#define OMAP_WATCHDOG_CRR		(0x28)
+-#define OMAP_WATCHDOG_LDR		(0x2c)
+-#define OMAP_WATCHDOG_TGR		(0x30)
+-#define OMAP_WATCHDOG_WPS		(0x34)
+-#define OMAP_WATCHDOG_SPR		(0x48)
+-
+-/* Using the prescaler, the OMAP watchdog could go for many
+- * months before firing.  These limits work without scaling,
+- * with the 60 second default assumed by most tools and docs.
+- */
+-#define TIMER_MARGIN_MAX    	(24 * 60 * 60)	/* 1 day */
+-#define TIMER_MARGIN_DEFAULT	60	/* 60 secs */
+-#define TIMER_MARGIN_MIN	1
+-
+-#define PTV			0	/* prescale */
+-#define GET_WLDR_VAL(secs)	(0xffffffff - ((secs) * (32768/(1<<PTV))) + 1)
+-
+-#endif				/* _OMAP_WATCHDOG_H */
+diff --git a/include/linux/watchdog/omap_wdt.h b/include/linux/watchdog/omap_wdt.h
+new file mode 100644
+index 0000000..62e6a74
+--- /dev/null
++++ b/include/linux/watchdog/omap_wdt.h
+@@ -0,0 +1,54 @@
++/*
++ *  include/linux/watchdog/omap_wdt.h
++ *
++ *  BRIEF MODULE DESCRIPTION
++ *      OMAP Watchdog timer register definitions
++ *
++ *  Copyright (C) 2004 Texas Instruments.
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ *  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR IMPLIED
++ *  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
++ *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
++ *  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY   DIRECT, INDIRECT,
++ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
++ *  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE GOODS  OR SERVICES; LOSS OF
++ *  USE, DATA,  OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
++ *  ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
++ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
++ *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
++ *  You should have received a copy of the  GNU General Public License along
++ *  with this program; if not, write  to the Free Software Foundation, Inc.,
++ *  675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#ifndef _OMAP_WATCHDOG_H
++#define _OMAP_WATCHDOG_H
++
++#define OMAP_WATCHDOG_REV		(0x00)
++#define OMAP_WATCHDOG_SYS_CONFIG	(0x10)
++#define OMAP_WATCHDOG_STATUS		(0x14)
++#define OMAP_WATCHDOG_CNTRL		(0x24)
++#define OMAP_WATCHDOG_CRR		(0x28)
++#define OMAP_WATCHDOG_LDR		(0x2c)
++#define OMAP_WATCHDOG_TGR		(0x30)
++#define OMAP_WATCHDOG_WPS		(0x34)
++#define OMAP_WATCHDOG_SPR		(0x48)
++
++/* Using the prescaler, the OMAP watchdog could go for many
++ * months before firing.  These limits work without scaling,
++ * with the 60 second default assumed by most tools and docs.
++ */
++#define TIMER_MARGIN_MAX	(24 * 60 * 60)	/* 1 day */
++#define TIMER_MARGIN_DEFAULT	60	/* 60 secs */
++#define TIMER_MARGIN_MIN	1
++
++#define PTV			0	/* prescale */
++#define GET_WLDR_VAL(secs)	(0xffffffff - ((secs) * (32768/(1<<PTV))) + 1)
++
++#endif				/* _OMAP_WATCHDOG_H */
+-- 
+1.6.0.1.308.gede4c
 
-> [   30.328280] BUG: unable to handle kernel paging request at d6023220
-> [   30.332244] IP: [<c021f6f3>] xen_set_pte+0x3/0x10
-
-sc520 tries to make an ioremap to read 0xfffefcb0
-
-> [   30.332244]  [<c037be42>] ioremap_page_range+0x1e2/0x280
-> [   30.332244]  [<c023d311>] __ioremap_caller+0x1e1/0x340
-
-The Xen glue should have either permitted the mapping or failed the
-ioremap attempt with NULL.
-
-Alan
