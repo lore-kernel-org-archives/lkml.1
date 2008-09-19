@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbYISQQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYISQRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754668AbYISQQS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 12:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYISQQH
+	id S1754925AbYISQRz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 12:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbYISQRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 12:16:07 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:36003 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751371AbYISQQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 12:16:06 -0400
-Date: Fri, 19 Sep 2008 18:15:51 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Michael Trimarchi <trimarchimichael@yahoo.it>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Victor <linux@maxim.org.za>,
-       Anti Sullin <anti.sullin@artecdesign.ee>
-Subject: Re: [PATCH] atmel_serial: update the powersave handler to match
- serial core
-Message-ID: <20080919181551.3507b34b@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <690570.15660.qm@web26204.mail.ukl.yahoo.com>
-References: <690570.15660.qm@web26204.mail.ukl.yahoo.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 19 Sep 2008 16:15:42.0268 (UTC) FILETIME=[F69A6FC0:01C91A72]
+	Fri, 19 Sep 2008 12:17:46 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:59953 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753147AbYISQRp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 12:17:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hNQByHcVQera508FEsv2OVwCE2QdGHgcyuNSJl1Xz+BlQ3Kc73Pbw+5Ed+oaVYVald
+         p0DsdBb4VcAVcmxUk0Vh02C8t4xxLNUYWpEh0JzEDMH5U9xjF1I1IkthfF5EyxlWRttB
+         jH1/eb+EDQdNmqxl72jNr/jGQItrQEjVhNMRo=
+Date: Fri, 19 Sep 2008 18:17:00 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #11506] oops during unmount - ext3? (2.6.27-rc5)
+Message-ID: <20080919161655.GA5540@joi>
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik> <SpS7rta8n4.A.XnG.LcsyIB@albercik>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <SpS7rta8n4.A.XnG.LcsyIB@albercik>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Trimarchi <trimarchimichael@yahoo.it> wrote:
-> > Michael Trimarchi wrote:  
-> > > > +    /* we can not wake up if we're running on slow clock */
-> > > > +    atmel_port->may_wakeup = device_may_wakeup(&pdev->dev);
-> > > > +    if (atmel_serial_clk_will_stop())
-> > > > +        device_set_wakeup_enable(&pdev->dev, 0);
-> > > > +    
-> > > This is not true, the wakeup in the slow clock is possible, configure the
-> > > input pin of the serial device as a gpio, and wake up on gpio. Then you
-> > > must reconfigure as a serial pin, and you can wake up on slow clock.  
-> > 
-> > Yes, but the current driver doesn't actually support that, does it?
-> >   
+On Fri, Sep 12, 2008 at 09:06:29PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Yes I know, but we can think about it and support when is possible
-> to wake-up the serial device. Each serial device can change the status
-> of the gpio-pin before suspendig and register and handler on it (I think one
-> interrupt handler for all the serial that can do that), then reset it after resume.
-> I think not all the serial device can do that in the atmel architectures but I suppose
-> that can be very usefull for example in gprs application.
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
 
-I agree it would be useful. It would require changing the port mux
-configuration from the driver though, and there's no standardized
-interface for doing that. Maybe this is a good motivation to come up
-with one?
+I didn't see it since I upgraded to -rc6. You can close it for now.
 
-Btw, I assume the first character you receive will be lost when you do
-this, right?
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11506
+> Subject		: oops during unmount - ext3? (2.6.27-rc5)
+> Submitter	: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Date		: 2008-09-04 19:14 (9 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122055573123449&w=4
+> 
+> 
 
-Haavard
+Marcin
