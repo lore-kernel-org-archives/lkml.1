@@ -1,89 +1,380 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYISUDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbYISUE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbYISUDU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 16:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYISUDK
+	id S1755406AbYISUE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 16:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYISUEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 16:03:10 -0400
-Received: from sh.osrg.net ([192.16.179.4]:53061 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753931AbYISUDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 16:03:09 -0400
-Date: Sat, 20 Sep 2008 05:02:16 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic
- option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080919195216.GB10692@amd.com>
-References: <20080919180118.GV24392@amd.com>
-	<20080920034750X.fujita.tomonori@lab.ntt.co.jp>
-	<20080919195216.GB10692@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080920050229Z.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 19 Sep 2008 16:04:51 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60142 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754009AbYISUEu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 16:04:50 -0400
+Date: Fri, 19 Sep 2008 15:04:49 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Alan Mayer <ajm@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
+       suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <Yinghai.lu@amd.com>
+Subject: [PATCH 1/3] switch vector_irq[] from irq number to irq_desc pointer v2
+Message-ID: <20080919200449.GB6528@sgi.com>
+References: <20080919200212.GA6528@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080919200212.GA6528@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 21:52:16 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+Change per_cpu variable vector_irq[] from holding an 'int' irq number to
+holding a 'struct irq_desc' pointer.
 
-> On Sat, Sep 20, 2008 at 03:48:11AM +0900, FUJITA Tomonori wrote:
-> > On Fri, 19 Sep 2008 20:01:18 +0200
-> > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > 
-> > > On Sat, Sep 20, 2008 at 02:40:35AM +0900, FUJITA Tomonori wrote:
-> > > > On Fri, 19 Sep 2008 19:30:04 +0200
-> > > > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > > 
-> > > > > On Sat, Sep 20, 2008 at 02:09:21AM +0900, FUJITA Tomonori wrote:
-> > > > > > 
-> > > > > > Please keep it for AMD option for now. Please send a patch to make it
-> > > > > > generic to other IOMMU people and give them a chance to discuss on
-> > > > > > it.
-> > > > > >
-> > > > > 
-> > > > > Btw, you already agreed with a generic iommu= parameter for lazy IO/TLB
-> > > > > flushing"
-> > > > > 
-> > > > > 
-> > > > >  > True. We should merge common parameters across IOMMUs into the
-> > > > >  > iommu= parameter some time in the future, I think. It would also be the
-> > > > >  > place for the IOMMU size parameter.
-> > > > > 
-> > > > >  Hmm, now is better than the future? I think that now you can add
-> > > > >  something like 'disable_batching_flush' as a common parameter and
-> > > > >  change AMD IOMMU to use it.
-> > > > > 
-> > > > > in http://lkml.org/lkml/2008/9/17/376
-> > > > > 
-> > > > > And since we already have a iommu=fullflush parameter it makes sense of
-> > > > > make it generic.
-> > > > 
-> > > > I'm not against fullflush but we need to discuss it with other people
-> > > > before making the change.
-> > > 
-> > > Weird. Just 2 hours ago you wrote:
-> > > 
-> > > |http://lkml.org/lkml/2008/9/19/106
-> > > |
-> > > |For me, adding these boot parameters doesn't make sense.
-> > 
-> > See:
-> > 
-> > http://lkml.org/lkml/2008/9/19/221
-> 
-> Removing nofullflush and moving fullflush to the generic code are two
-> different questions. You talk about the first and I talk about the
-> second here. We should make sure we talk about the same things
-> when we flame each other ;)
+Signed-off-by: Dean Nelson <dcn@sgi.com>
 
-And the root cause is that your patch does the two different things.
+---
 
-So please revert the changes. I've already send a patch to do
-that. Please do these things in the proper way. If you think that you
-are free to remove nofullflush from GART, send a patch to do that. If
-you think that fullflush should be generic, send a patch to do it with
-CC'ed to IOMMU people.
+Note that this pre-allocates the irq_desc structure before we know whether
+a vector will be successfully found. And should it not, the irq_desc structure
+is left created with the irq still unallocated. Should someone in the future
+attempt to allocate a vector with that same irq and succeed, they will get
+the previously allocated irq_desc structure.
+
+Also, I won't claim the changes to arch/x86/xen/irq.c were correctly done, and
+I know they weren't tested.
+
+ arch/x86/kernel/io_apic.c     |   32 ++++++++++++++++++--------------
+ arch/x86/kernel/irq_32.c      |   14 ++++++--------
+ arch/x86/kernel/irq_64.c      |   10 ++++------
+ arch/x86/kernel/irqinit_32.c  |   29 +++++++++--------------------
+ arch/x86/kernel/irqinit_64.c  |   29 +++++++++--------------------
+ arch/x86/kernel/vmiclock_32.c |    2 +-
+ arch/x86/xen/irq.c            |    3 ++-
+ include/asm-x86/hw_irq.h      |    2 +-
+ 8 files changed, 50 insertions(+), 71 deletions(-)
+
+Index: linux/arch/x86/kernel/io_apic.c
+===================================================================
+--- linux.orig/arch/x86/kernel/io_apic.c	2008-09-19 14:12:25.000000000 -0500
++++ linux/arch/x86/kernel/io_apic.c	2008-09-19 14:13:09.000000000 -0500
+@@ -1226,6 +1226,7 @@ static int __assign_irq_vector(int irq, 
+ 	unsigned int old_vector;
+ 	int cpu;
+ 	struct irq_cfg *cfg;
++	struct irq_desc *desc;
+ 
+ 	cfg = irq_cfg(irq);
+ 
+@@ -1243,6 +1244,8 @@ static int __assign_irq_vector(int irq, 
+ 			return 0;
+ 	}
+ 
++	desc = irq_to_desc_alloc(irq);
++
+ 	for_each_cpu_mask_nr(cpu, mask) {
+ 		cpumask_t domain, new_mask;
+ 		int new_cpu;
+@@ -1270,7 +1273,7 @@ next:
+ 			goto next;
+ #endif
+ 		for_each_cpu_mask_nr(new_cpu, new_mask)
+-			if (per_cpu(vector_irq, new_cpu)[vector] != -1)
++			if (per_cpu(vector_irq, new_cpu)[vector] != NULL)
+ 				goto next;
+ 		/* Found one! */
+ 		current_vector = vector;
+@@ -1280,7 +1283,7 @@ next:
+ 			cfg->old_domain = cfg->domain;
+ 		}
+ 		for_each_cpu_mask_nr(new_cpu, new_mask)
+-			per_cpu(vector_irq, new_cpu)[vector] = irq;
++			per_cpu(vector_irq, new_cpu)[vector] = desc;
+ 		cfg->vector = vector;
+ 		cfg->domain = domain;
+ 		return 0;
+@@ -1311,7 +1314,7 @@ static void __clear_irq_vector(int irq)
+ 	vector = cfg->vector;
+ 	cpus_and(mask, cfg->domain, cpu_online_map);
+ 	for_each_cpu_mask_nr(cpu, mask)
+-		per_cpu(vector_irq, cpu)[vector] = -1;
++		per_cpu(vector_irq, cpu)[vector] = NULL;
+ 
+ 	cfg->vector = 0;
+ 	cpus_clear(cfg->domain);
+@@ -1323,23 +1326,26 @@ void __setup_vector_irq(int cpu)
+ 	/* This function must be called with vector_lock held */
+ 	int irq, vector;
+ 	struct irq_cfg *cfg;
++	struct irq_desc *desc;
+ 
+ 	/* Mark the inuse vectors */
+ 	for_each_irq_cfg(irq, cfg) {
+ 		if (!cpu_isset(cpu, cfg->domain))
+ 			continue;
+ 		vector = cfg->vector;
+-		per_cpu(vector_irq, cpu)[vector] = irq;
++		desc = irq_to_desc(irq);
++		BUG_ON(desc == NULL);
++		per_cpu(vector_irq, cpu)[vector] = desc;
+ 	}
+ 	/* Mark the free vectors */
+ 	for (vector = 0; vector < NR_VECTORS; ++vector) {
+-		irq = per_cpu(vector_irq, cpu)[vector];
+-		if (irq < 0)
++		desc = per_cpu(vector_irq, cpu)[vector];
++		if (desc == NULL)
+ 			continue;
+ 
+-		cfg = irq_cfg(irq);
++		cfg = irq_cfg(desc->irq);
+ 		if (!cpu_isset(cpu, cfg->domain))
+-			per_cpu(vector_irq, cpu)[vector] = -1;
++			per_cpu(vector_irq, cpu)[vector] = NULL;
+ 	}
+ }
+ 
+@@ -2389,16 +2395,14 @@ asmlinkage void smp_irq_move_cleanup_int
+ 
+ 	me = smp_processor_id();
+ 	for (vector = FIRST_EXTERNAL_VECTOR; vector < NR_VECTORS; vector++) {
+-		unsigned int irq;
+ 		struct irq_desc *desc;
+ 		struct irq_cfg *cfg;
+-		irq = __get_cpu_var(vector_irq)[vector];
+ 
+-		desc = irq_to_desc(irq);
+-		if (!desc)
++		desc = __get_cpu_var(vector_irq)[vector];
++		if (desc == NULL)
+ 			continue;
+ 
+-		cfg = irq_cfg(irq);
++		cfg = irq_cfg(desc->irq);
+ 		spin_lock(&desc->lock);
+ 		if (!cfg->move_cleanup_count)
+ 			goto unlock;
+@@ -2406,7 +2410,7 @@ asmlinkage void smp_irq_move_cleanup_int
+ 		if ((vector == cfg->vector) && cpu_isset(me, cfg->domain))
+ 			goto unlock;
+ 
+-		__get_cpu_var(vector_irq)[vector] = -1;
++		__get_cpu_var(vector_irq)[vector] = NULL;
+ 		cfg->move_cleanup_count--;
+ unlock:
+ 		spin_unlock(&desc->lock);
+Index: linux/include/asm-x86/hw_irq.h
+===================================================================
+--- linux.orig/include/asm-x86/hw_irq.h	2008-09-19 14:12:25.000000000 -0500
++++ linux/include/asm-x86/hw_irq.h	2008-09-19 14:13:09.000000000 -0500
+@@ -113,7 +113,7 @@ extern asmlinkage void smp_invalidate_in
+ extern void (*const interrupt[NR_VECTORS])(void);
+ #endif
+ 
+-typedef int vector_irq_t[NR_VECTORS];
++typedef struct irq_desc *vector_irq_t[NR_VECTORS];
+ DECLARE_PER_CPU(vector_irq_t, vector_irq);
+ 
+ #ifdef CONFIG_X86_IO_APIC
+Index: linux/arch/x86/kernel/irq_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/irq_32.c	2008-09-19 14:12:25.000000000 -0500
++++ linux/arch/x86/kernel/irq_32.c	2008-09-19 14:13:09.000000000 -0500
+@@ -226,26 +226,24 @@ unsigned int do_IRQ(struct pt_regs *regs
+ 	int overflow;
+ 	unsigned vector = ~regs->orig_ax;
+ 	struct irq_desc *desc;
+-	unsigned irq;
+ 
+ 
+ 	old_regs = set_irq_regs(regs);
+ 	irq_enter();
+-	irq = __get_cpu_var(vector_irq)[vector];
+ 
+ 	overflow = check_stack_overflow();
+ 
+-	desc = irq_to_desc(irq);
+-	if (unlikely(!desc)) {
+-		printk(KERN_EMERG "%s: cannot handle IRQ %d vector %#x cpu %d\n",
+-					__func__, irq, vector, smp_processor_id());
++	desc = __get_cpu_var(vector_irq)[vector];
++	if (unlikely(desc == NULL)) {
++		printk(KERN_EMERG "%s: cannot handle IRQ vector %#x cpu %d\n",
++					__func__, vector, smp_processor_id());
+ 		BUG();
+ 	}
+ 
+-	if (!execute_on_irq_stack(overflow, desc, irq)) {
++	if (!execute_on_irq_stack(overflow, desc, desc->irq)) {
+ 		if (unlikely(overflow))
+ 			print_stack_overflow();
+-		desc->handle_irq(irq, desc);
++		desc->handle_irq(desc->irq, desc);
+ 	}
+ 
+ 	irq_exit();
+Index: linux/arch/x86/kernel/irq_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/irq_64.c	2008-09-19 14:12:25.000000000 -0500
++++ linux/arch/x86/kernel/irq_64.c	2008-09-19 14:13:09.000000000 -0500
+@@ -213,20 +213,18 @@ asmlinkage unsigned int do_IRQ(struct pt
+ 
+ 	/* high bit used in ret_from_ code  */
+ 	unsigned vector = ~regs->orig_ax;
+-	unsigned irq;
+ 
+ 	exit_idle();
+ 	irq_enter();
+-	irq = __get_cpu_var(vector_irq)[vector];
+ 
+ #ifdef CONFIG_DEBUG_STACKOVERFLOW
+ 	stack_overflow_check(regs);
+ #endif
+ 
+-	desc = irq_to_desc(irq);
+-	if (likely(desc))
+-		generic_handle_irq_desc(irq, desc);
+-	else {
++	desc = __get_cpu_var(vector_irq)[vector];
++	if (likely(desc != NULL)) {
++		generic_handle_irq_desc(desc->irq, desc);
++	} else {
+ 		if (!disable_apic)
+ 			ack_APIC_irq();
+ 
+Index: linux/arch/x86/kernel/vmiclock_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/vmiclock_32.c	2008-09-19 14:12:25.000000000 -0500
++++ linux/arch/x86/kernel/vmiclock_32.c	2008-09-19 14:13:09.000000000 -0500
+@@ -242,7 +242,7 @@ void __init vmi_time_init(void)
+ 	vmi_time_init_clockevent();
+ 	setup_irq(0, &vmi_clock_action);
+ 	for_each_possible_cpu(cpu)
+-		per_cpu(vector_irq, cpu)[vmi_get_timer_vector()] = 0;
++		per_cpu(vector_irq, cpu)[vmi_get_timer_vector()] = NULL;
+ }
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+Index: linux/arch/x86/xen/irq.c
+===================================================================
+--- linux.orig/arch/x86/xen/irq.c	2008-09-19 14:12:25.000000000 -0500
++++ linux/arch/x86/xen/irq.c	2008-09-19 14:13:09.000000000 -0500
+@@ -27,8 +27,9 @@ static void __init __xen_init_IRQ(void)
+ 	for(i = 0; i < NR_VECTORS; i++) {
+ 		int cpu;
+ 
++		desc = irq_to_desc_alloc(i);
+ 		for_each_possible_cpu(cpu)
+-			per_cpu(vector_irq, cpu)[i] = i;
++			per_cpu(vector_irq, cpu)[i] = desc;
+ 	}
+ 
+ 	xen_init_IRQ();
+Index: linux/arch/x86/kernel/irqinit_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/irqinit_32.c	2008-09-19 14:12:25.000000000 -0500
++++ linux/arch/x86/kernel/irqinit_32.c	2008-09-19 14:13:09.000000000 -0500
+@@ -59,6 +59,8 @@ static struct irqaction fpu_irq = {
+ void __init init_ISA_irqs (void)
+ {
+ 	int i;
++	int cpu;
++	unsigned int vector;
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	init_bsp_APIC();
+@@ -76,6 +78,12 @@ void __init init_ISA_irqs (void)
+ 		desc->action = NULL;
+ 		desc->depth = 1;
+ 
++		vector = IRQ0_VECTOR + i;
++		for_each_possible_cpu(cpu) {
++			BUG_ON(per_cpu(vector_irq, cpu)[vector] != NULL);
++			per_cpu(vector_irq, cpu)[vector] = desc;
++		}
++
+ 		set_irq_chip_and_handler_name(i, &i8259A_chip,
+ 					      handle_level_irq, "XT");
+ 	}
+@@ -90,26 +98,7 @@ static struct irqaction irq2 = {
+ 	.name = "cascade",
+ };
+ 
+-DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
+-	[0 ... IRQ0_VECTOR - 1] = -1,
+-	[IRQ0_VECTOR] = 0,
+-	[IRQ1_VECTOR] = 1,
+-	[IRQ2_VECTOR] = 2,
+-	[IRQ3_VECTOR] = 3,
+-	[IRQ4_VECTOR] = 4,
+-	[IRQ5_VECTOR] = 5,
+-	[IRQ6_VECTOR] = 6,
+-	[IRQ7_VECTOR] = 7,
+-	[IRQ8_VECTOR] = 8,
+-	[IRQ9_VECTOR] = 9,
+-	[IRQ10_VECTOR] = 10,
+-	[IRQ11_VECTOR] = 11,
+-	[IRQ12_VECTOR] = 12,
+-	[IRQ13_VECTOR] = 13,
+-	[IRQ14_VECTOR] = 14,
+-	[IRQ15_VECTOR] = 15,
+-	[IRQ15_VECTOR + 1 ... NR_VECTORS - 1] = -1
+-};
++DEFINE_PER_CPU(vector_irq_t, vector_irq);
+ 
+ /* Overridden in paravirt.c */
+ void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
+Index: linux/arch/x86/kernel/irqinit_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/irqinit_64.c	2008-09-19 14:12:25.000000000 -0500
++++ linux/arch/x86/kernel/irqinit_64.c	2008-09-19 14:13:09.000000000 -0500
+@@ -114,30 +114,13 @@ static struct irqaction irq2 = {
+ 	.mask = CPU_MASK_NONE,
+ 	.name = "cascade",
+ };
+-DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
+-	[0 ... IRQ0_VECTOR - 1] = -1,
+-	[IRQ0_VECTOR] = 0,
+-	[IRQ1_VECTOR] = 1,
+-	[IRQ2_VECTOR] = 2,
+-	[IRQ3_VECTOR] = 3,
+-	[IRQ4_VECTOR] = 4,
+-	[IRQ5_VECTOR] = 5,
+-	[IRQ6_VECTOR] = 6,
+-	[IRQ7_VECTOR] = 7,
+-	[IRQ8_VECTOR] = 8,
+-	[IRQ9_VECTOR] = 9,
+-	[IRQ10_VECTOR] = 10,
+-	[IRQ11_VECTOR] = 11,
+-	[IRQ12_VECTOR] = 12,
+-	[IRQ13_VECTOR] = 13,
+-	[IRQ14_VECTOR] = 14,
+-	[IRQ15_VECTOR] = 15,
+-	[IRQ15_VECTOR + 1 ... NR_VECTORS - 1] = -1
+-};
++DEFINE_PER_CPU(vector_irq_t, vector_irq);
+ 
+ static void __init init_ISA_irqs (void)
+ {
+ 	int i;
++	int cpu;
++	unsigned int vector;
+ 
+ 	init_bsp_APIC();
+ 	init_8259A(0);
+@@ -150,6 +133,12 @@ static void __init init_ISA_irqs (void)
+ 		desc->action = NULL;
+ 		desc->depth = 1;
+ 
++		vector = IRQ0_VECTOR + i;
++		for_each_possible_cpu(cpu) {
++			BUG_ON(per_cpu(vector_irq, cpu)[vector] != NULL);
++			per_cpu(vector_irq, cpu)[vector] = desc;
++		}
++
+ 		/*
+ 		 * 16 old-style INTA-cycle interrupts:
+ 		 */
