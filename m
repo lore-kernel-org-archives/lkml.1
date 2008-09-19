@@ -1,108 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbYISRJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYISRO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbYISRJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 13:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbYISRJs
+	id S1753925AbYISRO1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 13:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYISROU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 13:09:48 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:54482 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753402AbYISRJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 13:09:48 -0400
-Date: Sat, 20 Sep 2008 02:09:21 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic
- option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080919164541.GS24392@amd.com>
-References: <20080920012322R.fujita.tomonori@lab.ntt.co.jp>
-	<20080919164541.GS24392@amd.com>
+	Fri, 19 Sep 2008 13:14:20 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:20290 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750945AbYISROT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 13:14:19 -0400
+Date: Fri, 19 Sep 2008 10:08:32 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
+       Marco Innocenti <m.innocenti@cineca.it>, matt@bluehost.com,
+       ngupta@google.com, roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 2/6] introduce struct res_counter_ratelimit
+Message-Id: <20080919100832.e188460a.randy.dunlap@oracle.com>
+In-Reply-To: <1221649528-8519-3-git-send-email-righi.andrea@gmail.com>
+References: <1221649528-8519-3-git-send-email-righi.andrea@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080920020917O.fujita.tomonori@lab.ntt.co.jp>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 18:45:41 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Wed, 17 Sep 2008 13:05:24 +0200 Andrea Righi wrote:
 
-> On Sat, Sep 20, 2008 at 01:23:30AM +0900, FUJITA Tomonori wrote:
-> > This patch against tip/x86/iommu virtually reverts
-> > 2842e5bf3115193f05dc9dac20f940e7abf44c1a. But just reverting the
-> > commit breaks AMD IOMMU so this patch also includes some fixes.
+> Introduce res_counter_ratelimit as a generic structure to implement
+> throttling-based cgroup subsystems.
+> 
+> [ Only the interfaces needed by the IO controller are implemented right now ]
+> 
+> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> ---
+>  include/linux/res_counter.h |   70 +++++++++++++++++++++++++
+>  kernel/res_counter.c        |  118 ++++++++++++++++++++++++++++++++++++++++++-
+>  2 files changed, 187 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+> index 0ab55c4..ff677d9 100644
+> --- a/include/linux/res_counter.h
+> +++ b/include/linux/res_counter.h
+> @@ -45,6 +46,38 @@ struct res_counter {
+>  	spinlock_t lock;
+>  };
 >  
-> NACK.
-> 
-> > The above commit adds new two options to x86 IOMMU generic kernel boot
-> > options, fullflush and nofullflush. But such change that affects all
-> > the IOMMUs needs more discussion (all IOMMU parties need the chance to
-> > discuss it):
-> 
-> It affects only IOMMUs which use the iommu_fullflush variable. This are
-> GART, which used it since ages, and AMD IOMMU which was introduced by
-> the above commit. It absolutly makes sense to have command line parameters
-> which make sense for more than one or most of the IOMMUs in x86 into
-> 'iommu='. Ingo agreed with this, see http://lkml.org/lkml/2008/6/30/155
-> I agree with that too. The commit you are trying to revert here was a
-> step into this direction.
+> +/* The various policies that can be used for throttling */
+> +#define	RATELIMIT_LEAKY_BUCKET	0
+> +#define	RATELIMIT_TOKEN_BUCKET	1
+> +
+> +struct res_counter_ratelimit {
+> +	/*
+> +	 * the current resource consumption level
+> +	 */
+> +	unsigned long long usage;
+> +	/*
+> +	 * the maximal value of the usage from the counter creation
+> +	 */
+> +	unsigned long long max_usage;
+> +	/*
+> +	 * the rate limit that cannot be exceeded
+> +	 */
+> +	unsigned long long limit;
+> +	/*
+> +	 * the limiting policy / algorithm
+> +	 */
+> +	unsigned long long policy;
+> +	/*
+> +	 * timestamp of the last accounted resource request
+> +	 */
+> +	unsigned long long timestamp;
+> +	/*
+> +	 * the lock to protect all of the above.
+> +	 * the routines below consider this to be IRQ-safe
+> +	 */
+> +	spinlock_t lock;
+> +};
 
-The point is we can't remove or rename VT-d option for IOTLB batching
-because we already exported it for users.
+With such nice struct comments, it looks like you should convert them
+to kernel-doc for structs.  See Documentation/kernel-doc-nano-HOWTO.txt
+for into, or ask me if you need some help with it.
 
-I think that once we export a boot option to users, we can't remove or
-rename it. It's the user interface.
-
-You have a different policy for the kernel boot option? You think we
-can change or rename it after exporting it?
-
-
-> > http://lkml.org/lkml/2008/9/19/106
-> > 
-> > For me, adding these boot parameters doesn't make sense.
-> 
-> May be true for nofullflush. For fullflush it makes sense to have it in
-> the generic code since all x86 hardware IOMMUs except Calgary can make
-> use of it. 
-> 
-> > All the hardware IOMMUs could use 'fullflush' for lazy IOTLB flushing
-> > but Calgary doesn't support it. Intel VT-d has the different option
-> > for it (and we can't rename it). So it might be useful for only GART
-> > and AMD IOMMU.
-> 
-> We can keep the current Intel option and have iommu=fullflush in
-> parallel. It could also affect Intel IOMMU.
-
-Yeah, Intel IOMMU need to keep the current option for IOTLB batching
-but it also support fullflush. But we don't discuss anything with
-Intel developers. That's what I'm against.
-
-
-> > 'nofullflush' definitely is pointless. 'nofullflush' option doesn't
-> > change any kernel behavior and it was added just for GART
-> > compatibility. We should not have such generic meaningless option just
-> > for GART.
-> 
-> So why do you keep it in this patch then?
-
-As I wrote, I think that we can't remove the exported user interface.
-
-
-> > This patch removes the fullflush and nofullflush from the generic
-> > kernel boot options and adds 'fullflush' support for AMD IOMMU.
-> 
-> I disagree. Keep it in the generic code.
-
-We would have it in the generic code but the point is that you change
-the generic code without any discussion with other IOMMU people,
-Calgary and Intel developers.
-
-After discussion, if we agree on having it in the generic code, it's
-fine by me. But again, you changed the generic code without any
-discussion with other IOMMU people. It's a wrong development process.
-
-Please keep it for AMD option for now. Please send a patch to make it
-generic to other IOMMU people and give them a chance to discuss on
-it.
+Thanks,
+---
+~Randy
