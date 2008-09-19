@@ -1,106 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbYISNqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbYISNxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbYISNqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 09:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbYISNqJ
+	id S1753173AbYISNxI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 09:53:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbYISNwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 09:46:09 -0400
-Received: from mail91.analogic.com ([208.224.220.31]:43887 "EHLO
-	mail01.analogic.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752192AbYISNqJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 09:46:09 -0400
-X-Greylist: delayed 1714 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Sep 2008 09:46:08 EDT
-X-AuditID: 0a770115-aa67cbb0000014a6-2e-48d3a66e29e9
+	Fri, 19 Sep 2008 09:52:55 -0400
+Received: from xsmtp1.ethz.ch ([82.130.70.13]:2619 "EHLO xsmtp1.ethz.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751185AbYISNwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 09:52:55 -0400
+Message-ID: <48D3AEB5.1000007@debian.org>
+Date: Fri, 19 Sep 2008 15:52:53 +0200
+From: "Giacomo A. Catenazzi" <cate@debian.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-x-mimeole: Produced By Microsoft Exchange V6.5
-x-originalarrivaltime: 19 Sep 2008 13:17:12.0634 (UTC) FILETIME=[0729F9A0:01C91A5A]
-Content-class: urn:content-classes:message
-Subject: Re: [patch] x86, ptrace: void dopiness
-Date: Fri, 19 Sep 2008 09:17:11 -0400
-Message-ID: <Pine.LNX.4.61.0809190908470.11723@chaos.analogic.com>
-In-Reply-To: <20080919145250.A6000@sedona.ch.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch] x86, ptrace: void dopiness
-Thread-Index: AckaWgdN2BdduIuiT9+MCjjz0f3y/w==
-References: <20080919145250.A6000@sedona.ch.intel.com>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Markus Metzger" <markus.t.metzger@intel.com>
-Cc: <mingo@elte.hu>, <markus.t.metzger@gmail.com>,
-       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-X-Brightmail-Tracker: AAAAAA==
+To: Peter Oruba <peter.oruba@amd.com>
+CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 05/11] [PATCH 05/11] x86: Moved microcode.c to microcode_intel.c.
+References: <20080728164411.490752571@amd.com>	 <20080728164448.492961653@amd.com>	 <20080907120823.59f8fa47@infradead.org> <48CA586C.2010104@amd.com>	 <20080912063517.783b7f85@infradead.org> <48D3942B.1050901@amd.com> <b647ffbd0809190537w18cc4d5fo4ce1a9c0390405d9@mail.gmail.com> <48D3A1FD.7010309@debian.org> <48D3A338.5070400@amd.com>
+In-Reply-To: <48D3A338.5070400@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Sep 2008 13:52:53.0466 (UTC) FILETIME=[033303A0:01C91A5F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008, Markus Metzger wrote:
+Peter Oruba wrote:
+> Giacomo A. Catenazzi schrieb:
+>> Dmitry Adamushko wrote:
+>>> 2008/9/19 Peter Oruba <peter.oruba@amd.com>:
+>>>> Some additonal words regarding the current user space issues:
+>>>>
+>>>> IMHO the most convenient way to update microcode is through the
+>>>> firmware loading
+>>>> interface instead of microcode_ctl. This reduces user-space
+>>>> responsibilities to
+>>>> loading the correct module at boot time and to place the microcode
+>>>> patch file at
+>>>> the right location via package installation. The problems mentioned
+>>>> in this
+>>>> thread would then probably disappear as well. What do you guys think?
+>>> It'd still require changes for all the setups that currently rely on
+>>> the 'microcode_ctl' interface. Moreover, Arjan's setup failed not due
+>>> to the 'microcode_ctl' per se but due to the altered kernel module
+>>> name. After all, we can't break the established interface this way.
+>>>
+>>> We can either reserve 'microcode' as a legacy name for intel cpus (==
+>>> microcode_intel), or maybe we can use request_module() from
+>>> microcode.ko to load a proper arch-specific module (I guess, it's not
+>>> ok for !KMOD-enabled kernels).
+>> I agree. A wrapper "microcode.ko" module would be nice, in order
+>> to allow independent kernel and user space upgrades.
+>>
+>> The module name is important also on udev method: only a module
+>> load triggers the microcode request in udev, thus also the
+>> new method should have stable kernel module name.
+>>
+>> ciao
+>>     cate
+>>
+> 
+> That sounds like a single-module solution would be the best way to go. All
+> dependencies would then be handled inside the module.
 
-> Remove void cast to explicitly ignore the return value.
->
->
-> Signed-off-by: markus.t.metzger@intel.com
->
-> ---
-> Index: gits.x86/arch/x86/kernel/ptrace.c
-> ===================================================================
-> --- gits.x86.orig/arch/x86/kernel/ptrace.c	2008-06-30 13:21:07.%N +0200
-> +++ gits.x86/arch/x86/kernel/ptrace.c	2008-09-19 13:53:02.%N +0200
-> @@ -738,7 +738,7 @@
-> 		unsigned int sig = 0;
->
-> 		/* we ignore the error in case we were not tracing child */
-> -		(void)ds_release_bts(child);
-> +		ds_release_bts(child);
->
-> 		if (cfg.flags & PTRACE_BTS_O_SIGNAL) {
-> 			if (!cfg.signal)
-> @@ -947,7 +947,7 @@
-> 	clear_tsk_thread_flag(child, TIF_SYSCALL_EMU);
-> #endif
-> #ifdef CONFIG_X86_PTRACE_BTS
-> -	(void)ds_release_bts(child);
-> +	ds_release_bts(child);
->
-> 	child->thread.debugctlmsr &= ~bts_cfg.debugctl_mask;
-> 	if (!child->thread.debugctlmsr)
-> ---------------------------------------------------------------------
-> Intel GmbH
-> Dornacher Strasse 1
-> 85622 Feldkirchen/Muenchen Germany
-> Sitz der Gesellschaft: Feldkirchen bei Muenchen
-> Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-> Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-> VAT Registration No.: DE129385895
-> Citibank Frankfurt (BLZ 502 109 00) 600119052
+Single module probably is more difficult to maintain.
 
-I don't agree. Casting the return value to void, since it
-takes extra steps on the part of the writer, means that the
-writer is deliberately ignoring the return value because
-it has no objective use in the code.
+I was thinking about a very simple additional module:
+Check the cpu: load the relevant module, and wrapper the calls to the
+relevant module.
 
-Just letting unused return-values be ignored means that
-the writer either wanted to ignore it or simply forgot
-about it. The cast is supposed to remove doubt. Certain
-user-mode functions that are obviously used for effect
-like printf(), are exempt.
+So every vendor could develop easier the own driver. Only the interface
+should be stable.
 
-That said, putting a space between the cast and the
-function name helps in the use of some text-scanning
-tools and therefore improves maintainability.
+Eventually we could solve it in the distribution scripts (using module
+aliases), but it would be kernel version dependent, and it would works
+only on the new method (or a new microcode_ctl version, but people
+upgrade more often kernel than packages).
 
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.25.17 on an i686 machine (4786.70 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged. Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited. If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+ciao
+	cate
