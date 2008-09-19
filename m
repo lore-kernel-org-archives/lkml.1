@@ -1,111 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbYISQma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbYISQqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204AbYISQma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 12:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbYISQmR
+	id S1754821AbYISQqF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 12:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbYISQpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 12:42:17 -0400
-Received: from qb-out-0506.google.com ([72.14.204.233]:57980 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754509AbYISQmN (ORCPT
+	Fri, 19 Sep 2008 12:45:55 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:26888 "EHLO
+	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbYISQpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 12:42:13 -0400
-Date: Fri, 19 Sep 2008 09:42:04 -0700 (PDT)
-From: Steven Noonan <steven@uplinklabs.net>
-To: Senthil Balasubramanian <senthilkumar@atheros.com>
-cc: Luis Rodriguez <Luis.Rodriguez@atheros.com>, Ingo Molnar <mingo@elte.hu>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5,
- rc6, probably others)
-In-Reply-To: <20080919142801.GA5816@senthil-lnx.users.atheros.com>
-Message-ID: <alpine.LNX.2.00.0809190934001.22989@alcarin.uplinklabs.net>
-References: <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com> <43e72e890809181344q416b5944w3332ee5a33db048c@mail.gmail.com> <f488382f0809181449x7343aa7endff066cb5836a73c@mail.gmail.com> <20080918220102.GE7408@tesla>
- <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com> <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com> <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com> <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com>
- <20080919030125.GG7408@tesla> <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com> <20080919142801.GA5816@senthil-lnx.users.atheros.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 19 Sep 2008 12:45:54 -0400
+X-BigFish: VPS-22(z1039oz1432R98dR1805M936fQzz10d3izz2f39iz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K7GBW2-03-TE5-01
+Date: Fri, 19 Sep 2008 18:45:41 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic option
+Message-ID: <20080919164541.GS24392@amd.com>
+References: <20080920012322R.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080920012322R.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 19 Sep 2008 16:45:41.0707 (UTC) FILETIME=[272709B0:01C91A77]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Sep 20, 2008 at 01:23:30AM +0900, FUJITA Tomonori wrote:
+> This patch against tip/x86/iommu virtually reverts
+> 2842e5bf3115193f05dc9dac20f940e7abf44c1a. But just reverting the
+> commit breaks AMD IOMMU so this patch also includes some fixes.
+ 
+NACK.
 
+> The above commit adds new two options to x86 IOMMU generic kernel boot
+> options, fullflush and nofullflush. But such change that affects all
+> the IOMMUs needs more discussion (all IOMMU parties need the chance to
+> discuss it):
 
-On Fri, 19 Sep 2008, Senthil Balasubramanian wrote:
+It affects only IOMMUs which use the iommu_fullflush variable. This are
+GART, which used it since ages, and AMD IOMMU which was introduced by
+the above commit. It absolutly makes sense to have command line parameters
+which make sense for more than one or most of the IOMMUs in x86 into
+'iommu='. Ingo agreed with this, see http://lkml.org/lkml/2008/6/30/155
+I agree with that too. The commit you are trying to revert here was a
+step into this direction.
 
-> On Fri, Sep 19, 2008 at 12:59:29PM +0530, Steven Noonan wrote:
-> > On Thu, Sep 18, 2008 at 8:01 PM, Luis R. Rodriguez
-> > <lrodriguez@atheros.com> wrote:
-> > > Thanks for testing, and glad to see this is resolved.
-> > >
-> > 
-> > Damn. It's back. I was using wireless normally this evening. Browsing
-> > the web, that kind of thing, and then the wireless inexplicably
-> > dropped (even with the group rekeying patch), so I unloaded/reloaded
-> > the module. This popped up in dmesg:
-> > 
-> > [ 3834.375658] vendor=8086 device=27d2
-> > [ 3834.375666] ath9k 0000:03:00.0: PCI INT A disabled
-> > [ 3834.375716] ath9k: driver unloaded
-> > [ 3838.552419] ath9k: 0.1
-> > [ 3838.552502] vendor=8086 device=27d2
-> > [ 3838.552511] ath9k 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> > [ 3838.552532] ath9k 0000:03:00.0: setting latency timer to 64
-> > [ 3838.688924] phy1: Selected rate control algorithm 'ath9k_rate_control'
-> > [ 3838.693652] phy1: Atheros 5416: mem=0xffffc20000060000, irq=17
-> > [ 3839.427125] irq 17: nobody cared (try booting with the "irqpoll" option)
-> > [ 3839.427136] Pid: 0, comm: swapper Tainted: P
-> > 2.6.27-rc6-tip-00478-g74f1a36 #1
-> > [ 3839.427141] Call Trace:
-> > [ 3839.427145]  <IRQ>  [<ffffffff802219c5>] ? read_hpet+0x9/0x1c
-> > [ 3839.427165]  [<ffffffff8026af71>] __report_bad_irq+0x3d/0x8c
-> > [ 3839.427172]  [<ffffffff8026b0c6>] note_interrupt+0x106/0x160
-> > [ 3839.427180]  [<ffffffff8026b801>] handle_fasteoi_irq+0xad/0xda
-> > [ 3839.427188]  [<ffffffff8020f7b0>] do_IRQ+0x10c/0x190
-> > [ 3839.427194]  [<ffffffff8020c551>] ret_from_intr+0x0/0xa
-> > [ 3839.427198]  <EOI>  [<ffffffff8026c6f0>] rcu_pending+0x62/0x6e
-> > [ 3839.427211]  [<ffffffff8025bc11>] ? tick_nohz_stop_sched_tick+0x2e4/0x2f3
-> > [ 3839.427218]  [<ffffffff8020ad94>] cpu_idle+0x7b/0xdb
-> > [ 3839.427226]  [<ffffffff8060c921>] rest_init+0x75/0x77
-> > [ 3839.427231] handlers:
-> > [ 3839.427234] [<ffffffffa0240238>] (ath_isr+0x0/0x170 [ath9k])
-> > [ 3839.427263] Disabling IRQ #17
-> > [ 3842.263699] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> > [ 3848.035003] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> > [ 3848.432701] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> > [ 3850.216947] wlan0: authenticate with AP 00:1e:52:79:4d:01
-> > [ 3850.217027] wlan0: authenticate with AP 00:1e:52:79:4d:01
-> > [ 3850.228326] wlan0: authenticated
-> > [ 3850.228336] wlan0: associate with AP 00:1e:52:79:4d:01
-> > [ 3850.428140] wlan0: associate with AP 00:1e:52:79:4d:01
-> > [ 3850.628151] wlan0: associate with AP 00:1e:52:79:4d:01
-> > [ 3850.728305] wlan0: RX AssocResp from 00:1e:52:79:4d:01 (capab=0x431
-> > status=0 aid=1)
-> > [ 3850.728314] wlan0: associated
-> > [ 3850.728655] wlan0 (WE) : Wireless Event too big (320)
-> > [ 3850.743377] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-> > [ 3860.855104] wlan0: no IPv6 routers present
-> > 
-> > I rebuilt the module with DBG_ATH_INTERRUPT, but it somehow stumbled
-> > itself back into working order while I was compiling. I can't keep the
-> > interrupt debugging on all the time because it's just -too verbose-,
-> > and when I pop a debug version of the module in, then it's too late to
-> > track the issue....
+> http://lkml.org/lkml/2008/9/19/106
 > 
-> I am able to reproduce this IRQ nobody cared issue in my setup and the
-> following patch seems to be fixing the issue. Please try it out and let
-> me know if it solves your issue in your setup.
+> For me, adding these boot parameters doesn't make sense.
 
-The patch you prvide doesn't want to apply. What code did you base this 
-on?
+May be true for nofullflush. For fullflush it makes sense to have it in
+the generic code since all x86 hardware IOMMUs except Calgary can make
+use of it. 
 
-The first change listed doesn't work because there is no tasklet_kill() in 
-core.c, and the line immediately after ath_stop there has 
-"!sc->sc_invalid" instead of the "!(sc->sc_flags & SC_OP_INVALID)".
+> All the hardware IOMMUs could use 'fullflush' for lazy IOTLB flushing
+> but Calgary doesn't support it. Intel VT-d has the different option
+> for it (and we can't rename it). So it might be useful for only GART
+> and AMD IOMMU.
 
-The second fails because SC_OP_INVALID isn't defined.
+We can keep the current Intel option and have iommu=fullflush in
+parallel. It could also affect Intel IOMMU.
 
-However, if your patch did apply to my code, I bet it'd solve the issue, 
-based on what it says it does.
+> 'nofullflush' definitely is pointless. 'nofullflush' option doesn't
+> change any kernel behavior and it was added just for GART
+> compatibility. We should not have such generic meaningless option just
+> for GART.
+
+So why do you keep it in this patch then?
+
+> This patch removes the fullflush and nofullflush from the generic
+> kernel boot options and adds 'fullflush' support for AMD IOMMU.
+
+I disagree. Keep it in the generic code.
+
+Joerg
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
