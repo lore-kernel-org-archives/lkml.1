@@ -1,141 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbYISVe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752910AbYISVen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755080AbYISVe3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 17:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYISVeE
+	id S1752910AbYISVen (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 17:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbYISVeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 17:34:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46641 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753410AbYISVeC (ORCPT
+	Fri, 19 Sep 2008 17:34:08 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:57057 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754082AbYISVeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 17:34:02 -0400
-Date: Fri, 19 Sep 2008 14:33:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Cc: James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com
-Subject: Re: [PATCH 1/2] lld busy status exporting interface
-Message-Id: <20080919143344.44d1a83e.akpm@linux-foundation.org>
-In-Reply-To: <20080919.104854.71084447.k-ueda@ct.jp.nec.com>
-References: <20080919.104756.41628866.k-ueda@ct.jp.nec.com>
-	<20080919.104854.71084447.k-ueda@ct.jp.nec.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Sep 2008 17:34:05 -0400
+Date: Sat, 20 Sep 2008 00:33:34 +0300
+From: Felipe Balbi <me@felipebalbi.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Felipe Balbi <felipe.balbi@nokia.com>, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
+       Wim Van Sebroeck <wim@iguana.be>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "George G. Davis" <gdavis@mvista.com>
+Subject: Re: [PATCH 5/5] watchdog: introduce platform_data and remove cpu
+	conditional code
+Message-ID: <20080919213331.GA10156@frodo>
+Reply-To: me@felipebalbi.com
+References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-2-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-3-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-4-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-5-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-6-git-send-email-felipe.balbi@nokia.com> <20080919190431.GA9675@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080919190431.GA9675@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 10:48:54 -0400 (EDT)
-Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
+On Fri, Sep 19, 2008 at 08:04:32PM +0100, Russell King - ARM Linux wrote:
+> On Fri, Sep 19, 2008 at 01:32:39PM +0300, Felipe Balbi wrote:
+> > @@ -469,17 +515,26 @@ static struct platform_device omap_wdt_device = {
+> >  
+> >  static void omap_init_wdt(void)
+> >  {
+> > -	if (cpu_is_omap16xx())
+> > +	if (cpu_is_omap16xx()) {
+> > +		omap_wdt_pdata.fck = "armwdt_ck";
+> >  		wdt_resources[0].start = 0xfffeb000;
+> > -	else if (cpu_is_omap2420())
+> > +	} else if (cpu_is_omap2420()) {
+> > +		omap_wdt_pdata.fck = "mpu_wdt_ick";
+> > +		omap_wdt_pdata.ick = "mpu_wdt_fck";
+> 
+> What happened to leaving this stuff inside omap_wdt.c as I said
+> during the previous review?  I really don't want to see such cleanups
+> when the real answer is to fix the OMAP clock API implementation.  It
+> just makes for more unnecessary noise when doing this, and then yet more
+> noise when we fix the OMAP clock API.
+> 
+> Please get rid of this and leave the clock naming crap inside omap_wdt.c.
 
-> This patch adds an interface to check lld's busy status
-> from the block layer.
-> This resolves a performance problem on request stacking devices below.
-> 
-> 
-> Some drivers like scsi mid layer stop dispatching request when
-> they detect busy state on its low-level device like host/bus/device.
-> It allows other requests to stay in the I/O scheduler's queue
-> for a chance of merging.
-> 
-> Request stacking drivers like request-based dm should follow
-> the same logic.
-> However, there is no generic interface for the stacked device
-> to check if the underlying device(s) are busy.
-> If the request stacking driver dispatches and submits requests to
-> the busy underlying device, the requests will stay in
-> the underlying device's queue without a chance of merging.
-> This causes performance problem on burst I/O load.
-> 
-> With this patch, busy state of the underlying device is exported
-> via the state flag of queue's backing_dev_info.  So the request
-> stacking driver can check it and stop dispatching requests if busy.
-> 
-> The underlying device driver must set/clear the flag appropriately:
->    ON:  when the device driver can't process requests immediately.
->    OFF: when the device driver can process requests immediately,
->         including abnormal situations where the device driver needs
->         to kill all requests.
-> 
-> 
-> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-> ---
->  include/linux/backing-dev.h |    8 ++++++++
->  mm/backing-dev.c            |   12 ++++++++++++
->  2 files changed, 20 insertions(+)
-> 
-> Index: scsi-misc-2.6/include/linux/backing-dev.h
-> ===================================================================
-> --- scsi-misc-2.6.orig/include/linux/backing-dev.h
-> +++ scsi-misc-2.6/include/linux/backing-dev.h
-> @@ -26,6 +26,7 @@ enum bdi_state {
->  	BDI_pdflush,		/* A pdflush thread is working this device */
->  	BDI_write_congested,	/* The write queue is getting full */
->  	BDI_read_congested,	/* The read queue is getting full */
-> +	BDI_lld_congested,	/* The device/host is busy */
->  	BDI_unused,		/* Available bits start here */
->  };
->  
-> @@ -226,8 +227,15 @@ static inline int bdi_rw_congested(struc
->  				  (1 << BDI_write_congested));
->  }
->  
-> +static inline int bdi_lld_congested(struct backing_dev_info *bdi)
-> +{
-> +	return bdi_congested(bdi, 1 << BDI_lld_congested);
-> +}
-> +
->  void clear_bdi_congested(struct backing_dev_info *bdi, int rw);
->  void set_bdi_congested(struct backing_dev_info *bdi, int rw);
-> +void clear_bdi_lld_congested(struct backing_dev_info *bdi);
-> +void set_bdi_lld_congested(struct backing_dev_info *bdi);
->  long congestion_wait(int rw, long timeout);
->  
->  
-> Index: scsi-misc-2.6/mm/backing-dev.c
-> ===================================================================
-> --- scsi-misc-2.6.orig/mm/backing-dev.c
-> +++ scsi-misc-2.6/mm/backing-dev.c
-> @@ -279,6 +279,18 @@ void set_bdi_congested(struct backing_de
->  }
->  EXPORT_SYMBOL(set_bdi_congested);
->  
-> +void clear_bdi_lld_congested(struct backing_dev_info *bdi)
-> +{
-> +	clear_bit(BDI_lld_congested, &bdi->state);
-> +}
-> +EXPORT_SYMBOL_GPL(clear_bdi_lld_congested);
-> +
-> +void set_bdi_lld_congested(struct backing_dev_info *bdi)
-> +{
-> +	set_bit(BDI_lld_congested, &bdi->state);
-> +}
-> +EXPORT_SYMBOL_GPL(set_bdi_lld_congested);
-> +
->  /**
->   * congestion_wait - wait for a backing_dev to become uncongested
->   * @rw: READ or WRITE
+Well, patches 4 and 5 should be ignored. Should I resend or could I rely
+on the fact that people won't pick them up ?
 
-Is this really the right way to do it?
-
-Back in the days when we first did the backing_dev_info.congested_fn()
-logic it was decided that there basically was no single place in which
-the congested state could be stored.
-
-So we ended up deciding that whenever a caller wants to know a
-backing_dev's congested status, it has to call in to the
-->congested_fn() and that congested_fn would then call down into all
-the constituent low-level drivers/queues/etc asking each one if it is
-congested.
-
-I mean, as a simple example which is probably wrong - what happens if a
-single backing_dev is implemented via two different disks and
-controllers, and they both become congested and then one of them comes
-uncongested.  Is there no way in which the above implemention can
-incorrectly flag the backing_dev as being uncongested?
+-- 
+balbi
