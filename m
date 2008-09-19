@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbYISSmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbYISSps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755104AbYISSmX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 14:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbYISSmP
+	id S1754939AbYISSps (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 14:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbYISSpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 14:42:15 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:34564 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbYISSmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 14:42:14 -0400
-Date: Sat, 20 Sep 2008 03:40:34 +0900
-To: joro@8bytes.org
-Cc: ashok.raj@intel.com, shaohua.li@intel.com, anil.s.keshavamurthy@intel.com,
-       muli@il.ibm.com, joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp,
-       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080919174339.GA29039@8bytes.org>
-References: <20080918102931Z.fujita.tomonori@lab.ntt.co.jp>
-	<20080918140350.GE24392@amd.com>
-	<20080919174339.GA29039@8bytes.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080920034028S.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 19 Sep 2008 14:45:40 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:17250 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbYISSpj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 14:45:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=QtYgR9l31r4rpgaXer3fiWcMqdVcdrdRLu3GIVngz46RoTnm/ZBAQyq+9kSox5Fsvn
+         1Uec0ezYjBVqnS6TWhnkuotVjFfwHx0+eP8qNgvmT+HgOV07DAXbv/Oql07X+sfV57MU
+         OtpxNJ0YMa8QV3EEx0y4gem6i1QTKVUgXIw28=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: use WARN_ONCE in workaround for mtrr mask
+Date: Fri, 19 Sep 2008 11:45:04 -0700
+Message-Id: <1221849904-8856-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 19:43:39 +0200
-Joerg Roedel <joro@8bytes.org> wrote:
+so could help to catch attention about bug in bios about mtrr mask setting
 
-> Hi All,
-> 
-> FUJITA mentioned that I forgot to discuss this patch with you guys, the
-> implementers and maintainers for Intel VT-d and Calgary IOMMU drivers. I
-> would like to hear your opinion on that patch. He is right with that.
-> The patch is already in tip/iommu but can easily be reverted if there
-> are fundamental objections.
-> The patch basically moves the iommu=fullflush and iommu=nofullflush
-> option from the GART code to pci-dma.c. So we can use these parameters
-> in other IOMMU implementations too. Since Intel VT-d is implementing
-> also lazy IO/TLB flushing it would benefit from this generic parameter
-> too. I am not so sure about Calgary, but we have other parameters for
-> iommu= which doesn't affect all hardware IOMMUs.
+WARN_ONCE get into mainline already. let use it.
 
-nofullflush is pointless. It doesn't change any kernel behavior. Yes,
-GART has it and we can't remove it because we exported it to
-users. But please don't add such pointless option to the generic
-options just for GART compatibility.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-fullflush might be useful as a generic option to disable lazy IOTLB
-flushing. But I'm not sure that Calgary uses it. VT-d already has
-'strict' option for it and we can't change it. If VT-d wants to
-support both 'strict' and 'fullflush' for disabling lazy IOTLB
-flushing, it would make sense. But if VT-d doesn't want, it is useful
-only for GART and AMD IOMMU. If so, I don't think that it is very
-useful but I'm not against adding it.
+---
+ arch/x86/kernel/cpu/mtrr/generic.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/generic.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -401,12 +401,7 @@ static void generic_get_mtrr(unsigned in
+ 		tmp |= ~((1<<(hi - 1)) - 1);
+ 
+ 		if (tmp != mask_lo) {
+-			static int once = 1;
+-
+-			if (once) {
+-				printk(KERN_INFO "mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
+-				once = 0;
+-			}
++			WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
+ 			mask_lo = tmp;
+ 		}
+ 	}
