@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYISOeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbYISOfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754009AbYISOeb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 10:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYISOeX
+	id S1754676AbYISOfH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 10:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbYISOe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 10:34:23 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52061 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbYISOeX (ORCPT
+	Fri, 19 Sep 2008 10:34:56 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:36946 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723AbYISOez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 10:34:23 -0400
-Subject: Re: [patch 3/4] cpu alloc: The allocator
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@vger.kernel.org, jeremy@goop.org, ebiederm@xmission.com,
-       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org
-In-Reply-To: <48D3B6E4.90206@linux-foundation.org>
-References: <20080918233648.581696416@quilx.com>
-	 <20080918233701.599037712@quilx.com>
-	 <84144f020809190058j425eb995y7f441da18079dc8d@mail.gmail.com>
-	 <48D3A4F5.9010804@linux-foundation.org>
-	 <1221833529.15030.1.camel@penberg-laptop>
-	 <48D3B6E4.90206@linux-foundation.org>
-Date: Fri, 19 Sep 2008 17:35:08 +0300
-Message-Id: <1221834908.15030.3.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 19 Sep 2008 10:34:55 -0400
+Message-ID: <48D3B880.3070607@freescale.com>
+Date: Fri, 19 Sep 2008 09:34:40 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+CC: Dan Williams <dan.j.williams@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: dmaengine.c: question about device_alloc_chan_resources
+References: <48D02589.8070601@freescale.com>	<e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>	<ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>	<20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>	<48D2664D.7040204@freescale.com>	<20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com>	<e9c3a7c20809182120r5e056dd7h170959dc1171af84@mail.gmail.com> <20080919132544.533ab7d0@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080919132544.533ab7d0@hskinnemo-gx745.norway.atmel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-19 at 09:27 -0500, Christoph Lameter wrote:
-> Pekka Enberg wrote:
-> > On Fri, 2008-09-19 at 08:11 -0500, Christoph Lameter wrote:
-> >> I thought we could handle early boot panics with early_printk?
-> > 
-> > Sure, but *if* we can limp along it's usually much nicer to debug
-> > WARN_ONs that trigger during early boot. But anyway, I'm fine with
-> > either way.
-> 
-> How would you do this?
-> 
-> if (condition) {
-> 	WARN_ON(1);
-> 	return NULL;
-> }
-> 
-> or do we have a macro for this situation.
-> 
-> if (WARN(condition))
-> 	return NULL;
+Haavard Skinnemoen wrote:
 
-if (WARN_ON(condition))
-	return NULL;
+> Yes, or maybe provide an interface for simply requesting a channel
+> without having to register any callbacks. 
 
-or am I missing something here?
+I could use this feature.  The sound drivers for our MPC8610 processor use DMA,
+but the drivers need to control the DMA hardware directly, so I can't use
+dmaengine.  I would like to be able to just reserve the channels and program
+them as I see fit.
 
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
