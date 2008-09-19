@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYISSSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYISSUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbYISSSv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 14:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYISSSm
+	id S1754636AbYISSUt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 14:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYISSUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 14:18:42 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:50309 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751808AbYISSSl (ORCPT
+	Fri, 19 Sep 2008 14:20:41 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1742 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbYISSUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 14:18:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=unxPZ/rzayyCTPE2Vtt688BS8pvszRFDOJdQkLxUhH9BlFa4SbMIv1hzlIgejXEBGo
-         bGVgLCWeFv19B5NVPPQMcXesg2Jz88IjglgVOg5nFKosPCW43WW6+n9zuiEbHhd4w0cg
-         v0dJQMfGLFanUDMXhenO+hnkKLzIa+p1j6zf4=
-Message-ID: <dd18b0c30809191118u20a13ff3m801a23397eb6beed@mail.gmail.com>
-Date: Fri, 19 Sep 2008 11:18:40 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [19.666764] Disabling IRQ #23
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Chris Snook" <csnook@redhat.com>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       Linux-usb <linux-usb@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0809191304050.2142-100000@iolanthe.rowland.org>
+	Fri, 19 Sep 2008 14:20:40 -0400
+Date: Fri, 19 Sep 2008 19:20:38 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org
+Subject: Re: [PATCH] ASoC: Fix at32-pcm build breakage with PM enabled
+Message-ID: <20080919182036.GA16316@sirena.org.uk>
+Mail-Followup-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+	lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org,
+	alsa-devel@alsa-project.org
+References: <1221843045-18093-1-git-send-email-haavard.skinnemoen@atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <dd18b0c30809190941g8b44175haf3e3a7c354fe01c@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0809191304050.2142-100000@iolanthe.rowland.org>
+In-Reply-To: <1221843045-18093-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-Cookie: What's so funny?
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 10:05 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Fri, 19 Sep 2008, Justin Mattock wrote:
->
->> The disable irq #23 message.
->>
->> As for the HC died; cleaning up
->> (where did you see that, can't seem to find that?)
->
-> It's in your original message:
->
->        http://marc.info/?l=linux-kernel&m=122107367715361&w=2
->
-> The line with timestamp 16.068174.
->
-> Alan Stern
->
->
+On Fri, Sep 19, 2008 at 06:50:45PM +0200, Haavard Skinnemoen wrote:
+> s/PDC_PTCR/ATMEL_PDC_PTCR/
+> 
+> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 
-ahh there it is...
-I've been so focused on making sure
-uvcvideo is loading everything properly, I forgot to
-see what happens when I load everything without
-any of the uvcvideo stuff.
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
+Please submit all ALSA patches to alsa-devel (added to the CC).
+
+>  sound/soc/at32/at32-pcm.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/sound/soc/at32/at32-pcm.c b/sound/soc/at32/at32-pcm.c
+> index 435f1da..c83584f 100644
+> --- a/sound/soc/at32/at32-pcm.c
+> +++ b/sound/soc/at32/at32-pcm.c
+> @@ -434,7 +434,8 @@ static int at32_pcm_suspend(struct platform_device *pdev,
+>  	params = prtd->params;
+>  
+>  	/* Disable the PDC and save the PDC registers */
+> -	ssc_writex(params->ssc->regs, PDC_PTCR, params->mask->pdc_disable);
+> +	ssc_writex(params->ssc->regs, ATMEL_PDC_PTCR,
+> +		   params->mask->pdc_disable);
+>  
+>  	prtd->pdc_xpr_save = ssc_readx(params->ssc->regs, params->pdc->xpr);
+>  	prtd->pdc_xcr_save = ssc_readx(params->ssc->regs, params->pdc->xcr);
+> @@ -464,7 +465,7 @@ static int at32_pcm_resume(struct platform_device *pdev,
+>  	ssc_writex(params->ssc->regs, params->pdc->xnpr, prtd->pdc_xnpr_save);
+>  	ssc_writex(params->ssc->regs, params->pdc->xncr, prtd->pdc_xncr_save);
+>  
+> -	ssc_writex(params->ssc->regs, PDC_PTCR, params->mask->pdc_enable);
+> +	ssc_writex(params->ssc->regs, ATMEL_PDC_PTCR, params->mask->pdc_enable);
+>  	return 0;
+>  }
+>  #else /* CONFIG_PM */
+> -- 
+> 1.5.6.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
 -- 
-Justin P. Mattock
+"You grabbed my hand and we fell into it, like a daydream - or a fever."
