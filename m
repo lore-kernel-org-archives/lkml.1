@@ -1,71 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbYISVa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYISVeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753501AbYISVa4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 17:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYISVar
+	id S1753907AbYISVeF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 17:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbYISVdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 17:30:47 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:43666 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbYISVaq (ORCPT
+	Fri, 19 Sep 2008 17:33:54 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:23499 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751016AbYISVdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 17:30:46 -0400
-Message-ID: <48D4196D.6050003@linux.vnet.ibm.com>
-Date: Fri, 19 Sep 2008 14:28:13 -0700
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
+	Fri, 19 Sep 2008 17:33:53 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:mime-version:
+	content-type:content-transfer-encoding:content-disposition;
+	b=YRQpGeaNS6lxom3PvTBZ+eMApFuoUv0tElRiNtJSQLqw5CIjlYVjvRrHSR/G+xe8S
+	IzW+vxqiY8kVPQUKrsXIg==
+Message-ID: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+Date: Fri, 19 Sep 2008 14:33:42 -0700
+From: "Martin Bligh" <mbligh@google.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Unified tracing buffer
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, skumar@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
-       menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com, mingo@elte.hu
-Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and control
- (v4)
-References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain> <20080514130951.24440.73671.sendpatchset@localhost.localdomain> <20080918135430.e2979ab1.akpm@linux-foundation.org> <20080919063823.GA27639@balbir.in.ibm.com> <20080919131405.1a95c491.akpm@linux-foundation.org>
-In-Reply-To: <20080919131405.1a95c491.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 18 Sep 2008 23:38:23 -0700
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> * Andrew Morton <akpm@linux-foundation.org> [2008-09-18 13:54:30]:
->>
->>> On Wed, 14 May 2008 18:39:51 +0530
->>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>>
->>>> This patch adds support for accounting and control of virtual address space
->>>> limits.
->>>
->>> Large changes in linux-next's arch/x86/kernel/ptrace.c caused damage to
->>> the memrlimit patches.
->>>
->>> I decided to retain the patches because it looks repairable.  The
->>> problem is this reject from
->>> memrlimit-add-memrlimit-controller-accounting-and-control.patch:
->>>
->> Andrew,
->>
->> I could not apply mmotm to linux-next (both downloaded right now).
-> 
-> mmotm includes linux-next.patch.  mmotm is based upon the most recent
-> 2.6.x-rcy.
-> 
+During kernel summit and Plumbers conference, Linus and others
+expressed a desire for a unified
+tracing buffer system for multiple tracing applications (eg ftrace,
+lttng, systemtap, blktrace, etc) to use.
+This provides several advantages, including the ability to interleave
+data from multiple sources,
+not having to learn 200 different tools, duplicated code/effort, etc.
 
-Thanks for the info
+Several of us got together last night and tried to cut this down to
+the simplest usable system
+we could agree on (and nobody got hurt!). This will form version 1.
+I've sketched out a few
+enhancements we know that we want, but have agreed to leave these
+until version 2.
+The answer to most questions about the below is "yes we know, we'll
+fix that in version 2"
+(or 3). Simplicity was the rule ...
 
-[snip]
+Sketch of design.  Enjoy flaming me. Code will follow shortly.
 
-> OK, we'll give it a shot, thanks.
-> 
 
-Thanks!
+STORAGE
+-------
 
--- 
-	Balbir
+We will support multiple buffers for different tracing systems, with
+separate names, event id spaces.
+Event ids are 16 bit, dynamically allocated.
+A "one line of text" print function will be provided for each event,
+or use the default (probably hex printf)
+Will provide a "flight data recorder" mode, and a "spool to disk" mode.
+
+Circular buffer per cpu, protected by per-cpu spinlock_irq
+Word aligned records.
+Variable record length, header will start with length record.
+Timestamps in fixed timebase, monotonically increasing (across all CPUs)
+
+
+INPUT_FUNCTIONS
+---------------
+
+allocate_buffer (name, size)
+        return buffer_handle
+
+register_event (buffer_handle, event_id, print_function)
+        You can pass in a requested event_id from a fixed set, and
+will be given it, or an error
+        0 means allocate me one dynamically
+        returns event_id     (or -E_ERROR)
+
+record_event (buffer_handle, event_id, length, *buf)
+
+
+OUTPUT
+------
+
+Data will be output via debugfs, and provide the following output streams:
+
+/debugfs/tracing/<name>/buffers/text
+    clear text stream (will merge the per-cpu streams via insertion
+sort, and use the print functions)
+
+/debugfs/tracing/<name>/buffers/binary[cpu_number]
+    per-cpu binary data
+
+
+CONTROL
+-------
+
+Sysfs style tree under debugfs
+
+/debugfs/tracing/<name>/buffers/enabed         <--- binary value
+
+/debugfs/tracing/<name>/<event1>
+/debugfs/tracing/<name>/<event2>
+    etc ...
+    provides a way to enable/disable events, see what's available, and
+what's enabled.
+
+
+KNOWN ISSUES / PLANS
+-------------------
+
+No way to unregister buffers and events.
+    Will provide an unregister_buffer and unregister_event call
+
+
+Generating systemwide time is hard on some platforms
+    Yes. Time-based output provides a lot of simplicity for the user though
+    We won't support these platforms at first, we'll add functionality
+to make it work for them later.
+    (plan based on tick-based ms timing, plus counter offset from that
+if needed).
+
+Spinlock_irq is ineffecient, and doesn't support tracing in NMIs
+    True. We'll implement a lockless scheme later (see lttng)
+
+Putting a length record in every event is inefficient
+    True. Fixed record length with optional extensions is better, but
+more complex. v2.
+
+Putting a full timestamp rather than an offset in every event is inefficient
+    See above. True, but v2.
+
+Relayfs already exists! use that!
+    People were universally not keen on that idea. Complexity, interface, etc.
+    We're also providing some higher level shared functions for time &
+event ids.
+
+There's no way to decode the binary data stream
+    Code will be shared from the kernel to decode it, so that we can
+get the compact binary
+    format and decode it later. That code will be kept in the kernel
+tree (it's a trivial piece of C).
+    Version 1.1 ;-)
