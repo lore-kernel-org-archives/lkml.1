@@ -1,126 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbYISXUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYISX0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbYISXUy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 19:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbYISXUm
+	id S1754831AbYISX0v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 19:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYISX0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 19:20:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57166 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbYISXUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 19:20:41 -0400
-Date: Fri, 19 Sep 2008 19:18:41 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Martin Bligh <mbligh@google.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>, od@novell.com
-Subject: Re: Unified tracing buffer
-Message-ID: <20080919231841.GB3456@redhat.com>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
-Mime-Version: 1.0
+	Fri, 19 Sep 2008 19:26:42 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:40173 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750846AbYISX0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 19:26:42 -0400
+Date: Fri, 19 Sep 2008 18:26:40 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Alan Mayer <ajm@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
+       suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <Yinghai.lu@amd.com>
+Subject: Re: [PATCH 1/3] switch vector_irq[] from irq number to irq_desc pointer v2
+Message-ID: <20080919232640.GB10245@sgi.com>
+References: <20080919200212.GA6528@sgi.com> <20080919200449.GB6528@sgi.com> <86802c440809191340t75104d48g1f5cf5cf0e55035a@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <86802c440809191340t75104d48g1f5cf5cf0e55035a@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
-
-
-On Fri, Sep 19, 2008 at 02:33:42PM -0700, Martin Bligh wrote:
-
-> During kernel summit and Plumbers conference, Linus and others
-> expressed a desire for a unified tracing buffer system for multiple
-> tracing applications (eg ftrace, lttng, systemtap, blktrace, etc) to
-> use.
-
-OK.
-
-
-> [...]
-> STORAGE
-> -------
+On Fri, Sep 19, 2008 at 01:40:23PM -0700, Yinghai Lu wrote:
+> On Fri, Sep 19, 2008 at 1:04 PM, Dean Nelson <dcn@sgi.com> wrote:
+> > Change per_cpu variable vector_irq[] from holding an 'int' irq number to
+> > holding a 'struct irq_desc' pointer.
 > 
-> We will support multiple buffers for different tracing systems, with
-> separate names, event id spaces. [...]
-
-OK.  This is completely orthogonal to ...
-
-
-> INPUT_FUNCTIONS
-> ---------------
+> why?
 > 
-> allocate_buffer (name, size)
->         return buffer_handle
+> Eric wants to change int irq to some struct irq later?
+
+Well, it was my take on what Eric was saying in the following:
+
+On Mon, Aug 11, 2008 at 12:39:22PM -0700, Eric W. Biederman wrote:
+>
+> We create a common factor of assign_irq_vector that looks something like:
 > 
-> register_event (buffer_handle, event_id, print_function)
->         You can pass in a requested event_id from a fixed set, and
-> will be given it, or an error
->         0 means allocate me one dynamically
->         returns event_id     (or -E_ERROR)
+> bool __grab_irq_vector(struct irq_desc *desc, unsigned vector, cpumask_t new_domain)
+> {
+>         /* Must be called with vector lock */
+>         struct irq_cfg *cfg;
+>         bool grabbed = false;
+>         unsigned int old_vector;
+>         cpumask_t mask;
+>         int cpu;
 > 
-> record_event (buffer_handle, event_id, length, *buf)
-
-How do you imagine record_event() being used from the point of view of
-the instrumented module?  Is it to be protected by some sort of test
-of the control variable?  Is the little binary event buffer supposed
-to be constructed unconditionally?  (On the stack?)
-
-
-You should compare this to markers and tracepoints.  It sounds to me like
-this is not that different from
-
-     trace_mark (event_name, "%*b", length, buf);
-
-where the goofy "%*b" could be some magic to identify the proposed
-"everything is a short blob" event record type.
-
-By the way, systemtap supports formatted printing that generates
-binary records via directives like "%4b" for 4-byte ints.  I wonder if
-that would be a suitable facility for this and/or markers to allow
-instrumentation code to *generate* those binary event records.
-
-
-Do you believe that fans of tracepoints would support a single
-void*/length struct parametrization?
-
-
-
-> Data will be output via debugfs, and provide the following output streams:
+>         cfg = get_irqp_cfg(irq);
+>         old_vector = cfg->vector;
+>         cpus_and(mask, new_domain, cpu_online_map);
 > 
-> /debugfs/tracing/<name>/buffers/text
->     clear text stream (will merge the per-cpu streams via insertion
-> sort, and use the print functions)
+>         for_each_cpu_mask_nr(cpu, mask) {
+>               if (per_cpu(vector_irq, cpu)[vector])
+>                       goto out;
+>         }
+>         /* Available reserve it */
+>         for_each_cpu_mask_nr(cpu, mask)
+>             per_cpu(vector_irq, cpu)[vector] = desc;
 
-Can you spell out this part a little more?  I wonder because at the
-tracing miniconf on Wednesday we talked about systemtap's likely need
-to *consume* these trace events as they are being generated.
+The previous line made me think that was what he wanted....
 
-If systemtap can only see them as a binary blob or a rendered ascii
-string, they would not be as useful as if the record was decomposable
-in kernel.  Perhaps the event-type-registration call can declare the
-binary struct, like a perl pack directive ... or a marker (binary)
-format string.
+>         if (cfg->vector) {
+>               cfg->move_in_progress;
+>                 cfg->old_domain = cfg->domain;
+>         }
+>         cfg->vector = vector;
+>         cfg->domain = mask;
+>         grabbed = true;
+>         
+> out:
+>         return grabbed;
+> }
 
+... Along with the following paragraph.
 
-> CONTROL
-> 
-> Sysfs style tree under debugfs
-> 
-> /debugfs/tracing/<name>/buffers/enabed         <--- binary value
-> 
-> /debugfs/tracing/<name>/<event1>
-> /debugfs/tracing/<name>/<event2>
->     etc ...
->     provides a way to enable/disable events, see what's available, and
-> what's enabled.
+> I think vector_irq should return an irq_desc and have an entry for
+> all of the static vectors as well (if we are going to do weird
+> things with dynamic high priority vector allocation, and dynamic
+> detection of which vectors assign_irq_vector may use).
 
-This sort of control is (or should be) already available for markers.
+If that's not what Eric meant, then I got it wrong and you can reject
+the patchset.
 
+Dean
 
-- FChE
