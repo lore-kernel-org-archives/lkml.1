@@ -1,118 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbYISG35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbYISCmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752861AbYISG35 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 02:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbYISG3u
+	id S1757220AbYISCmg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 22:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755722AbYISCm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 02:29:50 -0400
-Received: from 8bytes.org ([88.198.83.132]:57340 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750798AbYISG3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 02:29:49 -0400
-Date: Fri, 19 Sep 2008 08:29:46 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: joerg.roedel@amd.com, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
-Message-ID: <20080919062946.GH27426@8bytes.org>
-References: <20080917192827.GA18515@8bytes.org> <20080918102931Z.fujita.tomonori@lab.ntt.co.jp> <20080918140350.GE24392@amd.com> <20080919081020S.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 18 Sep 2008 22:42:28 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:57649 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754223AbYISCm1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 22:42:27 -0400
+X-Greylist: delayed 2513 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 22:42:27 EDT
+Message-Id: <200809190200.m8J20Rt4030923@www262.sakura.ne.jp>
+Subject: [2.6.27-rc6-mm1] Boot hangs while initializing SCSI disk.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080919081020S.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Date: Fri, 19 Sep 2008 11:00:27 +0900
+Content-Type: text/plain; charset="ISO-2022-JP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 08:10:32AM +0900, FUJITA Tomonori wrote:
-> On Thu, 18 Sep 2008 16:03:50 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > On Thu, Sep 18, 2008 at 10:29:24AM +0900, FUJITA Tomonori wrote:
-> > > On Wed, 17 Sep 2008 21:28:27 +0200
-> > > Joerg Roedel <joro@8bytes.org> wrote:
-> > > 
-> > > > On Thu, Sep 18, 2008 at 04:20:18AM +0900, FUJITA Tomonori wrote:
-> > > > > On Wed, 17 Sep 2008 18:52:37 +0200
-> > > > > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > > > 
-> > > > > > The IO/TLB flushing on every unmaping operation is the most expensive
-> > > > > > part there and not strictly necessary. It is sufficient to do the flush
-> > > > > > before any entries are reused. This is patch implements lazy IO/TLB
-> > > > > > flushing which does exactly this.
-> > > > > > 
-> > > > > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > > > > > ---
-> > > > > >  Documentation/kernel-parameters.txt |    5 +++++
-> > > > > >  arch/x86/kernel/amd_iommu.c         |   26 ++++++++++++++++++++++----
-> > > > > >  arch/x86/kernel/amd_iommu_init.c    |   10 +++++++++-
-> > > > > >  include/asm-x86/amd_iommu_types.h   |    9 +++++++++
-> > > > > >  4 files changed, 45 insertions(+), 5 deletions(-)
-> > > > > > 
-> > > > > > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> > > > > > index c2e00ee..5f0aefe 100644
-> > > > > > --- a/Documentation/kernel-parameters.txt
-> > > > > > +++ b/Documentation/kernel-parameters.txt
-> > > > > > @@ -284,6 +284,11 @@ and is between 256 and 4096 characters. It is defined in the file
-> > > > > >  			isolate - enable device isolation (each device, as far
-> > > > > >  			          as possible, will get its own protection
-> > > > > >  			          domain)
-> > > > > > +			unmap_flush - enable flushing of IO/TLB entries when
-> > > > > > +			              they are unmapped. Otherwise they are
-> > > > > > +				      flushed before they will be reused, which
-> > > > > > +				      is a lot of faster
-> > > > > > +
-> > > > > 
-> > > > > Would it be nice to have consistency of IOMMU parameters?
-> > > > 
-> > > > True. We should merge common parameters across IOMMUs into the
-> > > > iommu= parameter some time in the future, I think. It would also be the
-> > > > place for the IOMMU size parameter.
-> > > 
-> > > Hmm, now is better than the future? I think that now you can add
-> > > something like 'disable_batching_flush' as a common parameter and
-> > > change AMD IOMMU to use it.
-> > 
-> > Ok, I queued the following patch in the AMD IOMMU updates and changed
-> > this patch to use iommu_fullflush instead. Is this patch ok? It changes
-> > the behavior of GART to use lazy flushing by default. But I don't think
-> > that this is a problem.
-> > 
-> > commit 9769771290fddcfc0362c5d30242151d4eb1cc46
-> > Author: Joerg Roedel <joerg.roedel@amd.com>
-> > Date:   Thu Sep 18 15:23:43 2008 +0200
-> > 
-> >     x86: move GART TLB flushing options to generic code
-> >     
-> >     The GART currently implements the iommu=[no]fullflush command line
-> >     parameters which influence its IO/TLB flushing strategy. This patch
-> >     makes these parameters generic so that they can be used by the AMD IOMMU
-> >     too.
-> >     
-> >     Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > 
-> > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> > index c2e00ee..569527e 100644
-> > --- a/Documentation/kernel-parameters.txt
-> > +++ b/Documentation/kernel-parameters.txt
-> > @@ -888,6 +888,10 @@ and is between 256 and 4096 characters. It is defined in the file
-> >  		nomerge
-> >  		forcesac
-> >  		soft
-> > +		fullflush
-> > +			Flush IO/TLB at every deallocation
-> > +		nofullflush
-> > +			Flush IO/TLB only when addresses are reused (default)
-> 
-> I'm not sure about making 'nofullflush' a generic option. Enabling
-> nofullflush option doesn't change anything. So what's the point of the
-> option?
+Hello.
 
-Backwards compatability with the GART code. These two options are
-basically just moved from the GART code to pci-dma.c. But otherwise its
-pointless, I can remove it if everybody else agrees.
+Boot process seems to fallen into infinite loop, as CPU usage became 100%
+after printing below messages.
+Comparing two outputs, it hangs just before printing
+"sd 2:0:0:0: [sda] 8388608 512-byte hardware sectors (4295 MB)" line.
 
-Joerg
+Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.27-rc6-mm1
 
+Regards.
+
+---------- Fedora 9 (2.6.27-rc6) ----------
+Creating block device nodes.
+Loading mptbase module
+Fusion MPT base driver 3.04.07
+Copyright (c) 1999-2008 LSI Corporation
+modprobe used greatest stack depth: 6836 bytes left
+Loading mptscsih module
+modprobe used greatest stack depth: 6812 bytes left
+Loading mptspi module
+Fusion MPT SPI Host driver 3.04.07
+mptspi 0000:00:10.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+mptbase: ioc0: Initiating bringup
+ioc0: LSI53C1030 B0: Capabilities={Initiator}
+scsi2 : ioc0: LSI53C1030 B0, FwRev=01032920h, Ports=1, MaxQ=128, IRQ=17
+scsi 2:0:0:0: Direct-Access     VMware,  VMware Virtual S 1.0  PQ: 0 ANSI: 2
+scsi target2:0:0: Beginning Domain Validation
+scsi target2:0:0: Domain Validation skipping write tests
+scsi target2:0:0: Ending Domain Validation
+scsi target2:0:0: FAST-40 WIDE SCSI 80.0 MB/s ST (25 ns, offset 127)
+sd 2:0:0:0: [sda] 8388608 512-byte hardware sectors (4295 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Cache data unavailable
+sd 2:0:0:0: [sda] Assuming drive cache: write through
+sd 2:0:0:0: [sda] 8388608 512-byte hardware sectors (4295 MB)
+sd 2:0:0:0: [sda] Write Protect is off
+sd 2:0:0:0: [sda] Cache data unavailable
+sd 2:0:0:0: [sda] Assuming drive cache: write through
+ sda: sda1
+sd 2:0:0:0: [sda] Attached SCSI disk
+sd 2:0:0:0: Attached scsi generic sg1 type 0
+modprobe used greatest stack depth: 5064 bytes left
+Creating root device.
+input: ImPS/2 Generic Wheel Mouse as /devices/platform/i8042/serio1/input/input3
+Mounting root filesystem.
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
+
+
+---------- Fedora 9 (2.6.27-rc6-mm1 (snapshot 2008-09-18-18-08)) ----------
+Creating block device nodes.
+Loading mptbase module
+Fusion MPT base driver 3.04.07
+Copyright (c) 1999-2008 LSI Corporation
+Loading mptscsih module
+Loading mptspi module
+Fusion MPT SPI Host driver 3.04.07
+mptspi 0000:00:10.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+mptbase: ioc0: Initiating bringup
+ioc0: LSI53C1030 B0: Capabilities={Initiator}
+scsi2 : ioc0: LSI53C1030 B0, FwRev=01032920h, Ports=1, MaxQ=128, IRQ=17
+scsi 2:0:0:0: Direct-Access     VMware,  VMware Virtual S 1.0  PQ: 0 ANSI: 2
+scsi target2:0:0: Beginning Domain Validation
+scsi target2:0:0: Domain Validation skipping write tests
+scsi target2:0:0: Ending Domain Validation
+scsi target2:0:0: FAST-40 WIDE SCSI 80.0 MB/s ST (25 ns, offset 127)
+input: ImPS/2 Generic Wheel Mouse as /devices/platform/i8042/serio1/input/input3
+
+(hangs at here and CPU usage becomes 100%)
