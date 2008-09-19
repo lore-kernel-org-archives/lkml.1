@@ -1,180 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYISKG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbYISKHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbYISKG5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 06:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbYISKGu
+	id S1757387AbYISKHd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 06:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbYISKHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 06:06:50 -0400
-Received: from qb-out-0506.google.com ([72.14.204.238]:58573 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbYISKGt (ORCPT
+	Fri, 19 Sep 2008 06:07:25 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:36654 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751093AbYISKHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 06:06:49 -0400
-From: Steven Noonan <steven@uplinklabs.net>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, Steven Noonan <steven@uplinklabs.net>
-Subject: [PATCH -tip FIXED] ftrace: add nop tracer
-Date: Fri, 19 Sep 2008 03:06:43 -0700
-Message-Id: <1221818803-9616-1-git-send-email-steven@uplinklabs.net>
-X-Mailer: git-send-email 1.6.0.2
+	Fri, 19 Sep 2008 06:07:23 -0400
+X-BigFish: VPS-22(z21eW5edJz936eQzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0K7FTFZ-04-CL7-01
+Date: Fri, 19 Sep 2008 12:07:11 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] AMD IOMMU updates for 2.6.28
+Message-ID: <20080919100711.GH24392@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 19 Sep 2008 10:07:11.0577 (UTC) FILETIME=[7B9ABC90:01C91A3F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A no-op tracer which can serve two purposes:
- 1. A template for development of a new tracer.
- 2. A convenient way to see ftrace_printk() calls without
-    an irrelevant trace making the output messy.
+Hi Ingo,
 
-Signed-off-by: Steven Noonan <steven@uplinklabs.net>
----
- kernel/trace/Kconfig          |   10 ++++++
- kernel/trace/Makefile         |    1 +
- kernel/trace/trace.h          |    4 ++
- kernel/trace/trace_nop.c      |   65 +++++++++++++++++++++++++++++++++++++++++
- kernel/trace/trace_selftest.c |    9 ++++++
- 5 files changed, 89 insertions(+), 0 deletions(-)
- create mode 100644 kernel/trace/trace_nop.c
+please pull the updates for the AMD IOMMU driver for the 2.6.28 merge
+window. Most of the patches had been sent to LKML for review and got
+comments. One patch touches the GART driver and was added after an
+objection with a patch previously in this series. Please pull.
 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 16e5bb5..d7b2de7 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -101,6 +101,16 @@ config SCHED_TRACER
- 	  This tracer tracks the latency of the highest priority task
- 	  to be scheduled in, starting from the point it has woken up.
- 
-+config NOP_TRACER
-+	bool "NOP Tracer"
-+	depends on HAVE_FTRACE
-+	depends on DEBUG_KERNEL
-+	select TRACING
-+	help
-+	  This tracer does nothing. The primary purpose for it is to
-+	  politely print the output of ftrace_printk() calls without
-+	  the overhead of an irrelevant trace taking place.
-+
- config CONTEXT_SWITCH_TRACER
- 	bool "Trace process context switches"
- 	depends on HAVE_FTRACE
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 58ec61c..73ba13f 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -19,6 +19,7 @@ obj-$(CONFIG_FTRACE) += trace_functions.o
- obj-$(CONFIG_IRQSOFF_TRACER) += trace_irqsoff.o
- obj-$(CONFIG_PREEMPT_TRACER) += trace_irqsoff.o
- obj-$(CONFIG_SCHED_TRACER) += trace_sched_wakeup.o
-+obj-$(CONFIG_NOP_TRACER) += trace_nop.o
- obj-$(CONFIG_STACK_TRACER) += trace_stack.o
- obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
- 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 42f65d0..447d4b9 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -339,6 +339,10 @@ extern int trace_selftest_startup_preemptirqsoff(struct tracer *trace,
- extern int trace_selftest_startup_wakeup(struct tracer *trace,
- 					 struct trace_array *tr);
- #endif
-+#ifdef CONFIG_NOP_TRACER
-+extern int trace_selftest_startup_nop(struct tracer *trace,
-+					 struct trace_array *tr);
-+#endif
- #ifdef CONFIG_CONTEXT_SWITCH_TRACER
- extern int trace_selftest_startup_sched_switch(struct tracer *trace,
- 					       struct trace_array *tr);
-diff --git a/kernel/trace/trace_nop.c b/kernel/trace/trace_nop.c
-new file mode 100644
-index 0000000..dafaefb
---- /dev/null
-+++ b/kernel/trace/trace_nop.c
-@@ -0,0 +1,65 @@
-+/*
-+ * nop tracer
-+ *
-+ * Copyright (C) 2008 Steven Noonan <steven@uplinklabs.net>
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/debugfs.h>
-+#include <linux/ftrace.h>
-+
-+#include "trace.h"
-+
-+static struct trace_array	*ctx_trace;
-+
-+static void start_nop_trace(struct trace_array *tr)
-+{
-+	/* Nothing to do! */
-+}
-+
-+static void stop_nop_trace(struct trace_array *tr)
-+{
-+	/* Nothing to do! */
-+}
-+
-+static void nop_trace_init(struct trace_array *tr)
-+{
-+	ctx_trace = tr;
-+
-+	if (tr->ctrl)
-+		start_nop_trace(tr);
-+}
-+
-+static void nop_trace_reset(struct trace_array *tr)
-+{
-+	if (tr->ctrl)
-+		stop_nop_trace(tr);
-+}
-+
-+static void nop_trace_ctrl_update(struct trace_array *tr)
-+{
-+	/* When starting a new trace, reset the buffers */
-+	if (tr->ctrl)
-+		start_nop_trace(tr);
-+	else
-+		stop_nop_trace(tr);
-+}
-+
-+static struct tracer nop_trace __read_mostly =
-+{
-+	.name		= "nop",
-+	.init		= nop_trace_init,
-+	.reset		= nop_trace_reset,
-+	.ctrl_update	= nop_trace_ctrl_update,
-+#ifdef CONFIG_FTRACE_SELFTEST
-+	.selftest	= trace_selftest_startup_nop,
-+#endif
-+};
-+
-+__init static int init_nop_trace(void)
-+{
-+	return register_tracer(&nop_trace);
-+}
-+device_initcall(init_nop_trace);
-diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
-index 630715b..82db910 100644
---- a/kernel/trace/trace_selftest.c
-+++ b/kernel/trace/trace_selftest.c
-@@ -418,6 +418,15 @@ trace_selftest_startup_preemptirqsoff(struct tracer *trace, struct trace_array *
- }
- #endif /* CONFIG_IRQSOFF_TRACER && CONFIG_PREEMPT_TRACER */
- 
-+#ifdef CONFIG_NOP_TRACER
-+int
-+trace_selftest_startup_nop(struct tracer *trace, struct trace_array *tr)
-+{
-+	/* What could possibly go wrong? */
-+	return 0;
-+}
-+#endif
-+
- #ifdef CONFIG_SCHED_TRACER
- static int trace_wakeup_test_thread(void *data)
- {
+The following changes since commit 74546a8cd9a4e2c26a15a534f0be2f9cc08ae675:
+  Ingo Molnar (1):
+        Revert "fix warning in: "x86: HPET_MSI Initialise per-cpu HPET timers""
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-updates-2.6.28
+
+FUJITA Tomonori (1):
+      AMD IOMMU: avoid unnecessary low zone allocation in alloc_coherent
+
+Joerg Roedel (24):
+      AMD IOMMU: check for invalid device pointers
+      AMD IOMMU: move TLB flushing to the map/unmap helper functions
+      x86: move GART TLB flushing options to generic code
+      AMD IOMMU: implement lazy IO/TLB flushing
+      AMD IOMMU: add branch hints to completion wait checks
+      AMD IOMMU: align alloc_coherent addresses properly
+      AMD IOMMU: add event buffer allocation
+      AMD IOMMU: save pci segment from ACPI tables
+      AMD IOMMU: save pci_dev instead of devid
+      AMD IOMMU: add MSI interrupt support
+      AMD IOMMU: add event handling code
+      AMD IOMMU: enable event logging
+      AMD IOMMU: allow IO page faults from devices
+      AMD IOMMU: add dma_supported callback
+      AMD IOMMU: don't assign preallocated protection domains to devices
+      AMD IOMMU: some set_device_domain cleanups
+      AMD IOMMU: replace memset with __GFP_ZERO in alloc_coherent
+      AMD IOMMU: simplify dma_mask_to_pages
+      AMD IOMMU: free domain bitmap with its allocation order
+      AMD IOMMU: remove unnecessary cast to u64 in the init code
+      AMD IOMMU: calculate IVHD size with a function
+      AMD IOMMU: use cmd_buf_size when freeing the command buffer
+      add AMD IOMMU tree to MAINTAINERS file
+      AMD IOMMU: use coherent_dma_mask in alloc_coherent
+
+ Documentation/kernel-parameters.txt       |    4 +
+ Documentation/x86/x86_64/boot-options.txt |    2 -
+ MAINTAINERS                               |    1 +
+ arch/x86/Kconfig                          |    1 +
+ arch/x86/kernel/amd_iommu.c               |  318 ++++++++++++++++++++++++-----
+ arch/x86/kernel/amd_iommu_init.c          |  191 ++++++++++++++++--
+ arch/x86/kernel/pci-dma.c                 |   13 ++
+ arch/x86/kernel/pci-gart_64.c             |   13 --
+ include/asm-x86/amd_iommu.h               |    3 +
+ include/asm-x86/amd_iommu_types.h         |   58 +++++-
+ include/asm-x86/iommu.h                   |    1 +
+ 11 files changed, 517 insertions(+), 88 deletions(-)
+
 -- 
-1.6.0.2
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
