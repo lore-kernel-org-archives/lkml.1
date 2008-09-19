@@ -1,51 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbYISM61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYISM6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754503AbYISM61 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 08:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbYISM5y
+	id S1754209AbYISM6F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 08:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYISM5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 08:57:54 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60285 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753425AbYISM5x (ORCPT
+	Fri, 19 Sep 2008 08:57:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45283 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752728AbYISM5o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 08:57:53 -0400
-Date: Fri, 19 Sep 2008 13:52:20 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: felipe.balbi@nokia.com
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       Tony Lindgren <tony@atomide.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Wim Van Sebroeck <wim@iguana.be>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "George G. Davis" <gdavis@mvista.com>
-Subject: Re: [PATCH 4/5] watchdog: move omap_wdt.h to include/linux/watchdog
-Message-ID: <20080919135220.1e52e32d@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080919110645.GO28615@gandalf.research.nokia.com>
-References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com>
-	<1221820359-8943-2-git-send-email-felipe.balbi@nokia.com>
-	<1221820359-8943-3-git-send-email-felipe.balbi@nokia.com>
-	<1221820359-8943-4-git-send-email-felipe.balbi@nokia.com>
-	<1221820359-8943-5-git-send-email-felipe.balbi@nokia.com>
-	<20080919115627.343a2847@lxorguk.ukuu.org.uk>
-	<20080919110645.GO28615@gandalf.research.nokia.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 19 Sep 2008 08:57:44 -0400
+Message-ID: <48D3A18A.5040003@linux-foundation.org>
+Date: Fri, 19 Sep 2008 07:56:42 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org, jeremy@goop.org, ebiederm@xmission.com,
+       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org
+Subject: Re: [patch 1/4] Make the per cpu reserve configurable
+References: <20080918233648.581696416@quilx.com>	 <20080918233701.127757960@quilx.com> <84144f020809190012u1b7dd266q3d2f689b4c2cfdf9@mail.gmail.com>
+In-Reply-To: <84144f020809190012u1b7dd266q3d2f689b4c2cfdf9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sure, I'll update the patch. But if you look at patch 5/5, I'll need the
-> structures to define the set_clock() function. Should I create then
-> under <mach/omap_wdt.h> ??
+Pekka Enberg wrote:
+> 
+> Wrong diffstat? There's no ia64 changes in the patch.
 
-I think that would be better - you are not creating a public general
-interface to watchdogs but a specific interface between the OMAP platform
-code and the OMAP watchdog.
-
-Alan
+Hmmm... I thought quilt would update that...
