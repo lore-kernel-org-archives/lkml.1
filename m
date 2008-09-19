@@ -1,108 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbYISNCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbYISNEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168AbYISNCS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 09:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbYISNCE
+	id S1753872AbYISNEQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 09:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYISNEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 09:02:04 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:58453 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751081AbYISNCC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 09:02:02 -0400
-Date: Fri, 19 Sep 2008 22:01:35 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] AMD IOMMU updates for 2.6.28
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080919123426.GN24392@amd.com>
-References: <20080919115259.GL24392@amd.com>
-	<20080919212327Y.fujita.tomonori@lab.ntt.co.jp>
-	<20080919123426.GN24392@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 19 Sep 2008 09:04:05 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:4553 "EHLO
+	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751476AbYISNED (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 09:04:03 -0400
+X-BigFish: VPS-9(zz1432R98dR936eQ1805M9320imzz10d3izzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0K7G1ME-01-AMR-01
+Message-ID: <48D3A338.5070400@amd.com>
+Date: Fri, 19 Sep 2008 15:03:52 +0200
+From: Peter Oruba <peter.oruba@amd.com>
+Organization: AMD (OSRC)
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+MIME-Version: 1.0
+To: "Giacomo A. Catenazzi" <cate@debian.org>
+CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 05/11] [PATCH 05/11] x86: Moved microcode.c to microcode_intel.c.
+References: <20080728164411.490752571@amd.com>	 <20080728164448.492961653@amd.com>	 <20080907120823.59f8fa47@infradead.org> <48CA586C.2010104@amd.com>	 <20080912063517.783b7f85@infradead.org> <48D3942B.1050901@amd.com> <b647ffbd0809190537w18cc4d5fo4ce1a9c0390405d9@mail.gmail.com> <48D3A1FD.7010309@debian.org>
+In-Reply-To: <48D3A1FD.7010309@debian.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080919220126C.fujita.tomonori@lab.ntt.co.jp>
+X-OriginalArrivalTime: 19 Sep 2008 13:03:53.0073 (UTC) FILETIME=[2A96A610:01C91A58]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 14:34:26 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> On Fri, Sep 19, 2008 at 09:24:18PM +0900, FUJITA Tomonori wrote:
-> > On Fri, 19 Sep 2008 13:52:59 +0200
-> > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > 
-> > > On Fri, Sep 19, 2008 at 08:47:54PM +0900, FUJITA Tomonori wrote:
-> > > > On Fri, 19 Sep 2008 20:23:50 +0900
-> > > > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > > > 
-> > > > And you don't need to add 'fullflush' to the generic place too.
-> > > > 
-> > > > 'fullflush' will be supported with only GART and AMD IOMMU. So adding
-> > > > the description of it to both GART and AMD IOMMU should be fine.
-> > > > 
-> > > > 'fullflush' has the same meaning for both IOMMUs. That's nice
-> > > > consistency, I think.
-> > > 
-> > > Huh? The whole point of this patch was to have a common option between
-> > > IOMMUs to disable lazy IOTLB flushing. This was suggested by _you_ and
-> > > the only reason I wrote this patch.
-> > 
-> > You misunderstand what I meant. I'm sorry if my explanation is not
-> > clear.
-> > 
-> > 
-> > > After this patch we can change other IOMMU implementations with lazy
-> > > flushing to use that parameter too.
-> > 
-> > I'm not sure that Calgary wants to support such option. It always uses
-> > lazy flushing.
-> > 
-> > 
-> > What I don't like is that there is no consistency about the option
-> > name for lazy flushing. It doesn't mean that we move the option to the
-> > generic place.
-> > 
-> > Here's my first reply:
-> > 
-> > =
-> > Would it be nice to have consistency of IOMMU parameters?
-> > 
-> > VT-d also has the kernel-boot option for this lazy flushing trick
-> > though VT-d 'strict' option is more vague than 'unmap_flush'
-> > =
-> > 
-> > What I meant that using the option name 'strict' that VT-d uses for
-> > lazy flushing for AMD IOMMU would be better than introducing a new
-> > option name, "unmap_flush" for AMD IOMMU though I don't think that
-> > 'strict' is the good name.
-> > 
-> > 
-> > Seems 'fullflush' is better than 'strict'. So I think that it's better
-> > to use 'fullflush' for AMD IMMU rather introducing a new name,
-> > 'unmap_flush'. But again, it doesn't mean that 'fullflush' moves to
-> > the generic place.
+Giacomo A. Catenazzi schrieb:
+> Dmitry Adamushko wrote:
+>> 2008/9/19 Peter Oruba <peter.oruba@amd.com>:
+>>> Some additonal words regarding the current user space issues:
+>>>
+>>> IMHO the most convenient way to update microcode is through the
+>>> firmware loading
+>>> interface instead of microcode_ctl. This reduces user-space
+>>> responsibilities to
+>>> loading the correct module at boot time and to place the microcode
+>>> patch file at
+>>> the right location via package installation. The problems mentioned
+>>> in this
+>>> thread would then probably disappear as well. What do you guys think?
+>>
+>> It'd still require changes for all the setups that currently rely on
+>> the 'microcode_ctl' interface. Moreover, Arjan's setup failed not due
+>> to the 'microcode_ctl' per se but due to the altered kernel module
+>> name. After all, we can't break the established interface this way.
+>>
+>> We can either reserve 'microcode' as a legacy name for intel cpus (==
+>> microcode_intel), or maybe we can use request_module() from
+>> microcode.ko to load a proper arch-specific module (I guess, it's not
+>> ok for !KMOD-enabled kernels).
 > 
-> Ok, so now we have fullflush, which makes sense for all x86 hardware
-> IOMMUs except maybe Calgary (from what I know about Calgary fullflush
-> can be implemented there only with a abyssal performance penalty nobody
-> is willing to pay). So it makes sense to have the option in the generic
-> place.
+> I agree. A wrapper "microcode.ko" module would be nice, in order
+> to allow independent kernel and user space upgrades.
+> 
+> The module name is important also on udev method: only a module
+> load triggers the microcode request in udev, thus also the
+> new method should have stable kernel module name.
+> 
+> ciao
+>     cate
+> 
 
-Not sure. It would make sense but maybe not.
+That sounds like a single-module solution would be the best way to go. All
+dependencies would then be handled inside the module.
 
-But it's the different topic. Making a generic option that affects all
-the IOMMUs is an important issue for everyone. All the parties need to
-discuss it and agree.
+-Peter
 
-
-> But we can surely add a comment that it does not affect Calgary
-> to the kernel documentation (and change VT-d to use that parameter too).
-> But the AMD IOMMU update chain is not the right place for making big
-> changes to other IOMMUs.
-
-Yes, that's the point. We should not have such important change in AMD
-IOMMU updates.
-
-So please just make 'fullflush' as AMD IOMMU's option.
