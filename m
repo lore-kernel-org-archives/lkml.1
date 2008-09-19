@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYISWdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbYISWie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbYISWdM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 18:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYISWc6
+	id S1754041AbYISWie (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 18:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYISWi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 18:32:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:14533 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751333AbYISWc5 (ORCPT
+	Fri, 19 Sep 2008 18:38:26 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50350 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751694AbYISWiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 18:32:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=oPUU/+gSIbKEF9VaXa4ljAr6s1Yy/f8utGXFrQE1gsMW1aHpgtPX1FE4IQLc1+p7au
-         7nYbBnOkBgUvlZKyz+a8GUc0rAZpG68uvec9jn1VKEM+C/GZgu5DUZtFNgKMot8pLM3W
-         DIsmmEoXJXTFIZDynVKZ0DAZoXUd+5eaZcqng=
-Message-ID: <70318cbf0809191532n6ebaa122v7d98815c8a65850b@mail.gmail.com>
-Date: Fri, 19 Sep 2008 15:32:56 -0700
-From: "Chris Li" <lkml@chrisli.org>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: irq 19: nobody cared
+	Fri, 19 Sep 2008 18:38:25 -0400
+Date: Fri, 19 Sep 2008 23:38:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Chris Li" <lkml@chrisli.org>
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <86802c440809191457g19e2cbbeo26aa3dff613b057f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Subject: Re: irq 19: nobody cared
+Message-ID: <20080919233808.64aa7539@lxorguk.ukuu.org.uk>
+In-Reply-To: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com>
 References: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com>
-	 <86802c440809191350h21327c76l55d2134d7667f5d0@mail.gmail.com>
-	 <70318cbf0809191413v70c49eccq9ed16ae50864a1a5@mail.gmail.com>
-	 <86802c440809191457g19e2cbbeo26aa3dff613b057f@mail.gmail.com>
-X-Google-Sender-Auth: 62715949c93c8301
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 2:57 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
-> 0x1a.2
-> 0x1d.1
-> 0x1f.2
-> 0x1f.5
->
-> are sharing pin 0x19...
->
-> but early dump can not find 0x1a.2, 0x1f.2, 0x1f.5
+On Fri, 19 Sep 2008 13:40:33 -0700
+"Chris Li" <lkml@chrisli.org> wrote:
 
-But later kernel does able to find those devices. Do you mean
-there is a bug in the early PCI scanning?
+> Hi,
+> 
+> I run into this irq nobody care problem on a dell vostro 200 machine.
+> I test the latest git tree. The problem is there as well.
+> I also update the BIOS to the latest version. Doesn't help either.
+> 
+> It seem the IRQ in question is shared between UHCI and SATA controller.
+> So I am not sure it is a SATA problem or a USB problem.
 
-Chris
+It could also be an IRQ being routed wrongly or an incorrect BIOS table
+so that the kernel is looking for the IRQ in the wrong place.
+
+Does booting with the irqpoll option help ?
+
+> 
+> usb 4-2: new full speed USB device using uhci_hcd and address 2
+> irq 19: nobody cared (try booting with the "irqpoll" option)
+
+And does this last one (the irq19) occur immediately when you plug in a
+USB device ?
