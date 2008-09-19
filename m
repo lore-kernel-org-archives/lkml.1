@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYISW2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYISWdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbYISW2h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 18:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbYISW23
+	id S1754135AbYISWdM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 18:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYISWc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 18:28:29 -0400
-Received: from gw.goop.org ([64.81.55.164]:59817 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876AbYISW22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 18:28:28 -0400
-Message-ID: <48D4278C.8020409@goop.org>
-Date: Fri, 19 Sep 2008 15:28:28 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Fri, 19 Sep 2008 18:32:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:14533 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751333AbYISWc5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 18:32:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=oPUU/+gSIbKEF9VaXa4ljAr6s1Yy/f8utGXFrQE1gsMW1aHpgtPX1FE4IQLc1+p7au
+         7nYbBnOkBgUvlZKyz+a8GUc0rAZpG68uvec9jn1VKEM+C/GZgu5DUZtFNgKMot8pLM3W
+         DIsmmEoXJXTFIZDynVKZ0DAZoXUd+5eaZcqng=
+Message-ID: <70318cbf0809191532n6ebaa122v7d98815c8a65850b@mail.gmail.com>
+Date: Fri, 19 Sep 2008 15:32:56 -0700
+From: "Chris Li" <lkml@chrisli.org>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: irq 19: nobody cared
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440809191457g19e2cbbeo26aa3dff613b057f@mail.gmail.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Bryan Donlan <bdonlan@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Kernel OOPS and panic on boot in advantech watchdog init
-References: <3e8340490809181902q31e8227fq72a7bea688b594c1@mail.gmail.com> <20080919113356.111ce79f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080919113356.111ce79f@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com>
+	 <86802c440809191350h21327c76l55d2134d7667f5d0@mail.gmail.com>
+	 <70318cbf0809191413v70c49eccq9ed16ae50864a1a5@mail.gmail.com>
+	 <86802c440809191457g19e2cbbeo26aa3dff613b057f@mail.gmail.com>
+X-Google-Sender-Auth: 62715949c93c8301
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> Looks like yet another Xen bug
->   
-
-No, we've been over this before.
-
->> [   30.328280] BUG: unable to handle kernel paging request at d6023220
->> [   30.332244] IP: [<c021f6f3>] xen_set_pte+0x3/0x10
->>     
+On Fri, Sep 19, 2008 at 2:57 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 >
-> sc520 tries to make an ioremap to read 0xfffefcb0
+> 0x1a.2
+> 0x1d.1
+> 0x1f.2
+> 0x1f.5
 >
->   
->> [   30.332244]  [<c037be42>] ioremap_page_range+0x1e2/0x280
->> [   30.332244]  [<c023d311>] __ioremap_caller+0x1e1/0x340
->>     
+> are sharing pin 0x19...
 >
-> The Xen glue should have either permitted the mapping or failed the
-> ioremap attempt with NULL.
+> but early dump can not find 0x1a.2, 0x1f.2, 0x1f.5
 
-Xen glue doesn't get in at that level.  The first Xen knows about the
-mapping is the attempt to set a pte with meaningless contents.
+But later kernel does able to find those devices. Do you mean
+there is a bug in the early PCI scanning?
 
-I still think the sc520 driver should make some rudimentary attempt to
-see if its actually running on a relevant system (ie, an AMD Elan)
-before creating iomappings.  I don't know if DMI, cpuid or some other
-mechanism would be best though.
-
-    J
+Chris
