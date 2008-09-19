@@ -1,73 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbYISMxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbYISMz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbYISMxI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 08:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYISMw6
+	id S1753757AbYISMz1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 08:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYISMzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 08:52:58 -0400
-Received: from mga09.intel.com ([134.134.136.24]:35642 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750880AbYISMw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 08:52:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,429,1217833200"; 
-   d="scan'208";a="338203469"
-Date: Fri, 19 Sep 2008 14:52:50 +0200
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: mingo@elte.hu
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [patch] x86, ptrace: void dopiness
-Message-ID: <20080919145250.A6000@sedona.ch.intel.com>
-Mime-Version: 1.0
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Sep 2008 08:55:17 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:40764 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751116AbYISMzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 08:55:16 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: efi vendor_reserved memory type
+Cc: hpa@zytor.com, ying.huang@intel.com
+Message-Id: <E1KgfWE-0006lU-7s@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Fri, 19 Sep 2008 07:55:30 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove void cast to explicitly ignore the return value.
+From: Cliff Wickman <cpw@sgi.com>
 
+Add an EFI_VENDOR_RESERVED memory type.
+This supports memory available only to special devices. Such memory will
+not be used as general RAM by the OS.
 
-Signed-off-by: markus.t.metzger@intel.com
+And add a method for a device driver to locate that memory. The walk()
+function scans the EFI memory map and does a callback to a specified
+function for each memory area of a specified type.
+efi_memmap_walk_vr() is made available for a module to scan for
+type EFI_VENDOR_RESERVED.
 
+A UV driver will be posted later that will use these routines.
+
+Diffed against 2.6.27-rc1-mm1-dirty
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
 ---
-Index: gits.x86/arch/x86/kernel/ptrace.c
+ arch/x86/kernel/efi.c |   36 ++++++++++++++++++++++++++++++++++++
+ include/linux/efi.h   |    3 ++-
+ 2 files changed, 38 insertions(+), 1 deletion(-)
+
+Index: linux/arch/x86/kernel/efi.c
 ===================================================================
---- gits.x86.orig/arch/x86/kernel/ptrace.c	2008-06-30 13:21:07.%N +0200
-+++ gits.x86/arch/x86/kernel/ptrace.c	2008-09-19 13:53:02.%N +0200
-@@ -738,7 +738,7 @@
- 		unsigned int sig = 0;
+--- linux.orig/arch/x86/kernel/efi.c
++++ linux/arch/x86/kernel/efi.c
+@@ -568,3 +568,39 @@ u64 efi_mem_attributes(unsigned long phy
+ 	}
+ 	return 0;
+ }
++
++static void
++walk(efi_freemem_callback_t callback, void *arg, int type)
++{
++	efi_memory_desc_t *md;
++	void *p;
++	int size;
++
++	/*
++	 * memmap.map is zeroed in efi_enter_virtual_mode()
++	 * but we can use the physical address (phys_map)
++	 */
++	size = memmap.nr_map*memmap.desc_size;
++	for (p = memmap.phys_map; p < memmap.phys_map+size;
++						p += memmap.desc_size) {
++		md = (efi_memory_desc_t *)__va(p);
++		if (md->type != type)
++			continue;
++		if ((*callback)(md->phys_addr,
++		     md->phys_addr + (md->num_pages << EFI_PAGE_SHIFT) - 1,
++		     arg) < 0)
++			return;
++	}
++}
++
++/*
++ * Walk the EFI memory map and call "callback" once for each EFI memory
++ * descriptor of type VENDOR_RESERVED.
++ */
++void
++efi_memmap_walk_vr(efi_freemem_callback_t callback, void *arg)
++{
++	walk(callback, arg, EFI_VENDOR_RESERVED);
++}
++
++EXPORT_SYMBOL_GPL(efi_memmap_walk_vr);
+Index: linux/include/linux/efi.h
+===================================================================
+--- linux.orig/include/linux/efi.h
++++ linux/include/linux/efi.h
+@@ -77,7 +77,8 @@ typedef	struct {
+ #define EFI_MEMORY_MAPPED_IO		11
+ #define EFI_MEMORY_MAPPED_IO_PORT_SPACE	12
+ #define EFI_PAL_CODE			13
+-#define EFI_MAX_MEMORY_TYPE		14
++#define EFI_VENDOR_RESERVED		14
++#define EFI_MAX_MEMORY_TYPE		15
  
- 		/* we ignore the error in case we were not tracing child */
--		(void)ds_release_bts(child);
-+		ds_release_bts(child);
- 
- 		if (cfg.flags & PTRACE_BTS_O_SIGNAL) {
- 			if (!cfg.signal)
-@@ -947,7 +947,7 @@
- 	clear_tsk_thread_flag(child, TIF_SYSCALL_EMU);
- #endif
- #ifdef CONFIG_X86_PTRACE_BTS
--	(void)ds_release_bts(child);
-+	ds_release_bts(child);
- 
- 	child->thread.debugctlmsr &= ~bts_cfg.debugctl_mask;
- 	if (!child->thread.debugctlmsr)
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+ /* Attribute values: */
+ #define EFI_MEMORY_UC		((u64)0x0000000000000001ULL)	/* uncached */
