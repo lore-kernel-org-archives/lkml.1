@@ -1,117 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbYISLUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbYISLYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753510AbYISLUp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 07:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbYISLUg
+	id S1753574AbYISLYU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 07:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbYISLYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 07:20:36 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:40926 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750800AbYISLUg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 07:20:36 -0400
-Date: Fri, 19 Sep 2008 20:20:31 +0900 (JST)
-Message-Id: <20080919.202031.86647893.taka@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
-       righi.andrea@gmail.com, jens.axboe@oracle.com
-Subject: Re: dm-ioband + bio-cgroup benchmarks
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <20080918131554.GB20640@redhat.com>
-References: <20080918.210418.226794540.ryov@valinux.co.jp>
-	<20080918131554.GB20640@redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Fri, 19 Sep 2008 07:24:12 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:45589 "EHLO mo10.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751099AbYISLYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 07:24:11 -0400
+Date: Fri, 19 Sep 2008 20:23:50 +0900
+To: joerg.roedel@amd.com
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] AMD IOMMU updates for 2.6.28
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080919110240.GJ24392@amd.com>
+References: <20080919103923.GI24392@amd.com>
+	<20080919195042S.fujita.tomonori@lab.ntt.co.jp>
+	<20080919110240.GJ24392@amd.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080919202344V.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 19 Sep 2008 13:02:40 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> > Hi All,
+> On Fri, Sep 19, 2008 at 07:51:11PM +0900, FUJITA Tomonori wrote:
+> > On Fri, 19 Sep 2008 12:39:23 +0200
+> > Joerg Roedel <joerg.roedel@amd.com> wrote:
 > > 
-> > I have got excellent results of dm-ioband, that controls the disk I/O
-> > bandwidth even when it accepts delayed write requests.
+> > > On Fri, Sep 19, 2008 at 07:28:13PM +0900, FUJITA Tomonori wrote:
+> > > > On Fri, 19 Sep 2008 12:07:11 +0200
+> > > > Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > > > 
+> > > > > Hi Ingo,
+> > > > > 
+> > > > > please pull the updates for the AMD IOMMU driver for the 2.6.28 merge
+> > > > > window. Most of the patches had been sent to LKML for review and got
+> > > > > comments. One patch touches the GART driver and was added after an
+> > > > > objection with a patch previously in this series. Please pull.
+> > > > > 
+> > > > > The following changes since commit 74546a8cd9a4e2c26a15a534f0be2f9cc08ae675:
+> > > > >   Ingo Molnar (1):
+> > > > >         Revert "fix warning in: "x86: HPET_MSI Initialise per-cpu HPET timers""
+> > > > > 
+> > > > > are available in the git repository at:
+> > > > > 
+> > > > >   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-updates-2.6.28
+> > > > > 
+> > > > > FUJITA Tomonori (1):
+> > > > >       AMD IOMMU: avoid unnecessary low zone allocation in alloc_coherent
+> > > > > 
+> > > > > Joerg Roedel (24):
+> > > > >       AMD IOMMU: check for invalid device pointers
+> > > > >       AMD IOMMU: move TLB flushing to the map/unmap helper functions
+> > > > >       x86: move GART TLB flushing options to generic code
+> > > > 
+> > > > As I wrote, I don't think that this GART patch is the right approach.
+> > > 
+> > > I don't thinks its clean to leave nofullflush in GART code and move
+> > > fullflush to generic code only.
 > > 
-> > In this time, I ran some benchmarks with a high-end storage. The
-> > reason was to avoid a performance bottleneck due to mechanical factors
-> > such as seek time.
+> > It's not clean for GART but clean for other IOMMUs.
+> 
+> So its unclean anyway. It doesn't matter if for GART or for AMD IOMMU.
+> 
+> > > If we move something then both. But feel
+> > > free to submit a patch that removes the nofullflush option. I would not
+> > > disagree with that.
 > > 
-> > You can see the details of the benchmarks at:
-> > http://people.valinux.co.jp/~ryov/dm-ioband/hps/
-
-  (snip)
-
-> Secondly, why do we have to create an additional dm-ioband device for 
-> every device we want to control using rules. This looks little odd
-> atleast to me. Can't we keep it in line with rest of the controllers
-> where task grouping takes place using cgroup and rules are specified in
-> cgroup itself (The way Andrea Righi does for io-throttling patches)?
-
-It isn't essential dm-band is implemented as one of the device-mappers.
-I've been also considering that this algorithm itself can be implemented
-in the block layer directly.
-
-Although, the current implementation has merits. It is flexible.
-  - Dm-ioband can be place anywhere you like, which may be right before
-    the I/O schedulers or may be placed on top of LVM devices.
-  - It supports partition based bandwidth control which can work without
-    cgroups, which is quite easy to use of.
-  - It is independent to any I/O schedulers including ones which will
-    be introduced in the future.
-
-I also understand it's will be hard to set up without some tools
-such as lvm commands.
-
-> To avoid creation of stacking another device (dm-ioband) on top of every
-> device we want to subject to rules, I was thinking of maintaining an
-> rb-tree per request queue. Requests will first go into this rb-tree upon
-> __make_request() and then will filter down to elevator associated with the
-> queue (if there is one). This will provide us the control of releasing
-> bio's to elevaor based on policies (proportional weight, max bandwidth
-> etc) and no need of stacking additional block device.
-
-I think it's a bit late to control I/O requests there, since process
-may be blocked in get_request_wait when the I/O load is high.
-Please imagine the situation that cgroups with low bandwidths are
-consuming most of "struct request"s while another cgroup with a high
-bandwidth is blocked and can't get enough "struct request"s.
-
-It means cgroups that issues lot of I/O request can win the game.
-
-> I am working on some experimental proof of concept patches. It will take
-> some time though.
+> > I'm not sure we can remove an option that we added. If we can, please
+> > remove it now. There is no point to make the meaningless option
+> > generic.
 > 
-> I was thinking of following.
-> 
-> - Adopt the Andrea Righi's style of specifying rules for devices and
->   group the tasks using cgroups.
-> 
-> - To begin with, adopt dm-ioband's approach of proportional bandwidth
->   controller. It makes sense to me limit the bandwidth usage only in
->   case of contention. If there is really a need to limit max bandwidth,
->   then probably we can do something to implement additional rules or
->   implement some policy switcher where user can decide what kind of
->   policies need to be implemented.
-> 
-> - Get rid of dm-ioband and instead buffer requests on an rb-tree on every
->   request queue which is controlled by some kind of cgroup rules.
->
-> It would be good to discuss above approach now whether it makes sense or 
-> not. I think it is kind of fusion of io-throttling and dm-ioband patches
-> with additional idea of doing io-control just above elevator on the request
-> queue using an rb-tree.
-> 
-> Thanks
-> Vivek
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I don't added this option. I just moved it to generic code from the
+
+You added it to the generic place. Moving it to the generic place
+means adding it to the generic place.
+
+There is no difference in the end. Now 'nofullflush' is listed as the
+generic place.
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index c2e00ee..569527e 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -888,6 +888,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 		nomerge
+ 		forcesac
+ 		soft
++		fullflush
++			Flush IO/TLB at every deallocation
++		nofullflush
++			Flush IO/TLB only when addresses are reused (default)
+
+
+Please don't do that.
+
+
+> GART. The nofullflush option has no meaning for GART and for AMD
+> IOMMU. The only reason to keep it is if we want to change the default in
+> the future.
+
+No, we can't change the default behavior. It's the user interface.
+
+
+> If you don't think we would change the default any time in
+> the future feel free to remove it.
