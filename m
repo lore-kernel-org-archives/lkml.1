@@ -1,97 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbYISQHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYISQIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754239AbYISQHS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 12:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbYISQHE
+	id S1754767AbYISQIT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 12:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYISQIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 12:07:04 -0400
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:54222 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750933AbYISQHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 12:07:03 -0400
-Message-ID: <48D3CDEC.9060407@cs.wisc.edu>
-Date: Fri, 19 Sep 2008 11:06:04 -0500
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Fri, 19 Sep 2008 12:08:04 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:46013 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751294AbYISQIB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 12:08:01 -0400
+Date: Fri, 19 Sep 2008 12:08:01 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Justin Mattock <justinmattock@gmail.com>
+cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Chris Snook <csnook@redhat.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Linux-usb <linux-usb@vger.kernel.org>
+Subject: Re: [19.666764] Disabling IRQ #23
+In-Reply-To: <dd18b0c30809181732t48b41806nadb60829a4fbdd67@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0809191206390.2429-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: device-mapper development <dm-devel@redhat.com>
-CC: James.Bottomley@HansenPartnership.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [dm-devel] [PATCH 2/2] scsi: exports busy status via	bdi_lld_congested
-References: <20080919.104756.41628866.k-ueda@ct.jp.nec.com> <20080919.104922.97297160.k-ueda@ct.jp.nec.com>
-In-Reply-To: <20080919.104922.97297160.k-ueda@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kiyoshi Ueda wrote:
-> This patch change scsi mid layer to export its busy status.
-> Not set the busy flag, when scsi can't dispatch I/Os anymore and
-> needs to kill I/Os.  Otherwise, request stacking drivers may hold
-> requests forever.
+On Thu, 18 Sep 2008, Justin Mattock wrote:
+
+> > You are concentrating on the symptom instead of the problem.  The
+> > symptom is that "Disabling IRQ #23" message -- don't worry about it.
+> >
+> > The underlying problem is the "ehci_hcd 0000:00:1d.7: HC died;
+> > cleaning up" message -- it should _never_ appear.  If you have a
+> > reliable way of provoking it then something needs to be fixed.
+> >
+> > Alan Stern
+> >
+> >
 > 
-> 
-> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-> ---
->  drivers/scsi/scsi.c     |    4 ++--
->  drivers/scsi/scsi_lib.c |   23 ++++++++++++++++++++++-
->  2 files changed, 24 insertions(+), 3 deletions(-)
-> 
-> Index: scsi-misc-2.6/drivers/scsi/scsi_lib.c
-> ===================================================================
-> --- scsi-misc-2.6.orig/drivers/scsi/scsi_lib.c
-> +++ scsi-misc-2.6/drivers/scsi/scsi_lib.c
-> @@ -459,17 +459,30 @@ static void scsi_init_cmd_errh(struct sc
->  
->  void scsi_device_unbusy(struct scsi_device *sdev)
->  {
-> +	int host_congested;
->  	struct Scsi_Host *shost = sdev->host;
->  	unsigned long flags;
->  
->  	spin_lock_irqsave(shost->host_lock, flags);
->  	shost->host_busy--;
-> +	if ((shost->can_queue > 0 && shost->host_busy >= shost->can_queue) ||
-> +	    shost->host_blocked || shost->host_self_blocked ||
-> +	    scsi_host_in_recovery(shost))
-> +		host_congested = 1;
-> +	else
-> +		host_congested = 0;
-> +
+> The reliable way of provoking this message is
 
-You might want to check if the starget busy too (scsi-misc has this but 
-Jens's tree and linus do not)? The code below that I snipped from 
-scsi_request_fn will set the congested bits if scsi_target_queue_ready 
-returns 0, so above here you would want to clear it if it not congested 
-anymore.
+Which message?  The "Disabling IRQ #23" message or the "HC died; 
+cleaning up" message?
 
->  	if (unlikely(scsi_host_in_recovery(shost) &&
->  		     (shost->host_failed || shost->host_eh_scheduled)))
->  		scsi_eh_wakeup(shost);
->  	spin_unlock(shost->host_lock);
-> +
->  	spin_lock(sdev->request_queue->queue_lock);
->  	sdev->device_busy--;
-> +	if (bdi_lld_congested(&sdev->request_queue->backing_dev_info) &&
-> +	    !host_congested && sdev->device_busy < sdev->queue_depth &&
-> +	    !sdev->device_blocked)
-> +		clear_bdi_lld_congested(&sdev->request_queue->backing_dev_info);
->  	spin_unlock_irqrestore(sdev->request_queue->queue_lock, flags);
->  }
->  
+> when uvcvideo is loading(not the module, but the tools involved with
+> the communication of loading the firmware and module).
+> i.g. when using the udev approach with isight-firware-tools
+> I will receive this, but if I use the hal approach
+> this message does not appear. Now with using the udev approach
+> I did try this patch:(not knowing what it really was doing),
+> http://www.gossamer-threads.com/lists/linux/kernel/966076
+> And it seems this message has not appeared. From looking at the
+> situation after running this patch irregardless if it was intended for this
+> or not, I'm wondering if isight-firware-tools is the main issue with this
+> rather than the kernel.
 
+It doesn't matter what tools or other userspace programs you run; the 
+"HC died; cleaning up" message should _never_ appear.
 
+Alan Stern
 
-> @@ -1593,6 +1613,7 @@ static void scsi_request_fn(struct reque
->  	 * later time.
->  	 */
->  	spin_lock_irq(q->queue_lock);
-> +	set_bdi_lld_congested(&q->backing_dev_info);
->  	blk_requeue_request(q, req);
->  	sdev->device_busy--;
->  	if(sdev->device_busy == 0)
