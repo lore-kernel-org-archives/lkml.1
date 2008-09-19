@@ -1,82 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYISLTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbYISLUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbYISLTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 07:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbYISLTN
+	id S1753510AbYISLUp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 07:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbYISLUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 07:19:13 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:30554 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbYISLTL (ORCPT
+	Fri, 19 Sep 2008 07:20:36 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:40926 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750800AbYISLUg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 07:19:11 -0400
-Date: Fri, 19 Sep 2008 14:06:45 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Felipe Balbi <felipe.balbi@nokia.com>, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Wim Van Sebroeck <wim@iguana.be>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "George G. Davis" <gdavis@mvista.com>
-Subject: Re: [PATCH 4/5] watchdog: move omap_wdt.h to include/linux/watchdog
-Message-ID: <20080919110645.GO28615@gandalf.research.nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-2-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-3-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-4-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-5-git-send-email-felipe.balbi@nokia.com> <20080919115627.343a2847@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080919115627.343a2847@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 19 Sep 2008 11:06:47.0608 (UTC) FILETIME=[CF15C380:01C91A47]
-X-Nokia-AV: Clean
+	Fri, 19 Sep 2008 07:20:36 -0400
+Date: Fri, 19 Sep 2008 20:20:31 +0900 (JST)
+Message-Id: <20080919.202031.86647893.taka@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       righi.andrea@gmail.com, jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080918131554.GB20640@redhat.com>
+References: <20080918.210418.226794540.ryov@valinux.co.jp>
+	<20080918131554.GB20640@redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 11:56:27AM +0100, ext Alan Cox wrote:
-> On Fri, 19 Sep 2008 13:32:38 +0300
-> Felipe Balbi <felipe.balbi@nokia.com> wrote:
-> 
-> > Create a new include/linux/watchdog directory
-> > for holding watchdog chips headers, move omap_wdt.h
-> > to the new location and update the include path in
-> > the driver source.
-> 
-> Headers that are driver private belong with the driver. In fact in many
-> cases they belong *in* the driver C file but that depends how much is
-> there.
-> 
-> 
-> 
-> > +#define OMAP_WATCHDOG_REV		(0x00)
-> > +#define OMAP_WATCHDOG_SYS_CONFIG	(0x10)
-> > +#define OMAP_WATCHDOG_STATUS		(0x14)
-> > +#define OMAP_WATCHDOG_CNTRL		(0x24)
-> > +#define OMAP_WATCHDOG_CRR		(0x28)
-> > +#define OMAP_WATCHDOG_LDR		(0x2c)
-> > +#define OMAP_WATCHDOG_TGR		(0x30)
-> > +#define OMAP_WATCHDOG_WPS		(0x34)
-> > +#define OMAP_WATCHDOG_SPR		(0x48)
-> > +
-> > +/* Using the prescaler, the OMAP watchdog could go for many
-> > + * months before firing.  These limits work without scaling,
-> > + * with the 60 second default assumed by most tools and docs.
-> > + */
-> > +#define TIMER_MARGIN_MAX	(24 * 60 * 60)	/* 1 day */
-> > +#define TIMER_MARGIN_DEFAULT	60	/* 60 secs */
-> > +#define TIMER_MARGIN_MIN	1
-> > +
-> > +#define PTV			0	/* prescale */
-> > +#define GET_WLDR_VAL(secs)	(0xffffffff - ((secs) * (32768/(1<<PTV))) + 1)
-> > +
-> > +#endif				/* _OMAP_WATCHDOG_H */
-> 
-> You could just drop these into the C file given how small they are.
+Hi,
 
-Sure, I'll update the patch. But if you look at patch 5/5, I'll need the
-structures to define the set_clock() function. Should I create then
-under <mach/omap_wdt.h> ??
+> > Hi All,
+> > 
+> > I have got excellent results of dm-ioband, that controls the disk I/O
+> > bandwidth even when it accepts delayed write requests.
+> > 
+> > In this time, I ran some benchmarks with a high-end storage. The
+> > reason was to avoid a performance bottleneck due to mechanical factors
+> > such as seek time.
+> > 
+> > You can see the details of the benchmarks at:
+> > http://people.valinux.co.jp/~ryov/dm-ioband/hps/
 
--- 
-balbi
+  (snip)
+
+> Secondly, why do we have to create an additional dm-ioband device for 
+> every device we want to control using rules. This looks little odd
+> atleast to me. Can't we keep it in line with rest of the controllers
+> where task grouping takes place using cgroup and rules are specified in
+> cgroup itself (The way Andrea Righi does for io-throttling patches)?
+
+It isn't essential dm-band is implemented as one of the device-mappers.
+I've been also considering that this algorithm itself can be implemented
+in the block layer directly.
+
+Although, the current implementation has merits. It is flexible.
+  - Dm-ioband can be place anywhere you like, which may be right before
+    the I/O schedulers or may be placed on top of LVM devices.
+  - It supports partition based bandwidth control which can work without
+    cgroups, which is quite easy to use of.
+  - It is independent to any I/O schedulers including ones which will
+    be introduced in the future.
+
+I also understand it's will be hard to set up without some tools
+such as lvm commands.
+
+> To avoid creation of stacking another device (dm-ioband) on top of every
+> device we want to subject to rules, I was thinking of maintaining an
+> rb-tree per request queue. Requests will first go into this rb-tree upon
+> __make_request() and then will filter down to elevator associated with the
+> queue (if there is one). This will provide us the control of releasing
+> bio's to elevaor based on policies (proportional weight, max bandwidth
+> etc) and no need of stacking additional block device.
+
+I think it's a bit late to control I/O requests there, since process
+may be blocked in get_request_wait when the I/O load is high.
+Please imagine the situation that cgroups with low bandwidths are
+consuming most of "struct request"s while another cgroup with a high
+bandwidth is blocked and can't get enough "struct request"s.
+
+It means cgroups that issues lot of I/O request can win the game.
+
+> I am working on some experimental proof of concept patches. It will take
+> some time though.
+> 
+> I was thinking of following.
+> 
+> - Adopt the Andrea Righi's style of specifying rules for devices and
+>   group the tasks using cgroups.
+> 
+> - To begin with, adopt dm-ioband's approach of proportional bandwidth
+>   controller. It makes sense to me limit the bandwidth usage only in
+>   case of contention. If there is really a need to limit max bandwidth,
+>   then probably we can do something to implement additional rules or
+>   implement some policy switcher where user can decide what kind of
+>   policies need to be implemented.
+> 
+> - Get rid of dm-ioband and instead buffer requests on an rb-tree on every
+>   request queue which is controlled by some kind of cgroup rules.
+>
+> It would be good to discuss above approach now whether it makes sense or 
+> not. I think it is kind of fusion of io-throttling and dm-ioband patches
+> with additional idea of doing io-control just above elevator on the request
+> queue using an rb-tree.
+> 
+> Thanks
+> Vivek
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
