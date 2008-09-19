@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbYISPda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbYISPd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbYISPda (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 11:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYISPdW
+	id S1754795AbYISPd6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 11:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYISPdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 11:33:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56475 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750722AbYISPdV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 11:33:21 -0400
-Date: Fri, 19 Sep 2008 16:28:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-Cc: "Timur Tabi" <timur@freescale.com>,
-       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
-       "Dan Williams" <dan.j.williams@intel.com>,
-       "lkml" <linux-kernel@vger.kernel.org>
-Subject: Re: dmaengine.c: question about device_alloc_chan_resources
-Message-ID: <20080919162853.773f1796@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.61.0809191042020.11905@chaos.analogic.com>
-References: <48D02589.8070601@freescale.com>
-	<e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
-	<ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>
-	<20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>
-	<48D2664D.7040204@freescale.com>
-	<20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com>
-	<e9c3a7c20809182120r5e056dd7h170959dc1171af84@mail.gmail.com>
-	<20080919132544.533ab7d0@hskinnemo-gx745.norway.atmel.com>
-	<48D3B880.3070607@freescale.com>
-	<Pine.LNX.4.61.0809191042020.11905@chaos.analogic.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Sep 2008 11:33:47 -0400
+Received: from web26208.mail.ukl.yahoo.com ([217.12.10.245]:20418 "HELO
+	web26208.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750927AbYISPdq convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 11:33:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=26NYPtgzzkOeWcdMIgYOzj4Al4ufEVYj+tJFGx6F/3zSpow/zOxsntH0lo59T1T7mFE+QdDgE+dpVhWKoWfSK3Ykx9jS7o4rUcKI4ZGgbINlmIqV1L86aMQNTQ3Cu+f9XKoG05eOEmL2modpkVB7adQpKCCTJRuuMHzRKt1hz/c=;
+X-YMail-OSG: zh1SAHEVM1lMkPav0nnI3GDjHF85jX0a8050UdEpfMZBmICPZytZoQlBk4pYKHgUY13RDeXxN5lzAtT_36Nd_Yk7pkYAbR84iqZoOD0uym8BloHrdv0zlCS2arKMI8BPCf5pO53kozUNo8XTaJc-
+X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
+Date: Fri, 19 Sep 2008 15:33:44 +0000 (GMT)
+From: Michael Trimarchi <trimarchimichael@yahoo.it>
+Subject: Re: [PATCH] atmel_serial: update the powersave handler to match serial core
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       linux-serial@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Andrew Victor <linux@maxim.org.za>,
+       Anti Sullin <anti.sullin@artecdesign.ee>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <393.6138.qm@web26208.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I could use this feature.  The sound drivers for our MPC8610 processor use DMA,
-> > but the drivers need to control the DMA hardware directly, so I can't use
-> > dmaengine.  I would like to be able to just reserve the channels and program
-> > them as I see fit.
+Hi,
 
 
-> The hardware on the PC/AT machines won't allow you to
-> reserve a specific channel and program it as you see fit,
 
-And since when have MPC8610 processors been used in PC/AT systems ?
 
-PC type ISA DMA is a special (mostly PC specific) interface of its own.
+> +    /* we can not wake up if we're running on slow clock */
+> +    atmel_port->may_wakeup = device_may_wakeup(&pdev->dev);
+> +    if (atmel_serial_clk_will_stop())
+> +        device_set_wakeup_enable(&pdev->dev, 0);
+> +
+This is not true, the wakeup in the slow clock is possible, configure the
+input pin of the serial device as a gpio, and wake up on gpio. Then you
+must reconfigure as a serial pin, and you can wake up on slow clock.
 
-Alan
+Regards Michael
+
+__________________________________________________
+Do You Yahoo!?
+Poco spazio e tanto spam? Yahoo! Mail ti protegge dallo spam e ti da tanto spazio gratuito per i tuoi file e i messaggi 
+http://mail.yahoo.it 
