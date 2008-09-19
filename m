@@ -1,39 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbYISCSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbYISCWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757162AbYISCSO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 22:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbYISCR4
+	id S1757222AbYISCWN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 22:22:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbYISCV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 22:17:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35852
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755720AbYISCR4 (ORCPT
+	Thu, 18 Sep 2008 22:21:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44228 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755778AbYISCV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 22:17:56 -0400
-Date: Thu, 18 Sep 2008 19:17:42 -0700 (PDT)
-Message-Id: <20080918.191742.193683501.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] regression fixes for .27-rc
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080919015209.GA21268@havoc.gtf.org>
-References: <20080919015209.GA21268@havoc.gtf.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 18 Sep 2008 22:21:57 -0400
+Date: Thu, 18 Sep 2008 19:21:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.27-rc6-mm1] Boot hangs while initializing SCSI disk.
+Message-Id: <20080918192125.fce21649.akpm@linux-foundation.org>
+In-Reply-To: <200809190200.m8J20Rt4030923@www262.sakura.ne.jp>
+References: <200809190200.m8J20Rt4030923@www262.sakura.ne.jp>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Thu, 18 Sep 2008 21:52:09 -0400
+On Fri, 19 Sep 2008 11:00:27 +0900 Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> wrote:
 
-> This is all the net driver-related regressions AFAICS.
+> Hello.
 > 
-> Please pull from 'davem-fixes' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-fixes
+> Boot process seems to fallen into infinite loop, as CPU usage became 100%
+> after printing below messages.
+> Comparing two outputs, it hangs just before printing
+> "sd 2:0:0:0: [sda] 8388608 512-byte hardware sectors (4295 MB)" line.
 > 
-> to receive the following updates:
+> Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.27-rc6-mm1
+> 
+> Regards.
+> 
+> ---------- Fedora 9 (2.6.27-rc6) ----------
+> Creating block device nodes.
+> Loading mptbase module
+> Fusion MPT base driver 3.04.07
+> Copyright (c) 1999-2008 LSI Corporation
+> modprobe used greatest stack depth: 6836 bytes left
+> Loading mptscsih module
+> modprobe used greatest stack depth: 6812 bytes left
+> Loading mptspi module
+> Fusion MPT SPI Host driver 3.04.07
+> mptspi 0000:00:10.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> mptbase: ioc0: Initiating bringup
+> ioc0: LSI53C1030 B0: Capabilities={Initiator}
+> scsi2 : ioc0: LSI53C1030 B0, FwRev=01032920h, Ports=1, MaxQ=128, IRQ=17
+> scsi 2:0:0:0: Direct-Access     VMware,  VMware Virtual S 1.0  PQ: 0 ANSI: 2
+> scsi target2:0:0: Beginning Domain Validation
+> scsi target2:0:0: Domain Validation skipping write tests
+> scsi target2:0:0: Ending Domain Validation
+> scsi target2:0:0: FAST-40 WIDE SCSI 80.0 MB/s ST (25 ns, offset 127)
+> sd 2:0:0:0: [sda] 8388608 512-byte hardware sectors (4295 MB)
+> sd 2:0:0:0: [sda] Write Protect is off
+> sd 2:0:0:0: [sda] Cache data unavailable
+> sd 2:0:0:0: [sda] Assuming drive cache: write through
+> sd 2:0:0:0: [sda] 8388608 512-byte hardware sectors (4295 MB)
+> sd 2:0:0:0: [sda] Write Protect is off
+> sd 2:0:0:0: [sda] Cache data unavailable
+> sd 2:0:0:0: [sda] Assuming drive cache: write through
+>  sda: sda1
+> sd 2:0:0:0: [sda] Attached SCSI disk
+> sd 2:0:0:0: Attached scsi generic sg1 type 0
+> modprobe used greatest stack depth: 5064 bytes left
+> Creating root device.
+> input: ImPS/2 Generic Wheel Mouse as /devices/platform/i8042/serio1/input/input3
+> Mounting root filesystem.
+> kjournald starting.  Commit interval 5 seconds
+> EXT3-fs: mounted filesystem with ordered data mode.
+> 
+> 
+> ---------- Fedora 9 (2.6.27-rc6-mm1 (snapshot 2008-09-18-18-08)) ----------
+> Creating block device nodes.
+> Loading mptbase module
+> Fusion MPT base driver 3.04.07
+> Copyright (c) 1999-2008 LSI Corporation
+> Loading mptscsih module
+> Loading mptspi module
+> Fusion MPT SPI Host driver 3.04.07
+> mptspi 0000:00:10.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> mptbase: ioc0: Initiating bringup
+> ioc0: LSI53C1030 B0: Capabilities={Initiator}
+> scsi2 : ioc0: LSI53C1030 B0, FwRev=01032920h, Ports=1, MaxQ=128, IRQ=17
+> scsi 2:0:0:0: Direct-Access     VMware,  VMware Virtual S 1.0  PQ: 0 ANSI: 2
+> scsi target2:0:0: Beginning Domain Validation
+> scsi target2:0:0: Domain Validation skipping write tests
+> scsi target2:0:0: Ending Domain Validation
+> scsi target2:0:0: FAST-40 WIDE SCSI 80.0 MB/s ST (25 ns, offset 127)
+> input: ImPS/2 Generic Wheel Mouse as /devices/platform/i8042/serio1/input/input3
+> 
+> (hangs at here and CPU usage becomes 100%)
 
-Pulled, thanks a lot Jeff.
+hm.  I don't _think_ we've merged anything since then which might have
+fixed it, but heaven knows what's been going on in linux-next.
+
+I'll try to get rc6-mm2 or rc7-mm1 out soon - please retest that?
