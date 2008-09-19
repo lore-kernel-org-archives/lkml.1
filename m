@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYISItk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYISIvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbYISItk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 04:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757045AbYISIt0
+	id S1757450AbYISIvg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 04:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYISIv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 04:49:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52209 "EHLO mx2.mail.elte.hu"
+	Fri, 19 Sep 2008 04:51:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40087 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754127AbYISItX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 04:49:23 -0400
-Date: Fri, 19 Sep 2008 10:48:56 +0200
+	id S1751235AbYISIv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 04:51:26 -0400
+Date: Fri, 19 Sep 2008 10:51:06 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dean Nelson <dcn@sgi.com>, Alan Mayer <ajm@sgi.com>, jeremy@goop.org,
-       rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <Yinghai.lu@amd.com>
-Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
-Message-ID: <20080919084856.GF17592@elte.hu>
-References: <20080911152304.GA13655@sgi.com> <20080914153522.GJ29290@elte.hu> <20080915215053.GA11657@sgi.com> <20080916082448.GA17287@elte.hu> <20080916204654.GA3532@sgi.com> <48D1575E.1050306@zytor.com> <20080917202102.GA166524@sgi.com> <m1zlm6zafo.fsf@frodo.ebiederm.org> <20080918191052.GA22864@sgi.com> <m1zlm5rnb2.fsf@frodo.ebiederm.org>
+To: Steven Noonan <steven@uplinklabs.net>
+Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27
+	(rc5, rc6, probably others)
+Message-ID: <20080919085105.GG17592@elte.hu>
+References: <20080918220102.GE7408@tesla> <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com> <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com> <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com> <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com> <20080919030125.GG7408@tesla> <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com> <20080919081733.GC19491@elte.hu> <f488382f0809190122k1b30cd9q22fd076c1e3eaa18@mail.gmail.com> <f488382f0809190145s1b5407d4s9d97ae594bcc3379@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1zlm5rnb2.fsf@frodo.ebiederm.org>
+In-Reply-To: <f488382f0809190145s1b5407d4s9d97ae594bcc3379@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,98 +40,45 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
+* Steven Noonan <steven@uplinklabs.net> wrote:
 
-> Jack Steiner <steiner@sgi.com> writes:
-> 
-> > On Wed, Sep 17, 2008 at 03:15:07PM -0700, Eric W. Biederman wrote:
-> >> Jack Steiner <steiner@sgi.com> writes:
-> >> 
-> >> > On Wed, Sep 17, 2008 at 12:15:42PM -0700, H. Peter Anvin wrote:
-> >> >> Dean Nelson wrote:
-> >> >> >
-> >> >> >    sgi-gru driver
-> >> >> >
-> >> >> >The GRU is not an actual external device that is connected to an IOAPIC.
-> >> >> >The gru is a hardware mechanism that is embedded in the node controller
-> >> >> >(UV hub) that directly connects to the cpu socket. Any cpu (with 
-> >> >> >permission)
-> >> >> >can do direct loads and stores to the gru. Some of these stores will
-> > result
-> >> >> >in an interrupt being sent back to the cpu that did the store.
-> >> >> >
-> >> >> >The interrupt vector used for this interrupt is not in an IOAPIC. Instead
-> >> >> >it must be loaded into the GRU at boot or driver initialization time.
-> >> >> >
-> >> >> 
-> >> >> Could you clarify there: is this one vector number per CPU, or are you 
-> >> >> issuing a specific vector number and just varying the CPU number?
-> >> >
-> >> > It is one vector for each cpu.
-> >> >
-> >> > It is more efficient for software if the vector # is the same for all cpus
-> >> Why?  Especially in terms of irq counting that would seem to lead to cache
-> >> line conflicts.
+> On Fri, Sep 19, 2008 at 1:22 AM, Steven Noonan <steven@uplinklabs.net> wrote:
+> > On Fri, Sep 19, 2008 at 1:17 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >> in tip/master there's an ftrace_printk() facility. You can just replace
+> >> the verbose printk()s with ftrace_printk() and see the result in
+> >> /debug/tracing/trace.
+> >>
+> >> This sort of tracing has very low overhead and can be used in an easy
+> >> ad-hoc manner with no extra infrastructure. Here's a few quick-start
+> >> links about how to enable the scheduler tracer:
+> >>
+> >>  http://redhat.com/~mingo/sched-devel.git/readme-tracer.txt
+> >>  http://redhat.com/~mingo/sched-devel.git/howto-trace-latencies.txt
+> >>
+> >> any ftrace_printk() you add in the kernel will show up in that trace.
+> >>
+> >> (If the scheduling events are uninteresting and clutter the output then
+> >> you might want to remove the scheduler tracing entries from kernel/*.c
+> >> by removing the trace_sched_*() calls or use a less noisy tracer.)
+> >>
+> >> to get enough of a trace history you might want to increase the number
+> >> of trace entries in /debug/tracing/trace_entries from 16K to 128K or so.
+> >>
 > >
-> > Functionally, it does not matter. However, if the IRQ is not a per-cpu IRQ, a
-> > very large number of IRQs (and vectors) may be needed. The GRU requires 32
-> > interrupt
-> > lines on each blade. A large system can currently support up to 512 blades.
-> 
-> Every vendor of high end hardware is saying they intend to provide
-> 1 or 2 queues per cpu and 1 irq per queue.  So the GRU is not special in
-> that regard.  Also a very large number of IRQs is not a problem as
-> soon as we start dynamically allocating them, which is currently
-> in progress.
-> 
-> Once we start dynamically allocating irq_desc structures we can put
-> them in node-local memory and guarantee there is no data shared between
-> cpus.
-> 
-> > After looking thru the MSI code, we are starting to believe that we should
-> > separate
-> > the GRU requirements from the XPC requirements. It looks like XPC can easily use
-> > the MSI infrastructure.  XPC needs a small number of IRQs, and interrupts are
-> > typically
-> > targeted to a single cpu. They can also be retargeted using the standard
-> > methods.
-> 
-> Alright. 
-> 
-> I would be completely happy if there were interrupts who's affinity we can
-> not change, and are always targeted at a single cpu.
-> 
-> > The GRU, OTOH, is more like a timer interrupt or like a co-processor interrupt.
-> > GRU interrupts can occur on any cpu using the GRU. When interrupts do occur, all
-> > that
-> > needs to happen is to call an interrupt handler. I'm thinking of something like
-> > the following:
+> > Thanks for the suggestion, I'll do that. :)
 > >
-> > 	- permanently reserve 2 system vectors in include/asm-x86/irq_vectors.h
-> > 	- in uv_system_init(), call alloc_intr_gate() to route the
-> > 	  interrupts to a function in the file containing uv_system_init().
-> > 	- initialize the GRU chipset with the vector, etc, ...
-> > 	- if an interrupt occurs and the GRU driver is NOT loaded, print
-> > 	  an error message (rate limited or one time)
-> >
-> > 	- provide a special UV hook for the GRU driver to register/deregister a
-> > 	  special callback function for GRU interrupts
 > 
-> That would work.  So far the GRU doesn't sound that special.
-> 
-> For a lot of this I would much rather solve the general case on this 
-> giving us a solution that works for all high end interrupts rather 
-> than one specific solution just for the GRU.  Especially since it 
-> looks like we have most of the infrastructure already present to solve 
-> the general case and we have to develop and review the specific case 
-> from scratch.
+> It'd be extremely convenient to have a tracer that did absolutely 
+> nothing but display ftrace_printk()s.
 
-ok, great.
+yeah, had the same thought.
 
-Dean, just to make sure the useful bits are not lost now that the 
-direction has been changed: could you please repost the patchset but 
-without the driver API bits? It's still all a nice and useful 
-generalization and cleanup of the x86 vector allocation code, and we can 
-check it in -tip how well it works in practice.
+Could you please contribute one? :) I'd suggest you take the smallest 
+tracer as a template: trace_sched_switch.c and turn that into 
+trace_nop.c - and change all the function names and ASCII and kconfig 
+glue to 'nop'/'NOP'?
+
+That can then be used as a basis for additional ftrace plugins, or for 
+ad-hoc temporary tracing.
 
 	Ingo
