@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbYISUki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbYISUkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbYISUki (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 16:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbYISUkL
+	id S1756265AbYISUkx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 16:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbYISUkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 16:40:11 -0400
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:34833 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755836AbYISUkJ (ORCPT
+	Fri, 19 Sep 2008 16:40:25 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:5109 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756027AbYISUkY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 16:40:09 -0400
-Message-Id: <20080919203724.474751340@quilx.com>
-References: <20080919203703.312007962@quilx.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 19 Sep 2008 13:37:06 -0700
-From: Christoph Lameter <cl@linux-foundation.org>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-CC: linux-mm@kvack.org
-Cc: jeremy@goop.org
-Cc: ebiederm@xmission.com
-Cc: travis@sgi.com
-Cc: herbert@gondor.apana.org.au
-Cc: xemul@openvz.org
-Cc: penberg@cs.helsinki.fi
-Subject: [patch 3/3] Increase default reserve percpu area
-Content-Disposition: inline; filename=cpu_alloc_increase_percpu_default
+	Fri, 19 Sep 2008 16:40:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=mi2ilYN7+IviBQ3wZ/9PtBK+VFefDp5OuAqWpYneCiKGP8Wrhmcqe4zHDfChmiprff
+         ezwn2Qf7m7UAd3X1IJ8CjC77gtKzFnkjLhwHZZvDBFs5qj1PMq2b2xKLW/vshqW+Gtlg
+         KhgcR/Qlqq5aguZH3tIXVEFVjfPMQGpr6+d9E=
+Message-ID: <86802c440809191340t75104d48g1f5cf5cf0e55035a@mail.gmail.com>
+Date: Fri, 19 Sep 2008 13:40:23 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Dean Nelson" <dcn@sgi.com>
+Subject: Re: [PATCH 1/3] switch vector_irq[] from irq number to irq_desc pointer v2
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Jack Steiner" <steiner@sgi.com>,
+       "Alan Mayer" <ajm@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
+       suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Yinghai Lu" <Yinghai.lu@amd.com>
+In-Reply-To: <20080919200449.GB6528@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080919200212.GA6528@sgi.com> <20080919200449.GB6528@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SLUB now requires a portion of the per cpu reserve. There are on average
-about 70 real slabs on a system (aliases do not count) and each needs 12 bytes
-of per cpu space. Thats 840 bytes. In debug mode all slabs will be real slabs
-which will make us end up with 150 -> 1800. Give it some slack and add 2000
-bytes to the default size.
+On Fri, Sep 19, 2008 at 1:04 PM, Dean Nelson <dcn@sgi.com> wrote:
+> Change per_cpu variable vector_irq[] from holding an 'int' irq number to
+> holding a 'struct irq_desc' pointer.
 
-Things work fine without this patch but then slub will reduce the percpu reserve
-for modules.
+why?
 
-Also define a reserve if CONFIG_MODULES is off.
+Eric wants to change int irq to some struct irq later?
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
-Index: linux-2.6/include/linux/percpu.h
-===================================================================
---- linux-2.6.orig/include/linux/percpu.h	2008-09-19 15:04:21.000000000 -0500
-+++ linux-2.6/include/linux/percpu.h	2008-09-19 15:05:31.000000000 -0500
-@@ -38,9 +38,9 @@
- /* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
- #ifndef PERCPU_AREA_SIZE
- #ifdef CONFIG_MODULES
--#define PERCPU_RESERVE_SIZE	8192
-+#define PERCPU_RESERVE_SIZE	10000
- #else
--#define PERCPU_RESERVE_SIZE	0
-+#define PERCPU_RESERVE_SIZE	2000
- #endif
- 
- #define PERCPU_AREA_SIZE						\
-
--- 
+YH
