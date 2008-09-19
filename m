@@ -1,65 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbYISAXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbYISA2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbYISAXl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 20:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbYISAXc
+	id S1757026AbYISA2i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 20:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbYISA23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 20:23:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54035 "EHLO mx2.redhat.com"
+	Thu, 18 Sep 2008 20:28:29 -0400
+Received: from nebensachen.de ([195.34.83.29]:42467 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755767AbYISAXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 20:23:32 -0400
-Message-ID: <48D2F05C.4040000@redhat.com>
-Date: Thu, 18 Sep 2008 17:20:44 -0700
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1755825AbYISA22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 20:28:28 -0400
+X-Hashcash: 1:20:080919:linux-ide@vger.kernel.org::4IiES3/CjsQ+NpKk:000000000000000000000000000000000000IsXc
+X-Hashcash: 1:20:080919:linux-kernel@vger.kernel.org::gsyKBSH/1FW/+k4+:0000000000000000000000000000000000ZbA
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4 v2] ide: Implement disk shock protection support
+References: <87d4j2n3dn.fsf@denkblock.local>
+	<20080917163144.9870.59732.stgit@denkblock.local>
+	<200809181624.54248.bzolnier@gmail.com>
+X-Hashcash: 1:20:080919:bzolnier@gmail.com::w+/IzXV0sYB/YBOO:000000000000000000000000000000000000000000043gn
+X-Hashcash: 1:20:080919:jeff@garzik.org::TJA3SzmavchsRhRb:00055d
+X-Hashcash: 1:20:080919:randy.dunlap@oracle.com::1dHMVm3JcIzoZWwQ:000000000000000000000000000000000000001Yya
+X-Hashcash: 1:20:080919:htejun@gmail.com::OA/MI/QseFf3LKXK:02Gi4
+Date: Fri, 19 Sep 2008 02:28:05 +0200
+In-Reply-To: <200809181624.54248.bzolnier@gmail.com> (Bartlomiej
+	Zolnierkiewicz's message of "Thu, 18 Sep 2008 16:24:53 -0700")
+Message-ID: <87d4j17ze2.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickens <hugh@veritas.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: Populating multiple ptes at fault time
-References: <48D142B2.3040607@goop.org> <48D17E75.80807@redhat.com> <48D1851B.70703@goop.org> <48D18919.9060808@redhat.com> <48D18C6B.5010407@goop.org> <48D2B970.7040903@redhat.com> <48D2D3B2.10503@goop.org> <48D2E65A.6020004@redhat.com> <48D2EBBB.205@goop.org>
-In-Reply-To: <48D2EBBB.205@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> On Wednesday 17 September 2008 09:38:37 Elias Oltmanns wrote:
+>> On user request (through sysfs), the IDLE IMMEDIATE command with UNLOAD
 >
->>> bet there's an appropriate pvop hook you could use to force
->>> synchronization just before the kernel actually inspects the bits
->>> (leaving lazy mode sounds good).
->>>   
->>>       
->> It would have to be a new lazy mode, not the existing one, I think.
->>     
+>> FEATURE as specified in ATA-7 is issued to the device and processing of
+>> the request queue is stopped thereafter until the specified timeout
+>> expires or user space asks to resume normal operation. This is supposed
+>> to prevent the heads of a hard drive from accidentally crashing onto the
+>> platter when a heavy shock is anticipated (like a falling laptop expected
+>> to hit the floor). Port resets are deferred whenever a device on that
+>> port is in the parked state.
+>> 
+>> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
 >
-> The only direct use of pte_young() is in zap_pte_range, within a
-> mmu_lazy region.  So syncing the A bit state on entering lazy mmu mode
-> would work fine there.
->
->   
+> applied
 
-Ugh, leaving lazy pte.a mode when entering lazy mmu mode?
+I'm very sorry for responding so late to Tejun's concerns but I got
+bitten by the uaccess bug in recent linux-next discussed on LKML.
+
+@Bart, one isue raised by Tejun actually applies to this ide patch as
+well. Even though the problem is considerably more complex in the libata
+case than I had bargained for, we are lucky in the ide case. Still, we
+need to move prepar_to_wait() to the top of the while loop. Can you
+please include the following interdiff? It also gets rid of a
+superfluous variable.
+
+Thanks,
+
+Elias
 
 
-> The call via page_referenced_one() doesn't seem to have a very
-> convenient hook though.  Perhaps putting something in
-> page_check_address() would do the job.
->
->   
-
-Why there?
-
-Why not explicitly in the callers?  We need more than to exit lazy pte.a 
-mode, we also need to enter it again later.
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+---
+diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
+index 7e7a1f0..0eb6284 100644
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -1115,11 +1115,11 @@ static ide_startstop_t do_reset1 (ide_drive_t *drive, int do_not_try_atapi)
+ 	/* We must not disturb devices in the IDE_DFLAG_PARKED state. */
+ 	do {
+ 		unsigned long now;
+-		int i;
+ 
++		prepare_to_wait(&ide_park_wq, &wait, TASK_UNINTERRUPTIBLE);
+ 		timeout = jiffies;
+-		for (i = 0; i < MAX_DRIVES; i++) {
+-			ide_drive_t *tdrive = &hwif->drives[i];
++		for (unit = 0; unit < MAX_DRIVES; unit++) {
++			ide_drive_t *tdrive = &hwif->drives[unit];
+ 
+ 			if (tdrive->dev_flags & IDE_DFLAG_PRESENT &&
+ 			    tdrive->dev_flags & IDE_DFLAG_PARKED &&
+@@ -1132,7 +1132,6 @@ static ide_startstop_t do_reset1 (ide_drive_t *drive, int do_not_try_atapi)
+ 			break;
+ 
+ 		spin_unlock_irqrestore(&ide_lock, flags);
+-		prepare_to_wait(&ide_park_wq, &wait, TASK_UNINTERRUPTIBLE);
+ 		timeout = schedule_timeout_uninterruptible(timeout - now);
+ 		spin_lock_irqsave(&ide_lock, flags);
+ 	} while (timeout);
