@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYISQvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbYISQvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754748AbYISQvS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 12:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbYISQvI
+	id S1755254AbYISQvn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 12:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbYISQvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 12:51:08 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:36951 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751116AbYISQvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 12:51:07 -0400
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: liam.girdwood@wolfsonmicro.com, broonie@opensource.wolfsonmicro.com
-Cc: linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: [PATCH] ASoC: Fix at32-pcm build breakage with PM enabled
-Date: Fri, 19 Sep 2008 18:50:45 +0200
-Message-Id: <1221843045-18093-1-git-send-email-haavard.skinnemoen@atmel.com>
-X-Mailer: git-send-email 1.5.6.5
-X-OriginalArrivalTime: 19 Sep 2008 16:50:35.0674 (UTC) FILETIME=[D65ED7A0:01C91A77]
+	Fri, 19 Sep 2008 12:51:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57328 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750876AbYISQvd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 12:51:33 -0400
+Message-ID: <48D3D836.40306@linux-foundation.org>
+Date: Fri, 19 Sep 2008 11:49:58 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, jeremy@goop.org, ebiederm@xmission.com,
+       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org,
+       penberg@cs.helsinki.fi
+Subject: Re: [patch 3/4] cpu alloc: The allocator
+References: <20080919145859.062069850@quilx.com> <20080919145929.158651064@quilx.com> <48D3D2EF.5090808@cosmosbay.com>
+In-Reply-To: <48D3D2EF.5090808@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-s/PDC_PTCR/ATMEL_PDC_PTCR/
+Eric Dumazet wrote:
 
-Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
----
- sound/soc/at32/at32-pcm.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+>> +    unsigned long start;
+>> +    int units = size_to_units(size);
+>> +    void *ptr;
+>> +    int first;
+>> +    unsigned long flags;
+>> +
+>> +    if (!size)
+>> +        return ZERO_SIZE_PTR;
+>> +
+>> +    WARN_ON(align > PAGE_SIZE);
+> 
+> if (align < UNIT_SIZE)
+>     align = UNIT_SIZE;
 
-diff --git a/sound/soc/at32/at32-pcm.c b/sound/soc/at32/at32-pcm.c
-index 435f1da..c83584f 100644
---- a/sound/soc/at32/at32-pcm.c
-+++ b/sound/soc/at32/at32-pcm.c
-@@ -434,7 +434,8 @@ static int at32_pcm_suspend(struct platform_device *pdev,
- 	params = prtd->params;
- 
- 	/* Disable the PDC and save the PDC registers */
--	ssc_writex(params->ssc->regs, PDC_PTCR, params->mask->pdc_disable);
-+	ssc_writex(params->ssc->regs, ATMEL_PDC_PTCR,
-+		   params->mask->pdc_disable);
- 
- 	prtd->pdc_xpr_save = ssc_readx(params->ssc->regs, params->pdc->xpr);
- 	prtd->pdc_xcr_save = ssc_readx(params->ssc->regs, params->pdc->xcr);
-@@ -464,7 +465,7 @@ static int at32_pcm_resume(struct platform_device *pdev,
- 	ssc_writex(params->ssc->regs, params->pdc->xnpr, prtd->pdc_xnpr_save);
- 	ssc_writex(params->ssc->regs, params->pdc->xncr, prtd->pdc_xncr_save);
- 
--	ssc_writex(params->ssc->regs, PDC_PTCR, params->mask->pdc_enable);
-+	ssc_writex(params->ssc->regs, ATMEL_PDC_PTCR, params->mask->pdc_enable);
- 	return 0;
- }
- #else /* CONFIG_PM */
--- 
-1.5.6.5
+size_to_units() does round up:
+
+
+/*
+ * How many units are needed for an object of a given size
+ */
+static int size_to_units(unsigned long size)
+{
+        return DIV_ROUND_UP(size, UNIT_SIZE);
+}
 
