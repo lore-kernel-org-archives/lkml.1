@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbYISKCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYISKG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757082AbYISKCT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 06:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbYISKCM
+	id S1756841AbYISKG5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 06:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbYISKGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 06:02:12 -0400
-Received: from qb-out-0506.google.com ([72.14.204.238]:57919 "EHLO
+	Fri, 19 Sep 2008 06:06:50 -0400
+Received: from qb-out-0506.google.com ([72.14.204.238]:58573 "EHLO
 	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751139AbYISKCL (ORCPT
+	with ESMTP id S1751089AbYISKGt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 06:02:11 -0400
+	Fri, 19 Sep 2008 06:06:49 -0400
 From: Steven Noonan <steven@uplinklabs.net>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, Steven Noonan <steven@uplinklabs.net>
-Subject: [PATCH -tip] ftrace: add nop tracer
-Date: Fri, 19 Sep 2008 03:02:04 -0700
-Message-Id: <1221818524-9159-1-git-send-email-steven@uplinklabs.net>
+Subject: [PATCH -tip FIXED] ftrace: add nop tracer
+Date: Fri, 19 Sep 2008 03:06:43 -0700
+Message-Id: <1221818803-9616-1-git-send-email-steven@uplinklabs.net>
 X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,9 +31,9 @@ Signed-off-by: Steven Noonan <steven@uplinklabs.net>
  kernel/trace/Kconfig          |   10 ++++++
  kernel/trace/Makefile         |    1 +
  kernel/trace/trace.h          |    4 ++
- kernel/trace/trace_nop.c      |   66 +++++++++++++++++++++++++++++++++++++++++
- kernel/trace/trace_selftest.c |    9 +++++
- 5 files changed, 90 insertions(+), 0 deletions(-)
+ kernel/trace/trace_nop.c      |   65 +++++++++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_selftest.c |    9 ++++++
+ 5 files changed, 89 insertions(+), 0 deletions(-)
  create mode 100644 kernel/trace/trace_nop.c
 
 diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
@@ -86,10 +86,10 @@ index 42f65d0..447d4b9 100644
  					       struct trace_array *tr);
 diff --git a/kernel/trace/trace_nop.c b/kernel/trace/trace_nop.c
 new file mode 100644
-index 0000000..b0a88e6
+index 0000000..dafaefb
 --- /dev/null
 +++ b/kernel/trace/trace_nop.c
-@@ -0,0 +1,66 @@
+@@ -0,0 +1,65 @@
 +/*
 + * nop tracer
 + *
@@ -152,7 +152,6 @@ index 0000000..b0a88e6
 +
 +__init static int init_nop_trace(void)
 +{
-+	printk ( "Registering tracer 'nop' before your very eyes!\n" );
 +	return register_tracer(&nop_trace);
 +}
 +device_initcall(init_nop_trace);
