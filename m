@@ -1,108 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYISXqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYISXxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755271AbYISXqA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 19:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbYISXpu
+	id S1754760AbYISXxg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 19:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYISXx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 19:45:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37281 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752897AbYISXpt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 19:45:49 -0400
-Date: Fri, 19 Sep 2008 16:45:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Cc: James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com
-Subject: Re: [PATCH 1/2] lld busy status exporting interface
-Message-Id: <20080919164524.295e1f9a.akpm@linux-foundation.org>
-In-Reply-To: <20080919.191122.102582872.k-ueda@ct.jp.nec.com>
-References: <20080919.104756.41628866.k-ueda@ct.jp.nec.com>
-	<20080919.104854.71084447.k-ueda@ct.jp.nec.com>
-	<20080919143344.44d1a83e.akpm@linux-foundation.org>
-	<20080919.191122.102582872.k-ueda@ct.jp.nec.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Sep 2008 19:53:26 -0400
+Received: from mail.atheros.com ([12.36.123.2]:39927 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751984AbYISXxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 19:53:25 -0400
+Date: Fri, 19 Sep 2008 16:53:05 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Steven Noonan <steven@uplinklabs.net>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       Senthilkumar Balasubramanian 
+	<Senthilkumar.Balasubramanian@atheros.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27
+	(rc5, rc6, probably others)
+Message-ID: <20080919235305.GD11665@tesla>
+References: <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com> <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com> <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com> <20080919030125.GG7408@tesla> <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com> <20080919142801.GA5816@senthil-lnx.users.atheros.com> <alpine.LNX.2.00.0809190934001.22989@alcarin.uplinklabs.net> <20080919175824.GA5626@senthil-lnx.users.atheros.com> <20080919182322.GB7027@tesla> <alpine.LNX.2.00.0809191630090.14961@alcarin.uplinklabs.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.0809191630090.14961@alcarin.uplinklabs.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 19:11:22 -0400 (EDT)
-Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
-
-> > Back in the days when we first did the backing_dev_info.congested_fn()
-> > logic it was decided that there basically was no single place in which
-> > the congested state could be stored.
-> > 
-> > So we ended up deciding that whenever a caller wants to know a
-> > backing_dev's congested status, it has to call in to the
-> > ->congested_fn() and that congested_fn would then call down into all
-> > the constituent low-level drivers/queues/etc asking each one if it is
-> > congested.
+On Fri, Sep 19, 2008 at 04:31:20PM -0700, Steven Noonan wrote:
 > 
-> bdi_lld_congested() also does that using bdi_congested(), which calls
-> ->congested_fn().
-> And only real device drivers (e.g. scsi, ide) set/clear the flag.
-> Stacking drivers like request-based dm don't.
-
-umm, OK, that should work.
-
-> So stacking drivers always check the BDI_lld_congested flag of
-> the bottom device of the device stack.
-
-How does a stacking driver know that the backing_device which it is
-looking at is a "lowest level" device?
-
-I don't think it does - only the code which implements that device
-knows this, so the stacking driver has to call into that device's
-congested_fn(), yes?
-
-In which case one wonders why the state was stored in the
-backing_dev_info at all.  Why not store it in the device-private data
-to avoid confusion and abuse?
-
-> BDI_[write|read]_congested flags have been using for queue's
-> congestion, so that I/O queueing/merging can be proceeded even if
-> the lld is congested.  So I added a new flag.
-
-iirc, BDI_read/write_congested predated the introduction of the
-congested_fn() and perhaps should have been removed once we went to the
-congested_fn approach.  But it's been a while since I spent a lot of
-time looking in there.
-
+> On Fri, 19 Sep 2008, Luis R. Rodriguez wrote:
+> > Thanks for the patch Senthil. He is on Linus' v2.6.27-rc, you are on
+> > wireless-testing so I've ported it (no changes, it just applies cleanly
+> > now). This is also untested by me:
 > 
-> > I mean, as a simple example which is probably wrong - what happens if a
-> > single backing_dev is implemented via two different disks and
-> > controllers, and they both become congested and then one of them comes
-> > uncongested.  Is there no way in which the above implemention can
-> > incorrectly flag the backing_dev as being uncongested?
-> 
-> Do you mean that "a single backing_dev via two disks/controllers" is
-> a dm device (e.g. a dm-multipath device having 2 paths, a dm-mirror
-> device having 2 disks)?
+> I'm seeing the same latency issue I reported originally with the latest
+> -tip kernel and WITHOUT irqpoll.
 
-Something along those lines, sure.
+Damn it.
 
-> If so, dm doesn't set/clear the flag, and the decision, whether
-> the dm device itself is congested or not, depends on dm's target driver.
-> 
-> For example of dm-multipath,
->   o call bdi_lld_congested() for each path.
->   o if one of the paths are uncongested, dm-multipath will decide
->     the dm device is uncongested and dispatch incoming I/Os to
->     the uncongested path.
+> Apparently there's something else to this...
 
-hm, OK.
+Steven,
 
-> For example of dm-mirror,
->   o call bdi_lld_congested() for each disk.
->   o if the incoming I/O is READ, same logic as dm-multipath above.
->     if the incoming I/O is WRITE, dm-mirror will decide the dm device
->     is uncongested only when all disks are uncongested.
-> 
-> Thanks,
-> Kiyoshi Ueda
+Can you reproduce this? If so can you tell us how? If you can reproduce
+can you try to test this with wireless-testing as well? That is still
+based on 2.6.26-rc6 but its just has all the new wireless development
+stuff queued up for 2.6.28 so far. Everything else is the same.
+
+  Luis
