@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYISIp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757089AbYISIrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbYISIp3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 04:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbYISIpR
+	id S1757089AbYISIrl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 04:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbYISIrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 04:45:17 -0400
-Received: from qb-out-0506.google.com ([72.14.204.227]:50253 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbYISIpP (ORCPT
+	Fri, 19 Sep 2008 04:47:33 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:39902 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750945AbYISIrc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 04:45:15 -0400
-Message-ID: <f488382f0809190145s1b5407d4s9d97ae594bcc3379@mail.gmail.com>
-Date: Fri, 19 Sep 2008 01:45:11 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5, rc6, probably others)
-Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       "Luis Rodriguez" <Luis.Rodriguez@atheros.com>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <f488382f0809190122k1b30cd9q22fd076c1e3eaa18@mail.gmail.com>
+	Fri, 19 Sep 2008 04:47:32 -0400
+Message-ID: <48D36794.6010002@oss.ntt.co.jp>
+Date: Fri, 19 Sep 2008 17:49:24 +0900
+From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+CC: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org,
+       kamezawa.hiroyu@jp.fujitsu.com, agk@sourceware.org
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+References: <20080918.210418.226794540.ryov@valinux.co.jp>
+In-Reply-To: <20080918.210418.226794540.ryov@valinux.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com>
-	 <20080918220102.GE7408@tesla>
-	 <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com>
-	 <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com>
-	 <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com>
-	 <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com>
-	 <20080919030125.GG7408@tesla>
-	 <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com>
-	 <20080919081733.GC19491@elte.hu>
-	 <f488382f0809190122k1b30cd9q22fd076c1e3eaa18@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 1:22 AM, Steven Noonan <steven@uplinklabs.net> wrote:
-> On Fri, Sep 19, 2008 at 1:17 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> in tip/master there's an ftrace_printk() facility. You can just replace
->> the verbose printk()s with ftrace_printk() and see the result in
->> /debug/tracing/trace.
->>
->> This sort of tracing has very low overhead and can be used in an easy
->> ad-hoc manner with no extra infrastructure. Here's a few quick-start
->> links about how to enable the scheduler tracer:
->>
->>  http://redhat.com/~mingo/sched-devel.git/readme-tracer.txt
->>  http://redhat.com/~mingo/sched-devel.git/howto-trace-latencies.txt
->>
->> any ftrace_printk() you add in the kernel will show up in that trace.
->>
->> (If the scheduling events are uninteresting and clutter the output then
->> you might want to remove the scheduler tracing entries from kernel/*.c
->> by removing the trace_sched_*() calls or use a less noisy tracer.)
->>
->> to get enough of a trace history you might want to increase the number
->> of trace entries in /debug/tracing/trace_entries from 16K to 128K or so.
->>
->
-> Thanks for the suggestion, I'll do that. :)
->
+Hi Tsuruta-san,
 
-It'd be extremely convenient to have a tracer that did absolutely
-nothing but display ftrace_printk()s.
+Ryo Tsuruta wrote:
+> Hi All,
+> 
+> I have got excellent results of dm-ioband, that controls the disk I/O
+> bandwidth even when it accepts delayed write requests.
+> 
+> In this time, I ran some benchmarks with a high-end storage. The
+> reason was to avoid a performance bottleneck due to mechanical factors
+> such as seek time.
+> 
+> You can see the details of the benchmarks at:
+> http://people.valinux.co.jp/~ryov/dm-ioband/hps/
+> 
+
+I took a look at your beautiful results!
+When you have time, would you explain me how you succeeded to check the
+time, bandwidth, especially when you did write() tests? Actually, I tried
+similar tests and failed to check the bandwidth correctly. Did you insert
+something in the kernel source?
+
+Thanks,
+Takuya Yoshikawa
