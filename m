@@ -1,263 +1,342 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbYISD7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbYISEiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbYISD7R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 23:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756138AbYISD7F
+	id S1752428AbYISEiq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 00:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbYISEih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 23:59:05 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:55491 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756063AbYISD7C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 23:59:02 -0400
-Date: Thu, 18 Sep 2008 20:58:42 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, manfred@colorfullife.com
-Subject: Re: [RFC PATCH] rcu: introduce kfree_rcu()
-Message-ID: <20080919035842.GD7482@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <48D1D694.9010802@cn.fujitsu.com> <20080918064406.GC6397@linux.vnet.ibm.com> <48D2FA8C.2010207@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48D2FA8C.2010207@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 19 Sep 2008 00:38:37 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58716 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbYISEif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 00:38:35 -0400
+Date: Fri, 19 Sep 2008 14:38:20 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for September 19
+Message-Id: <20080919143820.51d1a5d9.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__19_Sep_2008_14_38_20_+1000_Kdn7ZuRudsGMUe8o"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 09:04:12AM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> > On Thu, Sep 18, 2008 at 12:18:28PM +0800, Lai Jiangshan wrote:
-> >> sometimes a rcu callback is just calling kfree() to free a struct's memory
-> >> (we say this callback is a trivial callback.).
-> >> this patch introduce kfree_rcu() to do these things directly, easily.
-> > 
-> > Interesting!  Please see questions and comments below.
-> > 
-> >> There are 4 reasons that we need kfree_rcu():
-> >>
-> >> 1) unloadable modules:
-> >>    a module(rcu callback is defined in this module) using rcu must
-> >>    call rcu_barrier() when unload. rcu_barrier() will increase
-> >>    the system's overhead(the more cpus the worse) and
-> >>    rcu_barrier() is very time-consuming. if all rcu callback defined
-> >>    in this module are trivial callback, we can just call kfree_rcu()
-> >>    instead, save a rcu_barrier() when unload.
-> > 
-> > You lost me on this one.  Suppose that the following sequence of
-> > events occurred:
-> > 
-> > a.	The module invokes call_rcu() or kfree_rcu().  The callback
-> > 	is queued on CPU 0.
-> > 
-> > b.	Perhaps a grace period completes, and the callback is therefore
-> > 	moved to CPU 0's donelist.  But CPU 0 is busy, so doesn't get
-> > 	around to invoking the callback.  (For example, ksoftirqd.)
-> > 
-> > c.	The module is unloaded, and uses kfree_rcu() instead of
-> > 	rcu_barrier().  The callback is queued on CPU 1.
-> > 
-> > d.	A grace period completes, and CPU 1 is relatively idle, so
-> > 	invokes its callback quickly.  The module is therefore unloaded.
-> > 
-> > e.	CPU 0 finally gets around to executing its callback, but the
-> > 	module has been unloaded, so there is nothingness where the
-> > 	callback function used to be.  We get an oops.
-> > 
-> > What prevents this sequence of events from happening?
-> 
-> We save a rcu_barrier() only when all rcu callback defined in this
-> module are trivial callback and we use kfree_rcu to instead them.
-> 
-> trivial callbacks are the most common callbacks, so some module may used
-> trivial callback only.
+--Signature=_Fri__19_Sep_2008_14_38_20_+1000_Kdn7ZuRudsGMUe8o
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Understood.
+Hi all,
 
-> > 
-> >> 2) duplicate code:
-> >>    all trivial callback are duplicate code though the structs to be freed
-> >>    are different. it's just a container_of() and a kfree().
-> >>    There are about 50% callbacks are trivial callbacks for call_rcu() in
-> >>    current kernel code.
-> > 
-> > Indeed!  There was something similar to kfree_rcu() proposed some
-> > years back, but it was rejected because it contained more code than
-> > did the trivial callbacks.  :-/
-> > 
-> > But there are more such callbacks these days, so might be worth
-> > revisiting.
-> > 
-> >> 3) cache:
-> >>    the instructions of trivial callback is not in the cache supposedly.
-> >>    calling a trivial callback will let to cache missing very likely.
-> >>    the more trivial callback the more cache missing. OK, this is
-> >>    not a problem now or in a few days: Only less than 1% trivial callback
-> >>    are called in running kernel.
-> > 
-> > Reducing code footprint would be a good thing.  Do you have stats on
-> > the kernel text size, before and after?
-> 
-> I did not have stats on the kernel text size, I think these cache
-> missing are caused by lots of different trivial callbacks in everywhere,
-> not too big kernel text.
+Changes since next-20080918:
 
-The Tiny Linux guys might be interested in even a small reduction in
-kernel text size.
+Dropped tree: pxa (too any conflicts with the arm tree).
+	bdev (clashes with the device-mapper tree).
 
-> >> 4) future:
-> >>    the number of user of rcu is increasing. new code for rcu is
-> >>    trivial callback very likely. it means more modules using rcu
-> >>    and more duplicate code(may come to 90% of callbacks is trivial
-> >>    callbacks) and more cache missing.
-> > 
-> > Ditto.
-> > 
-> >> Implementation:
-> >>    there were a lot of ideas came out when i implemented kfree_rcu().
-> >>    I chose the simplest one as this patch shows. but these implementation
-> >>    may cannot be used for to free a struct larger than 16KBytes.
-> >>
-> >> kfree_rcu_bh()? kfree_rcu_sched()?
-> >>    these two are not need current. call_rcu_bh() & call_rcu_sched()
-> >>    are hardly be called(and hardly be called for trivial callback).
-> >>
-> >> vfree_rcu()?
-> >>    No, vfree() is not atomic function, will not be called in softirq.
-> >>
-> >> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> >> ---
-> >> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> >> index e8b4039..04c654f 100644
-> >> --- a/include/linux/rcupdate.h
-> >> +++ b/include/linux/rcupdate.h
-> >> @@ -253,4 +253,25 @@ extern void rcu_barrier_sched(void);
-> >>  extern void rcu_init(void);
-> >>  extern int rcu_needs_cpu(int cpu);
-> >>
-> >> +#define __KFREE_RCU_MAX_OFFSET 4095
-> >> +#define KFREE_RCU_MAX_OFFSET (sizeof(void *) * __KFREE_RCU_MAX_OFFSET)
-> >> +
-> >> +#define __rcu_reclaim(head) \
-> >> +do { \
-> >> +	unsigned long __offset = (unsigned long)head->func; \
-> >> +	if (__offset <= __KFREE_RCU_MAX_OFFSET) \
-> >> +		kfree((void *)head - sizeof(void *) * __offset); \
-> >> +	else \
-> >> +		head->func(head); \
-> >> +} while(0)
-> > 
-> > OK, so the idea is that structures whose rcu_head is near the front
-> > of the structure have the offset of the rcu_head put into the
-> > ->func field instead of a pointer to the callback function?
-> > 
-> > Of course, it doesn't need to be too near the beginning of the
-> > function...
-> > 
-> > All arches are guaranteed not to have kernel text in the low 16K
-> > of memory (for 32-bit arches) or low 32K of memory (for 64-bit arches)?
-> 
-> (unsigned long)head->func is always <= 4095, not 14K or 32K.
-> we just guaranteed not to have kernel text in the low 4k of memory.
-> 
-> the real offset is (sizeof(void *) * (unsigned long)head->func),
-> it's 16K or 32K.
+The arm tree inherited a build fix patch from the pxa tree.
 
-Good point!
+The pxa tree gained several conflicts against the arm tree so I had to
+drop it.
 
-						Thanx, Paul
+The block tree lost a build fix patch.
 
-> >> +/**
-> >> + * kfree_rcu - free previously allocated memory after a grace period.
-> >> + * @ptr:  pointer returned by kmalloc.
-> >> + * @head: structure to be used for queueing the RCU updates. This structure
-> >> + *        is a part of previously allocated memory @ptr.
-> >> + */
-> >> +extern void kfree_rcu(const void *ptr, struct rcu_head *head);
-> >> +
-> >>  #endif /* __LINUX_RCUPDATE_H */
-> >> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-> >> index aad93cd..5a14190 100644
-> >> --- a/kernel/rcuclassic.c
-> >> +++ b/kernel/rcuclassic.c
-> >> @@ -232,7 +232,7 @@ static void rcu_do_batch(struct rcu_data *rdp)
-> >>  	while (list) {
-> >>  		next = list->next;
-> >>  		prefetch(next);
-> >> -		list->func(list);
-> >> +		__rcu_reclaim(list);
-> > 
-> > OK, consistent with above.
-> > 
-> >>  		list = next;
-> >>  		if (++count >= rdp->blimit)
-> >>  			break;
-> >> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-> >> index 467d594..aa9b56a 100644
-> >> --- a/kernel/rcupdate.c
-> >> +++ b/kernel/rcupdate.c
-> >> @@ -162,6 +162,18 @@ void rcu_barrier_sched(void)
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(rcu_barrier_sched);
-> >>
-> >> +void kfree_rcu(const void *ptr, struct rcu_head *head)
-> >> +{
-> >> +	unsigned long offset;
-> >> +	typedef void (*rcu_callback)(struct rcu_head *);
-> >> +
-> >> +	offset = (void *)head - (void *)ptr;
-> >> +	BUG_ON(offset > KFREE_RCU_MAX_OFFSET);
-> >> +
-> >> +	call_rcu(head, (rcu_callback)(offset / sizeof(void *)));
-> > 
-> > OK, so we pass in the pointer to the rcu_head structure, followed
-> > by the offset in pointer-sized units, but with the latter cast to
-> > a pointer to a callback function?  Hmmm....  Kinky....
-> > 
-> > Then after the grace period completes, the __rcu_reclaim() sorts
-> > things out.
-> 
-> Yes, kernel pointers have redundant information, we use the low 4k
-> as offset. when ->func < 4k, it stand for offset, when ->func >= 4k,
-> it stand for function pointer.
-> 
-> > 
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(kfree_rcu);
-> >> +
-> >>  void __init rcu_init(void)
-> >>  {
-> >>  	__rcu_init();
-> >> diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-> >> index 2782793..62a9e54 100644
-> >> --- a/kernel/rcupreempt.c
-> >> +++ b/kernel/rcupreempt.c
-> >> @@ -1108,7 +1108,7 @@ static void rcu_process_callbacks(struct softirq_action *unused)
-> >>  	spin_unlock_irqrestore(&rdp->lock, flags);
-> >>  	while (list) {
-> >>  		next = list->next;
-> >> -		list->func(list);
-> >> +		__rcu_reclaim(list);
-> > 
-> > And we do this for preemptable RCU as well.
-> > 
-> >>  		list = next;
-> >>  		RCU_TRACE_ME(rcupreempt_trace_invoke);
-> >>  	}
-> >>
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> > 
-> > 
-> 
-> 
+The ttydev tree gained a conflict against each of the driver-core and usb
+trees but also lost a conflict.
+
+I have also applied the following patches for known problems:
+
+	sparc: qlogicpti fallout from sbus removal
+	fix IXGBE dependencies
+	uaccess: fix parameters inversion for __copy_from_user_inatomic()
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 117 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging arm/devel
+Applying pxa: LCD_CORGI is currently BROKEN
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging quilt/m68k
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+CONFLICT (rename/delete): Renamed include/asm-parisc/a.out.h->arch/parisc/i=
+nclude/asm/a.out.h in parisc/master and deleted in HEAD
+$ git rm -f arch/parisc/include/asm/a.out.h
+Merging powerpc/powerpc-next
+Merging 4xx/next
+Merging galak/powerpc-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in include/asm-x86/statfs.h
+Applying x86: fix arch/x86/kernel/k8.c
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in include/asm-x86/smp.h
+Merging ftrace/auto-ftrace-next
+CONFLICT (content): Merge conflict in kernel/module.c
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+CONFLICT (content): Merge conflict in include/asm-x86/pda.h
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging timers/auto-timers-next
+CONFLICT (delete/modify): arch/x86/kernel/apic_64.c deleted in timers/auto-=
+timers-next and modified in HEAD. Version HEAD of arch/x86/kernel/apic_64.c=
+ left in tree.
+CONFLICT (content): Merge conflict in arch/x86/xen/spinlock.c
+CONFLICT (content): Merge conflict in drivers/pci/probe.c
+CONFLICT (content): Merge conflict in include/linux/pci_ids.h
+$ git rm arch/x86/kernel/apic_64.c
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+CONFLICT (content): Merge conflict in drivers/hid/usbhid/hid-core.c
+Applying HID: fix for warn() removal
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/stable
+CONFLICT (content): Merge conflict in drivers/media/video/Kconfig
+CONFLICT (content): Merge conflict in drivers/media/video/zr364xx.c
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+CONFLICT (content): Merge conflict in drivers/misc/acer-wmi.c
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+CONFLICT (rename/modify): Merge conflict in include/linux/intel-iommu.h
+CONFLICT (content): Merge conflict in arch/x86/kvm/i8254.c
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+CONFLICT (content): Merge conflict in include/asm-x86/kvm.h
+CONFLICT (content): Merge conflict in include/asm-x86/msr-index.h
+Applying kvm: fixup merge for intel_iommu.h move
+Merging dlm/next
+Merging scsi/master
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/mac80211_hwsim.c
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in kernel/module.c
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in Documentation/edac.txt
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in drivers/base/class.c
+CONFLICT (content): Merge conflict in drivers/ide/ide-disk.c
+CONFLICT (content): Merge conflict in drivers/md/dm-mpath.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/scsi/qlogicpti.c
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/traps_64.c
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/reg-for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+CONFLICT (content): Merge conflict in drivers/char/ip2/ip2main.c
+CONFLICT (content): Merge conflict in drivers/char/tty_io.c
+CONFLICT (content): Merge conflict in drivers/char/vt.c
+CONFLICT (content): Merge conflict in drivers/serial/68328serial.c
+CONFLICT (content): Merge conflict in drivers/serial/8250.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/aircable.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/keyspan_pda.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/safe_serial.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
+Merging agp/agp-next
+Merging creds/next-creds
+CONFLICT (content): Merge conflict in drivers/net/wan/sbni.c
+CONFLICT (content): Merge conflict in fs/namespace.c
+CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_linux.h
+CONFLICT (content): Merge conflict in fs/xfs/xfs_inode.c
+CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.c
+CONFLICT (content): Merge conflict in include/linux/capability.h
+CONFLICT (add/add): Merge conflict in include/linux/cred.h
+CONFLICT (content): Merge conflict in include/linux/security.h
+CONFLICT (content): Merge conflict in kernel/exit.c
+CONFLICT (content): Merge conflict in kernel/fork.c
+CONFLICT (content): Merge conflict in security/commoncap.c
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+CONFLICT (content): Merge conflict in security/smack/smack_lsm.c
+Merging oprofile/auto-oprofile-next
+CONFLICT (content): Merge conflict in arch/x86/oprofile/nmi_int.c
+Merging fastboot/auto-fastboot-next
+CONFLICT (content): Merge conflict in include/linux/init.h
+Merging sparseirq/auto-sparseirq-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/ptrace.c
+CONFLICT (content): Merge conflict in arch/x86/kvm/vmx.h
+CONFLICT (content): Merge conflict in drivers/pci/probe.c
+CONFLICT (content): Merge conflict in include/asm-x86/msr-index.h
+Merging uwb/for-upstream
+$ git checkout -b temp scsi-post-merge/master
+Applying [SCSI] Add helper code so transport classes/driver can control que=
+ueing (v3)
+Applying [SCSI] qla4xxx: return SCSI_MLQUEUE_TARGET_BUSY when driver has de=
+tected session error
+Applying [SCSI] qla2xxx: return SCSI_MLQUEUE_TARGET_BUSY when driver has de=
+tected rport error or race
+Applying [SCSI] libiscsi: Use SCSI_MLQUEUE_TARGET_BUSY
+Applying [SCSI] lpfc: use SCSI_MLQUEUE_TARGET_BUSY when catching the rport =
+transition race
+Applying [SCSI] fc class: unblock target after calling terminate callback (=
+take 2)
+Applying [SCSI] ibmvfc, qla2xxx, lpfc: remove scsi_target_unblock calls in =
+terminate callbacks
+Applying [SCSI] scsi: add transport host byte errors (v3)
+Applying [SCSI] iscsi class, libiscsi and qla4xxx: convert to new transport=
+ host byte values
+Applying [SCSI] fc class: Add support for new transport errors
+Applying [SCSI] qla2xxx: use new host byte transport errors.
+Applying [SCSI] block: separate failfast into multiple bits.
+Applying [SCSI] modify scsi to handle new fail fast flags.
+Applying [SCSI] lpfc 8.2.8 : Add kernel-doc function headers
+Applying [SCSI] lpfc 8.2.8 : Miscellaneous Discovery Fixes
+Applying [SCSI] lpfc 8.2.8 : Update driver for new SLI-3 features
+Applying [SCSI] lpfc 8.2.8 : Miscellaneous Bug Fixes
+Applying [SCSI] lpfc 8.2.8 : Add new FCOE hardware support
+Applying [SCSI] lpfc 8.2.8 : Add support for PCI-EEH permanent disabling
+Applying [SCSI] lpfc 8.2.8 : Update driver to use new Host byte error code =
+DID_TRANSPORT_DISRUPTED
+Applying [SCSI] lpfc 8.2.8 : Add MSI-X support
+Applying [SCSI] lpfc 8.2.8 : update driver version to 8.2.8
+Applying [SCSI] scsi_dh_alua: remove REQ_NOMERGE
+Applying [SCSI] lpfc 8.2.8 v2 : Revert target busy in favor of transport di=
+srupted
+Applying [SCSI] lpfc 8.2.8 v2 : Add sysfs control of target queue depth han=
+dling
+Applying [SCSI] lpfc 8.2.8 v2 : Add statistical reporting control and addit=
+ional fc vendor events
+Applying [SCSI] scsi_error: fix target reset handling
+$ git checkout master
+Applying sparc: qlogicpti fallout from sbus removal
+Applying fix IXGBE dependencies
+Applying uaccess: fix parameters inversion for __copy_from_user_inatomic()
+
+--Signature=_Fri__19_Sep_2008_14_38_20_+1000_Kdn7ZuRudsGMUe8o
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkjTLLwACgkQjjKRsyhoI8w3cACfYGoljJwAXnsRkYc1/xXQTaLI
+GYkAnAmyKcEua2idcV5F7wSoU9kYkN46
+=GQ7C
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__19_Sep_2008_14_38_20_+1000_Kdn7ZuRudsGMUe8o--
