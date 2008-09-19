@@ -1,139 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYISMdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbYISMeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbYISMdi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 08:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYISMda
+	id S1754098AbYISMeo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 08:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbYISMeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 08:33:30 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:12171 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbYISMda (ORCPT
+	Fri, 19 Sep 2008 08:34:36 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:65163 "EHLO
+	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbYISMeg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 08:33:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=UIT9+Pq3a+Nyelxq0oShywNU+U6uLw6tcHM+wG2ieg420sen4F6tSI4mm/F8ti6DlB
-         TUU14YxTglu8qYI6xRKkPS1MoWWNpgI+2fa9IgZYE4aXNwVlcMx4Rxc2lghkZ6qQif66
-         o7VlJTkGwDDcRbVTfkYWrCkphyTJ+Om4ocAG4=
-Date: Fri, 19 Sep 2008 16:33:20 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: [PATCH -tip/master] x86: io-apic - interrupt remapping fix
-Message-ID: <20080919123320.GF7222@lenovo>
+	Fri, 19 Sep 2008 08:34:36 -0400
+X-BigFish: VPS-51(z21eW5edJz1418M1432R98dR1411M1805M936fQ873fnzz10d3izzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0K7G09C-03-H4A-01
+Date: Fri, 19 Sep 2008 14:34:26 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] AMD IOMMU updates for 2.6.28
+Message-ID: <20080919123426.GN24392@amd.com>
+References: <20080919202344V.fujita.tomonori@lab.ntt.co.jp> <20080919204738G.fujita.tomonori@lab.ntt.co.jp> <20080919115259.GL24392@amd.com> <20080919212327Y.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080919212327Y.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 19 Sep 2008 12:34:26.0707 (UTC) FILETIME=[0DC09630:01C91A54]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Interrupt remapping could lead to NULL dereference in case of
-kzalloc failed and memory leak in other way. So fix the
-both cases.
+On Fri, Sep 19, 2008 at 09:24:18PM +0900, FUJITA Tomonori wrote:
+> On Fri, 19 Sep 2008 13:52:59 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > On Fri, Sep 19, 2008 at 08:47:54PM +0900, FUJITA Tomonori wrote:
+> > > On Fri, 19 Sep 2008 20:23:50 +0900
+> > > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > > 
+> > > And you don't need to add 'fullflush' to the generic place too.
+> > > 
+> > > 'fullflush' will be supported with only GART and AMD IOMMU. So adding
+> > > the description of it to both GART and AMD IOMMU should be fine.
+> > > 
+> > > 'fullflush' has the same meaning for both IOMMUs. That's nice
+> > > consistency, I think.
+> > 
+> > Huh? The whole point of this patch was to have a common option between
+> > IOMMUs to disable lazy IOTLB flushing. This was suggested by _you_ and
+> > the only reason I wrote this patch.
+> 
+> You misunderstand what I meant. I'm sorry if my explanation is not
+> clear.
+> 
+> 
+> > After this patch we can change other IOMMU implementations with lazy
+> > flushing to use that parameter too.
+> 
+> I'm not sure that Calgary wants to support such option. It always uses
+> lazy flushing.
+> 
+> 
+> What I don't like is that there is no consistency about the option
+> name for lazy flushing. It doesn't mean that we move the option to the
+> generic place.
+> 
+> Here's my first reply:
+> 
+> =
+> Would it be nice to have consistency of IOMMU parameters?
+> 
+> VT-d also has the kernel-boot option for this lazy flushing trick
+> though VT-d 'strict' option is more vague than 'unmap_flush'
+> =
+> 
+> What I meant that using the option name 'strict' that VT-d uses for
+> lazy flushing for AMD IOMMU would be better than introducing a new
+> option name, "unmap_flush" for AMD IOMMU though I don't think that
+> 'strict' is the good name.
+> 
+> 
+> Seems 'fullflush' is better than 'strict'. So I think that it's better
+> to use 'fullflush' for AMD IMMU rather introducing a new name,
+> 'unmap_flush'. But again, it doesn't mean that 'fullflush' moves to
+> the generic place.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+Ok, so now we have fullflush, which makes sense for all x86 hardware
+IOMMUs except maybe Calgary (from what I know about Calgary fullflush
+can be implemented there only with a abyssal performance penalty nobody
+is willing to pay). So it makes sense to have the option in the generic
+place. But we can surely add a comment that it does not affect Calgary
+to the kernel documentation (and change VT-d to use that parameter too).
+But the AMD IOMMU update chain is not the right place for making big
+changes to other IOMMUs.
 
-Ingo, the patch is on top of applied one.
+Joerg
 
-If I remember correctly Suresh was involved in
-this - so I think he could take a look and review
-the patch (please).
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-LKML list restored in CC.
-
-Index: linux-2.6.git/arch/x86/kernel/apic.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic.c	2008-09-19 12:12:54.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/apic.c	2008-09-19 13:57:04.000000000 +0400
-@@ -1360,7 +1360,12 @@ void enable_IR_x2apic(void)
- 
- 	local_irq_save(flags);
- 	mask_8259A();
--	save_mask_IO_APIC_setup();
-+
-+	ret = save_mask_IO_APIC_setup();
-+	if (ret) {
-+		printk(KERN_INFO "Saving IO-APIC state failed: %d\n", ret);
-+		goto end;
-+	}
- 
- 	ret = enable_intr_remapping(1);
- 
-@@ -1370,14 +1375,15 @@ void enable_IR_x2apic(void)
- 	}
- 
- 	if (ret)
--		goto end;
-+		goto end_restore;
- 
- 	if (!x2apic) {
- 		x2apic = 1;
- 		apic_ops = &x2apic_ops;
- 		enable_x2apic();
- 	}
--end:
-+
-+end_restore:
- 	if (ret)
- 		/*
- 		 * IR enabling failed
-@@ -1386,6 +1392,7 @@ end:
- 	else
- 		reinit_intr_remapped_IO_APIC(x2apic_preenabled);
- 
-+end:
- 	unmask_8259A();
- 	local_irq_restore(flags);
- 
-Index: linux-2.6.git/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-19 12:12:54.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-19 13:33:01.000000000 +0400
-@@ -831,7 +831,7 @@ int save_mask_IO_APIC_setup(void)
- 			kzalloc(sizeof(struct IO_APIC_route_entry) *
- 				nr_ioapic_registers[apic], GFP_KERNEL);
- 		if (!early_ioapic_entries[apic])
--			return -ENOMEM;
-+			goto nomem;
- 	}
- 
- 	for (apic = 0; apic < nr_ioapics; apic++)
-@@ -845,7 +845,17 @@ int save_mask_IO_APIC_setup(void)
- 				ioapic_write_entry(apic, pin, entry);
- 			}
- 		}
-+
- 	return 0;
-+
-+nomem:
-+	for (; apic > 0; apic--)
-+		kfree(early_ioapic_entries[apic]);
-+	kfree(early_ioapic_entries[apic]);
-+	memset(early_ioapic_entries, 0,
-+		ARRAY_SIZE(early_ioapic_entries));
-+
-+	return -ENOMEM;
- }
- 
- void restore_IO_APIC_setup(void)
-@@ -853,12 +863,13 @@ void restore_IO_APIC_setup(void)
- 	int apic, pin;
- 
- 	for (apic = 0; apic < nr_ioapics; apic++) {
--		/* FIXME: it should be handled at allocation time --cvg */
- 		if (!early_ioapic_entries[apic])
- 			break;
- 		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++)
- 			ioapic_write_entry(apic, pin,
- 					   early_ioapic_entries[apic][pin]);
-+		kfree(early_ioapic_entries[apic]);
-+		early_ioapic_entries[apic] = NULL;
- 	}
- }
- 
