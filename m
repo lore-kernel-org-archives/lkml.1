@@ -1,209 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYISQ14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYISQ2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736AbYISQ14 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 12:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYISQ1s
+	id S1755249AbYISQ2W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 12:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbYISQ2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 12:27:48 -0400
-Received: from smtp21.orange.fr ([80.12.242.46]:37323 "EHLO smtp21.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752538AbYISQ1r convert rfc822-to-8bit (ORCPT
+	Fri, 19 Sep 2008 12:28:04 -0400
+Received: from qb-out-0506.google.com ([72.14.204.224]:48526 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754969AbYISQ2B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 12:27:47 -0400
-X-ME-UUID: 20080919162740517.7E5D61C0008C@mwinf2103.orange.fr
-Message-ID: <48D3D2EF.5090808@cosmosbay.com>
-Date: Fri, 19 Sep 2008 18:27:27 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 19 Sep 2008 12:28:01 -0400
+Date: Fri, 19 Sep 2008 09:27:48 -0700 (PDT)
+From: Steven Noonan <steven@uplinklabs.net>
+To: Robert Hancock <hancockr@shaw.ca>
+cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5,
+ rc6, probably others)
+In-Reply-To: <48D3BB5B.7060003@shaw.ca>
+Message-ID: <alpine.LNX.2.00.0809190925250.22158@alcarin.uplinklabs.net>
+References: <fa.jQQm4Iwb0lkAWxV+5FAfTMHY4m4@ifi.uio.no> <fa.zGA6t2p+jJeMRIaZFOqy1I8En1c@ifi.uio.no> <fa.AGi3s2gpyC3T3KuCJ8cYQ30teak@ifi.uio.no> <fa.59AlSLNBuMx/BjQSvR6whwGydbU@ifi.uio.no> <fa.NwYDTAB59VZjr1quzgR4OU0+8eQ@ifi.uio.no> <fa.tRre/FoeQKwChGwdusnYJgwjRmw@ifi.uio.no>
+ <48D3BB5B.7060003@shaw.ca>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, jeremy@goop.org, ebiederm@xmission.com,
-       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org,
-       penberg@cs.helsinki.fi
-Subject: Re: [patch 3/4] cpu alloc: The allocator
-References: <20080919145859.062069850@quilx.com> <20080919145929.158651064@quilx.com>
-In-Reply-To: <20080919145929.158651064@quilx.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> The per cpu allocator allows dynamic allocation of memory on all
-> processors simultaneously. A bitmap is used to track used areas.
-> The allocator implements tight packing to reduce the cache footprint
-> and increase speed since cacheline contention is typically not a concern
-> for memory mainly used by a single cpu. Small objects will fill up gaps
-> left by larger allocations that required alignments.
+
+
+On Fri, 19 Sep 2008, Robert Hancock wrote:
+
+> Steven Noonan wrote:
+> > Second of all, I'm looking at the ath9k interrupt handler right now,
+> > and there are a few cases where it returns IRQ_NONE. And here's where
+> > I'm a bit fuzzy. Since there could be any number of things using IRQ
+> > 17 (though in my case, ath9k is on its own dedicated IRQ), it seems
+> > odd that you check the value of sc->sc_invalid, since the cookie
+> > passed to the handler might not actually be ath9k's cookie if multiple
+> > drivers have registered IRQ handlers for that particular IRQ. Who
+> > knows if what you're reading is even valid? Heck, what if some driver
+> > uses a NULL for their cookie (however unlikely)? You'd get a
+> > segmentation fault on the second line of the interrupt handler. Of
+> > course, I could be completely wrong: does parent interrupt handler
+> > check to see which device driver owns the particular device signaling
+> > an IRQ and then call the appropriate handler?
 > 
-> The size of the cpu_alloc area can be changed via the percpu=xxx
-> kernel parameter.
-> 
-> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-> 
-> ---
->  include/linux/percpu.h |   46 ++++++++++++
->  include/linux/vmstat.h |    2 
->  mm/Makefile            |    2 
->  mm/cpu_alloc.c         |  181 +++++++++++++++++++++++++++++++++++++++++++++++++
->  mm/vmstat.c            |    1 
->  5 files changed, 230 insertions(+), 2 deletions(-)
->  create mode 100644 include/linux/cpu_alloc.h
->  create mode 100644 mm/cpu_alloc.c
-> 
-> Index: linux-2.6/include/linux/vmstat.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/vmstat.h	2008-09-19 09:45:02.000000000 -0500
-> +++ linux-2.6/include/linux/vmstat.h	2008-09-19 09:49:05.000000000 -0500
-> @@ -37,7 +37,7 @@
->  		FOR_ALL_ZONES(PGSCAN_KSWAPD),
->  		FOR_ALL_ZONES(PGSCAN_DIRECT),
->  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
-> -		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
-> +		PAGEOUTRUN, ALLOCSTALL, PGROTATED, CPU_BYTES,
->  #ifdef CONFIG_HUGETLB_PAGE
->  		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
->  #endif
-> Index: linux-2.6/mm/Makefile
-> ===================================================================
-> --- linux-2.6.orig/mm/Makefile	2008-09-19 09:45:02.000000000 -0500
-> +++ linux-2.6/mm/Makefile	2008-09-19 09:49:05.000000000 -0500
-> @@ -11,7 +11,7 @@
->  			   maccess.o page_alloc.o page-writeback.o pdflush.o \
->  			   readahead.o swap.o truncate.o vmscan.o \
->  			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
-> -			   page_isolation.o mm_init.o $(mmu-y)
-> +			   page_isolation.o mm_init.o cpu_alloc.o $(mmu-y)
->  
->  obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
->  obj-$(CONFIG_BOUNCE)	+= bounce.o
-> Index: linux-2.6/mm/cpu_alloc.c
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6/mm/cpu_alloc.c	2008-09-19 09:49:59.000000000 -0500
-> @@ -0,0 +1,182 @@
-> +/*
-> + * Cpu allocator - Manage objects allocated for each processor
-> + *
-> + * (C) 2008 SGI, Christoph Lameter <cl@linux-foundation.org>
-> + * 	Basic implementation with allocation and free from a dedicated per
-> + * 	cpu area.
-> + *
-> + * The per cpu allocator allows a dynamic allocation of a piece of memory on
-> + * every processor. A bitmap is used to track used areas.
-> + * The allocator implements tight packing to reduce the cache footprint
-> + * and increase speed since cacheline contention is typically not a concern
-> + * for memory mainly used by a single cpu. Small objects will fill up gaps
-> + * left by larger allocations that required alignments.
-> + */
-> +#include <linux/mm.h>
-> +#include <linux/mmzone.h>
-> +#include <linux/module.h>
-> +#include <linux/percpu.h>
-> +#include <linux/bitmap.h>
-> +#include <asm/sections.h>
-> +#include <linux/bootmem.h>
-> +
-> +/*
-> + * Basic allocation unit. A bit map is created to track the use of each
-> + * UNIT_SIZE element in the cpu area.
-> + */
-> +#define UNIT_TYPE int
-> +#define UNIT_SIZE sizeof(UNIT_TYPE)
-> +
-> +int units;	/* Actual available units */
-> +
-> +/*
-> + * How many units are needed for an object of a given size
-> + */
-> +static int size_to_units(unsigned long size)
-> +{
-> +	return DIV_ROUND_UP(size, UNIT_SIZE);
-> +}
-> +
-> +/*
-> + * Lock to protect the bitmap and the meta data for the cpu allocator.
-> + */
-> +static DEFINE_SPINLOCK(cpu_alloc_map_lock);
-> +static unsigned long *cpu_alloc_map;
-> +static int nr_units;		/* Number of available units */
-> +static int first_free;		/* First known free unit */
-> +
-> +/*
-> + * Mark an object as used in the cpu_alloc_map
-> + *
-> + * Must hold cpu_alloc_map_lock
-> + */
-> +static void set_map(int start, int length)
-> +{
-> +	while (length-- > 0)
-> +		__set_bit(start++, cpu_alloc_map);
-> +}
-> +
-> +/*
-> + * Mark an area as freed.
-> + *
-> + * Must hold cpu_alloc_map_lock
-> + */
-> +static void clear_map(int start, int length)
-> +{
-> +	while (length-- > 0)
-> +		__clear_bit(start++, cpu_alloc_map);
-> +}
-> +
-> +/*
-> + * Allocate an object of a certain size
-> + *
-> + * Returns a special pointer that can be used with CPU_PTR to find the
-> + * address of the object for a certain cpu.
-> + */
-> +void *cpu_alloc(unsigned long size, gfp_t gfpflags, unsigned long align)
-> +{
-> +	unsigned long start;
-> +	int units = size_to_units(size);
-> +	void *ptr;
-> +	int first;
-> +	unsigned long flags;
-> +
-> +	if (!size)
-> +		return ZERO_SIZE_PTR;
-> +
-> +	WARN_ON(align > PAGE_SIZE);
+> All the IRQ handlers registered on that interrupt will get called. The cookie
+> will always be the right one for that handler however.
 
-if (align < UNIT_SIZE)
-	align = UNIT_SIZE;
+Thank you! I appreciate the explanation.
 
-> +
-> +	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
-> +
-> +	first = 1;
-> +	start = first_free;
-> +
-> +	for ( ; ; ) {
-> +
-> +		start = find_next_zero_bit(cpu_alloc_map, nr_units, start);
-> +		if (start >= nr_units)
-> +			goto out_of_memory;
-> +
-> +		if (first)
-> +			first_free = start;
-> +
-> +		/*
-> +		 * Check alignment and that there is enough space after
-> +		 * the starting unit.
-> +		 */
-> +		if (start % (align / UNIT_SIZE) == 0 &&
+> The bug is presumably that it returns IRQ_NONE in some cases where the device
+> is actually generating an interrupt. The advice to turn on irqpoll is rather
+> useless in this case - that's mainly useful where the IRQ routing is messed up
+> and the device can't receive any interrupts at all.
 
-or else... divide per 0 ?
-
-> +			find_next_bit(cpu_alloc_map, nr_units, start + 1)
-> +					>= start + units)
-> +				break;
-> +		start++;
-> +		first = 0;
-> +	}
-
-
+Strange, though, that irqpoll solved the connectivity issues (but of 
+course created the ridiculous latency that this thread's all about).
 
