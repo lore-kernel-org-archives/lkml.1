@@ -1,35 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYISM6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbYISM6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbYISM6F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 08:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYISM5p
+	id S1754645AbYISM6y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 08:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbYISM6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 08:57:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45283 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752728AbYISM5o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 08:57:44 -0400
-Message-ID: <48D3A18A.5040003@linux-foundation.org>
-Date: Fri, 19 Sep 2008 07:56:42 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
+	Fri, 19 Sep 2008 08:58:43 -0400
+Received: from xsmtp1.ethz.ch ([82.130.70.13]:48587 "EHLO xsmtp1.ethz.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751728AbYISM6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 08:58:43 -0400
+Message-ID: <48D3A1FD.7010309@debian.org>
+Date: Fri, 19 Sep 2008 14:58:37 +0200
+From: "Giacomo A. Catenazzi" <cate@debian.org>
 User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@vger.kernel.org, jeremy@goop.org, ebiederm@xmission.com,
-       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org
-Subject: Re: [patch 1/4] Make the per cpu reserve configurable
-References: <20080918233648.581696416@quilx.com>	 <20080918233701.127757960@quilx.com> <84144f020809190012u1b7dd266q3d2f689b4c2cfdf9@mail.gmail.com>
-In-Reply-To: <84144f020809190012u1b7dd266q3d2f689b4c2cfdf9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+CC: Peter Oruba <peter.oruba@amd.com>, Arjan van de Ven <arjan@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 05/11] [PATCH 05/11] x86: Moved microcode.c to microcode_intel.c.
+References: <20080728164411.490752571@amd.com>	 <20080728164448.492961653@amd.com>	 <20080907120823.59f8fa47@infradead.org> <48CA586C.2010104@amd.com>	 <20080912063517.783b7f85@infradead.org> <48D3942B.1050901@amd.com> <b647ffbd0809190537w18cc4d5fo4ce1a9c0390405d9@mail.gmail.com>
+In-Reply-To: <b647ffbd0809190537w18cc4d5fo4ce1a9c0390405d9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Sep 2008 12:58:40.0697 (UTC) FILETIME=[7065DA90:01C91A57]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
+Dmitry Adamushko wrote:
+> 2008/9/19 Peter Oruba <peter.oruba@amd.com>:
+>> Some additonal words regarding the current user space issues:
+>>
+>> IMHO the most convenient way to update microcode is through the firmware loading
+>> interface instead of microcode_ctl. This reduces user-space responsibilities to
+>> loading the correct module at boot time and to place the microcode patch file at
+>> the right location via package installation. The problems mentioned in this
+>> thread would then probably disappear as well. What do you guys think?
 > 
-> Wrong diffstat? There's no ia64 changes in the patch.
+> It'd still require changes for all the setups that currently rely on
+> the 'microcode_ctl' interface. Moreover, Arjan's setup failed not due
+> to the 'microcode_ctl' per se but due to the altered kernel module
+> name. After all, we can't break the established interface this way.
+> 
+> We can either reserve 'microcode' as a legacy name for intel cpus (==
+> microcode_intel), or maybe we can use request_module() from
+> microcode.ko to load a proper arch-specific module (I guess, it's not
+> ok for !KMOD-enabled kernels).
 
-Hmmm... I thought quilt would update that...
+I agree. A wrapper "microcode.ko" module would be nice, in order
+to allow independent kernel and user space upgrades.
+
+The module name is important also on udev method: only a module
+load triggers the microcode request in udev, thus also the
+new method should have stable kernel module name.
+
+ciao
+	cate
+
