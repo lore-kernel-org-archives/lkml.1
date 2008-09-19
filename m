@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbYISTU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbYISTVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbYISTU6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 15:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbYISTUv
+	id S1755410AbYISTVz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 15:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbYISTVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 15:20:51 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:46489 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbYISTUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 15:20:50 -0400
-Subject: Re: [PATCH] ASoC: Fix at32-pcm build breakage with PM enabled
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Mark Brown <broonie@sirena.org.uk>, linux-kernel@vger.kernel.org,
-       alsa-devel@alsa-project.org
-In-Reply-To: <20080919211437.08db455c@hskinnemo-gx745.norway.atmel.com>
-References: <1221843045-18093-1-git-send-email-haavard.skinnemoen@atmel.com>
-	 <20080919182036.GA16316@sirena.org.uk>
-	 <20080919211437.08db455c@hskinnemo-gx745.norway.atmel.com>
-Content-Type: text/plain
-Date: Fri, 19 Sep 2008 20:20:50 +0100
-Message-Id: <1221852050.6892.155.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Sep 2008 15:21:46 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:20020 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753486AbYISTVp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 15:21:45 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>
+Date: Fri, 19 Sep 2008 19:20:48 +0000
+Subject: FW: E200i controllers on BL465C Blades - kernel fails to boot
+Thread-Topic: E200i controllers on BL465C Blades - kernel fails to boot
+Thread-Index: AckX+Do2Uz1rqE78Sw61R3ErUCJCnACkLsPg
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77884136A027EA@GVW0547EXC.americas.hpqcorp.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-19 at 21:14 +0200, Haavard Skinnemoen wrote:
-> Mark Brown <broonie@sirena.org.uk> wrote:
-> > On Fri, Sep 19, 2008 at 06:50:45PM +0200, Haavard Skinnemoen wrote:
-> > > s/PDC_PTCR/ATMEL_PDC_PTCR/
-> > > 
-> > > Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-> > 
-> > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> 
-> Thanks.
-> 
-> > Please submit all ALSA patches to alsa-devel (added to the CC).
-> 
-> I would if it wasn't listed as subscribers-only...but from a closer
-> look, it appears like it's only moderated for non-subscribers. Should I
-> resend the patch?
-> 
-> Btw, Liam Girdwood's mail address from MAINTAINERS doesn't work.
-> 
+Jens,
+This user is complaining of kernels >2.6.24 misbehaving. After 100 or more days all IO gets blocked. Are you aware of any regressions in the block layer? The driver changes that have gone in since 2.6.23-x _shouldn't_ affect the IO path.
 
-It's just been updated.
- 
-Patch went in yesterday !
+Any ideas or thought's are appreciated.
 
-Liam
+-- mikem
 
+-----Original Message-----
+From: Fabio Coatti [mailto:fabio.coatti@gmail.com]
+Sent: Tuesday, September 16, 2008 7:32 AM
+To: Miller, Mike (OS Dev)
+Subject: E200i controllers on BL465C Blades - kernel fails to boot
+
+Hi,
+I've spotted your address on lkml and I'm writing to you because we are hit by a very critical bug (or at least we think that it can be  a bug...) I'm referring to the behaviour reported here:
+
+http://lkml.org/lkml/2008/9/14/118
+
+and here:
+http://bugzilla.kernel.org/show_bug.cgi?id=9859
+
+
+I've seen that you looked at this issue in the past (february, lkml mail report by one of my coworkers), but we are still facing tjis issue and we are unable to upgrade our machines (bl465c).
+
+We are in a uncomfortable situation, as we need to upgrade our kernels (for instance, we are seeingd ba behaviour after more or less 100/150 days uptime, with all disk related process in D status, even kjournald -> machine crashes due to load avg skyrocketing. We want to try latest kernel).
+Since we have more or less 2 hundreds of BL465C a kernel issue like this can be a bit annoying :) I don't know if we are doing something wrong, but with exactly the same config the older kernel works.
+We don't have any problem in trying patches, providing full config or in doing nything useful to get out from this situation. (maybe this is our fault, bu I hardly can imagine how).
+Dunno if there are better ways to report this: wa can even try to contact our HP representative, but I'm not convinced that this will be a better solution than reporting the issue on lkml :)
+
+Many thanks for any answer.
+
+
+--
+Fabio "Cova" Coatti    http://members.ferrara.linux.it/cova
+Ferrara Linux Users Group           http://ferrara.linux.it
+GnuPG fp:9765 A5B6 6843 17BC A646  BE8C FA56 373A 5374 C703 Old SysOps never die... they simply forget their password.
