@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbYISWkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbYISWlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821AbYISWkq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 18:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYISWkh
+	id S1754821AbYISWlA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 18:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYISWkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 18:40:37 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:51659 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752482AbYISWkg (ORCPT
+	Fri, 19 Sep 2008 18:40:39 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48416 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695AbYISWki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 18:40:36 -0400
-X-BigFish: VPS-23(z1039oz1432R98dR1805M936fQzz10d3izzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K7GSA7-04-5HY-01
-Date: Sat, 20 Sep 2008 00:39:51 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic option
-Message-ID: <20080919223951.GC11410@amd.com>
-References: <20080919201909.GC10692@amd.com> <20080920065630N.fujita.tomonori@lab.ntt.co.jp> <20080919220946.GB11410@amd.com> <20080920071825A.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Fri, 19 Sep 2008 18:40:38 -0400
+Date: Fri, 19 Sep 2008 23:40:19 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Felipe Balbi <felipe.balbi@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       Tony Lindgren <tony@atomide.com>, Wim Van Sebroeck <wim@iguana.be>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "George G. Davis" <gdavis@mvista.com>
+Subject: Re: [PATCH 1/5] watchdog: sync linux-omap changes
+Message-ID: <20080919224019.GC9675@flint.arm.linux.org.uk>
+References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-2-git-send-email-felipe.balbi@nokia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080920071825A.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Sep 2008 22:39:51.0547 (UTC) FILETIME=[A10B4CB0:01C91AA8]
+In-Reply-To: <1221820359-8943-2-git-send-email-felipe.balbi@nokia.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 20, 2008 at 07:18:11AM +0900, FUJITA Tomonori wrote:
-> I don't know it's acceptable if removing the exported interface even
-> if the maintainer of it wants to remove it and it's totally
-> meaningless.
-> 
-> 
-> > reverting is the wrong way. For AMD IOMMU I want to use the
-> > iommu=fullflush way because I want to reuse a parameter thats already
-> > there. Thats why I am against your reverting patch.
-> > So now I stop repeating my points again and again. EOD.
-> 
-> I understood you want to use iommu=fullflush but you can't touch the
-> generic code without any discussion.
-> 
-> And even if everyone is happy about the change, it's much better to
-> start from scratch rather than try to fix the things done in the wrong
-> way.
+You're getting there with this patch, but still not completely up to
+snuff.
 
-Just sleep a night about the discussions for this issue and count then
-how often you changed your opinions and points. It all started with a
-objection from you against 'nofullflush' and ended in that you want to
-explain me the develpment process. And then think again if this
-unimportant minor change was worth all that ridiculous flaming.
+On Fri, Sep 19, 2008 at 01:32:35PM +0300, Felipe Balbi wrote:
+> diff --git a/drivers/watchdog/omap_wdt.c b/drivers/watchdog/omap_wdt.c
+> index 3a11dad..e55f2cc 100644
+> --- a/drivers/watchdog/omap_wdt.c
+> +++ b/drivers/watchdog/omap_wdt.c
+> @@ -39,6 +39,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/moduleparam.h>
+>  #include <linux/clk.h>
+> +
+>  #include <linux/bitops.h>
+>  #include <linux/io.h>
+>  #include <linux/uaccess.h>
 
-Good night,
+This hunk is unnecessary.
 
-Joerg
+> @@ -218,19 +240,18 @@ static long omap_wdt_ioctl(struct file *file, unsigned int cmd,
+>  			return -EFAULT;
+>  		omap_wdt_adjust_timeout(new_margin);
+>  
+> -		spin_lock(&wdt_lock);
+> -		omap_wdt_disable();
+> -		omap_wdt_set_timeout();
+> -		omap_wdt_enable();
+> +		omap_wdt_disable(wdev);
+> +		omap_wdt_set_timeout(wdev);
+> +		omap_wdt_enable(wdev);
+>  
+> -		omap_wdt_ping();
+> -		spin_unlock(&wdt_lock);
+> +		omap_wdt_ping(wdev);
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+This is removing the spin lock which should remain.
 
+>  		/* Fall */
+>  	case WDIOC_GETTIMEOUT:
+>  		return put_user(timer_margin, (int __user *)arg);
+>  	default:
+>  		return -ENOTTY;
+>  	}
+> +	return 0;
+
+And this return statement shouldn't be required.
+
+Apart from those three points, nice work.
