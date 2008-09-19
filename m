@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbYISXbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbYISXcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbYISXbj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 19:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYISXb3
+	id S1755921AbYISXcU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 19:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYISXcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 19:31:29 -0400
-Received: from qb-out-0506.google.com ([72.14.204.238]:49237 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbYISXb2 (ORCPT
+	Fri, 19 Sep 2008 19:32:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53599 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752724AbYISXcH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 19:31:28 -0400
-Date: Fri, 19 Sep 2008 16:31:20 -0700 (PDT)
-From: Steven Noonan <steven@uplinklabs.net>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-cc: Senthilkumar Balasubramanian 
-	<Senthilkumar.Balasubramanian@atheros.com>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5,
- rc6, probably others)
-In-Reply-To: <20080919182322.GB7027@tesla>
-Message-ID: <alpine.LNX.2.00.0809191630090.14961@alcarin.uplinklabs.net>
-References: <20080918220102.GE7408@tesla> <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com> <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com> <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com>
- <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com> <20080919030125.GG7408@tesla> <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com> <20080919142801.GA5816@senthil-lnx.users.atheros.com> <alpine.LNX.2.00.0809190934001.22989@alcarin.uplinklabs.net>
- <20080919175824.GA5626@senthil-lnx.users.atheros.com> <20080919182322.GB7027@tesla>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 19 Sep 2008 19:32:07 -0400
+Date: Fri, 19 Sep 2008 16:31:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Timur Tabi <timur@freescale.com>
+Cc: dan.j.williams@intel.com, haavard.skinnemoen@atmel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dmatest: properly handle duplicate DMA channels
+Message-Id: <20080919163145.de9866ac.akpm@linux-foundation.org>
+In-Reply-To: <1221751279-24936-1-git-send-email-timur@freescale.com>
+References: <1221751279-24936-1-git-send-email-timur@freescale.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 18 Sep 2008 10:21:19 -0500
+Timur Tabi <timur@freescale.com> wrote:
 
-On Fri, 19 Sep 2008, Luis R. Rodriguez wrote:
-> Thanks for the patch Senthil. He is on Linus' v2.6.27-rc, you are on
-> wireless-testing so I've ported it (no changes, it just applies cleanly
-> now). This is also untested by me:
+> --- a/drivers/dma/dmatest.c
+> +++ b/drivers/dma/dmatest.c
+> @@ -321,10 +321,15 @@ static void dmatest_cleanup_channel(struct dmatest_chan *dtc)
+>  
+>  static enum dma_state_client dmatest_add_channel(struct dma_chan *chan)
+>  {
+> -	struct dmatest_chan	*dtc;
+> +	struct dmatest_chan	*dtc, *_dtc;
+>  	struct dmatest_thread	*thread;
+>  	unsigned int		i;
+>  
+> +	/* Have we already been told about this channel? */
+> +	list_for_each_entry_safe(dtc, _dtc, &dmatest_channels, node)
+> +		if (dtc->chan == chan)
+> +			return DMA_DUP;
+> +
+>  	dtc = kmalloc(sizeof(struct dmatest_chan), GFP_ATOMIC);
+>  	if (!dtc) {
+>  		pr_warning("dmatest: No memory for %s\n", chan->dev.bus_id);
 
-I'm seeing the same latency issue I reported originally with the latest 
--tip kernel and WITHOUT irqpoll.
+hm.  A few lines after that GFP_ATOMIC the driver does a GFP_KERNEL
+allocation.
 
-Apparently there's something else to this...
+One of them is incorrect.  The interface is undocumented (natch), but I
+assume that GFP_KERNEL is the one to use here.
 
-- Steven
+--- a/drivers/dma/dmatest.c~a
++++ a/drivers/dma/dmatest.c
+@@ -330,7 +330,7 @@ static enum dma_state_client dmatest_add
+ 		if (dtc->chan == chan)
+ 			return DMA_DUP;
+ 
+-	dtc = kmalloc(sizeof(struct dmatest_chan), GFP_ATOMIC);
++	dtc = kmalloc(sizeof(struct dmatest_chan), GFP_KERNEL);
+ 	if (!dtc) {
+ 		pr_warning("dmatest: No memory for %s\n", chan->dev.bus_id);
+ 		return DMA_NAK;
+_
+
