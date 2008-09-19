@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbYISS4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbYISTFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754908AbYISS4a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 14:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYISS4W
+	id S1754656AbYISTFE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 15:05:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbYISTEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 14:56:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42304 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbYISS4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 14:56:22 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Janne Grunau <j@jannau.net>
-Subject: Re: [PATCH 02/18] lirc serial port receiver/transmitter device driver
-Date: Fri, 19 Sep 2008 14:54:00 -0400
-User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
-Cc: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>,
-       linux-kernel@vger.kernel.org, Christoph Bartelmus <lirc@bartelmus.de>
-References: <200809112149.25762.stefan.bauer@cs.tu-chemnitz.de> <200809192005.12068.stefan.bauer@cs.tu-chemnitz.de> <200809192026.21107.j@jannau.net>
-In-Reply-To: <200809192026.21107.j@jannau.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Sep 2008 15:04:52 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58765 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753405AbYISTEv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 15:04:51 -0400
+Date: Fri, 19 Sep 2008 20:04:32 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Felipe Balbi <felipe.balbi@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       Tony Lindgren <tony@atomide.com>, Wim Van Sebroeck <wim@iguana.be>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "George G. Davis" <gdavis@mvista.com>
+Subject: Re: [PATCH 5/5] watchdog: introduce platform_data and remove cpu conditional code
+Message-ID: <20080919190431.GA9675@flint.arm.linux.org.uk>
+References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-2-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-3-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-4-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-5-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-6-git-send-email-felipe.balbi@nokia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809191454.00617.jwilson@redhat.com>
+In-Reply-To: <1221820359-8943-6-git-send-email-felipe.balbi@nokia.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 19 September 2008 14:26:20 Janne Grunau wrote:
-> On Friday 19 September 2008 20:05:11 Stefan Bauer wrote:
-> > Thank you for keeping me up to date, here are my test results with
-> > todays (36e60bd457588b2a2fd37e0c1d0652a9fe214d85) git:
-> >
-> > - But lircd crashes immediately every time irexec/irw tries to
-> > connect:
-> >
-> > BUG: unable to handle kernel NULL pointer dereference at 0000000c
->
-> not necessary, it is
-> commit bc2039245c6390bd414a61c9395604c4155a58c6
-> Author: Janne Grunau <j@jannau.net>
-> Date:   Thu Sep 18 20:49:19 2008 +0200
->
->     reimplement lirc_buffer as kfifo wrapper
+On Fri, Sep 19, 2008 at 01:32:39PM +0300, Felipe Balbi wrote:
+> @@ -469,17 +515,26 @@ static struct platform_device omap_wdt_device = {
+>  
+>  static void omap_init_wdt(void)
+>  {
+> -	if (cpu_is_omap16xx())
+> +	if (cpu_is_omap16xx()) {
+> +		omap_wdt_pdata.fck = "armwdt_ck";
+>  		wdt_resources[0].start = 0xfffeb000;
+> -	else if (cpu_is_omap2420())
+> +	} else if (cpu_is_omap2420()) {
+> +		omap_wdt_pdata.fck = "mpu_wdt_ick";
+> +		omap_wdt_pdata.ick = "mpu_wdt_fck";
 
-Hm... Two things... First, I neglected to pull some of Janne's later changes 
-in the same area until just a bit ago, so perhaps this has already been 
-remedied, because second, lirc_i2c is working as expected w/current head 
-(98242cbdca...)
+What happened to leaving this stuff inside omap_wdt.c as I said
+during the previous review?  I really don't want to see such cleanups
+when the real answer is to fix the OMAP clock API implementation.  It
+just makes for more unnecessary noise when doing this, and then yet more
+noise when we fix the OMAP clock API.
 
-
--- 
-Jarod Wilson
-jarod@redhat.com
-
+Please get rid of this and leave the clock naming crap inside omap_wdt.c.
