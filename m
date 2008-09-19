@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbYISSps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755420AbYISSqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939AbYISSps (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 14:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbYISSpk
+	id S1755420AbYISSqB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 14:46:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbYISSpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 14:45:40 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:17250 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116AbYISSpj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 14:45:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=QtYgR9l31r4rpgaXer3fiWcMqdVcdrdRLu3GIVngz46RoTnm/ZBAQyq+9kSox5Fsvn
-         1Uec0ezYjBVqnS6TWhnkuotVjFfwHx0+eP8qNgvmT+HgOV07DAXbv/Oql07X+sfV57MU
-         OtpxNJ0YMa8QV3EEx0y4gem6i1QTKVUgXIw28=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: use WARN_ONCE in workaround for mtrr mask
-Date: Fri, 19 Sep 2008 11:45:04 -0700
-Message-Id: <1221849904-8856-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.6
+	Fri, 19 Sep 2008 14:45:50 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:39415 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755108AbYISSpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 14:45:49 -0400
+Date: Fri, 19 Sep 2008 20:45:27 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] Late avr32 fixes for 2.6.27
+Message-ID: <20080919204527.2b50bded@hskinnemo-gx745.norway.atmel.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 19 Sep 2008 18:45:17.0178 (UTC) FILETIME=[DC1105A0:01C91A87]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so could help to catch attention about bug in bios about mtrr mask setting
+Hi Linus,
 
-WARN_ONCE get into mainline already. let use it.
+Please pull
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git master
 
----
- arch/x86/kernel/cpu/mtrr/generic.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+to receive the following fixes. Among other things, this makes the ext4
+filesystem build and work on avr32 (neither of which it did before).
 
-Index: linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/generic.c
-+++ linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -401,12 +401,7 @@ static void generic_get_mtrr(unsigned in
- 		tmp |= ~((1<<(hi - 1)) - 1);
- 
- 		if (tmp != mask_lo) {
--			static int once = 1;
--
--			if (once) {
--				printk(KERN_INFO "mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
--				once = 0;
--			}
-+			WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
- 			mask_lo = tmp;
- 		}
- 	}
+Haavard Skinnemoen (1):
+      atstk1000: fix build breakage with BOARD_ATSTK100X_SW2_CUSTOM=y
+
+Hans-Christian Egtvedt (2):
+      avr32: add generic_find_next_le_bit bit function
+      avr32: fix sys_sync_file_range() call convention
+
+Manfred Spraul (1):
+      avr32: nmi_enter() without nmi_exit()
+
+Markus Heidelberg (1):
+      avr32: add .gitignore files
+
+ arch/avr32/boards/atstk1000/atstk1002.c |    2 +-
+ arch/avr32/boot/images/.gitignore       |    4 ++++
+ arch/avr32/kernel/.gitignore            |    1 +
+ arch/avr32/kernel/avr32_ksyms.c         |    1 +
+ arch/avr32/kernel/syscall-stubs.S       |    9 +++++++++
+ arch/avr32/kernel/syscall_table.S       |    2 +-
+ arch/avr32/kernel/traps.c               |    8 ++++----
+ arch/avr32/lib/findbit.S                |   30 ++++++++++++++++++++++++++++++
+ 8 files changed, 51 insertions(+), 6 deletions(-)
+ create mode 100644 arch/avr32/boot/images/.gitignore
+ create mode 100644 arch/avr32/kernel/.gitignore
