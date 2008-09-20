@@ -1,105 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbYITSAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYITSA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbYITSAm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 14:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbYITSAe
+	id S1753439AbYITSA4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 14:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYITSAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 14:00:34 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39399 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbYITSAd (ORCPT
+	Sat, 20 Sep 2008 14:00:44 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60251 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789AbYITSAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 14:00:33 -0400
-Date: Sat, 20 Sep 2008 11:00:36 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, mingo@elte.hu
-Subject: What's in fastboot.git for 2.6.28
-Message-ID: <20080920110036.302261c7@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Sat, 20 Sep 2008 14:00:43 -0400
+Date: Sat, 20 Sep 2008 19:00:18 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Felipe Balbi <felipe.balbi@nokia.com>, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
+       Wim Van Sebroeck <wim@iguana.be>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "George G. Davis" <gdavis@mvista.com>
+Subject: Re: [PATCH 3/5] watchdog: cleanup a bit omap_wdt.c
+Message-ID: <20080920180018.GD9873@flint.arm.linux.org.uk>
+References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com> <200809200832.15440.david-b@pacbell.net> <20080920161111.GA9873@flint.arm.linux.org.uk> <200809201018.42127.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809201018.42127.david-b@pacbell.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The fastboot.git tree has a set of patches (all posted and reviewed on lkml before)
-that speed up the kernel boot process of the kernel.
+On Sat, Sep 20, 2008 at 10:18:41AM -0700, David Brownell wrote:
+> > None that I know about - generally other drivers look up their private
+> > data in some kind of array and assign to file->private_data in their
+> > open() method - in much the same way that watchdog and misc drivers do.
+> 
+> Yet i_private gets set up *somewhere* else that field wouldn't exist.
+> Look around; you'll see it gets used.  (My quick grep started in the
+> USB tree, where it turns out both usbfs and gadgetfs use it.)
 
-There's 3 major pieces of this
-1) The creation of an asynchronous initcall level (6a) that runs asynchronous from
-   the regular driver init, and is for non-boot critical initcalls only
-2) A rework of the non-initrd boot code to try mounting /, and if that fails,
-   only THEN wait for all the various driver probings to finish (and then retry)
-3) A tool "bootgraph.pl" that outputs a SVG graphic of where the kernel boot spends
-   its time 
+Both of which are filesystems which have more control over the lifetime
+of the inode.  Device drivers don't have such luxuries.
 
+> > The simplest solution is as the watchdog drivers are doing.
+> 
+> I'll disagree.  It requires extra state even in this simple case;
+> state of a generically undesirable flavor (global).  And likewise,
+> it requires lookup mechanisms ... which if you look around, tend
+> to be rather error prone, locking often gets goofed up there.
+> 
+> Familiar and simple != simplest, != best.  It will often become
+> cargo cult programming.
 
-The following changes since commit 9824b8f11373b0df806c135a342da9319ef1d893:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git390.osdl.marist.edu/pub/scm/linux-2.6
+Well, are you going to manufacture a patch to update all the watchdog
+drivers to use your new i_private method, and get that merged into
+Wim's tree now, so that then the omap watchdog drivers can satisfy
+your apparant objection (which Wim _has_ taken as an objection against
+them going in)?
 
-are available in the git repository at:
+> > And anyway, the point of these patches is not to fix issues like this.
+> > It's to get what's in mainline updated to what's in the OMAP tree so
+> > stuff can move forwards.  So, let's not go down rabbit warrens trying
+> > to find obscure new issues which lots of other code already "suffers"
+> > from.
+> 
+> Right, my original comment pointed out one thing that was clearly
+> wrong (extra/unused struct field) and one odd thing (the global).
+> 
+> You said "not that odd, here's why"; I said "hmm, well OK but it's
+> still got problem X, which isn't for fixing in this patchset".
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-fastboot.git master
+The "well OK" didn't come over at all - neither I nor Wim seem to have
+received that point.
 
-Arjan van de Ven (15):
-      fastboot: create a "asynchronous" initlevel
-      fastboot: turn the USB hostcontroller initcalls into async initcalls
-      fastboot: convert a few non-critical ACPI drivers to async initcalls
-      fastboot: hold the BKL over the async init call sequence
-      fastboot: sync the async execution before late_initcall and move level 6s (sync) first
-      fastboot: make fastboot a config option
-      modules: extend initcall_debug functionality to the module loader
-      fastboot: retry mounting the root fs if we can't find init
-      fastboot: make the raid autodetect code wait for all devices to init
-      fastboot: remove "wait for all devices before mounting root" delay
-      fastboot: make the RAID autostart code print a message just before waiting
-      fastboot: fix blackfin breakage due to vmlinux.lds change
-      Add a script to visualize the kernel boot process / time
-      fastboot: fix issues and improve output of bootgraph.pl
-      use the fancy new printk flags to print the function pointer
+> > We're into the third day on this one driver.  If every OMAP driver takes
+> > this long ...
+> 
+> That seems like a strange way to account things.  It presumes
+> that the only time review comments should be accepted is within
+> a day of the patch getting posted.  Regardless of whether the
+> reviewer has time at that point.
 
-Arnaud Patard (1):
-      fastboot: Fix bootgraph.pl initcall name regexp
+You define accounting for things in real time as "strange" - lol.  Your
+following sentences don't follow either.
 
-Ingo Molnar (5):
-      Merge branch 'linus' into fastboot
-      fastboot: fix typo in init/Kconfig text
-      warning: fix init do_mounts_md c
-      Merge branch 'linus' into fastboot
-      Merge commit 'v2.6.27-rc6' into fastboot
+My point is that we currently have a BIG problem, and that is the OMAP
+fork being so far out of line with mainline, it isn't funny.  It's
+causing lots of pain for everyone here.  Folk are screaming for mainline
+to be buildable for OMAP.
 
-Li, Shaohua (1):
-      fastboot: remove duplicate unpack_to_rootfs()
+There are two approaches to achieve that: take each driver, polish it
+for weeks on end until it's nice and shiney, and then submit it upstream.
+Eventually, given enough man hours, you'll get to the point where you've
+pushed everything upstream, but in the mean time, new work has been
+queued so you need to start at the beginning again.  You've got a job
+for life constantly polishing code.
 
-Steven Noonan (1):
-      init/initramfs.c: unused function when compiling without CONFIG_BLK_DEV_RAM
+The other approach is to decide that we have what we have, and that in
+the interests of efficiently reducing divergence, merging the upstream
+changes with the downstream changes and pushing the result upstream ASAP.
+Once merged, further improvements and cleanups can be made by pushing
+them separately upstream along with any other bug fixes.
 
- drivers/acpi/battery.c            |    2 +-
- drivers/acpi/button.c             |    2 +-
- drivers/acpi/thermal.c            |    2 +-
- drivers/pci/pci.c                 |    2 +-
- drivers/usb/host/ehci-hcd.c       |    2 +-
- drivers/usb/host/ohci-hcd.c       |    2 +-
- drivers/usb/host/uhci-hcd.c       |    2 +-
- include/asm-generic/vmlinux.lds.h |    6 +-
- include/linux/init.h              |    8 ++
- init/Kconfig                      |   11 +++
- init/do_mounts.c                  |    2 +
- init/do_mounts_md.c               |   29 ++++++--
- init/initramfs.c                  |   73 +++++++++++++++----
- init/main.c                       |   84 +++++++++++++++++++--
- scripts/bootgraph.pl              |  147 +++++++++++++++++++++++++++++++++++++
- 15 files changed, 337 insertions(+), 37 deletions(-)
- create mode 100644 scripts/bootgraph.pl
+Given the amount of divergence, the only approach which gives realistic
+progress is the second one.
 
+If you think the first approach is the way to go, then please join in
+with Tony and myself reviewing the _entire_ OMAP tree, polishing every
+patch, and pushing it upstream.  And I mean _everything_.  Not just the
+USB stuff.  Encourage everyone else to do the same - because it will
+take an army of individuals to make any forward progress.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> If you *really* wanted to avoid wasting time you wouldn't have
+> replied to my previous post, which agreed that one point I raised
+> was a non-issue for this particular patch series.
+
+Wim said: "Will add patches 1 to 3 when everyone is OK with them. I
+still saw some comments from David."
+
+So, would you like to clearly tell Wim what your comments mean as far
+as merging this patch series?  It seems I'm not the only one who's
+confused as to the intention and meaning of your comments.
