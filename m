@@ -1,79 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbYITVtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbYITVxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437AbYITVtX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 17:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYITVtL
+	id S1754055AbYITVxc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 17:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbYITVxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 17:49:11 -0400
-Received: from shells.gnugeneration.com ([66.240.222.126]:59869 "HELO
-	shells.gnugeneration.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751576AbYITVtK (ORCPT
+	Sat, 20 Sep 2008 17:53:24 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34975 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbYITVxX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 17:49:10 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Sep 2008 17:49:10 EDT
-Date: Sat, 20 Sep 2008 16:42:29 -0500
-From: lkml@pengaru.com
-To: linux-kernel@vger.kernel.org
-Subject: Honoring SO_RCVLOWAT in proto_ops.poll methods
-Message-ID: <20080920214229.GP2761@fc6222126.aspadmin.net>
+	Sat, 20 Sep 2008 17:53:23 -0400
+Date: Sat, 20 Sep 2008 17:53:20 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       astarikovskiy@suse.de
+Subject: Re: Reading EeePC900 battery info causes stalls
+In-Reply-To: <48D52FE3.6060803@yahoo.com>
+Message-ID: <alpine.DEB.1.10.0809201739170.18130@gandalf.stny.rr.com>
+References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no>
+ <48D4CC1B.7030708@yahoo.com> <alpine.DEB.1.10.0809200955360.12824@gandalf.stny.rr.com> <48D50498.5050608@yahoo.com> <alpine.DEB.1.10.0809201037070.13540@gandalf.stny.rr.com> <48D52FE3.6060803@yahoo.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello lkml,
 
-I have a need for select/poll/epoll_wait to block on sockets which have
-unread data sitting in the receive buffer with a quantity less than
-specified via setsockopt() w/SO_RCVLOWAT, not less than one like the
-current implementation.
+On Sat, 20 Sep 2008, Sitsofe Wheeler wrote:
 
-Upon looking at the code in net/ipv4/tcp.c it doesn't look like this
-would be difficult to support.  Something along the lines of changing
-the function tcp_poll() of version 2.6.26.5 from doing this:
+> Steven Rostedt wrote:
+> > OK, that is probably the known bug you are hitting. Simply disable the
+> > CONFIG_FTRACE_STARTUP_TEST and you should have the wakeup tracer. The bug is
+> > with the test, not the tracer, so it should not hurt you.
+> 
+> Thanks - this made the wakeup tracer appear a you said. I have put two wakeup
+> traces up:
+> 
+> http://sucs.org/~sits/test/eeepc-debug/20080920/latency_trace.txt.gz
+> http://sucs.org/~sits/test/eeepc-debug/20080920/trace.txt.gz
+> (each file is around 6Mbytes uncompressed)
+> 
+> Here's a small extract of latency_trace.txt:
+> 
+> > # tracer: wakeup
+> > #
+> > wakeup latency trace v1.1.5 on 2.6.27-rc6skw-dirty
+> > --------------------------------------------------------------------
+> >  latency: 3232905 us, #65620/6180619, CPU#0 | (M:desktop VP:0, KP:0, SP:0
 
- 394                 if ((tp->rcv_nxt != tp->copied_seq) &&
- 395                     (tp->urg_seq != tp->copied_seq ||
- 396                      tp->rcv_nxt != tp->copied_seq + 1 ||
- 397                      sock_flag(sk, SOCK_URGINLINE) || !tp->urg_data))
- 398                         mask |= POLLIN | POLLRDNORM;
+Peter, these times are crazy, mainly due to the cpu_clock. He probably 
+wants to use the sched_clock. Below is a patch to use it instead.
 
-to this:
+Sitsofe, I notice that the trace states "desktop". This means that you
+are running with CONFIG_PREEMPT_VOLUNTARY. You want 
+CONFIG_PREEMPT.
 
- 394                 if ((tp->rcv_nxt != tp->copied_seq) &&
- 395                     (tp->urg_seq != tp->copied_seq ||
- 396                      tp->rcv_nxt > tp->copied_seq + sk->sk_rcvlowat ||
- 397                      sock_flag(sk, SOCK_URGINLINE) || !tp->urg_data))
- 398                         mask |= POLLIN | POLLRDNORM;
+[...]
+> 
+> Is it intentional that the last event has a time earlier closer to that of the
+> first event?
+> 
+
+Change the config, and see what you get with this patch:
+
+Note this is not compiled tested:
+
+---
+ kernel/trace/trace.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linus.git/kernel/trace/trace.c
+===================================================================
+--- linus.git.orig/kernel/trace/trace.c	2008-09-20 17:49:00.000000000 -0400
++++ linus.git/kernel/trace/trace.c	2008-09-20 17:49:35.000000000 -0400
+@@ -60,7 +60,7 @@ ns2usecs(cycle_t nsec)
+ 
+ cycle_t ftrace_now(int cpu)
+ {
+-	return cpu_clock(cpu);
++	return sched_clock();
+ }
+ 
+ /*
 
 
-I imagine it's similarly simple for the other socket types.  Am I
-missing something?  Is there a technical reason why Linux only blocks in
-read/recv but not the poll with respect to the SO_RCVLOWAT setting?
+-- Steve
 
-
-For those interested the application is basically doing:
-
-1: Wait for input on active sockets with epoll_wait()
-2: Recv() data off the eventful sockets with MSG_PEEK flag, parse contents
-   looking for specific keyword and value from buffer.
-3: If buffer is too short call setsockopt() with SO_RCVLOWAT parameter set
-   greater than what recv() with MSG_PEEK returned.
-
-Repeat @ 1 until finding what's needed or shutdown/error/timeout.
-
-Once the value is parsed it's used as an address to locate (with a db
-lookup) a path which would be a unix domain socket for passing the
-socket descriptor through.  The unrelated process at the other end needs
-to accept the descriptor and use it as if no other program mucked with it
-hence the MSG_PEEK magic.
-
-As-is I must basically tie up threads in blocked recv() calls after
-increasing SO_RCVLOWAT if the first recv() peek falls short.  This
-solution obviously doesn't scale well.
-
-Thanks,
-Vito Caputo
