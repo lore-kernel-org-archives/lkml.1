@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbYITEU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbYITE1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752660AbYITEU4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 00:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbYITEUs
+	id S1752936AbYITE1q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 00:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbYITE1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 00:20:48 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46378 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750726AbYITEUr (ORCPT
+	Sat, 20 Sep 2008 00:27:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49924 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740AbYITE1i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 00:20:47 -0400
-Date: Sat, 20 Sep 2008 13:27:03 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hirokazu Takahashi <taka@valinux.co.jp>
-Cc: righi.andrea@gmail.com, dm-devel@redhat.com, xen-devel@lists.xensource.com,
-       containers@lists.linux-foundation.org, agk@sourceware.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       jens.axboe@oracle.com, balbir@linux.vnet.ibm.com,
-       fernando@oss.ntt.co.jp, xemul@openvz.org
-Subject: Re: [dm-devel] Re: dm-ioband + bio-cgroup benchmarks
-Message-Id: <20080920132703.e74c8f89.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080919.123405.91829935.taka@valinux.co.jp>
-References: <48D267B5.20402@gmail.com>
-	<20080918150634.GH20640@redhat.com>
-	<48D2715A.6060002@gmail.com>
-	<20080919.123405.91829935.taka@valinux.co.jp>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Sep 2008 00:27:38 -0400
+Date: Fri, 19 Sep 2008 21:26:30 -0700
+From: Greg KH <greg@kroah.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] debug: Introduce a dev_WARN() function
+Message-ID: <20080920042630.GA21501@kroah.com>
+References: <20080919210733.4e9c58e8@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080919210733.4e9c58e8@infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 12:34:05 +0900 (JST)
-Hirokazu Takahashi <taka@valinux.co.jp> wrote:
-
-> I've decided to get Ryo to post the accurate dirty-page tracking patch
-> for bio-cgroup, which isn't perfect yet though. The memory controller
-> never wants to support this tracking because migrating a page between
-> memory cgroups is really heavy.
+On Fri, Sep 19, 2008 at 09:07:33PM -0700, Arjan van de Ven wrote:
 > 
-> I also thought enhancing the memory controller would be good enough,
-> but a lot of people said they wanted to control memory resource and
-> block I/O resource separately.
-> So you can create several bio-cgroup in one memory-cgroup,
-> or you can use bio-cgroup without memory-cgroup.
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Fri, 19 Sep 2008 21:03:06 -0700
+> Subject: [PATCH] debug: Introduce a dev_WARN() function
 > 
-> I also have a plan to implement more acurate tracking mechanism
-> on bio-cgroup after the memory cgroup team re-implement the infrastructure,
-> which won't be supported by memory-cgroup.
-> When a process are moved into another memory cgroup,
-> the pages belonging to the process don't move to the new cgroup
-> because migrating pages is so heavy. It's hard to find the pages
-> from the process and migrating pages may cause some memory pressure.
-> I'll implement this feature only on bio-cgroup with minimum overhead
-> 
-I really would like to move page_cgroup to new cgroup when the process moves...
-But it's just in my plan and I'm not sure I can do it or not.
+> in the line of dev_printk(), this patch introduces a dev_WARN() macro,
+> that takes a struct device and then a printk format/args set of arguments.
+> Unlike dev_printk(), the effect is that of WARN() in that a full warning
+> message (including filename/line, module list, versions and a backtrace)
+> is printed in addition to the device name and the arguments.
 
-Anyway what's next for me is
- 1. fix current discussion to remove page->page_cgroup pointer.
- 2. reduce locks.
- 3. support swap and swap-cache.
+I like the idea, but we already have dev_warn(), so dev_WARN() might be
+a bit confusing for people.
 
-I think algorithm for (1), (2) is now getting smart.
+Perhaps just documenting it with a docbook tag would suffice?
 
-Thanks,
--Kame
+thanks,
 
+greg k-h
