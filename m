@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752849AbYITHeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYITHo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752849AbYITHeN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 03:34:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbYITHd6
+	id S1752842AbYITHo2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 03:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYITHoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 03:33:58 -0400
-Received: from qb-out-0506.google.com ([72.14.204.225]:47620 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbYITHd6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 03:33:58 -0400
-Message-ID: <f488382f0809200033x10d43767j95e5958a2715d14c@mail.gmail.com>
-Date: Sat, 20 Sep 2008 00:33:56 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH -tip FIXED] ftrace: add nop tracer
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080920061659.GF25713@elte.hu>
+	Sat, 20 Sep 2008 03:44:20 -0400
+Received: from ns1.suse.de ([195.135.220.2]:54681 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751009AbYITHoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 03:44:19 -0400
+Date: Sat, 20 Sep 2008 10:10:49 +0200
+From: Olaf Dabrunz <od@suse.de>
+To: Martin Bligh <mbligh@google.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "od Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: Unified tracing buffer
+Message-ID: <20080920081049.GC4491@suse.de>
+Mail-Followup-To: Martin Bligh <mbligh@google.com>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	"od Frank Ch. Eigler" <fche@redhat.com>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <20080919144258.ac787fdf.randy.dunlap@oracle.com> <33307c790809191457y3ebffa28xa6d9ab6431554618@mail.gmail.com> <20080919224109.GB4491@suse.de> <33307c790809191519k7c1bcce7y3fa37efc23b0f9c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <1221818803-9616-1-git-send-email-steven@uplinklabs.net>
-	 <20080919142326.29834d11.akpm@linux-foundation.org>
-	 <f488382f0809191635o45f3ed17vc23380eab41b2878@mail.gmail.com>
-	 <20080920061659.GF25713@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <33307c790809191519k7c1bcce7y3fa37efc23b0f9c@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 11:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Steven Noonan <steven@uplinklabs.net> wrote:
->
->> On Fri, Sep 19, 2008 at 2:23 PM, Andrew Morton
->> <akpm@linux-foundation.org> wrote:
->> > On Fri, 19 Sep 2008 03:06:43 -0700
->> > Steven Noonan <steven@uplinklabs.net> wrote:
->> >
->> >> --- a/kernel/trace/trace.h
->> >> +++ b/kernel/trace/trace.h
->> >> @@ -339,6 +339,10 @@ extern int trace_selftest_startup_preemptirqsoff(struct tracer *trace,
->> >>  extern int trace_selftest_startup_wakeup(struct tracer *trace,
->> >>                                        struct trace_array *tr);
->> >>  #endif
->> >> +#ifdef CONFIG_NOP_TRACER
->> >> +extern int trace_selftest_startup_nop(struct tracer *trace,
->> >> +                                      struct trace_array *tr);
->> >> +#endif
->> >>  #ifdef CONFIG_CONTEXT_SWITCH_TRACER
->> >>  extern int trace_selftest_startup_sched_switch(struct tracer *trace,
->> >>                                              struct trace_array *tr);
->> >
->> > Consider omitting the ifdefs around the declarations.
->> >
->> > pro: the code looks nicer and is less likely to suffer build errors
->> > with weird config combinations.
->> >
->> > con: build errors are reported at link-time rather than at compile-time.
->> >
->> > Personally, I think pro>con here.
->> >
->>
->> I merely based this on one of the other tracers, so the ifdefs are
->> basically copied and renamed.
->
-> yeah. Feel free to send a separate patch that implements Andrew's
-> clean-up suggestion. I agree that pro>con.
->
+On 19-Sep-08, Martin Bligh wrote:
+> >> Sorry, probably lots of implicit assumptions in there that I forgot to explain
+> >
+> > Ids for event types. Either allocated dynamically, if the tracer needs
+> > new ids on each use, or statically assigned for others (like my fctrace
+> > or Steven's ftrace, I believe). Should we have a reserved range / registry
+> > for static allocation, maybe something like a very simple version of
+> > devices.txt?
+> 
+> Sure, but it's per-tracer, so hopefully won't be a big problem (eg fctrace
+> would have a different event-id namespace from blktrace)
 
-How about this patch gets applied to -tip and I submit one that drops
-the ifdefs on this and the other tracers?
+Ah, that is right. We can distinguish them.
+
+-- 
+Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
+
