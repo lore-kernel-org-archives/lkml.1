@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYITPDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYITPE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbYITPDi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 11:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYITPD3
+	id S1754848AbYITPE6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 11:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYITPEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 11:03:29 -0400
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:7983 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751128AbYITPD2 (ORCPT
+	Sat, 20 Sep 2008 11:04:49 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:55941 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751162AbYITPEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 11:03:28 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiMFAJKs1EhR9dHs/2dsb2JhbACBXbRbgWU
-Date: Sat, 20 Sep 2008 17:03:17 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Felipe Balbi <me@felipebalbi.com>, Felipe Balbi <felipe.balbi@nokia.com>,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       Tony Lindgren <tony@atomide.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "George G. Davis" <gdavis@mvista.com>
-Subject: Re: [PATCH 5/5] watchdog: introduce platform_data and remove cpu conditional code
-Message-ID: <20080920150316.GK22550@infomag.infomag.iguana.be>
-References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-2-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-3-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-4-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-5-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-6-git-send-email-felipe.balbi@nokia.com> <20080919190431.GA9675@flint.arm.linux.org.uk> <20080919213331.GA10156@frodo> <20080919225129.GD9675@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 20 Sep 2008 11:04:49 -0400
+Message-ID: <f488382f0809200804x34d5b8b8q33d73488fa1d56d1@mail.gmail.com>
+Date: Sat, 20 Sep 2008 08:04:47 -0700
+From: "Steven Noonan" <steven@uplinklabs.net>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH -tip FIXED] ftrace: add nop tracer
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080920113151.GA30234@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080919225129.GD9675@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+References: <1221818803-9616-1-git-send-email-steven@uplinklabs.net>
+	 <20080919142326.29834d11.akpm@linux-foundation.org>
+	 <f488382f0809191635o45f3ed17vc23380eab41b2878@mail.gmail.com>
+	 <20080920061659.GF25713@elte.hu>
+	 <f488382f0809200033x10d43767j95e5958a2715d14c@mail.gmail.com>
+	 <20080920113151.GA30234@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell,
+On Sat, Sep 20, 2008 at 4:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Steven Noonan <steven@uplinklabs.net> wrote:
+>
+>> > yeah. Feel free to send a separate patch that implements Andrew's
+>> > clean-up suggestion. I agree that pro>con.
+>>
+>> How about this patch gets applied to -tip and I submit one that drops
+>> the ifdefs on this and the other tracers?
+>
+> yeah - it's been part of tip/master since yesterday.
+>
 
-> Given my comments on patch 1, it's probably a good idea to resend
-> just 1 to 3.  We can then talk about 4 and 5 some more.
-> 
-> Wim - can you let me know when you merge the followup patches into your
-> tree please?
-
-Will add patches 1 to 3 when everyone is OK with them. I still saw
-some comments from David.
-
-Kind Regards,
-Wim.
-
+I saw it was applied about a minute after sending that. I should've
+checked first. ;)
