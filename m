@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYITHrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbYITH6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753421AbYITHrt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 03:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYITHri
+	id S1752515AbYITH6A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 03:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbYITH5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 03:47:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49478 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752842AbYITHri (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 03:47:38 -0400
-Date: Sat, 20 Sep 2008 00:47:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Steven Noonan" <steven@uplinklabs.net>
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip FIXED] ftrace: add nop tracer
-Message-Id: <20080920004723.e182ca8b.akpm@linux-foundation.org>
-In-Reply-To: <f488382f0809200033x10d43767j95e5958a2715d14c@mail.gmail.com>
-References: <1221818803-9616-1-git-send-email-steven@uplinklabs.net>
-	<20080919142326.29834d11.akpm@linux-foundation.org>
-	<f488382f0809191635o45f3ed17vc23380eab41b2878@mail.gmail.com>
-	<20080920061659.GF25713@elte.hu>
-	<f488382f0809200033x10d43767j95e5958a2715d14c@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Sep 2008 03:57:50 -0400
+Received: from mail.windriver.com ([147.11.1.11]:40488 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750957AbYITH5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 03:57:49 -0400
+From: Kevin Hao <kexin.hao@windriver.com>
+To: Jeff Garzik <jgarzik@redhat.com>, Chris Snook <csnook@redhat.com>,
+       Jay Cliburn <jacliburn@bellsouth.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] net: add net poll support for atl2 driver
+Date: Sat, 20 Sep 2008 15:56:44 +0800
+Message-Id: <1221897404-20290-1-git-send-email-kexin.hao@windriver.com>
+X-Mailer: git-send-email 1.5.6.2.220.g44701
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Sep 2008 00:33:56 -0700 "Steven Noonan" <steven@uplinklabs.net> wrote:
+Add netconsole support for Atheros L2 10/100 network device.
 
-> > yeah. Feel free to send a separate patch that implements Andrew's
-> > clean-up suggestion. I agree that pro>con.
-> >
-> 
-> How about this patch gets applied to -tip and I submit one that drops
-> the ifdefs on this and the other tracers?
+Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
+---
+ drivers/net/atlx/atl2.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-yup.  That's in fact the preferred way of separating patches.  "one
-concept per patch" is the old mantra.
+diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
+index d548a67..b2995ac 100644
+--- a/drivers/net/atlx/atl2.c
++++ b/drivers/net/atlx/atl2.c
+@@ -1327,6 +1327,15 @@ static void atl2_setup_pcicmd(struct pci_dev *pdev)
+ 	pci_write_config_dword(pdev, REG_PM_CTRLSTAT, 0);
+ }
+ 
++#ifdef CONFIG_NET_POLL_CONTROLLER
++static void atl2_poll_controller(struct net_device *netdev)
++{
++	disable_irq(netdev->irq);
++	atl2_intr(netdev->irq, netdev);
++	enable_irq(netdev->irq);
++}
++#endif
++
+ /*
+  * atl2_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
+@@ -1410,6 +1419,9 @@ static int __devinit atl2_probe(struct pci_dev *pdev,
+ 	netdev->do_ioctl = &atl2_ioctl;
+ 	atl2_set_ethtool_ops(netdev);
+ 
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	netdev->poll_controller = atl2_poll_controller;
++#endif
+ #ifdef HAVE_TX_TIMEOUT
+ 	netdev->tx_timeout = &atl2_tx_timeout;
+ 	netdev->watchdog_timeo = 5 * HZ;
+-- 
+1.5.6.2.220.g44701
+
