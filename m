@@ -1,77 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbYITSwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbYITTBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752900AbYITSwq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 14:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYITSwi
+	id S1753088AbYITTBX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 15:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYITTBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 14:52:38 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:38735 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbYITSwh (ORCPT
+	Sat, 20 Sep 2008 15:01:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:23113 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbYITTBO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 14:52:37 -0400
-Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
-From: Daniel Walker <dwalker@mvista.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com,
-       steffen.klassert@secunet.com
-In-Reply-To: <20080920110952.05da49ab@infradead.org>
-References: <20080919.234824.223177211.davem@davemloft.net>
-	 <1221924561.1343.121.camel@localhost.localdomain>
-	 <20080920084512.58f7fb08@infradead.org>
-	 <1221926529.1343.140.camel@localhost.localdomain>
-	 <20080920091918.0ffaef8c@infradead.org>
-	 <1221932404.1343.196.camel@localhost.localdomain>
-	 <20080920110952.05da49ab@infradead.org>
-Content-Type: text/plain
-Date: Sat, 20 Sep 2008 11:52:31 -0700
-Message-Id: <1221936751.1343.226.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Sat, 20 Sep 2008 15:01:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=EvYAVkTVBEZWK+OKVFyBL+OGtdPTxlq/hmHSIWrzrtSev6Swz6lMXTkpit9f+lHUBR
+         enLPOjFJxg5T7zQT1gEVhJDVtanzPFps11HqjRd0b8CclgYJ8/iG7q8+wswihxZpJqCb
+         PVd7/XJIQQsjx8DAIr1oLKEQitCJ4kHlIqeuA=
+Message-ID: <48D54873.8010108@gmail.com>
+Date: Sat, 20 Sep 2008 22:01:07 +0300
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: I need some serious help to debug suspend to ram problem
+References: <48D4E685.8030801@gmail.com> <200809201810.45057.rjw@sisk.pl>
+In-Reply-To: <200809201810.45057.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-09-20 at 11:09 -0700, Arjan van de Ven wrote:
-
-
-> > 
-> > Dave didn't supply the users of his code, or what kind of improvement
-> > was seen, or the case in which it would be needed. I think Dave knowns
-> > his subsystem, but the code on the surface looks like an end run
-> > around some other problem area..
+Rafael J. Wysocki wrote:
+> On Saturday, 20 of September 2008, Maxim Levitsky wrote:
+>> Hi,
+>>
+>> I hit a dead end when trying to understand 
+>> why my notebook can't resume from suspend to ram
+>> if this is done two times a row.
+>>
+>> Single suspend/resume cycle works almost perfectly 
+>> (beep that goes through the sound card is muted... 
+>> no morse code for me... :-(
+>>
+>> )
+>>
+>> I compiled a minimal kernel (absolutely nothing but disk drivers, all experimental option like nohz
+>> turned off)
+>>
+>> But I had to turn SMP, since without it system won't resume first time I suspend it.
+>> (How could this affect suspend?)
 > 
-> it's very fundamental, and has been talked about at various conferences
-> as well.
-
-At least you understand that not everyone goes to conferences..
-
-> the basic problem is that the submitter of the IO (be it block or net)
-> creates a ton of metadata state on submit, and ideally the completion
-> processing happens on the same CPU, for two reasons
-> 1) to use the state in the cache
-> 2) for the case where you touch userland data/structures, we assume the
-> scheduler kept affinity
+> It could if the system is 64-bit.  In which case please have a look at
+> http://bugzilla.kernel.org/show_bug.cgi?id=11237
 > 
-> it's a Moses-to-the-Mountain problem, except we have four Moses' but
-> only one Mountain. 
+>> With SMP and minimal kernel (of course  no closed drivers), I get same behavior,
+>> first resume works second hangs.
+>>
+>> I then added some debug code to real mode wakeup code, I put there in first
+>> place instructions, that will save some magic value to rtc (to alarm
+>> registers that I know are preserved during boot cycle), and I discovered   
+>> sad thing that first time bios does pass control to linux, but second time
+>> (when it hangs), it doesn't. 
+>>
+>>
+>> I tried to update bios, and I got same results.
+>>
+>> Of course it does work with that @#$%^& OS
 > 
-> Or in CS terms: we move the work to the CPU where the userland is
-> rather than moving the userland to the IRQ CPU, since there is usually
-> only one IRQ but many userlands and many cpu cores.
+> So we're doing something wrong.  Please try the appended patch.
+Thanks a lot, but this didn't help.
 
-There must be some kind of trade off here .. There's a fairly good
-performance gain from have the softirq asserted and run on the same cpu
-since it runs in interrupt context right after the interrupt.
+It still has same pattern, first suspend/resume works perfectly, 
+second suspend/resume hangs hard.
+It always happens like this, first resume always work 
+(unless I turn off smp in kernel (I test this again), or reserve all low memory)
 
-If you move the softirq to another cpu then you have to re-assert and
-either wait for ksoftirqd to handle it or wait for an interrupt on the
-new cpu .. Neither is very predictable..
+Also note that if I suspend the system to ram, resume, and then suspend to disk, 
+then I can suspend to ram and resume, it seems that
 
-All that vs. bouncing data around the caches.. To what degree has all
-that been handled or thought about?
+on suspend to ram cycle somehow arms BIOS or something else, 
+so second resume in a row doesn't work.
 
-Daniel
+I run 32 bit kernel here, this is a long story 
+(this bios doesn't turn fan on when running 64-bit version, 
+I could update it, and I know that fan issue is fixed there, 
+but new bios introduces bigger bug, namely it makes fan to run almost always 
+regardless of 32/64 type of os.
+And it doesn't fix this suspend/resume issue, I tested this. 
+I could start/stop fan manually with a script, but this could fail, 
+and maybe I will do so someday.)
 
+The bugzilla seems to be unrelated here, since bios does 
+pass control there, but corrupts memory.
+Here I also have seen that bios corrupts memory, 
+but everything resumes fine first time, and on second time,
+bios doesn't pass control (I put set of instructions in beginning 
+of wakeup real mode assembly file, no page tables, GDT/LDT are used there)
+
+
+Best regards,
+	Maxim Levitsky
