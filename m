@@ -1,421 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbYITVcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbYITVf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753356AbYITVcV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 17:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYITVcN
+	id S1753854AbYITVf6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 17:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYITVfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 17:32:13 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:48471 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbYITVcL (ORCPT
+	Sat, 20 Sep 2008 17:35:50 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:7100 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751470AbYITVfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 17:32:11 -0400
+	Sat, 20 Sep 2008 17:35:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=FzqQ6V5j2WW8hn0b58VhyyGi87qYrLQujVkrsLR2cl5/rCUPhKoevrMPAAe+Td+fqU
-         v8dxgHstkUMikDJ5T1O9/f6XIGE/a2RhaVZaJMWfNC1RaVTLlBAfm9ea6nk3Gq5IzJmg
-         9m/y9iygBcbcysZohRhvBQ8arXn89lbt7nKBo=
-Message-ID: <e9c3a7c20809201432y31da1e00mf3a20c60b918fab1@mail.gmail.com>
-Date: Sat, 20 Sep 2008 14:32:09 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: [PATCH] fsl-dma: allow Freescale Elo DMA driver to be compiled as a module
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       leoli@freescale.com
-In-Reply-To: <1221755059-27204-1-git-send-email-timur@freescale.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=P0KlUaiu/mjTlhfNsbYN4hyN9oByGg1mGSu51hgPkyu3meXIKyQyO5pX0pzNn3bNRh
+         8Dgy7wAoJE4qsHIv/LYub9GvKPG4S7f4LlmR4ZOgHAYxoBN/5l7+gCJC+mX7/Gzy6dCa
+         BuaNMEGYBBCoQYuZsnw6EX5j78/U/EJryKEOM=
+Message-ID: <86802c440809201435l6fdb7c90u59b6b816efb7f2f6@mail.gmail.com>
+Date: Sat, 20 Sep 2008 14:35:48 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Chris Li" <lkml@chrisli.org>
+Subject: Re: irq 19: nobody cared
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <70318cbf0809191532n6ebaa122v7d98815c8a65850b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221755059-27204-1-git-send-email-timur@freescale.com>
-X-Google-Sender-Auth: 1a349135d712ce1b
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_57638_33051216.1221946548309"
+References: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com>
+	 <86802c440809191350h21327c76l55d2134d7667f5d0@mail.gmail.com>
+	 <70318cbf0809191413v70c49eccq9ed16ae50864a1a5@mail.gmail.com>
+	 <86802c440809191457g19e2cbbeo26aa3dff613b057f@mail.gmail.com>
+	 <70318cbf0809191532n6ebaa122v7d98815c8a65850b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ added Li Yang to the cc ]
+------=_Part_57638_33051216.1221946548309
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Thu, Sep 18, 2008 at 9:24 AM, Timur Tabi <timur@freescale.com> wrote:
-> Modify the Freescale Elo / Elo Plus DMA driver so that it can be compiled as
-> a module.
+On Fri, Sep 19, 2008 at 3:32 PM, Chris Li <lkml@chrisli.org> wrote:
+> On Fri, Sep 19, 2008 at 2:57 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>>
+>> 0x1a.2
+>> 0x1d.1
+>> 0x1f.2
+>> 0x1f.5
+>>
+>> are sharing pin 0x19...
+>>
+>> but early dump can not find 0x1a.2, 0x1f.2, 0x1f.5
 >
-> The primary change is to stop treating the DMA controller as a bus, and the
-> DMA channels as devices on the bus.  This is because the Open Firmware (OF)
-> kernel code does not allow busses to be removed, so although we can call
-> of_platform_bus_probe() to probe the DMA channels, there is no
-> of_platform_bus_remove().  Therefore, the DMA channels must be manually probed.
+> But later kernel does able to find those devices. Do you mean
+> there is a bug in the early PCI scanning?
 >
-> Signed-off-by: Timur Tabi <timur@freescale.com>
 
-I am not familiar with the Open Firmware interface so I'll trust you
-on that piece, but please see 2 comments below.
+please apply attached patch and boot with pci=dump
 
-Thanks,
-Dan
+YH
 
-> ---
->
-> This patch is for the 2.6.28 kernel.  This patch exposes a bug in the dmatest
-> module, so my other patch "dmatest: properly handle duplicate DMA channels"
-> should be applied if this patch is applied.
->
->  drivers/dma/Kconfig  |   10 ++--
->  drivers/dma/fsldma.c |  165 ++++++++++++++++++++++++++++++++++----------------
->  drivers/dma/fsldma.h |    2 +
->  3 files changed, 119 insertions(+), 58 deletions(-)
->
-> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-> index cd30390..9dfd502 100644
-> --- a/drivers/dma/Kconfig
-> +++ b/drivers/dma/Kconfig
-> @@ -48,13 +48,13 @@ config DW_DMAC
->          can be integrated in chips such as the Atmel AT32ap7000.
->
->  config FSL_DMA
-> -       bool "Freescale MPC85xx/MPC83xx DMA support"
-> -       depends on PPC
-> +       tristate "Freescale Elo and Elo Plus DMA support"
-> +       depends on PPC_83xx || PPC_85xx || PPC_86xx
->        select DMA_ENGINE
->        ---help---
-> -         Enable support for the Freescale DMA engine. Now, it support
-> -         MPC8560/40, MPC8555, MPC8548 and MPC8641 processors.
-> -         The MPC8349, MPC8360 is also supported.
-> +         Enable support for the Freescale Elo and Elo Plus DMA controllers.
-> +         The Elo is the DMA controller on 83xx parts, and the Elo Plus is
-> +         the DMA controller on 85xx and 86xx parts.
->
->  config MV_XOR
->        bool "Marvell XOR engine support"
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index c0059ca..327c485 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -372,6 +372,10 @@ static int fsl_dma_alloc_chan_resources(struct dma_chan *chan,
->        struct fsl_dma_chan *fsl_chan = to_fsl_chan(chan);
->        LIST_HEAD(tmp_list);
->
-> +       /* Has this channel already been allocated? */
-> +       if (fsl_chan->desc_pool)
-> +               return 1;
-> +
->        /* We need the descriptor to be aligned to 32bytes
->         * for meeting FSL DMA specification requirement.
->         */
-> @@ -381,7 +385,7 @@ static int fsl_dma_alloc_chan_resources(struct dma_chan *chan,
->        if (!fsl_chan->desc_pool) {
->                dev_err(fsl_chan->dev, "No memory for channel %d "
->                        "descriptor dma pool.\n", fsl_chan->id);
-> -               return 0;
-> +               return -ENOMEM;
->        }
+------=_Part_57638_33051216.1221946548309
+Content-Type: text/x-patch;
+ name=0006-pci-dump-pci-config-space-before-loading-driver.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_flcrbwjq0
+Content-Disposition: attachment;
+ filename=0006-pci-dump-pci-config-space-before-loading-driver.patch
 
-The last three hunks should be broken out into a separate 'fix' patch
-with its own changelog.
-
->
->        return 1;
-> @@ -410,6 +414,8 @@ static void fsl_dma_free_chan_resources(struct dma_chan *chan)
->        }
->        spin_unlock_irqrestore(&fsl_chan->desc_lock, flags);
->        dma_pool_destroy(fsl_chan->desc_pool);
-> +
-> +       fsl_chan->desc_pool = NULL;
->  }
->
->  static struct dma_async_tx_descriptor *
-> @@ -912,33 +918,37 @@ out:
->        return err;
->  }
->
-> -static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
-> -                       const struct of_device_id *match)
-> +static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
-> +       struct device_node *node, u32 feature, const char *compatible)
->  {
-> -       struct fsl_dma_device *fdev;
->        struct fsl_dma_chan *new_fsl_chan;
-> +       const u32 *iprop;
->        int err;
->
-> -       fdev = dev_get_drvdata(dev->dev.parent);
-> -       BUG_ON(!fdev);
-> -
->        /* alloc channel */
->        new_fsl_chan = kzalloc(sizeof(struct fsl_dma_chan), GFP_KERNEL);
->        if (!new_fsl_chan) {
-> -               dev_err(&dev->dev, "No free memory for allocating "
-> +               dev_err(fdev->dev, "No free memory for allocating "
->                                "dma channels!\n");
->                return -ENOMEM;
->        }
->
-> +       new_fsl_chan->of_dev = of_platform_device_create(node, NULL, fdev->dev);
-> +       if (!new_fsl_chan->of_dev) {
-> +               dev_err(fdev->dev, "cannot create platform device\n");
-> +               err = -EINVAL;
-> +               goto err_no_dev;
-> +       }
-> +
->        /* get dma channel register base */
-> -       err = of_address_to_resource(dev->node, 0, &new_fsl_chan->reg);
-> +       err = of_address_to_resource(node, 0, &new_fsl_chan->reg);
->        if (err) {
-> -               dev_err(&dev->dev, "Can't get %s property 'reg'\n",
-> -                               dev->node->full_name);
-> +               dev_err(fdev->dev, "Can't get %s property 'reg'\n",
-> +                               node->full_name);
->                goto err_no_reg;
->        }
->
-> -       new_fsl_chan->feature = *(u32 *)match->data;
-> +       new_fsl_chan->feature = feature;
->
->        if (!fdev->feature)
->                fdev->feature = new_fsl_chan->feature;
-> @@ -948,17 +958,22 @@ static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
->         */
->        WARN_ON(fdev->feature != new_fsl_chan->feature);
->
-> -       new_fsl_chan->dev = &dev->dev;
-> +       new_fsl_chan->dev = &new_fsl_chan->of_dev->dev;
->        new_fsl_chan->reg_base = ioremap(new_fsl_chan->reg.start,
->                        new_fsl_chan->reg.end - new_fsl_chan->reg.start + 1);
->
-> -       new_fsl_chan->id = ((new_fsl_chan->reg.start - 0x100) & 0xfff) >> 7;
-> -       if (new_fsl_chan->id > FSL_DMA_MAX_CHANS_PER_DEVICE) {
-> -               dev_err(&dev->dev, "There is no %d channel!\n",
-> -                               new_fsl_chan->id);
-> +       iprop = of_get_property(node, "cell-index", NULL);
-> +       if (!iprop) {
-> +               dev_err(fdev->dev, "missing cell-index property\n");
-> +               return -EINVAL;
-> +       }
-> +       if (*iprop >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
-> +               dev_err(fdev->dev, "invalid cell-index value %u\n", *iprop);
->                err = -EINVAL;
->                goto err_no_chan;
->        }
-> +       new_fsl_chan->id = *iprop;
-> +
->        fdev->chan[new_fsl_chan->id] = new_fsl_chan;
->        tasklet_init(&new_fsl_chan->tasklet, dma_do_tasklet,
->                        (unsigned long)new_fsl_chan);
-> @@ -988,14 +1003,14 @@ static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
->                        &fdev->common.channels);
->        fdev->common.chancnt++;
->
-> -       new_fsl_chan->irq = irq_of_parse_and_map(dev->node, 0);
-> +       new_fsl_chan->irq = irq_of_parse_and_map(node, 0);
->        if (new_fsl_chan->irq != NO_IRQ) {
->                err = request_irq(new_fsl_chan->irq,
->                                        &fsl_dma_chan_do_interrupt, IRQF_SHARED,
->                                        "fsldma-channel", new_fsl_chan);
->                if (err) {
-> -                       dev_err(&dev->dev, "DMA channel %s request_irq error "
-> -                               "with return %d\n", dev->node->full_name, err);
-> +                       dev_err(fdev->dev, "DMA channel %s request_irq error "
-> +                               "with return %d\n", node->full_name, err);
->                        goto err_no_irq;
->                }
->        }
-> @@ -1004,8 +1019,8 @@ static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
->        if (err)
->                goto err_self_test;
->
-> -       dev_info(&dev->dev, "#%d (%s), irq %d\n", new_fsl_chan->id,
-> -                               match->compatible, new_fsl_chan->irq);
-> +       dev_info(fdev->dev, "#%d (%s), irq %d\n", new_fsl_chan->id,
-> +                               compatible, new_fsl_chan->irq);
->
->        return 0;
->
-> @@ -1016,42 +1031,30 @@ err_no_irq:
->  err_no_chan:
->        iounmap(new_fsl_chan->reg_base);
->  err_no_reg:
-> +       of_device_unregister(new_fsl_chan->of_dev);
-> +err_no_dev:
->        kfree(new_fsl_chan);
->        return err;
->  }
->
-> -const u32 mpc8540_dma_ip_feature = FSL_DMA_IP_85XX | FSL_DMA_BIG_ENDIAN;
-> -const u32 mpc8349_dma_ip_feature = FSL_DMA_IP_83XX | FSL_DMA_LITTLE_ENDIAN;
-> -
-> -static struct of_device_id of_fsl_dma_chan_ids[] = {
-> -       {
-> -               .compatible = "fsl,eloplus-dma-channel",
-> -               .data = (void *)&mpc8540_dma_ip_feature,
-> -       },
-> -       {
-> -               .compatible = "fsl,elo-dma-channel",
-> -               .data = (void *)&mpc8349_dma_ip_feature,
-> -       },
-> -       {}
-> -};
-> -
-> -static struct of_platform_driver of_fsl_dma_chan_driver = {
-> -       .name = "of-fsl-dma-channel",
-> -       .match_table = of_fsl_dma_chan_ids,
-> -       .probe = of_fsl_dma_chan_probe,
-> -};
-> -
-> -static __init int of_fsl_dma_chan_init(void)
-> +static void fsl_dma_chan_remove(struct fsl_dma_chan *fchan)
->  {
-> -       return of_register_platform_driver(&of_fsl_dma_chan_driver);
-> +       if (fchan) {
-> +               of_device_unregister(fchan->of_dev);
-> +
-> +               free_irq(fchan->irq, fchan);
-> +               list_del(&fchan->common.device_node);
-> +               iounmap(fchan->reg_base);
-> +               kfree(fchan);
-> +       }
->  }
-
-removing a NULL fchan should be an error right?  Perhaps move the
-check up to of_fsl_dma_remove().
-
->
->  static int __devinit of_fsl_dma_probe(struct of_device *dev,
->                        const struct of_device_id *match)
->  {
->        int err;
-> -       unsigned int irq;
->        struct fsl_dma_device *fdev;
-> +       struct device_node *child;
->
->        fdev = kzalloc(sizeof(struct fsl_dma_device), GFP_KERNEL);
->        if (!fdev) {
-> @@ -1085,9 +1088,9 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
->        fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
->        fdev->common.dev = &dev->dev;
->
-> -       irq = irq_of_parse_and_map(dev->node, 0);
-> -       if (irq != NO_IRQ) {
-> -               err = request_irq(irq, &fsl_dma_do_interrupt, IRQF_SHARED,
-> +       fdev->irq = irq_of_parse_and_map(dev->node, 0);
-> +       if (fdev->irq != NO_IRQ) {
-> +               err = request_irq(fdev->irq, &fsl_dma_do_interrupt, IRQF_SHARED,
->                                        "fsldma-device", fdev);
->                if (err) {
->                        dev_err(&dev->dev, "DMA device request_irq error "
-> @@ -1097,7 +1100,21 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
->        }
->
->        dev_set_drvdata(&(dev->dev), fdev);
-> -       of_platform_bus_probe(dev->node, of_fsl_dma_chan_ids, &dev->dev);
-> +
-> +       /* We cannot use of_platform_bus_probe() because there is no
-> +        * of_platform_bus_remove.  We have to manually instantiate every DMA
-> +        * channel object.
-> +        */
-> +       for_each_child_of_node(dev->node, child) {
-> +               if (of_device_is_compatible(child, "fsl,eloplus-dma-channel"))
-> +                       fsl_dma_chan_probe(fdev, child,
-> +                               FSL_DMA_IP_85XX | FSL_DMA_BIG_ENDIAN,
-> +                               "fsl,eloplus-dma-channel");
-> +               if (of_device_is_compatible(child, "fsl,elo-dma-channel"))
-> +                       fsl_dma_chan_probe(fdev, child,
-> +                               FSL_DMA_IP_83XX | FSL_DMA_LITTLE_ENDIAN,
-> +                               "fsl,elo-dma-channel");
-> +       }
->
->        dma_async_device_register(&fdev->common);
->        return 0;
-> @@ -1109,6 +1126,31 @@ err_no_reg:
->        return err;
->  }
->
-> +static int of_fsl_dma_remove(struct of_device *of_dev)
-> +{
-> +       struct fsl_dma_device *fdev;
-> +       unsigned int i;
-> +
-> +       fdev = dev_get_drvdata(&of_dev->dev);
-> +
-> +       dma_async_device_unregister(&fdev->common);
-> +
-> +       for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
-> +               fsl_dma_chan_remove(fdev->chan[i]);
-> +               fdev->chan[i] = NULL;
-> +       }
-> +
-> +       if (fdev->irq != NO_IRQ)
-> +               free_irq(fdev->irq, fdev);
-> +
-> +       iounmap(fdev->reg_base);
-> +
-> +       kfree(fdev);
-> +       dev_set_drvdata(&of_dev->dev, NULL);
-> +
-> +       return 0;
-> +}
-> +
->  static struct of_device_id of_fsl_dma_ids[] = {
->        { .compatible = "fsl,eloplus-dma", },
->        { .compatible = "fsl,elo-dma", },
-> @@ -1116,15 +1158,32 @@ static struct of_device_id of_fsl_dma_ids[] = {
->  };
->
->  static struct of_platform_driver of_fsl_dma_driver = {
-> -       .name = "of-fsl-dma",
-> +       .name = "fsl-elo-dma",
->        .match_table = of_fsl_dma_ids,
->        .probe = of_fsl_dma_probe,
-> +       .remove = of_fsl_dma_remove,
->  };
->
->  static __init int of_fsl_dma_init(void)
->  {
-> -       return of_register_platform_driver(&of_fsl_dma_driver);
-> +       int ret;
-> +
-> +       pr_info("Freescale Elo / Elo Plus DMA driver\n");
-> +
-> +       ret = of_register_platform_driver(&of_fsl_dma_driver);
-> +       if (ret)
-> +               pr_err("fsldma: failed to register platform driver\n");
-> +
-> +       return ret;
-> +}
-> +
-> +static void __exit of_fsl_dma_exit(void)
-> +{
-> +       of_unregister_platform_driver(&of_fsl_dma_driver);
->  }
->
-> -subsys_initcall(of_fsl_dma_chan_init);
->  subsys_initcall(of_fsl_dma_init);
-> +module_exit(of_fsl_dma_exit);
-> +
-> +MODULE_DESCRIPTION("Freescale Elo / Elo Plus DMA driver");
-> +MODULE_LICENSE("GPL");
-> diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-> index 6faf07b..e0902dd 100644
-> --- a/drivers/dma/fsldma.h
-> +++ b/drivers/dma/fsldma.h
-> @@ -114,6 +114,7 @@ struct fsl_dma_device {
->        struct dma_device common;
->        struct fsl_dma_chan *chan[FSL_DMA_MAX_CHANS_PER_DEVICE];
->        u32 feature;            /* The same as DMA channels */
-> +       int irq;                /* Channel IRQ */
->  };
->
->  /* Define macros for fsl_dma_chan->feature property */
-> @@ -135,6 +136,7 @@ struct fsl_dma_chan {
->        struct dma_chan common;         /* DMA common channel */
->        struct dma_pool *desc_pool;     /* Descriptors pool */
->        struct device *dev;             /* Channel device */
-> +       struct of_device *of_dev;       /* OF device */
->        struct resource reg;            /* Resource for register */
->        int irq;                        /* Channel IRQ */
->        int id;                         /* Raw id of this channel */
-> --
-> 1.5.5
->
+RnJvbSAxNGY4ZGU5YjM5ODVmMWI1OGY5OWRlZTNlMzJiNDk2OWFmOGM2NjkzIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+CkRh
+dGU6IFNhdCwgMjAgU2VwIDIwMDggMTM6NTE6MDEgLTA3MDAKU3ViamVjdDogW1BBVENIIDA2LzI1
+XSBwY2k6IGR1bXAgcGNpIGNvbmZpZyBzcGFjZSBiZWZvcmUgbG9hZGluZyBkcml2ZXIKCnRyeSB0
+byBmaWd1cmUgb3V0IHdoeSBnZXQgZXh0cmEgaXJxIHRoYXQgY29uZnVzaW5nIHRoZSBkcml2ZXJz
+LgoKYW5kIHNvbWV0aW1lIHBjaT1lYXJseWR1bXAgZG9lc24ndCBkdW1wIHNvbWUgZGV2aWNlLCBi
+ZWNhdXNlIGxhdGUgcXVpcmtzCnVuaGlkZSBzb21lIHBjaSBkZXZpY2VzLi4uCgpTaWduZWQtb2Zm
+LWJ5OiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+Ci0tLQogZHJpdmVycy9wY2kv
+cGNpLmMgfCAgIDQ0ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+CiAxIGZpbGVzIGNoYW5nZWQsIDQ0IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pCgpkaWZm
+IC0tZ2l0IGEvZHJpdmVycy9wY2kvcGNpLmMgYi9kcml2ZXJzL3BjaS9wY2kuYwppbmRleCBhOTMw
+MWEyLi45ZWQwMTg3IDEwMDY0NAotLS0gYS9kcml2ZXJzL3BjaS9wY2kuYworKysgYi9kcml2ZXJz
+L3BjaS9wY2kuYwpAQCAtMjcsNiArMjcsOCBAQCB1bnNpZ25lZCBpbnQgcGNpX3BtX2QzX2RlbGF5
+ID0gMTA7CiBpbnQgcGNpX2RvbWFpbnNfc3VwcG9ydGVkID0gMTsKICNlbmRpZgogCitzdGF0aWMg
+aW50IHBjaV9kdW1wX3JlZ3MgPSAwOworCiAjZGVmaW5lIERFRkFVTFRfQ0FSREJVU19JT19TSVpF
+CQkoMjU2KQogI2RlZmluZSBERUZBVUxUX0NBUkRCVVNfTUVNX1NJWkUJKDY0KjEwMjQqMTAyNCkK
+IC8qIHBjaT1jYm1lbXNpemU9bm5NLGNiaW9zaXplPW5uIGNhbiBvdmVycmlkZSB0aGlzICovCkBA
+IC0xODcxLDYgKzE4NzMsNDMgQEAgc3RhdGljIHZvaWQgX19kZXZpbml0IHBjaV9ub19kb21haW5z
+KHZvaWQpCiAjZW5kaWYKIH0KIAorc3RhdGljIHZvaWQgX19kZXZpbml0IHBjaV9kdW1wKHZvaWQp
+Cit7CisJcGNpX2R1bXBfcmVncyA9IDE7Cit9CisKK3N0YXRpYyB2b2lkIGR1bXBfcGNpX2Rldmlj
+ZV9yYW5nZShzdHJ1Y3QgcGNpX2RldiAqZGV2LCB1bnNpZ25lZCBzdGFydF9yZWcsIHVuc2lnbmVk
+IHNpemUpCit7CisgICAgICAgIGludCBpOworICAgICAgICBpbnQgajsKKwl1MzIgdmFsOworICAg
+ICAgICBpbnQgZW5kID0gc3RhcnRfcmVnICsgc2l6ZTsKKworCXByaW50aygiUENJOiAlcyIsIHBj
+aV9uYW1lKGRldikpOworCisgICAgICAgIGZvciAoaSA9IHN0YXJ0X3JlZzsgaSA8IGVuZDsgaSAr
+PSA0KSB7CisgICAgICAgICAgICAgICAgaWYgKCEoaSAmIDB4MGYpKQorICAgICAgICAgICAgICAg
+ICAgICAgICAgcHJpbnRrKCJcbiUwNHg6IixpKTsKKworICAgICAgICAgICAgICAgIHBjaV9yZWFk
+X2NvbmZpZ19kd29yZChkZXYsIGksICZ2YWwpOworICAgICAgICAgICAgICAgIGZvciAoaiA9IDA7
+IGogPCA0OyBqKyspIHsKKyAgICAgICAgICAgICAgICAgICAgICAgIHByaW50aygiICUwMngiLCB2
+YWwgJiAweGZmKTsKKyAgICAgICAgICAgICAgICAgICAgICAgIHZhbCA+Pj0gODsKKyAgICAgICAg
+ICAgICAgICB9CisgICAgICAgIH0KKyAgICAgICAgcHJpbnRrKCJcbiIpOworfQorCitzdGF0aWMg
+aW50IGR1bXBfcGNpX2RldmljZXModm9pZCkKK3sKKwlzdHJ1Y3QgcGNpX2RldiAqZGV2ID0gTlVM
+TDsKKworCXdoaWxlICgoZGV2ID0gcGNpX2dldF9kZXZpY2UoUENJX0FOWV9JRCwgUENJX0FOWV9J
+RCwgZGV2KSkgIT0gTlVMTCkgeworCQlkdW1wX3BjaV9kZXZpY2VfcmFuZ2UoZGV2LCAwLCBkZXYt
+PmNmZ19zaXplKTsKKwl9CisJcmV0dXJuIDA7Cit9CisKIHN0YXRpYyBpbnQgX19kZXZpbml0IHBj
+aV9pbml0KHZvaWQpCiB7CiAJc3RydWN0IHBjaV9kZXYgKmRldiA9IE5VTEw7CkBAIC0xODc4LDYg
+KzE5MTcsOSBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBwY2lfaW5pdCh2b2lkKQogCXdoaWxlICgo
+ZGV2ID0gcGNpX2dldF9kZXZpY2UoUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgZGV2KSkgIT0gTlVM
+TCkgewogCQlwY2lfZml4dXBfZGV2aWNlKHBjaV9maXh1cF9maW5hbCwgZGV2KTsKIAl9CisKKwlp
+ZiAocGNpX2R1bXBfcmVncykKKwkJZHVtcF9wY2lfZGV2aWNlcygpOwogCXJldHVybiAwOwogfQog
+CkBAIC0xODk0LDYgKzE5MzYsOCBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBwY2lfc2V0dXAoY2hh
+ciAqc3RyKQogCQkJCXBjaV9ub19hZXIoKTsKIAkJCX0gZWxzZSBpZiAoIXN0cmNtcChzdHIsICJu
+b2RvbWFpbnMiKSkgewogCQkJCXBjaV9ub19kb21haW5zKCk7CisJCQl9IGVsc2UgaWYgKCFzdHJj
+bXAoc3RyLCAiZHVtcCIpKSB7CisJCQkJcGNpX2R1bXAoKTsKIAkJCX0gZWxzZSBpZiAoIXN0cm5j
+bXAoc3RyLCAiY2Jpb3NpemU9IiwgOSkpIHsKIAkJCQlwY2lfY2FyZGJ1c19pb19zaXplID0gbWVt
+cGFyc2Uoc3RyICsgOSwgJnN0cik7CiAJCQl9IGVsc2UgaWYgKCFzdHJuY21wKHN0ciwgImNibWVt
+c2l6ZT0iLCAxMCkpIHsKLS0gCjEuNS42Cgo=
+------=_Part_57638_33051216.1221946548309--
