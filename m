@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbYITGPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYITGRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753075AbYITGPZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 02:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbYITGPO
+	id S1753196AbYITGRU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 02:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYITGRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 02:15:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57828 "EHLO mx3.mail.elte.hu"
+	Sat, 20 Sep 2008 02:17:12 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32941 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbYITGPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 02:15:13 -0400
-Date: Sat, 20 Sep 2008 08:14:57 +0200
+	id S1750802AbYITGRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 02:17:11 -0400
+Date: Sat, 20 Sep 2008 08:16:59 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Valdis.Kletnieks@vt.edu, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: c1e_idle: don't mark TSC unstable if CPU has
-	invariant TSC
-Message-ID: <20080920061457.GE25713@elte.hu>
-References: <20080918191210.GD23287@alberich.amd.com> <27087.1221766532@turing-police.cc.vt.edu> <20080919172019.GA16896@alberich.amd.com>
+To: Steven Noonan <steven@uplinklabs.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip FIXED] ftrace: add nop tracer
+Message-ID: <20080920061659.GF25713@elte.hu>
+References: <1221818803-9616-1-git-send-email-steven@uplinklabs.net> <20080919142326.29834d11.akpm@linux-foundation.org> <f488382f0809191635o45f3ed17vc23380eab41b2878@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080919172019.GA16896@alberich.amd.com>
+In-Reply-To: <f488382f0809191635o45f3ed17vc23380eab41b2878@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,17 +34,41 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+* Steven Noonan <steven@uplinklabs.net> wrote:
 
-> Currently the kernel assumes TSC is stable and there are various 
-> places where Linux might spot when TSC is unstable. c1e_idle is one 
-> such place. But it's wrong to mark TSC unstable for all AMD CPUs in 
-> this function as newer CPU families have TSC's that are P- and C-state 
-> invariant.
+> On Fri, Sep 19, 2008 at 2:23 PM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> > On Fri, 19 Sep 2008 03:06:43 -0700
+> > Steven Noonan <steven@uplinklabs.net> wrote:
+> >
+> >> --- a/kernel/trace/trace.h
+> >> +++ b/kernel/trace/trace.h
+> >> @@ -339,6 +339,10 @@ extern int trace_selftest_startup_preemptirqsoff(struct tracer *trace,
+> >>  extern int trace_selftest_startup_wakeup(struct tracer *trace,
+> >>                                        struct trace_array *tr);
+> >>  #endif
+> >> +#ifdef CONFIG_NOP_TRACER
+> >> +extern int trace_selftest_startup_nop(struct tracer *trace,
+> >> +                                      struct trace_array *tr);
+> >> +#endif
+> >>  #ifdef CONFIG_CONTEXT_SWITCH_TRACER
+> >>  extern int trace_selftest_startup_sched_switch(struct tracer *trace,
+> >>                                              struct trace_array *tr);
+> >
+> > Consider omitting the ifdefs around the declarations.
+> >
+> > pro: the code looks nicer and is less likely to suffer build errors
+> > with weird config combinations.
+> >
+> > con: build errors are reported at link-time rather than at compile-time.
+> >
+> > Personally, I think pro>con here.
+> >
+> 
+> I merely based this on one of the other tracers, so the ifdefs are
+> basically copied and renamed.
 
-i agree with the purpose of the patch (as it flags the first really sane 
-TSC implementation on x86!!!) - but it would be nice to indicate this in 
-a different CPU feature bit other than X86_FEATURE_CONSTANT_TSC, to 
-reduce confusion. Perhaps introduce a virtual CPU feature bit for that?
+yeah. Feel free to send a separate patch that implements Andrew's 
+clean-up suggestion. I agree that pro>con.
 
 	Ingo
