@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbYITXAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752492AbYITXBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbYITXAv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 19:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYITXAn
+	id S1752492AbYITXBK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 19:01:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYITXAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 19:00:43 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:23711 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751510AbYITXAm (ORCPT
+	Sat, 20 Sep 2008 19:00:48 -0400
+Received: from shells.gnugeneration.com ([66.240.222.126]:54551 "HELO
+	shells.gnugeneration.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752789AbYITXAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 19:00:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Ew7mSAw+X+e0cCsHDR20tQXwprNF6kdbqMquA9/t6TbZOGiGXbtuiWoiuQz9dRuKrt
-         sjvhatAe/u941c9MmPskfXpal5tgL/RMcqEleXWkf40Pwr6RUdNzDGowjFsWscUqglEt
-         Js0AomK+Ea3YgFWmGd8hGNNuXaXm/rZodJRBg=
-Message-ID: <e9c3a7c20809201600s3862da7qaab4a917220778e9@mail.gmail.com>
-Date: Sat, 20 Sep 2008 16:00:40 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: dmaengine.c: question about device_alloc_chan_resources
-Cc: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <48D3B880.3070607@freescale.com>
+	Sat, 20 Sep 2008 19:00:47 -0400
+Date: Sat, 20 Sep 2008 18:00:46 -0500
+From: lkml@pengaru.com
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Honoring SO_RCVLOWAT in proto_ops.poll methods
+Message-ID: <20080920230046.GQ2761@fc6222126.aspadmin.net>
+References: <20080920214229.GP2761@fc6222126.aspadmin.net> <20080920.152140.193698477.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48D02589.8070601@freescale.com>
-	 <e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
-	 <ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>
-	 <20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>
-	 <48D2664D.7040204@freescale.com>
-	 <20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com>
-	 <e9c3a7c20809182120r5e056dd7h170959dc1171af84@mail.gmail.com>
-	 <20080919132544.533ab7d0@hskinnemo-gx745.norway.atmel.com>
-	 <48D3B880.3070607@freescale.com>
-X-Google-Sender-Auth: e05af9ea41b9b75d
+In-Reply-To: <20080920.152140.193698477.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 7:34 AM, Timur Tabi <timur@freescale.com> wrote:
-> Haavard Skinnemoen wrote:
->
->> Yes, or maybe provide an interface for simply requesting a channel
->> without having to register any callbacks.
->
-> I could use this feature.  The sound drivers for our MPC8610 processor use DMA,
-> but the drivers need to control the DMA hardware directly, so I can't use
-> dmaengine.  I would like to be able to just reserve the channels and program
-> them as I see fit.
->
+On Sat, Sep 20, 2008 at 03:21:40PM -0700, David Miller wrote:
+> From: lkml@pengaru.com
+> Date: Sat, 20 Sep 2008 16:42:29 -0500
+> 
+> > I have a need for select/poll/epoll_wait to block on sockets which have
+> > unread data sitting in the receive buffer with a quantity less than
+> > specified via setsockopt() w/SO_RCVLOWAT, not less than one like the
+> > current implementation.
+> 
+> If BSD never provided this behavior, such a change is likely
+> to break applications.
 
-I think its a good idea especially since it would be best not to
-needlessly proliferate client implementations with competing channel
-allocation schemes.  However it would need to be more descriptive
-than:
+I did a quick look through FreeBSD source on fxr and found this macro:
+http://fxr.watson.org/fxr/source/sys/socketvar.h#L197
 
-struct dma_chan *dma_request_channel(dma_cap_mask_t request_mask);
+Which is used by the generic socket poll here:
+http://fxr.watson.org/fxr/source/kern/uipc_socket.c#L2731
 
-Why:
-1/  What if the requester initializes before a dmaengine device has
-been registered?  What if a device is never registered?
-2/ What about platform specific concerns where dma_cap_mask_t is not
-descriptive enough e.g. only one memcpy channel can address a certain
-bus?  Currently a client implementation can have some intelligence to
-return DMA_DUP for channels that do not have the platform capability.
+You can look throughout that listing and so_rcv.sb_lowat is always what
+is compared against for determining rcv buf readability.
+
+You might also want to look at the socket(7) man page which implies that
+what Linux currently does is exceptional & incorrect:
+
+       SO_RCVLOWAT and SO_SNDLOWAT
+              Specify the minimum number of bytes in  the  buffer  until
+              the  socket  layer  will  pass  the  data  to the protocol
+              (SO_SNDLOWAT) or  the  user  on  receiving  (SO_RCVLOWAT).
+              These two values are initialised to 1.  SO_SNDLOWAT is not
+              changeable on Linux (setsockopt fails with the error  ENO-
+              PROTOOPT).   SO_RCVLOWAT  is  changeable  only since Linux
+              2.4.  The select(2) and poll(2) system calls currently  do
+              not  respect  the SO_RCVLOWAT setting on Linux, and mark a
+              socket readable when even a single byte of data is  avail-
+              able.   A subsequent read from the socket will block until
+              SO_RCVLOWAT bytes are available.
 
 
-At the very least clients should be allowed to set an 'exclusive' bit
-to prevent the channel from leaking elsewhere.
-
---
-Dan
+Regards,
+Vito Caputo
