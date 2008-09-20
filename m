@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbYITTM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbYITUAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbYITTM2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 15:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbYITTMU
+	id S1753066AbYITUAU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 16:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYITUAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 15:12:20 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59221 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbYITTMT (ORCPT
+	Sat, 20 Sep 2008 16:00:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50387
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751112AbYITUAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 15:12:19 -0400
-Date: Sat, 20 Sep 2008 12:12:21 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org,
-       tglx@tglx.de
-Subject: Re: What's in range-hrtimer.git for 2.6.28
-Message-ID: <20080920121221.1ad04226@infradead.org>
-In-Reply-To: <20080920110343.6b68876c@infradead.org>
-References: <20080920110343.6b68876c@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Sat, 20 Sep 2008 16:00:03 -0400
+Date: Sat, 20 Sep 2008 12:59:49 -0700 (PDT)
+Message-Id: <20080920.125949.193703969.davem@davemloft.net>
+To: dwalker@mvista.com
+Cc: arjan@infradead.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com, steffen.klassert@secunet.com
+Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1221932404.1343.196.camel@localhost.localdomain>
+References: <1221926529.1343.140.camel@localhost.localdomain>
+	<20080920091918.0ffaef8c@infradead.org>
+	<1221932404.1343.196.camel@localhost.localdomain>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Sep 2008 11:03:43 -0700
-Arjan van de Ven <arjan@infradead.org> wrote:
+From: Daniel Walker <dwalker@mvista.com>
+Date: Sat, 20 Sep 2008 10:40:04 -0700
 
+> Dave didn't supply the users of his code, or what kind of improvement
+> was seen, or the case in which it would be needed. I think Dave knowns
+> his subsystem, but the code on the surface looks like an end run around
+> some other problem area..
 
-turns out I made the Subject of the mail confusing; this is ONLY for
-the range-hrtimer feature tree and isn't about Thomas' hrtimer.git tree.
+I posted an example use case on netdev a few days ago, and
+the block layer example is in Jen's block layer tree.
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+It's for networking cards that don't do flow seperation on
+receive using multiple RX queues and MSI-X interrupts.  It's
+also for things like IPSEC where the per-packet cpu usage
+is so huge (to do the crypto) that it makes sense to even
+split up the work to multiple cpus within the same flow.
