@@ -1,67 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbYITEx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbYITFUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753186AbYITEx1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 00:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbYITExT
+	id S1751805AbYITFUB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 01:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbYITFTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 00:53:19 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58078 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750790AbYITExS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 00:53:18 -0400
-Date: Sat, 20 Sep 2008 06:52:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] fastboot: fix mismerged conflict in init/main.c
-Message-ID: <20080920045258.GA16047@elte.hu>
-References: <20080919194215.12fe4c75@infradead.org> <20080919215014.37e2196d@infradead.org>
+	Sat, 20 Sep 2008 01:19:52 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:37798 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbYITFTv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 01:19:51 -0400
+Message-ID: <48D48789.8000606@linux.vnet.ibm.com>
+Date: Fri, 19 Sep 2008 22:18:01 -0700
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080919215014.37e2196d@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Hirokazu Takahashi <taka@valinux.co.jp>, righi.andrea@gmail.com,
+       dm-devel@redhat.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, agk@sourceware.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       jens.axboe@oracle.com, fernando@oss.ntt.co.jp, xemul@openvz.org
+Subject: Re: [dm-devel] Re: dm-ioband + bio-cgroup benchmarks
+References: <48D267B5.20402@gmail.com> <20080918150634.GH20640@redhat.com> <48D2715A.6060002@gmail.com> <20080919.123405.91829935.taka@valinux.co.jp> <20080920132703.e74c8f89.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080920132703.e74c8f89.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KAMEZAWA Hiroyuki wrote:
+> On Fri, 19 Sep 2008 12:34:05 +0900 (JST)
+> Hirokazu Takahashi <taka@valinux.co.jp> wrote:
+> 
+>> I've decided to get Ryo to post the accurate dirty-page tracking patch
+>> for bio-cgroup, which isn't perfect yet though. The memory controller
+>> never wants to support this tracking because migrating a page between
+>> memory cgroups is really heavy.
+>>
+>> I also thought enhancing the memory controller would be good enough,
+>> but a lot of people said they wanted to control memory resource and
+>> block I/O resource separately.
+>> So you can create several bio-cgroup in one memory-cgroup,
+>> or you can use bio-cgroup without memory-cgroup.
+>>
+>> I also have a plan to implement more acurate tracking mechanism
+>> on bio-cgroup after the memory cgroup team re-implement the infrastructure,
+>> which won't be supported by memory-cgroup.
+>> When a process are moved into another memory cgroup,
+>> the pages belonging to the process don't move to the new cgroup
+>> because migrating pages is so heavy. It's hard to find the pages
+>> from the process and migrating pages may cause some memory pressure.
+>> I'll implement this feature only on bio-cgroup with minimum overhead
+>>
+> I really would like to move page_cgroup to new cgroup when the process moves...
+> But it's just in my plan and I'm not sure I can do it or not.
+> 
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+Kamezawa-San, I am not dead against it, but I would provide a knob/control point
+for system administrator to decide if movement is important for applications,
+then let them do so (like force_empty).
 
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Subject: [PATCH] fastboot: fix mismerged conflict in init/main.c
-> 
-> ok turns out it was a real conflict, not a mismerge. I've just fixed it
-> and pushed out my git tree.
-> 
-> The following changes since commit
-> 77e9695b9d5c9ce761dedc193045d9cb64b8e245: Arjan van de Ven (1):
->         Add a script to visualize the kernel boot process / time
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-fastboot.git
-> master
-> 
-> Arjan van de Ven (2):
->       fastboot: fix issues and improve output of bootgraph.pl
->       use the fancy new printk flags to print the function pointer
-> 
-> Arnaud Patard (1):
->       fastboot: Fix bootgraph.pl initcall name regexp
-> 
->  init/main.c          |    8 +++-----
->  scripts/bootgraph.pl |   33 +++++++++++++++++++++------------
->  2 files changed, 24 insertions(+), 17 deletions(-)
+> Anyway what's next for me is
+>  1. fix current discussion to remove page->page_cgroup pointer.
+>  2. reduce locks.
 
-pulled into tip/fastboot, thanks Arjan!
+Are you planning on reposting these. I've been trying other approaches at my end
 
-	Ingo
+1. Use radix tree per-node per-zone
+2. Use radix trees only for 32 bit systems
+3. Depend on CONFIG_HAVE_MEMORY_PRESENT and build a sparse data structure and
+use pre-allocation
+
+I've posted (1) and I'll take a look at your patches as well
+
+>  3. support swap and swap-cache.
+> 
+> I think algorithm for (1), (2) is now getting smart.
+> 
+
+Yes, it is getting better
+
+> Thanks,
+> -Kame
+> 
+
+
+-- 
+	Balbir
