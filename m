@@ -1,98 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbYITLok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYITMDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753447AbYITLok (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 07:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYITLod
+	id S1753456AbYITMDf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 08:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbYITMD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 07:44:33 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:56811 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751191AbYITLod (ORCPT
+	Sat, 20 Sep 2008 08:03:27 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:50162 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751359AbYITMD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 07:44:33 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiMFAGZ+1EhMQWq+/2dsb2JhbACBXbRngWU
-Date: Sat, 20 Sep 2008 07:44:28 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Martin Bligh <mbligh@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, od@novell.com,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: Unified tracing buffer
-Message-ID: <20080920114427.GC10800@Krystal>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <20080919144258.ac787fdf.randy.dunlap@oracle.com> <33307c790809191457y3ebffa28xa6d9ab6431554618@mail.gmail.com> <alpine.DEB.1.10.0809200424050.9362@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 20 Sep 2008 08:03:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=rgf8xuhBk4u3SFykMii8cY8LjRAqRjAFIaxESb99OGaKpfFLMV7jBeFqY+NxO2J0Eb
+         ayAiAH6aCwIyrSQN9BxMO2+yhLyMczVQR4MmPpyWEtjyAbLt5jJdCY4Bz818R3w8JPu+
+         P4bq2E2LyXILcaIgdQbRHMj4qwbzf3kMVTrVo=
+Message-ID: <48D4E685.8030801@gmail.com>
+Date: Sat, 20 Sep 2008 15:03:17 +0300
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: I need some serious help to debug suspend to ram problem
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0809200424050.9362@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 07:41:51 up 107 days, 16:22,  5 users,  load average: 3.44, 2.59,
-	1.92
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> 
-> On Fri, 19 Sep 2008, Martin Bligh wrote:
-> 
-> > >> Event ids are 16 bit, dynamically allocated.
-> > >
-> > > What are these (like)?
-> > 
-> > u16
-> > 
-> > Sorry, probably lots of implicit assumptions in there that I forgot to explain
-> > 
-> > > Arch-specific "word"?
-> > > or some fixed-size-for-all-systems (so that trace buffers can be
-> > > shared/used on other systems?)  Preferably the latter.
-> > 
-> > Mmmm. I don't see anything wrong with making it just 8 byte aligned, personally.
-> > Steven - this was your thing?
-> 
-> I'm fine with 8 byte aligned for all.
-> 
-> > 
-> > >> Variable record length, header will start with length record.
-> > >> Timestamps in fixed timebase, monotonically increasing (across all CPUs)
-> > >
-> > > what timestamp resolution?
-> > 
-> > ns is probably sufficient for output, but may need to be higher
-> > internally to get
-> > correct ordering of events across CPUs. So, as long as we record this in
-> > the buffer header, the internal resolution shouldn't be critical. The text
-> > print output ... I'd say ns? We can put it relative to wall time in there,
-> > as long as we record it in the buffer header at trace start. I guess we should
-> > document the buffer header ;-)
-> > 
-> 
-> ftrace has two outputs. One is ns from start of boot, the other is ns from 
-> start of trace. Not sure we need to make wall time in there, unless we add 
-> it in the trace header (as you stated). Probably best for Version #2.
-> 
-> -- Steve
-> 
+Hi,
 
-For simplicity and efficiency, I would try to keep the timestamp
-recorded for every event as close as what we are reading from the
-hardware without manipulation. We can save the timestamp value at the
-beginning of the trace (in the buffer header) and we can also save the
-scaling value in the same header so we can transform stuff like cycle
-counts into ns, ps from boot time or from trace start when we
-pretty-print.
+I hit a dead end when trying to understand 
+why my notebook can't resume from suspend to ram
+if this is done two times a row.
 
-Mathieu
+Single suspend/resume cycle works almost perfectly 
+(beep that goes through the sound card is muted... 
+no morse code for me... :-(
+
+)
+
+I compiled a minimal kernel (absolutely nothing but disk drivers, all experimental option like nohz
+turned off)
+
+But I had to turn SMP, since without it system won't resume first time I suspend it.
+(How could this affect suspend?)
 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+With SMP and minimal kernel (of course  no closed drivers), I get same behavior, first resume works
+second hangs.
+
+I then added some debug code to real mode wakeup code, I put there in first place instructions, that will save some magic value to rtc (to alarm registers that I know are preserved during boot cycle), and I discovered 
+sad thing that first time bios does pass control to linux, but second time (when it hangs), it doesn't.
+
+
+I tried to update bios, and I got same results.
+
+Of course it does work with that @#$%^& OS
+
+
+I then proceeded to test recently posted low memory corruption patch, and it did show that that @#$%^& BIOS does corrupt low memory
+I then reserved all low memory, but system began to hand after first suspend, in exactly same way, but as expected I soon discovered,
+that that forces real mode page to be above 1M, ok, then I reserved almost all low memory except 100K window in the middle, so low allocations will work, but be placed in region bios less likely to corrupt, and still that didn't help, still same hang.
+
+
+You did face lot of such situations, so maybe you know about anything I can do.
+
+System is ACER aspire 5720G.
+
+I now use 2.6.27-rc5, but same did happen on 2.6.26, and if I remember correctly 2.6.25.
+(I bought this system in April and installed linux during first day)
+I installed hardy there)
+
+
+
+Note: I do use nvidia drivers, and without them display stays dark after resume, BUT, this bug is unrelated,
+while screen is dark, system does work, I can see hdd led blinking when I issue commands, I can turn system off, suspend again (and get hard hang of resume...), I even stored dmesg after first suspend without nvidia driver, and there are no errors
+(except that EC storm , which is harmless here (I tried  patches that fix it, but they didn't affect this suspend bug)
+
+All tests were done without nvidia driver.
+
+I would be very glad if you tell me any suggestions how to fix/debug that thing.
+
+And lastly, suggestion to everybody:
+
+NEVER BUY ACER LAPTOPS, THEY ARE JUST BROKEN
+
+Best regards,
+	Maxim Levitsky
