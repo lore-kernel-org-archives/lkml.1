@@ -1,118 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbYITVf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbYITVic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854AbYITVf6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 17:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYITVfu
+	id S1753366AbYITVic (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 17:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYITViY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 17:35:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:7100 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751470AbYITVfs (ORCPT
+	Sat, 20 Sep 2008 17:38:24 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51021 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbYITViX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 17:35:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=P0KlUaiu/mjTlhfNsbYN4hyN9oByGg1mGSu51hgPkyu3meXIKyQyO5pX0pzNn3bNRh
-         8Dgy7wAoJE4qsHIv/LYub9GvKPG4S7f4LlmR4ZOgHAYxoBN/5l7+gCJC+mX7/Gzy6dCa
-         BuaNMEGYBBCoQYuZsnw6EX5j78/U/EJryKEOM=
-Message-ID: <86802c440809201435l6fdb7c90u59b6b816efb7f2f6@mail.gmail.com>
-Date: Sat, 20 Sep 2008 14:35:48 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Chris Li" <lkml@chrisli.org>
-Subject: Re: irq 19: nobody cared
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <70318cbf0809191532n6ebaa122v7d98815c8a65850b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_57638_33051216.1221946548309"
-References: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com>
-	 <86802c440809191350h21327c76l55d2134d7667f5d0@mail.gmail.com>
-	 <70318cbf0809191413v70c49eccq9ed16ae50864a1a5@mail.gmail.com>
-	 <86802c440809191457g19e2cbbeo26aa3dff613b057f@mail.gmail.com>
-	 <70318cbf0809191532n6ebaa122v7d98815c8a65850b@mail.gmail.com>
+	Sat, 20 Sep 2008 17:38:23 -0400
+Subject: Re: oltp ~10% regression with 2.6.27-rc5 on stoakley machine
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, mingo <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <1220518266.9590.22.camel@minggr>
+References: <1220518266.9590.22.camel@minggr>
+Content-Type: text/plain
+Date: Sat, 20 Sep 2008 23:38:02 +0200
+Message-Id: <1221946683.19227.4.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_57638_33051216.1221946548309
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> 
+> ------- Comment #4 from ming.m.lin@intel.com  2008-09-17 17:55 -------
+> sched_switch trace of oltp in 2.6.27-rc4
+> http://myfreefilehosting.com/f/fc6c8eaacf_1.31MB
+> 
+> sched_switch trace of oltp in 2.6.27-rc5
+> http://myfreefilehosting.com/f/a2f9aea1b0_0.42MB
+> 
+> Compared the 2 trace files, you can find that (at most time),
+> with 2.6.27-rc5, mysql switches to sysbench when it's going to sleep
+>           mysqld-3791  [07]   151.421836:   3791:120:R   +  3803:120:S
+>           mysqld-3791  [07]   151.421876:   3791:120:S ==>  3803:120:R
+>         sysbench-3803  [07]   151.421878:   3803:120:R   +  3791:120:S
+>         sysbench-3803  [07]   151.421887:   3803:120:S ==>  3791:120:R
+> 
+> with 2.6.27-rc4, mysql switches to sysbench when it's still running
+>           mysqld-3674  [07]    95.960220:   3674:120:R   +  3687:120:S
+>           mysqld-3674  [07]    95.960220:   3674:120:R ==>  3687:120:R
+>         sysbench-3687  [07]    95.960220:   3687:120:S ==>  3674:120:R
+> 
+> So with 2.6.27-rc5, sysbench wakes up mysql and then switches to it (mysql is
+> in sleep state)
+> 
+> With 2.6.27-rc4, sysbench switches to mysql, no need to wake up it (mysql is
+> still in running state)
 
-On Fri, Sep 19, 2008 at 3:32 PM, Chris Li <lkml@chrisli.org> wrote:
-> On Fri, Sep 19, 2008 at 2:57 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->>
->> 0x1a.2
->> 0x1d.1
->> 0x1f.2
->> 0x1f.5
->>
->> are sharing pin 0x19...
->>
->> but early dump can not find 0x1a.2, 0x1f.2, 0x1f.5
->
-> But later kernel does able to find those devices. Do you mean
-> there is a bug in the early PCI scanning?
->
+Ming, how does this work for you?
 
-please apply attached patch and boot with pci=dump
+---
+Subject: sched: wakeup preempt when small overlap
 
-YH
+Aggresively preempt a task if its avg overlap is very small, this should
+avoid the task going to sleep and find it still running when we schedule
+back to it - saving a wakeup.
 
-------=_Part_57638_33051216.1221946548309
-Content-Type: text/x-patch;
- name=0006-pci-dump-pci-config-space-before-loading-driver.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_flcrbwjq0
-Content-Disposition: attachment;
- filename=0006-pci-dump-pci-config-space-before-loading-driver.patch
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 7b4592c..cb44774 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -897,7 +897,7 @@ struct sched_class {
+ 	void (*yield_task) (struct rq *rq);
+ 	int  (*select_task_rq)(struct task_struct *p, int sync);
+ 
+-	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p);
++	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p, int sync);
+ 
+ 	struct task_struct * (*pick_next_task) (struct rq *rq);
+ 	void (*put_prev_task) (struct rq *rq, struct task_struct *p);
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 32d56d6..e17d506 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -609,9 +609,9 @@ struct rq {
+ 
+ static DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
+ 
+-static inline void check_preempt_curr(struct rq *rq, struct task_struct *p)
++static inline void check_preempt_curr(struct rq *rq, struct task_struct *p, int sync)
+ {
+-	rq->curr->sched_class->check_preempt_curr(rq, p);
++	rq->curr->sched_class->check_preempt_curr(rq, p, sync);
+ }
+ 
+ static inline int cpu_of(struct rq *rq)
+@@ -2299,7 +2299,7 @@ out_activate:
+ 
+ out_running:
+ 	trace_sched_wakeup(rq, p);
+-	check_preempt_curr(rq, p);
++	check_preempt_curr(rq, p, sync);
+ 
+ 	p->state = TASK_RUNNING;
+ #ifdef CONFIG_SMP
+@@ -2432,7 +2432,7 @@ void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
+ 		inc_nr_running(rq);
+ 	}
+ 	trace_sched_wakeup_new(rq, p);
+-	check_preempt_curr(rq, p);
++	check_preempt_curr(rq, p, 0);
+ #ifdef CONFIG_SMP
+ 	if (p->sched_class->task_wake_up)
+ 		p->sched_class->task_wake_up(rq, p);
+@@ -2889,7 +2889,7 @@ static void pull_task(struct rq *src_rq, struct task_struct *p,
+ 	 * Note that idle threads have a prio of MAX_PRIO, for this test
+ 	 * to be always true for them.
+ 	 */
+-	check_preempt_curr(this_rq, p);
++	check_preempt_curr(this_rq, p, 0);
+ }
+ 
+ /*
+@@ -6015,7 +6015,7 @@ static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
+ 	set_task_cpu(p, dest_cpu);
+ 	if (on_rq) {
+ 		activate_task(rq_dest, p, 0);
+-		check_preempt_curr(rq_dest, p);
++		check_preempt_curr(rq_dest, p, 0);
+ 	}
+ done:
+ 	ret = 1;
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index a10ac0b..82a907c 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1331,7 +1331,7 @@ static inline int depth_se(struct sched_entity *se)
+ /*
+  * Preempt the current task with a newly woken task if needed:
+  */
+-static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
++static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
+ {
+ 	struct task_struct *curr = rq->curr;
+ 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
+@@ -1348,6 +1348,8 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
+ 	if (unlikely(se == pse))
+ 		return;
+ 
++	cfs_rq_of(pse)->next = pse;
++
+ 	/*
+ 	 * We can come here with TIF_NEED_RESCHED already set from new task
+ 	 * wake up path.
+@@ -1355,8 +1357,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
+ 	if (test_tsk_need_resched(curr))
+ 		return;
+ 
+-	cfs_rq_of(pse)->next = pse;
+-
+ 	/*
+ 	 * Batch tasks do not preempt (their preemption is driven by
+ 	 * the tick):
+@@ -1367,6 +1367,13 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
+ 	if (!sched_feat(WAKEUP_PREEMPT))
+ 		return;
+ 
++	if (sched_feat(WAKEUP_OVERLAP) && sync && 
++			se->avg_overlap < sysctl_sched_migration_cost &&
++			pse->avg_overlap < sysctl_sched_migration_cost) {
++		resched_task(curr);
++		return;
++	}
++
+ 	/*
+ 	 * preemption test can be made between sibling entities who are in the
+ 	 * same cfs_rq i.e who have a common parent. Walk up the hierarchy of
+@@ -1649,7 +1656,7 @@ static void prio_changed_fair(struct rq *rq, struct task_struct *p,
+ 		if (p->prio > oldprio)
+ 			resched_task(rq->curr);
+ 	} else
+-		check_preempt_curr(rq, p);
++		check_preempt_curr(rq, p, 0);
+ }
+ 
+ /*
+@@ -1666,7 +1673,7 @@ static void switched_to_fair(struct rq *rq, struct task_struct *p,
+ 	if (running)
+ 		resched_task(rq->curr);
+ 	else
+-		check_preempt_curr(rq, p);
++		check_preempt_curr(rq, p, 0);
+ }
+ 
+ /* Account for a task changing its policy or group.
+diff --git a/kernel/sched_features.h b/kernel/sched_features.h
+index 9353ca7..bf027a7 100644
+--- a/kernel/sched_features.h
++++ b/kernel/sched_features.h
+@@ -11,3 +11,4 @@ SCHED_FEAT(ASYM_GRAN, 1)
+ SCHED_FEAT(LB_BIAS, 1)
+ SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
+ SCHED_FEAT(ASYM_EFF_LOAD, 1)
++SCHED_FEAT(WAKEUP_OVERLAP, 1)
+diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
+index 3a4f92d..dec4cca 100644
+--- a/kernel/sched_idletask.c
++++ b/kernel/sched_idletask.c
+@@ -14,7 +14,7 @@ static int select_task_rq_idle(struct task_struct *p, int sync)
+ /*
+  * Idle tasks are unconditionally rescheduled:
+  */
+-static void check_preempt_curr_idle(struct rq *rq, struct task_struct *p)
++static void check_preempt_curr_idle(struct rq *rq, struct task_struct *p, int sync)
+ {
+ 	resched_task(rq->idle);
+ }
+@@ -76,7 +76,7 @@ static void switched_to_idle(struct rq *rq, struct task_struct *p,
+ 	if (running)
+ 		resched_task(rq->curr);
+ 	else
+-		check_preempt_curr(rq, p);
++		check_preempt_curr(rq, p, 0);
+ }
+ 
+ static void prio_changed_idle(struct rq *rq, struct task_struct *p,
+@@ -93,7 +93,7 @@ static void prio_changed_idle(struct rq *rq, struct task_struct *p,
+ 		if (p->prio > oldprio)
+ 			resched_task(rq->curr);
+ 	} else
+-		check_preempt_curr(rq, p);
++		check_preempt_curr(rq, p, 0);
+ }
+ 
+ /*
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 04875ef..2e228bd 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -787,7 +787,7 @@ static void check_preempt_equal_prio(struct rq *rq, struct task_struct *p)
+ /*
+  * Preempt the current task with a newly woken task if needed:
+  */
+-static void check_preempt_curr_rt(struct rq *rq, struct task_struct *p)
++static void check_preempt_curr_rt(struct rq *rq, struct task_struct *p, int sync)
+ {
+ 	if (p->prio < rq->curr->prio) {
+ 		resched_task(rq->curr);
 
-RnJvbSAxNGY4ZGU5YjM5ODVmMWI1OGY5OWRlZTNlMzJiNDk2OWFmOGM2NjkzIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+CkRh
-dGU6IFNhdCwgMjAgU2VwIDIwMDggMTM6NTE6MDEgLTA3MDAKU3ViamVjdDogW1BBVENIIDA2LzI1
-XSBwY2k6IGR1bXAgcGNpIGNvbmZpZyBzcGFjZSBiZWZvcmUgbG9hZGluZyBkcml2ZXIKCnRyeSB0
-byBmaWd1cmUgb3V0IHdoeSBnZXQgZXh0cmEgaXJxIHRoYXQgY29uZnVzaW5nIHRoZSBkcml2ZXJz
-LgoKYW5kIHNvbWV0aW1lIHBjaT1lYXJseWR1bXAgZG9lc24ndCBkdW1wIHNvbWUgZGV2aWNlLCBi
-ZWNhdXNlIGxhdGUgcXVpcmtzCnVuaGlkZSBzb21lIHBjaSBkZXZpY2VzLi4uCgpTaWduZWQtb2Zm
-LWJ5OiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+Ci0tLQogZHJpdmVycy9wY2kv
-cGNpLmMgfCAgIDQ0ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-CiAxIGZpbGVzIGNoYW5nZWQsIDQ0IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pCgpkaWZm
-IC0tZ2l0IGEvZHJpdmVycy9wY2kvcGNpLmMgYi9kcml2ZXJzL3BjaS9wY2kuYwppbmRleCBhOTMw
-MWEyLi45ZWQwMTg3IDEwMDY0NAotLS0gYS9kcml2ZXJzL3BjaS9wY2kuYworKysgYi9kcml2ZXJz
-L3BjaS9wY2kuYwpAQCAtMjcsNiArMjcsOCBAQCB1bnNpZ25lZCBpbnQgcGNpX3BtX2QzX2RlbGF5
-ID0gMTA7CiBpbnQgcGNpX2RvbWFpbnNfc3VwcG9ydGVkID0gMTsKICNlbmRpZgogCitzdGF0aWMg
-aW50IHBjaV9kdW1wX3JlZ3MgPSAwOworCiAjZGVmaW5lIERFRkFVTFRfQ0FSREJVU19JT19TSVpF
-CQkoMjU2KQogI2RlZmluZSBERUZBVUxUX0NBUkRCVVNfTUVNX1NJWkUJKDY0KjEwMjQqMTAyNCkK
-IC8qIHBjaT1jYm1lbXNpemU9bm5NLGNiaW9zaXplPW5uIGNhbiBvdmVycmlkZSB0aGlzICovCkBA
-IC0xODcxLDYgKzE4NzMsNDMgQEAgc3RhdGljIHZvaWQgX19kZXZpbml0IHBjaV9ub19kb21haW5z
-KHZvaWQpCiAjZW5kaWYKIH0KIAorc3RhdGljIHZvaWQgX19kZXZpbml0IHBjaV9kdW1wKHZvaWQp
-Cit7CisJcGNpX2R1bXBfcmVncyA9IDE7Cit9CisKK3N0YXRpYyB2b2lkIGR1bXBfcGNpX2Rldmlj
-ZV9yYW5nZShzdHJ1Y3QgcGNpX2RldiAqZGV2LCB1bnNpZ25lZCBzdGFydF9yZWcsIHVuc2lnbmVk
-IHNpemUpCit7CisgICAgICAgIGludCBpOworICAgICAgICBpbnQgajsKKwl1MzIgdmFsOworICAg
-ICAgICBpbnQgZW5kID0gc3RhcnRfcmVnICsgc2l6ZTsKKworCXByaW50aygiUENJOiAlcyIsIHBj
-aV9uYW1lKGRldikpOworCisgICAgICAgIGZvciAoaSA9IHN0YXJ0X3JlZzsgaSA8IGVuZDsgaSAr
-PSA0KSB7CisgICAgICAgICAgICAgICAgaWYgKCEoaSAmIDB4MGYpKQorICAgICAgICAgICAgICAg
-ICAgICAgICAgcHJpbnRrKCJcbiUwNHg6IixpKTsKKworICAgICAgICAgICAgICAgIHBjaV9yZWFk
-X2NvbmZpZ19kd29yZChkZXYsIGksICZ2YWwpOworICAgICAgICAgICAgICAgIGZvciAoaiA9IDA7
-IGogPCA0OyBqKyspIHsKKyAgICAgICAgICAgICAgICAgICAgICAgIHByaW50aygiICUwMngiLCB2
-YWwgJiAweGZmKTsKKyAgICAgICAgICAgICAgICAgICAgICAgIHZhbCA+Pj0gODsKKyAgICAgICAg
-ICAgICAgICB9CisgICAgICAgIH0KKyAgICAgICAgcHJpbnRrKCJcbiIpOworfQorCitzdGF0aWMg
-aW50IGR1bXBfcGNpX2RldmljZXModm9pZCkKK3sKKwlzdHJ1Y3QgcGNpX2RldiAqZGV2ID0gTlVM
-TDsKKworCXdoaWxlICgoZGV2ID0gcGNpX2dldF9kZXZpY2UoUENJX0FOWV9JRCwgUENJX0FOWV9J
-RCwgZGV2KSkgIT0gTlVMTCkgeworCQlkdW1wX3BjaV9kZXZpY2VfcmFuZ2UoZGV2LCAwLCBkZXYt
-PmNmZ19zaXplKTsKKwl9CisJcmV0dXJuIDA7Cit9CisKIHN0YXRpYyBpbnQgX19kZXZpbml0IHBj
-aV9pbml0KHZvaWQpCiB7CiAJc3RydWN0IHBjaV9kZXYgKmRldiA9IE5VTEw7CkBAIC0xODc4LDYg
-KzE5MTcsOSBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBwY2lfaW5pdCh2b2lkKQogCXdoaWxlICgo
-ZGV2ID0gcGNpX2dldF9kZXZpY2UoUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgZGV2KSkgIT0gTlVM
-TCkgewogCQlwY2lfZml4dXBfZGV2aWNlKHBjaV9maXh1cF9maW5hbCwgZGV2KTsKIAl9CisKKwlp
-ZiAocGNpX2R1bXBfcmVncykKKwkJZHVtcF9wY2lfZGV2aWNlcygpOwogCXJldHVybiAwOwogfQog
-CkBAIC0xODk0LDYgKzE5MzYsOCBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBwY2lfc2V0dXAoY2hh
-ciAqc3RyKQogCQkJCXBjaV9ub19hZXIoKTsKIAkJCX0gZWxzZSBpZiAoIXN0cmNtcChzdHIsICJu
-b2RvbWFpbnMiKSkgewogCQkJCXBjaV9ub19kb21haW5zKCk7CisJCQl9IGVsc2UgaWYgKCFzdHJj
-bXAoc3RyLCAiZHVtcCIpKSB7CisJCQkJcGNpX2R1bXAoKTsKIAkJCX0gZWxzZSBpZiAoIXN0cm5j
-bXAoc3RyLCAiY2Jpb3NpemU9IiwgOSkpIHsKIAkJCQlwY2lfY2FyZGJ1c19pb19zaXplID0gbWVt
-cGFyc2Uoc3RyICsgOSwgJnN0cik7CiAJCQl9IGVsc2UgaWYgKCFzdHJuY21wKHN0ciwgImNibWVt
-c2l6ZT0iLCAxMCkpIHsKLS0gCjEuNS42Cgo=
-------=_Part_57638_33051216.1221946548309--
+
