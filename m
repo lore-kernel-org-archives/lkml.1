@@ -1,21 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYITSFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbYITSKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753298AbYITSFW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 14:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbYITSFJ
+	id S1753001AbYITSKE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 14:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbYITSJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 14:05:09 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49500 "EHLO
+	Sat, 20 Sep 2008 14:09:53 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41207 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750903AbYITSFI (ORCPT
+	with ESMTP id S1750796AbYITSJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 14:05:08 -0400
-Date: Sat, 20 Sep 2008 11:05:09 -0700
+	Sat, 20 Sep 2008 14:09:52 -0400
+Date: Sat, 20 Sep 2008 11:09:52 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Whats in kerneloops.git for 2.6.28
-Message-ID: <20080920110509.0cae9c08@infradead.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com,
+       steffen.klassert@secunet.com
+Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
+Message-ID: <20080920110952.05da49ab@infradead.org>
+In-Reply-To: <1221932404.1343.196.camel@localhost.localdomain>
+References: <20080919.234824.223177211.davem@davemloft.net>
+	<1221924561.1343.121.camel@localhost.localdomain>
+	<20080920084512.58f7fb08@infradead.org>
+	<1221926529.1343.140.camel@localhost.localdomain>
+	<20080920091918.0ffaef8c@infradead.org>
+	<1221932404.1343.196.camel@localhost.localdomain>
 Organization: Intel
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -27,33 +36,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kerneloops.git tree is a (small) tree that contains patches that help
-kerneloops.org give better results by improving the diagnostics output
-of the Linux kernel.
+On Sat, 20 Sep 2008 10:40:04 -0700
+Daniel Walker <dwalker@mvista.com> wrote:
 
+> On Sat, 2008-09-20 at 09:19 -0700, Arjan van de Ven wrote:
+> > On Sat, 20 Sep 2008 09:02:09 -0700
+> > Daniel Walker <dwalker@mvista.com> wrote:
+> > 
+> > > On Sat, 2008-09-20 at 08:45 -0700, Arjan van de Ven wrote:
+> > > > On Sat, 20 Sep 2008 08:29:21 -0700
+> > > > > 
+> > > > > > Jen's, as stated, has block layer uses for this.  I intend
+> > > > > > to use this for receive side flow seperation on
+> > > > > > non-multiqueue network cards.  And Steffen Klassert has a
+> > > > > > set of IPSEC parallelization changes that can very likely
+> > > > > > make use of this.
+> > > > > 
+> > > > > What's the benefit that you (or Jens) sees from migrating
+> > > > > softirqs from specific cpu's to others?
+> > > > 
+> > > > it means you do all the processing on the CPU that submitted
+> > > > the IO in the first place, and likely still has the various
+> > > > metadata pieces in its CPU cache (or at least you know you
+> > > > won't need to bounce them over)
+> > > 
+> > > 
+> > > In the case of networking and block I would think a lot of the
+> > > softirq activity is asserted from userspace.. Maybe the scheduler
+> > > shouldn't be migrating these tasks, or could take this softirq
+> > > activity into account ..
+> > 
+> > well a lot of it comes from completion interrupts.
+> 
+> Yeah, partly I would think.
 
-Updating linus
-The following changes since commit 9824b8f11373b0df806c135a342da9319ef1d893:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git390.osdl.marist.edu/pub/scm/linux-2.6
+completions trigger the next send as well (for both block and net) so
+it's quite common
+> 
+> > and moving userspace isn't a good option; think of the case of 1 nic
+> > but 4 apache processes doing the work...
+> > 
+> 
+> One nic, so one interrupt ? I guess we're talking about an SMP
+> machine?
 
-are available in the git repository at:
+or multicore
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-kerneloops.git master
+doing IPI's for this on an UP machine is a rather boring exercise
 
-Arjan van de Ven (5):
-      procfs: use WARN() rather than printk+backtrace
-      fs: add a sanity check in d_free
-      debug: Introduce a dev_WARN() function
-      debug: use dev_WARN() rather than WARN_ON() in device_pm_add()
-      usb: turn dev_warn+WARN_ON combos into dev_WARN
+> 
+> Dave didn't supply the users of his code, or what kind of improvement
+> was seen, or the case in which it would be needed. I think Dave knowns
+> his subsystem, but the code on the surface looks like an end run
+> around some other problem area..
 
- drivers/base/power/main.c |    2 +-
- drivers/usb/host/uhci-q.c |   24 ++++++++----------------
- fs/dcache.c               |    1 +
- fs/proc/generic.c         |    3 +--
- include/linux/device.h    |    8 ++++++++
- 5 files changed, 19 insertions(+), 19 deletions(-)
+it's very fundamental, and has been talked about at various conferences
+as well.
+
+the basic problem is that the submitter of the IO (be it block or net)
+creates a ton of metadata state on submit, and ideally the completion
+processing happens on the same CPU, for two reasons
+1) to use the state in the cache
+2) for the case where you touch userland data/structures, we assume the
+scheduler kept affinity
+
+it's a Moses-to-the-Mountain problem, except we have four Moses' but
+only one Mountain. 
+
+Or in CS terms: we move the work to the CPU where the userland is
+rather than moving the userland to the IRQ CPU, since there is usually
+only one IRQ but many userlands and many cpu cores.
+
+(for the UP case this is all very irrelevant obviously)
+
+I assume Dave will pipe in if he disagrees with me ;-)
+
 
 -- 
 Arjan van de Ven 	Intel Open Source Technology Centre
