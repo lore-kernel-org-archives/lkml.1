@@ -1,95 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751357AbYITQCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbYITQFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751357AbYITQCp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 12:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYITQCe
+	id S1752755AbYITQFd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 12:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYITQFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 12:02:34 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:56716 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbYITQCd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 12:02:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=B37o6poM+xriZQqRhRFlcF1Vm7dS4QSIVUTrGJXFhnwoPicZ5xtZ6v3sKvl4pASTxv
-         3zjB7anmxna/beyDMeo7Z6BL4JJs6aPIJaxl6wWeFFeHQqcCVO45ONGkXKPChERQiyHB
-         qFXjj0uECUdktu/0zI0gbkwuEMc1gEpewRMs0=
-Message-ID: <48D51E93.90804@gmail.com>
-Date: Sat, 20 Sep 2008 18:02:27 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Sat, 20 Sep 2008 12:05:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52391 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750779AbYITQFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 12:05:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: I need some serious help to debug suspend to ram problem
+Date: Sat, 20 Sep 2008 18:10:44 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <48D4E685.8030801@gmail.com>
+In-Reply-To: <48D4E685.8030801@gmail.com>
 MIME-Version: 1.0
-To: robert.richter@amd.com
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       oprofile-list@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -mm] oprofile: BUG scheduling while atomic
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809201810.45057.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nmi_shutdown() calls unregister_die_notifier() from an atomic context
-after setting preempt_disable() via get_cpu_var():
+On Saturday, 20 of September 2008, Maxim Levitsky wrote:
+> Hi,
+> 
+> I hit a dead end when trying to understand 
+> why my notebook can't resume from suspend to ram
+> if this is done two times a row.
+> 
+> Single suspend/resume cycle works almost perfectly 
+> (beep that goes through the sound card is muted... 
+> no morse code for me... :-(
+> 
+> )
+> 
+> I compiled a minimal kernel (absolutely nothing but disk drivers, all experimental option like nohz
+> turned off)
+> 
+> But I had to turn SMP, since without it system won't resume first time I suspend it.
+> (How could this affect suspend?)
 
-[ 1049.404154] BUG: scheduling while atomic: oprofiled/7796/0x00000002
-[ 1049.404171] INFO: lockdep is turned off.
-[ 1049.404176] Modules linked in: oprofile af_packet rfcomm l2cap kvm_intel kvm i915 drm acpi_cpufreq cpufreq_userspace cpufreq_conservative cpufreq_ondemand cpufreq_powersave freq_table container sbs sbshc dm_mod arc4 ecb cryptomgr aead snd_hda_intel crypto_blkcipher snd_pcm_oss crypto_algapi snd_pcm iwlagn iwlcore snd_timer iTCO_wdt led_class btusb iTCO_vendor_support snd psmouse bluetooth mac80211 soundcore cfg80211 snd_page_alloc intel_agp video output button battery ac dcdbas evdev ext3 jbd mbcache sg sd_mod piix ata_piix libata scsi_mod dock tg3 libphy ehci_hcd uhci_hcd usbcore thermal processor fan fuse
-[ 1049.404362] Pid: 7796, comm: oprofiled Not tainted 2.6.27-rc5-mm1 #30
-[ 1049.404368] Call Trace:
-[ 1049.404384]  [<ffffffff804769fd>] thread_return+0x4a0/0x7d3
-[ 1049.404396]  [<ffffffff8026ad92>] generic_exec_single+0x52/0xe0
-[ 1049.404405]  [<ffffffff8026ae1a>] generic_exec_single+0xda/0xe0
-[ 1049.404414]  [<ffffffff8026aee3>] smp_call_function_single+0x73/0x150
-[ 1049.404423]  [<ffffffff804770c5>] schedule_timeout+0x95/0xd0
-[ 1049.404430]  [<ffffffff80476083>] wait_for_common+0x43/0x180
-[ 1049.404438]  [<ffffffff80476154>] wait_for_common+0x114/0x180
-[ 1049.404448]  [<ffffffff80236980>] default_wake_function+0x0/0x10
-[ 1049.404457]  [<ffffffff8024f810>] synchronize_rcu+0x30/0x40
-[ 1049.404463]  [<ffffffff8024f890>] wakeme_after_rcu+0x0/0x10
-[ 1049.404472]  [<ffffffff80479ca0>] _spin_unlock_irqrestore+0x40/0x80
-[ 1049.404482]  [<ffffffff80256def>] atomic_notifier_chain_unregister+0x3f/0x60
-[ 1049.404501]  [<ffffffffa03d8801>] nmi_shutdown+0x51/0x90 [oprofile]
-[ 1049.404517]  [<ffffffffa03d6134>] oprofile_shutdown+0x34/0x70 [oprofile]
-[ 1049.404532]  [<ffffffffa03d721e>] event_buffer_release+0xe/0x40 [oprofile]
-[ 1049.404543]  [<ffffffff802bdcdd>] __fput+0xcd/0x240
-[ 1049.404551]  [<ffffffff802baa74>] filp_close+0x54/0x90
-[ 1049.404560]  [<ffffffff8023e1d1>] put_files_struct+0xb1/0xd0
-[ 1049.404568]  [<ffffffff8023f82f>] do_exit+0x18f/0x930
-[ 1049.404576]  [<ffffffff8020be03>] restore_args+0x0/0x30
-[ 1049.404584]  [<ffffffff80240006>] do_group_exit+0x36/0xa0
-[ 1049.404592]  [<ffffffff8020b7cb>] system_call_fastpath+0x16/0x1b
+It could if the system is 64-bit.  In which case please have a look at
+http://bugzilla.kernel.org/show_bug.cgi?id=11237
 
-This can be easily triggered with 'opcontrol --shutdown'.
+> With SMP and minimal kernel (of course  no closed drivers), I get same behavior,
+> first resume works second hangs.
+> 
+> I then added some debug code to real mode wakeup code, I put there in first
+> place instructions, that will save some magic value to rtc (to alarm
+> registers that I know are preserved during boot cycle), and I discovered   
+> sad thing that first time bios does pass control to linux, but second time
+> (when it hangs), it doesn't. 
+> 
+> 
+> I tried to update bios, and I got same results.
+> 
+> Of course it does work with that @#$%^& OS
 
-Simply move get_cpu_var() above unregister_die_notifier().
+So we're doing something wrong.  Please try the appended patch.
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> I then proceeded to test recently posted low memory corruption patch, and
+> it did show that that @#$%^& BIOS does corrupt low memory 
+> I then reserved all low memory, but system began to hand after first suspend,
+> in exactly same way, but as expected I soon discovered, that that forces real
+> mode page to be above 1M, ok, then I reserved almost all low memory except
+> 100K window in the middle, so low allocations will work, but be placed in
+> region bios less likely to corrupt, and still that didn't help, still same hang.   
+>  
+> You did face lot of such situations, so maybe you know about anything I can do.
+> 
+
+Actually, I didn't, but some people did.  Again,
+http://bugzilla.kernel.org/show_bug.cgi?id=11237 is the place to look at.
+
+Thanks,
+Rafael
+
 ---
- arch/x86/oprofile/nmi_int.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 2e63357..c21ce0c 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -377,10 +377,12 @@ static void nmi_cpu_shutdown(void *dummy)
+ACPI suspend: Always use the 32-bit waking vector
+
+According to the ACPI specification 2.0c and later, the 64-bit waking vector
+should be cleared and the 32-bit waking vector should be used, unless we want
+the wake-up code to be called by the BIOS in Protected Mode.  Moreover, some
+systems (for example HP dv5-1004nr) are known to fail to resume if the 64-bit
+waking vector is used.  Therefore, modify the code to clear the 64-bit waking
+vector, for FACS version 1 or greater, and set the 32-bit one before suspend.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/hardware/hwsleep.c |   37 +++++++++++--------------------------
+ 1 file changed, 11 insertions(+), 26 deletions(-)
+
+Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
++++ linux-2.6/drivers/acpi/hardware/hwsleep.c
+@@ -78,19 +78,17 @@ acpi_set_firmware_waking_vector(acpi_phy
+ 		return_ACPI_STATUS(status);
+ 	}
  
- static void nmi_shutdown(void)
- {
--	struct op_msrs *msrs = &get_cpu_var(cpu_msrs);
-+	struct op_msrs *msrs;
-+
- 	nmi_enabled = 0;
- 	on_each_cpu(nmi_cpu_shutdown, NULL, 1);
- 	unregister_die_notifier(&profile_exceptions_nb);
-+	msrs = &get_cpu_var(cpu_msrs);
- 	model->shutdown(msrs);
- 	free_msrs();
- 	put_cpu_var(cpu_msrs);
+-	/* Set the vector */
++	/*
++	 * According to the ACPI specification 2.0c and later, the 64-bit
++	 * waking vector should be cleared and the 32-bit waking vector should
++	 * be used, unless we want the wake-up code to be called by the BIOS in
++	 * Protected Mode.  Some systems (for example HP dv5-1004nr) are known
++	 * to fail to resume if the 64-bit vector is used.
++	 */
++	if (facs->version >= 1)
++		facs->xfirmware_waking_vector = 0;
+ 
+-	if ((facs->length < 32) || (!(facs->xfirmware_waking_vector))) {
+-		/*
+-		 * ACPI 1.0 FACS or short table or optional X_ field is zero
+-		 */
+-		facs->firmware_waking_vector = (u32) physical_address;
+-	} else {
+-		/*
+-		 * ACPI 2.0 FACS with valid X_ field
+-		 */
+-		facs->xfirmware_waking_vector = physical_address;
+-	}
++	facs->firmware_waking_vector = (u32)physical_address;
+ 
+ 	return_ACPI_STATUS(AE_OK);
+ }
+@@ -134,20 +132,7 @@ acpi_get_firmware_waking_vector(acpi_phy
+ 	}
+ 
+ 	/* Get the vector */
+-
+-	if ((facs->length < 32) || (!(facs->xfirmware_waking_vector))) {
+-		/*
+-		 * ACPI 1.0 FACS or short table or optional X_ field is zero
+-		 */
+-		*physical_address =
+-		    (acpi_physical_address) facs->firmware_waking_vector;
+-	} else {
+-		/*
+-		 * ACPI 2.0 FACS with valid X_ field
+-		 */
+-		*physical_address =
+-		    (acpi_physical_address) facs->xfirmware_waking_vector;
+-	}
++	*physical_address = (acpi_physical_address)facs->firmware_waking_vector;
+ 
+ 	return_ACPI_STATUS(AE_OK);
+ }
