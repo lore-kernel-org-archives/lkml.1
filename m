@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752284AbYITGIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbYITGMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752284AbYITGIP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 02:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYITGH7
+	id S1752743AbYITGMR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 02:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbYITGMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 02:07:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48500 "EHLO mx3.mail.elte.hu"
+	Sat, 20 Sep 2008 02:12:03 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41956 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbYITGH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 02:07:58 -0400
-Date: Sat, 20 Sep 2008 08:07:26 +0200
+	id S1750802AbYITGMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 02:12:01 -0400
+Date: Sat, 20 Sep 2008 08:11:45 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Oruba <peter.oruba@amd.com>
-Cc: "Giacomo A. Catenazzi" <cate@debian.org>,
+To: "Giacomo A. Catenazzi" <cate@debian.org>
+Cc: Peter Oruba <peter.oruba@amd.com>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>,
@@ -20,12 +20,12 @@ Cc: "Giacomo A. Catenazzi" <cate@debian.org>,
        LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [patch 05/11] [PATCH 05/11] x86: Moved microcode.c to
 	microcode_intel.c.
-Message-ID: <20080920060726.GC25713@elte.hu>
-References: <20080728164411.490752571@amd.com> <20080728164448.492961653@amd.com> <20080907120823.59f8fa47@infradead.org> <48CA586C.2010104@amd.com> <20080912063517.783b7f85@infradead.org> <48D3942B.1050901@amd.com> <b647ffbd0809190537w18cc4d5fo4ce1a9c0390405d9@mail.gmail.com> <48D3A1FD.7010309@debian.org> <48D3A338.5070400@amd.com>
+Message-ID: <20080920061145.GD25713@elte.hu>
+References: <20080728164411.490752571@amd.com> <20080728164448.492961653@amd.com> <20080907120823.59f8fa47@infradead.org> <48CA586C.2010104@amd.com> <20080912063517.783b7f85@infradead.org> <48D3942B.1050901@amd.com> <b647ffbd0809190537w18cc4d5fo4ce1a9c0390405d9@mail.gmail.com> <48D3A1FD.7010309@debian.org> <48D3A338.5070400@amd.com> <48D3AEB5.1000007@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48D3A338.5070400@amd.com>
+In-Reply-To: <48D3AEB5.1000007@debian.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,49 +40,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Oruba <peter.oruba@amd.com> wrote:
+* Giacomo A. Catenazzi <cate@debian.org> wrote:
 
-> Giacomo A. Catenazzi schrieb:
-> > Dmitry Adamushko wrote:
-> >> 2008/9/19 Peter Oruba <peter.oruba@amd.com>:
-> >>> Some additonal words regarding the current user space issues:
-> >>>
-> >>> IMHO the most convenient way to update microcode is through the
-> >>> firmware loading
-> >>> interface instead of microcode_ctl. This reduces user-space
-> >>> responsibilities to
-> >>> loading the correct module at boot time and to place the microcode
-> >>> patch file at
-> >>> the right location via package installation. The problems mentioned
-> >>> in this
-> >>> thread would then probably disappear as well. What do you guys think?
-> >>
-> >> It'd still require changes for all the setups that currently rely on
-> >> the 'microcode_ctl' interface. Moreover, Arjan's setup failed not due
-> >> to the 'microcode_ctl' per se but due to the altered kernel module
-> >> name. After all, we can't break the established interface this way.
-> >>
-> >> We can either reserve 'microcode' as a legacy name for intel cpus (==
-> >> microcode_intel), or maybe we can use request_module() from
-> >> microcode.ko to load a proper arch-specific module (I guess, it's not
-> >> ok for !KMOD-enabled kernels).
-> > 
-> > I agree. A wrapper "microcode.ko" module would be nice, in order
-> > to allow independent kernel and user space upgrades.
-> > 
-> > The module name is important also on udev method: only a module
-> > load triggers the microcode request in udev, thus also the
-> > new method should have stable kernel module name.
-> > 
-> > ciao
-> >     cate
-> > 
-> 
-> That sounds like a single-module solution would be the best way to go. 
-> All dependencies would then be handled inside the module.
+>> That sounds like a single-module solution would be the best way to 
+>> go. All dependencies would then be handled inside the module.
+>
+> Single module probably is more difficult to maintain.
 
-yes - as long as the internal abstraction is clean (and it is rather 
-clean with Dmitry's changes applied too), that should be fine and 
-maintainable.
+why? In this case we have just two relevant CPU microcode drivers - and 
+we dont expect their number to grow significantly. So it should be 
+perfectly clean to link everything into a single module.
+
+In fact as this example has shown it a single-module solution has 
+numerous advantages, as it simplifies userspace interactions.
+
+Taken to the extreme, a single-image (bzImage) kernel has many 
+advantages over a many-modules kernel as well. So we only want to 
+modularize when we absolutely have to, and this is not one of those 
+cases.
 
 	Ingo
