@@ -1,89 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752492AbYITRdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbYITRkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752492AbYITRdh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 13:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbYITRd3
+	id S1752624AbYITRkX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 13:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYITRkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 13:33:29 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:59644 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbYITRd2 (ORCPT
+	Sat, 20 Sep 2008 13:40:10 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:28011 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbYITRkJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 13:33:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kIruunan9PisGTzvPT/RkZtlBCBDFWx4Xd+A8sxkdwww25tUUV1Kim44sao+BhT8p3
-         wgBfGQs7ywBVTq8YZvE/krwhDFECakjuwY8IZUgzKwCYUbcaSHS+imbOwJLevYk5LfWV
-         Ur+8tp9mmGHFksXdPD0oHw3aWiFadQKW7MzfA=
-Date: Sat, 20 Sep 2008 21:33:05 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christer Weinigel <christer@weinigel.se>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Russ Dill <russ.dill@gmail.com>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org
-Subject: Re: kernel.h: add ARRAY_AND_SIZE() macro to complement
-	ARRAY_SIZE().
-Message-ID: <20080920173305.GE7354@localhost>
-References: <20080919065426.GA7222@lenovo> <f17812d70809190022u6c862ae8j43b1c1a942e22497@mail.gmail.com> <f9d2a5e10809190828g54a824b9od1ade53c96a518c8@mail.gmail.com> <20080919175544.GA3228@x200.localdomain> <48D4F519.2080509@weinigel.se> <20080920134543.GA7354@localhost> <48D50883.6040700@weinigel.se> <20080920144504.GB7354@localhost> <48D5271B.7010109@weinigel.se> <20080920171216.GD7354@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080920171216.GD7354@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sat, 20 Sep 2008 13:40:09 -0400
+Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
+From: Daniel Walker <dwalker@mvista.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com,
+       steffen.klassert@secunet.com
+In-Reply-To: <20080920091918.0ffaef8c@infradead.org>
+References: <20080919.234824.223177211.davem@davemloft.net>
+	 <1221924561.1343.121.camel@localhost.localdomain>
+	 <20080920084512.58f7fb08@infradead.org>
+	 <1221926529.1343.140.camel@localhost.localdomain>
+	 <20080920091918.0ffaef8c@infradead.org>
+Content-Type: text/plain
+Date: Sat, 20 Sep 2008 10:40:04 -0700
+Message-Id: <1221932404.1343.196.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sat, Sep 20, 2008 at 09:12:16PM +0400]
-| [Christer Weinigel - Sat, Sep 20, 2008 at 06:38:51PM +0200]
-| > Cyrill Gorcunov wrote:
-| >> [Christer Weinigel - Sat, Sep 20, 2008 at 04:28:19PM +0200]
-| >> ...
-| >>> In my opinion, making platform_add_devices into a magic macro is   
-| >>> actually worse, since the same construct (array, ARRAY_SIZE(array)) 
-| >>> is  used in many places, so one would have to do the same thing over 
-| >>> and  over again for every function.  In that case it's better to have 
-| >>> to  learn one macro once, and the ALL_CAPITALS should make it obvious 
-| >>> that  it is a macro.
-| >
-| >> Well, can't agree with you :) It's my _presonal_ opinion.
-| >> You could define it as
-| >>
-| >> static inline int platform_add_devices_array(struct platform_device **devs)
-| >> {
-| >> 	return platform_add_devices(devs, ARRAY_SIZE(devs));
-| >> }
-| >
-| > Won't work.  You would have to use a macro.  The above would turn into:
-| >
-| >      platform_add_devices(devs, 1);
-| >
-| > or would if the __must_be_array check didn't catch it.
-| >
-| >   /Christer
-| >
-| 
-| Ah...indeed, my bad :) gcc is not that smart (yet). So there only
-| the macro is possible (just forget that it will be different
-| namespace scope). Anyway even having it like a macro would be
-| better then hiding args.
-| 
-| 		- Cyrill -
+On Sat, 2008-09-20 at 09:19 -0700, Arjan van de Ven wrote:
+> On Sat, 20 Sep 2008 09:02:09 -0700
+> Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > On Sat, 2008-09-20 at 08:45 -0700, Arjan van de Ven wrote:
+> > > On Sat, 20 Sep 2008 08:29:21 -0700
+> > > > 
+> > > > > Jen's, as stated, has block layer uses for this.  I intend to
+> > > > > use this for receive side flow seperation on non-multiqueue
+> > > > > network cards.  And Steffen Klassert has a set of IPSEC
+> > > > > parallelization changes that can very likely make use of this.
+> > > > 
+> > > > What's the benefit that you (or Jens) sees from migrating softirqs
+> > > > from specific cpu's to others?
+> > > 
+> > > it means you do all the processing on the CPU that submitted the IO
+> > > in the first place, and likely still has the various metadata
+> > > pieces in its CPU cache (or at least you know you won't need to
+> > > bounce them over)
+> > 
+> > 
+> > In the case of networking and block I would think a lot of the softirq
+> > activity is asserted from userspace.. Maybe the scheduler shouldn't be
+> > migrating these tasks, or could take this softirq activity into
+> > account ..
+> 
+> well a lot of it comes from completion interrupts.
 
-ie I mean
+Yeah, partly I would think.
 
-#define platform_add_devices_array(devs) \
-	platform_add_devices(devs, ARRAY_SIZE(devs))
+> and moving userspace isn't a good option; think of the case of 1 nic
+> but 4 apache processes doing the work...
+> 
 
-which should satisfy the requirements. Please note that I'm not
-trying to say it should be done like that - just a propose which
-looks for me much better the ARRAY_AND_SIZE in context of routine
-argument.
+One nic, so one interrupt ? I guess we're talking about an SMP machine? 
+It seems case dependent .. If you send a lot, or receive a lot.. BUT
+it's all speculation on my part..
 
-ps: i was to use macro before inline func but someone inside me
-was talking - hey, use function, not macro... and I gave up :)
+Dave didn't supply the users of his code, or what kind of improvement
+was seen, or the case in which it would be needed. I think Dave knowns
+his subsystem, but the code on the surface looks like an end run around
+some other problem area..
 
-		- Cyrill -
+Daniel
+
