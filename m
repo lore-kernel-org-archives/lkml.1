@@ -1,80 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYITLl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbYITLok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbYITLl7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 07:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYITLlv
+	id S1753447AbYITLok (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 07:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYITLod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 07:41:51 -0400
-Received: from ptb-relay01.plus.net ([212.159.14.145]:44001 "EHLO
-	ptb-relay01.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751579AbYITLlv (ORCPT
+	Sat, 20 Sep 2008 07:44:33 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:56811 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751191AbYITLod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 07:41:51 -0400
-Message-ID: <48D4E180.4050907@yahoo.com>
-Date: Sat, 20 Sep 2008 12:41:52 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
-MIME-Version: 1.0
-CC: Alexey Starikovskiy <astarikovskiy@suse.de>, linux-kernel@vger.kernel.org,
-       lenb@kernel.org
-Subject: Re: Reading EeePC900 battery info causes stalls
-References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no> <48D4CC1B.7030708@yahoo.com> <48D4CFA5.7010501@suse.de> <48D4D5CA.1060104@yahoo.com> <48D4D6AE.70705@yahoo.com> <48D4DB23.5080901@suse.de> <48D4DD3C.3050308@yahoo.com>
-In-Reply-To: <48D4DD3C.3050308@yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 20 Sep 2008 07:44:33 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiMFAGZ+1EhMQWq+/2dsb2JhbACBXbRngWU
+Date: Sat, 20 Sep 2008 07:44:28 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Martin Bligh <mbligh@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: Unified tracing buffer
+Message-ID: <20080920114427.GC10800@Krystal>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <20080919144258.ac787fdf.randy.dunlap@oracle.com> <33307c790809191457y3ebffa28xa6d9ab6431554618@mail.gmail.com> <alpine.DEB.1.10.0809200424050.9362@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 4cf84bf39d29af61dba4245be1da69ea
-To: unlisted-recipients:; (no To-header on input)
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0809200424050.9362@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:41:51 up 107 days, 16:22,  5 users,  load average: 3.44, 2.59,
+	1.92
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sitsofe Wheeler wrote:
-> Alexey Starikovskiy wrote:
->> Could you cat /proc/interrupts ?
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
->            CPU0
->   0:     106942   IO-APIC-edge      timer
->   1:        426   IO-APIC-edge      i8042
->   8:         41   IO-APIC-edge      rtc0
->   9:      27346   IO-APIC-fasteoi   acpi
->  12:       6840   IO-APIC-edge      i8042
->  14:          0   IO-APIC-edge      ata_piix
->  15:        203   IO-APIC-edge      ata_piix
->  16:      92357   IO-APIC-fasteoi   uhci_hcd:usb5, HDA Intel, 
-> i915@pci:0000:00:02.0
->  18:      38195   IO-APIC-fasteoi   ath, uhci_hcd:usb4
->  19:          0   IO-APIC-fasteoi   uhci_hcd:usb3
->  23:      25150   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
-> NMI:          0   Non-maskable interrupts
-> LOC:     142112   Local timer interrupts
-> TRM:          0   Thermal event interrupts
-> SPU:          0   Spurious interrupts
-> ERR:          0
-> MIS:          0
+> 
+> On Fri, 19 Sep 2008, Martin Bligh wrote:
+> 
+> > >> Event ids are 16 bit, dynamically allocated.
+> > >
+> > > What are these (like)?
+> > 
+> > u16
+> > 
+> > Sorry, probably lots of implicit assumptions in there that I forgot to explain
+> > 
+> > > Arch-specific "word"?
+> > > or some fixed-size-for-all-systems (so that trace buffers can be
+> > > shared/used on other systems?)  Preferably the latter.
+> > 
+> > Mmmm. I don't see anything wrong with making it just 8 byte aligned, personally.
+> > Steven - this was your thing?
+> 
+> I'm fine with 8 byte aligned for all.
+> 
+> > 
+> > >> Variable record length, header will start with length record.
+> > >> Timestamps in fixed timebase, monotonically increasing (across all CPUs)
+> > >
+> > > what timestamp resolution?
+> > 
+> > ns is probably sufficient for output, but may need to be higher
+> > internally to get
+> > correct ordering of events across CPUs. So, as long as we record this in
+> > the buffer header, the internal resolution shouldn't be critical. The text
+> > print output ... I'd say ns? We can put it relative to wall time in there,
+> > as long as we record it in the buffer header at trace start. I guess we should
+> > document the buffer header ;-)
+> > 
+> 
+> ftrace has two outputs. One is ns from start of boot, the other is ns from 
+> start of trace. Not sure we need to make wall time in there, unless we add 
+> it in the trace header (as you stated). Probably best for Version #2.
+> 
+> -- Steve
+> 
 
-and here are the interrupts from the (seemingly working) EeePC's Xandros 
-2.6.21.4 install:
+For simplicity and efficiency, I would try to keep the timestamp
+recorded for every event as close as what we are reading from the
+hardware without manipulation. We can save the timestamp value at the
+beginning of the trace (in the buffer header) and we can also save the
+scaling value in the same header so we can transform stuff like cycle
+counts into ns, ps from boot time or from trace start when we
+pretty-print.
 
-            CPU0
-   0:       6486    XT-PIC-XT        timer
-   1:        107    XT-PIC-XT        i8042
-   2:          0    XT-PIC-XT        cascade
-   3:          0    XT-PIC-XT        uhci_hcd:usb2
-   5:        735    XT-PIC-XT        uhci_hcd:usb1, ehci_hcd:usb5
-   9:        219    XT-PIC-XT        acpi
-  10:       8171    XT-PIC-XT        uhci_hcd:usb3, pciehp, wifi0
-  11:        107    XT-PIC-XT        HDA Intel, i915@pci:0000:00:02.0, 
-uhci_hcd:usb4, pciehp
-  12:        236    XT-PIC-XT        i8042
-  14:          0    XT-PIC-XT        libata
-  15:       3475    XT-PIC-XT        libata
-NMI:          0
-ERR:          0
+Mathieu
 
-and here is the kernel cmdline that the Xandros install uses:
-quiet rw vga=785 irqpoll root=/dev/sda1
-
-I've got a feeling I know what direction this is going in...
 
 -- 
-Sitsofe | http://sucs.org/~sits/
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
