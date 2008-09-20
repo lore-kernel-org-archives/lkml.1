@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYITMDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYITMef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753456AbYITMDf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 08:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbYITMD1
+	id S1753456AbYITMef (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 08:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYITMe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 08:03:27 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:50162 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751359AbYITMD0 (ORCPT
+	Sat, 20 Sep 2008 08:34:28 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:44011 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751391AbYITMe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 08:03:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=rgf8xuhBk4u3SFykMii8cY8LjRAqRjAFIaxESb99OGaKpfFLMV7jBeFqY+NxO2J0Eb
-         ayAiAH6aCwIyrSQN9BxMO2+yhLyMczVQR4MmPpyWEtjyAbLt5jJdCY4Bz818R3w8JPu+
-         P4bq2E2LyXILcaIgdQbRHMj4qwbzf3kMVTrVo=
-Message-ID: <48D4E685.8030801@gmail.com>
-Date: Sat, 20 Sep 2008 15:03:17 +0300
-From: Maxim Levitsky <maximlevitsky@gmail.com>
+	Sat, 20 Sep 2008 08:34:27 -0400
+Message-ID: <48D4EDD2.5030603@suse.de>
+Date: Sat, 20 Sep 2008 16:34:26 +0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: I need some serious help to debug suspend to ram problem
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+CC: linux-kernel@vger.kernel.org, lenb@kernel.org
+Subject: Re: Reading EeePC900 battery info causes stalls
+References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no> <48D4CC1B.7030708@yahoo.com> <48D4CFA5.7010501@suse.de> <48D4D5CA.1060104@yahoo.com> <48D4D6AE.70705@yahoo.com> <48D4DB23.5080901@suse.de> <48D4DD3C.3050308@yahoo.com> <48D4E180.4050907@yahoo.com>
+In-Reply-To: <48D4E180.4050907@yahoo.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Sitsofe Wheeler wrote:
+> Sitsofe Wheeler wrote:
+>> Alexey Starikovskiy wrote:
+>>> Could you cat /proc/interrupts ?
+>>
+>>            CPU0
+>>   0:     106942   IO-APIC-edge      timer
+>>   1:        426   IO-APIC-edge      i8042
+>>   8:         41   IO-APIC-edge      rtc0
+>>   9:      27346   IO-APIC-fasteoi   acpi
+>>  12:       6840   IO-APIC-edge      i8042
+>>  14:          0   IO-APIC-edge      ata_piix
+>>  15:        203   IO-APIC-edge      ata_piix
+>>  16:      92357   IO-APIC-fasteoi   uhci_hcd:usb5, HDA Intel, 
+>> i915@pci:0000:00:02.0
+>>  18:      38195   IO-APIC-fasteoi   ath, uhci_hcd:usb4
+>>  19:          0   IO-APIC-fasteoi   uhci_hcd:usb3
+>>  23:      25150   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+>> NMI:          0   Non-maskable interrupts
+>> LOC:     142112   Local timer interrupts
+>> TRM:          0   Thermal event interrupts
+>> SPU:          0   Spurious interrupts
+>> ERR:          0
+>> MIS:          0
+> 
+> and here are the interrupts from the (seemingly working) EeePC's Xandros 
+> 2.6.21.4 install:
+> 
+>            CPU0
+>   0:       6486    XT-PIC-XT        timer
+>   1:        107    XT-PIC-XT        i8042
+>   2:          0    XT-PIC-XT        cascade
+>   3:          0    XT-PIC-XT        uhci_hcd:usb2
+>   5:        735    XT-PIC-XT        uhci_hcd:usb1, ehci_hcd:usb5
+>   9:        219    XT-PIC-XT        acpi
+>  10:       8171    XT-PIC-XT        uhci_hcd:usb3, pciehp, wifi0
+>  11:        107    XT-PIC-XT        HDA Intel, i915@pci:0000:00:02.0, 
+> uhci_hcd:usb4, pciehp
+>  12:        236    XT-PIC-XT        i8042
+>  14:          0    XT-PIC-XT        libata
+>  15:       3475    XT-PIC-XT        libata
+> NMI:          0
+> ERR:          0
+> 
+> and here is the kernel cmdline that the Xandros install uses:
+> quiet rw vga=785 irqpoll root=/dev/sda1
+> 
+> I've got a feeling I know what direction this is going in...
+> 
+Right, could you please check if irqpoll is the key to success?
 
-I hit a dead end when trying to understand 
-why my notebook can't resume from suspend to ram
-if this is done two times a row.
-
-Single suspend/resume cycle works almost perfectly 
-(beep that goes through the sound card is muted... 
-no morse code for me... :-(
-
-)
-
-I compiled a minimal kernel (absolutely nothing but disk drivers, all experimental option like nohz
-turned off)
-
-But I had to turn SMP, since without it system won't resume first time I suspend it.
-(How could this affect suspend?)
-
-
-With SMP and minimal kernel (of course  no closed drivers), I get same behavior, first resume works
-second hangs.
-
-I then added some debug code to real mode wakeup code, I put there in first place instructions, that will save some magic value to rtc (to alarm registers that I know are preserved during boot cycle), and I discovered 
-sad thing that first time bios does pass control to linux, but second time (when it hangs), it doesn't.
-
-
-I tried to update bios, and I got same results.
-
-Of course it does work with that @#$%^& OS
-
-
-I then proceeded to test recently posted low memory corruption patch, and it did show that that @#$%^& BIOS does corrupt low memory
-I then reserved all low memory, but system began to hand after first suspend, in exactly same way, but as expected I soon discovered,
-that that forces real mode page to be above 1M, ok, then I reserved almost all low memory except 100K window in the middle, so low allocations will work, but be placed in region bios less likely to corrupt, and still that didn't help, still same hang.
-
-
-You did face lot of such situations, so maybe you know about anything I can do.
-
-System is ACER aspire 5720G.
-
-I now use 2.6.27-rc5, but same did happen on 2.6.26, and if I remember correctly 2.6.25.
-(I bought this system in April and installed linux during first day)
-I installed hardy there)
-
-
-
-Note: I do use nvidia drivers, and without them display stays dark after resume, BUT, this bug is unrelated,
-while screen is dark, system does work, I can see hdd led blinking when I issue commands, I can turn system off, suspend again (and get hard hang of resume...), I even stored dmesg after first suspend without nvidia driver, and there are no errors
-(except that EC storm , which is harmless here (I tried  patches that fix it, but they didn't affect this suspend bug)
-
-All tests were done without nvidia driver.
-
-I would be very glad if you tell me any suggestions how to fix/debug that thing.
-
-And lastly, suggestion to everybody:
-
-NEVER BUY ACER LAPTOPS, THEY ARE JUST BROKEN
-
-Best regards,
-	Maxim Levitsky
+Thanks,
+Alex.
