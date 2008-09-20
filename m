@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbYITLXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbYITLcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbYITLXs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 07:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYITLXj
+	id S1753628AbYITLcQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 07:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYITLcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 07:23:39 -0400
-Received: from ptb-relay03.plus.net ([212.159.14.147]:56332 "EHLO
-	ptb-relay03.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbYITLXj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 07:23:39 -0400
-Message-ID: <48D4DD3C.3050308@yahoo.com>
-Date: Sat, 20 Sep 2008 12:23:40 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Sat, 20 Sep 2008 07:32:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38335 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751534AbYITLcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 07:32:04 -0400
+Date: Sat, 20 Sep 2008 13:31:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Noonan <steven@uplinklabs.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip FIXED] ftrace: add nop tracer
+Message-ID: <20080920113151.GA30234@elte.hu>
+References: <1221818803-9616-1-git-send-email-steven@uplinklabs.net> <20080919142326.29834d11.akpm@linux-foundation.org> <f488382f0809191635o45f3ed17vc23380eab41b2878@mail.gmail.com> <20080920061659.GF25713@elte.hu> <f488382f0809200033x10d43767j95e5958a2715d14c@mail.gmail.com>
 MIME-Version: 1.0
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-CC: linux-kernel@vger.kernel.org, lenb@kernel.org
-Subject: Re: Reading EeePC900 battery info causes stalls
-References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no> <48D4CC1B.7030708@yahoo.com> <48D4CFA5.7010501@suse.de> <48D4D5CA.1060104@yahoo.com> <48D4D6AE.70705@yahoo.com> <48D4DB23.5080901@suse.de>
-In-Reply-To: <48D4DB23.5080901@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 24a8ce37fa4d9ca9946ae971133cf1f2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f488382f0809200033x10d43767j95e5958a2715d14c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0004]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Starikovskiy wrote:
-> Could you cat /proc/interrupts ?
 
-            CPU0
-   0:     106942   IO-APIC-edge      timer
-   1:        426   IO-APIC-edge      i8042
-   8:         41   IO-APIC-edge      rtc0
-   9:      27346   IO-APIC-fasteoi   acpi
-  12:       6840   IO-APIC-edge      i8042
-  14:          0   IO-APIC-edge      ata_piix
-  15:        203   IO-APIC-edge      ata_piix
-  16:      92357   IO-APIC-fasteoi   uhci_hcd:usb5, HDA Intel, 
-i915@pci:0000:00:02.0
-  18:      38195   IO-APIC-fasteoi   ath, uhci_hcd:usb4
-  19:          0   IO-APIC-fasteoi   uhci_hcd:usb3
-  23:      25150   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
-NMI:          0   Non-maskable interrupts
-LOC:     142112   Local timer interrupts
-TRM:          0   Thermal event interrupts
-SPU:          0   Spurious interrupts
-ERR:          0
-MIS:          0
+* Steven Noonan <steven@uplinklabs.net> wrote:
+
+> > yeah. Feel free to send a separate patch that implements Andrew's 
+> > clean-up suggestion. I agree that pro>con.
+> 
+> How about this patch gets applied to -tip and I submit one that drops 
+> the ifdefs on this and the other tracers?
+
+yeah - it's been part of tip/master since yesterday.
+
+	Ingo
