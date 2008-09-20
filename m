@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYITKKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbYITKOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbYITKKp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 06:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbYITKKj
+	id S1753115AbYITKOP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 06:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbYITKOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 06:10:39 -0400
-Received: from ptb-relay03.plus.net ([212.159.14.147]:39193 "EHLO
-	ptb-relay03.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751058AbYITKKi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 06:10:38 -0400
-Message-ID: <48D4CC1B.7030708@yahoo.com>
-Date: Sat, 20 Sep 2008 11:10:35 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       lenb@kernel.org, astarikovskiy@suse.de
-Subject: Reading EeePC900 battery info causes stalls (was Re: How how latent
- should non-preemptive scheduling be?)
-References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no>
-In-Reply-To: <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 095b0758841c94655bb15f5e4ff964ec
+	Sat, 20 Sep 2008 06:14:07 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:36117 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751162AbYITKOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 06:14:05 -0400
+Date: Sat, 20 Sep 2008 12:13:58 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: linux-kernel@vger.kernel.org, kernel@avr32linux.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH 0/4] atmel-mci: fixes for 2.6.27
+Message-ID: <20080920121358.3fc10a13@mjolnir.drzeus.cx>
+In-Reply-To: <1221851370-20189-1-git-send-email-haavard.skinnemoen@atmel.com>
+References: <1221851370-20189-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.0; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-10577-1221905644-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Its actually function tracer output I'm interested in.. that shows what
-> all its doing to make it take 120+ms.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-I switched the tracer to ftrace and waited for the problem to occur.
-When stall did happen it was far worse than usual with the tracing on
-(instead of looping sound of < 0.5 second it looped it for about 2-3
-seconds). Looking atthe trace it was filled with hald events. Killing 
-off all of hald made the 30 second stalls go away.
+--=_freyr.drzeus.cx-10577-1221905644-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-A quick strace showed that what hal was doing every 30 seconds was
-reading various battery stats from /sys. Doing a simple
-cat /sys/class/power_supply/BAT0/manufacturer
-is enough to provoke a stall. The stalls only occur if you are on 
-battery or are on AC and the battery is not reporting that it is 100% 
-charged (but in the latter case the stalls are less pronounced).
+On Fri, 19 Sep 2008 21:09:26 +0200
+Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
 
-I can reliably hear the stalls at runlevel 1 by running
-speaker-test -b75000
-and
-watch --interval=1 cat /proc/acpi/battery/BAT0/info
-within separate terminals within screen.
+> Hi Pierre,
+>=20
+> Here is a small handful of fixes for problems I've found while testing
+> the new atmel-mci driver. I hope they can be applied before 2.6.27
+> goes out the door.
+>=20
 
-A 5 second ftrace of the stall being provoked is provided on 
-<http://sucs.org/~sits/test/eeepc-ftrace.txt.gz> (it's 6Mbytes 
-uncompressed).
+Queued up and on its way to Linus.
 
-Putting the alsa buffer size up to 100000 allows you to still hear
-stalls but far less frequently. Putting to 150000 will stop you from
-hearing stalls. Even though xruns is set to 2 alsa not report any buffer
-underruns to syslog.
+> I guess it's too late to add DMA support at this point, so I'll post
+> that separately along with a few other improvements.
 
-Another way of seeing the stalls is to run glxgears and every second the
-gears' spinning will jump (even on an unloaded system).
+Yeah, no features at this point. I do appreciate getting patches some
+time before the merge window (preferably right after it closes).
 
-(I guess this works as the stalls are over 100ms)
+--=20
+     -- Pierre Ossman
 
-The xandros provided 2.6.21.4 kernel does not exhibit this problem at 
-all but my hand compiled 2.6.24something and ubuntu 2.6.24 kernels do.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-For some reason latencytop did not really finger ACPI as a cause of
-stalls (although some acpi stuff does show up but never in the top
-spot). Is this simply a part of the kernel that latencytop does not trace?
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-> I thought we had a wakeup latency tracer exacty like we have preempt and
-> irq off latency tracers, Steve, where'd that go?
+--=_freyr.drzeus.cx-10577-1221905644-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-I rebuilt my kernel after a make clean and wakeup was still not there. 
-It might be a good idea to modify the kernel documentation currently
-provided with 2.6.27 if it has gone away for now (or document the extra
-switches needed to turn it on if that's why it didn't show up for me)...
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
---
-Sitsofe | http://sucs.org/~sits/
+iEYEARECAAYFAkjUzOoACgkQ7b8eESbyJLiLkACglU8R8Br9m0YUki1Ms6eAz20A
+VGoAoKU4oWmBCTVsSvaOCl4Tax/jJi+t
+=Wqw9
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-10577-1221905644-0001-2--
