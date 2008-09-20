@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbYITQsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752345AbYITRHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752146AbYITQsY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 12:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYITQsP
+	id S1752345AbYITRHu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 13:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbYITRHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 12:48:15 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:43012 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbYITQsO (ORCPT
+	Sat, 20 Sep 2008 13:07:42 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49138 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750903AbYITRHl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 12:48:14 -0400
-Message-ID: <48D5294B.2010804@skyrush.com>
-Date: Sat, 20 Sep 2008 10:48:11 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080727)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com
-Subject: Re: [PATCH] Fix backspace on wrapped lines in console (virtual terminal)
-References: <48D5240D.7070701@skyrush.com> <20080920173822.51794923@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080920173822.51794923@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 20 Sep 2008 13:07:41 -0400
+Date: Sat, 20 Sep 2008 18:01:10 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Felipe Balbi <felipe.balbi@nokia.com>, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
+       Wim Van Sebroeck <wim@iguana.be>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "George G. Davis" <gdavis@mvista.com>
+Subject: Re: [PATCH 3/5] watchdog: cleanup a bit omap_wdt.c
+Message-ID: <20080920180110.18f6205b@lxorguk.ukuu.org.uk>
+In-Reply-To: <200809200832.15440.david-b@pacbell.net>
+References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com>
+	<200809191741.44986.david-b@pacbell.net>
+	<20080920081326.GB11114@flint.arm.linux.org.uk>
+	<200809200832.15440.david-b@pacbell.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Sat, 20 Sep 2008 10:25:49 -0600
-> Joe Peterson <joe@skyrush.com> wrote:
+> One could argue that this idiom is ugly ... and fix it by having
+> misc_open() in drivers/char/misc.c initialize i_private before
+> delegating to the miscdevice->fops->open().  Even just setting
+> it to the miscdevice pointer would suffice with this driver;
+> container_of(i_private, struct omap_wdt_dev, omap_wdt_miscdev)
+> would then return what get_drvdata() returns, sans global.
 > 
->> Attached is a patch that fixes virtual terminal problems when backspace
->> is used on wrapped lines (see patch text for the specific issues).  The
->> issues can be demonstrated by trying two things in the console (vt):
-> 
-> I would need to power up my vt420 to check (yes I have one lurking in a
-> corner!) but I have a feeling the current behaviour (not going up a line)
-> is correct for ansi type terminals.
+> But that wouldn't be just cleaning up this watchdog.
 
-Would it still erase the actual characters input, though?  This would
-cause one to believe they were not erased, since the visual feedback
-does not match...  I wonder if "fixing" this in Linux would really break
-the needed vt hardware compatibility - maybe that case lies in the
-"undefined" area in a sense.
+There are a couple of takes are reworking all the watchdog core code to
+get rid of that stuff - so its probably not worth worrying about as
+pretty soon I'd hope watchdogs are mostly using one of the new interfaces
+and taking struct watchdog for ops (and in the case of the watchdog core
+code I proposed don't even usually need open methods at all)
 
-What about the need_wrap (end of line) case - I wonder what the real
-vt420 does for that.  If it doesn't match the behavior this patch
-"fixes", it would probably be a vt420 bug...
-
-Yes, these things are certainly getting harder to check against real
-hardware these days!  :)
-
-						-Joe
+Alan
+--
+#include <stdsig.h>
