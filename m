@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbYITPns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbYITPp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752069AbYITPns (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 11:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYITPni
+	id S1752583AbYITPp3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 11:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbYITPpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 11:43:38 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:13245 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750713AbYITPnh (ORCPT
+	Sat, 20 Sep 2008 11:45:11 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51211 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754AbYITPpK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 11:43:37 -0400
-Subject: Re: [PATCH 2/2]: softirq: Add support for triggering softirq work
-	on softirqs.
-From: Daniel Walker <dwalker@mvista.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com, steffen.klassert@secunet.com
-In-Reply-To: <20080919.234832.127229997.davem@davemloft.net>
-References: <20080919.234832.127229997.davem@davemloft.net>
-Content-Type: text/plain
-Date: Sat, 20 Sep 2008 08:43:33 -0700
-Message-Id: <1221925413.1343.132.camel@localhost.localdomain>
+	Sat, 20 Sep 2008 11:45:10 -0400
+Date: Sat, 20 Sep 2008 08:45:12 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com,
+       steffen.klassert@secunet.com
+Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
+Message-ID: <20080920084512.58f7fb08@infradead.org>
+In-Reply-To: <1221924561.1343.121.camel@localhost.localdomain>
+References: <20080919.234824.223177211.davem@davemloft.net>
+	<1221924561.1343.121.camel@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-19 at 23:48 -0700, David Miller wrote:
+On Sat, 20 Sep 2008 08:29:21 -0700
+> 
+> > Jen's, as stated, has block layer uses for this.  I intend to use
+> > this for receive side flow seperation on non-multiqueue network
+> > cards.  And Steffen Klassert has a set of IPSEC parallelization
+> > changes that can very likely make use of this.
+> 
+> What's the benefit that you (or Jens) sees from migrating softirqs
+> from specific cpu's to others?
 
-> @@ -6,6 +6,8 @@
->   *	Distribute under GPLv2.
->   *
->   *	Rewritten. Old one was good in 2.2, but in 2.3 it was immoral. --ANK (990903)
-> + *
-> + *	Remote softirq infrastructure is by Jens Axboe.
->   */
+it means you do all the processing on the CPU that submitted the IO in
+the first place, and likely still has the various metadata pieces in
+its CPU cache (or at least you know you won't need to bounce them over)
 
-This goes in the GIT log so I hear, so you shouldn't need to add it to
-the top.. It sounds like your saying Jens is the author, but I'm sure
-you are..
-
->  #include <linux/module.h>
-> @@ -463,17 +465,118 @@ void tasklet_kill(struct tasklet_struct *t)
->  
->  EXPORT_SYMBOL(tasklet_kill);
->  
-> +DEFINE_PER_CPU(struct list_head, softirq_work_list[NR_SOFTIRQ]);
-> +
-> +static void __local_trigger(struct call_single_data *cp, int softirq)
-> +{
-> +	struct list_head *head = &__get_cpu_var(softirq_work_list[softirq]);
-> +
-> +	list_add_tail(&cp->list, head);
-> +	if (head->next == &cp->list)
-> +		raise_softirq_irqoff(softirq);
-> +}
-
-This list your adding is rather confusing .. You add to it, but never
-remove anything.. You've got it in the header file, so you must use it
-someplace else .. Then I don't see what else it could be used for other
-than triggering the softirq..
-
-> +#if defined(CONFIG_SMP) && defined(CONFIG_USE_GENERIC_SMP_HELPERS)
-
-This whole patch really needs ifdefs. There's no value here on UP, since
-what other cpu are you going to send softirqs to?
-
-Daniel
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
