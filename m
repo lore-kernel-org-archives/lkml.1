@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbYITVxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbYITV7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754055AbYITVxc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 17:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbYITVxY
+	id S1753988AbYITV7z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 17:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYITV7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 17:53:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34975 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751490AbYITVxX (ORCPT
+	Sat, 20 Sep 2008 17:59:46 -0400
+Received: from metis.extern.pengutronix.de ([83.236.181.26]:60548 "EHLO
+	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751727AbYITV7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 17:53:23 -0400
-Date: Sat, 20 Sep 2008 17:53:20 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       astarikovskiy@suse.de
-Subject: Re: Reading EeePC900 battery info causes stalls
-In-Reply-To: <48D52FE3.6060803@yahoo.com>
-Message-ID: <alpine.DEB.1.10.0809201739170.18130@gandalf.stny.rr.com>
-References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no>
- <48D4CC1B.7030708@yahoo.com> <alpine.DEB.1.10.0809200955360.12824@gandalf.stny.rr.com> <48D50498.5050608@yahoo.com> <alpine.DEB.1.10.0809201037070.13540@gandalf.stny.rr.com> <48D52FE3.6060803@yahoo.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 20 Sep 2008 17:59:45 -0400
+Date: Sat, 20 Sep 2008 23:59:42 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: apw@shadowen.org
+Subject: [PATCH] [CHECKPATCH] Check for p0-patches
+Message-ID: <20080920215942.GA26888@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="9jxsPFA5p3P2qPhR"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 10.1.1.3
+X-SA-Exim-Mail-From: wsa@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sat, 20 Sep 2008, Sitsofe Wheeler wrote:
+--9jxsPFA5p3P2qPhR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Steven Rostedt wrote:
-> > OK, that is probably the known bug you are hitting. Simply disable the
-> > CONFIG_FTRACE_STARTUP_TEST and you should have the wakeup tracer. The bug is
-> > with the test, not the tracer, so it should not hurt you.
-> 
-> Thanks - this made the wakeup tracer appear a you said. I have put two wakeup
-> traces up:
-> 
-> http://sucs.org/~sits/test/eeepc-debug/20080920/latency_trace.txt.gz
-> http://sucs.org/~sits/test/eeepc-debug/20080920/trace.txt.gz
-> (each file is around 6Mbytes uncompressed)
-> 
-> Here's a small extract of latency_trace.txt:
-> 
-> > # tracer: wakeup
-> > #
-> > wakeup latency trace v1.1.5 on 2.6.27-rc6skw-dirty
-> > --------------------------------------------------------------------
-> >  latency: 3232905 us, #65620/6180619, CPU#0 | (M:desktop VP:0, KP:0, SP:0
+Check if the patch is most likely a p0-patch and give a warning if so.
 
-Peter, these times are crazy, mainly due to the cpu_clock. He probably 
-wants to use the sched_clock. Below is a patch to use it instead.
-
-Sitsofe, I notice that the trace states "desktop". This means that you
-are running with CONFIG_PREEMPT_VOLUNTARY. You want 
-CONFIG_PREEMPT.
-
-[...]
-> 
-> Is it intentional that the last event has a time earlier closer to that of the
-> first event?
-> 
-
-Change the config, and see what you get with this patch:
-
-Note this is not compiled tested:
-
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 ---
- kernel/trace/trace.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ scripts/checkpatch.pl |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Index: linus.git/kernel/trace/trace.c
-===================================================================
---- linus.git.orig/kernel/trace/trace.c	2008-09-20 17:49:00.000000000 -0400
-+++ linus.git/kernel/trace/trace.c	2008-09-20 17:49:35.000000000 -0400
-@@ -60,7 +60,7 @@ ns2usecs(cycle_t nsec)
- 
- cycle_t ftrace_now(int cpu)
- {
--	return cpu_clock(cpu);
-+	return sched_clock();
- }
- 
- /*
+Index: playground/scripts/checkpatch.pl
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- playground.orig/scripts/checkpatch.pl
++++ playground/scripts/checkpatch.pl
+@@ -986,6 +986,7 @@
+ 	my $in_comment =3D 0;
+ 	my $comment_edge =3D 0;
+ 	my $first_line =3D 0;
++	my $p1_prefix =3D '';
+=20
+ 	my $prev_values =3D 'E';
+=20
+@@ -1123,7 +1124,12 @@
+ 		# extract the filename as it passes
+ 		if ($line=3D~/^\+\+\+\s+(\S+)/) {
+ 			$realfile =3D $1;
+-			$realfile =3D~ s@^[^/]*/@@;
++			$realfile =3D~ s@^([^/]*)/@@;
++
++			$p1_prefix =3D $1;
++			if ($tree && -e "$root/$p1_prefix") {
++				WARN("Patch prefix '$p1_prefix' exists. Is it maybe a p0-patch?\n");
++			}
+=20
+ 			if ($realfile =3D~ m@include/asm/@) {
+ 				ERROR("do not modify files in include/asm, change architecture specifi=
+c files in include/asm-<architecture>\n" . "$here$rawline\n");
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
 
+--9jxsPFA5p3P2qPhR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
--- Steve
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkjVck4ACgkQD27XaX1/VRv8tgCfSpeBUyaU6Wf7QApomlwpU15V
+YIoAn0CE9i+PZ1HsF+BlpU2SgyypWB07
+=fV28
+-----END PGP SIGNATURE-----
+
+--9jxsPFA5p3P2qPhR--
