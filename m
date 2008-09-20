@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYITLF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYITLHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754175AbYITLF0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 07:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYITLFN
+	id S1754047AbYITLHG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 07:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYITLGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 07:05:13 -0400
-Received: from lazybastard.de ([212.112.238.170]:43083 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751641AbYITLFL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 07:05:11 -0400
-Date: Sat, 20 Sep 2008 13:04:59 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kihara.seiji@lab.ntt.co.jp,
-       amagai.yoshiji@lab.ntt.co.jp
-Subject: Re: [PATCH 25/27] nilfs2: block cache for garbage collection
-Message-ID: <20080920110459.GB9418@logfs.org>
-References: <20080917144146.GD8750@logfs.org> <20080918.040945.32654226.ryusuke@osrg.net> <20080917224953.GB14644@logfs.org> <20080920.194358.07565122.ryusuke@osrg.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080920.194358.07565122.ryusuke@osrg.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 20 Sep 2008 07:06:55 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:50905 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751379AbYITLGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 07:06:55 -0400
+Date: Sat, 20 Sep 2008 13:06:52 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Matt Fleming" <mattjfleming@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] MMC: Use write timeout value as read from CSR
+Message-ID: <20080920130652.05f3da6d@mjolnir.drzeus.cx>
+In-Reply-To: <5ff4a1e50809150224o600fd9fhb29e986bdb618464@mail.gmail.com>
+References: <5ff4a1e50809010812i32168136qea538ba177b81446@mail.gmail.com>
+	<5ff4a1e50809090034y3156427bpfac8a07674c3c844@mail.gmail.com>
+	<20080909094438.6423b8ef@mjolnir.drzeus.cx>
+	<5ff4a1e50809090059i2bcdb7ber8cae07128eea5a77@mail.gmail.com>
+	<20080909105513.5b8ceaaf@mjolnir.drzeus.cx>
+	<5ff4a1e50809090207o5846f5udf709eeda81653eb@mail.gmail.com>
+	<5ff4a1e50809090242ha576dcdmf82d1e9ec2204178@mail.gmail.com>
+	<20080914154817.3d618e67@mjolnir.drzeus.cx>
+	<5ff4a1e50809150103v1e250e0x4192e2fe901750a6@mail.gmail.com>
+	<20080915103821.2b618bba@mjolnir.drzeus.cx>
+	<5ff4a1e50809150224o600fd9fhb29e986bdb618464@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.0; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 September 2008 19:43:58 +0900, Ryusuke Konishi wrote:
+On Mon, 15 Sep 2008 10:24:22 +0100
+"Matt Fleming" <mattjfleming@googlemail.com> wrote:
+
 > 
-> > But that would be inefficient in several cases.  When
-> > GC'ing data that is dirty in the caches, you move the old stale data
-> > during GC and write the new data soon after.  And you always flush the
-> > caches after GC, even if your machine has no better use for the memory.
+> OK, I can see your point here. However, this is a completely different
+> change to my original patch. Would it not make more sense to queue my
+> original patch and then for me to write some patches to move all the
+> timeout info into the request structure?
 > 
-> As for as NILFS2, the dirty blocks and the blocks to be moved by GC
-> never overlap because the dirty blocks make a new generation.
-> So, they rather must be written individually.
+
+It's better to get it right directly. I'd consider this a bug fix
+patch, so it can be applied at any time during the development cycle.
+
 > 
-> Though we can reuse pages in the GC cache, the effect of this
-> optimization may be much lower than usual LFSes because most of
-> blocks in the pages may not belong to the latest generation.
+> So, what I propose is this. Could you please queue my bug fix (I can
+> send the two patches again) and then I will begin working on the
+> generic patches to fix the issues that you've raised in this thread?
+> How does that sound?
 
-Yet again I've tried to apply techniques that simply don't work with
-checkpoints in the equation.
-
-> NILFS2 needs explication than usual file systems; it needs time
-> perspective as well as it is an LFS. :)
-
-At least if you take me as a standard, I think you have proven that
-point rather well. :)
-
-Jörn
+It shouldn't take that long to write the more proper solution, so get
+to it and it should be possible to get in even for .27.
 
 -- 
-Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it.
--- Brian W. Kernighan
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
