@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbYITUTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbYITU4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753722AbYITUTj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 16:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYITUT2
+	id S1753349AbYITU4Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 16:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYITU4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 16:19:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37018
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751397AbYITUT2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 16:19:28 -0400
-Date: Sat, 20 Sep 2008 13:19:15 -0700 (PDT)
-Message-Id: <20080920.131915.143583562.davem@davemloft.net>
-To: dwalker@mvista.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com, steffen.klassert@secunet.com
-Subject: Re: [PATCH 2/2]: softirq: Add support for triggering softirq work
- on softirqs.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1221941809.1343.229.camel@localhost.localdomain>
-References: <1221925413.1343.132.camel@localhost.localdomain>
-	<20080920.130325.56429707.davem@davemloft.net>
-	<1221941809.1343.229.camel@localhost.localdomain>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Sep 2008 16:56:15 -0400
+Received: from mail.atheros.com ([12.36.123.2]:39267 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751561AbYITU4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 16:56:14 -0400
+Date: Sat, 20 Sep 2008 13:56:11 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Steven Noonan <steven@uplinklabs.net>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Senthilkumar Balasubramanian 
+	<Senthilkumar.Balasubramanian@atheros.com>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       Ingo Molnar <mingo@elte.hu>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27
+	(rc5, rc6, probably others)
+Message-ID: <20080920205611.GB8996@tesla>
+References: <20080919142801.GA5816@senthil-lnx.users.atheros.com> <alpine.LNX.2.00.0809190934001.22989@alcarin.uplinklabs.net> <20080919175824.GA5626@senthil-lnx.users.atheros.com> <20080919182322.GB7027@tesla> <alpine.LNX.2.00.0809191630090.14961@alcarin.uplinklabs.net> <20080919235305.GD11665@tesla> <f488382f0809191701u2dbf8d22n6015c9f1f23c73be@mail.gmail.com> <43e72e890809191813n95579f5h83e92b0ba1f95a44@mail.gmail.com> <f488382f0809192029w601e0e72x5c3affc3dbe65118@mail.gmail.com> <f488382f0809192040k317660f3yb99806bbdce60449@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <f488382f0809192040k317660f3yb99806bbdce60449@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel Walker <dwalker@mvista.com>
-Date: Sat, 20 Sep 2008 13:16:49 -0700
-
-> On Sat, 2008-09-20 at 13:03 -0700, David Miller wrote:
+On Fri, Sep 19, 2008 at 08:40:04PM -0700, Steven Noonan wrote:
+> On Fri, Sep 19, 2008 at 8:29 PM, Steven Noonan <steven@uplinklabs.net> wrote:
+> > Anyway, there definitely is an interrupt storm here. Let me demonstrate...
 > 
-> > On UP we get a single queue, which the layer needs anyways.
-> > It just always queues to the one queue.
-> > 
-> > Unlike Andrew's, your review comments have been completely and utterly
-> > useless, as well as a total waste of my time.
-> 
-> If you don't want your code reviewed, _don't send it_
+> Worth noting that this change (modified version of the patch by
+> Senthil from earlier) made it so it didn't give an 'IRQ 17: nobody
+> cared' when I reloaded ath9k during the IRQ storm...
 
-Sounds like a plan.
+Thanks, for letting us know -- John, seems that IRQ patch by Senthil is
+27 material as it fixes an IRQ issue (nobody cared complaint, and it
+disables the IRQ otherwise) upon rmmod during an IRQ storm.
 
+  Luis
