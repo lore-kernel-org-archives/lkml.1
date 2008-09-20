@@ -1,129 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753444AbYITSLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbYITSbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753444AbYITSLV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 14:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYITSLN
+	id S1752859AbYITSbX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 14:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYITSbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 14:11:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35112 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751112AbYITSLM convert rfc822-to-8bit (ORCPT
+	Sat, 20 Sep 2008 14:31:15 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:39589 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751112AbYITSbN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 14:11:12 -0400
-Date: Sat, 20 Sep 2008 11:11:13 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Greg KH <greg@kroah.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] debug: Introduce a dev_WARN() function
-Message-ID: <20080920111113.18954688@infradead.org>
-In-Reply-To: <20080920042630.GA21501@kroah.com>
-References: <20080919210733.4e9c58e8@infradead.org>
-	<20080920042630.GA21501@kroah.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 20 Sep 2008 14:31:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=KB3QsNhgAbI6p2xG4j6FleU1ltcKQBR3XetDSxnfHgh3cB3mqF2upp7zZ8c8GhnBQw
+         Py7XSddLLbp3tYCp5UgAJ3UI8I/GV/DyRAGedBB9mJb+P3y+8n9wcZ66U3LAr62emOxh
+         nBeakKByz9eOkx5STbkSSMPj3fdXLlrq2shyg=
+Message-ID: <48D54188.3080801@gmail.com>
+Date: Sat, 20 Sep 2008 20:31:36 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Badalian Vyacheslav <slavon@bigtelecom.ru>
+CC: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Machine Check Exception Was: NetDev! Please help!
+References: <48D4F85C.8090709@bigtelecom.ru>
+In-Reply-To: <48D4F85C.8090709@bigtelecom.ru>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Sep 2008 21:26:30 -0700
-Greg KH <greg@kroah.com> wrote:
+Badalian Vyacheslav wrote, On 09/20/2008 03:19 PM:
 
-> On Fri, Sep 19, 2008 at 09:07:33PM -0700, Arjan van de Ven wrote:
-> > 
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Date: Fri, 19 Sep 2008 21:03:06 -0700
-> > Subject: [PATCH] debug: Introduce a dev_WARN() function
-> > 
-> > in the line of dev_printk(), this patch introduces a dev_WARN()
-> > macro, that takes a struct device and then a printk format/args set
-> > of arguments. Unlike dev_printk(), the effect is that of WARN() in
-> > that a full warning message (including filename/line, module list,
-> > versions and a backtrace) is printed in addition to the device name
-> > and the arguments.
+> Hello all.
+
+
+Hi Vyacheslav,
+
+
+I think it might be something more than netdev. Please, read in the kernel
+config the comment to Processor type and features/Machine Check Exception.
+
+I pasted your second message below and Cc linux-kernel.
+
+Jarek P.
+
+> We buy 10 Intel servers and paste it to shape traffic. After 5-15 hours
+> all PC is was freeze!  Kernel not see TCO watchdog at this platform and
+> can't reboot it!. Soft Watchdog not reboot pc in this situation.  =(
 > 
-> I like the idea, but we already have dev_warn(), so dev_WARN() might
-> be a bit confusing for people.
+> At screen we see messages like this (when it freeze and i was near monitor):
 > 
-> Perhaps just documenting it with a docbook tag would suffice?
+> http://www.kerneloops.org/guilty.php?guilty=dev_watchdog&version=2.6.26-release&start=1736704&end=1769471&class=warn
+> 
+> Also by netconsole we was get this one time:
+> 
+> [ 1352.245851] netconsole: network logging started
+> [ 1458.400133] 802.1Q VLAN Support v1.8 Ben Greear <greearb@candelatech.com>
+> [ 1458.400133] All bugs added by David S. Miller <davem@redhat.com>
+> [ 4956.420298] CPU 1: Machine Check Exception: 0000000000000005
+> [ 4956.420298] e1000: eth0: e1000_clean_tx_irq: Detected Tx Unit Hang
+> [ 4956.420300]   Tx Queue             <0>
+> [ 4956.420300]   TDH                  <81>
+> [ 4956.420301]   TDT                  <81>
+> [ 4956.420302]   next_to_use          <81>
+> [ 4956.420302]   next_to_clean        <d6>
+> [ 4956.420303] buffer_info[next_to_clean]
+> [ 4956.420303]   time_stamp           <15498d>
+> [ 4956.420304]   next_to_watch        <d6>
+> [ 4956.420304]   jiffies              <15511c>
+> [ 4956.420305]   next_to_watch.status <1>
+> [ 4956.420537] eth1: Detected Tx Unit Hang:
+> [ 4956.420538]   TDH                  <b0>
+> [ 4956.420538]   TDT                  <b0>
+> [ 4956.420539]   next_to_use          <b0>
+> [ 4956.420539]   next_to_clean        <5>
+> [ 4956.420540] buffer_info[next_to_clean]:
+> [ 4956.420540]   time_stamp           <15498e>
+> [ 4956.420541]   next_to_watch        <5>
+> [ 4956.420542]   jiffies              <15511c>
+> [ 4956.420542]   next_to_watch.status <1>
+> [ 4956.423064] CPU 1: Bank 0: 3200004000000800
+> [ 4956.423190] CPU 1: Bank 5: 3200220024080400
+> [ 4956.423315] Kernel panic - not syncing: CPU context corrupt
+> [ 4956.423933] Rebooting in 3 seconds..[  531.843998] CPU 2: Machine
+> Check Exception: 0000000000000005
+> [  531.843998] CPU 0: Machine Check Exception: 0000000000000004
+> [  531.844000] CPU 0: Bank 0: 3200004000000800
+> [  531.844001] CPU 0: Bank 5: 3200121014040400
+> [  531.844002] Kernel panic - not syncing: CPU context corrupt
+> [  531.844916] Rebooting in 3 seconds..
+> 
+> This out of lspci:
+> 
+> 00:00.0 Host bridge: Intel Corporation Server DRAM Controller
+> 00:19.0 Ethernet controller: Intel Corporation 82566DM-2 Gigabit Network
+> Connection (rev 02)
+> 00:1a.0 USB Controller: Intel Corporation USB UHCI Controller #4 (rev 02)
+> 00:1a.1 USB Controller: Intel Corporation USB UHCI Controller #5 (rev 02)
+> 00:1a.2 USB Controller: Intel Corporation USB UHCI Controller #6 (rev 02)
+> 00:1a.7 USB Controller: Intel Corporation USB2 EHCI Controller #2 (rev 02)
+> 00:1c.0 PCI bridge: Intel Corporation PCI Express Port 1 (rev 02)
+> 00:1c.4 PCI bridge: Intel Corporation PCI Express Port 5 (rev 02)
+> 00:1d.0 USB Controller: Intel Corporation USB UHCI Controller #1 (rev 02)
+> 00:1d.1 USB Controller: Intel Corporation USB UHCI Controller #2 (rev 02)
+> 00:1d.2 USB Controller: Intel Corporation USB UHCI Controller #3 (rev 02)
+> 00:1d.7 USB Controller: Intel Corporation USB2 EHCI Controller #1 (rev 02)
+> 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev 92)
+> 00:1f.0 ISA bridge: Intel Corporation LPC Interface Controller (rev 02)
+> 00:1f.2 SATA controller: Intel Corporation 6 port SATA AHCI Controller
+> (rev 02)
+> 00:1f.3 SMBus: Intel Corporation SMBus Controller (rev 02)
+> 02:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G200e
+> [Pilot] ServerEngines (SEP1) (rev 02)
+> 03:02.0 Ethernet controller: Intel Corporation 82541GI Gigabit Ethernet
+> Controller (rev 05)
+> 
+> lspci -tv
+> -[0000:00]-+-00.0  Intel Corporation Server DRAM Controller
+>            +-19.0  Intel Corporation 82566DM-2 Gigabit Network Connection
+>            +-1a.0  Intel Corporation USB UHCI Controller #4
+>            +-1a.1  Intel Corporation USB UHCI Controller #5
+>            +-1a.2  Intel Corporation USB UHCI Controller #6
+>            +-1a.7  Intel Corporation USB2 EHCI Controller #2
+>            +-1c.0-[0000:01]--
+>            +-1c.4-[0000:02]----00.0  Matrox Graphics, Inc. MGA G200e
+> [Pilot] ServerEngines (SEP1)
+>            +-1d.0  Intel Corporation USB UHCI Controller #1
+>            +-1d.1  Intel Corporation USB UHCI Controller #2
+>            +-1d.2  Intel Corporation USB UHCI Controller #3
+>            +-1d.7  Intel Corporation USB2 EHCI Controller #1
+>            +-1e.0-[0000:03]----02.0  Intel Corporation 82541GI Gigabit
+> Ethernet Controller
+>            +-1f.0  Intel Corporation LPC Interface Controller
+>            +-1f.2  Intel Corporation 6 port SATA AHCI Controller
+>            \-1f.3  Intel Corporation SMBus Controller
+> 
+> All tests in 2.6.26.2 kernel... now i try compile 2.6.26.5 kernel, but
+> if KernelOops is right - its not  will help.
+> 
+> I hope NetDev help!
+> If any information or test is needed - please write!
+> 
+> Thanks for anyone!
+> 
+> Badalian Vyacheslav.
+
+Badalian Vyacheslav wrote, On 09/20/2008 03:38 PM:
+
+> New crash.... netconsole log:
+> 
+> [  116.333349] ------------[ cut here ]------------
+> [  116.333516] WARNING: at net/sched/sch_generic.c:222
+> dev_watchdog+0xf1/0x110()
+> [  116.333690] Modules linked in: netconsole i2c_i801 i2c_core e1000e e1000
+> [  116.334199] Pid: 0, comm: swapper Not tainted 2.6.26-gentoo-r1-fw #2
+> [  116.334371]  [<c012506f>] warn_on_slowpath+0x5f/0x90
+> [  116.334597]  [<c011dd1a>] enqueue_task_fair+0x1a/0x30
+> [  116.334823]  [<c011b962>] enqueue_task+0x12/0x30
+> [  116.335046]  [<c011b9d3>] activate_task+0x23/0x40
+> [  116.335268]  [<c011e01a>] try_to_wake_up+0x6a/0x110
+> [  116.335491]  [<c0137c7b>] autoremove_wake_function+0x1b/0x50
+> [  116.335718]  [<c011be6b>] __wake_up_common+0x4b/0x80
+> [  116.335941]  [<c011cfde>] __wake_up+0x3e/0x60
+> [  116.336161]  [<c0134a2b>] insert_work+0x4b/0x70
+> [  116.336384]  [<c0134dd7>] __queue_work+0x27/0x40
+> [  116.336610]  [<c02d0651>] dev_watchdog+0xf1/0x110
+> [  116.337333]  [<c012e055>] run_timer_softirq+0x115/0x170
+> [  116.337557]  [<c0122c71>] scheduler_tick+0xa1/0xd0
+> [  116.337780]  [<c012a062>] __do_softirq+0x82/0x100
+> [  116.338002]  [<c012a117>] do_softirq+0x37/0x40
+> [  116.338222]  [<c0114027>] smp_apic_timer_interrupt+0x57/0x90
+> [  116.338448]  [<c0105660>] apic_timer_interrupt+0x28/0x30
+> [  116.338672]  [<c010a5e2>] mwait_idle+0x32/0x40
+> [  116.338894]  [<c010a5b0>] mwait_idle+0x0/0x40
+> [  116.339115]  [<c01036e8>] cpu_idle+0x48/0xc0
+> [  116.339336]  =======================
+> [  116.339499] ---[ end trace e25a40b7dc59df07 ]---
+> [  117.655918] CPU 1: Machine Check Exception: 0000000000000005
+> [  117.656103] CPU 1: Bank 0: 3200004000000800
+> [  117.656604] CPU 1: Bank 5: 3200220024080400
+> [  117.656604] Kernel panic - not syncing: CPU context corrupt
+> [  117.656624] Rebooting in 3 seconds..
+> 
+> 
+> Thanks
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
 
-I added a set of comments, and also ended up doing the below USB change
-
->From 8a2fde5066bed00906df2fff1121d361e9e552f7 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 20 Sep 2008 10:35:51 -0700
-Subject: [PATCH] usb: turn dev_warn+WARN_ON combos into dev_WARN
-
-dev_WARN is both compacter and gives better debug information
-than just a WARN_ON, since people and tools will copy the device
-information message together with the WARN_ON in bug reports.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/usb/host/uhci-q.c |   24 ++++++++----------------
- 1 files changed, 8 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/usb/host/uhci-q.c b/drivers/usb/host/uhci-q.c
-index db64593..1f0c2cf 100644
---- a/drivers/usb/host/uhci-q.c
-+++ b/drivers/usb/host/uhci-q.c
-@@ -123,14 +123,10 @@ static struct uhci_td *uhci_alloc_td(struct uhci_hcd *uhci)
- 
- static void uhci_free_td(struct uhci_hcd *uhci, struct uhci_td *td)
- {
--	if (!list_empty(&td->list)) {
--		dev_warn(uhci_dev(uhci), "td %p still in list!\n", td);
--		WARN_ON(1);
--	}
--	if (!list_empty(&td->fl_list)) {
--		dev_warn(uhci_dev(uhci), "td %p still in fl_list!\n", td);
--		WARN_ON(1);
--	}
-+	if (!list_empty(&td->list))
-+		dev_WARN(uhci_dev(uhci), "td %p still in list!\n", td);
-+	if (!list_empty(&td->fl_list))
-+		dev_WARN(uhci_dev(uhci), "td %p still in fl_list!\n", td);
- 
- 	dma_pool_free(uhci->td_pool, td, td->dma_handle);
- }
-@@ -295,10 +291,8 @@ static struct uhci_qh *uhci_alloc_qh(struct uhci_hcd *uhci,
- static void uhci_free_qh(struct uhci_hcd *uhci, struct uhci_qh *qh)
- {
- 	WARN_ON(qh->state != QH_STATE_IDLE && qh->udev);
--	if (!list_empty(&qh->queue)) {
--		dev_warn(uhci_dev(uhci), "qh %p list not empty!\n", qh);
--		WARN_ON(1);
--	}
-+	if (!list_empty(&qh->queue))
-+		dev_WARN(uhci_dev(uhci), "qh %p list not empty!\n", qh);
- 
- 	list_del(&qh->node);
- 	if (qh->udev) {
-@@ -746,11 +740,9 @@ static void uhci_free_urb_priv(struct uhci_hcd *uhci,
- {
- 	struct uhci_td *td, *tmp;
- 
--	if (!list_empty(&urbp->node)) {
--		dev_warn(uhci_dev(uhci), "urb %p still on QH's list!\n",
-+	if (!list_empty(&urbp->node))
-+		dev_WARN(uhci_dev(uhci), "urb %p still on QH's list!\n",
- 				urbp->urb);
--		WARN_ON(1);
--	}
- 
- 	list_for_each_entry_safe(td, tmp, &urbp->td_list, list) {
- 		uhci_remove_td_from_urbp(td);
--- 
-1.5.5.1
 
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
