@@ -1,141 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbYITXKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYITXQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbYITXKm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 19:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYITXKc
+	id S1753924AbYITXQx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 19:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYITXQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 19:10:32 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:51246 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751470AbYITXKa (ORCPT
+	Sat, 20 Sep 2008 19:16:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59849 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751519AbYITXQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 19:10:30 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: akpm@linux-foundation.org
-Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH] ext3/jbd: Avoid WARN() messages when failing to write to the superblock
-Date: Sat, 20 Sep 2008 17:35:47 -0400
-Message-Id: <1221946547-9873-1-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sat, 20 Sep 2008 19:16:44 -0400
+Message-ID: <48D58401.4070403@linux-foundation.org>
+Date: Sat, 20 Sep 2008 18:15:13 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, jeremy@goop.org, ebiederm@xmission.com,
+       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org,
+       penberg@cs.helsinki.fi
+Subject: Re: [patch 1/4] Make the per cpu reserve configurable
+References: <20080919145859.062069850@quilx.com>	<20080919145928.322062135@quilx.com> <20080920125546.d6d7b42e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080920125546.d6d7b42e.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes some very common warnings reported by kerneloops.org
+KAMEZAWA Hiroyuki wrote:
+> Is this PERCPU_MODULE_RESERVE default size is fixex to 8192 bytes
+> both on 32bit-arch and 64bit-arch ?
+>   
+Yes.
+> How about enlarging this to twice on 64bit arch now ?
+>
+> sorry for noise.
+No actually a good idea to discuss the limit here. Maybe use 10000 for 32 bit and 15000 for 64 bit? Many percpu variables are counters that may be integers.
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
----
- fs/ext3/super.c  |   23 ++++++++++++++++++++++-
- fs/jbd/journal.c |   29 +++++++++++++++++++++++++++--
- 2 files changed, 49 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index f38a5af..b3f8eb8 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -2259,13 +2259,34 @@ static void ext3_commit_super (struct super_block * sb,
- 
- 	if (!sbh)
- 		return;
-+	if (buffer_write_io_error(sbh)) {
-+		/*
-+		 * Oh, dear.  A previous attempt to write the
-+		 * superblock failed.  This could happen because the
-+		 * USB device was yanked out.  Or it could happen to
-+		 * be a transient write error and maybe the block will
-+		 * be remapped.  Nothing we can do but to retry the
-+		 * write and hope for the best.
-+		 */
-+		printk(KERN_ERR "ext3: previous I/O error to "
-+		       "superblock detected for %s.\n", sb->s_id);
-+		clear_buffer_write_io_error(sbh);
-+		set_buffer_uptodate(sbh);
-+	}
- 	es->s_wtime = cpu_to_le32(get_seconds());
- 	es->s_free_blocks_count = cpu_to_le32(ext3_count_free_blocks(sb));
- 	es->s_free_inodes_count = cpu_to_le32(ext3_count_free_inodes(sb));
- 	BUFFER_TRACE(sbh, "marking dirty");
- 	mark_buffer_dirty(sbh);
--	if (sync)
-+	if (sync) {
- 		sync_dirty_buffer(sbh);
-+		if (buffer_write_io_error(sbh)) {
-+			printk(KERN_ERR "ext3: I/O error while writing "
-+			       "superblock for %s.\n", sb->s_id);
-+			clear_buffer_write_io_error(sbh);
-+			set_buffer_uptodate(sbh);
-+		}
-+	}
- }
- 
- 
-diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-index aa7143a..8214175 100644
---- a/fs/jbd/journal.c
-+++ b/fs/jbd/journal.c
-@@ -83,6 +83,7 @@ EXPORT_SYMBOL(journal_force_commit);
- 
- static int journal_convert_superblock_v1(journal_t *, journal_superblock_t *);
- static void __journal_abort_soft (journal_t *journal, int errno);
-+static const char *journal_dev_name(journal_t *journal, char *buffer);
- 
- /*
-  * Helper function used to manage commit timeouts
-@@ -931,6 +932,7 @@ void journal_update_superblock(journal_t *journal, int wait)
- {
- 	journal_superblock_t *sb = journal->j_superblock;
- 	struct buffer_head *bh = journal->j_sb_buffer;
-+	char b[BDEVNAME_SIZE];
- 
- 	/*
- 	 * As a special case, if the on-disk copy is already marked as needing
-@@ -948,6 +950,22 @@ void journal_update_superblock(journal_t *journal, int wait)
- 		goto out;
- 	}
- 
-+	if (buffer_write_io_error(bh)) {
-+		/*
-+		 * Oh, dear.  A previous attempt to write the journal
-+		 * superblock failed.  This could happen because the
-+		 * USB device was yanked out.  Or it could happen to
-+		 * be a transient write error and maybe the block will
-+		 * be remapped.  Nothing we can do but to retry the
-+		 * write and hope for the best.
-+		 */
-+		printk(KERN_ERR "JBD: previous I/O error detected "
-+		       "for journal superblock update for %s.\n",
-+		       journal_dev_name(journal, b));
-+		clear_buffer_write_io_error(bh);
-+		set_buffer_uptodate(bh);
-+	}
-+
- 	spin_lock(&journal->j_state_lock);
- 	jbd_debug(1,"JBD: updating superblock (start %ld, seq %d, errno %d)\n",
- 		  journal->j_tail, journal->j_tail_sequence, journal->j_errno);
-@@ -959,9 +977,16 @@ void journal_update_superblock(journal_t *journal, int wait)
- 
- 	BUFFER_TRACE(bh, "marking dirty");
- 	mark_buffer_dirty(bh);
--	if (wait)
-+	if (wait) {
- 		sync_dirty_buffer(bh);
--	else
-+		if (buffer_write_io_error(bh)) {
-+			printk(KERN_ERR "JBD: I/O error detected "
-+			       "when updating journal superblock for %s.\n",
-+			       journal_dev_name(journal, b));
-+			clear_buffer_write_io_error(bh);
-+			set_buffer_uptodate(bh);
-+		}
-+	} else
- 		ll_rw_block(SWRITE, 1, &bh);
- 
- out:
--- 
-1.5.6.1.205.ge2c7.dirty
 
