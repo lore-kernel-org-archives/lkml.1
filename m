@@ -1,93 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbYITFUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbYITFs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751805AbYITFUB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 01:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbYITFTw
+	id S1751805AbYITFs5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 01:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYITFss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 01:19:52 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:37798 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750826AbYITFTv (ORCPT
+	Sat, 20 Sep 2008 01:48:48 -0400
+Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:10691 "EHLO
+	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750826AbYITFsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 01:19:51 -0400
-Message-ID: <48D48789.8000606@linux.vnet.ibm.com>
-Date: Fri, 19 Sep 2008 22:18:01 -0700
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Hirokazu Takahashi <taka@valinux.co.jp>, righi.andrea@gmail.com,
-       dm-devel@redhat.com, xen-devel@lists.xensource.com,
-       containers@lists.linux-foundation.org, agk@sourceware.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       jens.axboe@oracle.com, fernando@oss.ntt.co.jp, xemul@openvz.org
-Subject: Re: [dm-devel] Re: dm-ioband + bio-cgroup benchmarks
-References: <48D267B5.20402@gmail.com> <20080918150634.GH20640@redhat.com> <48D2715A.6060002@gmail.com> <20080919.123405.91829935.taka@valinux.co.jp> <20080920132703.e74c8f89.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080920132703.e74c8f89.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Sep 2008 01:48:47 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiMFAPgq1EhR93Ee/2dsb2JhbACBXbRLgWU
+Date: Sat, 20 Sep 2008 07:48:41 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Felipe Balbi <me@felipebalbi.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Felipe Balbi <felipe.balbi@nokia.com>, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "George G. Davis" <gdavis@mvista.com>
+Subject: Re: [PATCH 5/5] watchdog: introduce platform_data and remove cpu conditional code
+Message-ID: <20080920054841.GJ22550@infomag.infomag.iguana.be>
+References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-2-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-3-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-4-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-5-git-send-email-felipe.balbi@nokia.com> <1221820359-8943-6-git-send-email-felipe.balbi@nokia.com> <20080919190431.GA9675@flint.arm.linux.org.uk> <20080919213331.GA10156@frodo>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080919213331.GA10156@frodo>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Fri, 19 Sep 2008 12:34:05 +0900 (JST)
-> Hirokazu Takahashi <taka@valinux.co.jp> wrote:
-> 
->> I've decided to get Ryo to post the accurate dirty-page tracking patch
->> for bio-cgroup, which isn't perfect yet though. The memory controller
->> never wants to support this tracking because migrating a page between
->> memory cgroups is really heavy.
->>
->> I also thought enhancing the memory controller would be good enough,
->> but a lot of people said they wanted to control memory resource and
->> block I/O resource separately.
->> So you can create several bio-cgroup in one memory-cgroup,
->> or you can use bio-cgroup without memory-cgroup.
->>
->> I also have a plan to implement more acurate tracking mechanism
->> on bio-cgroup after the memory cgroup team re-implement the infrastructure,
->> which won't be supported by memory-cgroup.
->> When a process are moved into another memory cgroup,
->> the pages belonging to the process don't move to the new cgroup
->> because migrating pages is so heavy. It's hard to find the pages
->> from the process and migrating pages may cause some memory pressure.
->> I'll implement this feature only on bio-cgroup with minimum overhead
->>
-> I really would like to move page_cgroup to new cgroup when the process moves...
-> But it's just in my plan and I'm not sure I can do it or not.
-> 
+Hi Balbi,
 
-Kamezawa-San, I am not dead against it, but I would provide a knob/control point
-for system administrator to decide if movement is important for applications,
-then let them do so (like force_empty).
+> Well, patches 4 and 5 should be ignored. Should I resend or could I rely
+> on the fact that people won't pick them up ?
 
-> Anyway what's next for me is
->  1. fix current discussion to remove page->page_cgroup pointer.
->  2. reduce locks.
+I will not pick them up (to add them in the watchdog tree).
 
-Are you planning on reposting these. I've been trying other approaches at my end
+Kind regards,
+Wim.
 
-1. Use radix tree per-node per-zone
-2. Use radix trees only for 32 bit systems
-3. Depend on CONFIG_HAVE_MEMORY_PRESENT and build a sparse data structure and
-use pre-allocation
-
-I've posted (1) and I'll take a look at your patches as well
-
->  3. support swap and swap-cache.
-> 
-> I think algorithm for (1), (2) is now getting smart.
-> 
-
-Yes, it is getting better
-
-> Thanks,
-> -Kame
-> 
-
-
--- 
-	Balbir
