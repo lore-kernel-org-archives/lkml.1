@@ -1,38 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbYITUEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYITUPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbYITUEx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 16:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYITUEn
+	id S1753205AbYITUPx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 16:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYITUPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 16:04:43 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34257
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751112AbYITUEm (ORCPT
+	Sat, 20 Sep 2008 16:15:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54894 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbYITUPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 16:04:42 -0400
-Date: Sat, 20 Sep 2008 13:04:30 -0700 (PDT)
-Message-Id: <20080920.130430.267667082.davem@davemloft.net>
-To: dwalker@mvista.com
-Cc: arjan@infradead.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com, steffen.klassert@secunet.com
-Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1221936751.1343.226.camel@localhost.localdomain>
-References: <1221932404.1343.196.camel@localhost.localdomain>
-	<20080920110952.05da49ab@infradead.org>
-	<1221936751.1343.226.camel@localhost.localdomain>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Sep 2008 16:15:45 -0400
+Date: Sat, 20 Sep 2008 13:14:42 -0700
+From: Greg KH <greg@kroah.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] debug: Introduce a dev_WARN() function
+Message-ID: <20080920201442.GA29622@kroah.com>
+References: <20080919210733.4e9c58e8@infradead.org> <20080920042630.GA21501@kroah.com> <20080920111113.18954688@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080920111113.18954688@infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel Walker <dwalker@mvista.com>
-Date: Sat, 20 Sep 2008 11:52:31 -0700
+On Sat, Sep 20, 2008 at 11:11:13AM -0700, Arjan van de Ven wrote:
+> On Fri, 19 Sep 2008 21:26:30 -0700
+> Greg KH <greg@kroah.com> wrote:
+> 
+> > On Fri, Sep 19, 2008 at 09:07:33PM -0700, Arjan van de Ven wrote:
+> > > 
+> > > From: Arjan van de Ven <arjan@linux.intel.com>
+> > > Date: Fri, 19 Sep 2008 21:03:06 -0700
+> > > Subject: [PATCH] debug: Introduce a dev_WARN() function
+> > > 
+> > > in the line of dev_printk(), this patch introduces a dev_WARN()
+> > > macro, that takes a struct device and then a printk format/args set
+> > > of arguments. Unlike dev_printk(), the effect is that of WARN() in
+> > > that a full warning message (including filename/line, module list,
+> > > versions and a backtrace) is printed in addition to the device name
+> > > and the arguments.
+> > 
+> > I like the idea, but we already have dev_warn(), so dev_WARN() might
+> > be a bit confusing for people.
+> > 
+> > Perhaps just documenting it with a docbook tag would suffice?
+> > 
+> 
+> I added a set of comments, and also ended up doing the below USB change
 
-> All that vs. bouncing data around the caches.. To what degree has all
-> that been handled or thought about?
+Ok, that looks good, care to resend all of these, with the changed
+original one so that I can apply them?
 
-Give concrete things to discuss or just be quiet.
+thanks,
+
+greg k-h
