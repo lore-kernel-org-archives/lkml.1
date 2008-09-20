@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbYITXvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYITX4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbYITXvT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 19:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYITXvK
+	id S1754142AbYITX4j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 19:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbYITX4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 19:51:10 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:44023 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751758AbYITXvK (ORCPT
+	Sat, 20 Sep 2008 19:56:30 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:37879 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbYITX43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 19:51:10 -0400
-Message-ID: <48D58C6B.9000403@skyrush.com>
-Date: Sat, 20 Sep 2008 17:51:07 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080727)
+	Sat, 20 Sep 2008 19:56:29 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [bisected][resend] pnp: Huge number of "io resource overlap" messages
+Date: Sat, 20 Sep 2008 17:56:24 -0600
+User-Agent: KMail/1.9.9
+Cc: Rene Herman <rene.herman@keyaccess.nl>, linux-kernel@vger.kernel.org,
+       Rene Herman <rene.herman@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <200809091250.08620.elendil@planet.nl> <200809172310.01580.bjorn.helgaas@hp.com> <200809210149.07755.elendil@planet.nl>
+In-Reply-To: <200809210149.07755.elendil@planet.nl>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com
-Subject: Re: [PATCH] Fix backspace on wrapped lines in console (virtual terminal)
-References: <48D5240D.7070701@skyrush.com> <20080920173822.51794923@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080920173822.51794923@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809201756.25157.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Sat, 20 Sep 2008 10:25:49 -0600
-> Joe Peterson <joe@skyrush.com> wrote:
+On Saturday 20 September 2008 05:49:05 pm Frans Pop wrote:
+> On Thursday 18 September 2008, Bjorn Helgaas wrote:
+> > On Tuesday 09 September 2008 12:31:09 pm Rene Herman wrote:
+> > > On 09-09-08 19:40, Bjorn Helgaas wrote:
+> > > > If the PCI device isn't fully initialized, it doesn't seem right to
+> > > > check it for resource conflicts.  But I don't know how to tell
+> > > > that.
+> > >
+> > > His pci_resource_start() values are 0. How about just checking for
+> > > that?
+> >
+> > Frans, can you test Rene's patch?  I think it will solve the problem
+> > you're seeing, and if so, we should put it in for 2.6.27.  But I'd like
+> > to have your "Tested-by" first.
 > 
->> Attached is a patch that fixes virtual terminal problems when backspace
->> is used on wrapped lines (see patch text for the specific issues).  The
->> issues can be demonstrated by trying two things in the console (vt):
+> Tested against current git (v2.6.27-rc6-158-g9824b8f) and looks good.
+> Attached the patch with Rene's Signed-off and my Tested-by for 
+> convenience.
 > 
-> I would need to power up my vt420 to check (yes I have one lurking in a
-> corner!) but I have a feeling the current behaviour (not going up a line)
-> is correct for ansi type terminals.
+> I had not tested earlier as you said you wanted to better understand the 
+> cause first. Did you get anything more about why things happen as they do 
+> from the info I sent?
 
-One more thought about this:
+Thanks for testing this.
 
-xterm has a "private mode 45", which turns on reverseWrap, allowing
-backspace to wrap.  This is similar to mode 7 (supported on xterm and
-vt), which is DEVAWM (auto wrap mode).
+We're looking at some other issues in the same area, or at least,
+where the fix might be in the same area:
+  http://bugzilla.kernel.org/show_bug.cgi?id=10231
+  http://bugzilla.kernel.org/show_bug.cgi?id=9904
 
-I agree that hard-coding backspace/reverse wrap would likely be wrong
-(even though it looks like some terminal emulators I've seen, like
-"screen" add the feature), but would it be appropriate to add mode 45 to
-vt, allowing reverse wrap as an option?
+I am still not 100% comfortable with this because I think we really
+want to know whether the BAR value is zero, not whether the CPU
+address is zero, and pci_resource_start() gives us the CPU address.
 
-Also note that vt enables DEVAWM (mode 7) by default, whereas the vt100
-docs say that it is off by default.  Since reverse wrap is probably
-almost always useful for general Linux in the console, should it also be
-on by default if we were to add that option?
+Bus and CPU addresses are currently identical on x86, but I expect
+that will change someday.  They're already different on ia64 and
+some other architectures.
 
-						-Joe
+Bottom line, I think we should tweak the patch to check the BAR
+address before we put it in.
+
+Bjorn
+
