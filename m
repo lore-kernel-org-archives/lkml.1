@@ -1,271 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbYITNiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYITNpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbYITNiP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 09:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYITNh7
+	id S1754134AbYITNpz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 09:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYITNps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 09:37:59 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:63919 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751735AbYITNh6 (ORCPT
+	Sat, 20 Sep 2008 09:45:48 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:51655 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329AbYITNpr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 09:37:58 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiMFANaV1EhMQWq+/2dsb2JhbACBXbRSgWU
-Date: Sat, 20 Sep 2008 09:37:52 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, od@novell.com
-Subject: Re: Unified tracing buffer
-Message-ID: <20080920133752.GA23215@Krystal>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <20080919231841.GB3456@redhat.com> <alpine.DEB.1.10.0809200435470.9362@gandalf.stny.rr.com>
-Mime-Version: 1.0
+	Sat, 20 Sep 2008 09:45:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DxFNa80GwDdSJUPtkeN/r+ZUDN6aWisolqFMoEKY6JJ+TKdSPrsRdHrvqh6YDtXDUI
+         2Q+cHWPm6z8BC6LxghmD6iZo+dBbd5TFVLVKut6mp603DI5qtpkbG6V1ydsVKeIRRAA8
+         dK9CE+jEZDxKUhYtwdYJDcBHXaaXHVIUi97mQ=
+Date: Sat, 20 Sep 2008 17:45:43 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Christer Weinigel <christer@weinigel.se>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Russ Dill <russ.dill@gmail.com>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org
+Subject: Re: kernel.h: add ARRAY_AND_SIZE() macro to complement
+	ARRAY_SIZE().
+Message-ID: <20080920134543.GA7354@localhost>
+References: <20080918132447.516309749@fluff.org.uk> <20080918150624.GA3421@x200.localdomain> <f17812d70809181138xb0e4d4bs8a6361bb038b5a6e@mail.gmail.com> <20080919065426.GA7222@lenovo> <f17812d70809190022u6c862ae8j43b1c1a942e22497@mail.gmail.com> <f9d2a5e10809190828g54a824b9od1ade53c96a518c8@mail.gmail.com> <20080919175544.GA3228@x200.localdomain> <48D4F519.2080509@weinigel.se>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0809200435470.9362@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:09:36 up 107 days, 17:50,  5 users,  load average: 1.59, 1.32,
-	1.10
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <48D4F519.2080509@weinigel.se>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> [ Note, It is very late for me and I probably should be finishing up 
-> packing for my trip home, but I'm stupid and decided to respond now 
-> instead ]
-> 
-> 
-> On Fri, 19 Sep 2008, Frank Ch. Eigler wrote:
-> 
-> > Hi -
-> > 
-> > 
-> > On Fri, Sep 19, 2008 at 02:33:42PM -0700, Martin Bligh wrote:
-> > 
-> > > During kernel summit and Plumbers conference, Linus and others
-> > > expressed a desire for a unified tracing buffer system for multiple
-> > > tracing applications (eg ftrace, lttng, systemtap, blktrace, etc) to
-> > > use.
-> > 
-> > OK.
-> > 
-> > 
-> > > [...]
-> > > STORAGE
-> > > -------
-> > > 
-> > > We will support multiple buffers for different tracing systems, with
-> > > separate names, event id spaces. [...]
-> > 
-> > OK.  This is completely orthogonal to ...
-> > 
-> > 
-> > > INPUT_FUNCTIONS
-> > > ---------------
-> > > 
-> > > allocate_buffer (name, size)
-> > >         return buffer_handle
-> > > 
-> > > register_event (buffer_handle, event_id, print_function)
-> > >         You can pass in a requested event_id from a fixed set, and
-> > > will be given it, or an error
-> > >         0 means allocate me one dynamically
-> > >         returns event_id     (or -E_ERROR)
-> > > 
-> > > record_event (buffer_handle, event_id, length, *buf)
-> > 
-> > How do you imagine record_event() being used from the point of view of
-> > the instrumented module?  Is it to be protected by some sort of test
-> > of the control variable?  Is the little binary event buffer supposed
-> > to be constructed unconditionally?  (On the stack?)
-> 
-> The event buffer is allocated when you create the buffer. The tracer will 
-> do that on initialization.
-> 
+[Christer Weinigel - Sat, Sep 20, 2008 at 03:05:29PM +0200]
+> Alexey Dobriyan wrote:
+>> On Fri, Sep 19, 2008 at 08:28:45AM -0700, Russ Dill wrote:
+>>> My vote is for ARRAY_AND_SIZE to spread far and wide across the land.
+>>> ARRAY_SIZE is already very safe, as it has a __must_be_array macro
+>>> built in. So ARRAY_AND_SIZE is even safer, as it prevents you from
+>>> mixing up two different arrays. It also reduces line length and makes
+>>> driver and device (usually platform_device) registration code easier
+>>> to read.
+>>
+>> It also spreads ARRAY_SIZE misnaming futher.
+>
+> You still haven't explained what's misnamed about it, nor suggested a  
+> better name.
+>
+>> It introduces one more core macro and quite pointless one. I can't
+>> personally recall a single bug where sizeof() was taken from another
+>> array.
+>
+> You haven't written a lot of machine definitions then.  When adding  
+> platform devices for an embedded platform one has to write a lot of  
+> boilerplate like this:
+>
+>     platform_add_devices(n30_devices, ARRAY_SIZE(n30_devices));
+>
+> and it is much too easy to copy paste that line and miss one of the  
+> references.
+>
+>> It creates interesting confusion point: ARRAY_AND_SIZE is about array
+>> and it's size. What ARRAY_SIZE is about then?
+>
+> ARRAY_AND_SIZE -> (An) array and (its) size
+>
+> ARRAY_SIZE -> (The) array size
+>
+> Sure, you could write ARRAY_AND_ITS_SIZE, but would that really make  
+> anyone happy?  Cobol went out of fashion a long time ago.
+>
+>   /Christer
+>
 
-I would propose disable the event source ASAP when disabled, without any
-conditional test if possible. This is actually what the Kernel Markers
-does with the help of Immediate Values. It should also come with a
-finer-grained filtering based on a global "enable" variable and
-per-buffer "enable" variables so a tracer can atomically start
-collecting all of its event types. We could then require both
-global tracing and per-buffer tracing to be enabled to write into the
-buffer.
+Christer, _I_ was complaining not about naming
+but about hiding function arguments. I suppose
+it's better to define some inline wrapper for
+platform_add_devices then use such a macro.
 
-I think I see where Frank is going, and I agree that this is more or
-less what I have had in mind : the Markers could be used as a global
-event ID registry and could hold the event name, ID, types (format
-string) table. Therefore, the markers would simply become the "Write to
-buffer" interface, which would associate IDs automatically and keep the
-format strings into a table dumped into a metainformation trace buffer
-at trace start and whenever IDs are dynamically registered while the
-trace is active.
+If you google a bit you may find that I was asking
+someday why don't we define alias for memset when
+we just it as _clearing_ routine ie memset(x, 0, sizeof(x)).
 
-> > 
-> > 
-> > You should compare this to markers and tracepoints.  It sounds to me like
-> > this is not that different from
-> > 
-> >      trace_mark (event_name, "%*b", length, buf);
-> > 
-> > where the goofy "%*b" could be some magic to identify the proposed
-> > "everything is a short blob" event record type.
-> 
-> This is completely separate from the trace buffer itself. The trace points 
-> and trace markers simply write whatever they want into the trace buffer.
-> The tracepoints and trace markers are something to hook points of code to 
-> do some type of tracing. The trace buffer record_event is how it will do 
-> it if it chooses to do so.
-> 
-
-As I said above, the tracepoints are meant to be a in-kernel API which
-instruments the kernel code. It leaves the markers, which are meant to
-be exposed to userspace anyway, for such record_event use. They would
-actually accomplish two things : they would register the event (just
-declaring the marker puts the event in a special section, which is our
-mapping table) and would also record the event when enabled and
-executed.
-
-
-> > 
-> > By the way, systemtap supports formatted printing that generates
-> > binary records via directives like "%4b" for 4-byte ints.  I wonder if
-> > that would be a suitable facility for this and/or markers to allow
-> > instrumentation code to *generate* those binary event records.
-> > 
-> 
-> The tracepoints and markers can generate anything they want.
-> 
-> > 
-> > Do you believe that fans of tracepoints would support a single
-> > void*/length struct parametrization?
-> 
-> The "record_event" would not (I repeat, "not") be in general code. It will 
-> be used by the different tracers. The markers/tracepoints will be in the 
-> code that can hooked to do things like profiling, or if you want, record 
-> the data into the trace buffer via the record event.
-> 
-> > 
-> > 
-> > 
-> > > Data will be output via debugfs, and provide the following output streams:
-> > > 
-> > > /debugfs/tracing/<name>/buffers/text
-> > >     clear text stream (will merge the per-cpu streams via insertion
-> > > sort, and use the print functions)
-> > 
-> > Can you spell out this part a little more?  I wonder because at the
-> > tracing miniconf on Wednesday we talked about systemtap's likely need
-> > to *consume* these trace events as they are being generated.
-> 
-> What does this mean exactly. I should have asked more details about this
-> but I was too worried about time constraints (since Linus was speaking 
-> next to think about it at the time.
-> 
-> That is, when you read a marker, who and when does that data get consumed?
-> Where does that data go? Do you even need to store it in this ring buffer?
-> 
-
-Given that systemtap may need to access the kernel state and the moment
-the instrumentation is reached, I think it implies they have to be
-called _before_ the data is writter to the buffers. We can thus see
-SystemTAP as a very powerful filtering mechanism. SystemTAP could also
-choose to directly use the instrumentation available (kprobes,
-tracepoints, ...) when it does not need to act as a filter, but more
-like a statistic gathering module. So I think we should simply provide a
-callback filter registration mechanism in the filtering chain, thus
-having a filtering pseudo-code looking like :
-
-if (unlikely(marker_enabled))
-  if (likely(global_tracing_enabled))
-    if (likely(buffer_tracing_enabled))
-      if (likely(call_filter_chain()))
-        write to buffer
-
-> > 
-> > If systemtap can only see them as a binary blob or a rendered ascii
-> > string, they would not be as useful as if the record was decomposable
-> > in kernel.  Perhaps the event-type-registration call can declare the
-> > binary struct, like a perl pack directive ... or a marker (binary)
-> > format string.
-> 
-> I don't understand the above. I'm also thinking that we are 
-> miscommunicating a bit here.
-> 
-> Let make make an example with something that I know, ftrace.
-> 
-> We hit the tracepoint in, lets say, scheduler. Previously at 
-> initialization time, ftrace would have registered with this trace point 
-> and would have allocated a buffer. When the tracepoint is actually hit, it 
-> jumps to the function that ftrace registered. Then this function would 
-> record the event into the buffer using 'record_event'. At a later time, 
-> the user could read the buffer from the filesystem using either the pretty 
-> print format or raw binary format.
-> 
-> This code is not replacing tracepoints or markers. When you say you will 
-> consume at reading, it sounds like you don't even need to use the buffer 
-> mechanism and the trace points/markers is good enough for you. The 
-> tracepoints and markers are not something that is being replaced. The 
-> trace buffers are just something to use that we can record data to that we 
-> can retrieve at a later time.
-> 
-
-If we export the data to record through markers, we would be able to let
-SystemTAP (registered in our filter chain) look at the event types being
-passed to the buffers and thus perform clever filtering on the
-information.
-
-> > 
-> > 
-> > > CONTROL
-> > > 
-> > > Sysfs style tree under debugfs
-> > > 
-> > > /debugfs/tracing/<name>/buffers/enabed         <--- binary value
-> > > 
-> > > /debugfs/tracing/<name>/<event1>
-> > > /debugfs/tracing/<name>/<event2>
-> > >     etc ...
-> > >     provides a way to enable/disable events, see what's available, and
-> > > what's enabled.
-> > 
-> > This sort of control is (or should be) already available for markers.
-> 
-> Markers and the buffers are two separate things. Perhaps I'm just tired, 
-> but I'm thinking that you are thinking we are going to remove markers and 
-> trace points.
-> 
-> This code is only to give the kernel a ring buffer to use. Not a way to 
-> put hooks into kernel code. We have tracepoints and markers for that.
-> 
-
-I think what Frank tries to express is that we would not lose any
-flexibility, but make life much easier for everyone, if we use the
-markers as the API to register event ids, keep their type table and to
-export the data at runtime.
-
-One addition that would be needed to the markers is to create a "binary
-blob" type (size %lu binary %pW ? W would be for "Write") which would
-express that this data is actually only parsable by specialized
-functions which knows the types embedded within the binary blob. If
-necessary, systemtap could then develop incrementally specialized
-functions to deal with these blob, only if required. All the other basic
-types would be easy to print or filter with a vsnprintf-like function.
-
-Mathieu
-
-> -- Steve
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+		- Cyrill -
