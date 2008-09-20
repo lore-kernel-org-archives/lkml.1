@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbYITRMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbYITRQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbYITRMd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 13:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbYITRMW
+	id S1752681AbYITRQl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 13:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbYITRQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 13:12:22 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:52823 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbYITRMV (ORCPT
+	Sat, 20 Sep 2008 13:16:34 -0400
+Received: from pih-relay05.plus.net ([212.159.14.18]:53109 "EHLO
+	pih-relay05.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbYITRQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 13:12:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BOD/EcRXikrCm8RNIv/cZN8yWV+vlVVqejOjSsQUTHKNPRbTD5Kz+97ocCDinbO9EM
-         cS3UzPONrw9wAbSrhmtlzANnJy6hSNWzX5pKUTv1/loylaTWwfRYm+W+nHT+vfJwsa1Y
-         xfkYZgYJYFbj1/CV2KbWLMr4KcumwzKTok68s=
-Date: Sat, 20 Sep 2008 21:12:16 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christer Weinigel <christer@weinigel.se>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Russ Dill <russ.dill@gmail.com>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org
-Subject: Re: kernel.h: add ARRAY_AND_SIZE() macro to complement
-	ARRAY_SIZE().
-Message-ID: <20080920171216.GD7354@localhost>
-References: <f17812d70809181138xb0e4d4bs8a6361bb038b5a6e@mail.gmail.com> <20080919065426.GA7222@lenovo> <f17812d70809190022u6c862ae8j43b1c1a942e22497@mail.gmail.com> <f9d2a5e10809190828g54a824b9od1ade53c96a518c8@mail.gmail.com> <20080919175544.GA3228@x200.localdomain> <48D4F519.2080509@weinigel.se> <20080920134543.GA7354@localhost> <48D50883.6040700@weinigel.se> <20080920144504.GB7354@localhost> <48D5271B.7010109@weinigel.se>
+	Sat, 20 Sep 2008 13:16:34 -0400
+Message-ID: <48D52FE3.6060803@yahoo.com>
+Date: Sat, 20 Sep 2008 18:16:19 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48D5271B.7010109@weinigel.se>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       astarikovskiy@suse.de
+Subject: Re: Reading EeePC900 battery info causes stalls
+References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no> <48D4CC1B.7030708@yahoo.com> <alpine.DEB.1.10.0809200955360.12824@gandalf.stny.rr.com> <48D50498.5050608@yahoo.com> <alpine.DEB.1.10.0809201037070.13540@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0809201037070.13540@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Plusnet-Relay: 68d77f52906a9c6cf4e2537116f5c29b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Christer Weinigel - Sat, Sep 20, 2008 at 06:38:51PM +0200]
-> Cyrill Gorcunov wrote:
->> [Christer Weinigel - Sat, Sep 20, 2008 at 04:28:19PM +0200]
->> ...
->>> In my opinion, making platform_add_devices into a magic macro is   
->>> actually worse, since the same construct (array, ARRAY_SIZE(array)) 
->>> is  used in many places, so one would have to do the same thing over 
->>> and  over again for every function.  In that case it's better to have 
->>> to  learn one macro once, and the ALL_CAPITALS should make it obvious 
->>> that  it is a macro.
->
->> Well, can't agree with you :) It's my _presonal_ opinion.
->> You could define it as
->>
->> static inline int platform_add_devices_array(struct platform_device **devs)
->> {
->> 	return platform_add_devices(devs, ARRAY_SIZE(devs));
->> }
->
-> Won't work.  You would have to use a macro.  The above would turn into:
->
->      platform_add_devices(devs, 1);
->
-> or would if the __must_be_array check didn't catch it.
->
->   /Christer
->
+Steven Rostedt wrote:
+> OK, that is probably the known bug you are hitting. Simply disable the 
+> CONFIG_FTRACE_STARTUP_TEST and you should have the wakeup tracer. The bug 
+> is with the test, not the tracer, so it should not hurt you.
 
-Ah...indeed, my bad :) gcc is not that smart (yet). So there only
-the macro is possible (just forget that it will be different
-namespace scope). Anyway even having it like a macro would be
-better then hiding args.
+Thanks - this made the wakeup tracer appear a you said. I have put two 
+wakeup traces up:
 
-		- Cyrill -
+http://sucs.org/~sits/test/eeepc-debug/20080920/latency_trace.txt.gz
+http://sucs.org/~sits/test/eeepc-debug/20080920/trace.txt.gz
+(each file is around 6Mbytes uncompressed)
+
+Here's a small extract of latency_trace.txt:
+
+> # tracer: wakeup
+> #
+> wakeup latency trace v1.1.5 on 2.6.27-rc6skw-dirty
+> --------------------------------------------------------------------
+>  latency: 3232905 us, #65620/6180619, CPU#0 | (M:desktop VP:0, KP:0, SP:0 HP:0)
+>     -----------------
+>     | task: speaker-test-5074 (uid:1000 nice:0 policy:1 rt_prio:25)
+>     -----------------
+> 
+> #                _------=> CPU#            
+> #               / _-----=> irqs-off        
+> #              | / _----=> need-resched    
+> #              || / _---=> hardirq/softirq 
+> #              ||| / _--=> preempt-depth   
+> #              |||| /                      
+> #              |||||     delay             
+> #  cmd     pid ||||| time  |   caller      
+> #     \   /    |||||   \   |   /           
+>      cat-6743  0.N.. 3198412us : acpi_ut_update_ref_count (acpi_ut_update_object_reference)
+>      cat-6743  0.N.. 3198413us : acpi_ut_pop_generic_state (acpi_ut_update_object_reference)
+>      cat-6743  0.N.. 3198413us : acpi_ut_delete_generic_state (acpi_ut_update_object_reference)
+>      cat-6743  0.N.. 3198414us : acpi_os_release_object (acpi_ut_delete_generic_state)
+>      cat-6743  0.N.. 3198414us : kmem_cache_free (acpi_os_release_object)
+[...]
+>      cat-6743  0.N.. 3232893us : acpi_ut_create_update_state (acpi_ut_create_update_state_and_push)
+>      cat-6743  0.N.. 3232893us : acpi_ut_create_generic_state (acpi_ut_create_update_state)
+>      cat-6743  0.N.. 3232894us : kmem_cache_alloc (acpi_ut_create_generic_state)
+>      cat-6743  0dN.. 3232895us : __slab_alloc (kmem_cache_alloc)
+>      cat-6743  0dN.. 3232895us : deactivate_slab (__slab_alloc)
+>      cat-6743  0.N.. 3232896us+: __alloc_pages_internal (__slab_alloc)
+>      cat-6743  0d... 3232904us+: marker_probe_cb (schedule)
+>      cat-6743  0d... 3232905us!: schedule (__cond_resched)
+>      cat-6743  0.N.. 3198412us : acpi_ut_push_generic_state (acpi_ut_create_update_state_and_push)
+
+Is it intentional that the last event has a time earlier closer to that 
+of the first event?
+
+-- 
+Sitsofe | http://sucs.org/~sits/
