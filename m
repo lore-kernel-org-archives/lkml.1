@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYITLES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYITLF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbYITLES (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 07:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbYITLEE
+	id S1754175AbYITLF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 07:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYITLFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 07:04:04 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:51498 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751343AbYITLEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 07:04:02 -0400
-Date: Sat, 20 Sep 2008 13:03:59 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mmc_test: initialize mmc_test_lock statically
-Message-ID: <20080920130359.61c6a916@mjolnir.drzeus.cx>
-In-Reply-To: <20080913100331.GB3746@localhost.localdomain>
-References: <20080913100331.GB3746@localhost.localdomain>
-X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Sep 2008 07:05:13 -0400
+Received: from lazybastard.de ([212.112.238.170]:43083 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751641AbYITLFL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 07:05:11 -0400
+Date: Sat, 20 Sep 2008 13:04:59 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kihara.seiji@lab.ntt.co.jp,
+       amagai.yoshiji@lab.ntt.co.jp
+Subject: Re: [PATCH 25/27] nilfs2: block cache for garbage collection
+Message-ID: <20080920110459.GB9418@logfs.org>
+References: <20080917144146.GD8750@logfs.org> <20080918.040945.32654226.ryusuke@osrg.net> <20080917224953.GB14644@logfs.org> <20080920.194358.07565122.ryusuke@osrg.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080920.194358.07565122.ryusuke@osrg.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Sep 2008 19:03:32 +0900
-Akinobu Mita <akinobu.mita@gmail.com> wrote:
-
-> The mutex mmc_test_lock is initialized at every time mmc_test device
-> is probed. Probing another mmc_test device may break the mutex, if
-> the probe function is called while the mutex is locked.
+On Sat, 20 September 2008 19:43:58 +0900, Ryusuke Konishi wrote:
 > 
-> This patch fixes it by statically initializing mmc_test_lock.
+> > But that would be inefficient in several cases.  When
+> > GC'ing data that is dirty in the caches, you move the old stale data
+> > during GC and write the new data soon after.  And you always flush the
+> > caches after GC, even if your machine has no better use for the memory.
 > 
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
-> ---
+> As for as NILFS2, the dirty blocks and the blocks to be moved by GC
+> never overlap because the dirty blocks make a new generation.
+> So, they rather must be written individually.
+> 
+> Though we can reuse pages in the GC cache, the effect of this
+> optimization may be much lower than usual LFSes because most of
+> blocks in the pages may not belong to the latest generation.
 
-Also applied.
+Yet again I've tried to apply techniques that simply don't work with
+checkpoints in the equation.
+
+> NILFS2 needs explication than usual file systems; it needs time
+> perspective as well as it is an LFS. :)
+
+At least if you take me as a standard, I think you have proven that
+point rather well. :)
+
+Jörn
 
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it.
+-- Brian W. Kernighan
