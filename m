@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbYITJ6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYITKKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753352AbYITJ6k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 05:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYITJ6e
+	id S1753203AbYITKKp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 06:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbYITKKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 05:58:34 -0400
-Received: from smtp1.stealer.net ([88.198.224.204]:48221 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbYITJ6d (ORCPT
+	Sat, 20 Sep 2008 06:10:39 -0400
+Received: from ptb-relay03.plus.net ([212.159.14.147]:39193 "EHLO
+	ptb-relay03.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbYITKKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 05:58:33 -0400
-Date: Sat, 20 Sep 2008 11:58:23 +0200 (CEST)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: rpurdie@rpsys.net
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] leds-pca9532: Mark pca9532_event() static
-Message-ID: <alpine.LNX.2.00.0809201156580.22510@titan.stealer.net>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-Organization: STEALER.net
+	Sat, 20 Sep 2008 06:10:38 -0400
+Message-ID: <48D4CC1B.7030708@yahoo.com>
+Date: Sat, 20 Sep 2008 11:10:35 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: 0.1
-X-Spam-Bar: /
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Sat, 20 Sep 2008 09:58:32 +0000
-	Bayes: 0.4959 Tokens: new, 146; hammy, 2; neutral, 1; spammy, 1.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4959]
-X-Spam-Signature: 065e7b18c6c4c621bcee0ec8828f5aa02c8b0c04
-X-DomainKey-Status: no signature
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       lenb@kernel.org, astarikovskiy@suse.de
+Subject: Reading EeePC900 battery info causes stalls (was Re: How how latent
+ should non-preemptive scheduling be?)
+References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no>
+In-Reply-To: <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Plusnet-Relay: 095b0758841c94655bb15f5e4ff964ec
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
----
- drivers/leds/leds-pca9532.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Peter Zijlstra wrote:
+> Its actually function tracer output I'm interested in.. that shows what
+> all its doing to make it take 120+ms.
 
-diff --git a/drivers/leds/leds-pca9532.c b/drivers/leds/leds-pca9532.c
-index 4064d4f..f0883e6 100644
---- a/drivers/leds/leds-pca9532.c
-+++ b/drivers/leds/leds-pca9532.c
-@@ -151,8 +151,8 @@ static int pca9532_set_blink(struct led_classdev *led_cdev,
- 	return pca9532_setpwm(client, 0, psc, led_cdev->brightness);
- }
- 
--int pca9532_event(struct input_dev *dev, unsigned int type, unsigned int code,
--	int value)
-+static int pca9532_event(struct input_dev *dev, unsigned int type,
-+	unsigned int code, int value)
- {
- 	struct pca9532_data *data = input_get_drvdata(dev);
- 
+I switched the tracer to ftrace and waited for the problem to occur.
+When stall did happen it was far worse than usual with the tracing on
+(instead of looping sound of < 0.5 second it looped it for about 2-3
+seconds). Looking atthe trace it was filled with hald events. Killing 
+off all of hald made the 30 second stalls go away.
+
+A quick strace showed that what hal was doing every 30 seconds was
+reading various battery stats from /sys. Doing a simple
+cat /sys/class/power_supply/BAT0/manufacturer
+is enough to provoke a stall. The stalls only occur if you are on 
+battery or are on AC and the battery is not reporting that it is 100% 
+charged (but in the latter case the stalls are less pronounced).
+
+I can reliably hear the stalls at runlevel 1 by running
+speaker-test -b75000
+and
+watch --interval=1 cat /proc/acpi/battery/BAT0/info
+within separate terminals within screen.
+
+A 5 second ftrace of the stall being provoked is provided on 
+<http://sucs.org/~sits/test/eeepc-ftrace.txt.gz> (it's 6Mbytes 
+uncompressed).
+
+Putting the alsa buffer size up to 100000 allows you to still hear
+stalls but far less frequently. Putting to 150000 will stop you from
+hearing stalls. Even though xruns is set to 2 alsa not report any buffer
+underruns to syslog.
+
+Another way of seeing the stalls is to run glxgears and every second the
+gears' spinning will jump (even on an unloaded system).
+
+(I guess this works as the stalls are over 100ms)
+
+The xandros provided 2.6.21.4 kernel does not exhibit this problem at 
+all but my hand compiled 2.6.24something and ubuntu 2.6.24 kernels do.
+
+For some reason latencytop did not really finger ACPI as a cause of
+stalls (although some acpi stuff does show up but never in the top
+spot). Is this simply a part of the kernel that latencytop does not trace?
+
+> I thought we had a wakeup latency tracer exacty like we have preempt and
+> irq off latency tracers, Steve, where'd that go?
+
+I rebuilt my kernel after a make clean and wakeup was still not there. 
+It might be a good idea to modify the kernel documentation currently
+provided with 2.6.27 if it has gone away for now (or document the extra
+switches needed to turn it on if that's why it didn't show up for me)...
+
+--
+Sitsofe | http://sucs.org/~sits/
