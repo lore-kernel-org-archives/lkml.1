@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYITAKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbYITALB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522AbYITAKr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 20:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYITAKi
+	id S1756125AbYITALB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 20:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYITAKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 20:10:38 -0400
-Received: from scing.com ([217.160.110.58]:51849 "EHLO scing.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751408AbYITAKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 20:10:37 -0400
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-From: Janne Grunau <j@jannau.net>
-To: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
-Subject: Re: [PATCH 02/18] lirc serial port receiver/transmitter device driver
-Date: Sat, 20 Sep 2008 02:10:33 +0200
-User-Agent: KMail/1.9.9
-Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
-       Christoph Bartelmus <lirc@bartelmus.de>
-References: <200809112149.25762.stefan.bauer@cs.tu-chemnitz.de> <200809192026.21107.j@jannau.net> <200809192053.36760.stefan.bauer@cs.tu-chemnitz.de>
-In-Reply-To: <200809192053.36760.stefan.bauer@cs.tu-chemnitz.de>
+	Fri, 19 Sep 2008 20:10:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:27132 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754215AbYITAKn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Sep 2008 20:10:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=GVScEAdSgsCkL1uSLCCllUgjn+B6BBxVhAlpb+YMOAzcaVVW4uuUlHoiqRm3mdHigR
+         iU4IMi/buysl1Y9LwNF10LbI6lxXU+vghAlAniMT0eGRBJL6/a1kYd09lJ3Ee9MnO3JB
+         /f5qdMyzSdTHxr+pCMcw7w4JpXH8DS8Autk0w=
+Message-ID: <86802c440809191710o155fa870j9f1d9443896046fe@mail.gmail.com>
+Date: Fri, 19 Sep 2008 17:10:42 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: sparse_irq: userspace ABI breakage in -tip tree
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <20080919155321.1181638a@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809200210.33597.j@jannau.net>
+References: <20080919155321.1181638a@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 19 September 2008 20:53:36 Stefan Bauer wrote:
-> On Friday 19 September 2008 20:26, Janne Grunau wrote:
-> >
-> > not necessary, it is
-> > commit bc2039245c6390bd414a61c9395604c4155a58c6
-> > Author: Janne Grunau <j@jannau.net>
-> > Date:   Thu Sep 18 20:49:19 2008 +0200
-> >
-> >     reimplement lirc_buffer as kfifo wrapper
+On Fri, Sep 19, 2008 at 3:53 PM, Arjan van de Ven <arjan@infradead.org> wrote:
 >
-> Thank you for pointing me, but
-> bc2039245c6390bd414a61c9395604c4155a58c6~1 (lirc_streamzap can use
-> lirc_buffer_clear) also crashes lircd when irexec is started.
+> commit 70426a06a58561c401e64c5767d71a011d4b978b
+> Author: Yinghai Lu <yhlu.kernel@gmail.com>
+> Date:   Tue Aug 19 20:50:27 2008 -0700
+>
+>    x86: make 32 bit to use sparse_irq
+>
+> @@ -285,7 +303,7 @@ int show_interrupts(struct seq_file *p, void *v)
+>                action = desc->action;
+>                if (!action && !any_count)
+>                        goto skip;
+> -               seq_printf(p, "%3d: ",i);
+> +               seq_printf(p, "%#x: ",i);
+>  #ifndef CONFIG_SMP
+>                seq_printf(p, "%10u ", kstat_irqs(i));
+>  #else
+>
+>
+> this is a userspace ABI breakage; you're changing /proc/interrupts from
+> decimal to hex! This file is used by both humans and computer programs,
+> and the humans will get confused, but the computer programs will break.
+> Not a good idea to put into mainline.
 
-yes, a different bug. both fixed in 
-git://git.jannau.net/linux-2.6-lirc.git
+change back to decimal could help?
 
-but lirc serial still doesn't work after 
-bc2039245c6390bd414a61c9395604c4155a58c6. I'll look at it tomorrow.
+>
+> (I'm not so convinced of sparse_irq as a whole to be honest, but that's
+> a different story)
 
-I have also good news: irrecord + lirc_serial is working with bc203924^. 
-Not sure if something changed or if it was PEBCAK.
+anything need to be addressed?
 
-Janne
+YH
