@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752419AbYITGsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbYITGtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752419AbYITGsw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 02:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYITGsi
+	id S1753188AbYITGtR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 02:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbYITGsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 02:48:38 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35475
+	Sat, 20 Sep 2008 02:48:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35479
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750891AbYITGsh (ORCPT
+	by vger.kernel.org with ESMTP id S1751065AbYITGsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 02:48:37 -0400
-Date: Fri, 19 Sep 2008 23:48:24 -0700 (PDT)
-Message-Id: <20080919.234824.223177211.davem@davemloft.net>
+	Sat, 20 Sep 2008 02:48:39 -0400
+Date: Fri, 19 Sep 2008 23:48:27 -0700 (PDT)
+Message-Id: <20080919.234827.23142568.davem@davemloft.net>
 To: linux-kernel@vger.kernel.org
 CC: netdev@vger.kernel.org, jens.axboe@oracle.com,
        steffen.klassert@secunet.com
-Subject: [PATCH 0/2]: Remote softirq invocation infrastructure.
+Subject: [PATCH 1/2]: softirq: Define and use NR_SOFTIRQ
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,39 +26,43 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Jens Axboe has written some hacks for the block layer that allow
-queueing softirq work to remote cpus.  In the context of the block
-layer he used this facility to trigger the softirq block I/O
-completion on the same cpu where the I/O was submitted.
+softirq: Define and use NR_SOFTIRQ
 
-I want to make use of a similar facility for the networking, so we
-should make this thing generic.
+The softirq tables use a magic value "32" for sizing.
 
-It depends upon the generic SMP call function infrastructure, which
-Jens wrote specifically to do these remote softirq hacks.
+Define a proper NR_SOFTIRQ value instead.
 
-For each softirq there is a per-cpu list head which is where the work
-is queued up.
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ include/linux/interrupt.h |    1 +
+ kernel/softirq.c          |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-If the platform doesn't support the generic SMP call function bits,
-the work is queued onto the local cpu.
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 58ff4e7..fdd7b90 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -252,6 +252,7 @@ enum
+ 	HRTIMER_SOFTIRQ,
+ #endif
+ 	RCU_SOFTIRQ, 	/* Preferable RCU should always be the last softirq */
++	NR_SOFTIRQ
+ };
+ 
+ /* softirq mask and active fields moved to irq_cpustat_t in
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index c506f26..27642a2 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -46,7 +46,7 @@ irq_cpustat_t irq_stat[NR_CPUS] ____cacheline_aligned;
+ EXPORT_SYMBOL(irq_stat);
+ #endif
+ 
+-static struct softirq_action softirq_vec[32] __cacheline_aligned_in_smp;
++static struct softirq_action softirq_vec[NR_SOFTIRQ] __cacheline_aligned_in_smp;
+ 
+ static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
+ 
+-- 
+1.5.6.5
 
-The first patch adds a NR_SOFTIRQS so that we can size these arrays
-by the actual number of softirqs instead of the magic number "32"
-which is what is used now.
-
-The second patch adds the infrastructure and provides intefaces to
-invoke softirqs on remove cpus.
-
-Jen's, as stated, has block layer uses for this.  I intend to use this
-for receive side flow seperation on non-multiqueue network cards.  And
-Steffen Klassert has a set of IPSEC parallelization changes that can
-very likely make use of this.
-
-These patches are against current 2.6.27-rcX
-
-I would suggest that if nobody has any problems with this, we put it
-into a GIT tree on kernel.org and any subsystem that wants to use it
-can just pull that tree into their GIT tree.  This way, it doesn't
-matter which tree Linus pulls in first, he'll get this stuff properly
-regardless of ordering.
