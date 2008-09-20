@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbYITH6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbYITIAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752515AbYITH6A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 03:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbYITH5u
+	id S1753131AbYITIAx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 04:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbYITIAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 03:57:50 -0400
-Received: from mail.windriver.com ([147.11.1.11]:40488 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750957AbYITH5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 03:57:49 -0400
-From: Kevin Hao <kexin.hao@windriver.com>
-To: Jeff Garzik <jgarzik@redhat.com>, Chris Snook <csnook@redhat.com>,
-       Jay Cliburn <jacliburn@bellsouth.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] net: add net poll support for atl2 driver
-Date: Sat, 20 Sep 2008 15:56:44 +0800
-Message-Id: <1221897404-20290-1-git-send-email-kexin.hao@windriver.com>
-X-Mailer: git-send-email 1.5.6.2.220.g44701
+	Sat, 20 Sep 2008 04:00:44 -0400
+Received: from qb-out-0506.google.com ([72.14.204.239]:54294 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbYITIAo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 04:00:44 -0400
+From: Steven Noonan <steven@uplinklabs.net>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, mingo@elte.hu,
+       Steven Noonan <steven@uplinklabs.net>
+Subject: [PATCH] ftrace: mcount_addr defined but not used
+Date: Sat, 20 Sep 2008 01:00:37 -0700
+Message-Id: <1221897638-16272-1-git-send-email-steven@uplinklabs.net>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <20080920061659.GF25713@elte.hu>
+References: <20080920061659.GF25713@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add netconsole support for Atheros L2 10/100 network device.
+When CONFIG_DYNAMIC_FTRACE isn't used, neither is mcount_addr. This
+patch eliminates that warning.
 
-Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
+Signed-off-by: Steven Noonan <steven@uplinklabs.net>
 ---
- drivers/net/atlx/atl2.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ kernel/trace/ftrace.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
-index d548a67..b2995ac 100644
---- a/drivers/net/atlx/atl2.c
-+++ b/drivers/net/atlx/atl2.c
-@@ -1327,6 +1327,15 @@ static void atl2_setup_pcicmd(struct pci_dev *pdev)
- 	pci_write_config_dword(pdev, REG_PM_CTRLSTAT, 0);
- }
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 89ed43b..f484909 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -37,14 +37,6 @@ int ftrace_enabled __read_mostly;
+ static int last_ftrace_enabled;
  
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+static void atl2_poll_controller(struct net_device *netdev)
-+{
-+	disable_irq(netdev->irq);
-+	atl2_intr(netdev->irq, netdev);
-+	enable_irq(netdev->irq);
-+}
-+#endif
-+
  /*
-  * atl2_probe - Device Initialization Routine
-  * @pdev: PCI device information struct
-@@ -1410,6 +1419,9 @@ static int __devinit atl2_probe(struct pci_dev *pdev,
- 	netdev->do_ioctl = &atl2_ioctl;
- 	atl2_set_ethtool_ops(netdev);
+- * Since MCOUNT_ADDR may point to mcount itself, we do not want
+- * to get it confused by reading a reference in the code as we
+- * are parsing on objcopy output of text. Use a variable for
+- * it instead.
+- */
+-static unsigned long mcount_addr = MCOUNT_ADDR;
+-
+-/*
+  * ftrace_disabled is set when an anomaly is discovered.
+  * ftrace_disabled is much stronger than ftrace_enabled.
+  */
+@@ -178,6 +170,14 @@ static DEFINE_SPINLOCK(ftrace_hash_lock);
+ #define ftrace_hash_unlock(flags) do { } while(0)
+ #endif
  
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	netdev->poll_controller = atl2_poll_controller;
-+#endif
- #ifdef HAVE_TX_TIMEOUT
- 	netdev->tx_timeout = &atl2_tx_timeout;
- 	netdev->watchdog_timeo = 5 * HZ;
++/*
++ * Since MCOUNT_ADDR may point to mcount itself, we do not want
++ * to get it confused by reading a reference in the code as we
++ * are parsing on objcopy output of text. Use a variable for
++ * it instead.
++ */
++static unsigned long mcount_addr = MCOUNT_ADDR;
++
+ static struct task_struct *ftraced_task;
+ 
+ enum {
 -- 
-1.5.6.2.220.g44701
+1.6.0.2
 
