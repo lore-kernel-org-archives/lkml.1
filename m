@@ -1,103 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbYITLNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbYITLOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753559AbYITLNR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 07:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYITLNB
+	id S1753920AbYITLOw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 07:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYITLOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 07:13:01 -0400
-Received: from nebensachen.de ([195.34.83.29]:34423 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751492AbYITLNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 07:13:00 -0400
-X-Hashcash: 1:20:080920:tj@kernel.org::8jom1XR33FfoS5b5:00002xHX
-X-Hashcash: 1:20:080920:jeff@garzik.org::8PJ5IjWEhkyIaEkA:009EBU
-X-Hashcash: 1:20:080920:linux-ide@vger.kernel.org::/FPAzi8Rd5rOAgUk:0000000000000000000000000000000000000aYy
-X-Hashcash: 1:20:080920:linux-kernel@vger.kernel.org::stZl5CUu3LtxjibS:000000000000000000000000000000000IPAK
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Tejun Heo <tj@kernel.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2 v3] libata: Implement disk shock protection support
-References: <87tzcb7r0r.fsf@denkblock.local>
-	<20080919214400.7183.64611.stgit@denkblock.local>
-	<48D4805A.3090707@kernel.org> <87abe37462.fsf@denkblock.local>
-Date: Sat, 20 Sep 2008 13:12:46 +0200
-In-Reply-To: <87abe37462.fsf@denkblock.local> (Elias Oltmanns's message of
-	"Sat, 20 Sep 2008 07:54:45 +0200")
-Message-ID: <87wsh75avl.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Sat, 20 Sep 2008 07:14:45 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:39488 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751492AbYITLOo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 07:14:44 -0400
+Message-ID: <48D4DB23.5080901@suse.de>
+Date: Sat, 20 Sep 2008 15:14:43 +0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+CC: linux-kernel@vger.kernel.org, lenb@kernel.org
+Subject: Re: Reading EeePC900 battery info causes stalls
+References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no> <48D4CC1B.7030708@yahoo.com> <48D4CFA5.7010501@suse.de> <48D4D5CA.1060104@yahoo.com> <48D4D6AE.70705@yahoo.com>
+In-Reply-To: <48D4D6AE.70705@yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Readding LKML which I dropped when starting this thread for some
-inexplicable reason. ]
-
-Elias Oltmanns <eo@nebensachen.de> wrote:
-> Tejun Heo <tj@kernel.org> wrote:
->>> +static ssize_t ata_scsi_park_store(struct device *device,
->>> +				   struct device_attribute *attr,
->>> +				   const char *buf, size_t len)
->>> +{
->> ...
->>> +		complete_all(&ap->park_req_pending);
+Sitsofe Wheeler wrote:
+> Sitsofe Wheeler wrote:
+>> Hi Alexey,
 >>
->> Sorry to catching this this late but calling complete_all() twice will
->> overflow the done counter.  I think complete() should just work here,
->> no?
->
-> Sorry for missing that in the first place, rather embarrassing that. I
-> had just assumed that the done counter was set to an absolute value
-> rather than added to. I really think that this is what we actually want,
-> so, perhaps, a seperate patch for Ingo or someone is in order?
-
-By the way, this doesn't really matter in our particular case. The
-reason is that we only care about whether park_req_pending.done is equal
-or unequal to zero. Since UINT_MAX is of the form 2n+1 (where n is some
-interger value), calling complete_all() m times may overflow but will
-still result in a non-zero value provided that m is smaller than n.
-Assuming that m != 0 is even, we have:
-
-m * n < m / 2 * (2 * n + 2).
-
-Additionally, we have:
-
-(m / 2 - 1) * (2 * n + 2) == (m - 2) * (n + 1) == m * n + m - (2 * n + 2).
-
-This means that for 0 < m < UINT_MAX (and m even) we get:
-
-m * n > (m / 2 - 1) * (2 * n + 2)
-
-and consequently
-
-m * n % (UINT_MAX + 1) == m * n - (m / 2) * (2 * n + 2) == 2 * n + 2 - m
-== UINT_MAX + 1 - m.
-
-Now consider the case that m is odd:
-
-m * n < (m + 1) / 2 * (2 * n + 2).
-
-But
-
-(m - 1) / 2 * (2 * n + 2) == (m - 1) * (n + 1) == m * n + m - n - 1.
-
-For m <= n (and m odd) we get:
-
-m * n >= (m - 1) / 2 * (2 * n + 2)
-
-and consequently
-
-m * n % (UINT_MAX + 1) == m * n - (m - 1) / 2 * (2 * n + 2) == n + 1 - m.
-
-This proves that the done counter will be non-zero if we call
-complete_all() at least once and up to (UINT_MAX - 1) / 2 times. So,
-I'll add some more comments about clearing ATA_EH_PARK and why it's
-needed and then resend the patch. Mind you, I still think that
-complete_all() should be changed. I'll take a look at other use cases in
-the kernel and see whether overflowing is an issue there.
-
-Regards,
-
-Elias
+>> Alexey Starikovskiy wrote:
+>>> eeePC is known to be affected by EC GPE storm bug, and there is a 
+>>> patch for 2.6.27 to workaround the problem. please look at
+>>> http://bugzilla.kernel.org/show_bug.cgi?id=11549
+>>> for latest patch and bugs 10724/9998 for problem discussion.
+>>
+>> Even with 
+>> http://bugzilla.kernel.org/attachment.cgi?id=17845&action=view (fast 
+>> transaction) applied the stalls are still present (and seemingly just 
+>> as bad as before).
+> 
+> I should note that the patch DOES fix the slow volume hotkey repeat rate 
+> that I was seeing.
+Could you cat /proc/interrupts ?
