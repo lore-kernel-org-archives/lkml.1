@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbYITA4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbYITBAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbYITA4b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 20:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYITA4W
+	id S1755406AbYITBAs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 21:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYITBAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 20:56:22 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:45910 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751153AbYITA4V (ORCPT
+	Fri, 19 Sep 2008 21:00:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:29284 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752192AbYITBAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 20:56:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=r/dwSDJMDZXKAetYiL9b5yytsGqe1zrwZmu0a/F5AqQF9t+eYVO38sLF6YAL3CxLsJzkmlFaB2EgYtkLO3Ax7hhwgMosTHnk9puGIpCdUVstZoDeSiScdg6nkDAS8N4PiovubVvCE3CO9pXL3DDz0uQ57ds0WPxJs1SI0SgzAMo=  ;
-X-YMail-OSG: kp3_aZYVM1k9YRaSBvq0rmC_VP4XwfIl2U639gFvk2prmvDZPgYJBWrI8DxxRiMvp1biX9vge5.zBkXtTw.0arP5Am498D63MDkAtwfa1lapp6q0rexjxMEu.T7dpW.FJi5Z4fxfZpAeIeur9M_iKdNBUjtngw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Justin Mattock" <justinmattock@gmail.com>
-Subject: Re: [19.666764] Disabling IRQ #23
-Date: Fri, 19 Sep 2008 17:56:18 -0700
-User-Agent: KMail/1.9.9
-Cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Chris Snook" <csnook@redhat.com>,
-       Linux-usb <linux-usb@vger.kernel.org>
-References: <dd18b0c30809190941g8b44175haf3e3a7c354fe01c@mail.gmail.com> <dd18b0c30809191118u20a13ff3m801a23397eb6beed@mail.gmail.com> <dd18b0c30809191420xe1ff525rbf59bb5d9f9910b2@mail.gmail.com>
-In-Reply-To: <dd18b0c30809191420xe1ff525rbf59bb5d9f9910b2@mail.gmail.com>
+	Fri, 19 Sep 2008 21:00:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=OGdHgl1Cpr/yIX1faCsEDqR2dPOdLsgVjqiJSejPFOVFDG+d+vFerwkOVhEfDhalnc
+         NtKQeFRuhnNGk8a408PSk/rUTlrYnw1+iTATn9Mz1s7ahEYlVOk0xfjDft93Le3/V02r
+         6GgjLThyios45FY6uoHOAVzCghF9iYGY/kTIQ=
+Message-ID: <48D44B35.10105@gmail.com>
+Date: Fri, 19 Sep 2008 21:00:37 -0400
+From: sangsu <sangsu@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: stern@rowland.harvard.edu
+CC: david-b@pacbell.net, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] USB: g_printer: fix handling zero-length packet
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809191756.18661.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In
+g_printer doesn't have to check whether the data size is a multiple of
+MaxPacketSize, because device controller driver already make that check.
 
-  http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-02-usb.current/
+Signed-off-by: SangSu Park<sangsu@gmail.com>
+---
+drivers/usb/gadget/printer.c | 3++-
+1 files changed, 2 insertion(+), 1 deletions(-)
 
-the patch
 
-  usb-fix-ehci-periodic-transfers.patch
-
-seems like it should resolve the root cause of this, and
-
- usb-ehci-fix-some-ehci-hangs-and-crashes.patch
-
-would cover symptoms which probably caused the "Disabling..." message.
-Both patches were in that LKML thread you referenced.
+--- a/drivers/usb/gadget/printer.c	2008-08-12 21:55:39.000000000 -0400
++++ b/drivers/usb/gadget/printer.c	2008-09-19 20:39:44.000000000 -0400
+@@ -1264,8 +1264,7 @@
+	/* respond with data transfer before status phase? */
+	if (value >= 0) {
+		req->length = value;
+-		req->zero = value < wLength
+-				&& (value % gadget->ep0->maxpacket) == 0;
++		req->zero = value < wLength;
+		value = usb_ep_queue(gadget->ep0, req, GFP_ATOMIC);
+		if (value < 0) {
+			DBG(dev, "ep_queue --> %d\n", value);
