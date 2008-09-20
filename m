@@ -1,66 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756336AbYITBPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbYITBPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756336AbYITBPh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Sep 2008 21:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbYITBPQ
+	id S1756365AbYITBPx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Sep 2008 21:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbYITBPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Sep 2008 21:15:16 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:44062 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756175AbYITBPO (ORCPT
+	Fri, 19 Sep 2008 21:15:22 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:57404 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754691AbYITBPR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Sep 2008 21:15:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=L14JArME8tvlKSfPjUBvKt+UOzHxb19BZmjKw4T/5HrDoZ8uNMCOltXGNBoNkM8bgc
-         /vgXtOooeo6CJRAzecHzpOUoWtQzdaXd0r5WYF38Tg8/z7ZBNUkIGANiePbNf96oZ1Ul
-         5KXa3RUSEpRx9kWXvUUAJm9reuEdDR60iV+4w=
-Message-ID: <43e72e890809191815k3aad680cx6bc27759191e201@mail.gmail.com>
-Date: Fri, 19 Sep 2008 18:15:12 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: "Steven Noonan" <steven@uplinklabs.net>
-Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5, rc6, probably others)
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Senthilkumar Balasubramanian" 
-	<Senthilkumar.Balasubramanian@atheros.com>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       "Luis Rodriguez" <Luis.Rodriguez@atheros.com>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <43e72e890809191813n95579f5h83e92b0ba1f95a44@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com>
-	 <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com>
-	 <20080919142801.GA5816@senthil-lnx.users.atheros.com>
-	 <alpine.LNX.2.00.0809190934001.22989@alcarin.uplinklabs.net>
-	 <20080919175824.GA5626@senthil-lnx.users.atheros.com>
-	 <20080919182322.GB7027@tesla>
-	 <alpine.LNX.2.00.0809191630090.14961@alcarin.uplinklabs.net>
-	 <20080919235305.GD11665@tesla>
-	 <f488382f0809191701u2dbf8d22n6015c9f1f23c73be@mail.gmail.com>
-	 <43e72e890809191813n95579f5h83e92b0ba1f95a44@mail.gmail.com>
-X-Google-Sender-Auth: 5259a05155c92563
+	Fri, 19 Sep 2008 21:15:17 -0400
+From: Felipe Balbi <me@felipebalbi.com>
+To: linux-kernel@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Wim Van Sebroeck <wim@iguana.be>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "George G. Davis" <gdavis@mvista.com>, Alan Cox <alan@redhat.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: [PATCH 2/3] watchdog: another ioremap() fix
+Date: Sat, 20 Sep 2008 04:14:02 +0300
+Message-Id: <1221873243-18303-3-git-send-email-me@felipebalbi.com>
+X-Mailer: git-send-email 1.6.0.1.196.g01914
+In-Reply-To: <1221873243-18303-2-git-send-email-me@felipebalbi.com>
+References: <1221873243-18303-1-git-send-email-me@felipebalbi.com>
+ <1221873243-18303-2-git-send-email-me@felipebalbi.com>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 6:13 PM, Luis R. Rodriguez
-<lrodriguez@atheros.com> wrote:
+From: Felipe Balbi <felipe.balbi@nokia.com>
 
-> That is capital "i", this will show you the monitor results of number
-> of interrupts on IRQ 17. You want to see if the rate of change is huge
-> when you have latency issues. If not then its most likely
+convert to use ioremap() and __raw_{read/write} friends.
 
-I meant most likely *NOT* an interrupt storm.
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+Signed-off-by: George G. Davis <gdavis@mvista.com>
+Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+---
+ drivers/watchdog/omap_wdt.c |   50 +++++++++++++++++++++++++------------------
+ 1 files changed, 29 insertions(+), 21 deletions(-)
 
-> an interrupt
-> storm by ath9k (which is my suspect right now) but something else.
->
->  Luis
->
+diff --git a/drivers/watchdog/omap_wdt.c b/drivers/watchdog/omap_wdt.c
+index c3aa30a..e619234 100644
+--- a/drivers/watchdog/omap_wdt.c
++++ b/drivers/watchdog/omap_wdt.c
+@@ -71,12 +71,12 @@ static void omap_wdt_ping(struct omap_wdt_dev *wdev)
+ {
+ 	void __iomem    *base = wdev->base;
+ 	/* wait for posted write to complete */
+-	while ((omap_readl(base + OMAP_WATCHDOG_WPS)) & 0x08)
++	while ((__raw_readl(base + OMAP_WATCHDOG_WPS)) & 0x08)
+ 		cpu_relax();
+ 	wdt_trgr_pattern = ~wdt_trgr_pattern;
+-	omap_writel(wdt_trgr_pattern, (base + OMAP_WATCHDOG_TGR));
++	__raw_writel(wdt_trgr_pattern, (base + OMAP_WATCHDOG_TGR));
+ 	/* wait for posted write to complete */
+-	while ((omap_readl(base + OMAP_WATCHDOG_WPS)) & 0x08)
++	while ((__raw_readl(base + OMAP_WATCHDOG_WPS)) & 0x08)
+ 		cpu_relax();
+ 	/* reloaded WCRR from WLDR */
+ }
+@@ -86,11 +86,11 @@ static void omap_wdt_enable(struct omap_wdt_dev *wdev)
+ 	void __iomem *base;
+ 	base = wdev->base;
+ 	/* Sequence to enable the watchdog */
+-	omap_writel(0xBBBB, base + OMAP_WATCHDOG_SPR);
+-	while ((omap_readl(base + OMAP_WATCHDOG_WPS)) & 0x10)
++	__raw_writel(0xBBBB, base + OMAP_WATCHDOG_SPR);
++	while ((__raw_readl(base + OMAP_WATCHDOG_WPS)) & 0x10)
+ 		cpu_relax();
+-	omap_writel(0x4444, base + OMAP_WATCHDOG_SPR);
+-	while ((omap_readl(base + OMAP_WATCHDOG_WPS)) & 0x10)
++	__raw_writel(0x4444, base + OMAP_WATCHDOG_SPR);
++	while ((__raw_readl(base + OMAP_WATCHDOG_WPS)) & 0x10)
+ 		cpu_relax();
+ }
+ 
+@@ -99,11 +99,11 @@ static void omap_wdt_disable(struct omap_wdt_dev *wdev)
+ 	void __iomem *base;
+ 	base = wdev->base;
+ 	/* sequence required to disable watchdog */
+-	omap_writel(0xAAAA, base + OMAP_WATCHDOG_SPR);	/* TIMER_MODE */
+-	while (omap_readl(base + OMAP_WATCHDOG_WPS) & 0x10)
++	__raw_writel(0xAAAA, base + OMAP_WATCHDOG_SPR);	/* TIMER_MODE */
++	while (__raw_readl(base + OMAP_WATCHDOG_WPS) & 0x10)
+ 		cpu_relax();
+-	omap_writel(0x5555, base + OMAP_WATCHDOG_SPR);	/* TIMER_MODE */
+-	while (omap_readl(base + OMAP_WATCHDOG_WPS) & 0x10)
++	__raw_writel(0x5555, base + OMAP_WATCHDOG_SPR);	/* TIMER_MODE */
++	while (__raw_readl(base + OMAP_WATCHDOG_WPS) & 0x10)
+ 		cpu_relax();
+ }
+ 
+@@ -123,10 +123,10 @@ static void omap_wdt_set_timeout(struct omap_wdt_dev *wdev)
+ 	base = wdev->base;
+ 
+ 	/* just count up at 32 KHz */
+-	while (omap_readl(base + OMAP_WATCHDOG_WPS) & 0x04)
++	while (__raw_readl(base + OMAP_WATCHDOG_WPS) & 0x04)
+ 		cpu_relax();
+-	omap_writel(pre_margin, base + OMAP_WATCHDOG_LDR);
+-	while (omap_readl(base + OMAP_WATCHDOG_WPS) & 0x04)
++	__raw_writel(pre_margin, base + OMAP_WATCHDOG_LDR);
++	while (__raw_readl(base + OMAP_WATCHDOG_WPS) & 0x04)
+ 		cpu_relax();
+ }
+ 
+@@ -152,10 +152,10 @@ static int omap_wdt_open(struct inode *inode, struct file *file)
+ 	}
+ 
+ 	/* initialize prescaler */
+-	while (omap_readl(base + OMAP_WATCHDOG_WPS) & 0x01)
++	while (__raw_readl(base + OMAP_WATCHDOG_WPS) & 0x01)
+ 		cpu_relax();
+-	omap_writel((1 << 5) | (PTV << 2), base + OMAP_WATCHDOG_CNTRL);
+-	while (omap_readl(base + OMAP_WATCHDOG_WPS) & 0x01)
++	__raw_writel((1 << 5) | (PTV << 2), base + OMAP_WATCHDOG_CNTRL);
++	while (__raw_readl(base + OMAP_WATCHDOG_WPS) & 0x01)
+ 		cpu_relax();
+ 
+ 	file->private_data = (void *) wdev;
+@@ -224,7 +224,7 @@ static long omap_wdt_ioctl(struct file *file, unsigned int cmd,
+ 		return put_user(0, (int __user *)arg);
+ 	case WDIOC_GETBOOTSTATUS:
+ 		if (cpu_is_omap16xx())
+-			return put_user(omap_readw(ARM_SYSST),
++			return put_user(__raw_readw(ARM_SYSST),
+ 					(int __user *)arg);
+ 		if (cpu_is_omap24xx())
+ 			return put_user(omap_prcm_get_reset_sources(),
+@@ -328,7 +328,12 @@ static int __init omap_wdt_probe(struct platform_device *pdev)
+ 			goto fail;
+ 		}
+ 	}
+-	wdev->base = (void __iomem *) (mem->start);
++	wdev->base = ioremap(res->start, res->end - res->start + 1);
++	if (!wdev->base) {
++		ret = -ENOMEM;
++		goto fail;
++	}
++
+ 	platform_set_drvdata(pdev, wdev);
+ 
+ 	omap_wdt_disable(wdev);
+@@ -344,11 +349,11 @@ static int __init omap_wdt_probe(struct platform_device *pdev)
+ 		goto fail;
+ 
+ 	pr_info("OMAP Watchdog Timer Rev 0x%02x: initial timeout %d sec\n",
+-		omap_readl(wdev->base + OMAP_WATCHDOG_REV) & 0xFF,
++		__raw_readl(wdev->base + OMAP_WATCHDOG_REV) & 0xFF,
+ 		timer_margin);
+ 
+ 	/* autogate OCP interface clock */
+-	omap_writel(0x01, wdev->base + OMAP_WATCHDOG_SYS_CONFIG);
++	__raw_writel(0x01, wdev->base + OMAP_WATCHDOG_SYS_CONFIG);
+ 
+ 	omap_wdt_dev = pdev;
+ 
+@@ -363,6 +368,7 @@ fail:
+ 			clk_put(wdev->mpu_wdt_ick);
+ 		if (wdev->mpu_wdt_fck)
+ 			clk_put(wdev->mpu_wdt_fck);
++		iounmap(wdev->base);
+ 		kfree(wdev);
+ 	}
+ 	if (mem) {
+@@ -404,6 +410,8 @@ static int omap_wdt_remove(struct platform_device *pdev)
+ 		clk_put(wdev->mpu_wdt_fck);
+ 		wdev->mpu_wdt_fck = NULL;
+ 	}
++	iounmap(wdev->base);
++
+ 	kfree(wdev);
+ 	omap_wdt_dev = NULL;
+ 	return 0;
+-- 
+1.6.0.1.196.g01914
+
