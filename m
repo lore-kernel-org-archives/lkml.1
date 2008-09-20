@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbYITLlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYITLl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753824AbYITLlR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 07:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYITLlF
+	id S1754192AbYITLl7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 07:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYITLlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 07:41:05 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:46223 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751652AbYITLlD (ORCPT
+	Sat, 20 Sep 2008 07:41:51 -0400
+Received: from ptb-relay01.plus.net ([212.159.14.145]:44001 "EHLO
+	ptb-relay01.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751579AbYITLlv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 07:41:03 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiMFAA991EhMQWq+/2dsb2JhbACBXbRWgWU
-Date: Sat, 20 Sep 2008 07:40:57 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Martin Bligh <mbligh@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: Unified tracing buffer
-Message-ID: <20080920114056.GB10800@Krystal>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <20080919144258.ac787fdf.randy.dunlap@oracle.com> <33307c790809191457y3ebffa28xa6d9ab6431554618@mail.gmail.com> <20080919224109.GB4491@suse.de> <33307c790809191519k7c1bcce7y3fa37efc23b0f9c@mail.gmail.com> <alpine.DEB.1.10.0809200427070.9362@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 20 Sep 2008 07:41:51 -0400
+Message-ID: <48D4E180.4050907@yahoo.com>
+Date: Sat, 20 Sep 2008 12:41:52 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+MIME-Version: 1.0
+CC: Alexey Starikovskiy <astarikovskiy@suse.de>, linux-kernel@vger.kernel.org,
+       lenb@kernel.org
+Subject: Re: Reading EeePC900 battery info causes stalls
+References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no> <48D4CC1B.7030708@yahoo.com> <48D4CFA5.7010501@suse.de> <48D4D5CA.1060104@yahoo.com> <48D4D6AE.70705@yahoo.com> <48D4DB23.5080901@suse.de> <48D4DD3C.3050308@yahoo.com>
+In-Reply-To: <48D4DD3C.3050308@yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0809200427070.9362@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 07:32:58 up 107 days, 16:13,  5 users,  load average: 1.10, 1.41,
-	1.39
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Plusnet-Relay: 4cf84bf39d29af61dba4245be1da69ea
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
+Sitsofe Wheeler wrote:
+> Alexey Starikovskiy wrote:
+>> Could you cat /proc/interrupts ?
 > 
-> On Fri, 19 Sep 2008, Martin Bligh wrote:
-> 
-> > >> Sorry, probably lots of implicit assumptions in there that I forgot to explain
-> > >
-> > > Ids for event types. Either allocated dynamically, if the tracer needs
-> > > new ids on each use, or statically assigned for others (like my fctrace
-> > > or Steven's ftrace, I believe). Should we have a reserved range / registry
-> > > for static allocation, maybe something like a very simple version of
-> > > devices.txt?
-> > 
-> > Sure, but it's per-tracer, so hopefully won't be a big problem (eg fctrace
-> > would have a different event-id namespace from blktrace)
-> > 
-> 
-> Right!
-> 
->  We stated in our little meeting that the true event id association is 
-> buffer id / event id tuple. We will not be assigning ranges for events 
-> for specific tracers. Ftrace will not have its own range. The static ids 
-> are reserved for the static trace points and some various static trace 
-> types that the average kernel developer may use.
-> 
+>            CPU0
+>   0:     106942   IO-APIC-edge      timer
+>   1:        426   IO-APIC-edge      i8042
+>   8:         41   IO-APIC-edge      rtc0
+>   9:      27346   IO-APIC-fasteoi   acpi
+>  12:       6840   IO-APIC-edge      i8042
+>  14:          0   IO-APIC-edge      ata_piix
+>  15:        203   IO-APIC-edge      ata_piix
+>  16:      92357   IO-APIC-fasteoi   uhci_hcd:usb5, HDA Intel, 
+> i915@pci:0000:00:02.0
+>  18:      38195   IO-APIC-fasteoi   ath, uhci_hcd:usb4
+>  19:          0   IO-APIC-fasteoi   uhci_hcd:usb3
+>  23:      25150   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+> NMI:          0   Non-maskable interrupts
+> LOC:     142112   Local timer interrupts
+> TRM:          0   Thermal event interrupts
+> SPU:          0   Spurious interrupts
+> ERR:          0
+> MIS:          0
 
-Just to be sure of the "that the average kernel developer may use"
-meaning : I would recommend keeping those static ID range only for
-internal buffering mechanism events. E.g., if we need to add a
-periodical event in every stream so we can detect timestamp wrap-around,
-that would be part of the buffering infrastructure itself, and thus
-reserve an event ID.
+and here are the interrupts from the (seemingly working) EeePC's Xandros 
+2.6.21.4 install:
 
-core_heartbeat (u64 timestamp)
+            CPU0
+   0:       6486    XT-PIC-XT        timer
+   1:        107    XT-PIC-XT        i8042
+   2:          0    XT-PIC-XT        cascade
+   3:          0    XT-PIC-XT        uhci_hcd:usb2
+   5:        735    XT-PIC-XT        uhci_hcd:usb1, ehci_hcd:usb5
+   9:        219    XT-PIC-XT        acpi
+  10:       8171    XT-PIC-XT        uhci_hcd:usb3, pciehp, wifi0
+  11:        107    XT-PIC-XT        HDA Intel, i915@pci:0000:00:02.0, 
+uhci_hcd:usb4, pciehp
+  12:        236    XT-PIC-XT        i8042
+  14:          0    XT-PIC-XT        libata
+  15:       3475    XT-PIC-XT        libata
+NMI:          0
+ERR:          0
 
-Same thing if we want to export the table that maps:
+and here is the kernel cmdline that the Xandros install uses:
+quiet rw vga=785 irqpoll root=/dev/sda1
 
-  event name <-> event ID <-> event typing (includes event size info)
-
-That table can be presented into the buffers (possible a single metadata
-buffer) in the form of two static event IDs :
-
-core_id_name (u16 id, const char *name)
-core_id_type (u16 id, const char *type)
-
-Here another assumption for portability is to declare event type as a
-possibly extended format string. Alternative suggestions are welcome.
-
-Mathieu
-
-> Think "string event type" for a event type that will simply hold an ASCII 
-> string.
-> 
-> -- Steve
-> 
+I've got a feeling I know what direction this is going in...
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Sitsofe | http://sucs.org/~sits/
