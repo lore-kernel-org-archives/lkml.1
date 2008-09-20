@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYITGRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752419AbYITGsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196AbYITGRU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 02:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYITGRM
+	id S1752419AbYITGsw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 02:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYITGsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 02:17:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32941 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750802AbYITGRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 02:17:11 -0400
-Date: Sat, 20 Sep 2008 08:16:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Noonan <steven@uplinklabs.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip FIXED] ftrace: add nop tracer
-Message-ID: <20080920061659.GF25713@elte.hu>
-References: <1221818803-9616-1-git-send-email-steven@uplinklabs.net> <20080919142326.29834d11.akpm@linux-foundation.org> <f488382f0809191635o45f3ed17vc23380eab41b2878@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f488382f0809191635o45f3ed17vc23380eab41b2878@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 20 Sep 2008 02:48:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35475
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750891AbYITGsh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 02:48:37 -0400
+Date: Fri, 19 Sep 2008 23:48:24 -0700 (PDT)
+Message-Id: <20080919.234824.223177211.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+CC: netdev@vger.kernel.org, jens.axboe@oracle.com,
+       steffen.klassert@secunet.com
+Subject: [PATCH 0/2]: Remote softirq invocation infrastructure.
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Noonan <steven@uplinklabs.net> wrote:
+Jens Axboe has written some hacks for the block layer that allow
+queueing softirq work to remote cpus.  In the context of the block
+layer he used this facility to trigger the softirq block I/O
+completion on the same cpu where the I/O was submitted.
 
-> On Fri, Sep 19, 2008 at 2:23 PM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> > On Fri, 19 Sep 2008 03:06:43 -0700
-> > Steven Noonan <steven@uplinklabs.net> wrote:
-> >
-> >> --- a/kernel/trace/trace.h
-> >> +++ b/kernel/trace/trace.h
-> >> @@ -339,6 +339,10 @@ extern int trace_selftest_startup_preemptirqsoff(struct tracer *trace,
-> >>  extern int trace_selftest_startup_wakeup(struct tracer *trace,
-> >>                                        struct trace_array *tr);
-> >>  #endif
-> >> +#ifdef CONFIG_NOP_TRACER
-> >> +extern int trace_selftest_startup_nop(struct tracer *trace,
-> >> +                                      struct trace_array *tr);
-> >> +#endif
-> >>  #ifdef CONFIG_CONTEXT_SWITCH_TRACER
-> >>  extern int trace_selftest_startup_sched_switch(struct tracer *trace,
-> >>                                              struct trace_array *tr);
-> >
-> > Consider omitting the ifdefs around the declarations.
-> >
-> > pro: the code looks nicer and is less likely to suffer build errors
-> > with weird config combinations.
-> >
-> > con: build errors are reported at link-time rather than at compile-time.
-> >
-> > Personally, I think pro>con here.
-> >
-> 
-> I merely based this on one of the other tracers, so the ifdefs are
-> basically copied and renamed.
+I want to make use of a similar facility for the networking, so we
+should make this thing generic.
 
-yeah. Feel free to send a separate patch that implements Andrew's 
-clean-up suggestion. I agree that pro>con.
+It depends upon the generic SMP call function infrastructure, which
+Jens wrote specifically to do these remote softirq hacks.
 
-	Ingo
+For each softirq there is a per-cpu list head which is where the work
+is queued up.
+
+If the platform doesn't support the generic SMP call function bits,
+the work is queued onto the local cpu.
+
+The first patch adds a NR_SOFTIRQS so that we can size these arrays
+by the actual number of softirqs instead of the magic number "32"
+which is what is used now.
+
+The second patch adds the infrastructure and provides intefaces to
+invoke softirqs on remove cpus.
+
+Jen's, as stated, has block layer uses for this.  I intend to use this
+for receive side flow seperation on non-multiqueue network cards.  And
+Steffen Klassert has a set of IPSEC parallelization changes that can
+very likely make use of this.
+
+These patches are against current 2.6.27-rcX
+
+I would suggest that if nobody has any problems with this, we put it
+into a GIT tree on kernel.org and any subsystem that wants to use it
+can just pull that tree into their GIT tree.  This way, it doesn't
+matter which tree Linus pulls in first, he'll get this stuff properly
+regardless of ordering.
