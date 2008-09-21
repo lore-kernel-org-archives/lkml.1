@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbYIUUHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbYIUUNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753054AbYIUUHi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 16:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbYIUUH3
+	id S1752974AbYIUUNs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 16:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYIUUNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 16:07:29 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:58373 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751462AbYIUUH2 (ORCPT
+	Sun, 21 Sep 2008 16:13:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57096 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751387AbYIUUNk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 16:07:28 -0400
-Message-ID: <48D6A9BB.1070705@ru.mvista.com>
-Date: Mon, 22 Sep 2008 00:08:27 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Mark de Wever <koraq@xs4all.nl>
-Cc: Gadi Oxman <gadio@netvision.net.il>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] IDE-TAPE NULL terminate strings.
-References: <20080921185138.GA16310@localhost> <48D69F5A.9010201@ru.mvista.com>
-In-Reply-To: <48D69F5A.9010201@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Sun, 21 Sep 2008 16:13:40 -0400
+Date: Sun, 21 Sep 2008 21:13:37 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: vcaputo@pengaru.com, linux-kernel@vger.kernel.org
+Subject: Re: Honoring SO_RCVLOWAT in proto_ops.poll methods
+Message-ID: <20080921211337.74e8f1f1@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080921145134.GT2761@fc6222126.aspadmin.net>
+References: <20080920214229.GP2761@fc6222126.aspadmin.net>
+	<20080920.152140.193698477.davem@davemloft.net>
+	<20080920230046.GQ2761@fc6222126.aspadmin.net>
+	<20080921092442.GS2761@fc6222126.aspadmin.net>
+	<20080921151811.46328133@lxorguk.ukuu.org.uk>
+	<20080921145134.GT2761@fc6222126.aspadmin.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+Thats a gloriously insane way of trying to do HTTP/1.1, and one I'm not
+sure is actually viable in the real world because the TCP window may be
+smaller than the number of bytes required to find a Host: header - so you
+may simply not be able to receive it via MSG_PEEK. In particular mobile
+phone gateways have a nasty habit of using very small windows.
 
->> After updating my kernel to 2.6.26 the output for the ide-tape drive
->> during booting is garbled eg
->> ide-tape: hdd <-> ht0: Seagate <98>ß8A51|1À<81>Üº<98>ß STT20000A rev 
->> 8A51|1À<81>Üº<98>ß
+> I just don't see a good solution for what I'm doing other than MSG_PEEK
+> and SO_RCVLOWAT, any ideas?
 
->> This patch fixes the problem by NULL terminating the strings.
-
->> Regards,
->> Mark de Wever
-
->> PS: please CC me since I'm not subscribed.
->> PPS: there are more problems with my tapestreamer in 2.6.26 but I'll
->> post a separate message for that.
-
->> Signed-off-by: Mark de Wever <koraq@xs4all.nl>
-
->> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
->> index 1bce84b..fd87b43 100644
->> --- a/drivers/ide/ide-tape.c
->> +++ b/drivers/ide/ide-tape.c
->> @@ -2354,6 +2354,10 @@ static void 
->> idetape_get_inquiry_results(ide_drive_t *drive)
->>      ide_fixstring(product_id, 18, 0);
->>      ide_fixstring(fw_rev, 6, 0);
-
-    Hm, I see that every string variable declared there has 2 extra 
-characters, and yet the author have managed to make a mistake... these extra 
-chars don't seem needed.
-
-MBR, Sergei
+I don't either, and while I don't agree that what you are doing for
+HTTP/1.1 is remotely sane there are probably other cases this would be
+both sane and useful which does suggest fixing it would be beneficial
