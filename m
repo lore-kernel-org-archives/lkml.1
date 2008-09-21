@@ -1,92 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYIUToi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbYIUTu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196AbYIUToi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 15:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYIUTo0
+	id S1752884AbYIUTu3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 15:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYIUTuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 15:44:26 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:45168 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751462AbYIUToZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 15:44:25 -0400
-Date: Sun, 21 Sep 2008 23:38:09 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Arjan van de Ven <arjan@infradead.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
-       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
-       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
-       davem@davemloft.net
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
-Message-ID: <20080921193809.GA8735@2ka.mipt.ru>
-References: <20080921172316.GA6306@2ka.mipt.ru> <20080921110422.1d010b96@infradead.org> <20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org> <20080921190050.GA20484@2ka.mipt.ru> <1222024444.3023.53.camel@johannes.berg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222024444.3023.53.camel@johannes.berg>
-User-Agent: Mutt/1.5.9i
+	Sun, 21 Sep 2008 15:50:20 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34618 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752162AbYIUTuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 15:50:19 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19hCFBmbAJhFGKPtmUo7ZYVFYfW0TekQSS9e0tMGP
+	NPupL8Bf7KPTZt
+Date: Sun, 21 Sep 2008 21:50:18 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+cc: Dan Williams <dan.j.williams@intel.com>, Timur Tabi <timur@freescale.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: dmaengine.c: question about device_alloc_chan_resources
+In-Reply-To: <20080921112605.1e00b92b@hskinnemo-gx745.norway.atmel.com>
+Message-ID: <Pine.LNX.4.64.0809212139040.7264@axis700.grange>
+References: <48D02589.8070601@freescale.com>
+ <e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
+ <ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>
+ <20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>
+ <48D2664D.7040204@freescale.com> <20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com>
+ <e9c3a7c20809182120r5e056dd7h170959dc1171af84@mail.gmail.com>
+ <20080919132544.533ab7d0@hskinnemo-gx745.norway.atmel.com>
+ <48D3B880.3070607@freescale.com> <e9c3a7c20809201600s3862da7qaab4a917220778e9@mail.gmail.com>
+ <20080921112605.1e00b92b@hskinnemo-gx745.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.61
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Sun, 21 Sep 2008, Haavard Skinnemoen wrote:
 
-On Sun, Sep 21, 2008 at 09:14:04PM +0200, Johannes Berg (johannes@sipsolutions.net) wrote:
-> > Do you want me to implement ipw2100 driver as a big work structure
-> > which will run ipw2100_init()/wait/ipw2100_exit() in a loop?
-> > And that will be the fix suggested by Intel? That would explain a lot.
+> > 2/ What about platform specific concerns where dma_cap_mask_t is not
+> > descriptive enough e.g. only one memcpy channel can address a certain
+> > bus?  Currently a client implementation can have some intelligence to
+> > return DMA_DUP for channels that do not have the platform capability.
 > 
-> I think what Arjan is saying is that it would be better to put pressure
-> on the responsible folks (I don't think Arjan is anywhere near them at
+> Currently, clients requesting the DMA_SLAVE capability can specify
+> which particular DMA device they need. Would it make sense to allow
+> other clients to do that as well?
 
-Both maintainers were added to the copy list.
+This is how it is documented in dmaengine.h:
 
-> all) if you'd put in a WARN_ON() for this error and that would make the
-> top entry on kerneloops.org all the time... And additionally put in a
-> workaround for yourself for now.
+ * @slave: data for preparing slave transfer. Must be non-NULL iff the
+ *  DMA_SLAVE capability is requested.
 
-As I pointed, I can rewrite the whole driver's initialization process,
-so that it looked like init/wait/exit loop, which can be processed at
-the module load and when fatal interrupt fires. Do this a fix? This is
-not even a remotely workaround. We can just add
-rmmod/modprobe/ifdown/ifup to the crontab job. Another users reported in
-bugzilla that they needed to reboot a machine to make card working
-again. I'm not sure that user tried to do a rmmod/modprobe though.
+But, looking at dma_client_chan_alloc() it seems, any client requesting a 
+channel can provide a slave and link it to a specific dma_dev, regardless 
+what capabilities the client is requesting, or am I missing something? If 
+so, then yes, please, let's allow all do this. Wouldn't it be better to 
+move the .dma_dev member to dma_client?
 
-> And can we keep the flames off this list please? That comment from Wei
-> Weng was absolutely uncalled for, and inciting a flamewar (as you have
-> already blogged) was not really productive either.
+> Also, struct dma_slave can be extended with
+> controller-/platform-specific fields. Maybe we need a similar mechanism
+> for passing platform-specific constraints when requesting "regular"
+> channels?
 
-If we will keep silence, no one will notice that problem exists.
+As far as I understand, this extension can only be done by "wrapping" 
+dma_slave with driver-specific data:
 
-I do hope this will result in a progress. Arjan, do you aggree to add
-this patch to the current tree?
+ * If dma_dev is non-NULL, the client can not be bound to other DMA
+ * masters than the one corresponding to this device. The DMA master
+ * driver may use this to determine if there is controller-specific
+ * data wrapped around this struct. Drivers of platform code that sets
+ * the dma_dev field must therefore make sure to use an appropriate
+ * controller-specific dma slave structure wrapping this struct.
 
-diff --git a/drivers/net/wireless/ipw2100.c b/drivers/net/wireless/ipw2100.c
-index 19a401c..9a7b64c 100644
---- a/drivers/net/wireless/ipw2100.c
-+++ b/drivers/net/wireless/ipw2100.c
-@@ -206,6 +206,8 @@ MODULE_PARM_DESC(disable, "manually disable the radio (default 0 [radio on])");
- 
- static u32 ipw2100_debug_level = IPW_DL_NONE;
- 
-+static int ipw2100_max_fatal_ints = 10;
-+
- #ifdef CONFIG_IPW2100_DEBUG
- #define IPW_DEBUG(level, message...) \
- do { \
-@@ -3174,6 +3176,10 @@ static void ipw2100_irq_tasklet(struct ipw2100_priv *priv)
- 	if (inta & IPW2100_INTA_FATAL_ERROR) {
- 		printk(KERN_WARNING DRV_NAME
- 		       ": Fatal interrupt. Scheduling firmware restart.\n");
-+		WARN_ON(1);
-+
-+		BUG_ON(ipw2100_max_fatal_ints-- <= 0);
-+
- 		priv->inta_other++;
- 		write_register(dev, IPW_REG_INTA, IPW2100_INTA_FATAL_ERROR);
- 
+i.e., there is no "void *priv" or similar. So, the same "wrapping" can be 
+used with dma_client, even more conveniently so, if we move .dma_dev into 
+it.
 
-
--- 
-	Evgeniy Polyakov
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
