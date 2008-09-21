@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbYIUS5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbYIUTAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752681AbYIUS5w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 14:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbYIUS5o
+	id S1752795AbYIUTAb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 15:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYIUTAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 14:57:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56642 "EHLO ogre.sisk.pl"
+	Sun, 21 Sep 2008 15:00:19 -0400
+Received: from mail1.acecape.com ([66.114.74.12]:47902 "EHLO mail1.acecape.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751413AbYIUS5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 14:57:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Regression] Commit 2344abbcbdb82140050e8be29d3d55e4f6fe860b breaks resume on nx6325
-Date: Sun, 21 Sep 2008 21:03:16 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Kernel Testers <kernel-testers@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
-References: <200809210124.30547.rjw@sisk.pl> <200809210132.46504.rjw@sisk.pl>
-In-Reply-To: <200809210132.46504.rjw@sisk.pl>
+	id S1751052AbYIUTAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 15:00:17 -0400
+X-Greylist: delayed 413 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Sep 2008 15:00:17 EDT
+Message-ID: <48D697F5.9050802@acedsl.com>
+Date: Sun, 21 Sep 2008 14:52:37 -0400
+From: Wei Weng <wweng@acedsl.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
+       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
+       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
+       davem@davemloft.net
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
+ restart.
+References: <20080921172316.GA6306@2ka.mipt.ru>	<20080921110422.1d010b96@infradead.org>	<20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org>
+In-Reply-To: <20080921113513.16677c4e@infradead.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809212103.17578.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 21 of September 2008, Rafael J. Wysocki wrote:
-> On Sunday, 21 of September 2008, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > Unfortunately resume from suspend to RAM is completely broken on my hp nx6325
-> > because of
-> > 
-> > commit 2344abbcbdb82140050e8be29d3d55e4f6fe860b
-> > Author: Thomas Gleixner <tglx@linutronix.de>
-> > Date:   Tue Sep 16 11:32:50 2008 -0700
-> > 
-> >     clockevents: make device shutdown robust
-> > 
-> >     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > 
-> > Reverting of this commit makes things work again.
+Arjan van de Ven wrote:
+> On Sun, 21 Sep 2008 22:28:38 +0400
+> Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 > 
-> One more thing, "broken" means that the box doesn't resume (the suspend part
-> seems to work correctly) and instead it seems to enter a neverending loop
-> that cannot be broken by any means except for the power button, so I think it
-> occurs with interrupts disabled.
+>> On Sun, Sep 21, 2008 at 11:04:22AM -0700, Arjan van de Ven
+>> (arjan@infradead.org) wrote:
+>>> so now you go from an occasional burp to having nothing at all.
+>>> How about you run with this patch on your own machine only?
+>> And how else user can get attention to the problem which is not fixed
+>> by the vendor? 
+> 
+> ... or the community
+> 
+>> We close our eyes and there is no problem, since we do
+>> not see it. I just brought a lamp: no user can see that essentially
+>> driver is broken so he can run it on his own risk.
+>>
+>>> or.. since you say a reload of the driver fixes it.. why don't you
+>>> make a patch for the driver that does basically the actions of a
+>>> reload automatically when the driver detects the issue?
+>>> (and stick a WARN_ON in for good measure so that kerneloops.org can
+>>> start tracking these burps)
+>> It stops after several seconds (or packets?). Sometimes (but rarely)
+>> it works several minutes, sometimes it fires above dmesg line and
+>> continues to work, sometimes it fires it for a while and then stops
+>> writing it, although driver does not send or receive anything (at
+>> least ifconfig counters do not change).
+> 
+> again.. so how about you detect this condition and do, in the driver
+> code, the equivalent of rmmod/insmod to the hardware. I'm sure people
+> who have the hardware would appreciate that type of patch a lot more
+> than the one you sent out.
+> 
 
-Update:
+I guess it is your way of "middle finger" to all the IPW2100 customers who try
+to use it on a Linux machine.
 
-After some more debugging I verified that in fact the $subject commit breaks
-CPU hotplugging (the 'online' part), so I should be able to get some more
-information about what really happens.
 
-This still will be difficult, because the box hangs solid (magic sysrq doesn't
-work in this state) almost immediately after a (failing) attempt to 'online' the
-previously 'offlined' CPU.
+Thanks
+Wei
 
-Thanks,
-Rafael
+
