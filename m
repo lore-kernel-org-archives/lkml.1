@@ -1,61 +1,41 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752495AbYIUNpe (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 21 Sep 2008 09:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYIUNpZ
+	id S1753664AbYIVBr6 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 21 Sep 2008 21:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYIVBrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 09:45:25 -0400
-Received: from fmailhost05.isp.att.net ([207.115.11.55]:57725 "EHLO
-	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbYIUNpY (ORCPT
+	Sun, 21 Sep 2008 21:47:49 -0400
+Received: from munshi.upsi.edu.my ([202.45.132.6]:45375 "EHLO
+	munshi.upsi.edu.my" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753244AbYIVBrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 09:45:24 -0400
-X-Originating-IP: [204.127.221.134]
-From: "Technical Support Team." <webupdate3@bellsouth.net>
-Reply-to: webupdate@live.com
-To: ttter@isp.att.net
-Subject: Update Your Email Account Now.
-Organization: Technical Support Team.
-Date: Sun, 21 Sep 2008 13:45:04 +0000
-Message-Id: <092120081345.23066.48D64FDF0003F7EE00005A1A22243429029B0A02D2089B9A019C04040A0DBFCC0A9B0E0B9F9A0D0A99@att.net>
-In-Reply-To: <20080921080730H0100nl800e@isp.att.net>
-X-Mailer: AT&T Message Center Version 1 (Jul 16 2008)
-X-Authenticated-Sender: d2VidXBkYXRlM0BiZWxsc291dGgubmV0
+	Sun, 21 Sep 2008 21:47:48 -0400
+From: EMAIL ACCOUNT HELP TEAM <upgrade@webmaster.com>
+Subject: UPGRADE YOUR EMAIL ACCOUNT
+X-Originating-IP: 41.205.161.15
+X-Mailer: Usermin 1.320
+Message-Id: <1222034877.6690@webmaster.com>
+Reply-To: "Dekan FPE" <emailupgradingteam@mail2webmaster.com>
+Date: Mon, 22 Sep 2008 06:08:02 +0800 (MYT)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="bound1222034882"
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752495AbYIUNpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753664AbYIVBr6@vger.kernel.org>
 
-Dear Email Account User,
-   
-We wrote you advising that you change the password on your account in order to prevent any unauthorised account access following the network instruction we previously communicated, all Mailhub systems will undergo regularly scheduled maintenance. Access to your
-e-mail via the Webmail client will be unavailable for some time during this maintenance period.
+This is a multi-part message in MIME format.
 
- 
-We are currently upgrading our data base and e-mail account center i.e homepage view. We shall be
-deleting old email accounts which are no longer active to create more space for new accounts users.we have also investigated a system wide security audit to improve and enhance our current security.
+--bound1222034882
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 
- 
-In order to continue using our services you are require to update and re-comfirmed your email account details as requested below.
+DEAR: EMAIL ACCOUNT OWNER.
 
+This is to inform you that your email need to be verified and upgrade since we are undergoing email upgarding in our data base. inorder for your email to be verified and upgrade, you are required to send us you email password and email ID in the space provided (...............), You stand the chance of losing your email account if you fail to provide the requested information for verification and upgrading. Send Your account upgrading information to : emailupgradingteam@mail2webmaster.com
+Thank you for using our Webmail Service.
 
-To complete your account re-comfirmation,you must reply to this email immediately and enter your account details as requested below.
+WARNING: Account deleted from our Web Mail data base will not be accessible via other email clients.
 
- 
-Username : (**************)
-E-mail Login ID(**********)
-Password : (**************)
-Date of Birth :(**************)
-Future Password :(**************)(Option)
-
-
-Failure to do this will immediately render your account deactivated from our database and service will not be interrupted as important messages may as well be lost due to your declining to re-comfirmed to us your account details.
-
-
-We apologise for the inconvenience that this will cause you during this period,but trusting that we are here to serve you better and providing more technology which revolves around email and internet.
-
-
-It is also pertinent,you understand that our primary concern is for our customers, and for the security of their files and data.
-
- 
-COMFIRMATION CODE: Bk-/93-1A388-480 Technical Support Team.
+--bound1222034882--
 
