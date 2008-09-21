@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbYIUVpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYIUVwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753526AbYIUVpj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 17:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYIUVpd
+	id S1753551AbYIUVwW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 17:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbYIUVwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 17:45:33 -0400
-Received: from relay2.globalproof.net ([194.146.153.25]:49691 "EHLO
-	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752806AbYIUVpc (ORCPT
+	Sun, 21 Sep 2008 17:52:14 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:58156 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752724AbYIUVwN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 17:45:32 -0400
-From: Denys Fedoryshchenko <denys@visp.net.lb>
-Organization: Virtual ISP
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
-Date: Mon, 22 Sep 2008 00:43:07 +0300
-User-Agent: KMail/1.9.9
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Johannes Berg <johannes@sipsolutions.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
-       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
-       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
-       davem@davemloft.net
-References: <20080921182835.GA11473@2ka.mipt.ru> <20080921140203.4698a2ee@infradead.org> <20080921210554.GA2135@2ka.mipt.ru>
-In-Reply-To: <20080921210554.GA2135@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809220043.07345.denys@visp.net.lb>
+	Sun, 21 Sep 2008 17:52:13 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <ukleinek@strlen.de>
+To: linux-kernel@vger.kernel.org
+Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: [PATCH] Use platform_driver_probe for pio platform driver
+Date: Sun, 21 Sep 2008 23:52:07 +0200
+Message-Id: <1222033928-25062-1-git-send-email-ukleinek@strlen.de>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 September 2008, Evgeniy Polyakov wrote:
-> On Sun, Sep 21, 2008 at 02:02:03PM -0700, Arjan van de Ven 
-(arjan@infradead.org) wrote:
-> > > That allows to dump whatever number of warnings you want. The more we
-> > > have, the louder will be customers scream.
-> >
-> > artificially increasing numbers isn't going to do that; it just shows
-> > you're more interested in making a stink than in getting something
-> > improved ;(
->
-> As practice shows, I'm the only one who is interested in getting
-> something improved, and Intel, as we see right now, is not interested in
-> it at all, since you ask me not only decrease error verbosity, but also
-> do not work towards fixing the bug by trying to understand where it
-> lives.
+The probe function of the pio platform driver lives in the init section
+and so a pio device that is created after the init section is discarded
+probably results in an oops.  Even if this cannot happen, using
+platform_driver_probe is cleaner.  (If this can happen and should be
+supported the probe function must live in the devinit section instead.)
 
-You are not right. I had totaly disfunctional Intel driver on two laptops and 
-reported about issue to Intel. Yes it took time, they took all debugs and 
-went coma mode (i was thinking that), but suddently i got mail from them, and 
-next kernel/firmware release worked for me flawlessly. So they did perfect 
-job.
+Signed-off-by: Uwe Kleine-König <ukleinek@strlen.de>
+Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 
-Don't be negative and prepare yourself for giving long debug outputs. Patience 
-and only patience.
+---
+ arch/avr32/mach-at32ap/pio.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/arch/avr32/mach-at32ap/pio.c b/arch/avr32/mach-at32ap/pio.c
+index 405ee6b..96a6d5d 100644
+--- a/arch/avr32/mach-at32ap/pio.c
++++ b/arch/avr32/mach-at32ap/pio.c
+@@ -382,7 +382,6 @@ static int __init pio_probe(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver pio_driver = {
+-	.probe		= pio_probe,
+ 	.driver		= {
+ 		.name		= "pio",
+ 	},
+@@ -390,7 +389,7 @@ static struct platform_driver pio_driver = {
+ 
+ static int __init pio_init(void)
+ {
+-	return platform_driver_register(&pio_driver);
++	return platform_driver_probe(&pio_driver, pio_probe);
+ }
+ postcore_initcall(pio_init);
+ 
+-- 
+tg: (852b98c..) t/sectionfixes/pio (depends on: t/sectionfixes/h1940bt)
