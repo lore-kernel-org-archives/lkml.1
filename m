@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbYIUXQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYIUX1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753696AbYIUXQw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 19:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYIUXQn
+	id S1753392AbYIUX1Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 19:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYIUX04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 19:16:43 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:1848 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbYIUXQm (ORCPT
+	Sun, 21 Sep 2008 19:26:56 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:52948 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752533AbYIUX0z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 19:16:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=R8yV1jPTzUkW+FrTPg8ivlIUd0vVmeOYTSnqhxL8TabqXaB3U7Tov1dUWHgr4f8lbo
-         uWGOYc67xvzEfF9XAJp8p3y25f0uaq9p7NBkeAabjQq4xz6emZeanUKmBdrnx0WY8Dj8
-         w/6M2SEryD1pDV9wZRlNjMYFo3p35/nhZJ7L0=
-Message-ID: <dd18b0c30809211616g658b50c8k2ea9f9953f1de96f@mail.gmail.com>
-Date: Sun, 21 Sep 2008 16:16:42 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #11552] Disabling IRQ #23
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "David Brownell" <david-b@pacbell.net>
-In-Reply-To: <7lIhZC4hCxE.A.vqG.X0q1IB@albercik>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 21 Sep 2008 19:26:55 -0400
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
+	restart.
+From: Marcel Holtmann <holtmann@linux.intel.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Johannes Berg <johannes@sipsolutions.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
+       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
+       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
+       davem@davemloft.net
+In-Reply-To: <20080921210554.GA2135@2ka.mipt.ru>
+References: <20080921182835.GA11473@2ka.mipt.ru>
+	 <20080921113513.16677c4e@infradead.org>
+	 <20080921190050.GA20484@2ka.mipt.ru>
+	 <1222024444.3023.53.camel@johannes.berg>
+	 <20080921193809.GA8735@2ka.mipt.ru> <20080921124332.67ddc13a@infradead.org>
+	 <20080921202057.GB25052@2ka.mipt.ru>
+	 <20080921132753.5689b564@infradead.org>
+	 <20080921205706.GA24545@2ka.mipt.ru>
+	 <20080921140203.4698a2ee@infradead.org> <20080921210554.GA2135@2ka.mipt.ru>
+Content-Type: text/plain
+Date: Mon, 22 Sep 2008 01:27:47 +0200
+Message-Id: <1222039667.6782.125.camel@californication>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik>
-	 <7lIhZC4hCxE.A.vqG.X0q1IB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 21, 2008 at 11:54 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11552
-> Subject         : Disabling IRQ #23
-> Submitter       : Justin Mattock <justinmattock@gmail.com>
-> Date            : 2008-09-09 19:08 (13 days old)
-> References      : http://marc.info/?l=linux-kernel&m=122098735230906&w=4
->                  http://marc.info/?l=linux-kernel&m=122107367715361&w=4
-> Handled-By      : David Brownell <david-b@pacbell.net>
->                  Alan Stern <stern@rowland.harvard.edu>
-> Patch           : http://marc.info/?l=linux-kernel&m=122187222705195&w=4
->
->
->
+Hi Evgeniy,
 
-not sure if it should be;
->From over here, I did a bad install
-of isight-firmware-tools, causing hal and udev
-to clash.  After making sure the package was either
-using hal or udev, there is no message of disable irq #23.
-If its not too much trouble is there a way to verify that this was
-the case, i.g. if udev creates a dev, then hal creates the same device
-will this cause ehci_hcd to have messages of this kind? If so
-then thats what happened, if not then theres something else causing this.
+> > > That allows to dump whatever number of warnings you want. The more we
+> > > have, the louder will be customers scream.
+> > 
+> > artificially increasing numbers isn't going to do that; it just shows
+> > you're more interested in making a stink than in getting something
+> > improved ;(
+> 
+> As practice shows, I'm the only one who is interested in getting
+> something improved, and Intel, as we see right now, is not interested in
+> it at all, since you ask me not only decrease error verbosity, but also
+> do not work towards fixing the bug by trying to understand where it
+> lives.
 
--- 
-Justin P. Mattock
+as Arjan and Alan pointed out already, WARN_ON_ONCE is enough and I
+agree with them. Just to make this perfectly clear, this is with my
+community hat on.
+
+Please send a proper patch with a simple WARN_ON_ONCE and I am happy to
+sign off on it.
+
+Regards
+
+Marcel
+
+
