@@ -1,114 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbYIUOlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbYIUPqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbYIUOlP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 10:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYIUOlA
+	id S1752528AbYIUPqg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 11:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYIUPq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 10:41:00 -0400
-Received: from 1wt.eu ([62.212.114.60]:4420 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751799AbYIUOk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 10:40:59 -0400
-Date: Sun, 21 Sep 2008 16:40:53 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: David W Studeman <avionicsdv@aim.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Keyboard Jammed error patch 2.4.35-pre4
-Message-ID: <20080921144053.GB24654@1wt.eu>
-References: <g6jqud$t5e$1@ger.gmane.org> <20080729051558.GH29189@1wt.eu> <489016AB.6050309@aim.com> <20080730075101.GA31668@1wt.eu> <489044C8.7090006@aim.com> <20080730123839.GA2397@1wt.eu> <gb5gi2$l36$1@ger.gmane.org>
+	Sun, 21 Sep 2008 11:46:28 -0400
+Received: from fmailhost05.isp.att.net ([207.115.11.55]:34112 "EHLO
+	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494AbYIUPq1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 11:46:27 -0400
+X-Originating-IP: [74.251.44.253]
+Date: Sun, 21 Sep 2008 10:46:25 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: linux-kernel@vger.kernel.org
+Subject: Console not capturing call trace
+Message-ID: <20080921104625.655f55df@osprey.hogchain.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEV2dXOAgYNxSD+aemaal42A
+ gIBqYV2UU07Ik5GXfoFMRTdbKiVwAAACbUlEQVQ4jXXTzWvbMBQAcG3EZsmt0Owc3pgNPo1oxNFt
+ pQnEN3Wrs3UnkdXq5tOwIdq9Pci3gUqJexo55KC/cs9O/dHBRIiMfpb03rNE4v800jxIQRzsXPEP
+ jDwndhNelo9/ngE/SFdKmZQnfOT0YSSlQBKLiJBDH6w9SPwlp5evpduDr9biQqkV8Rh7p4NRNSO1
+ 4BHhpjLpIK2gWksIgl0LPLCHoBIcX6dp2kGKMYnfGJnjIFungZeuHA6dhSvqLXrA1zJmVKayCu1w
+ DKuGAU+WZRRCsLdBFXgLl2Sw3N2ZEJDAn3VwEV9FK12YUGW+yqlIWiD30U5rbSi2efGuhRfxEXRB
+ 8e+uJE/AL5z78xrqVg6aBHlMTj9V7x/RJOMGHHI11ItVUW+B0JakkGPcUsJNHuY7/ZA04X4xwQ/D
+ 3I0FGgaT8iFponoJ26F+sNbu51O7l7QHHtNTbxMc5o/W+kw0S31Ub5i+pQBq/hjYPVPbJ/ic/aoC
+ pbTQtxlAvvnZgNod89Y4D2sFXpMHZWU1yHb6Ft+g2aTJY84iY2iY4ySGmWdvmxlDprHkCgd1yDRV
+ bXVfFQiZjyuyaU5p1pZkTbXBbxRagAyU2rZfcH2tTQ7+FpNQ4Ofb7lxdFzTHDGqAvHdEv0cIezi2
+ be+0vzdUqawaDSATHfB7itGiIfrQu2p8UQOOooHTh5lUPn6lva/qQrWwQpCUTv08hGe3dkU9KWmJ
+ Z2EGpAeDFc3kN8oMNbNJ/AzMFERUhjmehB7ws6XBTTnfeOXT9T/C9dn4HEshpPWIjDvgi5Px2U0G
+ Hl7dzaQHg8U4Xn6oa4g3vVnqLz3ribDLdyFmAAAAAElFTkSuQmCC
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <gb5gi2$l36$1@ger.gmane.org>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
+I'm thinking this may be a userspace issue, but most users don't hack
+network drivers and don't encounter kernel warnings and oopses, and
+therefore aren't likely to encounter this, so I'm bringing it to the
+kernel list (especially those who run Fedora) for assistance/opinions.
 
-first, please always take care of keeping persons in CC when replying to
-LKML, otherwise you risk your mail being missed.
+The problem:  I no longer get full module lists and call traces on the
+console for a WARN_ON (for example).  I run Fedora 9 and its current
+version of rsyslog-3.18.1-2.fc9.x86_64.  Reverting to
+rsyslog-3.14.1-2.fc9.x86_64 or advancing to
+rsyslog-3.21.3-3.fc10.x86_64 didn't seem to help.  
 
-On Sun, Sep 21, 2008 at 06:00:50AM -0700, David W Studeman wrote:
-> Ok, I finally applied the patch manually to 2.4.36.7 and then made my own
-> diff from that. Your patch would likely have applied if I increased the
-> fuzz factor as it was merely off by a number of lines. When trying to
-> compile with no keyboard or VT support, I still get this error:
-> 
-> arch/i386/kernel/kernel.o(.text.init+0x33e6): In function
-> `disable_console_keyboard':
-> : undefined reference to `keyboard_controller_present'
-> make: *** [vmlinux] Error 1
+For test purposes I inserted a WARN_ON(1) statement in the atl1 driver,
+and dmesg shows the output just fine, but /var/log/messages and my
+serial console both fail to show the module list and call trace.
+(Evidence below.)
 
-I know what causes this. The fix is merged into 2.4.37-rc1. I've been
-using it for a long time without even noticing that it was still not
-merged. The fix is trivial as it simply removes the disable_console_keyboard
-function when CONFIG_VT is not set. This is needed because the variable
-keyboard_controller_present is only defined when CONFIG_VT is set.
+One thing I can't figure out is where the "<8>" comes from in
+the serial console output down at the bottom of this message.
+Backstepping from warn_on_slowpath() to print_modules() in the kernel
+code doesn't seem to show an <8> printed anywhere.  I've got 
+/proc/sys/kernel/printk set to 8 8 8 8, so maybe that's related?
 
-Here's the patch if it can help you.
+Has anyone else encountered this or know which rsyslogd knob to tweak
+to enable the full modules list and call trace?  I've verified the
+condition occurs with current git, 2.6.26.3, and 2.6.25.16 kernels, so I
+think it's not a kernel problem.  It *used* to work fine, but I can't 
+remember when it stopped doing so.
 
-Also, next time you encounter problems, please post your config. It's
-very hard to troubleshoot build bugs without a config. I would have
-immediately spotted this missing patch on the first time had I got
-that config.
+>From dmesg, which is what the output *should* look like.
 
-Regards,
-Willy
+[ 3487.555651] ------------[ cut here ]------------
+[ 3487.569484] WARNING: at drivers/net/atlx/atl1.c:2735 atl1_open+0x40/0x51 [atl1]()
+[ 3487.569485] Modules linked in: sit tunnel4 fuse nf_conntrack_ipv4 ipt_REJECT iptable_filter ip_tables ip6t_REJECT xt_tcpudp nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 cpufreq_ondemand dm_mirror dm_log dm_multipath dm_mod snd_hda_intel snd_seq_dummy snd_seq_oss snd_seq_midi_event atl2 snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd_page_alloc snd_hwdep i2c_i801 snd soundcore i2c_core atl1 ppdev parport_pc iTCO_wdt mii iTCO_vendor_support sg pcspkr parport sr_mod floppy cdrom ata_generic ata_piix libata dock sd_mod scsi_mod ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: microcode]
+[ 3487.569526] Pid: 3730, comm: ip Tainted: G        W 2.6.27-rc6 #17
+[ 3487.569528] 
+[ 3487.569528] Call Trace:
+[ 3487.569535]  [<ffffffff8103c719>] warn_on_slowpath+0x5d/0x84
+[ 3487.569539]  [<ffffffff8104625f>] ? mod_timer+0x42/0x47
+[ 3487.569543]  [<ffffffff8123196c>] ? __netdev_watchdog_up+0x53/0x62
+[ 3487.569546]  [<ffffffff812320c5>] ? netif_carrier_on+0x33/0x38
+[ 3487.569551]  [<ffffffffa010c4e8>] ? atl1_check_link+0x250/0x313 [atl1]
+[ 3487.569556]  [<ffffffffa010ecc5>] ? atl1_up+0x7ab/0x7df [atl1]
+[ 3487.569560]  [<ffffffffa010f3f8>] atl1_open+0x40/0x51 [atl1]
+[ 3487.569563]  [<ffffffff812238bb>] dev_open+0x7a/0xb7
+[ 3487.569566]  [<ffffffff812231fc>] dev_change_flags+0xb0/0x173
+[ 3487.569569]  [<ffffffff8122aec7>] do_setlink+0x27f/0x341
+[ 3487.569572]  [<ffffffff81026bc3>] ? kernel_map_pages+0x122/0x12d
+[ 3487.569575]  [<ffffffff8122c35e>] rtnl_newlink+0x2db/0x479
+[ 3487.569577]  [<ffffffff8122c135>] ? rtnl_newlink+0xb2/0x479
+[ 3487.569580]  [<ffffffff8122be83>] ? rtnetlink_rcv+0x1f/0x38
+[ 3487.569583]  [<ffffffff8122c065>] rtnetlink_rcv_msg+0x1c9/0x1e7
+[ 3487.569585]  [<ffffffff8122be9c>] ? rtnetlink_rcv_msg+0x0/0x1e7
+[ 3487.569588]  [<ffffffff8123af45>] netlink_rcv_skb+0x43/0x92
+[ 3487.569590]  [<ffffffff8122be92>] rtnetlink_rcv+0x2e/0x38
+[ 3487.569593]  [<ffffffff8123a91a>] ? netlink_unicast+0x101/0x278
+[ 3487.569595]  [<ffffffff8123aa12>] netlink_unicast+0x1f9/0x278
+[ 3487.569599]  [<ffffffff8121cc79>] ? __alloc_skb+0x6b/0x131
+[ 3487.569601]  [<ffffffff8123ad14>] netlink_sendmsg+0x283/0x296
+[ 3487.569604]  [<ffffffff812a7ab1>] ? do_page_fault+0x6de/0xaf8
+[ 3487.569607]  [<ffffffff8121cc79>] ? __alloc_skb+0x6b/0x131
+[ 3487.569609]  [<ffffffff81215d67>] sock_sendmsg+0x102/0x125
+[ 3487.569613]  [<ffffffff81050ce5>] ? autoremove_wake_function+0x0/0x3d
+[ 3487.569616]  [<ffffffff81050ce5>] ? autoremove_wake_function+0x0/0x3d
+[ 3487.569618]  [<ffffffff812167cf>] ? move_addr_to_kernel+0x45/0x4e
+[ 3487.569621]  [<ffffffff8121d9d3>] ? verify_iovec+0x54/0x95
+[ 3487.569623]  [<ffffffff81215f0e>] sys_sendmsg+0x184/0x1e8
+[ 3487.569625]  [<ffffffff81216bf1>] ? sys_recvmsg+0x132/0x1ac
+[ 3487.569630]  [<ffffffff81145a41>] ? __up_write+0x24/0xff
+[ 3487.569632]  [<ffffffff81145b0d>] ? __up_write+0xf0/0xff
+[ 3487.569636]  [<ffffffff810745e7>] ? audit_syscall_entry+0x12b/0x15f
+[ 3487.569639]  [<ffffffff8100c18a>] system_call_fastpath+0x16/0x1b
+[ 3487.569640] 
+[ 3487.569642] ---[ end trace 144a207f2e9d6a37 ]---
 
-----
->From 90e228888a59d630c8094d5d1b273b00a2c76cc0 Mon Sep 17 00:00:00 2001
-From: Willy Tarreau <w@1wt.eu>
-Date: Sun, 7 Sep 2008 12:37:51 +0200
-Subject: x86 would not build without CONFIG_VT
 
-I've been using this patch for a while without noticing it never
-went into mainline. It is required to build i386 without CONFIG_VT.
+>From /var/log/messages.  Note the module list and call trace don't 
+show up at all.
 
-Signed-off-by: Willy Tarreau <w@1wt.eu>
----
- arch/i386/kernel/dmi_scan.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+Sep 21 08:57:46 osprey kernel: [ 3487.555651] ------------[ cut here ]------------
+Sep 21 08:57:46 osprey kernel: [ 3487.569484] WARNING: at drivers/net/atlx/atl1.c:2735 atl1_open+0x40/0x51 [atl1]()
+Sep 21 08:57:46 osprey kernel: [ 3487.569642] ---[ end trace 144a207f2e9d6a37 ]---
 
-diff --git a/arch/i386/kernel/dmi_scan.c b/arch/i386/kernel/dmi_scan.c
-index 07c6d94..9c27ca2 100644
---- a/arch/i386/kernel/dmi_scan.c
-+++ b/arch/i386/kernel/dmi_scan.c
-@@ -524,6 +524,7 @@ static __init int disable_acpi_pci(struct dmi_blacklist *d)
-  */
-  
- 
-+#ifdef CONFIG_VT
- /*      IBM bladeservers have a USB console switch. The keyboard type is USB
-  *      and the hardware does not have a console keyboard. We disable the
-  *      console keyboard so the kernel does not try to initialize one and
-@@ -538,6 +539,7 @@ static __init int disable_console_keyboard(struct dmi_blacklist *d)
-         keyboard_controller_present = 0;
-         return 0;
- }
-+#endif
- 
- /*
-  *	This will be expanded over time to force things like the APM 
-@@ -825,7 +827,8 @@ static __initdata struct dmi_blacklist dmi_blacklist[]={
- 			MATCH(DMI_SYS_VENDOR, "IBM"),
- 			NO_MATCH, NO_MATCH, NO_MATCH
- 			} },
-- /*
-+#ifdef CONFIG_VT
-+        /*
-          *      IBM Bladeservers
-          */
- 
-@@ -834,6 +837,7 @@ static __initdata struct dmi_blacklist dmi_blacklist[]={
-                         MATCH(DMI_BOARD_NAME, "Server Blade"),
-                         NO_MATCH, NO_MATCH
-                         } },
-+#endif
- 
- #ifdef	CONFIG_ACPI_BOOT
- 	/*
--- 
-1.5.3.3
 
+>From minicom on my serial console.  Note the <8> at the beginning of
+the third line.  Relevant?  Maybe rsyslogd sees this as some sort of
+"don't display me" symbol?
+
+[ 3487.555651] ------------[ cut here ]------------
+[ 3487.569484] WARNING: at drivers/net/atlx/atl1.c:2735 atl1_open+0x40/0x51 [atl1]() 
+<8>[ 3487.569485] Modules linked in: sit tunnel4 fuse nf_conntrack_ipv4 ipt_REJECT iptable_filter ip_tables ip6t_REJECT xt_tcpudp nf_conntrack_ipv6 xt_state nf_conntrack ip6table_-
+
+Thanks,
+Jay
