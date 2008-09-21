@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbYIUMGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbYIUM1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752056AbYIUMGQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 08:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbYIUMGH
+	id S1752048AbYIUM1S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 08:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYIUM1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 08:06:07 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:37480 "EHLO tac.ki.iif.hu"
+	Sun, 21 Sep 2008 08:27:06 -0400
+Received: from tac.ki.iif.hu ([193.6.222.43]:58395 "EHLO tac.ki.iif.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbYIUMGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 08:06:06 -0400
+	id S1751385AbYIUM1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 08:27:05 -0400
 From: Ferenc Wagner <wferi@niif.hu>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>
 Subject: Re: doubled idle count
 References: <87vdwtfxng.fsf@tac.ki.iif.hu> <48D2AD5E.7040602@goop.org>
-Date: Sun, 21 Sep 2008 14:05:59 +0200
+Date: Sun, 21 Sep 2008 14:27:00 +0200
 In-Reply-To: Ferenc Wagner's message of "Fri, 19 Sep 2008 18:53:35 +0200"
-Message-ID: <87hc89g0uw.fsf@tac.ki.iif.hu>
+Message-ID: <871vzdfzvv.fsf@tac.ki.iif.hu>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -46,19 +46,7 @@ Ferenc Wagner <wferi@niif.hu> writes:
 > so I've got two domUs (running on xen2-ha) misbehaving, and other two
 > (running on xen2) behaving correctly.
 
-Possibly related: three out of the above four 2.6.26 domUs froze
-yesterday afternoon.  The consoles don't show anything and are dead,
-they don't react to sysrq, even.  According to xm list, the frozen
-domains are constantly running (stuck in r state).
-
-I haven't destroyed them yet, in case it is possible to extract any
-info from the system.  If not, please tell me so I can restart them.
-
-On the other hand, I'll have a look whether the same kernel running on
-the bare metal produces this idle count discrepancy.
+Also, top is not confused, it shows <100% idle times.  Maybe it's
+allright, or maybe top simply subtracts all the rest from 100...
 -- 
-Thanks,
 Feri.
-
-Ps: Please note that xen-devel swallows my mails without a trace,
-    probably because I'm not subscribed.
