@@ -1,96 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbYIUSik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbYIUSvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857AbYIUSik (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 14:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYIUSic
+	id S1752631AbYIUSvR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 14:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYIUSvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 14:38:32 -0400
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:55929 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751940AbYIUSia (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 14:38:30 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+oP+WJYMTcItssr3U7DlsR
-Date: Sun, 21 Sep 2008 11:41:00 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: David Brownell <david-b@pacbell.net>,
-       Felipe Balbi <felipe.balbi@nokia.com>, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "George G. Davis" <gdavis@mvista.com>
-Subject: Re: [PATCH 3/5] watchdog: cleanup a bit omap_wdt.c
-Message-ID: <20080921184058.GC7961@atomide.com>
-References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com> <200809200832.15440.david-b@pacbell.net> <20080920161111.GA9873@flint.arm.linux.org.uk> <200809201018.42127.david-b@pacbell.net> <20080920180018.GD9873@flint.arm.linux.org.uk>
+	Sun, 21 Sep 2008 14:51:04 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56602 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751460AbYIUSvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 14:51:03 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: I need some serious help to debug suspend to ram problem
+Date: Sun, 21 Sep 2008 20:56:26 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <48D4E685.8030801@gmail.com> <48D54873.8010108@gmail.com> <48D682DB.8020802@gmail.com>
+In-Reply-To: <48D682DB.8020802@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080920180018.GD9873@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200809212056.27335.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Russell King - ARM Linux <linux@arm.linux.org.uk> [080920 11:01]:
-> On Sat, Sep 20, 2008 at 10:18:41AM -0700, David Brownell wrote:
-
-<snip snip>
-
-> 
-> > > We're into the third day on this one driver.  If every OMAP driver takes
-> > > this long ...
+On Sunday, 21 of September 2008, Maxim Levitsky wrote:
+> Maxim Levitsky wrote:
+> > Rafael J. Wysocki wrote:
+> >> On Saturday, 20 of September 2008, Maxim Levitsky wrote:
+> >>> Hi,
+> >>>
+> >>> I hit a dead end when trying to understand why my notebook can't 
+> >>> resume from suspend to ram
+> >>> if this is done two times a row.
+> >>>
+> >>> Single suspend/resume cycle works almost perfectly (beep that goes 
+> >>> through the sound card is muted... no morse code for me... :-(
+> >>>
+> >>> )
+> >>>
+> >>> I compiled a minimal kernel (absolutely nothing but disk drivers, all 
+> >>> experimental option like nohz
+> >>> turned off)
+> >>>
+> >>> But I had to turn SMP, since without it system won't resume first 
+> >>> time I suspend it.
+> >>> (How could this affect suspend?)
+> >>
+> >> It could if the system is 64-bit.  In which case please have a look at
+> >> http://bugzilla.kernel.org/show_bug.cgi?id=11237
+> >>
+> >>> With SMP and minimal kernel (of course  no closed drivers), I get 
+> >>> same behavior,
+> >>> first resume works second hangs.
+> >>>
+> >>> I then added some debug code to real mode wakeup code, I put there in 
+> >>> first
+> >>> place instructions, that will save some magic value to rtc (to alarm
+> >>> registers that I know are preserved during boot cycle), and I 
+> >>> discovered   sad thing that first time bios does pass control to 
+> >>> linux, but second time
+> >>> (when it hangs), it doesn't.
+> >>>
+> >>> I tried to update bios, and I got same results.
+> >>>
+> >>> Of course it does work with that @#$%^& OS
+> >>
+> >> So we're doing something wrong.  Please try the appended patch.
+> > Thanks a lot, but this didn't help.
 > > 
-> > That seems like a strange way to account things.  It presumes
-> > that the only time review comments should be accepted is within
-> > a day of the patch getting posted.  Regardless of whether the
-> > reviewer has time at that point.
+> > It still has same pattern, first suspend/resume works perfectly, second 
+> > suspend/resume hangs hard.
+> > It always happens like this, first resume always work (unless I turn off 
+> > smp in kernel (I test this again), or reserve all low memory)
+> > 
+> > Also note that if I suspend the system to ram, resume, and then suspend 
+> > to disk, then I can suspend to ram and resume, it seems that
+> > 
+> > on suspend to ram cycle somehow arms BIOS or something else, so second 
+> > resume in a row doesn't work.
+> > 
+> > I run 32 bit kernel here, this is a long story (this bios doesn't turn 
+> > fan on when running 64-bit version, I could update it, and I know that 
+> > fan issue is fixed there, but new bios introduces bigger bug, namely it 
+> > makes fan to run almost always regardless of 32/64 type of os.
+> > And it doesn't fix this suspend/resume issue, I tested this. I could 
+> > start/stop fan manually with a script, but this could fail, and maybe I 
+> > will do so someday.)
+> > 
+> > The bugzilla seems to be unrelated here, since bios does pass control 
+> > there, but corrupts memory.
+> > Here I also have seen that bios corrupts memory, but everything resumes 
+> > fine first time, and on second time,
+> > bios doesn't pass control (I put set of instructions in beginning of 
+> > wakeup real mode assembly file, no page tables, GDT/LDT are used there)
 > 
-> You define accounting for things in real time as "strange" - lol.  Your
-> following sentences don't follow either.
-> 
-> My point is that we currently have a BIG problem, and that is the OMAP
-> fork being so far out of line with mainline, it isn't funny.  It's
-> causing lots of pain for everyone here.  Folk are screaming for mainline
-> to be buildable for OMAP.
-> 
-> There are two approaches to achieve that: take each driver, polish it
-> for weeks on end until it's nice and shiney, and then submit it upstream.
-> Eventually, given enough man hours, you'll get to the point where you've
-> pushed everything upstream, but in the mean time, new work has been
-> queued so you need to start at the beginning again.  You've got a job
-> for life constantly polishing code.
-> 
-> The other approach is to decide that we have what we have, and that in
-> the interests of efficiently reducing divergence, merging the upstream
-> changes with the downstream changes and pushing the result upstream ASAP.
-> Once merged, further improvements and cleanups can be made by pushing
-> them separately upstream along with any other bug fixes.
-> 
-> Given the amount of divergence, the only approach which gives realistic
-> progress is the second one.
-> 
-> If you think the first approach is the way to go, then please join in
-> with Tony and myself reviewing the _entire_ OMAP tree, polishing every
-> patch, and pushing it upstream.  And I mean _everything_.  Not just the
-> USB stuff.  Encourage everyone else to do the same - because it will
-> take an army of individuals to make any forward progress.
+> I did same test for kernel without SMP, yes it hangs on first resume, but bios
+> does pass control to linux, so while this is a minor bug, it is unrelated.
 
-Hey, you gotta give Dave some credit! Dave's been polishing tons of omap
-code in addition to the USB, at least I2C, gpio, SPI come to mind. Not to
-mention all the blinking leds!
+Still, I'd be interested in debugging this one too, if possible.  That may be
+easier too. ;-)
 
-Regarding getting and army of people to fix code, we need to start
-following another standard policy: All drivers must have a MAINTAINER
-who is capable of fixing things, and ideally doing things the right
-way from the start.
+> I also tested noapic, pci=nommconf. No luck.
+> 
+> Pattern is always the same, first resume works always, second doesn't.
+> It is sad since first resume is almost perfect (when I have free time I need to look at sound codec datasheet
+> and fix few issues there, anyways here alsa has few issues, all this is trivial, I already fixed all issues with desktop
+> which has a sigmatel codec)
 
-It's not going to be enough that few people try to fix stuff and get
-burnt out on it over and over again when new omaps come around every
-1.5 years.
+If you have more than 2 GB of RAM, you can try iommu=soft .
 
-<snip snip>
+I guess that all of the /sys/power/pm_test tests are passed?
 
-Tony
+Thanks,
+Rafael
