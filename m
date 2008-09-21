@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYIUWJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbYIUWMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbYIUWJf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 18:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYIUWJ2
+	id S1753340AbYIUWMm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 18:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbYIUWMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 18:09:28 -0400
-Received: from shells.gnugeneration.com ([66.240.222.126]:51162 "HELO
-	shells.gnugeneration.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752482AbYIUWJ1 (ORCPT
+	Sun, 21 Sep 2008 18:12:34 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:59356 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752515AbYIUWMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 18:09:27 -0400
-Date: Sun, 21 Sep 2008 17:09:26 -0500
-From: lkml@pengaru.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Honoring SO_RCVLOWAT in proto_ops.poll methods
-Message-ID: <20080921220926.GA18569@fc6222126.aspadmin.net>
-References: <20080920214229.GP2761@fc6222126.aspadmin.net> <20080920.152140.193698477.davem@davemloft.net> <20080920230046.GQ2761@fc6222126.aspadmin.net> <20080921092442.GS2761@fc6222126.aspadmin.net> <20080921151811.46328133@lxorguk.ukuu.org.uk> <20080921145134.GT2761@fc6222126.aspadmin.net> <20080921211337.74e8f1f1@lxorguk.ukuu.org.uk>
+	Sun, 21 Sep 2008 18:12:33 -0400
+Message-ID: <48D6C6CA.3080100@ru.mvista.com>
+Date: Mon, 22 Sep 2008 02:12:26 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080921211337.74e8f1f1@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Mark de Wever <koraq@xs4all.nl>
+Cc: Gadi Oxman <gadio@netvision.net.il>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IDE-TAPE NULL terminate strings.
+References: <20080921185138.GA16310@localhost> <48D69F5A.9010201@ru.mvista.com> <48D6A9BB.1070705@ru.mvista.com> <20080921202915.GA17945@localhost>
+In-Reply-To: <20080921202915.GA17945@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 21, 2008 at 09:13:37PM +0100, Alan Cox wrote:
-> Thats a gloriously insane way of trying to do HTTP/1.1, and one I'm not
-> sure is actually viable in the real world because the TCP window may be
-> smaller than the number of bytes required to find a Host: header - so you
-> may simply not be able to receive it via MSG_PEEK. In particular mobile
-> phone gateways have a nasty habit of using very small windows.
-> 
-> > I just don't see a good solution for what I'm doing other than MSG_PEEK
-> > and SO_RCVLOWAT, any ideas?
-> 
-> I don't either, and while I don't agree that what you are doing for
-> HTTP/1.1 is remotely sane there are probably other cases this would be
-> both sane and useful which does suggest fixing it would be beneficial
+Hello.
 
-I somewhat agree that it's insane, but it should be possible and what I've
-done already works most of the time.  With some additional special handling
-of the missing Host: case what I have might be a viable general case
-solution.
+Mark de Wever wrote:
 
-For now httpx just drops the connection when Host: isn't found as it's a
-work in progress.  I wanted to get this out there largely for you guys to
-see "Hey maybe there's a practical need for MSG_PEEK & SO_RCVLOWAT behaving
-differently than it does".  It seems to have been effective in this
-respect and I am hugely appreciative of your attention, time, and input.
- 
-As a proof of concept httpx already has some people scratching their heads
-because name-based vhosting can be a nightmare with the venerable Apache.  A
-solution like mine could alleviate alot of that.  With some work and a way
-to sleep on peek with a rcvbuf < rcvlowat there might be something quite
-interesting for the web hosting world.
+>>>> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+>>>> index 1bce84b..fd87b43 100644
+>>>> --- a/drivers/ide/ide-tape.c
+>>>> +++ b/drivers/ide/ide-tape.c
+>>>> @@ -2354,6 +2354,10 @@ static void  
+>>>> idetape_get_inquiry_results(ide_drive_t *drive)
+>>>>      ide_fixstring(product_id, 18, 0);
+>>>>      ide_fixstring(fw_rev, 6, 0);
+>>>>         
+>>    Hm, I see that every string variable declared there has 2 extra  
+>> characters, and yet the author have managed to make a mistake... these 
+>> extra chars don't seem needed.
+>>     
+>
+> Those extra characters made me believe the intention was setting the
+> NULL character, therefore I used that solution in my patch.
+>   
 
-Cheers,
-Vito Caputo
+   It was wrong to call ide_fixstring() on those "long" stings without 
+first setting their last byte to 0 -- this way that function just copied 
+the garbage at the end of the passed unterminated strings.
+I suggest that you get rid of those extra bytes as well, and use the 
+"%.<n>s" format specifiers.
+
+> Regards,
+> Mark de Wever
+>   
+
+MBR, Sergei
 
 
---------------------------------------------------------------------------------
-For those of you on the list:  I had replied to Alan directly but since
-Alan CC'd the list in his response I've continued with that format.  For
-those of you in the dark, httpx is my insane app using the MSG_PEEK and
-SO_RCVLOWAT being referred to above, you can find it here:
-http://serverkit.org/modules/httpx/
