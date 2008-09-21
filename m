@@ -1,36 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbYIUT6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbYIUUDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752900AbYIUT6i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 15:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYIUT61
+	id S1752900AbYIUUDI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 16:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYIUUCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 15:58:27 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40303 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751462AbYIUT60 (ORCPT
+	Sun, 21 Sep 2008 16:02:55 -0400
+Received: from ppp-111-195.adsl.restena.lu ([158.64.111.195]:40240 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750877AbYIUUCy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 15:58:26 -0400
-Date: Sun, 21 Sep 2008 20:57:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Arjan van de Ven <arjan@infradead.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
-       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
-       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
-       davem@davemloft.net
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
- restart.
-Message-ID: <20080921205744.2d78f1fa@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080921190050.GA20484@2ka.mipt.ru>
-References: <20080921172316.GA6306@2ka.mipt.ru>
-	<20080921110422.1d010b96@infradead.org>
-	<20080921182835.GA11473@2ka.mipt.ru>
-	<20080921113513.16677c4e@infradead.org>
-	<20080921190050.GA20484@2ka.mipt.ru>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 21 Sep 2008 16:02:54 -0400
+X-Greylist: delayed 647 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Sep 2008 16:02:54 EDT
+Date: Sun, 21 Sep 2008 21:51:57 +0200
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, Mark Lord <liml@rtr.ca>
+Subject: Re: XFS shutting down due to IO timeout on SATA disk (pata_via for
+ CX700)
+Message-ID: <20080921215157.449ef5b7@neptune.home>
+In-Reply-To: <48CFEE51.2070200@kernel.org>
+References: <20080911193511.7960bc82@neptune.home>
+	<48CE22E5.9090403@kernel.org>
+	<20080915190242.58d21a8f@neptune.home>
+	<48CEC8F2.4040904@kernel.org>
+	<20080916102152.3f35439f@pluto.restena.lu>
+	<48CFEE51.2070200@kernel.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -38,13 +34,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Getting the fact, that rmmod/insmod does not always fix the problem (but
-> most of the time for a short period of time), I again want to point,
-> that it looks like a firmware problem related to some inner timings. You
-> ask me to fix the driver and do not even listen to what I said
-> previously and do not get that into account and analyze.
+Hello,
 
-Try putting it into D3 counting to 10 and powering it back up. Thats
-about as close as you can get to pulling the plug when it hangs.
+On Tue, 16 September 2008 Tejun Heo <tj@kernel.org> wrote:
+> > Just for the record, on the VIA there were no errors yet with
+> > 2.6.27-rc6-git3 though I ran some compiling on it. As such it
+> > *could* be that one of the patches pushed by Jeff helped:
+> >   [libata] LBA28/LBA48 off-by-one bug in ata.h
+> >   sata_inic162x: enable LED blinking
+> >   ata: duplicate variable sparse warning
+> 
+> The only patch which could have affected the result is the off-by-one
+> one; however, FLUSH timeout is a bit unexpected failure mode for the
+> problem.  Can you please keep the system running for a whlie and see
+> whether the problem occurs?
 
-Alan
+I haven't seen the error happen yet with 2.6.27-rc6-git3, so that off
+by one bug might have had an incidence.
+No warranty on that as I did also slightly change power-saving settings
+for the disk around the time I updated kernel (-B254, -S241 parameters
+to hdparm) and have not seen the error yet on 2.6.27-rc5-git9 since
+then.
+
+Will do more testing as time permits over the next days and report if I
+find anything that looks useful (e.g. better way than time to trigger
+the error or some of the hdparm options influencing the probability)
+
+In case there is a patch that would eventually be able to get more info
+when the error occurs I would be happy to apply it.
+
+Bruno
