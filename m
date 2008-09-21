@@ -1,63 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbYIUVCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbYIUVDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753130AbYIUVCm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 17:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbYIUVCd
+	id S1753722AbYIUVDp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 17:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYIUVDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 17:02:33 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:57347 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbYIUVCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 17:02:32 -0400
-Date: Mon, 22 Sep 2008 00:57:06 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
-       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
-       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
-       davem@davemloft.net
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
-Message-ID: <20080921205706.GA24545@2ka.mipt.ru>
-References: <20080921172316.GA6306@2ka.mipt.ru> <20080921110422.1d010b96@infradead.org> <20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org> <20080921190050.GA20484@2ka.mipt.ru> <1222024444.3023.53.camel@johannes.berg> <20080921193809.GA8735@2ka.mipt.ru> <20080921124332.67ddc13a@infradead.org> <20080921202057.GB25052@2ka.mipt.ru> <20080921132753.5689b564@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 21 Sep 2008 17:03:37 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:56349 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbYIUVDg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 17:03:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mime-version
+         :content-type:content-disposition:x-pgp-key:user-agent:sender;
+        b=m5suWd93/8M82kDEeZaoT1GT92xSJqb+c6W4lV/RbtIJzqdnvTwEHDkGb5jdFPOVXH
+         vVZz9uClIG3nlz/r9fBHlZypt3tq/nbQguBCavioe5peBq+STNu8RVD8i1a+vsUm14A3
+         mJp07oNVPGDkVFaJRGJV9m3Ay8IFg7b/m0V1c=
+Date: Sun, 21 Sep 2008 23:02:19 +0200
+From: Michal Januszewski <spock@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] fbdev: don't allow to set a video mode via vga= if FB
+	doesn't support it
+Message-ID: <20080921210219.GC21215@spock.one.pl>
+Reply-To: spock@gentoo.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <20080921132753.5689b564@infradead.org>
-User-Agent: Mutt/1.5.9i
+X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 21, 2008 at 01:27:53PM -0700, Arjan van de Ven (arjan@infradead.org) wrote:
-> > Well, I actually wanted to have a bug there because of it, but now I
-> > think that annoying repeated warning is enough to bring attention to
-> > the problem by putting bug information into some magic special place
-> > called kerneloops collection.
-> 
-> are you more interested in bringing attention than finding something
-> that makes the driver work ? I sort of am getting that impression and
-> I'd be disappointed if that is the case.
+From: Michal Januszewski <spock@gentoo.org>
+
+Currently, it is possible to set a VESA graphics mode at boot time via
+the vga= parameter even when no framebuffer driver supporting this is
+configured.  This could lead to the system booting with a black screen,
+without a usable console.
+
+Fix this problem by only allowing to set graphics modes at boot time
+if a supporting framebuffer driver is configured.
+
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+---
+diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
+index 401ad99..32a6045 100644
+--- a/arch/x86/boot/video-vesa.c
++++ b/arch/x86/boot/video-vesa.c
+@@ -88,14 +88,11 @@ static int vesa_probe(void)
+ 			   (vminfo.memory_layout == 4 ||
+ 			    vminfo.memory_layout == 6) &&
+ 			   vminfo.memory_planes == 1) {
+-#ifdef CONFIG_FB
++#if FB_SUPPORTS_BOOT_VESA
+ 			/* Graphics mode, color, linear frame buffer
+ 			   supported.  Only register the mode if
+ 			   if framebuffer is configured, however,
+-			   otherwise the user will be left without a screen.
+-			   We don't require CONFIG_FB_VESA, however, since
+-			   some of the other framebuffer drivers can use
+-			   this mode-setting, too. */
++			   otherwise the user will be left without a screen. */
+ 			mi = GET_HEAP(struct mode_info, 1);
+ 			mi->mode = mode + VIDEO_FIRST_VESA;
+ 			mi->depth = vminfo.bpp;
+@@ -134,9 +131,13 @@ static int vesa_set_mode(struct mode_info *mode)
+ 		/* It's a supported text mode */
+ 		is_graphic = 0;
+ 	} else if ((vminfo.mode_attr & 0x99) == 0x99) {
++#if FB_SUPPORTS_BOOT_VESA
+ 		/* It's a graphics mode with linear frame buffer */
+ 		is_graphic = 1;
+ 		vesa_mode |= 0x4000; /* Request linear frame buffer */
++#else
++		return -1;
++#endif
+ 	} else {
+ 		return -1;	/* Invalid mode */
+ 	}
+diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
+index 1ee2c05..20fdc2f 100644
+--- a/include/linux/screen_info.h
++++ b/include/linux/screen_info.h
+@@ -76,6 +76,10 @@ extern struct screen_info screen_info;
+ #define ORIG_VIDEO_LINES	(screen_info.orig_video_lines)
+ #define ORIG_VIDEO_ISVGA	(screen_info.orig_video_isVGA)
+ #define ORIG_VIDEO_POINTS       (screen_info.orig_video_points)
++
++#define FB_SUPPORTS_BOOT_VESA (defined(CONFIG_FB_VESA) || \
++		defined(CONFIG_FB_SIS) || defined(CONFIG_FB_IMAC) || \
++		defined(CONFIG_FB_INTEL))
+ #endif /* __KERNEL__ */
  
-I do think that it can not be fixed without serious intervention of the
-Intel (hardware) folks, since bug exists more than 4 years in two
-firmwares and lots of very different driver versions and was reproduced
-even on 2.4 kernel.
+ #endif /* _SCREEN_INFO_H */
 
-I will experiment with reloading issues as Alan suggested and to
-add/remove more surgery into initialization process to be allowed to
-'workaround' the issue, since it looks noone else will.
-
-But that's definitely not a fix and in my personal workaround's 10
-degrees shit'o'meter this lies around 12.
- 
-> > Consider for inclusing for the upcoming kernel to get wider
-> > notifications. Yes, it is not a bugfix, I know.
-> 
-> still more complex than needed; a WARN_ON_ONCE() will be enough.
-
-That allows to dump whatever number of warnings you want. The more we
-have, the louder will be customers scream.
-
--- 
-	Evgeniy Polyakov
