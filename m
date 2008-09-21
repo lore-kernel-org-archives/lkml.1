@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbYIUCOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbYIUCRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbYIUCOw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 22:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbYIUCOn
+	id S1753502AbYIUCRq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 22:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYIUCRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 22:14:43 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43543 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbYIUCOm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 22:14:42 -0400
-Date: Sat, 20 Sep 2008 19:14:42 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: akpm@linux-foundation.org,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH] ext3/jbd: Avoid WARN() messages when failing to write
- to the superblock
-Message-ID: <20080920191442.311c043e@infradead.org>
-In-Reply-To: <1221946547-9873-1-git-send-email-tytso@mit.edu>
-References: <1221946547-9873-1-git-send-email-tytso@mit.edu>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 20 Sep 2008 22:17:38 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:63307 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751259AbYIUCRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 22:17:37 -0400
+Date: Sun, 21 Sep 2008 11:16:30 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: [PATCH] [RFC] tracehook: Hook in syscall tracing markers.
+Message-ID: <20080921021630.GA6443@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+	"Frank Ch. Eigler" <fche@redhat.com>,
+	Roland McGrath <roland@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Sep 2008 17:35:47 -0400
-Theodore Ts'o <tytso@mit.edu> wrote:
+At kernel summit, the idea that syscall tracing was generally desirable
+for tracing was mentioned several times, as was the argument that kernel
+developers aren't placing markers in meaningful locations. This is a
+simple patch to try and do that for the syscall case.
 
-> This fixes some very common warnings reported by kerneloops.org
+Presently LTTng attempts to litter these trace markers all over the
+architecture code, primarily to get around the fact that there was no
+generic way to get at this information before. Now that platforms are
+starting to do their syscall entry/exit notifiers through tracehook and
+we have the asm/syscall.h interface, all of this information can be
+generically abstracted.
 
-just to quantify "very common"; I did a quick count on the database and
-there have been 4920 reports of the WARNing fixed by this patch...
-that's quite a bit.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
+---
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+ include/linux/tracehook.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
+index 6186a78..481ff45 100644
+--- a/include/linux/tracehook.h
++++ b/include/linux/tracehook.h
+@@ -49,6 +49,9 @@
+ #include <linux/sched.h>
+ #include <linux/ptrace.h>
+ #include <linux/security.h>
++#include <linux/marker.h>
++#include <asm/syscall.h>
++
+ struct linux_binprm;
+ 
+ /**
+@@ -112,6 +115,8 @@ static inline __must_check int tracehook_report_syscall_entry(
+ 	struct pt_regs *regs)
+ {
+ 	ptrace_report_syscall(regs);
++	trace_mark(kernel_arch_syscall_entry, "syscall_id %ld ip #p%ld",
++		   syscall_get_nr(NULL, regs), instruction_pointer(regs));
+ 	return 0;
+ }
+ 
+@@ -135,6 +140,8 @@ static inline __must_check int tracehook_report_syscall_entry(
+ static inline void tracehook_report_syscall_exit(struct pt_regs *regs, int step)
+ {
+ 	ptrace_report_syscall(regs);
++	trace_mark(kernel_arch_syscall_exit, "ret %ld",
++		   syscall_get_return_value(NULL, regs));
+ }
+ 
+ /**
