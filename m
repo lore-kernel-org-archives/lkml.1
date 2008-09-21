@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbYIUSEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbYIUSK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752522AbYIUSEf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 14:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbYIUSEY
+	id S1752593AbYIUSK2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 14:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbYIUSKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 14:04:24 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60474 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbYIUSEX (ORCPT
+	Sun, 21 Sep 2008 14:10:20 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:30269 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbYIUSKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 14:04:23 -0400
-Date: Sun, 21 Sep 2008 11:04:22 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ipw2100-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       yi.zhu@intel.com, reinette.chatre@intel.com, jgarzik@pobox.com,
-       linville@tuxdriver.com, davem@davemloft.net
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
- restart.
-Message-ID: <20080921110422.1d010b96@infradead.org>
-In-Reply-To: <20080921172316.GA6306@2ka.mipt.ru>
-References: <20080921172316.GA6306@2ka.mipt.ru>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 21 Sep 2008 14:10:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=xnayy3P+YkIT4qYcUYofr+MzMeoLC/2wtkuzUnMMV5fZQ8+maoC8wQbjisU4s5vnrm
+         jPr8fLqyksrf+vxRLaekB0XyDTwKmk/Loqv3UsLsyKc65F+TBacs5ocjpdSmZUB0mg2K
+         nFLPjXWn02GH8zaPLNZqIwkEemn73zLnZIB9M=
+Message-ID: <48D68E06.50504@gmail.com>
+Date: Sun, 21 Sep 2008 20:10:14 +0200
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Steven Noonan <steven@uplinklabs.net>
+Subject: [Patch 1/3] Tracing/ftrace: Make nop tracer reset previous entries
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Sep 2008 21:23:17 +0400
-Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+If nop tracer is selected, some old entries from the previous tracer could still be enqueued. Tracing have to be reset.
 
-> Hi.
-> 
-> Following bug exists in the ipw2100 driver/firmware for years and
-> Intel folks never responded to zillions bugzilla entries and forum
-> notices in the internet with some patch or firmware update (although
-> did request dmesg and debug info, and received them).
-> 
-> ipw2100: Fatal interrupt. Scheduling firmware restart.
-> 
-> I believe it is a firmware bug because after driver is unloaded and
-> loaded back again wireless adapter usually starts working (for small
-> amount of time though). 
-\
-> diff --git a/drivers/net/wireless/Kconfig
-> b/drivers/net/wireless/Kconfig index 9931b5a..c24fc6a 100644
-> --- a/drivers/net/wireless/Kconfig
-> +++ b/drivers/net/wireless/Kconfig
-> @@ -125,7 +125,7 @@ config PCMCIA_RAYCS
->  
->  config IPW2100
->  	tristate "Intel PRO/Wireless 2100 Network Connection"
-> -	depends on PCI && WLAN_80211
-> +	depends on PCI && WLAN_80211 && BROKEN
->  	select WIRELESS_EXT
->  	select FW_LOADER
->  	select IEEE80211
-> 
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+diff -rup linux-2.6-tip (2)/kernel/trace/trace_nop.c linux-2.6-tip/kernel/trace/trace_nop.c
+--- linux-2.6-tip (2)/kernel/trace/trace_nop.c	2008-09-19 18:01:26.000000000 +0200
++++ linux-2.6-tip/kernel/trace/trace_nop.c	2008-09-21 00:44:47.000000000 +0200
+@@ -25,8 +25,12 @@ static void stop_nop_trace(struct trace_
+ }
 
-so now you go from an occasional burp to having nothing at all.
-How about you run with this patch on your own machine only?
+ 
 
-or.. since you say a reload of the driver fixes it.. why don't you make
-a patch for the driver that does basically the actions of a reload
-automatically when the driver detects the issue?
-(and stick a WARN_ON in for good measure so that kerneloops.org can
-start tracking these burps)
+ static void nop_trace_init(struct trace_array *tr)
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+-{
+
+-	ctx_trace = tr;
+
++{
++	int cpu;
+
++	ctx_trace = tr;
++
++	for_each_online_cpu(cpu)
+
++		tracing_reset(tr->data[cpu]);
+
+ 
+
+ 	if (tr->ctrl)
+
+ 		start_nop_trace(tr);
