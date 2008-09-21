@@ -1,161 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbYJADvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752869AbYIUHHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753226AbYJADvQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 23:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYJADu7
+	id S1752869AbYIUHHZ (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Sun, 21 Sep 2008 03:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbYIUHHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 23:50:59 -0400
-Received: from ns3.system-techniques.com ([204.91.156.41]:42477 "EHLO
-	ns3.baby-dragons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751945AbYJADu7 (ORCPT
+	Sun, 21 Sep 2008 03:07:09 -0400
+Received: from connect-ua-211.dg.net.ua ([213.186.218.211]:54214 "EHLO
+	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751212AbYIUHHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 23:50:59 -0400
-Date: Tue, 30 Sep 2008 19:50:09 -0800 (AKDT)
-From: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-cc: Tom Mortensen <tmmlkml@gmail.com>, Tejun Heo <tj@kernel.org>,
-       Bill Davidsen <davidsen@tmr.com>, Gwendal Grignou <gwendal@google.com>,
-       Brian Rademacher <rad@radfiles.net>, linux-ide@vger.kernel.org,
-       linux-raid maillist <linux-raid@vger.kernel.org>,
-       Linux Kernel Maillist <linux-kernel@vger.kernel.org>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>
-Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
-In-Reply-To: <alpine.DEB.1.10.0809301715280.14600@p34.internal.lan>
-Message-ID: <alpine.LNX.2.00.0809301946020.16014@filesrv1.baby-dragons.com>
-References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA>  <alpine.DEB.1.10.0809220828490.23159@p34.internal.lan>  <5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>  <alpine.DEB.1.10.0809220903400.23159@p34.internal.lan>  <4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA>
-  <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>  <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan>  <e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com>  <48DBAB81.8050900@tmr.com> <48E08E2D.6050905@kernel.org>
- <a52a95e30809301347s70b57ebfh280a6871329afd72@mail.gmail.com> <alpine.DEB.1.10.0809301715280.14600@p34.internal.lan>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Sun, 21 Sep 2008 03:07:08 -0400
+To: linux-kernel@vger.kernel.org
+Subject: =?UTF-8?B?Q29ubmVjdC51YSB8INCX0LzRltC90Lgg0LfQsCDQvtGB0YLQsNC90L3Rlg==?=  =?UTF-8?B?0Lkg0YLQuNC20LTQtdC90Yw=?=
+Date: Sun, 21 Sep 2008 10:07:04 +0300
+From: =?UTF-8?B?0JrQvtC80LDQvdC00LAgQ29ubmVjdC51YQ==?= 
+	<donotreply@connect.com.ua>
+Reply-to: Connect <donotreply@connect.com.ua>
+Message-ID: <23d14958cc75c46488ba5af52feb7776@localhost.localdomain>
+X-Priority: 3
+X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.8 (ns3.baby-dragons.com [204.91.156.41]); Wed, 01 Oct 2008 03:50:11 +0000 (UTC)
+Content-Type: multipart/mixed; boundary="----------=_1221980854-20634-112"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 	Hello Justin ,
+This is a multi-part message in MIME format...
 
-On Tue, 30 Sep 2008, Justin Piszcz wrote:
-> On Tue, 30 Sep 2008, Tom Mortensen wrote:
->
->> Don't know if this is the original poster's problem, but if the drive
->> is spun down, then enabling SMART or trying to read SMART attributes
->> causes the drive to spin up and the command is delayed until this has
->> occurred.
->> 
->> The fix is to increase the timeout given to scsi_execute() in
->> drivers/ata/libata-scsi.c.
->> 
->> ie, current code (2.6.26.5) is:
->>
->>        /* Good values for timeout and retries?  Values below
->>           from scsi_ioctl_send_command() for default case... */
->>        cmd_result = scsi_execute(scsidev, scsi_cmd, data_dir, argbuf, 
->> argsize,
->>                                  sensebuf, (10*HZ), 5, 0);
->> 
->> Should be changed to:
->>
->>        /* Good values for timeout and retries?  Values below
->>           from scsi_ioctl_send_command() for default case... */
->>        cmd_result = scsi_execute(scsidev, scsi_cmd, data_dir, argbuf, 
->> argsize,
->>                                  sensebuf, (30*HZ), 5, 0);
->> 
->> Using a 1TB Hitachi hard drive, this command times out because it
->> takes this drive about 15 seconds to spin up.  Virtutally all hard
->> drives spin up in less than 30 sec, but perhaps make this higher in
->> case there are slower drives out there?
->> 
->> Cheers,
->> Tom
->
-> Velociraptor 10k drive here (2.6.26.5):
->
-> Sep 30 15:55:06 p34 kernel: [420781.333179] ata6.00: exception Emask 0x0 SAct
-> 0x0 SErr 0x0 action 0x6 frozen
-> Sep 30 15:55:06 p34 kernel: [420781.333189] ata6.00: cmd
-> b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
-> Sep 30 15:55:06 p34 kernel: [420781.333190]          res
-> 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> Sep 30 15:55:06 p34 kernel: [420781.333194] ata6.00: status: { DRDY }
-> Sep 30 15:55:06 p34 kernel: [420781.333200] ata6: hard resetting link
-> Sep 30 15:55:06 p34 kernel: [420781.638589] ata6: SATA link up 3.0 Gbps 
-> (SStatus
-> 123 SControl 300)
-> Sep 30 15:55:06 p34 kernel: [420781.662166] ata6.00: configured for UDMA/133
-> Sep 30 15:55:06 p34 kernel: [420781.669416] sd 5:0:0:0: [sdf] Write Protect 
-> is
-> off
-> Sep 30 15:55:06 p34 kernel: [420781.669416] sd 5:0:0:0: [sdf] Mode Sense: 00 
-> 3a
-> 00 00
-> Sep 30 15:55:06 p34 kernel: [420781.669416] sd 5:0:0:0: [sdf] Write cache:
-> enabled, read cache: enabled, doesn't support DPO or FUA
->
-> Nothing wrong with the disk, it just happens... :(  Linux/kernel bug?
-> It happens on multiple controllers, Intel, SiI, Marvell, does not seem to
-> matter.
->
-> SMART Self-test log structure revision number 1
-> Num  Test_Description    Status                  Remaining  LifeTime(hours) 
-> LBA
-> _of_first_error
-> # 1  Short offline       Completed without error       00%      2761 
-> -
-> # 2  Short offline       Completed without error       00%      2737 
-> -
-> # 3  Extended offline    Completed without error       00%      2714 
-> -
-> # 4  Short offline       Completed without error       00%      2689 
-> -
-> # 5  Extended offline    Completed without error       00%      2514 
-> -
-> # 6  Short offline       Completed without error       00%      2306 
-> -
-> # 7  Short offline       Completed without error       00%      2282 
-> -
-> # 8  Short offline       Completed without error       00%      2258 
-> -
-> # 9  Short offline       Completed without error       00%      2234 
-> -
-> #10  Extended offline    Completed without error       00%      2211 
-> -
-> #11  Short offline       Completed without error       00%      2186 
-> -
-> #12  Short offline       Completed without error       00%      2138 
-> -
-> #13  Short offline       Completed without error       00%      2114 
-> -
-> #14  Short offline       Completed without error       00%      2090 
-> -
-> #15  Short offline       Completed without error       00%      2066 
-> -
-> #16  Extended offline    Completed without error       00%      2043 
-> -
-> #17  Short offline       Completed without error       00%      2018 
-> -
-> #18  Short offline       Completed without error       00%      1970 
-> -
-> #19  Short offline       Completed without error       00%      1947 
-> -
-> #20  Short offline       Completed without error       00%      1923 
-> -
-> #21  Short offline       Completed without error       00%      1899 
-> -
->
->
-> Justin.
- 	I take it you've tried differant drive manufacturers ?
- 	Or even a differant drive of same manuf. ?
- 	Seeing as you've moved this same drive(?) across several chipsets & 
-possibly mother boards ,  Leads me to beleive that the difficulty is either with 
-the driver or the drive (if it is always the same drive or drive model) .
+------------=_1221980854-20634-112
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
 
- 		Hth ,  JimL
--- 
-+------------------------------------------------------------------+
-| James   W.   Laferriere | System    Techniques | Give me VMS     |
-| Network&System Engineer | 2133    McCullam Ave |  Give me Linux  |
-| babydr@baby-dragons.com | Fairbanks, AK. 99701 |   only  on  AXP |
-+------------------------------------------------------------------+
+Вітаємо, Владимир Кирилов!
+
+Найбільш цікаві події на Коннекті за останній час:
+
+Нова версія Коннекту повна нововведень та сюрпризів. По-перше, це функція "Супер Жжот", яка дозволяє яскравіше виражати свою симпатію і підвищувати рейтинг користувачу. По-друге, Коннект.Гроші – бали, які дозволяють використовувати розширені можливості Коннекту. По-третє, це бонусна система, яка дає можливість активним користувачам отримувати Коннект. Гроші і навіть реальні гроші!
+
+Нове вiдео:
+Кармен Электра: стрип-аэробика (видеокурс) - Carmen Electra`s Advanced Aerobic Striptease, 1894 перегляда: http://connect.ua/video/view?id=106006
+Большой адронный коллайдер, 934 перегляда: http://connect.ua/video/view?id=100333
+Ведущая М1 под кайфом!, 867 переглядiв: http://connect.ua/video/view?id=106717
+Всi вiдео http://connect.ua/video
+
+
+Якщо вказане вище посилання не відкривається, зкопіюйте його до буфера обміну, вставте в адресний рядок браузера та натисніть Enter.
+
+
+Об`єднуємо Україну!
+Команда Connect.ua
+
+-------------------------------
+
+Ви отримали цей лист, тому що зареєстровані на сайті національної української соціальної мережі Connect.ua
+Ви можете змінити параметри відправлення повідомлень в опціях анкети.
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+------------=_1221980854-20634-112
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.425 (Entity 5.425)
+
+Spam detection software, running on the system "daredevil.linux-foundation.=
+org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
+
+Content preview:  =D0=92=D1=96=D1=82=D0=B0=D1=94=D0=BC=D0=BE, =D0=92=D0=BB=
+=D0=B0=D0=B4=D0=B8=D0=BC=D0=B8=D1=80 =D0=9A=D0=B8=D1=80=D0=B8=D0=BB=D0=BE=
+=D0=B2! =D0=9D=D0=B0=D0=B9=D0=B1=D1=96=D0=BB=D1=8C=D1=88
+   =D1=86=D1=96=D0=BA=D0=B0=D0=B2=D1=96 =D0=BF=D0=BE=D0=B4=D1=96=D1=97 =D0=
+=BD=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=96 =D0=B7=D0=B0 =D0=
+=BE=D1=81=D1=82=D0=B0=D0=BD=D0=BD=D1=96=D0=B9 =D1=87=D0=B0=D1=81:
+   =D0=9D=D0=BE=D0=B2=D0=B0 =D0=B2=D0=B5=D1=80=D1=81=D1=96=D1=8F =D0=9A=D0=
+=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=83 =D0=BF=D0=BE=D0=B2=D0=BD=D0=B0 =D0=
+=BD=D0=BE=D0=B2=D0=BE=D0=B2=D0=B2=D0=B5=D0=B4=D0=B5=D0=BD=D1=8C
+  =D1=82=D0=B0 =D1=81=D1=8E=D1=80=D0=BF=D1=80=D0=B8=D0=B7=D1=96=D0=B2. =D0=
+=9F=D0=BE-=D0=BF=D0=B5=D1=80=D1=88=D0=B5, =D1=86=D0=B5 =D1=84=D1=83=D0=BD=
+=D0=BA=D1=86=D1=96=D1=8F "=D0=A1=D1=83=D0=BF=D0=B5=D1=80
+  =D0=96=D0=B6=D0=BE=D1=82", =D1=8F=D0=BA=D0=B0 =D0=B4=D0=BE=D0=B7=D0=B2=D0=
+=BE=D0=BB=D1=8F=D1=94 =D1=8F=D1=81=D0=BA=D1=80=D0=B0=D0=B2=D1=96=D1=88=D0=
+=B5 =D0=B2=D0=B8=D1=80=D0=B0=D0=B6=D0=B0=D1=82=D0=B8 =D1=81=D0=B2=D0=BE=D1=
+=8E
+   =D1=81=D0=B8=D0=BC=D0=BF=D0=B0=D1=82=D1=96=D1=8E =D1=96 =D0=BF=D1=96=D0=
+=B4=D0=B2=D0=B8=D1=89=D1=83=D0=B2=D0=B0=D1=82=D0=B8 =D1=80=D0=B5=D0=B9=D1=
+=82=D0=B8=D0=BD=D0=B3 =D0=BA=D0=BE=D1=80=D0=B8=D1=81=D1=82=D1=83=D0=B2=D0=
+=B0=D1=87=D1=83.
+   =D0=9F=D0=BE-=D0=B4=D1=80=D1=83=D0=B3=D0=B5, =D0=9A=D0=BE=D0=BD=D0=BD=D0=
+=B5=D0=BA=D1=82.=D0=93=D1=80=D0=BE=D1=88=D1=96 =E2=80=93 =D0=B1=D0=B0=D0=BB=
+=D0=B8, =D1=8F=D0=BA=D1=96 =D0=B4=D0=BE=D0=B7=D0=B2=D0=BE=D0=BB=D1=8F=D1=8E=
+=D1=82=D1=8C
+   =D0=B2=D0=B8=D0=BA=D0=BE=D1=80=D0=B8=D1=81=D1=82=D0=BE=D0=B2=D1=83=D0=B2=
+=D0=B0=D1=82=D0=B8 =D1=80=D0=BE=D0=B7=D1=88=D0=B8=D1=80=D0=B5=D0=BD=D1=96 =
+=D0=BC=D0=BE=D0=B6=D0=BB=D0=B8=D0=B2=D0=BE=D1=81=D1=82=D1=96 =D0=9A=D0=BE=
+=D0=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=83.
+   =D0=9F=D0=BE-=D1=82=D1=80=D0=B5=D1=82=D1=94, =D1=86=D0=B5 =D0=B1=D0=BE=
+=D0=BD=D1=83=D1=81=D0=BD=D0=B0 =D1=81=D0=B8=D1=81=D1=82=D0=B5=D0=BC=D0=B0, =
+=D1=8F=D0=BA=D0=B0 =D0=B4=D0=B0=D1=94 =D0=BC=D0=BE=D0=B6=D0=BB=D0=B8=D0=B2=
+=D1=96=D1=81=D1=82=D1=8C
+   =D0=B0=D0=BA=D1=82=D0=B8=D0=B2=D0=BD=D0=B8=D0=BC =D0=BA=D0=BE=D1=80=D0=
+=B8=D1=81=D1=82=D1=83=D0=B2=D0=B0=D1=87=D0=B0=D0=BC =D0=BE=D1=82=D1=80=D0=
+=B8=D0=BC=D1=83=D0=B2=D0=B0=D1=82=D0=B8 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=D0=
+=BA=D1=82.
+   =D0=93=D1=80=D0=BE=D1=88=D1=96 =D1=96 =D0=BD=D0=B0=D0=B2=D1=96=D1=82=D1=
+=8C =D1=80=D0=B5=D0=B0=D0=BB=D1=8C=D0=BD=D1=96 =D0=B3=D1=80=D0=BE=D1=88=D1=
+=96! [...]=20
+
+Content analysis details:   (5.7 points, 5.0 required)
+
+ pts rule name              description
+---- ---------------------- -----------------------------------------------=
+---
+-1.0 OSDL_HEADER_LIST_KNOWN X-Mailing-List contains a known mailing list
+-1.0 OSDL_HEADER_LISTID_KNOWN List-Id contains a known mailing list
+ 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+                            [score: 0.4876]
+ 1.2 OSDL_HIGH_ASCII_8      FULL: 8 high-ASCII characters in a row
+ 1.0 OSDL_HIGH_ASCII_6      FULL: 6 high-ASCII characters in a row
+ 1.2 OSDL_HIGH_ASCII_12     FULL: 12 high-ASCII characters in a row
+ 1.0 OSDL_HIGH_ASCII_4      FULL: 4 high-ASCII characters in a row
+ 1.2 OSDL_HIGH_ASCII_10     FULL: 10 high-ASCII characters in a row
+ 1.2 OSDL_HIGH_ASCII_14     FULL: 14 high-ASCII characters in a row
+ 1.2 OSDL_HIGH_ASCII_15     FULL: 15 or more high-ASCII characters in a row
+-0.6 AWL                    AWL: From: address is in the auto white-list
+
+
+
+------------=_1221980854-20634-112--
