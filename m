@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbYIUUtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756379AbYIUUt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755596AbYIUUtA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 16:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbYIUUhT
+	id S1756379AbYIUUt1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 16:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYIUUjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 16:37:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57242 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753863AbYIUUhQ convert rfc822-to-8bit (ORCPT
+	Sun, 21 Sep 2008 16:39:15 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:17664 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754506AbYIUUjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 16:37:16 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik>
-In-Reply-To: <PJz8fNrJNHG.A.65F.wzq1IB@albercik>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Sun, 21 Sep 2008 16:39:13 -0400
+Message-ID: <f488382f0809211339i250defb9obf82d218a03beb44@mail.gmail.com>
+Date: Sun, 21 Sep 2008 13:39:11 -0700
+From: "Steven Noonan" <steven@uplinklabs.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #11551] Semi-repeatable hard lockup on 2.6.27-rc6
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>
+In-Reply-To: <7lIhZC4hCxE.A.uuG.a0q1IB@albercik>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <7lIhZC4hCxE.A._9F.6zq1IB@albercik>
-Subject: [Bug #11611] Commit 2344abbcbdb82140050e8be29d3d55e4f6fe860b breaks resume on nx6325
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 21 Sep 2008 20:54:24 +0200 (CEST)
+References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik>
+	 <7lIhZC4hCxE.A.uuG.a0q1IB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+On Sun, Sep 21, 2008 at 11:54 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11551
+> Subject         : Semi-repeatable hard lockup on 2.6.27-rc6
+> Submitter       : Steven Noonan <steven@uplinklabs.net>
+> Date            : 2008-09-10 18:07 (12 days old)
+> References      : http://marc.info/?l=linux-kernel&m=122107007407994&w=4
+>
+>
 
-The following bug entry is on the current list of known regressions
-from 2.6.26.  Please verify if it still should be listed and let me know
-(either way).
+The machine with these symptoms was sent in for service on Friday. I
+suspect there may have been dodgy hardware involved on this one. I
+think this bug should be closed for the time being. Once I get the
+machine back, I'll reopen the bug if I can still reproduce it.
 
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11611
-Subject		: Commit 2344abbcbdb82140050e8be29d3d55e4f6fe860b breaks resume on nx6325
-Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
-Date		: 2008-09-20 23:24 (2 days old)
-References	: http://marc.info/?l=linux-kernel&m=122195277606974&w=4
-
-
+- Steven
