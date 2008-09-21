@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbYIUEFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbYIUEQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751955AbYIUEFQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 00:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbYIUEFE
+	id S1752056AbYIUEQB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 00:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbYIUEPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 00:05:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36988 "EHLO
+	Sun, 21 Sep 2008 00:15:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53033 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750728AbYIUEFD (ORCPT
+	by vger.kernel.org with ESMTP id S1750733AbYIUEPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 00:05:03 -0400
-Date: Sat, 20 Sep 2008 21:04:44 -0700
+	Sun, 21 Sep 2008 00:15:52 -0400
+Date: Sat, 20 Sep 2008 21:14:33 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: Find bio sector offset given idx and offset
-Message-Id: <20080920210444.f083da7b.akpm@linux-foundation.org>
-In-Reply-To: <yq17i96nyom.fsf@sermon.lab.mkp.net>
-References: <yq17i96nyom.fsf@sermon.lab.mkp.net>
+Cc: jens.axboe@oracle.com, agk@sourceware.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com
+Subject: Re: [PATCH] dm: Add support for data integrity to DM
+Message-Id: <20080920211433.9e1a6872.akpm@linux-foundation.org>
+In-Reply-To: <yq13ajunyju.fsf@sermon.lab.mkp.net>
+References: <yq13ajunyju.fsf@sermon.lab.mkp.net>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,39 +27,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Sep 2008 20:13:29 -0400 "Martin K. Petersen" <martin.petersen@oracle.com> wrote:
+On Sat, 20 Sep 2008 20:16:21 -0400 "Martin K. Petersen" <martin.petersen@oracle.com> wrote:
 
-> @@ -1300,6 +1300,30 @@ struct bio_pair *bio_split(struct bio *bi, mempool_t *pool, int first_sectors)
->  	return bp;
+> 
+> If all subdevices support the same protection format the DM device is
+> flagged as capable.
+> 
+> ..
+..
+> +	/* Register dm device as being integrity capable */
+> +	if (prev && bdev_get_integrity(prev->bdev)) {
+> +		struct gendisk *disk = dm_disk(md);
+> +
+> +		if (blk_integrity_register(dm_disk(md), 
+
+Please use checkpatch.  Always.  There's just no reason not to.  Sure,
+you can make a decision to ignore some of its reports, but at least
+this avoids the accidental introduction of layout problems.
+
+> +					   bdev_get_integrity(prev->bdev)))
+> +			printk(KERN_ERR "%s: %s Could not register integrity!\n",
+> +			       __func__, disk->disk_name);
+> +		else
+> +			printk(KERN_INFO "Enabling data integrity on %s\n",
+> +			       disk->disk_name);
+> +	}
 >  }
->  
-> +sector_t bio_sector_offset(struct bio *bio, unsigned short index, unsigned int offset)
-> +{
-> +	struct bio_vec *bv;
-> +	unsigned int sector_sz = bio->bi_bdev->bd_disk->queue->hardsect_size;
-> +	sector_t sectors;
-> +	int i;
+>
+> ...
+>
+> +	if (bio_integrity(bio)) {
+> +		bio_integrity_clone(clone, bio, bs);
 > +
-> +	sectors = 0;
-> +
-> +	BUG_ON(index >= bio->bi_vcnt);
-> +
-> +	bio_for_each_segment(bv, bio, i) {
-> +		if (i == index) {
-> +			if (offset > bv->bv_offset)
-> +				sectors += (offset - bv->bv_offset) / sector_sz;
-> +			return sectors;
-> +		}
-> +
-> +		sectors += bv->bv_len / sector_sz;
+> +		if (idx != bio->bi_idx || clone->bi_size < bio->bi_size)
+> +			bio_integrity_trim(clone, bio_sector_offset(bio, idx, 0), len);
+
+For better or for worse, the developers of dm.c have chosen to keep the
+whole file presentable in an 80-col display.  This patch breaks that,
+and they might not like this.
+
 > +	}
 > +
-> +	BUG();
+>  	return clone;
+>  }
+>  
+> @@ -1108,6 +1121,7 @@ static struct mapped_device *alloc_dev(int minor)
+>  	md->disk->queue = md->queue;
+>  	md->disk->private_data = md;
+>  	sprintf(md->disk->disk_name, "dm-%d", minor);
+> +	printk(KERN_ERR "DM: Created %s\n", md->disk->disk_name);
+>  	add_disk(md->disk);
+>  	format_dev_t(md->name, MKDEV(_major, minor));
+>  
+> @@ -1157,6 +1171,7 @@ static void free_dev(struct mapped_device *md)
+>  	mempool_destroy(md->tio_pool);
+>  	mempool_destroy(md->io_pool);
+>  	bioset_free(md->bs);
+> +	blk_integrity_unregister(md->disk);
+>  	del_gendisk(md->disk);
+>  	free_minor(minor);
+>  
+> @@ -1200,7 +1215,6 @@ static void __set_size(struct mapped_device *md, sector_t size)
+>  
+>  static int __bind(struct mapped_device *md, struct dm_table *t)
+>  {
+> -	struct request_queue *q = md->queue;
+>  	sector_t size;
+>  
+>  	size = dm_table_get_size(t);
+> @@ -1221,7 +1235,7 @@ static int __bind(struct mapped_device *md, struct dm_table *t)
+>  
+>  	write_lock(&md->map_lock);
+>  	md->map = t;
+> -	dm_table_set_restrictions(t, q);
+> +	dm_table_set_restrictions(t, md);
+>  	write_unlock(&md->map_lock);
+>  
+>  	return 0;
+> @@ -1674,9 +1688,17 @@ void dm_uevent_add(struct mapped_device *md, struct list_head *elist)
+>   */
+>  struct gendisk *dm_disk(struct mapped_device *md)
+>  {
+> +	BUG_ON(md == NULL);
+
+This will provide no more information than the oops which will happen
+two lines later.
+
+> +	BUG_ON(md->disk == NULL);
+
+well, that will provide a little bit of information I guess.
+
+>  	return md->disk;
+>  }
+>  
+> +struct request_queue *dm_queue(struct mapped_device *md)
+> +{
+> +	return md->queue;
 > +}
-> +EXPORT_SYMBOL(bio_sector_offset);
 
-Please avoid sending out kenrel-wide exported-to-modules utility
-functions which have no documentation.
+This (unused, undocumented) function should be inlined.
 
-Not only is it a bad thing from a maintainability and reliability point
-of view - it also makes code review significantly less effective.
+
