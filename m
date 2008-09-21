@@ -1,85 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbYIUTu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbYIUT6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752884AbYIUTu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 15:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYIUTuU
+	id S1752900AbYIUT6i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 15:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYIUT61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 15:50:20 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34618 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752162AbYIUTuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 15:50:19 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19hCFBmbAJhFGKPtmUo7ZYVFYfW0TekQSS9e0tMGP
-	NPupL8Bf7KPTZt
-Date: Sun, 21 Sep 2008 21:50:18 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-cc: Dan Williams <dan.j.williams@intel.com>, Timur Tabi <timur@freescale.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: dmaengine.c: question about device_alloc_chan_resources
-In-Reply-To: <20080921112605.1e00b92b@hskinnemo-gx745.norway.atmel.com>
-Message-ID: <Pine.LNX.4.64.0809212139040.7264@axis700.grange>
-References: <48D02589.8070601@freescale.com>
- <e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
- <ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>
- <20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>
- <48D2664D.7040204@freescale.com> <20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com>
- <e9c3a7c20809182120r5e056dd7h170959dc1171af84@mail.gmail.com>
- <20080919132544.533ab7d0@hskinnemo-gx745.norway.atmel.com>
- <48D3B880.3070607@freescale.com> <e9c3a7c20809201600s3862da7qaab4a917220778e9@mail.gmail.com>
- <20080921112605.1e00b92b@hskinnemo-gx745.norway.atmel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.61
+	Sun, 21 Sep 2008 15:58:27 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40303 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751462AbYIUT60 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 15:58:26 -0400
+Date: Sun, 21 Sep 2008 20:57:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Arjan van de Ven <arjan@infradead.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
+       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
+       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
+       davem@davemloft.net
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
+ restart.
+Message-ID: <20080921205744.2d78f1fa@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080921190050.GA20484@2ka.mipt.ru>
+References: <20080921172316.GA6306@2ka.mipt.ru>
+	<20080921110422.1d010b96@infradead.org>
+	<20080921182835.GA11473@2ka.mipt.ru>
+	<20080921113513.16677c4e@infradead.org>
+	<20080921190050.GA20484@2ka.mipt.ru>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Sep 2008, Haavard Skinnemoen wrote:
+> Getting the fact, that rmmod/insmod does not always fix the problem (but
+> most of the time for a short period of time), I again want to point,
+> that it looks like a firmware problem related to some inner timings. You
+> ask me to fix the driver and do not even listen to what I said
+> previously and do not get that into account and analyze.
 
-> > 2/ What about platform specific concerns where dma_cap_mask_t is not
-> > descriptive enough e.g. only one memcpy channel can address a certain
-> > bus?  Currently a client implementation can have some intelligence to
-> > return DMA_DUP for channels that do not have the platform capability.
-> 
-> Currently, clients requesting the DMA_SLAVE capability can specify
-> which particular DMA device they need. Would it make sense to allow
-> other clients to do that as well?
+Try putting it into D3 counting to 10 and powering it back up. Thats
+about as close as you can get to pulling the plug when it hangs.
 
-This is how it is documented in dmaengine.h:
-
- * @slave: data for preparing slave transfer. Must be non-NULL iff the
- *  DMA_SLAVE capability is requested.
-
-But, looking at dma_client_chan_alloc() it seems, any client requesting a 
-channel can provide a slave and link it to a specific dma_dev, regardless 
-what capabilities the client is requesting, or am I missing something? If 
-so, then yes, please, let's allow all do this. Wouldn't it be better to 
-move the .dma_dev member to dma_client?
-
-> Also, struct dma_slave can be extended with
-> controller-/platform-specific fields. Maybe we need a similar mechanism
-> for passing platform-specific constraints when requesting "regular"
-> channels?
-
-As far as I understand, this extension can only be done by "wrapping" 
-dma_slave with driver-specific data:
-
- * If dma_dev is non-NULL, the client can not be bound to other DMA
- * masters than the one corresponding to this device. The DMA master
- * driver may use this to determine if there is controller-specific
- * data wrapped around this struct. Drivers of platform code that sets
- * the dma_dev field must therefore make sure to use an appropriate
- * controller-specific dma slave structure wrapping this struct.
-
-i.e., there is no "void *priv" or similar. So, the same "wrapping" can be 
-used with dma_client, even more conveniently so, if we move .dma_dev into 
-it.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+Alan
