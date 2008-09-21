@@ -1,47 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbYIUUNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbYIUUYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752974AbYIUUNs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 16:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYIUUNk
+	id S1753037AbYIUUYu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 16:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYIUUYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 16:13:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57096 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751387AbYIUUNk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 16:13:40 -0400
-Date: Sun, 21 Sep 2008 21:13:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: vcaputo@pengaru.com, linux-kernel@vger.kernel.org
-Subject: Re: Honoring SO_RCVLOWAT in proto_ops.poll methods
-Message-ID: <20080921211337.74e8f1f1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080921145134.GT2761@fc6222126.aspadmin.net>
-References: <20080920214229.GP2761@fc6222126.aspadmin.net>
-	<20080920.152140.193698477.davem@davemloft.net>
-	<20080920230046.GQ2761@fc6222126.aspadmin.net>
-	<20080921092442.GS2761@fc6222126.aspadmin.net>
-	<20080921151811.46328133@lxorguk.ukuu.org.uk>
-	<20080921145134.GT2761@fc6222126.aspadmin.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 21 Sep 2008 16:24:39 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:40999 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752192AbYIUUYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 16:24:37 -0400
+Date: Mon, 22 Sep 2008 00:20:57 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
+       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
+       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
+       davem@davemloft.net
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
+Message-ID: <20080921202057.GB25052@2ka.mipt.ru>
+References: <20080921172316.GA6306@2ka.mipt.ru> <20080921110422.1d010b96@infradead.org> <20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org> <20080921190050.GA20484@2ka.mipt.ru> <1222024444.3023.53.camel@johannes.berg> <20080921193809.GA8735@2ka.mipt.ru> <20080921124332.67ddc13a@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080921124332.67ddc13a@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thats a gloriously insane way of trying to do HTTP/1.1, and one I'm not
-sure is actually viable in the real world because the TCP window may be
-smaller than the number of bytes required to find a Host: header - so you
-may simply not be able to receive it via MSG_PEEK. In particular mobile
-phone gateways have a nasty habit of using very small windows.
+On Sun, Sep 21, 2008 at 12:43:32PM -0700, Arjan van de Ven (arjan@infradead.org) wrote:
+> > @@ -3174,6 +3176,10 @@ static void ipw2100_irq_tasklet(struct
+> > ipw2100_priv *priv) if (inta & IPW2100_INTA_FATAL_ERROR) {
+> >  		printk(KERN_WARNING DRV_NAME
+> >  		       ": Fatal interrupt. Scheduling firmware
+> > restart.\n");
+> > +		WARN_ON(1);
+> > +
+> > +		BUG_ON(ipw2100_max_fatal_ints-- <= 0);
+> 
+> BUG_ON in interrupt context is just extremely hostile, since it means
+> the box is dead.
+>
+> also I would suggest using WARN_ON_ONCE() 
 
-> I just don't see a good solution for what I'm doing other than MSG_PEEK
-> and SO_RCVLOWAT, any ideas?
+Well, I actually wanted to have a bug there because of it, but now I
+think that annoying repeated warning is enough to bring attention to the
+problem by putting bug information into some magic special place called
+kerneloops collection.
 
-I don't either, and while I don't agree that what you are doing for
-HTTP/1.1 is remotely sane there are probably other cases this would be
-both sane and useful which does suggest fixing it would be beneficial
+Consider for inclusing for the upcoming kernel to get wider
+notifications. Yes, it is not a bugfix, I know.
+
+diff --git a/drivers/net/wireless/ipw2100.c b/drivers/net/wireless/ipw2100.c
+index 19a401c..6599211 100644
+--- a/drivers/net/wireless/ipw2100.c
++++ b/drivers/net/wireless/ipw2100.c
+@@ -206,6 +206,9 @@ MODULE_PARM_DESC(disable, "manually disable the radio (default 0 [radio on])");
+ 
+ static u32 ipw2100_debug_level = IPW_DL_NONE;
+ 
++static int ipw2100_max_fatal_ints = 10;
++module_param(ipw2100_max_fatal_ints, int, 0644);
++
+ #ifdef CONFIG_IPW2100_DEBUG
+ #define IPW_DEBUG(level, message...) \
+ do { \
+@@ -3174,6 +3177,9 @@ static void ipw2100_irq_tasklet(struct ipw2100_priv *priv)
+ 	if (inta & IPW2100_INTA_FATAL_ERROR) {
+ 		printk(KERN_WARNING DRV_NAME
+ 		       ": Fatal interrupt. Scheduling firmware restart.\n");
++
++		WARN_ON(ipw2100_max_fatal_ints-- >= 0);
++
+ 		priv->inta_other++;
+ 		write_register(dev, IPW_REG_INTA, IPW2100_INTA_FATAL_ERROR);
+ 
+
+
+-- 
+	Evgeniy Polyakov
