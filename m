@@ -1,87 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753048AbYIUTnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYIUToi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753048AbYIUTnu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 15:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYIUTni
+	id S1753196AbYIUToi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 15:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYIUTo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 15:43:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53355 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752048AbYIUTnh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 15:43:37 -0400
-Date: Sun, 21 Sep 2008 12:43:32 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Johannes Berg <johannes@sipsolutions.net>, netdev@vger.kernel.org,
+	Sun, 21 Sep 2008 15:44:26 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:45168 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751462AbYIUToZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 15:44:25 -0400
+Date: Sun, 21 Sep 2008 23:38:09 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Arjan van de Ven <arjan@infradead.org>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
        linux-wireless@vger.kernel.org, yi.zhu@intel.com,
        reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
        davem@davemloft.net
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
- restart.
-Message-ID: <20080921124332.67ddc13a@infradead.org>
-In-Reply-To: <20080921193809.GA8735@2ka.mipt.ru>
-References: <20080921172316.GA6306@2ka.mipt.ru>
-	<20080921110422.1d010b96@infradead.org>
-	<20080921182835.GA11473@2ka.mipt.ru>
-	<20080921113513.16677c4e@infradead.org>
-	<20080921190050.GA20484@2ka.mipt.ru>
-	<1222024444.3023.53.camel@johannes.berg>
-	<20080921193809.GA8735@2ka.mipt.ru>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
+Message-ID: <20080921193809.GA8735@2ka.mipt.ru>
+References: <20080921172316.GA6306@2ka.mipt.ru> <20080921110422.1d010b96@infradead.org> <20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org> <20080921190050.GA20484@2ka.mipt.ru> <1222024444.3023.53.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222024444.3023.53.camel@johannes.berg>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Sep 2008 23:38:09 +0400
-Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+Hi.
 
+On Sun, Sep 21, 2008 at 09:14:04PM +0200, Johannes Berg (johannes@sipsolutions.net) wrote:
+> > Do you want me to implement ipw2100 driver as a big work structure
+> > which will run ipw2100_init()/wait/ipw2100_exit() in a loop?
+> > And that will be the fix suggested by Intel? That would explain a lot.
 > 
-> As I pointed, I can rewrite the whole driver's initialization process,
-> so that it looked like init/wait/exit loop, which can be processed at
-> the module load and when fatal interrupt fires. 
+> I think what Arjan is saying is that it would be better to put pressure
+> on the responsible folks (I don't think Arjan is anywhere near them at
 
-yes please do this.
+Both maintainers were added to the copy list.
 
-> 
-> I do hope this will result in a progress. Arjan, do you aggree to add
-> this patch to the current tree?
-> 
-> diff --git a/drivers/net/wireless/ipw2100.c
-> b/drivers/net/wireless/ipw2100.c index 19a401c..9a7b64c 100644
-> --- a/drivers/net/wireless/ipw2100.c
-> +++ b/drivers/net/wireless/ipw2100.c
-> @@ -206,6 +206,8 @@ MODULE_PARM_DESC(disable, "manually disable the
-> radio (default 0 [radio on])"); 
->  static u32 ipw2100_debug_level = IPW_DL_NONE;
->  
-> +static int ipw2100_max_fatal_ints = 10;
-> +
->  #ifdef CONFIG_IPW2100_DEBUG
->  #define IPW_DEBUG(level, message...) \
->  do { \
-> @@ -3174,6 +3176,10 @@ static void ipw2100_irq_tasklet(struct
-> ipw2100_priv *priv) if (inta & IPW2100_INTA_FATAL_ERROR) {
->  		printk(KERN_WARNING DRV_NAME
->  		       ": Fatal interrupt. Scheduling firmware
-> restart.\n");
-> +		WARN_ON(1);
-> +
-> +		BUG_ON(ipw2100_max_fatal_ints-- <= 0);
+> all) if you'd put in a WARN_ON() for this error and that would make the
+> top entry on kerneloops.org all the time... And additionally put in a
+> workaround for yourself for now.
 
-BUG_ON in interrupt context is just extremely hostile, since it means
-the box is dead.
+As I pointed, I can rewrite the whole driver's initialization process,
+so that it looked like init/wait/exit loop, which can be processed at
+the module load and when fatal interrupt fires. Do this a fix? This is
+not even a remotely workaround. We can just add
+rmmod/modprobe/ifdown/ifup to the crontab job. Another users reported in
+bugzilla that they needed to reboot a machine to make card working
+again. I'm not sure that user tried to do a rmmod/modprobe though.
 
-also I would suggest using WARN_ON_ONCE() 
+> And can we keep the flames off this list please? That comment from Wei
+> Weng was absolutely uncalled for, and inciting a flamewar (as you have
+> already blogged) was not really productive either.
+
+If we will keep silence, no one will notice that problem exists.
+
+I do hope this will result in a progress. Arjan, do you aggree to add
+this patch to the current tree?
+
+diff --git a/drivers/net/wireless/ipw2100.c b/drivers/net/wireless/ipw2100.c
+index 19a401c..9a7b64c 100644
+--- a/drivers/net/wireless/ipw2100.c
++++ b/drivers/net/wireless/ipw2100.c
+@@ -206,6 +206,8 @@ MODULE_PARM_DESC(disable, "manually disable the radio (default 0 [radio on])");
+ 
+ static u32 ipw2100_debug_level = IPW_DL_NONE;
+ 
++static int ipw2100_max_fatal_ints = 10;
++
+ #ifdef CONFIG_IPW2100_DEBUG
+ #define IPW_DEBUG(level, message...) \
+ do { \
+@@ -3174,6 +3176,10 @@ static void ipw2100_irq_tasklet(struct ipw2100_priv *priv)
+ 	if (inta & IPW2100_INTA_FATAL_ERROR) {
+ 		printk(KERN_WARNING DRV_NAME
+ 		       ": Fatal interrupt. Scheduling firmware restart.\n");
++		WARN_ON(1);
++
++		BUG_ON(ipw2100_max_fatal_ints-- <= 0);
++
+ 		priv->inta_other++;
+ 		write_register(dev, IPW_REG_INTA, IPW2100_INTA_FATAL_ERROR);
+ 
+
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Evgeniy Polyakov
