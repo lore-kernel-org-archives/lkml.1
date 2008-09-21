@@ -1,120 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752569AbYIURWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbYIURY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752569AbYIURWv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 13:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbYIURWm
+	id S1752732AbYIURY2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 13:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbYIURYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 13:22:42 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:36445 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbYIURWm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 13:22:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=wmq0GswlvScz8PjFalFSpaN/rygVBjJXcbUmA0H7Yw70EtqPyHvhBQxVxQUFLlr9l9
-         oW8z6u0WwloLg4MBJzbh6Z6a5WuWjKLQ974UcIZrnccVsTLbMpT5x/w+Gic9R1B0Ke6w
-         bGhBVB/5uUKHLxztwnjgtBGyK0srGoHqSOPE0=
-Message-ID: <48D682DB.8020802@gmail.com>
-Date: Sun, 21 Sep 2008 20:22:35 +0300
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: I need some serious help to debug suspend to ram problem
-References: <48D4E685.8030801@gmail.com> <200809201810.45057.rjw@sisk.pl> <48D54873.8010108@gmail.com>
-In-Reply-To: <48D54873.8010108@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Sep 2008 13:24:17 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:49281 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751462AbYIURYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 13:24:16 -0400
+Date: Sun, 21 Sep 2008 21:23:17 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: ipw2100-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
+       yi.zhu@intel.com, reinette.chatre@intel.com, jgarzik@pobox.com,
+       linville@tuxdriver.com, davem@davemloft.net
+Subject: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
+Message-ID: <20080921172316.GA6306@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim Levitsky wrote:
-> Rafael J. Wysocki wrote:
->> On Saturday, 20 of September 2008, Maxim Levitsky wrote:
->>> Hi,
->>>
->>> I hit a dead end when trying to understand why my notebook can't 
->>> resume from suspend to ram
->>> if this is done two times a row.
->>>
->>> Single suspend/resume cycle works almost perfectly (beep that goes 
->>> through the sound card is muted... no morse code for me... :-(
->>>
->>> )
->>>
->>> I compiled a minimal kernel (absolutely nothing but disk drivers, all 
->>> experimental option like nohz
->>> turned off)
->>>
->>> But I had to turn SMP, since without it system won't resume first 
->>> time I suspend it.
->>> (How could this affect suspend?)
->>
->> It could if the system is 64-bit.  In which case please have a look at
->> http://bugzilla.kernel.org/show_bug.cgi?id=11237
->>
->>> With SMP and minimal kernel (of course  no closed drivers), I get 
->>> same behavior,
->>> first resume works second hangs.
->>>
->>> I then added some debug code to real mode wakeup code, I put there in 
->>> first
->>> place instructions, that will save some magic value to rtc (to alarm
->>> registers that I know are preserved during boot cycle), and I 
->>> discovered   sad thing that first time bios does pass control to 
->>> linux, but second time
->>> (when it hangs), it doesn't.
->>>
->>> I tried to update bios, and I got same results.
->>>
->>> Of course it does work with that @#$%^& OS
->>
->> So we're doing something wrong.  Please try the appended patch.
-> Thanks a lot, but this didn't help.
-> 
-> It still has same pattern, first suspend/resume works perfectly, second 
-> suspend/resume hangs hard.
-> It always happens like this, first resume always work (unless I turn off 
-> smp in kernel (I test this again), or reserve all low memory)
-> 
-> Also note that if I suspend the system to ram, resume, and then suspend 
-> to disk, then I can suspend to ram and resume, it seems that
-> 
-> on suspend to ram cycle somehow arms BIOS or something else, so second 
-> resume in a row doesn't work.
-> 
-> I run 32 bit kernel here, this is a long story (this bios doesn't turn 
-> fan on when running 64-bit version, I could update it, and I know that 
-> fan issue is fixed there, but new bios introduces bigger bug, namely it 
-> makes fan to run almost always regardless of 32/64 type of os.
-> And it doesn't fix this suspend/resume issue, I tested this. I could 
-> start/stop fan manually with a script, but this could fail, and maybe I 
-> will do so someday.)
-> 
-> The bugzilla seems to be unrelated here, since bios does pass control 
-> there, but corrupts memory.
-> Here I also have seen that bios corrupts memory, but everything resumes 
-> fine first time, and on second time,
-> bios doesn't pass control (I put set of instructions in beginning of 
-> wakeup real mode assembly file, no page tables, GDT/LDT are used there)
+Hi.
 
-I did same test for kernel without SMP, yes it hangs on first resume, but bios
-does pass control to linux, so while this is a minor bug, it is unrelated.
+Following bug exists in the ipw2100 driver/firmware for years and Intel
+folks never responded to zillions bugzilla entries and forum notices in
+the internet with some patch or firmware update (although did request
+dmesg and debug info, and received them).
 
-I also tested noapic, pci=nommconf. No luck.
+ipw2100: Fatal interrupt. Scheduling firmware restart.
 
-Pattern is always the same, first resume works always, second doesn't.
-It is sad since first resume is almost perfect (when I have free time I need to look at sound codec datasheet
-and fix few issues there, anyways here alsa has few issues, all this is trivial, I already fixed all issues with desktop
-which has a sigmatel codec)
-> 
-> 
-> Best regards,
->     Maxim Levitsky
+I believe it is a firmware bug because after driver is unloaded and
+loaded back again wireless adapter usually starts working (for small
+amount of time though). My conspiracy feeling can suggest, that it may
+be kind of a force to buy a new one, or trivial error in the firmware,
+when it writes to the same place in the flash and essentially given cell
+became dead or whatever else.
 
+Intel folks, please fix this problem, I see no other way to force you to do
+this than to mark ipw2100 driver as broken, since that is what it is.
+
+Bug exists at least in .15 upto .24 kernels, just search above dmesg
+line. I cought it with 2.6.24-19-386 ubuntu kernel, 1.3 firmware
+version. lspci:
+
+02:04.0 Network controller: Intel Corporation PRO/Wireless LAN 2100 3B Mini PCI Adapter (rev 04)
+	Subsystem: Intel Corporation Samsung X10/P30 integrated WLAN
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 64 (500ns min, 8500ns max), Cache Line Size: 64 bytes
+	Interrupt: pin A routed to IRQ 11
+	Region 0: Memory at 90080000 (32-bit, non-prefetchable) [size=4K]
+	Capabilities: [dc] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+
+dmesg is pretty usual.
+
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+
+diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
+index 9931b5a..c24fc6a 100644
+--- a/drivers/net/wireless/Kconfig
++++ b/drivers/net/wireless/Kconfig
+@@ -125,7 +125,7 @@ config PCMCIA_RAYCS
+ 
+ config IPW2100
+ 	tristate "Intel PRO/Wireless 2100 Network Connection"
+-	depends on PCI && WLAN_80211
++	depends on PCI && WLAN_80211 && BROKEN
+ 	select WIRELESS_EXT
+ 	select FW_LOADER
+ 	select IEEE80211
+
+-- 
+	Evgeniy Polyakov
