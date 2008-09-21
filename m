@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbYIUXsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYIUXu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753886AbYIUXsy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 19:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbYIUXsn
+	id S1753918AbYIUXu1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 19:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYIUXuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 19:48:43 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33983
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752795AbYIUXsm (ORCPT
+	Sun, 21 Sep 2008 19:50:17 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:41024 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752721AbYIUXuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 19:48:42 -0400
-Date: Sun, 21 Sep 2008 16:48:29 -0700 (PDT)
-Message-Id: <20080921.164829.156985548.davem@davemloft.net>
-To: johnpol@2ka.mipt.ru
-Cc: alan@lxorguk.ukuu.org.uk, arjan@infradead.org, johannes@sipsolutions.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ipw2100-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       yi.zhu@intel.com, reinette.chatre@intel.com, jgarzik@pobox.com,
-       linville@tuxdriver.com
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
- restart.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080921234403.GA17946@2ka.mipt.ru>
-References: <20080921205706.GA24545@2ka.mipt.ru>
-	<20080921233819.32714483@lxorguk.ukuu.org.uk>
-	<20080921234403.GA17946@2ka.mipt.ru>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 21 Sep 2008 19:50:15 -0400
+Message-ID: <48D6DD9B.1090004@oracle.com>
+Date: Sun, 21 Sep 2008 16:49:47 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [Bug #11335] 2.6.27-rc2-git5 BUG: unable to handle kernel paging
+ request
+References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik> <7lIhZC4hCxE.A.U2.r2q1IB@albercik>
+In-Reply-To: <7lIhZC4hCxE.A.U2.r2q1IB@albercik>
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+Let's drop it & I'll report if it happens again.
 
-Evgeniy, you're bordering on being an asshole, if not actually
-being one.
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11335
+> Subject		: 2.6.27-rc2-git5 BUG: unable to handle kernel paging request
+> Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
+> Date		: 2008-08-12 4:18 (41 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121851477201960&w=4
+> 		  http://lkml.org/lkml/2008/8/16/274
+> Handled-By	: Hugh Dickins <hugh@veritas.com>
 
-If you behaved this way for a bug I was responsible for, I would
-absolutely ignore you until you settled down and started to behave
-more reasonably.
 
-You're acting like a bomb which is about to explode, which is probably
-why the actual Intel maintainers for this driver don't want to touch
-you with a ten foot pole.  You're being volatile and extremely
-unpleasant to interact with about this issue.
-
-The Intel folks replying to you right now are general Intel linux
-folks who are trying to help you, not the driver maintainers who can
-look into the firmware and attack that angle.  So give them A FUCKING
-BREAK!
-
-Getting the OOPS to kerneloops.org is the way forward and will help
-your cause, whether you believe it or not.
+-- 
+~Randy
