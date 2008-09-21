@@ -1,130 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbYIUEQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbYIUF3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752056AbYIUEQB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 00:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbYIUEPx
+	id S1752515AbYIUF3p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 01:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbYIUF3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 00:15:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53033 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750733AbYIUEPw (ORCPT
+	Sun, 21 Sep 2008 01:29:38 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:50952 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbYIUF3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 00:15:52 -0400
-Date: Sat, 20 Sep 2008 21:14:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: jens.axboe@oracle.com, agk@sourceware.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: Re: [PATCH] dm: Add support for data integrity to DM
-Message-Id: <20080920211433.9e1a6872.akpm@linux-foundation.org>
-In-Reply-To: <yq13ajunyju.fsf@sermon.lab.mkp.net>
-References: <yq13ajunyju.fsf@sermon.lab.mkp.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Sep 2008 01:29:37 -0400
+Date: Sun, 21 Sep 2008 08:27:50 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Ashok Raj <ashok.raj@intel.com>, Shaohua Li <shaohua.li@intel.com>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
+Message-ID: <20080921052750.GM6990@il.ibm.com>
+References: <1221670377-19295-4-git-send-email-joerg.roedel@amd.com> <20080918041104K.fujita.tomonori@lab.ntt.co.jp> <20080917192827.GA18515@8bytes.org> <20080918102931Z.fujita.tomonori@lab.ntt.co.jp> <20080918140350.GE24392@amd.com> <20080919174339.GA29039@8bytes.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080919174339.GA29039@8bytes.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Sep 2008 20:16:21 -0400 "Martin K. Petersen" <martin.petersen@oracle.com> wrote:
-
+On Fri, Sep 19, 2008 at 07:43:39PM +0200, Joerg Roedel wrote:
+> Hi All,
 > 
-> If all subdevices support the same protection format the DM device is
-> flagged as capable.
-> 
-> ..
-..
-> +	/* Register dm device as being integrity capable */
-> +	if (prev && bdev_get_integrity(prev->bdev)) {
-> +		struct gendisk *disk = dm_disk(md);
-> +
-> +		if (blk_integrity_register(dm_disk(md), 
+> FUJITA mentioned that I forgot to discuss this patch with you guys, the
+> implementers and maintainers for Intel VT-d and Calgary IOMMU drivers. I
+> would like to hear your opinion on that patch. He is right with that.
+> The patch is already in tip/iommu but can easily be reverted if there
+> are fundamental objections.
+> The patch basically moves the iommu=fullflush and iommu=nofullflush
+> option from the GART code to pci-dma.c. So we can use these parameters
+> in other IOMMU implementations too. Since Intel VT-d is implementing
+> also lazy IO/TLB flushing it would benefit from this generic parameter
+> too. I am not so sure about Calgary, but we have other parameters for
+> iommu= which doesn't affect all hardware IOMMUs.
 
-Please use checkpatch.  Always.  There's just no reason not to.  Sure,
-you can make a decision to ignore some of its reports, but at least
-this avoids the accidental introduction of layout problems.
+Calgary can't use fullflush, but in general the more unified our IOMMU
+options, the better for the users. It's a pain to have to remember
+which option applies to which IOMMU implementation.
 
-> +					   bdev_get_integrity(prev->bdev)))
-> +			printk(KERN_ERR "%s: %s Could not register integrity!\n",
-> +			       __func__, disk->disk_name);
-> +		else
-> +			printk(KERN_INFO "Enabling data integrity on %s\n",
-> +			       disk->disk_name);
-> +	}
->  }
->
-> ...
->
-> +	if (bio_integrity(bio)) {
-> +		bio_integrity_clone(clone, bio, bs);
-> +
-> +		if (idx != bio->bi_idx || clone->bi_size < bio->bi_size)
-> +			bio_integrity_trim(clone, bio_sector_offset(bio, idx, 0), len);
-
-For better or for worse, the developers of dm.c have chosen to keep the
-whole file presentable in an 80-col display.  This patch breaks that,
-and they might not like this.
-
-> +	}
-> +
->  	return clone;
->  }
->  
-> @@ -1108,6 +1121,7 @@ static struct mapped_device *alloc_dev(int minor)
->  	md->disk->queue = md->queue;
->  	md->disk->private_data = md;
->  	sprintf(md->disk->disk_name, "dm-%d", minor);
-> +	printk(KERN_ERR "DM: Created %s\n", md->disk->disk_name);
->  	add_disk(md->disk);
->  	format_dev_t(md->name, MKDEV(_major, minor));
->  
-> @@ -1157,6 +1171,7 @@ static void free_dev(struct mapped_device *md)
->  	mempool_destroy(md->tio_pool);
->  	mempool_destroy(md->io_pool);
->  	bioset_free(md->bs);
-> +	blk_integrity_unregister(md->disk);
->  	del_gendisk(md->disk);
->  	free_minor(minor);
->  
-> @@ -1200,7 +1215,6 @@ static void __set_size(struct mapped_device *md, sector_t size)
->  
->  static int __bind(struct mapped_device *md, struct dm_table *t)
->  {
-> -	struct request_queue *q = md->queue;
->  	sector_t size;
->  
->  	size = dm_table_get_size(t);
-> @@ -1221,7 +1235,7 @@ static int __bind(struct mapped_device *md, struct dm_table *t)
->  
->  	write_lock(&md->map_lock);
->  	md->map = t;
-> -	dm_table_set_restrictions(t, q);
-> +	dm_table_set_restrictions(t, md);
->  	write_unlock(&md->map_lock);
->  
->  	return 0;
-> @@ -1674,9 +1688,17 @@ void dm_uevent_add(struct mapped_device *md, struct list_head *elist)
->   */
->  struct gendisk *dm_disk(struct mapped_device *md)
->  {
-> +	BUG_ON(md == NULL);
-
-This will provide no more information than the oops which will happen
-two lines later.
-
-> +	BUG_ON(md->disk == NULL);
-
-well, that will provide a little bit of information I guess.
-
->  	return md->disk;
->  }
->  
-> +struct request_queue *dm_queue(struct mapped_device *md)
-> +{
-> +	return md->queue;
-> +}
-
-This (unused, undocumented) function should be inlined.
-
-
+Cheers,
+Muli
+-- 
+Workshop on I/O Virtualization (WIOV '08)
+Co-located with OSDI '08, Dec 2008, San Diego, CA
+http://www.usenix.org/wiov08
