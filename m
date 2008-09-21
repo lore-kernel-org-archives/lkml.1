@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752194AbYIULJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbYIUMGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752194AbYIULJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 07:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYIULJV
+	id S1752056AbYIUMGQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 08:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbYIUMGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 07:09:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:5362 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbYIULJU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 07:09:20 -0400
-Message-ID: <48D62B7F.10905@colorfullife.com>
-Date: Sun, 21 Sep 2008 13:09:51 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sun, 21 Sep 2008 08:06:07 -0400
+Received: from tac.ki.iif.hu ([193.6.222.43]:37480 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751052AbYIUMGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 08:06:06 -0400
+From: Ferenc Wagner <wferi@niif.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: doubled idle count
+References: <87vdwtfxng.fsf@tac.ki.iif.hu> <48D2AD5E.7040602@goop.org>
+Date: Sun, 21 Sep 2008 14:05:59 +0200
+In-Reply-To: Ferenc Wagner's message of "Fri, 19 Sep 2008 18:53:35 +0200"
+Message-ID: <87hc89g0uw.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] v4 scalable classic RCU implementation
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <20080915160221.GA9660@linux.vnet.ibm.com> <48CFE466.8010200@colorfullife.com> <20080916173012.GC6717@linux.vnet.ibm.com> <48CFF150.8070400@colorfullife.com>
-In-Reply-To: <48CFF150.8070400@colorfullife.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+Ferenc Wagner <wferi@niif.hu> writes:
 
-Some further thoughts about design differences between your and my 
-implementation:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+> --text follows this line--
+>> Ferenc Wagner wrote:
+>>
+>>> After upgrading a Xen virtual machine to Debian's 2.6.26-4 kernel, I
+>>> noticed that the idle counter doubled its pace on one of the machines:
+>>> [...]
+>>> One out of three machines show this effect, with the exact same kernel
+>>> and Xen versions (3.2.0, dom0 is Debian's stock Etch 2.6.18 kernel).
+>>> They aren't hosted by the same machine, though: the misbehaving one is
+>>> on a different installation with very similar hardware (3 vs 2 GHz).
+>>> All the guest are paravirtual.
+>>
+>> So you're saying that they are identical Xen and guest kernel binaries,
+>> but one of three is showing doubled idle time?
+>
+> Now I upgraded another domU, and that also shows this doubling effect,
+> so I've got two domUs (running on xen2-ha) misbehaving, and other two
+> (running on xen2) behaving correctly.
 
-- rcutree's qsmaskinit  is the worst-case list of cpus that could be in 
-rcu read side critical sections.
-- rcustate's cpu_total is the accurate list of cpus that could be in rcu 
-read side critical sections.
+Possibly related: three out of the above four 2.6.26 domUs froze
+yesterday afternoon.  The consoles don't show anything and are dead,
+they don't react to sysrq, even.  According to xm list, the frozen
+domains are constantly running (stuck in r state).
 
-Both variables are read rarely: for rcu_state, twice per grace period.
+I haven't destroyed them yet, in case it is possible to extract any
+info from the system.  If not, please tell me so I can restart them.
 
-rcutree fixes up cpus that are "incorrectly" listed in qsmaskinit with 
-force_quiescent_state(). It forces rcutree to use a cpu bitmask for 
-qsmask and it forces rcutree to store the "done" information in a global 
-structure. Additionately, in the worst case force_quiescent_state() must 
-loop over all cpus.
-rcustate can use per-cpu structures and a global atomic_t. There is no 
-loop over all cpus. That's a big advantage, thus I think it's worth the 
-effort to maintain an accurate list.
-Unfortunately, I don't have an efficient implementation for the accurate 
-list.
+On the other hand, I'll have a look whether the same kernel running on
+the bare metal produces this idle count discrepancy.
+-- 
+Thanks,
+Feri.
 
-Some random ideas:
-- cpu_total is only read rarely. Thus it would be ok if the read 
-operation is expensive [e.g. collect data from multiple cachelines, 
-acquire spinlocks...]
-- updates to cpu_total happen with every interrupt on an idle system 
-with no_hz.
-    Thus it must be very scalable, preferably per-cpu data.
-    And: Updates are far more frequent than grace periods.
-- updates to cpu_total happen nearly never without no_hz.
-   Especially: far less frequent than grace periods.
-
-What about adding an "invalid" flag to cpu_total? The "real" data is 
-stored in per-cpu structures.
-- when a cpu enters/leaves nohz, then it invalidates the global 
-cpu_total and updates a per-cpu structure
-- when the state machine needs the number of rcu-tracked cpus, then it 
-checks if the global cpu_total is valid.
-If it's valid, then cpu_total is used directly. Otherwise the per-cpu 
-structures are enumerated and the new value is stored as cpu_total.
-
-What do you think?
-
---
-    Manfred
+Ps: Please note that xen-devel swallows my mails without a trace,
+    probably because I'm not subscribed.
