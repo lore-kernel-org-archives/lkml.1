@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYIUANn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbYIUASL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754413AbYIUANn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 20:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYIUANf
+	id S1754477AbYIUASL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 20:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbYIUAR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 20:13:35 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:26206 "EHLO
+	Sat, 20 Sep 2008 20:17:57 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:26581 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbYIUANe (ORCPT
+	with ESMTP id S1751694AbYIUAR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 20:13:34 -0400
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] block: Find bio sector offset given idx and offset
+	Sat, 20 Sep 2008 20:17:56 -0400
+To: jens.axboe@oracle.com, agk@sourceware.org
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
+Subject: [PATCH] dm: Add support for data integrity to DM
 From: "Martin K. Petersen" <martin.petersen@oracle.com>
 Organization: Oracle
-Date: Sat, 20 Sep 2008 20:13:29 -0400
-Message-ID: <yq17i96nyom.fsf@sermon.lab.mkp.net>
+Date: Sat, 20 Sep 2008 20:16:21 -0400
+Message-ID: <yq13ajunyju.fsf@sermon.lab.mkp.net>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,63 +29,180 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Helper function to find the sector offset in a bio given bvec index
-and page offset.
+If all subdevices support the same protection format the DM device is
+flagged as capable.
 
 Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
 ---
- fs/bio.c            |   24 ++++++++++++++++++++++++
- include/linux/bio.h |    2 ++
- 2 files changed, 26 insertions(+), 0 deletions(-)
+ drivers/md/dm-table.c         |   35 ++++++++++++++++++++++++++++++++++-
+ drivers/md/dm.c               |   26 ++++++++++++++++++++++++--
+ drivers/md/dm.h               |    2 +-
+ include/linux/device-mapper.h |    1 +
+ 4 files changed, 60 insertions(+), 4 deletions(-)
 
-diff --git a/fs/bio.c b/fs/bio.c
-index e56e768..6fd3a86 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -1300,6 +1300,30 @@ struct bio_pair *bio_split(struct bio *bi, mempool_t *pool, int first_sectors)
- 	return bp;
+diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
+index 61f4414..006a10e 100644
+--- a/drivers/md/dm-table.c
++++ b/drivers/md/dm-table.c
+@@ -841,8 +841,12 @@ struct dm_target *dm_table_find_target(struct dm_table *t, sector_t sector)
+ 	return &t->targets[(KEYS_PER_NODE * n) + k];
  }
  
-+sector_t bio_sector_offset(struct bio *bio, unsigned short index, unsigned int offset)
-+{
-+	struct bio_vec *bv;
-+	unsigned int sector_sz = bio->bi_bdev->bd_disk->queue->hardsect_size;
-+	sector_t sectors;
-+	int i;
+-void dm_table_set_restrictions(struct dm_table *t, struct request_queue *q)
++void dm_table_set_restrictions(struct dm_table *t, struct mapped_device *md)
+ {
++	struct request_queue *q = dm_queue(md);
++	struct list_head *devices = dm_table_get_devices(t);
++	struct dm_dev *prev, *cur;
 +
-+	sectors = 0;
+ 	/*
+ 	 * Make sure we obey the optimistic sub devices
+ 	 * restrictions.
+@@ -861,6 +865,35 @@ void dm_table_set_restrictions(struct dm_table *t, struct request_queue *q)
+ 	else
+ 		queue_flag_set_unlocked(QUEUE_FLAG_CLUSTER, q);
+ 
++	/*
++	 * Run through all devices to ensure they have matching
++	 * integrity profile
++	 */
++	cur = prev = NULL;
 +
-+	BUG_ON(index >= bio->bi_vcnt);
++	list_for_each_entry(cur, devices, list) {
 +
-+	bio_for_each_segment(bv, bio, i) {
-+		if (i == index) {
-+			if (offset > bv->bv_offset)
-+				sectors += (offset - bv->bv_offset) / sector_sz;
-+			return sectors;
++		if (prev && blk_integrity_compare(prev->bdev, cur->bdev) < 0) {
++			printk(KERN_ERR "%s: %s %s Integrity mismatch!\n",
++			       __func__, prev->bdev->bd_disk->disk_name,
++			       cur->bdev->bd_disk->disk_name);
++			return;
 +		}
-+
-+		sectors += bv->bv_len / sector_sz;
++		prev = cur;
 +	}
 +
-+	BUG();
-+}
-+EXPORT_SYMBOL(bio_sector_offset);
- 
- /*
-  * create memory pools for biovec's in a bio_set.
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 6aba97d..895a960 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -327,6 +327,8 @@ extern int bio_add_page(struct bio *, struct page *, unsigned int,unsigned int);
- extern int bio_add_pc_page(struct request_queue *, struct bio *, struct page *,
- 			   unsigned int, unsigned int);
- extern int bio_get_nr_vecs(struct block_device *);
-+extern sector_t bio_sector_offset(struct bio *, unsigned short, unsigned int);
++	/* Register dm device as being integrity capable */
++	if (prev && bdev_get_integrity(prev->bdev)) {
++		struct gendisk *disk = dm_disk(md);
 +
- extern struct bio *bio_map_user(struct request_queue *, struct block_device *,
- 				unsigned long, unsigned int, int, gfp_t);
- struct sg_iovec;
++		if (blk_integrity_register(dm_disk(md), 
++					   bdev_get_integrity(prev->bdev)))
++			printk(KERN_ERR "%s: %s Could not register integrity!\n",
++			       __func__, disk->disk_name);
++		else
++			printk(KERN_INFO "Enabling data integrity on %s\n",
++			       disk->disk_name);
++	}
+ }
+ 
+ unsigned int dm_table_get_num_targets(struct dm_table *t)
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index 8d40369..e3d14b0 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -669,6 +669,12 @@ static struct bio *split_bvec(struct bio *bio, sector_t sector,
+ 	clone->bi_size = to_bytes(len);
+ 	clone->bi_io_vec->bv_offset = offset;
+ 	clone->bi_io_vec->bv_len = clone->bi_size;
++	clone->bi_flags |= 1 << BIO_CLONED;
++
++	if (bio_integrity(bio)) {
++		bio_integrity_clone(clone, bio, bs);
++		bio_integrity_trim(clone, bio_sector_offset(bio, idx, offset), len);
++	}
+ 
+ 	return clone;
+ }
+@@ -691,6 +697,13 @@ static struct bio *clone_bio(struct bio *bio, sector_t sector,
+ 	clone->bi_size = to_bytes(len);
+ 	clone->bi_flags &= ~(1 << BIO_SEG_VALID);
+ 
++	if (bio_integrity(bio)) {
++		bio_integrity_clone(clone, bio, bs);
++
++		if (idx != bio->bi_idx || clone->bi_size < bio->bi_size)
++			bio_integrity_trim(clone, bio_sector_offset(bio, idx, 0), len);
++	}
++
+ 	return clone;
+ }
+ 
+@@ -1108,6 +1121,7 @@ static struct mapped_device *alloc_dev(int minor)
+ 	md->disk->queue = md->queue;
+ 	md->disk->private_data = md;
+ 	sprintf(md->disk->disk_name, "dm-%d", minor);
++	printk(KERN_ERR "DM: Created %s\n", md->disk->disk_name);
+ 	add_disk(md->disk);
+ 	format_dev_t(md->name, MKDEV(_major, minor));
+ 
+@@ -1157,6 +1171,7 @@ static void free_dev(struct mapped_device *md)
+ 	mempool_destroy(md->tio_pool);
+ 	mempool_destroy(md->io_pool);
+ 	bioset_free(md->bs);
++	blk_integrity_unregister(md->disk);
+ 	del_gendisk(md->disk);
+ 	free_minor(minor);
+ 
+@@ -1200,7 +1215,6 @@ static void __set_size(struct mapped_device *md, sector_t size)
+ 
+ static int __bind(struct mapped_device *md, struct dm_table *t)
+ {
+-	struct request_queue *q = md->queue;
+ 	sector_t size;
+ 
+ 	size = dm_table_get_size(t);
+@@ -1221,7 +1235,7 @@ static int __bind(struct mapped_device *md, struct dm_table *t)
+ 
+ 	write_lock(&md->map_lock);
+ 	md->map = t;
+-	dm_table_set_restrictions(t, q);
++	dm_table_set_restrictions(t, md);
+ 	write_unlock(&md->map_lock);
+ 
+ 	return 0;
+@@ -1674,9 +1688,17 @@ void dm_uevent_add(struct mapped_device *md, struct list_head *elist)
+  */
+ struct gendisk *dm_disk(struct mapped_device *md)
+ {
++	BUG_ON(md == NULL);
++	BUG_ON(md->disk == NULL);
++
+ 	return md->disk;
+ }
+ 
++struct request_queue *dm_queue(struct mapped_device *md)
++{
++	return md->queue;
++}
++
+ int dm_suspended(struct mapped_device *md)
+ {
+ 	return test_bit(DMF_SUSPENDED, &md->flags);
+diff --git a/drivers/md/dm.h b/drivers/md/dm.h
+index 1e59a0b..907795f 100644
+--- a/drivers/md/dm.h
++++ b/drivers/md/dm.h
+@@ -43,7 +43,7 @@ void dm_table_event_callback(struct dm_table *t,
+ 			     void (*fn)(void *), void *context);
+ struct dm_target *dm_table_get_target(struct dm_table *t, unsigned int index);
+ struct dm_target *dm_table_find_target(struct dm_table *t, sector_t sector);
+-void dm_table_set_restrictions(struct dm_table *t, struct request_queue *q);
++void dm_table_set_restrictions(struct dm_table *t, struct mapped_device *md);
+ struct list_head *dm_table_get_devices(struct dm_table *t);
+ void dm_table_presuspend_targets(struct dm_table *t);
+ void dm_table_postsuspend_targets(struct dm_table *t);
+diff --git a/include/linux/device-mapper.h b/include/linux/device-mapper.h
+index a90222e..5cf3a89 100644
+--- a/include/linux/device-mapper.h
++++ b/include/linux/device-mapper.h
+@@ -200,6 +200,7 @@ void dm_uevent_add(struct mapped_device *md, struct list_head *elist);
+ const char *dm_device_name(struct mapped_device *md);
+ int dm_copy_name_and_uuid(struct mapped_device *md, char *name, char *uuid);
+ struct gendisk *dm_disk(struct mapped_device *md);
++struct request_queue *dm_queue(struct mapped_device *md);
+ int dm_suspended(struct mapped_device *md);
+ int dm_noflush_suspending(struct dm_target *ti);
+ 
 -- 
 1.5.5.1
+
+
 
