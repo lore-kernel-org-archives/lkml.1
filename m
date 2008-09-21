@@ -1,99 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbYIUVDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYIUVIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753722AbYIUVDp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 17:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYIUVDh
+	id S1753402AbYIUVIU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 17:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYIUVIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 17:03:37 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:56349 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbYIUVDg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 17:03:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mime-version
-         :content-type:content-disposition:x-pgp-key:user-agent:sender;
-        b=m5suWd93/8M82kDEeZaoT1GT92xSJqb+c6W4lV/RbtIJzqdnvTwEHDkGb5jdFPOVXH
-         vVZz9uClIG3nlz/r9fBHlZypt3tq/nbQguBCavioe5peBq+STNu8RVD8i1a+vsUm14A3
-         mJp07oNVPGDkVFaJRGJV9m3Ay8IFg7b/m0V1c=
-Date: Sun, 21 Sep 2008 23:02:19 +0200
-From: Michal Januszewski <spock@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
-Subject: [PATCH] fbdev: don't allow to set a video mode via vga= if FB
-	doesn't support it
-Message-ID: <20080921210219.GC21215@spock.one.pl>
-Reply-To: spock@gentoo.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+	Sun, 21 Sep 2008 17:08:12 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:44914 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752460AbYIUVIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 17:08:11 -0400
+Date: Mon, 22 Sep 2008 01:06:49 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Arjan van de Ven <arjan@infradead.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
+       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
+       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
+       davem@davemloft.net
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
+Message-ID: <20080921210649.GB2135@2ka.mipt.ru>
+References: <20080921172316.GA6306@2ka.mipt.ru> <20080921110422.1d010b96@infradead.org> <20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org> <20080921190050.GA20484@2ka.mipt.ru> <1222024444.3023.53.camel@johannes.berg> <20080921193809.GA8735@2ka.mipt.ru> <20080921200518.GK7736@localhost> <20080921202656.GC25052@2ka.mipt.ru> <20080921203503.GL7736@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080921203503.GL7736@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Januszewski <spock@gentoo.org>
+On Mon, Sep 22, 2008 at 12:35:03AM +0400, Cyrill Gorcunov (gorcunov@gmail.com) wrote:
+> yes Evgeniy - all could know that but this register info could help
+> firmware engineers to distinguish problems (without additional efforts
+> like ask users to pass debug argument - kerneloops will have it
+> by default) if there not only one exist. I mean I don't think anyone
+> would reject additional info about problem ever :)
 
-Currently, it is possible to set a VESA graphics mode at boot time via
-the vga= parameter even when no framebuffer driver supporting this is
-configured.  This could lead to the system booting with a black screen,
-without a usable console.
+Agreed.
 
-Fix this problem by only allowing to set graphics modes at boot time
-if a supporting framebuffer driver is configured.
-
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
----
-diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
-index 401ad99..32a6045 100644
---- a/arch/x86/boot/video-vesa.c
-+++ b/arch/x86/boot/video-vesa.c
-@@ -88,14 +88,11 @@ static int vesa_probe(void)
- 			   (vminfo.memory_layout == 4 ||
- 			    vminfo.memory_layout == 6) &&
- 			   vminfo.memory_planes == 1) {
--#ifdef CONFIG_FB
-+#if FB_SUPPORTS_BOOT_VESA
- 			/* Graphics mode, color, linear frame buffer
- 			   supported.  Only register the mode if
- 			   if framebuffer is configured, however,
--			   otherwise the user will be left without a screen.
--			   We don't require CONFIG_FB_VESA, however, since
--			   some of the other framebuffer drivers can use
--			   this mode-setting, too. */
-+			   otherwise the user will be left without a screen. */
- 			mi = GET_HEAP(struct mode_info, 1);
- 			mi->mode = mode + VIDEO_FIRST_VESA;
- 			mi->depth = vminfo.bpp;
-@@ -134,9 +131,13 @@ static int vesa_set_mode(struct mode_info *mode)
- 		/* It's a supported text mode */
- 		is_graphic = 0;
- 	} else if ((vminfo.mode_attr & 0x99) == 0x99) {
-+#if FB_SUPPORTS_BOOT_VESA
- 		/* It's a graphics mode with linear frame buffer */
- 		is_graphic = 1;
- 		vesa_mode |= 0x4000; /* Request linear frame buffer */
-+#else
-+		return -1;
-+#endif
- 	} else {
- 		return -1;	/* Invalid mode */
- 	}
-diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-index 1ee2c05..20fdc2f 100644
---- a/include/linux/screen_info.h
-+++ b/include/linux/screen_info.h
-@@ -76,6 +76,10 @@ extern struct screen_info screen_info;
- #define ORIG_VIDEO_LINES	(screen_info.orig_video_lines)
- #define ORIG_VIDEO_ISVGA	(screen_info.orig_video_isVGA)
- #define ORIG_VIDEO_POINTS       (screen_info.orig_video_points)
-+
-+#define FB_SUPPORTS_BOOT_VESA (defined(CONFIG_FB_VESA) || \
-+		defined(CONFIG_FB_SIS) || defined(CONFIG_FB_IMAC) || \
-+		defined(CONFIG_FB_INTEL))
- #endif /* __KERNEL__ */
+diff --git a/drivers/net/wireless/ipw2100.c b/drivers/net/wireless/ipw2100.c
+index 19a401c..36cdd57 100644
+--- a/drivers/net/wireless/ipw2100.c
++++ b/drivers/net/wireless/ipw2100.c
+@@ -206,6 +206,9 @@ MODULE_PARM_DESC(disable, "manually disable the radio (default 0 [radio on])");
  
- #endif /* _SCREEN_INFO_H */
+ static u32 ipw2100_debug_level = IPW_DL_NONE;
+ 
++static int ipw2100_max_fatal_ints = 10;
++module_param(ipw2100_max_fatal_ints, int, 0644);
++
+ #ifdef CONFIG_IPW2100_DEBUG
+ #define IPW_DEBUG(level, message...) \
+ do { \
+@@ -3174,16 +3177,21 @@ static void ipw2100_irq_tasklet(struct ipw2100_priv *priv)
+ 	if (inta & IPW2100_INTA_FATAL_ERROR) {
+ 		printk(KERN_WARNING DRV_NAME
+ 		       ": Fatal interrupt. Scheduling firmware restart.\n");
++
++		printk(KERN_WARNING DRV_NAME ": INTA: 0x%08lX\n",
++			(unsigned long)inta & IPW_INTERRUPT_MASK);
++
+ 		priv->inta_other++;
+ 		write_register(dev, IPW_REG_INTA, IPW2100_INTA_FATAL_ERROR);
+ 
+ 		read_nic_dword(dev, IPW_NIC_FATAL_ERROR, &priv->fatal_error);
+-		IPW_DEBUG_INFO("%s: Fatal error value: 0x%08X\n",
++		printk(KERN_WARNING "%s: Fatal error value: 0x%08X\n",
+ 			       priv->net_dev->name, priv->fatal_error);
+ 
+ 		read_nic_dword(dev, IPW_ERROR_ADDR(priv->fatal_error), &tmp);
+-		IPW_DEBUG_INFO("%s: Fatal error address value: 0x%08X\n",
++		printk(KERN_WARNING "%s: Fatal error address value: 0x%08X\n",
+ 			       priv->net_dev->name, tmp);
++		WARN_ON(ipw2100_max_fatal_ints-- >= 0);
+ 
+ 		/* Wake up any sleeping jobs */
+ 		schedule_reset(priv);
 
+
+-- 
+	Evgeniy Polyakov
