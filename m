@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbYIUTGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbYIUTGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752876AbYIUTGR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 15:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYIUTGG
+	id S1753198AbYIUTGx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 15:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYIUTGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 15:06:06 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:43164 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751765AbYIUTGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 15:06:05 -0400
+	Sun, 21 Sep 2008 15:06:42 -0400
+Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:2118 "EHLO
+	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752179AbYIUTGl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 15:06:41 -0400
+X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Sep 2008 15:06:40 EDT
+Date: Sun, 21 Sep 2008 20:51:38 +0200
+From: Mark de Wever <koraq@xs4all.nl>
+To: Gadi Oxman <gadio@netvision.net.il>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] IDE-TAPE NULL terminate strings.
+Message-ID: <20080921185138.GA16310@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18646.39701.819497.337394@harpo.it.uu.se>
-Date: Sun, 21 Sep 2008 21:05:57 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Thomas Jarosch <thomas.jarosch@intra2net.com>
-Cc: linux-kernel@vger.kernel.org, Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: [patch] log fatal signals like SIGSEGV
-In-Reply-To: <200809201912.40381.thomas.jarosch@intra2net.com>
-References: <200809121502.15264.thomas.jarosch@intra2net.com>
-	<200809181210.40336.thomas.jarosch@intra2net.com>
-	<20080918202010.GA5656@joi>
-	<200809201912.40381.thomas.jarosch@intra2net.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Jarosch writes:
- > Hello together,
- > 
- > here's the reworked version of the signal logging patch.
- > Many thanks to Marcin Slusarz for reviewing it. 
- > 
- > The idea is to briefly log "fatal" signals by default, the output
- > should be close to zero during normal system operation.
- > Faulty hardware gets detected much quicker
- > if you see crashing apps in the logs.
- > 
- > The patch applies to 2.6.26 and git HEAD.
- > scripts/checkpatch.pl is happy, too.
- > 
- > I'm off for a vacation, so expect a delay of some days
- > if there should be additional questions or comments.
- > 
- > Hope the new feature is as useful to others as it has been to me.
- > 
- > Enjoy,
- > Thomas
- > 
- > ------------------------------------------------------
- > From: Thomas Jarosch <thomas.jarosch@intra2net.com>
- > 
- > Log signals like SIGSEGV, SIGILL, SIGBUS or SIGFPE to aid tracing
- > of obscure problems. Also logs the sender of the signal.
+After updating my kernel to 2.6.26 the output for the ide-tape drive
+during booting is garbled eg
+ide-tape: hdd <-> ht0: Seagate <98>ß8A51|1À<81>Üº<98>ß STT20000A rev 8A51|1À<81>Üº<98>ß
 
-I believe the approach taken in this patch is broken:
+This patch fixes the problem by NULL terminating the strings.
 
-1. The signal logging decision is taken before signal delivery,
-   which causes *handled* signals in the above list to be logged.
-   So your printk_ratelimit() can be swamped by handled signals
-   causing it to not log unhandled fatal signals.
+Regards,
+Mark de Wever
 
-   Applications that handle SEGV/BUS/ILL/FPE aren't that uncommon.
+PS: please CC me since I'm not subscribed.
+PPS: there are more problems with my tapestreamer in 2.6.26 but I'll
+post a separate message for that.
 
-2. Fatal signals are only interesting if they are self-generated.
-   Signals sent from other processes or threads are uninteresting,
-   if the purpose is to detect program errors or faulty hardware.
+Signed-off-by: Mark de Wever <koraq@xs4all.nl>
+---
+ drivers/ide/ide-tape.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-3. Similar functionality already exists in the kernel, except
-   it correctly runs much later in the signal delivery path.
-   Grep for print_fatal_signals and show_unhandled_signals.
+diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+index 1bce84b..fd87b43 100644
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -2354,6 +2354,10 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
+ 	ide_fixstring(product_id, 18, 0);
+ 	ide_fixstring(fw_rev, 6, 0);
+ 
++	fw_rev[4] = '\0';
++	vendor_id[8] = '\0';
++	product_id[16] = '\0';
++
+ 	printk(KERN_INFO "ide-tape: %s <-> %s: %s %s rev %s\n",
+ 			drive->name, tape->name, vendor_id, product_id, fw_rev);
+ }
+-- 
+1.5.6.5
 
-   There's also some trace hooks in the signal delivery path
-   that look like they could log actual fatal signals.
-
-/Mikael
