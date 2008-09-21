@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbYIUO0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbYIUO13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476AbYIUO0G (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 10:26:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbYIUOZz
+	id S1752721AbYIUO13 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 10:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbYIUO1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 10:25:55 -0400
-Received: from ti-out-0910.google.com ([209.85.142.188]:27373 "EHLO
+	Sun, 21 Sep 2008 10:27:22 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:24485 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbYIUOZy (ORCPT
+	with ESMTP id S1751703AbYIUO1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 10:25:54 -0400
+	Sun, 21 Sep 2008 10:27:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=W1HHXReJaa4VmgLivd5yo2dz7f38kkPC8u9bIxR1fZqWrhWPbZ221hUm6fqUP8xiS4
-         AF3DwpGY3NDPAjQZrY+gNQ8pNFeveuBvGIHlJFbngldeODGSoiOauSu221/Z2mM91uX1
-         S80LbUHDtNV2JnkszYh1gho01t75f4W4keTXQ=
-Date: Sun, 21 Sep 2008 23:25:40 +0900
+        b=KWMd9/jrdImk5MbJ+qprMuGIoeKceFV3yUYHrmMu5iE8N/lwy9uKZK3CwCEU6zg867
+         TeChie0Q0/DAlHAh2y6VpI85tTnCWGrM/Ox1+7fPVIG+NgR4QTKzQyCbHCY2oN+upZRv
+         bK00hy+CI7i7o0RFMcutjtKWK3hvgGCeLn9EA=
+Date: Sun, 21 Sep 2008 23:27:13 +0900
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: use platform_device_register_simple()
-Message-ID: <20080921142538.GA8790@localhost.localdomain>
+Subject: [PATCH] x86: check for ioremap() failure in copy_oldmem_page()
+Message-ID: <20080921142711.GB8790@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-2022-jp
 Content-Disposition: inline
@@ -32,41 +32,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup pcspeaker.c
+Add a check for ioremap() failure in copy_oldmem_page().
+This patch also includes small coding style fixes.
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: "H. Peter Anvin" <hpa@zytor.com>
 ---
- arch/x86/kernel/pcspeaker.c |   13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
+ arch/x86/kernel/crash_dump_64.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Index: 2.6-git/arch/x86/kernel/pcspeaker.c
+Index: 2.6-git/arch/x86/kernel/crash_dump_64.c
 ===================================================================
---- 2.6-git.orig/arch/x86/kernel/pcspeaker.c
-+++ 2.6-git/arch/x86/kernel/pcspeaker.c
-@@ -1,20 +1,13 @@
- #include <linux/platform_device.h>
--#include <linux/errno.h>
-+#include <linux/err.h>
- #include <linux/init.h>
+--- 2.6-git.orig/arch/x86/kernel/crash_dump_64.c
++++ 2.6-git/arch/x86/kernel/crash_dump_64.c
+@@ -33,14 +33,16 @@ ssize_t copy_oldmem_page(unsigned long p
+ 		return 0;
  
- static __init int add_pcspkr(void)
- {
- 	struct platform_device *pd;
--	int ret;
+ 	vaddr = ioremap(pfn << PAGE_SHIFT, PAGE_SIZE);
++	if (!vaddr)
++		return -ENOMEM;
  
--	pd = platform_device_alloc("pcspkr", -1);
--	if (!pd)
--		return -ENOMEM;
-+	pd = platform_device_register_simple("pcspkr", -1, NULL, 0);
+ 	if (userbuf) {
+-		if (copy_to_user(buf, (vaddr + offset), csize)) {
++		if (copy_to_user(buf, vaddr + offset, csize)) {
+ 			iounmap(vaddr);
+ 			return -EFAULT;
+ 		}
+ 	} else
+-	memcpy(buf, (vaddr + offset), csize);
++		memcpy(buf, vaddr + offset, csize);
  
--	ret = platform_device_add(pd);
--	if (ret)
--		platform_device_put(pd);
--
--	return ret;
-+	return IS_ERR(pd) ? PTR_ERR(pd) : 0;
- }
- device_initcall(add_pcspkr);
+ 	iounmap(vaddr);
+ 	return csize;
