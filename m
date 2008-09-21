@@ -1,51 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbYIUWp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbYIUWpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753633AbYIUWp3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 18:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYIUWpN
+	id S1753105AbYIUWpt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 18:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYIUWpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 18:45:13 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:41357 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752482AbYIUWpM (ORCPT
+	Sun, 21 Sep 2008 18:45:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:52936 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752819AbYIUWpi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 18:45:12 -0400
-Date: Sun, 21 Sep 2008 23:45:06 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Marcel Holtmann <holtmann@linux.intel.com>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
-       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
-       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
-       davem@davemloft.net
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
-Message-ID: <20080921224506.GB24461@srcf.ucam.org>
-References: <20080921172316.GA6306@2ka.mipt.ru> <1222025731.6782.117.camel@californication>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222025731.6782.117.camel@californication>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Sun, 21 Sep 2008 18:45:38 -0400
+Date: Sun, 21 Sep 2008 15:45:41 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: neilb@suse.de, mingo@elte.hu, davej@redhat.com
+Subject: [PATCH] raid: make RAID autodetect default a KConfig option
+Message-ID: <20080921154541.371f2ebe@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 21, 2008 at 09:35:31PM +0200, Marcel Holtmann wrote:
 
-> I don't know if it is for this bug or a different one, but Matthew
-> Garrett seem to have some pending patches. At least that is what he told
-> me at PlumbersConf. Lets see if these patches do help. And please follow
-> up with Arjan's suggestion and put a WARN_ON in the upstream code
-> instead of waving CONFIG_BROKEN around.
+>From 812bf9a448d96375a3aec5c51764d74cace85abb Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Sun, 21 Sep 2008 15:44:32 -0700
+Subject: [PATCH] raid: make RAID autodetect default a KConfig option
 
-The fix I had for this was actually for ipw2200, but it ought to be 
-applicable for 2100 as well. The ideal fix is probably to ensure that 
-ipw*_down D3s the card and *_up D0s it, which brings enhanced runtime 
-power saving and also has the nice side effect of actually resetting the 
-damned POS in error cases.
+RAID autodetect has the side effect of requiring synchronisation
+of all device drivers, which can make the boot several seconds longer
+(I've measured 7 on one of my laptops).... even for systems that don't
+have RAID setup for the root filesystem (the only FS where this matters).
+
+This patch makes the default for autodetect a config option; either way
+the user can always override via the kernel command line.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/md/Kconfig  |   14 ++++++++++++++
+ init/do_mounts_md.c |   11 +++++++++--
+ 2 files changed, 23 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/md/Kconfig b/drivers/md/Kconfig
+index 07d92c1..8e72c91 100644
+--- a/drivers/md/Kconfig
++++ b/drivers/md/Kconfig
+@@ -30,6 +30,20 @@ config BLK_DEV_MD
+ 
+ 	  If unsure, say N.
+ 
++config MD_AUTODETECT
++	bool "Autodetect RAID arrays during kernel boot"
++	depends on BLK_DEV_MD
++	default y
++	---help---
++	  If you say Y here, then the kernel will try to autodetect raid
++	  arrays as part of its boot process. 
++
++	  If you don't use raid and say Y, this autodetection can cause 
++	  a several-second delay in the boot time due to various
++	  synchronisation steps that are part of this step.
++
++	  If unsure, say Y.
++
+ config MD_LINEAR
+ 	tristate "Linear (append) mode"
+ 	depends on BLK_DEV_MD
+diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
+index c0dfd3c..48b3fad 100644
+--- a/init/do_mounts_md.c
++++ b/init/do_mounts_md.c
+@@ -12,7 +12,12 @@
+  * The code for that is here.
+  */
+ 
+-static int __initdata raid_noautodetect, raid_autopart;
++#ifdef CONFIG_MD_AUTODETECT
++static int __initdata raid_noautodetect;
++#else
++static int __initdata raid_noautodetect=1;
++#endif
++static int __initdata raid_autopart;
+ 
+ static struct {
+ 	int minor;
+@@ -252,6 +257,8 @@ static int __init raid_setup(char *str)
+ 
+ 		if (!strncmp(str, "noautodetect", wlen))
+ 			raid_noautodetect = 1;
++		if (!strncmp(str, "autodetect", wlen))
++			raid_noautodetect = 0;
+ 		if (strncmp(str, "partitionable", wlen)==0)
+ 			raid_autopart = 1;
+ 		if (strncmp(str, "part", wlen)==0)
+@@ -288,7 +295,7 @@ void __init md_run_setup(void)
+ 	create_dev("/dev/md0", MKDEV(MD_MAJOR, 0));
+ 
+ 	if (raid_noautodetect)
+-		printk(KERN_INFO "md: Skipping autodetection of RAID arrays. (raid=noautodetect)\n");
++		printk(KERN_INFO "md: Skipping autodetection of RAID arrays. (raid=autodetect will force)\n");
+ 	else
+ 		autodetect_raid();
+ 	md_setup_drive();
+-- 
+1.5.5.1
+
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
