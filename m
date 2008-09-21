@@ -1,56 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbYIUMxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752193AbYIUNBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752470AbYIUMxm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 08:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYIUMxe
+	id S1752193AbYIUNBR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 09:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYIUNBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 08:53:34 -0400
-Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:44353 "HELO
-	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751475AbYIUMxd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 08:53:33 -0400
-X-YMail-OSG: iidae6QVM1kORcAgbqqjVy8Btr4W7c5xRugfRsA7ViqGAi0vnmAhGAWOeO7fBC04C7SASaR1Z_FlToJUq7j7o8yWwzHG0aj0rTAm0Ymgsya9jJBvBD9akyh9nWRhJxFtBk5c3EFE
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
-Date: Sun, 21 Sep 2008 05:53:32 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
-To: Peter Staubach <staubach@redhat.com>, Chuck Lever <chucklever@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Banks <gnb@melbourne.sgi.com>,
-       linux-nfs list <linux-nfs@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Peter zijlstra <a.p.zijlstra@chello.nl>
-MIME-Version: 1.0
+	Sun, 21 Sep 2008 09:01:04 -0400
+Received: from main.gmane.org ([80.91.229.2]:39845 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751475AbYIUNBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 09:01:03 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: David W Studeman <avionicsdv@aim.com>
+Subject: Re: Keyboard Jammed error patch 2.4.35-pre4
+Date: Sun, 21 Sep 2008 06:00:50 -0700
+Message-ID: <gb5gi2$l36$1@ger.gmane.org>
+References: <g6jqud$t5e$1@ger.gmane.org> <20080729051558.GH29189@1wt.eu> <489016AB.6050309@aim.com> <20080730075101.GA31668@1wt.eu> <489044C8.7090006@aim.com> <20080730123839.GA2397@1wt.eu>
+Reply-To: avionicsdv@aim.com
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <614333.44648.qm@web32604.mail.mud.yahoo.com>
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: pool-71-112-171-94.sttlwa.dsl-w.verizon.net
+User-Agent: KNode/0.10.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Willy Tarreau wrote:
 
-
-> >
-> > I agree that a mount option would allow more fine-grained control over
-> > readahead.  A system wide parameter controlling readahead has always
-> > been a weakness.  Readahead, as implemented in the VFS, has a
-> > *per-file descriptor* context, however, which operates automatically
-> > (and can be tuned at run-time by an application with [mf]advise(2).
-> >
-> > As a future feature, this might work in better combination with the
-> > per-mount bdi changes proposed by Peter to provide maximal flexibility
-> > without exposing yet another confusing knob that could help some
-> > workloads but hurt others.
+> On Wed, Jul 30, 2008 at 03:39:04AM -0700, David W Studeman wrote:
+>> >This was the important part. Did you fix it by hand ? If not, it would
+>> >explain why it did not change the behaviour.
+>> >
+>>  It didn't change the behaviour because it would not apply cleanly,
+>> kernel compilation stopped there.
 > 
-> And perhaps add some dynamic tuning capabilities to the NFS client
-> code to just make it do "the right thing".  This would be better
-> than any tunables and would help to serve in other situations, such
-> as high bandwidth/latency networks, overloaded servers who don't
-> need more read-ahead READ requests piled on, etc...
+> Ah OK, so if you applied half of the patch, it's expected that the fix is
+> not applied !
 > 
+>> A raq/qube3, raq4, raq550, and xtr are all x86 based
+> 
+> OK, that's what I wanted to know, because I needed to understand whether
+> the compiled code was in the i386 directory or in another one.
+> 
+>> but they do not use
+>> a typical bios and a bootloader to start the boot process but that part
+>> is not important here.
+> 
+> that's what I understood.
+> 
+>> When I made the regression patch, I simply diffed
+>> the dmi scan and keyboard drivers between the two kernels. The stock
+>> 2.4.36.6 kernel cannot be compiled for x86 with no keyboard and vt
+>> support
+> 
+> Why? I have it running on several machines! What error do you get ? Or
+> perhaps it's just a matter of not finding the appropriate configuration
+> (which is not obvious, I agree) ?
+> 
+>> and I need no dummy driver even though it would not compile by
+>> choosing the dummy driver by itself either.
+> 
+> Why would it not compile ?
+> 
+> I'm sorry, but you keep saying that solution XXX would not work but you
+> don't indicate what issue you encounter when you try it. If there are
+> problems, obviously they need to be fixed, but I cannot fix problems
+> based on suppositions.
+> 
+>> Regression patching to
+>> 2.4.34 restored the ability to compile without keyboard and vt support.
+>> This is what it took:
+> 
+> I'm well aware of the patch you reverted. But in my opinion, you fix
+> symptoms and not the cause. This patch fixed a problem. Reverting it
+> causes either :
+>   - kbd_controller_present being uncondtionally defined to 1, meaning
+>     it would not change anything for you
+> 
+>   - kbd_controller_present being defined to zero by some obscure other
+>     configuration that we just need to find out. However, the last patch
+>     I sent to you would have taken care of it, had it applied correctly
+>     (please apply it by hand in this case, it's just a matter of changing
+>     one macro name in the "if").
+> 
+> Thanks,
+> Willy
 
- this goes over my capabilities, but would certainly help the situation. But then I would hate to see Sun/Linux going off the hook, because Linux just played nice :-)
 
-Cheers
-Martin
+Ok, I finally applied the patch manually to 2.4.36.7 and then made my own
+diff from that. Your patch would likely have applied if I increased the
+fuzz factor as it was merely off by a number of lines. When trying to
+compile with no keyboard or VT support, I still get this error:
+
+arch/i386/kernel/kernel.o(.text.init+0x33e6): In function
+`disable_console_keyboard':
+: undefined reference to `keyboard_controller_present'
+make: *** [vmlinux] Error 1
+
+When I did a regression patch I also did the arch/i386/kernel/dmi_scan.c
+since some of the changes made back in 2.4.35 to this file are where the
+error comes from in the above error. DMI blacklisting will NOT work with
+Cobalt hardware as there is no dmi present to blacklist. Also note that the
+above error does not occur with a normal pc configuration where you include
+keyboard support and VT support but once you try to make a kernel without
+keyboard and VT support for embedded devices, dmi_scan.c breaks the build. 
+
+
+Dave
 
