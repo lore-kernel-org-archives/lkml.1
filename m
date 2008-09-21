@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbYIUTCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbYIUTGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752869AbYIUTCu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 15:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYIUTCh
+	id S1752876AbYIUTGR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 15:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYIUTGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 15:02:37 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:43009 "EHLO 2ka.mipt.ru"
+	Sun, 21 Sep 2008 15:06:06 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:43164 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751823AbYIUTCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 15:02:36 -0400
-Date: Sun, 21 Sep 2008 23:00:50 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ipw2100-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       yi.zhu@intel.com, reinette.chatre@intel.com, jgarzik@pobox.com,
-       linville@tuxdriver.com, davem@davemloft.net
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
-Message-ID: <20080921190050.GA20484@2ka.mipt.ru>
-References: <20080921172316.GA6306@2ka.mipt.ru> <20080921110422.1d010b96@infradead.org> <20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org>
-Mime-Version: 1.0
+	id S1751765AbYIUTGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 15:06:05 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080921113513.16677c4e@infradead.org>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
+Message-ID: <18646.39701.819497.337394@harpo.it.uu.se>
+Date: Sun, 21 Sep 2008 21:05:57 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Thomas Jarosch <thomas.jarosch@intra2net.com>
+Cc: linux-kernel@vger.kernel.org, Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: [patch] log fatal signals like SIGSEGV
+In-Reply-To: <200809201912.40381.thomas.jarosch@intra2net.com>
+References: <200809121502.15264.thomas.jarosch@intra2net.com>
+	<200809181210.40336.thomas.jarosch@intra2net.com>
+	<20080918202010.GA5656@joi>
+	<200809201912.40381.thomas.jarosch@intra2net.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 21, 2008 at 11:35:13AM -0700, Arjan van de Ven (arjan@infradead.org) wrote:
-> > And how else user can get attention to the problem which is not fixed
-> > by the vendor? 
-> 
-> ... or the community
+Thomas Jarosch writes:
+ > Hello together,
+ > 
+ > here's the reworked version of the signal logging patch.
+ > Many thanks to Marcin Slusarz for reviewing it. 
+ > 
+ > The idea is to briefly log "fatal" signals by default, the output
+ > should be close to zero during normal system operation.
+ > Faulty hardware gets detected much quicker
+ > if you see crashing apps in the logs.
+ > 
+ > The patch applies to 2.6.26 and git HEAD.
+ > scripts/checkpatch.pl is happy, too.
+ > 
+ > I'm off for a vacation, so expect a delay of some days
+ > if there should be additional questions or comments.
+ > 
+ > Hope the new feature is as useful to others as it has been to me.
+ > 
+ > Enjoy,
+ > Thomas
+ > 
+ > ------------------------------------------------------
+ > From: Thomas Jarosch <thomas.jarosch@intra2net.com>
+ > 
+ > Log signals like SIGSEGV, SIGILL, SIGBUS or SIGFPE to aid tracing
+ > of obscure problems. Also logs the sender of the signal.
 
-Which does not have access to the firmware... Which IMO is failing and
-not the driver itself.
+I believe the approach taken in this patch is broken:
 
-> > It stops after several seconds (or packets?). Sometimes (but rarely)
-> > it works several minutes, sometimes it fires above dmesg line and
-> > continues to work, sometimes it fires it for a while and then stops
-> > writing it, although driver does not send or receive anything (at
-> > least ifconfig counters do not change).
-> 
-> again.. so how about you detect this condition and do, in the driver
-> code, the equivalent of rmmod/insmod to the hardware. I'm sure people
-> who have the hardware would appreciate that type of patch a lot more
-> than the one you sent out.
- 
-Reset task does efectively ipw2100_up(), so the difference is power
-cycles over the PCI bus and enable/disable/request commands. Like this
-stuff:
-	/* We disable the RETRY_TIMEOUT register (0x41) to keep
-	 * PCI Tx retries from interfering with C3 CPU state */
-	pci_read_config_dword(pci_dev, 0x40, &val);
-	if ((val & 0x0000ff00) != 0)
-		pci_write_config_dword(pci_dev, 0x40, val & 0xffff00ff);
+1. The signal logging decision is taken before signal delivery,
+   which causes *handled* signals in the above list to be logged.
+   So your printk_ratelimit() can be swamped by handled signals
+   causing it to not log unhandled fatal signals.
 
-I do remember I had a tibet monk course of decoding ipw2100 PCI
-config address space, just need to find my kimono.
+   Applications that handle SEGV/BUS/ILL/FPE aren't that uncommon.
 
-Do you want me to implement ipw2100 driver as a big work structure
-which will run ipw2100_init()/wait/ipw2100_exit() in a loop?
-And that will be the fix suggested by Intel? That would explain a lot.
+2. Fatal signals are only interesting if they are self-generated.
+   Signals sent from other processes or threads are uninteresting,
+   if the purpose is to detect program errors or faulty hardware.
 
-P.S. And some people tell that asking for bug bisection is a hard
-pressure on user. Vendor has to ask him to fix bug himself instead,
-and that will be a solution!
+3. Similar functionality already exists in the kernel, except
+   it correctly runs much later in the signal delivery path.
+   Grep for print_fatal_signals and show_unhandled_signals.
 
-Getting the fact, that rmmod/insmod does not always fix the problem (but
-most of the time for a short period of time), I again want to point,
-that it looks like a firmware problem related to some inner timings. You
-ask me to fix the driver and do not even listen to what I said
-previously and do not get that into account and analyze.
+   There's also some trace hooks in the signal delivery path
+   that look like they could log actual fatal signals.
 
--- 
-	Evgeniy Polyakov
+/Mikael
