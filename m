@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbYIUVwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbYIUV5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754005AbYIUVwf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 17:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbYIUVwO
+	id S1753202AbYIUV5n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 17:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYIUV5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 17:52:14 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:58158 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752830AbYIUVwN (ORCPT
+	Sun, 21 Sep 2008 17:57:34 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:62196 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752500AbYIUV5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 17:52:13 -0400
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <ukleinek@strlen.de>
-To: linux-kernel@vger.kernel.org
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: [PATCH] Use platform_driver_probe for pdc platform driver
-Date: Sun, 21 Sep 2008 23:52:08 +0200
-Message-Id: <1222033928-25062-2-git-send-email-ukleinek@strlen.de>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1222033928-25062-1-git-send-email-ukleinek@strlen.de>
-References: <1222033928-25062-1-git-send-email-ukleinek@strlen.de>
+	Sun, 21 Sep 2008 17:57:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=faDd19+kFSws6H3K66LCOpwXVcQPtUDt4v5wnbcRoaz6wQdyOikiQBJk/PWIfZLMiC
+         0bFu2AacDccjzjACnvS2vdld47AY3X074VZJlOpXO+LHyBUYRZiQ+65K/53xAW+Uc/Xm
+         erOnHw7mCgBWI9dv5x2zIOvLEiiMlWLfSY31k=
+Message-ID: <48D6C34F.8070700@gmail.com>
+Date: Mon, 22 Sep 2008 01:57:35 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+Subject: Re: 2.6.27-rc6-git6: Reported regressions from 2.6.26
+References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik>
+In-Reply-To: <PJz8fNrJNHG.A.65F.wzq1IB@albercik>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The probe function of the pdc platform driver lives in the init section
-and so a pdc device that is created after the init section is discarded
-probably results in an oops.  Even if this cannot happen, using
-platform_driver_probe is cleaner.  (If this can happen and should be
-supported the probe function must live in the devinit section instead.)
+Hi Rafael,
+Correct patch is the one attached to bugzilla entry,
+not the one you mention.
 
-Signed-off-by: Uwe Kleine-König <ukleinek@strlen.de>
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Regards,
+Alex.
 
----
- arch/avr32/mach-at32ap/pdc.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/arch/avr32/mach-at32ap/pdc.c b/arch/avr32/mach-at32ap/pdc.c
-index 1040bda..61ab15a 100644
---- a/arch/avr32/mach-at32ap/pdc.c
-+++ b/arch/avr32/mach-at32ap/pdc.c
-@@ -35,7 +35,6 @@ static int __init pdc_probe(struct platform_device *pdev)
- }
- 
- static struct platform_driver pdc_driver = {
--	.probe		= pdc_probe,
- 	.driver		= {
- 		.name	= "pdc",
- 	},
-@@ -43,6 +42,6 @@ static struct platform_driver pdc_driver = {
- 
- static int __init pdc_init(void)
- {
--	return platform_driver_register(&pdc_driver);
-+	return platform_driver_probe(&pdc_driver, pdc_probe);
- }
- arch_initcall(pdc_init);
--- 
-tg: (639920b..) t/sectionfixes/pdc (depends on: t/sectionfixes/pio)
+Rafael J. Wysocki wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11549
+> Subject		: 2.6.27-rc5 acpi: EC Storm error message on bootup
+> Submitter	: <jmerkey@wolfmountaingroup.com>
+> Date		: 2008-09-02 21:27 (20 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122039255517586&w=4
+> Handled-By	: Alexey Starikovskiy <astarikovskiy@suse.de>
+> Patch		: http://marc.info/?l=linux-kernel&m=122098180019264&w=4
+>   
