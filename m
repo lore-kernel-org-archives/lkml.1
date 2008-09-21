@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbYIUTBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbYIUTCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752981AbYIUTBR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 15:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYIUTBE
+	id S1752869AbYIUTCu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 15:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYIUTCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 15:01:04 -0400
-Received: from v813.rev.tld.pl ([195.149.226.213]:55397 "EHLO
-	smtp.host4.kei.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751844AbYIUTBC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 15:01:02 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Sep 2008 15:01:01 EDT
-X-clamdmail: clamdmail 0.18a
-From: Marcin Juszkiewicz <marcin@haerwu.biz>
-To: Akinobu Mita <akinobu.mita@gmail.com>, Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH] progear_bl: use platform_device_register_simple()
-Date: Sun, 21 Sep 2008 20:54:17 +0200
-User-Agent: KMail/1.10.0 (Linux/2.6.27-rc6; KDE/4.1.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <20080921143827.GF8790@localhost.localdomain>
-In-Reply-To: <20080921143827.GF8790@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Sep 2008 15:02:37 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:43009 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751823AbYIUTCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 15:02:36 -0400
+Date: Sun, 21 Sep 2008 23:00:50 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ipw2100-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
+       yi.zhu@intel.com, reinette.chatre@intel.com, jgarzik@pobox.com,
+       linville@tuxdriver.com, davem@davemloft.net
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
+Message-ID: <20080921190050.GA20484@2ka.mipt.ru>
+References: <20080921172316.GA6306@2ka.mipt.ru> <20080921110422.1d010b96@infradead.org> <20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809212054.18346.marcin@haerwu.biz>
+In-Reply-To: <20080921113513.16677c4e@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 21 of September 2008 16:38:29 Akinobu Mita wrote:
-> This change also fixes error handling when platform_device_alloc()
-> fails. (When platform_device_alloc() failed, it returns error without
-> unregistering progearbl_driver)
+On Sun, Sep 21, 2008 at 11:35:13AM -0700, Arjan van de Ven (arjan@infradead.org) wrote:
+> > And how else user can get attention to the problem which is not fixed
+> > by the vendor? 
+> 
+> ... or the community
 
-I do not have this hardware working now so will not be able to test it 
-during next month or two.
+Which does not have access to the firmware... Which IMO is failing and
+not the driver itself.
 
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Cc: Marcin Juszkiewicz <linux@hrw.one.pl>
-> Cc: Richard Purdie <rpurdie@rpsys.net>
+> > It stops after several seconds (or packets?). Sometimes (but rarely)
+> > it works several minutes, sometimes it fires above dmesg line and
+> > continues to work, sometimes it fires it for a while and then stops
+> > writing it, although driver does not send or receive anything (at
+> > least ifconfig counters do not change).
+> 
+> again.. so how about you detect this condition and do, in the driver
+> code, the equivalent of rmmod/insmod to the hardware. I'm sure people
+> who have the hardware would appreciate that type of patch a lot more
+> than the one you sent out.
+ 
+Reset task does efectively ipw2100_up(), so the difference is power
+cycles over the PCI bus and enable/disable/request commands. Like this
+stuff:
+	/* We disable the RETRY_TIMEOUT register (0x41) to keep
+	 * PCI Tx retries from interfering with C3 CPU state */
+	pci_read_config_dword(pci_dev, 0x40, &val);
+	if ((val & 0x0000ff00) != 0)
+		pci_write_config_dword(pci_dev, 0x40, val & 0xffff00ff);
 
+I do remember I had a tibet monk course of decoding ipw2100 PCI
+config address space, just need to find my kimono.
 
+Do you want me to implement ipw2100 driver as a big work structure
+which will run ipw2100_init()/wait/ipw2100_exit() in a loop?
+And that will be the fix suggested by Intel? That would explain a lot.
 
+P.S. And some people tell that asking for bug bisection is a hard
+pressure on user. Vendor has to ask him to fix bug himself instead,
+and that will be a solution!
+
+Getting the fact, that rmmod/insmod does not always fix the problem (but
+most of the time for a short period of time), I again want to point,
+that it looks like a firmware problem related to some inner timings. You
+ask me to fix the driver and do not even listen to what I said
+previously and do not get that into account and analyze.
+
+-- 
+	Evgeniy Polyakov
