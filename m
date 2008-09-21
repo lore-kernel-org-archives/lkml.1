@@ -1,105 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbYIUJYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbYIUJ0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752536AbYIUJYw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 05:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYIUJYo
+	id S1753058AbYIUJ0V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 05:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYIUJ0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 05:24:44 -0400
-Received: from shells.gnugeneration.com ([66.240.222.126]:42084 "HELO
-	shells.gnugeneration.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751150AbYIUJYn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 05:24:43 -0400
-Date: Sun, 21 Sep 2008 04:24:42 -0500
-From: lkml@pengaru.com
-To: linux-kernel@vger.kernel.org
-Subject: Re: Honoring SO_RCVLOWAT in proto_ops.poll methods
-Message-ID: <20080921092442.GS2761@fc6222126.aspadmin.net>
-References: <20080920214229.GP2761@fc6222126.aspadmin.net> <20080920.152140.193698477.davem@davemloft.net> <20080920230046.GQ2761@fc6222126.aspadmin.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080920230046.GQ2761@fc6222126.aspadmin.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 21 Sep 2008 05:26:13 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:36707 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751199AbYIUJ0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 05:26:12 -0400
+Date: Sun, 21 Sep 2008 11:26:05 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Cc: "Timur Tabi" <timur@freescale.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: dmaengine.c: question about device_alloc_chan_resources
+Message-ID: <20080921112605.1e00b92b@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <e9c3a7c20809201600s3862da7qaab4a917220778e9@mail.gmail.com>
+References: <48D02589.8070601@freescale.com>
+	<e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
+	<ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>
+	<20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>
+	<48D2664D.7040204@freescale.com>
+	<20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com>
+	<e9c3a7c20809182120r5e056dd7h170959dc1171af84@mail.gmail.com>
+	<20080919132544.533ab7d0@hskinnemo-gx745.norway.atmel.com>
+	<48D3B880.3070607@freescale.com>
+	<e9c3a7c20809201600s3862da7qaab4a917220778e9@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 21 Sep 2008 09:25:55.0459 (UTC) FILETIME=[0C8C9D30:01C91BCC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 20, 2008 at 06:00:46PM -0500, lkml@pengaru.com wrote:
-> On Sat, Sep 20, 2008 at 03:21:40PM -0700, David Miller wrote:
-> > From: lkml@pengaru.com
-> > Date: Sat, 20 Sep 2008 16:42:29 -0500
-> > 
-> > > I have a need for select/poll/epoll_wait to block on sockets which have
-> > > unread data sitting in the receive buffer with a quantity less than
-> > > specified via setsockopt() w/SO_RCVLOWAT, not less than one like the
-> > > current implementation.
-> > 
-> > If BSD never provided this behavior, such a change is likely
-> > to break applications.
+"Dan Williams" <dan.j.williams@intel.com> wrote:
+> On Fri, Sep 19, 2008 at 7:34 AM, Timur Tabi <timur@freescale.com> wrote:
+> > Haavard Skinnemoen wrote:
+> >
+> >> Yes, or maybe provide an interface for simply requesting a channel
+> >> without having to register any callbacks.
+> >
+> > I could use this feature.  The sound drivers for our MPC8610 processor use DMA,
+> > but the drivers need to control the DMA hardware directly, so I can't use
+> > dmaengine.  I would like to be able to just reserve the channels and program
+> > them as I see fit.
+> >
 > 
-> I did a quick look through FreeBSD source on fxr and found this macro:
-> http://fxr.watson.org/fxr/source/sys/socketvar.h#L197
+> I think its a good idea especially since it would be best not to
+> needlessly proliferate client implementations with competing channel
+> allocation schemes.  However it would need to be more descriptive
+> than:
 > 
-> Which is used by the generic socket poll here:
-> http://fxr.watson.org/fxr/source/kern/uipc_socket.c#L2731
-> 
-> You can look throughout that listing and so_rcv.sb_lowat is always what
-> is compared against for determining rcv buf readability.
-> 
-> You might also want to look at the socket(7) man page which implies that
-> what Linux currently does is exceptional & incorrect:
-> 
->        SO_RCVLOWAT and SO_SNDLOWAT
->               Specify the minimum number of bytes in  the  buffer  until
->               the  socket  layer  will  pass  the  data  to the protocol
->               (SO_SNDLOWAT) or  the  user  on  receiving  (SO_RCVLOWAT).
->               These two values are initialised to 1.  SO_SNDLOWAT is not
->               changeable on Linux (setsockopt fails with the error  ENO-
->               PROTOOPT).   SO_RCVLOWAT  is  changeable  only since Linux
->               2.4.  The select(2) and poll(2) system calls currently  do
->               not  respect  the SO_RCVLOWAT setting on Linux, and mark a
->               socket readable when even a single byte of data is  avail-
->               able.   A subsequent read from the socket will block until
->               SO_RCVLOWAT bytes are available.
-> 
+> struct dma_chan *dma_request_channel(dma_cap_mask_t request_mask);
 
-I've been working on my application further and finally got around to
-testing it with the assumption that poll won't block with regard to
-SO_RCVLOWAT, and to my surprise even my recv() calls with MSG_PEEK flags
-set are not blocking.  They block without MSG_PEEK, but not with.
+Yes. It would definitely require a struct dma_slave too, unless we
+create a separate function for that.
 
-Upon further investigation I find in tcp.c tcp_recvmsg() 2.6.26.5:
+> Why:
+> 1/  What if the requester initializes before a dmaengine device has
+> been registered?  What if a device is never registered?
 
-1306         target = sock_rcvlowat(sk, flags & MSG_WAITALL, len);
+It should just return NULL if it cannot satisfy the request. That might
+cause problems since the requesting module normally won't depend on the
+dmaengine driver, but I think it's better than requiring drivers to
+deal with channels that may come and go at any time. Those drivers will
+inevitably be buggy.
 
-...snip...
+> 2/ What about platform specific concerns where dma_cap_mask_t is not
+> descriptive enough e.g. only one memcpy channel can address a certain
+> bus?  Currently a client implementation can have some intelligence to
+> return DMA_DUP for channels that do not have the platform capability.
 
-1371                 if (copied >= target && !sk->sk_backlog.tail)
-1372                         break;
-1373 
-1374                 if (copied) {
-1375                         if (sk->sk_err ||
-1376                             sk->sk_state == TCP_CLOSE ||
-1377                             (sk->sk_shutdown & RCV_SHUTDOWN) ||
-1378                             !timeo ||
-1379                             signal_pending(current) ||
-1380                             (flags & MSG_PEEK))
-1381                                 break;
-1382                 } else {
+Currently, clients requesting the DMA_SLAVE capability can specify
+which particular DMA device they need. Would it make sense to allow
+other clients to do that as well?
 
+Also, struct dma_slave can be extended with
+controller-/platform-specific fields. Maybe we need a similar mechanism
+for passing platform-specific constraints when requesting "regular"
+channels?
 
-So line #1380 drops out without satisfying copied >= target if MSG_PEEK is
-set, and if you look at the remainder of the function it's assuming that
-it needs to cleanup buffers before waiting for more.  So fixing this guy
-is likely not as trivial as fixing poll, since the rest of the function
-has to be massaged to not try free things be in MSG_PEEK mode.
+> At the very least clients should be allowed to set an 'exclusive' bit
+> to prevent the channel from leaking elsewhere.
 
-Once again, this deviates from FreeBSD behavior.
+Agreed. Perhaps we should allow the DMA engine driver to set that flag
+too, in case certain parameters make channels difficult to share on
+certain controllers.
 
-At this point, for my application to work on Linux without burning CPU like
-mad... I basically have to sleep and poll the socket regularly to see if
-more data has arrived with the tcp socket ioctl SIOCINQ. :(
-
-Regards,
-Vito Caputo
+Haavard
