@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbYIUQF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbYIUQGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751920AbYIUQF7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 12:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbYIUQFv
+	id S1751920AbYIUQGV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 12:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYIUQF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 12:05:51 -0400
-Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:52319
-	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751637AbYIUQFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 12:05:51 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Sep 2008 12:05:50 EDT
-Message-Id: <50F88745-08CD-4BAD-965E-619A8DDE7085@it-loops.com>
-From: Guntsche Michael <mike@it-loops.com>
+	Sun, 21 Sep 2008 12:05:57 -0400
+Received: from main.gmane.org ([80.91.229.2]:41467 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752471AbYIUQF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 12:05:56 -0400
+X-Injected-Via-Gmane: http://gmane.org/
 To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: 2.6.26: Parport printing problem
-Date: Sun, 21 Sep 2008 17:59:08 +0200
-X-Mailer: Apple Mail (2.929.2)
+From: Ben Pfaff <blp@cs.stanford.edu>
+Subject: Re: [PATCH] max3100 driver
+Date: Sun, 21 Sep 2008 09:09:21 -0700
+Message-ID: <87bpyhfpla.fsf@blp.benpfaff.org>
+References: <1221895208650-git-send-email-chripell@gmail.com> <20080920012454.e40f03cc.akpm@linux-foundation.org> <20080920065652.11d76780@infradead.org>
+Reply-To: blp@cs.stanford.edu
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 76.14.48.56
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+Cancel-Lock: sha1:qPsiaSPP1apxfUlU+V8aDs9PKnU=
+Cc: linux-serial@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
+Arjan van de Ven <arjan@infradead.org> writes:
 
-I am having some problems with printing to an epson printer connected  
-to the parallel port.
-I have an old computer that acts as my firewall/print server. Every  
-now and then I print out some pages on this setup.
-At the beginning of the year I printed a pdf file without any  
-problems. This weekend I wanted to print out a small PDF but instead  
-of getting the page, I just got gibberish showing up on the page. I  
-did not change anything in my cups setup so I booted to 2.6.25 and  
-tried again, same problem.
-Since this is an Epson inkjet printer I turned off cups and fired up  
-the escpuil tool.
+> I do have a question though: what does a signed bitfield of 1 mean?
+> I mean.. the variables are "int", so signed.... where will the compiler
+> store the sign bit???
 
-	escputil -i -r /dev/lp0
+Whether a bit-field declared as type "int" is signed or unsigned
+is compiler implementation-defined.  As C99 6.7.2 says (there is
+similar text in C89):
 
-This should normally print out the inklevels. But instead if the ouput  
-I just got gibberish printed out again. For me it looked like that the  
-data, got somehow mangled on the way to the printer. I recompiled the  
-kernel and tried it once again with parport_pc in polling mode. Same  
-result.
+     ...for bit-fields, it is implementation-defined whether the
+     specifier int designates the same type as signed int or the
+     same type as unsigned int.
 
-I then connected the printer via its USB port to another computer  
-running 2.6.26 and tried escputil again. It worked without any  
-problems. I saw the ink levels and could also trigger the print head  
-cleaning sequence. A test print out from cups and the PDF printout  
-worked as well. I then connected the printer to this new server with  
-the parallel port. I got the same result as with the other computer.  
-Instead of ink levels or a printout I just got gibberish on the page.
+Thus, it is never a good idea to declare a bit-field as plain
+"int".  Declare it as "signed int" or "unsigned int" instead.
+-- 
+"Mon peu de succès près des femmes est toujours venu de les trop aimer."
+--Jean-Jacques Rousseau
 
-Since then I moved my cups setup to the server since it is faster  
-anyway. Nevertheless I still do not understand why printing does not  
-work via the parallel port.
-On the new machine parport_pc even detects the type and name of the  
-printer, so the connection is definitely working. It just looks like  
-that output sent via the parport somehow gets tampered with.
-Maybe someone has an idea.
-
-Please CC me since I am not subscribed to the list.
-
-Kind regards,
-Michael
