@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbYITX6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbYIUAJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbYITX6w (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 19:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYITX6n
+	id S1753889AbYIUAJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Sep 2008 20:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYIUAJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 19:58:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39935 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751539AbYITX6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 19:58:42 -0400
-Message-ID: <48D58D5E.30508@kernel.org>
-Date: Sat, 20 Sep 2008 19:55:10 -0400
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Sat, 20 Sep 2008 20:09:51 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:25960 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751536AbYIUAJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Sep 2008 20:09:50 -0400
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] block: Introduce integrity data ownership flag
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+Date: Sat, 20 Sep 2008 20:09:44 -0400
+Message-ID: <yq1ej3enyuv.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Elias Oltmanns <eo@nebensachen.de>
-CC: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2 v4] libata: Implement disk shock protection support
-References: <87tzcb7r0r.fsf@denkblock.local>	<20080919214400.7183.64611.stgit@denkblock.local>	<48D4805A.3090707@kernel.org> <87abe37462.fsf@denkblock.local>	<87wsh75avl.fsf@denkblock.local> <20080920213418.16970.37782.stgit@denkblock.local>
-In-Reply-To: <20080920213418.16970.37782.stgit@denkblock.local>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 20 Sep 2008 23:56:34 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Elias Oltmanns wrote:
-> On user request (through sysfs), the IDLE IMMEDIATE command with UNLOAD
-> FEATURE as specified in ATA-7 is issued to the device and processing of
-> the request queue is stopped thereafter until the specified timeout
-> expires or user space asks to resume normal operation. This is supposed
-> to prevent the heads of a hard drive from accidentally crashing onto the
-> platter when a heavy shock is anticipated (like a falling laptop
-> expected to hit the floor). In fact, the whole port stops processing
-> commands until the timeout has expired in order to avoid any resets due
-> to failed commands on another device.
-> 
-> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
 
-Acked-by: Tejun Heo <tj@kernel.org>
+A filesystem might supply its own integrity metadata.  Introduce a
+flag that indicates whether the filesystem or the block layer owns the
+integrity buffer.
 
-As for completion, yes, I think it would be nice to update complete
-such that multiple complete_all() calls don't overflow and completion
-can be used for this type of usage.  Anyways, that's for another day I
-guess.
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+---
+ fs/bio-integrity.c  |    3 ++-
+ include/linux/bio.h |    1 +
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-Thanks.
-
+diff --git a/fs/bio-integrity.c b/fs/bio-integrity.c
+index c3e174b..8e409ff 100644
+--- a/fs/bio-integrity.c
++++ b/fs/bio-integrity.c
+@@ -107,7 +107,8 @@ void bio_integrity_free(struct bio *bio, struct bio_set *bs)
+ 	BUG_ON(bip == NULL);
+ 
+ 	/* A cloned bio doesn't own the integrity metadata */
+-	if (!bio_flagged(bio, BIO_CLONED) && bip->bip_buf != NULL)
++	if (!bio_flagged(bio, BIO_CLONED) && !bio_flagged(bio, BIO_FS_INTEGRITY)
++	    && bip->bip_buf != NULL)
+ 		kfree(bip->bip_buf);
+ 
+ 	mempool_free(bip->bip_vec, bs->bvec_pools[bip->bip_pool]);
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index 6520ee1..6aba97d 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -109,6 +109,7 @@ struct bio {
+ #define BIO_EOPNOTSUPP	7	/* not supported */
+ #define BIO_CPU_AFFINE	8	/* complete bio on same CPU as submitted */
+ #define BIO_NULL_MAPPED 9	/* contains invalid user pages */
++#define BIO_FS_INTEGRITY 10	/* fs owns integrity data, not block layer */
+ #define bio_flagged(bio, flag)	((bio)->bi_flags & (1 << (flag)))
+ 
+ /*
 -- 
-tejun
+1.5.5.1
+
