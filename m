@@ -1,78 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbYIUSf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbYIUShX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752595AbYIUSf2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 14:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbYIUSfN
+	id S1752760AbYIUShX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 14:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYIUShK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 14:35:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35604 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbYIUSfM (ORCPT
+	Sun, 21 Sep 2008 14:37:10 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:20574 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbYIUShJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 14:35:12 -0400
-Date: Sun, 21 Sep 2008 11:35:13 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ipw2100-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       yi.zhu@intel.com, reinette.chatre@intel.com, jgarzik@pobox.com,
-       linville@tuxdriver.com, davem@davemloft.net
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
- restart.
-Message-ID: <20080921113513.16677c4e@infradead.org>
-In-Reply-To: <20080921182835.GA11473@2ka.mipt.ru>
-References: <20080921172316.GA6306@2ka.mipt.ru>
-	<20080921110422.1d010b96@infradead.org>
-	<20080921182835.GA11473@2ka.mipt.ru>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Sun, 21 Sep 2008 14:37:09 -0400
+Date: Sun, 21 Sep 2008 20:37:57 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Antonino Daplas <adaplas@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] vgacon: optimize scrolling
+Message-Id: <20080921203757.455ead71.krzysztof.h1@poczta.fm>
+In-Reply-To: <1222012809-5783-2-git-send-email-marcin.slusarz@gmail.com>
+References: <1222012809-5783-1-git-send-email-marcin.slusarz@gmail.com>
+	<1222012809-5783-2-git-send-email-marcin.slusarz@gmail.com>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-EMID: fae2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Sep 2008 22:28:38 +0400
-Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+On Sun, 21 Sep 2008 18:00:08 +0200
+Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 
-> On Sun, Sep 21, 2008 at 11:04:22AM -0700, Arjan van de Ven
-> (arjan@infradead.org) wrote:
-> > so now you go from an occasional burp to having nothing at all.
-> > How about you run with this patch on your own machine only?
+> Join multiple scr_memcpyw into 1-3 calls (usually 2).
+> (benchmarked average speedup: 1%)
 > 
-> And how else user can get attention to the problem which is not fixed
-> by the vendor? 
 
-... or the community
+The scr_memcpyw is an inline function so there is no real call here.
 
-> We close our eyes and there is no problem, since we do
-> not see it. I just brought a lamp: no user can see that essentially
-> driver is broken so he can run it on his own risk.
+However, have you tested the patch with scroll range > 2 *  vgacon_scrollback_size?
+
+It seems that your patch only handles scrolling if it is not bigger than 2 * vgacon_scrollback_size.
+
+Regards,
+Krzysztof
+
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Antonino Daplas <adaplas@gmail.com>
+> Cc: linux-fbdev-devel@lists.sourceforge.net
+> ---
+>  drivers/video/console/vgacon.c |   28 ++++++++++++++++------------
+>  1 files changed, 16 insertions(+), 12 deletions(-)
 > 
-> > or.. since you say a reload of the driver fixes it.. why don't you
-> > make a patch for the driver that does basically the actions of a
-> > reload automatically when the driver detects the issue?
-> > (and stick a WARN_ON in for good measure so that kerneloops.org can
-> > start tracking these burps)
+> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+> index bd1f57b..de4f66c 100644
+> --- a/drivers/video/console/vgacon.c
+> +++ b/drivers/video/console/vgacon.c
+> @@ -292,23 +292,27 @@ static int vgacon_scrolldelta(struct vc_data *c, int lines)
+>  	d = (void *) c->vc_origin;
+>  	s = (void *) c->vc_screenbuf;
+>  
+> -	while (count--) {
+> -		scr_memcpyw(d, vgacon_scrollback + soff, c->vc_size_row);
+> -		d += c->vc_size_row;
+> -		soff += c->vc_size_row;
+> -
+> -		if (soff >= vgacon_scrollback_size)
+> -			soff = 0;
+> +	if (count) {
+> +		int copysize;
+> +		count *= c->vc_size_row;
+> +		/* how much memory to end of buffer left? */
+> +		copysize = min(count, vgacon_scrollback_size - soff);
+> +		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
+> +		d += copysize;
+> +		count -= copysize;
+> +		
+> +		if (count) {
+> +			copysize = min(count, vgacon_scrollback_size);
+> +			scr_memcpyw(d, vgacon_scrollback, copysize);
+> +			d += copysize;
+> +		}
+>  	}
+>  
+>  	if (diff == c->vc_rows) {
+>  		vgacon_cursor(c, CM_MOVE);
+>  	} else {
+> -		while (diff--) {
+> -			scr_memcpyw(d, s, c->vc_size_row);
+> -			d += c->vc_size_row;
+> -			s += c->vc_size_row;
+> -		}
+> +		if (diff)
+> +			scr_memcpyw(d, s, diff * c->vc_size_row);
+>  	}
+>  
+>  	return 1;
+> -- 
+> 1.5.6.4
 > 
-> It stops after several seconds (or packets?). Sometimes (but rarely)
-> it works several minutes, sometimes it fires above dmesg line and
-> continues to work, sometimes it fires it for a while and then stops
-> writing it, although driver does not send or receive anything (at
-> least ifconfig counters do not change).
+> 
+> -------------------------------------------------------------------------
+> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+> Build the coolest Linux based applications with Moblin SDK & win great prizes
+> Grand prize is a trip for two to an Open Source event anywhere in the world
+> http://moblin-contest.org/redirect.php?banner_id=100&url=/
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> 
 
-again.. so how about you detect this condition and do, in the driver
-code, the equivalent of rmmod/insmod to the hardware. I'm sure people
-who have the hardware would appreciate that type of patch a lot more
-than the one you sent out.
+----------------------------------------------------------------------
+Kredyt Hipoteczny w Banku Millennium - zdobywca Zlotego Lauru Klienta!
+Sprawdz >> http://link.interia.pl/f1f15
 
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
