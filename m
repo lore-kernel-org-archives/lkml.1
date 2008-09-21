@@ -1,105 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbYIUNx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752339AbYIUOOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752260AbYIUNx0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 09:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYIUNxS
+	id S1752339AbYIUOOY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 10:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYIUOOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 09:53:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:55868 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbYIUNxR (ORCPT
+	Sun, 21 Sep 2008 10:14:17 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60724 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751539AbYIUOOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 09:53:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references:x-google-sender-auth;
-        b=Y/+JuCiPujdLM/jyC9uL5/vnQDBxRvBRrAGxokGjgRl3gqzavWA6b0ZPJRucBb+TmL
-         Ma6OSUXB75jS5tRlq5BDPOrpkAC43ulGTXX294s2HGOmScoWRjM/Bm5tfiFFxqk7aw6o
-         4tv49xG0lbYO4zAz8CbScFOLQPqoIDHloppFU=
-Message-ID: <76bd70e30809210653o304d6634k9e1f11263db6452a@mail.gmail.com>
-Date: Sun, 21 Sep 2008 09:53:14 -0400
-From: "Chuck Lever" <chuck.lever@oracle.com>
-Reply-To: chucklever@gmail.com
-To: "Martin Knoblauch" <knobi@knobisoft.de>
-Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Greg Banks" <gnb@melbourne.sgi.com>,
-       "linux-nfs list" <linux-nfs@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, "Peter zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <968192.84087.qm@web32607.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 21 Sep 2008 10:14:16 -0400
+Date: Sun, 21 Sep 2008 15:14:07 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tollef Fog Heen <tfheen@err.no>
+Cc: linux-kernel@vger.kernel.org, werner@cornelius-consult.de,
+       frank@kingswood-consulting.co.uk
+Subject: Re: [PATCH] Winchiphead 340/1: full baud rate and status/control
+ line support
+Message-ID: <20080921151407.10c89452@lxorguk.ukuu.org.uk>
+In-Reply-To: <87ej3d4zv3.fsf_-_@xoog.err.no>
+References: <200807290254.m6T2sIBG010575@imap1.linux-foundation.org>
+	<20080729104331.367fde6b@lxorguk.ukuu.org.uk>
+	<87ej3d4zv3.fsf_-_@xoog.err.no>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <968192.84087.qm@web32607.mail.mud.yahoo.com>
-X-Google-Sender-Auth: 311d727e95581e62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 21, 2008 at 8:50 AM, Martin Knoblauch <knobi@knobisoft.de> wrote:
-> ----- Original Message ----
->
->> From: Chuck Lever <chucklever@gmail.com>
->> To: Martin Knoblauch <knobi@knobisoft.de>
->> Cc: Andrew Morton <akpm@linux-foundation.org>; Greg Banks <gnb@melbourne.sgi.com>; linux-nfs list <linux-nfs@vger.kernel.org>; linux-kernel@vger.kernel.org; Peter zijlstra <a.p.zijlstra@chello.nl>
->> Sent: Thursday, September 18, 2008 8:24:42 PM
->> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
->>
->> On Thu, Sep 18, 2008 at 6:53 AM, Martin Knoblauch wrote:
->> > ----- Original Message ----
->> >
->> >> From: Andrew Morton
->> >> To: Martin Knoblauch
->> >> Cc: Greg Banks ; linux-nfs list
->> ; linux-kernel@vger.kernel.org; Peter zijlstra
->>
->> >> Sent: Thursday, September 18, 2008 10:47:33 AM
->> >> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
->> >>
->> >> On Thu, 18 Sep 2008 01:38:57 -0700 (PDT) Martin Knoblauch
->> >> wrote:
->> >>
->> >> > > No.  mount(8) will pass unrecognised options straight down into the
->> >> > > filesystem driver.
->> >> > >
->> >> >
->> >> >  Has that always been the case, or is it a recent change? I have to support
->> >> RHEL4 userland, which is not really new.
->> >>
->> >> It's been that way for ever and ever.  It's how all these guys:
->> >>
->> >> y:/usr/src/25> grep Opt_ fs/*/super.c|wc
->> >>     781    2626   33703
->> >>
->> >> get handled.
->> >
->> >  while that seems to be not to complicated, I seem to have a problem passing
->> the mount options to the kernel. They come down as mount data version "6".
->> Apparently mount(8) or mount.nfs(8) are doing the parsing and send down the
->> legacy data block. So, what is the minimum version of mount or mount.nfs that
->> pass the options down unaltered?
->>
->> The mount command has passed a string of options to the kernel for
->> particular file systems for a while, but the facility for the NFS
->> client to parse a string of mount options in the kernel was added only
->> recently -- at least 2.6.23 or 2.6.24 is required to support this.
->> Before this, the mount command parsed these options.
->>
->
->  I understand that. Question remains, which version of the mount(8) or nfs.mount(8) command do I need to pass the options to the kernel.
+Some niggles but this is a big improvement to the code.
 
-You can use the latest version of nfs-utils, which is 1.1.3 to get a
-version of mount.nfs that passes a string of mount options.
 
-You should probably also replace the mount command with the latest
-version from the util-linux package to get a version that starts the
-mount.nfs subcommand instead of trying to do an NFS mount itself.
+>  static int ch341_set_baudrate(struct usb_device *dev,
+> +			      struct tty_struct *tty,
+>  			      struct ch341_private *priv)
+> +	baud = CH341_BAUDBASE_FACTOR / t1;
+> +
+> +	if (baud && tty)
+> +		tty_encode_baud_rate(tty, baud, baud);
 
-This is not needed for experimentation, though.  You can issue
-mount.nfs directly.
+Can you really get a speed below 1 baud ?
 
---
-Chuck Lever
+If there is a hangup requested (c_cflag & CBAUD) == B0 then you don't
+want to overwrite the baud rate but that you handled in set_termios
+already.
+
+
+> +static void ch341_close(struct tty_struct *tty, struct usb_serial_port *port,
+> +			struct file *filp)
+> +{
+> +	struct ch341_private *priv = usb_get_serial_port_data(port);
+> +	unsigned long flags;
+> +
+> +	dbg("%s - port %d", __func__, port->number);
+> +
+> +	/* shutdown our urbs */
+> +	dbg("%s - shutting down urbs", __func__);
+> +	usb_kill_urb(port->write_urb);
+> +	usb_kill_urb(port->read_urb);
+> +	usb_kill_urb(port->interrupt_in_urb);
+> +
+> +	if (tty) {
+
+close should never be called with tty == NULL unless there is some kind
+of internal abuse of it - is the tty check really needed ?
+
+> @@ -242,21 +320,34 @@ static int ch341_open(struct tty_struct *tty, struct usb_serial_port *port,
+>  	dbg("ch341_open()");
+>  
+>  	priv->baud_rate = DEFAULT_BAUD_RATE;
+> -	priv->dtr = 1;
+> -	priv->rts = 1;
+> +
+> +	if (C_CLOCAL(tty))
+
+Open on the other hand is currently called with tty = NULL in the case it
+is used as a console device (ugly and something I want to fix but it
+happens for now)
+
+> @@ -270,38 +361,207 @@ static void ch341_set_termios(struct tty_struct *tty,
+>  {
+>  	struct ch341_private *priv = usb_get_serial_port_data(port);
+>  	unsigned baud_rate;
+> +	unsigned long flags;
+>  
+>  	dbg("ch341_set_termios()");
+>  
+> +	if (!tty)
+> +		return;
+> +
+
+set_termios should never be called with tty == NULL nowdays so that test
+should be removable.
+
+
+> +	control = priv->line_control;
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+> +
+> +	return ch341_set_handshake(port->serial->dev, control);
+> +}
+
+This could race another set_handshake ? I'm not sure it matters and I'd
+suggest that stuff gets fixed after this is submitted separately
+
+
+
