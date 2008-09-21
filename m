@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbYIUW4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbYIUXLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753496AbYIUW4f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 18:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbYIUW41
+	id S1753696AbYIUXLF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 19:11:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYIUXKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 18:56:27 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:37998 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752533AbYIUW40 (ORCPT
+	Sun, 21 Sep 2008 19:10:52 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46150 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752533AbYIUXKv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 18:56:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=FjNxJx4LiPOrq7KhmGUx5EuXWCm7JFcZlA95zFR3PHc1tC+RJrefFEewLRybP3Ll0d
-         4/QGByIWIUOobOlVIlNAdyxVGLz58VkY2UbgxzNbWkK1oAuWrtq2jt++cNdSVppkVSPB
-         g1/Y76WxXF5ytuzbORoN36pvbdimfFVIpWE/U=
-Date: Sun, 21 Sep 2008 18:56:21 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.27-rc7
-Message-ID: <20080921225621.GA10188@anvil.corenet.prv>
+	Sun, 21 Sep 2008 19:10:51 -0400
+Date: Mon, 22 Sep 2008 01:10:29 +0200
+From: "Michal 'vorner' Vaner" <vorner@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Holger Macht <hmacht@suse.de>, Jeff Garzik <jgarzik@redhat.com>,
+       "Michal 'vorner' Vaner" <vorner@ucw.cz>
+Subject: Re: [Bug #11610] Problem with kernel commit
+	664d080c41463570b95717b5ad86e79dc1be0877
+Message-ID: <20080921231029.GA5533@tarantula.kolej.mff.cuni.cz>
+Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Holger Macht <hmacht@suse.de>, Jeff Garzik <jgarzik@redhat.com>,
+	Michal 'vorner' Vaner <vorner@ucw.cz>
+References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik> <7lIhZC4hCxE.A.2EG.9zq1IB@albercik>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <7lIhZC4hCxE.A.2EG.9zq1IB@albercik>
+Jabber-ID: michal.vaner@njs.netlab.cz
+User-Agent: Mutt 1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hello
 
-Please pull from:
+On Sun, Sep 21, 2008 at 08:54:23PM +0200, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+Yes, it still does this with newest kernel
+(9824b8f11373b0df806c135a342da9319ef1d893). At last for me.
 
-to receive updates for the input subsystem.
-
-Changelog:
----------
-
-Henrik Rydberg (1):
-      Input: bcm5974 - switch back to normal mode when closing
-
-Kristoffer Ericson (1):
-      Input: jornada720_ts - fix build error ( LONG() usage )
-
-
-Diffstat:
---------
-
- drivers/input/mouse/bcm5974.c             |   13 +++++++++----
- drivers/input/touchscreen/jornada720_ts.c |    4 ++--
- 2 files changed, 11 insertions(+), 6 deletions(-)
+With regards
 
 -- 
-Dmitry
+Please enter password:
+
+Michal 'vorner' Vaner
