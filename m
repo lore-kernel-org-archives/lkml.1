@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbYIUJOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbYIUJR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752528AbYIUJOI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 05:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYIUJNy
+	id S1752822AbYIUJR0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 05:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYIUJRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 05:13:54 -0400
-Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:41156 "EHLO
-	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750877AbYIUJNx (ORCPT
+	Sun, 21 Sep 2008 05:17:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46633
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750733AbYIUJRP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 05:13:53 -0400
-Message-ID: <48D6104B.9040304@superbug.co.uk>
-Date: Sun, 21 Sep 2008 10:13:47 +0100
-From: James Courtier-Dutton <James@superbug.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080727)
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: David Miller <davem@davemloft.net>, dwalker@mvista.com,
-       arjan@infradead.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com,
-       steffen.klassert@secunet.com
+	Sun, 21 Sep 2008 05:17:15 -0400
+Date: Sun, 21 Sep 2008 02:17:02 -0700 (PDT)
+Message-Id: <20080921.021702.37632261.davem@davemloft.net>
+To: James@superbug.co.uk
+Cc: herbert@gondor.apana.org.au, dwalker@mvista.com, arjan@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com, steffen.klassert@secunet.com
 Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48D6104B.9040304@superbug.co.uk>
 References: <E1KhI4n-0002Fk-7C@gondolin.me.apana.org.au>
-In-Reply-To: <E1KhI4n-0002Fk-7C@gondolin.me.apana.org.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	<48D6104B.9040304@superbug.co.uk>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> David Miller <davem@davemloft.net> wrote:
->> receive using multiple RX queues and MSI-X interrupts.  It's
->> also for things like IPSEC where the per-packet cpu usage
->> is so huge (to do the crypto) that it makes sense to even
->> split up the work to multiple cpus within the same flow.
-> 
-> Unfortunately doing this with IPsec is going to be non-trivial
-> since we still want to maintain packet ordering inside IPsec
-> and you don't get the inner flow information until you decrypt
-> the packet.
-> 
+From: James Courtier-Dutton <James@superbug.co.uk>
+Date: Sun, 21 Sep 2008 10:13:47 +0100
 
-Why do you have to preserve packet ordering?
-TCP/IP does not preserve packet ordering across the network.
-IPSEC uses a sliding window for anti-relay detection precisely because
-it has to be able to handle out-of-order packets.
+> Why do you have to preserve packet ordering?
+> TCP/IP does not preserve packet ordering across the network.
 
-Sharing the sliding window between CPUs might be interesting!
+Yes, but we should preserve per-flow ordering as much as
+possible within the local system for optimal performance.
 
-James
+Things fall apart completely, even with TCP, once you reorder more
+than 2 or 3 packets deep.
+
+> Sharing the sliding window between CPUs might be interesting!
+
+Again, Steffen's patches take care of this issue.
