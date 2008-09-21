@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYIUDf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbYIUEFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371AbYIUDf4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Sep 2008 23:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYIUDfs
+	id S1751955AbYIUEFQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 00:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbYIUEFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Sep 2008 23:35:48 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58082 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505AbYIUDfr (ORCPT
+	Sun, 21 Sep 2008 00:05:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36988 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750728AbYIUEFD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Sep 2008 23:35:47 -0400
-Date: Sat, 20 Sep 2008 20:35:44 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH] x86: use round_jiffies() for the corruption check timer
-Message-ID: <20080920203544.53a5148e@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Sun, 21 Sep 2008 00:05:03 -0400
+Date: Sat, 20 Sep 2008 21:04:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block: Find bio sector offset given idx and offset
+Message-Id: <20080920210444.f083da7b.akpm@linux-foundation.org>
+In-Reply-To: <yq17i96nyom.fsf@sermon.lab.mkp.net>
+References: <yq17i96nyom.fsf@sermon.lab.mkp.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 20 Sep 2008 20:13:29 -0400 "Martin K. Petersen" <martin.petersen@oracle.com> wrote:
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 20 Sep 2008 20:32:43 -0700
-Subject: [PATCH] x86: use round_jiffies() for the corruption check timer
+> @@ -1300,6 +1300,30 @@ struct bio_pair *bio_split(struct bio *bi, mempool_t *pool, int first_sectors)
+>  	return bp;
+>  }
+>  
+> +sector_t bio_sector_offset(struct bio *bio, unsigned short index, unsigned int offset)
+> +{
+> +	struct bio_vec *bv;
+> +	unsigned int sector_sz = bio->bi_bdev->bd_disk->queue->hardsect_size;
+> +	sector_t sectors;
+> +	int i;
+> +
+> +	sectors = 0;
+> +
+> +	BUG_ON(index >= bio->bi_vcnt);
+> +
+> +	bio_for_each_segment(bv, bio, i) {
+> +		if (i == index) {
+> +			if (offset > bv->bv_offset)
+> +				sectors += (offset - bv->bv_offset) / sector_sz;
+> +			return sectors;
+> +		}
+> +
+> +		sectors += bv->bv_len / sector_sz;
+> +	}
+> +
+> +	BUG();
+> +}
+> +EXPORT_SYMBOL(bio_sector_offset);
 
-the exact timing of the corruption check isn't too important (it's once a
-minute timer), use round_jiffies() to align it and avoid extra wakeups.
+Please avoid sending out kenrel-wide exported-to-modules utility
+functions which have no documentation.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-CC: Hugh Dickins <hugh@veritas.com>
-CC: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/kernel/setup.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index d5bd679..a9998cb 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -715,7 +715,7 @@ void check_for_bios_corruption(void)
- static void periodic_check_for_corruption(unsigned long data)
- {
- 	check_for_bios_corruption();
--	mod_timer(&periodic_check_timer, jiffies + corruption_check_period*HZ);
-+	mod_timer(&periodic_check_timer, round_jiffies(jiffies + corruption_check_period*HZ));
- }
- 
- void start_periodic_check_for_corruption(void)
--- 
-1.5.5.1
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Not only is it a bad thing from a maintainability and reliability point
+of view - it also makes code review significantly less effective.
