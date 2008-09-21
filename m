@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752957AbYIUTXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbYIUTew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752957AbYIUTXY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 15:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYIUTXP
+	id S1752750AbYIUTew (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 15:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYIUTek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 15:23:15 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:58026 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751052AbYIUTXO (ORCPT
+	Sun, 21 Sep 2008 15:34:40 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:54213 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbYIUTej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 15:23:14 -0400
-Message-ID: <48D69F5A.9010201@ru.mvista.com>
-Date: Sun, 21 Sep 2008 23:24:10 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Mark de Wever <koraq@xs4all.nl>
-Cc: Gadi Oxman <gadio@netvision.net.il>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] IDE-TAPE NULL terminate strings.
-References: <20080921185138.GA16310@localhost>
-In-Reply-To: <20080921185138.GA16310@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Sun, 21 Sep 2008 15:34:39 -0400
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
+	restart.
+From: Marcel Holtmann <holtmann@linux.intel.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ipw2100-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
+       yi.zhu@intel.com, reinette.chatre@intel.com, jgarzik@pobox.com,
+       linville@tuxdriver.com, davem@davemloft.net
+In-Reply-To: <20080921172316.GA6306@2ka.mipt.ru>
+References: <20080921172316.GA6306@2ka.mipt.ru>
+Content-Type: text/plain
+Date: Sun, 21 Sep 2008 21:35:31 +0200
+Message-Id: <1222025731.6782.117.camel@californication>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi Evgeniy,
 
-Mark de Wever wrote:
+> Following bug exists in the ipw2100 driver/firmware for years and Intel
+> folks never responded to zillions bugzilla entries and forum notices in
+> the internet with some patch or firmware update (although did request
+> dmesg and debug info, and received them).
+> 
+> ipw2100: Fatal interrupt. Scheduling firmware restart.
+> 
+> I believe it is a firmware bug because after driver is unloaded and
+> loaded back again wireless adapter usually starts working (for small
+> amount of time though). My conspiracy feeling can suggest, that it may
+> be kind of a force to buy a new one, or trivial error in the firmware,
+> when it writes to the same place in the flash and essentially given cell
+> became dead or whatever else.
 
-> After updating my kernel to 2.6.26 the output for the ide-tape drive
-> during booting is garbled eg
-> ide-tape: hdd <-> ht0: Seagate <98>ß8A51|1À<81>Üº<98>ß STT20000A rev 8A51|1À<81>Üº<98>ß
+I don't know if it is for this bug or a different one, but Matthew
+Garrett seem to have some pending patches. At least that is what he told
+me at PlumbersConf. Lets see if these patches do help. And please follow
+up with Arjan's suggestion and put a WARN_ON in the upstream code
+instead of waving CONFIG_BROKEN around.
 
-> This patch fixes the problem by NULL terminating the strings.
+Regards
 
-> Regards,
-> Mark de Wever
+Marcel
 
-> PS: please CC me since I'm not subscribed.
-> PPS: there are more problems with my tapestreamer in 2.6.26 but I'll
-> post a separate message for that.
 
-> Signed-off-by: Mark de Wever <koraq@xs4all.nl>
-
-> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-> index 1bce84b..fd87b43 100644
-> --- a/drivers/ide/ide-tape.c
-> +++ b/drivers/ide/ide-tape.c
-> @@ -2354,6 +2354,10 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
->  	ide_fixstring(product_id, 18, 0);
->  	ide_fixstring(fw_rev, 6, 0);
->  
-> +	fw_rev[4] = '\0';
-> +	vendor_id[8] = '\0';
-> +	product_id[16] = '\0';
-> +
->  	printk(KERN_INFO "ide-tape: %s <-> %s: %s %s rev %s\n",
->  			drive->name, tape->name, vendor_id, product_id, fw_rev);
-
-    This is not quite correct way to tackle this.  More correct would be to 
-fix the format specifiers in this printk() to only print no more than N string 
-characters like this:
-
-  	printk(KERN_INFO "ide-tape: %s <-> %s: %.8s %.16s rev %.4s\n",
-  		drive->name, tape->name, vendor_id, product_id, fw_rev);
-
-MBR, Sergei
