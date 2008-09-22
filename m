@@ -1,95 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYIVK3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbYIVKcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752827AbYIVK3Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 06:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYIVK3A
+	id S1752757AbYIVKcV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 06:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbYIVKcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 06:29:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45691 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751497AbYIVK3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 06:29:00 -0400
-Date: Mon, 22 Sep 2008 12:28:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: robert.richter@amd.com, akpm@linux-foundation.org,
-       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] oprofile: BUG: using smp_processor_id() in
-	preemptible code
-Message-ID: <20080922102834.GA32692@elte.hu>
-References: <1221908320-7183-1-git-send-email-righi.andrea@gmail.com> <20080922102524.GB30137@elte.hu>
+	Mon, 22 Sep 2008 06:32:13 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:40597 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751570AbYIVKcM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 06:32:12 -0400
+From: Srinivasa Ds <srinivasa@in.ibm.com>
+Organization: IBM
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, paulus@samba.org,
+       roland@redhat.com, linuxppc-dev@ozlabs.org, mingo@elte.hu,
+       linux-parisc@vger.kernel.org
+Subject: [RFC][PATCH] Demultiplexing SIGTRAP signal
+Date: Mon, 22 Sep 2008 16:02:32 +0530
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080922102524.GB30137@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200809221602.32616.srinivasa@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Currently a SIGTRAP signal can denote any one of below reasons.
+	- Breakpoint hit
+	- H/W debug register hit
+	- Single step
+	- SIGTRAP signal sent through kill() or rasie()
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Architectures like powerpc/parisc provides infrastructure to demultiplex
+SIGTRAP signal by passing down the information for receiving SIGTRAP through
+si_code of siginfot_t structure. Here is an attempt is generalise this 
+infrastructure by extending it to x86 and x86_64 archs. 
 
-> > +	local_irq_save(flags);
-> >  	__get_cpu_var(switch_index) = 0;
-> > +	local_irq_restore(flags);
-> 
-> either use __raw_get_cpu_var() if we are for sure not preemptible 
-> here, or fix the preemption status of this codepath.
+Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
 
-i've applied the patch below instead to tip/oprofile - agreed?
 
-	Ingo
 
------------->
->From 45f197ade73ba95681b9803680c75352fc0a1c0a Mon Sep 17 00:00:00 2001
-From: Andrea Righi <righi.andrea@gmail.com>
-Date: Sat, 20 Sep 2008 12:58:40 +0200
-Subject: [PATCH] x86, oprofile: BUG: using smp_processor_id() in preemptible code
-
-Add __raw access before setting per cpu variable switch_index, to avoid
-the following BUG:
-
-[  449.166827] BUG: using smp_processor_id() in preemptible [00000000] code: modprobe/6998
-[  449.166848] caller is op_nmi_init+0xf0/0x2b0 [oprofile]
-[  449.166855] Pid: 6998, comm: modprobe Not tainted 2.6.27-rc5-mm1 #29
-[  449.166860] Call Trace:
-[  449.166872]  [<ffffffff80362d67>] debug_smp_processor_id+0xd7/0xe0
-[  449.166887]  [<ffffffffa00181c0>] op_nmi_init+0xf0/0x2b0 [oprofile]
-[  449.166902]  [<ffffffffa0018000>] oprofile_init+0x0/0x60 [oprofile]
-[  449.166915]  [<ffffffffa00180a9>] oprofile_arch_init+0x9/0x30 [oprofile]
-[  449.166928]  [<ffffffffa001801e>] oprofile_init+0x1e/0x60 [oprofile]
-[  449.166937]  [<ffffffff8020903b>] _stext+0x3b/0x160
-[  449.166946]  [<ffffffff80477985>] __mutex_unlock_slowpath+0xe5/0x190
-[  449.166955]  [<ffffffff80262c1a>] trace_hardirqs_on_caller+0xca/0x140
-[  449.166965]  [<ffffffff8026f7fc>] sys_init_module+0xdc/0x210
-[  449.166972]  [<ffffffff8020b7cb>] system_call_fastpath+0x16/0x1b
-
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-Acked-by: Robert Richter <robert.richter@amd.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/oprofile/nmi_int.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/ia64/include/asm/siginfo.h    |    5 -----
+ arch/powerpc/include/asm/siginfo.h |    5 -----
+ arch/x86/kernel/traps_32.c         |   19 +++++++++++++++++--
+ arch/x86/kernel/traps_64.c         |    7 ++++++-
+ include/asm-generic/siginfo.h      |    2 ++
+ include/asm-parisc/siginfo.h       |    5 -----
+ 6 files changed, 25 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index fb4902b..4108d02 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -551,7 +551,7 @@ int __init op_nmi_init(struct oprofile_operations *ops)
+Index: linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
++++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+@@ -113,11 +113,6 @@ typedef struct siginfo {
+ #undef NSIGSEGV
+ #define NSIGSEGV	3
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/powerpc/include/asm/siginfo.h
++++ linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
+@@ -15,11 +15,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_32.c
++++ linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
+@@ -890,6 +890,7 @@ void __kprobes do_int3(struct pt_regs *r
+ void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ {
+ 	struct task_struct *tsk = current;
++	struct siginfo info;
+ 	unsigned int condition;
+ 
+ 	trace_hardirqs_fixup();
+@@ -935,8 +936,22 @@ void __kprobes do_debug(struct pt_regs *
+ 			goto clear_TF_reenable;
  	}
  
- 	/* default values, can be overwritten by model */
--	__get_cpu_var(switch_index) = 0;
-+	__raw_get_cpu_var(switch_index) = 0;
- 	ops->create_files = nmi_create_files;
- 	ops->setup = nmi_setup;
- 	ops->shutdown = nmi_shutdown;
+-	/* Ok, finally something we can handle */
+-	send_sigtrap(tsk, regs, error_code);
++	tsk->thread.trap_no = 1;
++	tsk->thread.error_code = error_code;
++
++	memset(&info, 0, sizeof(info));
++	info.si_signo = SIGTRAP;
++	if (condition & DR_STEP)
++		info.si_code = TRAP_TRACE;
++	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		info.si_code = TRAP_HWBKPT;
++	else
++		info.si_code = TRAP_BRKPT;
++	/* User-mode ip? */
++	info.si_addr = user_mode_vm(regs) ? (void __user *) regs->ip : NULL;
++
++	/* Send us the fake SIGTRAP */
++	force_sig_info(SIGTRAP, &info, tsk);
+ 
+ 	/*
+ 	 * Disable additional traps. They'll be re-enabled when
+Index: linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_64.c
++++ linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
+@@ -936,7 +936,12 @@ asmlinkage void __kprobes do_debug(struc
+ 	tsk->thread.error_code = error_code;
+ 	info.si_signo = SIGTRAP;
+ 	info.si_errno = 0;
+-	info.si_code = TRAP_BRKPT;
++	if (condition & DR_STEP)
++		info.si_code = TRAP_TRACE;
++	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		info.si_code = TRAP_HWBKPT;
++	else
++		info.si_code = TRAP_BRKPT;
+ 	info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
+ 	force_sig_info(SIGTRAP, &info, tsk);
+ 
+Index: linux-2.6.27-rc7/include/asm-generic/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-generic/siginfo.h
++++ linux-2.6.27-rc7/include/asm-generic/siginfo.h
+@@ -199,6 +199,8 @@ typedef struct siginfo {
+  */
+ #define TRAP_BRKPT	(__SI_FAULT|1)	/* process breakpoint */
+ #define TRAP_TRACE	(__SI_FAULT|2)	/* process trace trap */
++#define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
++#define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint or watchpoint 
+*/
+ #define NSIGTRAP	2
+ 
+ /*
+Index: linux-2.6.27-rc7/include/asm-parisc/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-parisc/siginfo.h
++++ linux-2.6.27-rc7/include/asm-parisc/siginfo.h
+@@ -3,11 +3,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
