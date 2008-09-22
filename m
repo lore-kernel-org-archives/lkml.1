@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbYIVHBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbYIVHHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752657AbYIVHBo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 03:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbYIVHBf
+	id S1752201AbYIVHHe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 03:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYIVHH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 03:01:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51430
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751317AbYIVHBf (ORCPT
+	Mon, 22 Sep 2008 03:07:26 -0400
+Received: from pih-relay06.plus.net ([212.159.14.19]:47599 "EHLO
+	pih-relay06.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbYIVHH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 03:01:35 -0400
-Date: Mon, 22 Sep 2008 00:01:23 -0700 (PDT)
-Message-Id: <20080922.000123.172220747.davem@davemloft.net>
-To: airlied@gmail.com
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       chrisl@vmware.com, david.vrabel@csr.com
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <21d7e9970809212359y6876c405ub57dca3e9ee737e4@mail.gmail.com>
-References: <7lIhZC4hCxE.A.yj.E2q1IB@albercik>
-	<20080921.165159.67476441.davem@davemloft.net>
-	<21d7e9970809212359y6876c405ub57dca3e9ee737e4@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 22 Sep 2008 03:07:26 -0400
+Message-ID: <48D74431.8050805@yahoo.com>
+Date: Mon, 22 Sep 2008 08:07:29 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+MIME-Version: 1.0
+To: George Nychis <gnychis@cmu.edu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: printing current system time from kernel space
+References: <48D72AAD.3000805@cmu.edu>
+In-Reply-To: <48D72AAD.3000805@cmu.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Plusnet-Relay: 749085be226b19ad222f2064b01998b9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Dave Airlie" <airlied@gmail.com>
-Date: Mon, 22 Sep 2008 16:59:51 +1000
+George Nychis wrote:
+> I spent some time googling, but could not find out how or if it is 
+> possible to read the current system time in kernel space.  I could 
+> insert a printk() somewhere in usbdev_read() then.
 
-> I've reconstructed my boot timeline from message logs
-> 
-> Sep 3rd, I booted rawhide kernel 2.6.27-0.290.rc5.fc10.i686
+If that's what you want to do could you not turn on timestamps on printk 
+(CONFIG_PRINTK_TIME in the kernel hacking menu)?
 
-What upstream SHA1 is this based upon?
-
-> I suspended/resume a few times in between with no issues.
-> 
-> Sep 8th I booted my own 2.6.27-rc5 kernel based from
-> ec0c15afb41fd9ad45b53468b60db50170e22346
-> 
-> This got a corrupted e1000e checksum and every kernel since has.
-
-Ok.
+-- 
+Sitsofe | http://sucs.org/~sits/
