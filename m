@@ -1,71 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbYIVOQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbYIVOWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752982AbYIVOQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 10:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYIVOQt
+	id S1752660AbYIVOWX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 10:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYIVOWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 10:16:49 -0400
-Received: from sh.osrg.net ([192.16.179.4]:47255 "EHLO sh.osrg.net"
+	Mon, 22 Sep 2008 10:22:15 -0400
+Received: from main.gmane.org ([80.91.229.2]:47775 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752368AbYIVOQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 10:16:48 -0400
-Date: Mon, 22 Sep 2008 23:16:25 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] AMD IOMMU: revert "x86, AMD IOMMU: honor iommu=off
- instead of amd_iommu=off"
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080922140749.GY24392@amd.com>
-References: <20080922223457W.fujita.tomonori@lab.ntt.co.jp>
-	<20080922140749.GY24392@amd.com>
+	id S1752449AbYIVOWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 10:22:15 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
+ restart.
+Date: Mon, 22 Sep 2008 10:22:01 -0400
+Message-ID: <48D7AA09.8090202@tmr.com>
+References: <20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org> <20080921190050.GA20484@2ka.mipt.ru> <1222024444.3023.53.camel@johannes.berg> <20080921193809.GA8735@2ka.mipt.ru> <20080921124332.67ddc13a@infradead.org> <20080921202057.GB25052@2ka.mipt.ru> <20080921132753.5689b564@infradead.org> <20080921205706.GA24545@2ka.mipt.ru> <20080921233819.32714483@lxorguk.ukuu.org.uk> <20080921234403.GA17946@2ka.mipt.ru>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080922231619X.fujita.tomonori@lab.ntt.co.jp>
+X-Complaints-To: usenet@ger.gmane.org
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       ipw2100-devel@lists.sourceforge.net
+X-Gmane-NNTP-Posting-Host: pool-71-245-142-197.albyny.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080716 Fedora/1.1.11-1.fc9 SeaMonkey/1.1.11
+In-Reply-To: <20080921234403.GA17946@2ka.mipt.ru>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ipw2100-devel@lists.sourceforge.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 16:07:49 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> On Mon, Sep 22, 2008 at 10:35:08PM +0900, FUJITA Tomonori wrote:
-> > This is against tip/x86/iommu.
-> > 
-> > =
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Subject: [PATCH] AMD IOMMU: revert "x86, AMD IOMMU: honor iommu=off instead of amd_iommu=off"
-> > 
-> > This reverts:
-> > 
-> > commit 8b14518fadd9d5915827d86d5c10e602fedf042e
-> > Author: Joerg Roedel <joerg.roedel@amd.com>
-> > Date:   Thu Jul 3 19:35:09 2008 +0200
-> > 
-> >     x86, AMD IOMMU: honor iommu=off instead of amd_iommu=off
-> > 
-> >     This patch removes the amd_iommu=off kernel parameter and honors the generic
-> > 
-> >     iommu=off parameter for the same purpose.
-> > 
-> > 
-> > The above commit is wrong.
+Evgeniy Polyakov wrote:
+> On Sun, Sep 21, 2008 at 11:38:19PM +0100, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+>>>> still more complex than needed; a WARN_ON_ONCE() will be enough.
+>>> That allows to dump whatever number of warnings you want. The more we
+>>> have, the louder will be customers scream.
+>> But if Intel don't care then you can scream all you like 8)
 > 
-> It isn't. The user normally don't care about the type of IOMMU in the
-> system. So disabling it with iommu=off is the right way. To achieve what
-> you want its better to add iommu=gart and iommu=amd to the option
-> parser. This will be consistent with Calgary and SWIOTLB too.
+> That's what happens :)
+> 
+>> A WARN_ON_ONCE is sufficient to capture an idea of how many people it is
+>> effecting and maybe to figure out what the trigger is from their reports,
+>> at that point there is some chance to get it fixed (especially if its
+>> remotely triggerable ;))
+> 
+> Well, redhat, suse and ubuntu bugzillas happend to be not enough. Why do
+> you believe a single warning at a new place will be? or couple of tens
+> or whatever else? If it cares, it cares. If it does not...
+> 
+Has it occurred to you that YOU have a problem on YOUR maschine, and that your 
+patch would kill wireless for all the people who have the hardware on working 
+systems? My experience was somewhat like Denys' except I got no notice, I just 
+found that after an update the wireless worked solidly, and continued to do so 
+until that laptop because obsolete and slow, and went to live with one of the 
+teens in my family.
 
-I'm not talking about what the best way to disable IOMMUs for
-users. I'm talking about how the current code works. It's a different
-topic. If you want to fix this, that's fine.
+> I attracted vendor's attention, vendor told me to fix it myself and to
+> create a patch to fill an entry in another 'bugzilla', so that vendor
+> could get results and probably decide to walk down from the cloud and
+> fix it.
+> 
+It would be good to gather data rather than claim it doesn't work, because for 
+some set of machines it certainly does.
 
-I just pointed out:
+> So, if they do not care, I do not care about their care. That's the
+> deal. I will try to find a workaround, even if it is a real crap,
+> fortunately other users will not strike this bug too frequently.
+> 
+My experience with laptops has been that you fiddle with power saving, and more, 
+and more, until you find the tricks which make the laptop save power by 
+disabling something you need, like network or display. At least that's been both 
+my practice and observation, that not every machine responds well to every power 
+saving trick.
 
-- You think that iommu=off and amd_iommu=off worked in the same way,
-but they didn't.
+Have you checked for a BIOS update for the machine? Tried disabling all power 
+saving settings and seeing if that changes the problem? I would normally assume 
+you have, but you seem convinced that the bug is in the firmware and you're 
+going to get it fixed. It may be a firmware bug, but if something in your system 
+is triggering it, and most people don't have the problem, you might investigate 
+a solution other than beating on Intel.
 
-- This commit removed the useful feature.
-
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
