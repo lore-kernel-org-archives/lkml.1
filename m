@@ -1,116 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYIVNYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbYIVN0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYIVNYw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 09:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbYIVNYn
+	id S1753263AbYIVN0r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 09:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbYIVN0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 09:24:43 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:10969 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751933AbYIVNYn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 09:24:43 -0400
-Message-ID: <48D79CD5.5000605@ru.mvista.com>
-Date: Mon, 22 Sep 2008 17:25:41 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Mon, 22 Sep 2008 09:26:35 -0400
+Received: from lucidpixels.com ([75.144.35.66]:39146 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752076AbYIVN0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 09:26:34 -0400
+Date: Mon, 22 Sep 2008 09:26:33 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Brian Rademacher <rad@radfiles.net>
+cc: linux-ide@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
+In-Reply-To: <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>
+Message-ID: <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan>
+References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA> <alpine.DEB.1.10.0809220404400.18908@p34.internal.lan> <5A4A9A3B0AAA4A20A33BC2D578F5F75F@909927SOSLA> <alpine.DEB.1.10.0809220828490.23159@p34.internal.lan> <5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>
+ <alpine.DEB.1.10.0809220903400.23159@p34.internal.lan> <4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA> <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: bzolnier@gmail.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>
-Subject: Re: [PATCH 06/22] ide-tape: struct idetape_tape_t: remove unused
- members
-References: <1202132440-26648-1-git-send-email-petkovbb@gmail.com> <1202132440-26648-7-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1202132440-26648-7-git-send-email-petkovbb@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+>From Brian's earlier e-mail:
 
-Borislav Petkov wrote:
+> > I filed this kernel bug:
+> > https://bugzilla.redhat.com/show_bug.cgi?id=462425
 
-> - last_frame_position: only being written to once
-> - firmware_revision, product_id, vendor_id: used once, remove from struct
->   idetape_tape_t and deal with them locally
-> - firmware_revision_num: only written to once
-> - tape_still_time_begin: completely unused
-> - tape_still_time: never written to; remove corresponding code chunk
-> - uncontrolled_last_pipeline_head: only once written to
-> - blocks_in_buffer: only written to
 
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+On Mon, 22 Sep 2008, Justin Piszcz wrote:
 
-    Late complaint but anyway... :-)
-
-> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-> index e0e8184..126e8a9 100644
-> --- a/drivers/ide/ide-tape.c
-> +++ b/drivers/ide/ide-tape.c
-> @@ -399,11 +397,6 @@ typedef struct ide_tape_obj {
->  	int avg_size;
->  	int avg_speed;
->  
-> -	char vendor_id[10];
-> -	char product_id[18];
-> -	char firmware_revision[6];
-> -	int firmware_revision_num;
-> -
->  	/* the door is currently locked */
->  	int door_locked;
->  	/* the tape hardware is write protected */
-
-[...]
-
-> @@ -3438,9 +3419,9 @@ static int idetape_identify_device (ide_drive_t *drive)
->  
->  static void idetape_get_inquiry_results(ide_drive_t *drive)
->  {
-> -	char *r;
->  	idetape_tape_t *tape = drive->driver_data;
->  	idetape_pc_t pc;
-> +	char fw_rev[6], vendor_id[10], product_id[18];
->  
->  	idetape_create_inquiry_cmd(&pc);
->  	if (idetape_queue_pc_tail(drive, &pc)) {
-> @@ -3448,20 +3429,16 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
->  				tape->name);
->  		return;
->  	}
-> -	memcpy(tape->vendor_id, &pc.buffer[8], 8);
-> -	memcpy(tape->product_id, &pc.buffer[16], 16);
-> -	memcpy(tape->firmware_revision, &pc.buffer[32], 4);
-> -
-> -	ide_fixstring(tape->vendor_id, 10, 0);
-> -	ide_fixstring(tape->product_id, 18, 0);
-> -	ide_fixstring(tape->firmware_revision, 6, 0);
-> -	r = tape->firmware_revision;
-> -	if (*(r + 1) == '.')
-> -		tape->firmware_revision_num = (*r - '0') * 100 +
-> -			(*(r + 2) - '0') * 10 +	*(r + 3) - '0';
-> +	memcpy(vendor_id, &pc.buffer[8], 8);
-> +	memcpy(product_id, &pc.buffer[16], 16);
-> +	memcpy(fw_rev, &pc.buffer[32], 4);
-> +
-> +	ide_fixstring(vendor_id, 10, 0);
-> +	ide_fixstring(product_id, 18, 0);
-> +	ide_fixstring(fw_rev, 6, 0);
-
-    It was wrong to call ide_fixstring() on unterminated strings and expecting 
-them to become terminated strings after that; plus it was useless to add 2 
-characters padding at the end. When these variables were the fields of 'struct 
-ide_tape_obj', those bytes were 0 because of the variable of this type being a 
-static array. When they became local variables, they got garbage bytes at the 
-end which ide_fixdriveid() either honestly copied when compressing spaces or 
-just left where they were...
-
-> +
->  	printk(KERN_INFO "ide-tape: %s <-> %s: %s %s rev %s\n",
-
-    Should've rather changed the string format to print only N characters max...
-
-MBR, Sergei
+> I could not agree more.
+>
+> CC'ing the relevant mailing lists to see if someone out there has any idea 
+> what more we could do as this has been affecting you (more so than myself, 
+> but I would still like to get some sort of resolution as well, as it still 
+> happens to me too):
+>
+> Similar, but not the same issue:
+>
+> Sep 17 20:20:05 p34 kernel: [1422169.440538] ata5.00: exception Emask 0x0 
+> SAct 0x0 SErr 0x0 action 0x6 frozen
+> Sep 17 20:20:05 p34 kernel: [1422169.440549] ata5.00: cmd 
+> b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
+> Sep 17 20:20:05 p34 kernel: [1422169.440551]          res 
+> 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> Sep 17 20:20:05 p34 kernel: [1422169.440556] ata5.00: status: { DRDY }
+> Sep 17 20:20:05 p34 kernel: [1422169.440561] ata5: hard resetting link
+> Sep 17 20:20:06 p34 kernel: [1422169.744980] ata5: SATA link up 3.0 Gbps 
+> (SStatus 123 SControl 300)
+> Sep 17 20:20:06 p34 kernel: [1422169.770448] ata5.00: configured for UDMA/133
+> Sep 17 20:20:06 p34 kernel: [1422169.770461] ata5: EH complete
+>
+> (2.6.23.3) above
+>
+> On Mon, 22 Sep 2008, Brian Rademacher wrote:
+>
+>> Works fine...Also works under heavy load with only 4 drives.  I could only 
+>> get it to fail by doing a raid resync with 4 drives, except for the newer 
+>> kernel, which dies pretty easily..
+>> 
+>> What is really frustrating about it is that short of the bugzilla bug I 
+>> submitted, I don't know who would be willing to listen...A lot of the 
+>> google hits when searching "action 0x2 frozen" are related to a particular 
+>> CDROM drive, or general hardware failure.  I really don't think that is the 
+>> case here, but I bet most of the kernel people think the same thing, so 
+>> they have no reason to care...
+>> 
+>> 
+>> Sent: Monday, September 22, 2008 7:04 AM
+>> Subject: Re: Hardware RAID
+>> 
+>> 
+>>> What about if you just 'stress' one drive?
+>>> 
+>>> 1. dd if=/dev/sda of=/dev/null bs=1M &
+>>> Does it do it?
+>>> 2. Same thing for sdb?
+>>> 
+>>> Justin.
+>>> 
+>>> On Mon, 22 Sep 2008, Brian Rademacher wrote:
+>>> 
+>>>> I killed smartd for testing.  Other than that, it seems entirely load 
+>>>> based. Anything disk intensive (backups, raid resync, a bunch of spam 
+>>>> comes in at once, etc.) makes it fail...
+>>>> 
+>>>> Sent: Monday, September 22, 2008 6:29 AM
+>>>> Subject: Re: Hardware RAID
+>>>> 
+>>>> 
+>>>>> While the error happens for me as well it does NOT happen with that much 
+>>>>> consistency, if I were you, I would start testing different kernels and 
+>>>>> run it in single user mode (or as close to it as you can) to see if you 
+>>>>> can narrow down what is causing it, also boot knoppix and see if it 
+>>>>> occurs-- ?
+>>>>> 
+>>>>> Justin.
+>>>>> 
+>>>>> On Mon, 22 Sep 2008, Brian Rademacher wrote:
+>>>>> 
+>>>>>> Doesn't look like a very powerful RAID card, so I may pass on it.  I 
+>>>>>> don't think it will have the BW to run as fast as the software RAID 
+>>>>>> currently does since it's only a 64bit/66mhz PCI slot...
+>>>>>> 
+>>>>>> I hate to do the hardware RAID thing, but this error is killing me:
+>>>>>> Sep 21 12:05:19 radfiles kernel: ata1.00: exception Emask 0x0 SAct 0x1 
+>>>>>> SErr 0x0 action 0x2 frozen
+>>>>>> Sep 21 12:32:12 radfiles kernel: ata1.00: exception Emask 0x0 SAct 0x1 
+>>>>>> SErr 0x0 action 0x2 frozen
+>>>>>> Sep 21 12:41:34 radfiles kernel: ata1.00: exception Emask 0x0 SAct 0x1 
+>>>>>> SErr 0x0 action 0x2 frozen
+>>>>>> Sep 21 12:58:22 radfiles kernel: ata1.00: exception Emask 0x0 SAct 0x1 
+>>>>>> SErr 0x0 action 0x2 frozen
+>>>>>> Sep 21 13:11:04 radfiles kernel: ata1.00: exception Emask 0x0 SAct 0x1 
+>>>>>> SErr 0x0 action 0x2 frozen
+>>>>>> Sep 21 13:23:55 radfiles kernel: ata1.00: exception Emask 0x0 SAct 0x1 
+>>>>>> SErr 0x0 action 0x2 frozen
+>>>>>> Sep 21 13:54:23 radfiles kernel: ata1.00: exception Emask 0x0 SAct 0x1 
+>>>>>> SErr 0x0 action 0x2 frozen
+>>>>>> Sep 21 15:15:04 radfiles kernel: ata1.00: exception Emask 0x0 SAct 0x1 
+>>>>>> SErr 0x0 action 0x2 frozen
+>>>>>> Sep 21 15:44:06 radfiles kernel: ata1.00: exception Emask 0x0 SAct 0x1 
+>>>>>> SErr 0x0 action 0x2 frozen
+>>>>>> Sep 21 21:15:12 radfiles kernel: ata1.00: exception Emask 0x0 SAct 0x1 
+>>>>>> SErr 0x0 action 0x2 frozen
+>>>>>> 
+>>>>>> And at this point, I can either regress to a 4 drive RAID and don't 
+>>>>>> update the kernel, or move forward with hardware...
+>>>>>> 
+>>>>>> I don't see a fix coming any time soon, but maybe I'll try one of the 
+>>>>>> latest F10 kernels just to see if anything has changed...
+>>>>>> 
+>>>>>> 
+>>>>>> ----- Original Message ----- From: "Justin Piszcz" Sent: Monday, 
+>>>>>> September 22, 2008 2:05 AM
+>>>>>> Subject: Re: Hardware RAID
+>>>>>> 
+>>>>>> 
+>>>>>>> 
+>>>>>>> 
+>>>>>>> On Sun, 21 Sep 2008, Brian Rademacher wrote:
+>>>>>>> 
+>>>>>>>> The RAID gods must have been thinking about me.  My MB has one of 
+>>>>>>>> these funny slots and supports ZCR, so for the price I'm going to 
+>>>>>>>> jump ship. I would guess (and hope) this solves the problem, 
+>>>>>>>> especially since I'll have to reconstruct the entire array...
+>>>>>>>> 
+>>>>>>>> http://cgi.ebay.com/2113600-R-Adaptec-Serial-ATA-RAID-2025SA-Storage_W0QQitemZ250295938636QQihZ015QQcategoryZ167QQssPageNameZWDVWQQrdZ1QQcmdZViewItem
+>>>>>>> 
+>>>>>>> Hm cool-- let me know how it goes.
+>
