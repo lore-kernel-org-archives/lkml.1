@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbYIVNj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbYIVNyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbYIVNj1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 09:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYIVNjU
+	id S1752760AbYIVNyw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 09:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYIVNyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 09:39:20 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:33391 "EHLO
-	orion.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752139AbYIVNjT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 09:39:19 -0400
-Message-ID: <48D79FFD.1060102@cateee.net>
-Date: Mon, 22 Sep 2008 15:39:09 +0200
-From: "Giacomo A. Catenazzi" <cate@cateee.net>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Mon, 22 Sep 2008 09:54:41 -0400
+Received: from a.mx.secunet.com ([213.68.205.161]:53600 "EHLO a.mx.secunet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752191AbYIVNyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 09:54:40 -0400
+Date: Mon, 22 Sep 2008 15:54:40 +0200
+From: Steffen Klassert <steffen.klassert@secunet.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: David Miller <davem@davemloft.net>, dwalker@mvista.com,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
+Message-ID: <20080922135440.GC9549@secunet.com>
+References: <20080920.125949.193703969.davem@davemloft.net> <E1KhI4n-0002Fk-7C@gondolin.me.apana.org.au> <20080921094628.GA22453@secunet.com> <20080922082309.GA25739@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Chris Li <lkml@chrisli.org>, Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: diet-kconfig: a script to trim unneeded kconfigs
-References: <s5hbpyny7bl.wl%tiwai@suse.de>	<20080918122541.2c3c7b39@areia.chehab.org>	<48D27734.3040600@cateee.net>	<alpine.LFD.1.10.0809181154020.12224@bombadil.infradead.org>	<48D36D02.4090003@cateee.net>	<s5hy71oyviu.wl%tiwai@suse.de>	<70318cbf0809191655m89e4b4fo68c3693487afed98@mail.gmail.com> <s5hk5d4xzw0.wl%tiwai@suse.de>
-In-Reply-To: <s5hk5d4xzw0.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080922082309.GA25739@gondor.apana.org.au>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 22 Sep 2008 13:54:38.0359 (UTC) FILETIME=[C0F5AA70:01C91CBA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> At Fri, 19 Sep 2008 16:55:51 -0700,
-> Chris Li wrote:
+On Mon, Sep 22, 2008 at 04:23:09PM +0800, Herbert Xu wrote:
 > 
->> I avoid arch/ and firmware/ because it is nasty. I figure module in
->> arch/ is small enough I don't mind building it. And the firmware directory,
->> if I don't build the module loads it. Those firmware will automatically skipped
->> any way.
+> > With my test environment (two quad core boxes) I get with IPSEC
+> > aes192-sha1 and one tcp stream a throughput of about 600 Mbit/s
+> > compared to about 200 Mbit/s without the parallel processing. 
 > 
-> Agreed.
-> 
->> The little tricky part is some thing like this:
->> ========================
->> ifeq ($(CONFIG_BLK_DEV_CMD640), m)
->>         obj-m += cmd640.o
->> endif
->> ========================
->> Internally it get convert it into:
->> "obj-$(CONFIG_BLK_DEV_CMD640) += cmd640.o"
+> Yes this would definitely help IPsec.  However, I'm not so sure
+> of its benefit to routing and other parts of networking.  That's
+> why I'd rather have this sort of hack stay in the crypto system
+> where it's isolated rather than having it proliferate throughout
+> the network stack.
 
-Are you sure?
-I.e. if you set CONFIG_BLK_DEV_CMD640=y, you see that
-the two constructs gives different results.
-
-If the makefile author did such complex construct, I
-really think there is a reason ;-)
-
-ciao
-	cate
-
+The crypto benefits the most of course, but routing and xfrm lookups
+could benefit on bigger networks too. However, the method to bring
+the packets back to order is quite generic and could be used
+even in the crypto system. The important thing for me is that we
+can run in parallel even if we have just one flow.
 
 > 
-> This should be fixed in Makefile.
-> Care to submit a patch?
+> When the time comes to weed out this because all CPUs that matter
+> have encryption in hardware then it'll be much easier to delete a
+> crypto algorithm as opposed to removing parts of the network
+> infrastructure :)
 > 
-> 
-> Takashi
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
+Yes, if you think about how to remove it I agree here.
