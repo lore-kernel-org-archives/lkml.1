@@ -1,152 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbYIVKzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYIVK41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753224AbYIVKzx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 06:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYIVKzl
+	id S1753470AbYIVK41 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 06:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYIVK4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 06:55:41 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36285 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbYIVKzk (ORCPT
+	Mon, 22 Sep 2008 06:56:19 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55268 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752040AbYIVK4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 06:55:40 -0400
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       Eric Sandeen <sandeen@redhat.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/10] freeze feature ver 1.12
-Message-Id: <20080922195505t-sato@mail.jp.nec.com>
+	Mon, 22 Sep 2008 06:56:18 -0400
+Date: Mon, 22 Sep 2008 20:02:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 5/13] memcg: cleanup to make mapping null before unchage
+Message-Id: <20080922200204.d2548297.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:1K0086
-From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Mon, 22 Sep 2008 19:55:05 +0900
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch tries to make page->mapping to be NULL before
+mem_cgroup_uncharge_cache_page() is called.
 
-Eric Sandeen wrote:
-> Not a problem with your patch exactly, but I was just wondering; you
-> check here whether the sb returned from freeze_bdev is an ERR_PTR (as
-> does lock_fs()) - but, freeze_bdev never returns an error, does it?
-> ->write_super_lockfs is a void...
-> 
-> It really seems that at least we should be able to handle IO errors on
-> the freeze request, and tell the user "No, your filesystem was not
-> frozen..."?
+"page->mapping == NULL" is a good check for "whether the page is still
+radix-tree or not".
+This patch also adds BUG_ON() to mem_cgroup_uncharge_cache_page();
 
-I've changed the type of write_super_lockfs and unlockfs from "void" to
-"int" so that they can return an error.  In addition, I've changed ext3/4's
-write_super_lockfs and unlockfs so that they return an error in case of
-an I/O failure.  (Current journal_flush() called by
-ext3_write_super_lockfs() doesn't handle an I/O error sufficiently,
-but Kawai-san's patch (jbd-fix-error-handling-for-checkpoint-io.patch)
-in mm-tree will solve it soon.)
 
-On the other filesystems (xfs, jfs, reiserfs, gfs2) which implement
-write_super_lockfs and unlockfs, they always return 0 (success)
-to keep the current behavior.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Currently, ext3 in mainline Linux doesn't have the freeze feature which
-suspends write requests.  So, we cannot take a backup which keeps
-the filesystem's consistency with the storage device's features
-(snapshot and replication) while it is mounted.
-In many case, a commercial filesystem (e.g. VxFS) has
-the freeze feature and it would be used to get the consistent backup.
-If Linux's standard filesystem ext3 has the freeze feature, we can do it
-without a commercial filesystem.
+ mm/filemap.c    |    2 +-
+ mm/memcontrol.c |    1 +
+ mm/migrate.c    |   12 +++++++++---
+ 3 files changed, 11 insertions(+), 4 deletions(-)
 
-So I have implemented the ioctls of the freeze feature.
-I think we can take the consistent backup with the following steps.
-1. Freeze the filesystem with the freeze ioctl.
-2. Separate the replication volume or create the snapshot
-   with the storage device's feature.
-3. Unfreeze the filesystem with the unfreeze ioctl.
-4. Take the backup from the separated replication volume
-   or the snapshot.
+Index: mmotm-2.6.27-rc6+/mm/filemap.c
+===================================================================
+--- mmotm-2.6.27-rc6+.orig/mm/filemap.c
++++ mmotm-2.6.27-rc6+/mm/filemap.c
+@@ -116,12 +116,12 @@ void __remove_from_page_cache(struct pag
+ {
+ 	struct address_space *mapping = page->mapping;
+ 
+-	mem_cgroup_uncharge_cache_page(page);
+ 	radix_tree_delete(&mapping->page_tree, page->index);
+ 	page->mapping = NULL;
+ 	mapping->nrpages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	BUG_ON(page_mapped(page));
++	mem_cgroup_uncharge_cache_page(page);
+ 
+ 	/*
+ 	 * Some filesystems seem to re-dirty the page even after
+Index: mmotm-2.6.27-rc6+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc6+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc6+/mm/memcontrol.c
+@@ -859,6 +859,7 @@ void mem_cgroup_uncharge_page(struct pag
+ void mem_cgroup_uncharge_cache_page(struct page *page)
+ {
+ 	VM_BUG_ON(page_mapped(page));
++	VM_BUG_ON(page->mapping);
+ 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+ }
+ 
+Index: mmotm-2.6.27-rc6+/mm/migrate.c
+===================================================================
+--- mmotm-2.6.27-rc6+.orig/mm/migrate.c
++++ mmotm-2.6.27-rc6+/mm/migrate.c
+@@ -330,8 +330,6 @@ static int migrate_page_move_mapping(str
+ 	__inc_zone_page_state(newpage, NR_FILE_PAGES);
+ 
+ 	spin_unlock_irq(&mapping->tree_lock);
+-	if (!PageSwapCache(newpage))
+-		mem_cgroup_uncharge_cache_page(page);
+ 
+ 	return 0;
+ }
+@@ -378,7 +376,15 @@ static void migrate_page_copy(struct pag
+ #endif
+ 	ClearPagePrivate(page);
+ 	set_page_private(page, 0);
+-	page->mapping = NULL;
++	/* page->mapping contains a flag for PageAnon() */
++	if (PageAnon(page)) {
++		/* This page is uncharged at try_to_unmap(). */
++		page->mapping = NULL;
++	} else {
++		/* Obsolete file cache should be uncharged */
++		page->mapping = NULL;
++		mem_cgroup_uncharge_cache_page(page);
++	}
+ 
+ 	/*
+ 	 * If any waiters have accumulated on the new page then
 
-[PATCH 1/10] Fix error handling of write_super_lockfs/unlockfs (VFS)
-  Changed the type of write_super_lockfs and unlockfs from "void"
-  to "int" so that they can return an error. 
-
-[PATCH 2/10] Fix error handling in write_super_lockfs/unlockfs (ext3)
-  Changed write_super_lockfs/unlockfs so that they return
-  an error in case of an I/O failure.
-
-[PATCH 3/10] Fix error handling in write_super_lockfs/unlockfs (ext4)
-  Changed write_super_lockfs/unlockfs so that they return
-  an error in case of an I/O failure.
-
-[PATCH 4/10]-[PATCH 7/10] Fix error handling in write_super_lockfs/unlockfs
-                          (xfs, reiserfs, gfs2, jfs)
-  Changed write_super_lockfs/unlockfs so that they always return
-  0 (success) to keep a current behavior.
-
-[PATCH 8/10] Implement generic freeze feature
-  The ioctls for the generic freeze feature are below.
-  o Freeze the filesystem
-    int ioctl(int fd, int FIFREEZE, arg)
-      fd: The file descriptor of the mountpoint
-      FIFREEZE: request code for the freeze
-      arg: Ignored
-      Return value: 0 if the operation succeeds. Otherwise, -1
-
-  o Unfreeze the filesystem
-    int ioctl(int fd, int FITHAW, arg)
-      fd: The file descriptor of the mountpoint
-      FITHAW: request code for unfreeze
-      arg: Ignored
-      Return value: 0 if the operation succeeds. Otherwise, -1
-
-[PATCH 9/10] Remove XFS specific ioctl interfaces for freeze feature
-  It removes XFS specific ioctl interfaces and request codes
-  for freeze feature.
-  This patch has been supplied by David Chinner.
-
-[PATCH 10/10] Add timeout feature
-  The timeout feature is added to "freeze ioctl" to solve a deadlock
-  when the freezer accesses a frozen filesystem. And new ioctl
-  to reset the timeout period is added to extend the timeout period.
-  For example, the freezer resets the timeout period to 10 seconds every 5
-  seconds.  In this approach, even if the freezer causes a deadlock by
-  accessing the frozen filesystem, it will be solved by the timeout
-  in 10 seconds and the freezer will be able to recognize that
-  at the next reset of timeout period.
-  o Freeze the filesystem
-    int ioctl(int fd, int FIFREEZE, long *timeout_sec)
-      fd: The file descriptor of the mountpoint
-      FIFREEZE: request code for the freeze
-      timeout_sec: the timeout period in seconds
-               If it's 0 or 1, the timeout isn't set.
-               This special case of "1" is implemented to keep
-               the compatibility with XFS applications.
-      Return value: 0 if the operation succeeds. Otherwise, -1
-
-  o Reset the timeout period
-    This is useful for the application to set the timeout_sec more accurately.
-    For example, the freezer resets the timeout_sec to 10 seconds every 5
-    seconds.  In this approach, even if the freezer causes a deadlock
-    by accessing the frozen filesystem, it will be solved by the timeout
-    in 10 seconds and the freezer can recognize that at the next reset
-    of timeout_sec.
-    int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeout_sec)
-      fd:file descriptor of mountpoint
-      FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
-      timeout_sec: new timeout period in seconds
-      Return value: 0 if the operation succeeds. Otherwise, -1
-      Error number: If the filesystem has already been unfrozen,
-                    errno is set to EINVAL.
-
-Any comments are very welcome.
-
-Cheers, Takashi
