@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbYIVXQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbYIVXRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821AbYIVXQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 19:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYIVXQt
+	id S1754983AbYIVXRZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 19:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYIVXRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 19:16:49 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:5679 "EHLO
-	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753543AbYIVXQs (ORCPT
+	Mon, 22 Sep 2008 19:17:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51471
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753543AbYIVXRN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 19:16:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references:x-gmailtapped-by;
-	b=kwyr31QJFn2KRC3pNs5q0KyE6nodJDm+1MU0brXRsPXnA+MiseviEoRr7wLpFRMbO
-	YC+WxRcy9w8bJI82AAv1Q==
-Message-ID: <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com>
-Date: Mon, 22 Sep 2008 16:16:41 -0700
-From: "Martin Bligh" <mbligh@google.com>
-To: "Masami Hiramatsu" <mhiramat@redhat.com>
-Subject: Re: Unified tracing buffer
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>, od@novell.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>
-In-Reply-To: <48D81B5F.2030702@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 22 Sep 2008 19:17:13 -0400
+Date: Mon, 22 Sep 2008 16:17:01 -0700 (PDT)
+Message-Id: <20080922.161701.159153918.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, linville@tuxdriver.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Wireless Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
-	 <48D7F5E8.3000705@redhat.com>
-	 <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com>
-	 <48D81B5F.2030702@redhat.com>
-X-GMailtapped-By: 172.24.198.101
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> One thing that I think is still important is to have a unified timestamp
->> mechanism on everything, so we can co-ordinate different things back
->> together in userspace from different trace tools, so I intend to keep
->> that at a lower level, but I think you're right that the event id, etc can
->> move up into separate layers.
->
-> I'm not so sure that the unified 'timestamp' must be required by all tracers.
-> If you just need to merge and sort per-cpu data, you can use an atomic
-> sequential number for it.
-> IMHO, the unified 'timestamp' would better be an option, because some
-> architectures can't support it. I think preparing timestamp-callback
-> function will help us.
 
-An atomic sequential number is:
+Here are three wireless changes for 2.6.27.
 
-(a) far less meaningful than a timestamp for the user
-(b) more expensive to compute in many cases.
+The first two are critical fixes for the ATH9K driver that have been
+making the rounds a lot lately (Linus, you even forwarded a reference
+to at least one of them to John Linville and myself a few days ago).
 
-I think we came up with a way to approximate this, using a callback every
-ms or so as the higher order bits, and a sequential counter in the lower
-order for those broken platforms.
+And the third change is the addition of a new zd1121rw UDB device ID.
 
-But perhaps it would be better if we started with a discussion of which
-platforms can't do global timestamps, and why not? I know some of them
-are fixable, but perhaps not all.
+Linus, we also saw the zd1121rw OOPS you forward to us.  That bug is
+only present in 2.6.26 and John Linville is getting the fix for that
+one pushed to -stable.
+
+Please pull, thanks a lot!
+
+The following changes since commit cec5eb7be3a104fffd27ca967ee8e15a123050e2:
+  Alan Cox (1):
+        pcmcia: Fix broken abuse of dev->driver_data
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+David S. Miller (1):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+
+Senthil Balasubramanian (2):
+      ath9k: connectivity is lost after Group rekeying is done
+      ath9k: Fix IRQ nobody cared issue with ath9k
+
+born.into.silence@gmail.com (1):
+      wireless: zd1211rw: add device ID fix wifi dongle "trust nw-3100"
+
+ drivers/net/wireless/ath9k/core.c      |    4 ++--
+ drivers/net/wireless/ath9k/core.h      |    1 -
+ drivers/net/wireless/ath9k/main.c      |   12 ++++++++----
+ drivers/net/wireless/ath9k/xmit.c      |    6 +++---
+ drivers/net/wireless/zd1211rw/zd_usb.c |    1 +
+ 5 files changed, 14 insertions(+), 10 deletions(-)
