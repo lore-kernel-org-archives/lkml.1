@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbYIVSh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYIVShn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbYIVSh1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYIVShN
+	id S1754534AbYIVShn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYIVSh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:37:13 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:47971 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752407AbYIVShL (ORCPT
+	Mon, 22 Sep 2008 14:37:26 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:37384 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754049AbYIVShY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 14:37:11 -0400
-Message-ID: <48D7E5D7.3060703@lwfinger.net>
-Date: Mon, 22 Sep 2008 13:37:11 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Mon, 22 Sep 2008 14:37:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ruoTQKyr+THnsbkVbmBuC3P2SEnmNAsK/jkpYJ0G36PWQ8Efx3LbHDs3tJkOmwxBuj
+         6EKmp2/iGGxbqjlxt3132U8WJyfa91qgFCremv/MlcrQW4l7C4kx0RMM/PgG/STZ37zM
+         Vu/WmXe+0z7K+C8nmboy/ojNAyUbl2+AI6H/M=
+Message-ID: <86802c440809221137v63e46951j78ae337275872b58@mail.gmail.com>
+Date: Mon, 22 Sep 2008 11:37:21 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [PATCH] x86: do_boot_cpu - add check if we have ESR register
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080922101505.GF7663@localhost>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Logs being spammed with "Unable to enumerate USB device"
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080922093603.GC7663@localhost> <20080922095148.GD7663@localhost>
+	 <86802c440809220257q4e1b4c81o534c957d919a6b3c@mail.gmail.com>
+	 <20080922101505.GF7663@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At times, my logs are filled with multiple copies of the following
-message:
+On Mon, Sep 22, 2008 at 3:15 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> [Yinghai Lu - Mon, Sep 22, 2008 at 02:57:17AM -0700]
+> | >
+> | > Actually it's resend of the patch. On previous attempt
+> | > Yinghai was proposed to choose:
+> | >
+> | >> one apic_version or boot_cpu_apic_version could be enough
+> | >
+> | > but I think it should be different patch which does cleaning
+> | > up variables usage. So for now I think _this_ patch is enough
+> | > since idea is to prevent of touching nonexistant register rather
+> | > code cleaning (whci could be done later).
+> |
+> | do we have systems that have mixed cpu supported with different apic version?
+> |
+> | YH
+> |
+>
+> Yinghai what was the reason of this question? I've a suspicious
+> you're planning to test apic version early and only _once_ so
+> eliminating APIC_INTERGRATED call? Am I right?
 
-hub 4-0:1.0: unable to enumerate USB device on port 5
+want to put more thing in genapic...
 
-The output of lsusb is as follows:
-
-Bus 003 Device 002: ID 04f2:b016 Chicony Electronics Co., Ltd
-Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 004 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-Bus 001 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-
-The hubs are built into an HP dv2815nr laptop, and nothing is plugged in.
-
-I'm currently running v2.6.27-rc7 from the linux-2.6 git tree, but it
-does not seem to be a regression. In checking my back logs, my first
-such "storm" happened on July 25, with successive ones on September 8,
-9, 12 and 21.
-
-Is this an indication of hardware failure? What further info is
-required? Any suggestions for debugging code to try to pinpoint the
-problem?
-
-Thanks,
-
-Larry
-
+YH
