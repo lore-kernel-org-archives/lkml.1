@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbYIVU3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbYIVUah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837AbYIVU3W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 16:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYIVU3N
+	id S1753621AbYIVUah (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 16:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYIVUa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 16:29:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32884 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752001AbYIVU3M convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 16:29:12 -0400
-Date: Mon, 22 Sep 2008 13:28:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bruno =?ISO-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: krzysztof.h1@poczta.fm, spock@gentoo.org,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: don't allow to set a video
- mode via vga= if FB doesn't support it
-Message-Id: <20080922132830.359bc001.akpm@linux-foundation.org>
-In-Reply-To: <20080922220054.4e74c099@neptune.home>
-References: <20080921210219.GC21215@spock.one.pl>
-	<20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
-	<20080922220054.4e74c099@neptune.home>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 22 Sep 2008 16:30:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58024 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751024AbYIVUa3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 16:30:29 -0400
+Date: Mon, 22 Sep 2008 22:35:18 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: andi@firstfloor.org, mingo@elte.hu, joerg.roedel@amd.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about virtual mappings
+Message-ID: <20080922203518.GZ25711@one.firstfloor.org>
+References: <20080918182029.GO25711@one.firstfloor.org> <20080919071534C.fujita.tomonori@lab.ntt.co.jp> <20080919004431.GS25711@one.firstfloor.org> <20080923041203Q.fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080923041203Q.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 22:00:54 +0200
-Bruno Prémont <bonbons@linux-vserver.org> wrote:
+On Tue, Sep 23, 2008 at 04:12:33AM +0900, FUJITA Tomonori wrote:
+> Sure, pci-nommu's map_sg/map_single doesn't handle it. But we handle
+> this issue somewhere else (like b44 keeps own DMA buffer)?
 
-> From: Michal Januszewski <spock@gentoo.org>
-> > Currently, it is possible to set a VESA graphics mode at boot time
-> > via the vga= parameter even when no framebuffer driver supporting
-> > this is configured.  This could lead to the system booting with a
-> > black screen, without a usable console.
-> > 
-> This looks pretty much the same as what I requested some time ago:
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=8062
-> 
-> Would need to check -mm archives for the actual patch.
-> 
-> Don't remember why it did not make it to mainline...
+Yes, b44 handles it on its own. It has to for 32bit which always
+has a nop map_sg/single. Also some other subsystems like the block layer
+do it implicitely.
 
-If someone can give me some idea of what that patch looked
-like then I can go hunt it down, find out why it didn't make it.
+> 1. not all map_sg/map_single (e.g. pci-nommu) can't handle it.
+
+and especially i386
+
+> 2. we already have workarounds for it somewhere else so
+> map_sg/map_single don't need to handle it.
+> 3. I changed GART map_sg/map_signle to handle it. I thought if it
+> can handle it, for example, b44 doesn't go the workaround path. It
+> would be a good thing.
+> 4. But GART cannot remap to addresses < 4GB reliably, so my above
+> argument doesn't always work.
+> 5. Then my patch doesn't break anything but it's almost meaningless.
+
+Correct.
+
+-Andi
+-- 
+ak@linux.intel.com
