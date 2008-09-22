@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbYIVVIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYIVVIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754281AbYIVVIj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 17:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYIVVIa
+	id S1754567AbYIVVIw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 17:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYIVVIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 17:08:30 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39619 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753013AbYIVVI3 (ORCPT
+	Mon, 22 Sep 2008 17:08:34 -0400
+Received: from homer.mvista.com ([63.81.120.155]:19072 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753330AbYIVVId (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 17:08:29 -0400
-Date: Mon, 22 Sep 2008 16:08:29 -0500
-From: Russ Anderson <rja@sgi.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: [PATCH 1/4] x86: Add UV EFI table entry
-Message-ID: <20080922210829.GD222374@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Mon, 22 Sep 2008 17:08:33 -0400
+Message-ID: <48D80949.4080901@ru.mvista.com>
+Date: Tue, 23 Sep 2008 01:08:25 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Mark de Wever <koraq@xs4all.nl>
+Cc: petkovbb@gmail.com, Gadi Oxman <gadio@netvision.net.il>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IDE-TAPE NULL terminate strings.
+References: <20080921185138.GA16310@localhost> <48D79ABD.8060805@ru.mvista.com> <9ea470500809220656j6dfcf4c9q7a5a4185481ec994@mail.gmail.com> <20080922204129.GA3495@localhost>
+In-Reply-To: <20080922204129.GA3495@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 1/4] Add UV EFI table entry
+Hello.
 
-Look for a SAL entry in the EFI tables.
+Mark de Wever wrote:
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
-Signed-off-by: Paul Jackson <pj@sgi.com>
+>> .. and I know why :). Those ide_tape_obj members (char fw_rev[6], vendor_id[10],
+>> product_id[18]) were used only once in idetape_get_inquiry_results() so I moved
+>> them there as local stack variables. Originally, they were kzalloc'ed as part of
+>> struct ide_tape_obj and now they contain stack garbage therefore the funny
+>> values. The simple solution would be to zero them out or:
+>>
+>>
+>> Does the following patch help?
+>>     
+>
+> Yes feel free to add my tested-by.
+>   
 
----
- arch/x86/kernel/efi.c |    4 ++++
- 1 file changed, 4 insertions(+)
+   And my NAK too. :-)
 
-Index: linux/arch/x86/kernel/efi.c
-===================================================================
---- linux.orig/arch/x86/kernel/efi.c	2008-09-22 16:01:00.000000000 -0500
-+++ linux/arch/x86/kernel/efi.c	2008-09-22 16:01:07.000000000 -0500
-@@ -367,6 +367,10 @@ void __init efi_init(void)
- 			efi.smbios = config_tables[i].table;
- 			printk(" SMBIOS=0x%lx ", config_tables[i].table);
- 		} else if (!efi_guidcmp(config_tables[i].guid,
-+					SAL_SYSTEM_TABLE_GUID)) {
-+			efi.sal_systab = config_tables[i].table;
-+			printk(" SALsystab=0x%lx ", config_tables[i].table);
-+		} else if (!efi_guidcmp(config_tables[i].guid,
- 					HCDP_TABLE_GUID)) {
- 			efi.hcdp = config_tables[i].table;
- 			printk(" HCDP=0x%lx ", config_tables[i].table);
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+> Only not sure whether the static is the best solution, the following
+> patch also works, by zeroing the memory as you suggested.
+>
+> Signed-off-by: Mark de Wever <koraq@xs4all.nl>
+>
+> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> index 1bce84b..c41f5b1 100644
+> --- a/drivers/ide/ide-tape.c
+> +++ b/drivers/ide/ide-tape.c
+> @@ -2338,7 +2338,7 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
+>  {
+>  	idetape_tape_t *tape = drive->driver_data;
+>  	struct ide_atapi_pc pc;
+> -	char fw_rev[6], vendor_id[10], product_id[18];
+> +	char fw_rev[6] = {'\0'}, vendor_id[10] = {'\0'}, product_id[18] = {'\0'};
+>   
+
+   Do you realize how much *absolutely unnecessary* code will this bring 
+in? This is certainly worse than your initial patch (if it was correct).
+Ugh, looks like I'll have t submit the patch myself to stop this ugliness...
+
+MBR, Sergei
+
+
