@@ -1,83 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYIVBMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbYIVBNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbYIVBMz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 21:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYIVBMq
+	id S1753145AbYIVBNY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 21:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYIVBNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 21:12:46 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42410 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752936AbYIVBMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 21:12:45 -0400
-Subject: Re: [PATCH] arch/powerpc/platforms/powermac/pic.c: move of_node_put
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Julia Lawall <julia@diku.dk>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0809211301030.7450@ask.diku.dk>
-References: <Pine.LNX.4.64.0809211301030.7450@ask.diku.dk>
-Content-Type: text/plain
-Date: Sun, 21 Sep 2008 18:12:28 -0700
-Message-Id: <1222045948.12085.9.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 21 Sep 2008 21:13:14 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48337 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752936AbYIVBNN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 21:13:13 -0400
+Date: Mon, 22 Sep 2008 10:12:18 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] [RFC] tracehook: Hook in syscall tracing markers.
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20080921021630.GA6443@linux-sh.org>
+References: <20080921021630.GA6443@linux-sh.org>
+Message-Id: <20080922010408.F53D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-09-21 at 13:01 +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> It seems better to dereference master before decrementing the reference
-> count rather than afterwards.
-> 
-> The problem was found using the following semantic match:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @r exists@
-> expression n,E;
-> identifier fld;
-> iterator I;
-> statement S;
-> @@
-> 
-> * of_node_put(n)
-> ... when != n = E
->     when != I(n,...) S
-> * n->fld
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+Hi Paul,
 
-Ack.
+> At kernel summit, the idea that syscall tracing was generally desirable
+> for tracing was mentioned several times, as was the argument that kernel
+> developers aren't placing markers in meaningful locations. This is a
+> simple patch to try and do that for the syscall case.
+> 
+> Presently LTTng attempts to litter these trace markers all over the
+> architecture code, primarily to get around the fact that there was no
+> generic way to get at this information before. Now that platforms are
+> starting to do their syscall entry/exit notifiers through tracehook and
+> we have the asm/syscall.h interface, all of this information can be
+> generically abstracted.
+> 
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> 
 
-No big deal, tho, those nodes are never going to go away :-)
+I think marriage between tracehook and generic marker is very good idea. 
+at least, instruction pointer and return value are definitly useful.
 
-Cheers,
-Ben.
+but...
+Have you seen Mathieu's tracepoint patch?
+I recommend to use tracepoint insted use marker directly.
+
 
 > ---
 > 
->  arch/powerpc/platforms/powermac/pic.c          |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  include/linux/tracehook.h |    7 +++++++
+>  1 file changed, 7 insertions(+)
 > 
-> diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
-> index 6d149ae..d17aa2b 100644
-> --- a/arch/powerpc/platforms/powermac/pic.c
-> +++ b/arch/powerpc/platforms/powermac/pic.c
-> @@ -395,10 +395,10 @@ static void __init pmac_pic_probe_oldstyle(void)
->  	if (max_real_irqs > 32)
->  		pmac_irq_hw[i++] = (volatile struct pmac_irq_hw __iomem *)
->  			(addr + 0x10);
-> -	of_node_put(master);
+> diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
+> index 6186a78..481ff45 100644
+> --- a/include/linux/tracehook.h
+> +++ b/include/linux/tracehook.h
+> @@ -49,6 +49,9 @@
+>  #include <linux/sched.h>
+>  #include <linux/ptrace.h>
+>  #include <linux/security.h>
+> +#include <linux/marker.h>
+> +#include <asm/syscall.h>
+> +
+>  struct linux_binprm;
 >  
->  	printk(KERN_INFO "irq: Found primary Apple PIC %s for %d irqs\n",
->  	       master->full_name, max_real_irqs);
-> +	of_node_put(master);
+>  /**
+> @@ -112,6 +115,8 @@ static inline __must_check int tracehook_report_syscall_entry(
+>  	struct pt_regs *regs)
+>  {
+>  	ptrace_report_syscall(regs);
+> +	trace_mark(kernel_arch_syscall_entry, "syscall_id %ld ip #p%ld",
+> +		   syscall_get_nr(NULL, regs), instruction_pointer(regs));
+>  	return 0;
+>  }
 >  
->  	/* Map interrupts of cascaded controller */
->  	if (slave && !of_address_to_resource(slave, 0, &r)) {
+> @@ -135,6 +140,8 @@ static inline __must_check int tracehook_report_syscall_entry(
+>  static inline void tracehook_report_syscall_exit(struct pt_regs *regs, int step)
+>  {
+>  	ptrace_report_syscall(regs);
+> +	trace_mark(kernel_arch_syscall_exit, "ret %ld",
+> +		   syscall_get_return_value(NULL, regs));
+>  }
+
 
