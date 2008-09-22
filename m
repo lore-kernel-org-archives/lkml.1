@@ -1,106 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbYIVOm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbYIVOpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753086AbYIVOm5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 10:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYIVOmu
+	id S1753004AbYIVOpj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 10:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbYIVOpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 10:42:50 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:49262 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752269AbYIVOmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 10:42:49 -0400
-Message-ID: <48D7AEE6.7080804@sgi.com>
-Date: Mon, 22 Sep 2008 07:42:46 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 22 Sep 2008 10:45:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60606 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752181AbYIVOpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 10:45:31 -0400
+Date: Mon, 22 Sep 2008 10:30:42 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Hirokazu Takahashi <taka@valinux.co.jp>
+Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       righi.andrea@gmail.com, jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+Message-ID: <20080922143042.GA19222@redhat.com>
+References: <20080918131554.GB20640@redhat.com> <20080919.202031.86647893.taka@valinux.co.jp> <20080919131019.GA3606@redhat.com> <20080922.183651.62951479.taka@valinux.co.jp>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, rpurdie@rpsys.net,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 1/1] SGI X86 UV: Provide a System Activity Indicator	driver
-References: <20080919143744.009764000@polaris-admin.engr.sgi.com> <20080919143744.190005000@polaris-admin.engr.sgi.com> <20080922114820.GA13990@elte.hu>
-In-Reply-To: <20080922114820.GA13990@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080922.183651.62951479.taka@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
+On Mon, Sep 22, 2008 at 06:36:51PM +0900, Hirokazu Takahashi wrote:
+> Hi,
 > 
->>  arch/x86/kernel/genx2apic_uv_x.c |  138 +++++++++++++++++++++++++++++++++++++++
->>  include/asm-x86/uv/uv_hub.h      |   62 +++++++++++++++++
+> > > > > I have got excellent results of dm-ioband, that controls the disk I/O
+> > > > > bandwidth even when it accepts delayed write requests.
+> > > > > 
+> > > > > In this time, I ran some benchmarks with a high-end storage. The
+> > > > > reason was to avoid a performance bottleneck due to mechanical factors
+> > > > > such as seek time.
+> > > > > 
+> > > > > You can see the details of the benchmarks at:
+> > > > > http://people.valinux.co.jp/~ryov/dm-ioband/hps/
+> > > 
+> > >   (snip)
+> > > 
+> > > > Secondly, why do we have to create an additional dm-ioband device for 
+> > > > every device we want to control using rules. This looks little odd
+> > > > atleast to me. Can't we keep it in line with rest of the controllers
+> > > > where task grouping takes place using cgroup and rules are specified in
+> > > > cgroup itself (The way Andrea Righi does for io-throttling patches)?
+> > > 
+> > > It isn't essential dm-band is implemented as one of the device-mappers.
+> > > I've been also considering that this algorithm itself can be implemented
+> > > in the block layer directly.
+> > > 
+> > > Although, the current implementation has merits. It is flexible.
+> > >   - Dm-ioband can be place anywhere you like, which may be right before
+> > >     the I/O schedulers or may be placed on top of LVM devices.
+> > 
+> > Hi,
+> > 
+> > An rb-tree per request queue also should be able to give us this
+> > flexibility. Because logic is implemented per request queue, rules can be 
+> > placed at any layer. Either at bottom most layer where requests are
+> > passed to elevator or at higher layer where requests will be passed to 
+> > lower level block devices in the stack. Just that we shall have to do
+> > modifications to some of the higher level dm/md drivers to make use of
+> > queuing cgroup requests and releasing cgroup requests to lower layers.
 > 
-> hm, why is this in genx2apic_uv_x.c, not a separate file?
+> Request descriptors are allocated just right before passing I/O requests
+> to the elevators. Even if you move the descriptor allocation point
+> before calling the dm/md drivers, the drivers can't make use of them.
 > 
->> +	idle_notifier_register(&uv_idle_notifier);
-> 
-> no, we really dont want such overhead in an idle notifier. (those 
-> interfaces will go away)
 
-Hi Ingo,
+You are right. request descriptors are currently allocated at bottom
+most layer. Anyway, in the rb-tree, we put bio cgroups as logical elements
+and every bio cgroup then contains the list of either bios or requeust
+descriptors. So what kind of list bio-cgroup maintains can depend on
+whether it is a higher layer driver (will maintain bios) or a lower layer
+driver (will maintain list of request descriptors per bio-cgroup).
 
-The overhead is very low and I've not been able to figure out how to 
-"estimate" per cpu usage without tons more code (duplicating "top" in
-the kernel.)  The actual I/O (well O ;-) is once per second.  The other
-important point is this is only on an SGI UV system, so no other systems
-are affected.  Because of this, I'm a bit confused by your objection.
+So basically mechanism of maintaining an rb-tree can be completely
+ignorant of the fact whether a driver is keeping track of bios or keeping
+track of requests per cgroup. 
+ 
+> When one of the dm drivers accepts a I/O request, the request
+> won't have either a real device number or a real sector number.
+> The request will be re-mapped to another sector of another device
+> in every dm drivers. The request may even be replicated there.
+> So it is really hard to find the right request queue to put
+> the request into and sort them on the queue.
 
-I tried a couple of other approaches, but because the timer wakeup
-causes the idle state to be exited, it's difficult to determine if
-the cpu was idle before the timer interrupt.  (I even tried putting a
-"wasidle" in the pda to check the idle state prior to the last exit
-from idle, but this did not appear to be reliable.)  The idle callback
-solves this rather nicely.
-
-Here's the same code that's been in ia64 for quite a while:
-
-arch/ia64/sn/kernel/setup.c:
-	void __init sn_setup(char **cmdline_p)
-	{
-		...
-		ia64_mark_idle = &snidle;
-
-arch/ia64/kernel/process.c:
-	cpu_idle (void)
-	{
-        	void (*mark_idle)(int) = ia64_mark_idle;
-		...
-
-                if (mark_idle)
-                        (*mark_idle)(1);
-
-(The x86 callback approach is much cleaner.)
-
-Another relevant point is that I will be adding a bit more functionality
-to disable the timer interrupt on truly "idle" cpus (like have been idle
-for some amount of seconds).  We would then use the "exit from idle"
-callback to reestablish the timer interrupt.  [This would allow them to
-enter power down states if appropriate.]
+Hmm.., I thought that all the incoming requests to dm/md driver will
+remain in a single queue maintained by that drvier (irrespective of the
+fact in which request queue these requests go in lower layers after
+replication or other operation). I am not very familiar with dm/md
+implementation. I will read more about it....
 
 > 
-> As i suggested in my previous mail about this topic, a low-frequency 
-> sampling method should be used instead, to indicate system status. I 
-> thought the leds drivers have all that in place already.
+> > >   - It supports partition based bandwidth control which can work without
+> > >     cgroups, which is quite easy to use of.
+> > 
+> > >   - It is independent to any I/O schedulers including ones which will
+> > >     be introduced in the future.
+> > 
+> > This scheme should also be independent of any of the IO schedulers. We
+> > might have to do small changes in IO-schedulers to decouple the things
+> > from __make_request() a bit to insert rb-tree in between __make_request()
+> > and IO-scheduler. Otherwise fundamentally, this approach should not
+> > require any major modifications to IO-schedulers. 
+> > 
+> > > 
+> > > I also understand it's will be hard to set up without some tools
+> > > such as lvm commands.
+> > > 
+> > 
+> > That's something I wish to avoid. If we can keep it simple by doing
+> > grouping using cgroup and allow one line rules in cgroup it would be nice.
+> 
+> It's possible the algorithm of dm-ioband can be placed in the block layer
+> if it is really a big problem.
+> But I doubt it can control every control block I/O as we wish since
+> the interface the cgroup supports is quite poor.
 
-It is low frequency (once per second), this is just setting what's to
-be sampled.
+Had a question regarding cgroup interface. I am assuming that in a system,
+one will be using other controllers as well apart from IO-controller.
+Other controllers will be using cgroup as a grouping mechanism.
+Now coming up with additional grouping mechanism for only io-controller seems
+little odd to me. It will make the job of higher level management software
+harder.
 
-As I mentioned, this is not for LED displays (human readable), it's for the
-system controller to monitor how all parts of the system are running, and
-this one is just the cpu parts.  The LED driver approach would have me
-registering 4096 led devices, with all their callbacks, 4096 strings saying
-"LED0001", etc., and I still cannot associate a specific register bit
-(AKA LED if that's what it was), with a specific cpu using the LED driver.
+Looking at the dm-ioband grouping examples given in patches, I think cases
+of grouping based  in pid, pgrp, uid and kvm can be handled by creating right
+cgroup and making sure applications are launched/moved into right cgroup by
+user space tools. 
 
-The LED driver is fine for a couple of blinking lights indicating overall
-system activity, disk activity, etc.  (Btw, I did not see a network trigger,
-or a paging trigger, or an out of memory trigger, or some other things that
-might be useful for real time monitoring of the system.)
+I think keeping grouping mechanism in line with rest of the controllers
+should help because a uniform grouping mechanism should make life simpler.
 
-But the LED driver has way more overhead than needed for this simple application.
+I am not very sure about moving dm-ioband algorithm in block layer. Looks
+like it will make life simpler at least in terms of configuration. 
 
-Thanks,
-Mike
+> 
+> > > > To avoid creation of stacking another device (dm-ioband) on top of every
+> > > > device we want to subject to rules, I was thinking of maintaining an
+> > > > rb-tree per request queue. Requests will first go into this rb-tree upon
+> > > > __make_request() and then will filter down to elevator associated with the
+> > > > queue (if there is one). This will provide us the control of releasing
+> > > > bio's to elevaor based on policies (proportional weight, max bandwidth
+> > > > etc) and no need of stacking additional block device.
+> > > 
+> > > I think it's a bit late to control I/O requests there, since process
+> > > may be blocked in get_request_wait when the I/O load is high.
+> > > Please imagine the situation that cgroups with low bandwidths are
+> > > consuming most of "struct request"s while another cgroup with a high
+> > > bandwidth is blocked and can't get enough "struct request"s.
+> > > 
+> > > It means cgroups that issues lot of I/O request can win the game.
+> > > 
+> > 
+> > Ok, this is a good point. Because number of struct requests are limited
+> > and they seem to be allocated on first come first serve basis, so if a
+> > cgroup is generating lot of IO, then it might win.
+> > 
+> > But dm-ioband will face the same issue. 
+> 
+> Nope. Dm-ioband doesn't have this issue since it works before allocating
+> the descriptors. Only I/O requests dm-ioband has passed can allocate its
+> descriptor.
+> 
+
+Ok. Got it. dm-ioband does not block on allocation of request descriptors.
+It does seem to be blocking in prevent_burst_bios() but that would be
+per group so it should be fine.
+
+That means for lower layers, one shall have to do request descritor
+allocation as per the cgroup weight to make sure a cgroup with lower
+weight does not get higher % of disk because it is generating more
+requests.
+
+One additional issue with my scheme I just noticed is that I am putting
+bio-cgroup in rb-tree. If there are stacked devices then bio/requests from
+same cgroup can be at multiple levels of processing at same time. That
+would mean that a single cgroup needs to be in multiple rb-trees at the
+same time in various layers. So I might have to create a temporary object
+which can associate with cgroup and get rid of that object once I don't
+have the requests any more...
+
+Well, implementing rb-tree per request queue seems to be harder than I 
+had thought. Especially taking care of decoupling the elevator and reqeust
+descriptor logic at lower layers. Long way to go..
+
+Thanks
+Vivek
