@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbYIUXwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbYIVAB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753849AbYIUXwU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 19:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbYIUXwM
+	id S1753638AbYIVAB7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 20:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYIVABr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 19:52:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45799
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752795AbYIUXwL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 19:52:11 -0400
-Date: Sun, 21 Sep 2008 16:51:59 -0700 (PDT)
-Message-Id: <20080921.165159.67476441.davem@davemloft.net>
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       chrisl@vmware.com, david.vrabel@csr.com
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <7lIhZC4hCxE.A.yj.E2q1IB@albercik>
-References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik>
-	<7lIhZC4hCxE.A.yj.E2q1IB@albercik>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sun, 21 Sep 2008 20:01:47 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:60064 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752402AbYIVABq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 20:01:46 -0400
+Date: Mon, 22 Sep 2008 04:00:39 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Marcel Holtmann <holtmann@linux.intel.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Johannes Berg <johannes@sipsolutions.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
+       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
+       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
+       davem@davemloft.net
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
+Message-ID: <20080922000039.GA1878@2ka.mipt.ru>
+References: <20080921190050.GA20484@2ka.mipt.ru> <1222024444.3023.53.camel@johannes.berg> <20080921193809.GA8735@2ka.mipt.ru> <20080921124332.67ddc13a@infradead.org> <20080921202057.GB25052@2ka.mipt.ru> <20080921132753.5689b564@infradead.org> <20080921205706.GA24545@2ka.mipt.ru> <20080921140203.4698a2ee@infradead.org> <20080921210554.GA2135@2ka.mipt.ru> <1222039667.6782.125.camel@californication>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222039667.6782.125.camel@californication>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Sun, 21 Sep 2008 20:54:13 +0200 (CEST)
+On Mon, Sep 22, 2008 at 01:27:47AM +0200, Marcel Holtmann (holtmann@linux.intel.com) wrote:
+> as Arjan and Alan pointed out already, WARN_ON_ONCE is enough and I
+> agree with them. Just to make this perfectly clear, this is with my
+> community hat on.
+> 
+> Please send a proper patch with a simple WARN_ON_ONCE and I am happy to
+> sign off on it.
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11382
-> Subject		: e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-> Submitter	: David Vrabel <david.vrabel@csr.com>
-> Date		: 2008-08-08 10:47 (45 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121819267211679&w=4
-> Handled-By	: Christopher Li <chrisl@vmware.com>
+I really do not care about if there is warning at all, I just want that
+bug to be fixed. And a we can see, something started to change, and that's
+probably a good sign. I glad there is a result. I will check d3 states
+tomorrow. Attached patch if you think it is yet needed.
 
-Fixed by:
+diff --git a/drivers/net/wireless/ipw2100.c b/drivers/net/wireless/ipw2100.c
+index 19a401c..637dc05 100644
+--- a/drivers/net/wireless/ipw2100.c
++++ b/drivers/net/wireless/ipw2100.c
+@@ -3174,16 +3174,18 @@ static void ipw2100_irq_tasklet(struct ipw2100_priv *priv)
+ 	if (inta & IPW2100_INTA_FATAL_ERROR) {
+ 		printk(KERN_WARNING DRV_NAME
+ 		       ": Fatal interrupt. Scheduling firmware restart.\n");
++
+ 		priv->inta_other++;
+ 		write_register(dev, IPW_REG_INTA, IPW2100_INTA_FATAL_ERROR);
+ 
+ 		read_nic_dword(dev, IPW_NIC_FATAL_ERROR, &priv->fatal_error);
+-		IPW_DEBUG_INFO("%s: Fatal error value: 0x%08X\n",
+-			       priv->net_dev->name, priv->fatal_error);
+-
+ 		read_nic_dword(dev, IPW_ERROR_ADDR(priv->fatal_error), &tmp);
+-		IPW_DEBUG_INFO("%s: Fatal error address value: 0x%08X\n",
+-			       priv->net_dev->name, tmp);
++
++		printk(KERN_WARNING "%s: Fatal error value: 0x%08X, "
++				"address: 0x%08X, inta: 0x%08lX\n",
++			priv->net_dev->name, priv->fatal_error, tmp,
++			(unsigned long)inta & IPW_INTERRUPT_MASK);
++		WARN_ON_ONCE(1);
+ 
+ 		/* Wake up any sleeping jobs */
+ 		schedule_reset(priv);
 
-commit 78566fecbb12a7616ae9a88b2ffbc8062c4a89e3
-Author: Christopher Li <chrisl@vmware.com>
-Date:   Fri Sep 5 14:04:05 2008 -0700
-
-    e1000: prevent corruption of EEPROM/NVM
-    
-    Andrey reports e1000 corruption, and that a patch in vmware's ESX fixed
-    it.
-    
-    The EEPROM corruption is triggered by concurrent access of the EEPROM
-    read/write. Putting a lock around it solve the problem.
-    
-    [akpm@linux-foundation.org: use DEFINE_SPINLOCK to avoid confusing lockdep]
-    Signed-off-by: Christopher Li <chrisl@vmware.com>
-    Reported-by: Andrey Borzenkov <arvidjaar@mail.ru>
-    Cc: Zach Amsden <zach@vmware.com>
-    Cc: Pratap Subrahmanyam <pratap@vmware.com>
-    Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-    Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
-    Cc: Bruce Allan <bruce.w.allan@intel.com>
-    Cc: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
-    Cc: John Ronciak <john.ronciak@intel.com>
-    Cc: Jeff Garzik <jeff@garzik.org>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+-- 
+	Evgeniy Polyakov
