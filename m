@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbYIVWMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYIVWMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbYIVWMG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 18:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbYIVWLy
+	id S1754837AbYIVWMy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 18:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYIVWMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 18:11:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41422 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753783AbYIVWLx (ORCPT
+	Mon, 22 Sep 2008 18:12:44 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44457 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753063AbYIVWMn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 18:11:53 -0400
-Date: Mon, 22 Sep 2008 15:10:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       avi@qumranet.com, kvm@vger.kernel.org, dan.j.williams@intel.com
-Subject: Re: mmotm 2008-09-22-01-36 uploaded (kvm)
-Message-Id: <20080922151026.64715dc4.akpm@linux-foundation.org>
-In-Reply-To: <200809221458.53192.jbarnes@virtuousgeek.org>
-References: <200809220838.m8M8cwC2031790@imap1.linux-foundation.org>
-	<20080922111947.507e34b1.randy.dunlap@oracle.com>
-	<20080922125227.2b837457.akpm@linux-foundation.org>
-	<200809221458.53192.jbarnes@virtuousgeek.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 22 Sep 2008 18:12:43 -0400
+Date: Mon, 22 Sep 2008 23:12:27 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org
+Subject: Re: [PATCH] pcmcia: Fix broken abuse of dev->driver_data
+Message-ID: <20080922231227.2625dd09@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080922215617.GA13057@comet.dominikbrodowski.net>
+References: <20080922155814.2bdad40f@lxorguk.ukuu.org.uk>
+	<20080922215617.GA13057@comet.dominikbrodowski.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,33 +31,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 14:58:52 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-
-> On Monday, September 22, 2008 12:52 pm Andrew Morton wrote:
-> > On Mon, 22 Sep 2008 11:19:47 -0700
-> >
-> > Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > > On Mon, 22 Sep 2008 01:38:58 -0700 akpm@linux-foundation.org wrote:
-> > > > The mm-of-the-moment snapshot 2008-09-22-01-36 has been uploaded to
-> > > >
-> > > >    http://userweb.kernel.org/~akpm/mmotm/
-> > > >
-> > > > It contains the following patches against 2.6.27-rc7:
-> > >
-> > > ERROR: "intel_iommu_found" [arch/x86/kvm/kvm.ko] undefined!
-> > >
-> > > when CONFIG_DMAR=n.
-> >
-> > Yes, I got that too.  i386 allmodconfig fails similarly.  It's still
-> > unclear which tree in linux-next broke it.  PCI or async_tx, perhaps.
+> > +	
 > 
-> I don't have that symbol in my tree (yet).  It's part of one of the IOMMU KVM 
-> patch sets that's currently in-flight.  I'll add it to my linux-next tree 
-> today or tomorrow, assuming I get an ack from David about it (I'll bounce it 
-> over to him now).
+> trailing whitespace
+
+Nod..
+
+> >  	if (did && (did->match_flags & PCMCIA_DEV_ID_MATCH_DEVICE_NO) &&
+> >  	    (p_dev->socket->device_count == 1) && (p_dev->device_no ==
+> > 0)) pcmcia_add_device_later(p_dev->socket, 0);
 > 
+> uh?
 
-It's already there, and exported in linux-next.  But it just doesn't get
-compiled in due to some Kconfig snafu.
+Looks like a mailer folded it later, but the patch itself seems just fine.
 
+> >  
+> > - put_module:
+> > +put_module:
+> >  	if (ret)
+> >  		module_put(p_drv->owner);
+> > - put_dev:
+> > +put_dev:
+> 
+> unrelated -- please do not change it this time.
+
+Not sure you can have it both ways - if you don't want stray whitespace
+then fixing the labels to conform to coding style seems to go with it ;)
+
+Alan
