@@ -1,89 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYIVSlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbYIVSl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbYIVSlN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbYIVSkn
+	id S1754640AbYIVSl3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYIVSko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:40:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54649 "EHLO mx2.redhat.com"
+	Mon, 22 Sep 2008 14:40:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54650 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752894AbYIVSkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752900AbYIVSkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 22 Sep 2008 14:40:41 -0400
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4/6] dlm: fix address compare
-Date: Mon, 22 Sep 2008 13:28:37 -0500
-Message-Id: <1222108119-24928-5-git-send-email-teigland@redhat.com>
+Subject: [PATCH 2/6] dlm: detect available userspace daemon
+Date: Mon, 22 Sep 2008 13:28:35 -0500
+Message-Id: <1222108119-24928-3-git-send-email-teigland@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Compare only the addr and port fields of sockaddr structures.
-Fixes a problem with ipv6 where sin6_scope_id does not match.
+If dlm_controld (the userspace daemon that controls the setup and
+recovery of the dlm) fails, the kernel should shut down the lockspaces
+in the kernel rather than leaving them running.  This is detected by
+having dlm_controld hold a misc device open while running, and if
+the kernel detects a close while the daemon is still needed, it stops
+the lockspaces in the kernel.
+
+Knowing that the userspace daemon isn't running also allows the
+lockspace create/remove routines to avoid waiting on the daemon
+for join/leave operations.
 
 Signed-off-by: David Teigland <teigland@redhat.com>
 ---
- fs/dlm/config.c |   33 +++++++++++++++++++++++++++++++--
- 1 files changed, 31 insertions(+), 2 deletions(-)
+ fs/dlm/lockspace.c |   24 +++++++++++++++++++-
+ fs/dlm/lockspace.h |    1 +
+ fs/dlm/user.c      |   61 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ fs/dlm/user.h      |    1 +
+ 4 files changed, 85 insertions(+), 2 deletions(-)
 
-diff --git a/fs/dlm/config.c b/fs/dlm/config.c
-index 89d2fb7..1359be3 100644
---- a/fs/dlm/config.c
-+++ b/fs/dlm/config.c
-@@ -14,6 +14,9 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/configfs.h>
-+#include <linux/in.h>
-+#include <linux/in6.h>
-+#include <net/ipv6.h>
- #include <net/sock.h>
+diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
+index 56eae4e..ba672fe 100644
+--- a/fs/dlm/lockspace.c
++++ b/fs/dlm/lockspace.c
+@@ -378,6 +378,11 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
+ 	if (!try_module_get(THIS_MODULE))
+ 		return -EINVAL;
  
- #include "config.h"
-@@ -776,6 +779,33 @@ static void put_space(struct dlm_space *sp)
- 	config_item_put(&sp->group.cg_item);
++	if (!dlm_user_daemon_available()) {
++		module_put(THIS_MODULE);
++		return -EUNATCH;
++	}
++
+ 	error = 0;
+ 
+ 	spin_lock(&lslist_lock);
+@@ -669,7 +674,7 @@ static int release_lockspace(struct dlm_ls *ls, int force)
+ 
+ 	dlm_device_deregister(ls);
+ 
+-	if (force < 3)
++	if (force < 3 && dlm_user_daemon_available())
+ 		do_uevent(ls, 0);
+ 
+ 	dlm_recoverd_stop(ls);
+@@ -791,3 +796,20 @@ int dlm_release_lockspace(void *lockspace, int force)
+ 	return error;
  }
  
-+static int addr_compare(struct sockaddr_storage *x, struct sockaddr_storage *y)
++void dlm_stop_lockspaces(void)
 +{
-+	switch (x->ss_family) {
-+	case AF_INET: {
-+		struct sockaddr_in *sinx = (struct sockaddr_in *)x;
-+		struct sockaddr_in *siny = (struct sockaddr_in *)y;
-+		if (sinx->sin_addr.s_addr != siny->sin_addr.s_addr)
-+			return 0;
-+		if (sinx->sin_port != siny->sin_port)
-+			return 0;
-+		break;
++	struct dlm_ls *ls;
++
++ restart:
++	spin_lock(&lslist_lock);
++	list_for_each_entry(ls, &lslist, ls_list) {
++		if (!test_bit(LSFL_RUNNING, &ls->ls_flags))
++			continue;
++		spin_unlock(&lslist_lock);
++		log_error(ls, "no userland control daemon, stopping lockspace");
++		dlm_ls_stop(ls);
++		goto restart;
 +	}
-+	case AF_INET6: {
-+		struct sockaddr_in6 *sinx = (struct sockaddr_in6 *)x;
-+		struct sockaddr_in6 *siny = (struct sockaddr_in6 *)y;
-+		if (!ipv6_addr_equal(&sinx->sin6_addr, &siny->sin6_addr))
-+			return 0;
-+		if (sinx->sin6_port != siny->sin6_port)
-+			return 0;
-+		break;
-+	}
-+	default:
-+		return 0;
-+	}
-+	return 1;
++	spin_unlock(&lslist_lock);
 +}
 +
- static struct dlm_comm *get_comm(int nodeid, struct sockaddr_storage *addr)
+diff --git a/fs/dlm/lockspace.h b/fs/dlm/lockspace.h
+index 891eabb..f879f87 100644
+--- a/fs/dlm/lockspace.h
++++ b/fs/dlm/lockspace.h
+@@ -20,6 +20,7 @@ struct dlm_ls *dlm_find_lockspace_global(uint32_t id);
+ struct dlm_ls *dlm_find_lockspace_local(void *id);
+ struct dlm_ls *dlm_find_lockspace_device(int minor);
+ void dlm_put_lockspace(struct dlm_ls *ls);
++void dlm_stop_lockspaces(void);
+ 
+ #endif				/* __LOCKSPACE_DOT_H__ */
+ 
+diff --git a/fs/dlm/user.c b/fs/dlm/user.c
+index 6542110..81627b5 100644
+--- a/fs/dlm/user.c
++++ b/fs/dlm/user.c
+@@ -27,6 +27,8 @@
+ 
+ static const char name_prefix[] = "dlm";
+ static const struct file_operations device_fops;
++static atomic_t dlm_monitor_opened;
++static int dlm_monitor_unused = 1;
+ 
+ #ifdef CONFIG_COMPAT
+ 
+@@ -890,6 +892,26 @@ static unsigned int device_poll(struct file *file, poll_table *wait)
+ 	return 0;
+ }
+ 
++int dlm_user_daemon_available(void)
++{
++	/* dlm_controld hasn't started (or, has started, but not
++	   properly populated configfs) */
++
++	if (!dlm_our_nodeid())
++		return 0;
++
++	/* This is to deal with versions of dlm_controld that don't
++	   know about the monitor device.  We assume that if the
++	   dlm_controld was started (above), but the monitor device
++	   was never opened, that it's an old version.  dlm_controld
++	   should open the monitor device before populating configfs. */
++
++	if (dlm_monitor_unused)
++		return 1;
++
++	return atomic_read(&dlm_monitor_opened) ? 1 : 0;
++}
++
+ static int ctl_device_open(struct inode *inode, struct file *file)
  {
- 	struct config_item *i;
-@@ -797,8 +827,7 @@ static struct dlm_comm *get_comm(int nodeid, struct sockaddr_storage *addr)
- 			config_item_get(i);
- 			break;
- 		} else {
--			if (!cm->addr_count ||
--			    memcmp(cm->addr[0], addr, sizeof(*addr)))
-+			if (!cm->addr_count || !addr_compare(cm->addr[0], addr))
- 				continue;
- 			found = 1;
- 			config_item_get(i);
+ 	cycle_kernel_lock();
+@@ -902,6 +924,20 @@ static int ctl_device_close(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
++static int monitor_device_open(struct inode *inode, struct file *file)
++{
++	atomic_inc(&dlm_monitor_opened);
++	dlm_monitor_unused = 0;
++	return 0;
++}
++
++static int monitor_device_close(struct inode *inode, struct file *file)
++{
++	if (atomic_dec_and_test(&dlm_monitor_opened))
++		dlm_stop_lockspaces();
++	return 0;
++}
++
+ static const struct file_operations device_fops = {
+ 	.open    = device_open,
+ 	.release = device_close,
+@@ -925,19 +961,42 @@ static struct miscdevice ctl_device = {
+ 	.minor = MISC_DYNAMIC_MINOR,
+ };
+ 
++static const struct file_operations monitor_device_fops = {
++	.open    = monitor_device_open,
++	.release = monitor_device_close,
++	.owner   = THIS_MODULE,
++};
++
++static struct miscdevice monitor_device = {
++	.name  = "dlm-monitor",
++	.fops  = &monitor_device_fops,
++	.minor = MISC_DYNAMIC_MINOR,
++};
++
+ int __init dlm_user_init(void)
+ {
+ 	int error;
+ 
++	atomic_set(&dlm_monitor_opened, 0);
++
+ 	error = misc_register(&ctl_device);
+-	if (error)
++	if (error) {
+ 		log_print("misc_register failed for control device");
++		goto out;
++	}
+ 
++	error = misc_register(&monitor_device);
++	if (error) {
++		log_print("misc_register failed for monitor device");
++		misc_deregister(&ctl_device);
++	}
++ out:
+ 	return error;
+ }
+ 
+ void dlm_user_exit(void)
+ {
+ 	misc_deregister(&ctl_device);
++	misc_deregister(&monitor_device);
+ }
+ 
+diff --git a/fs/dlm/user.h b/fs/dlm/user.h
+index c528b6b..35eb6a1 100644
+--- a/fs/dlm/user.h
++++ b/fs/dlm/user.h
+@@ -13,5 +13,6 @@ void dlm_user_add_ast(struct dlm_lkb *lkb, int type);
+ int dlm_user_init(void);
+ void dlm_user_exit(void);
+ int dlm_device_deregister(struct dlm_ls *ls);
++int dlm_user_daemon_available(void);
+ 
+ #endif
 -- 
 1.5.5.1
 
