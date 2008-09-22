@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753681AbYIVQXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbYIVQ1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753681AbYIVQXp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 12:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYIVQXh
+	id S1753236AbYIVQ1J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 12:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbYIVQ05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 12:23:37 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:4436 "EHLO
-	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbYIVQXg (ORCPT
+	Mon, 22 Sep 2008 12:26:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41303 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbYIVQ04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 12:23:36 -0400
-X-BigFish: VPS-32(z1039oz1432R98dR936eQ1805M936fQzz10d3izzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K7LUUM-04-0YK-01
-Date: Mon, 22 Sep 2008 18:23:14 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic option
-Message-ID: <20080922162314.GC24392@amd.com>
-References: <20080920060059.GA25713@elte.hu> <20080920225705C.fujita.tomonori@lab.ntt.co.jp> <20080922111730.GF5987@elte.hu> <20080923002516R.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080923002516R.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 22 Sep 2008 16:23:14.0613 (UTC) FILETIME=[83760E50:01C91CCF]
+	Mon, 22 Sep 2008 12:26:56 -0400
+Subject: Re: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
+From: David Woodhouse <dwmw2@infradead.org>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080921090549.GK27426@8bytes.org>
+References: <1221670377-19295-4-git-send-email-joerg.roedel@amd.com>
+	 <20080918041104K.fujita.tomonori@lab.ntt.co.jp>
+	 <20080917192827.GA18515@8bytes.org>
+	 <20080918102931Z.fujita.tomonori@lab.ntt.co.jp>
+	 <20080918140350.GE24392@amd.com> <20080919174339.GA29039@8bytes.org>
+	 <8A3E977AB3C24845947ADAAE0526E39505192554@orsmsx419.amr.corp.intel.com>
+	 <20080921090549.GK27426@8bytes.org>
+Content-Type: text/plain
+Date: Mon, 22 Sep 2008 09:26:46 -0700
+Message-Id: <1222100806.4000.25.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 12:25:24AM +0900, FUJITA Tomonori wrote:
-> 
-> I'm not sure we can because he has a quite different opinion on this,
-> he thinks that the IOMMU parameters are unimportant and minor issue.
-> 
+On Sun, 2008-09-21 at 11:05 +0200, Joerg Roedel wrote:
+> can you add an entry to the MAINTAINERs file for Intel IOMMU? I found
+> it difficult to find the responsible person for this thread.
 
-Stop your personal attacks and come down. I've never said that iommu
-parameters are unimportant. The _move_ of the iommu=[no]fullflush to
-generic code is a minor issue in my opinion. For the user it changes
-nothing. There was an iommu=fullflush parameter before and now there is
-also an iommu=fullflush parameter. The only difference is that it now
-affects AMD IOMMU too.
+I was trying to avoid doing that until I've actually acquired enough
+clue for it to be meaningful. I'll be home from Portland next week, and
+working to achieve that, with the shiny new hardware that arrived just
+before I left.
 
-> I'm against adding new generic IOMMU parameters without serious
-> consideration. Joerg thinks that we can clean up the parameters like
-> adding some for 2.6.28, then add some for 2.6.X, then rename some, in
-> an ad-hoc way.
-
-Again. Stop your personal attacks.
-
-Joerg
+I'm also planning to create a separate git tree for iommu work, where we
+can all have direct access. It doesn't really live in the x86 tree.
 
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
