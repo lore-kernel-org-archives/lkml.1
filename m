@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbYIVMGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbYIVMHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752933AbYIVMGy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 08:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYIVMGq
+	id S1753239AbYIVMHY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 08:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYIVMHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 08:06:46 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:28203 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751655AbYIVMGp convert rfc822-to-8bit (ORCPT
+	Mon, 22 Sep 2008 08:07:09 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:40839 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497AbYIVMHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 08:06:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=U/+n9drbhyjHK3hlkTUI1RWe1lowZrw0xuDmJ2exPxMzy9RjbBqRtrD+cTjeEpl+sj
-         qfco0R/kj7adcLB3lrUX+D6BcTC3M9/rbSOlmChDTTi1qznabzXWclBnN4Epk6YEf1S4
-         FrhnInrzI6r917Hh9ma12TtwZnfCxeSAPo+4M=
-Message-ID: <c62985530809220506o39264e63k25ccb7a73384335c@mail.gmail.com>
-Date: Mon, 22 Sep 2008 14:06:44 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [Patch 1/3] Tracing/ftrace: Make nop tracer reset previous entries
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "Steven Noonan" <steven@uplinklabs.net>
-In-Reply-To: <20080922093604.GA17258@elte.hu>
+	Mon, 22 Sep 2008 08:07:08 -0400
+Date: Mon, 22 Sep 2008 08:07:05 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Sitsofe Wheeler <sitsofe@yahoo.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: How how latent should non-preemptive scheduling be?
+In-Reply-To: <20080922115749.GE14301@elte.hu>
+Message-ID: <alpine.DEB.1.10.0809220804090.14496@gandalf.stny.rr.com>
+References: <fa.ERZTl/6uH+mhNoef5fPJKTRjJag@ifi.uio.no> <fa.C6WSm5Rh2Nb+Qho7b0qDOZ9RPV8@ifi.uio.no> <fa.ch6j4qXs/2sFpLkHz5fXrtjTR8c@ifi.uio.no> <fa.Jx/Ygtm46CVRawlA6OnfYNn6cN0@ifi.uio.no> <fa.iIHgL48F3T5VAqFw3mqaf9Pzrs4@ifi.uio.no> <fa.Td8xkKZKMSMghlJmEYefTRVF2kc@ifi.uio.no>
+ <48D39312.9000400@yahoo.com> <20080922115749.GE14301@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <48D68E06.50504@gmail.com>
-	 <20080922121237.13D4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080922093604.GA17258@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/22 Ingo Molnar <mingo@elte.hu>:
->
-> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
->
->> your patch seems corrupted.
->> please check again your e-mail client settings.
->
-> i fixed the extra newlines up and applied the patches to
-> tip/tracing/ftrace, thanks Frédéric!
->
-> please check Documentation/email-clients.txt about details. There were
-> two problems i saw: overlong lines in the commit description and extra
-> 'double newlines' in the patch itself. (To get around gmail limitations
-> you can send -tip patches as MIME attachments as well.)
->
->        Ingo
->
 
-Oops. I'm really sorry about that. I was pretty convinced that my
-email client was well configured.
-In the future I will first send myself the patches before any new
-submit to ensure they are not damaged...
+On Mon, 22 Sep 2008, Ingo Molnar wrote:
+> * Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> >>
+> >> sounds like potential SMM triggered latencies.
+> >
+> > I have just gone away and read about the SMM ( 
+> > http://blogs.msdn.com/carmencr/archive/2005/08/31/458609.aspx ). If 
+> > you're right there is pretty much nothing that can be done about the 
+> > problem : (
+> 
+> well, since they went away after you enabled CONFIG_PREEMPT=y, they are 
+> definitely in-kernel latencies, not any external SMM latencies.
+> 
+> I.e. they are inherently fixable. Could you enable:
+> 
+>   CONFIG_DYNAMIC_FTRACE=y
+>   CONFIG_FTRACE_MCOUNT_RECORD=y
+> 
+> that should make the traces a lot more verbose - every kernel function 
+> executed in the latency path will be logged. That way we'll be able to 
+> say which one takes that long.
+> 
+> note, you might have to increase /debug/tracing/trace_entries to get a 
+> long enough trace to capture the relevant portion of the latency.
 
-Thanks.
+Also note, to modify trace_entries, you must be in the none (nop?) tracer, 
+otherwise the size will not be effected.
+
+If you find the trace is also too big, you can echo a list of functions 
+into:
+
+  /debug/tracing/set_ftrace_notrace
+
+to not trace those functions. using '>' will remove any existing function 
+in that file, but using '>>' will append functions to the file.
+
+For a list of functions that you can add, see:
+
+  /debug/tracing/available_filter_functions
+
+-- Steve
+
