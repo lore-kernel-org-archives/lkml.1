@@ -1,76 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbYIVTZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYIVT33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753554AbYIVTZc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 15:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbYIVTZY
+	id S1753900AbYIVT33 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 15:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYIVT3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 15:25:24 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:34912 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751530AbYIVTZY (ORCPT
+	Mon, 22 Sep 2008 15:29:21 -0400
+Received: from outbound-mail-145.bluehost.com ([67.222.38.35]:38571 "HELO
+	outbound-mail-145.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751598AbYIVT3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 15:25:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=SJLdWPyeGyi6/TCV3gwLR2nfz5wqBzWFO9NIhJ8AsN6LJ3HgIF6aleTm7NBK/bgvuO
-         Dubg2F3qR/y3Y2ZrcOO/BZoNGTOMDbUtyBdR9pCVRlNKCyYsZANvocOFdeORhHnzn04w
-         wfpapzh6tThVa7268IxiKi6Ta9ayHQeUtwRM8=
-Message-ID: <70318cbf0809221225i5be0ce6eh3ac09d8bf61cc2d7@mail.gmail.com>
-Date: Mon, 22 Sep 2008 12:25:21 -0700
-From: "Chris Li" <lkml@chrisli.org>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: diet-kconfig: a script to trim unneeded kconfigs
-Cc: "Giacomo A. Catenazzi" <cate@cateee.net>,
-       "Mauro Carvalho Chehab" <mchehab@infradead.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <s5hk5d4xzw0.wl%tiwai@suse.de>
+	Mon, 22 Sep 2008 15:29:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=rUnRzD99awKMHhItHrjMILwjQR6jP5jlI/wuSuJLNijsiNAxklL6ipvxJ1wICqE5PP0rh0fiNPc3um8l8GPULFjyMCiAkNtaqeYWFlz1JP+d98LmmVlgVagmZ+kR+6LG;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Notes from LPC PCI/MSI BoF session
+Date: Mon, 22 Sep 2008 12:29:18 -0700
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <s5hbpyny7bl.wl%tiwai@suse.de>
-	 <20080918122541.2c3c7b39@areia.chehab.org>
-	 <48D27734.3040600@cateee.net>
-	 <alpine.LFD.1.10.0809181154020.12224@bombadil.infradead.org>
-	 <48D36D02.4090003@cateee.net> <s5hy71oyviu.wl%tiwai@suse.de>
-	 <70318cbf0809191655m89e4b4fo68c3693487afed98@mail.gmail.com>
-	 <s5hk5d4xzw0.wl%tiwai@suse.de>
-X-Google-Sender-Auth: 3021e7cc6396f21c
+Message-Id: <200809221229.18501.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 3:01 AM, Takashi Iwai <tiwai@suse.de> wrote:
+Matthew was kind enough to set up a BoF for those of us interested in PCI and 
+MSI issues at this year's LPC.  We went over several issues there:  MSI, PCI 
+hotplug, PCIe virtualization, VGA arbitration and PCI address space 
+management.
 
-> I think a whitelist would be useful, too, e.g. for hotplug devices
-> like usb.
+MSI
+---
+This was probably the biggest topic; we spent almost an hour on the topic as I 
+recall.  The main takeaways were these:
 
-The white list is marginally useful. But it is very complicate to do.
-In order to preform white list. You have to know the dependency
-of the module. e.g. You need to know exactly which options to
-turn on so the modules will show up. The current dependency
-analyze is the other way around. It knows which device should
-show up when some config option is enabled. Answering the
-question of which option should enable in order that device
-show up is a much harder problem.
+Issue:
+Need to add something like James' lost interrupt code so we can better     
+detect platforms with buggy MSI support (along with more general     
+interrupt routing issues).
+Owner:
+Me.  I'll be handling this by integrating James' patches into the PCI tree for     
+2.6.28.
 
-Also, as long as the user can get a boot able kernel out of
-the minimal config. It is easy enough to recompile the kernel
-with white list modules and install them as needed.
+Issue:
+Storage drivers need to use the functionality provided above and print an oops 
+message or similar so we can pick it up and blacklist the platform.
+Owner:
+Matthew (I think?)
 
-The white list should be a secondary step to do because
-its complexity. The first priority is to have some thing simple
-and provide a good minimal kernel module option. Then we
-can go from there, how to add extra white list from it. The white
-list is a very different game any way. I found the minimal config
-option is a sweet spot to have in terms of feature and simplicity.
+Issue:
+smp_affinity and MSI are currently incompatible if MSI masking and INTX 
+mapping are unavailable.  Need to return -EINVAL from smp_affinity changes in 
+this case.
+Owner:
+Me (happy to receive patches for this though).
 
-> This should be fixed in Makefile.
-> Care to submit a patch?
+Issue:
+MSI API improvements.  Need ways to allocate MSIs at runtime, and perhaps on a 
+per-CPU level and get affinity information.  And of course we need a way to 
+get more than one legacy MSI allocated.
+Owner:
+Matthew is handling the first pass of this (the more than one legacy MSI 
+addition).  I think we'll need some detailed requirements from the driver 
+guys to make further improvements (e.g. per-CPU or affinity stuff).
 
-Some module does not want to be compile as build-in.
+Issue:
+Need better MSI platform blacklists.
+Owner:
+Me.  I'll see if I can gather the list of issues the Fedora guys saw last time 
+they tried to enable MSI unconditionally.  We can also improve the list 
+through the added debugging described above.
 
-Chris
+PCI hotplug
+-----------
+PCI hotplug has seen a lot of churn lately, mainly due to long overdue fixes 
+from Alex & Kenji-san.  Now that Kristen is done with LPC related planning 
+and implementation, she says she'll have time to review more patches, but she 
+also said PCI hotplug doesn't need a dedicated maintainer.  Assuming there 
+are no objections, I'll apply a patch to remove the associated entry from 
+MAINTAINERS for 2.6.28.
+
+I'm really happy with the level of review we've been getting on hotplug 
+related patches these days, I hope we can keep it up.  One of the main 
+remaining issues that I can see is adding some better detection code for our 
+hotplug slot drivers.  It seems like we're missing something given that we 
+see so many systems with duplicate slot IDs; maybe we're not calling the 
+right ACPI methods or are calling them wrong somehow?
+
+PCIe virtualization
+-------------------
+Briefly discussed the SR-IOV patches Yu has been posting recently.  Except for 
+a couple of changes requested by Alex & Matthew, it looks like this patch set 
+is in pretty good shape.  I'll wait for Matthew & Alex to ack the next set, 
+then I'll apply to my linux-next branch.
+
+VGA arbitration
+---------------
+There's some code for handling legacy VGA routing floating around.  Ben put it 
+together awhile back, and Tiago Vignatti has been looking after it lately.  
+It's a good interface to have for multi-seat configurations that require 
+multiple VGA cards to be POSTed; it mainly needs to be re-posted to the 
+mailing list for final review at this point (and Ben mentioned one more API 
+is needed to allow drivers to exclude themselves from arbitration once they 
+no longer need legacy VGA space).
+
+PCI address space management
+----------------------------
+TJ has a bunch of code to improve address space management in Linux.  We 
+talked for a few minutes about this at the BoF; at this point I'm just 
+waiting for TJ to post his stuff so we can start integrating it.  Hopefully 
+we can start merging small pieces of it (like the multiple PCI gap stuff) for 
+2.6.28, and get some more eyes on the more aggressive PCI-DMAR stuff he's 
+been talking about soon.
+
+Well that's all I have in the way of notes.  Feel free to add your own if I 
+missed anything or correct me if I mischaracterized things.
+
+Thanks,
+Jesse
+    
