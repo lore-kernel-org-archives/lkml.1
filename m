@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbYIVPAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbYIVPGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753818AbYIVPAh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 11:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYIVPAK
+	id S1753167AbYIVPGe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 11:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYIVPG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 11:00:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37093 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752593AbYIVPAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 11:00:08 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0809201649400.13926@blonde.site>
-References: <Pine.LNX.4.64.0809201649400.13926@blonde.site> <20080910121217.GA16013@elte.hu> <20080910144812.GB18644@wotan.suse.de> <1221058864.30429.291.camel@twins.programming.kicks-ass.net> <20080910152651.GE18644@wotan.suse.de> <20080911082709.GA14378@elte.hu> <20080914073906.GA6184@elte.hu> <20080914004442.4f8e851f.akpm@linux-foundation.org> <20080914080631.GA10720@elte.hu> <20080914221231.GG27080@wotan.suse.de> <20080917131419.e6b7622e.akpm@linux-foundation.org> <20080918111226.GD29968@elte.hu> <48D2ABFD.3040103@goop.org> <1221772310.4779.29.camel@calx> <1221877119.8533.2.camel@nimitz> 
-To: Hugh Dickins <hugh@veritas.com>
-Cc: dhowells@redhat.com, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
-Date: Mon, 22 Sep 2008 15:54:09 +0100
-Message-ID: <13787.1222095249@redhat.com>
+	Mon, 22 Sep 2008 11:06:26 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52643 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752583AbYIVPGZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 11:06:25 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <28237198.1222095970373.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 23 Sep 2008 00:06:10 +0900 (JST)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Re: Re: [PATCH 4/13] memcg: force_empty moving account
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       balbir@linux.vnet.ibm.com, nishimura@mxp.nes.nec.co.jp,
+       xemul@openvz.org, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1222095363.16700.15.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <1222095363.16700.15.camel@lappy.programming.kicks-ass.net>
+ <1222093420.16700.2.camel@lappy.programming.kicks-ass.net>
+	 <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080922200025.49ea6d70.kamezawa.hiroyu@jp.fujitsu.com>
+	 <19184326.1222095015978.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hugh Dickins <hugh@veritas.com> wrote:
-
-> But now looking into it further, I see this is all a red herring,
-> your rearrangement is not the significant difference: before that
-> there was David Howells' Jan 2006 commit
-> b0e15190ead07056ab0c3844a499ff35e66d27cc
-> [PATCH] NOMMU: Make SYSV IPC SHM use ramfs facilities on NOMMU
-> which is the one which adds do_truncate() into tiny-shmem.c's
-> shmem_file_setup() but not into shmem.c's - presumably because
-> config SHMEM depends on MMU so it was irrelevant in shmem.c.
+----- Original Message -----
+>On Mon, 2008-09-22 at 23:50 +0900, kamezawa.hiroyu@jp.fujitsu.com wrote:
+>> ----- Original Message -----
+>> >> +			spin_lock_irqsave(&mz->lru_lock, flags);
+>> >> +		} else {
+>> >> +			unlock_page(page);
+>> >> +			put_page(page);
+>> >> +		}
+>> >> +		if (atomic_read(&mem->css.cgroup->count) > 0)
+>> >> +			break;
+>> >>  	}
+>> >>  	spin_unlock_irqrestore(&mz->lru_lock, flags);
+>> >
+>> >do _NOT_ use yield() ever! unless you know what you're doing, and
+>> >probably not even then.
+>> >
+>> >NAK!
+>> Hmm, sorry. cond_resched() is ok ?
 >
-> *That* is the relevant commit, which introduced the bad i_mutex
-> within mmap_sem lock ordering, and it seems that Nick's current
-> patch is wrong just to remove that do_truncate(), a significant
-> change hidden inside his restoration of the original arrangement.
+>depends on what you want to do, please explain what you're trying to do.
+>
+Sorry again.
 
-That would break SYSV IPC SHM under CONFIG_MMU=n conditions.
+This force_empty is called only in following situation
+ - there is no user threas in this cgroup.
+ - a user tries to rmdir() this cgroup or explicitly type
+   echo 1 > ../memory.force_empty.
 
-The truncate is necessary as I explained in my patch:
+force_empty() scans lru list of this cgroup and check page_cgroup on the
+list one by one. Because there are no tasks in this group, force_empty can
+see following racy condtions while scanning.
 
-     (2) ramfs files now need resizing using do_truncate() rather than by
-         modifying the inode size directly (see shmem_file_setup()). This
-         causes ramfs to attempt to bind a block of pages of sufficient size to
-         the inode.
+ - global lru tries to remove the page which pointed by page_cgroup 
+   and it is not-on-LRU.
+ - the page is locked by someone.
+   ....find some lock contetion with invalidation/truncate.
+ - in later patch, page_cgroup can be on pagevec(i added) and we have to drain
+   it to remove from LRU.
 
-What I didn't belabour in the patch, and perhaps I should have, is that to do
-SYSV IPC SHM under NOMMU conditions, it is necessary to allocate a *contiguous*
-set of pages - something that ramfs has been taught to do under NOMMU when
-truncating a file upwards from zero size.  This makes POSIX SHM on ramfs files
-viable also.
+In above situation, force_empty() have to wait for some event proceeds.
 
-David
+Hmm...detecting busy situation in loop and sleep in out-side-of-loop
+is better ? Anyway, ok, I'll rewrite this.
+
+BTW, sched.c::yield() is for what purpose now ?
+
+Thanks,
+-Kame
+
+
+
