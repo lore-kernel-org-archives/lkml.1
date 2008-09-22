@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbYIVW2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYIVWc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752056AbYIVW2n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 18:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbYIVW23
+	id S1754672AbYIVWc4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 18:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYIVWcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 18:28:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54059
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754388AbYIVW21 (ORCPT
+	Mon, 22 Sep 2008 18:32:43 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:36228 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753172AbYIVWcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 18:28:27 -0400
-Date: Mon, 22 Sep 2008 15:28:15 -0700 (PDT)
-Message-Id: <20080922.152815.22060684.davem@davemloft.net>
-To: jkosina@suse.cz
-Cc: airlied@gmail.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, chrisl@vmware.com, david.vrabel@csr.com
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0809230010460.27884@twin.jikos.cz>
-References: <20080921.165159.67476441.davem@davemloft.net>
-	<21d7e9970809212359y6876c405ub57dca3e9ee737e4@mail.gmail.com>
-	<Pine.LNX.4.64.0809230010460.27884@twin.jikos.cz>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 22 Sep 2008 18:32:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=mTrFuazWOs2ub0rWGBaCAZYgQfsr+S4btCRM3yrj9RErpW4if/mVi9g3QJqdPoSIXu
+         DHStYqWkA5+sw03LJkJ3VJ1Ju96KadkFBYnp+rq7Owik/mql56+5UBq/G45JU1/LMkow
+         1h3aOCy8DUuPNBXcmcYPeOp7GZL8tib/3kM20=
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: OOPS bug KERNEL LINUX- Version 2.6.26
+Date: Tue, 23 Sep 2008 00:32:36 +0200
+User-Agent: KMail/1.9.9
+Cc: David Miller <davem@davemloft.net>, andrea_monta@inwind.it,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, stable@kernel.org
+References: <K7M9ZI$69A44BBF23D86D612A80B0EA98EEEE6B@libero.it> <200809230025.03680.IvDoorn@gmail.com> <20080922222716.GI3660@tuxdriver.com>
+In-Reply-To: <20080922222716.GI3660@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809230032.37255.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Tue, 23 Sep 2008 00:15:08 +0200 (CEST)
+On Tuesday 23 September 2008, John W. Linville wrote:
+> On Tue, Sep 23, 2008 at 12:25:03AM +0200, Ivo van Doorn wrote:
+> > Hi,
+> > 
+> > > > 1. Problem with usb-wireless-key 
+> > > > 2. I can't find my device typing ifconfig -a or iwconfig I don't find any wireless attached device. But I have my usb wireless connected. A belkin usb wireless key.Before, with the kernel 2.6.25 all worked well
+> > > > 3. nothing
+> > > > 4. Linux version 2.6.26 (root@clementino) (gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)) #1 PREEMPT Mon Sep 22 15:57:45 CEST 2008
+> > > > 5.
+> > 
+> > You missed the message from rt2x00 2 lines above this trace, which undoubtly have said something like:
+> > 	"Invalid RT chipset detected."
+> > which is triggered when rt73usb is loaded for a device it does not support
+> > 
+> > The current workaround for this issue is blacklisting rt73usb and making sure the driver
+> > which is required for your driver is loaded instead.
+> > 
+> > I'll look into the reason why this actually triggers a NULL pointer, since that is obviously a nasty bug.
+> 
+> -stable needs a patch similar to the one here:
+> 
+> 	http://people.redhat.com/linville/kernels/rhel5/patches/jwltest-rt2x00lib-probe-fail.patch
 
-> On Mon, 22 Sep 2008, Dave Airlie wrote:
-> 
-> > Sep 8th I booted my own 2.6.27-rc5 kernel based from
-> > ec0c15afb41fd9ad45b53468b60db50170e22346
-> > This got a corrupted e1000e checksum and every kernel since has.
-> 
-> Have you restored the EEPROM contents after it got corrupted for the first 
-> time?
-> 
-> Once the EEPROM contents get corrupted, the card will then be broken
-> forever even on kernel that gets this fixed one day. 
-> 
-> This is pretty serious bug in fact, as it renders hardware of poor users 
-> unusable, and just patching kernel is then not enough to put things back 
-> to shape.
+Ah yes, that would be a good one.
+I kind of assumed it was already merged, and hadn't actually verified that yet. ;)
 
-The top priority is to root cause this, so that we can stop the
-problem from happening as fast as possible, and I'm still waiting for
-the SHA1 ID that was used for the last kernel Dave booted before the
-problem occurred which is pretty damn critical for making forward
-progress here.
+Ivo
 
-It could even be some PCI or x86 layer change that caused the corruption,
-we don't even know yet.
+
