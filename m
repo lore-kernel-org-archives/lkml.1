@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbYIVWJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbYIVWMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653AbYIVWJS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 18:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbYIVWJF
+	id S1754701AbYIVWMG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 18:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbYIVWLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 18:09:05 -0400
-Received: from ns2.suse.de ([195.135.220.15]:46297 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753568AbYIVWJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 18:09:04 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs / Novell
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH 1/2] file capabilities: add no_file_caps switch (v2)
-Date: Tue, 23 Sep 2008 00:08:30 +0200
-User-Agent: KMail/1.9.9
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Chris Wright <chrisw@sous-sol.org>
-References: <20080922184835.GA2826@us.ibm.com> <200809222209.37218.agruen@suse.de> <20080922215032.GB502@us.ibm.com>
-In-Reply-To: <20080922215032.GB502@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 22 Sep 2008 18:11:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41422 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753783AbYIVWLx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 18:11:53 -0400
+Date: Mon, 22 Sep 2008 15:10:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       avi@qumranet.com, kvm@vger.kernel.org, dan.j.williams@intel.com
+Subject: Re: mmotm 2008-09-22-01-36 uploaded (kvm)
+Message-Id: <20080922151026.64715dc4.akpm@linux-foundation.org>
+In-Reply-To: <200809221458.53192.jbarnes@virtuousgeek.org>
+References: <200809220838.m8M8cwC2031790@imap1.linux-foundation.org>
+	<20080922111947.507e34b1.randy.dunlap@oracle.com>
+	<20080922125227.2b837457.akpm@linux-foundation.org>
+	<200809221458.53192.jbarnes@virtuousgeek.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809230008.31025.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 22 September 2008 23:50:32 Serge E. Hallyn wrote:
-> Quoting Andreas Gruenbacher (agruen@suse.de):
-> > I agree. These other behaviorial changes should not depend on
-> > CONFIG_SECURITY_FILE_CAPABILITIES; the old behavior should just be fixed
-> > instead.
->
-> That of course would be the point of the patch 3/3, which removes
-> CONFIG_SECURITY_FILE_CAPABILITIES as a config option.  Should I
-> do that
+On Mon, 22 Sep 2008 14:58:52 -0700
+Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-I think yes.
+> On Monday, September 22, 2008 12:52 pm Andrew Morton wrote:
+> > On Mon, 22 Sep 2008 11:19:47 -0700
+> >
+> > Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > > On Mon, 22 Sep 2008 01:38:58 -0700 akpm@linux-foundation.org wrote:
+> > > > The mm-of-the-moment snapshot 2008-09-22-01-36 has been uploaded to
+> > > >
+> > > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > >
+> > > > It contains the following patches against 2.6.27-rc7:
+> > >
+> > > ERROR: "intel_iommu_found" [arch/x86/kvm/kvm.ko] undefined!
+> > >
+> > > when CONFIG_DMAR=n.
+> >
+> > Yes, I got that too.  i386 allmodconfig fails similarly.  It's still
+> > unclear which tree in linux-next broke it.  PCI or async_tx, perhaps.
+> 
+> I don't have that symbol in my tree (yet).  It's part of one of the IOMMU KVM 
+> patch sets that's currently in-flight.  I'll add it to my linux-next tree 
+> today or tomorrow, assuming I get an ack from David about it (I'll bounce it 
+> over to him now).
+> 
 
-> when I redo the patch as per Stephen's suggestion to use filecaps=0/1?
+It's already there, and exported in linux-next.  But it just doesn't get
+compiled in due to some Kconfig snafu.
 
-This will require to adjust our installer, which uses no_file_caps already. I 
-don't think that filecaps=0/1 is really necessary, but it I can life with 
-either.
-
-Thanks,
-Andreas
