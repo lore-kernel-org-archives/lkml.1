@@ -1,71 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYIVTOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbYIVTRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYIVTOW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 15:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYIVTOO
+	id S1753801AbYIVTRB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 15:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYIVTQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 15:14:14 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47627 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310AbYIVTON (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 15:14:13 -0400
-Date: Mon, 22 Sep 2008 20:13:53 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org,
-       Tony Lindgren <tony@atomide.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "George G. Davis" <gdavis@mvista.com>, Alan Cox <alan@redhat.com>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: [PATCH 1/3] watchdog: sync linux-omap changes
-Message-ID: <20080922191353.GB8314@flint.arm.linux.org.uk>
-References: <1221873243-18303-1-git-send-email-me@felipebalbi.com> <1221873243-18303-2-git-send-email-me@felipebalbi.com> <20080922182206.GM22550@infomag.infomag.iguana.be>
+	Mon, 22 Sep 2008 15:16:52 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:63801 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751205AbYIVTQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 15:16:51 -0400
+Subject: Re: [PATCH 1/2] file capabilities: add no_file_caps switch (v2)
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       Andreas Gruenbacher <agruen@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <20080922184835.GA2826@us.ibm.com>
+References: <20080922184835.GA2826@us.ibm.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 22 Sep 2008 15:16:04 -0400
+Message-Id: <1222110964.18735.77.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080922182206.GM22550@infomag.infomag.iguana.be>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 08:22:06PM +0200, Wim Van Sebroeck wrote:
-> Hi All,
+
+On Mon, 2008-09-22 at 13:48 -0500, Serge E. Hallyn wrote:
+> (Resend of two patches from late August.  If noone objects, would it be
+> possible to see this pair take a turn in security-testing?)
 > 
-> last item that (for me) is still open is:
-> > +struct omap_wdt_dev {
-> > +	void __iomem    *base;          /* physical */
-> > +	struct device   *dev;
+> Add a no_file_caps boot option when file capabilities are
+> compiled into the kernel (CONFIG_SECURITY_FILE_CAPABILITIES=y).
+
+Is there a reason you didn't just use a filecaps=0/1 approach ala the
+selinux= boot parameter?  And let the default value be selectable as
+well?
+
+> This allows distributions to ship a kernel with file capabilities
+> compiled in, without forcing users to use (and understand and
+> trust) them.
 > 
-> is dev indeed unused or is it used by platform specific code?
-> If this is sorted out this will go into the watchdog-mm tree.
+> When no_file_caps is specified at boot, then when a process executes
+> a file, any file capabilities stored with that file will not be
+> used in the calculation of the process' new capability sets.
+> 
+> This means that booting with the no_file_caps boot option will
+> not be the same as booting a kernel with file capabilities
+> compiled out - in particular a task with  CAP_SETPCAP will not
+> have any chance of passing capabilities to another task (which
+> isn't "really" possible anyway, and which may soon by killed
+> altogether by David Howells in any case), and it will instead
+> be able to put new capabilities in its pI.  However since fI
+> will always be empty and pI is masked with fI, it gains the
+> task nothing.
+> 
+> We also support the extra prctl options, setting securebits and
+> dropping capabilities from the per-process bounding set.
+> 
+> The other remaining difference is that killpriv, task_setscheduler,
+> setioprio, and setnice will continue to be hooked.  That will
+> be noticable in the case where a root task changed its uid
+> while keeping some caps, and another task owned by the new uid
+> tries to change settings for the more privileged task.
 
-It's unused, but it's a minor point, something that shouldn't stand
-in the way of it going into the watchdog tree.  It doesn't cause a
-build error and doesn't cause malfunction.  It's just a little untidy
-and can be addressed separately.
+Seems a bit confusing to offer a no_file_caps option with different
+behavior than disabling it at build time.
 
-However, if you want Filipe to redo the patch yet again (risking him
-getting pissed off with the number of times round the loop it's taking
-for what should be a simple driver) there's also this:
+BTW, I think Fedora kernel have had CONFIG_SECURITY_FILE_CAPABILITIES=y
+for quite some time.  Not that they are using it AFAIK, but the kernel
+support has seemingly been enabled.
 
-@@ -219,12 +240,12 @@ static long omap_wdt_ioctl(struct file *file, unsigned int+cmd,
-                omap_wdt_adjust_timeout(new_margin);
+> Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+> Acked-by: Andrew G. Morgan <morgan@kernel.org>
+> ---
+>  kernel/capability.c  |   13 +++++++++++++
+>  security/commoncap.c |   11 +++++++++++
+>  2 files changed, 24 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/capability.c b/kernel/capability.c
+> index 33e51e7..5d034ec 100644
+> --- a/kernel/capability.c
+> +++ b/kernel/capability.c
+> @@ -33,6 +33,19 @@ EXPORT_SYMBOL(__cap_empty_set);
+>  EXPORT_SYMBOL(__cap_full_set);
+>  EXPORT_SYMBOL(__cap_init_eff_set);
+>  
+> +#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
+> +int file_caps_enabled = 1;
+> +
+> +static int __init file_caps_disable(char *str)
+> +{
+> +	file_caps_enabled = 0;
+> +	return 1;
+> +}
+> +__setup("no_file_caps", file_caps_disable);
+> +#else
+> +static const int file_caps_enabled = 0;
+> +#endif
+> +
+>  /*
+>   * More recent versions of libcap are available from:
+>   *
+> diff --git a/security/commoncap.c b/security/commoncap.c
+> index e4c4b3f..8c66d34 100644
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+> @@ -27,6 +27,12 @@
+>  #include <linux/prctl.h>
+>  #include <linux/securebits.h>
+>  
+> +#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
+> +extern int file_caps_enabled;
+> +#else
+> +static const int file_caps_enabled = 0;
+> +#endif
+> +
+>  int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
+>  {
+>  	NETLINK_CB(skb).eff_cap = current->cap_effective;
+> @@ -279,6 +285,11 @@ static int get_file_caps(struct linux_binprm *bprm)
+>  	struct vfs_cap_data vcaps;
+>  	struct inode *inode;
+>  
+> +	if (!file_caps_enabled) {
+> +		bprm_clear_caps(bprm);
+> +		return 0;
+> +	}
+> +
+>  	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
+>  		bprm_clear_caps(bprm);
+>  		return 0;
+-- 
+Stephen Smalley
+National Security Agency
 
-                spin_lock(&wdt_lock);
--               omap_wdt_disable();
--               omap_wdt_set_timeout();
--               omap_wdt_enable();
--
--               omap_wdt_ping();
-+               omap_wdt_disable(wdev);
-+               omap_wdt_set_timeout(wdev);
-+               omap_wdt_enable(wdev);
-                spin_unlock(&wdt_lock);
-+
-+               omap_wdt_ping(wdev);
-
-which is moving omap_wdt_ping() outside of the spin lock, which I
-doubt actually causes any problem in real life on OMAP platforms.
-Granted that theoretically and logically it's wrong.
