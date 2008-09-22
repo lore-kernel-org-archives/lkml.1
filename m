@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbYIVNNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbYIVNN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752855AbYIVNNd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 09:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYIVNNZ
+	id S1753200AbYIVNN6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 09:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYIVNNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 09:13:25 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:1703 "EHLO
-	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751909AbYIVNNZ (ORCPT
+	Mon, 22 Sep 2008 09:13:49 -0400
+Received: from ns0.wincor-nixdorf.com ([80.154.98.130]:59784 "EHLO
+	mxpdbe2.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752034AbYIVNNs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 09:13:25 -0400
-X-BigFish: VPS-32(zz1432R98dR936eQ62a3L1805M19c2kzz10d3izz5a6ciz32i6bh64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-SS: 5,
-X-WSS-ID: 0K7LM1Y-02-YCU-01
-Date: Mon, 22 Sep 2008 15:13:10 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Andrea Righi <righi.andrea@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       oprofile-list@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -mm] oprofile: BUG scheduling while atomic
-Message-ID: <20080922131309.GL23557@erda.amd.com>
-References: <48D51E93.90804@gmail.com>
+	Mon, 22 Sep 2008 09:13:48 -0400
+Message-ID: <48D79977.30403@wincor-nixdorf.com>
+Date: Mon, 22 Sep 2008 15:11:19 +0200
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Organization: Wincor Nixdorf International
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: linux-serial@vger.kernel.org
+CC: Russell King <rmk@arm.linux.org.uk>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v2] serial: set correct baud_base for Oxford Semiconductor
+ Ltd EXSYS EX-41092 Dual 16950 Serial adapter
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Sep 2008 13:12:56.0567 (UTC) FILETIME=[EDC68070:01C91CB4]
 Content-Disposition: inline
-In-Reply-To: <48D51E93.90804@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 22 Sep 2008 13:13:13.0579 (UTC) FILETIME=[F7EA53B0:01C91CB4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forgot to cc Ingo.
+The PCI-card identified as "Oxford Semiconductor Ltd EXSYS EX-41092 Dual
+16950 Serial adapter" is only usable with other devices (i.e. not the same
+card) after doing a "setserial /dev/ttyS<n> baud_base 115200".  This
+baud_base should be default for this card.
 
--Robert
+Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
+---
+ drivers/serial/8250_pci.c |    3 +++
+ include/linux/pci_ids.h   |    1 +
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-On 20.09.08 18:02:27, Andrea Righi wrote:
-> nmi_shutdown() calls unregister_die_notifier() from an atomic context
-> after setting preempt_disable() via get_cpu_var():
-> 
-> [ 1049.404154] BUG: scheduling while atomic: oprofiled/7796/0x00000002
-> [ 1049.404171] INFO: lockdep is turned off.
-> [ 1049.404176] Modules linked in: oprofile af_packet rfcomm l2cap kvm_intel kvm i915 drm acpi_cpufreq cpufreq_userspace cpufreq_conservative cpufreq_ondemand cpufreq_powersave freq_table container sbs sbshc dm_mod arc4 ecb cryptomgr aead snd_hda_intel crypto_blkcipher snd_pcm_oss crypto_algapi snd_pcm iwlagn iwlcore snd_timer iTCO_wdt led_class btusb iTCO_vendor_support snd psmouse bluetooth mac80211 soundcore cfg80211 snd_page_alloc intel_agp video output button battery ac dcdbas evdev ext3 jbd mbcache sg sd_mod piix ata_piix libata scsi_mod dock tg3 libphy ehci_hcd uhci_hcd usbcore thermal processor fan fuse
-> [ 1049.404362] Pid: 7796, comm: oprofiled Not tainted 2.6.27-rc5-mm1 #30
-> [ 1049.404368] Call Trace:
-> [ 1049.404384]  [<ffffffff804769fd>] thread_return+0x4a0/0x7d3
-> [ 1049.404396]  [<ffffffff8026ad92>] generic_exec_single+0x52/0xe0
-> [ 1049.404405]  [<ffffffff8026ae1a>] generic_exec_single+0xda/0xe0
-> [ 1049.404414]  [<ffffffff8026aee3>] smp_call_function_single+0x73/0x150
-> [ 1049.404423]  [<ffffffff804770c5>] schedule_timeout+0x95/0xd0
-> [ 1049.404430]  [<ffffffff80476083>] wait_for_common+0x43/0x180
-> [ 1049.404438]  [<ffffffff80476154>] wait_for_common+0x114/0x180
-> [ 1049.404448]  [<ffffffff80236980>] default_wake_function+0x0/0x10
-> [ 1049.404457]  [<ffffffff8024f810>] synchronize_rcu+0x30/0x40
-> [ 1049.404463]  [<ffffffff8024f890>] wakeme_after_rcu+0x0/0x10
-> [ 1049.404472]  [<ffffffff80479ca0>] _spin_unlock_irqrestore+0x40/0x80
-> [ 1049.404482]  [<ffffffff80256def>] atomic_notifier_chain_unregister+0x3f/0x60
-> [ 1049.404501]  [<ffffffffa03d8801>] nmi_shutdown+0x51/0x90 [oprofile]
-> [ 1049.404517]  [<ffffffffa03d6134>] oprofile_shutdown+0x34/0x70 [oprofile]
-> [ 1049.404532]  [<ffffffffa03d721e>] event_buffer_release+0xe/0x40 [oprofile]
-> [ 1049.404543]  [<ffffffff802bdcdd>] __fput+0xcd/0x240
-> [ 1049.404551]  [<ffffffff802baa74>] filp_close+0x54/0x90
-> [ 1049.404560]  [<ffffffff8023e1d1>] put_files_struct+0xb1/0xd0
-> [ 1049.404568]  [<ffffffff8023f82f>] do_exit+0x18f/0x930
-> [ 1049.404576]  [<ffffffff8020be03>] restore_args+0x0/0x30
-> [ 1049.404584]  [<ffffffff80240006>] do_group_exit+0x36/0xa0
-> [ 1049.404592]  [<ffffffff8020b7cb>] system_call_fastpath+0x16/0x1b
-> 
-> This can be easily triggered with 'opcontrol --shutdown'.
-> 
-> Simply move get_cpu_var() above unregister_die_notifier().
-> 
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+index c2f2393..3539c3c 100644
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -2291,6 +2291,9 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 		 * For now just used the hex ID 0x950a.
+ 		 */
+ 	{	PCI_VENDOR_ID_OXSEMI, 0x950a,
++		PCI_SUBVENDOR_ID_SIIG, PCI_SUBDEVICE_ID_SIIG_DUAL_SERIAL, 0, 0,
++		pbn_b0_2_115200 },
++	{	PCI_VENDOR_ID_OXSEMI, 0x950a,
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+ 		pbn_b0_2_1130000 },
+ 	{	PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_16PCI954,
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index f1624b3..9e46ab3 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -1751,6 +1751,7 @@
+ #define PCI_DEVICE_ID_SIIG_8S_20x_650	0x2081
+ #define PCI_DEVICE_ID_SIIG_8S_20x_850	0x2082
+ #define PCI_SUBDEVICE_ID_SIIG_QUARTET_SERIAL	0x2050
++#define PCI_SUBDEVICE_ID_SIIG_DUAL_SERIAL	0x2530
+ 
+ #define PCI_VENDOR_ID_RADISYS		0x1331
+ 
 
-Acked-by: Robert Richter <robert@richter@amd.com>
+
+
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+WINCOR NIXDORF International GmbH 
+Sitz der Gesellschaft: Paderborn 
+Registergericht Paderborn HRB 3507
+Geschäftsführer: Eckard Heidloff (Vorsitzender), Stefan Auerbach, Dr. Jürgen Wunram
+Vorsitzender des Aufsichtsrats: Karl-Heinz Stiller 
+Steuernummer: 339/5884/0020 - Ust-ID Nr.: DE812927716 - WEEE-Reg.-Nr. DE44477193
+
+Diese E-Mail enthält vertrauliche Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und vernichten Sie diese E-Mail. Das unerlaubte Kopieren sowie die unbefugte Weitergabe dieser E-Mail ist nicht gestattet.
+
+This e-mail may contain confidential information. If you are not the intended recipient (or have received this e-mail in error) please notify the sender immediately and destroy this e-mail. Any unauthorised copying, disclosure or distribution of the material in this e-mail is strictly forbidden. 
 
