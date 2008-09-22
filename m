@@ -1,441 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbYIVSmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbYIVSmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754902AbYIVSmZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYIVSkq
+	id S1755088AbYIVSmj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbYIVSlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:40:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54652 "EHLO mx2.redhat.com"
+	Mon, 22 Sep 2008 14:41:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54675 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752957AbYIVSkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 14:40:41 -0400
+	id S1752826AbYIVSlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 14:41:16 -0400
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/6] dlm: allow multiple lockspace creates
-Date: Mon, 22 Sep 2008 13:28:34 -0500
-Message-Id: <1222108119-24928-2-git-send-email-teigland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 6/6] dlm: choose better identifiers
+Date: Mon, 22 Sep 2008 13:28:39 -0500
+Message-Id: <1222108119-24928-7-git-send-email-teigland@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a count for lockspace create and release so that create can
-be called multiple times to use the lockspace from different places.
-Also add the new flag DLM_LSFL_NEWEXCL to create a lockspace with
-the previous behavior of returning -EEXIST if the lockspace already
-exists.
+From: Andrew Morton <akpm@linux-foundation.org>
 
+sparc32:
+
+fs/dlm/config.c:397: error: expected identifier or '(' before '{' token
+fs/dlm/config.c: In function 'drop_node':
+fs/dlm/config.c:589: warning: initialization from incompatible pointer type
+fs/dlm/config.c:589: warning: initialization from incompatible pointer type
+fs/dlm/config.c: In function 'release_node':
+fs/dlm/config.c:601: warning: initialization from incompatible pointer type
+fs/dlm/config.c:601: warning: initialization from incompatible pointer type
+fs/dlm/config.c: In function 'show_node':
+fs/dlm/config.c:717: warning: initialization from incompatible pointer type
+fs/dlm/config.c:717: warning: initialization from incompatible pointer type
+fs/dlm/config.c: In function 'store_node':
+fs/dlm/config.c:726: warning: initialization from incompatible pointer type
+fs/dlm/config.c:726: warning: initialization from incompatible pointer type
+
+Cc: Christine Caulfield <ccaulfie@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: David Teigland <teigland@redhat.com>
 ---
- fs/dlm/dlm_internal.h       |    6 ++-
- fs/dlm/lockspace.c          |  107 ++++++++++++++++++++++++++++---------------
- fs/dlm/user.c               |   54 +++++++++++++--------
- fs/dlm/user.h               |    3 +-
- fs/gfs2/locking/dlm/mount.c |    3 +-
- include/linux/dlm.h         |    5 ++-
- include/linux/dlm_device.h  |    2 +-
- 7 files changed, 116 insertions(+), 64 deletions(-)
+ fs/dlm/config.c |   44 ++++++++++++++++++++++----------------------
+ 1 files changed, 22 insertions(+), 22 deletions(-)
 
-diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
-index 5a7ac33..9e0622a 100644
---- a/fs/dlm/dlm_internal.h
-+++ b/fs/dlm/dlm_internal.h
-@@ -2,7 +2,7 @@
- *******************************************************************************
- **
- **  Copyright (C) Sistina Software, Inc.  1997-2003  All rights reserved.
--**  Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2004-2008 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -441,7 +441,9 @@ struct dlm_ls {
- 	uint32_t		ls_global_id;	/* global unique lockspace ID */
- 	uint32_t		ls_exflags;
- 	int			ls_lvblen;
--	int			ls_count;	/* reference count */
-+	int			ls_count;	/* refcount of processes in
-+						   the dlm using this ls */
-+	int			ls_create_count; /* create/release refcount */
- 	unsigned long		ls_flags;	/* LSFL_ */
- 	struct kobject		ls_kobj;
- 
-diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
-index 499e167..56eae4e 100644
---- a/fs/dlm/lockspace.c
-+++ b/fs/dlm/lockspace.c
-@@ -2,7 +2,7 @@
- *******************************************************************************
- **
- **  Copyright (C) Sistina Software, Inc.  1997-2003  All rights reserved.
--**  Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2004-2008 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -23,6 +23,7 @@
- #include "lock.h"
- #include "recover.h"
- #include "requestqueue.h"
-+#include "user.h"
- 
- static int			ls_count;
- static struct mutex		ls_lock;
-@@ -246,23 +247,6 @@ static void dlm_scand_stop(void)
- 	kthread_stop(scand_task);
- }
- 
--static struct dlm_ls *dlm_find_lockspace_name(char *name, int namelen)
--{
--	struct dlm_ls *ls;
--
--	spin_lock(&lslist_lock);
--
--	list_for_each_entry(ls, &lslist, ls_list) {
--		if (ls->ls_namelen == namelen &&
--		    memcmp(ls->ls_name, name, namelen) == 0)
--			goto out;
--	}
--	ls = NULL;
-- out:
--	spin_unlock(&lslist_lock);
--	return ls;
--}
--
- struct dlm_ls *dlm_find_lockspace_global(uint32_t id)
- {
- 	struct dlm_ls *ls;
-@@ -327,6 +311,7 @@ static void remove_lockspace(struct dlm_ls *ls)
- 	for (;;) {
- 		spin_lock(&lslist_lock);
- 		if (ls->ls_count == 0) {
-+			WARN_ON(ls->ls_create_count != 0);
- 			list_del(&ls->ls_list);
- 			spin_unlock(&lslist_lock);
- 			return;
-@@ -381,7 +366,7 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
- 			 uint32_t flags, int lvblen)
- {
- 	struct dlm_ls *ls;
--	int i, size, error = -ENOMEM;
-+	int i, size, error;
- 	int do_unreg = 0;
- 
- 	if (namelen > DLM_LOCKSPACE_LEN)
-@@ -393,12 +378,32 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
- 	if (!try_module_get(THIS_MODULE))
- 		return -EINVAL;
- 
--	ls = dlm_find_lockspace_name(name, namelen);
--	if (ls) {
--		*lockspace = ls;
-+	error = 0;
-+
-+	spin_lock(&lslist_lock);
-+	list_for_each_entry(ls, &lslist, ls_list) {
-+		WARN_ON(ls->ls_create_count <= 0);
-+		if (ls->ls_namelen != namelen)
-+			continue;
-+		if (memcmp(ls->ls_name, name, namelen))
-+			continue;
-+		if (flags & DLM_LSFL_NEWEXCL) {
-+			error = -EEXIST;
-+			break;
-+		}
-+		ls->ls_create_count++;
- 		module_put(THIS_MODULE);
--		return -EEXIST;
-+		error = 1; /* not an error, return 0 */
-+		break;
- 	}
-+	spin_unlock(&lslist_lock);
-+
-+	if (error < 0)
-+		goto out;
-+	if (error)
-+		goto ret_zero;
-+
-+	error = -ENOMEM;
- 
- 	ls = kzalloc(sizeof(struct dlm_ls) + namelen, GFP_KERNEL);
- 	if (!ls)
-@@ -418,8 +423,9 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
- 		ls->ls_allocation = GFP_KERNEL;
- 
- 	/* ls_exflags are forced to match among nodes, and we don't
--	   need to require all nodes to have TIMEWARN or FS set */
--	ls->ls_exflags = (flags & ~(DLM_LSFL_TIMEWARN | DLM_LSFL_FS));
-+	   need to require all nodes to have some flags set */
-+	ls->ls_exflags = (flags & ~(DLM_LSFL_TIMEWARN | DLM_LSFL_FS |
-+				    DLM_LSFL_NEWEXCL));
- 
- 	size = dlm_config.ci_rsbtbl_size;
- 	ls->ls_rsbtbl_size = size;
-@@ -510,6 +516,7 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
- 	down_write(&ls->ls_in_recovery);
- 
- 	spin_lock(&lslist_lock);
-+	ls->ls_create_count = 1;
- 	list_add(&ls->ls_list, &lslist);
- 	spin_unlock(&lslist_lock);
- 
-@@ -548,7 +555,7 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
- 	dlm_create_debug_file(ls);
- 
- 	log_debug(ls, "join complete");
--
-+ ret_zero:
- 	*lockspace = ls;
- 	return 0;
- 
-@@ -635,11 +642,32 @@ static int release_lockspace(struct dlm_ls *ls, int force)
- 	struct dlm_lkb *lkb;
- 	struct dlm_rsb *rsb;
- 	struct list_head *head;
--	int i;
--	int busy = lockspace_busy(ls);
-+	int i, busy, rv;
-+
-+	busy = lockspace_busy(ls);
-+
-+	spin_lock(&lslist_lock);
-+	if (ls->ls_create_count == 1) {
-+		if (busy > force)
-+			rv = -EBUSY;
-+		else {
-+			/* remove_lockspace takes ls off lslist */
-+			ls->ls_create_count = 0;
-+			rv = 0;
-+		}
-+	} else if (ls->ls_create_count > 1) {
-+		rv = --ls->ls_create_count;
-+	} else {
-+		rv = -EINVAL;
-+	}
-+	spin_unlock(&lslist_lock);
-+
-+	if (rv) {
-+		log_debug(ls, "release_lockspace no remove %d", rv);
-+		return rv;
-+	}
- 
--	if (busy > force)
--		return -EBUSY;
-+	dlm_device_deregister(ls);
- 
- 	if (force < 3)
- 		do_uevent(ls, 0);
-@@ -720,15 +748,10 @@ static int release_lockspace(struct dlm_ls *ls, int force)
- 	dlm_clear_members(ls);
- 	dlm_clear_members_gone(ls);
- 	kfree(ls->ls_node_array);
-+	log_debug(ls, "release_lockspace final free");
- 	kobject_put(&ls->ls_kobj);
- 	/* The ls structure will be freed when the kobject is done with */
- 
--	mutex_lock(&ls_lock);
--	ls_count--;
--	if (!ls_count)
--		threads_stop();
--	mutex_unlock(&ls_lock);
--
- 	module_put(THIS_MODULE);
- 	return 0;
- }
-@@ -750,11 +773,21 @@ static int release_lockspace(struct dlm_ls *ls, int force)
- int dlm_release_lockspace(void *lockspace, int force)
- {
- 	struct dlm_ls *ls;
-+	int error;
- 
- 	ls = dlm_find_lockspace_local(lockspace);
- 	if (!ls)
- 		return -EINVAL;
- 	dlm_put_lockspace(ls);
--	return release_lockspace(ls, force);
-+
-+	mutex_lock(&ls_lock);
-+	error = release_lockspace(ls, force);
-+	if (!error)
-+		ls_count--;
-+	else if (!ls_count)
-+		threads_stop();
-+	mutex_unlock(&ls_lock);
-+
-+	return error;
- }
- 
-diff --git a/fs/dlm/user.c b/fs/dlm/user.c
-index 34f14a1..6542110 100644
---- a/fs/dlm/user.c
-+++ b/fs/dlm/user.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006-2007 Red Hat, Inc.  All rights reserved.
-+ * Copyright (C) 2006-2008 Red Hat, Inc.  All rights reserved.
-  *
-  * This copyrighted material is made available to anyone wishing to use,
-  * modify, copy, or redistribute it subject to the terms and conditions
-@@ -340,10 +340,15 @@ static int device_user_deadlock(struct dlm_user_proc *proc,
- 	return error;
- }
- 
--static int create_misc_device(struct dlm_ls *ls, char *name)
-+static int dlm_device_register(struct dlm_ls *ls, char *name)
- {
- 	int error, len;
- 
-+	/* The device is already registered.  This happens when the
-+	   lockspace is created multiple times from userspace. */
-+	if (ls->ls_device.name)
-+		return 0;
-+
- 	error = -ENOMEM;
- 	len = strlen(name) + strlen(name_prefix) + 2;
- 	ls->ls_device.name = kzalloc(len, GFP_KERNEL);
-@@ -363,6 +368,22 @@ fail:
- 	return error;
- }
- 
-+int dlm_device_deregister(struct dlm_ls *ls)
-+{
-+	int error;
-+
-+	/* The device is not registered.  This happens when the lockspace
-+	   was never used from userspace, or when device_create_lockspace()
-+	   calls dlm_release_lockspace() after the register fails. */
-+	if (!ls->ls_device.name)
-+		return 0;
-+
-+	error = misc_deregister(&ls->ls_device);
-+	if (!error)
-+		kfree(ls->ls_device.name);
-+	return error;
-+}
-+
- static int device_user_purge(struct dlm_user_proc *proc,
- 			     struct dlm_purge_params *params)
- {
-@@ -397,7 +418,7 @@ static int device_create_lockspace(struct dlm_lspace_params *params)
- 	if (!ls)
- 		return -ENOENT;
- 
--	error = create_misc_device(ls, params->name);
-+	error = dlm_device_register(ls, params->name);
- 	dlm_put_lockspace(ls);
- 
- 	if (error)
-@@ -421,31 +442,22 @@ static int device_remove_lockspace(struct dlm_lspace_params *params)
- 	if (!ls)
- 		return -ENOENT;
- 
--	/* Deregister the misc device first, so we don't have
--	 * a device that's not attached to a lockspace. If
--	 * dlm_release_lockspace fails then we can recreate it
--	 */
--	error = misc_deregister(&ls->ls_device);
--	if (error) {
--		dlm_put_lockspace(ls);
--		goto out;
--	}
--	kfree(ls->ls_device.name);
--
- 	if (params->flags & DLM_USER_LSFLG_FORCEFREE)
- 		force = 2;
- 
- 	lockspace = ls->ls_local_handle;
-+	dlm_put_lockspace(ls);
- 
--	/* dlm_release_lockspace waits for references to go to zero,
--	   so all processes will need to close their device for the ls
--	   before the release will procede */
-+	/* The final dlm_release_lockspace waits for references to go to
-+	   zero, so all processes will need to close their device for the
-+	   ls before the release will proceed.  release also calls the
-+	   device_deregister above.  Converting a positive return value
-+	   from release to zero means that userspace won't know when its
-+	   release was the final one, but it shouldn't need to know. */
- 
--	dlm_put_lockspace(ls);
- 	error = dlm_release_lockspace(lockspace, force);
--	if (error)
--		create_misc_device(ls, ls->ls_name);
-- out:
-+	if (error > 0)
-+		error = 0;
- 	return error;
- }
- 
-diff --git a/fs/dlm/user.h b/fs/dlm/user.h
-index d38e9f3..c528b6b 100644
---- a/fs/dlm/user.h
-+++ b/fs/dlm/user.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006 Red Hat, Inc.  All rights reserved.
-+ * Copyright (C) 2006-2008 Red Hat, Inc.  All rights reserved.
-  *
-  * This copyrighted material is made available to anyone wishing to use,
-  * modify, copy, or redistribute it subject to the terms and conditions
-@@ -12,5 +12,6 @@
- void dlm_user_add_ast(struct dlm_lkb *lkb, int type);
- int dlm_user_init(void);
- void dlm_user_exit(void);
-+int dlm_device_deregister(struct dlm_ls *ls);
- 
- #endif
-diff --git a/fs/gfs2/locking/dlm/mount.c b/fs/gfs2/locking/dlm/mount.c
-index 09d78c2..0c4cbe6 100644
---- a/fs/gfs2/locking/dlm/mount.c
-+++ b/fs/gfs2/locking/dlm/mount.c
-@@ -144,7 +144,8 @@ static int gdlm_mount(char *table_name, char *host_data,
- 
- 	error = dlm_new_lockspace(ls->fsname, strlen(ls->fsname),
- 				  &ls->dlm_lockspace,
--				  DLM_LSFL_FS | (nodir ? DLM_LSFL_NODIR : 0),
-+				  DLM_LSFL_FS | DLM_LSFL_NEWEXCL |
-+				  (nodir ? DLM_LSFL_NODIR : 0),
- 				  GDLM_LVB_SIZE);
- 	if (error) {
- 		log_error("dlm_new_lockspace error %d", error);
-diff --git a/include/linux/dlm.h b/include/linux/dlm.h
-index 203a025..b9cd386 100644
---- a/include/linux/dlm.h
-+++ b/include/linux/dlm.h
-@@ -2,7 +2,7 @@
- *******************************************************************************
- **
- **  Copyright (C) Sistina Software, Inc.  1997-2003  All rights reserved.
--**  Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2004-2008 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -65,9 +65,12 @@ struct dlm_lksb {
- 	char *	 sb_lvbptr;
+diff --git a/fs/dlm/config.c b/fs/dlm/config.c
+index 1359be3..fd9859f 100644
+--- a/fs/dlm/config.c
++++ b/fs/dlm/config.c
+@@ -380,24 +380,24 @@ static struct config_item_type node_type = {
+ 	.ct_owner = THIS_MODULE,
  };
  
-+/* dlm_new_lockspace() flags */
-+
- #define DLM_LSFL_NODIR		0x00000001
- #define DLM_LSFL_TIMEWARN	0x00000002
- #define DLM_LSFL_FS     	0x00000004
-+#define DLM_LSFL_NEWEXCL     	0x00000008
+-static struct dlm_cluster *to_cluster(struct config_item *i)
++static struct dlm_cluster *config_item_to_cluster(struct config_item *i)
+ {
+ 	return i ? container_of(to_config_group(i), struct dlm_cluster, group) :
+ 		   NULL;
+ }
  
- #ifdef __KERNEL__
+-static struct dlm_space *to_space(struct config_item *i)
++static struct dlm_space *config_item_to_space(struct config_item *i)
+ {
+ 	return i ? container_of(to_config_group(i), struct dlm_space, group) :
+ 		   NULL;
+ }
  
-diff --git a/include/linux/dlm_device.h b/include/linux/dlm_device.h
-index c603450..3060783 100644
---- a/include/linux/dlm_device.h
-+++ b/include/linux/dlm_device.h
-@@ -26,7 +26,7 @@
- /* Version of the device interface */
- #define DLM_DEVICE_VERSION_MAJOR 6
- #define DLM_DEVICE_VERSION_MINOR 0
--#define DLM_DEVICE_VERSION_PATCH 0
-+#define DLM_DEVICE_VERSION_PATCH 1
+-static struct dlm_comm *to_comm(struct config_item *i)
++static struct dlm_comm *config_item_to_comm(struct config_item *i)
+ {
+ 	return i ? container_of(i, struct dlm_comm, item) : NULL;
+ }
  
- /* struct passed to the lock write */
- struct dlm_lock_params {
+-static struct dlm_node *to_node(struct config_item *i)
++static struct dlm_node *config_item_to_node(struct config_item *i)
+ {
+ 	return i ? container_of(i, struct dlm_node, item) : NULL;
+ }
+@@ -453,7 +453,7 @@ static struct config_group *make_cluster(struct config_group *g,
+ 
+ static void drop_cluster(struct config_group *g, struct config_item *i)
+ {
+-	struct dlm_cluster *cl = to_cluster(i);
++	struct dlm_cluster *cl = config_item_to_cluster(i);
+ 	struct config_item *tmp;
+ 	int j;
+ 
+@@ -471,7 +471,7 @@ static void drop_cluster(struct config_group *g, struct config_item *i)
+ 
+ static void release_cluster(struct config_item *i)
+ {
+-	struct dlm_cluster *cl = to_cluster(i);
++	struct dlm_cluster *cl = config_item_to_cluster(i);
+ 	kfree(cl->group.default_groups);
+ 	kfree(cl);
+ }
+@@ -510,7 +510,7 @@ static struct config_group *make_space(struct config_group *g, const char *name)
+ 
+ static void drop_space(struct config_group *g, struct config_item *i)
+ {
+-	struct dlm_space *sp = to_space(i);
++	struct dlm_space *sp = config_item_to_space(i);
+ 	struct config_item *tmp;
+ 	int j;
+ 
+@@ -527,7 +527,7 @@ static void drop_space(struct config_group *g, struct config_item *i)
+ 
+ static void release_space(struct config_item *i)
+ {
+-	struct dlm_space *sp = to_space(i);
++	struct dlm_space *sp = config_item_to_space(i);
+ 	kfree(sp->group.default_groups);
+ 	kfree(sp);
+ }
+@@ -549,7 +549,7 @@ static struct config_item *make_comm(struct config_group *g, const char *name)
+ 
+ static void drop_comm(struct config_group *g, struct config_item *i)
+ {
+-	struct dlm_comm *cm = to_comm(i);
++	struct dlm_comm *cm = config_item_to_comm(i);
+ 	if (local_comm == cm)
+ 		local_comm = NULL;
+ 	dlm_lowcomms_close(cm->nodeid);
+@@ -560,13 +560,13 @@ static void drop_comm(struct config_group *g, struct config_item *i)
+ 
+ static void release_comm(struct config_item *i)
+ {
+-	struct dlm_comm *cm = to_comm(i);
++	struct dlm_comm *cm = config_item_to_comm(i);
+ 	kfree(cm);
+ }
+ 
+ static struct config_item *make_node(struct config_group *g, const char *name)
+ {
+-	struct dlm_space *sp = to_space(g->cg_item.ci_parent);
++	struct dlm_space *sp = config_item_to_space(g->cg_item.ci_parent);
+ 	struct dlm_node *nd;
+ 
+ 	nd = kzalloc(sizeof(struct dlm_node), GFP_KERNEL);
+@@ -588,8 +588,8 @@ static struct config_item *make_node(struct config_group *g, const char *name)
+ 
+ static void drop_node(struct config_group *g, struct config_item *i)
+ {
+-	struct dlm_space *sp = to_space(g->cg_item.ci_parent);
+-	struct dlm_node *nd = to_node(i);
++	struct dlm_space *sp = config_item_to_space(g->cg_item.ci_parent);
++	struct dlm_node *nd = config_item_to_node(i);
+ 
+ 	mutex_lock(&sp->members_lock);
+ 	list_del(&nd->list);
+@@ -601,7 +601,7 @@ static void drop_node(struct config_group *g, struct config_item *i)
+ 
+ static void release_node(struct config_item *i)
+ {
+-	struct dlm_node *nd = to_node(i);
++	struct dlm_node *nd = config_item_to_node(i);
+ 	kfree(nd);
+ }
+ 
+@@ -635,7 +635,7 @@ void dlm_config_exit(void)
+ static ssize_t show_cluster(struct config_item *i, struct configfs_attribute *a,
+ 			    char *buf)
+ {
+-	struct dlm_cluster *cl = to_cluster(i);
++	struct dlm_cluster *cl = config_item_to_cluster(i);
+ 	struct cluster_attribute *cla =
+ 			container_of(a, struct cluster_attribute, attr);
+ 	return cla->show ? cla->show(cl, buf) : 0;
+@@ -645,7 +645,7 @@ static ssize_t store_cluster(struct config_item *i,
+ 			     struct configfs_attribute *a,
+ 			     const char *buf, size_t len)
+ {
+-	struct dlm_cluster *cl = to_cluster(i);
++	struct dlm_cluster *cl = config_item_to_cluster(i);
+ 	struct cluster_attribute *cla =
+ 		container_of(a, struct cluster_attribute, attr);
+ 	return cla->store ? cla->store(cl, buf, len) : -EINVAL;
+@@ -654,7 +654,7 @@ static ssize_t store_cluster(struct config_item *i,
+ static ssize_t show_comm(struct config_item *i, struct configfs_attribute *a,
+ 			 char *buf)
+ {
+-	struct dlm_comm *cm = to_comm(i);
++	struct dlm_comm *cm = config_item_to_comm(i);
+ 	struct comm_attribute *cma =
+ 			container_of(a, struct comm_attribute, attr);
+ 	return cma->show ? cma->show(cm, buf) : 0;
+@@ -663,7 +663,7 @@ static ssize_t show_comm(struct config_item *i, struct configfs_attribute *a,
+ static ssize_t store_comm(struct config_item *i, struct configfs_attribute *a,
+ 			  const char *buf, size_t len)
+ {
+-	struct dlm_comm *cm = to_comm(i);
++	struct dlm_comm *cm = config_item_to_comm(i);
+ 	struct comm_attribute *cma =
+ 		container_of(a, struct comm_attribute, attr);
+ 	return cma->store ? cma->store(cm, buf, len) : -EINVAL;
+@@ -717,7 +717,7 @@ static ssize_t comm_addr_write(struct dlm_comm *cm, const char *buf, size_t len)
+ static ssize_t show_node(struct config_item *i, struct configfs_attribute *a,
+ 			 char *buf)
+ {
+-	struct dlm_node *nd = to_node(i);
++	struct dlm_node *nd = config_item_to_node(i);
+ 	struct node_attribute *nda =
+ 			container_of(a, struct node_attribute, attr);
+ 	return nda->show ? nda->show(nd, buf) : 0;
+@@ -726,7 +726,7 @@ static ssize_t show_node(struct config_item *i, struct configfs_attribute *a,
+ static ssize_t store_node(struct config_item *i, struct configfs_attribute *a,
+ 			  const char *buf, size_t len)
+ {
+-	struct dlm_node *nd = to_node(i);
++	struct dlm_node *nd = config_item_to_node(i);
+ 	struct node_attribute *nda =
+ 		container_of(a, struct node_attribute, attr);
+ 	return nda->store ? nda->store(nd, buf, len) : -EINVAL;
+@@ -771,7 +771,7 @@ static struct dlm_space *get_space(char *name)
+ 	i = config_group_find_item(space_list, name);
+ 	mutex_unlock(&space_list->cg_subsys->su_mutex);
+ 
+-	return to_space(i);
++	return config_item_to_space(i);
+ }
+ 
+ static void put_space(struct dlm_space *sp)
+@@ -818,7 +818,7 @@ static struct dlm_comm *get_comm(int nodeid, struct sockaddr_storage *addr)
+ 	mutex_lock(&clusters_root.subsys.su_mutex);
+ 
+ 	list_for_each_entry(i, &comm_list->cg_children, ci_entry) {
+-		cm = to_comm(i);
++		cm = config_item_to_comm(i);
+ 
+ 		if (nodeid) {
+ 			if (cm->nodeid != nodeid)
 -- 
 1.5.5.1
 
