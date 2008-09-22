@@ -1,141 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbYIVTRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbYIVTVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753801AbYIVTRB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 15:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYIVTQw
+	id S1753554AbYIVTVj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 15:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYIVTVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 15:16:52 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:63801 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbYIVTQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 15:16:51 -0400
-Subject: Re: [PATCH 1/2] file capabilities: add no_file_caps switch (v2)
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
-       Andreas Gruenbacher <agruen@suse.de>, Andrew Morton <akpm@osdl.org>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <20080922184835.GA2826@us.ibm.com>
-References: <20080922184835.GA2826@us.ibm.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 22 Sep 2008 15:16:04 -0400
-Message-Id: <1222110964.18735.77.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Sep 2008 15:21:31 -0400
+Received: from ik-out-1112.google.com ([66.249.90.179]:12854 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbYIVTVb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 15:21:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vJV9yAQkSLhBPFQumQEnHHU4n8klcUo2l+W0Urekb3QHl5GTHcUGXvtT9PzuTLmXvD
+         ipyhrUCYi/4DFG5eDPPSP4k8IYulhr2zuND2Fl88wpi6XiQEIRWeXFX66NuLJeuo2FXJ
+         izrEFMIBCQcc3LfFwib1IJbL58P5FIQM/aiig=
+Date: Mon, 22 Sep 2008 23:21:34 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: do_boot_cpu - add check if we have ESR register
+Message-ID: <20080922192134.GD22024@localhost>
+References: <20080922093603.GC7663@localhost> <20080922095148.GD7663@localhost> <86802c440809220257q4e1b4c81o534c957d919a6b3c@mail.gmail.com> <20080922101505.GF7663@localhost> <86802c440809221137v63e46951j78ae337275872b58@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440809221137v63e46951j78ae337275872b58@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Yinghai Lu - Mon, Sep 22, 2008 at 11:37:21AM -0700]
+| On Mon, Sep 22, 2008 at 3:15 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| > [Yinghai Lu - Mon, Sep 22, 2008 at 02:57:17AM -0700]
+| > | >
+| > | > Actually it's resend of the patch. On previous attempt
+| > | > Yinghai was proposed to choose:
+| > | >
+| > | >> one apic_version or boot_cpu_apic_version could be enough
+| > | >
+| > | > but I think it should be different patch which does cleaning
+| > | > up variables usage. So for now I think _this_ patch is enough
+| > | > since idea is to prevent of touching nonexistant register rather
+| > | > code cleaning (whci could be done later).
+| > |
+| > | do we have systems that have mixed cpu supported with different apic version?
+| > |
+| > | YH
+| > |
+| >
+| > Yinghai what was the reason of this question? I've a suspicious
+| > you're planning to test apic version early and only _once_ so
+| > eliminating APIC_INTERGRATED call? Am I right?
+| 
+| want to put more thing in genapic...
+| 
+| YH
+| 
 
-On Mon, 2008-09-22 at 13:48 -0500, Serge E. Hallyn wrote:
-> (Resend of two patches from late August.  If noone objects, would it be
-> possible to see this pair take a turn in security-testing?)
-> 
-> Add a no_file_caps boot option when file capabilities are
-> compiled into the kernel (CONFIG_SECURITY_FILE_CAPABILITIES=y).
+I think Ingo could drop this patch then at all.
 
-Is there a reason you didn't just use a filecaps=0/1 approach ala the
-selinux= boot parameter?  And let the default value be selectable as
-well?
-
-> This allows distributions to ship a kernel with file capabilities
-> compiled in, without forcing users to use (and understand and
-> trust) them.
-> 
-> When no_file_caps is specified at boot, then when a process executes
-> a file, any file capabilities stored with that file will not be
-> used in the calculation of the process' new capability sets.
-> 
-> This means that booting with the no_file_caps boot option will
-> not be the same as booting a kernel with file capabilities
-> compiled out - in particular a task with  CAP_SETPCAP will not
-> have any chance of passing capabilities to another task (which
-> isn't "really" possible anyway, and which may soon by killed
-> altogether by David Howells in any case), and it will instead
-> be able to put new capabilities in its pI.  However since fI
-> will always be empty and pI is masked with fI, it gains the
-> task nothing.
-> 
-> We also support the extra prctl options, setting securebits and
-> dropping capabilities from the per-process bounding set.
-> 
-> The other remaining difference is that killpriv, task_setscheduler,
-> setioprio, and setnice will continue to be hooked.  That will
-> be noticable in the case where a root task changed its uid
-> while keeping some caps, and another task owned by the new uid
-> tries to change settings for the more privileged task.
-
-Seems a bit confusing to offer a no_file_caps option with different
-behavior than disabling it at build time.
-
-BTW, I think Fedora kernel have had CONFIG_SECURITY_FILE_CAPABILITIES=y
-for quite some time.  Not that they are using it AFAIK, but the kernel
-support has seemingly been enabled.
-
-> Signed-off-by: Serge Hallyn <serue@us.ibm.com>
-> Acked-by: Andrew G. Morgan <morgan@kernel.org>
-> ---
->  kernel/capability.c  |   13 +++++++++++++
->  security/commoncap.c |   11 +++++++++++
->  2 files changed, 24 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/capability.c b/kernel/capability.c
-> index 33e51e7..5d034ec 100644
-> --- a/kernel/capability.c
-> +++ b/kernel/capability.c
-> @@ -33,6 +33,19 @@ EXPORT_SYMBOL(__cap_empty_set);
->  EXPORT_SYMBOL(__cap_full_set);
->  EXPORT_SYMBOL(__cap_init_eff_set);
->  
-> +#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
-> +int file_caps_enabled = 1;
-> +
-> +static int __init file_caps_disable(char *str)
-> +{
-> +	file_caps_enabled = 0;
-> +	return 1;
-> +}
-> +__setup("no_file_caps", file_caps_disable);
-> +#else
-> +static const int file_caps_enabled = 0;
-> +#endif
-> +
->  /*
->   * More recent versions of libcap are available from:
->   *
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index e4c4b3f..8c66d34 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -27,6 +27,12 @@
->  #include <linux/prctl.h>
->  #include <linux/securebits.h>
->  
-> +#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
-> +extern int file_caps_enabled;
-> +#else
-> +static const int file_caps_enabled = 0;
-> +#endif
-> +
->  int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
->  {
->  	NETLINK_CB(skb).eff_cap = current->cap_effective;
-> @@ -279,6 +285,11 @@ static int get_file_caps(struct linux_binprm *bprm)
->  	struct vfs_cap_data vcaps;
->  	struct inode *inode;
->  
-> +	if (!file_caps_enabled) {
-> +		bprm_clear_caps(bprm);
-> +		return 0;
-> +	}
-> +
->  	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
->  		bprm_clear_caps(bprm);
->  		return 0;
--- 
-Stephen Smalley
-National Security Agency
-
+		- Cyrill -
