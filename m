@@ -1,100 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYIVO63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYIVPAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbYIVO63 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 10:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYIVO6W
+	id S1753476AbYIVPAV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 11:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYIVPAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 10:58:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39970 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752524AbYIVO6W (ORCPT
+	Mon, 22 Sep 2008 11:00:09 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:5506 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752587AbYIVPAH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 10:58:22 -0400
-Date: Mon, 22 Sep 2008 15:58:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: torvalds@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] pcmcia: Fix broken abuse of dev->driver_data
-Message-ID: <20080922155814.2bdad40f@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Sep 2008 11:00:07 -0400
+X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K7LQZQ-03-PIH-01
+Date: Mon, 22 Sep 2008 16:59:53 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] AMD IOMMU: revert "x86, AMD IOMMU: honor iommu=off instead of amd_iommu=off"
+Message-ID: <20080922145953.GB24392@amd.com>
+References: <20080922223457W.fujita.tomonori@lab.ntt.co.jp> <20080922140749.GY24392@amd.com> <20080922144601.GA27956@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080922144601.GA27956@elte.hu>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 22 Sep 2008 14:59:53.0387 (UTC) FILETIME=[DE7F87B0:01C91CC3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@redhat.com>
+On Mon, Sep 22, 2008 at 04:46:01PM +0200, Ingo Molnar wrote:
+> 
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > >     x86, AMD IOMMU: honor iommu=off instead of amd_iommu=off
+> > > 
+> > >     This patch removes the amd_iommu=off kernel parameter and honors 
+> > >     the generic
+> > > 
+> > >     iommu=off parameter for the same purpose.
+> > > 
+> > > 
+> > > The above commit is wrong.
+> > 
+> > It isn't. The user normally don't care about the type of IOMMU in the 
+> > system. So disabling it with iommu=off is the right way. To achieve 
+> > what you want its better to add iommu=gart and iommu=amd to the option 
+> > parser. This will be consistent with Calgary and SWIOTLB too.
+> 
+> well, what matters in the end is to have a consistent set of exclusion 
+> options:
+> 
+>   gart_iommu=off     # disable the GART (and only that one)
+>   intel_iommu=off    # disable the Intel IOMMU (and only that one)
+>   amd_iommu=off      # disable AMD-IOMMU (and only that one)
+> 
+> then there's the all-off option:
+> 
+>   iommu=off          # wildcard: disable all IOMMUs
+> 
+> [ whether iommu=off also disables the swiotlb is a detail. ]
+> 
+> and we could also do the inclusive options in addition:
+> 
+>   iommu=gart         # use the GART as the primary IOMMU [if available]
+>   iommu=amd          # use the AMD-IOMMU as the primary IOMMU [if available]
+>   iommu=intel        # use the Intel IOMMU [if available]
+> 
+> so could we please first agree on such a specific list of generic 
+> options, and then implement them consistently, while keeping legacies 
+> (the ones that matter) intact as well?
 
-PCMCIA abuses dev->private_data in the probe methods. Unfortunately it
-continues to abuse it after calling drv->probe() which leads to crashes and
-other nasties (such as bogus probes of multifunction devices) giving errors like
+Ok, having $(type)_iommu=off in addition to iommu=$type is surely a good
+thing.
 
-pcmcia: registering new device pcmcia0.1
-kernel: 0.1: GetNextTuple: No more items
+Joerg
 
-Extract the passed data before calling the driver probe function that way
-we don't blow up when the driver reuses dev->private_data as its right.
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-As its close to the final release just move the hack so it works out,
-hopefully someone will be sufficiently embarrassed to produce a nice rework
-for 2.6.28.
-
-Signed-off-by: Alan Cox <alan@redhat.com>
----
-
- drivers/pcmcia/ds.c |   23 ++++++++++++++---------
- 1 files changed, 14 insertions(+), 9 deletions(-)
-
-
-diff --git a/drivers/pcmcia/ds.c b/drivers/pcmcia/ds.c
-index 4174d96..853d342 100644
---- a/drivers/pcmcia/ds.c
-+++ b/drivers/pcmcia/ds.c
-@@ -426,6 +426,18 @@ static int pcmcia_device_probe(struct device * dev)
- 	p_dev = to_pcmcia_dev(dev);
- 	p_drv = to_pcmcia_drv(dev->driver);
- 	s = p_dev->socket;
-+	
-+	/* The PCMCIA code passes the match data in via dev->driver_data
-+	 * which is an ugly hack. Once the driver probe is called it may
-+	 * and often will overwrite the match data so we must save it first 
-+	 *
-+	 * handle pseudo multifunction devices:
-+	 * there are at most two pseudo multifunction devices.
-+	 * if we're matching against the first, schedule a
-+	 * call which will then check whether there are two
-+	 * pseudo devices, and if not, add the second one.
-+	 */
-+	did = p_dev->dev.driver_data;
- 
- 	ds_dbg(1, "trying to bind %s to %s\n", p_dev->dev.bus_id,
- 	       p_drv->drv.name);
-@@ -455,21 +467,14 @@ static int pcmcia_device_probe(struct device * dev)
- 		goto put_module;
- 	}
- 
--	/* handle pseudo multifunction devices:
--	 * there are at most two pseudo multifunction devices.
--	 * if we're matching against the first, schedule a
--	 * call which will then check whether there are two
--	 * pseudo devices, and if not, add the second one.
--	 */
--	did = p_dev->dev.driver_data;
- 	if (did && (did->match_flags & PCMCIA_DEV_ID_MATCH_DEVICE_NO) &&
- 	    (p_dev->socket->device_count == 1) && (p_dev->device_no ==
-0)) pcmcia_add_device_later(p_dev->socket, 0);
- 
-- put_module:
-+put_module:
- 	if (ret)
- 		module_put(p_drv->owner);
-- put_dev:
-+put_dev:
- 	if (ret)
- 		put_device(dev);
- 	return (ret);
---
-<meme>discombobulated echidna</meme>
