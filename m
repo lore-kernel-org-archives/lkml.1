@@ -1,70 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752345AbYIVIAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbYIVIAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752345AbYIVIAA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 04:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYIVH7v
+	id S1752776AbYIVIAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 04:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYIVIAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 03:59:51 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48605 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbYIVH7v (ORCPT
+	Mon, 22 Sep 2008 04:00:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:13758 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbYIVIAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 03:59:51 -0400
-Date: Mon, 22 Sep 2008 08:59:22 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Felipe Balbi <felipe.balbi@nokia.com>, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-       Wim Van Sebroeck <wim@iguana.be>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "George G. Davis" <gdavis@mvista.com>
-Subject: Re: [PATCH 3/5] watchdog: cleanup a bit omap_wdt.c
-Message-ID: <20080922075922.GD17746@flint.arm.linux.org.uk>
-References: <1221820359-8943-1-git-send-email-felipe.balbi@nokia.com> <200809201018.42127.david-b@pacbell.net> <20080920180018.GD9873@flint.arm.linux.org.uk> <200809211845.42990.david-b@pacbell.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809211845.42990.david-b@pacbell.net>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 22 Sep 2008 04:00:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=WXrT//uCu74cxGPIC73weypxN5XIuva5BOi2ismfh2Wh49YQaRYoIajQuD0hhx9WNK
+         v03rf7Xl1nl8irDHRC9An+mvia2HYg9KzCFVpAerBrfMASKT/0dUXgggeQq58/ouhP9W
+         eqJgGKEVAlr5n/7K2wr/owqz2eFwwo3XQtKgQ=
+Message-ID: <48D7507F.8050109@gmail.com>
+Date: Mon, 22 Sep 2008 10:59:59 +0300
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: I need some serious help to debug suspend to ram problem
+References: <48D4E685.8030801@gmail.com> <48D54873.8010108@gmail.com> <48D682DB.8020802@gmail.com> <200809212056.27335.rjw@sisk.pl>
+In-Reply-To: <200809212056.27335.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 21, 2008 at 06:45:42PM -0700, David Brownell wrote:
-> Review rarely happens all at once, unless very few people look at
-> the code.  Discouraging review is *extremely* strange.
-
-I'm not discouraging review.  I'm saying that making inappropriate
-comments isn't helpful.
-
-Yes, your comments are right, but are they appropriate to getting
-the OMAP watchdog drivers updated in mainline, or are they more
-appropriate in a general sense to all watchdog drivers, and therefore
-should be separate from that task?
-
-> > My point is that we currently have a BIG problem, and that is the OMAP
-> > fork being so far out of line with mainline, it isn't funny.
+Rafael J. Wysocki wrote:
+> On Sunday, 21 of September 2008, Maxim Levitsky wrote:
+>> Maxim Levitsky wrote:
+>>> Rafael J. Wysocki wrote:
+>>>> On Saturday, 20 of September 2008, Maxim Levitsky wrote:
+>>>>> Hi,
+>>>>>
+>>>>> I hit a dead end when trying to understand why my notebook can't 
+>>>>> resume from suspend to ram
+>>>>> if this is done two times a row.
+>>>>>
+>>>>> Single suspend/resume cycle works almost perfectly (beep that goes 
+>>>>> through the sound card is muted... no morse code for me... :-(
+>>>>>
+>>>>> )
+>>>>>
+>>>>> I compiled a minimal kernel (absolutely nothing but disk drivers, all 
+>>>>> experimental option like nohz
+>>>>> turned off)
+>>>>>
+>>>>> But I had to turn SMP, since without it system won't resume first 
+>>>>> time I suspend it.
+>>>>> (How could this affect suspend?)
+>>>> It could if the system is 64-bit.  In which case please have a look at
+>>>> http://bugzilla.kernel.org/show_bug.cgi?id=11237
+>>>>
+>>>>> With SMP and minimal kernel (of course  no closed drivers), I get 
+>>>>> same behavior,
+>>>>> first resume works second hangs.
+>>>>>
+>>>>> I then added some debug code to real mode wakeup code, I put there in 
+>>>>> first
+>>>>> place instructions, that will save some magic value to rtc (to alarm
+>>>>> registers that I know are preserved during boot cycle), and I 
+>>>>> discovered   sad thing that first time bios does pass control to 
+>>>>> linux, but second time
+>>>>> (when it hangs), it doesn't.
+>>>>>
+>>>>> I tried to update bios, and I got same results.
+>>>>>
+>>>>> Of course it does work with that @#$%^& OS
+>>>> So we're doing something wrong.  Please try the appended patch.
+>>> Thanks a lot, but this didn't help.
+>>>
+>>> It still has same pattern, first suspend/resume works perfectly, second 
+>>> suspend/resume hangs hard.
+>>> It always happens like this, first resume always work (unless I turn off 
+>>> smp in kernel (I test this again), or reserve all low memory)
+>>>
+>>> Also note that if I suspend the system to ram, resume, and then suspend 
+>>> to disk, then I can suspend to ram and resume, it seems that
+>>>
+>>> on suspend to ram cycle somehow arms BIOS or something else, so second 
+>>> resume in a row doesn't work.
+>>>
+>>> I run 32 bit kernel here, this is a long story (this bios doesn't turn 
+>>> fan on when running 64-bit version, I could update it, and I know that 
+>>> fan issue is fixed there, but new bios introduces bigger bug, namely it 
+>>> makes fan to run almost always regardless of 32/64 type of os.
+>>> And it doesn't fix this suspend/resume issue, I tested this. I could 
+>>> start/stop fan manually with a script, but this could fail, and maybe I 
+>>> will do so someday.)
+>>>
+>>> The bugzilla seems to be unrelated here, since bios does pass control 
+>>> there, but corrupts memory.
+>>> Here I also have seen that bios corrupts memory, but everything resumes 
+>>> fine first time, and on second time,
+>>> bios doesn't pass control (I put set of instructions in beginning of 
+>>> wakeup real mode assembly file, no page tables, GDT/LDT are used there)
+>> I did same test for kernel without SMP, yes it hangs on first resume, but bios
+>> does pass control to linux, so while this is a minor bug, it is unrelated.
 > 
-> I call it a "branch" myself; "fork" sounds confrontational.
+> Still, I'd be interested in debugging this one too, if possible.  That may be
+> easier too. ;-)
 
-Call it what you want.
+I take a look at that.
 
-> When more of the arch/arm/* core bits merge -- like the clock and
-> power domain updates ISTR you wanted to hold back -- then the rest
-> starts to make sense upstream.
+> 
+>> I also tested noapic, pci=nommconf. No luck.
+>>
+>> Pattern is always the same, first resume works always, second doesn't.
+>> It is sad since first resume is almost perfect (when I have free time I need to look at sound codec datasheet
+>> and fix few issues there, anyways here alsa has few issues, all this is trivial, I already fixed all issues with desktop
+>> which has a sigmatel codec)
+> 
+> If you have more than 2 GB of RAM, you can try iommu=soft .
+> 
+> I guess that all of the /sys/power/pm_test tests are passed?
 
-I never said that - you're twisting my words as normal.
+Well, I didn't run /sys/power/pm_test. 
+But this system has rock solid suspend to disk, I use it always.
 
-> Yes, there are two unresolved issues in patch #1 which you seem
-> to have successfully buried with your flamage.  Easy fixes, just
-> strike a line and truncate a path.  The sort of thing that often
-> gets queued in the MM tree as a "fixup" and then merged into a
-> main patch.
+iommu? I don't think this mobo has it, it has PM965/GM965/GL960
+(according to lspci)
 
-Yet again you use confrontational language, inflaming this discussion.
 
-Okay, I give up.  Folk here can carry on struggling to get their code
-into mainline with endless reviews and getting fed up with having to
-constantly rework the code over and over again.
+Best regards,
+	Maxim  Levitsky
+> 
+> Thanks,
+> Rafael
 
-Clearly my views aren't welcome.
