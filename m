@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYIVPAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbYIVPAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753476AbYIVPAV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 11:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYIVPAJ
+	id S1753818AbYIVPAh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 11:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYIVPAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 11:00:09 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:5506 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752587AbYIVPAH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 11:00:07 -0400
-X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K7LQZQ-03-PIH-01
-Date: Mon, 22 Sep 2008 16:59:53 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] AMD IOMMU: revert "x86, AMD IOMMU: honor iommu=off instead of amd_iommu=off"
-Message-ID: <20080922145953.GB24392@amd.com>
-References: <20080922223457W.fujita.tomonori@lab.ntt.co.jp> <20080922140749.GY24392@amd.com> <20080922144601.GA27956@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080922144601.GA27956@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 22 Sep 2008 14:59:53.0387 (UTC) FILETIME=[DE7F87B0:01C91CC3]
+	Mon, 22 Sep 2008 11:00:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37093 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752593AbYIVPAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 11:00:08 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0809201649400.13926@blonde.site>
+References: <Pine.LNX.4.64.0809201649400.13926@blonde.site> <20080910121217.GA16013@elte.hu> <20080910144812.GB18644@wotan.suse.de> <1221058864.30429.291.camel@twins.programming.kicks-ass.net> <20080910152651.GE18644@wotan.suse.de> <20080911082709.GA14378@elte.hu> <20080914073906.GA6184@elte.hu> <20080914004442.4f8e851f.akpm@linux-foundation.org> <20080914080631.GA10720@elte.hu> <20080914221231.GG27080@wotan.suse.de> <20080917131419.e6b7622e.akpm@linux-foundation.org> <20080918111226.GD29968@elte.hu> <48D2ABFD.3040103@goop.org> <1221772310.4779.29.camel@calx> <1221877119.8533.2.camel@nimitz> 
+To: Hugh Dickins <hugh@veritas.com>
+Cc: dhowells@redhat.com, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
+Date: Mon, 22 Sep 2008 15:54:09 +0100
+Message-ID: <13787.1222095249@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 04:46:01PM +0200, Ingo Molnar wrote:
-> 
-> * Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > >     x86, AMD IOMMU: honor iommu=off instead of amd_iommu=off
-> > > 
-> > >     This patch removes the amd_iommu=off kernel parameter and honors 
-> > >     the generic
-> > > 
-> > >     iommu=off parameter for the same purpose.
-> > > 
-> > > 
-> > > The above commit is wrong.
-> > 
-> > It isn't. The user normally don't care about the type of IOMMU in the 
-> > system. So disabling it with iommu=off is the right way. To achieve 
-> > what you want its better to add iommu=gart and iommu=amd to the option 
-> > parser. This will be consistent with Calgary and SWIOTLB too.
-> 
-> well, what matters in the end is to have a consistent set of exclusion 
-> options:
-> 
->   gart_iommu=off     # disable the GART (and only that one)
->   intel_iommu=off    # disable the Intel IOMMU (and only that one)
->   amd_iommu=off      # disable AMD-IOMMU (and only that one)
-> 
-> then there's the all-off option:
-> 
->   iommu=off          # wildcard: disable all IOMMUs
-> 
-> [ whether iommu=off also disables the swiotlb is a detail. ]
-> 
-> and we could also do the inclusive options in addition:
-> 
->   iommu=gart         # use the GART as the primary IOMMU [if available]
->   iommu=amd          # use the AMD-IOMMU as the primary IOMMU [if available]
->   iommu=intel        # use the Intel IOMMU [if available]
-> 
-> so could we please first agree on such a specific list of generic 
-> options, and then implement them consistently, while keeping legacies 
-> (the ones that matter) intact as well?
 
-Ok, having $(type)_iommu=off in addition to iommu=$type is surely a good
-thing.
+Hugh Dickins <hugh@veritas.com> wrote:
 
-Joerg
+> But now looking into it further, I see this is all a red herring,
+> your rearrangement is not the significant difference: before that
+> there was David Howells' Jan 2006 commit
+> b0e15190ead07056ab0c3844a499ff35e66d27cc
+> [PATCH] NOMMU: Make SYSV IPC SHM use ramfs facilities on NOMMU
+> which is the one which adds do_truncate() into tiny-shmem.c's
+> shmem_file_setup() but not into shmem.c's - presumably because
+> config SHMEM depends on MMU so it was irrelevant in shmem.c.
+>
+> *That* is the relevant commit, which introduced the bad i_mutex
+> within mmap_sem lock ordering, and it seems that Nick's current
+> patch is wrong just to remove that do_truncate(), a significant
+> change hidden inside his restoration of the original arrangement.
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+That would break SYSV IPC SHM under CONFIG_MMU=n conditions.
 
+The truncate is necessary as I explained in my patch:
+
+     (2) ramfs files now need resizing using do_truncate() rather than by
+         modifying the inode size directly (see shmem_file_setup()). This
+         causes ramfs to attempt to bind a block of pages of sufficient size to
+         the inode.
+
+What I didn't belabour in the patch, and perhaps I should have, is that to do
+SYSV IPC SHM under NOMMU conditions, it is necessary to allocate a *contiguous*
+set of pages - something that ramfs has been taught to do under NOMMU when
+truncating a file upwards from zero size.  This makes POSIX SHM on ramfs files
+viable also.
+
+David
