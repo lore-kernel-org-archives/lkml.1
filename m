@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbYIVPGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYIVPLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753167AbYIVPGe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 11:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYIVPG0
+	id S1753211AbYIVPLY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 11:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYIVPLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 11:06:26 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52643 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbYIVPGZ (ORCPT
+	Mon, 22 Sep 2008 11:11:16 -0400
+Received: from SMTP.ANDREW.CMU.EDU ([128.2.10.160]:55205 "EHLO
+	smtp.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbYIVPLQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 11:06:25 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <28237198.1222095970373.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 23 Sep 2008 00:06:10 +0900 (JST)
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Re: Re: [PATCH 4/13] memcg: force_empty moving account
-Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       balbir@linux.vnet.ibm.com, nishimura@mxp.nes.nec.co.jp,
-       xemul@openvz.org, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1222095363.16700.15.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
+	Mon, 22 Sep 2008 11:11:16 -0400
+Message-ID: <48D7B591.8000408@cmu.edu>
+Date: Mon, 22 Sep 2008 11:11:13 -0400
+From: George Nychis <gnychis@cmu.edu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: printing current system time from kernel space
+References: <48D72AAD.3000805@cmu.edu> <48D74431.8050805@yahoo.com>
+In-Reply-To: <48D74431.8050805@yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <1222095363.16700.15.camel@lappy.programming.kicks-ass.net>
- <1222093420.16700.2.camel@lappy.programming.kicks-ass.net>
-	 <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080922200025.49ea6d70.kamezawa.hiroyu@jp.fujitsu.com>
-	 <19184326.1222095015978.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
->On Mon, 2008-09-22 at 23:50 +0900, kamezawa.hiroyu@jp.fujitsu.com wrote:
->> ----- Original Message -----
->> >> +			spin_lock_irqsave(&mz->lru_lock, flags);
->> >> +		} else {
->> >> +			unlock_page(page);
->> >> +			put_page(page);
->> >> +		}
->> >> +		if (atomic_read(&mem->css.cgroup->count) > 0)
->> >> +			break;
->> >>  	}
->> >>  	spin_unlock_irqrestore(&mz->lru_lock, flags);
->> >
->> >do _NOT_ use yield() ever! unless you know what you're doing, and
->> >probably not even then.
->> >
->> >NAK!
->> Hmm, sorry. cond_resched() is ok ?
->
->depends on what you want to do, please explain what you're trying to do.
->
-Sorry again.
-
-This force_empty is called only in following situation
- - there is no user threas in this cgroup.
- - a user tries to rmdir() this cgroup or explicitly type
-   echo 1 > ../memory.force_empty.
-
-force_empty() scans lru list of this cgroup and check page_cgroup on the
-list one by one. Because there are no tasks in this group, force_empty can
-see following racy condtions while scanning.
-
- - global lru tries to remove the page which pointed by page_cgroup 
-   and it is not-on-LRU.
- - the page is locked by someone.
-   ....find some lock contetion with invalidation/truncate.
- - in later patch, page_cgroup can be on pagevec(i added) and we have to drain
-   it to remove from LRU.
-
-In above situation, force_empty() have to wait for some event proceeds.
-
-Hmm...detecting busy situation in loop and sleep in out-side-of-loop
-is better ? Anyway, ok, I'll rewrite this.
-
-BTW, sched.c::yield() is for what purpose now ?
-
-Thanks,
--Kame
 
 
+Sitsofe Wheeler wrote:
+> George Nychis wrote:
+>> I spent some time googling, but could not find out how or if it is 
+>> possible to read the current system time in kernel space.  I could 
+>> insert a printk() somewhere in usbdev_read() then.
+> 
+> If that's what you want to do could you not turn on timestamps on printk 
+> (CONFIG_PRINTK_TIME in the kernel hacking menu)?
+> 
 
+Thanks for the response!
+
+You might be misunderstanding my goal.  I need a common clock between 
+kernel and user space, so that I can say:
+
+Event1 happened at time X in the kernel
+Event2 happened at time X+Y in user space
+The time between Event1 and Event2 was Y-X
+
+So, turning off timestamps does not help anything here :)
+
+What might be useful is if user space can read the current timestamp 
+value that printk uses, that way I can just do a printk in the kernel 
+and then read the value and print in user space.
+
+Is this possible?
+
+Thanks!
+George
