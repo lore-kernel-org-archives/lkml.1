@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbYIVXr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYIVXu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154AbYIVXr7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 19:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbYIVXrs
+	id S1755085AbYIVXu3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 19:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbYIVXuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 19:47:48 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:53493 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbYIVXrr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 19:47:47 -0400
-Date: Mon, 22 Sep 2008 19:47:08 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: David Miller <davem@davemloft.net>, andrea_monta@inwind.it,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, stable@kernel.org
-Subject: Re: OOPS bug KERNEL LINUX- Version 2.6.26
-Message-ID: <20080922234649.GA26219@tuxdriver.com>
-References: <K7M9ZI$69A44BBF23D86D612A80B0EA98EEEE6B@libero.it> <200809230025.03680.IvDoorn@gmail.com> <20080922222716.GI3660@tuxdriver.com> <200809230032.37255.IvDoorn@gmail.com>
+	Mon, 22 Sep 2008 19:50:10 -0400
+Received: from sous-sol.org ([216.99.217.87]:45390 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754046AbYIVXuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 19:50:08 -0400
+Date: Mon, 22 Sep 2008 15:57:33 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       Andreas Gruenbacher <agruen@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 1/2] file capabilities: add no_file_caps switch (v2)
+Message-ID: <20080922225733.GB610@sequoia.sous-sol.org>
+References: <20080922184835.GA2826@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200809230032.37255.IvDoorn@gmail.com>
+In-Reply-To: <20080922184835.GA2826@us.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 12:32:36AM +0200, Ivo van Doorn wrote:
-> On Tuesday 23 September 2008, John W. Linville wrote:
-> > On Tue, Sep 23, 2008 at 12:25:03AM +0200, Ivo van Doorn wrote:
-> > > Hi,
-> > > 
-> > > > > 1. Problem with usb-wireless-key 
-> > > > > 2. I can't find my device typing ifconfig -a or iwconfig I don't find any wireless attached device. But I have my usb wireless connected. A belkin usb wireless key.Before, with the kernel 2.6.25 all worked well
-> > > > > 3. nothing
-> > > > > 4. Linux version 2.6.26 (root@clementino) (gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)) #1 PREEMPT Mon Sep 22 15:57:45 CEST 2008
-> > > > > 5.
-> > > 
-> > > You missed the message from rt2x00 2 lines above this trace, which undoubtly have said something like:
-> > > 	"Invalid RT chipset detected."
-> > > which is triggered when rt73usb is loaded for a device it does not support
-> > > 
-> > > The current workaround for this issue is blacklisting rt73usb and making sure the driver
-> > > which is required for your driver is loaded instead.
-> > > 
-> > > I'll look into the reason why this actually triggers a NULL pointer, since that is obviously a nasty bug.
-> > 
-> > -stable needs a patch similar to the one here:
-> > 
-> > 	http://people.redhat.com/linville/kernels/rhel5/patches/jwltest-rt2x00lib-probe-fail.patch
-> 
-> Ah yes, that would be a good one.
-> I kind of assumed it was already merged, and hadn't actually verified that yet. ;)
+* Serge E. Hallyn (serue@us.ibm.com) wrote:
+> --- a/kernel/capability.c
+> +++ b/kernel/capability.c
+> @@ -33,6 +33,19 @@ EXPORT_SYMBOL(__cap_empty_set);
+>  EXPORT_SYMBOL(__cap_full_set);
+>  EXPORT_SYMBOL(__cap_init_eff_set);
+>  
+> +#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
+> +int file_caps_enabled = 1;
+> +
+> +static int __init file_caps_disable(char *str)
+> +{
+> +	file_caps_enabled = 0;
+> +	return 1;
+> +}
+> +__setup("no_file_caps", file_caps_disable);
+> +#else
+> +static const int file_caps_enabled = 0;
+> +#endif
 
-Well the code in 2.6.27 is different, this patch is no longer necessary
-(and doesn't apply).
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+> @@ -27,6 +27,12 @@
+>  #include <linux/prctl.h>
+>  #include <linux/securebits.h>
+>  
+> +#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
+> +extern int file_caps_enabled;
+> +#else
+> +static const int file_caps_enabled = 0;
+> +#endif
+> +
 
-John
--- 
-John W. Linville		Linux should be at the core
-linville@tuxdriver.com			of your literate lifestyle.
+file_caps_enabled cut 'n paste mistake when !CONFIG_SECURITY_FILE_CAPABILITIES?
+
+Also, plan to update Documentation/kernel-parameters.txt?
+
+thanks,
+-chris
