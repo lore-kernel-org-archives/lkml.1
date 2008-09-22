@@ -1,90 +1,336 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbYIVLR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbYIVLS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752460AbYIVLR7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 07:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYIVLRu
+	id S1753555AbYIVLS4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 07:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYIVLSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 07:17:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40658 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752001AbYIVLRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 07:17:50 -0400
-Date: Mon, 22 Sep 2008 13:17:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: joerg.roedel@amd.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic
-	option
-Message-ID: <20080922111730.GF5987@elte.hu>
-References: <20080920012322R.fujita.tomonori@lab.ntt.co.jp> <20080920060059.GA25713@elte.hu> <20080920225705C.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080920225705C.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 22 Sep 2008 07:18:48 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54385 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751363AbYIVLSr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 07:18:47 -0400
+Date: Mon, 22 Sep 2008 20:24:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 13/13] memcg: swap accounting fix
+Message-Id: <20080922202447.07a8ed23.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+There is a small race in do_swap_page(). When the page swapped-in is charged,
+the mapcount can be greater than 0. But, at the same time some process (shares
+it ) call unmap and make mapcount 1->0 and the page is uncharged.
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+For fixing this, I added a new interface.
+  - precharge
+   account to res_counter by PAGE_SIZE and try to free pages if necessary.
+  - commit	
+   register page_cgroup and add to LRU if necessary.
+  - cancel
+   uncharge PAGE_SIZE because of do_swap_page failure.
 
-> > But, in general, it's pretty pointless to add boot options for 
-> > anything but debugging - nobody will use them unless there's a 
-> > _problem_ with the default. So the right approach is to not add boot 
-> > options and to make sure that the defaults are sane and intelligent.
-> 
-> In general (or ideally), I agreed. But we can't do that in some cases.
-> 
-> And IOMMUs has some options for non general cases. For example, the 
-> option, we are talking about, 'fullflush' for disabling lazy IOTLB 
-> flushing, has no correct setting for everyone. It's kinda policy. The 
-> boot option changes the policy that the IOMMU maintainer set by 
-> default.
+This protocol uses PCG_USED bit on page_cgroup for avoiding over accounting.
+Usual mem_cgroup_charge_common() does precharge -> commit at a time.
 
-yes. But boot options really have a lot less relevance in practice. In 
-99.99% of cases they are only used if things go wrong. They are almost 
-never used to tune production systems. (yes, there are exceptions - in 
-0.01% of the cases)
 
-so ... i'd really suggest for you to get the bootup defaults right, and 
-then just to give enough boot option flexibility to turn something off 
-that might break in practice.
+These precharge/commit/cancel can be used for other places, shmem,
+migration, etc..we'll revisit later.
 
-Otherwise, dont bother - if you want to offer advanced performance 
-tuning then at _minimum_ it should be debugfs or sysctl exposed. It's 
-totally PITA to performance-tune a system via a boot option.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> > So could we work towards removing unnecessary boot options please? _If_ 
-> > we want any strategy switch then that should be runtime anyway - nobody 
-> > sane will reboot a server just to tune it slightly, and no distro will 
-> > litter the boot commandline with hardware dependent tunings either. So 
-> > it's only the default that matters, plus boot parameters for debugging.
-> 
-> Ok, though I still think that deprecating and removing the existing 
-> kernel parameter is bad for users.
+ include/linux/memcontrol.h |   21 +++++++
+ mm/memcontrol.c            |  135 +++++++++++++++++++++++++++++++--------------
+ mm/memory.c                |    6 +-
+ 3 files changed, 120 insertions(+), 42 deletions(-)
 
-yes - the solution could be as easy as to add back that single option to 
-the affected iommu alone. (i.e. create a compatibility alias in essence)
+Index: mmotm-2.6.27-rc6+/include/linux/memcontrol.h
+===================================================================
+--- mmotm-2.6.27-rc6+.orig/include/linux/memcontrol.h
++++ mmotm-2.6.27-rc6+/include/linux/memcontrol.h
+@@ -32,6 +32,13 @@ struct mm_struct;
+ extern struct page_cgroup *page_get_page_cgroup(struct page *page);
+ extern int mem_cgroup_charge(struct page *page, struct mm_struct *mm,
+ 				gfp_t gfp_mask);
++/* for swap handling */
++extern int mem_cgroup_precharge(struct mm_struct *mm,
++		gfp_t gfp_mask, struct mem_cgroup **ptr);
++extern void mem_cgroup_commit_charge_swap(struct page *page,
++					struct mem_cgroup *ptr);
++extern void mem_cgroup_cancel_charge_swap(struct mem_cgroup *ptr);
++
+ extern int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+ 					gfp_t gfp_mask);
+ extern void mem_cgroup_move_lists(struct page *page, enum lru_list lru);
+@@ -94,6 +101,20 @@ static inline int mem_cgroup_cache_charg
+ 	return 0;
+ }
+ 
++static int mem_cgroup_precharge(struct mm_struct *mm,
++				gfp_t gfp_mask, struct mem_cgroup **ptr)
++{
++	return 0;
++}
++
++static void mem_cgroup_commit_charge_swap(struct page *page,
++					  struct mem_cgroup *ptr)
++{
++}
++static void mem_cgroup_cancel_charge_swap(struct mem_cgroup *ptr)
++{
++}
++
+ static inline void mem_cgroup_uncharge_page(struct page *page)
+ {
+ }
+Index: mmotm-2.6.27-rc6+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc6+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc6+/mm/memcontrol.c
+@@ -698,52 +698,44 @@ static void drain_page_cgroup_all(void)
+ 
+ 
+ /*
+- * Charge the memory controller for page usage.
+- * Return
+- * 0 if the charge was successful
+- * < 0 if the cgroup is over its limit
++ * charge against mem_cgroup linked to this mm. (or *ptr)
++ *
++ * This just charge PAGE_SIZE and reduce memory usage if necessary.
++ *
++ * Pages on radix-tree is charged at radix-tree add/remove under lock.
++ * new pages are charged at allocation and both are guaranteed to be that
++ * there are no racy users. We does precharge->commit at once.
++ *
++ * About swapcache, we can't trust page->mapcount until it's mapped.
++ * Then we do precharge before map and commit/cancel after the mapping is
++ * established. (see below, we have commit_swap and cancel_swap)
+  */
+-static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
+-				gfp_t gfp_mask, enum charge_type ctype,
+-				struct mem_cgroup *memcg)
++
++int mem_cgroup_precharge(struct mm_struct *mm,
++			 gfp_t mask, struct mem_cgroup **ptr)
+ {
+ 	struct mem_cgroup *mem;
+-	struct page_cgroup *pc;
+-	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+-	struct mem_cgroup_per_zone *mz;
+-	unsigned long flags;
+-
+-	pc = lookup_page_cgroup(page);
+-	/* can happen at boot */
+-	if (unlikely(!pc))
+-		return 0;
+-	prefetchw(pc);
+-	/*
+-	 * We always charge the cgroup the mm_struct belongs to.
+-	 * The mm_struct's mem_cgroup changes on task migration if the
+-	 * thread group leader migrates. It's possible that mm is not
+-	 * set, if so charge the init_mm (happens for pagecache usage).
+-	 */
++	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+ 
+-	if (likely(!memcg)) {
+-		rcu_read_lock();
++	rcu_read_lock();
++	if (!*ptr) {
+ 		mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
+ 		if (unlikely(!mem)) {
+ 			rcu_read_unlock();
+-			return 0;
++			return -ESRCH;
+ 		}
+-		rcu_read_unlock();
++		*ptr = mem;
+ 	} else {
+-		mem = memcg;
++		mem = *ptr;
+ 	}
++	rcu_read_unlock();
+ 
++	css_get(&mem->css);
+ 	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
+-		if (!(gfp_mask & __GFP_WAIT))
+-			goto out;
+-
+-		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
++		if (!(mask & __GFP_WAIT))
++			goto nomem;
++		if (try_to_free_mem_cgroup_pages(mem, mask))
+ 			continue;
+-
+ 		/*
+ 		 * try_to_free_mem_cgroup_pages() might not give us a full
+ 		 * picture of reclaim. Some pages are reclaimed and might be
+@@ -755,16 +747,31 @@ static int mem_cgroup_charge_common(stru
+ 			continue;
+ 
+ 		if (!nr_retries--) {
+-			mem_cgroup_out_of_memory(mem, gfp_mask);
+-			goto out;
++			mem_cgroup_out_of_memory(mem, mask);
++			goto nomem;
+ 		}
+ 	}
++	return 0;
++nomem:
++	css_put(&mem->css);
++	return -ENOMEM;
++}
+ 
++void mem_cgroup_commit_charge(struct page_cgroup *pc,
++			      struct mem_cgroup *mem,
++			      enum charge_type ctype)
++{
++	struct mem_cgroup_per_zone *mz;
++	unsigned long flags;
++
++	if (!mem)
++		return;
+ 	preempt_disable();
+ 	if (TestSetPageCgroupUsed(pc)) {
+ 		res_counter_uncharge(&mem->res, PAGE_SIZE);
++		css_put(&mem->css);
+ 		preempt_enable();
+-		goto done;
++		return;
+ 	}
+ 	/*
+  	 *  page cgroup is *unused* now....but....
+@@ -786,14 +793,43 @@ static int mem_cgroup_charge_common(stru
+ 
+ 	pc->mem_cgroup = mem;
+ 	set_page_cgroup_lru(pc);
++	css_put(&mem->css);
+ 	preempt_enable();
++}
+ 
+-done:
++/*
++ * Charge the memory controller for page usage.
++ * Return
++ * 0 if the charge was successful
++ * < 0 if the cgroup is over its limit
++ */
++static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
++				gfp_t gfp_mask, enum charge_type ctype,
++				struct mem_cgroup *memcg)
++{
++	struct page_cgroup *pc;
++	struct mem_cgroup *ptr = memcg;
++	int ret;
++
++	pc = lookup_page_cgroup(page);
++	/* can happen at boot */
++	if (unlikely(!pc))
++		return 0;
++	prefetchw(pc);
++
++	ret = mem_cgroup_precharge(mm, gfp_mask, &ptr);
++	if (likely(!ret)) {
++		mem_cgroup_commit_charge(pc, ptr, ctype);
++		return 0;
++	}
++	if (unlikely((ret == -ENOMEM)))
++		return ret;
++	/* ESRCH case */
+ 	return 0;
+-out:
+-	return -ENOMEM;
+ }
+ 
++
++
+ int mem_cgroup_charge(struct page *page, struct mm_struct *mm, gfp_t gfp_mask)
+ {
+ 	if (mem_cgroup_subsys.disabled)
+@@ -806,7 +842,7 @@ int mem_cgroup_charge(struct page *page,
+ 	 * But page->mapping may have out-of-use anon_vma pointer,
+ 	 * detecit it by PageAnon() check. newly-mapped-anon's page->mapping
+ 	 * is NULL.
+-  	 */
++	 */
+ 	if (page_mapped(page) || (page->mapping && !PageAnon(page)))
+ 		return 0;
+ 	if (unlikely(!mm))
+@@ -857,6 +893,25 @@ int mem_cgroup_cache_charge(struct page 
+ 				MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
+ }
+ 
++
++void mem_cgroup_commit_charge_swap(struct page *page, struct mem_cgroup *ptr)
++{
++	struct page_cgroup *pc;
++	if (!ptr)
++		return;
++	pc = lookup_page_cgroup(page);
++	mem_cgroup_commit_charge(pc, ptr, MEM_CGROUP_CHARGE_TYPE_MAPPED);
++}
++
++void mem_cgroup_cancel_charge_swap(struct mem_cgroup *mem)
++{
++	if (!mem)
++		return;
++	res_counter_uncharge(&mem->res, PAGE_SIZE);
++	css_put(&mem->css);
++}
++
++
+ /*
+  * uncharge if !page_mapped(page)
+  */
+Index: mmotm-2.6.27-rc6+/mm/memory.c
+===================================================================
+--- mmotm-2.6.27-rc6+.orig/mm/memory.c
++++ mmotm-2.6.27-rc6+/mm/memory.c
+@@ -2287,6 +2287,7 @@ static int do_swap_page(struct mm_struct
+ 	struct page *page;
+ 	swp_entry_t entry;
+ 	pte_t pte;
++	struct mem_cgroup *ptr = NULL;
+ 	int ret = 0;
+ 
+ 	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
+@@ -2323,7 +2324,7 @@ static int do_swap_page(struct mm_struct
+ 	lock_page(page);
+ 	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+ 
+-	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
++	if (mem_cgroup_precharge(mm, GFP_KERNEL, &ptr) == -ENOMEM) {
+ 		ret = VM_FAULT_OOM;
+ 		goto out;
+ 	}
+@@ -2353,6 +2354,7 @@ static int do_swap_page(struct mm_struct
+ 	flush_icache_page(vma, page);
+ 	set_pte_at(mm, address, page_table, pte);
+ 	page_add_anon_rmap(page, vma, address);
++	mem_cgroup_commit_charge_swap(page, ptr);
+ 
+ 	swap_free(entry);
+ 	if (vm_swap_full() || (vma->vm_flags & VM_LOCKED) || PageMlocked(page))
+@@ -2373,7 +2375,7 @@ unlock:
+ out:
+ 	return ret;
+ out_nomap:
+-	mem_cgroup_uncharge_page(page);
++	mem_cgroup_cancel_charge_swap(ptr);
+ 	pte_unmap_unlock(page_table, ptl);
+ 	unlock_page(page);
+ 	page_cache_release(page);
 
-> Joerg's patch does two things, adding fullflush and nofullflush to the 
-> generic option. The former needs more discussion though it might be a 
-> correct idea. The latter is clearly wrong (as Joerg agreed).
-> 
-> I sent you the patch to revert his patch. But If you like to fix 
-> things in a different way, then it's fine.
-
-well, i'd like you two to agree on how to proceed. Could you send a 
-patch please that adds back the option that Joerg's patch removed? I 
-certainly dont argue with the point that we should preserve existing 
-options.
-
-	Ingo
