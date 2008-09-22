@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbYIVVQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbYIVVRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbYIVVQa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 17:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbYIVVQV
+	id S1754477AbYIVVRv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 17:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYIVVRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 17:16:21 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:36530 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753230AbYIVVQV (ORCPT
+	Mon, 22 Sep 2008 17:17:43 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:52248 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752838AbYIVVRm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 17:16:21 -0400
-Message-ID: <48D809A3.8040207@oracle.com>
-Date: Mon, 22 Sep 2008 14:09:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 22 Sep 2008 17:17:42 -0400
+Date: Mon, 22 Sep 2008 23:18:44 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Wakeup from suspend via keyboard and mouse doesn't work
+	anymore with 2.6.27-rc
+Message-ID: <20080922211844.GA7049@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20080922202911.GA9832@dose.home.local> <200809222309.34413.rjw@sisk.pl>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
-       Andreas Gruenbacher <agruen@suse.de>, Andrew Morton <akpm@osdl.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 2/2] file capabilities: turn on by default
-References: <20080922184835.GA2826@us.ibm.com> <20080922184901.GA3688@us.ibm.com> <20080922120347.60a9171a.randy.dunlap@oracle.com> <20080922195647.GA25682@us.ibm.com>
-In-Reply-To: <20080922195647.GA25682@us.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809222309.34413.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Quoting Randy Dunlap (randy.dunlap@oracle.com):
->> On Mon, 22 Sep 2008 13:49:01 -0500 Serge E. Hallyn wrote:
->>
->>> Now that file capabilities can be turned off at boot, go ahead
->>> and compile them into the kernel by default by making
->>> CONFIG_SECURITY_FILE_CAPABILITIES=y the default.
->> Hi,
->>
->> How much code does this add to everyone's kernel?
+On Mon, Sep 22, 2008 at 23:09:34 +0200, Rafael J. Wysocki wrote:
+> On Monday, 22 of September 2008, Tino Keitel wrote:
+> > Hi,
 > 
-> Here are the sizes I get with Linus' plain tree and patched
-> with both of these patches:
+> Hi,
 > 
-> master  with file capabilities: 6241626
-> master  w/o  file capabilities: 6241595
+> > my Mac mini core duo used to wake up from suspend to RAM when a key or
+> > mouse button is pressed. This doesn't work anymore with 2.6.27-rc, the
+> > current version that I tried is 2.6.27-rc7. I checked /proc/acpi/wakeup
+> > for differences, with 2.6.26 and 2.6.27-rc, but both were identical:
 > 
-> patched with file capabilities: 6241782
-> patched w/o  file capabilities: 6241595
-> 
-> So actually I don't like the added size.
-> 
->>> Note that the boot flag no_file_caps must be specified to turn
->>> file capabilities off, as by default they are on.  So the
->>> default behavior is in fact changed.
->> If most people want this enable, using 'no_file_caps' makes
->> some sense.  OTOH, if most people don't want/use it, then
->> having a 'file_caps_on' option would make more sense.
->>
->> Do you have any (unbiased :) ideas about this?
-> 
-> I'll sit this one out I guess :)
+> Did you test that with any 2.6.27-rc before -rc7?
 
-BTW, I like Stephen's suggestion of using file_caps=0/1 instead
-of no_file_caps.
+Only -rc6 IIRC.
 
--- 
-~Randy
+> > Any hints if there are some commits that I should try to revert, before
+> > I start bisecting?
+> 
+> I don't think you need to revert anything. :-)
+> 
+> Please check if the /sys/devices/.../power/wakeup file contains 'enabled' for
+> the USB controller pci:0000:00:1d.7 (I assume this is the one the keyboard &
+> mouse are attached to).  If it doesn't, please try to write 'enabled' to this
+> file and retest.
+
+Yes, this works. Thanks.
+
+Regards,
+Tino
