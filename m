@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYIVSgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYIVSga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139AbYIVSgA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYIVSfv
+	id S1754417AbYIVSga (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYIVSgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:35:51 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:2344 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752878AbYIVSft (ORCPT
+	Mon, 22 Sep 2008 14:36:19 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56196 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752822AbYIVSgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 14:35:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=NwV1+E5/aZTzHI2NY1dAuhQ9gJrkCSzrI68O6GqvxO3G9Hc75CjtUvbHiiG5gH/ipt
-         8mNaQE3vU3P0wd/lMmu4BLViC+smSmGOzcH/M8ofBcMvtjJV55rqPOhtoOu6KsEZuhGw
-         7dun2pZTY9+28E+IMeTTVLD2oYJPZfKBWrV4M=
-From: Denis ChengRq <crquan@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [WIRELESS CORE] a global static to local static improvement
-Date: Tue, 23 Sep 2008 02:35:37 +0800
-Message-Id: <1222108537-5097-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
+	Mon, 22 Sep 2008 14:36:18 -0400
+Date: Mon, 22 Sep 2008 11:36:19 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       iommu@lists.linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, Amit Shah <amit.shah@qumranet.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 0/9][RFC] stackable dma_ops for x86
+Message-ID: <20080922113619.5075e7e4@infradead.org>
+In-Reply-To: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com>
+References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are two improvements in this simple patch:
-1. wiphy_counter is a static var only used in one function, so
-   can use local static instead of global static;
-2. wiphy_counter wrap handling killed one comparision with unlike;
+On Mon, 22 Sep 2008 20:21:12 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Signed-off-by: Denis ChengRq <crquan@gmail.com>
----
- net/wireless/core.c |   16 +++++++---------
- 1 files changed, 7 insertions(+), 9 deletions(-)
+> Hi,
+> 
+> this patch series implements stackable dma_ops on x86. This is useful
+> to be able to fall back to a different dma_ops implementation if one
+> can not handle a particular device (as necessary for example with
+> paravirtualized device passthrough or if a hardware IOMMU only
+> handles a subset of available devices).
 
-diff --git a/net/wireless/core.c b/net/wireless/core.c
-index f1da0b9..af8af8b 100644
---- a/net/wireless/core.c
-+++ b/net/wireless/core.c
-@@ -32,7 +32,6 @@ MODULE_DESCRIPTION("wireless configuration support");
-  * often because we need to do it for each command */
- LIST_HEAD(cfg80211_drv_list);
- DEFINE_MUTEX(cfg80211_drv_mutex);
--static int wiphy_counter;
- 
- /* for debugfs */
- static struct dentry *ieee80211_debugfs_dir;
-@@ -204,6 +203,8 @@ out_unlock:
- 
- struct wiphy *wiphy_new(struct cfg80211_ops *ops, int sizeof_priv)
- {
-+	static int wiphy_counter;
-+
- 	struct cfg80211_registered_device *drv;
- 	int alloc_size;
- 
-@@ -220,21 +221,18 @@ struct wiphy *wiphy_new(struct cfg80211_ops *ops, int sizeof_priv)
- 
- 	mutex_lock(&cfg80211_drv_mutex);
- 
--	drv->idx = wiphy_counter;
--
--	/* now increase counter for the next device unless
--	 * it has wrapped previously */
--	if (wiphy_counter >= 0)
--		wiphy_counter++;
--
--	mutex_unlock(&cfg80211_drv_mutex);
-+	drv->idx = wiphy_counter++;
- 
- 	if (unlikely(drv->idx < 0)) {
-+		wiphy_counter--;
-+		mutex_unlock(&cfg80211_drv_mutex);
- 		/* ugh, wrapped! */
- 		kfree(drv);
- 		return NULL;
- 	}
- 
-+	mutex_unlock(&cfg80211_drv_mutex);
-+
- 	/* give it a proper name */
- 	snprintf(drv->wiphy.dev.bus_id, BUS_ID_SIZE,
- 		 PHY_NAME "%d", drv->idx);
+isn't the right answer here to have a per device DMA ops instead ?
+
+
 -- 
-1.5.6.3
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
