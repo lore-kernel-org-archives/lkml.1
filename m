@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbYIVSYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbYIVSa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754965AbYIVSYy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYIVSWQ
+	id S1753598AbYIVSa3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYIVSaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:22:16 -0400
-Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:50184 "EHLO
-	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754125AbYIVSWO (ORCPT
+	Mon, 22 Sep 2008 14:30:21 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:40236 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752660AbYIVSaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 14:22:14 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqEEAJ9/10hR9cHm/2dsb2JhbACBXbZBgWY
-Date: Mon, 22 Sep 2008 20:22:06 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: linux-kernel@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "George G. Davis" <gdavis@mvista.com>, Alan Cox <alan@redhat.com>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: [PATCH 1/3] watchdog: sync linux-omap changes
-Message-ID: <20080922182206.GM22550@infomag.infomag.iguana.be>
-References: <1221873243-18303-1-git-send-email-me@felipebalbi.com> <1221873243-18303-2-git-send-email-me@felipebalbi.com>
+	Mon, 22 Sep 2008 14:30:20 -0400
+Date: Mon, 22 Sep 2008 11:29:18 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: Re: mmotm 2008-09-22-01-36 uploaded (memory_hotplug)
+Message-Id: <20080922112918.c6ea4e05.randy.dunlap@oracle.com>
+In-Reply-To: <200809220838.m8M8cwC2031790@imap1.linux-foundation.org>
+References: <200809220838.m8M8cwC2031790@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1221873243-18303-2-git-send-email-me@felipebalbi.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On Mon, 22 Sep 2008 01:38:58 -0700 akpm@linux-foundation.org wrote:
 
-last item that (for me) is still open is:
-> +struct omap_wdt_dev {
-> +	void __iomem    *base;          /* physical */
-> +	struct device   *dev;
+> The mm-of-the-moment snapshot 2008-09-22-01-36 has been uploaded to
+> 
+>    http://userweb.kernel.org/~akpm/mmotm/
+> 
+> It contains the following patches against 2.6.27-rc7:
 
-is dev indeed unused or is it used by platform specific code?
-If this is sorted out this will go into the watchdog-mm tree.
 
-Kind regards,
-Wim.
+mm/built-in.o: In function `remove_memory':
+(.text+0x497ed): multiple definition of `remove_memory'
+arch/x86/mm/built-in.o:(.text+0x3d8): first defined here
+make[1]: *** [vmlinux.o] Error 1
 
+
+so it is defined in both mm/memory_hotplug.c and
+arch/x86/mm/init_64.c when CONFIG_MEMORY_HOTREMOVE=y.
+
+---
+~Randy
