@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbYIVUzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbYIVVAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753324AbYIVUzg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 16:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYIVUz2
+	id S1753420AbYIVVAZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 17:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYIVVAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 16:55:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39030 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751316AbYIVUz1 (ORCPT
+	Mon, 22 Sep 2008 17:00:14 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:36990 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbYIVVAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 16:55:27 -0400
-Date: Mon, 22 Sep 2008 13:54:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Michal Januszewski" <michalj@gmail.com>
-Cc: bonbons@linux-vserver.org, krzysztof.h1@poczta.fm,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: don't allow to set a video
- mode via vga= if FB doesn't support it
-Message-Id: <20080922135438.c8a10da7.akpm@linux-foundation.org>
-In-Reply-To: <5d9b736f0809221332q21dea0a1lb8159b64391ee978@mail.gmail.com>
-References: <20080921210219.GC21215@spock.one.pl>
-	<20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
-	<20080922220054.4e74c099@neptune.home>
-	<5d9b736f0809221332q21dea0a1lb8159b64391ee978@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Sep 2008 17:00:12 -0400
+Message-ID: <48D8074F.9030106@freescale.com>
+Date: Mon, 22 Sep 2008 15:59:59 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: Dan Williams <dan.j.williams@intel.com>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       leoli@freescale.com
+Subject: Re: [PATCH] fsl-dma: allow Freescale Elo DMA driver to be compiled
+ as a module
+References: <1221755059-27204-1-git-send-email-timur@freescale.com> <e9c3a7c20809201432y31da1e00mf3a20c60b918fab1@mail.gmail.com>
+In-Reply-To: <e9c3a7c20809201432y31da1e00mf3a20c60b918fab1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 22:32:40 +0200
-"Michal Januszewski" <michalj@gmail.com> wrote:
+Dan Williams wrote:
 
-> On Mon, Sep 22, 2008 at 22:00, Bruno Pr__mont <bonbons@linux-vserver.org> wrote:
+> The last three hunks should be broken out into a separate 'fix' patch
+> with its own changelog.
+
+Can you be more specific?  I can see how "return 0" -> "return -ENOMEM" could be
+separated out, but the Kconfig hunk is integral to the patch, and the "if
+(fsl_chan->desc_pool) return 1;" is needed to prevent a memory leak if the
+module is unloaded.
+
+>> -static __init int of_fsl_dma_chan_init(void)
+>> +static void fsl_dma_chan_remove(struct fsl_dma_chan *fchan)
+>>  {
+>> -       return of_register_platform_driver(&of_fsl_dma_chan_driver);
+>> +       if (fchan) {
+>> +               of_device_unregister(fchan->of_dev);
+>> +
+>> +               free_irq(fchan->irq, fchan);
+>> +               list_del(&fchan->common.device_node);
+>> +               iounmap(fchan->reg_base);
+>> +               kfree(fchan);
+>> +       }
+>>  }
 > 
-> > This looks pretty much the same as what I requested some time ago:
-> >
-> > http://bugzilla.kernel.org/show_bug.cgi?id=8062
-> >
-> > Would need to check -mm archives for the actual patch.
-> >
-> > Don't remember why it did not make it to mainline...
-> 
-> Well, the bug and the mm fix [1] are about a similar, yet slightly different
-> issue than the one I'm trying to fix with my patch (note that the issue
-> reported in the bug is currently fixed in the kernel, but the actual fix
-> is differrent than the one in -mm due to x86 boot code refactoring
-> that took place since then).
-> 
-> My patch fixes the case where the framebuffer is enabled, but none of
-> the drivers support boot-time video mode setting, whereas the old
-> patch fixed the case where it was possible to set a video mode even
-> though the kernel didn't contain the framebuffer layer.
-> 
-> [1] http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/broken-out/fbdev-ignore-vesa-modes-if-framebuffer-is-disabled.patch
-> 
+> removing a NULL fchan should be an error right?  
 
-OK.  It was merged into mainline but was later reverted by Linus:
+No, this is a side-effect of not using a linked-list to store the channels found
+by the driver.  The driver has a 4-element array to store the channel info.
+Normally, all four channels are defined in the OF device tree, so all four
+elements are defined.  But it's not a requirement, so in those cases, the
+non-defined channels will have NULL for fchan.
 
+I have plans to replace the array with a linked list.  This change will fix a
+few other minor problems with the driver.
 
-commit 01e73be3c8f254ef19d787f9b6757468175267eb
-Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-Date:   Tue May 8 20:12:30 2007 -0700
+> Perhaps move the
+> check up to of_fsl_dma_remove().
 
-    Revert "fbdev: ignore VESA modes if framebuffer is disabled"
-    
-    This reverts commit 464bdd33e9baad9806c7adbd8dfc37081a55f27e.
-    
-    Peter Anvin correctly points out that VESA modes have nothing to do with
-    frame buffers per se - they are often just regular extended text modes.
-    Disabling them just because we don't have frame buffer support is very
-    wrong.
-    
-    Cc: H. Peter Anvin <hpa@zytor.com>
-    Cc: Antonino A. Daplas <adaplas@gmail.com>,
-    Cc: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+I can do that.
 
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
