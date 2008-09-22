@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYIVSga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbYIVSh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417AbYIVSga (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYIVSgT
+	id S1754056AbYIVSh1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYIVShN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:36:19 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56196 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbYIVSgS (ORCPT
+	Mon, 22 Sep 2008 14:37:13 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:47971 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752407AbYIVShL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 14:36:18 -0400
-Date: Mon, 22 Sep 2008 11:36:19 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       iommu@lists.linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Amit Shah <amit.shah@qumranet.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 0/9][RFC] stackable dma_ops for x86
-Message-ID: <20080922113619.5075e7e4@infradead.org>
-In-Reply-To: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com>
-References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Sep 2008 14:37:11 -0400
+Message-ID: <48D7E5D7.3060703@lwfinger.net>
+Date: Mon, 22 Sep 2008 13:37:11 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Logs being spammed with "Unable to enumerate USB device"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 20:21:12 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+At times, my logs are filled with multiple copies of the following
+message:
 
-> Hi,
-> 
-> this patch series implements stackable dma_ops on x86. This is useful
-> to be able to fall back to a different dma_ops implementation if one
-> can not handle a particular device (as necessary for example with
-> paravirtualized device passthrough or if a hardware IOMMU only
-> handles a subset of available devices).
+hub 4-0:1.0: unable to enumerate USB device on port 5
 
-isn't the right answer here to have a per device DMA ops instead ?
+The output of lsusb is as follows:
 
+Bus 003 Device 002: ID 04f2:b016 Chicony Electronics Co., Ltd
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 004 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+The hubs are built into an HP dv2815nr laptop, and nothing is plugged in.
+
+I'm currently running v2.6.27-rc7 from the linux-2.6 git tree, but it
+does not seem to be a regression. In checking my back logs, my first
+such "storm" happened on July 25, with successive ones on September 8,
+9, 12 and 21.
+
+Is this an indication of hardware failure? What further info is
+required? Any suggestions for debugging code to try to pinpoint the
+problem?
+
+Thanks,
+
+Larry
+
