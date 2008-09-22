@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbYIVUNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbYIVUNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbYIVUNQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 16:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbYIVUM6
+	id S1753929AbYIVUNp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 16:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbYIVUNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 16:12:58 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44693
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751313AbYIVUM5 (ORCPT
+	Mon, 22 Sep 2008 16:13:37 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:37878 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422AbYIVUNg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 16:12:57 -0400
-Date: Mon, 22 Sep 2008 13:12:45 -0700 (PDT)
-Message-Id: <20080922.131245.193705447.davem@davemloft.net>
-To: nickolay@protei.ru
-Cc: linux-kernel@vger.kernel.org, linux-sctp@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: SCTP checksum patch for 2.6.26.5
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48D7C0A2.9090406@protei.ru>
-References: <48D7C0A2.9090406@protei.ru>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 22 Sep 2008 16:13:36 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references:x-gmailtapped-by;
+	b=ltAJvb2+dQfjZRW921KLGWJA7rDiyS295V0We0LqhvnEI/GoAIKf8irVRR9uBG2T7
+	FoH7Of8Ov5sh15aiAYjDA==
+Message-ID: <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com>
+Date: Mon, 22 Sep 2008 13:13:28 -0700
+From: "Martin Bligh" <mbligh@google.com>
+To: "Masami Hiramatsu" <mhiramat@redhat.com>
+Subject: Re: Unified tracing buffer
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap-ml <systemtap@sources.redhat.com>
+In-Reply-To: <48D7F5E8.3000705@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+	 <48D7F5E8.3000705@redhat.com>
+X-GMailtapped-By: 172.28.16.148
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nickolay Vinogradov <nickolay@protei.ru>
-Date: Mon, 22 Sep 2008 19:58:26 +0400
+> I agree to integrate tracing buffer mechanism, but I don't think
+> your proposal is the simplest one.
+>
+> To simplify, I think the layered buffering mechanism is desirable.
+> - The lowest layer just provides named circular buffers(both per-cpu and
+>  uni-buffer in system) and read/write scheme.
+> - Next layer provides user/kernel interface including controls.
+> - Top layer defines packet(and event) formatting utilities.
+> - Additionally, it would better provide some library routines(timestamp,
+>  event-id synchronize, and so on).
+>
+> Since this unified buffer is used from different kind of tracers/loggers,
+> I don't think all of them(and future tracers) want to be tied down by
+> "event-id"+"parameter" format.
+> So, Sorry, I disagree about that the tracing buffer defines its *data format*,
+> it's just overkill for me.
 
-CC:'ing correct mailing lists...
+I think you're right that we can layer this, and we didn't make a particularly
+good job of splitting those things out. I'll try to pull together
+another revision
+to reflect this and other suggested changes.
 
-> SCTP checksum calculation fix for BigEndian.
-> ntohl() doesn't do anything on BigEndian.
-> 
-> diff --git a/Makefile b/Makefile
-> diff --git a/include/net/sctp/checksum.h b/include/net/sctp/checksum.h
-> index ba75c67..2f0ed64 100644
-> --- a/include/net/sctp/checksum.h
-> +++ b/include/net/sctp/checksum.h
-> @@ -74,5 +74,19 @@ static inline __u32 sctp_update_cksum(__u8 *buffer, __u16 length, __u32 crc32)
-> 
->   static inline __u32 sctp_end_cksum(__u32 crc32)
->   {
-> -       return ntohl(~crc32);
-> +       __u32 result;
-> +       __u8 byte0, byte1, byte2, byte3;
-> +
-> +       result = ~crc32;
-> +
-> +       byte0 = result & 0xff;
-> +       byte1 = (result>>8) & 0xff;
-> +       byte2 = (result>>16) & 0xff;
-> +       byte3 = (result>>24) & 0xff;
-> +
-> +       crc32 = ((byte0 << 24) |
-> +                (byte1 << 16) |
-> +                (byte2 << 8)  |
-> +                byte3);
-> +       return crc32;
->   }
-> diff --git a/net/sctp/output.c b/net/sctp/output.c
-> 
-> 
-> -- Nickolay Vinogradov
-> Protei Research and Development Center
-> St.Petersburg, 194044, Russia
-> Tel.: +7 812 449 47 27
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+One thing that I think is still important is to have a unified timestamp
+mechanism on everything, so we can co-ordinate different things back
+together in userspace from different trace tools, so I intend to keep
+that at a lower level, but I think you're right that the event id, etc can
+move up into separate layers.
