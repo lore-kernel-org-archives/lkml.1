@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbYIVPpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbYIVPpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752986AbYIVPpG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 11:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYIVPo4
+	id S1752856AbYIVPpj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 11:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYIVPpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 11:44:56 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:42274 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752736AbYIVPoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 11:44:55 -0400
-Message-ID: <48D7BD75.2050803@sgi.com>
-Date: Mon, 22 Sep 2008 08:44:53 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Dean Nelson <dcn@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Alan Mayer <ajm@sgi.com>, jeremy@goop.org, suresh.b.siddha@intel.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <Yinghai.lu@amd.com>
-Subject: Re: [PATCH 1/3] switch vector_irq[] from irq number to irq_desc	pointer
- v2
-References: <20080919200212.GA6528@sgi.com> <20080919200449.GB6528@sgi.com> <48D40A97.2000402@sgi.com> <20080922110542.GD5987@elte.hu> <48D7B5F8.9020300@sgi.com>
-In-Reply-To: <48D7B5F8.9020300@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 22 Sep 2008 11:45:30 -0400
+Received: from main.gmane.org ([80.91.229.2]:54680 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752476AbYIVPp3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 11:45:29 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Halesh S <halesh.sadashiv@ap.sony.com>
+Subject: Re: Regarding select() on PPC
+Date: Mon, 22 Sep 2008 15:45:20 +0000 (UTC)
+Message-ID: <loom.20080922T154432-962@post.gmane.org>
+References: <loom.20080919T140301-79@post.gmane.org> <loom.20080922T143915-56@post.gmane.org> <jeskrs42gg.fsf@sykes.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 59.96.48.15 (Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1))
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Ingo Molnar wrote:
->> * Mike Travis <travis@sgi.com> wrote:
->>
->>> Hi Ingo,
->>>
->>> Note that my recent patch from a couple of weeks ago, stripped almost 
->>> all of the cpumask_t's from the io_apic functions.  Any chance we can 
->>> apply them before we add more?
->>>
->>> I'd be willing to merge in Dean's patch over the top of mine (or 
->>> vice-versa).
->> i'm really looking forwards to Rusty's 'get-rid-of-cpumask_t use' 
->> patchset, which would solve such cpumask_t proliferation issues once and 
->> for all.
->>
->> 	Ingo
-> 
-> Hi Ingo,
-> 
-> The net effect of the "getting rid of cpumask_t's" will be the same.  This
-> patch reduces considerably the amount of stack space being required right
-> now.  
+Andreas Schwab <schwab <at> suse.de> writes:
 
-Btw, my patch will still be useful even after cpumask's are passed by reference
-in that it optimizes the cpumask's that are being used.  For example, in one
-function 3 cpumask_t's become 1.  In some others, 2 were reduced to 1.  Since
-the new cpumask approach will require temp cpumask's, this cuts down on the
-number of temp cpumask's required.
+> 
+> Halesh S <halesh.sadashiv <at> ap.sony.com> writes:
+> 
+> > What is the purpose of Argument check only for PPC32, is ther any specific 
+> > reason?
+> 
+> Probably long obsolete, it predates linux 2.2.0.
+
+  Than do you mean by this is not required in later versions.
+
+> 
+> Andreas.
+> 
 
 Thanks,
-Mike
+Halesh
+
+
