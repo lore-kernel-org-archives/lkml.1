@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbYIVNLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbYIVNNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753088AbYIVNLu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 09:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbYIVNLk
+	id S1752855AbYIVNNd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 09:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYIVNNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 09:11:40 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:19679 "EHLO
-	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752033AbYIVNLj (ORCPT
+	Mon, 22 Sep 2008 09:13:25 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:1703 "EHLO
+	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbYIVNNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 09:11:39 -0400
-X-BigFish: VPS-32(zz1432R98dR936eQ62a3L1805M19c2kzz10d3izz5a6ciz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
+	Mon, 22 Sep 2008 09:13:25 -0400
+X-BigFish: VPS-32(zz1432R98dR936eQ62a3L1805M19c2kzz10d3izz5a6ciz32i6bh64h)
+X-Spam-TCS-SCL: 3:0
 X-FB-SS: 5,
-X-WSS-ID: 0K7LLYZ-02-Y9M-01
-Date: Mon, 22 Sep 2008 15:10:56 +0200
+X-WSS-ID: 0K7LM1Y-02-YCU-01
+Date: Mon, 22 Sep 2008 15:13:10 +0200
 From: Robert Richter <robert.richter@amd.com>
 To: Andrea Righi <righi.andrea@gmail.com>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        oprofile-list@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH -mm] oprofile: BUG scheduling while atomic
-Message-ID: <20080922131055.GK23557@erda.amd.com>
+Message-ID: <20080922131309.GL23557@erda.amd.com>
 References: <48D51E93.90804@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
 In-Reply-To: <48D51E93.90804@gmail.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 22 Sep 2008 13:10:59.0559 (UTC) FILETIME=[A8087F70:01C91CB4]
+X-OriginalArrivalTime: 22 Sep 2008 13:13:13.0579 (UTC) FILETIME=[F7EA53B0:01C91CB4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+Forgot to cc Ingo.
+
+-Robert
 
 On 20.09.08 18:02:27, Andrea Righi wrote:
 > nmi_shutdown() calls unregister_die_notifier() from an atomic context
