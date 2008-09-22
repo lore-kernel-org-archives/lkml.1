@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbYIVOWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbYIVOXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752660AbYIVOWX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 10:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYIVOWP
+	id S1753240AbYIVOXg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 10:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYIVOX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 10:22:15 -0400
-Received: from main.gmane.org ([80.91.229.2]:47775 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752449AbYIVOWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 10:22:15 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware
- restart.
-Date: Mon, 22 Sep 2008 10:22:01 -0400
-Message-ID: <48D7AA09.8090202@tmr.com>
-References: <20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org> <20080921190050.GA20484@2ka.mipt.ru> <1222024444.3023.53.camel@johannes.berg> <20080921193809.GA8735@2ka.mipt.ru> <20080921124332.67ddc13a@infradead.org> <20080921202057.GB25052@2ka.mipt.ru> <20080921132753.5689b564@infradead.org> <20080921205706.GA24545@2ka.mipt.ru> <20080921233819.32714483@lxorguk.ukuu.org.uk> <20080921234403.GA17946@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 22 Sep 2008 10:23:28 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:50578 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752411AbYIVOX1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 10:23:27 -0400
+Message-ID: <48D7A9F9.50502@euromail.se>
+Date: Mon, 22 Sep 2008 16:21:45 +0200
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
+MIME-Version: 1.0
+To: akpm@osdl.org, Nicolas Boichat <nicolas@boichat.ch>,
+       lm-sensors@lm-sensors.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] hwmon: applesmc: Add support for Macbook Pro 4
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       ipw2100-devel@lists.sourceforge.net
-X-Gmane-NNTP-Posting-Host: pool-71-245-142-197.albyny.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080716 Fedora/1.1.11-1.fc9 SeaMonkey/1.1.11
-In-Reply-To: <20080921234403.GA17946@2ka.mipt.ru>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ipw2100-devel@lists.sourceforge.net
+X-Originating-IP: 83.248.35.94
+X-Scan-Result: No virus found in message 1KhmJS-0004gI-3y.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1KhmJS-0004gI-3y 9195aa331755e1dfd5d69579ebad2028
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> On Sun, Sep 21, 2008 at 11:38:19PM +0100, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
->>>> still more complex than needed; a WARN_ON_ONCE() will be enough.
->>> That allows to dump whatever number of warnings you want. The more we
->>> have, the louder will be customers scream.
->> But if Intel don't care then you can scream all you like 8)
-> 
-> That's what happens :)
-> 
->> A WARN_ON_ONCE is sufficient to capture an idea of how many people it is
->> effecting and maybe to figure out what the trigger is from their reports,
->> at that point there is some chance to get it fixed (especially if its
->> remotely triggerable ;))
-> 
-> Well, redhat, suse and ubuntu bugzillas happend to be not enough. Why do
-> you believe a single warning at a new place will be? or couple of tens
-> or whatever else? If it cares, it cares. If it does not...
-> 
-Has it occurred to you that YOU have a problem on YOUR maschine, and that your 
-patch would kill wireless for all the people who have the hardware on working 
-systems? My experience was somewhat like Denys' except I got no notice, I just 
-found that after an update the wireless worked solidly, and continued to do so 
-until that laptop because obsolete and slow, and went to live with one of the 
-teens in my family.
+This patch adds temperature sensor support for the Macbook Pro 4.
 
-> I attracted vendor's attention, vendor told me to fix it myself and to
-> create a patch to fill an entry in another 'bugzilla', so that vendor
-> could get results and probably decide to walk down from the cloud and
-> fix it.
-> 
-It would be good to gather data rather than claim it doesn't work, because for 
-some set of machines it certainly does.
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+ drivers/hwmon/applesmc.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-> So, if they do not care, I do not care about their care. That's the
-> deal. I will try to find a workaround, even if it is a real crap,
-> fortunately other users will not strike this bug too frequently.
-> 
-My experience with laptops has been that you fiddle with power saving, and more, 
-and more, until you find the tricks which make the laptop save power by 
-disabling something you need, like network or display. At least that's been both 
-my practice and observation, that not every machine responds well to every power 
-saving trick.
+diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
+index b57bd82..631d31c 100644
+--- a/drivers/hwmon/applesmc.c
++++ b/drivers/hwmon/applesmc.c
+@@ -107,6 +107,9 @@ static const char* temperature_sensors_sets[][36] = {
+ /* Set 7: Macbook Air */
+ 	{ "TB0T", "TB1S", "TB1T", "TB2S", "TB2T", "TC0D", "TC0P", "TCFP",
+ 	  "TTF0", "TW0P", "Th0H", "Tp0P", "TpFP", "Ts0P", "Ts0S", NULL },
++/* Set 8: Macbook Pro 4,1 (Penryn) */
++	{ "TB0T", "TC0D", "TC0P", "TG0D", "TG0H", "TTF0", "TW0P", "Th0H",
++	  "Th1H", "Th2H", "Tm0P", "Ts0P", NULL },
+ };
 
-Have you checked for a BIOS update for the machine? Tried disabling all power 
-saving settings and seeing if that changes the problem? I would normally assume 
-you have, but you seem convinced that the bug is in the firmware and you're 
-going to get it fixed. It may be a firmware bug, but if something in your system 
-is triggering it, and most people don't have the problem, you might investigate 
-a solution other than beating on Intel.
+ /* List of keys used to read/write fan speeds */
+@@ -1264,6 +1267,8 @@ static __initdata struct dmi_match_data applesmc_dmi_data[] = {
+ 	{ .accelerometer = 1, .light = 0, .temperature_set = 6 },
+ /* MacBook Air: accelerometer, backlight and temperature set 7 */
+ 	{ .accelerometer = 1, .light = 1, .temperature_set = 7 },
++/* MacBook Pro 4: accelerometer, backlight and temperature set 8 */
++	{ .accelerometer = 1, .light = 1, .temperature_set = 8 },
+ };
 
+ /* Note that DMI_MATCH(...,"MacBook") will match "MacBookPro1,1".
+@@ -1273,6 +1278,10 @@ static __initdata struct dmi_system_id applesmc_whitelist[] = {
+ 	  DMI_MATCH(DMI_BOARD_VENDOR, "Apple"),
+ 	  DMI_MATCH(DMI_PRODUCT_NAME, "MacBookAir") },
+ 		(void*)&applesmc_dmi_data[7]},
++	{ applesmc_dmi_match, "Apple MacBook Pro 4", {
++	  DMI_MATCH(DMI_BOARD_VENDOR, "Apple"),
++	  DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro4") },
++		&applesmc_dmi_data[8]},
+ 	{ applesmc_dmi_match, "Apple MacBook Pro", {
+ 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
+ 	  DMI_MATCH(DMI_PRODUCT_NAME,"MacBookPro") },
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+1.5.6.3
 
