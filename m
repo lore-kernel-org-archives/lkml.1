@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYIVWc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYIVWkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYIVWc4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 18:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYIVWcn
+	id S1754422AbYIVWkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 18:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYIVWjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 18:32:43 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:36228 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753172AbYIVWcm (ORCPT
+	Mon, 22 Sep 2008 18:39:52 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:55967 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753188AbYIVWjv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 18:32:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=mTrFuazWOs2ub0rWGBaCAZYgQfsr+S4btCRM3yrj9RErpW4if/mVi9g3QJqdPoSIXu
-         DHStYqWkA5+sw03LJkJ3VJ1Ju96KadkFBYnp+rq7Owik/mql56+5UBq/G45JU1/LMkow
-         1h3aOCy8DUuPNBXcmcYPeOp7GZL8tib/3kM20=
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: OOPS bug KERNEL LINUX- Version 2.6.26
-Date: Tue, 23 Sep 2008 00:32:36 +0200
-User-Agent: KMail/1.9.9
-Cc: David Miller <davem@davemloft.net>, andrea_monta@inwind.it,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, stable@kernel.org
-References: <K7M9ZI$69A44BBF23D86D612A80B0EA98EEEE6B@libero.it> <200809230025.03680.IvDoorn@gmail.com> <20080922222716.GI3660@tuxdriver.com>
-In-Reply-To: <20080922222716.GI3660@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809230032.37255.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+	Mon, 22 Sep 2008 18:39:51 -0400
+From: Trent Piepho <tpiepho@freescale.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Trent Piepho <tpiepho@freescale.com>,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: [PATCH] leds: make the default trigger name const
+Date: Mon, 22 Sep 2008 15:37:53 -0700
+Message-Id: <1222123073-28996-1-git-send-email-tpiepho@freescale.com>
+X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 September 2008, John W. Linville wrote:
-> On Tue, Sep 23, 2008 at 12:25:03AM +0200, Ivo van Doorn wrote:
-> > Hi,
-> > 
-> > > > 1. Problem with usb-wireless-key 
-> > > > 2. I can't find my device typing ifconfig -a or iwconfig I don't find any wireless attached device. But I have my usb wireless connected. A belkin usb wireless key.Before, with the kernel 2.6.25 all worked well
-> > > > 3. nothing
-> > > > 4. Linux version 2.6.26 (root@clementino) (gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)) #1 PREEMPT Mon Sep 22 15:57:45 CEST 2008
-> > > > 5.
-> > 
-> > You missed the message from rt2x00 2 lines above this trace, which undoubtly have said something like:
-> > 	"Invalid RT chipset detected."
-> > which is triggered when rt73usb is loaded for a device it does not support
-> > 
-> > The current workaround for this issue is blacklisting rt73usb and making sure the driver
-> > which is required for your driver is loaded instead.
-> > 
-> > I'll look into the reason why this actually triggers a NULL pointer, since that is obviously a nasty bug.
-> 
-> -stable needs a patch similar to the one here:
-> 
-> 	http://people.redhat.com/linville/kernels/rhel5/patches/jwltest-rt2x00lib-probe-fail.patch
+The default_trigger fields of struct gpio_led and thus struct led_classdev
+are pretty much always assigned from a string literal, which means the
+string can't be modified.  Which is fine, since there is no reason to
+modify the string and in fact it never is.
 
-Ah yes, that would be a good one.
-I kind of assumed it was already merged, and hadn't actually verified that yet. ;)
+But they should be marked const to prevent such code from being added, to
+prevent warnings if -Wwrite-strings is used, when assigned from a constant
+string other than a string literal (which produces a warning under current
+kernel compiler flags), and for general good coding practices.
 
-Ivo
+Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+CC: Richard Purdie <rpurdie@rpsys.net>
+---
+ include/linux/leds.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/include/linux/leds.h b/include/linux/leds.h
+index d41ccb5..d3a73f5 100644
+--- a/include/linux/leds.h
++++ b/include/linux/leds.h
+@@ -123,7 +123,7 @@ extern void ledtrig_ide_activity(void);
+  */
+ struct led_info {
+ 	const char	*name;
+-	char		*default_trigger;
++	const char	*default_trigger;
+ 	int		flags;
+ };
+ 
+@@ -135,7 +135,7 @@ struct led_platform_data {
+ /* For the leds-gpio driver */
+ struct gpio_led {
+ 	const char *name;
+-	char *default_trigger;
++	const char *default_trigger;
+ 	unsigned 	gpio;
+ 	u8 		active_low;
+ };
+-- 
+1.5.4.1
 
