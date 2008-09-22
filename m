@@ -1,106 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbYIVGWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752598AbYIVGZE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752585AbYIVGWv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 02:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbYIVGWo
+	id S1752598AbYIVGZE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 02:25:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYIVGYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 02:22:44 -0400
-Received: from gw.goop.org ([64.81.55.164]:37501 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750764AbYIVGWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 02:22:43 -0400
-Message-ID: <48D739B2.1050202@goop.org>
-Date: Sun, 21 Sep 2008 23:22:42 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 22 Sep 2008 02:24:55 -0400
+Received: from pih-relay06.plus.net ([212.159.14.19]:55365 "EHLO
+	pih-relay06.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751481AbYIVGYy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 02:24:54 -0400
+Message-ID: <48D73A33.5010107@yahoo.com>
+Date: Mon, 22 Sep 2008 07:24:51 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>
-Subject: Re: PTE access rules & abstraction
-References: <1221846139.8077.25.camel@pasglop>
-In-Reply-To: <1221846139.8077.25.camel@pasglop>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       astarikovskiy@suse.de
+Subject: Re: Reading EeePC900 battery info causes stalls
+References: <fa.aea4e10hJLpVS/qr4bumSa5e9C0@ifi.uio.no> <fa.uDmoMIWw4thxpZxpYeSIpVJhAOo@ifi.uio.no> <fa.RIMmQqN9ybFSKBqOk9Gxi/mOeB4@ifi.uio.no> <fa.XLGLzP+T4fm9CkeATkS1VL/Yz4Q@ifi.uio.no> <fa.z8sKLpwDO3qQ15ZJIm152YEty4I@ifi.uio.no> <fa.KyW7dWWjiSFnFxwdZZLurmVn8qA@ifi.uio.no> <48D4CC1B.7030708@yahoo.com> <alpine.DEB.1.10.0809200955360.12824@gandalf.stny.rr.com> <48D50498.5050608@yahoo.com> <alpine.DEB.1.10.0809201037070.13540@gandalf.stny.rr.com> <48D52FE3.6060803@yahoo.com> <alpine.DEB.1.10.0809201739170.18130@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0809201739170.18130@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Plusnet-Relay: 3a1af5fa2529b16b08096960d9e1fe6e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> Just yesterday, I was browsing through the users of set_pte_at() to
-> check something, and stumbled on a (new ?) bug that will introduce
-> subtle problems on at least powerpc and s390.
->
-> No big deal, I'll send a fix, but I'm becoming concerned with how
-> fragile our page table & PTE access has become.
->
-> (The bug btw is that we ptep_get_and_clear followed by a set_pte_at, at
-> least on those architectures, you -must- flush before you put something
-> new after you have cleared a PTE, I'll have to fixup our implementation
-> of the new pte_modify_start/commit).
->   
+Steven Rostedt wrote:
+> On Sat, 20 Sep 2008, Sitsofe Wheeler wrote:
+> 
+>> Steven Rostedt wrote:
+>>> OK, that is probably the known bug you are hitting. Simply disable the
+>>> CONFIG_FTRACE_STARTUP_TEST and you should have the wakeup tracer. The bug is
+>>> with the test, not the tracer, so it should not hurt you.
+>> Thanks - this made the wakeup tracer appear a you said. I have put two wakeup
+>> traces up:
+>>
+>> http://sucs.org/~sits/test/eeepc-debug/20080920/latency_trace.txt.gz
+>> http://sucs.org/~sits/test/eeepc-debug/20080920/trace.txt.gz
+>> (each file is around 6Mbytes uncompressed)
+>>
+>> Here's a small extract of latency_trace.txt:
+>>
+>>> # tracer: wakeup
+>>> #
+>>> wakeup latency trace v1.1.5 on 2.6.27-rc6skw-dirty
+>>> --------------------------------------------------------------------
+>>>  latency: 3232905 us, #65620/6180619, CPU#0 | (M:desktop VP:0, KP:0, SP:0
+> 
+> Peter, these times are crazy, mainly due to the cpu_clock. He probably 
+> wants to use the sched_clock. Below is a patch to use it instead.
+> 
+> Sitsofe, I notice that the trace states "desktop". This means that you
+> are running with CONFIG_PREEMPT_VOLUNTARY. You want 
+> CONFIG_PREEMPT.
+> 
+> [...]
+>> Is it intentional that the last event has a time earlier closer to that of the
+>> first event?
+>>
+> 
+> Change the config, and see what you get with this patch:
+> 
+> Note this is not compiled tested:
 
-When I added the ptep_modify_* interface, it occurred to me that
-assuming that ptep_get_and_clear would always prevent async pte updates
-was a bit optimistic, or at least presumptuous.  And certainly not
-flushing the tlb seems like something that just happens to work on x86
-(in fact I'm not quite sure how it does work on x86).
+OK I've made the changes you suggested. Without preempt enabled the last 
+event will have a stamp closer to the first event and the times are very 
+high. With preempt enabled that beahviour has gone. Here are results 
+with preempt enabled:
 
-I didn't change the function of that code when I made the change, so the
-bug was pre-existing; I think it has been like that for quite a while
-(though I haven't done any git archaeology to back that up).  So I don't
-think there's a new bug here.
+latency: 19657 us, #3268/3268, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0):
+http://sucs.org/~sits/test/eeepc-debug/20080922/preempt/ath5k/latency_trace.txt 
 
-What's the consequence of not flushing for you?
 
-> With the need of the various virtual machines on x86, we've seen new
-> page table accessors being created like there is no tomorrow, changes in
-> the PTEs are accessed that may or may not be things we can rely on being
-> stable in arch code, etc...
->   
+latency: 104 us, #182/182, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0)
+http://sucs.org/~sits/test/eeepc-debug/20080922/preempt/unplug/latency_trace.txt
 
-There have been a few optional-extras calls, which are all fine to leave
-as no-ops.  I don't think we've added or changed any must-have interfaces.
+latency: 95 us, #134/134, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0):
+http://sucs.org/~sits/test/eeepc-debug/20080922/preempt/acpi/latency_trace.txt
 
-> Unfortunately, the arch code often has a very intimate relationship to
-> how page tables are handled. The rules for locking, what can and cannot
-> be done within a single PTE lock section, what can or cannot be done on
-> a PTE, for example after it's been cleared, etc... vary in subtle ways
-> and the way the things are today, the situation is very messy and
-> fragile.
->   
+latency: 91 us, #152/152, CPU#0 | (M:preempt VP:0, KP:0, SP:0 HP:0)
+http://sucs.org/~sits/test/eeepc-debug/20080922/preempt/touchpad/latency_trace.txt
 
-It seems to me that the rules are roughly "anything goes while you're
-holding the pte lock, but it all must be sane by the time you release
-it".  But a bit more precision would be useful.
+Are these the type of latencies to be expected with preemption on?
 
-> Maybe it's time to have one head in "charge" of the page table access to
-> try to keep some sanity, maybe it's time to write down some rules (for
-> example, can we rely now and forever that set_pte_at() will -never- be
-> called to write on top of an already valid PTE ?, etc...).
->   
-
-I don't know if there's any such rule regarding set_pte_at().  Certainly
-if you were overwriting an existing valid entry, you'd have to arrange
-for a tlb flush.
-
-> But maybe it's time to try to move the abstraction up a bit, maybe along
-> the lines of what Nick proposed a while ago, some kind of transactional
-> model. That would give a lot more freedom to architectures to have their
-> own PTE access rules and optimisations. 
-
-Do you have a reference to Nick's proposals?
-
-A higher level interface might give us virtualization people more scope
-to play with things.  But given that the current interface mostly works
-for everyone, a high level interface would tend to result in a lot of
-duplicated code unless you pretty strictly stipluate something like
-"implement the highest level interface you need *and no higher*; use
-common library code for everything else".
-
-I think documenting the real rules for the current interface would be a
-more immediately fruitful path to start with.
-
-    J
+-- 
+Sitsofe | http://sucs.org/~sits/
