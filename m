@@ -1,235 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbYIVSmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbYIVSn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755088AbYIVSmj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbYIVSlS
+	id S1754711AbYIVSn3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYIVSnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:41:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54675 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbYIVSlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 14:41:16 -0400
-From: David Teigland <teigland@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 6/6] dlm: choose better identifiers
-Date: Mon, 22 Sep 2008 13:28:39 -0500
-Message-Id: <1222108119-24928-7-git-send-email-teigland@redhat.com>
+	Mon, 22 Sep 2008 14:43:15 -0400
+Received: from quackingmoose.com ([63.73.180.143]:46746 "EHLO
+	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753343AbYIVSnN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 14:43:13 -0400
+Date: Mon, 22 Sep 2008 11:43:11 -0700
+From: Aaron Straus <aaron@merfinllc.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Hans-Peter Jansen <hpj@urpla.net>, linux-kernel@vger.kernel.org,
+       Chuck Lever <chuck.lever@oracle.com>, Neil Brown <neilb@suse.de>,
+       Linux NFS Mailing List <linux-nfs@vger.kernel.org>
+Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
+Message-ID: <20080922184311.GI12483@merfinllc.com>
+References: <20080905191939.GG22796@merfinllc.com> <56258A29-95D5-4A8C-A097-014B8FEDFB8F@oracle.com> <20080911184951.GB19054@merfinllc.com> <200809221805.48463.hpj@urpla.net> <1222101322.7615.6.camel@localhost> <20080922170414.GC12483@merfinllc.com> <1222104541.7615.23.camel@localhost> <20080922174525.GF12483@merfinllc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080922174525.GF12483@merfinllc.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
+Hi,
 
-sparc32:
+On Sep 22 10:45 AM, Aaron Straus wrote:
+> > diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+> > index 3229e21..eb6b211 100644
+> > --- a/fs/nfs/write.c
+> > +++ b/fs/nfs/write.c
+> > @@ -1428,7 +1428,8 @@ static int nfs_write_mapping(struct address_space *mapping, int how)
+> >  		.sync_mode = WB_SYNC_NONE,
+> >  		.nr_to_write = LONG_MAX,
+> >  		.for_writepages = 1,
+> > -		.range_cyclic = 1,
+> > +		.range_start = 0,
+> > +		.range_end = LLONG_MAX,
+> >  	};
+> >  	int ret;
+> >  
+> 
+> Also, I should test this, but I thought the VM was calling
+> nfs_writepages directly i.e. not going through nfs_write_mapping.  Let
+> me test with this patch.
 
-fs/dlm/config.c:397: error: expected identifier or '(' before '{' token
-fs/dlm/config.c: In function 'drop_node':
-fs/dlm/config.c:589: warning: initialization from incompatible pointer type
-fs/dlm/config.c:589: warning: initialization from incompatible pointer type
-fs/dlm/config.c: In function 'release_node':
-fs/dlm/config.c:601: warning: initialization from incompatible pointer type
-fs/dlm/config.c:601: warning: initialization from incompatible pointer type
-fs/dlm/config.c: In function 'show_node':
-fs/dlm/config.c:717: warning: initialization from incompatible pointer type
-fs/dlm/config.c:717: warning: initialization from incompatible pointer type
-fs/dlm/config.c: In function 'store_node':
-fs/dlm/config.c:726: warning: initialization from incompatible pointer type
-fs/dlm/config.c:726: warning: initialization from incompatible pointer type
+Yes.  This patch doesn't seem to help.  The VM is calling nfs_writepages
+directly.   I have debug statements in the nfs_write_mapping() call and it
+hasn't been called when the hole appears.
 
-Cc: Christine Caulfield <ccaulfie@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: David Teigland <teigland@redhat.com>
----
- fs/dlm/config.c |   44 ++++++++++++++++++++++----------------------
- 1 files changed, 22 insertions(+), 22 deletions(-)
+It's the VM dirty page writeout that is happening out of order, *not*
+nfs_wb_* stuff.   That's why we can see it so easily.  The dirty pages
+are only scanned periodically.  In-between scans is when we see the
+hole.
 
-diff --git a/fs/dlm/config.c b/fs/dlm/config.c
-index 1359be3..fd9859f 100644
---- a/fs/dlm/config.c
-+++ b/fs/dlm/config.c
-@@ -380,24 +380,24 @@ static struct config_item_type node_type = {
- 	.ct_owner = THIS_MODULE,
- };
- 
--static struct dlm_cluster *to_cluster(struct config_item *i)
-+static struct dlm_cluster *config_item_to_cluster(struct config_item *i)
- {
- 	return i ? container_of(to_config_group(i), struct dlm_cluster, group) :
- 		   NULL;
- }
- 
--static struct dlm_space *to_space(struct config_item *i)
-+static struct dlm_space *config_item_to_space(struct config_item *i)
- {
- 	return i ? container_of(to_config_group(i), struct dlm_space, group) :
- 		   NULL;
- }
- 
--static struct dlm_comm *to_comm(struct config_item *i)
-+static struct dlm_comm *config_item_to_comm(struct config_item *i)
- {
- 	return i ? container_of(i, struct dlm_comm, item) : NULL;
- }
- 
--static struct dlm_node *to_node(struct config_item *i)
-+static struct dlm_node *config_item_to_node(struct config_item *i)
- {
- 	return i ? container_of(i, struct dlm_node, item) : NULL;
- }
-@@ -453,7 +453,7 @@ static struct config_group *make_cluster(struct config_group *g,
- 
- static void drop_cluster(struct config_group *g, struct config_item *i)
- {
--	struct dlm_cluster *cl = to_cluster(i);
-+	struct dlm_cluster *cl = config_item_to_cluster(i);
- 	struct config_item *tmp;
- 	int j;
- 
-@@ -471,7 +471,7 @@ static void drop_cluster(struct config_group *g, struct config_item *i)
- 
- static void release_cluster(struct config_item *i)
- {
--	struct dlm_cluster *cl = to_cluster(i);
-+	struct dlm_cluster *cl = config_item_to_cluster(i);
- 	kfree(cl->group.default_groups);
- 	kfree(cl);
- }
-@@ -510,7 +510,7 @@ static struct config_group *make_space(struct config_group *g, const char *name)
- 
- static void drop_space(struct config_group *g, struct config_item *i)
- {
--	struct dlm_space *sp = to_space(i);
-+	struct dlm_space *sp = config_item_to_space(i);
- 	struct config_item *tmp;
- 	int j;
- 
-@@ -527,7 +527,7 @@ static void drop_space(struct config_group *g, struct config_item *i)
- 
- static void release_space(struct config_item *i)
- {
--	struct dlm_space *sp = to_space(i);
-+	struct dlm_space *sp = config_item_to_space(i);
- 	kfree(sp->group.default_groups);
- 	kfree(sp);
- }
-@@ -549,7 +549,7 @@ static struct config_item *make_comm(struct config_group *g, const char *name)
- 
- static void drop_comm(struct config_group *g, struct config_item *i)
- {
--	struct dlm_comm *cm = to_comm(i);
-+	struct dlm_comm *cm = config_item_to_comm(i);
- 	if (local_comm == cm)
- 		local_comm = NULL;
- 	dlm_lowcomms_close(cm->nodeid);
-@@ -560,13 +560,13 @@ static void drop_comm(struct config_group *g, struct config_item *i)
- 
- static void release_comm(struct config_item *i)
- {
--	struct dlm_comm *cm = to_comm(i);
-+	struct dlm_comm *cm = config_item_to_comm(i);
- 	kfree(cm);
- }
- 
- static struct config_item *make_node(struct config_group *g, const char *name)
- {
--	struct dlm_space *sp = to_space(g->cg_item.ci_parent);
-+	struct dlm_space *sp = config_item_to_space(g->cg_item.ci_parent);
- 	struct dlm_node *nd;
- 
- 	nd = kzalloc(sizeof(struct dlm_node), GFP_KERNEL);
-@@ -588,8 +588,8 @@ static struct config_item *make_node(struct config_group *g, const char *name)
- 
- static void drop_node(struct config_group *g, struct config_item *i)
- {
--	struct dlm_space *sp = to_space(g->cg_item.ci_parent);
--	struct dlm_node *nd = to_node(i);
-+	struct dlm_space *sp = config_item_to_space(g->cg_item.ci_parent);
-+	struct dlm_node *nd = config_item_to_node(i);
- 
- 	mutex_lock(&sp->members_lock);
- 	list_del(&nd->list);
-@@ -601,7 +601,7 @@ static void drop_node(struct config_group *g, struct config_item *i)
- 
- static void release_node(struct config_item *i)
- {
--	struct dlm_node *nd = to_node(i);
-+	struct dlm_node *nd = config_item_to_node(i);
- 	kfree(nd);
- }
- 
-@@ -635,7 +635,7 @@ void dlm_config_exit(void)
- static ssize_t show_cluster(struct config_item *i, struct configfs_attribute *a,
- 			    char *buf)
- {
--	struct dlm_cluster *cl = to_cluster(i);
-+	struct dlm_cluster *cl = config_item_to_cluster(i);
- 	struct cluster_attribute *cla =
- 			container_of(a, struct cluster_attribute, attr);
- 	return cla->show ? cla->show(cl, buf) : 0;
-@@ -645,7 +645,7 @@ static ssize_t store_cluster(struct config_item *i,
- 			     struct configfs_attribute *a,
- 			     const char *buf, size_t len)
- {
--	struct dlm_cluster *cl = to_cluster(i);
-+	struct dlm_cluster *cl = config_item_to_cluster(i);
- 	struct cluster_attribute *cla =
- 		container_of(a, struct cluster_attribute, attr);
- 	return cla->store ? cla->store(cl, buf, len) : -EINVAL;
-@@ -654,7 +654,7 @@ static ssize_t store_cluster(struct config_item *i,
- static ssize_t show_comm(struct config_item *i, struct configfs_attribute *a,
- 			 char *buf)
- {
--	struct dlm_comm *cm = to_comm(i);
-+	struct dlm_comm *cm = config_item_to_comm(i);
- 	struct comm_attribute *cma =
- 			container_of(a, struct comm_attribute, attr);
- 	return cma->show ? cma->show(cm, buf) : 0;
-@@ -663,7 +663,7 @@ static ssize_t show_comm(struct config_item *i, struct configfs_attribute *a,
- static ssize_t store_comm(struct config_item *i, struct configfs_attribute *a,
- 			  const char *buf, size_t len)
- {
--	struct dlm_comm *cm = to_comm(i);
-+	struct dlm_comm *cm = config_item_to_comm(i);
- 	struct comm_attribute *cma =
- 		container_of(a, struct comm_attribute, attr);
- 	return cma->store ? cma->store(cm, buf, len) : -EINVAL;
-@@ -717,7 +717,7 @@ static ssize_t comm_addr_write(struct dlm_comm *cm, const char *buf, size_t len)
- static ssize_t show_node(struct config_item *i, struct configfs_attribute *a,
- 			 char *buf)
- {
--	struct dlm_node *nd = to_node(i);
-+	struct dlm_node *nd = config_item_to_node(i);
- 	struct node_attribute *nda =
- 			container_of(a, struct node_attribute, attr);
- 	return nda->show ? nda->show(nd, buf) : 0;
-@@ -726,7 +726,7 @@ static ssize_t show_node(struct config_item *i, struct configfs_attribute *a,
- static ssize_t store_node(struct config_item *i, struct configfs_attribute *a,
- 			  const char *buf, size_t len)
- {
--	struct dlm_node *nd = to_node(i);
-+	struct dlm_node *nd = config_item_to_node(i);
- 	struct node_attribute *nda =
- 		container_of(a, struct node_attribute, attr);
- 	return nda->store ? nda->store(nd, buf, len) : -EINVAL;
-@@ -771,7 +771,7 @@ static struct dlm_space *get_space(char *name)
- 	i = config_group_find_item(space_list, name);
- 	mutex_unlock(&space_list->cg_subsys->su_mutex);
- 
--	return to_space(i);
-+	return config_item_to_space(i);
- }
- 
- static void put_space(struct dlm_space *sp)
-@@ -818,7 +818,7 @@ static struct dlm_comm *get_comm(int nodeid, struct sockaddr_storage *addr)
- 	mutex_lock(&clusters_root.subsys.su_mutex);
- 
- 	list_for_each_entry(i, &comm_list->cg_children, ci_entry) {
--		cm = to_comm(i);
-+		cm = config_item_to_comm(i);
- 
- 		if (nodeid) {
- 			if (cm->nodeid != nodeid)
+I think :).  I'm obviously not an expert here.
+
+					Thanks,
+					=a=
+
+
 -- 
-1.5.5.1
-
+===================
+Aaron Straus
+aaron@merfinllc.com
