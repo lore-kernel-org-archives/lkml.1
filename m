@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbYIVLZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbYIVL0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbYIVLZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 07:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbYIVLZq
+	id S1753791AbYIVL0z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 07:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbYIVL0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 07:25:46 -0400
-Received: from fogou.chygwyn.com ([195.171.2.24]:47207 "EHLO fogou.chygwyn.com"
+	Mon, 22 Sep 2008 07:26:46 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:37416 "EHLO slimlogic.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751168AbYIVLZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 07:25:46 -0400
-Date: Mon, 22 Sep 2008 12:23:45 +0100
-From: steve@chygwyn.com
-To: Takashi Sato <t-sato@yk.jp.nec.com>
+	id S1751630AbYIVL0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 07:26:46 -0400
+Subject: Re: [PATCH 2/6] regulator: Fix typo
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Zid Null <zidsoft@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 6/10] gfs2: Fix error handling in
-	write_super_lockfs/unlockfs
-Message-ID: <20080922112345.GA10387@fogou.chygwyn.com>
-References: <20080922195718t-sato@mail.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080922195718t-sato@mail.jp.nec.com>
-Organization: ChyGwyn Limited
-X-Registered-Office: Digital Technium, Singleton Park, Swansea. SA2 8PP
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <328e43f00809201317o233f0b10ybb7fb5b5278c22f2@mail.gmail.com>
+References: <1221845972.6892.136.camel@odin>
+	 <328e43f00809201317o233f0b10ybb7fb5b5278c22f2@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 22 Sep 2008 12:26:42 +0100
+Message-Id: <1222082802.10226.10.camel@dell-desktop.example.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Mon, Sep 22, 2008 at 07:57:18PM +0900, Takashi Sato wrote:
-> I've changed write_super_lockfs/unlockfs so that they always return
-> 0 (success) to keep a current behavior.
+On Sat, 2008-09-20 at 21:17 +0100, Zid Null wrote:
 > 
-> Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
-> Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
-> ---
->  ops_super.c |    8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
 > 
-> diff -uprN -X linux-2.6.27-rc7-lockfs-ext4/Documentation/dontdiff linux-2.6.27-rc7-lockfs-ext4/fs/gfs2/ops_super.c linux
-> -2.6.27-rc7-lockfs-gfs2/fs/gfs2/ops_super.c
-> --- linux-2.6.27-rc7-lockfs-ext4/fs/gfs2/ops_super.c	2008-09-22 07:29:55.000000000 +0900
-> +++ linux-2.6.27-rc7-lockfs-gfs2/fs/gfs2/ops_super.c	2008-09-22 10:52:16.000000000 +0900
-> @@ -166,13 +166,13 @@ static int gfs2_sync_fs(struct super_blo
->   *
->   */
->  
-> -static void gfs2_write_super_lockfs(struct super_block *sb)
-> +static int gfs2_write_super_lockfs(struct super_block *sb)
->  {
->  	struct gfs2_sbd *sdp = sb->s_fs_info;
->  	int error;
->  
->  	if (test_bit(SDF_SHUTDOWN, &sdp->sd_flags))
-> -		return;
-> +		return 0;
->
-Since this now returns a status, then this should indicate a failure
-I think. Perhaps -EINVAL would be suitable?
+> 2008/9/19 Liam Girdwood <lrg@slimlogic.co.uk>
+>         Fixes a small typo.
+>         
+>         Signed-off-by: Mark Brown
+>         <broonie@opensource.wolfsonmicro.com>
+>         Signed-off-by: Liam Girdwood <lrg@slimlogic.co.uk>
+>         ---
+>          include/linux/regulator/driver.h |    2 +-
+>          1 files changed, 1 insertions(+), 1 deletions(-)
+>         
+>         diff --git a/include/linux/regulator/driver.h
+>         b/include/linux/regulator/driver.h
+>         index e7cbeda..2a37528 100644
+>         --- a/include/linux/regulator/driver.h
+>         +++ b/include/linux/regulator/driver.h
+>         @@ -51,7 +51,7 @@ struct regulator_ops {
+>                                                  int output_uV, int
+>         load_uA);
+>         
+>                /* the operations below are for configuration of
+>         regulator state when
+>         -        * it's parent PMIC enters a global STANBY/HIBERNATE
+>         state */
+>         +        * it's parent PMIC enters a global STANDBY/HIBERNATE
+>         state */
+> Still wrong, it's is the possesive. 
+> 
 
-Otherwise it looks good from a gfs2 perspective,
+Thanks. Fixed.
 
-Steve.
+Liam
+
+
