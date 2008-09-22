@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbYIVMiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbYIVMwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752848AbYIVMiS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 08:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbYIVMiK
+	id S1752675AbYIVMwp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 08:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYIVMwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 08:38:10 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:48275 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751915AbYIVMiJ (ORCPT
+	Mon, 22 Sep 2008 08:52:35 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:46269 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751933AbYIVMwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 08:38:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=m0GwbHR18WFguxoVGSDYF5GdVfMuWplEmfifnpxMJGA3Hy6VrJrNujQVLehl8o6+Vr
-         67bsurGad83K9svO6Zx5s5Y80IPMRE7ygkTbDAAj67jhxCQ9ywGz9gbmMmuT8nT707OC
-         2sxc0jbn8lETMz6oGBfD5mfVlPDY+SGvFP4qc=
-Message-ID: <961aa3350809220538u5663ed51y38395f6c07169336@mail.gmail.com>
-Date: Mon, 22 Sep 2008 21:38:07 +0900
-From: "Akinobu Mita" <akinobu.mita@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: check for ioremap() failure in copy_oldmem_page()
-Cc: linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <20080922101547.GB27526@elte.hu>
+	Mon, 22 Sep 2008 08:52:33 -0400
+Message-ID: <3717EAB2B3F742ACBE4FFEC94B98BEB5@nsl.ad.nec.co.jp>
+From: "Takashi Sato" <t-sato@yk.jp.nec.com>
+To: "Christoph Hellwig" <hch@infradead.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       <linux-fsdevel@vger.kernel.org>, <dm-devel@redhat.com>,
+       <viro@ZenIV.linux.org.uk>, <linux-ext4@vger.kernel.org>,
+       <xfs@oss.sgi.com>, <axboe@kernel.dk>, <mtk.manpages@googlemail.com>,
+       <linux-kernel@vger.kernel.org>
+References: <20080922195526t-sato@mail.jp.nec.com> <20080922105956.GA16069@infradead.org>
+In-Reply-To: <20080922105956.GA16069@infradead.org>
+Subject: Re: [PATCH 1/10] VFS: Fix error handling ofwrite_super_lockfs/unlockfs
+Date: Mon, 22 Sep 2008 21:52:09 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080921142711.GB8790@localhost.localdomain>
-	 <20080922101547.GB27526@elte.hu>
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Windows Mail 6.0.6000.16480
+X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/22 Ingo Molnar <mingo@elte.hu>:
->
-> * Akinobu Mita <akinobu.mita@gmail.com> wrote:
->
->> Add a check for ioremap() failure in copy_oldmem_page().
->> This patch also includes small coding style fixes.
->>
->> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
->
-> applied to tip/x86/crashdump, thanks!
->
-> I'm curious, have you found this bug via the fault-injection framework,
-> or via code review?
+Hi,
 
-I found it via code review.
-But I forgot why I was looking at crash_dump_64.c...
+> On Mon, Sep 22, 2008 at 07:55:26PM +0900, Takashi Sato wrote:
+>> I've changed the type of write_super_lockfs and unlockfs from "void" to
+>> "int" so that they can return an error.
+>
+> Returning an error from the freeze operation makes sense, but for the
+> unfreeze I don't see the point.  You must however change all existing
+> instances to actually return a value (even if it's always 0 for now)
+> to avoid breaking git bisect.
+
+I thought unlockfs should return an error because ext3_unlockfs()
+might cause I/O error in writing a super block.
+But it is an internal error and the unfreezing succeeds.
+So I will consider returning 0.
+
+> If you touch all instances anyway, it would be nice to rename them
+> to freeze / unfreze as the current names are more confusing.
+
+I will consider renaming.
+
+Cheers, Takashi
