@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752598AbYIVNQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYIVNQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752598AbYIVNQG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 09:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYIVNPw
+	id S1753402AbYIVNQZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 09:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbYIVNQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 09:15:52 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:10734 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752047AbYIVNPv (ORCPT
+	Mon, 22 Sep 2008 09:16:03 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42382 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753230AbYIVNQA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 09:15:51 -0400
-Message-ID: <48D79ABD.8060805@ru.mvista.com>
-Date: Mon, 22 Sep 2008 17:16:45 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Mark de Wever <koraq@xs4all.nl>
-Cc: Gadi Oxman <gadio@netvision.net.il>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] IDE-TAPE NULL terminate strings.
-References: <20080921185138.GA16310@localhost>
-In-Reply-To: <20080921185138.GA16310@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 22 Sep 2008 09:16:00 -0400
+Date: Mon, 22 Sep 2008 14:15:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Cc: linux-serial@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] serial: set correct baud_base for Oxford
+ Semiconductor Ltd EXSYS EX-41092 Dual 16950 Serial adapter
+Message-ID: <20080922141550.6e043f44@lxorguk.ukuu.org.uk>
+In-Reply-To: <48D79977.30403@wincor-nixdorf.com>
+References: <48D79977.30403@wincor-nixdorf.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Mon, 22 Sep 2008 15:11:19 +0200
+Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
 
-Mark de Wever wrote:
+> The PCI-card identified as "Oxford Semiconductor Ltd EXSYS EX-41092 Dual
+> 16950 Serial adapter" is only usable with other devices (i.e. not the same
+> card) after doing a "setserial /dev/ttyS<n> baud_base 115200".  This
+> baud_base should be default for this card.
+> 
+> Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
 
-> After updating my kernel to 2.6.26 the output for the ide-tape drive
-> during booting is garbled eg
-> ide-tape: hdd <-> ht0: Seagate <98>ß8A51|1À<81>Üº<98>ß STT20000A rev 8A51|1À<81>Üº<98>ß
+Ok we'll give that one a go and hopefully it won't clash with anything
+else this time. Queued for the ttydev tree
 
-> This patch fixes the problem by NULL terminating the strings.
 
-    Looks like this bugs was introduced by this commit:
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=41f81d545b6b1f585a02d1d8545978714f710e91
-
-MBR, Sergei
+Alan
