@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYIVXu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYIVXwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755085AbYIVXu3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 19:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbYIVXuK
+	id S1755186AbYIVXwW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 19:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbYIVXwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 19:50:10 -0400
-Received: from sous-sol.org ([216.99.217.87]:45390 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754046AbYIVXuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 19:50:08 -0400
-Date: Mon, 22 Sep 2008 15:57:33 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
-       Andreas Gruenbacher <agruen@suse.de>, Andrew Morton <akpm@osdl.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 1/2] file capabilities: add no_file_caps switch (v2)
-Message-ID: <20080922225733.GB610@sequoia.sous-sol.org>
-References: <20080922184835.GA2826@us.ibm.com>
+	Mon, 22 Sep 2008 19:52:15 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:33805 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754123AbYIVXwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 19:52:14 -0400
+Date: Tue, 23 Sep 2008 01:52:10 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Thomas Jarosch <thomas.jarosch@intra2net.com>
+cc: linux-kernel@vger.kernel.org, Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: [patch] log fatal signals like SIGSEGV
+In-Reply-To: <200809201912.40381.thomas.jarosch@intra2net.com>
+Message-ID: <Pine.LNX.4.64.0809230150290.27884@twin.jikos.cz>
+References: <200809121502.15264.thomas.jarosch@intra2net.com>
+ <200809181210.40336.thomas.jarosch@intra2net.com> <20080918202010.GA5656@joi>
+ <200809201912.40381.thomas.jarosch@intra2net.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080922184835.GA2826@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Serge E. Hallyn (serue@us.ibm.com) wrote:
-> --- a/kernel/capability.c
-> +++ b/kernel/capability.c
-> @@ -33,6 +33,19 @@ EXPORT_SYMBOL(__cap_empty_set);
->  EXPORT_SYMBOL(__cap_full_set);
->  EXPORT_SYMBOL(__cap_init_eff_set);
->  
-> +#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
-> +int file_caps_enabled = 1;
-> +
-> +static int __init file_caps_disable(char *str)
-> +{
-> +	file_caps_enabled = 0;
-> +	return 1;
-> +}
-> +__setup("no_file_caps", file_caps_disable);
-> +#else
-> +static const int file_caps_enabled = 0;
-> +#endif
+On Sat, 20 Sep 2008, Thomas Jarosch wrote:
 
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -27,6 +27,12 @@
->  #include <linux/prctl.h>
->  #include <linux/securebits.h>
->  
-> +#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
-> +extern int file_caps_enabled;
-> +#else
-> +static const int file_caps_enabled = 0;
-> +#endif
-> +
+> ------------------------------------------------------
+> From: Thomas Jarosch <thomas.jarosch@intra2net.com>
+> 
+> Log signals like SIGSEGV, SIGILL, SIGBUS or SIGFPE to aid tracing
+> of obscure problems. Also logs the sender of the signal.
+> 
+> The log message looks like this:
+> "kernel: signal 9 sent to freezed[2634] uid:100,
+>  parent init[1] uid:0 by bash[3168] uid:0, parent sshd[3164] uid:0"
 
-file_caps_enabled cut 'n paste mistake when !CONFIG_SECURITY_FILE_CAPABILITIES?
+BTW be aware that for example x86 arch-specific code does this on its own, 
+and therefore with your patch, the information will be duplicated. See 
+page fault handler for x86.
 
-Also, plan to update Documentation/kernel-parameters.txt?
+-- 
+Jiri Kosina
+SUSE Labs
 
-thanks,
--chris
