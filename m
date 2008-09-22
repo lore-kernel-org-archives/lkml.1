@@ -1,58 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbYIVXjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbYIVXkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbYIVXjT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 19:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbYIVXjI
+	id S1754995AbYIVXkQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 19:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYIVXkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 19:39:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56159 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753991AbYIVXjI (ORCPT
+	Mon, 22 Sep 2008 19:40:04 -0400
+Received: from nospam3.slac.stanford.edu ([134.79.18.120]:56574 "EHLO
+	nospam3.slac.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754082AbYIVXkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 19:39:08 -0400
-Date: Mon, 22 Sep 2008 16:39:14 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Randy.Dunlap" <rdunlap@xenotime.net>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Hugh Dickins <hugh@veritas.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 2/2] corruption check: run the corruption checks from a
- work queue
-Message-ID: <20080922163914.2cafd797@infradead.org>
-In-Reply-To: <Pine.LNX.4.64.0809221627290.4768@shark.he.net>
-References: <20080920203544.53a5148e@infradead.org>
-	<20080922140402.166de1ba@infradead.org>
-	<20080922140503.5f3a3db3@infradead.org>
-	<20080922162426.2a55a722@infradead.org>
-	<Pine.LNX.4.64.0809221627290.4768@shark.he.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Mon, 22 Sep 2008 19:40:03 -0400
+X-Greylist: delayed 860 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Sep 2008 19:40:02 EDT
+Subject: SPLICE_F_MOVE
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: Linux Mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 22 Sep 2008 16:25:39 -0700
+Message-Id: <1222125940.1313.83.camel@pcds-ts102.slac.stanford.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-53.el4_6.3) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 16:28:23 -0700 (PDT)
-"Randy.Dunlap" <rdunlap@xenotime.net> wrote:
+Hi,
 
-> On Mon, 22 Sep 2008, Arjan van de Ven wrote:
-> 
-> > eh a stray debug // snuck in; update attached
-> 
-> In that case, patch 1/2 contains "for(" and "while(".  :(
-> 
+Does anyone know if SPLICE_F_MOVE is obsolete or still in use ?
 
-that's a dillema case.
-I'm just moving code around in patch 1/2; I personally consider it bad
-form to also change it at the same time.....
+The documentation says that the flag should be used to tell splice not
+to copy the data when moving data to/from a pipe, but I cannot find
+anywhere in the kernel where this flag is being used or checked for.
 
-(and it confuses git change tracking)
+Thanks,
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Remi
+
