@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbYIVIMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbYIVIXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752505AbYIVIMt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 04:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYIVIMl
+	id S1752505AbYIVIXy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 04:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYIVIXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 04:12:41 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:52033 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751630AbYIVIMl (ORCPT
+	Mon, 22 Sep 2008 04:23:43 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:56629 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751630AbYIVIXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 04:12:41 -0400
-Date: Mon, 22 Sep 2008 10:12:39 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
-To: Denis Vlasenko <vda@port.imtp.ilyichevsk.odessa.ua>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] List of maintainers (draft #3)
-Message-ID: <20080922081239.GA28726@strlen.de>
-References: <200202071054.g17Asst06608@Port.imtp.ilyichevsk.odessa.ua>
+	Mon, 22 Sep 2008 04:23:42 -0400
+Date: Mon, 22 Sep 2008 16:23:09 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Steffen Klassert <steffen.klassert@secunet.com>
+Cc: David Miller <davem@davemloft.net>, dwalker@mvista.com,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
+Message-ID: <20080922082309.GA25739@gondor.apana.org.au>
+References: <20080920.125949.193703969.davem@davemloft.net> <E1KhI4n-0002Fk-7C@gondolin.me.apana.org.au> <20080921094628.GA22453@secunet.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200202071054.g17Asst06608@Port.imtp.ilyichevsk.odessa.ua>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080921094628.GA22453@secunet.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2002 at 12:54:56PM -0200, Denis Vlasenko wrote:
-> After recent discussion on Linux development practices I think it may be
-> worthy to have list of lk maintainers. Unlike one included into kernel
-> source, this document is meant to be monthly (weekly?) mailed to lkml
-> and to be modified whenever new victim wishes to be listed in it
-> or someone can no longer devote his time to maintainer work.
-I don't see an advantage of a regular mail compared to a file in the
-tree, but obviously YMMV.
+On Sun, Sep 21, 2008 at 11:46:28AM +0200, Steffen Klassert wrote:
+>
+> It's non-trivial but possible. I have a test implementation that
+> runs the whole IP layer in parallel. The basic idea to keep track
+> of the packet ordering is to give the packets sequence numbers
+> befor we run in parallel. Befor we push the packets to the upper
+> layers or to the neighboring subsystem I have a mechanism that
+> brings them back to the right order. 
 
-But another thing really bothers me:  I think there should not be more
-than one place I have to look up manually for maintainers.  Currently I
-have ~100 easy patches pending and the most time consuming part of
-finishing these is looking up the right address to send to send them to.
-Currently I already have to check the modified files for a maintainer
-entry, MAINTAINERS and the history of the files.
+Yes that should do the trick.
 
-IMHO this could be automated with some effort.  I currently imagine:
- - a MAINTAINERS maintainer?!
- - a certain format to specify a maintainer of a single file in that
-   file (e.g. in a specially marked comment) to prevent overloading
-   MAINTAINERS
- - maybe a per-directory .maintainers file.
- - add a field to each entry in MAINTAINERS specifying a regular
-   expression or shell wildcard of the corresponding files and
-   directories.
- - a script that takes a patch and extracts the addresses from the above
-   sources (and optionally calls git send-email)
- 
-If you want to do that with an externally maintained source thats OK for
-me, too, provided it eases patch submission.
+> With my test environment (two quad core boxes) I get with IPSEC
+> aes192-sha1 and one tcp stream a throughput of about 600 Mbit/s
+> compared to about 200 Mbit/s without the parallel processing. 
 
-Best regards
-Uwe
+Yes this would definitely help IPsec.  However, I'm not so sure
+of its benefit to routing and other parts of networking.  That's
+why I'd rather have this sort of hack stay in the crypto system
+where it's isolated rather than having it proliferate throughout
+the network stack.
+
+When the time comes to weed out this because all CPUs that matter
+have encryption in hardware then it'll be much easier to delete a
+crypto algorithm as opposed to removing parts of the network
+infrastructure :)
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
