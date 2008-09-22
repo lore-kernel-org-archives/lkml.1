@@ -1,92 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbYIVKw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbYIVKx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753247AbYIVKw7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 06:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYIVKwv
+	id S1753302AbYIVKx4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 06:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYIVKxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 06:52:51 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53287 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbYIVKwu (ORCPT
+	Mon, 22 Sep 2008 06:53:47 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2723 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752001AbYIVKxq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 06:52:50 -0400
-Date: Mon, 22 Sep 2008 19:58:42 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/13] memcg: nolimit root cgroup
-Message-Id: <20080922195842.eb198a88.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Sep 2008 06:53:46 -0400
+Date: Mon, 22 Sep 2008 06:53:46 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Justin Mattock <justinmattock@gmail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [Bug #11552] Disabling IRQ #23
+In-Reply-To: <dd18b0c30809211616g658b50c8k2ea9f9953f1de96f@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0809220651080.13379-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make root cgroup of memory resource controller to have no limit.
+On Sun, 21 Sep 2008, Justin Mattock wrote:
 
-By this, users cannot set limit to root group. This is for making root cgroup
-as a kind of trash-can.
+> From over here, I did a bad install
+> of isight-firmware-tools, causing hal and udev
+> to clash.  After making sure the package was either
+> using hal or udev, there is no message of disable irq #23.
+> If its not too much trouble is there a way to verify that this was
+> the case, i.g. if udev creates a dev, then hal creates the same device
+> will this cause ehci_hcd to have messages of this kind? If so
+> then thats what happened, if not then theres something else causing this.
 
-For accounting pages which has no owner, which are created by force_empty,
-we need some cgroup with no_limit. A patch for rewriting force_empty will
-will follow this one.
+You didn't read what I wrote earlier, did you?  The "HC died" message 
+should NEVER occur!  It doesn't matter what games you play with hal and 
+udev -- it should NEVER occur.  Not ever.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+And since the "HC died" is what causes IRQ #23 to be disabled, that 
+shouldn't happen either.
 
-Index: mmotm-2.6.27-rc6+/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.27-rc6+.orig/mm/memcontrol.c
-+++ mmotm-2.6.27-rc6+/mm/memcontrol.c
-@@ -136,6 +136,9 @@ struct mem_cgroup {
- };
- static struct mem_cgroup init_mem_cgroup;
- 
-+#define is_root_cgroup(cgrp)	((cgrp) == &init_mem_cgroup)
-+
-+
- /*
-  * We use the lower bit of the page->page_cgroup pointer as a bit spin
-  * lock.  We need to ensure that page->page_cgroup is at least two
-@@ -944,6 +947,10 @@ static int mem_cgroup_write(struct cgrou
- 
- 	switch (cft->private) {
- 	case RES_LIMIT:
-+		if (is_root_cgroup(memcg)) {
-+			ret = -EINVAL;
-+			break;
-+		}
- 		/* This function does all necessary parse...reuse it */
- 		ret = res_counter_memparse_write_strategy(buffer, &val);
- 		if (!ret)
-Index: mmotm-2.6.27-rc6+/Documentation/controllers/memory.txt
-===================================================================
---- mmotm-2.6.27-rc6+.orig/Documentation/controllers/memory.txt
-+++ mmotm-2.6.27-rc6+/Documentation/controllers/memory.txt
-@@ -121,6 +121,9 @@ The corresponding routines that remove a
- a page from Page Cache is used to decrement the accounting counters of the
- cgroup.
- 
-+The root cgroup is not allowed to be set limit but usage is accounted.
-+For controlling usage of memory, you need to create a cgroup.
-+
- 2.3 Shared Page Accounting
- 
- Shared pages are accounted on the basis of the first touch approach. The
-@@ -172,6 +175,7 @@ We can alter the memory limit:
- 
- NOTE: We can use a suffix (k, K, m, M, g or G) to indicate values in kilo,
- mega or gigabytes.
-+Note: root cgroup is not able to be set limit.
- 
- # cat /cgroups/0/memory.limit_in_bytes
- 4194304
+Alan Stern
 
