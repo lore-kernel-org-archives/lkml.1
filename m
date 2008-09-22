@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYIVR7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbYIVSAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbYIVR7m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 13:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYIVR7e
+	id S1754137AbYIVSAS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYIVSAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 13:59:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33145 "EHLO mx2.mail.elte.hu"
+	Mon, 22 Sep 2008 14:00:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35023 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751985AbYIVR7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 13:59:34 -0400
-Date: Mon, 22 Sep 2008 19:59:24 +0200
+	id S1752881AbYIVSAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 14:00:03 -0400
+Date: Mon, 22 Sep 2008 19:59:53 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Aristeu Rozanski <aris@redhat.com>
 Cc: linux-kernel@vger.kernel.org, dzickus@redhat.com, prarit@redhat.com,
        vgoyal@redhat.com
-Subject: Re: [PATCH] NMI watchdog: when booting with reset_devices, clear
-	the performance counters
-Message-ID: <20080922175924.GH10535@elte.hu>
-References: <20080922171408.GJ16840@redhat.com> <20080922174748.GC10535@elte.hu> <20080922175803.GK16840@redhat.com>
+Subject: Re: [PATCH] NMI watchdog: setup before enabling NMI watchdog
+Message-ID: <20080922175953.GI10535@elte.hu>
+References: <20080922171347.GI16840@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080922175803.GK16840@redhat.com>
+In-Reply-To: <20080922171347.GI16840@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,34 +37,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Aristeu Rozanski <aris@redhat.com> wrote:
 
-> > > P4s have a quirk that makes necessary to clear P4_CCCR_OVF bit on the CCCR
-> > > everytime the PMI is triggered. When booting the kernel with reset_devices
-> > > (more specific kdump case), the counters reach zero and the PMI will be
-> > > generated. This is not a problem on other processors but on P4s, it'll
-> > > continue to generate NMIs until that bit is cleared. Since there may be
-> > > other users of the performance counters, clear and disable all of them
-> > > when booting with reset_devices option.
-> > > 
-> > > We have a P4 box here that crashes because of this problem. Since the kdump
-> > > kernel usually boots with only one processor active, the second logical
-> > > unit won't be set up, therefore, MSR_P4_IQ_CCCR1 (and other performance
-> > > counter registers) won't be cleared and P4_CCCR_OVF may be still set because
-> > > the previous kernel was using this register. An NMI is triggered because of
-> > > the MSR_P4_IQ_CCCR1 right after the NMI delivery is enabled, triggering the
-> > > race fixed on my previous email.
-> > > 
-> > > Signed-off-by: Aristeu Rozanski <aris@redhat.com>
-> > > Acked-by: Don Zickus <dzickus@redhat.com>
-> > > Acked-by: Prarit Bhargava <prarit@redhat.com>
-> > > Acked-by: Vivek Goyal <vgoyal@redhat.com>
-> > 
-> > applied to tip/x86/nmi-watchdog, thanks.
-> > 
-> > i'm wondering, is this fix a v2.6.27 candidate?
-> I believe so. Even being a small affected group (P4 based boxes using NMI
-> watchdog and kdump), it's fully reproducible.
+> There's a small window when NMI watchdog is being set up that if any 
+> NMIs are triggered, the NMI code will make make use of not initalized 
+> wd_ops elements:
 
-is there a bugzilla.kernel.org entry for it? If not, could you please 
-file it? Thanks,
+btw, this looks a bit large and not that easy to trigger, so i think 
+it's v2.6.28 material - agreed?
 
 	Ingo
