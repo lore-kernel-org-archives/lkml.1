@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753681AbYIVQMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751588AbYIVQQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753681AbYIVQMY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 12:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYIVQMM
+	id S1751588AbYIVQQQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 12:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYIVQQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 12:12:12 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:43250 "EHLO e6.ny.us.ibm.com"
+	Mon, 22 Sep 2008 12:16:04 -0400
+Received: from crmm.lgl.lu ([158.64.72.228]:42451 "EHLO lll.lu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752528AbYIVQML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 12:12:11 -0400
-Subject: Re: Re: Re: [PATCH 9/13] memcg: lookup page cgroup (and remove
-	pointer from struct page)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: kamezawa.hiroyu@jp.fujitsu.com
-Cc: linux-mm@kvack.org, balbir@linux.vnet.ibm.com, nishimura@mxp.nes.nec.co.jp,
-       xemul@openvz.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <32459434.1222099038142.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1222098450.8533.41.camel@nimitz>
-	 <1222095177.8533.14.camel@nimitz>
-	 <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080922201206.e73d9ce6.kamezawa.hiroyu@jp.fujitsu.com>
-	 <31600854.1222096483210.kamezawa.hiroyu@jp.fujitsu.com>
-	 <32459434.1222099038142.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Mon, 22 Sep 2008 09:10:50 -0700
-Message-Id: <1222099850.8533.60.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1750807AbYIVQQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 12:16:03 -0400
+Message-ID: <48D7C48F.8010907@knaff.lu>
+Date: Mon, 22 Sep 2008 18:15:11 +0200
+From: Alain Knaff <alain@knaff.lu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, w@1wt.eu
+Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
+ initrds
+References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com>
+In-Reply-To: <48D7C304.4020709@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-23 at 00:57 +0900, kamezawa.hiroyu@jp.fujitsu.com wrote:
-> I'll add FLATMEM/SPARSEMEM support later. Could you wait for a while ?
-> Because we have lookup_page_cgroup() after this, we can do anything.
+H. Peter Anvin wrote:
+> Alain Knaff wrote:
+>> What do you think about update5? Any things still to improve, or is it
+>> already scheduled for inclusion in one of the upcoming kernels? If so,
+>> which one?
+>>
+>> Thanks for any info,
+> 
+> I was out of town for LKS/LPC last week, and I didn't get a chance to
+> deal with it before I left.  However, it's definitely getting there.
+> 
+> I will add it to the -tip tree, and assuming it doesn't cause massive
+> breakage it probably will be pushed into .28.
+> 
+>     -hpa
 
-OK, I'll stop harassing for the moment, and take a look at the cache. :)
+Thanks,
 
--- Dave
-
+Alain
