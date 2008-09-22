@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbYIVQG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbYIVQKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbYIVQG4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 12:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYIVQGt
+	id S1753597AbYIVQKP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 12:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYIVQJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 12:06:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55359 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbYIVQGs (ORCPT
+	Mon, 22 Sep 2008 12:09:59 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58659 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752768AbYIVQJ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 12:06:48 -0400
-Subject: Re: Re: [PATCH 9/13] memcg: lookup page cgroup (and remove pointer
-	from struct page)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: kamezawa.hiroyu@jp.fujitsu.com
-Cc: linux-mm@kvack.org, balbir@linux.vnet.ibm.com, nishimura@mxp.nes.nec.co.jp,
-       xemul@openvz.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <22188426.1222099453986.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1222098469.16700.38.camel@lappy.programming.kicks-ass.net>
-	 <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080922201206.e73d9ce6.kamezawa.hiroyu@jp.fujitsu.com>
-	 <22188426.1222099453986.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Mon, 22 Sep 2008 18:06:31 +0200
-Message-Id: <1222099591.16700.39.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 22 Sep 2008 12:09:58 -0400
+Message-ID: <48D7C304.4020709@zytor.com>
+Date: Mon, 22 Sep 2008 09:08:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Alain Knaff <alain@knaff.lu>
+CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, w@1wt.eu
+Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
+ initrds
+References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu>
+In-Reply-To: <48D73858.3070900@knaff.lu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-23 at 01:04 +0900, kamezawa.hiroyu@jp.fujitsu.com wrote:
-> ----- Original Message -----
-> >On Mon, 2008-09-22 at 20:12 +0900, KAMEZAWA Hiroyuki wrote:
-> >
-> >>   - all page_cgroup struct is maintained by hash. 
-> >>     I think we have 2 ways to handle sparse index in general
-> >>     ...radix-tree and hash. This uses hash because radix-tree's layout is
-> >>     affected by memory map's layout.
-> >
-> >Could you provide further detail? That is, is this solely because our
-> >radix tree implementation is sucky for large indexes?
-> >
-> no, sparse-large index.
+Alain Knaff wrote:
+> What do you think about update5? Any things still to improve, or is it
+> already scheduled for inclusion in one of the upcoming kernels? If so,
+> which one?
 > 
-> >If so, I did most of the work of fixing that, just need to spend a
-> >little more time to stabalize the code.
-> >
-> 
-> IIUC, radix tree's height is determined by how sparse the space is.
+> Thanks for any info,
 
-Right, so Yes. Its that which I fixed.
+I was out of town for LKS/LPC last week, and I didn't get a chance to 
+deal with it before I left.  However, it's definitely getting there.
 
-> Then, steps to reach entries is tend to be larger than hash.
-> I'm sorry if I misunderstood.
+I will add it to the -tip tree, and assuming it doesn't cause massive 
+breakage it probably will be pushed into .28.
 
-No problems,. I'll try and brush up that radix tree code and post
-sometime soon.
-
+	-hpa
