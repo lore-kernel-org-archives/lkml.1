@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbYIVSUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbYIVSU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753324AbYIVSUq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbYIVSUi
+	id S1753844AbYIVSU7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbYIVSUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:20:38 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:12434 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751456AbYIVSUi (ORCPT
+	Mon, 22 Sep 2008 14:20:49 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:35718 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753395AbYIVSUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 14:20:38 -0400
-Date: Mon, 22 Sep 2008 11:19:56 -0700
+	Mon, 22 Sep 2008 14:20:48 -0400
+Date: Mon, 22 Sep 2008 11:19:47 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: Re: mmotm 2008-09-22-01-36 uploaded (profiling)
-Message-Id: <20080922111956.fd6dcb20.randy.dunlap@oracle.com>
+Cc: akpm@linux-foundation.org, dwmw2@infradead.org, avi@qumranet.com,
+       kvm@vger.kernel.org
+Subject: Re: mmotm 2008-09-22-01-36 uploaded (kvm)
+Message-Id: <20080922111947.507e34b1.randy.dunlap@oracle.com>
 In-Reply-To: <200809220838.m8M8cwC2031790@imap1.linux-foundation.org>
 References: <200809220838.m8M8cwC2031790@imap1.linux-foundation.org>
 Organization: Oracle Linux Eng.
@@ -39,13 +40,11 @@ On Mon, 22 Sep 2008 01:38:58 -0700 akpm@linux-foundation.org wrote:
 > 
 > It contains the following patches against 2.6.27-rc7:
 
-kernel/built-in.o: In function `profiling_store':
-ksysfs.c:(.text+0x1b9b1): undefined reference to `create_proc_profile'
-make[1]: *** [.tmp_vmlinux1] Error 1
 
 
-when CONFIG_PROC_FS=n.
+ERROR: "intel_iommu_found" [arch/x86/kvm/kvm.ko] undefined!
 
+when CONFIG_DMAR=n.
 
 ---
 ~Randy
