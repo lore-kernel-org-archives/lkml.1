@@ -1,146 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbYIVJhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbYIVJjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753135AbYIVJhS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 05:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbYIVJg5
+	id S1752732AbYIVJjx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 05:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYIVJjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 05:36:57 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:38287 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753230AbYIVJgz (ORCPT
+	Mon, 22 Sep 2008 05:39:45 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:46108 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751354AbYIVJjp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 05:36:55 -0400
-Date: Mon, 22 Sep 2008 18:36:51 +0900 (JST)
-Message-Id: <20080922.183651.62951479.taka@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
-       righi.andrea@gmail.com, jens.axboe@oracle.com
-Subject: Re: dm-ioband + bio-cgroup benchmarks
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <20080919131019.GA3606@redhat.com>
-References: <20080918131554.GB20640@redhat.com>
-	<20080919.202031.86647893.taka@valinux.co.jp>
-	<20080919131019.GA3606@redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Sep 2008 05:39:45 -0400
+Date: Mon, 22 Sep 2008 11:39:43 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Paul Bolle <pebolle@tiscali.nl>
+Subject: [RESEND] MAINTAINERS cleanup
+Message-ID: <20080922093943.GA29310@strlen.de>
+References: <20080908221139.GA10991@cassiopeia.tralala> <1221003422.3604.14.camel@test.thuisdomein> <20080910193210.GA26173@informatik.uni-freiburg.de> <20080912095851.GA3174@informatik.uni-freiburg.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080912095851.GA3174@informatik.uni-freiburg.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello,
 
-> > > > I have got excellent results of dm-ioband, that controls the disk I/O
-> > > > bandwidth even when it accepts delayed write requests.
-> > > > 
-> > > > In this time, I ran some benchmarks with a high-end storage. The
-> > > > reason was to avoid a performance bottleneck due to mechanical factors
-> > > > such as seek time.
-> > > > 
-> > > > You can see the details of the benchmarks at:
-> > > > http://people.valinux.co.jp/~ryov/dm-ioband/hps/
-> > 
-> >   (snip)
-> > 
-> > > Secondly, why do we have to create an additional dm-ioband device for 
-> > > every device we want to control using rules. This looks little odd
-> > > atleast to me. Can't we keep it in line with rest of the controllers
-> > > where task grouping takes place using cgroup and rules are specified in
-> > > cgroup itself (The way Andrea Righi does for io-throttling patches)?
-> > 
-> > It isn't essential dm-band is implemented as one of the device-mappers.
-> > I've been also considering that this algorithm itself can be implemented
-> > in the block layer directly.
-> > 
-> > Although, the current implementation has merits. It is flexible.
-> >   - Dm-ioband can be place anywhere you like, which may be right before
-> >     the I/O schedulers or may be placed on top of LVM devices.
-> 
-> Hi,
-> 
-> An rb-tree per request queue also should be able to give us this
-> flexibility. Because logic is implemented per request queue, rules can be 
-> placed at any layer. Either at bottom most layer where requests are
-> passed to elevator or at higher layer where requests will be passed to 
-> lower level block devices in the stack. Just that we shall have to do
-> modifications to some of the higher level dm/md drivers to make use of
-> queuing cgroup requests and releasing cgroup requests to lower layers.
+I resend the last version of my MAINTAINERS cleanup series because I
+didn't get any feedback last time but still consider it valuable.
 
-Request descriptors are allocated just right before passing I/O requests
-to the elevators. Even if you move the descriptor allocation point
-before calling the dm/md drivers, the drivers can't make use of them.
+It it freshly rebased on top of v2.6.27-rc7 and available on
 
-When one of the dm drivers accepts a I/O request, the request
-won't have either a real device number or a real sector number.
-The request will be re-mapped to another sector of another device
-in every dm drivers. The request may even be replicated there.
-So it is really hard to find the right request queue to put
-the request into and sort them on the queue.
+	git://git.breakpoint.cc/ukleinek/linux-2.6 maintainers
 
-> >   - It supports partition based bandwidth control which can work without
-> >     cgroups, which is quite easy to use of.
-> 
-> >   - It is independent to any I/O schedulers including ones which will
-> >     be introduced in the future.
-> 
-> This scheme should also be independent of any of the IO schedulers. We
-> might have to do small changes in IO-schedulers to decouple the things
-> from __make_request() a bit to insert rb-tree in between __make_request()
-> and IO-scheduler. Otherwise fundamentally, this approach should not
-> require any major modifications to IO-schedulers. 
-> 
-> > 
-> > I also understand it's will be hard to set up without some tools
-> > such as lvm commands.
-> > 
-> 
-> That's something I wish to avoid. If we can keep it simple by doing
-> grouping using cgroup and allow one line rules in cgroup it would be nice.
+an has the following changes listed below.  The first four commits were
+done to allow merging P and M fields with the help of a script (i.e. the
+sixth commit).  The remaining patch restores the alphabetic ordering in
+the file (scripted).
 
-It's possible the algorithm of dm-ioband can be placed in the block layer
-if it is really a big problem.
-But I doubt it can control every control block I/O as we wish since
-the interface the cgroup supports is quite poor.
+If you fear merge conflicts or simply that new entries that don't follow the
+new format, I can do a MAINTAINERS maintainership and sort out the
+conflicts.
 
-> > > To avoid creation of stacking another device (dm-ioband) on top of every
-> > > device we want to subject to rules, I was thinking of maintaining an
-> > > rb-tree per request queue. Requests will first go into this rb-tree upon
-> > > __make_request() and then will filter down to elevator associated with the
-> > > queue (if there is one). This will provide us the control of releasing
-> > > bio's to elevaor based on policies (proportional weight, max bandwidth
-> > > etc) and no need of stacking additional block device.
-> > 
-> > I think it's a bit late to control I/O requests there, since process
-> > may be blocked in get_request_wait when the I/O load is high.
-> > Please imagine the situation that cgroups with low bandwidths are
-> > consuming most of "struct request"s while another cgroup with a high
-> > bandwidth is blocked and can't get enough "struct request"s.
-> > 
-> > It means cgroups that issues lot of I/O request can win the game.
-> > 
-> 
-> Ok, this is a good point. Because number of struct requests are limited
-> and they seem to be allocated on first come first serve basis, so if a
-> cgroup is generating lot of IO, then it might win.
-> 
-> But dm-ioband will face the same issue. 
+Best regards
+Uwe
 
-Nope. Dm-ioband doesn't have this issue since it works before allocating
-the descriptors. Only I/O requests dm-ioband has passed can allocate its
-descriptor.
+Uwe Kleine-König (6):
+      MAINTAINERS: Remove a stale entry refering to kernel 2.2
+      MAINTAINERS: add a realname for adilger@sun.com
+      MAINTAINERS: remove real names from M fields
+      MAINTAINERS: put corresponding realnames and mail addresses together
+      MAINTAINERS: fix alphabetic ordering
+      MAINTAINERS: merge P and M fields to ease copy'n'paste
 
-> Essentially it is also a request
-> queue and it will have limited number of request descriptors. Have you 
-> modified the logic somewhere for allocation of request descriptors to the
-> waiting processes based on their weights? If yes, the logic probably can
-> be implemented here too.
-
-I feel this is almost what dm-ioband is doing.
-
-> Thanks
-> Vivek
+ MAINTAINERS | 3130 ++++++++++++++++++++++-------------------------------------
+ 1 files changed, 1176 insertions(+), 1954 deletions(-)
