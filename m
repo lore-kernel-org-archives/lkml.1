@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbYIVQvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbYIVRE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753330AbYIVQvj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 12:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYIVQva
+	id S1753173AbYIVRE1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 13:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbYIVRES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 12:51:30 -0400
-Received: from sh.osrg.net ([192.16.179.4]:49208 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751336AbYIVQv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 12:51:29 -0400
-Date: Tue, 23 Sep 2008 01:51:05 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic
- option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080922162314.GC24392@amd.com>
-References: <20080922111730.GF5987@elte.hu>
-	<20080923002516R.fujita.tomonori@lab.ntt.co.jp>
-	<20080922162314.GC24392@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080923015059M.fujita.tomonori@lab.ntt.co.jp>
+	Mon, 22 Sep 2008 13:04:18 -0400
+Received: from quackingmoose.com ([63.73.180.143]:37718 "EHLO
+	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750976AbYIVRER (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 13:04:17 -0400
+Date: Mon, 22 Sep 2008 10:04:14 -0700
+From: Aaron Straus <aaron@merfinllc.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Hans-Peter Jansen <hpj@urpla.net>, linux-kernel@vger.kernel.org,
+       Chuck Lever <chuck.lever@oracle.com>, Neil Brown <neilb@suse.de>,
+       Linux NFS Mailing List <linux-nfs@vger.kernel.org>
+Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
+Message-ID: <20080922170414.GC12483@merfinllc.com>
+References: <20080905191939.GG22796@merfinllc.com> <56258A29-95D5-4A8C-A097-014B8FEDFB8F@oracle.com> <20080911184951.GB19054@merfinllc.com> <200809221805.48463.hpj@urpla.net> <1222101322.7615.6.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222101322.7615.6.camel@localhost>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 18:23:14 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+Hi,
 
-> On Tue, Sep 23, 2008 at 12:25:24AM +0900, FUJITA Tomonori wrote:
-> > 
-> > I'm not sure we can because he has a quite different opinion on this,
-> > he thinks that the IOMMU parameters are unimportant and minor issue.
-> > 
-> 
-> Stop your personal attacks and come down. I've never said that iommu
-> parameters are unimportant. The _move_ of the iommu=[no]fullflush to
-> generic code is a minor issue in my opinion. For the user it changes
-> nothing. There was an iommu=fullflush parameter before and now there is
-> also an iommu=fullflush parameter. The only difference is that it now
-> affects AMD IOMMU too.
+On Sep 22 12:35 PM, Trond Myklebust wrote:
+> Revert _what_ exactly?
 
-I have no intention to attack you. I just described what you did.
+Yep.  I narrowed the problem down to an offending hunk in a particular
+patch.  Removing that hunk did eliminate the problem.   However,
+reverting that hunk is likely wrong and the code has changed _a lot_
+since that commit.
 
-You moved two IOMMU parameters to generic code, they interact with all
-other IOMMUs specific parameters.
+> My understanding was that this is a consequence of unordered writes
+> causing the file to be extended while some other task is reading.
 
-If you add parameters to AMD IOMMU, they interact with only AMD IOMMU.
+Yes.  I added some debugging statements to look at the writeout path.  
 
-That's a huge difference. You might think that the two parameters are
-minor but it would turn out that they are not. What we know now is
-that the changes you make affect all the IOMMUs. It's not a minor
-issue.
+I think the following happens:
+
+  - page 0 gets partially written to by app
+  - VM writes out partial dirty page 0
+  - page 0 gets fully written by app
+  - page 1 gets partially written by app
+  - VM writes out dirty page 1
+
+  At this point there is a hole in the file.  The tail end of page 0 is
+still not written to server.
+
+  - VM writes out dirty page 0
+  ...
+
+> AFAICS, this sort of behaviour has _always_ been possible. I can't see
+> how reverting anything will fix it.
+
+Here is the crux.  It was possible previously but unlikely e.g. our app
+never saw this behavior.  The new writeout semantics causes visible
+holes in files often.
+
+Anyway, I agree the new writeout semantics are allowed and possibly
+saner than the previous writeout path.  The problem is that it is
+__annoying__ for this use case (log files).
+
+I'm not sure if there is an easy solution.  We want the VM to writeout
+the address space in order.   Maybe we can start the scan for dirty
+pages at the last page we wrote out i.e. page 0 in the example above?
+
+					=a=
 
 
-> > I'm against adding new generic IOMMU parameters without serious
-> > consideration. Joerg thinks that we can clean up the parameters like
-> > adding some for 2.6.28, then add some for 2.6.X, then rename some, in
-> > an ad-hoc way.
-> 
-> Again. Stop your personal attacks.
 
-You added new generic fullflush and nofullflush parameters and
-suggested to remove nofullflush parameter without discussing any plan
-about further IOMMU parameter changes. We don't even start to discuss
-a plan to how to clean up the IOMMU parameters.
-
-I just described what you did.
-
-
-The patch that I sent doesn't make any changes for you. GART works as
-before and AMD IOMMU takes a new parameter, fullflush, as you want. It
-does the exact same thing that the first version of your patchset for
-2.6.28.
-
-So please let me apply it then we can stop this discussion.
+-- 
+===================
+Aaron Straus
+aaron@merfinllc.com
