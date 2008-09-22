@@ -1,151 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbYIVVFK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYIVVGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214AbYIVVFK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 17:05:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYIVVE5
+	id S1754063AbYIVVGx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 17:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYIVVGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 17:04:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33562 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642AbYIVVE4 (ORCPT
+	Mon, 22 Sep 2008 17:06:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39577 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752855AbYIVVGp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 17:04:56 -0400
-Date: Mon, 22 Sep 2008 14:05:03 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu,
-       Hugh Dickins <hugh@veritas.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 2/2] corruption check: run the corruption checks from a work
- queue
-Message-ID: <20080922140503.5f3a3db3@infradead.org>
-In-Reply-To: <20080922140402.166de1ba@infradead.org>
-References: <20080920203544.53a5148e@infradead.org>
-	<20080922140402.166de1ba@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Mon, 22 Sep 2008 17:06:45 -0400
+Date: Mon, 22 Sep 2008 16:06:44 -0500
+From: Russ Anderson <rja@sgi.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: [PATCH 0/4] x86: UV runtime bios calls
+Message-ID: <20080922210644.GC222374@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[PATCH 0/4] x86: UV runtime bios calls
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Mon, 22 Sep 2008 13:42:15 -0700
-Subject: [PATCH] corruption check: run the corruption checks from a work queue
+Purpose: 
+	Create an interface to allow calls into bios to return platform
+	specific information.  The interface uses EFI SAL table entry.
+	EFI provides a mechanism for defining function pointers to 
+	firmware routines.  This patchset builds on the EFI mechanism
+	to provide access to those firmware routines.
 
-the corruption checks are better off run from a work queue; there's nothing
-time critical about them and this way the amount of interrupt-context work
-is reduced (including interrupt latency)
+Patches:
+	uv_efi_bios:	Look for SAL entry in EFI tables.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- arch/x86/kernel/corruptioncheck.c |   21 +++++++++++++++++----
- arch/x86/mm/init_32.c             |    2 --
- arch/x86/mm/init_64.c             |    2 --
- include/linux/kernel.h            |    2 +-
- 4 files changed, 18 insertions(+), 9 deletions(-)
+	uv_bios_common:	Add the EFI callback function using the EFI table
+			entry.  Create associated wrapper code.  Initialize
+			SAL system table entry info at boot time.
 
-diff --git a/arch/x86/kernel/corruptioncheck.c b/arch/x86/kernel/corruptioncheck.c
-index a7e80ed..cd89219 100644
---- a/arch/x86/kernel/corruptioncheck.c
-+++ b/arch/x86/kernel/corruptioncheck.c
-@@ -1,5 +1,6 @@
- #include <linux/module.h>
- #include <linux/sched.h>
-+#include <linux/kthread.h>
- 
- #include <asm/e820.h>
- #include <asm/proto.h>
-@@ -135,22 +136,34 @@ void check_for_bios_corruption(void)
- 	WARN(corruption, KERN_ERR "Memory corruption detected in low memory\n");
- }
- 
--static void periodic_check_for_corruption(unsigned long data)
-+static void check_corruption(struct work_struct *dummy)
- {
- 	check_for_bios_corruption();
-+}
-+
-+static void periodic_check_for_corruption(unsigned long data)
-+{
-+	static DECLARE_WORK(corruptioncheck_work, check_corruption);
-+	schedule_work(&corruptioncheck_work);
- 	mod_timer(&periodic_check_timer, round_jiffies(jiffies + corruption_check_period*HZ));
- }
- 
--void start_periodic_check_for_corruption(void)
-+
-+
-+int start_periodic_check_for_corruption(void)
- {
- 	if (!memory_corruption_check || corruption_check_period == 0)
--		return;
-+		return 0;
- 
- 	printk(KERN_INFO "Scanning for low memory corruption every %d seconds\n",
- 	       corruption_check_period);
- 
- 	init_timer(&periodic_check_timer);
- 	periodic_check_timer.function = &periodic_check_for_corruption;
--	periodic_check_for_corruption(0);
-+	mod_timer(&periodic_check_timer, round_jiffies(jiffies + corruption_check_period*HZ));
-+//	periodic_check_for_corruption(0);
-+	return 0;
- }
-+
-+module_init(start_periodic_check_for_corruption);
- #endif
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index b4c3a92..16ea9d0 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -905,8 +905,6 @@ void __init mem_init(void)
- 	int codesize, reservedpages, datasize, initsize;
- 	int tmp;
- 
--	start_periodic_check_for_corruption();
--
- #ifdef CONFIG_FLATMEM
- 	BUG_ON(!mem_map);
- #endif
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index b565721..b65492e 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -822,8 +822,6 @@ void __init mem_init(void)
- {
- 	long codesize, reservedpages, datasize, initsize;
- 
--	start_periodic_check_for_corruption();
--
- 	pci_iommu_alloc();
- 
- 	/* clear_bss() already clear the empty_zero_page */
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index a5afee2..01085d2 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -260,7 +260,7 @@ extern int root_mountflags;
-  * able to scatter it around anywhere in the kernel.
-  */
- void check_for_bios_corruption(void);
--void start_periodic_check_for_corruption(void);
-+int start_periodic_check_for_corruption(void);
- #else
- static inline void check_for_bios_corruption(void)
- {
+	uv_bios_call_partition: Add call to get partitioning related info.
+
+	uv_sysfs:	Create sysfs entrys in /sys/firmware/sgi_uv/ for
+			partitioning related information.
+
+Implementation comments:
+
+	This patch uses sal_systab.  sal_systab is used on ia64, but was
+	not used on x86.  An alternative would be to create a new
+	EFI entry type (uv_systab), though that would require adding 
+	to struct efi.
+
+	The location in sysfs (/sys/firmware/sgi_uv/) is based on
+	community feedback.
+
+	If EFI is not configured (CONFIG_EFI), the calls will return -ENOSYS.
+	If run on a system with a bios that does not supportes EFI SAL, the
+	calls will return -ENOSYS.
+
+	Paul Jackson assisted in the development of this code.
+	
 -- 
-1.5.5.1
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
