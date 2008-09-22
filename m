@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523AbYIVI14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752636AbYIVIaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752523AbYIVI14 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 04:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYIVI1t
+	id S1752636AbYIVIaT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 04:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYIVIaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 04:27:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56236 "EHLO mx3.mail.elte.hu"
+	Mon, 22 Sep 2008 04:30:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56613 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751629AbYIVI1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 04:27:48 -0400
-Date: Mon, 22 Sep 2008 10:27:28 +0200
+	id S1751757AbYIVIaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 04:30:04 -0400
+Date: Mon, 22 Sep 2008 10:29:50 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>, neilb@suse.de
-Cc: linux-kernel@vger.kernel.org, neilb@suse.de, davej@redhat.com
-Subject: Re: [PATCH] raid: make RAID autodetect default a KConfig option
-Message-ID: <20080922082728.GB6601@elte.hu>
-References: <20080921154541.371f2ebe@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH] x86: use round_jiffies() for the corruption check timer
+Message-ID: <20080922082949.GD6601@elte.hu>
+References: <20080920203544.53a5148e@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080921154541.371f2ebe@infradead.org>
+In-Reply-To: <20080920203544.53a5148e@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,23 +37,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Arjan van de Ven <arjan@infradead.org> wrote:
 
-> From 812bf9a448d96375a3aec5c51764d74cace85abb Mon Sep 17 00:00:00 2001
+> 
 > From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Sun, 21 Sep 2008 15:44:32 -0700
-> Subject: [PATCH] raid: make RAID autodetect default a KConfig option
+> Date: Sat, 20 Sep 2008 20:32:43 -0700
+> Subject: [PATCH] x86: use round_jiffies() for the corruption check timer
 > 
-> RAID autodetect has the side effect of requiring synchronisation of 
-> all device drivers, which can make the boot several seconds longer 
-> (I've measured 7 on one of my laptops).... even for systems that don't 
-> have RAID setup for the root filesystem (the only FS where this 
-> matters).
+> the exact timing of the corruption check isn't too important (it's once a
+> minute timer), use round_jiffies() to align it and avoid extra wakeups.
 > 
-> This patch makes the default for autodetect a config option; either 
-> way the user can always override via the kernel command line.
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> CC: Hugh Dickins <hugh@veritas.com>
+> CC: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Neil, if you agree with this patch, could you please send your Acked-by 
-line? This patch depends on a clean-up in init/do_mounts_md.c that is in 
-the fastboot tree so it would be logistically easier/better if we could 
-queue this up towards upstream via tip/fastboot.
+applied to tip/x86/memory-corruption-check, thanks Arjan!
 
 	Ingo
