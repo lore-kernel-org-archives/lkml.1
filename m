@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYIVRy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbYIVR55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbYIVRy6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 13:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbYIVRyv
+	id S1753676AbYIVR55 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 13:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYIVR5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 13:54:51 -0400
-Received: from phoenix.slamd64.com ([217.10.145.2]:39994 "EHLO
-	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbYIVRyv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 13:54:51 -0400
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] acer-wmi: add error checks in module_init
-Date: Mon, 22 Sep 2008 18:54:44 +0100
-User-Agent: KMail/1.9.9
-Cc: Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org
-References: <200809211853.19889.carlos@strangeworlds.co.uk> <20080922155949.GA4283@kroah.com>
-In-Reply-To: <20080922155949.GA4283@kroah.com>
+	Mon, 22 Sep 2008 13:57:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58422 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752068AbYIVR5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 13:57:48 -0400
+Date: Mon, 22 Sep 2008 13:58:09 -0400
+From: Aristeu Rozanski <aris@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, dzickus@redhat.com, prarit@redhat.com,
+       vgoyal@redhat.com
+Subject: Re: [PATCH] NMI watchdog: when booting with reset_devices, clear
+	the performance counters
+Message-ID: <20080922175803.GK16840@redhat.com>
+References: <20080922171408.GJ16840@redhat.com> <20080922174748.GC10535@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809221854.44615.carlos@strangeworlds.co.uk>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Mon, 22 Sep 2008 17:54:45 +0000 (UTC)
+In-Reply-To: <20080922174748.GC10535@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 September 2008 16:59:49 Greg KH wrote:
-> On Sun, Sep 21, 2008 at 06:53:19PM +0100, Carlos Corbacho wrote:
-> > On Sunday 21 September 2008 15:29:59 Akinobu Mita wrote:
-> > > This patch fixes these bugs by using platform_device_register_simple()
-> >
-> > [Adding Greg KH to CC - 2nd time lucky...]
-> >
-> > Last I heard, platform_device_register_simple() was in the process of
-> > being deprecated and then slated for future removal. Has this changed?
->
-> I don't recall this, but someone else might have stated it a while ago.
+> > P4s have a quirk that makes necessary to clear P4_CCCR_OVF bit on the CCCR
+> > everytime the PMI is triggered. When booting the kernel with reset_devices
+> > (more specific kdump case), the counters reach zero and the PMI will be
+> > generated. This is not a problem on other processors but on P4s, it'll
+> > continue to generate NMIs until that bit is cleared. Since there may be
+> > other users of the performance counters, clear and disable all of them
+> > when booting with reset_devices option.
+> > 
+> > We have a P4 box here that crashes because of this problem. Since the kdump
+> > kernel usually boots with only one processor active, the second logical
+> > unit won't be set up, therefore, MSR_P4_IQ_CCCR1 (and other performance
+> > counter registers) won't be cleared and P4_CCCR_OVF may be still set because
+> > the previous kernel was using this register. An NMI is triggered because of
+> > the MSR_P4_IQ_CCCR1 right after the NMI delivery is enabled, triggering the
+> > race fixed on my previous email.
+> > 
+> > Signed-off-by: Aristeu Rozanski <aris@redhat.com>
+> > Acked-by: Don Zickus <dzickus@redhat.com>
+> > Acked-by: Prarit Bhargava <prarit@redhat.com>
+> > Acked-by: Vivek Goyal <vgoyal@redhat.com>
+> 
+> applied to tip/x86/nmi-watchdog, thanks.
+> 
+> i'm wondering, is this fix a v2.6.27 candidate?
+I believe so. Even being a small affected group (P4 based boxes using NMI
+watchdog and kdump), it's fully reproducible.
 
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2006-04/msg02070.html
-
-This was dated a while ago, but has anything changed since then?
-
--Carlos
 -- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+Aristeu
+
