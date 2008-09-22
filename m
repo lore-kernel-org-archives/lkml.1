@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbYIVRE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbYIVRGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbYIVRE1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 13:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbYIVRES
+	id S1753273AbYIVRGa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 13:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbYIVRGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 13:04:18 -0400
-Received: from quackingmoose.com ([63.73.180.143]:37718 "EHLO
-	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750976AbYIVRER (ORCPT
+	Mon, 22 Sep 2008 13:06:23 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:41163 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750982AbYIVRGX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 13:04:17 -0400
-Date: Mon, 22 Sep 2008 10:04:14 -0700
-From: Aaron Straus <aaron@merfinllc.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Hans-Peter Jansen <hpj@urpla.net>, linux-kernel@vger.kernel.org,
-       Chuck Lever <chuck.lever@oracle.com>, Neil Brown <neilb@suse.de>,
-       Linux NFS Mailing List <linux-nfs@vger.kernel.org>
-Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
-Message-ID: <20080922170414.GC12483@merfinllc.com>
-References: <20080905191939.GG22796@merfinllc.com> <56258A29-95D5-4A8C-A097-014B8FEDFB8F@oracle.com> <20080911184951.GB19054@merfinllc.com> <200809221805.48463.hpj@urpla.net> <1222101322.7615.6.camel@localhost>
+	Mon, 22 Sep 2008 13:06:23 -0400
+Message-ID: <48D7D081.8060807@nortel.com>
+Date: Mon, 22 Sep 2008 11:06:09 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222101322.7615.6.camel@localhost>
-User-Agent: Mutt/1.5.11
+To: a.p.zijlstra@chello.nl, mingo@elte.hu
+CC: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: [patch] sched: fix list traversal to use _rcu variant
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Sep 2008 17:06:13.0080 (UTC) FILETIME=[8458E580:01C91CD5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Chris Friesen    <cfriesen@nortel.com>
 
-On Sep 22 12:35 PM, Trond Myklebust wrote:
-> Revert _what_ exactly?
+load_balance_fair() calls rcu_read_lock() but then traverses the list
+ using the regular list traversal routine.  This patch converts the
+list traversal to use the _rcu version.
 
-Yep.  I narrowed the problem down to an offending hunk in a particular
-patch.  Removing that hunk did eliminate the problem.   However,
-reverting that hunk is likely wrong and the code has changed _a lot_
-since that commit.
+Signed-off-by: Chris Friesen <cfriesen@nortel.com>
+Approval token "Nortel-02-July-2008-01"
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>
 
-> My understanding was that this is a consequence of unordered writes
-> causing the file to be extended while some other task is reading.
+---
 
-Yes.  I added some debugging statements to look at the writeout path.  
-
-I think the following happens:
-
-  - page 0 gets partially written to by app
-  - VM writes out partial dirty page 0
-  - page 0 gets fully written by app
-  - page 1 gets partially written by app
-  - VM writes out dirty page 1
-
-  At this point there is a hole in the file.  The tail end of page 0 is
-still not written to server.
-
-  - VM writes out dirty page 0
-  ...
-
-> AFAICS, this sort of behaviour has _always_ been possible. I can't see
-> how reverting anything will fix it.
-
-Here is the crux.  It was possible previously but unlikely e.g. our app
-never saw this behavior.  The new writeout semantics causes visible
-holes in files often.
-
-Anyway, I agree the new writeout semantics are allowed and possibly
-saner than the previous writeout path.  The problem is that it is
-__annoying__ for this use case (log files).
-
-I'm not sure if there is an easy solution.  We want the VM to writeout
-the address space in order.   Maybe we can start the scan for dirty
-pages at the last page we wrote out i.e. page 0 in the example above?
-
-					=a=
-
-
-
--- 
-===================
-Aaron Straus
-aaron@merfinllc.com
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index fb8994c..3c8f631 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1507,7 +1507,7 @@ load_balance_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
+ 	rcu_read_lock();
+ 	update_h_load(busiest_cpu);
+ 
+-	list_for_each_entry(tg, &task_groups, list) {
++	list_for_each_entry_rcu(tg, &task_groups, list) {
+ 		struct cfs_rq *busiest_cfs_rq = tg->cfs_rq[busiest_cpu];
+ 		unsigned long busiest_h_load = busiest_cfs_rq->h_load;
+ 		unsigned long busiest_weight = busiest_cfs_rq->load.weight;
