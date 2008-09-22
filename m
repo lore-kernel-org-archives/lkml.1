@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbYIVAZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYIVBMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbYIVAZb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Sep 2008 20:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYIVAZR
+	id S1753409AbYIVBMz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Sep 2008 21:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYIVBMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Sep 2008 20:25:17 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:49109 "EHLO 2ka.mipt.ru"
+	Sun, 21 Sep 2008 21:12:46 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42410 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752668AbYIVAZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Sep 2008 20:25:16 -0400
-Date: Mon, 22 Sep 2008 04:18:17 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: David Miller <davem@davemloft.net>
-Cc: alan@lxorguk.ukuu.org.uk, arjan@infradead.org, johannes@sipsolutions.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ipw2100-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       yi.zhu@intel.com, reinette.chatre@intel.com, jgarzik@pobox.com,
-       linville@tuxdriver.com
-Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
-Message-ID: <20080922001817.GB1878@2ka.mipt.ru>
-References: <20080921205706.GA24545@2ka.mipt.ru> <20080921233819.32714483@lxorguk.ukuu.org.uk> <20080921234403.GA17946@2ka.mipt.ru> <20080921.164829.156985548.davem@davemloft.net>
+	id S1752936AbYIVBMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Sep 2008 21:12:45 -0400
+Subject: Re: [PATCH] arch/powerpc/platforms/powermac/pic.c: move of_node_put
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Julia Lawall <julia@diku.dk>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0809211301030.7450@ask.diku.dk>
+References: <Pine.LNX.4.64.0809211301030.7450@ask.diku.dk>
+Content-Type: text/plain
+Date: Sun, 21 Sep 2008 18:12:28 -0700
+Message-Id: <1222045948.12085.9.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080921.164829.156985548.davem@davemloft.net>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 21, 2008 at 04:48:29PM -0700, David Miller (davem@davemloft.net) wrote:
-> Evgeniy, you're bordering on being an asshole, if not actually
-> being one.
+On Sun, 2008-09-21 at 13:01 +0200, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> It seems better to dereference master before decrementing the reference
+> count rather than afterwards.
+> 
+> The problem was found using the following semantic match:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @r exists@
+> expression n,E;
+> identifier fld;
+> iterator I;
+> statement S;
+> @@
+> 
+> * of_node_put(n)
+> ... when != n = E
+>     when != I(n,...) S
+> * n->fld
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Out of curiosity, what's worse: being an asshole and pretend to be good
-or vice versa? Whatever... :)
+Ack.
 
-> If you behaved this way for a bug I was responsible for, I would
-> absolutely ignore you until you settled down and started to behave
-> more reasonably.
+No big deal, tho, those nodes are never going to go away :-)
 
-That's the main point: 'until you started to behave more reasonably'.
-For example filling another bug in rh/suse/ubuntu bugzilla?
-Put yourself to the user's place, and suddenly picture changes
-dramatically.
+Cheers,
+Ben.
 
-We got some progress on this bug, at least there is direct suggestion
-from Matthew about power state, if it will fix the issue, I think it is
-a good deal: one bug fix for lot of users for the mail in the killfile
-and a worsened 'reputation'.
+> ---
+> 
+>  arch/powerpc/platforms/powermac/pic.c          |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
+> index 6d149ae..d17aa2b 100644
+> --- a/arch/powerpc/platforms/powermac/pic.c
+> +++ b/arch/powerpc/platforms/powermac/pic.c
+> @@ -395,10 +395,10 @@ static void __init pmac_pic_probe_oldstyle(void)
+>  	if (max_real_irqs > 32)
+>  		pmac_irq_hw[i++] = (volatile struct pmac_irq_hw __iomem *)
+>  			(addr + 0x10);
+> -	of_node_put(master);
+>  
+>  	printk(KERN_INFO "irq: Found primary Apple PIC %s for %d irqs\n",
+>  	       master->full_name, max_real_irqs);
+> +	of_node_put(master);
+>  
+>  	/* Map interrupts of cascaded controller */
+>  	if (slave && !of_address_to_resource(slave, 0, &r)) {
 
-I provded a patch like Arjan wanted, and it can only change something
-because of all this talks I started being an asshole. In my opinion.
-Maybe there were some other ways around, but it looks like being a
-provocative is the only way to get to the cloud. Who knows :)
-
--- 
-	Evgeniy Polyakov
