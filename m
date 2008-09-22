@@ -1,279 +1,412 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbYIVVJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbYIVVK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754505AbYIVVJi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 17:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYIVVJa
+	id S1753246AbYIVVK1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 17:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYIVVKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 17:09:30 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:57441 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752175AbYIVVJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 17:09:29 -0400
-Date: Mon, 22 Sep 2008 16:09:28 -0500
-From: Russ Anderson <rja@sgi.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: [PATCH 2/4] x86: Add UV bios call infrastructure
-Message-ID: <20080922210928.GE222374@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Mon, 22 Sep 2008 17:10:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47311 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752419AbYIVVKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 17:10:10 -0400
+Date: Mon, 22 Sep 2008 17:10:04 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Chris Webb <chris@arachsys.com>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org
+cc: Alasdair G Kergon <agk@redhat.com>, Milan Broz <mbroz@redhat.com>
+Subject: [PATCH] Memory management livelock
+In-Reply-To: <20080911101616.GA24064@agk.fab.redhat.com>
+Message-ID: <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 2/4] Add UV bios call infrastructure
+Hi
 
-Add the EFI callback function and associated wrapper code.
-Initialize SAL system table entry info at boot time.
+Here is a patch for MM livelock. The original bug report follows after the 
+patch. To reproduce the bug on my computer, I had to change bs=4M to 
+bs=65536 in examples in the original report.
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
-Signed-off-by: Paul Jackson <pj@sgi.com>
+Mikulas
 
 ---
- arch/x86/kernel/bios_uv.c        |  106 +++++++++++++++++++++++++++++++--------
- arch/x86/kernel/genx2apic_uv_x.c |    1 
- include/asm-x86/uv/bios.h        |   58 +++++++++++----------
- 3 files changed, 117 insertions(+), 48 deletions(-)
 
-Index: linux/arch/x86/kernel/bios_uv.c
+Fix starvation in memory management.
+
+The bug happens when one process is doing sequential buffered writes to
+a block device (or file) and another process is attempting to execute
+sync(), fsync() or direct-IO on that device (or file). This syncing
+process will wait indefinitelly, until the first writing process
+finishes.
+
+For example, run these two commands:
+dd if=/dev/zero of=/dev/sda1 bs=65536 &
+dd if=/dev/sda1 of=/dev/null bs=4096 count=1 iflag=direct
+
+The bug is caused by sequential walking of address space in
+write_cache_pages and wait_on_page_writeback_range: if some other
+process is constantly making dirty and writeback pages while these
+functions run, the functions will wait on every new page, resulting in
+indefinite wait.
+
+To fix the starvation, I declared a mutex starvation_barrier in struct
+address_space. When the mutex is taken, anyone making dirty pages on
+that address space should stop. The functions that walk address space
+sequentially first estimate a number of pages to process. If they
+process more than this amount (plus some small delta), it means that
+someone is making dirty pages under them --- they take the mutex and
+hold it until they finish. When the mutex is taken, the function
+balance_dirty_pages will wait and not allow more dirty pages being made.
+
+The mutex is not really used as a mutex, it does not prevent access to
+any critical section. It is used as a barrier that blocks new dirty
+pages from being created. I use mutex and not wait queue to make sure
+that the starvation can't happend the other way (if there were wait
+queue, excessive calls to write_cache_pages and
+wait_on_page_writeback_range would block balance_dirty_pages forever;
+with mutex it is guaranteed that every process eventually makes
+progress).
+
+The essential property of this patch is that if the starvation doesn't
+happen, no additional locks are taken and no atomic operations are
+performed. So the patch shouldn't damage performance.
+
+The indefinite starvation was observed in write_cache_pages and
+wait_on_page_writeback_range. Another possibility where it could happen
+is invalidate_inode_pages2_range.
+
+There are two more functions that walk all the pages in address space,
+but I think they don't need this starvation protection:
+truncate_inode_pages_range: it is called with i_mutex locked, so no new
+pages are created under it.
+__invalidate_mapping_pages: it skips locked, dirty and writeback pages,
+so there's no point in protecting the function against starving on them.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+
+---
+ fs/inode.c          |    1 +
+ include/linux/fs.h  |    1 +
+ mm/filemap.c        |   16 ++++++++++++++++
+ mm/page-writeback.c |   30 +++++++++++++++++++++++++++++-
+ mm/swap_state.c     |    1 +
+ mm/truncate.c       |   20 +++++++++++++++++++-
+ 6 files changed, 67 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.27-rc7-devel/fs/inode.c
 ===================================================================
---- linux.orig/arch/x86/kernel/bios_uv.c	2008-09-22 16:01:00.000000000 -0500
-+++ linux/arch/x86/kernel/bios_uv.c	2008-09-22 16:01:11.000000000 -0500
-@@ -1,8 +1,6 @@
- /*
-  * BIOS run time interface routines.
-  *
-- *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-- *
-  *  This program is free software; you can redistribute it and/or modify
-  *  it under the terms of the GNU General Public License as published by
-  *  the Free Software Foundation; either version 2 of the License, or
-@@ -16,33 +14,99 @@
-  *  You should have received a copy of the GNU General Public License
-  *  along with this program; if not, write to the Free Software
-  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ *
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Russ Anderson
-  */
+--- linux-2.6.27-rc7-devel.orig/fs/inode.c	2008-09-22 23:04:31.000000000 +0200
++++ linux-2.6.27-rc7-devel/fs/inode.c	2008-09-22 23:04:34.000000000 +0200
+@@ -214,6 +214,7 @@ void inode_init_once(struct inode *inode
+ 	spin_lock_init(&inode->i_data.i_mmap_lock);
+ 	INIT_LIST_HEAD(&inode->i_data.private_list);
+ 	spin_lock_init(&inode->i_data.private_lock);
++	mutex_init(&inode->i_data.starvation_barrier);
+ 	INIT_RAW_PRIO_TREE_ROOT(&inode->i_data.i_mmap);
+ 	INIT_LIST_HEAD(&inode->i_data.i_mmap_nonlinear);
+ 	i_size_ordered_init(inode);
+Index: linux-2.6.27-rc7-devel/include/linux/fs.h
+===================================================================
+--- linux-2.6.27-rc7-devel.orig/include/linux/fs.h	2008-09-22 23:04:31.000000000 +0200
++++ linux-2.6.27-rc7-devel/include/linux/fs.h	2008-09-22 23:04:34.000000000 +0200
+@@ -539,6 +539,7 @@ struct address_space {
+ 	spinlock_t		private_lock;	/* for use by the address_space */
+ 	struct list_head	private_list;	/* ditto */
+ 	struct address_space	*assoc_mapping;	/* ditto */
++	struct mutex		starvation_barrier;	/* taken when fsync starves */
+ } __attribute__((aligned(sizeof(long))));
+ 	/*
+ 	 * On most architectures that alignment is already the case; but
+Index: linux-2.6.27-rc7-devel/mm/filemap.c
+===================================================================
+--- linux-2.6.27-rc7-devel.orig/mm/filemap.c	2008-09-22 23:04:31.000000000 +0200
++++ linux-2.6.27-rc7-devel/mm/filemap.c	2008-09-22 23:04:34.000000000 +0200
+@@ -269,10 +269,19 @@ int wait_on_page_writeback_range(struct 
+ 	int nr_pages;
+ 	int ret = 0;
+ 	pgoff_t index;
++	long pages_to_process;
  
-+#include <linux/efi.h>
-+#include <linux/io.h>
- #include <asm/uv/bios.h>
+ 	if (end < start)
+ 		return 0;
  
--const char *
--x86_bios_strerror(long status)
-+struct sal_systab sal_systab;
++	/*
++	 * Estimate the number of pages to process. If we process significantly
++	 * more than this, someone is making writeback pages under us.
++	 * We must pull the anti-starvation plug.
++	 */
++	pages_to_process = bdi_stat(mapping->backing_dev_info, BDI_WRITEBACK);
++	pages_to_process += pages_to_process >> 3;
 +
-+s64 uv_bios_call(int which, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5)
- {
--	const char *str;
--	switch (status) {
--	case  0: str = "Call completed without error";	break;
--	case -1: str = "Not implemented";		break;
--	case -2: str = "Invalid argument";		break;
--	case -3: str = "Call completed with error";	break;
--	default: str = "Unknown BIOS status code";	break;
--	}
--	return str;
-+	struct sal_systab *tab = &sal_systab;
-+
-+	if (tab->function == (unsigned long)NULL)
-+		/*
-+		 * BIOS does not support SAL systab
-+		 */
-+		return BIOS_STATUS_UNIMPLEMENTED;
-+
-+	return efi_call6((void *)__va(tab->function),
-+					which, a1, a2, a3, a4, a5);
- }
+ 	pagevec_init(&pvec, 0);
+ 	index = start;
+ 	while ((index <= end) &&
+@@ -288,6 +297,10 @@ int wait_on_page_writeback_range(struct 
+ 			if (page->index > end)
+ 				continue;
  
--long
--x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
--		   unsigned long *drift_info)
-+s64 uv_bios_call_irqsave(int which, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5)
- {
--	struct uv_bios_retval isrv;
-+	unsigned long bios_flags;
-+	s64 ret;
++			if (pages_to_process >= 0)
++				if (!pages_to_process--)
++					mutex_lock(&mapping->starvation_barrier);
++
+ 			wait_on_page_writeback(page);
+ 			if (PageError(page))
+ 				ret = -EIO;
+@@ -296,6 +309,9 @@ int wait_on_page_writeback_range(struct 
+ 		cond_resched();
+ 	}
  
--	BIOS_CALL(isrv, BIOS_FREQ_BASE, which, 0, 0, 0, 0, 0, 0);
--	*ticks_per_second = isrv.v0;
--	*drift_info = isrv.v1;
--	return isrv.status;
-+	local_irq_save(bios_flags);
-+	ret = uv_bios_call(which, a1, a2, a3, a4, a5);
-+	local_irq_restore(bios_flags);
++	if (pages_to_process < 0)
++		mutex_unlock(&mapping->starvation_barrier);
 +
-+	return ret;
-+}
-+
-+s64 uv_bios_call_reentrant(int which, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5)
-+{
-+	s64 ret;
-+
-+	preempt_disable();
-+	ret = uv_bios_call(which, a1, a2, a3, a4, a5);
-+	preempt_enable();
-+
-+	return ret;
-+}
-+
-+long
-+x86_bios_freq_base(unsigned long clock_type, unsigned long *ticks_per_second,
-+					unsigned long *drift_info)
-+{
-+	return uv_bios_call(BIOS_FREQ_BASE, clock_type,
-+				(u64)ticks_per_second, 0, 0, 0);
- }
- EXPORT_SYMBOL_GPL(x86_bios_freq_base);
-+
-+
-+#ifdef CONFIG_EFI
-+void uv_bios_init(void)
-+{
-+	struct sal_systab *tab;
-+
-+	if ((efi.sal_systab == EFI_INVALID_TABLE_ADDR) ||
-+	    (efi.sal_systab == (unsigned long)NULL)) {
-+		printk(KERN_CRIT "No EFI SAL System Table.\n");
-+		sal_systab.function = (unsigned long)NULL;
-+		return;
+ 	/* Check for outstanding write errors */
+ 	if (test_and_clear_bit(AS_ENOSPC, &mapping->flags))
+ 		ret = -ENOSPC;
+Index: linux-2.6.27-rc7-devel/mm/page-writeback.c
+===================================================================
+--- linux-2.6.27-rc7-devel.orig/mm/page-writeback.c	2008-09-22 23:04:31.000000000 +0200
++++ linux-2.6.27-rc7-devel/mm/page-writeback.c	2008-09-22 23:04:34.000000000 +0200
+@@ -435,6 +435,15 @@ static void balance_dirty_pages(struct a
+ 
+ 	struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 
++	/*
++	 * If there is sync() starving on this address space, block
++	 * writers until it finishes.
++	 */
++	if (unlikely(mutex_is_locked(&mapping->starvation_barrier))) {
++		mutex_lock(&mapping->starvation_barrier);
++		mutex_unlock(&mapping->starvation_barrier);
 +	}
 +
-+	tab = (struct sal_systab *)ioremap(efi.sal_systab,
-+					sizeof(struct sal_systab));
-+	if (strncmp(tab->signature, "SST_", 4) != 0)
-+		printk(KERN_ERR "bad signature in SAL system table!");
+ 	for (;;) {
+ 		struct writeback_control wbc = {
+ 			.bdi		= bdi,
+@@ -876,12 +885,21 @@ int write_cache_pages(struct address_spa
+ 	pgoff_t end;		/* Inclusive */
+ 	int scanned = 0;
+ 	int range_whole = 0;
++	long pages_to_process;
+ 
+ 	if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 		wbc->encountered_congestion = 1;
+ 		return 0;
+ 	}
+ 
++	/*
++	 * Estimate the number of pages to process. If we process significantly
++	 * more than this, someone is making dirty pages under us.
++	 * Pull the anti-starvation plug to stop him.
++	 */
++	pages_to_process = bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE);
++	pages_to_process += pages_to_process >> 3;
++
+ 	pagevec_init(&pvec, 0);
+ 	if (wbc->range_cyclic) {
+ 		index = mapping->writeback_index; /* Start from prev offset */
+@@ -902,7 +920,13 @@ retry:
+ 
+ 		scanned = 1;
+ 		for (i = 0; i < nr_pages; i++) {
+-			struct page *page = pvec.pages[i];
++			struct page *page;
++
++			if (pages_to_process >= 0)
++				if (!pages_to_process--)
++					mutex_lock(&mapping->starvation_barrier);
++
++			page = pvec.pages[i];
+ 
+ 			/*
+ 			 * At this point we hold neither mapping->tree_lock nor
+@@ -958,6 +982,10 @@ retry:
+ 		index = 0;
+ 		goto retry;
+ 	}
++
++	if (pages_to_process < 0)
++		mutex_unlock(&mapping->starvation_barrier);
++
+ 	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
+ 		mapping->writeback_index = index;
+ 
+Index: linux-2.6.27-rc7-devel/mm/swap_state.c
+===================================================================
+--- linux-2.6.27-rc7-devel.orig/mm/swap_state.c	2008-09-22 23:04:31.000000000 +0200
++++ linux-2.6.27-rc7-devel/mm/swap_state.c	2008-09-22 23:04:34.000000000 +0200
+@@ -43,6 +43,7 @@ struct address_space swapper_space = {
+ 	.a_ops		= &swap_aops,
+ 	.i_mmap_nonlinear = LIST_HEAD_INIT(swapper_space.i_mmap_nonlinear),
+ 	.backing_dev_info = &swap_backing_dev_info,
++	.starvation_barrier = __MUTEX_INITIALIZER(swapper_space.starvation_barrier),
+ };
+ 
+ #define INC_CACHE_INFO(x)	do { swap_cache_info.x++; } while (0)
+Index: linux-2.6.27-rc7-devel/mm/truncate.c
+===================================================================
+--- linux-2.6.27-rc7-devel.orig/mm/truncate.c	2008-09-22 23:04:31.000000000 +0200
++++ linux-2.6.27-rc7-devel/mm/truncate.c	2008-09-22 23:04:34.000000000 +0200
+@@ -392,6 +392,14 @@ int invalidate_inode_pages2_range(struct
+ 	int ret2 = 0;
+ 	int did_range_unmap = 0;
+ 	int wrapped = 0;
++	long pages_to_process;
 +
 +	/*
-+	 * Copy table to permanent spot for later use.
++	 * Estimate number of pages to process. If we process more, someone
++	 * is making pages under us.
 +	 */
-+	memcpy(&sal_systab, tab, sizeof(struct sal_systab));
-+	iounmap(tab);
++	pages_to_process = mapping->nrpages;
++	pages_to_process += pages_to_process >> 3;
+ 
+ 	pagevec_init(&pvec, 0);
+ 	next = start;
+@@ -399,9 +407,15 @@ int invalidate_inode_pages2_range(struct
+ 		pagevec_lookup(&pvec, mapping, next,
+ 			min(end - next, (pgoff_t)PAGEVEC_SIZE - 1) + 1)) {
+ 		for (i = 0; i < pagevec_count(&pvec); i++) {
+-			struct page *page = pvec.pages[i];
++			struct page *page;
+ 			pgoff_t page_index;
+ 
++			if (pages_to_process >= 0)
++				if (!pages_to_process--)
++					mutex_lock(&mapping->starvation_barrier);
 +
-+	printk(KERN_INFO "EFI SAL System Table Revision %d\n", tab->revision);
-+}
-+#else	/* !CONFIG_EFI */
-+/*
-+ * IF EFI is not configured, have the EFI calls return unimplemented.
-+ */
-+u64 efi_call6(void *fp, u64 arg1, u64 arg2, u64 arg3,
-+			u64 arg4, u64 arg5, u64 arg6)
-+{
-+	return  BIOS_STATUS_UNIMPLEMENTED;
-+}
++			page = pvec.pages[i];
 +
-+void uv_bios_init(void) { }
-+#endif
+ 			lock_page(page);
+ 			if (page->mapping != mapping) {
+ 				unlock_page(page);
+@@ -449,6 +463,10 @@ int invalidate_inode_pages2_range(struct
+ 		pagevec_release(&pvec);
+ 		cond_resched();
+ 	}
 +
-Index: linux/arch/x86/kernel/genx2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-09-22 16:01:00.000000000 -0500
-+++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-09-22 16:01:11.000000000 -0500
-@@ -413,6 +413,7 @@ void __init uv_system_init(void)
- 	gnode_upper = (((unsigned long)node_id.s.node_id) &
- 		       ~((1 << n_val) - 1)) << m_val;
- 
-+	uv_bios_init();
- 	uv_rtc_init();
- 
- 	for_each_present_cpu(cpu) {
-Index: linux/include/asm-x86/uv/bios.h
-===================================================================
---- linux.orig/include/asm-x86/uv/bios.h	2008-09-22 16:01:00.000000000 -0500
-+++ linux/include/asm-x86/uv/bios.h	2008-09-22 16:01:11.000000000 -0500
-@@ -2,9 +2,7 @@
- #define ASM_X86__UV__BIOS_H
- 
- /*
-- * BIOS layer definitions.
-- *
-- *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ * UV BIOS layer definitions.
-  *
-  *  This program is free software; you can redistribute it and/or modify
-  *  it under the terms of the GNU General Public License as published by
-@@ -19,6 +17,9 @@
-  *  You should have received a copy of the GNU General Public License
-  *  along with this program; if not, write to the Free Software
-  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ *
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Russ Anderson
-  */
- 
- #include <linux/rtc.h>
-@@ -31,38 +32,41 @@ enum {
- 	BIOS_FREQ_BASE_REALTIME_CLOCK = 2
- };
- 
--# define BIOS_CALL(result, a0, a1, a2, a3, a4, a5, a6, a7)		\
--	do {								\
--		/* XXX - the real call goes here */			\
--		result.status = BIOS_STATUS_UNIMPLEMENTED;		\
--		isrv.v0 = 0;						\
--		isrv.v1 = 0;						\
--	} while (0)
--
-+/*
-+ * Status values returned from a BIOS call.
-+ */
- enum {
- 	BIOS_STATUS_SUCCESS		=  0,
--	BIOS_STATUS_UNIMPLEMENTED	= -1,
--	BIOS_STATUS_EINVAL		= -2,
--	BIOS_STATUS_ERROR		= -3
-+	BIOS_STATUS_UNIMPLEMENTED	= -ENOSYS,
-+	BIOS_STATUS_EINVAL		= -EINVAL,
-+	BIOS_STATUS_UNAVAIL		= -EBUSY
- };
- 
--struct uv_bios_retval {
--	/*
--	 * A zero status value indicates call completed without error.
--	 * A negative status value indicates reason of call failure.
--	 * A positive status value indicates success but an
--	 * informational value should be printed (e.g., "reboot for
--	 * change to take effect").
--	 */
--	s64 status;
--	u64 v0;
--	u64 v1;
--	u64 v2;
-+/*
-+ * The SAL system table describes specific firmware
-+ * capabilities available to the Linux kernel at runtime.
-+ */
-+struct sal_systab {
-+	char signature[4];	/* must be "SST_" */
-+	u32 revision;		/* distinguish different firmware revs */
-+	u64 function; 		/* BIOS runtime callback function ptr */
- };
- 
-+/*
-+ * bios calls have 6 parameters
-+ */
-+extern s64 uv_bios_call(int, u64, u64, u64, u64, u64);
-+extern s64 uv_bios_call_irqsave(int, u64, u64, u64, u64, u64);
-+extern s64 uv_bios_call_reentrant(int which, u64, u64, u64, u64, u64);
++	if (pages_to_process < 0)
++		mutex_unlock(&mapping->starvation_barrier);
 +
-+extern void uv_bios_init(void);
-+
- extern long
- x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
- 		   unsigned long *drift_info);
--extern const char *x86_bios_strerror(long status);
-+
-+#ifndef CONFIG_EFI
-+extern u64 efi_call6(void *, u64, u64, u64, u64, u64, u64);
-+#endif
- 
- #endif /* ASM_X86__UV__BIOS_H */
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(invalidate_inode_pages2_range);
+
+> ----- Forwarded message from Chris Webb <chris@arachsys.com> -----
+> 
+> Date: Thu, 11 Sep 2008 10:47:36 +0100
+> From: Chris Webb <chris@arachsys.com>
+> Subject: Unexpected behaviour with O_DIRECT affecting lvm
+> 
+> To reproduce:
+> 
+>   # dd if=/dev/zero of=/dev/scratch/a bs=4M &
+>   [1] 2612
+>   # lvm lvrename /dev/scratch/b /dev/scratch/c
+>   [hangs]
+> 
+> (Similarly for lvremote, lvcreate, etc., and it doesn't matter whether the
+> operation is on the same VG or a different one.)
+> 
+> Stracing lvm, I saw
+> 
+>   stat64("/dev/dm-7", {st_mode=S_IFBLK|0600, st_rdev=makedev(251, 7), ...}) = 0
+>   open("/dev/dm-7", O_RDWR|O_DIRECT|O_LARGEFILE|O_NOATIME) = 6
+>   fstat64(6, {st_mode=S_IFBLK|0600, st_rdev=makedev(251, 7), ...}) = 0
+>   ioctl(6, BLKBSZGET, 0x89bbb30)          = 0
+>   _llseek(6, 0, [0], SEEK_SET)            = 0
+>   read(6,
+>   [hangs]
+> 
+> If I kill the dd at this point, the lvm unblocks and continues as normal:
+> 
+>   read(6, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 4096) = 4096
+>   close(6)                                = 0
+>   stat64("/dev/dm-8", {st_mode=S_IFBLK|0600, st_rdev=makedev(251, 8), ...}) = 0
+>   stat64("/dev/dm-8", {st_mode=S_IFBLK|0600, st_rdev=makedev(251, 8), ...}) = 0
+>   open("/dev/dm-8", O_RDWR|O_DIRECT|O_LARGEFILE|O_NOATIME) = 6
+>   [etc]
+> 
+> /dev/dm-7 is the dm device corresponding to /dev/disk.1/0.0 which is being
+> written to.
+> 
+> I wrote a tiny test program which does a single O_DIRECT read of 4096 bytes
+> from a device, and can confirm that, more generally, an O_DIRECT read from a
+> device being continuously written to always hangs indefinitely. This occurs
+> even if I ionice -c3 the dd, and ionice -c1 -n0 the O_DIRECT reader...
+> 
+>   # dd if=/dev/zero of=/dev/disk.1/0.0 bs=4M &
+>   [1] 2697
+>   # ~/tmp/readtest
+>   [hangs]
+> 
+>   # ionice -c3 dd if=/dev/zero of=/dev/disk.1/0.0 bs=4M &
+>   [1] 2734
+>   # ionice -c1 -n0 ~/tmp/readtest
+>   [hangs]
+> 
+> There's no problem if the dd is in the other direction, reading continuously
+> from the LV, nor if the test read isn't O_DIRECT. Attempting to kill -9 the
+> O_DIRECT reader doesn't succeed until after the read() returns.
+> 
+> Finally, I've tried replacing the LV with a raw disk /dev/sdb, and the same
+> behaviour appears there for all choices of IO scheduler for the disk, so
+> it's neither device mapper specific nor even IO scheduler specific! This
+> means that it isn't in any sense a bug in your code, of course, but given
+> that the phenomenon seems to block any LVM management operation when heavy
+> writes are going on, surely we can't be the first people to hit this whilst
+> using the LVM tool. I'm wondering whether you've had other similar reports
+> or have any other suggestions?
+> 
+> For what it's worth, these tests were initially done on our dev machine
+> which is running lvm 2.02.38 and a kernel from the head of Linus' tree
+> (usually no more than a couple of days old with a queue of my local patches
+> that Ed hasn't integrated into the upstream ata-over-ethernet drivers yet),
+> but the same behaviour appears on my totally standard desktop machine with
+> much older 2.6.25 and 2.6.24.4 kernels 'as released', so I think it's pretty
+> long-standing.
+> 
+> Best wishes,
+> 
+> Chris.
+> 
+> #define _GNU_SOURCE
+> #include <errno.h>
+> #include <fcntl.h>
+> #include <stdio.h>
+> #include <stdlib.h>
+> #include <unistd.h>
+> 
+> #define BLOCK 4096
+> 
+> int main(int argc, char **argv) {
+>   int fd, n;
+>   char *buffer;
+> 
+>   if (argc != 2) {
+>     fprintf(stderr, "Usage: %s FILE\n", argv[0]);
+>     return 1;
+>   }
+> 
+>   buffer = valloc(BLOCK);
+>   if (!buffer) {
+>     perror("valloc");
+>     return 1;
+>   }
+> 
+>   fd = open(argv[1], O_RDONLY | O_LARGEFILE | O_DIRECT);
+>   if (fd < 0) {
+>     perror("open");
+>     return 1;
+>   }
+> 
+>   if (pread(fd, buffer, BLOCK, 0) < 0)
+>     perror("pread");
+> 
+>   close(fd);
+>   return 0;
+> }
+> 
+> 
