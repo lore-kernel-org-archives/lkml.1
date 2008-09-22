@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbYIVMwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbYIVNBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752675AbYIVMwp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 08:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYIVMwf
+	id S1752662AbYIVNBU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 09:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbYIVNBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 08:52:35 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:46269 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751933AbYIVMwd (ORCPT
+	Mon, 22 Sep 2008 09:01:07 -0400
+Received: from mail.bigtelecom.ru ([87.255.0.61]:47429 "EHLO
+	mail.bigtelecom.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbYIVNBG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 08:52:33 -0400
-Message-ID: <3717EAB2B3F742ACBE4FFEC94B98BEB5@nsl.ad.nec.co.jp>
-From: "Takashi Sato" <t-sato@yk.jp.nec.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       <linux-fsdevel@vger.kernel.org>, <dm-devel@redhat.com>,
-       <viro@ZenIV.linux.org.uk>, <linux-ext4@vger.kernel.org>,
-       <xfs@oss.sgi.com>, <axboe@kernel.dk>, <mtk.manpages@googlemail.com>,
-       <linux-kernel@vger.kernel.org>
-References: <20080922195526t-sato@mail.jp.nec.com> <20080922105956.GA16069@infradead.org>
-In-Reply-To: <20080922105956.GA16069@infradead.org>
-Subject: Re: [PATCH 1/10] VFS: Fix error handling ofwrite_super_lockfs/unlockfs
-Date: Mon, 22 Sep 2008 21:52:09 +0900
+	Mon, 22 Sep 2008 09:01:06 -0400
+Message-ID: <48D79709.80400@bigtelecom.ru>
+Date: Mon, 22 Sep 2008 17:00:57 +0400
+From: Badalian Vyacheslav <slavon@bigtelecom.ru>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080818)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+To: Jarek Poplawski <jarkao2@gmail.com>
+CC: Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Machine Check Exception Re: NetDev! Please help!
+References: <48D4F85C.8090709@bigtelecom.ru> <200809202111.01256.denys@visp.net.lb> <48D67239.9040006@gmail.com> <48D7385D.40107@bigtelecom.ru> <20080922065339.GA4399@ff.dom.local> <48D76813.9000603@bigtelecom.ru> <20080922112452.GB5314@ff.dom.local>
+In-Reply-To: <20080922112452.GB5314@ff.dom.local>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Windows Mail 6.0.6000.16480
-X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-> On Mon, Sep 22, 2008 at 07:55:26PM +0900, Takashi Sato wrote:
->> I've changed the type of write_super_lockfs and unlockfs from "void" to
->> "int" so that they can return an error.
->
-> Returning an error from the freeze operation makes sense, but for the
-> unfreeze I don't see the point.  You must however change all existing
-> instances to actually return a value (even if it's always 0 for now)
-> to avoid breaking git bisect.
+> BTW: could you try to trigger this bug with one network card off?
+>   
 
-I thought unlockfs should return an error because ext3_unlockfs()
-might cause I/O error in writing a super block.
-But it is an internal error and the unfreezing succeeds.
-So I will consider returning 0.
 
-> If you touch all instances anyway, it would be nice to rename them
-> to freeze / unfreze as the current names are more confusing.
+Shire! I stop eth1 and do "/etc/init.d/bgpd stop" (this pc not get route
+traffic anymore)....
 
-I will consider renaming.
+run "emerge portage" 2 times and get:
 
-Cheers, Takashi
+[25492.187405] CPU 3: Machine Check Exception: 0000000000000005
+[25492.187405] MCE: The hardware reports a non fatal, correctable
+incident occurred on CPU 1.
+[25492.187405] Bank 0: b200004000000800
+[25492.187405] MCE: The hardware reports a non fatal, correctable
+incident occurred on CPU 1.
+[25492.187405] Bank 5: b200120014040400
+[25497.124884] CPU 1: Machine Check Exception: 0000000000000004
+[25497.124884] Kernel panic - not syncing: Unable to continue
+[25497.124884] Rebooting in 3 seconds..
+
+bugtracker updated.... i can get (reproduce) error on all 10 servers at
+2.6.26.5... I use TC and not wont test 2.6.27-rc because its have (if i
+understand) multiqueue feature that not tested...
+
+Thanks!
