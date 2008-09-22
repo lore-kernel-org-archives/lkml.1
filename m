@@ -1,216 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbYIVSl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbYIVSl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754640AbYIVSl3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYIVSko
+	id S1754836AbYIVSl7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYIVSkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:40:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54650 "EHLO mx2.redhat.com"
+	Mon, 22 Sep 2008 14:40:45 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54653 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752900AbYIVSkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 14:40:41 -0400
+	id S1752970AbYIVSkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 14:40:42 -0400
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/6] dlm: detect available userspace daemon
-Date: Mon, 22 Sep 2008 13:28:35 -0500
-Message-Id: <1222108119-24928-3-git-send-email-teigland@redhat.com>
+Subject: [PATCH 5/6] dlm: remove bkl
+Date: Mon, 22 Sep 2008 13:28:38 -0500
+Message-Id: <1222108119-24928-6-git-send-email-teigland@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If dlm_controld (the userspace daemon that controls the setup and
-recovery of the dlm) fails, the kernel should shut down the lockspaces
-in the kernel rather than leaving them running.  This is detected by
-having dlm_controld hold a misc device open while running, and if
-the kernel detects a close while the daemon is still needed, it stops
-the lockspaces in the kernel.
-
-Knowing that the userspace daemon isn't running also allows the
-lockspace create/remove routines to avoid waiting on the daemon
-for join/leave operations.
+BLK from recent pushdown is not needed.
 
 Signed-off-by: David Teigland <teigland@redhat.com>
 ---
- fs/dlm/lockspace.c |   24 +++++++++++++++++++-
- fs/dlm/lockspace.h |    1 +
- fs/dlm/user.c      |   61 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- fs/dlm/user.h      |    1 +
- 4 files changed, 85 insertions(+), 2 deletions(-)
+ fs/dlm/user.c |    9 +--------
+ 1 files changed, 1 insertions(+), 8 deletions(-)
 
-diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
-index 56eae4e..ba672fe 100644
---- a/fs/dlm/lockspace.c
-+++ b/fs/dlm/lockspace.c
-@@ -378,6 +378,11 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
- 	if (!try_module_get(THIS_MODULE))
- 		return -EINVAL;
- 
-+	if (!dlm_user_daemon_available()) {
-+		module_put(THIS_MODULE);
-+		return -EUNATCH;
-+	}
-+
- 	error = 0;
- 
- 	spin_lock(&lslist_lock);
-@@ -669,7 +674,7 @@ static int release_lockspace(struct dlm_ls *ls, int force)
- 
- 	dlm_device_deregister(ls);
- 
--	if (force < 3)
-+	if (force < 3 && dlm_user_daemon_available())
- 		do_uevent(ls, 0);
- 
- 	dlm_recoverd_stop(ls);
-@@ -791,3 +796,20 @@ int dlm_release_lockspace(void *lockspace, int force)
- 	return error;
- }
- 
-+void dlm_stop_lockspaces(void)
-+{
-+	struct dlm_ls *ls;
-+
-+ restart:
-+	spin_lock(&lslist_lock);
-+	list_for_each_entry(ls, &lslist, ls_list) {
-+		if (!test_bit(LSFL_RUNNING, &ls->ls_flags))
-+			continue;
-+		spin_unlock(&lslist_lock);
-+		log_error(ls, "no userland control daemon, stopping lockspace");
-+		dlm_ls_stop(ls);
-+		goto restart;
-+	}
-+	spin_unlock(&lslist_lock);
-+}
-+
-diff --git a/fs/dlm/lockspace.h b/fs/dlm/lockspace.h
-index 891eabb..f879f87 100644
---- a/fs/dlm/lockspace.h
-+++ b/fs/dlm/lockspace.h
-@@ -20,6 +20,7 @@ struct dlm_ls *dlm_find_lockspace_global(uint32_t id);
- struct dlm_ls *dlm_find_lockspace_local(void *id);
- struct dlm_ls *dlm_find_lockspace_device(int minor);
- void dlm_put_lockspace(struct dlm_ls *ls);
-+void dlm_stop_lockspaces(void);
- 
- #endif				/* __LOCKSPACE_DOT_H__ */
- 
 diff --git a/fs/dlm/user.c b/fs/dlm/user.c
-index 6542110..81627b5 100644
+index 81627b5..b3832c6 100644
 --- a/fs/dlm/user.c
 +++ b/fs/dlm/user.c
-@@ -27,6 +27,8 @@
+@@ -15,7 +15,6 @@
+ #include <linux/poll.h>
+ #include <linux/signal.h>
+ #include <linux/spinlock.h>
+-#include <linux/smp_lock.h>
+ #include <linux/dlm.h>
+ #include <linux/dlm_device.h>
  
- static const char name_prefix[] = "dlm";
- static const struct file_operations device_fops;
-+static atomic_t dlm_monitor_opened;
-+static int dlm_monitor_unused = 1;
+@@ -637,17 +636,13 @@ static int device_open(struct inode *inode, struct file *file)
+ 	struct dlm_user_proc *proc;
+ 	struct dlm_ls *ls;
  
- #ifdef CONFIG_COMPAT
+-	lock_kernel();
+ 	ls = dlm_find_lockspace_device(iminor(inode));
+-	if (!ls) {
+-		unlock_kernel();
++	if (!ls)
+ 		return -ENOENT;
+-	}
  
-@@ -890,6 +892,26 @@ static unsigned int device_poll(struct file *file, poll_table *wait)
+ 	proc = kzalloc(sizeof(struct dlm_user_proc), GFP_KERNEL);
+ 	if (!proc) {
+ 		dlm_put_lockspace(ls);
+-		unlock_kernel();
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -659,7 +654,6 @@ static int device_open(struct inode *inode, struct file *file)
+ 	spin_lock_init(&proc->locks_spin);
+ 	init_waitqueue_head(&proc->wait);
+ 	file->private_data = proc;
+-	unlock_kernel();
+ 
  	return 0;
  }
+@@ -914,7 +908,6 @@ int dlm_user_daemon_available(void)
  
-+int dlm_user_daemon_available(void)
-+{
-+	/* dlm_controld hasn't started (or, has started, but not
-+	   properly populated configfs) */
-+
-+	if (!dlm_our_nodeid())
-+		return 0;
-+
-+	/* This is to deal with versions of dlm_controld that don't
-+	   know about the monitor device.  We assume that if the
-+	   dlm_controld was started (above), but the monitor device
-+	   was never opened, that it's an old version.  dlm_controld
-+	   should open the monitor device before populating configfs. */
-+
-+	if (dlm_monitor_unused)
-+		return 1;
-+
-+	return atomic_read(&dlm_monitor_opened) ? 1 : 0;
-+}
-+
  static int ctl_device_open(struct inode *inode, struct file *file)
  {
- 	cycle_kernel_lock();
-@@ -902,6 +924,20 @@ static int ctl_device_close(struct inode *inode, struct file *file)
+-	cycle_kernel_lock();
+ 	file->private_data = NULL;
  	return 0;
  }
- 
-+static int monitor_device_open(struct inode *inode, struct file *file)
-+{
-+	atomic_inc(&dlm_monitor_opened);
-+	dlm_monitor_unused = 0;
-+	return 0;
-+}
-+
-+static int monitor_device_close(struct inode *inode, struct file *file)
-+{
-+	if (atomic_dec_and_test(&dlm_monitor_opened))
-+		dlm_stop_lockspaces();
-+	return 0;
-+}
-+
- static const struct file_operations device_fops = {
- 	.open    = device_open,
- 	.release = device_close,
-@@ -925,19 +961,42 @@ static struct miscdevice ctl_device = {
- 	.minor = MISC_DYNAMIC_MINOR,
- };
- 
-+static const struct file_operations monitor_device_fops = {
-+	.open    = monitor_device_open,
-+	.release = monitor_device_close,
-+	.owner   = THIS_MODULE,
-+};
-+
-+static struct miscdevice monitor_device = {
-+	.name  = "dlm-monitor",
-+	.fops  = &monitor_device_fops,
-+	.minor = MISC_DYNAMIC_MINOR,
-+};
-+
- int __init dlm_user_init(void)
- {
- 	int error;
- 
-+	atomic_set(&dlm_monitor_opened, 0);
-+
- 	error = misc_register(&ctl_device);
--	if (error)
-+	if (error) {
- 		log_print("misc_register failed for control device");
-+		goto out;
-+	}
- 
-+	error = misc_register(&monitor_device);
-+	if (error) {
-+		log_print("misc_register failed for monitor device");
-+		misc_deregister(&ctl_device);
-+	}
-+ out:
- 	return error;
- }
- 
- void dlm_user_exit(void)
- {
- 	misc_deregister(&ctl_device);
-+	misc_deregister(&monitor_device);
- }
- 
-diff --git a/fs/dlm/user.h b/fs/dlm/user.h
-index c528b6b..35eb6a1 100644
---- a/fs/dlm/user.h
-+++ b/fs/dlm/user.h
-@@ -13,5 +13,6 @@ void dlm_user_add_ast(struct dlm_lkb *lkb, int type);
- int dlm_user_init(void);
- void dlm_user_exit(void);
- int dlm_device_deregister(struct dlm_ls *ls);
-+int dlm_user_daemon_available(void);
- 
- #endif
 -- 
 1.5.5.1
 
