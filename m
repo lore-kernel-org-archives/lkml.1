@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbYIVSMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbYIVSUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754051AbYIVSMR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYIVSME
+	id S1753324AbYIVSUq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbYIVSUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:12:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60509 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752878AbYIVSMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 14:12:03 -0400
-Date: Mon, 22 Sep 2008 14:12:20 -0400
-From: Aristeu Rozanski <aris@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, dzickus@redhat.com, prarit@redhat.com,
-       vgoyal@redhat.com
-Subject: Re: [PATCH] NMI watchdog: setup before enabling NMI watchdog
-Message-ID: <20080922181219.GM16840@redhat.com>
-References: <20080922171347.GI16840@redhat.com> <20080922175953.GI10535@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080922175953.GI10535@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 22 Sep 2008 14:20:38 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:12434 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751456AbYIVSUi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 14:20:38 -0400
+Date: Mon, 22 Sep 2008 11:19:56 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: Re: mmotm 2008-09-22-01-36 uploaded (profiling)
+Message-Id: <20080922111956.fd6dcb20.randy.dunlap@oracle.com>
+In-Reply-To: <200809220838.m8M8cwC2031790@imap1.linux-foundation.org>
+References: <200809220838.m8M8cwC2031790@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > There's a small window when NMI watchdog is being set up that if any 
-> > NMIs are triggered, the NMI code will make make use of not initalized 
-> > wd_ops elements:
+On Mon, 22 Sep 2008 01:38:58 -0700 akpm@linux-foundation.org wrote:
+
+> The mm-of-the-moment snapshot 2008-09-22-01-36 has been uploaded to
 > 
-> btw, this looks a bit large and not that easy to trigger, so i think 
-> it's v2.6.28 material - agreed?
-Yep, this can wait.
-Thanks Ingo
+>    http://userweb.kernel.org/~akpm/mmotm/
+> 
+> It contains the following patches against 2.6.27-rc7:
 
--- 
-Aristeu
+kernel/built-in.o: In function `profiling_store':
+ksysfs.c:(.text+0x1b9b1): undefined reference to `create_proc_profile'
+make[1]: *** [.tmp_vmlinux1] Error 1
 
+
+when CONFIG_PROC_FS=n.
+
+
+---
+~Randy
