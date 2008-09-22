@@ -1,99 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYIVP6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbYIVQB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYIVP6A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 11:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYIVP5x
+	id S1753744AbYIVQB7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 12:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYIVQBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 11:57:53 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33472 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752724AbYIVP5w (ORCPT
+	Mon, 22 Sep 2008 12:01:50 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:44809 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752345AbYIVQBt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 11:57:52 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <32459434.1222099038142.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 23 Sep 2008 00:57:18 +0900 (JST)
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: Re: Re: [PATCH 9/13] memcg: lookup page cgroup (and remove pointer from struct page)
-Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       balbir@linux.vnet.ibm.com, nishimura@mxp.nes.nec.co.jp,
-       xemul@openvz.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1222098450.8533.41.camel@nimitz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
+	Mon, 22 Sep 2008 12:01:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=QYee4MJ1WpgLjw8RU8q+uDkH3nCQ8D9ViqYHbR4aYSR5tbxyG3zqEK7iQRTPZteTU1
+         GSo8tFTFNrsjWjUh5sQmn7cxUFQMeGmWtLwdMjR7ahXModTo3UiUY8H8PxcDtTDynCiY
+         YHrl0C8Z7e9CAAfHDk5XB8mbEE8bkJLx/MWxA=
+Message-ID: <43e72e890809220901y162636fu63ed133f0a0c235@mail.gmail.com>
+Date: Mon, 22 Sep 2008 09:01:48 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: "Steven Noonan" <steven@uplinklabs.net>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5, rc6, probably others)
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Senthilkumar Balasubramanian" 
+	<Senthilkumar.Balasubramanian@atheros.com>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       "Luis Rodriguez" <Luis.Rodriguez@atheros.com>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <f488382f0809220811y46e9daf3r5db5a7c76df87800@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <1222098450.8533.41.camel@nimitz>
- <1222095177.8533.14.camel@nimitz>
-	 <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080922201206.e73d9ce6.kamezawa.hiroyu@jp.fujitsu.com>
-	 <31600854.1222096483210.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Disposition: inline
+References: <f488382f0809200821m6fe355feu2d9fb99ac3c7f712@mail.gmail.com>
+	 <43e72e890809201403w2c4511fdv2fe26bbcf49ccdd7@mail.gmail.com>
+	 <f488382f0809201422rdabeff4g435bf3d4a7e9fa3@mail.gmail.com>
+	 <43e72e890809201426x61c94bfej2dcda1c178be81b@mail.gmail.com>
+	 <f488382f0809201448l21434f11n12311e308f9952d7@mail.gmail.com>
+	 <f488382f0809201848w1e59cc19i8235c7c74c44fc10@mail.gmail.com>
+	 <20080922065453.GD19580@tesla>
+	 <f488382f0809220026u9afa355g1ff2cc7a3fe88333@mail.gmail.com>
+	 <20080922080632.GA20446@tesla>
+	 <f488382f0809220811y46e9daf3r5db5a7c76df87800@mail.gmail.com>
+X-Google-Sender-Auth: 0d27284e197f4ea7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
->> >
->> I admit this calcuration is too easy. Hmm, based on totalram_pages is 
->> better. ok.
+On Mon, Sep 22, 2008 at 8:11 AM, Steven Noonan <steven@uplinklabs.net> wrote:
+> On Mon, Sep 22, 2008 at 1:06 AM, Luis R. Rodriguez
+> <lrodriguez@atheros.com> wrote:
+>> Please test the following patch.
+>>
+>> diff --git a/drivers/net/wireless/ath9k/core.c b/drivers/net/wireless/ath9k/core.c
+>> index c262ef2..9a51739 100644
+>> --- a/drivers/net/wireless/ath9k/core.c
+>> +++ b/drivers/net/wireless/ath9k/core.c
+>> @@ -681,10 +681,12 @@ int ath_open(struct ath_softc *sc, struct ath9k_channel *initial_chan)
+>>         * Enable MIB interrupts when there are hardware phy counters.
+>>         * Note we only do this (at the moment) for station mode.
+>>         */
+>> +#if 0
+>>        if (ath9k_hw_phycounters(ah) &&
+>>            ((sc->sc_ah->ah_opmode == ATH9K_M_STA) ||
+>>             (sc->sc_ah->ah_opmode == ATH9K_M_IBSS)))
+>>                sc->sc_imask |= ATH9K_INT_MIB;
+>> +#endif
+>>        /*
+>>         * Some hardware processes the TIM IE and fires an
+>>         * interrupt when the TIM bit is set.  For hardware
+>>
 >
->No, I was setting a trap. ;)
+> It didn't apply to -rc7, but I managed to apply it manually
+> (apparently you made this for wireless-testing?) and added the #if 0.
+> After 7 hours uptime with the driver, no apparent interrupt storm.
 >
-Bomb!
+> I'll do more thorough testing later, but I have a 3 hour drive today,
+> and some packing to do, so it'll need to wait a bit.
 
->If you use totalram_pages, I'll just complain that it doesn't work if a
->memory hotplug machine drastically changes its size.  You'll end up with
->pretty darn big hash buckets.
->
-As I wrote, this is just _generic_ one.
-I'll add FLATMEM and SPARSEMEM support later.
+Yeah I did it for wireless-testing. Good to hear this so far has
+solved the issue. I'll port it to 27 and post it once I get your
+blessings that this fixed it by a Tested-by.
 
-I never want to write SPARSEMEM_EXTREME by myself and want to depend
-on SPARSEMEM's internal implementation, which I know well.
-
-
->You basically can't get away with the fact that you (potentially) have
->really sparse addresses to play with here.  Using a hash table is
->exactly the same as using an array such as sparsemem except you randomly
->index into it instead of using straight arithmetic.
->
-see the next patch. per-cpu look-aside cache works well.
-
->My gut says that you'll need to do exactly the same things sparsemem did
->here, which is at *least* have a two-level lookup before you get to the
->linear search.  The two-level lookup also makes the hotplug problem
->easier.
->
->As I look at this, I always have to bounce between these tradeoffs:
->
->1. deal with sparse address spaces (keeps you from using max_pfn)
->2. scale as that sparse address space has memory hotplugged into it
->   (keeps you from using boot-time present_pages)
->3. deal with performance impacts from new data structures created to
->   deal with the other two :)
->
->> >Can you lay out how much memory this will use on a machine like Dave
->> >Miller's which has 1GB of memory at 0x0 and 1GB of memory at 1TB up in
->> >the address space?
->> 
->> >Also, how large do the hash buckets get in the average case?
->> >
->> on my 48GB box, hashtable was 16384bytes. (in dmesg log.)
->> (section size was 128MB.)
->
->I'm wondering how long the linear searches of those hlists get.
->
-In above case, just one step.  16384/8 * 128MB.
-In ppc, it has 16MB sections, hash table will be bigger. But "walk" is
-not very long.
-Anyway, How "walk" is long is not very big problem because look-aside
-buffer helps.
-
-I'll add FLATMEM/SPARSEMEM support later. Could you wait for a while ?
-Because we have lookup_page_cgroup() after this, we can do anything.
-
-Thanks,
--Kame
-
+  Luis
