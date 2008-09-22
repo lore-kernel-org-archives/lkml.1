@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbYIVMFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbYIVMGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752675AbYIVMFl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 08:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYIVMFd
+	id S1752933AbYIVMGy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 08:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYIVMGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 08:05:33 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:53284 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbYIVMFd (ORCPT
+	Mon, 22 Sep 2008 08:06:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:28203 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751655AbYIVMGp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 08:05:33 -0400
-X-BigFish: VPS-8(z1039oz98dR936fQzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K7LIWU-04-P5C-01
-Date: Mon, 22 Sep 2008 14:05:19 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic option
-Message-ID: <20080922120519.GX24392@amd.com>
-References: <20080920012322R.fujita.tomonori@lab.ntt.co.jp> <20080920060059.GA25713@elte.hu> <20080920225705C.fujita.tomonori@lab.ntt.co.jp> <20080922111730.GF5987@elte.hu>
+	Mon, 22 Sep 2008 08:06:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=U/+n9drbhyjHK3hlkTUI1RWe1lowZrw0xuDmJ2exPxMzy9RjbBqRtrD+cTjeEpl+sj
+         qfco0R/kj7adcLB3lrUX+D6BcTC3M9/rbSOlmChDTTi1qznabzXWclBnN4Epk6YEf1S4
+         FrhnInrzI6r917Hh9ma12TtwZnfCxeSAPo+4M=
+Message-ID: <c62985530809220506o39264e63k25ccb7a73384335c@mail.gmail.com>
+Date: Mon, 22 Sep 2008 14:06:44 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [Patch 1/3] Tracing/ftrace: Make nop tracer reset previous entries
+Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Steven Noonan" <steven@uplinklabs.net>
+In-Reply-To: <20080922093604.GA17258@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080922111730.GF5987@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 22 Sep 2008 12:05:19.0715 (UTC) FILETIME=[7BB40330:01C91CAB]
+References: <48D68E06.50504@gmail.com>
+	 <20080922121237.13D4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080922093604.GA17258@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 01:17:30PM +0200, Ingo Molnar wrote:
-> well, i'd like you two to agree on how to proceed. Could you send a 
-> patch please that adds back the option that Joerg's patch removed? I 
-> certainly dont argue with the point that we should preserve existing 
-> options.
+2008/9/22 Ingo Molnar <mingo@elte.hu>:
+>
+> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+>
+>> your patch seems corrupted.
+>> please check again your e-mail client settings.
+>
+> i fixed the extra newlines up and applied the patches to
+> tip/tracing/ftrace, thanks Frédéric!
+>
+> please check Documentation/email-clients.txt about details. There were
+> two problems i saw: overlong lines in the commit description and extra
+> 'double newlines' in the patch itself. (To get around gmail limitations
+> you can send -tip patches as MIME attachments as well.)
+>
+>        Ingo
+>
 
-I didn't removed any option. I just moved them from GART to the generic
-code. I am fine with every solution that keeps iommu=fullflush usable
-for AMD IOMMU (except maybe an amd_iommu_parse_options hook in the
-generic code like its there for GART).
+Oops. I'm really sorry about that. I was pretty convinced that my
+email client was well configured.
+In the future I will first send myself the patches before any new
+submit to ensure they are not damaged...
 
-Joerg
-
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+Thanks.
