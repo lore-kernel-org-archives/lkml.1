@@ -1,198 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbYIVLEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbYIVLGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088AbYIVLEQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 07:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbYIVLD7
+	id S1753447AbYIVLGb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 07:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYIVLGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 07:03:59 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55557 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752444AbYIVLD6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 07:03:58 -0400
-Date: Mon, 22 Sep 2008 20:09:48 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3.6/13] memcg: add function to move account.
-Message-Id: <20080922200948.83b4ef26.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Sep 2008 07:06:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49310 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751904AbYIVLGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 07:06:22 -0400
+Date: Mon, 22 Sep 2008 13:05:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>
+Cc: Dean Nelson <dcn@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Alan Mayer <ajm@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
+       suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <Yinghai.lu@amd.com>
+Subject: Re: [PATCH 1/3] switch vector_irq[] from irq number to irq_desc
+	pointer v2
+Message-ID: <20080922110542.GD5987@elte.hu>
+References: <20080919200212.GA6528@sgi.com> <20080919200449.GB6528@sgi.com> <48D40A97.2000402@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D40A97.2000402@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0157]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, this patchs is after "3.5" , before "4"....
 
-==
-This patch provides a function to move account information of a page between
-mem_cgroups.
+* Mike Travis <travis@sgi.com> wrote:
 
-This moving of page_cgroup is done under
- - the page is locked.
- - lru_lock of source/destination mem_cgroup is held.
+> Hi Ingo,
+> 
+> Note that my recent patch from a couple of weeks ago, stripped almost 
+> all of the cpumask_t's from the io_apic functions.  Any chance we can 
+> apply them before we add more?
+> 
+> I'd be willing to merge in Dean's patch over the top of mine (or 
+> vice-versa).
 
-Then, a routine which touches pc->mem_cgroup without page_lock() should
-confirm pc->mem_cgroup is still valid or not. Typlical code can be following.
+i'm really looking forwards to Rusty's 'get-rid-of-cpumask_t use' 
+patchset, which would solve such cpumask_t proliferation issues once and 
+for all.
 
-(while page is not under lock_page())
-	mem = pc->mem_cgroup;
-	mz = page_cgroup_zoneinfo(pc)
-	spin_lock_irqsave(&mz->lru_lock);
-	if (pc->mem_cgroup == mem)
-		...../* some list handling */
-	spin_unlock_irq(&mz->lru_lock);
-
-If you find page_cgroup from mem_cgroup's LRU under mz->lru_lock, you don't
-have to worry about anything.
-
-Changelog: (v3) -> (v4)
-  - no changes.
-Changelog: (v2) -> (v3)
-  - added lock_page_cgroup().
-  - splitted out from new-force-empty patch.
-  - added how-to-use text.
-  - fixed race in __mem_cgroup_uncharge_common().
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
- mm/memcontrol.c |   85 ++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 82 insertions(+), 3 deletions(-)
-
-Index: mmotm-2.6.27-rc6+/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.27-rc6+.orig/mm/memcontrol.c
-+++ mmotm-2.6.27-rc6+/mm/memcontrol.c
-@@ -424,6 +424,7 @@ int task_in_mem_cgroup(struct task_struc
- void mem_cgroup_move_lists(struct page *page, enum lru_list lru)
- {
- 	struct page_cgroup *pc;
-+	struct mem_cgroup *mem;
- 	struct mem_cgroup_per_zone *mz;
- 	unsigned long flags;
- 
-@@ -442,9 +443,14 @@ void mem_cgroup_move_lists(struct page *
- 
- 	pc = page_get_page_cgroup(page);
- 	if (pc) {
-+		mem = pc->mem_cgroup;
- 		mz = page_cgroup_zoneinfo(pc);
- 		spin_lock_irqsave(&mz->lru_lock, flags);
--		__mem_cgroup_move_lists(pc, lru);
-+		/*
-+		 * check against the race with move_account.
-+		 */
-+		if (likely(mem == pc->mem_cgroup))
-+			__mem_cgroup_move_lists(pc, lru);
- 		spin_unlock_irqrestore(&mz->lru_lock, flags);
- 	}
- 	unlock_page_cgroup(page);
-@@ -565,6 +571,71 @@ unsigned long mem_cgroup_isolate_pages(u
- 	return nr_taken;
- }
- 
-+/**
-+ * mem_cgroup_move_account - move account of the page
-+ * @page ... the target page of being moved.
-+ * @pc   ... page_cgroup of the page.
-+ * @from ... mem_cgroup which the page is moved from.
-+ * @to   ... mem_cgroup which the page is moved to.
-+ *
-+ * The caller must confirm following.
-+ * 1. lock the page by lock_page().
-+ * 2. disable irq.
-+ * 3. lru_lock of old mem_cgroup should be held.
-+ * 4. pc is guaranteed to be valid and on mem_cgroup's LRU.
-+ *
-+ * Because we cannot call try_to_free_page() here, the caller must guarantee
-+ * this moving of change never fails. Currently this is called only against
-+ * root cgroup, which has no limitation of resource.
-+ * Returns 0 at success, returns 1 at failure.
-+ */
-+int mem_cgroup_move_account(struct page *page, struct page_cgroup *pc,
-+	struct mem_cgroup *from, struct mem_cgroup *to)
-+{
-+	struct mem_cgroup_per_zone *from_mz, *to_mz;
-+	int nid, zid;
-+	int ret = 1;
-+
-+	VM_BUG_ON(!irqs_disabled());
-+	VM_BUG_ON(!PageLocked(page));
-+
-+	nid = page_to_nid(page);
-+	zid = page_zonenum(page);
-+	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
-+	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
-+
-+	if (res_counter_charge(&to->res, PAGE_SIZE)) {
-+		/* Now, we assume no_limit...no failure here. */
-+		return ret;
-+	}
-+	if (!try_lock_page_cgroup(page)) {
-+		res_counter_uncharge(&to->res, PAGE_SIZE);
-+		return ret;
-+	}
-+
-+	if (page_get_page_cgroup(page) != pc) {
-+		res_counter_uncharge(&to->res, PAGE_SIZE);
-+		goto out;
-+	}
-+
-+	if (spin_trylock(&to_mz->lru_lock)) {
-+		__mem_cgroup_remove_list(from_mz, pc);
-+		css_put(&from->css);
-+		res_counter_uncharge(&from->res, PAGE_SIZE);
-+		pc->mem_cgroup = to;
-+		css_get(&to->css);
-+		__mem_cgroup_add_list(to_mz, pc);
-+		ret = 0;
-+		spin_unlock(&to_mz->lru_lock);
-+	} else {
-+		res_counter_uncharge(&to->res, PAGE_SIZE);
-+	}
-+out:
-+	unlock_page_cgroup(page);
-+
-+	return ret;
-+}
-+
- /*
-  * Charge the memory controller for page usage.
-  * Return
-@@ -752,16 +823,24 @@ __mem_cgroup_uncharge_common(struct page
- 	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
- 	    && ((PageCgroupCache(pc) || page_mapped(page))))
- 		goto unlock;
--
-+retry:
-+	mem = pc->mem_cgroup;
- 	mz = page_cgroup_zoneinfo(pc);
- 	spin_lock_irqsave(&mz->lru_lock, flags);
-+	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED &&
-+	    unlikely(mem != pc->mem_cgroup)) {
-+		/* MAPPED account can be done without lock_page().
-+		   Check race with mem_cgroup_move_account() */
-+		spin_unlock_irqrestore(&mz->lru_lock, flags);
-+		goto retry;
-+	}
- 	__mem_cgroup_remove_list(mz, pc);
- 	spin_unlock_irqrestore(&mz->lru_lock, flags);
- 
- 	page_assign_page_cgroup(page, NULL);
- 	unlock_page_cgroup(page);
- 
--	mem = pc->mem_cgroup;
-+
- 	res_counter_uncharge(&mem->res, PAGE_SIZE);
- 	css_put(&mem->css);
- 
-
+	Ingo
