@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbYIVQGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbYIVQG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753587AbYIVQGQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 12:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYIVQGC
+	id S1754149AbYIVQG4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 12:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYIVQGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 12:06:02 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:52212 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752829AbYIVQGA (ORCPT
+	Mon, 22 Sep 2008 12:06:49 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55359 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbYIVQGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 12:06:00 -0400
-From: "Hans-Peter Jansen" <hpj@urpla.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
-Date: Mon, 22 Sep 2008 18:05:47 +0200
-User-Agent: KMail/1.9.10
-Cc: Aaron Straus <aaron@merfinllc.com>, Chuck Lever <chuck.lever@oracle.com>,
-       Neil Brown <neilb@suse.de>,
-       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-References: <20080905191939.GG22796@merfinllc.com> <56258A29-95D5-4A8C-A097-014B8FEDFB8F@oracle.com> <20080911184951.GB19054@merfinllc.com>
-In-Reply-To: <20080911184951.GB19054@merfinllc.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 22 Sep 2008 12:06:48 -0400
+Subject: Re: Re: [PATCH 9/13] memcg: lookup page cgroup (and remove pointer
+	from struct page)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: linux-mm@kvack.org, balbir@linux.vnet.ibm.com, nishimura@mxp.nes.nec.co.jp,
+       xemul@openvz.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <22188426.1222099453986.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1222098469.16700.38.camel@lappy.programming.kicks-ass.net>
+	 <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080922201206.e73d9ce6.kamezawa.hiroyu@jp.fujitsu.com>
+	 <22188426.1222099453986.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Mon, 22 Sep 2008 18:06:31 +0200
+Message-Id: <1222099591.16700.39.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809221805.48463.hpj@urpla.net>
-X-Provags-ID: V01U2FsdGVkX19Q3b+D3/O+Y0Zq48BAPQeDq5yuvVOXrvzCROz
- dpsw9VCtUOmPn1pi4vj38lr6fZD6gzEBEL/54kL7iHb8I+/vcs
- sP8YTsbwi367fl6u/VaUw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Aaron, hi NFS hackers,
+On Tue, 2008-09-23 at 01:04 +0900, kamezawa.hiroyu@jp.fujitsu.com wrote:
+> ----- Original Message -----
+> >On Mon, 2008-09-22 at 20:12 +0900, KAMEZAWA Hiroyuki wrote:
+> >
+> >>   - all page_cgroup struct is maintained by hash. 
+> >>     I think we have 2 ways to handle sparse index in general
+> >>     ...radix-tree and hash. This uses hash because radix-tree's layout is
+> >>     affected by memory map's layout.
+> >
+> >Could you provide further detail? That is, is this solely because our
+> >radix tree implementation is sucky for large indexes?
+> >
+> no, sparse-large index.
+> 
+> >If so, I did most of the work of fixing that, just need to spend a
+> >little more time to stabalize the code.
+> >
+> 
+> IIUC, radix tree's height is determined by how sparse the space is.
 
-Am Donnerstag, 11. September 2008 schrieb Aaron Straus:
-> Hi,
->
-> On Sep 11 01:48 PM, Chuck Lever wrote:
-> > Were you able to modify your writer to do real fsync system calls?  If
-> > so, did it help?  That would be a useful data point.
->
-> Yes/Yes.  Please see the attached tarball sync-test.tar.bz2.
->
-> Inside you'll find the modified writer:  writer_sync.py
->
-> That will call fsync on the file descriptor after each write.
->
-> Also I added the strace and wireshark data for the sync and nosync
-> cases.
->
-> Note these are all tested with latest linus git:
->
->   d1c6d2e547148c5aa0c0a4ff6aac82f7c6da1d8b
->
-> > Practically speaking this is often not enough for typical
-> > applications, so NFS client implementations go to further (non-
-> > standard) efforts to behave like a local file system.  This is simply
-> > a question of whether we can address this while not creating
-> > performance or correctness issues for other common use cases.
->
-> Yep, I agree.  I'm not saying what we do now is "wrong" per the RFC
-> (writing the file out of order).  It's just different from what we've
-> done in the past (and somewhat unexpected).
->
-> I'm still hoping there is a simple fix... but maybe not... :(
+Right, so Yes. Its that which I fixed.
 
-For what is worth, this behavior is visible in bog standard writing/reading 
-files, (log files in my case, via the python logging package). It obviously 
-deviates from local filesystem behavior, and former state of the linux 
-nfs-client. Should we add patches to less, tail, and all other instruments 
-for watching/analysing log files (just to pick the tip of the ice rock) in 
-order to throw away runs of zeros, when reading from nfs mounted files? Or 
-should we ask their maintainers to add locking code for the nfs "read 
-files, which are written at the same time" case, just to work around 
-__some__ of the consequences of this bug? Imagine, how ugly this is going 
-to look! 
+> Then, steps to reach entries is tend to be larger than hash.
+> I'm sorry if I misunderstood.
 
-The whole issue is what I call a major regression, thus I strongly ask for a 
-reply from Trond on this matter.
+No problems,. I'll try and brush up that radix tree code and post
+sometime soon.
 
-I even vote for sending a revert request for this hunk to the stable team, 
-where it is applicable, after Trond sorted it out (for 2.6.27?).
-
-Thanks, Aaron and Chuck for the detailed analysis - it demystified a wired 
-behavior, I observed here. When you're in a process to get real work done 
-in a fixed timeline, such things could make you mad..
-
-Cheers,
-Pete
