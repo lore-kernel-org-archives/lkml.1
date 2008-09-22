@@ -1,96 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYIVW20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbYIVW2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbYIVW20 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 18:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbYIVW2A
+	id S1752056AbYIVW2n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 18:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbYIVW23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 18:28:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39290 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754450AbYIVW17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 18:27:59 -0400
-Message-ID: <48D81B5F.2030702@redhat.com>
-Date: Mon, 22 Sep 2008 18:25:35 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Martin Bligh <mbligh@google.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>, od@novell.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: Unified tracing buffer
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>	 <48D7F5E8.3000705@redhat.com> <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com>
-In-Reply-To: <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 22 Sep 2008 18:28:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54059
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754388AbYIVW21 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 18:28:27 -0400
+Date: Mon, 22 Sep 2008 15:28:15 -0700 (PDT)
+Message-Id: <20080922.152815.22060684.davem@davemloft.net>
+To: jkosina@suse.cz
+Cc: airlied@gmail.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, chrisl@vmware.com, david.vrabel@csr.com
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0809230010460.27884@twin.jikos.cz>
+References: <20080921.165159.67476441.davem@davemloft.net>
+	<21d7e9970809212359y6876c405ub57dca3e9ee737e4@mail.gmail.com>
+	<Pine.LNX.4.64.0809230010460.27884@twin.jikos.cz>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Martin,
+From: Jiri Kosina <jkosina@suse.cz>
+Date: Tue, 23 Sep 2008 00:15:08 +0200 (CEST)
 
-Martin Bligh wrote:
->> I agree to integrate tracing buffer mechanism, but I don't think
->> your proposal is the simplest one.
->>
->> To simplify, I think the layered buffering mechanism is desirable.
->> - The lowest layer just provides named circular buffers(both per-cpu and
->>  uni-buffer in system) and read/write scheme.
->> - Next layer provides user/kernel interface including controls.
->> - Top layer defines packet(and event) formatting utilities.
->> - Additionally, it would better provide some library routines(timestamp,
->>  event-id synchronize, and so on).
->>
->> Since this unified buffer is used from different kind of tracers/loggers,
->> I don't think all of them(and future tracers) want to be tied down by
->> "event-id"+"parameter" format.
->> So, Sorry, I disagree about that the tracing buffer defines its *data format*,
->> it's just overkill for me.
+> On Mon, 22 Sep 2008, Dave Airlie wrote:
 > 
-> I think you're right that we can layer this, and we didn't make a particularly
-> good job of splitting those things out. I'll try to pull together
-> another revision
-> to reflect this and other suggested changes.
+> > Sep 8th I booted my own 2.6.27-rc5 kernel based from
+> > ec0c15afb41fd9ad45b53468b60db50170e22346
+> > This got a corrupted e1000e checksum and every kernel since has.
+> 
+> Have you restored the EEPROM contents after it got corrupted for the first 
+> time?
+> 
+> Once the EEPROM contents get corrupted, the card will then be broken
+> forever even on kernel that gets this fixed one day. 
+> 
+> This is pretty serious bug in fact, as it renders hardware of poor users 
+> unusable, and just patching kernel is then not enough to put things back 
+> to shape.
 
-I'm happy to hear that. :-)
+The top priority is to root cause this, so that we can stop the
+problem from happening as fast as possible, and I'm still waiting for
+the SHA1 ID that was used for the last kernel Dave booted before the
+problem occurred which is pretty damn critical for making forward
+progress here.
 
-> One thing that I think is still important is to have a unified timestamp
-> mechanism on everything, so we can co-ordinate different things back
-> together in userspace from different trace tools, so I intend to keep
-> that at a lower level, but I think you're right that the event id, etc can
-> move up into separate layers.
-
-I'm not so sure that the unified 'timestamp' must be required by all tracers.
-If you just need to merge and sort per-cpu data, you can use an atomic
-sequential number for it.
-IMHO, the unified 'timestamp' would better be an option, because some
-architectures can't support it. I think preparing timestamp-callback
-function will help us.
-
-By the way, systemtap uses two modes;
-
-- single-channel mode
- In this mode, all cpus share one buffer channel to write and read.
- each writer locks spinlock and write a probe-local data to buffer.
-
-- per-cpu buffer mode
- In this mode, we use an atomic sequential number for ordering data. If
- user doesn't need it(because they have their own timestamps), they can
- choose not to use that seq-number.
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+It could even be some PCI or x86 layer change that caused the corruption,
+we don't even know yet.
