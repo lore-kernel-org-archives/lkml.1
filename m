@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYIVPLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYIVPLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbYIVPLY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 11:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYIVPLQ
+	id S1752723AbYIVPLs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 11:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbYIVPLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 11:11:16 -0400
-Received: from SMTP.ANDREW.CMU.EDU ([128.2.10.160]:55205 "EHLO
-	smtp.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbYIVPLQ (ORCPT
+	Mon, 22 Sep 2008 11:11:39 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:41574 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753102AbYIVPLi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 11:11:16 -0400
-Message-ID: <48D7B591.8000408@cmu.edu>
-Date: Mon, 22 Sep 2008 11:11:13 -0400
-From: George Nychis <gnychis@cmu.edu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 22 Sep 2008 11:11:38 -0400
+Message-ID: <f488382f0809220811y46e9daf3r5db5a7c76df87800@mail.gmail.com>
+Date: Mon, 22 Sep 2008 08:11:30 -0700
+From: "Steven Noonan" <steven@uplinklabs.net>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5, rc6, probably others)
+Cc: "Luis Rodriguez" <Luis.Rodriguez@atheros.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Senthilkumar Balasubramanian" 
+	<Senthilkumar.Balasubramanian@atheros.com>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <20080922080632.GA20446@tesla>
 MIME-Version: 1.0
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: printing current system time from kernel space
-References: <48D72AAD.3000805@cmu.edu> <48D74431.8050805@yahoo.com>
-In-Reply-To: <48D74431.8050805@yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f488382f0809200821m6fe355feu2d9fb99ac3c7f712@mail.gmail.com>
+	 <1221944338.3023.8.camel@johannes.berg>
+	 <43e72e890809201403w2c4511fdv2fe26bbcf49ccdd7@mail.gmail.com>
+	 <f488382f0809201422rdabeff4g435bf3d4a7e9fa3@mail.gmail.com>
+	 <43e72e890809201426x61c94bfej2dcda1c178be81b@mail.gmail.com>
+	 <f488382f0809201448l21434f11n12311e308f9952d7@mail.gmail.com>
+	 <f488382f0809201848w1e59cc19i8235c7c74c44fc10@mail.gmail.com>
+	 <20080922065453.GD19580@tesla>
+	 <f488382f0809220026u9afa355g1ff2cc7a3fe88333@mail.gmail.com>
+	 <20080922080632.GA20446@tesla>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Sep 22, 2008 at 1:06 AM, Luis R. Rodriguez
+<lrodriguez@atheros.com> wrote:
+> Please test the following patch.
+>
+> diff --git a/drivers/net/wireless/ath9k/core.c b/drivers/net/wireless/ath9k/core.c
+> index c262ef2..9a51739 100644
+> --- a/drivers/net/wireless/ath9k/core.c
+> +++ b/drivers/net/wireless/ath9k/core.c
+> @@ -681,10 +681,12 @@ int ath_open(struct ath_softc *sc, struct ath9k_channel *initial_chan)
+>         * Enable MIB interrupts when there are hardware phy counters.
+>         * Note we only do this (at the moment) for station mode.
+>         */
+> +#if 0
+>        if (ath9k_hw_phycounters(ah) &&
+>            ((sc->sc_ah->ah_opmode == ATH9K_M_STA) ||
+>             (sc->sc_ah->ah_opmode == ATH9K_M_IBSS)))
+>                sc->sc_imask |= ATH9K_INT_MIB;
+> +#endif
+>        /*
+>         * Some hardware processes the TIM IE and fires an
+>         * interrupt when the TIM bit is set.  For hardware
+>
 
+It didn't apply to -rc7, but I managed to apply it manually
+(apparently you made this for wireless-testing?) and added the #if 0.
+After 7 hours uptime with the driver, no apparent interrupt storm.
 
-Sitsofe Wheeler wrote:
-> George Nychis wrote:
->> I spent some time googling, but could not find out how or if it is 
->> possible to read the current system time in kernel space.  I could 
->> insert a printk() somewhere in usbdev_read() then.
-> 
-> If that's what you want to do could you not turn on timestamps on printk 
-> (CONFIG_PRINTK_TIME in the kernel hacking menu)?
-> 
+I'll do more thorough testing later, but I have a 3 hour drive today,
+and some packing to do, so it'll need to wait a bit.
 
-Thanks for the response!
-
-You might be misunderstanding my goal.  I need a common clock between 
-kernel and user space, so that I can say:
-
-Event1 happened at time X in the kernel
-Event2 happened at time X+Y in user space
-The time between Event1 and Event2 was Y-X
-
-So, turning off timestamps does not help anything here :)
-
-What might be useful is if user space can read the current timestamp 
-value that printk uses, that way I can just do a printk in the kernel 
-and then read the value and print in user space.
-
-Is this possible?
-
-Thanks!
-George
+- Steven
