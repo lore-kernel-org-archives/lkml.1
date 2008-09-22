@@ -1,101 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbYIVLXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbYIVLZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbYIVLXN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 07:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbYIVLW6
+	id S1753264AbYIVLZQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 07:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbYIVLZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 07:22:58 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56170 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbYIVLW5 (ORCPT
+	Mon, 22 Sep 2008 07:25:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:30270 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751363AbYIVLY7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 07:22:57 -0400
-Date: Mon, 22 Sep 2008 20:28:58 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/13] memory cgroup updates v4
-Message-Id: <20080922202858.14525857.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Sep 2008 07:24:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=XdsOUud9gobYnv/tRbIASLjwwjptyBfllFTww2q35eU57rb75lcpF31mzYRbAzA3EK
+         Oyi8srxBmnGyC46Cm5nh514WknjRYywwIcTvy0l7c3z7h/Nd/+HZU+dfyDASNiYWF+Oo
+         gMFNwlAs4qy4QQxeJAT/5b+MxCLVYC4x5HpoY=
+Date: Mon, 22 Sep 2008 11:24:52 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Badalian Vyacheslav <slavon@bigtelecom.ru>
+Cc: Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Machine Check Exception Re: NetDev! Please help!
+Message-ID: <20080922112452.GB5314@ff.dom.local>
+References: <48D4F85C.8090709@bigtelecom.ru> <200809202111.01256.denys@visp.net.lb> <48D67239.9040006@gmail.com> <48D7385D.40107@bigtelecom.ru> <20080922065339.GA4399@ff.dom.local> <48D76813.9000603@bigtelecom.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D76813.9000603@bigtelecom.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 19:51:59 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Brief description.
+On Mon, Sep 22, 2008 at 01:40:35PM +0400, Badalian Vyacheslav wrote:
+> Thanks for answer Jarek!
+> I post it is bugtrack - http://bugzilla.kernel.org/show_bug.cgi?id=11618
 > 
-> 1/13 .... special mapping fix. (NEW)
->      => avoid accounting pages not on LRU...which we cannot reclaim.
+> I not think that its hardware error because this problem we have in 10
+> servers on 2.6.26.2 kernel +)
+> On Friday night i compile 2.6.26.5 and have 2 panic on 1 pc what have
+> max load and 1 panic on other pc.
+> I write to netdev list because first messages looks like:
 > 
-> 2/13 .... account swap-cache under lock.
->      => move accounting of swap-cache under lock for avoiding unnecessary race.
->          
-> 3/13 .... make root cgroup to be unlimited.
->      => fix root cgroup's memory limit to unlimited.
-> 
-> 4/13 .... atomic-flags for page_cgroup
->      => make page_cgroup->flags to be atomic.
-> 
-> 5/13 .... implement move_account function.
->      => add a function for moving page_cgroup's account to other cgroup.
-> 
-> 6/13 ... force_empty to migrate account
->      => move all account to root cgroup rather than forget all.
-> 
-> 7/13 ...make mapping NULL (clean up)
->      => ensure page->mapping to be NULL before calling mem_cgroup_uncharge_cache().
-> 
-> 8/13 ...optimize cpustat
->      => optimize access to per-cpu statistics for memcg.
-> 
-> 9/13 ...lookup page_cgroup (CHANGED)
->      => preallocate all page_cgroup at boot and remove page->page_cgroup pointer.
-> 
-> 10/13...page_cgroup lookaside buffer 
->      => helps looking up page_cgroup from page.
-> 
-> 11/13...lazy lru freeing page_cgroup (NEW)
->      => do removal from LRU in bached manner like pagevec.
-> 
-> 12/13...lazy lru add page_cgroup (NEW)
->      => do addition to LRU in bached manner like pagevec.
-> 
-> 13/13...swap accountig fix. (NEW)
->      => fix race in swap accounting (can be happen)
->         and this intrduce new protocal as precharge/commit/cancel.
-> 
-> Some patches are big but not complicated I think.
-> 
-Sorry for crazy patch numbering...
+> [ 4956.420298] CPU 1: Machine Check Exception: 0000000000000005
+> [ 4956.420298] e1000: eth0: e1000_clean_tx_irq: Detected Tx Unit Hang
+> [ 4956.420300]   Tx Queue             <0>
+> [ 4956.420300]   TDH                  <81>
+> [ 4956.420301]   TDT                  <81>
+> [ 4956.420302]   next_to_use          <81>
+> [ 4956.420302]   next_to_clean        <d6>
+> [ 4956.420303] buffer_info[next_to_clean]
+> [ 4956.420303]   time_stamp           <15498d>
+> [ 4956.420304]   next_to_watch        <d6>
+> [ 4956.420304]   jiffies              <15511c>
+> [ 4956.420305]   next_to_watch.status <1>
+> [ 4956.420537] eth1: Detected Tx Unit Hang:
+> [ 4956.420538]   TDH                  <b0>
+> [ 4956.420538]   TDT                  <b0>
+> [ 4956.420539]   next_to_use          <b0>
+> [ 4956.420539]   next_to_clean        <5>
+> [ 4956.420540] buffer_info[next_to_clean]:
+> [ 4956.420540]   time_stamp           <15498e>
+> [ 4956.420541]   next_to_watch        <5>
+> [ 4956.420542]   jiffies              <15511c>
+> [ 4956.420542]   next_to_watch.status <1>
+> [ 4956.423064] CPU 1: Bank 0: 3200004000000800
+> [ 4956.423190] CPU 1: Bank 5: 3200220024080400
+> [ 4956.423315] Kernel panic - not syncing: CPU context corrupt
+> [ 4956.423933] Rebooting in 3 seconds..
 
-1   -> 1
-2   -> 2
-3   -> 3
-3.5 -> 4
-3.6 -> 5
-4   -> 6
-5   -> 7
-6   -> 8
-9   -> 9
-10  -> 10
-11  -> 11
-12  -> 12
+Yes, similar messages are often netdev problems, but not with
+this Machine Check Exception with this CPU context corrupt,
+which should mean some severe hardware problem (unless some bug,
+probably not netdev, triggers them).
 
-I may not able to do quick responce, sorry.
+> 
+> But in 2.6.26.5 i not see errors like this 2 days... Also if system not have network load - i can't do panic by cpuburn or compiling sources...
+> Anyone i think its good that my message also go to general mail-list and bugzilla...
+> 
+> I try get more info... if you or anyone have idea how test this bug - i can do it)
 
-Thanks,
--Kame
+I see you have some advice in bugzilla. These people really know more
+about these things, so you should try this first. I think, they expect
+you to compile the most current kernel version (tip) using git for
+this. You can do this using the instructions from Ingo Molnar's README.
+Make a script from this: from the beginning to the "git checkout ...".
+Of course you have to install git before. After running the commands
+it will download the kernel sources to a subdir (takes time). Copy your
+config there, make oldconfig, make etc. Then send them dmesg after
+rebooting. If you have any problems - write. Alternatively, I guess,
+you could try the current 2.6.27-rc7 kernel at least.
 
+Jarek P.
 
-
+BTW: could you try to trigger this bug with one network card off?
