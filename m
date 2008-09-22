@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbYIVXRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYIVXSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbYIVXRZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 19:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYIVXRO
+	id S1754898AbYIVXSX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 19:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYIVXSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 19:17:14 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51471
+	Mon, 22 Sep 2008 19:18:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51476
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753543AbYIVXRN (ORCPT
+	by vger.kernel.org with ESMTP id S1753531AbYIVXSN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 19:17:13 -0400
-Date: Mon, 22 Sep 2008 16:17:01 -0700 (PDT)
-Message-Id: <20080922.161701.159153918.davem@davemloft.net>
+	Mon, 22 Sep 2008 19:18:13 -0400
+Date: Mon, 22 Sep 2008 16:18:01 -0700 (PDT)
+Message-Id: <20080922.161801.193342191.davem@davemloft.net>
 To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, linville@tuxdriver.com, netdev@vger.kernel.org,
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [GIT]: Wireless Networking
+Subject: [GIT]: Sparc
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,41 +26,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Here are three wireless changes for 2.6.27.
-
-The first two are critical fixes for the ATH9K driver that have been
-making the rounds a lot lately (Linus, you even forwarded a reference
-to at least one of them to John Linville and myself a few days ago).
-
-And the third change is the addition of a new zd1121rw UDB device ID.
-
-Linus, we also saw the zd1121rw OOPS you forward to us.  That bug is
-only present in 2.6.26 and John Linville is getting the fix for that
-one pushed to -stable.
+This fixes another missing PCI device bug on sparc64 which
+was reported (and successfully tested) by Meelis Roos.
 
 Please pull, thanks a lot!
 
-The following changes since commit cec5eb7be3a104fffd27ca967ee8e15a123050e2:
-  Alan Cox (1):
-        pcmcia: Fix broken abuse of dev->driver_data
+The following changes since commit 7ee766d8fba9dfd93bf3eca7a8d84a25404a68dc:
+  David S. Miller (1):
+        sparc64: Fix disappearing PCI devices on e3500.
 
 are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
 
 David S. Miller (1):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+      sparc64: Fix missing devices due to PCI bridge test in of_create_pci_dev().
 
-Senthil Balasubramanian (2):
-      ath9k: connectivity is lost after Group rekeying is done
-      ath9k: Fix IRQ nobody cared issue with ath9k
-
-born.into.silence@gmail.com (1):
-      wireless: zd1211rw: add device ID fix wifi dongle "trust nw-3100"
-
- drivers/net/wireless/ath9k/core.c      |    4 ++--
- drivers/net/wireless/ath9k/core.h      |    1 -
- drivers/net/wireless/ath9k/main.c      |   12 ++++++++----
- drivers/net/wireless/ath9k/xmit.c      |    6 +++---
- drivers/net/wireless/zd1211rw/zd_usb.c |    1 +
- 5 files changed, 14 insertions(+), 10 deletions(-)
+ arch/sparc64/kernel/pci.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
