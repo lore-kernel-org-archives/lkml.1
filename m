@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYIVRsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYIVRuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbYIVRsM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 13:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYIVRr6
+	id S1753902AbYIVRuF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 13:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYIVRt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 13:47:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42438 "EHLO mx2.mail.elte.hu"
+	Mon, 22 Sep 2008 13:49:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37900 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751632AbYIVRr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 13:47:57 -0400
-Date: Mon, 22 Sep 2008 19:47:48 +0200
+	id S1751815AbYIVRtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 13:49:55 -0400
+Date: Mon, 22 Sep 2008 19:49:39 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Aristeu Rozanski <aris@redhat.com>
-Cc: linux-kernel@vger.kernel.org, dzickus@redhat.com, prarit@redhat.com,
-       vgoyal@redhat.com
-Subject: Re: [PATCH] NMI watchdog: when booting with reset_devices, clear
-	the performance counters
-Message-ID: <20080922174748.GC10535@elte.hu>
-References: <20080922171408.GJ16840@redhat.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: joerg.roedel@amd.com, muli@il.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] export iommu_area_reserve helper funciton
+Message-ID: <20080922174939.GD10535@elte.hu>
+References: <20080922223353K.fujita.tomonori@lab.ntt.co.jp> <20080922144849.GB27956@elte.hu> <20080923011448M.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080922171408.GJ16840@redhat.com>
+In-Reply-To: <20080923011448M.fujita.tomonori@lab.ntt.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,31 +34,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Aristeu Rozanski <aris@redhat.com> wrote:
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-> P4s have a quirk that makes necessary to clear P4_CCCR_OVF bit on the CCCR
-> everytime the PMI is triggered. When booting the kernel with reset_devices
-> (more specific kdump case), the counters reach zero and the PMI will be
-> generated. This is not a problem on other processors but on P4s, it'll
-> continue to generate NMIs until that bit is cleared. Since there may be
-> other users of the performance counters, clear and disable all of them
-> when booting with reset_devices option.
+> Subject: [PATCH] x86: remove unused set_bit_string
 > 
-> We have a P4 box here that crashes because of this problem. Since the kdump
-> kernel usually boots with only one processor active, the second logical
-> unit won't be set up, therefore, MSR_P4_IQ_CCCR1 (and other performance
-> counter registers) won't be cleared and P4_CCCR_OVF may be still set because
-> the previous kernel was using this register. An NMI is triggered because of
-> the MSR_P4_IQ_CCCR1 right after the NMI delivery is enabled, triggering the
-> race fixed on my previous email.
+> "export iommu_area_reserve helper funciton" patch converted all the 
+> users of set_bit_string, GART, Calgary and AMD IOMMU drivers, to use 
+> iommu_area_reserve helper function. Now we can remove unused 
+> set_bit_string function.
 > 
-> Signed-off-by: Aristeu Rozanski <aris@redhat.com>
-> Acked-by: Don Zickus <dzickus@redhat.com>
-> Acked-by: Prarit Bhargava <prarit@redhat.com>
-> Acked-by: Vivek Goyal <vgoyal@redhat.com>
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-applied to tip/x86/nmi-watchdog, thanks.
-
-i'm wondering, is this fix a v2.6.27 candidate?
+applied to tip/x86/iommu, thanks!
 
 	Ingo
