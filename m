@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbYIVUcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbYIVUdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753853AbYIVUcv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 16:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYIVUcm
+	id S1753013AbYIVUdJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 16:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYIVUcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 16:32:42 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:17920 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751855AbYIVUcm (ORCPT
+	Mon, 22 Sep 2008 16:32:53 -0400
+Received: from SMTP.andrew.cmu.edu ([128.2.10.85]:37598 "EHLO
+	smtp.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753886AbYIVUcw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 16:32:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=AcRJIcnAHjZskC/HAtnRjhQk7rBJcutZLDSPoiZg4r9Uoh4J9/YGURWDwuehwWsesD
-         ZtbDaYxSt7+5IhiHkyWFp536vjwmzxOwrFOvIRu4BkLw0t/BNnECeulcsUtf+BvzLMkX
-         xdfkt8SFDbppRJG8c415P4Lz5sj/NlP8E2/aE=
-Message-ID: <5d9b736f0809221332q21dea0a1lb8159b64391ee978@mail.gmail.com>
-Date: Mon, 22 Sep 2008 22:32:40 +0200
-From: "Michal Januszewski" <michalj@gmail.com>
-To: "=?UTF-8?Q?Bruno_Pr=C3=A9mont?=" <bonbons@linux-vserver.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: don't allow to set a video mode via vga= if FB doesn't support it
-Cc: "Krzysztof Helt" <krzysztof.h1@poczta.fm>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20080922220054.4e74c099@neptune.home>
+	Mon, 22 Sep 2008 16:32:52 -0400
+Message-ID: <48D80127.7020602@cmu.edu>
+Date: Mon, 22 Sep 2008 16:33:43 -0400
+From: George Nychis <gnychis@cmu.edu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <20080921210219.GC21215@spock.one.pl>
-	 <20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
-	 <20080922220054.4e74c099@neptune.home>
+To: john stultz <johnstul@us.ibm.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: printing current system time from kernel space
+References: <48D72AAD.3000805@cmu.edu>	 <1f1b08da0809221328v19f84fb9n7c535f6f01157ba@mail.gmail.com> <1f1b08da0809221330r11f3b82l48509dbc1ea4bb63@mail.gmail.com>
+In-Reply-To: <1f1b08da0809221330r11f3b82l48509dbc1ea4bb63@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m8MKWsdq021001
 
-On Mon, Sep 22, 2008 at 22:00, Bruno Pr√©mont <bonbons@linux-vserver.org> wrote:
-> This looks pretty much the same as what I requested some time ago:>> http://bugzilla.kernel.org/show_bug.cgi?id=8062>> Would need to check -mm archives for the actual patch.>> Don't remember why it did not make it to mainline...
-Well, the bug and the mm fix [1] are about a similar, yet slightly differentissue than the one I'm trying to fix with my patch (note that the issuereported in the bug is currently fixed in the kernel, but the actual fixis differrent than the one in -mm due to x86 boot code refactoringthat took place since then).
-My patch fixes the case where the framebuffer is enabled, but none ofthe drivers support boot-time video mode setting, whereas the oldpatch fixed the case where it was possible to set a video mode eventhough the kernel didn't contain the framebuffer layer.
-[1] http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/broken-out/fbdev-ignore-vesa-modes-if-framebuffer-is-disabled.patch
-Best regards,-- Michal Januszewski, Gentoo Linux Developerhttp://people.gentoo.org/spockˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+
+
+john stultz wrote:
+> On Mon, Sep 22, 2008 at 1:28 PM, john stultz <johnstul@us.ibm.com> wrote:
+>> On Sun, Sep 21, 2008 at 10:18 PM, George Nychis <gnychis@cmu.edu> wrote:
+>>> I am looking to measure the latency of USB data between kernel space and
+>>> user space.  The user space driver uses a URB to get data from the device to
+>>> the kernel and finally to user space.
+>>>
+>>> To measure this latency, I was thinking of printing the current system time
+>>> when a read occurs/succeeds in drivers/usb/core/devio.c at the function
+>>> usbdev_read(), and then again in user space when the URB succeeds in
+>>> reading.  Then, I could subtract the two times to get the latency.
+>>>
+>>> I spent some time googling, but could not find out how or if it is possible
+>>> to read the current system time in kernel space.  I could insert a printk()
+>>> somewhere in usbdev_read() then.
+>>>
+>>> If it is not possible to read the current system time, is there some other
+>>> shared clock between kernel and user space that I could use for this?
+>> Kernel: getnstimeofday()
+>> Userland: clock_gettime(CLOCK_MONOTONIC, ...)
+>>
+>> Those two should give you the same data. So printing timespecs from
+>> kernel space that come from getnstimeofday() and comparing it to
+>> userland clock_gettime(CLOCK_MONOTONIC,...) hopefully will give you
+>> what you want.
+> 
+> Gah! Typed too fast. The above is wrong. You want to use
+> clock_gettime(CLOCK_REALTIME,...)  not CLOCK_MONOTONIC with
+> getnstimeofday().
+> 
+> Sorry for the confusion.
+> -john
+> 
+
+Thanks John!
+
+This is exactly what I am looking for.
+
+- George
