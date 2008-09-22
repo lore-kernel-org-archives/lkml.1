@@ -1,43 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbYIVGuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbYIVGyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752105AbYIVGuZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 02:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbYIVGuM
+	id S1752457AbYIVGyA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 02:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYIVGxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 02:50:12 -0400
-Received: from pih-relay05.plus.net ([212.159.14.18]:45534 "EHLO
-	pih-relay05.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225AbYIVGuL (ORCPT
+	Mon, 22 Sep 2008 02:53:49 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:57465 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbYIVGxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 02:50:11 -0400
-Message-ID: <48D74027.7020708@yahoo.com>
-Date: Mon, 22 Sep 2008 07:50:15 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Mon, 22 Sep 2008 02:53:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GE2lhuE7WMU5WcmJeFyccEBlqo85jApL9ZH9v/ZCTtb+xnoUZ5PzGSoYpYt77MyGRo
+         lMGyNDVQ0hjxuGQ3z0M9OHko8jFXWGL5N7xaOD2+dCYhdcLBPnHXlNO+eGe6FMel+cCZ
+         TASEzPcxGac8iz9fBdqeTNFfbp+Pvjq4c1SnA=
+Date: Mon, 22 Sep 2008 06:53:39 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Badalian Vyacheslav <slavon@bigtelecom.ru>
+Cc: Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Machine Check Exception Re: NetDev! Please help!
+Message-ID: <20080922065339.GA4399@ff.dom.local>
+References: <48D4F85C.8090709@bigtelecom.ru> <200809202111.01256.denys@visp.net.lb> <48D67239.9040006@gmail.com> <48D7385D.40107@bigtelecom.ru>
 MIME-Version: 1.0
-To: Matt Keenan <tank.en.mate@gmail.com>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: How how latent should non-preemptive scheduling be?
-References: <48D1741A.7010508@yahoo.com> <1222030615.10469.10.camel@bazbox>
-In-Reply-To: <1222030615.10469.10.camel@bazbox>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: e805ab8aab8d3d2c56d7e488fcb5dffe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D7385D.40107@bigtelecom.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Keenan wrote:
-> If you use ALSA you could write a custom .asoundrc file and increase
-> ALSA's default buffer size, this gives the hardware a longer buffer to
-> play which may work around the problem. This used to do the trick for me
-> with the old scheduler with slow machines. Not a fix but if nothing else
-> works...
+On Mon, Sep 22, 2008 at 10:17:01AM +0400, Badalian Vyacheslav wrote:
+> Jarek Poplawski:
+> 
+> Hello!
+> There all requested information.
+> I try 2.6.26.5 and again get:
+> [143784.513166] CPU 2: Bank 0: 3200004000000800
+> [143784.513241] CPU 2: Bank 5: 3200121020080400
+> [143784.513241] Kernel panic - not syncing: CPU context corrupt
+> [143784.513282] Rebooting in 3 seconds..
 
-In all fairness turning on preemption also helps (I don't hear any drops 
-or see any stalls once it's on) but I'm trying to work out if this is an 
-underlying problem that can be fixed (and then there is the case of the 
-default desktop distros).
+Hi,
 
--- 
-Sitsofe | http://sucs.org/~sits/
+Actually, I suggested you to read this Machine Check Exception help,
+because I think you should first try to test your hardware instead of
+sending configs. This type of error isn't usually seen with netdev
+bugs.
+
+Since I'm not a hardware expert I added linux-kernel to Cc, and
+probably you should do the same (I added it to this one). But, until
+you have any better advice I think you should do some long and heavy
+testing of your PCs especially for overheating or memory problems.
+We can start to analyze other bugs after we are sure the hardware is
+OK.
+
+BTW, probably your attachements are too big for the lists and the
+message could be dropped. It would be better to add some link to a
+server or use bugzilla for this.
+
+Thanks,
+Jarek P.
+ 
+> 
+> Attached all info that i was can get from PC. Maybe problem that we use
+> Core Duo Quard processors? It's 64bit, but kernel and software compile
+> as 32. On 2 x "OLD HT(2 core) Xeon 32 bit" PC all work great...
+> 
+> Simple step to reproduce
+> Add iptables and tc rules.... give above 500 mbs total traffic (we have
+> above 300/200 mbs in/out) from any (many?) ip what preset in TC rules
+> and run any CPU like process (like compiling)...
+> 
+> Thanks for answers!
+> 
+> Denys Fedoryshchenko:
+> Hello!
+> i try run nmi_watchdog...
+> i hope its helps, but this PC have hardware watchdog (bios have params
+> for it), but kernel not have module for it - /S3210SH/ (ICH9-R chipset).
+> I think simple not add ID to driver. I try write to author of it -
+> wim@iguana.be.
+> Please ask for me... this line:
+> [    0.143332] APIC timer registered as dummy, due to nmi_watchdog=1!
+> its normal start of nmi_watchdog? or i need use nmi_watchdog=2?
+> 
+> Thanks for answers!
+> 
+> > Denys Fedoryshchenko wrote, On 09/20/2008 08:11 PM:
+> > ...
+> >
+> >   
+> >> P.S. For netdev, i have one more friend - who is complaining that shapers is 
+> >> crashing on Intel machines (who uses TSC, he have two different "Core" based 
+> >> servers, and both is crashing). With HPET i dont have any problem on high 
+> >> performance shapers (except, that it is CPU expensive). It happens on latest 
+> >> 2.6.26.5 too. Machine getting hard lockup, and nothing than hardware watchdog 
+> >> able to recover it. They dont have experience to get actual reason of this 
+> >> issue and they dont know english well to report this issue.
+> >>     
+> >
+> > Is your friend sure it's because of shapers? If he/she can patch
+> > there is no need to know English well to report here:
+> >
+> > Subject: 2.6.26.5 tc not OK
+> >
+> > Config:
+> > 	.config
+> >
+> > tc script:
+> > 	script
+> >
+> > dmesg:
+> > 	dmesg
+> >
+> > not OK when: script run/script not run
+> >
+> > patch #1 not OK
+> > patch #2 not OK
+> > ...
+> > patch #2001 OK!
+> >
+> > Jarek P.
+> >
+> >   
+> 
+
+
+
+
+
+
+
+
