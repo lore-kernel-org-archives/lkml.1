@@ -1,139 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbYIVGyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbYIVGzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbYIVGyA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 02:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYIVGxt
+	id S1752675AbYIVGzN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 02:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYIVGy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 02:53:49 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:57465 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751317AbYIVGxs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 02:53:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GE2lhuE7WMU5WcmJeFyccEBlqo85jApL9ZH9v/ZCTtb+xnoUZ5PzGSoYpYt77MyGRo
-         lMGyNDVQ0hjxuGQ3z0M9OHko8jFXWGL5N7xaOD2+dCYhdcLBPnHXlNO+eGe6FMel+cCZ
-         TASEzPcxGac8iz9fBdqeTNFfbp+Pvjq4c1SnA=
-Date: Mon, 22 Sep 2008 06:53:39 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Badalian Vyacheslav <slavon@bigtelecom.ru>
-Cc: Denys Fedoryshchenko <denys@visp.net.lb>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Machine Check Exception Re: NetDev! Please help!
-Message-ID: <20080922065339.GA4399@ff.dom.local>
-References: <48D4F85C.8090709@bigtelecom.ru> <200809202111.01256.denys@visp.net.lb> <48D67239.9040006@gmail.com> <48D7385D.40107@bigtelecom.ru>
+	Mon, 22 Sep 2008 02:54:57 -0400
+Received: from mail.atheros.com ([12.36.123.2]:39767 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751225AbYIVGy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 02:54:56 -0400
+Date: Sun, 21 Sep 2008 23:54:53 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Steven Noonan <steven@uplinklabs.net>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Senthilkumar Balasubramanian 
+	<Senthilkumar.Balasubramanian@atheros.com>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27
+	(rc5, rc6, probably others)
+Message-ID: <20080922065453.GD19580@tesla>
+References: <43e72e890809191813n95579f5h83e92b0ba1f95a44@mail.gmail.com> <f488382f0809192029w601e0e72x5c3affc3dbe65118@mail.gmail.com> <f488382f0809200821m6fe355feu2d9fb99ac3c7f712@mail.gmail.com> <43e72e890809201357y1413a151r85aad7cc16440cf4@mail.gmail.com> <1221944338.3023.8.camel@johannes.berg> <43e72e890809201403w2c4511fdv2fe26bbcf49ccdd7@mail.gmail.com> <f488382f0809201422rdabeff4g435bf3d4a7e9fa3@mail.gmail.com> <43e72e890809201426x61c94bfej2dcda1c178be81b@mail.gmail.com> <f488382f0809201448l21434f11n12311e308f9952d7@mail.gmail.com> <f488382f0809201848w1e59cc19i8235c7c74c44fc10@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <48D7385D.40107@bigtelecom.ru>
+In-Reply-To: <f488382f0809201848w1e59cc19i8235c7c74c44fc10@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 10:17:01AM +0400, Badalian Vyacheslav wrote:
-> Jarek Poplawski:
+On Sat, Sep 20, 2008 at 06:48:05PM -0700, Steven Noonan wrote:
 > 
-> Hello!
-> There all requested information.
-> I try 2.6.26.5 and again get:
-> [143784.513166] CPU 2: Bank 0: 3200004000000800
-> [143784.513241] CPU 2: Bank 5: 3200121020080400
-> [143784.513241] Kernel panic - not syncing: CPU context corrupt
-> [143784.513282] Rebooting in 3 seconds..
-
-Hi,
-
-Actually, I suggested you to read this Machine Check Exception help,
-because I think you should first try to test your hardware instead of
-sending configs. This type of error isn't usually seen with netdev
-bugs.
-
-Since I'm not a hardware expert I added linux-kernel to Cc, and
-probably you should do the same (I added it to this one). But, until
-you have any better advice I think you should do some long and heavy
-testing of your PCs especially for overheating or memory problems.
-We can start to analyze other bugs after we are sure the hardware is
-OK.
-
-BTW, probably your attachements are too big for the lists and the
-message could be dropped. It would be better to add some link to a
-server or use bugzilla for this.
-
-Thanks,
-Jarek P.
- 
+> OK, here's the time index at which it b0rked:
 > 
-> Attached all info that i was can get from PC. Maybe problem that we use
-> Core Duo Quard processors? It's 64bit, but kernel and software compile
-> as 32. On 2 x "OLD HT(2 core) Xeon 32 bit" PC all work great...
+> 18:28:42          sum   1155.00
+> 18:28:43          sum   1339.00
+> 18:28:44          sum  18355.00
+> 18:28:45          sum  17845.45
 > 
-> Simple step to reproduce
-> Add iptables and tc rules.... give above 500 mbs total traffic (we have
-> above 300/200 mbs in/out) from any (many?) ip what preset in TC rules
-> and run any CPU like process (like compiling)...
+> And the entire log of the minute 18:28 is here:
+> http://www.uplinklabs.net/~tycho/linux/18.28.00-59.log.gz
 > 
-> Thanks for answers!
-> 
-> Denys Fedoryshchenko:
-> Hello!
-> i try run nmi_watchdog...
-> i hope its helps, but this PC have hardware watchdog (bios have params
-> for it), but kernel not have module for it - /S3210SH/ (ICH9-R chipset).
-> I think simple not add ID to driver. I try write to author of it -
-> wim@iguana.be.
-> Please ask for me... this line:
-> [    0.143332] APIC timer registered as dummy, due to nmi_watchdog=1!
-> its normal start of nmi_watchdog? or i need use nmi_watchdog=2?
-> 
-> Thanks for answers!
-> 
-> > Denys Fedoryshchenko wrote, On 09/20/2008 08:11 PM:
-> > ...
-> >
-> >   
-> >> P.S. For netdev, i have one more friend - who is complaining that shapers is 
-> >> crashing on Intel machines (who uses TSC, he have two different "Core" based 
-> >> servers, and both is crashing). With HPET i dont have any problem on high 
-> >> performance shapers (except, that it is CPU expensive). It happens on latest 
-> >> 2.6.26.5 too. Machine getting hard lockup, and nothing than hardware watchdog 
-> >> able to recover it. They dont have experience to get actual reason of this 
-> >> issue and they dont know english well to report this issue.
-> >>     
-> >
-> > Is your friend sure it's because of shapers? If he/she can patch
-> > there is no need to know English well to report here:
-> >
-> > Subject: 2.6.26.5 tc not OK
-> >
-> > Config:
-> > 	.config
-> >
-> > tc script:
-> > 	script
-> >
-> > dmesg:
-> > 	dmesg
-> >
-> > not OK when: script run/script not run
-> >
-> > patch #1 not OK
-> > patch #2 not OK
-> > ...
-> > patch #2001 OK!
-> >
-> > Jarek P.
-> >
-> >   
-> 
+> It looks pretty crazy.
 
+Thanks, I'll take a look when I get a chance (remember aggretion
+is in the queue too) unless someone beats me to it. Asking in advance
+-- if you can also provide a log of minutes 43, 44 and 45 that would
+be great, but this may just be enough.
 
-
-
-
-
-
-
+  Luis
