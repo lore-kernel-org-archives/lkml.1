@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbYIVMHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbYIVMIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbYIVMHY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 08:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYIVMHJ
+	id S1752821AbYIVMIT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 08:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbYIVMIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 08:07:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:40839 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751497AbYIVMHI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 08:07:08 -0400
-Date: Mon, 22 Sep 2008 08:07:05 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: How how latent should non-preemptive scheduling be?
-In-Reply-To: <20080922115749.GE14301@elte.hu>
-Message-ID: <alpine.DEB.1.10.0809220804090.14496@gandalf.stny.rr.com>
-References: <fa.ERZTl/6uH+mhNoef5fPJKTRjJag@ifi.uio.no> <fa.C6WSm5Rh2Nb+Qho7b0qDOZ9RPV8@ifi.uio.no> <fa.ch6j4qXs/2sFpLkHz5fXrtjTR8c@ifi.uio.no> <fa.Jx/Ygtm46CVRawlA6OnfYNn6cN0@ifi.uio.no> <fa.iIHgL48F3T5VAqFw3mqaf9Pzrs4@ifi.uio.no> <fa.Td8xkKZKMSMghlJmEYefTRVF2kc@ifi.uio.no>
- <48D39312.9000400@yahoo.com> <20080922115749.GE14301@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 22 Sep 2008 08:08:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47824 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751886AbYIVMIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 08:08:09 -0400
+Date: Mon, 22 Sep 2008 14:07:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: markus.t.metzger@gmail.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Roland McGrath <roland@redhat.com>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: [patch] x86, ptrace: void dopiness
+Message-ID: <20080922120743.GF14301@elte.hu>
+References: <20080919145250.A6000@sedona.ch.intel.com> <20080922115058.GB14301@elte.hu> <029E5BE7F699594398CA44E3DDF5544402781F00@swsmsx413.ger.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <029E5BE7F699594398CA44E3DDF5544402781F00@swsmsx413.ger.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 22 Sep 2008, Ingo Molnar wrote:
-> * Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-> >>
-> >> sounds like potential SMM triggered latencies.
+* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+
+> >-----Original Message-----
+> >From: Ingo Molnar [mailto:mingo@elte.hu] 
+> >Sent: Montag, 22. September 2008 13:51
+> >To: Metzger, Markus T
+> >Cc: markus.t.metzger@gmail.com; linux-kernel@vger.kernel.org; 
+> >akpm@linux-foundation.org; Roland McGrath
+> >Subject: Re: [patch] x86, ptrace: void dopiness
 > >
-> > I have just gone away and read about the SMM ( 
-> > http://blogs.msdn.com/carmencr/archive/2005/08/31/458609.aspx ). If 
-> > you're right there is pretty much nothing that can be done about the 
-> > problem : (
+> >
+> >* Markus Metzger <markus.t.metzger@intel.com> wrote:
+> >
+> >> +++ gits.x86/arch/x86/kernel/ptrace.c	2008-09-19 
+> >13:53:02.%N +0200
+> >> @@ -738,7 +738,7 @@
+> >>  		unsigned int sig = 0;
+> >>  
+> >>  		/* we ignore the error in case we were not 
+> >tracing child */
+> >> -		(void)ds_release_bts(child);
+> >> +		ds_release_bts(child);
+> >
+> >hm, here the cast is OK because we actually ignore the return value.
+> >
+> >> @@ -947,7 +947,7 @@
+> >>  	clear_tsk_thread_flag(child, TIF_SYSCALL_EMU);
+> >>  #endif
+> >>  #ifdef CONFIG_X86_PTRACE_BTS
+> >> -	(void)ds_release_bts(child);
+> >> +	ds_release_bts(child);
+> >
+> >is it right/intentional here?
 > 
-> well, since they went away after you enabled CONFIG_PREEMPT=y, they are 
-> definitely in-kernel latencies, not any external SMM latencies.
+> The void-cast is intentional in both cases.
 > 
-> I.e. they are inherently fixable. Could you enable:
-> 
->   CONFIG_DYNAMIC_FTRACE=y
->   CONFIG_FTRACE_MCOUNT_RECORD=y
-> 
-> that should make the traces a lot more verbose - every kernel function 
-> executed in the latency path will be logged. That way we'll be able to 
-> say which one takes that long.
-> 
-> note, you might have to increase /debug/tracing/trace_entries to get a 
-> long enough trace to capture the relevant portion of the latency.
+> I thought it a question of style, i.e. that we don't want void casts 
+> just like we want NULL instead of 0.
 
-Also note, to modify trace_entries, you must be in the none (nop?) tracer, 
-otherwise the size will not be effected.
+ok.
 
-If you find the trace is also too big, you can echo a list of functions 
-into:
+But you could mark ds_release_bts() as a __must_check function, in that 
+case the (void) has functional aspects as well: the kernel build will 
+complain if a return value is ignored unintentionally.
 
-  /debug/tracing/set_ftrace_notrace
+So i think the code might be fine as-is after all :-/
 
-to not trace those functions. using '>' will remove any existing function 
-in that file, but using '>>' will append functions to the file.
-
-For a list of functions that you can add, see:
-
-  /debug/tracing/available_filter_functions
-
--- Steve
-
+	Ingo
