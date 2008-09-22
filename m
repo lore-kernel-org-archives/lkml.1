@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYIVUfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYIVUhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169AbYIVUfi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 16:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYIVUfa
+	id S1753953AbYIVUhU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 16:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYIVUhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 16:35:30 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:41836 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751735AbYIVUfa (ORCPT
+	Mon, 22 Sep 2008 16:37:04 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:9317 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbYIVUhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 16:35:30 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-References: <48D7AC44.6050208@bull.net> <20080922153455.GA6238@kroah.com>
-Date: Mon, 22 Sep 2008 13:24:28 -0700
-In-Reply-To: <20080922153455.GA6238@kroah.com> (Greg KH's message of "Mon, 22
-	Sep 2008 08:34:55 -0700")
-Message-ID: <m163ooq683.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 22 Sep 2008 16:37:03 -0400
+Message-ID: <48D801EA.7060308@hp.com>
+Date: Mon, 22 Sep 2008 16:36:58 -0400
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: greg@kroah.com, serue@us.ibm.com, linux-kernel@vger.kernel.org, benjamin.thery@bull.net
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Greg KH <greg@kroah.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0219]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: sysfs: tagged directories not merged completely yet
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+To: nickolay@protei.ru
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-sctp@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: SCTP checksum patch for 2.6.26.5
+References: <48D7C0A2.9090406@protei.ru> <20080922.131245.193705447.davem@davemloft.net>
+In-Reply-To: <20080922.131245.193705447.davem@davemloft.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
+David Miller wrote:
+> From: Nickolay Vinogradov <nickolay@protei.ru>
+> Date: Mon, 22 Sep 2008 19:58:26 +0400
+> 
+> CC:'ing correct mailing lists...
+> 
+>> SCTP checksum calculation fix for BigEndian.
+>> ntohl() doesn't do anything on BigEndian.
+>>
+>> diff --git a/Makefile b/Makefile
+>> diff --git a/include/net/sctp/checksum.h b/include/net/sctp/checksum.h
+>> index ba75c67..2f0ed64 100644
+>> --- a/include/net/sctp/checksum.h
+>> +++ b/include/net/sctp/checksum.h
+>> @@ -74,5 +74,19 @@ static inline __u32 sctp_update_cksum(__u8 *buffer, __u16 length, __u32 crc32)
+>>
+>>   static inline __u32 sctp_end_cksum(__u32 crc32)
+>>   {
+>> -       return ntohl(~crc32);
+>> +       __u32 result;
+>> +       __u8 byte0, byte1, byte2, byte3;
+>> +
+>> +       result = ~crc32;
+>> +
+>> +       byte0 = result & 0xff;
+>> +       byte1 = (result>>8) & 0xff;
+>> +       byte2 = (result>>16) & 0xff;
+>> +       byte3 = (result>>24) & 0xff;
+>> +
+>> +       crc32 = ((byte0 << 24) |
+>> +                (byte1 << 16) |
+>> +                (byte2 << 8)  |
+>> +                byte3);
+>> +       return crc32;
+>>   }
+>> diff --git a/net/sctp/output.c b/net/sctp/output.c
 
-> I only got so far through the patch set and then got interrupted (was at
-> different conferences for 2 weeks), sorry.  I'll get the rest of the
-> patchset added later today.
 
-Thanks.  I was just going to ask about it.
+Was this tested?  I remember running tests with that code between
+big and little endian arches and it worked.  So, the old code worked
+correclty.
 
-> Note, I did talk to Al Viro about these patches last week at the kernel
-> summit, and he advised holding off on sending them to mainline before he
-> could review them.  So I'll keep them in my tree for now, but not push
-> them to Linus until he acks them as he raised a few issues in our
-> conversation.
+I changed in 2.6.27 series to do all the calculations in network order anyway.
 
-If Al is willing to do a timely review I'm happy to see it.
-That is the point of having the code in a tree after all.
+-vlad
 
-Eric
+>>
+>>
+>> -- Nickolay Vinogradov
+>> Protei Research and Development Center
+>> St.Petersburg, 194044, Russia
+>> Tel.: +7 812 449 47 27
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sctp" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
