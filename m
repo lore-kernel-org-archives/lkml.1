@@ -1,49 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbYIVKx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYIVKyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbYIVKx4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 06:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYIVKxr
+	id S1753394AbYIVKyb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 06:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbYIVKyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 06:53:47 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2723 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752001AbYIVKxq (ORCPT
+	Mon, 22 Sep 2008 06:54:22 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45984 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751894AbYIVKyV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 06:53:46 -0400
-Date: Mon, 22 Sep 2008 06:53:46 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Justin Mattock <justinmattock@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [Bug #11552] Disabling IRQ #23
-In-Reply-To: <dd18b0c30809211616g658b50c8k2ea9f9953f1de96f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0809220651080.13379-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 22 Sep 2008 06:54:21 -0400
+Date: Mon, 22 Sep 2008 20:00:25 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 4/13] memcg: force_empty moving account
+Message-Id: <20080922200025.49ea6d70.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Sep 2008, Justin Mattock wrote:
+Current force_empty of memory resource controller just removes page_cgroup.
+This maans the page is never accounted at all and create an in-use page which
+has no page_cgroup.
 
-> From over here, I did a bad install
-> of isight-firmware-tools, causing hal and udev
-> to clash.  After making sure the package was either
-> using hal or udev, there is no message of disable irq #23.
-> If its not too much trouble is there a way to verify that this was
-> the case, i.g. if udev creates a dev, then hal creates the same device
-> will this cause ehci_hcd to have messages of this kind? If so
-> then thats what happened, if not then theres something else causing this.
+This patch tries to move account to "root" cgroup. By this patch, force_empty
+doesn't leak an account but move account to "root" cgroup. Maybe someone can
+think of other enhancements as moving account to its parent.
+(But moving to the parent means we have to handle "limit" of pages.
+ Need more complicated work to do that.")
 
-You didn't read what I wrote earlier, did you?  The "HC died" message 
-should NEVER occur!  It doesn't matter what games you play with hal and 
-udev -- it should NEVER occur.  Not ever.
+For now, just moves account to root cgroup.
 
-And since the "HC died" is what causes IRQ #23 to be disabled, that 
-shouldn't happen either.
+Note: all lock other than old mem_cgroup's lru_lock
+      in this path is try_lock().
 
-Alan Stern
+Changelog (v3) -> (v4)
+ - no changes
+Changelog (v2) -> (v3)
+ - splitted out mem_cgroup_move_account().
+ - replaced get_page() with get_page_unless_zero().
+   (This is necessary for avoiding confliction with migration)
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ Documentation/controllers/memory.txt |    7 ++--
+ mm/memcontrol.c                      |   51 +++++++++++++++++++++--------------
+ 2 files changed, 35 insertions(+), 23 deletions(-)
+
+Index: mmotm-2.6.27-rc6+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc6+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc6+/mm/memcontrol.c
+@@ -29,6 +29,7 @@
+ #include <linux/slab.h>
+ #include <linux/swap.h>
+ #include <linux/spinlock.h>
++#include <linux/pagemap.h>
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/vmalloc.h>
+@@ -976,17 +977,14 @@ int mem_cgroup_resize_limit(struct mem_c
+ 
+ 
+ /*
+- * This routine traverse page_cgroup in given list and drop them all.
+- * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
++ * This routine traverse page_cgroup in given list and move them all.
+  */
+-#define FORCE_UNCHARGE_BATCH	(128)
+ static void mem_cgroup_force_empty_list(struct mem_cgroup *mem,
+ 			    struct mem_cgroup_per_zone *mz,
+ 			    enum lru_list lru)
+ {
+ 	struct page_cgroup *pc;
+ 	struct page *page;
+-	int count = FORCE_UNCHARGE_BATCH;
+ 	unsigned long flags;
+ 	struct list_head *list;
+ 
+@@ -996,23 +994,36 @@ static void mem_cgroup_force_empty_list(
+ 	while (!list_empty(list)) {
+ 		pc = list_entry(list->prev, struct page_cgroup, lru);
+ 		page = pc->page;
+-		get_page(page);
+-		spin_unlock_irqrestore(&mz->lru_lock, flags);
+-		/*
+-		 * Check if this page is on LRU. !LRU page can be found
+-		 * if it's under page migration.
+-		 */
+-		if (PageLRU(page)) {
+-			__mem_cgroup_uncharge_common(page,
+-					MEM_CGROUP_CHARGE_TYPE_FORCE);
++		/* For avoiding race with speculative page cache handling. */
++		if (!PageLRU(page) || !get_page_unless_zero(page)) {
++			list_move(&pc->lru, list);
++			spin_unlock_irqrestore(&mz->lru_lock, flags);
++			yield();
++			spin_lock_irqsave(&mz->lru_lock, flags);
++			continue;
++		}
++		if (!trylock_page(page)) {
++			list_move(&pc->lru, list);
+ 			put_page(page);
+-			if (--count <= 0) {
+-				count = FORCE_UNCHARGE_BATCH;
+-				cond_resched();
+-			}
+-		} else
+-			cond_resched();
+-		spin_lock_irqsave(&mz->lru_lock, flags);
++			spin_unlock_irqrestore(&mz->lru_lock, flags);
++			yield();
++			spin_lock_irqsave(&mz->lru_lock, flags);
++			continue;
++		}
++		if (mem_cgroup_move_account(page, pc, mem, &init_mem_cgroup)) {
++			/* some confliction */
++			list_move(&pc->lru, list);
++			unlock_page(page);
++			put_page(page);
++			spin_unlock_irqrestore(&mz->lru_lock, flags);
++			yield();
++			spin_lock_irqsave(&mz->lru_lock, flags);
++		} else {
++			unlock_page(page);
++			put_page(page);
++		}
++		if (atomic_read(&mem->css.cgroup->count) > 0)
++			break;
+ 	}
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+ }
+Index: mmotm-2.6.27-rc6+/Documentation/controllers/memory.txt
+===================================================================
+--- mmotm-2.6.27-rc6+.orig/Documentation/controllers/memory.txt
++++ mmotm-2.6.27-rc6+/Documentation/controllers/memory.txt
+@@ -207,7 +207,8 @@ The memory.force_empty gives an interfac
+ 
+ # echo 1 > memory.force_empty
+ 
+-will drop all charges in cgroup. Currently, this is maintained for test.
++will move all charges to root cgroup.
++(This policy may be modified in future.)
+ 
+ 4. Testing
+ 
+@@ -238,8 +239,8 @@ reclaimed.
+ 
+ A cgroup can be removed by rmdir, but as discussed in sections 4.1 and 4.2, a
+ cgroup might have some charge associated with it, even though all
+-tasks have migrated away from it. Such charges are automatically dropped at
+-rmdir() if there are no tasks.
++tasks have migrated away from it. Such charges are automatically moved to
++root cgroup at rmidr() if there are no tasks. (This policy may be changed.)
+ 
+ 5. TODO
+ 
 
