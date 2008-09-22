@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbYIVPbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753607AbYIVPcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbYIVPbE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 11:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYIVPay
+	id S1753607AbYIVPcS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 11:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYIVPcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 11:30:54 -0400
-Received: from xenotime.net ([66.160.160.81]:34372 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752697AbYIVPay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 11:30:54 -0400
-Date: Mon, 22 Sep 2008 08:30:50 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Marco Stornelli <marco.stornelli@coritel.it>
-Cc: mtk.manpages@gmail.com, linux-doc@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] documentation: xip documentation update
-Message-Id: <20080922083050.3ec7b7e9.rdunlap@xenotime.net>
-In-Reply-To: <48D76770.9000808@coritel.it>
-References: <48D76770.9000808@coritel.it>
-Organization: YPO4
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Sep 2008 11:32:05 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33830 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752734AbYIVPcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 11:32:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Regression] Commit 2344abbcbdb82140050e8be29d3d55e4f6fe860b breaks resume on nx6325
+Date: Mon, 22 Sep 2008 17:37:31 +0200
+User-Agent: KMail/1.9.9
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers <kernel-testers@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+References: <200809210124.30547.rjw@sisk.pl> <200809220036.52831.rjw@sisk.pl> <20080922084103.GF6601@elte.hu>
+In-Reply-To: <20080922084103.GF6601@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809221737.32117.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 11:37:52 +0200 Marco Stornelli wrote:
-
-> From: Marco Stornelli <marco.stornelli@gmail.com>
+On Monday, 22 of September 2008, Ingo Molnar wrote:
 > 
-> xip documentation updated
-> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
-> ---
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> --- linux-2.6.26.5/Documentation/filesystems/xip.txt.orig	2008-08-20 20:11:37.000000000 +0200
-> +++ linux-2.6.26.5/Documentation/filesystems/xip.txt	2008-09-22 11:27:46.000000000 +0200
-> @@ -39,10 +39,11 @@ The block device operation is optional,
->  today:
->  - dcssblk: s390 dcss block device driver
->  
-> -An address space operation named get_xip_page is used to retrieve reference
-> -to a struct page. To address the target page, a reference to an address_space,
-> -and a sector number is provided. A 3rd argument indicates whether the
-> -function should allocate blocks if needed.
-> +An address space operation named get_xip_mem is used to retrieve reference
-> +to a page frame number and a kernel address. To obtain these values a reference
-> +to an address_space is provided. This function is in charge to assign values to
+> > So, it looks like RCU is broken and I have no idea how to debug it 
+> > further.
+> > 
+> > Please advise.
+> 
+> i think RCU is not broken, RCU just happens to be the first entity 
+> affected by C1E-enter magically killing the (previously working) lapic 
+> timer clockevents device.
 
-How about:
-                                    This function assigns values to the kmem and
-   pfn parameters.
+Well, I should have said "RCU breaks as a result of the underlying issue". :-)
 
-> +the pointers kmem and pfn. The 3rd argument indicates whether the function 
-> +should allocate blocks if needed.
->  
->  This address space operation is mutually exclusive with readpage&writepage that
->  do page cache read/write operations.
+> We are working on a fix. 
 
+Thanks!
 
-Thanks.
-
----
-~Randy
+Rafael
