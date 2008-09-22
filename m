@@ -1,102 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbYIVR3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbYIVRfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbYIVR3T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 13:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYIVR3J
+	id S1753533AbYIVRfF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 13:35:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYIVRez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 13:29:09 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:56002 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751409AbYIVR3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 13:29:08 -0400
-Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Aaron Straus <aaron@merfinllc.com>
-Cc: Hans-Peter Jansen <hpj@urpla.net>, linux-kernel@vger.kernel.org,
-       Chuck Lever <chuck.lever@oracle.com>, Neil Brown <neilb@suse.de>,
-       Linux NFS Mailing List <linux-nfs@vger.kernel.org>
-In-Reply-To: <20080922170414.GC12483@merfinllc.com>
-References: <20080905191939.GG22796@merfinllc.com>
-	 <56258A29-95D5-4A8C-A097-014B8FEDFB8F@oracle.com>
-	 <20080911184951.GB19054@merfinllc.com> <200809221805.48463.hpj@urpla.net>
-	 <1222101322.7615.6.camel@localhost>  <20080922170414.GC12483@merfinllc.com>
-Content-Type: multipart/mixed; boundary="=-is3cApJkYlRsaw3Ok6RD"
-Date: Mon, 22 Sep 2008 13:29:01 -0400
-Message-Id: <1222104541.7615.23.camel@localhost>
+	Mon, 22 Sep 2008 13:34:55 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34666 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbYIVRey (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 13:34:54 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <4937651.1222104886847.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 23 Sep 2008 02:34:46 +0900 (JST)
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: Re: Re: Re: [PATCH 9/13] memcg: lookup page cgroup (and remove pointer from struct page)
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       balbir@linux.vnet.ibm.com, nishimura@mxp.nes.nec.co.jp,
+       xemul@openvz.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1222099850.8533.60.camel@nimitz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, MISSING_SUBJECT=0.001,NO_RECEIVED=-0.001, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 052FE5A7BEBBD0B803BA56FAB2C6D463A45D69A2
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 39 max/h 3 blacklist 0 greylist 0 ratelimit 0
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <1222099850.8533.60.camel@nimitz>
+ <1222098450.8533.41.camel@nimitz>
+	 <1222095177.8533.14.camel@nimitz>
+	 <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080922201206.e73d9ce6.kamezawa.hiroyu@jp.fujitsu.com>
+	 <31600854.1222096483210.kamezawa.hiroyu@jp.fujitsu.com>
+	 <32459434.1222099038142.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>On Tue, 2008-09-23 at 00:57 +0900, kamezawa.hiroyu@jp.fujitsu.com wrote:
+>> I'll add FLATMEM/SPARSEMEM support later. Could you wait for a while ?
+>> Because we have lookup_page_cgroup() after this, we can do anything.
+>
+>OK, I'll stop harassing for the moment, and take a look at the cache. :)
+>
+Why I don't say "optimize this! now! more!" is where this is called is
+limited now. only at charge/uncharge. This is not memmap.
 
---=-is3cApJkYlRsaw3Ok6RD
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+ charge     ...the first page fault to the page
+                  add to radix-tree
+ uncharge   ...the last unmap aginst the page
+                  remove from radix-tree.
 
-On Mon, 2008-09-22 at 10:04 -0700, Aaron Straus wrote:
-> Here is the crux.  It was possible previously but unlikely e.g. our app
-> never saw this behavior.  The new writeout semantics causes visible
-> holes in files often.
-> 
-> Anyway, I agree the new writeout semantics are allowed and possibly
-> saner than the previous writeout path.  The problem is that it is
-> __annoying__ for this use case (log files).
+I can make this faster by using charactoristics of FLATMEM and others.
+(with more #ifdefs and codes.)
+But would like to start from generic one because adding interface is
+the first thing I have to do here.
 
-There is always the option of using syslog.
+BTW, to be honest, I don't like 2-level-table-lookup like
+SPARSEMEM_EXTREME, here. A style like SPARSEMEM_VMEMMAP...using 
+linear virtual address map will be goal of mine.
 
-> I'm not sure if there is an easy solution.  We want the VM to writeout
-> the address space in order.   Maybe we can start the scan for dirty
-> pages at the last page we wrote out i.e. page 0 in the example above?
-
-You can never guarantee that in a multi-threaded environment.
-
-Two threads may, for instance, force 2 competing fsync() calls: that
-again may cause out-of-order writes.
-...and even if the client doesn't reorder the writes, the _server_ may
-do it, since multiple nfsd threads may race when processing writes to
-the same file.
-
-Anyway, the patch to force a single threaded nfs client to write out the
-data in order is trivial. See attachment...
-
-Trond
-
---=-is3cApJkYlRsaw3Ok6RD
-Content-Disposition: attachment; filename=linux-2.6.27-ordered_writes.dif
-Content-Type: message/rfc822; name=linux-2.6.27-ordered_writes.dif
-
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: 
-NFS: Always sync data to disk in sequential order
-Subject: No Subject
-Message-Id: <1222104509.7615.22.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- fs/nfs/write.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index 3229e21..eb6b211 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -1428,7 +1428,8 @@ static int nfs_write_mapping(struct address_space *mapping, int how)
- 		.sync_mode = WB_SYNC_NONE,
- 		.nr_to_write = LONG_MAX,
- 		.for_writepages = 1,
--		.range_cyclic = 1,
-+		.range_start = 0,
-+		.range_end = LLONG_MAX,
- 	};
- 	int ret;
- 
-
---=-is3cApJkYlRsaw3Ok6RD--
-
+Thanks,
+-Kame
