@@ -1,79 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbYIVOqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbYIVOra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbYIVOqc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 10:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYIVOqQ
+	id S1753289AbYIVOra (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 10:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbYIVOrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 10:46:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39553 "EHLO mx2.mail.elte.hu"
+	Mon, 22 Sep 2008 10:47:22 -0400
+Received: from main.gmane.org ([80.91.229.2]:48707 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753241AbYIVOqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 10:46:15 -0400
-Date: Mon, 22 Sep 2008 16:46:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] AMD IOMMU: revert "x86, AMD IOMMU: honor iommu=off
-	instead of amd_iommu=off"
-Message-ID: <20080922144601.GA27956@elte.hu>
-References: <20080922223457W.fujita.tomonori@lab.ntt.co.jp> <20080922140749.GY24392@amd.com>
-MIME-Version: 1.0
+	id S1752506AbYIVOrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 10:47:22 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Halesh S <halesh.sadashiv@ap.sony.com>
+Subject: Re: Regarding select() on PPC
+Date: Mon, 22 Sep 2008 14:47:03 +0000 (UTC)
+Message-ID: <loom.20080922T143915-56@post.gmane.org>
+References: <loom.20080919T140301-79@post.gmane.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080922140749.GY24392@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 59.96.48.15 (Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1))
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Halesh S <halesh.sadashiv <at> ap.sony.com> writes:
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> >     x86, AMD IOMMU: honor iommu=off instead of amd_iommu=off
-> > 
-> >     This patch removes the amd_iommu=off kernel parameter and honors 
-> >     the generic
-> > 
-> >     iommu=off parameter for the same purpose.
-> > 
-> > 
-> > The above commit is wrong.
 > 
-> It isn't. The user normally don't care about the type of IOMMU in the 
-> system. So disabling it with iommu=off is the right way. To achieve 
-> what you want its better to add iommu=gart and iommu=amd to the option 
-> parser. This will be consistent with Calgary and SWIOTLB too.
+> Hi all,
+> 
+> Please find the below testcase.
+> 
+> #include <stdio.h>
+> #include <sys/time.h>
+> #include <sys/types.h>
+> #include <unistd.h>
+> #include <fcntl.h>
+> #include <string.h>
+> #include <time.h>
+> #include <errno.h>
+> #include <stdlib.h>
+> 
+> int main()
+> {
+> 
+>  int fd;
+>  fd_set rfds;
+>  struct timeval tv;
+>  int ret_val;
+> 
+>  if ((fd = open("test_file", O_RDWR|O_CREAT, 0664)) < 0)
+>   {
+>     printf("Open failed\n");
+>   }
+> 
+>   FD_ZERO(&rfds);
+>   FD_SET(fd, &rfds);
+> 
+>   /* Wait up to five seconds. */
+>   tv.tv_sec = 1;
+>   tv.tv_usec = 0;
+> 
+>   if ( (ret_val = select(-1, &rfds, NULL, NULL, &tv)) < 0)
+>   {
+>     if (errno == EINVAL)
+>       printf("OK\n");
+>     else
+>       printf("Not OK, Got errno %d\n", errno);
+>   }
+>   exit(0);
+> }
+> 
+> For negetive value of n (first argument to select) select fails with
+> EINVAL error,
+> 
+> But for the same when I tested for PowerPC it was giving EFAULT, 
+> Its on 2.6.16 kernel.
+> 
+> Please let me know, If this is fixed or it's a issue in PPC.
+> For other archs its working fine.
+> 
+> Thanks,
+> Halesh
+> 
+> 
 
-well, what matters in the end is to have a consistent set of exclusion 
-options:
 
-  gart_iommu=off     # disable the GART (and only that one)
-  intel_iommu=off    # disable the Intel IOMMU (and only that one)
-  amd_iommu=off      # disable AMD-IOMMU (and only that one)
+On further investigation found, the above problem occurs only in PPC32.
 
-then there's the all-off option:
+Because select()->ppc_select()->sys_select() only for PPC32.
 
-  iommu=off          # wildcard: disable all IOMMUs
+In the file powerpc/kernel/syscalls.c, 
 
-[ whether iommu=off also disables the swiotlb is a detail. ]
+#ifdef CONFIG_PPC32
+/*
+* Due to some executables calling the wrong select we sometimes
+* get wrong args.  This determines how the args are being passed
+* (a single ptr to them all args passed) then calls
+* sys_select() with the appropriate args. -- Cort
+*/
+int
+ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, 
+struct timeval __user *tvp)
+{
+        if ( (unsigned long)n >= 4096 )
+        {
+                unsigned long __user *buffer = (unsigned long __user *)n;
+                if (!access_ok(VERIFY_READ, buffer, 5*sizeof(unsigned long))
+                   || __get_user(n, buffer)
+                   || __get_user(inp, ((fd_set __user * __user *)(buffer+1)))
+                   || __get_user(outp, ((fd_set  __user * __user *)(buffer+2)))
+                   || __get_user(exp, ((fd_set  __user * __user *)(buffer+3)))
+                   || __get_user(tvp, ((struct timeval  __user * __user *)
+(buffer+4))))
+                   return -EFAULT;
+        }
+        return sys_select(n, inp, outp, exp, tvp);
+}
+#endif
 
-and we could also do the inclusive options in addition:
 
-  iommu=gart         # use the GART as the primary IOMMU [if available]
-  iommu=amd          # use the AMD-IOMMU as the primary IOMMU [if available]
-  iommu=intel        # use the Intel IOMMU [if available]
+What is the purpose of Argument check only for PPC32, is ther any specific 
+reason? Please let me know if so. Comments were not enough to understad the 
+actual reason reas for me.
 
-so could we please first agree on such a specific list of generic 
-options, and then implement them consistently, while keeping legacies 
-(the ones that matter) intact as well?
+On all archs I have checked like PPC64, ARM, i686 with invalid 'n' val returns 
+EINVAL, execpet on PPC32, this needs to be fixed ??
 
-	Ingo
+either man page / return value in kernel source.
+
+ - return -EFAULT
+ + return -EINVAL
+
+Please let me know regarding this issue.
+
+
+Thanks,
+Halesh
+
+
+
+
+
+
+
+
+
+
+
+
+
