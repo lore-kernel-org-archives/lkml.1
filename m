@@ -1,109 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbYIVSqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYIVSst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbYIVSqZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 14:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbYIVSqN
+	id S1754192AbYIVSst (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 14:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYIVSsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 14:46:13 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:61954 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752804AbYIVSqL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 14:46:11 -0400
-From: "Hans-Peter Jansen" <hpj@urpla.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
-Date: Mon, 22 Sep 2008 20:45:51 +0200
-User-Agent: KMail/1.9.10
-Cc: Aaron Straus <aaron@merfinllc.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Chuck Lever <chuck.lever@oracle.com>, Neil Brown <neilb@suse.de>,
-       Linux NFS Mailing List <linux-nfs@vger.kernel.org>
-References: <20080905191939.GG22796@merfinllc.com> <1222104541.7615.23.camel@localhost> <20080922174525.GF12483@merfinllc.com>
-In-Reply-To: <20080922174525.GF12483@merfinllc.com>
+	Mon, 22 Sep 2008 14:48:40 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:43914 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752827AbYIVSsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 14:48:39 -0400
+Date: Mon, 22 Sep 2008 13:48:35 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       Andreas Gruenbacher <agruen@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [PATCH 1/2] file capabilities: add no_file_caps switch (v2)
+Message-ID: <20080922184835.GA2826@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809222045.52388.hpj@urpla.net>
-X-Provags-ID: V01U2FsdGVkX19LYEsgyAh6iQ0FOtp9eOsDWDwuNoJDl/1bHEn
- JQYQCGXow5jtG1F3Kf7Oo+KKL6JoJB3HsmZ5bgYVTYD9eZZ52P
- kRKIDorCzlMRiTG0dVRwQ==
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 22. September 2008 schrieb Aaron Straus:
-> Hi,
->
-> On Sep 22 01:29 PM, Trond Myklebust wrote:
-> > > Anyway, I agree the new writeout semantics are allowed and possibly
-> > > saner than the previous writeout path.  The problem is that it is
-> > > __annoying__ for this use case (log files).
-> >
-> > There is always the option of using syslog.
->
-> Definitely.  Everything in our control we can work around.... there are
-> a few applications we cannot easily change... see the follow-up in
-> another e-mail.
->
-> > > I'm not sure if there is an easy solution.  We want the VM to
-> > > writeout the address space in order.   Maybe we can start the scan
-> > > for dirty pages at the last page we wrote out i.e. page 0 in the
-> > > example above?
-> >
-> > You can never guarantee that in a multi-threaded environment.
->
-> Definitely.  This is a single writer, single reader case though.
+(Resend of two patches from late August.  If noone objects, would it be
+possible to see this pair take a turn in security-testing?)
 
-...where it happens, that the reader gets chunks of zeros from reading a 
-file, that is written from another (single threaded) process.
+Add a no_file_caps boot option when file capabilities are
+compiled into the kernel (CONFIG_SECURITY_FILE_CAPABILITIES=y).
 
-Note, that going through syslog isn't an option in many cases unless we want 
-to rewrite the "world" to work around this phenomenon, thus it's not simply 
-annoying, as Aaron points out, the "in order" approach is inevitable.
+This allows distributions to ship a kernel with file capabilities
+compiled in, without forcing users to use (and understand and
+trust) them.
 
-> > Two threads may, for instance, force 2 competing fsync() calls: that
-> > again may cause out-of-order writes.
->
-> Yup.
->
-> > ...and even if the client doesn't reorder the writes, the _server_ may
-> > do it, since multiple nfsd threads may race when processing writes to
-> > the same file.
->
-> Yup.  We're definitely not asking for anything like that.
->
-> > Anyway, the patch to force a single threaded nfs client to write out
-> > the data in order is trivial. See attachment...
-> >
-> > diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-> > index 3229e21..eb6b211 100644
-> > --- a/fs/nfs/write.c
-> > +++ b/fs/nfs/write.c
-> > @@ -1428,7 +1428,8 @@ static int nfs_write_mapping(struct address_space
-> > *mapping, int how) .sync_mode = WB_SYNC_NONE,
-> >  		.nr_to_write = LONG_MAX,
-> >  		.for_writepages = 1,
-> > -		.range_cyclic = 1,
-> > +		.range_start = 0,
-> > +		.range_end = LLONG_MAX,
-> >  	};
-> >  	int ret;
->
-> Yeah I was looking at that while debugging.  Would that change have
-> chance to make it into mainline?  I assume it makes the normal writeout
-> path more expensive, by forcing a scan of the entire address space.
+When no_file_caps is specified at boot, then when a process executes
+a file, any file capabilities stored with that file will not be
+used in the calculation of the process' new capability sets.
 
-If this patch solves this issue, it is necessary to get applied as soon as 
-possible as outlined above.. 
+This means that booting with the no_file_caps boot option will
+not be the same as booting a kernel with file capabilities
+compiled out - in particular a task with  CAP_SETPCAP will not
+have any chance of passing capabilities to another task (which
+isn't "really" possible anyway, and which may soon by killed
+altogether by David Howells in any case), and it will instead
+be able to put new capabilities in its pI.  However since fI
+will always be empty and pI is masked with fI, it gains the
+task nothing.
 
-> Also, I should test this, but I thought the VM was calling
-> nfs_writepages directly i.e. not going through nfs_write_mapping.  Let
-> me test with this patch.
+We also support the extra prctl options, setting securebits and
+dropping capabilities from the per-process bounding set.
 
-Let us know about the outcome. 
+The other remaining difference is that killpriv, task_setscheduler,
+setioprio, and setnice will continue to be hooked.  That will
+be noticable in the case where a root task changed its uid
+while keeping some caps, and another task owned by the new uid
+tries to change settings for the more privileged task.
 
-Thanks,
-Pete
+Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: Andrew G. Morgan <morgan@kernel.org>
+---
+ kernel/capability.c  |   13 +++++++++++++
+ security/commoncap.c |   11 +++++++++++
+ 2 files changed, 24 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/capability.c b/kernel/capability.c
+index 33e51e7..5d034ec 100644
+--- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -33,6 +33,19 @@ EXPORT_SYMBOL(__cap_empty_set);
+ EXPORT_SYMBOL(__cap_full_set);
+ EXPORT_SYMBOL(__cap_init_eff_set);
+ 
++#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
++int file_caps_enabled = 1;
++
++static int __init file_caps_disable(char *str)
++{
++	file_caps_enabled = 0;
++	return 1;
++}
++__setup("no_file_caps", file_caps_disable);
++#else
++static const int file_caps_enabled = 0;
++#endif
++
+ /*
+  * More recent versions of libcap are available from:
+  *
+diff --git a/security/commoncap.c b/security/commoncap.c
+index e4c4b3f..8c66d34 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -27,6 +27,12 @@
+ #include <linux/prctl.h>
+ #include <linux/securebits.h>
+ 
++#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
++extern int file_caps_enabled;
++#else
++static const int file_caps_enabled = 0;
++#endif
++
+ int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
+ {
+ 	NETLINK_CB(skb).eff_cap = current->cap_effective;
+@@ -279,6 +285,11 @@ static int get_file_caps(struct linux_binprm *bprm)
+ 	struct vfs_cap_data vcaps;
+ 	struct inode *inode;
+ 
++	if (!file_caps_enabled) {
++		bprm_clear_caps(bprm);
++		return 0;
++	}
++
+ 	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
+ 		bprm_clear_caps(bprm);
+ 		return 0;
+-- 
+1.5.4.3
+
