@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbYIVRr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYIVRsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753816AbYIVRr2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 13:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYIVRrU
+	id S1753956AbYIVRsM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 13:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYIVRr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 13:47:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36846 "EHLO mx3.mail.elte.hu"
+	Mon, 22 Sep 2008 13:47:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42438 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbYIVRrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 13:47:19 -0400
-Date: Mon, 22 Sep 2008 19:47:09 +0200
+	id S1751632AbYIVRr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 13:47:57 -0400
+Date: Mon, 22 Sep 2008 19:47:48 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Aristeu Rozanski <aris@redhat.com>
 Cc: linux-kernel@vger.kernel.org, dzickus@redhat.com, prarit@redhat.com,
        vgoyal@redhat.com
-Subject: Re: [PATCH] NMI watchdog: setup before enabling NMI watchdog
-Message-ID: <20080922174709.GB10535@elte.hu>
-References: <20080922171347.GI16840@redhat.com>
+Subject: Re: [PATCH] NMI watchdog: when booting with reset_devices, clear
+	the performance counters
+Message-ID: <20080922174748.GC10535@elte.hu>
+References: <20080922171408.GJ16840@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080922171347.GI16840@redhat.com>
+In-Reply-To: <20080922171408.GJ16840@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,60 +38,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Aristeu Rozanski <aris@redhat.com> wrote:
 
-> There's a small window when NMI watchdog is being set up that if any NMIs
-> are triggered, the NMI code will make make use of not initalized wd_ops
-> elements:
-> 	void setup_apic_nmi_watchdog(void *unused)
-> 	{       
-> 		if (__get_cpu_var(wd_enabled))
-> 			return;
+> P4s have a quirk that makes necessary to clear P4_CCCR_OVF bit on the CCCR
+> everytime the PMI is triggered. When booting the kernel with reset_devices
+> (more specific kdump case), the counters reach zero and the PMI will be
+> generated. This is not a problem on other processors but on P4s, it'll
+> continue to generate NMIs until that bit is cleared. Since there may be
+> other users of the performance counters, clear and disable all of them
+> when booting with reset_devices option.
 > 
-> 		/* cheap hack to support suspend/resume */
-> 		/* if cpu0 is not active neither should the other cpus */
-> 		if (smp_processor_id() != 0 && atomic_read(&nmi_active) <= 0)
-> 			return;
-> 
-> 		switch (nmi_watchdog) {
-> 		case NMI_LOCAL_APIC:
-> 			/* enable it before to avoid race with handler */
-> -->			__get_cpu_var(wd_enabled) = 1;
-> -->			if (lapic_watchdog_init(nmi_hz) < 0) {
-> (...)
-> 	asmlinkage notrace __kprobes void default_do_nmi(struct pt_regs *regs)
-> 	{       
-> 	(...)
-> 			if (nmi_watchdog_tick(regs, reason))
-> 				return;
-> (...)
-> 	notrace __kprobes int
-> 	nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
-> 	{       
-> 	(...)
-> 		if (!__get_cpu_var(wd_enabled))
-> 			return rc;
-> 		switch (nmi_watchdog) {
-> 		case NMI_LOCAL_APIC:
-> 			rc |= lapic_wd_event(nmi_hz);
-> (...)
-> int lapic_wd_event(unsigned nmi_hz)
-> {       
-> 	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
-> 	u64 ctr;
-> 
-> -->	rdmsrl(wd->perfctr_msr, ctr);
-> 
-> and wd->*_msr will be initialized on each processor type specific setup, after
-> enabling NMIs for PMIs. Since the counter was just set, the chances of an
-> performance counter generated NMI is minimal, but any other unknown NMI would
-> trigger the problem. This patch fixes the problem by setting everything up
-> before enabling performance counter generated NMIs and will set wd_enabled
-> using a callback function.
+> We have a P4 box here that crashes because of this problem. Since the kdump
+> kernel usually boots with only one processor active, the second logical
+> unit won't be set up, therefore, MSR_P4_IQ_CCCR1 (and other performance
+> counter registers) won't be cleared and P4_CCCR_OVF may be still set because
+> the previous kernel was using this register. An NMI is triggered because of
+> the MSR_P4_IQ_CCCR1 right after the NMI delivery is enabled, triggering the
+> race fixed on my previous email.
 > 
 > Signed-off-by: Aristeu Rozanski <aris@redhat.com>
 > Acked-by: Don Zickus <dzickus@redhat.com>
 > Acked-by: Prarit Bhargava <prarit@redhat.com>
 > Acked-by: Vivek Goyal <vgoyal@redhat.com>
 
-applied to tip/x86/nmi-watchdog, thanks Aristeu!
+applied to tip/x86/nmi-watchdog, thanks.
+
+i'm wondering, is this fix a v2.6.27 candidate?
 
 	Ingo
