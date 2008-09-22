@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbYIVOqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbYIVOqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753366AbYIVOqT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 10:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbYIVOqJ
+	id S1753520AbYIVOqc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 10:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYIVOqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 10:46:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40034 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752460AbYIVOqG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 10:46:06 -0400
-Subject: Re: Unified tracing buffer
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: prasad@linux.vnet.ibm.com
-Cc: Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>, od@novell.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
-       David Wilder <dwilder@us.ibm.com>, zanussi@comcast.net
-In-Reply-To: <20080922140740.GB5279@in.ibm.com>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
-	 <1221869279.8359.31.camel@lappy.programming.kicks-ass.net>
-	 <20080922140740.GB5279@in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 22 Sep 2008 16:45:24 +0200
-Message-Id: <1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Sep 2008 10:46:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39553 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753241AbYIVOqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 10:46:15 -0400
+Date: Mon, 22 Sep 2008 16:46:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] AMD IOMMU: revert "x86, AMD IOMMU: honor iommu=off
+	instead of amd_iommu=off"
+Message-ID: <20080922144601.GA27956@elte.hu>
+References: <20080922223457W.fujita.tomonori@lab.ntt.co.jp> <20080922140749.GY24392@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080922140749.GY24392@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-22 at 19:37 +0530, K.Prasad wrote:
 
-> > > INPUT_FUNCTIONS
-> > > ---------------
-> > > 
-> > > allocate_buffer (name, size)
-> > >         return buffer_handle
-> > > 
-> > > register_event (buffer_handle, event_id, print_function)
-> > >         You can pass in a requested event_id from a fixed set, and
-> > > will be given it, or an error
-> > >         0 means allocate me one dynamically
-> > >         returns event_id     (or -E_ERROR)
-> > > 
-> > > record_event (buffer_handle, event_id, length, *buf)
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
+
+> >     x86, AMD IOMMU: honor iommu=off instead of amd_iommu=off
 > > 
-> > I'd hoped for an interface like:
+> >     This patch removes the amd_iommu=off kernel parameter and honors 
+> >     the generic
 > > 
-> > struct ringbuffer *ringbuffer_alloc(const char *name, size_t size);
-> > void ringbuffer_free(struct ringbuffer *buffer);
-> > int ringbuffer_write(struct ringbuffer *buffer, const char *buf, size_t size);
-> > int ringbuffer_read(struct ringbuffer *buffer, int cpu, char *buf, size_t size);
+> >     iommu=off parameter for the same purpose.
 > > 
-> > On top of which you'd do the event thing, the register event with a
-> > callback idea makes sense, except I'd split the consumption into two:
-> >  - one method to pull the binary event out, which knows how long it
-> > ought to be etc..
-> >  - one method to convert the binary event to ASCII
-> >
-> In conjunction with the previous email on this thread
-> (http://lkml.org/lkml/2008/9/22/160), may I suggest
-> the equivalent interfaces in -mm tree (2.6.27-rc5-mm1) to be:
+> > 
+> > The above commit is wrong.
 > 
-> relay_printk(<some struct with default filenames/pathnames>, <string>,
-> ....) ;
-> relay_dump(<some struct with default filenames/pathnames>, <binary
-> data>);
-> and
-> relay_cleanup_all(<the struct name>); - Single interface that cleans up
-> all files/directories/output data created under a logical entity.
+> It isn't. The user normally don't care about the type of IOMMU in the 
+> system. So disabling it with iommu=off is the right way. To achieve 
+> what you want its better to add iommu=gart and iommu=amd to the option 
+> parser. This will be consistent with Calgary and SWIOTLB too.
 
-Dude, relayfs is such a bad performing mess that extending it seems like
-a bad idea. Better to write something new and delete everything relayfs
-related.
+well, what matters in the end is to have a consistent set of exclusion 
+options:
 
-Also, it seems prudent to separate the ring-buffer implementation from
-the event encoding/decoding facilities.
+  gart_iommu=off     # disable the GART (and only that one)
+  intel_iommu=off    # disable the Intel IOMMU (and only that one)
+  amd_iommu=off      # disable AMD-IOMMU (and only that one)
 
+then there's the all-off option:
 
+  iommu=off          # wildcard: disable all IOMMUs
 
+[ whether iommu=off also disables the swiotlb is a detail. ]
+
+and we could also do the inclusive options in addition:
+
+  iommu=gart         # use the GART as the primary IOMMU [if available]
+  iommu=amd          # use the AMD-IOMMU as the primary IOMMU [if available]
+  iommu=intel        # use the Intel IOMMU [if available]
+
+so could we please first agree on such a specific list of generic 
+options, and then implement them consistently, while keeping legacies 
+(the ones that matter) intact as well?
+
+	Ingo
