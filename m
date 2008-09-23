@@ -1,122 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbYIWN4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYIWN5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbYIWN4i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYIWNsD
+	id S1756611AbYIWN5Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYIWNsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:48:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52436 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:48:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52440 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753838AbYIWNrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:47:53 -0400
+	id S1752537AbYIWNr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:47:56 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Subject: [PATCH 20/40] KVM: kvmtrace: replace get_cycles with ktime_get v3
-Date: Tue, 23 Sep 2008 16:46:34 +0300
-Message-Id: <1222177614-26669-21-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 34/40] x86: KVM guest: use paravirt function to calculate cpu khz
+Date: Tue, 23 Sep 2008 16:46:48 +0300
+Message-Id: <1222177614-26669-35-git-send-email-avi@redhat.com>
 In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
 References: <1222177614-26669-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+From: Glauber Costa <gcosta@redhat.com>
 
-The current kvmtrace code uses get_cycles() while the interpretation would be
-easier using using nanoseconds. ktime_get() should give at least the same
-accuracy as get_cycles on all architectures (even better on 32bit archs) but
-at a better unit (e.g. comparable between hosts with different frequencies.
+We're currently facing timing problems in guests that do
+calibration under heavy load, and then the load vanishes.
+This means we'll have a much lower lpj than we actually should,
+and delays end up taking less time than they should, which is a
+nasty bug.
 
-[avi: avoid ktime_t in public header]
+Solution is to pass on the lpj value from host to guest, and have it
+preset.
 
-Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- include/linux/kvm.h  |    6 +++---
- virt/kvm/kvm_trace.c |   19 ++++++++++---------
- 2 files changed, 13 insertions(+), 12 deletions(-)
+ arch/x86/kernel/kvmclock.c |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 8a16b08..5d08f11 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -322,12 +322,12 @@ struct kvm_trace_rec {
- 	__u32 vcpu_id;
- 	union {
- 		struct {
--			__u64 cycle_u64;
-+			__u64 timestamp;
- 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
--		} __attribute__((packed)) cycle;
-+		} __attribute__((packed)) timestamp;
- 		struct {
- 			__u32 extra_u32[KVM_TRC_EXTRA_MAX];
--		} nocycle;
-+		} notimestamp;
- 	} u;
- };
- 
-diff --git a/virt/kvm/kvm_trace.c b/virt/kvm/kvm_trace.c
-index 9acb78b..41dcc84 100644
---- a/virt/kvm/kvm_trace.c
-+++ b/virt/kvm/kvm_trace.c
-@@ -17,6 +17,7 @@
- #include <linux/module.h>
- #include <linux/relay.h>
- #include <linux/debugfs.h>
-+#include <linux/ktime.h>
- 
- #include <linux/kvm_host.h>
- 
-@@ -35,16 +36,16 @@ static struct kvm_trace *kvm_trace;
- struct kvm_trace_probe {
- 	const char *name;
- 	const char *format;
--	u32 cycle_in;
-+	u32 timestamp_in;
- 	marker_probe_func *probe_func;
- };
- 
--static inline int calc_rec_size(int cycle, int extra)
-+static inline int calc_rec_size(int timestamp, int extra)
- {
- 	int rec_size = KVM_TRC_HEAD_SIZE;
- 
- 	rec_size += extra;
--	return cycle ? rec_size += KVM_TRC_CYCLE_SIZE : rec_size;
-+	return timestamp ? rec_size += KVM_TRC_CYCLE_SIZE : rec_size;
+diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
+index d02def0..774ac49 100644
+--- a/arch/x86/kernel/kvmclock.c
++++ b/arch/x86/kernel/kvmclock.c
+@@ -78,6 +78,34 @@ static cycle_t kvm_clock_read(void)
+ 	return ret;
  }
  
- static void kvm_add_trace(void *probe_private, void *call_data,
-@@ -69,20 +70,20 @@ static void kvm_add_trace(void *probe_private, void *call_data,
- 	WARN_ON(!(extra <= KVM_TRC_EXTRA_MAX));
- 	extra 		= min_t(u32, extra, KVM_TRC_EXTRA_MAX);
- 
--	rec.rec_val |= TRACE_REC_TCS(p->cycle_in)
-+	rec.rec_val |= TRACE_REC_TCS(p->timestamp_in)
- 			| TRACE_REC_NUM_DATA_ARGS(extra);
- 
--	if (p->cycle_in) {
--		rec.u.cycle.cycle_u64 = get_cycles();
-+	if (p->timestamp_in) {
-+		rec.u.timestamp.timestamp = ktime_to_ns(ktime_get());
- 
- 		for (i = 0; i < extra; i++)
--			rec.u.cycle.extra_u32[i] = va_arg(*args, u32);
-+			rec.u.timestamp.extra_u32[i] = va_arg(*args, u32);
- 	} else {
- 		for (i = 0; i < extra; i++)
--			rec.u.nocycle.extra_u32[i] = va_arg(*args, u32);
-+			rec.u.notimestamp.extra_u32[i] = va_arg(*args, u32);
++/*
++ * If we don't do that, there is the possibility that the guest
++ * will calibrate under heavy load - thus, getting a lower lpj -
++ * and execute the delays themselves without load. This is wrong,
++ * because no delay loop can finish beforehand.
++ * Any heuristics is subject to fail, because ultimately, a large
++ * poll of guests can be running and trouble each other. So we preset
++ * lpj here
++ */
++static unsigned long kvm_get_tsc_khz(void)
++{
++	return preset_lpj;
++}
++
++static void kvm_get_preset_lpj(void)
++{
++	struct pvclock_vcpu_time_info *src;
++	unsigned long khz;
++	u64 lpj;
++
++	src = &per_cpu(hv_clock, 0);
++	khz = pvclock_tsc_khz(src);
++
++	lpj = ((u64)khz * 1000);
++	do_div(lpj, HZ);
++	preset_lpj = lpj;
++}
++
+ static struct clocksource kvm_clock = {
+ 	.name = "kvm-clock",
+ 	.read = kvm_clock_read,
+@@ -153,6 +181,7 @@ void __init kvmclock_init(void)
+ 		pv_time_ops.get_wallclock = kvm_get_wallclock;
+ 		pv_time_ops.set_wallclock = kvm_set_wallclock;
+ 		pv_time_ops.sched_clock = kvm_clock_read;
++		pv_time_ops.get_tsc_khz = kvm_get_tsc_khz;
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 		pv_apic_ops.setup_secondary_clock = kvm_setup_secondary_clock;
+ #endif
+@@ -163,6 +192,7 @@ void __init kvmclock_init(void)
+ #ifdef CONFIG_KEXEC
+ 		machine_ops.crash_shutdown  = kvm_crash_shutdown;
+ #endif
++		kvm_get_preset_lpj();
+ 		clocksource_register(&kvm_clock);
  	}
- 
--	size = calc_rec_size(p->cycle_in, extra * sizeof(u32));
-+	size = calc_rec_size(p->timestamp_in, extra * sizeof(u32));
- 	relay_write(kt->rchan, &rec, size);
  }
- 
 -- 
 1.6.0.1
 
