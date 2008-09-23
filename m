@@ -1,228 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755727AbYIWWsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbYIWWtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755727AbYIWWsg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 18:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYIWWs1
+	id S1756021AbYIWWtg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 18:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYIWWt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 18:48:27 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:2299 "EHLO
-	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751549AbYIWWs0 (ORCPT
+	Tue, 23 Sep 2008 18:49:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55825 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751313AbYIWWt2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 18:48:26 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:user-agent:from:x-gmailtapped-by;
-	b=n1lUShZe4ZEHJk9zgvn0y3gNPkOq9gR7EQmif18UARqH86JG4b98Lih/hyLB1/hSa
-	M7Pb11jZ5ZaC/Uu/0PVww==
-Date: Tue, 23 Sep 2008 15:47:52 -0700
-To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: mlock: Make the mlock system call interruptible by fatal
-Message-ID: <20080923224751.GA2790@google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: sqazi@google.com (Salman Qazi)
-X-GMailtapped-By: 172.25.146.37
+	Tue, 23 Sep 2008 18:49:28 -0400
+Date: Tue, 23 Sep 2008 15:49:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org, agk@redhat.com,
+       mbroz@redhat.com, chris@arachsys.com
+Subject: Re: [PATCH] Memory management livelock
+Message-Id: <20080923154905.50d4b0fa.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+	<Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+	<Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 23 Sep 2008 18:34:20 -0400 (EDT)
+Mikulas Patocka <mpatocka@redhat.com> wrote:
 
-> Andrew Morton wrote:
->
->This isn't a terribly good interface.  Someone could now call
-> __get_user_pages() with pages!=NULL and interruptible=1 and they would
-> get a return value of -EINTR, even though some page*'s were placed in
-> their pages array.
->
-> That caller now has no way of knowing how many pages need to be
-> released to clean up.
->
-> Can we do
->
->        return i ? i : -EINTR;
->
-> in the usual fashion?
+> > On Mon, 22 Sep 2008 17:10:04 -0400 (EDT)
+> > Mikulas Patocka <mpatocka@xxxxxxxxxx> wrote:
+> > 
+> > > The bug happens when one process is doing sequential buffered writes to
+> > > a block device (or file) and another process is attempting to execute
+> > > sync(), fsync() or direct-IO on that device (or file). This syncing
+> > > process will wait indefinitelly, until the first writing process
+> > > finishes.
+> > >
+> > > For example, run these two commands:
+> > > dd if=/dev/zero of=/dev/sda1 bs=65536 &
+> > > dd if=/dev/sda1 of=/dev/null bs=4096 count=1 iflag=direct
+> > >
+> > > The bug is caused by sequential walking of address space in
+> > > write_cache_pages and wait_on_page_writeback_range: if some other
+> > > process is constantly making dirty and writeback pages while these
+> > > functions run, the functions will wait on every new page, resulting in
+> > > indefinite wait.
+> > 
+> > Shouldn't happen. All the data-syncing functions should have an upper
+> > bound on the number of pages which they attempt to write. In the
+> > example above, we end up in here:
+> > 
+> > int __filemap_fdatawrite_range(struct address_space *mapping, loff_t
+> > start,
+> > loff_t end, int sync_mode)
+> > {
+> > int ret;
+> > struct writeback_control wbc = {
+> > .sync_mode = sync_mode,
+> > .nr_to_write = mapping->nrpages * 2, <<--
+> > .range_start = start,
+> > .range_end = end,
+> > };
+> > 
+> > so generic_file_direct_write()'s filemap_write_and_wait() will attempt
+> > to write at most 2* the number of pages which are in cache for that inode.
+> 
+> See write_cache_pages:
+> 
+> if (wbc->sync_mode != WB_SYNC_NONE)
+>         wait_on_page_writeback(page);	(1)
+> if (PageWriteback(page) ||
+>     !clear_page_dirty_for_io(page)) {
+>         unlock_page(page);		(2)
+>         continue;
+> }
+> ret = (*writepage)(page, wbc, data);
+> if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
+>         unlock_page(page);
+>         ret = 0;
+> }
+> if (ret || (--(wbc->nr_to_write) <= 0))
+>         done = 1;
+> 
+> --- so if it goes by points (1) and (2), the counter is not decremented, 
+> yet the function waits for the page. If there is constant stream of 
+> writeback pages being generated, it waits on each on them --- that is, 
+> forever. I have seen livelock in this function. For you that example with 
+> two dd's, one buffered write and the other directIO read doesn't work? For 
+> me it livelocks here.
+> 
+> wait_on_page_writeback_range is another example where the livelock 
+> happened, there is no protection at all against starvation.
 
-Fixed.
+um, OK.  So someone else is initiating IO for this inode and this
+thread *never* gets to initiate any writeback.  That's a bit of a
+surprise.
+
+How do we fix that?  Maybe decrement nt_to_write for these pages as
+well?
+
+> 
+> BTW. that .nr_to_write = mapping->nrpages * 2 looks like a dangerous thing 
+> to me.
+> 
+> Imagine this case: You have two pages with indices 4 and 5 dirty in a 
+> file. You call fsync(). It sets nr_to_write to 4.
+> 
+> Meanwhile, another process makes pages 0, 1, 2, 3 dirty.
+> 
+> The fsync() process goes to write_cache_pages, writes the first 4 dirty 
+> pages and exits because it goes over the limit.
+> 
+> result --- you violate fsync() semantics, pages that were dirty before 
+> call to fsync() are not written when fsync() exits.
+
+yup, that's pretty much unfixable, really, unless new locks are added
+which block threads which are writing to unrelated sections of the
+file, and that could hurt some workloads quite a lot, I expect.
+
+Hopefully high performance applications are instantiating the file
+up-front and are using sync_file_range() to prevent these sorts of
+things from happening.  But they probably aren't.
 
 
-Make the mlock system call interruptible by fatal signals, so that programs
-that are mlocking a large number of pages terminate quickly when killed.
-
-Signed-off-by: Salman Qazi <sqazi@google.com>
----
-
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 72a15dc..a2531e6 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -807,7 +807,8 @@ static inline int handle_mm_fault(struct mm_struct *mm,
- }
- #endif
- 
--extern int make_pages_present(unsigned long addr, unsigned long end);
-+extern int make_pages_present(unsigned long addr, unsigned long end,
-+			int interruptible);
- extern int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, int len, int write);
- 
- int get_user_pages(struct task_struct *tsk, struct mm_struct *mm, unsigned long start,
-diff --git a/mm/fremap.c b/mm/fremap.c
-index 7881638..f5eff74 100644
---- a/mm/fremap.c
-+++ b/mm/fremap.c
-@@ -223,7 +223,7 @@ asmlinkage long sys_remap_file_pages(unsigned long start, unsigned long size,
- 			downgrade_write(&mm->mmap_sem);
- 			has_write_lock = 0;
- 		}
--		make_pages_present(start, start+size);
-+		make_pages_present(start, start+size, 0);
- 	}
- 
- 	/*
-diff --git a/mm/memory.c b/mm/memory.c
-index 1002f47..f6f8742 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1129,9 +1129,10 @@ static inline int use_zero_page(struct vm_area_struct *vma)
- 	return !vma->vm_ops || !vma->vm_ops->fault;
- }
- 
--int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
--		unsigned long start, int len, int write, int force,
--		struct page **pages, struct vm_area_struct **vmas)
-+static int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
-+			unsigned long start, int len, int write, int force,
-+			struct page **pages, struct vm_area_struct **vmas,
-+			int interruptible)
- {
- 	int i;
- 	unsigned int vm_flags;
-@@ -1223,6 +1224,8 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- 			cond_resched();
- 			while (!(page = follow_page(vma, start, foll_flags))) {
- 				int ret;
-+				if (interruptible && fatal_signal_pending(tsk))
-+					return i ? i : -EINTR;
- 				ret = handle_mm_fault(mm, vma, start,
- 						foll_flags & FOLL_WRITE);
- 				if (ret & VM_FAULT_ERROR) {
-@@ -1266,6 +1269,14 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- 	} while (len);
- 	return i;
- }
-+
-+int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
-+		unsigned long start, int len, int write, int force,
-+		struct page **pages, struct vm_area_struct **vmas)
-+{
-+	return __get_user_pages(tsk, mm, start, len, write, force,
-+				pages, vmas, 0);
-+}
- EXPORT_SYMBOL(get_user_pages);
- 
- pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
-@@ -2758,7 +2769,7 @@ int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
- }
- #endif /* __PAGETABLE_PMD_FOLDED */
- 
--int make_pages_present(unsigned long addr, unsigned long end)
-+int make_pages_present(unsigned long addr, unsigned long end, int interruptible)
- {
- 	int ret, len, write;
- 	struct vm_area_struct * vma;
-@@ -2770,8 +2781,8 @@ int make_pages_present(unsigned long addr, unsigned long end)
- 	BUG_ON(addr >= end);
- 	BUG_ON(end > vma->vm_end);
- 	len = DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
--	ret = get_user_pages(current, current->mm, addr,
--			len, write, 0, NULL, NULL);
-+	ret = __get_user_pages(current, current->mm, addr,
-+			len, write, 0, NULL, NULL, interruptible);
- 	if (ret < 0) {
- 		/*
- 		   SUS require strange return value to mlock
-diff --git a/mm/mlock.c b/mm/mlock.c
-index 01fbe93..5586ee4 100644
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -73,7 +73,7 @@ success:
- 	if (newflags & VM_LOCKED) {
- 		pages = -pages;
- 		if (!(newflags & VM_IO))
--			ret = make_pages_present(start, end);
-+			ret = make_pages_present(start, end, 1);
- 	}
- 
- 	mm->locked_vm -= pages;
-diff --git a/mm/mmap.c b/mm/mmap.c
-index e7a5a68..afb8e39 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1225,10 +1225,10 @@ out:
- 	vm_stat_account(mm, vm_flags, file, len >> PAGE_SHIFT);
- 	if (vm_flags & VM_LOCKED) {
- 		mm->locked_vm += len >> PAGE_SHIFT;
--		make_pages_present(addr, addr + len);
-+		make_pages_present(addr, addr + len, 0);
- 	}
- 	if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
--		make_pages_present(addr, addr + len);
-+		make_pages_present(addr, addr + len, 0);
- 	return addr;
- 
- unmap_and_free_vma:
-@@ -1701,7 +1701,7 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
- 	if (!prev || expand_stack(prev, addr))
- 		return NULL;
- 	if (prev->vm_flags & VM_LOCKED)
--		make_pages_present(addr, prev->vm_end);
-+		make_pages_present(addr, prev->vm_end, 0);
- 	return prev;
- }
- #else
-@@ -1728,7 +1728,7 @@ find_extend_vma(struct mm_struct * mm, unsigned long addr)
- 	if (expand_stack(vma, addr))
- 		return NULL;
- 	if (vma->vm_flags & VM_LOCKED)
--		make_pages_present(addr, start);
-+		make_pages_present(addr, start, 0);
- 	return vma;
- }
- #endif
-@@ -2049,7 +2049,7 @@ out:
- 	mm->total_vm += len >> PAGE_SHIFT;
- 	if (flags & VM_LOCKED) {
- 		mm->locked_vm += len >> PAGE_SHIFT;
--		make_pages_present(addr, addr + len);
-+		make_pages_present(addr, addr + len, 0);
- 	}
- 	return addr;
- }
-diff --git a/mm/mremap.c b/mm/mremap.c
-index 1a77439..c83ffcc 100644
---- a/mm/mremap.c
-+++ b/mm/mremap.c
-@@ -239,7 +239,7 @@ static unsigned long move_vma(struct vm_area_struct *vma,
- 		mm->locked_vm += new_len >> PAGE_SHIFT;
- 		if (new_len > old_len)
- 			make_pages_present(new_addr + old_len,
--					   new_addr + new_len);
-+					   new_addr + new_len, 0);
- 	}
- 
- 	return new_addr;
-@@ -380,7 +380,7 @@ unsigned long do_mremap(unsigned long addr,
- 			if (vma->vm_flags & VM_LOCKED) {
- 				mm->locked_vm += pages;
- 				make_pages_present(addr + old_len,
--						   addr + new_len);
-+						   addr + new_len, 0);
- 			}
- 			ret = addr;
- 			goto out;
-
----
