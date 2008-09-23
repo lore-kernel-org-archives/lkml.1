@@ -1,94 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbYIWQDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbYIWQIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbYIWQDJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 12:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbYIWQC4
+	id S1753340AbYIWQIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 12:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYIWQIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 12:02:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59953 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751538AbYIWQCz (ORCPT
+	Tue, 23 Sep 2008 12:08:15 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:53601 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbYIWQIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 12:02:55 -0400
-Date: Tue, 23 Sep 2008 09:01:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, darren@dvhart.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: Unified tracing buffer
-In-Reply-To: <48D90B84.4030905@redhat.com>
-Message-ID: <alpine.LFD.1.10.0809230847360.3265@nehalem.linux-foundation.org>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <48D7F5E8.3000705@redhat.com> <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com> <48D81B5F.2030702@redhat.com> <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com>
- <48D832B6.3010409@redhat.com> <33307c790809221712x4fbd9781u958c98d4585e92a9@mail.gmail.com> <48D901FE.5060604@redhat.com> <20080923150410.GA28341@Krystal> <48D90B84.4030905@redhat.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 23 Sep 2008 12:08:14 -0400
+Message-ID: <48D91464.9010501@nortel.com>
+Date: Tue, 23 Sep 2008 10:08:04 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] sched: trivial fix for incorrect comments
+References: <48D3C9FF.20504@nortel.com> <20080922110049.GA5987@elte.hu>
+In-Reply-To: <20080922110049.GA5987@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Sep 2008 16:08:05.0882 (UTC) FILETIME=[903A75A0:01C91D96]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 23 Sep 2008, Masami Hiramatsu wrote:
+Ingo Molnar wrote:
+> * Chris Friesen <cfriesen@nortel.com> wrote:
 > 
-> 2.00GHz is the maximum(model) frequency. And 'cpu MHz' means
-> current frequency. (yep, now I'm using cpufreq)
-> Anyway, when I measured TSC drift, I killed cpuspeed service and
-> fixed freq to 2000. ;-)
+>> From: Chris Friesen    <cfriesen@nortel.com>
+>>
+>> A couple of the comments for the conditional definitions in sched.c are
+>> incorrect.  Here's a trivial patch fixing them up.
+> 
+> looks good to me, but the patch is whitespace corrupted. Please see 
+> Documentation/email-clients.txt about how to send plain-text patches.
+> 
+> 	Ingo
+> 
 
-Ahh. I have an idea..
+Actually, I thought I was following the procedures in there.  It turns out 
+that older Thunderbird requires an external editor, disabling 
+format=flowed, and a line wrap of 0.  The email clients doc makes it sound
+like if you use an external editor you don't need the other parts.  With
+current Thunderbird the external editor is still not sufficient by itself,
+but isn't required if the other two items are configured properly.
 
-Maybe that thing does thermal throttling? 
+Here's another try.
 
-Fixing the frequency at the highest setting is actually one of the worst 
-things you can do, because if the device is thermally limited, it will 
-still do the whole throttling thing, but now it won't do it by changing 
-the frequency any more, it will do it by essentially forxing the external 
-frequency down.
+---
+From: Chris Friesen <cfriesen@nortel.com>
+Subject: [PATCH] sched: trivial fix for incorrect comments
 
-And that is going to be *very* inefficient. You really really don't want 
-that. Your performance will actually be _worse_ than if the CPU went to a 
-lower frequency. And it might explain the unreliable TSC too, because I 
-suspect constant TSC is really constant only wrt the bus clock to the CPU.
+A couple of the comments for the conditional definitions in sched.c are
+incorrect.  Here's a trivial patch fixing them up.
 
-The termal throttling thing is a "protect the CPU from overheating" last 
-ditch effort, and because it doesn't lower voltage, it isn't actually at 
-all as efficient at saving power (and thus cooling the CPU) as a real 
-frequency change event would be.
+Signed-off-by: Chris Friesen <cfriesen@nortel.com>
+Approval token "Nortel-02-July-2008-01"
+---
+ kernel/sched.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-And fixing the frequency to the highest frequency in a tight laptop 
-enclosure is the best way to force that behavior (in contrast - in a 
-desktop system with sufficient cooling, it's usually not a problem at all 
-to just say "run at highest frequency").
+diff --git a/kernel/sched.c b/kernel/sched.c
+index cc1f81b..8ddca50 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -298,9 +298,9 @@ static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
+ static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
+ static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
+ #endif /* CONFIG_RT_GROUP_SCHED */
+-#else /* !CONFIG_FAIR_GROUP_SCHED */
++#else /* !CONFIG_USER_SCHED */
+ #define root_task_group init_task_group
+-#endif /* CONFIG_FAIR_GROUP_SCHED */
++#endif /* CONFIG_USER_SCHED */
+ 
+ /* task_group_lock serializes add/remove of task groups and also changes to
+  * a task group's cpu shares.
 
-And btw, that also explains why you had so *big* changes in frequency: the 
-throttling I think happens with a 1/8 duty cycle thing, iirc.
-
-It's supposed to be very rare with Core 2. Thermal throttling was quite 
-common with the P4 one, and was the main overheating protection initially. 
-These days, you should only see it for really badly designed devices that 
-simply don't have enough thermal cooling, but if the design calls for 
-mostly running at low frequency because it's some thing-and-light notebook 
-with insufficient cooling (or some thick-and-heavy thing that is just 
-total crap), and you force it to always run at full speed, I can imagine 
-it kicking in to protect the CPU.
-
-It's obviously also going to be much easier to see if the ambient 
-temperature is high. If you want to get best peformance, take one of those 
-compressed-air spray-cans, and spray on the laptop with the can held 
-upside down (the can will generally tell you _not_ to do that, because 
-then you'll get the liquid itself rather than gas, but that's what you 
-want for cooling).
-
-So if you can test this, try it with 
- (a) cpufreq at a fixed _low_ value (to not cause overheating)
- (b) with the spray-can cooling the thing and cpufreq at a fixed high 
-     value
-and see if the TSC is constant then.
-
-			Linus
