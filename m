@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYIWGdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYIWGu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbYIWGdz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 02:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbYIWGdn
+	id S1753946AbYIWGu0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 02:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYIWGuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 02:33:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35836 "EHLO mx1.redhat.com"
+	Tue, 23 Sep 2008 02:50:16 -0400
+Received: from tundra.namei.org ([65.99.196.166]:53047 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754182AbYIWGdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 02:33:41 -0400
-From: Amit Shah <amit.shah@redhat.com>
-Organization: Red Hat, Inc.
-To: Andrew Morton <akpm@linux-foundation.org>, avi@qumranet.com
-Subject: Re: mmotm 2008-09-22-01-36 uploaded (kvm)
-Date: Tue, 23 Sep 2008 12:02:00 +0530
-User-Agent: KMail/1.9.9
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org, kvm@vger.kernel.org,
-       dan.j.williams@intel.com
-References: <200809220838.m8M8cwC2031790@imap1.linux-foundation.org> <200809221458.53192.jbarnes@virtuousgeek.org> <20080922151026.64715dc4.akpm@linux-foundation.org>
-In-Reply-To: <20080922151026.64715dc4.akpm@linux-foundation.org>
+	id S1751196AbYIWGuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 02:50:14 -0400
+Date: Tue, 23 Sep 2008 16:48:37 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: Andreas Gruenbacher <agruen@suse.de>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 1/2] file capabilities: add no_file_caps switch (v2)
+In-Reply-To: <20080922215032.GB502@us.ibm.com>
+Message-ID: <alpine.LRH.1.10.0809231610530.25628@tundra.namei.org>
+References: <20080922184835.GA2826@us.ibm.com> <1222110964.18735.77.camel@moss-spartans.epoch.ncsc.mil> <200809222209.37218.agruen@suse.de> <20080922215032.GB502@us.ibm.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809231202.00856.amit.shah@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* On Tuesday 23 Sep 2008 03:40:26 Andrew Morton wrote:
-> On Mon, 22 Sep 2008 14:58:52 -0700
->
-> Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> > On Monday, September 22, 2008 12:52 pm Andrew Morton wrote:
-> > > On Mon, 22 Sep 2008 11:19:47 -0700
-> > >
-> > > Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > > > On Mon, 22 Sep 2008 01:38:58 -0700 akpm@linux-foundation.org wrote:
-> > > > > The mm-of-the-moment snapshot 2008-09-22-01-36 has been uploaded to
-> > > > >
-> > > > >    http://userweb.kernel.org/~akpm/mmotm/
-> > > > >
-> > > > > It contains the following patches against 2.6.27-rc7:
-> > > >
-> > > > ERROR: "intel_iommu_found" [arch/x86/kvm/kvm.ko] undefined!
-> > > >
-> > > > when CONFIG_DMAR=n.
-> > >
-> > > Yes, I got that too.  i386 allmodconfig fails similarly.  It's still
-> > > unclear which tree in linux-next broke it.  PCI or async_tx, perhaps.
-> >
-> > I don't have that symbol in my tree (yet).  It's part of one of the IOMMU
-> > KVM patch sets that's currently in-flight.  I'll add it to my linux-next
-> > tree today or tomorrow, assuming I get an ack from David about it (I'll
-> > bounce it over to him now).
->
-> It's already there, and exported in linux-next.  But it just doesn't get
-> compiled in due to some Kconfig snafu.
+On Mon, 22 Sep 2008, Serge E. Hallyn wrote:
 
-This was introduced in the KVM tree.
+> > I agree. These other behaviorial changes should not depend on 
+> > CONFIG_SECURITY_FILE_CAPABILITIES; the old behavior should just be fixed 
+> > instead.
+> 
+> That of course would be the point of the patch 3/3, which removes
+> CONFIG_SECURITY_FILE_CAPABILITIES as a config option.
 
-Avi, please pick this up:
+btw, don't make it Y at all (patch 1/3 ?), as Linus has outlawed making 
+new features default to Y.
 
-http://article.gmane.org/gmane.comp.emulators.kvm.devel/21770
+>  Should I do that when I redo the patch as per Stephen's suggestion to 
+> use filecaps=0/1?
 
-or Mike Day's patches that fix the kernel as well as userspace build:
+Given that there's existing use of no_file_caps, and that I doubt Fedora 
+will provide an install option to disable it, probably just stick with 
+no_file_caps.
 
-1/2: http://article.gmane.org/gmane.comp.emulators.kvm.devel/21813
 
-2/2: http://article.gmane.org/gmane.comp.emulators.kvm.devel/21814
+- James
+-- 
+James Morris
+<jmorris@namei.org>
