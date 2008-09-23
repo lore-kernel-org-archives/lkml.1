@@ -1,60 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbYIWSO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbYIWSO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbYIWSO0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 14:14:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbYIWSOS
+	id S1755198AbYIWSO6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 14:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbYIWSOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 14:14:18 -0400
-Received: from outbound-mail-110.bluehost.com ([69.89.22.10]:48694 "HELO
-	outbound-mail-110.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751796AbYIWSOR (ORCPT
+	Tue, 23 Sep 2008 14:14:43 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:19175 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753176AbYIWSOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 14:14:17 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=tNkhPtwL77dx+kr7qrMb+56VOzvtYk2eVRIIfb2Xh5n917Pp1sTlZiks7x+3yM8B7/owl3ZyvnHhdqWg4tWZAVtL4H+a97mIKL6x/hOpAg86d+xpP1X0AvRn0zNJEsbX;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH] PCI: connect struct pci_dev to struct pci_slot
-Date: Tue, 23 Sep 2008 11:14:13 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-pci <linux-pci@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <20080902154051.GA23638@ldl.fc.hp.com>
-In-Reply-To: <20080902154051.GA23638@ldl.fc.hp.com>
+	Tue, 23 Sep 2008 14:14:41 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references:x-gmailtapped-by;
+	b=j6oiSNPRCtxRsix7jVNsLiXjkPlt90eNp799V6ULM68Ge8odLRb4PkDIvGo7NBrlY
+	OpRct29UvLUtl/q+cqyeg==
+Message-ID: <e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com>
+Date: Tue, 23 Sep 2008 11:14:21 -0700
+From: "Gwendal Grignou" <gwendal@google.com>
+To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
+Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
+Cc: "Brian Rademacher" <rad@radfiles.net>, linux-ide@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809231114.13905.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA>
+	 <alpine.DEB.1.10.0809220404400.18908@p34.internal.lan>
+	 <5A4A9A3B0AAA4A20A33BC2D578F5F75F@909927SOSLA>
+	 <alpine.DEB.1.10.0809220828490.23159@p34.internal.lan>
+	 <5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>
+	 <alpine.DEB.1.10.0809220903400.23159@p34.internal.lan>
+	 <4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA>
+	 <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>
+	 <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan>
+X-GMailtapped-By: 172.28.16.142
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, September 2, 2008 8:40 am Alex Chiang wrote:
-> The introduction of struct pci_slot (f46753c5e354b857b20ab8e0fe7b25)
-> added a struct pci_slot pointer to struct pci_dev, but we forgot to
-> associate the two.
->
-> Connect the two structs together; the interesting portions of the object
-> lifetimes are:
->
-> 	- when a new pci_slot is created, connect it to the appropriate
-> 	  pci_dev's. A single pci_slot may be associated with multiple
-> 	  pci_dev's, e.g. any multi-function PCI device.
->
-> 	- when a pci_slot is released, look for all the pci_dev's it was
-> 	  associated with, and set their pci_slot pointers to NULL
->
-> 	- when a pci_dev is created, look for slots to associate with.
->
-> Note -- when a pci_dev is released, we don't need to do any bookkeeping,
-> since pci_slot's do not have pointers to pci_dev's.
->
-> Signed-off-by: Alex Chiang <achiang@hp.com>
+About ata1:0 problem, as reported in the bugzilla bug: I would try to
+disable NCQ to see if it helps. Your disks firmware might not fully
+support it.
 
-Applied to linux-next.  Thanks.
+You can either add the parameter "libata.force=noncq" when loading
+your kernel, or set queue_depth to 1 for all the Seagate drives behind
+the Marvell MV88SX6081 controller.
 
-Jesse
+About ata5:0 , someone - in user space probably - is trying to do a
+SMART ENABLE operation, but the device ignores it. I don't know which
+device you are using, but I assume it does not support ATA SMART
+feature set. Timeout is an acceptable but not a nice way to answer, a
+cancel would have been better; check if there is a firmware upgrade
+for your device.
+
+Gwendal.
+
+On Mon, Sep 22, 2008 at 6:26 AM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+> From Brian's earlier e-mail:
+>
+>> > I filed this kernel bug:
+>> > https://bugzilla.redhat.com/show_bug.cgi?id=462425
+>
+>
+> On Mon, 22 Sep 2008, Justin Piszcz wrote:
+>
+>> I could not agree more.
+>>
+>> CC'ing the relevant mailing lists to see if someone out there has any idea
+>> what more we could do as this has been affecting you (more so than myself,
+>> but I would still like to get some sort of resolution as well, as it still
+>> happens to me too):
+>>
+>> Similar, but not the same issue:
+>>
+>> Sep 17 20:20:05 p34 kernel: [1422169.440538] ata5.00: exception Emask 0x0
+>> SAct 0x0 SErr 0x0 action 0x6 frozen
+>> Sep 17 20:20:05 p34 kernel: [1422169.440549] ata5.00: cmd
+>> b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
+>> Sep 17 20:20:05 p34 kernel: [1422169.440551]          res
+>> 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> Sep 17 20:20:05 p34 kernel: [1422169.440556] ata5.00: status: { DRDY }
+>> Sep 17 20:20:05 p34 kernel: [1422169.440561] ata5: hard resetting link
+>> Sep 17 20:20:06 p34 kernel: [1422169.744980] ata5: SATA link up 3.0 Gbps
+>> (SStatus 123 SControl 300)
+>> Sep 17 20:20:06 p34 kernel: [1422169.770448] ata5.00: configured for
+>> UDMA/133
+>> Sep 17 20:20:06 p34 kernel: [1422169.770461] ata5: EH complete
+>>
+>> (2.6.23.3) above
+>>
+>> On Mon, 22 Sep 2008, Brian Rademacher wrote:
+>>
+>>> Works fine...Also works under heavy load with only 4 drives.  I could
+>>> only get it to fail by doing a raid resync with 4 drives, except for the
+>>> newer kernel, which dies pretty easily..
+>>>
+>>> What is really frustrating about it is that short of the bugzilla bug I
+>>> submitted, I don't know who would be willing to listen...A lot of the google
+>>> hits when searching "action 0x2 frozen" are related to a particular CDROM
+>>> drive, or general hardware failure.  I really don't think that is the case
+>>> here, but I bet most of the kernel people think the same thing, so they have
+>>> no reason to care...
+>>>
+>>>
+>>> Sent: Monday, September 22, 2008 7:04 AM
+>>> Subject: Re: Hardware RAID
+>>>
+>>>
+>>>> What about if you just 'stress' one drive?
+>>>>
+>>>> 1. dd if=/dev/sda of=/dev/null bs=1M &
+>>>> Does it do it?
+>>>> 2. Same thing for sdb?
+>>>>
+>>>> Justin.
+>>>>
+>>>> On Mon, 22 Sep 2008, Brian Rademacher wrote:
+>>>>
+>>>>> I killed smartd for testing.  Other than that, it seems entirely load
+>>>>> based. Anything disk intensive (backups, raid resync, a bunch of spam comes
+>>>>> in at once, etc.) makes it fail...
+>>>>>
+>>>>> Sent: Monday, September 22, 2008 6:29 AM
+>>>>> Subject: Re: Hardware RAID
+>>>>>
+>>>>>
+>>>>>> While the error happens for me as well it does NOT happen with that
+>>>>>> much consistency, if I were you, I would start testing different kernels and
+>>>>>> run it in single user mode (or as close to it as you can) to see if you can
+>>>>>> narrow down what is causing it, also boot knoppix and see if it occurs-- ?
+>>>>>>
+>>>>>> Justin.
+>>>>>>
+>>>>>> On Mon, 22 Sep 2008, Brian Rademacher wrote:
+>>>>>>
+>>>>>>> Doesn't look like a very powerful RAID card, so I may pass on it.  I
+>>>>>>> don't think it will have the BW to run as fast as the software RAID
+>>>>>>> currently does since it's only a 64bit/66mhz PCI slot...
+>>>>>>>
+>>>>>>> I hate to do the hardware RAID thing, but this error is killing me:
+>>>>>>> Sep 21 12:05:19 radfiles kernel: ata1.00: exception Emask 0x0 SAct
+>>>>>>> 0x1 SErr 0x0 action 0x2 frozen
+>>>>>>> Sep 21 12:32:12 radfiles kernel: ata1.00: exception Emask 0x0 SAct
+>>>>>>> 0x1 SErr 0x0 action 0x2 frozen
+>>>>>>> Sep 21 12:41:34 radfiles kernel: ata1.00: exception Emask 0x0 SAct
+>>>>>>> 0x1 SErr 0x0 action 0x2 frozen
+>>>>>>> Sep 21 12:58:22 radfiles kernel: ata1.00: exception Emask 0x0 SAct
+>>>>>>> 0x1 SErr 0x0 action 0x2 frozen
+>>>>>>> Sep 21 13:11:04 radfiles kernel: ata1.00: exception Emask 0x0 SAct
+>>>>>>> 0x1 SErr 0x0 action 0x2 frozen
+>>>>>>> Sep 21 13:23:55 radfiles kernel: ata1.00: exception Emask 0x0 SAct
+>>>>>>> 0x1 SErr 0x0 action 0x2 frozen
+>>>>>>> Sep 21 13:54:23 radfiles kernel: ata1.00: exception Emask 0x0 SAct
+>>>>>>> 0x1 SErr 0x0 action 0x2 frozen
+>>>>>>> Sep 21 15:15:04 radfiles kernel: ata1.00: exception Emask 0x0 SAct
+>>>>>>> 0x1 SErr 0x0 action 0x2 frozen
+>>>>>>> Sep 21 15:44:06 radfiles kernel: ata1.00: exception Emask 0x0 SAct
+>>>>>>> 0x1 SErr 0x0 action 0x2 frozen
+>>>>>>> Sep 21 21:15:12 radfiles kernel: ata1.00: exception Emask 0x0 SAct
+>>>>>>> 0x1 SErr 0x0 action 0x2 frozen
+>>>>>>>
+>>>>>>> And at this point, I can either regress to a 4 drive RAID and don't
+>>>>>>> update the kernel, or move forward with hardware...
+>>>>>>>
+>>>>>>> I don't see a fix coming any time soon, but maybe I'll try one of the
+>>>>>>> latest F10 kernels just to see if anything has changed...
+>>>>>>>
+>>>>>>>
+>>>>>>> ----- Original Message ----- From: "Justin Piszcz" Sent: Monday,
+>>>>>>> September 22, 2008 2:05 AM
+>>>>>>> Subject: Re: Hardware RAID
+>>>>>>>
+>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> On Sun, 21 Sep 2008, Brian Rademacher wrote:
+>>>>>>>>
+>>>>>>>>> The RAID gods must have been thinking about me.  My MB has one of
+>>>>>>>>> these funny slots and supports ZCR, so for the price I'm going to jump ship.
+>>>>>>>>> I would guess (and hope) this solves the problem, especially since I'll have
+>>>>>>>>> to reconstruct the entire array...
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> http://cgi.ebay.com/2113600-R-Adaptec-Serial-ATA-RAID-2025SA-Storage_W0QQitemZ250295938636QQihZ015QQcategoryZ167QQssPageNameZWDVWQQrdZ1QQcmdZViewItem
+>>>>>>>>
+>>>>>>>> Hm cool-- let me know how it goes.
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
