@@ -1,399 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbYIWQun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbYIWQ7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbYIWQun (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 12:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYIWQqS
+	id S1754058AbYIWQ7N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 12:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbYIWQ66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 12:46:18 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:47469 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754471AbYIWQqQ (ORCPT
+	Tue, 23 Sep 2008 12:58:58 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:2347 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752440AbYIWQ65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 12:46:16 -0400
-From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH v3 12/14] PCI: shcphp: remove 'name' parameter
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
-       kaneshige.kenji@jp.fujitsu.com, Alex Chiang <achiang@hp.com>
-Date: Tue, 23 Sep 2008 10:46:14 -0600
-Message-ID: <20080923164614.12628.61841.stgit@bob.kio>
-In-Reply-To: <20080923163753.12628.98683.stgit@bob.kio>
-References: <20080923163753.12628.98683.stgit@bob.kio>
-User-Agent: StGIT/0.14.3.215.gff3d
+	Tue, 23 Sep 2008 12:58:57 -0400
+Message-ID: <48D9204E.2020706@ct.jp.nec.com>
+Date: Tue, 23 Sep 2008 09:58:54 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH -tip 0/4] x86: signal handler improvement
+References: <48D84A2A.2030009@ct.jp.nec.com> <20080923085027.GA25698@elte.hu>
+In-Reply-To: <20080923085027.GA25698@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We do not need to manage our own name parameter, especially since
-the PCI core can change it on our behalf, in the case of duplicate
-slot names.
+Ingo Molnar wrote:
+> * Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+> 
+>> This patch series is experimental.
+>> I made it against tip/master.
+>>
+>> I noticed there are inefficient codes in x86 signals.
+>> For example, disassembled 32-bit setup_sigcontext();
+>>
+>> 0000007c <setup_sigcontext>:
+>>   7c:	55                   	push   %ebp
+>>   7d:	89 e5                	mov    %esp,%ebp
+>>   7f:	57                   	push   %edi
+>>   80:	31 ff                	xor    %edi,%edi
+>>   82:	56                   	push   %esi
+>>   83:	89 c6                	mov    %eax,%esi
+>>   85:	53                   	push   %ebx
+>>   86:	83 ec 58             	sub    $0x58,%esp
+>>   89:	89 55 a4             	mov    %edx,-0x5c(%ebp)
+>>   8c:	89 fa                	mov    %edi,%edx
+>>   8e:	8b 41 24             	mov    0x24(%ecx),%eax
+>>   91:	89 46 04             	mov    %eax,0x4(%esi)
+>>   94:	89 55 a8             	mov    %edx,-0x58(%ebp)
+>> ...
+>>  184:	8b 5d ac             	mov    -0x54(%ebp),%ebx
+>>  187:	0b 5d a8             	or     -0x58(%ebp),%ebx
+>>  18a:	0b 5d b0             	or     -0x50(%ebp),%ebx
+>>  18d:	0b 5d b4             	or     -0x4c(%ebp),%ebx
+>>  190:	0b 5d b8             	or     -0x48(%ebp),%ebx
+>>  193:	0b 5d bc             	or     -0x44(%ebp),%ebx
+>>  196:	0b 5d c0             	or     -0x40(%ebp),%ebx
+>>  199:	0b 5d c4             	or     -0x3c(%ebp),%ebx
+>>  19c:	0b 5d c8             	or     -0x38(%ebp),%ebx
+>>  19f:	0b 5d cc             	or     -0x34(%ebp),%ebx
+>>  1a2:	0b 5d d0             	or     -0x30(%ebp),%ebx
+>>  1a5:	0b 5d d4             	or     -0x2c(%ebp),%ebx
+>>  1a8:	0b 5d d8             	or     -0x28(%ebp),%ebx
+>>  1ab:	0b 5d dc             	or     -0x24(%ebp),%ebx
+>>  1ae:	0b 5d e0             	or     -0x20(%ebp),%ebx
+>>  1b1:	0b 5d e4             	or     -0x1c(%ebp),%ebx
+>>  1b4:	0b 5d e8             	or     -0x18(%ebp),%ebx
+>>  1b7:	0b 5d ec             	or     -0x14(%ebp),%ebx
+>>  1ba:	0b 5d f0             	or     -0x10(%ebp),%ebx
+>>  1bd:	09 fb                	or     %edi,%ebx
+>> ...
+>>  1dc:	09 d8                	or     %ebx,%eax
+>>  1de:	5b                   	pop    %ebx
+>>  1df:	09 c8                	or     %ecx,%eax
+>>  1e1:	5e                   	pop    %esi
+>>  1e2:	5f                   	pop    %edi
+>>  1e3:	5d                   	pop    %ebp
+>>  1e4:	c3                   	ret    
+>>
+>> there is a lot of "or" operation with stack, and it came from a set of
+>> following lines;
+>>
+>> err |= __put_user(x, ptr);
+>>
+>> The above line compiled to like this;
+>>   a0:	89 fa                	mov    %edi,%edx
+>>   a2:	8b 41 20             	mov    0x20(%ecx),%eax
+>>   a5:	89 46 08             	mov    %eax,0x8(%esi)
+>>   a8:	89 55 b0             	mov    %edx,-0x50(%ebp)
+>>
+>> and errors in __put_user is stored to stack. At the end of function, 
+>> all errors in stack are calculated. If access to user space is failed, 
+>> %edx is set to -EFAULT in exception handler and stored to stack for 
+>> later operation. It seems inefficient.
+> 
+> yes, very much! Years ago i tried years to improve it but didnt think of 
+> your solution back then.
+> 
+>> This patch series introduce __{put|get}_user_cerr for cumulative error
+>> handling. So, the line;
+>> err |= __put_user(x, ptr);
+>> changes to
+>> __put_user_cerr(x, ptr, err);
+>>
+>> and it compiled to like this;
+>>   92:	8b 41 20             	mov    0x20(%ecx),%eax
+>>   95:	89 47 08             	mov    %eax,0x8(%edi)
+>>
+>> The cumulative error is kept in the other register, in this example,
+>> %esi is used for this, and returns it. If access to user space causes fault,
+>> %esi is set to the value (%esi | -EFAULT) in exception handler.
+>>
+>>  137:	89 f0                	mov    %esi,%eax
+>>  139:	5b                   	pop    %ebx
+>>  13a:	5e                   	pop    %esi
+>>  13b:	5f                   	pop    %edi
+>>  13c:	5d                   	pop    %ebp
+>>  13d:	c3                   	ret    
+>>
+>> The results of this, I got a little performance improvement in signal
+>> handling. Here is a result of lmbench.
+>> I've tried 64-bit only at this time. Will measure on 32-bit.
+>>
+>> Processor, Processes - times in microseconds - smaller is better
+>> ------------------------------------------------------------------------------
+>> Host                 OS  Mhz null null      open slct sig  sig  fork exec sh
+>>                              call  I/O stat clos TCP  inst hndl proc proc proc
+>> --------- ------------- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+>> tip64-sig Linux 2.6.27- 3788 0.17 0.27 1.67 2.65 3.20 0.32 2.97 180. 524. 1806
+>> tip64-sig Linux 2.6.27- 3788 0.17 0.27 1.68 2.65 3.20 0.32 2.95 180. 520. 1796
+>> tip64-sig Linux 2.6.27- 3788 0.17 0.27 1.68 2.72 3.21 0.32 2.96 177. 528. 1812
+>> tip64     Linux 2.6.27- 3788 0.17 0.27 1.68 2.74 3.22 0.32 3.01 174. 523. 1853
+>> tip64     Linux 2.6.27- 3788 0.17 0.27 1.68 2.73 3.22 0.32 3.01 175. 523. 1806
+>> tip64     Linux 2.6.27- 3788 0.17 0.27 1.68 2.74 3.20 0.32 3.01 181. 523. 1791
+>>
+>> This patch series also reduces stack usages and code size.
+>>
+>> $ size signal_*
+>>    text	   data	    bss	    dec	    hex	filename
+>>    4507	      0	      0	   4507	   119b	signal_32.o.new
+>>    5031	      0	      0	   5031	   13a7	signal_32.o.old
+>>    3827	      0	      0	   3827	    ef3	signal_64.o.new
+>>    4652	      0	      0	   4652	   122c	signal_64.o.old
+>>
+>> Comments are welcome.
+>> I'll handle this patch series if it's good.
+> 
+> very nice!!
+> 
+> could we perhaps first finish unifying them into signal.c, and then 
+> introduce __put_user_cerr() in signal_32/64.c?
+> 
+> Or we could put your patches into tip/x86/signal as-is if you expect to 
+> finish the unification in the near future.
 
-Remove 'name' from shpchp's version of struct slot.
+Thanks for looking this series!
 
-This change also removes the unused struct task_event from the
-slot structure.
+I prefer to finish unification first.
+Will push this series after unification.
 
-Cc: jbarnes@virtuousgeek.org
-Cc: kristen.c.accardi@intel.com
-Cc: kaneshige.kenji@jp.fujitsu.com
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-
- drivers/pci/hotplug/shpchp.h      |    9 +++++--
- drivers/pci/hotplug/shpchp_core.c |   28 ++++++++++------------
- drivers/pci/hotplug/shpchp_ctrl.c |   48 +++++++++++++++++++------------------
- 3 files changed, 43 insertions(+), 42 deletions(-)
-
-diff --git a/drivers/pci/hotplug/shpchp.h b/drivers/pci/hotplug/shpchp.h
-index 8a026f7..4d9fed0 100644
---- a/drivers/pci/hotplug/shpchp.h
-+++ b/drivers/pci/hotplug/shpchp.h
-@@ -69,15 +69,13 @@ struct slot {
- 	u8 state;
- 	u8 presence_save;
- 	u8 pwr_save;
--	struct timer_list task_event;
--	u8 hp_slot;
- 	struct controller *ctrl;
- 	struct hpc_ops *hpc_ops;
- 	struct hotplug_slot *hotplug_slot;
- 	struct list_head	slot_list;
--	char name[SLOT_NAME_SIZE];
- 	struct delayed_work work;	/* work for button event */
- 	struct mutex lock;
-+	u8 hp_slot;
- };
- 
- struct event_info {
-@@ -169,6 +167,11 @@ extern void cleanup_slots(struct controller *ctrl);
- extern void shpchp_queue_pushbutton_work(struct work_struct *work);
- extern int shpc_init( struct controller *ctrl, struct pci_dev *pdev);
- 
-+static inline const char *slot_name(struct slot *slot)
-+{
-+	return hotplug_slot_name(slot->hotplug_slot);
-+}
-+
- #ifdef CONFIG_ACPI
- #include <linux/pci-acpi.h>
- static inline int get_hp_params_from_firmware(struct pci_dev *dev,
-diff --git a/drivers/pci/hotplug/shpchp_core.c b/drivers/pci/hotplug/shpchp_core.c
-index cfdd079..ad6db88 100644
---- a/drivers/pci/hotplug/shpchp_core.c
-+++ b/drivers/pci/hotplug/shpchp_core.c
-@@ -89,7 +89,7 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
- {
- 	struct slot *slot = hotplug_slot->private;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	kfree(slot->hotplug_slot->info);
- 	kfree(slot->hotplug_slot);
-@@ -101,6 +101,7 @@ static int init_slots(struct controller *ctrl)
- 	struct slot *slot;
- 	struct hotplug_slot *hotplug_slot;
- 	struct hotplug_slot_info *info;
-+	char name[SLOT_NAME_SIZE];
- 	int retval = -ENOMEM;
- 	int i;
- 
-@@ -119,8 +120,6 @@ static int init_slots(struct controller *ctrl)
- 			goto error_hpslot;
- 		hotplug_slot->info = info;
- 
--		hotplug_slot->name = slot->name;
--
- 		slot->hp_slot = i;
- 		slot->ctrl = ctrl;
- 		slot->bus = ctrl->pci_dev->subordinate->number;
-@@ -133,7 +132,7 @@ static int init_slots(struct controller *ctrl)
- 		/* register this slot with the hotplug pci core */
- 		hotplug_slot->private = slot;
- 		hotplug_slot->release = &release_slot;
--		snprintf(slot->name, SLOT_NAME_SIZE, "%d", slot->number);
-+		snprintf(name, SLOT_NAME_SIZE, "%d", slot->number);
- 		hotplug_slot->ops = &shpchp_hotplug_slot_ops;
- 
- 		get_power_status(hotplug_slot, &info->power_status);
-@@ -145,8 +144,7 @@ static int init_slots(struct controller *ctrl)
- 		    "slot_device_offset=%x\n", slot->bus, slot->device,
- 		    slot->hp_slot, slot->number, ctrl->slot_device_offset);
- 		retval = pci_hp_register(slot->hotplug_slot,
--				ctrl->pci_dev->subordinate, slot->device,
--				hotplug_slot->name);
-+				ctrl->pci_dev->subordinate, slot->device, name);
- 		if (retval) {
- 			err("pci_hp_register failed with error %d\n", retval);
- 			goto error_info;
-@@ -189,7 +187,7 @@ static int set_attention_status (struct hotplug_slot *hotplug_slot, u8 status)
- {
- 	struct slot *slot = get_slot(hotplug_slot);
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	hotplug_slot->info->attention_status = status;
- 	slot->hpc_ops->set_attention_status(slot, status);
-@@ -201,7 +199,7 @@ static int enable_slot (struct hotplug_slot *hotplug_slot)
- {
- 	struct slot *slot = get_slot(hotplug_slot);
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	return shpchp_sysfs_enable_slot(slot);
- }
-@@ -210,7 +208,7 @@ static int disable_slot (struct hotplug_slot *hotplug_slot)
- {
- 	struct slot *slot = get_slot(hotplug_slot);
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	return shpchp_sysfs_disable_slot(slot);
- }
-@@ -220,7 +218,7 @@ static int get_power_status (struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = get_slot(hotplug_slot);
- 	int retval;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	retval = slot->hpc_ops->get_power_status(slot, value);
- 	if (retval < 0)
-@@ -234,7 +232,7 @@ static int get_attention_status (struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = get_slot(hotplug_slot);
- 	int retval;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	retval = slot->hpc_ops->get_attention_status(slot, value);
- 	if (retval < 0)
-@@ -248,7 +246,7 @@ static int get_latch_status (struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = get_slot(hotplug_slot);
- 	int retval;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	retval = slot->hpc_ops->get_latch_status(slot, value);
- 	if (retval < 0)
-@@ -262,7 +260,7 @@ static int get_adapter_status (struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = get_slot(hotplug_slot);
- 	int retval;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	retval = slot->hpc_ops->get_adapter_status(slot, value);
- 	if (retval < 0)
-@@ -277,7 +275,7 @@ static int get_max_bus_speed(struct hotplug_slot *hotplug_slot,
- 	struct slot *slot = get_slot(hotplug_slot);
- 	int retval;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	retval = slot->hpc_ops->get_max_bus_speed(slot, value);
- 	if (retval < 0)
-@@ -291,7 +289,7 @@ static int get_cur_bus_speed (struct hotplug_slot *hotplug_slot, enum pci_bus_sp
- 	struct slot *slot = get_slot(hotplug_slot);
- 	int retval;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	retval = slot->hpc_ops->get_cur_bus_speed(slot, value);
- 	if (retval < 0)
-diff --git a/drivers/pci/hotplug/shpchp_ctrl.c b/drivers/pci/hotplug/shpchp_ctrl.c
-index dfb5393..919b1ee 100644
---- a/drivers/pci/hotplug/shpchp_ctrl.c
-+++ b/drivers/pci/hotplug/shpchp_ctrl.c
-@@ -70,7 +70,7 @@ u8 shpchp_handle_attention_button(u8 hp_slot, struct controller *ctrl)
- 	/*
- 	 *  Button pressed - See if need to TAKE ACTION!!!
- 	 */
--	info("Button pressed on Slot(%s)\n", p_slot->name);
-+	info("Button pressed on Slot(%s)\n", slot_name(p_slot));
- 	event_type = INT_BUTTON_PRESS;
- 
- 	queue_interrupt_event(p_slot, event_type);
-@@ -98,7 +98,7 @@ u8 shpchp_handle_switch_change(u8 hp_slot, struct controller *ctrl)
- 		/*
- 		 * Switch opened
- 		 */
--		info("Latch open on Slot(%s)\n", p_slot->name);
-+		info("Latch open on Slot(%s)\n", slot_name(p_slot));
- 		event_type = INT_SWITCH_OPEN;
- 		if (p_slot->pwr_save && p_slot->presence_save) {
- 			event_type = INT_POWER_FAULT;
-@@ -108,7 +108,7 @@ u8 shpchp_handle_switch_change(u8 hp_slot, struct controller *ctrl)
- 		/*
- 		 *  Switch closed
- 		 */
--		info("Latch close on Slot(%s)\n", p_slot->name);
-+		info("Latch close on Slot(%s)\n", slot_name(p_slot));
- 		event_type = INT_SWITCH_CLOSE;
- 	}
- 
-@@ -135,13 +135,13 @@ u8 shpchp_handle_presence_change(u8 hp_slot, struct controller *ctrl)
- 		/*
- 		 * Card Present
- 		 */
--		info("Card present on Slot(%s)\n", p_slot->name);
-+		info("Card present on Slot(%s)\n", slot_name(p_slot));
- 		event_type = INT_PRESENCE_ON;
- 	} else {
- 		/*
- 		 * Not Present
- 		 */
--		info("Card not present on Slot(%s)\n", p_slot->name);
-+		info("Card not present on Slot(%s)\n", slot_name(p_slot));
- 		event_type = INT_PRESENCE_OFF;
- 	}
- 
-@@ -164,14 +164,14 @@ u8 shpchp_handle_power_fault(u8 hp_slot, struct controller *ctrl)
- 		/*
- 		 * Power fault Cleared
- 		 */
--		info("Power fault cleared on Slot(%s)\n", p_slot->name);
-+		info("Power fault cleared on Slot(%s)\n", slot_name(p_slot));
- 		p_slot->status = 0x00;
- 		event_type = INT_POWER_FAULT_CLEAR;
- 	} else {
- 		/*
- 		 *   Power fault
- 		 */
--		info("Power fault on Slot(%s)\n", p_slot->name);
-+		info("Power fault on Slot(%s)\n", slot_name(p_slot));
- 		event_type = INT_POWER_FAULT;
- 		/* set power fault status for this board */
- 		p_slot->status = 0xFF;
-@@ -493,11 +493,11 @@ static void handle_button_press_event(struct slot *p_slot)
- 		if (getstatus) {
- 			p_slot->state = BLINKINGOFF_STATE;
- 			info("PCI slot #%s - powering off due to button "
--			     "press.\n", p_slot->name);
-+			     "press.\n", slot_name(p_slot));
- 		} else {
- 			p_slot->state = BLINKINGON_STATE;
- 			info("PCI slot #%s - powering on due to button "
--			     "press.\n", p_slot->name);
-+			     "press.\n", slot_name(p_slot));
- 		}
- 		/* blink green LED and turn off amber */
- 		p_slot->hpc_ops->green_led_blink(p_slot);
-@@ -512,7 +512,7 @@ static void handle_button_press_event(struct slot *p_slot)
- 		 * press the attention again before the 5 sec. limit
- 		 * expires to cancel hot-add or hot-remove
- 		 */
--		info("Button cancel on Slot(%s)\n", p_slot->name);
-+		info("Button cancel on Slot(%s)\n", slot_name(p_slot));
- 		dbg("%s: button cancel\n", __func__);
- 		cancel_delayed_work(&p_slot->work);
- 		if (p_slot->state == BLINKINGOFF_STATE)
-@@ -521,7 +521,7 @@ static void handle_button_press_event(struct slot *p_slot)
- 			p_slot->hpc_ops->green_led_off(p_slot);
- 		p_slot->hpc_ops->set_attention_status(p_slot, 0);
- 		info("PCI slot #%s - action canceled due to button press\n",
--		     p_slot->name);
-+		     slot_name(p_slot));
- 		p_slot->state = STATIC_STATE;
- 		break;
- 	case POWEROFF_STATE:
-@@ -531,7 +531,7 @@ static void handle_button_press_event(struct slot *p_slot)
- 		 * this means that the previous attention button action
- 		 * to hot-add or hot-remove is undergoing
- 		 */
--		info("Button ignore on Slot(%s)\n", p_slot->name);
-+		info("Button ignore on Slot(%s)\n", slot_name(p_slot));
- 		update_slot_info(p_slot);
- 		break;
- 	default:
-@@ -574,17 +574,17 @@ static int shpchp_enable_slot (struct slot *p_slot)
- 	mutex_lock(&p_slot->ctrl->crit_sect);
- 	rc = p_slot->hpc_ops->get_adapter_status(p_slot, &getstatus);
- 	if (rc || !getstatus) {
--		info("No adapter on slot(%s)\n", p_slot->name);
-+		info("No adapter on slot(%s)\n", slot_name(p_slot));
- 		goto out;
- 	}
- 	rc = p_slot->hpc_ops->get_latch_status(p_slot, &getstatus);
- 	if (rc || getstatus) {
--		info("Latch open on slot(%s)\n", p_slot->name);
-+		info("Latch open on slot(%s)\n", slot_name(p_slot));
- 		goto out;
- 	}
- 	rc = p_slot->hpc_ops->get_power_status(p_slot, &getstatus);
- 	if (rc || getstatus) {
--		info("Already enabled on slot(%s)\n", p_slot->name);
-+		info("Already enabled on slot(%s)\n", slot_name(p_slot));
- 		goto out;
- 	}
- 
-@@ -633,17 +633,17 @@ static int shpchp_disable_slot (struct slot *p_slot)
- 
- 	rc = p_slot->hpc_ops->get_adapter_status(p_slot, &getstatus);
- 	if (rc || !getstatus) {
--		info("No adapter on slot(%s)\n", p_slot->name);
-+		info("No adapter on slot(%s)\n", slot_name(p_slot));
- 		goto out;
- 	}
- 	rc = p_slot->hpc_ops->get_latch_status(p_slot, &getstatus);
- 	if (rc || getstatus) {
--		info("Latch open on slot(%s)\n", p_slot->name);
-+		info("Latch open on slot(%s)\n", slot_name(p_slot));
- 		goto out;
- 	}
- 	rc = p_slot->hpc_ops->get_power_status(p_slot, &getstatus);
- 	if (rc || !getstatus) {
--		info("Already disabled slot(%s)\n", p_slot->name);
-+		info("Already disabled slot(%s)\n", slot_name(p_slot));
- 		goto out;
- 	}
- 
-@@ -671,14 +671,14 @@ int shpchp_sysfs_enable_slot(struct slot *p_slot)
- 		break;
- 	case POWERON_STATE:
- 		info("Slot %s is already in powering on state\n",
--		     p_slot->name);
-+		     slot_name(p_slot));
- 		break;
- 	case BLINKINGOFF_STATE:
- 	case POWEROFF_STATE:
--		info("Already enabled on slot %s\n", p_slot->name);
-+		info("Already enabled on slot %s\n", slot_name(p_slot));
- 		break;
- 	default:
--		err("Not a valid state on slot %s\n", p_slot->name);
-+		err("Not a valid state on slot %s\n", slot_name(p_slot));
- 		break;
- 	}
- 	mutex_unlock(&p_slot->lock);
-@@ -703,14 +703,14 @@ int shpchp_sysfs_disable_slot(struct slot *p_slot)
- 		break;
- 	case POWEROFF_STATE:
- 		info("Slot %s is already in powering off state\n",
--		     p_slot->name);
-+		     slot_name(p_slot));
- 		break;
- 	case BLINKINGON_STATE:
- 	case POWERON_STATE:
--		info("Already disabled on slot %s\n", p_slot->name);
-+		info("Already disabled on slot %s\n", slot_name(p_slot));
- 		break;
- 	default:
--		err("Not a valid state on slot %s\n", p_slot->name);
-+		err("Not a valid state on slot %s\n", slot_name(p_slot));
- 		break;
- 	}
- 	mutex_unlock(&p_slot->lock);
+thanks,
+Hiroshi Shimamoto
 
