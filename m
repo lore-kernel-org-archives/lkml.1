@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbYIWWXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbYIWWZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754388AbYIWWXj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 18:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYIWWXb
+	id S1754357AbYIWWZp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 18:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYIWWZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 18:23:31 -0400
-Received: from crmm.lgl.lu ([158.64.72.228]:45961 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750884AbYIWWXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 18:23:31 -0400
-Message-ID: <48D96C60.6000104@knaff.lu>
-Date: Wed, 24 Sep 2008 00:23:28 +0200
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 23 Sep 2008 18:25:33 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:51395 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbYIWWZc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 18:25:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:subject:to:cc:date:message-id:user-agent:mime-version
+         :content-type:content-transfer-encoding:sender;
+        b=LQgOYUZGxNUdgTYGzvzR9LA/ehFXExLi+FRJ25xtNxXN/R6wF3yy2CU8MZCwEHpJ4e
+         Ilhfv3wNuqzDit1DYnq777C1QlKigcc83VjUqPlMd6whM61QaFOy+u/E/rT2C/65qi+D
+         tEtA3S3lahxcArZOfchohYIoXac7mlavjWlgQ=
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: [PATCH 0/3] e1000e: protect NVM from corruption 
+To: jeff@garzik.org, mingo@elte.hu, davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jesse.brandeburg@intel.com, john.ronciak@intel.com
+Date: Tue, 23 Sep 2008 15:25:37 -0700
+Message-ID: <20080923222320.6075.90496.stgit@jtkirshe-mobile.jf.intel.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
- initrds
-References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu> <48D96013.1070507@zytor.com> <48D966E4.7080200@knaff.lu> <48D96B58.6080604@zytor.com>
-In-Reply-To: <48D96B58.6080604@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> [Trimming Cc: list]
-> 
-> Alain Knaff wrote:
->> H. Peter Anvin wrote:
->>> I mean I'm using O= to build in a different object directory.
->>
->> Could you please post an example of such a command line?
-> 
-> mkdir o.junk
-> make O=o.junk defconfig
-> make O=o.junk
-> 
->     -hpa
+These patches apply against commit e002bcc2f8e766a96472379e3b4a8a4e8938a93e of Linus's latest tree.
 
-Thanks. That's interesting, especially when testing stuff for several
-architectures.
+These patches have had some basic tested run against them.  These patches are intended to prevent the NVM corruption being reported and will hopefully help in finding a root cause for the NVM corruption.
 
-Alain
+---
 
+Bruce Allan (3):
+      e1000e: remove failed request for sw/fw/hw flag
+      e1000e: Useset_memory_ro()/set_memory_rw() to protect flash memory
+      x86: export set_memory_ro() and set_memory_rw() calls
+
+
+ arch/x86/mm/pageattr.c       |    2 ++
+ drivers/net/e1000e/e1000.h   |    1 +
+ drivers/net/e1000e/hw.h      |    1 +
+ drivers/net/e1000e/ich8lan.c |   18 ++++++++++++++++++
+ drivers/net/e1000e/netdev.c  |   11 +++++++----
+ 5 files changed, 29 insertions(+), 4 deletions(-)
+
+-- 
+Signature
