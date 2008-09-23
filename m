@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYIWRnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYIWRp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263AbYIWRnc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 13:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYIWRnZ
+	id S1754566AbYIWRp2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 13:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYIWRpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 13:43:25 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60676 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751630AbYIWRnY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 13:43:24 -0400
-Date: Tue, 23 Sep 2008 18:43:15 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mtd: Export the ROM enable/disable helpers and use them
- in mtd
-Message-ID: <20080923184315.13f0923f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080923164338.GA12167@shareable.org>
-References: <20080923172510.37419440@lxorguk.ukuu.org.uk>
-	<20080923164338.GA12167@shareable.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Sep 2008 13:45:21 -0400
+Received: from web50901.mail.re2.yahoo.com ([206.190.38.121]:44612 "HELO
+	web50901.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752687AbYIWRpU convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 13:45:20 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Sep 2008 13:45:20 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.br;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Lwc8yvs358rztofZEFf3cIBWd0TPKXxdVonFe+C1ZbrXe3JWY/tDOOYJERGlHuqDMf5VVD35F7xRPuKa7WmfXcGJUZseMklFXIkvKYKc7f6nTbt5acoZJlnAbc5A2ux8tFKq6U9C+pqsVh6ZtpMFWbFMNTywiNNSQh0/nagT/3M=;
+X-YMail-OSG: 8APR37QVM1nwFdFC4F203uwuFKP.GQYJTJBz.TRa6KWKv0XHqxPUv15pXom5j9qSSQ--
+X-Mailer: YahooMailWebService/0.7.218.2
+Date: Tue, 23 Sep 2008 10:38:37 -0700 (PDT)
+From: Joilnen Leite <knl_joi@yahoo.com.br>
+Reply-To: knl_joi@yahoo.com.br
+Subject: about kernel_physical_mapping_init
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1222190371-23814-4-git-send-email-srajiv@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <511753.74328.qm@web50901.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008 17:43:38 +0100
-Jamie Lokier <jamie@shareable.org> wrote:
+I wondering if inside kernel_physical_mapping_init, we could put the line
+  pmd = one_md_table_init(pgd);
+after
+  if (pfn >= max_low_pfn)
+    continue;
+and if this could to be a improve, one time it dont go to one_md_table_init in pfn >= max_low_pfn case
 
-> Alan Cox wrote:
-> >  EXPORT_SYMBOL(pci_map_rom);
-> >  EXPORT_SYMBOL(pci_unmap_rom);
-> > +EXPORT_SYMBOL_GPL(pci_enable_rom);
-> > +EXPORT_SYMBOL_GPL(pci_disable_rom);
-> 
-> It doesn't _sound_ like the sort of thing tied into the kernel enough
-> to deserve an EXPORT_SYMBOL_*GPL*.  Any particularly reason?
+Joilnen
 
-It's not my code so I can't change the licensing on it. If the original
-author of that code has no objection I would also think the _GPL version
-isn't needed.
 
-Alan
+      Novos endereços, o Yahoo! que você conhece. Crie um email novo com a sua cara @ymail.com ou @rocketmail.com.
+http://br.new.mail.yahoo.com/addresses
