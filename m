@@ -1,66 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbYIWWqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755727AbYIWWsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbYIWWqp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 18:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYIWWqe
+	id S1755727AbYIWWsg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 18:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYIWWs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 18:46:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:50844 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbYIWWqd (ORCPT
+	Tue, 23 Sep 2008 18:48:27 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:2299 "EHLO
+	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751549AbYIWWs0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 18:46:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:subject:to:cc:date:message-id:user-agent:mime-version
-         :content-type:content-transfer-encoding:sender;
-        b=TInqTiQGRLjN9M+5Hma7OdXiDkRtud2ipXqO/WAIhtBJLwuwGRhGh4nfF1698Na5u/
-         youCsWgduVNIUkplCwgTqp39Qyl9q6DgfcV2qGh3XnMechBDykAP0vvRW2LzMM7SDyIH
-         XwaNxv5NRzSOEaPEJ7GMWKLrnWtlYZnX+dwLA=
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [PATCH 3/3] e1000e: remove failed request for sw/fw/hw flag
-To: jeff@garzik.org, mingo@elte.hu, davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jesse.brandeburg@intel.com, john.ronciak@intel.com,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 23 Sep 2008 15:46:38 -0700
-Message-ID: <20080923224630.6927.28967.stgit@jtkirshe-mobile.jf.intel.com>
-User-Agent: StGIT/0.14.3
+	Tue, 23 Sep 2008 18:48:26 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:user-agent:from:x-gmailtapped-by;
+	b=n1lUShZe4ZEHJk9zgvn0y3gNPkOq9gR7EQmif18UARqH86JG4b98Lih/hyLB1/hSa
+	M7Pb11jZ5ZaC/Uu/0PVww==
+Date: Tue, 23 Sep 2008 15:47:52 -0700
+To: akpm@linux-foundation.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: mlock: Make the mlock system call interruptible by fatal
+Message-ID: <20080923224751.GA2790@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+From: sqazi@google.com (Salman Qazi)
+X-GMailtapped-By: 172.25.146.37
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bruce Allan <bruce.w.allan@intel.com>
 
-When the driver fails to acquire the control flag used to serialize
-NVM and PHY accesses between the driver, firmware and hardware, remove the
-request for the flag otherwise the hardware might grant the flag when it
-becomes available but the driver will not release the flag.  This could
-cause the firmware to prevent the driver getting the flag for all future
-attempts.
+> Andrew Morton wrote:
+>
+>This isn't a terribly good interface.  Someone could now call
+> __get_user_pages() with pages!=NULL and interruptible=1 and they would
+> get a return value of -EINTR, even though some page*'s were placed in
+> their pages array.
+>
+> That caller now has no way of knowing how many pages need to be
+> released to clean up.
+>
+> Can we do
+>
+>        return i ? i : -EINTR;
+>
+> in the usual fashion?
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Fixed.
+
+
+Make the mlock system call interruptible by fatal signals, so that programs
+that are mlocking a large number of pages terminate quickly when killed.
+
+Signed-off-by: Salman Qazi <sqazi@google.com>
 ---
 
- drivers/net/e1000e/ich8lan.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
-index f47c60e..6b14ea8 100644
---- a/drivers/net/e1000e/ich8lan.c
-+++ b/drivers/net/e1000e/ich8lan.c
-@@ -409,6 +409,8 @@ static s32 e1000_acquire_swflag_ich8lan(struct e1000_hw *hw)
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 72a15dc..a2531e6 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -807,7 +807,8 @@ static inline int handle_mm_fault(struct mm_struct *mm,
+ }
+ #endif
  
- 	if (!timeout) {
- 		hw_dbg(hw, "FW or HW has locked the resource for too long.\n");
-+		extcnf_ctrl &= ~E1000_EXTCNF_CTRL_SWFLAG;
-+		ew32(EXTCNF_CTRL, extcnf_ctrl);
- 		return -E1000_ERR_CONFIG;
+-extern int make_pages_present(unsigned long addr, unsigned long end);
++extern int make_pages_present(unsigned long addr, unsigned long end,
++			int interruptible);
+ extern int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, int len, int write);
+ 
+ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm, unsigned long start,
+diff --git a/mm/fremap.c b/mm/fremap.c
+index 7881638..f5eff74 100644
+--- a/mm/fremap.c
++++ b/mm/fremap.c
+@@ -223,7 +223,7 @@ asmlinkage long sys_remap_file_pages(unsigned long start, unsigned long size,
+ 			downgrade_write(&mm->mmap_sem);
+ 			has_write_lock = 0;
+ 		}
+-		make_pages_present(start, start+size);
++		make_pages_present(start, start+size, 0);
  	}
  
+ 	/*
+diff --git a/mm/memory.c b/mm/memory.c
+index 1002f47..f6f8742 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1129,9 +1129,10 @@ static inline int use_zero_page(struct vm_area_struct *vma)
+ 	return !vma->vm_ops || !vma->vm_ops->fault;
+ }
+ 
+-int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+-		unsigned long start, int len, int write, int force,
+-		struct page **pages, struct vm_area_struct **vmas)
++static int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
++			unsigned long start, int len, int write, int force,
++			struct page **pages, struct vm_area_struct **vmas,
++			int interruptible)
+ {
+ 	int i;
+ 	unsigned int vm_flags;
+@@ -1223,6 +1224,8 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 			cond_resched();
+ 			while (!(page = follow_page(vma, start, foll_flags))) {
+ 				int ret;
++				if (interruptible && fatal_signal_pending(tsk))
++					return i ? i : -EINTR;
+ 				ret = handle_mm_fault(mm, vma, start,
+ 						foll_flags & FOLL_WRITE);
+ 				if (ret & VM_FAULT_ERROR) {
+@@ -1266,6 +1269,14 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 	} while (len);
+ 	return i;
+ }
++
++int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
++		unsigned long start, int len, int write, int force,
++		struct page **pages, struct vm_area_struct **vmas)
++{
++	return __get_user_pages(tsk, mm, start, len, write, force,
++				pages, vmas, 0);
++}
+ EXPORT_SYMBOL(get_user_pages);
+ 
+ pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
+@@ -2758,7 +2769,7 @@ int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
+ }
+ #endif /* __PAGETABLE_PMD_FOLDED */
+ 
+-int make_pages_present(unsigned long addr, unsigned long end)
++int make_pages_present(unsigned long addr, unsigned long end, int interruptible)
+ {
+ 	int ret, len, write;
+ 	struct vm_area_struct * vma;
+@@ -2770,8 +2781,8 @@ int make_pages_present(unsigned long addr, unsigned long end)
+ 	BUG_ON(addr >= end);
+ 	BUG_ON(end > vma->vm_end);
+ 	len = DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
+-	ret = get_user_pages(current, current->mm, addr,
+-			len, write, 0, NULL, NULL);
++	ret = __get_user_pages(current, current->mm, addr,
++			len, write, 0, NULL, NULL, interruptible);
+ 	if (ret < 0) {
+ 		/*
+ 		   SUS require strange return value to mlock
+diff --git a/mm/mlock.c b/mm/mlock.c
+index 01fbe93..5586ee4 100644
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -73,7 +73,7 @@ success:
+ 	if (newflags & VM_LOCKED) {
+ 		pages = -pages;
+ 		if (!(newflags & VM_IO))
+-			ret = make_pages_present(start, end);
++			ret = make_pages_present(start, end, 1);
+ 	}
+ 
+ 	mm->locked_vm -= pages;
+diff --git a/mm/mmap.c b/mm/mmap.c
+index e7a5a68..afb8e39 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1225,10 +1225,10 @@ out:
+ 	vm_stat_account(mm, vm_flags, file, len >> PAGE_SHIFT);
+ 	if (vm_flags & VM_LOCKED) {
+ 		mm->locked_vm += len >> PAGE_SHIFT;
+-		make_pages_present(addr, addr + len);
++		make_pages_present(addr, addr + len, 0);
+ 	}
+ 	if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
+-		make_pages_present(addr, addr + len);
++		make_pages_present(addr, addr + len, 0);
+ 	return addr;
+ 
+ unmap_and_free_vma:
+@@ -1701,7 +1701,7 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
+ 	if (!prev || expand_stack(prev, addr))
+ 		return NULL;
+ 	if (prev->vm_flags & VM_LOCKED)
+-		make_pages_present(addr, prev->vm_end);
++		make_pages_present(addr, prev->vm_end, 0);
+ 	return prev;
+ }
+ #else
+@@ -1728,7 +1728,7 @@ find_extend_vma(struct mm_struct * mm, unsigned long addr)
+ 	if (expand_stack(vma, addr))
+ 		return NULL;
+ 	if (vma->vm_flags & VM_LOCKED)
+-		make_pages_present(addr, start);
++		make_pages_present(addr, start, 0);
+ 	return vma;
+ }
+ #endif
+@@ -2049,7 +2049,7 @@ out:
+ 	mm->total_vm += len >> PAGE_SHIFT;
+ 	if (flags & VM_LOCKED) {
+ 		mm->locked_vm += len >> PAGE_SHIFT;
+-		make_pages_present(addr, addr + len);
++		make_pages_present(addr, addr + len, 0);
+ 	}
+ 	return addr;
+ }
+diff --git a/mm/mremap.c b/mm/mremap.c
+index 1a77439..c83ffcc 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -239,7 +239,7 @@ static unsigned long move_vma(struct vm_area_struct *vma,
+ 		mm->locked_vm += new_len >> PAGE_SHIFT;
+ 		if (new_len > old_len)
+ 			make_pages_present(new_addr + old_len,
+-					   new_addr + new_len);
++					   new_addr + new_len, 0);
+ 	}
+ 
+ 	return new_addr;
+@@ -380,7 +380,7 @@ unsigned long do_mremap(unsigned long addr,
+ 			if (vma->vm_flags & VM_LOCKED) {
+ 				mm->locked_vm += pages;
+ 				make_pages_present(addr + old_len,
+-						   addr + new_len);
++						   addr + new_len, 0);
+ 			}
+ 			ret = addr;
+ 			goto out;
 
+---
