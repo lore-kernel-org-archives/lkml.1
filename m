@@ -1,98 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbYIWNh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYIWNic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753496AbYIWNh5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYIWNge
+	id S1753925AbYIWNic (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYIWNgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:36:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50025 "EHLO
+	Tue, 23 Sep 2008 09:36:35 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50028 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbYIWNgb (ORCPT
+	with ESMTP id S1751445AbYIWNge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:36:31 -0400
-Message-Id: <20080923133459.522091580@programming.kicks-ass.net>
+	Tue, 23 Sep 2008 09:36:34 -0400
+Message-Id: <20080923133501.046482664@programming.kicks-ass.net>
 References: <20080923133340.929758093@programming.kicks-ass.net>
 User-Agent: quilt/0.46-1
-Date: Tue, 23 Sep 2008 15:33:42 +0200
+Date: Tue, 23 Sep 2008 15:33:46 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 2/6] sched: fixlet for group load balance
-Content-Disposition: inline; filename=sched-group-balance-fix.patch
+Subject: [PATCH 6/6] sched: rework wakeup preemption
+Content-Disposition: inline; filename=sched-wakeup-preempt.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We should not only correct the increment for the initial group, but should
-be consistent and do so for all the groups we encounter.
+Rework the wakeup preemption to work on real runtime instead of
+the virtual runtime. This greatly simplifies the code.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched_fair.c |   27 ++++++++++++++-------------
- 1 file changed, 14 insertions(+), 13 deletions(-)
+ kernel/sched_fair.c |  133 +---------------------------------------------------
+ 1 file changed, 4 insertions(+), 129 deletions(-)
 
 Index: linux-2.6/kernel/sched_fair.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched_fair.c
 +++ linux-2.6/kernel/sched_fair.c
-@@ -1086,7 +1086,6 @@ static long effective_load(struct task_g
- 		long wl, long wg)
- {
- 	struct sched_entity *se = tg->se[cpu];
--	long more_w;
+@@ -409,64 +409,6 @@ static u64 sched_vslice_add(struct cfs_r
+ }
  
- 	if (!tg->parent)
- 		return wl;
-@@ -1098,18 +1097,17 @@ static long effective_load(struct task_g
- 	if (!wl && sched_feat(ASYM_EFF_LOAD))
- 		return wl;
- 
--	/*
--	 * Instead of using this increment, also add the difference
--	 * between when the shares were last updated and now.
--	 */
--	more_w = se->my_q->load.weight - se->my_q->rq_weight;
--	wl += more_w;
--	wg += more_w;
+ /*
+- * The goal of calc_delta_asym() is to be asymmetrically around NICE_0_LOAD, in
+- * that it favours >=0 over <0.
+- *
+- *   -20         |
+- *               |
+- *     0 --------+-------
+- *             .'
+- *    19     .'
+- *
+- */
+-static unsigned long
+-calc_delta_asym(unsigned long delta, struct sched_entity *se)
+-{
+-	struct load_weight lw = {
+-		.weight = NICE_0_LOAD,
+-		.inv_weight = 1UL << (WMULT_SHIFT-NICE_0_SHIFT)
+-	};
 -
- 	for_each_sched_entity(se) {
--#define D(n) (likely(n) ? (n) : 1)
+-	for_each_sched_entity(se) {
+-		struct load_weight *se_lw = &se->load;
+-		unsigned long rw = cfs_rq_of(se)->load.weight;
 -
- 		long S, rw, s, a, b;
-+		long more_w;
-+
-+		/*
-+		 * Instead of using this increment, also add the difference
-+		 * between when the shares were last updated and now.
-+		 */
-+		more_w = se->my_q->load.weight - se->my_q->rq_weight;
-+		wl += more_w;
-+		wg += more_w;
+-#ifdef CONFIG_FAIR_SCHED_GROUP
+-		struct cfs_rq *cfs_rq = se->my_q;
+-		struct task_group *tg = NULL
+-
+-		if (cfs_rq)
+-			tg = cfs_rq->tg;
+-
+-		if (tg && tg->shares < NICE_0_LOAD) {
+-			/*
+-			 * scale shares to what it would have been had
+-			 * tg->weight been NICE_0_LOAD:
+-			 *
+-			 *   weight = 1024 * shares / tg->weight
+-			 */
+-			lw.weight *= se->load.weight;
+-			lw.weight /= tg->shares;
+-
+-			lw.inv_weight = 0;
+-
+-			se_lw = &lw;
+-			rw += lw.weight - se->load.weight;
+-		} else
+-#endif
+-
+-		if (se->load.weight < NICE_0_LOAD) {
+-			se_lw = &lw;
+-			rw += NICE_0_LOAD - se->load.weight;
+-		}
+-
+-		delta = calc_delta_mine(delta, rw, se_lw);
+-	}
+-
+-	return delta;
+-}
+-
+-/*
+  * Update the current task's runtime statistics. Skip current tasks that
+  * are not in our scheduling class.
+  */
+@@ -1283,54 +1225,12 @@ static unsigned long wakeup_gran(struct 
+ 	 * + nice tasks.
+ 	 */
+ 	if (sched_feat(ASYM_GRAN))
+-		gran = calc_delta_asym(sysctl_sched_wakeup_granularity, se);
+-	else
+-		gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
++		gran = calc_delta_mine(gran, NICE_0_LOAD, &se->load);
  
- 		S = se->my_q->tg->shares;
- 		s = se->my_q->shares;
-@@ -1118,7 +1116,11 @@ static long effective_load(struct task_g
- 		a = S*(rw + wl);
- 		b = S*rw + s*wg;
+ 	return gran;
+ }
  
--		wl = s*(a-b)/D(b);
-+		wl = s*(a-b);
-+
-+		if (likely(b))
-+			wl /= b;
-+
- 		/*
- 		 * Assume the group is already running and will
- 		 * thus already be accounted for in the weight.
-@@ -1127,7 +1129,6 @@ static long effective_load(struct task_g
- 		 * alter the group weight.
- 		 */
- 		wg = 0;
--#undef D
+ /*
+- * Should 'se' preempt 'curr'.
+- *
+- *             |s1
+- *        |s2
+- *   |s3
+- *         g
+- *      |<--->|c
+- *
+- *  w(c, s1) = -1
+- *  w(c, s2) =  0
+- *  w(c, s3) =  1
+- *
+- */
+-static int
+-wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
+-{
+-	s64 gran, vdiff = curr->vruntime - se->vruntime;
+-
+-	if (vdiff < 0)
+-		return -1;
+-
+-	gran = wakeup_gran(curr);
+-	if (vdiff > gran)
+-		return 1;
+-
+-	return 0;
+-}
+-
+-/* return depth at which a sched entity is present in the hierarchy */
+-static inline int depth_se(struct sched_entity *se)
+-{
+-	int depth = 0;
+-
+-	for_each_sched_entity(se)
+-		depth++;
+-
+-	return depth;
+-}
+-
+-/*
+  * Preempt the current task with a newly woken task if needed:
+  */
+ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
+@@ -1338,7 +1238,7 @@ static void check_preempt_wakeup(struct 
+ 	struct task_struct *curr = rq->curr;
+ 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
+ 	struct sched_entity *se = &curr->se, *pse = &p->se;
+-	int se_depth, pse_depth;
++	s64 delta_exec;
+ 
+ 	if (unlikely(rt_prio(p->prio))) {
+ 		update_rq_clock(rq);
+@@ -1376,33 +1276,8 @@ static void check_preempt_wakeup(struct 
+ 		return;
  	}
  
- 	return wl;
+-	/*
+-	 * preemption test can be made between sibling entities who are in the
+-	 * same cfs_rq i.e who have a common parent. Walk up the hierarchy of
+-	 * both tasks until we find their ancestors who are siblings of common
+-	 * parent.
+-	 */
+-
+-	/* First walk up until both entities are at same depth */
+-	se_depth = depth_se(se);
+-	pse_depth = depth_se(pse);
+-
+-	while (se_depth > pse_depth) {
+-		se_depth--;
+-		se = parent_entity(se);
+-	}
+-
+-	while (pse_depth > se_depth) {
+-		pse_depth--;
+-		pse = parent_entity(pse);
+-	}
+-
+-	while (!is_same_group(se, pse)) {
+-		se = parent_entity(se);
+-		pse = parent_entity(pse);
+-	}
+-
+-	if (wakeup_preempt_entity(se, pse) == 1)
++	delta_exec = se->sum_exec_runtime - se->prev_sum_exec_runtime;
++	if (delta_exec > wakeup_gran(pse))
+ 		resched_task(curr);
+ }
+ 
 
 -- 
 
