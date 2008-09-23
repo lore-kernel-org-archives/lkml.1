@@ -1,117 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYIWWep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbYIWWg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183AbYIWWep (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 18:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYIWWeg
+	id S1755824AbYIWWg1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 18:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYIWWgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 18:34:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43009 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750958AbYIWWef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 18:34:35 -0400
-Date: Tue, 23 Sep 2008 18:34:20 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-mm@vger.kernel.org
-cc: Alasdair G Kergon <agk@redhat.com>, Milan Broz <mbroz@redhat.com>,
-       Chris Webb <chris@arachsys.com>
-Subject: Re: [PATCH] Memory management livelock
-In-Reply-To: <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
-Message-ID: <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
-References: <20080911101616.GA24064@agk.fab.redhat.com>
- <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+	Tue, 23 Sep 2008 18:36:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:49239 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbYIWWgQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 18:36:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:subject:to:cc:date:message-id:user-agent:mime-version
+         :content-type:content-transfer-encoding:sender;
+        b=nxeLsA8b6brpeUM2ZQHWsdUcLF3TUuDIs+ndQfrC68wrYvIcPkzViwE7UcWBrxvDAT
+         MKpQ2bjTdk4SXyYYL3xgLIamfzw4lSAyP2xrvEEe8jywXC7AJhLQTsN9kuyeC0E92bsB
+         Yr1v8cpU8y1mV0QHA6PXUqYNAqEh3Qq3imfz0=
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: [PATCH 0/3] e1000e: protect NVM from corruption
+To: jeff@garzik.org, davem@davemloft.net, mingo@elte.hu
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jesse.brandeburg@intel.com, john.ronciak@intel.com
+Date: Tue, 23 Sep 2008 15:36:04 -0700
+Message-ID: <20080923223517.15567.94071.stgit@gitlost.lost>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 22 Sep 2008 17:10:04 -0400 (EDT)
-> Mikulas Patocka <mpatocka@xxxxxxxxxx> wrote:
-> 
-> > The bug happens when one process is doing sequential buffered writes to
-> > a block device (or file) and another process is attempting to execute
-> > sync(), fsync() or direct-IO on that device (or file). This syncing
-> > process will wait indefinitelly, until the first writing process
-> > finishes.
-> >
-> > For example, run these two commands:
-> > dd if=/dev/zero of=/dev/sda1 bs=65536 &
-> > dd if=/dev/sda1 of=/dev/null bs=4096 count=1 iflag=direct
-> >
-> > The bug is caused by sequential walking of address space in
-> > write_cache_pages and wait_on_page_writeback_range: if some other
-> > process is constantly making dirty and writeback pages while these
-> > functions run, the functions will wait on every new page, resulting in
-> > indefinite wait.
-> 
-> Shouldn't happen. All the data-syncing functions should have an upper
-> bound on the number of pages which they attempt to write. In the
-> example above, we end up in here:
-> 
-> int __filemap_fdatawrite_range(struct address_space *mapping, loff_t
-> start,
-> loff_t end, int sync_mode)
-> {
-> int ret;
-> struct writeback_control wbc = {
-> .sync_mode = sync_mode,
-> .nr_to_write = mapping->nrpages * 2, <<--
-> .range_start = start,
-> .range_end = end,
-> };
-> 
-> so generic_file_direct_write()'s filemap_write_and_wait() will attempt
-> to write at most 2* the number of pages which are in cache for that inode.
+These patches apply against commit e002bcc2f8e766a96472379e3b4a8a4e8938a93e of Linus's latest tree.
 
-See write_cache_pages:
+These patches have had some basic tested run against them.  These patches are intended to prevent the NVM corruption being reported and will hopefully help in finding a root cause for the NVM corruption.
 
-if (wbc->sync_mode != WB_SYNC_NONE)
-        wait_on_page_writeback(page);	(1)
-if (PageWriteback(page) ||
-    !clear_page_dirty_for_io(page)) {
-        unlock_page(page);		(2)
-        continue;
-}
-ret = (*writepage)(page, wbc, data);
-if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
-        unlock_page(page);
-        ret = 0;
-}
-if (ret || (--(wbc->nr_to_write) <= 0))
-        done = 1;
+---
 
---- so if it goes by points (1) and (2), the counter is not decremented, 
-yet the function waits for the page. If there is constant stream of 
-writeback pages being generated, it waits on each on them --- that is, 
-forever. I have seen livelock in this function. For you that example with 
-two dd's, one buffered write and the other directIO read doesn't work? For 
-me it livelocks here.
-
-wait_on_page_writeback_range is another example where the livelock 
-happened, there is no protection at all against starvation.
+Bruce Allan (3):
+      e1000e: remove failed request for sw/fw/hw flag
+      e1000e: Useset_memory_ro()/set_memory_rw() to protect flash memory
+      x86: export set_memory_ro() and set_memory_rw() calls
 
 
-BTW. that .nr_to_write = mapping->nrpages * 2 looks like a dangerous thing 
-to me.
+ arch/x86/mm/pageattr.c       |    2 ++
+ drivers/net/e1000e/e1000.h   |    1 +
+ drivers/net/e1000e/hw.h      |    1 +
+ drivers/net/e1000e/ich8lan.c |   18 ++++++++++++++++++
+ drivers/net/e1000e/netdev.c  |   11 +++++++----
+ 5 files changed, 29 insertions(+), 4 deletions(-)
 
-Imagine this case: You have two pages with indices 4 and 5 dirty in a 
-file. You call fsync(). It sets nr_to_write to 4.
-
-Meanwhile, another process makes pages 0, 1, 2, 3 dirty.
-
-The fsync() process goes to write_cache_pages, writes the first 4 dirty 
-pages and exits because it goes over the limit.
-
-result --- you violate fsync() semantics, pages that were dirty before 
-call to fsync() are not written when fsync() exits.
-
-> I'd say that either a) that logic got broken or b) you didn't wait long
-> enough, and we might need to do something to make it not wait so long.
-> 
-> But before we patch anything we should fully understand what is
-> happening and why the current anti-livelock code isn't working in this
-> case.
-
-Mikulas
+-- 
+Signature
