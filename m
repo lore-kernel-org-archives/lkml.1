@@ -1,100 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbYIWRdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbYIWRiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbYIWRdU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 13:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYIWRdL
+	id S1753666AbYIWRiJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 13:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYIWRh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 13:33:11 -0400
-Received: from www.tglx.de ([62.245.132.106]:33530 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752626AbYIWRdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 13:33:10 -0400
-Date: Tue, 23 Sep 2008 19:30:38 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, darren@dvhart.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: Unified tracing buffer
-In-Reply-To: <48D921B3.2060809@redhat.com>
-Message-ID: <alpine.LFD.1.10.0809231927060.2038@apollo.tec.linutronix.de>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <48D7F5E8.3000705@redhat.com> <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com> <48D81B5F.2030702@redhat.com> <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com>
- <48D832B6.3010409@redhat.com> <33307c790809221712x4fbd9781u958c98d4585e92a9@mail.gmail.com> <48D901FE.5060604@redhat.com> <20080923150410.GA28341@Krystal> <48D90B84.4030905@redhat.com> <alpine.LFD.1.10.0809230847360.3265@nehalem.linux-foundation.org>
- <48D921B3.2060809@redhat.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 23 Sep 2008 13:37:56 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:58287 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750982AbYIWRhz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 13:37:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=FtmVcU9GxKJ/l/9Kvd1l9jXMQ/wHuV61BZMwZsmghnpVpU8TaMDniPe3+8cbatqEc0
+         KDrJcbp2bLysTjWtpAuQNYm17KNYkfbLmCWgLRoQK1VxmkvNxETHqdaZGh32y/GDOYch
+         hmvKx4v+It409iZozvlkjgShTByfKhJzZe1N0=
+Message-ID: <2137b82d0809231037w3900ef3fta003b791bf36d4a@mail.gmail.com>
+Date: Tue, 23 Sep 2008 10:37:52 -0700
+From: "Chad Zanonie" <chad.zanonie@gmail.com>
+To: "Oleg Nesterov" <oleg@tv-sign.ru>
+Subject: Re: + mm-oom-killer-kills-more-than-needed.patch added to -mm tree
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       rientjes@google.com
+In-Reply-To: <2137b82d0809231025n359b3f59h53714d5acabd2107@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200809222238.m8MMcgAp001695@imap1.linux-foundation.org>
+	 <20080923124035.GA253@tv-sign.ru>
+	 <2137b82d0809231025n359b3f59h53714d5acabd2107@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008, Masami Hiramatsu wrote:
-> > So if you can test this, try it with 
-> >  (a) cpufreq at a fixed _low_ value (to not cause overheating)
-> >  (b) with the spray-can cooling the thing and cpufreq at a fixed high 
-> >      value
-> > and see if the TSC is constant then.
-> 
-> Hi Linus,
-> 
-> Thank you for your advice. I tested it again according your advice,
-> I did:
-> - service cpuspeed stop
-> - echo 1000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
->   and checked /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq is
->   1000000.
-> - echo 1 >  /proc/acpi/thermal_zone/THM/polling_frequency
-> - cooling with spray-can :)
-> - cat /proc/acpi/thermal_zone/THM/temperature
->   temperature:             39 C
-> 
-> and ran the test.
-> ---
-> p0: c:1107576,	 ns:990280	 ratio:111
-> p0: c:1805640,	 ns:1008787	 ratio:178
-> p0: c:1998324,	 ns:1000127	 ratio:199
-> p0: c:946380,	 ns:990280	 ratio:95
-> p0: c:871728,	 ns:1000267	 ratio:87
-> p0: c:1807380,	 ns:1007949	 ratio:179
-> p0: c:1784808,	 ns:1000127	 ratio:178
-> p0: c:1768488,	 ns:991676	 ratio:178
-> p0: c:1802292,	 ns:1008299	 ratio:178
-> p0: c:1787088,	 ns:1000406	 ratio:178
-> p0: c:1999176,	 ns:1000896	 ratio:199
-> p0: c:881364,	 ns:991956	 ratio:88
-> p0: c:1802712,	 ns:1008019	 ratio:178
-> p0: c:1787088,	 ns:998590	 ratio:178
-> ---
-> this seems not so stable yet. :-(
-> 
-> After test I checked temperature again.
-> # cat /proc/acpi/thermal_zone/THM/temperature
-> temperature:             39 C
-> 
-> Hmm, 39 C is not so high. I wouldn't be surprised even if this
-> is an individual product bug. Anyway, currently, Linux itself
-> works well on this laptop with hpet.:-)
+Before I propagate this blunder anymore, I've found the root of my mistake.
 
-Do you have C-States enabled on that machine ?
+I really mean TASK_DEAD, not EXIT_DEAD.
 
-ls /sys/devices/system/cpu/cpu0/cpuidle/
+(p->state & TASK_DEAD)
 
-has it more than a state0 entry ?
+-Chad
 
-If yes, please do:
-
-cat /sys/devices/system/cpu/cpu0/cpuidle/stateX/usage
-
-where X is the highest number in there.
-
-cat /proc/acpi/processor/CPU0/power
-
-might be useful as well.
-
-Thanks,
-
-	tglx
+On Tue, Sep 23, 2008 at 10:25 AM, Chad Zanonie <chad.zanonie@gmail.com> wrote:
+> On Tue, Sep 23, 2008 at 5:40 AM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
+>> On 09/22, Andrew Morton wrote:
+>>>
+>>> ------------------------------------------------------
+>>> Subject: mm: oom-killer kills more than needed
+>>> From: "Chad Zanonie" <chad.zanonie@gmail.com>
+>>>
+>>> Possibility exists for an exiting application to be in between marking its
+>>> mm NULL and calling mmput when out_of_memory is invoked.
+>>> select_bad_process() will continue past this process as opposed to
+>>> returning -1UL due to its mm being NULL.  This causes the oom killer in
+>>> certain scenarios to not only kill the memory culprit, but also kill the
+>>> runner up.
+>>>
+>>> EXIT_DEAD seems to be the only flag that guarantees that mmput() has
+>>> finished.
+>>
+>> I don't think this is right.
+>>
+>> Let's suppose we have a single zombie. Now select_bad_process() always
+>> returns -1 ? IOW, doesn't this means that, say,
+>>
+>>        $ perl -e 'fork && sleep'
+>>
+>> disables oom-kill completely and forever?
+>
+> Ugh, looks like my description was slightly incorrect. I don't mean
+> for it to return -1 upon noticing a null mm. I mean for
+> select_bad_process to not skip (continue) over processes that haven't
+> provably finished unmapping their memory (which EXIT_DEAD infers).
+>
+>>
+>> Hmm. But please see below. This doesn't happen because the usage
+>> of EXIT_DEAD is not right.
+>>
+>>> Checking for PF_KTHREAD should replace p->mm regardless.
+>>
+>> Yes, almost every check for ->mm in oom_kill.c is not right.
+>>
+>>> Adding EXIT_DEAD to the check seems to prevent unnecessary kills in local
+>>> testing.
+>>
+>> This is strange, could you re-test? Because
+>>
+>>> @@ -216,7 +216,7 @@ static struct task_struct *select_bad_pr
+>>>                * skip kernel threads and tasks which have already released
+>>>                * their mm.
+>>>                */
+>>> -             if (!p->mm)
+>>> +             if (p->flags & PF_KTHREAD || p->flags & EXIT_DEAD)
+>>                                                ^^^^^^^^^^^^^^^^^
+>>
+>> this is not possible. EXIT_DEAD lives in ->exit_state, not in ->flags.
+>
+> Good catch. I had actually done the testing in an older kernel that
+> used PF_DEAD and while noticing the change to only EXIT_DEAD forgot to
+> use the new appropriate flag in the patch.
+>
+>>
+>> Oleg.
+>>
+>>
+>
+> I'm new to this endeavor. Should I propose a new patch, or, will
+> things be fixed from this omission? I still support the EXIT_DEAD
+> inclusion, as it'll allow the OOM killer to make the similar progress
+> that !p->mm provided.
+>
+> Chad
+>
