@@ -1,76 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbYIWNxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbYIWNyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755908AbYIWNxy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbYIWNrp
+	id S1755285AbYIWNyh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbYIWNrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:47:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52375 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:47:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52422 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753318AbYIWNrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:47:23 -0400
+	id S1753733AbYIWNrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:47:46 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Jan Kiszka <jan.kiszka@web.de>
-Subject: [PATCH 15/40] KVM: Consolidate XX_VECTOR defines
-Date: Tue, 23 Sep 2008 16:46:29 +0300
-Message-Id: <1222177614-26669-16-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Jerone Young <jyoung5@us.ibm.com>
+Subject: [PATCH 22/40] KVM: ppc: adds trace points for ppc tlb activity
+Date: Tue, 23 Sep 2008 16:46:36 +0300
+Message-Id: <1222177614-26669-23-git-send-email-avi@redhat.com>
 In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
 References: <1222177614-26669-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kiszka <jan.kiszka@web.de>
+From: Jerone Young <jyoung5@us.ibm.com>
 
-Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
+This patch adds trace points to track powerpc TLB activities using the
+KVM_TRACE infrastructure.
+
+Signed-off-by: Jerone Young <jyoung5@us.ibm.com>
+Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/svm.c         |    4 ----
- arch/x86/kvm/vmx.c         |    2 +-
- include/asm-x86/kvm_host.h |    1 +
- 3 files changed, 2 insertions(+), 5 deletions(-)
+ arch/powerpc/kvm/44x_tlb.c |   15 ++++++++++++++-
+ arch/powerpc/kvm/emulate.c |    4 ++++
+ include/linux/kvm.h        |    3 +++
+ 3 files changed, 21 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 54b0bf3..743c98d 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -36,10 +36,6 @@ MODULE_LICENSE("GPL");
- #define IOPM_ALLOC_ORDER 2
- #define MSRPM_ALLOC_ORDER 1
+diff --git a/arch/powerpc/kvm/44x_tlb.c b/arch/powerpc/kvm/44x_tlb.c
+index 5a5602d..a207d16 100644
+--- a/arch/powerpc/kvm/44x_tlb.c
++++ b/arch/powerpc/kvm/44x_tlb.c
+@@ -19,6 +19,7 @@
  
--#define DB_VECTOR 1
--#define UD_VECTOR 6
--#define GP_VECTOR 13
--
- #define DR7_GD_MASK (1 << 13)
- #define DR6_BD_MASK (1 << 13)
+ #include <linux/types.h>
+ #include <linux/string.h>
++#include <linux/kvm.h>
+ #include <linux/kvm_host.h>
+ #include <linux/highmem.h>
+ #include <asm/mmu-44x.h>
+@@ -175,6 +176,10 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 gvaddr, gfn_t gfn, u64 asid,
+ 	stlbe->word1 = (hpaddr & 0xfffffc00) | ((hpaddr >> 32) & 0xf);
+ 	stlbe->word2 = kvmppc_44x_tlb_shadow_attrib(flags,
+ 	                                            vcpu->arch.msr & MSR_PR);
++
++	KVMTRACE_5D(STLB_WRITE, vcpu, victim,
++			stlbe->tid, stlbe->word0, stlbe->word1, stlbe->word2,
++			handler);
+ }
  
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 9591ca7..5c9dac5 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -470,7 +470,7 @@ static void update_exception_bitmap(struct kvm_vcpu *vcpu)
- 	if (!vcpu->fpu_active)
- 		eb |= 1u << NM_VECTOR;
- 	if (vcpu->guest_debug.enabled)
--		eb |= 1u << 1;
-+		eb |= 1u << DB_VECTOR;
- 	if (vcpu->arch.rmode.active)
- 		eb = ~0;
- 	if (vm_need_ept())
-diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
-index af1c0f7..2446893 100644
---- a/include/asm-x86/kvm_host.h
-+++ b/include/asm-x86/kvm_host.h
-@@ -57,6 +57,7 @@
- #define KVM_PAGES_PER_HPAGE (KVM_HPAGE_SIZE / PAGE_SIZE)
+ void kvmppc_mmu_invalidate(struct kvm_vcpu *vcpu, gva_t eaddr,
+@@ -204,6 +209,9 @@ void kvmppc_mmu_invalidate(struct kvm_vcpu *vcpu, gva_t eaddr,
  
- #define DE_VECTOR 0
-+#define DB_VECTOR 1
- #define UD_VECTOR 6
- #define NM_VECTOR 7
- #define DF_VECTOR 8
+ 		kvmppc_44x_shadow_release(vcpu, i);
+ 		stlbe->word0 = 0;
++		KVMTRACE_5D(STLB_INVAL, vcpu, i,
++				stlbe->tid, stlbe->word0, stlbe->word1,
++				stlbe->word2, handler);
+ 	}
+ 	up_write(&current->mm->mmap_sem);
+ }
+@@ -217,8 +225,13 @@ void kvmppc_mmu_priv_switch(struct kvm_vcpu *vcpu, int usermode)
+ 	/* XXX Replace loop with fancy data structures. */
+ 	down_write(&current->mm->mmap_sem);
+ 	for (i = 0; i <= tlb_44x_hwater; i++) {
++		struct tlbe *stlbe = &vcpu->arch.shadow_tlb[i];
++
+ 		kvmppc_44x_shadow_release(vcpu, i);
+-		vcpu->arch.shadow_tlb[i].word0 = 0;
++		stlbe->word0 = 0;
++		KVMTRACE_5D(STLB_INVAL, vcpu, i,
++				stlbe->tid, stlbe->word0, stlbe->word1,
++				stlbe->word2, handler);
+ 	}
+ 	up_write(&current->mm->mmap_sem);
+ }
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index 8c605d0..4a3e274 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -170,6 +170,10 @@ static int kvmppc_emul_tlbwe(struct kvm_vcpu *vcpu, u32 inst)
+ 		kvmppc_mmu_map(vcpu, eaddr, raddr >> PAGE_SHIFT, asid, flags);
+ 	}
+ 
++	KVMTRACE_5D(GTLB_WRITE, vcpu, index,
++			tlbe->tid, tlbe->word0, tlbe->word1, tlbe->word2,
++			handler);
++
+ 	return EMULATE_DONE;
+ }
+ 
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 5d08f11..e21a505 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -471,5 +471,8 @@ struct kvm_trace_rec {
+ #define KVM_TRC_LMSW             (KVM_TRC_HANDLER + 0x13)
+ #define KVM_TRC_APIC_ACCESS      (KVM_TRC_HANDLER + 0x14)
+ #define KVM_TRC_TDP_FAULT        (KVM_TRC_HANDLER + 0x15)
++#define KVM_TRC_GTLB_WRITE       (KVM_TRC_HANDLER + 0x16)
++#define KVM_TRC_STLB_WRITE       (KVM_TRC_HANDLER + 0x17)
++#define KVM_TRC_STLB_INVAL       (KVM_TRC_HANDLER + 0x18)
+ 
+ #endif
 -- 
 1.6.0.1
 
