@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbYIWNty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYIWNuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbYIWNty (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYIWNrU
+	id S1754897AbYIWNuS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYIWNrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:47:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52359 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:47:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52362 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752587AbYIWNrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:47:13 -0400
+	id S1752155AbYIWNrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:47:15 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 09/40] KVM: Clear exception queue before emulating an instruction
-Date: Tue, 23 Sep 2008 16:46:23 +0300
-Message-Id: <1222177614-26669-10-git-send-email-avi@redhat.com>
+Subject: [PATCH 10/40] KVM: VMX: Fix pending exception processing
+Date: Tue, 23 Sep 2008 16:46:24 +0300
+Message-Id: <1222177614-26669-11-git-send-email-avi@redhat.com>
 In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
 References: <1222177614-26669-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,54 +23,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Avi Kivity <avi@qumranet.com>
 
-If we're emulating an instruction, either it will succeed, in which case
-any previously queued exception will be spurious, or we will requeue the
-same exception.
+The vmx code assumes that IDT-Vectoring can only be set when an exception
+is injected due to the exception in question.  That's not true, however:
+if the exception is injected correctly, and later another exception occurs
+but its delivery is blocked due to a fault, then we will incorrectly assume
+the first exception was not delivered.
+
+Fix by unconditionally dequeuing the pending exception, and requeuing it
+(or the second exception) if we see it in the IDT-Vectoring field.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/x86.c |    2 ++
- arch/x86/kvm/x86.h |   11 +++++++++++
- 2 files changed, 13 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/kvm/x86.h
+ arch/x86/kvm/vmx.c |   15 ++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 2f0696b..5620df2 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -20,6 +20,7 @@
- #include "i8254.h"
- #include "tss.h"
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index ce13b53..ed4fe8e 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -27,6 +27,7 @@
+ #include <linux/sched.h>
+ #include <linux/moduleparam.h>
  #include "kvm_cache_regs.h"
 +#include "x86.h"
  
- #include <linux/clocksource.h>
- #include <linux/kvm.h>
-@@ -2121,6 +2122,7 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
- 	int r;
- 	struct decode_cache *c;
+ #include <asm/io.h>
+ #include <asm/desc.h>
+@@ -744,9 +745,7 @@ static void vmx_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
  
-+	kvm_clear_exception_queue(vcpu);
- 	vcpu->arch.mmio_fault_cr2 = cr2;
- 	/*
- 	 * TODO: fix x86_emulate.c to use guest_read/write_register
-diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
-new file mode 100644
-index 0000000..c666649
---- /dev/null
-+++ b/arch/x86/kvm/x86.h
-@@ -0,0 +1,11 @@
-+#ifndef ARCH_X86_KVM_X86_H
-+#define ARCH_X86_KVM_X86_H
-+
-+#include <linux/kvm_host.h>
-+
-+static inline void kvm_clear_exception_queue(struct kvm_vcpu *vcpu)
-+{
-+	vcpu->arch.exception.pending = false;
-+}
-+
-+#endif
+ static bool vmx_exception_injected(struct kvm_vcpu *vcpu)
+ {
+-	struct vcpu_vmx *vmx = to_vmx(vcpu);
+-
+-	return !(vmx->idt_vectoring_info & VECTORING_INFO_VALID_MASK);
++	return false;
+ }
+ 
+ /*
+@@ -2824,6 +2823,7 @@ static void vmx_complete_interrupts(struct vcpu_vmx *vmx)
+ 	u8 vector;
+ 	int type;
+ 	bool idtv_info_valid;
++	u32 error;
+ 
+ 	exit_intr_info = vmcs_read32(VM_EXIT_INTR_INFO);
+ 	if (cpu_has_virtual_nmis()) {
+@@ -2855,6 +2855,15 @@ static void vmx_complete_interrupts(struct vcpu_vmx *vmx)
+ 		else
+ 			vmx->vcpu.arch.nmi_injected = false;
+ 	}
++	kvm_clear_exception_queue(&vmx->vcpu);
++	if (idtv_info_valid && type == INTR_TYPE_EXCEPTION) {
++		if (idt_vectoring_info & VECTORING_INFO_DELIVER_CODE_MASK) {
++			error = vmcs_read32(IDT_VECTORING_ERROR_CODE);
++			kvm_queue_exception_e(&vmx->vcpu, vector, error);
++		} else
++			kvm_queue_exception(&vmx->vcpu, vector);
++		vmx->idt_vectoring_info = 0;
++	}
+ }
+ 
+ static void vmx_intr_assist(struct kvm_vcpu *vcpu)
 -- 
 1.6.0.1
 
