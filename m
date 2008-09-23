@@ -1,67 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752353AbYIWOqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbYIWOqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752353AbYIWOqJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 10:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYIWOp4
+	id S1754476AbYIWOqa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 10:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYIWOqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 10:45:56 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:50067 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbYIWOpz (ORCPT
+	Tue, 23 Sep 2008 10:46:13 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:61339 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753612AbYIWOqK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 10:45:55 -0400
-Subject: G5 with tg3 ethernet stops when rsyncing large amounts of data
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Cc: netdev <netdev@vger.kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-l/a1uyVQp3AcF4OIShyc"
-Date: Tue, 23 Sep 2008 16:44:58 +0200
-Message-Id: <1222181098.18015.23.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 23 Sep 2008 10:46:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=aFuZQnvwc/0YI1SVURIm9A7HIKT6SLA5CQVjJObp2S7AcbMB1am2X+qz9I05XBC8AU
+         m848eAGYymcc9dPDFuFePB97VhcDZ02x5qzH4OYms3wDr0g9jnpfr5Vl+eVdOpx5zhSY
+         5ISZ7L8eaPQX08sZBbbhG25BulVEYs0M2+R5c=
+Message-ID: <91b13c310809230746o1c2cb694taebc814bea57c8c5@mail.gmail.com>
+Date: Tue, 23 Sep 2008 22:46:08 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Matthias Urlichs" <smurf@smurf.noris.de>
+Subject: Re: please consider remove those tags named master, which is ambigous with master branch
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, git@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <91b13c310808310948r5e9e825as27bcdf381137e179@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <91b13c310808310948r5e9e825as27bcdf381137e179@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+To Smurf and Andrew:
+  Did you notice that there's a tag named "master" in the smurf
+mm-trees.git repo,
+this would confuse the git and the users, please consider remove the
+"master" tag, OK?
 
---=-l/a1uyVQp3AcF4OIShyc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+---------- Forwarded message ----------
+From: rae l <crquan@gmail.com>
+Date: Mon, Sep 1, 2008 at 12:48 AM
+Subject: please consider remove those tags named master, which is
+ambigous with master branch
+To: Matthias Urlichs <smurf@smurf.noris.de>
 
-I've been trying to push a few GB of data from my powerbook to my quad
-G5 with rsync, but after transferring for a bit the machine stops
-entirely. It doesn't even reply to ping, so this must be happening in an
-interrupt.
+please consider remove those tags named master, which is ambigous with
+master branch
 
-The only information I have so far is a picture I took of the console
-when this happened again:
-http://johannes.sipsolutions.net/files/dsc_2275.jpg
+http://git.kernel.org/?p=linux/kernel/git/smurf/linux-trees.git;a=tags
 
-Unfortunately, there isn't even a backtrace for some reason.
+--
 
-johannes
+To Git developers:
+  I found that different git subcommand have inconsitent processing
+about ambiguous refname,
 
---=-l/a1uyVQp3AcF4OIShyc
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+git show will take "master" tag first,
+while git tag -v will take "master" branch first,
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+So what's your suggestion to fix this? Just simple remove ambiguous refnames?
 
-iQIcBAABAgAGBQJI2QDmAAoJEKVg1VMiehFYph0P/3kGl/VqhAnhhfS3RTpe2wG0
-dkZjnIacqPxfxqTbiDcSoFZqliU/zfvOmoOYmDHY3+uN+2zXMCEooHWvriFt7XJQ
-sBK9VNjJKZOfixcBvlcefELNFSrTNadNn3X/ZGHxNAiLVSZnBGewhyIIqeBNED/d
-1d8Qav43IS20t4A7QhoAMVRcGL9L765p3UhyYbCQc8V3SOyeEORF6OeUuCwNAPMV
-xYjDjU8zFNpNrifVVHujUxaV861G1Bnw1oQL0VFJ8LbJ7zzz3r32nPC7+NocqV59
-rx000S0RPzj7ZWikj81GVxaYexSBhkDgb++9yzYoX2gjNM7IGDY9ZeGDd4Jwyyyk
-Y4+PJG7g/H8nqWN4Qs1DOyvLdYdMtpcYGbXLu1hHAECUJqQ+w5NwUI4nLfAAhQVW
-aj8/NHCoM67moaK18NyDCBOrQOSB3aUAd21JXQdR7SHUO7eejvT/BVlKqq4vq0Sq
-z53Z6PIE9JXWBqgeCT9X97a8Q2RvdSqxqgFDQi7XCqTj1SyQdaCE19FQyk5PV5Py
-NNDVnMYFYWHSMwoJPK/8vXs2WSs7MKrZnsXYRvLCQTaZEitAu/A/MnaGy8G8rJ4f
-br90vwV+J8L/CM3fWDwt9uHzOgPygiTn3WF9isqtHlZWymAQpDpMcU7cW6phUbYx
-Rev8W9yLTVnP+HzkgpZd
-=CEXo
------END PGP SIGNATURE-----
+Or we can add a feature to allow same refname in different namespaces
+(tags and branches)?
+Such as "-b" to refer a branch while "-t" to refer a tag name? Else
+how to distinguish them?
 
---=-l/a1uyVQp3AcF4OIShyc--
+gektop@tux ~/sforge/linux-2.6 0 $ PAGER= git show master
+warning: refname 'master' is ambiguous.
+commit 05230bd16821e2ec80321d72e97e7a2b1a07c6f2
+Author:     Adrian Bunk <bunk@stusta.de>
+AuthorDate: Sat Jul 30 00:45:08 2005 +0000
+Commit:     Matthias Urlichs <smurf@hera.kernel.org>
+CommitDate: Mon Aug 1 05:16:36 2005 -0700
 
+    sound-oss-sequencer_syms-unexport-reprogram_timer
+
+    This patch remoes an unneeded EXPORT_SYMBOL.
+
+    Signed-off-by: Andrew Morton <akpm@osdl.org>
+
+diff --git a/sound/oss/sequencer_syms.c b/sound/oss/sequencer_syms.c
+index 45edfd7..5d00879 100644
+--- a/sound/oss/sequencer_syms.c
++++ b/sound/oss/sequencer_syms.c
+@@ -19,7 +19,6 @@ EXPORT_SYMBOL(sequencer_timer);
+ EXPORT_SYMBOL(sound_timer_init);
+ EXPORT_SYMBOL(sound_timer_interrupt);
+ EXPORT_SYMBOL(sound_timer_syncinterval);
+-EXPORT_SYMBOL(reprogram_timer);
+
+ /* Tuning */
+
+gektop@tux ~/sforge/linux-2.6 0 $ git tag -v master
+error: 05230bd16821e2ec80321d72e97e7a2b1a07c6f2: cannot verify a
+non-tag object of type commit.
+error: could not verify the tag 'master'
+
+
+--
+Denis Cheng Renquan
