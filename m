@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbYIWQLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbYIWQRL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbYIWQLX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 12:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYIWQLO
+	id S1753434AbYIWQRL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 12:17:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYIWQQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 12:11:14 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:56830 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648AbYIWQLN (ORCPT
+	Tue, 23 Sep 2008 12:16:55 -0400
+Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:1696 "EHLO
+	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbYIWQQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 12:11:13 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=subject:from:to:cc:in-reply-to:references:content-type:
-	organization:date:message-id:mime-version:x-mailer:
-	content-transfer-encoding:x-gmailtapped-by;
-	b=BRJXD8UAS/lrQfRUxq/P2rUoYHH/q1zXO+Ph6dJlqykOJYd0XaGgnH0SGvkeT2VQX
-	odbH9nyhkotwInih6CvDw==
-Subject: Re: [PATCH 2.6.27-rc5 re-resubmit] Fix itimer/many thread hang.
-From: Frank Mayhar <fmayhar@google.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080923135917.GA285@tv-sign.ru>
-References: <1221238479.30136.2.camel@bobble.smo.corp.google.com>
-	 <20080914150651.GK12522@elte.hu> <20080914150923.GB26984@elte.hu>
-	 <1221502142.19012.35.camel@bobble.smo.corp.google.com>
-	 <20080916084143.GC17287@elte.hu>
-	 <1221678187.13420.17.camel@bobble.smo.corp.google.com>
-	 <20080918102353.GD20967@elte.hu>
-	 <1222114936.21579.20.camel@bobble.smo.corp.google.com>
-	 <20080923114033.GB14840@elte.hu>  <20080923135917.GA285@tv-sign.ru>
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Tue, 23 Sep 2008 09:09:57 -0700
-Message-Id: <1222186197.1408.2.camel@bobble.smo.corp.google.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.25.146.19
+	Tue, 23 Sep 2008 12:16:54 -0400
+Date: Tue, 23 Sep 2008 18:14:35 +0200
+From: Mark de Wever <koraq@xs4all.nl>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: petkovbb@gmail.com, Gadi Oxman <gadio@netvision.net.il>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IDE-TAPE NULL terminate strings.
+Message-ID: <20080923161434.GA4444@localhost>
+References: <20080921185138.GA16310@localhost> <48D79ABD.8060805@ru.mvista.com> <9ea470500809220656j6dfcf4c9q7a5a4185481ec994@mail.gmail.com> <20080922204129.GA3495@localhost> <48D80949.4080901@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D80949.4080901@ru.mvista.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-23 at 17:59 +0400, Oleg Nesterov wrote:
-> Confused. Unless I misread the patch, tgtimes->totals can be NULL
-> on UP too?
+On Tue, Sep 23, 2008 at 01:08:25AM +0400, Sergei Shtylyov wrote:
+>> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+>> index 1bce84b..c41f5b1 100644
+>> --- a/drivers/ide/ide-tape.c
+>> +++ b/drivers/ide/ide-tape.c
+>> @@ -2338,7 +2338,7 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
+>>  {
+>>  	idetape_tape_t *tape = drive->driver_data;
+>>  	struct ide_atapi_pc pc;
+>> -	char fw_rev[6], vendor_id[10], product_id[18];
+>> +	char fw_rev[6] = {'\0'}, vendor_id[10] = {'\0'}, product_id[18] = {'\0'};
+>>   
+>
+>   Do you realize how much *absolutely unnecessary* code will this bring
+> in?
 
-Yep.  I've had about four different irons in the fire over the last few
-days and I think because of that I ended up giving this less attention
-than I should have.  I'll beat on this some more and reroll the patch in
-the next day or so.
+I did not, I just had a look at the code GCC produced. I did expect much
+smaller code, but maybe that's only generated with -Os.
 
-I'll also provide the delta patch as Ingo requested.
+> This is certainly worse than your initial patch (if it was correct).
 
-Sorry, folks.
--- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
+My initial patch did work, but that doesn't matter much, since Boris
+posted another patch based on your suggestions. I like that patch better
+as my initial patch. I'm testing it now and I expect it to work.
 
+Regards,
+Mark de Wever
