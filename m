@@ -1,96 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751351AbYIWJcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbYIWJet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751351AbYIWJcv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 05:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYIWJci
+	id S1752884AbYIWJet (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 05:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYIWJel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 05:32:38 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:10284 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbYIWJch (ORCPT
+	Tue, 23 Sep 2008 05:34:41 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40720 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750810AbYIWJek (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 05:32:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type;
-        b=IGJGUkCa6dI/kmVYla+Qk/C1pZF88LpTZXApz3M7ipZPPaL0fv0npi2/FrP87CweTK
-         NKTk7DTZrF27eHN4jN3zVVCIO9qFxXvEnNJEEgvrXgGREt3MfEVeDbt5vt9MZ5SZQ8Do
-         gCOZ2Oat/VfzRxtJKDCoJAEqGApfz17SBgC7k=
-Message-ID: <48D8C71A.7080204@gmail.com>
-Date: Tue, 23 Sep 2008 11:38:18 +0100
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Steven Noonan <steven@uplinklabs.net>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: [Patch -tip 4/4] Tracing/ftrace: Launch initcall tracing after pre-smp
- initcalls.
-Content-Type: multipart/mixed;
- boundary="------------060703030105030100090102"
+	Tue, 23 Sep 2008 05:34:40 -0400
+Subject: Re: Unified tracing buffer
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Tom Zanussi <zanussi@comcast.net>
+Cc: prasad@linux.vnet.ibm.com, Martin Bligh <mbligh@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Steven Rostedt <rostedt@goodmis.org>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>
+In-Reply-To: <1222147545.6875.135.camel@charm-linux>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+	 <1221869279.8359.31.camel@lappy.programming.kicks-ass.net>
+	 <20080922140740.GB5279@in.ibm.com>
+	 <1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
+	 <1222147545.6875.135.camel@charm-linux>
+Content-Type: text/plain
+Date: Tue, 23 Sep 2008 11:31:09 +0200
+Message-Id: <1222162270.16700.57.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060703030105030100090102
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Tue, 2008-09-23 at 00:25 -0500, Tom Zanussi wrote:
 
-Launch the initcall tracing inside the initcall_debug area. Old printk have not been
-removed to keep the old way of initcall tracing for backward compatibility.
+> - get rid of anything having to do with padding, nobody needs it and its
+> only affect has been to horribly distort and complicate a lot of the
+> code
+> - get rid of sub-buffers, they just cause confusion
+> - get rid of mmap, nobody uses it
+> - no sub-buffers and no mmap support means we can get rid of most of the
+> callbacks, and a lot of API confusion along with them
+> - add relay flags - they probably should have been used from the
+> beginning and options made explicit instead of being shoehorned into the
+> callback functions.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
+ - get rid of the vmap buffers as they cause tlb pressure and eat up
+precious vspace on 32 bit platforms.
 
---------------060703030105030100090102
-Content-Type: text/plain;
- name="patch4.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch4.diff"
-
-diff --git a/init/main.c b/init/main.c
-index a9e36fb..a90d4f5 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -724,9 +724,12 @@ int do_one_initcall(initcall_t fn)
- 	ktime_t t0, t1, delta;
- 	char msgbuf[64];
- 	int result;
-+	struct initcall_trace it;
- 
- 	if (initcall_debug) {
--		printk("calling  %pF @ %i\n", fn, task_pid_nr(current));
-+		it.caller = task_pid_nr(current);
-+		it.func = fn;
-+		printk("calling  %pF @ %i\n", fn, it.caller);
- 		t0 = ktime_get();
- 	}
- 
-@@ -735,9 +738,11 @@ int do_one_initcall(initcall_t fn)
- 	if (initcall_debug) {
- 		t1 = ktime_get();
- 		delta = ktime_sub(t1, t0);
--
-+		it.result = result;
-+		it.duration = (unsigned long long) delta.tv64 >> 20;
- 		printk("initcall %pF returned %d after %Ld msecs\n", fn,
--			result, (unsigned long long) delta.tv64 >> 20);
-+			result, it.duration);
-+		trace_initcall(&it);
- 	}
- 
- 	msgbuf[0] = 0;
-@@ -947,6 +952,7 @@ static int __init kernel_init(void * unused)
- 	smp_prepare_cpus(setup_max_cpus);
- 
- 	do_pre_smp_initcalls();
-+	start_initcall_trace();
- 
- 	smp_init();
- 	sched_init_smp();
-
---------------060703030105030100090102--
