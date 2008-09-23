@@ -1,104 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYIWVyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYIWV5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbYIWVyc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbYIWVyX
+	id S1754221AbYIWV5A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYIWV4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:54:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51030 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751686AbYIWVyW (ORCPT
+	Tue, 23 Sep 2008 17:56:52 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:38364 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751005AbYIWV4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 17:54:22 -0400
-Date: Tue, 23 Sep 2008 14:53:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: sqazi@google.com (Salman Qazi)
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: mlock: Make the mlock system call interruptible by fatal
- signals.
-Message-Id: <20080923145342.7a14fb4f.akpm@linux-foundation.org>
-In-Reply-To: <20080923213811.GA24086@google.com>
-References: <20080923213811.GA24086@google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 23 Sep 2008 17:56:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=PSgpYF9A5Q3GQGTjH/mFwtcJsoI+u+XXa/E9jfa2mIrfp8IIJ04aGIaQcXWEZNcnFI
+         ottdk2EzyIE5VQ5BM/960GShCanz2cONArwFmqH2qTau2z3R4CZTmQD5SeIlySCK4rm0
+         VIWqfD0k1J/S/BGfeCPxJVmuLUxDvKivZRtQg=
+Subject: [PATCH] x86: ds.c ptrace.c integer as NULL pointer sparse fixes
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 23 Sep 2008 14:56:44 -0700
+Message-Id: <1222207004.16003.20.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.23.91 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008 14:38:11 -0700
-sqazi@google.com (Salman Qazi) wrote:
+arch/x86/kernel/ptrace.c:763:29: warning: Using plain integer as NULL pointer
+arch/x86/kernel/ptrace.c:777:46: warning: Using plain integer as NULL pointer
+arch/x86/kernel/ptrace.c:1115:45: warning: Using plain integer as NULL pointer
+arch/x86/kernel/ds.c:482:26: warning: Using plain integer as NULL pointer
+arch/x86/kernel/ds.c:487:25: warning: Using plain integer as NULL pointer
 
-> 
-> Make the mlock system call interruptible by fatal signals, so that programs
-> that are mlocking a large number of pages terminate quickly when killed.
-> 
-> Signed-off-by: Salman Qazi <sqazi@google.com>
-> ---
-> 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 72a15dc..a2531e6 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -807,7 +807,8 @@ static inline int handle_mm_fault(struct mm_struct *mm,
->  }
->  #endif
->  
-> -extern int make_pages_present(unsigned long addr, unsigned long end);
-> +extern int make_pages_present(unsigned long addr, unsigned long end,
-> +			int interruptible);
->  extern int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, int len, int write);
->  
->  int get_user_pages(struct task_struct *tsk, struct mm_struct *mm, unsigned long start,
-> diff --git a/mm/fremap.c b/mm/fremap.c
-> index 7881638..f5eff74 100644
-> --- a/mm/fremap.c
-> +++ b/mm/fremap.c
-> @@ -223,7 +223,7 @@ asmlinkage long sys_remap_file_pages(unsigned long start, unsigned long size,
->  			downgrade_write(&mm->mmap_sem);
->  			has_write_lock = 0;
->  		}
-> -		make_pages_present(start, start+size);
-> +		make_pages_present(start, start+size, 0);
->  	}
->  
->  	/*
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 1002f47..4088fd0 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -1129,9 +1129,10 @@ static inline int use_zero_page(struct vm_area_struct *vma)
->  	return !vma->vm_ops || !vma->vm_ops->fault;
->  }
->  
-> -int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
-> -		unsigned long start, int len, int write, int force,
-> -		struct page **pages, struct vm_area_struct **vmas)
-> +static int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
-> +			unsigned long start, int len, int write, int force,
-> +			struct page **pages, struct vm_area_struct **vmas,
-> +			int interruptible)
->  {
->  	int i;
->  	unsigned int vm_flags;
-> @@ -1223,6 +1224,8 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
->  			cond_resched();
->  			while (!(page = follow_page(vma, start, foll_flags))) {
->  				int ret;
-> +				if (interruptible && fatal_signal_pending(tsk))
-> +					return -EINTR;
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/kernel/ds.c     |    4 ++--
+ arch/x86/kernel/ptrace.c |    6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-This isn't a terribly good interface.  Someone could now call
-__get_user_pages() with pages!=NULL and interruptible=1 and they would
-get a return value of -EINTR, even though some page*'s were placed in
-their pages array.
+diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
+index ab21c27..2b69994 100644
+--- a/arch/x86/kernel/ds.c
++++ b/arch/x86/kernel/ds.c
+@@ -479,12 +479,12 @@ static int ds_release(struct task_struct *task, enum ds_qualifier qual)
+ 		goto out;
+ 
+ 	kfree(context->buffer[qual]);
+-	context->buffer[qual] = 0;
++	context->buffer[qual] = NULL;
+ 
+ 	current->mm->total_vm  -= context->pages[qual];
+ 	current->mm->locked_vm -= context->pages[qual];
+ 	context->pages[qual] = 0;
+-	context->owner[qual] = 0;
++	context->owner[qual] = NULL;
+ 
+ 	/*
+ 	 * we put the context twice:
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 42801a5..4e1ef66 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -760,7 +760,7 @@ static int ptrace_bts_config(struct task_struct *child,
+ 		goto errout;
+ 
+ 	if (cfg.flags & PTRACE_BTS_O_ALLOC) {
+-		ds_ovfl_callback_t ovfl = 0;
++		ds_ovfl_callback_t ovfl = NULL;
+ 		unsigned int sig = 0;
+ 
+ 		/* we ignore the error in case we were not tracing child */
+@@ -774,7 +774,7 @@ static int ptrace_bts_config(struct task_struct *child,
+ 			ovfl = ptrace_bts_ovfl;
+ 		}
+ 
+-		error = ds_request_bts(child, /* base = */ 0, cfg.size, ovfl);
++		error = ds_request_bts(child, /* base = */ NULL, cfg.size, ovfl);
+ 		if (error < 0)
+ 			goto errout;
+ 
+@@ -1112,7 +1112,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		break;
+ 
+ 	case PTRACE_BTS_SIZE:
+-		ret = ds_get_bts_index(child, /* pos = */ 0);
++		ret = ds_get_bts_index(child, /* pos = */ NULL);
+ 		break;
+ 
+ 	case PTRACE_BTS_GET:
+-- 
+1.6.0.2.471.g47a76
 
-That caller now has no way of knowing how many pages need to be
-released to clean up.
 
-Can we do
 
-	return i ? i : -EINTR;
-
-in the usual fashion?
