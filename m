@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYIWTpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYIWTrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbYIWTpb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 15:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYIWTpX
+	id S1754776AbYIWTrP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 15:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbYIWTq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 15:45:23 -0400
-Received: from crmm.lgl.lu ([158.64.72.228]:40316 "EHLO lll.lu"
+	Tue, 23 Sep 2008 15:46:59 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:46657 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbYIWTpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 15:45:23 -0400
-Message-ID: <48D9471E.9090108@knaff.lu>
-Date: Tue, 23 Sep 2008 21:44:30 +0200
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	id S1750928AbYIWTq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 15:46:58 -0400
+Date: Tue, 23 Sep 2008 20:46:56 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux-MM <linux-mm@kvack.org>
+Subject: Re: [PATCH 1/2] Report the pagesize backing a VMA in /proc/pid/smaps
+Message-ID: <20080923194655.GA25542@csn.ul.ie>
+References: <20080922162152.GB7716@csn.ul.ie> <1222102098.8533.62.camel@nimitz> <20080923211140.DC16.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, w@1wt.eu
-Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
- initrds
-References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com>
-In-Reply-To: <48D93E68.6040701@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080923211140.DC16.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Just did so, and it broke my first test build.
+On (23/09/08 21:15), KOSAKI Motohiro didst pronounce:
+> > > The corollary is that someone running with a 64K base page kernel may be
+> > > surprised that the pagesize is always 4K. However I'll check if there is
+> > > a simple way of checking out if the MMU size differs from PAGE_SIZE.
+> > 
+> > Sure.  If it isn't easy, the best thing to do is probably just to
+> > document the "interesting" behavior.
 > 
-> arch/x86/boot/compressed/head_64.o: In function `relocated':
-> (.text+0x28): undefined reference to `_end'
-> make[3]: *** [arch/x86/boot/compressed/vmlinux] Error 1
-> make[2]: *** [arch/x86/boot/compressed/vmlinux] Error 2
-> make[1]: *** [bzImage] Error 2
-> make: *** [sub-make] Error 2
+> Dave, please let me know getpagesize() function return to 4k or 64k on ppc64.
+> I think the PageSize line of the /proc/pid/smap and getpagesize() result should be matched.
 > 
->     -hpa
+> otherwise, enduser may be confused.
+> 
 
-Just leave the changes in head_64.S away; this was only about improved
-memory management. It is not strictly needed, as the change in
-/include/asm-x86/boot.h still makes sure that the heap is big enough,
-even for bzip2
+To distinguish between the two, I now report the kernel pagesize and the
+mmu pagesize like so
 
-Regards,
+KernelPageSize:       64 kB
+MMUPageSize:           4 kB
 
-Alain
+This is running a kernel with a 64K base pagesize on a PPC970MP which
+does not support 64K hardware pagesizes.
 
+Does this make sense?
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
