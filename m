@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYIWSeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYIWSfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbYIWSeW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 14:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYIWSeO
+	id S1755169AbYIWSfq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 14:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYIWSfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 14:34:14 -0400
-Received: from mga09.intel.com ([134.134.136.24]:44313 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752341AbYIWSeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 14:34:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,294,1220252400"; 
-   d="scan'208";a="339649771"
-Date: Tue, 23 Sep 2008 11:34:12 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH -tip/master] x86: io-apic - interrupt remapping fix
-Message-ID: <20080923183411.GD25045@linux-os.sc.intel.com>
-References: <20080919123320.GF7222@lenovo> <20080923005737.GA25045@linux-os.sc.intel.com> <20080923011620.GB25045@linux-os.sc.intel.com> <20080923045637.GA7172@localhost>
-Mime-Version: 1.0
+	Tue, 23 Sep 2008 14:35:38 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:35436 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751721AbYIWSfh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 14:35:37 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Benjamin Thery <benjamin.thery@bull.net>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Al Viro <viro@ftp.linux.org.uk>
+References: <48D7AC44.6050208@bull.net> <20080922153455.GA6238@kroah.com>
+	<48D8FC1E.6000601@bull.net>
+Date: Tue, 23 Sep 2008 11:23:57 -0700
+In-Reply-To: <48D8FC1E.6000601@bull.net> (Benjamin Thery's message of "Tue, 23
+	Sep 2008 16:24:30 +0200")
+Message-ID: <m1k5d2oh4y.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080923045637.GA7172@localhost>
-User-Agent: Mutt/1.4.1i
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: benjamin.thery@bull.net, viro@ftp.linux.org.uk, serue@us.ibm.com, linux-kernel@vger.kernel.org, greg@kroah.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Benjamin Thery <benjamin.thery@bull.net>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0069]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: sysfs: tagged directories not merged completely yet
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 09:56:37PM -0700, Cyrill Gorcunov wrote:
-> [Suresh Siddha - Mon, Sep 22, 2008 at 06:16:21PM -0700]
-> | On Mon, Sep 22, 2008 at 05:57:38PM -0700, Siddha, Suresh B wrote:
-> | > On Fri, Sep 19, 2008 at 05:33:20AM -0700, Cyrill Gorcunov wrote:
-> | > > Interrupt remapping could lead to NULL dereference in case of
-> | > > kzalloc failed and memory leak in other way. So fix the
-> | > > both cases.
-> | > >
-> | > > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> | > > ---
-> | > >
-> | > > Ingo, the patch is on top of applied one.
-> | > >
-> | > > If I remember correctly Suresh was involved in
-> | > > this - so I think he could take a look and review
-> | > > the patch (please).
-> | > >
-> | >
-> | > Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> |
-> | oops. Cyrill some typo here:
-> |
-> | +       for (; apic > 0; apic--)
-> | +               kfree(early_ioapic_entries[apic]);
-> | +       kfree(early_ioapic_entries[apic]);
-> |
-> 
-> Hi Suresh, thanks for review!
-> 
-> Well it's not typo actually :) Of course it could
-> be like
-> 
->         for (--apic; apic > 0; apic--)
-> or
->         for (apic--; apic > 0; apic--)
-> 
-> but it will be a rpoblem in case if apic = 0 and
-> if someday apic would be unsigned int. So I prefered
-> to have _one_ kfree(NULL) call instead :)
-> 
-> I hope i didn't miss anything.
+Benjamin Thery <benjamin.thery@bull.net> writes:
+>
+> Oh.
+> It's a pity Al couldn't re-review them before. We've already lost a lot
+> of time with this patchset and it's blocking easier testing of network
+> namespaces (right now, with a mainline kernel, we have to disable sysfs
+> to build network namespaces).
 
-This is too confusing. Please change it to something simple, like:
+I am confident that we have a good base with these patches and the rest of
+the work can be done incrementally on top of them if any issues turn up.
 
-	for (i = 0; i < apic; i++)
-		kfree(early_ioapic_entries[i]);
+Al recent rework of sysctl has a very similar structure.
 
-or
+> Thanks anyway. It's a good step to have it in a tree.
 
-	for (apic = 0; apic < nr_ioapics; apic++)
-		kfree(early_ioapic_entries[apic]);
+Yes.  That should prevent other changes out there from surprising
+us.
 
-thanks,
-suresh
+Eric
+
+
