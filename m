@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757765AbYIWOCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbYIWOEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757765AbYIWOCM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 10:02:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757456AbYIWOAv
+	id S1753985AbYIWOEE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 10:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYIWODv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 10:00:51 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:33725 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756163AbYIWOAu (ORCPT
+	Tue, 23 Sep 2008 10:03:51 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:45224 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbYIWODv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 10:00:50 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references:x-gmailtapped-by;
-	b=V0dR9QbzXuWS2FGzSdeGA6azASexrsnJiNEcR2i1/1hhHxGpHrqdlsV6kD9DmdO73
-	a4fx1En/oXqFONqNW5c2Q==
-Message-ID: <33307c790809230700o4bf0d22fg8ab2dcb904f7d66c@mail.gmail.com>
-Date: Tue, 23 Sep 2008 07:00:38 -0700
-From: "Martin Bligh" <mbligh@google.com>
-To: "Tom Zanussi" <zanussi@comcast.net>
-Subject: Re: Unified tracing buffer
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, hch@lst.de,
-       "David Wilder" <dwilder@us.ibm.com>
-In-Reply-To: <1222147545.6875.135.camel@charm-linux>
+	Tue, 23 Sep 2008 10:03:51 -0400
+Message-ID: <48D8F73A.4050004@freescale.com>
+Date: Tue, 23 Sep 2008 09:03:38 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
+To: Ira Snyder <iws@ovro.caltech.edu>
+CC: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       maciej.sosnowski@intel.com, leoli@freescale.com, zw@zh-kernel.org,
+       Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: Problems with Freescale DMA driver
+References: <20080825165133.GA20446@ovro.caltech.edu> <e9c3a7c20809181458p4cabccblfde6a92bf35976ee@mail.gmail.com> <48D2D00B.3010001@freescale.com> <20080922230435.GA20825@ovro.caltech.edu>
+In-Reply-To: <20080922230435.GA20825@ovro.caltech.edu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
-	 <1221869279.8359.31.camel@lappy.programming.kicks-ass.net>
-	 <20080922140740.GB5279@in.ibm.com>
-	 <1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
-	 <1222147545.6875.135.camel@charm-linux>
-X-GMailtapped-By: 172.24.198.85
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - get rid of anything having to do with padding, nobody needs it and its
-> only affect has been to horribly distort and complicate a lot of the
-> code
-> - get rid of sub-buffers, they just cause confusion
-> - get rid of mmap, nobody uses it
-> - no sub-buffers and no mmap support means we can get rid of most of the
-> callbacks, and a lot of API confusion along with them
-> - add relay flags - they probably should have been used from the
-> beginning and options made explicit instead of being shoehorned into the
-> callback functions.
+Ira Snyder wrote:
 
-Actually, I think if you did all that, it'd be pretty close to what we
-want anyway ...
+> When your patch makes it in, you should probably add the cell-index to
+> all of the dts files that are missing them.
+
+Ah, I see that Kumar added a bunch of DMA nodes back in June and forgot the
+cell-index properties.
+
+> I was not able to cause the DMA controller to copy bad data. Perhaps the
+> kernel just had a bug at the time. It was still relatively early on in
+> the development cycle.
+
+dmatest runs all the time, so it's possible that it's eating up DMA resources.
+Try running your tests without CONFIG_DMATEST.
+
+> In a related note, I've been somewhat following the discussion on LKML
+> about creating an API for requesting a single DMA channel. This would be
+> great in a driver I've written for PCI communication over a backplane.
+> (I have a test board running in PCI Agent mode. It creates a virtual
+> ethernet interface that passes data over the PCI bus.)
+
+PCI devices should not be using generic DMA resources, so I don't see how this
+would apply.
+
+> Also, are there any plans to support the external start feature on the
+> 83XX parts? (According to my datasheet, it is supported.) I will be
+> using this feature in a driver I will be starting fairly soon.
+
+External start is very device-specific, so I don't see how a generic DMA driver,
+which is intended only for memory-to-memory DMA operations, can coordinate with
+an external master.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
