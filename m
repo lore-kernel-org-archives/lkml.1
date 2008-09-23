@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbYIWUqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbYIWUq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752760AbYIWUqG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 16:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYIWUpq
+	id S1753236AbYIWUq0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 16:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYIWUpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 16:45:46 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:48925 "EHLO gir.skynet.ie"
+	Tue, 23 Sep 2008 16:45:53 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:48908 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752927AbYIWUpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 16:45:45 -0400
+	id S1752804AbYIWUpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 16:45:51 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Linux-MM <linux-mm@kvack.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Dave Hansen <dave@linux.vnet.ibm.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 3/3] Report the pagesize backing a VMA in /proc/pid/maps
-Date: Tue, 23 Sep 2008 21:45:36 +0100
-Message-Id: <1222202736-13311-4-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 2/3] Report the MMU pagesize in /proc/pid/smaps
+Date: Tue, 23 Sep 2008 21:45:35 +0100
+Message-Id: <1222202736-13311-3-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1222202736-13311-1-git-send-email-mel@csn.ul.ie>
 References: <1222202736-13311-1-git-send-email-mel@csn.ul.ie>
@@ -24,109 +24,126 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a new field for hugepage-backed memory regions to show the
-pagesize in /proc/pid/maps.  While the information is available in smaps,
-maps is more human-readable and does not incur the cost of calculating Pss. An
-example of a /proc/self/maps output for an application using hugepages with
-this patch applied is;
-
-08048000-0804c000 r-xp 00000000 03:01 49135      /bin/cat
-0804c000-0804d000 rw-p 00003000 03:01 49135      /bin/cat
-08400000-08800000 rw-p 00000000 00:10 4055       /mnt/libhugetlbfs.tmp.QzPPTJ (deleted) (hpagesize=4096kB)
-b7daa000-b7dab000 rw-p b7daa000 00:00 0
-b7dab000-b7ed2000 r-xp 00000000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-b7ed2000-b7ed7000 r--p 00127000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-b7ed7000-b7ed9000 rw-p 0012c000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-b7ed9000-b7edd000 rw-p b7ed9000 00:00 0
-b7ee1000-b7ee8000 r-xp 00000000 03:01 49262      /root/libhugetlbfs-git/obj32/libhugetlbfs.so
-b7ee8000-b7ee9000 rw-p 00006000 03:01 49262      /root/libhugetlbfs-git/obj32/libhugetlbfs.so
-b7ee9000-b7eed000 rw-p b7ee9000 00:00 0
-b7eed000-b7f02000 r-xp 00000000 03:01 119345     /lib/ld-2.3.6.so
-b7f02000-b7f04000 rw-p 00014000 03:01 119345     /lib/ld-2.3.6.so
-bf8ef000-bf903000 rwxp bffeb000 00:00 0          [stack]
-bf903000-bf904000 rw-p bffff000 00:00 0
-ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
-
-To be predictable for parsers, the patch adds the notion of reporting on VMA
-attributes by appending one or more fields that look like "(attribute)". This
-already happens when a file is deleted and the user sees (deleted) after the
-filename. The expectation is that existing parsers will not break as those
-that read the filename should be reading forward after the inode number
-and stopping when it sees something that is not part of the filename.
-Parsers that assume everything after / is a filename will get confused by
-(hpagesize=XkB) but are already broken due to (deleted).
+The KernelPageSize entry in /proc/pid/maps is the pagesize used by the
+kernel to back a VMA. This matches the size used by the MMU in the majority
+of cases. However, one counter-example occurs on PPC64 kernels whereby a
+kernel using 64K as a base pagesize may still use 4K pages for the MMU on
+older processor. To distinguish, this patch reports MMUPageSize as the
+pagesize used by the MMU in /proc/pid/smaps.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- fs/proc/task_mmu.c |   24 ++++++++++++++++++------
- 1 files changed, 18 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/hugetlb.h |    6 ++++++
+ arch/powerpc/mm/hugetlbpage.c      |    7 +++++++
+ fs/proc/task_mmu.c                 |    6 ++++--
+ include/linux/hugetlb.h            |    3 +++
+ mm/hugetlb.c                       |   13 +++++++++++++
+ 5 files changed, 33 insertions(+), 2 deletions(-)
 
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index ee1f4eb..bb90326 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -198,7 +198,7 @@ static int do_maps_open(struct inode *inode, struct file *file,
- 	return ret;
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index 26f0d0a..2655146 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -18,6 +18,12 @@ pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+ 			      pte_t *ptep);
+ 
+ /*
++ * The version of vma_mmu_pagesize() in arch/powerpc/mm/hugetlbpage.c needs
++ * to override the version in mm/hugetlb.c
++ */ 
++#define vma_mmu_pagesize vma_mmu_pagesize
++
++/*
+  * If the arch doesn't supply something else, assume that hugepage
+  * size aligned regions are ok without further preparation.
+  */
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index f1c2d55..c44d01e 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -503,6 +503,13 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+ 	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1, 0);
  }
  
--static int show_map(struct seq_file *m, void *v)
-+static int __show_map(struct seq_file *m, void *v, int showattributes)
- {
- 	struct proc_maps_private *priv = m->private;
- 	struct task_struct *task = priv->task;
-@@ -233,8 +233,8 @@ static int show_map(struct seq_file *m, void *v)
- 	 * Print the dentry name for named mappings, and a
- 	 * special [heap] marker for the heap:
- 	 */
-+	pad_len_spaces(m, len);
- 	if (file) {
--		pad_len_spaces(m, len);
- 		seq_path(m, &file->f_path, "\n");
- 	} else {
- 		const char *name = arch_vma_name(vma);
-@@ -251,11 +251,18 @@ static int show_map(struct seq_file *m, void *v)
- 				name = "[vdso]";
- 			}
- 		}
--		if (name) {
--			pad_len_spaces(m, len);
-+		if (name)
- 			seq_puts(m, name);
--		}
- 	}
-+
-+	/*
-+	 * Print additional attributes of the VMA of interest
-+	 * - hugepage size if hugepage-backed
-+	 */
-+	if (showattributes && vma->vm_flags & VM_HUGETLB)
-+		seq_printf(m, " (hpagesize=%lukB)",
-+			vma_kernel_pagesize(vma) >> 10);
-+
- 	seq_putc(m, '\n');
- 
- 	if (m->count < m->size)  /* vma is copied successfully */
-@@ -263,6 +270,11 @@ static int show_map(struct seq_file *m, void *v)
- 	return 0;
- }
- 
-+static int show_map(struct seq_file *m, void *v)
++unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
 +{
-+	return __show_map(m, v, 1);
++	unsigned int psize = get_slice_psize(vma->vm_mm, vma->vm_start);
++
++	return 1UL << mmu_psize_to_shift(psize);
 +}
 +
- static const struct seq_operations proc_pid_maps_op = {
- 	.start	= m_start,
- 	.next	= m_next,
-@@ -381,7 +393,7 @@ static int show_smap(struct seq_file *m, void *v)
- 	if (vma->vm_mm && !is_vm_hugetlb_page(vma))
- 		walk_page_range(vma->vm_start, vma->vm_end, &smaps_walk);
+ /*
+  * Called by asm hashtable.S for doing lazy icache flush
+  */
+diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index 08b453f..ee1f4eb 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -395,7 +395,8 @@ static int show_smap(struct seq_file *m, void *v)
+ 		   "Private_Dirty:  %8lu kB\n"
+ 		   "Referenced:     %8lu kB\n"
+ 		   "Swap:           %8lu kB\n"
+-		   "KernelPageSize: %8lu kB\n",
++		   "KernelPageSize: %8lu kB\n"
++		   "MMUPageSize:    %8lu kB\n",
+ 		   (vma->vm_end - vma->vm_start) >> 10,
+ 		   mss.resident >> 10,
+ 		   (unsigned long)(mss.pss >> (10 + PSS_SHIFT)),
+@@ -405,7 +406,8 @@ static int show_smap(struct seq_file *m, void *v)
+ 		   mss.private_dirty >> 10,
+ 		   mss.referenced >> 10,
+ 		   mss.swap >> 10,
+-		   vma_kernel_pagesize(vma) >> 10);
++		   vma_kernel_pagesize(vma) >> 10,
++		   vma_mmu_pagesize(vma) >> 10);
  
--	ret = show_map(m, v);
-+	ret = __show_map(m, v, 0);
- 	if (ret)
- 		return ret;
+ 	return ret;
+ }
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index ace04a7..5056021 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -233,6 +233,8 @@ static inline unsigned long huge_page_size(struct hstate *h)
  
+ extern unsigned long vma_kernel_pagesize(struct vm_area_struct *vma);
+ 
++extern unsigned long vma_mmu_pagesize(struct vm_area_struct *vma);
++
+ static inline unsigned long huge_page_mask(struct hstate *h)
+ {
+ 	return h->mask;
+@@ -274,6 +276,7 @@ struct hstate {};
+ #define huge_page_size(h) PAGE_SIZE
+ #define huge_page_mask(h) PAGE_MASK
+ #define vma_kernel_pagesize(v) PAGE_SIZE
++#define vma_mmu_pagesize(v) PAGE_SIZE
+ #define huge_page_order(h) 0
+ #define huge_page_shift(h) PAGE_SHIFT
+ static inline unsigned int pages_per_huge_page(struct hstate *h)
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 9c7ff96..91a7c2d 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -236,6 +236,19 @@ unsigned long vma_kernel_pagesize(struct vm_area_struct *vma)
+ }
+ 
+ /*
++ * Return the page size being used by the MMU to back a VMA. In the majority
++ * of cases, the page size used by the kernel matches the MMU size. On
++ * architectures where it differs, an architecture-specific version of this
++ * function is required.
++ */ 
++#ifndef vma_mmu_pagesize
++unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
++{
++	return vma_kernel_pagesize(vma);
++}
++#endif
++
++/*
+  * Flags for MAP_PRIVATE reservations.  These are stored in the bottom
+  * bits of the reservation map pointer, which are always clear due to
+  * alignment.
 -- 
 1.5.6.5
 
