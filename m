@@ -1,105 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYIWXrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYIWXr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753337AbYIWXrm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 19:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbYIWXrL
+	id S1754822AbYIWXr1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 19:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYIWXq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 19:47:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57834 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754187AbYIWXrK (ORCPT
+	Tue, 23 Sep 2008 19:46:59 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:43234 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753106AbYIWXq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 19:47:10 -0400
-Date: Tue, 23 Sep 2008 16:46:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org, agk@redhat.com,
-       mbroz@redhat.com, chris@arachsys.com
-Subject: Re: [PATCH] Memory management livelock
-Message-Id: <20080923164623.ce82c1c2.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
-References: <20080911101616.GA24064@agk.fab.redhat.com>
-	<Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
-	<Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
-	<20080923154905.50d4b0fa.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 23 Sep 2008 19:46:58 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgsFAEsa2UhMQWq+/2dsb2JhbACBXrUUgWc
+Date: Tue, 23 Sep 2008 19:46:56 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: suppress trivial sparse signedness warnings
+Message-ID: <20080923234656.GA26986@Krystal>
+References: <1222207546.16003.21.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1222207546.16003.21.camel@brick>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:46:40 up 111 days,  4:27,  7 users,  load average: 0.30, 0.28,
+	0.27
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008 19:11:51 -0400 (EDT)
-Mikulas Patocka <mpatocka@redhat.com> wrote:
+This should probably go to Steven...
 
+* Harvey Harrison (harvey.harrison@gmail.com) wrote:
+> Could just as easily change the three casts to cast to the correct
+> type...this patch changes the type of ftrace_nop instead.
+> 
+> Supresses sparse warnings:
+> arch/x86/kernel/ftrace.c:157:14: warning: incorrect type in assignment (different signedness)
+> arch/x86/kernel/ftrace.c:157:14:    expected long *static [toplevel] ftrace_nop
+> arch/x86/kernel/ftrace.c:157:14:    got unsigned long *<noident>
+> arch/x86/kernel/ftrace.c:161:14: warning: incorrect type in assignment (different signedness)
+> arch/x86/kernel/ftrace.c:161:14:    expected long *static [toplevel] ftrace_nop
+> arch/x86/kernel/ftrace.c:161:14:    got unsigned long *<noident>
+> arch/x86/kernel/ftrace.c:165:14: warning: incorrect type in assignment (different signedness)
+> arch/x86/kernel/ftrace.c:165:14:    expected long *static [toplevel] ftrace_nop
+> arch/x86/kernel/ftrace.c:165:14:    got unsigned long *<noident>
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  arch/x86/kernel/ftrace.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 082d996..66d9002 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -22,7 +22,7 @@
+>  
+>  
+>  /* Long is fine, even if it is only 4 bytes ;-) */
+> -static long *ftrace_nop;
+> +static unsigned long *ftrace_nop;
+>  
+>  union ftrace_code_union {
+>  	char code[MCOUNT_INSN_SIZE];
+> -- 
+> 1.6.0.2.471.g47a76
 > 
 > 
-> > > wait_on_page_writeback_range is another example where the livelock 
-> > > happened, there is no protection at all against starvation.
-> > 
-> > um, OK.  So someone else is initiating IO for this inode and this
-> > thread *never* gets to initiate any writeback.  That's a bit of a
-> > surprise.
-> > 
-> > How do we fix that?  Maybe decrement nt_to_write for these pages as
-> > well?
 > 
-> And what do you want to do with wait_on_page_writeback_range?
 
-Don't know.  I was asking you.
-
-> When I 
-> solved that livelock in write_cache_pages(), I got another livelock in 
-> wait_on_page_writeback_range.
-> 
-> > > BTW. that .nr_to_write = mapping->nrpages * 2 looks like a dangerous thing 
-> > > to me.
-> > > 
-> > > Imagine this case: You have two pages with indices 4 and 5 dirty in a 
-> > > file. You call fsync(). It sets nr_to_write to 4.
-> > > 
-> > > Meanwhile, another process makes pages 0, 1, 2, 3 dirty.
-> > > 
-> > > The fsync() process goes to write_cache_pages, writes the first 4 dirty 
-> > > pages and exits because it goes over the limit.
-> > > 
-> > > result --- you violate fsync() semantics, pages that were dirty before 
-> > > call to fsync() are not written when fsync() exits.
-> > 
-> > yup, that's pretty much unfixable, really, unless new locks are added
-> > which block threads which are writing to unrelated sections of the
-> > file, and that could hurt some workloads quite a lot, I expect.
-> 
-> It is fixable with the patch I sent --- it doesn't take any locks unless 
-> the starvation happens. Then, you don't have to use .nr_to_write for 
-> fsync anymore.
-
-I agree that the patch is low-impact and relatively straightforward. 
-The main problem is making the address_space larger - there can (and
-often are) millions and millions of these things in memory.  Making it
-larger is a big deal.  We should work hard to seek an alternative and
-afacit that isn't happening here.
-
-We already have existing code and design which attempts to avoid
-livelock without adding stuff to the address_space.  Can it be modified
-so as to patch up this quite obscure and rarely-occuring problem?
-
-> Another solution could be to record in page structure jiffies when the 
-> page entered dirty state and writeback state. The start writeback/wait on 
-> writeback functions could then trivially ignore pages that were 
-> dirtied/writebacked while the function was in progress.
-> 
-> > Hopefully high performance applications are instantiating the file
-> > up-front and are using sync_file_range() to prevent these sorts of
-> > things from happening.  But they probably aren't.
-> 
-> --- for databases it is pretty much possible that one thread is writing 
-> already journaled data (so it doesn't care when the data are really 
-> written) and another thread is calling fsync() on the same inode 
-> simultaneously --- so fsync() could mistakenly write the data generated by 
-> the first thread and ignore the data generated by the second thread, that 
-> it should really write.
-> 
-> Mikulas
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
