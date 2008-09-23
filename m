@@ -1,107 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYIWR0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbYIWR3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbYIWR0F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 13:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYIWRZy
+	id S1754510AbYIWR3y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 13:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYIWR3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 13:25:54 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:60028 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbYIWRZx (ORCPT
+	Tue, 23 Sep 2008 13:29:45 -0400
+Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:3986 "EHLO
+	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751629AbYIWR3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 13:25:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=q/BaRTuV8jJxewZKhpVv5xSRr6rwHSvrRGiaYPCIQz8lIaMgZUOuDulyzjZ3MFiyr7
-         BYteYXp9ewLG0TunT/XU1AmsiKiECKcHHnZ/GR4TdUCPYKHY3dAjxTbE7MTz9Ozm5wBz
-         AnEEkcfIpLVrOY+argakllA3Vf3jQYIUrm9BI=
-Message-ID: <2137b82d0809231025n359b3f59h53714d5acabd2107@mail.gmail.com>
-Date: Tue, 23 Sep 2008 10:25:52 -0700
-From: "Chad Zanonie" <chad.zanonie@gmail.com>
-To: "Oleg Nesterov" <oleg@tv-sign.ru>
-Subject: Re: + mm-oom-killer-kills-more-than-needed.patch added to -mm tree
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       rientjes@google.com
-In-Reply-To: <20080923124035.GA253@tv-sign.ru>
+	Tue, 23 Sep 2008 13:29:44 -0400
+Date: Tue, 23 Sep 2008 19:27:19 +0200
+From: Mark de Wever <koraq@xs4all.nl>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: petkovbb@gmail.com, Gadi Oxman <gadio@netvision.net.il>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IDE-TAPE NULL terminate strings.
+Message-ID: <20080923172719.GA9370@localhost>
+References: <20080921185138.GA16310@localhost> <48D79ABD.8060805@ru.mvista.com> <9ea470500809220656j6dfcf4c9q7a5a4185481ec994@mail.gmail.com> <20080922204129.GA3495@localhost> <48D80949.4080901@ru.mvista.com> <20080923161434.GA4444@localhost> <48D92313.3060605@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200809222238.m8MMcgAp001695@imap1.linux-foundation.org>
-	 <20080923124035.GA253@tv-sign.ru>
+In-Reply-To: <48D92313.3060605@ru.mvista.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 5:40 AM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> On 09/22, Andrew Morton wrote:
->>
->> ------------------------------------------------------
->> Subject: mm: oom-killer kills more than needed
->> From: "Chad Zanonie" <chad.zanonie@gmail.com>
->>
->> Possibility exists for an exiting application to be in between marking its
->> mm NULL and calling mmput when out_of_memory is invoked.
->> select_bad_process() will continue past this process as opposed to
->> returning -1UL due to its mm being NULL.  This causes the oom killer in
->> certain scenarios to not only kill the memory culprit, but also kill the
->> runner up.
->>
->> EXIT_DEAD seems to be the only flag that guarantees that mmput() has
->> finished.
+On Tue, Sep 23, 2008 at 09:10:43PM +0400, Sergei Shtylyov wrote:
+> Mark de Wever wrote:
 >
-> I don't think this is right.
+>>>> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+>>>> index 1bce84b..c41f5b1 100644
+>>>> --- a/drivers/ide/ide-tape.c
+>>>> +++ b/drivers/ide/ide-tape.c
+>>>> @@ -2338,7 +2338,7 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
+>>>> {
+>>>> 	idetape_tape_t *tape = drive->driver_data;
+>>>> 	struct ide_atapi_pc pc;
+>>>> -	char fw_rev[6], vendor_id[10], product_id[18];
+>>>> +	char fw_rev[6] = {'\0'}, vendor_id[10] = {'\0'}, product_id[18] = {'\0'};
 >
-> Let's suppose we have a single zombie. Now select_bad_process() always
-> returns -1 ? IOW, doesn't this means that, say,
+>>>  Do you realize how much *absolutely unnecessary* code will this bring
+>>> in?
 >
->        $ perl -e 'fork && sleep'
+>> I did not, I just had a look at the code GCC produced. I did expect much
+>> smaller code, but maybe that's only generated with -Os.
 >
-> disables oom-kill completely and forever?
+>    My imagination sufficed to foresee how much code a compiler would have 
+> to produce to completely initialize the arrays of the *auto* memory class 
+> -- even regardless of optimization. And all that mostly to no purpose.
 
-Ugh, looks like my description was slightly incorrect. I don't mean
-for it to return -1 upon noticing a null mm. I mean for
-select_bad_process to not skip (continue) over processes that haven't
-provably finished unmapping their memory (which EXIT_DEAD infers).
+I expected a rep stos based code, which isn't much code. But the code
+was created without a rep, instead it used several stos opcodes. I agree
+with the mostly no purpose part, since the memcpy later overwrites most
+of the array.
 
+>>> This is certainly worse than your initial patch (if it was correct).
 >
-> Hmm. But please see below. This doesn't happen because the usage
-> of EXIT_DEAD is not right.
+>> My initial patch did work, 
 >
->> Checking for PF_KTHREAD should replace p->mm regardless.
->
-> Yes, almost every check for ->mm in oom_kill.c is not right.
->
->> Adding EXIT_DEAD to the check seems to prevent unnecessary kills in local
->> testing.
->
-> This is strange, could you re-test? Because
->
->> @@ -216,7 +216,7 @@ static struct task_struct *select_bad_pr
->>                * skip kernel threads and tasks which have already released
->>                * their mm.
->>                */
->> -             if (!p->mm)
->> +             if (p->flags & PF_KTHREAD || p->flags & EXIT_DEAD)
->                                                ^^^^^^^^^^^^^^^^^
->
-> this is not possible. EXIT_DEAD lives in ->exit_state, not in ->flags.
+>    If ide_fixstring() wouldn't have to do any space compression, it would 
+> work. If it would have to compress spaces, 2 garbage characters would be  
+> copied by it and then printed.
 
-Good catch. I had actually done the testing in an older kernel that
-used PF_DEAD and while noticing the change to only EXIT_DEAD forgot to
-use the new appropriate flag in the patch.
+I didn't know that, I guess I got lucky ;-)
 
+>> but that doesn't matter much, since Boris
+>> posted another patch based on your suggestions. I like that patch better
+>> as my initial patch. I'm testing it now and I expect it to work.
 >
-> Oleg.
->
->
+>    Me too. :-)
 
-I'm new to this endeavor. Should I propose a new patch, or, will
-things be fixed from this omission? I still support the EXIT_DEAD
-inclusion, as it'll allow the OOM killer to make the similar progress
-that !p->mm provided.
+It worked, thanks for your suggestion :-)
 
-Chad
+Regards,
+Mark de Wever
