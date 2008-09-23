@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYIWXa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbYIWXbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753483AbYIWXa1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 19:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYIWXaL
+	id S1754260AbYIWXbX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 19:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbYIWXbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 19:30:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60128
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750884AbYIWXaJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 19:30:09 -0400
-Date: Tue, 23 Sep 2008 16:29:57 -0700 (PDT)
-Message-Id: <20080923.162957.141669474.davem@davemloft.net>
-To: jeffrey.t.kirsher@intel.com
-Cc: jeff@garzik.org, mingo@elte.hu, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
-       john.ronciak@intel.com, bruce.w.allan@intel.com
-Subject: Re: [PATCH 2/3] e1000e: Useset_memory_ro()/set_memory_rw() to
- protect flash memory
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080923224535.6869.76210.stgit@jtkirshe-mobile.jf.intel.com>
-References: <20080923224535.6869.76210.stgit@jtkirshe-mobile.jf.intel.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Sep 2008 19:31:13 -0400
+Received: from ns2.suse.de ([195.135.220.15]:49315 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750884AbYIWXbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 19:31:13 -0400
+Subject: patch uio-change-driver-name-of-uio_pdrv.patch added to gregkh-2.6 tree
+To: hjk@linutronix.de, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       ukleinek@strlen.de
+From: <gregkh@suse.de>
+Date: Tue, 23 Sep 2008 16:25:55 -0700
+In-Reply-To: <20080918210306.GC2991@local>
+Message-ID: <122221235522@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 23 Sep 2008 15:45:54 -0700
 
-> From: Bruce Allan <bruce.w.allan@intel.com>
-> 
-> A number of users have reported NVM corruption on various ICHx platform
-> LOMs.  One possible reasons for this could be unexpected and/or malicious
-> writes to the flash memory area mapped into kernel memory.  Once the
-> interface is up, there should be very few reads/writes of the mapped flash
-> memory.  This patch makes use of the x86 set_memory_*() functions to set
-> the mapped memory read-only and temporarily set it writable only when the
-> driver needs to write to it.  With the memory set read-only, any unexpected
-> write will be logged with a stack dump indicating the offending code.
-> 
-> Since these LOMs are only on x86 ICHx platforms, it does not matter that
-> this API is not yet available on other architectures, however it is
-> dependent on a previous patch that exports these function name symbols.
-> 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+This is a note to let you know that I've just added the patch titled
 
-If the X server or similar is causing this problem, this patch won't help.
+    Subject: UIO: Change driver name of uio_pdrv
 
-The X server maps MMIO space using mmap() in userspace, and you're only
-protecting the kernel side mapping.
+to my gregkh-2.6 tree.  Its filename is
+
+    uio-change-driver-name-of-uio_pdrv.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From hjk@linutronix.de  Tue Sep 23 15:59:56 2008
+From: "Hans J. Koch" <hjk@linutronix.de>
+Date: Thu, 18 Sep 2008 23:03:07 +0200
+Subject: UIO: Change driver name of uio_pdrv
+To: Greg KH <gregkh@suse.de>
+Cc: Uwe Kleine-König <ukleinek@strlen.de>, LKML <linux-kernel@vger.kernel.org>
+Message-ID: <20080918210306.GC2991@local>
+Content-Disposition: inline
+
+
+The generic UIO platform device driver should be given a unique driver ID and
+not just "uio". This is especially important since we now have a similar driver
+named uio_pdrv_genirq. Currently, there's no user of this driver in the
+mainline kernel.
+
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/uio/uio_pdrv.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/uio/uio_pdrv.c
++++ b/drivers/uio/uio_pdrv.c
+@@ -12,7 +12,7 @@
+ #include <linux/uio_driver.h>
+ #include <linux/stringify.h>
+ 
+-#define DRIVER_NAME "uio"
++#define DRIVER_NAME "uio_pdrv"
+ 
+ struct uio_platdata {
+ 	struct uio_info *uioinfo;
+
+
+Patches currently in gregkh-2.6 which might be from hjk@linutronix.de are
+
+bad/uio-irq.patch
+driver-core/uio-add-alignment-warnings-for-uio-mem.patch
+driver-core/uio-add-automata-sercos3-pci-card-support.patch
+driver-core/uio-change-driver-name-of-uio_pdrv.patch
