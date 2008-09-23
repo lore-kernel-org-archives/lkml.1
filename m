@@ -1,64 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYIWUJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbYIWURc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbYIWUJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 16:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYIWUJv
+	id S1753443AbYIWURc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 16:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYIWURY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 16:09:51 -0400
-Received: from www.tglx.de ([62.245.132.106]:51046 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751926AbYIWUJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 16:09:50 -0400
-Date: Tue, 23 Sep 2008 22:08:25 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, darren@dvhart.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: Unified tracing buffer
-In-Reply-To: <48D94BA8.9030106@redhat.com>
-Message-ID: <alpine.LFD.1.10.0809232206530.2038@apollo.tec.linutronix.de>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <48D7F5E8.3000705@redhat.com> <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com> <48D81B5F.2030702@redhat.com> <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com>
- <48D832B6.3010409@redhat.com> <33307c790809221712x4fbd9781u958c98d4585e92a9@mail.gmail.com> <48D901FE.5060604@redhat.com> <20080923150410.GA28341@Krystal> <48D90B84.4030905@redhat.com> <alpine.LFD.1.10.0809230847360.3265@nehalem.linux-foundation.org>
- <48D921B3.2060809@redhat.com> <alpine.LFD.1.10.0809231927060.2038@apollo.tec.linutronix.de> <48D93CAF.8070000@redhat.com> <alpine.LFD.1.10.0809232129280.2038@apollo.tec.linutronix.de> <48D94BA8.9030106@redhat.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 23 Sep 2008 16:17:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44932 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751395AbYIWURX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 16:17:23 -0400
+Date: Tue, 23 Sep 2008 13:15:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tom Zanussi <zanussi@comcast.net>
+Cc: a.p.zijlstra@chello.nl, prasad@linux.vnet.ibm.com, mbligh@google.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       tglx@linutronix.de, compudj@krystal.dyndns.org, rostedt@goodmis.org,
+       od@novell.com, fche@redhat.com, hch@lst.de, dwilder@us.ibm.com
+Subject: Re: [PATCH 1/3] relay - clean up subbuf switch
+Message-Id: <20080923131548.e3ac1533.akpm@linux-foundation.org>
+In-Reply-To: <1222147622.6875.136.camel@charm-linux>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+	<1221869279.8359.31.camel@lappy.programming.kicks-ass.net>
+	<20080922140740.GB5279@in.ibm.com>
+	<1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
+	<1222147622.6875.136.camel@charm-linux>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008, Masami Hiramatsu wrote:
+On Tue, 23 Sep 2008 00:27:02 -0500
+Tom Zanussi <zanussi@comcast.net> wrote:
 
-> Thomas Gleixner wrote:
-> > On Tue, 23 Sep 2008, Masami Hiramatsu wrote:
-> >> # cat /sys/devices/system/cpu/cpu0/cpuidle/state3/usage
-> >> 171210
-> > 
-> > C3 stops the TSC. So depending on how many C3 entries you have on the
-> > different cores, your TSCs will drift apart. Some BIOSes do even a
-> > lousy job trying to fixup the TSCs on exit from C3, which makes things
-> > even worse.
-> > 
-> >>     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000016] duration[00000000000000000000]
-> >>     C2:                  type[C2] promotion[--] demotion[--] latency[001] usage[00037969] duration[00000000000024288003]
-> >>     C3:                  type[C3] promotion[--] demotion[--] latency[057] usage[00171818] duration[00000000001881257636]
-> >>
-> >> Could these help you?
-> > 
-> > Yup, explains your TSC observation. Nothing we can do about. Broken by
-> > system design :( Welcome in the wonderful world of Inhell/BIOS/ACPI !
+> Clean up relay_switch_subbuf() and make waking up consumers optional.
+>     
+> Over time, relay_switch_subbuf() has accumulated some cruft - this
+> patch cleans it up and at the same time makes available some of it
+> available as common functions that any subbuf-switch implementor would
+> need (this is partially in preparation for the next patch, which makes
+> the subbuf-switch function completely replaceable).  It also removes
+> the hard-coded reader wakeup and moves it into a replaceable callback
+> called notify_consumers(); this allows any given tracer to implement
+> consumer notification as it sees fit.
 > 
-> Thank you for analyzing! :-)
-> Hmm, then could I fix that by fixing my dsdt...?
+> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> 
+> diff --git a/include/linux/relay.h b/include/linux/relay.h
+> index 953fc05..17f0515 100644
+> --- a/include/linux/relay.h
+> +++ b/include/linux/relay.h
+> @@ -159,6 +159,15 @@ struct rchan_callbacks
+>  	 * The callback should return 0 if successful, negative if not.
+>  	 */
+>  	int (*remove_buf_file)(struct dentry *dentry);
+> +
+> +	/*
+> +	 * notify_consumers - new sub-buffer available, let consumers know
+> +	 * @buf: the channel buffer
+> +	 *
+> +	 * Called during sub-buffer switch.  Applications which don't
+> +	 * want to notify anyone should implement an empty version.
+> +	 */
+> +        void (*notify_consumers)(struct rchan_buf *buf);
+>  };
 
-You can limit c-states so you dont do down to the C3 state, but there
-is a trade off vs. power saving.
+Does this comment format and placement get properly processed by the
+kerneldoc tools?
 
-Lets wait for Martins magic TSC patches first :)
+>  /*
+> @@ -186,6 +195,48 @@ extern size_t relay_switch_subbuf(struct rchan_buf *buf,
+>  				  size_t length);
+>  
+>  /**
+> + *	relay_event_toobig - is event too big to fit in a sub-buffer?
+> + *	@buf: relay channel buffer
+> + *	@length: length of event
+> + *
+> + *	Returns 1 if too big, 0 otherwise.
+> + *
+> + *	switch_subbuf() helper function.
+> + */
+> +static inline int relay_event_toobig(struct rchan_buf *buf, size_t length)
+> +{
+> +	return length > buf->chan->subbuf_size;
+> +}
+> +
+> +/**
+> + *	relay_update_filesize - increase relay file i_size by length
+> + *	@buf: relay channel buffer
+> + *	@length: length to add
+> + *
+> + *	switch_subbuf() helper function.
+> + */
+> +static inline void relay_update_filesize(struct rchan_buf *buf, size_t length)
+> +{
+> +	if (buf->dentry)
+> +		buf->dentry->d_inode->i_size +=	length;
+> +	else
+> +		buf->early_bytes += length;
+> +
+> +	smp_mb();
+> +}
 
-     tglx
+What locking protects the non-atomic modification of the 64-bit i_size
+here?
+
+> +/**
+> + *	relay_inc_produced - increase number of sub-buffers produced by 1
+> + *	@buf: relay channel buffer
+> + *
+> + *	switch_subbuf() helper function.
+> + */
+> +static inline void relay_inc_produced(struct rchan_buf *buf)
+> +{
+> +	buf->subbufs_produced++;
+> +}
+
+This also needs caller-provided locking.  That's part of the function's
+interface and should be documented,
+
+> +/**
+>   *	relay_write - write data into the channel
+>   *	@chan: relay channel
+>   *	@data: data to be written
+> diff --git a/kernel/relay.c b/kernel/relay.c
+> index 8d13a78..53652f1 100644
+> --- a/kernel/relay.c
+> +++ b/kernel/relay.c
+> @@ -324,6 +324,21 @@ static int remove_buf_file_default_callback(struct dentry *dentry)
+>  	return -EINVAL;
+>  }
+>  
+> +/*
+> + * notify_consumers() default callback.
+> + */
+> +static void notify_consumers_default_callback(struct rchan_buf *buf)
+> +{
+> +	if (waitqueue_active(&buf->read_wait))
+> +		/*
+> +		 * Calling wake_up_interruptible() from here
+> +		 * will deadlock if we happen to be logging
+> +		 * from the scheduler (trying to re-grab
+> +		 * rq->lock), so defer it.
+> +		 */
+> +		__mod_timer(&buf->timer, jiffies + 1);
+> +}
+> +
+>  /* relay channel default callbacks */
+>  static struct rchan_callbacks default_channel_callbacks = {
+>  	.subbuf_start = subbuf_start_default_callback,
+> @@ -331,6 +346,7 @@ static struct rchan_callbacks default_channel_callbacks = {
+>  	.buf_unmapped = buf_unmapped_default_callback,
+>  	.create_buf_file = create_buf_file_default_callback,
+>  	.remove_buf_file = remove_buf_file_default_callback,
+> +	.notify_consumers = notify_consumers_default_callback,
+>  };
+>  
+>  /**
+> @@ -508,6 +524,8 @@ static void setup_callbacks(struct rchan *chan,
+>  		cb->create_buf_file = create_buf_file_default_callback;
+>  	if (!cb->remove_buf_file)
+>  		cb->remove_buf_file = remove_buf_file_default_callback;
+> +	if (!cb->notify_consumers)
+> +		cb->notify_consumers = notify_consumers_default_callback;
+>  	chan->cb = cb;
+>  }
+>  
+> @@ -726,30 +744,17 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
+>  	void *old, *new;
+>  	size_t old_subbuf, new_subbuf;
+>  
+> -	if (unlikely(length > buf->chan->subbuf_size))
+> +	if (unlikely(relay_event_toobig(buf, length)))
+>  		goto toobig;
+>  
+>  	if (buf->offset != buf->chan->subbuf_size + 1) {
+>  		buf->prev_padding = buf->chan->subbuf_size - buf->offset;
+>  		old_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
+>  		buf->padding[old_subbuf] = buf->prev_padding;
+> -		buf->subbufs_produced++;
+> -		if (buf->dentry)
+> -			buf->dentry->d_inode->i_size +=
+> -				buf->chan->subbuf_size -
+> -				buf->padding[old_subbuf];
+> -		else
+> -			buf->early_bytes += buf->chan->subbuf_size -
+> -					    buf->padding[old_subbuf];
+> -		smp_mb();
+> -		if (waitqueue_active(&buf->read_wait))
+> -			/*
+> -			 * Calling wake_up_interruptible() from here
+> -			 * will deadlock if we happen to be logging
+> -			 * from the scheduler (trying to re-grab
+> -			 * rq->lock), so defer it.
+> -			 */
+> -			__mod_timer(&buf->timer, jiffies + 1);
+> +		relay_inc_produced(buf);
+> +		relay_update_filesize(buf, buf->chan->subbuf_size -
+> +				      buf->padding[old_subbuf]);
+> +		buf->chan->cb->notify_consumers(buf);
+>  	}
+>  
+>  	old = buf->data;
+> @@ -763,7 +768,7 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
+>  	buf->data = new;
+>  	buf->padding[new_subbuf] = 0;
+>  
+> -	if (unlikely(length + buf->offset > buf->chan->subbuf_size))
+> +	if (unlikely(relay_event_toobig(buf, length + buf->offset)))
+>  		goto toobig;
+
+I think you can put the unlikely() into relay_event_toobig() and gcc
+will dtrt.  If that has any value.
+
+>  	return length;
+> 
