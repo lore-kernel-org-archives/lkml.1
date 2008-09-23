@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYIWH7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbYIWIRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbYIWH7t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 03:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYIWH7k
+	id S1753630AbYIWIRY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 04:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbYIWIRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 03:59:40 -0400
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:41043 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751103AbYIWH7j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 03:59:39 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Tom Tucker <tom@opengridcomputing.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, linux-nfs@vger.kernel.org
-In-Reply-To: <1221582285.28572.67.camel@zakaz.uk.xensource.com>
-References: <48B2D7F8.5020206@opengridcomputing.com>
-	 <20080826192711.GJ4380@fieldses.org>
-	 <48B567F5.2090605@opengridcomputing.com>
-	 <1220111261.31172.14.camel@localhost.localdomain>
-	 <20080831193037.GB14876@fieldses.org>
-	 <1220211842.31172.18.camel@localhost.localdomain>
-	 <48BAF643.4070808@opengridcomputing.com>
-	 <1220217505.31172.26.camel@localhost.localdomain>
-	 <48BC2466.2070806@opengridcomputing.com>
-	 <1221036015.24993.27.camel@zakaz.uk.xensource.com>
-	 <20080912224323.GN22126@fieldses.org>
-	 <48CAF80A.4010109@opengridcomputing.com>
-	 <1221296243.2534.7.camel@localhost.localdomain>
-	 <1221544139.2534.18.camel@localhost.localdomain>
-	 <48CF9AC3.6060801@opengridcomputing.com>
-	 <1221577412.28572.60.camel@zakaz.uk.xensource.com>
-	 <48CFD7C3.5080207@opengridcomputing.com>
-	 <1221582285.28572.67.camel@zakaz.uk.xensource.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-fC+yxt09xc2hPQUhPRJR"
-Date: Tue, 23 Sep 2008 08:59:30 +0100
-Message-Id: <1222156770.6869.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=unbeb6qN2T0A:10 a=497XeZ5pv4kA:10 a=XlxSX2Hdy_YXQKSh_0QA:9 a=7cQA42gctG0Iob7tcpmsZcABEUwA:4 a=CWfAmLVWKswA:10 a=PsJTKJ31HHxYP_PBw-AA:9 a=S-SlGOGFQQRUbdLR_bb2XEQLMAoA:4 a=rPt6xJ-oxjAA:10
+	Tue, 23 Sep 2008 04:17:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56327 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750943AbYIWIRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 04:17:08 -0400
+Date: Tue, 23 Sep 2008 10:16:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: x86: fix macro with bad_bios_dmi_table
+Message-ID: <20080923081650.GA19003@elte.hu>
+References: <1222155333-18247-1-git-send-email-yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222155333-18247-1-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-fC+yxt09xc2hPQUhPRJR
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-I've found that the problem was backported into the stable stream since
-I cannot reproduce the issue with 2.6.26 but I can with 2.6.26.5. This
-is quite useful since there are only 3 relevant looking changesets in
-that range. I will bisect between these before confirming the culprit on
-mainline.
+> need one blank tail.
+> 
+> fix the crash on ingo's test box.
 
-I've had a private reply from someone who is seeing the same issue with
-2.6.26.5 against a server running 2.6.18 (Debian Etch) which I think
-largely discounts the server from being at fault.
+applied to tip/x86/memory-corruption-check, thanks Yinghai!
 
-Ian.
---=20
-Ian Campbell
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -760,8 +760,8 @@ static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
+>  			DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies, LTD"),
+>  		},
+>  	},
+> -	{}
+>  #endif
+> +	{}
+>  };
 
-Everything ends badly.  Otherwise it wouldn't end.
+i've seen such DMI crashes numerous times, caused by a missing NULL at 
+the end of the table. Is there no sane way to detect or robustly avoid 
+such run-off-the-end bugs?
 
---=-fC+yxt09xc2hPQUhPRJR
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+how about changing dmi_check_system(table) to a macro, which does 
+something like:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+   __dmi_check_system(&(table), sizeof(table)) 
 
-iEYEABECAAYFAkjYoeIACgkQM0+0qS9rzVn6gQCfZ4oGa0GgBJnIR9iIh3FV7ePm
-NvQAoMoyKeeA5Rot5o+w+2uZHmdKfnxe
-=INM6
------END PGP SIGNATURE-----
+and rename dmi_check_system() in drivers/firmware/dmi_scan.c to 
+__dmi_check_system() and add the size parameter? That way we could 
+remove the need for NULL termination and it's even a size optimization: 
+it shrinks those tables a tiny bit.
 
---=-fC+yxt09xc2hPQUhPRJR--
-
+	Ingo
