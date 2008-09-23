@@ -1,127 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754457AbYIWRyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbYIWRyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754457AbYIWRyA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 13:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYIWRxw
+	id S1753105AbYIWRyZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 13:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYIWRyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 13:53:52 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:58884 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752605AbYIWRxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 13:53:51 -0400
-Date: Tue, 23 Sep 2008 19:53:42 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH 3/4] atmel-mci: support multiple mmc slots
-Message-ID: <20080923195342.52b1164d@mjolnir.drzeus.cx>
-In-Reply-To: <1222101497-21183-4-git-send-email-haavard.skinnemoen@atmel.com>
-References: <1222101497-21183-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1222101497-21183-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<1222101497-21183-3-git-send-email-haavard.skinnemoen@atmel.com>
-	<1222101497-21183-4-git-send-email-haavard.skinnemoen@atmel.com>
-X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-22714-1222192430-0001-2"
+	Tue, 23 Sep 2008 13:54:15 -0400
+Received: from hobbit.corpit.ru ([81.13.33.150]:20865 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752743AbYIWRyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 13:54:14 -0400
+Message-ID: <48D92D43.2070705@msgid.tls.msk.ru>
+Date: Tue, 23 Sep 2008 21:54:11 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: PARAVIRT_GUEST bug? [was: Stable regression: usb-storage is stuck
+ in 2.6.26.5]
+References: <20080913122143.4B13B908E@gandalf.tls.msk.ru> <48CBB626.4050300@msgid.tls.msk.ru> <48CF6A45.3010204@msgid.tls.msk.ru> <48D22847.5020100@msgid.tls.msk.ru> <48D2AB8E.90305@goop.org>
+In-Reply-To: <48D2AB8E.90305@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Jeremy Fitzhardinge wrote:
+> Michael Tokarev wrote:
+>> Michael Tokarev wrote:
+>>   
+>>> Michael Tokarev wrote:
+>>>
+>>> [usb-storage hangs on asus M2NPV-VM (nVidia GeForce 6150/nForce 430)
+>>>  motherboard with latest bios]
+>>>
+>>>     
+>>>> Ok, it turned out to be pretty.. interesting.
+>>>>
+>>>> It's not a regression within -stable kernel series.  The problem
+>>>> happens when BOTH are true:
+>>>>
+>>>>   - using latest BIOS for this mobo (1401), AND
+>>>>   - enabling KVM_GUEST in kernel.
+>>>>
+>>>> The only difference in my kernel config between .1 and .5 was
+>>>> to enable KVM_GUEST and KVM_CLOCK, and also I2C_HELPER_AUTO
+>>>> which was added by kernel update.
+>>>>
+>>>> Going with previous BIOS (1201) OR disabling PARAVIRT_GUEST
+>>>> fixes the problem.  I'll try to figure out which config
+>>>> option is at problem here.
+>>>>       
+>>> After seeing similar situation on another motherboard, I
+>>> become curious.
+>>>
+>>> Here's the result:  M3A78-EM motherboard (also from Asus),
+>>> AMD780G/SB700 etc.  Updating to one of the latest bios
+>>> makes the system unbootable.  Kernel hangs on boot right
+>>> after displaying
+>>>
+>>>  SLUB: Genslabs=12, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
+>>>
+>>> Reverting to the older BIOS or disabling PARAVIRT_GUEST in kernel
+>>>     
+>> PARAVIRT it is, not PARAVIRT_GUEST.
+>>   
+> 
+> Hm, mysterious.  CONFIG_PARAVIRT should have no functional effect on a
+> native boot.
+> 
+> Could you post the complete dmesg output (with "initcall_debug" on the
+> kernel command line), with both CONFIG_PARAVIRT on and off, and ideally,
+> comparing working vs non-working BIOS?
 
---=_freyr.drzeus.cx-22714-1222192430-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+It turned out to be more difficult than I thought.  There were other
+problems with the motherboard I experimented with (my new home machine),
+unrelated.  Also, it wasn't possible to re-flash bios back as it said
+that the old version is incompatible with currently running bios so it
+can't re-flash it.
 
-On Mon, 22 Sep 2008 18:38:16 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+Also, initcall_debug does not make any difference for my mobo.  All the
+debugging shown by this option are AFTER the place where it hangs.
+And for netconsole I'd need another machine at home, which I don't
+have currently.
 
-> The Atmel MCI controller can drive multiple cards through separate sets
-> of pins, but only one at a time. This patch adds support for
-> multiplexing access to the controller so that multiple card slots can be
-> used as if they were hooked up to separate mmc controllers.
->=20
+Instead, while debugging other issues, I tried 2.6.27-rc7 kernel -- this
+one works on 2 motherboards with new BIOSes, no matter which PARAVIRT
+options I turn on.  I'll try this kernel on other mobos where possible,
+and if no issue will be found, I'd declare the issue to be solved.
 
-This multiplexing shenanigans seems to be all the rage these days...
+If not, I'll try to find some time to debug it later.  After all, this
+very issue is already worked around -- I enabled those options in order
+to add (optimized) support for KVM guests, but for those I just built
+another kernel flavour with only that config change.
 
-> =20
->  static void atmci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
->  {
-> -	struct atmel_mci	*host =3D mmc_priv(mmc);
-> +	struct atmel_mci_slot	*slot =3D mmc_priv(mmc);
-> +	struct atmel_mci	*host =3D slot->host;
-> =20
->  	if (ios->clock) {
->  		u32 clkdiv;
+Oh well.
 
-You forgot the most important part; how to handle the clock given two
-different requests.
+And thank you for your support!
 
-(This will also get a bit more painful when/if the core starts
-disabling the clock when a card is idle)
-
-> +
-> +	if (gpio_is_valid(slot->detect_pin)) {
-> +		int ret;
-> +
-> +		setup_timer(&slot->detect_timer, atmci_detect_change,
-> +				(unsigned long)slot);
-> +
-> +		ret =3D request_irq(gpio_to_irq(slot->detect_pin),
-> +				atmci_detect_interrupt,
-> +				IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
-> +				"mmc-detect", slot);
-> +		if (ret) {
-> +			dev_dbg(&mmc->class_dev,
-> +				"could not request IRQ %d for detect pin\n",
-> +				gpio_to_irq(slot->detect_pin));
-> +			gpio_free(slot->detect_pin);
-> +			slot->detect_pin =3D -EBUSY;
-> +		}
-> +	}
-
-Fall back to polling?
-
-> +	/* We need at least one slot to succeed */
-> +	ret =3D -1;
-> +	if (pdata->slot[0].bus_width)
-> +		ret &=3D atmci_init_slot(host, &pdata->slot[0],
-> +				MCI_SDCSEL_SLOT_A);
-> +	if (pdata->slot[1].bus_width)
-> +		ret &=3D atmci_init_slot(host, &pdata->slot[1],
-> +				MCI_SDCSEL_SLOT_B);
-> +	if (ret) {
-> +		ret =3D -ENODEV;
-> +		goto err_init_slot;
->  	}
-
-Memory/resource leak.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-22714-1222192430-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkjZLSsACgkQ7b8eESbyJLjGFACfceaFAt5MZ91MSDWbSBy70R5c
-avsAmwUsqYFGW3UKWT9RJlbYGOfhqO+g
-=kJki
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-22714-1222192430-0001-2--
+/mjt
