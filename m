@@ -1,43 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752090AbYIWMQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbYIWMTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752090AbYIWMQP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 08:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbYIWMP7
+	id S1752675AbYIWMTT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 08:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYIWMTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 08:15:59 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50696 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbYIWMP7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 08:15:59 -0400
-Date: Tue, 23 Sep 2008 21:15:33 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] Report the pagesize backing a VMA in /proc/pid/smaps
-Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
-In-Reply-To: <1222102098.8533.62.camel@nimitz>
-References: <20080922162152.GB7716@csn.ul.ie> <1222102098.8533.62.camel@nimitz>
-Message-Id: <20080923211140.DC16.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 23 Sep 2008 08:19:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47790 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751324AbYIWMTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 08:19:08 -0400
+Message-ID: <48D8DEAE.4080309@redhat.com>
+Date: Tue, 23 Sep 2008 08:18:54 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Andreas Dilger <adilger@sun.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, "Theodore Ts'o" <tytso@mit.edu>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext4: Use preallocation when reading from the	inode
+ table
+References: <E1KhvsB-0002Ik-Ex@closure.thunk.org> <20080923101613.58768083@lxorguk.ukuu.org.uk> <20080923115045.GI10950@webber.adilger.int>
+In-Reply-To: <20080923115045.GI10950@webber.adilger.int>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The corollary is that someone running with a 64K base page kernel may be
-> > surprised that the pagesize is always 4K. However I'll check if there is
-> > a simple way of checking out if the MMU size differs from PAGE_SIZE.
-> 
-> Sure.  If it isn't easy, the best thing to do is probably just to
-> document the "interesting" behavior.
+Andreas Dilger wrote:
+> On Sep 23, 2008  10:16 +0100, Alan Cox wrote:
+>   
+>> On Mon, 22 Sep 2008 20:35:23 -0400
+>> "Theodore Ts'o" <tytso@mit.edu> wrote:
+>>     
+>>> With modern hard drives, reading 64k takes roughly the same time as
+>>> reading a 4k block.  So request adjacent inode table blocks to reduce
+>>> the time it takes when iterating over directories (especially when doing
+>>> this in htree sort order) in a cold cache case.  With this patch, the
+>>> time it takes to run "git status" on a kernel tree after flushing the
+>>> caches via "echo 3 > /proc/sys/vm/drop_caches", is reduced by 21%.
+>>>
+>>> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+>>>       
+>> Acked-by: Alan Cox <alan@redhat.com>
+>>
+>> I'm actually suprised that 16 is the magic tuning number you've used and
+>> a bigger one isn't even more of a win
+>>     
+>
+> I was going to suggest making this at least a #defined constant instead
+> of hard coding the values there.  Making it a mount option and/or /proc
+> value would allow further testing.
+>
+> Cheers, Andreas
+> --
+> Andreas Dilger
+> Sr. Staff Engineer, Lustre Group
+> Sun Microsystems of Canada, Inc.
+>
+>   
 
-Dave, please let me know getpagesize() function return to 4k or 64k on ppc64.
-I think the PageSize line of the /proc/pid/smap and getpagesize() result should be matched.
+I think that Alan is probably right - the magic number for modern drives 
+is probably closer to 256K. Having it be a /sys tunable (with a larger 
+default) would be a nice way to verify this.
 
-otherwise, enduser may be confused.
-
-
+Ric
 
