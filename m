@@ -1,74 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYIWV31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYIWV3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbYIWV31 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYIWV3S
+	id S1756170AbYIWV3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbYIWV30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:29:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:55302 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbYIWV3R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 17:29:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:sender;
-        b=D+0TKQwKHT34CAPIdEaiGSpOXFp575O30rEtSpe9+eKCE66hhuNzEtG+pZtK3c0bEb
-         uZOjZEr2AcZSFNXSz3nGBwg/Tq77ed9cNAYonSFLJd5mF6RNzYZ+XqnJeNMY+eciGLQF
-         fYz7Ubt1XgFgd42nSL6BRctv8wDzWB2BxkkC8=
-Date: Wed, 24 Sep 2008 00:29:14 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: penberg@cs.helsinki.fi
-Cc: compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org,
-       righi.andrea@gmail.com, eduard.munteanu@linux360.ro,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: [ANNOUNCE] kmemtrace-user repo update
-Message-ID: <20080923212914.GB5237@localhost>
+	Tue, 23 Sep 2008 17:29:26 -0400
+Received: from smtp8-g19.free.fr ([212.27.42.65]:55316 "EHLO smtp8-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755538AbYIWV3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 17:29:25 -0400
+Message-ID: <48D95FB2.4050108@free.fr>
+Date: Tue, 23 Sep 2008 23:29:22 +0200
+From: matthieu castet <castet.matthieu@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080702 Iceape/1.1.11 (Debian-1.1.11-1)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Martin Doucha <next_ghost@quick.cz>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 11603] Re: ACPI PnP on Intel MU440EX
+References: <48BA9B2C.7060007@quick.cz> <200809162339.40330.bjorn.helgaas@hp.com> <200809201659.19268.bjorn.helgaas@hp.com> <200809221701.13569.bjorn.helgaas@hp.com>
+In-Reply-To: <200809221701.13569.bjorn.helgaas@hp.com>
+Content-Type: multipart/mixed;
+ boundary="------------040701070706080304090704"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody,
+This is a multi-part message in MIME format.
+--------------040701070706080304090704
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-This concerns...
-http://repo.or.cz/w/kmemtrace-user.git
+Bjorn Helgaas wrote:
+> Your logs are perfect, which makes me happy because it's the first
+> time I've successfully used the byzantine ACPI debug infrastructure.
+> 
+>> Log with parport set to auto/bidirectional in BIOS for comparison. PNPBIOS does
+>> detect it in this setting, ACPI doesn't. Same with auto/EPP which I used until
+>> now.
+> 
+> I think this is a BIOS defect.
+> 
+> When you set the port to "enabled" in the BIOS, Linux finds and uses
+> the parallel port with no problem.
+> 
+> When you set the port to "auto/bidirectional" or "auto/EPP" in the BIOS,
+> the _STA methods on all the parallel devices return 0:
+> 
+>      bus-0117 [00] bus_get_status        : Device [LPT] status [00000000]
+>      bus-0117 [00] bus_get_status        : Device [EPP] status [00000000]
+>      bus-0117 [00] bus_get_status        : Device [ECP] status [00000000]
+> 
+> A zero _STA means the device is not present at all, so I think Linux
+> is right to ignore the devices.
+> 
+If you want you could try to run the attached program on your pc in 
+"auto/bidirectional" or "auto/EPP" mode.
 
-kmemtrace-user's git repo has been update. This is the last revision
-history alteration. Due to missing copyright notices and other problems,
-I preferred to keep things clean.
-
-So now you need to git-clone it again, but it will no longer be
-necessary in the future. 
-
-Changes:
-- Refactored code, it's a lot cleaner now.
-- It now works on 32-bit machines, or at least I hope so: it no longer
-  exhibits problems when the userspace is compiled with the -m32 flag.
-- We now use mmap() for almost anything.
-- kmemtraced copies /proc/kallsyms, so if you want to hack on
-  kmemtrace-report, you no longer need to do all stuff on a
-  kmemtrace-enabled kernel.
-- Probably other misc janitorial stuff.
-
-Priority todos:
-- Integrate Tom's UTT patch (thanks again). I'd first like to provide a UTT
-  wrapper in the kernel to provide all those files without having to
-  explicitly code things in kmemtrace.
-- Make it work cross-arch (endianness etc.).
-
-Kinda lower priority todos:
-- Add timestamps. Useful to measure allocations' lifetimes in a tangible
-  way.
-
-
-Please take a shot at this and let me know what you think.
+This program does what _STA methods do.
 
 
-	Cheers,
-	Eduard
+Matthieu
 
+--------------040701070706080304090704
+Content-Type: text/x-csrc;
+ name="lpc.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="lpc.c"
+
+#include <sys/io.h>
+
+#define S707 0x0370
+#define INDX S707
+#define DATA S707+1
+
+
+int R707(int Arg0)
+{
+	int ret;
+	outb(0x55,INDX);
+	outb(0x55,INDX);
+	outb(Arg0,INDX);
+	ret = inb(DATA);
+	outb(0xAA,INDX);
+	return ret;
+}
+void W707(int Arg0, int Arg1)
+{
+	outb(0x55,INDX);
+	outb(0x55,INDX);
+	outb(Arg0,INDX);
+	outb(Arg1, DATA);
+	outb(0xAA,INDX);
+}
+
+
+
+int GSTA()
+{
+	int ret;
+	W707 (0x07, 0x03);
+	ret = R707 (0xF0);
+	printf("raw %d\n", ret);
+	printf("LPT %d\n", (ret & 0x7) == 0);
+	printf("EPP %d\n", (ret & 0x3) == 1);
+	printf("ECP %d\n", (ret & 0x2) == 2);
+	return ret;
+}
+
+int main()
+{
+	iopl(3);
+	GSTA();
+	return 0;
+}
+
+--------------040701070706080304090704--
