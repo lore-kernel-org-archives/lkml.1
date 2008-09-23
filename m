@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbYIWLv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbYIWLxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753189AbYIWLv3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 07:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbYIWLvT
+	id S1752586AbYIWLxl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 07:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbYIWLxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 07:51:19 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53153 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbYIWLvS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 07:51:18 -0400
-Date: Tue, 23 Sep 2008 05:50:45 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH, RFC] ext4: Use preallocation when reading from the	inode
- table
-In-reply-to: <20080923101613.58768083@lxorguk.ukuu.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-id: <20080923115045.GI10950@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <E1KhvsB-0002Ik-Ex@closure.thunk.org>
- <20080923101613.58768083@lxorguk.ukuu.org.uk>
+	Tue, 23 Sep 2008 07:53:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46558 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750869AbYIWLxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 07:53:32 -0400
+Date: Tue, 23 Sep 2008 13:53:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: How how latent should non-preemptive scheduling be?
+Message-ID: <20080923115323.GA27240@elte.hu>
+References: <fa.ERZTl/6uH+mhNoef5fPJKTRjJag@ifi.uio.no> <fa.C6WSm5Rh2Nb+Qho7b0qDOZ9RPV8@ifi.uio.no> <fa.ch6j4qXs/2sFpLkHz5fXrtjTR8c@ifi.uio.no> <fa.Jx/Ygtm46CVRawlA6OnfYNn6cN0@ifi.uio.no> <fa.iIHgL48F3T5VAqFw3mqaf9Pzrs4@ifi.uio.no> <fa.Td8xkKZKMSMghlJmEYefTRVF2kc@ifi.uio.no> <48D39312.9000400@yahoo.com> <20080922115749.GE14301@elte.hu> <48D88DB4.9020003@yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D88DB4.9020003@yahoo.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 23, 2008  10:16 +0100, Alan Cox wrote:
-> On Mon, 22 Sep 2008 20:35:23 -0400
-> "Theodore Ts'o" <tytso@mit.edu> wrote:
-> > With modern hard drives, reading 64k takes roughly the same time as
-> > reading a 4k block.  So request adjacent inode table blocks to reduce
-> > the time it takes when iterating over directories (especially when doing
-> > this in htree sort order) in a cold cache case.  With this patch, the
-> > time it takes to run "git status" on a kernel tree after flushing the
-> > caches via "echo 3 > /proc/sys/vm/drop_caches", is reduced by 21%.
-> > 
-> > Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> 
-> Acked-by: Alan Cox <alan@redhat.com>
-> 
-> I'm actually suprised that 16 is the magic tuning number you've used and
-> a bigger one isn't even more of a win
+* Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
 
-I was going to suggest making this at least a #defined constant instead
-of hard coding the values there.  Making it a mount option and/or /proc
-value would allow further testing.
+> Ingo Molnar wrote:
+>> well, since they went away after you enabled CONFIG_PREEMPT=y, they are 
+>> definitely in-kernel latencies, not any external SMM latencies.
+>>
+>> I.e. they are inherently fixable. Could you enable:
+>>
+>>   CONFIG_DYNAMIC_FTRACE=y
+>>   CONFIG_FTRACE_MCOUNT_RECORD=y
+>>
+>> that should make the traces a lot more verbose - every kernel function  
+>> executed in the latency path will be logged. That way we'll be able to  
+>> say which one takes that long.
+>
+> I do not appear to have the CONFIG_FTRACE_MCOUNT_RECORD option in 
+> 2.6.27rc7. Is it an option that is only in -tip ?
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+yeah - it's a new ftrace feature queued up for v2.6.28.
 
+	Ingo
