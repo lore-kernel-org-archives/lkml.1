@@ -1,142 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbYIWDHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbYIWDKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755106AbYIWDHm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 23:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbYIWDHf
+	id S1755065AbYIWDKv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 23:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbYIWDKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 23:07:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39770 "EHLO mx1.redhat.com"
+	Mon, 22 Sep 2008 23:10:43 -0400
+Received: from mail.suse.de ([195.135.220.2]:39999 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754064AbYIWDHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 23:07:34 -0400
-Message-ID: <48D85D21.7060801@redhat.com>
-Date: Mon, 22 Sep 2008 23:06:09 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>, darren@dvhart.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: Unified tracing buffer
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>  <48D7F5E8.3000705@redhat.com>  <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com>  <48D81B5F.2030702@redhat.com> <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com> <48D832B6.3010409@redhat.com> <alpine.LFD.1.10.0809221718100.3265@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0809221718100.3265@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753239AbYIWDKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 23:10:42 -0400
+Date: Tue, 23 Sep 2008 05:10:37 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: PTE access rules & abstraction
+Message-ID: <20080923031037.GA11907@wotan.suse.de>
+References: <1221846139.8077.25.camel@pasglop> <48D739B2.1050202@goop.org> <1222117551.12085.39.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222117551.12085.39.camel@pasglop>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, Sep 23, 2008 at 07:05:51AM +1000, Benjamin Herrenschmidt wrote:
+> 
+> > I didn't change the function of that code when I made the change, so the
+> > bug was pre-existing; I think it has been like that for quite a while
+> > (though I haven't done any git archaeology to back that up).  So I don't
+> > think there's a new bug here.
+> > 
+> > What's the consequence of not flushing for you?
+> 
+> The bug may have been there, as I said, lots of unwritten rules...
+> sometimes broken. I'm not necessarily blaming you, but there have been
+> lots of changes to the PTE accessors over the last 2 years and not
+> always under any control :-)
+> 
+> In our case, the consequence is that the entry can be re-hashed because
+> the fact that it was already hashed and where it was hashed, which is
+> encoded in the PTE, gets lost by the clear. That means a potential
+> duplicate entry in the hash. A hard to hit race, but possible. Such a
+> condition is architecturally illegal and can cause things ranging from
+> incorrect translation to machine checks or checkstops (generally, on
+> LPAR machines, what will happen is your partition will get killed).
+> 
+> I know s390 has different issues & constraints. Martin told me during
+> Plumbers that mprotect was probably also broken for him.
+> 
+> > There have been a few optional-extras calls, which are all fine to leave
+> > as no-ops.  I don't think we've added or changed any must-have interfaces.
+> 
+> Again, I'm not necessarily talking about the very latest round of
+> changes that you did here... More like a general approach as trying to
+> find a better overall interface to PTE access which currently is a total
+> mess as far as I'm concerned.
+> 
+> > It seems to me that the rules are roughly "anything goes while you're
+> > holding the pte lock, but it all must be sane by the time you release
+> > it".  But a bit more precision would be useful.
+> 
+> Well, unfortunately it's a lot more complex than that. For example, on
+> powerpc, we have to keep the hash table in sync and hash misses don't
+> take the PTE lock. They are aking to a non-atomic HW walk of the page
+> tables if you prefer.
+> 
+> So we must be careful about things like never replacing a PTE without
+> first flushing the hash table entry for the previous one (if it was
+> hashed). We also need to ensure we flush before we unlock, but we do
+> that by re-using the new lazy MMU hooks, as to not insert a new PTE
+> (which can potentially be hashed).
+> 
+> s390 has more complex sets of rules.
+> 
+> > I don't know if there's any such rule regarding set_pte_at().  Certainly
+> > if you were overwriting an existing valid entry, you'd have to arrange
+> > for a tlb flush.
+> 
+> Well, for example, the generic copy-on-write case used to do just that,
+> ie set_pte_at() over the previous one, then flush. That is not good for
+> us and thus our set_pte_at() has special code to check whether there's
+> already a present PTE there and does a synchronous flush if there is.
+> 
+> However, that also changed, and nowadays, afaik, set_pte_at() is never
+> called anymore to override a already present PTE. 
+> 
+> We are doing some work on 32 bits code that will need similar
+> constraints and It would be nice if we could rely on the above and make
+> it part of the rules.
+> 
+> > Do you have a reference to Nick's proposals?
+> 
+> Not off hand, Nick ? How far did you go down that path ?
 
-Linus Torvalds wrote:
-> 
-> On Mon, 22 Sep 2008, Masami Hiramatsu wrote:
->> Sure, atomic counter might be more expensive but accurate for ordering.
-> 
-> Don't be silly.
-> 
-> An atomic counter is no more accurate for ordering than anything else.
-> 
-> Why?
-> 
-> Because all it tells you is the ordering of the atomic increment, not of 
-> the caller. The atomic increment is not related to all the other ops that 
-> the code that you trace actually does in any shape or form, and so the 
-> ordering of the trace doesn't actually imply anything for the ordering of 
-> the operations you are tracing!
-> 
-> Except for a single CPU, of course, but for that case you don't need a 
-> sequence number either, since the ordering is entirely determined by the 
-> ring buffer itself.
-> 
-> So the counter will be more expensive (cross-cpu cache bouncing for EVERY 
-> SINGLE EVENT), less useful (no real meaning for people who DO want to have 
-> a timestamp), and it's really no more "ordered" than anything that bases 
-> itself on a TSC.
-> 
-> The fact is, you cannot order operations based on log messages unless you 
-> have a lock around the whole caller - absolutely _no_ amount of locking or 
-> atomic accesses in the log itself will guarantee ordering of the upper 
-> layers.
+I got something far enough to compile and boot (iirc on x86 and maybe
+ia64). Basically it was designed with fine grained pte locking in
+mind which is why I stopped working on it after the pmd locking from
+Hugh, but I imagine it could be used in some cases to do more
+intelligent things with pte manipulation.
 
-Indeed.
-If TSC(or similar time counter) can provide synchronized-time, I don't
-have any comment on that(AFAIK, latest x86 and ia64 can provide it).
-# I might be a bit nervous about Broken TSC...
+IIRC, basically you would have a pte_modify_start, which gives back a
+cookie and the pte value, and pte_modify_end which takes a new pte
+value and the cookie.
 
-> And sure, if you have locking at a higher layer, then a sequence number is 
-> sufficient, but on the other hand, so is a well-synchronized TSC.
-> 
-> So personally, I think that the optimal solution is:
-> 
->  - let each ring buffer be associated with a "gettimestamp()" function, so 
->    that everybody _can_ set it to something of their own. But default to 
->    something sane, namely a raw TSC thing.
+This would allow the arch to see exactly how the pte was changed, but
+I imagine in some cases you would still prefer to do that with
+optimised direct functions rather than test and branches. So I don't
+know if it would be a magic cure ;)
 
-I agree, default to TSC is enough.
+Part of the problem with the pte API (as well as the cache flush and
+tlb flush APIs) is that it often involves the core mm code telling
+the arch how it thinks ptes,tlbs,caches should be managed, rather than
+I think the better approach would be telling the arch what it wants to
+do.
 
->  - Add synchronization events to the ring buffer often enough that you can 
->    make do with a _raw_ (ie unscaled) 32-bit timestamp. Possibly by simply 
->    noticing when the upper 32 bits change, although you could possibly do 
->    it with a heartbeat too.
-> 
->  - Similarly, add a synchronization event when the TSC frequency changes.
-> 
->  - Make the synchronization packet contain the full 64-bit TSC base, in 
->    addition to TSC frequency info _and_ the timebase.
-> 
->  - From those synchronization events, you should be able to get a very 
->    accurate timestamp *after* the fact from the raw TSC numbers (ie do all 
->    the scaling not when you gather the info, but when you present it), 
->    even if you only spent 32 bits of TSC info on 99% of all events (an 
->    just had a overflow log occasionally to get the rest of the info)
-> 
->  - Most people will be _way_ happier with a timestamp that has enough 
->    precision to also show ordering (assuming that the caller holds a 
->    lock over the operation _including_ the tracing) than they would ever 
->    be with a sequence number.
-> 
->  - people who really want to can consider the incrementing counter a TSC, 
->    but it will suck in so many ways that I bet it will not be very popular 
->    at all. But having the option to set a special timestamp function will
->    give people the option (on a per-buffer level) to make the "TSC" be a 
->    simple incrementing 32-bit counter using xaddl and the upper bits 
->    incrementing from a timer, but keep that as a "ok, the TSC is really 
->    broken, or this architecture doesn't support any fast cycle counters at 
->    all, or I really don't care about time, just sequence, and I guarantee 
->    I have a single lock in all callers that makes things unambiguous"
-
-Thank you very much for giving me a good idea!
-I agree with you.
-
-> Note the "single lock" part. It's not enough that you make any trace thing 
-> under a lock. They must be under the _same_ lock for all relevant events 
-> for you to be able to say anything about ordering. And that's actually 
-> pretty rare for any complex behavior.
-> 
-> The timestamping, btw, is likely the most important part of the whole 
-> logging thing. So we need to get it right. But by "right" I mean really 
-> really low-latency so that it's acceptable to everybody, real-time enough 
-> that you can tell how far apart events were, and precise enough that you 
-> really _can_ see ordering.
-> 
-> The "raw TSC value with correction information" should be able to give you 
-> all of that. At least on x86. On some platforms, the TSC may not give you 
-> enough resolution to get reasonable guesses on event ordering.
-> 
-> 			Linus
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+We are getting better slowly I think (eg. you note that set_pte_at is
+no longer used as a generic "do anything"), but I won't dispute that
+this whole area could use an overhaul; a document for all the rules,
+a single person or point of responsibility for those rules...
 
