@@ -1,136 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYIWTdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYIWTer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071AbYIWTdS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 15:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYIWTc7
+	id S1754831AbYIWTer (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 15:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYIWTei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 15:32:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52023 "EHLO mx1.redhat.com"
+	Tue, 23 Sep 2008 15:34:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49265 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752160AbYIWTc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 15:32:58 -0400
-Date: Tue, 23 Sep 2008 15:29:42 -0400 (EDT)
-Message-Id: <20080923.152942.41629825.k-ueda@ct.jp.nec.com>
-To: martin.petersen@oracle.com
-Cc: agk@sourceware.org, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, k-ueda@ct.jp.nec.com
-Subject: Re: [dm-devel] [PATCH 2/2] dm: Add support for data integrity to DM
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <1222195272-18674-3-git-send-email-martin.petersen@oracle.com>
-References: <20080920211433.9e1a6872.akpm@linux-foundation.org>
-	<1222195272-18674-3-git-send-email-martin.petersen@oracle.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1751648AbYIWTei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 15:34:38 -0400
+Date: Tue, 23 Sep 2008 21:34:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [git pull] x86 fixes
+Message-ID: <20080923193424.GA25728@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Martin,
+Linus,
 
-On Tue, 23 Sep 2008 14:41:12 -0400, "Martin K. Petersen" wrote:
-> If all subdevices support the same protection format the DM device is
-> flagged as capable.
-> 
-> Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-> ---
->  drivers/md/dm-table.c         |   35 ++++++++++++++++++++++++++++++++++-
->  drivers/md/dm.c               |   24 ++++++++++++++++++++++--
->  drivers/md/dm.h               |    2 +-
->  include/linux/device-mapper.h |    1 +
->  4 files changed, 58 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
-> index 61f4414..7290a90 100644
-> --- a/drivers/md/dm-table.c
-> +++ b/drivers/md/dm-table.c
-> @@ -841,8 +841,12 @@ struct dm_target *dm_table_find_target(struct dm_table *t, sector_t sector)
->  	return &t->targets[(KEYS_PER_NODE * n) + k];
->  }
->  
-> -void dm_table_set_restrictions(struct dm_table *t, struct request_queue *q)
-> +void dm_table_set_restrictions(struct dm_table *t, struct mapped_device *md)
->  {
-> +	struct request_queue *q = dm_queue(md);
-> +	struct list_head *devices = dm_table_get_devices(t);
-> +	struct dm_dev *prev, *cur;
-> +
->  	/*
->  	 * Make sure we obey the optimistic sub devices
->  	 * restrictions.
-> @@ -861,6 +865,35 @@ void dm_table_set_restrictions(struct dm_table *t, struct request_queue *q)
->  	else
->  		queue_flag_set_unlocked(QUEUE_FLAG_CLUSTER, q);
->  
-> +	/*
-> +	 * Run through all devices to ensure they have matching
-> +	 * integrity profile
-> +	 */
-> +	cur = prev = NULL;
-> +
-> +	list_for_each_entry(cur, devices, list) {
-> +
-> +		if (prev && blk_integrity_compare(prev->bdev, cur->bdev) < 0) {
-> +			printk(KERN_ERR "%s: %s %s Integrity mismatch!\n",
-> +			       __func__, prev->bdev->bd_disk->disk_name,
-> +			       cur->bdev->bd_disk->disk_name);
-> +			return;
-> +		}
-> +		prev = cur;
-> +	}
-> +
-> +	/* Register dm device as being integrity capable */
-> +	if (prev && bdev_get_integrity(prev->bdev)) {
-> +		struct gendisk *disk = dm_disk(md);
-> +
-> +		if (blk_integrity_register(dm_disk(md),
-> +					   bdev_get_integrity(prev->bdev)))
-> +			printk(KERN_ERR "%s: %s Could not register integrity!\n",
-> +			       __func__, disk->disk_name);
-> +		else
-> +			printk(KERN_INFO "Enabling data integrity on %s\n",
-> +			       disk->disk_name);
-> +	}
->  }
-<snip>
-> @@ -1200,7 +1216,6 @@ static void __set_size(struct mapped_device *md, sector_t size)
->  
->  static int __bind(struct mapped_device *md, struct dm_table *t)
->  {
-> -	struct request_queue *q = md->queue;
->  	sector_t size;
->  
->  	size = dm_table_get_size(t);
-> @@ -1221,7 +1236,7 @@ static int __bind(struct mapped_device *md, struct dm_table *t)
->  
->  	write_lock(&md->map_lock);
->  	md->map = t;
-> -	dm_table_set_restrictions(t, q);
-> +	dm_table_set_restrictions(t, md);
->  	write_unlock(&md->map_lock);
->  
->  	return 0;
+Please pull the latest x86-fixes-for-linus git tree from:
 
-Creating another function (e.g. dm_table_set_integrity(t, md)) may
-be better, since then you wouldn't need dm_queue() nor need to change
-the function interface of dm_table_set_restrictions() I think.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+
+ Thanks,
+
+	Ingo
+
+------------------>
+Andrea Righi (1):
+      x86, oprofile: BUG scheduling while atomic
+
+Joerg Roedel (2):
+      AMD IOMMU: set iommu sunc flag after command queuing
+      AMD IOMMU: protect completion wait loop with iommu lock
+
+Ravikiran G Thirumalai (1):
+      x86: fix 27-rc crash on vsmp due to paravirt during module load
 
 
-> diff --git a/include/linux/device-mapper.h b/include/linux/device-mapper.h
-> index a90222e..5cf3a89 100644
-> --- a/include/linux/device-mapper.h
-> +++ b/include/linux/device-mapper.h
-> @@ -200,6 +200,7 @@ void dm_uevent_add(struct mapped_device *md, struct list_head *elist);
->  const char *dm_device_name(struct mapped_device *md);
->  int dm_copy_name_and_uuid(struct mapped_device *md, char *name, char *uuid);
->  struct gendisk *dm_disk(struct mapped_device *md);
-> +struct request_queue *dm_queue(struct mapped_device *md);
->  int dm_suspended(struct mapped_device *md);
->  int dm_noflush_suspending(struct dm_target *ti);
+ arch/x86/kernel/amd_iommu.c |   22 ++++++++++++++++------
+ arch/x86/kernel/vsmp_64.c   |    2 +-
+ arch/x86/oprofile/nmi_int.c |    4 +++-
+ 3 files changed, 20 insertions(+), 8 deletions(-)
 
-If you need dm_queue() anyway, this part should be in drivers/md/dm.h
-because other kernel modules like dm target drivers (e.g. dm-mirror)
-don't use it.
-
-Thanks,
-Kiyoshi Ueda
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index 69b4d06..042fdc2 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -101,10 +101,10 @@ static int iommu_queue_command(struct amd_iommu *iommu, struct iommu_cmd *cmd)
+  */
+ static int iommu_completion_wait(struct amd_iommu *iommu)
+ {
+-	int ret, ready = 0;
++	int ret = 0, ready = 0;
+ 	unsigned status = 0;
+ 	struct iommu_cmd cmd;
+-	unsigned long i = 0;
++	unsigned long flags, i = 0;
+ 
+ 	memset(&cmd, 0, sizeof(cmd));
+ 	cmd.data[0] = CMD_COMPL_WAIT_INT_MASK;
+@@ -112,10 +112,12 @@ static int iommu_completion_wait(struct amd_iommu *iommu)
+ 
+ 	iommu->need_sync = 0;
+ 
+-	ret = iommu_queue_command(iommu, &cmd);
++	spin_lock_irqsave(&iommu->lock, flags);
++
++	ret = __iommu_queue_command(iommu, &cmd);
+ 
+ 	if (ret)
+-		return ret;
++		goto out;
+ 
+ 	while (!ready && (i < EXIT_LOOP_COUNT)) {
+ 		++i;
+@@ -130,6 +132,8 @@ static int iommu_completion_wait(struct amd_iommu *iommu)
+ 
+ 	if (unlikely((i == EXIT_LOOP_COUNT) && printk_ratelimit()))
+ 		printk(KERN_WARNING "AMD IOMMU: Completion wait loop failed\n");
++out:
++	spin_unlock_irqrestore(&iommu->lock, flags);
+ 
+ 	return 0;
+ }
+@@ -140,6 +144,7 @@ static int iommu_completion_wait(struct amd_iommu *iommu)
+ static int iommu_queue_inv_dev_entry(struct amd_iommu *iommu, u16 devid)
+ {
+ 	struct iommu_cmd cmd;
++	int ret;
+ 
+ 	BUG_ON(iommu == NULL);
+ 
+@@ -147,9 +152,11 @@ static int iommu_queue_inv_dev_entry(struct amd_iommu *iommu, u16 devid)
+ 	CMD_SET_TYPE(&cmd, CMD_INV_DEV_ENTRY);
+ 	cmd.data[0] = devid;
+ 
++	ret = iommu_queue_command(iommu, &cmd);
++
+ 	iommu->need_sync = 1;
+ 
+-	return iommu_queue_command(iommu, &cmd);
++	return ret;
+ }
+ 
+ /*
+@@ -159,6 +166,7 @@ static int iommu_queue_inv_iommu_pages(struct amd_iommu *iommu,
+ 		u64 address, u16 domid, int pde, int s)
+ {
+ 	struct iommu_cmd cmd;
++	int ret;
+ 
+ 	memset(&cmd, 0, sizeof(cmd));
+ 	address &= PAGE_MASK;
+@@ -171,9 +179,11 @@ static int iommu_queue_inv_iommu_pages(struct amd_iommu *iommu,
+ 	if (pde) /* PDE bit - we wan't flush everything not only the PTEs */
+ 		cmd.data[2] |= CMD_INV_IOMMU_PAGES_PDE_MASK;
+ 
++	ret = iommu_queue_command(iommu, &cmd);
++
+ 	iommu->need_sync = 1;
+ 
+-	return iommu_queue_command(iommu, &cmd);
++	return ret;
+ }
+ 
+ /*
+diff --git a/arch/x86/kernel/vsmp_64.c b/arch/x86/kernel/vsmp_64.c
+index 0c029e8..7766d36 100644
+--- a/arch/x86/kernel/vsmp_64.c
++++ b/arch/x86/kernel/vsmp_64.c
+@@ -61,7 +61,7 @@ static void vsmp_irq_enable(void)
+ 	native_restore_fl((flags | X86_EFLAGS_IF) & (~X86_EFLAGS_AC));
+ }
+ 
+-static unsigned __init vsmp_patch(u8 type, u16 clobbers, void *ibuf,
++static unsigned __init_or_module vsmp_patch(u8 type, u16 clobbers, void *ibuf,
+ 				  unsigned long addr, unsigned len)
+ {
+ 	switch (type) {
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index 0227694..8a5f161 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -295,10 +295,12 @@ static void nmi_cpu_shutdown(void *dummy)
+ 
+ static void nmi_shutdown(void)
+ {
+-	struct op_msrs *msrs = &get_cpu_var(cpu_msrs);
++	struct op_msrs *msrs;
++
+ 	nmi_enabled = 0;
+ 	on_each_cpu(nmi_cpu_shutdown, NULL, 1);
+ 	unregister_die_notifier(&profile_exceptions_nb);
++	msrs = &get_cpu_var(cpu_msrs);
+ 	model->shutdown(msrs);
+ 	free_msrs();
+ 	put_cpu_var(cpu_msrs);
