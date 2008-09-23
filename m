@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbYIWBvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbYIWBvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754885AbYIWBvX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 21:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbYIWBvK
+	id S1754894AbYIWBvk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 21:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbYIWBva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 21:51:10 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:2700 "EHLO
+	Mon, 22 Sep 2008 21:51:30 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:2773 "EHLO
 	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753945AbYIWBvI (ORCPT
+	with ESMTP id S1754329AbYIWBv3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 21:51:08 -0400
-Message-ID: <48D84B8B.4080004@ct.jp.nec.com>
-Date: Mon, 22 Sep 2008 18:51:07 -0700
+	Mon, 22 Sep 2008 21:51:29 -0400
+Message-ID: <48D84BA0.4030005@ct.jp.nec.com>
+Date: Mon, 22 Sep 2008 18:51:28 -0700
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH -tip 2/4] x86: uaccess: introduce __{put|get}_user_asm_eop
+Subject: [RFC PATCH -tip 3/4] x86: uaccess: introduce __{put|get}_user_cerr
 References: <48D84A2A.2030009@ct.jp.nec.com>
 In-Reply-To: <48D84A2A.2030009@ct.jp.nec.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -29,111 +29,145 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Introduce __{put|get}_user_asm_eop which receives eop for error opecode.
-Define __{put|get}_user_asm as __{put|get}_user_asm_eop with "mov".
+Introduce __{put|get}_user_cerr for cumulative error handling.
+The following 2 lines are same.
+  __{put|get}_user_cerr(x, ptr, err);
+  err |= __{put|get}_user(x, ptr);
+
+Introduce __{put|get}_user_size_cerr for internal use from __{put|get}_user_cerr.
 
 Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
- include/asm-x86/uaccess.h |   27 +++++++++++++++++++++------
- 1 files changed, 21 insertions(+), 6 deletions(-)
+ include/asm-x86/uaccess.h |   74 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 74 insertions(+), 0 deletions(-)
 
 diff --git a/include/asm-x86/uaccess.h b/include/asm-x86/uaccess.h
-index c098dfe..84b0600 100644
+index 84b0600..b83448a 100644
 --- a/include/asm-x86/uaccess.h
 +++ b/include/asm-x86/uaccess.h
-@@ -186,12 +186,12 @@ extern int __get_user_bad(void);
- 
- 
- #ifdef CONFIG_X86_32
--#define __put_user_asm_u64(x, addr, err)					\
-+#define __put_user_asm_eop_u64(x, addr, eop, err)			\
- 	asm volatile("1:	movl %%eax,0(%2)\n"			\
- 		     "2:	movl %%edx,4(%2)\n"			\
- 		     "3:\n"						\
- 		     ".section .fixup,\"ax\"\n"				\
--		     "4:	movl %3,%0\n"				\
-+		     "4:	" eop " %3,%0\n"			\
- 		     "	jmp 3b\n"					\
- 		     ".previous\n"					\
- 		     _ASM_EXTABLE(1b, 4b)				\
-@@ -199,12 +199,17 @@ extern int __get_user_bad(void);
- 		     : "=r" (err)					\
- 		     : "A" (x), "r" (addr), "i" (-EFAULT), "0" (err))
- 
-+#define __put_user_asm_u64(x, addr, err)			\
-+	__put_user_asm_eop_u64(x, addr, "movl", err)
-+
- #define __put_user_x8(x, ptr, __ret_pu)				\
- 	asm volatile("call __put_user_8" : "=a" (__ret_pu)	\
- 		     : "A" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
- #else
- #define __put_user_asm_u64(x, ptr, retval) \
- 	__put_user_asm(x, ptr, retval, "q", "", "Zr", -EFAULT)
-+#define __put_user_asm_eop_u64(x, ptr, eop, retval) \
-+	__put_user_asm_eop(x, ptr, retval, "q", "", "Zr", eop, -EFAULT)
- #define __put_user_x8(x, ptr, __ret_pu) __put_user_x(8, x, ptr, __ret_pu)
- #endif
- 
-@@ -311,9 +316,12 @@ do {									\
- 
- #ifdef CONFIG_X86_32
- #define __get_user_asm_u64(x, ptr, retval, errret)	(x) = __get_user_bad()
-+#define __get_user_asm_eop_u64(x, ptr, retval, eop, errret)	(x) = __get_user_bad()
- #else
- #define __get_user_asm_u64(x, ptr, retval, errret) \
- 	 __get_user_asm(x, ptr, retval, "q", "", "=r", errret)
-+#define __get_user_asm_eop_u64(x, ptr, retval, eop, errret) \
-+	 __get_user_asm_eop(x, ptr, retval, "q", "", "=r", eop, errret)
- #endif
- 
- #define __get_user_size(x, ptr, size, retval, errret)			\
-@@ -338,11 +346,11 @@ do {									\
+@@ -291,6 +291,31 @@ do {									\
  	}								\
  } while (0)
  
--#define __get_user_asm(x, addr, err, itype, rtype, ltype, errret)	\
-+#define __get_user_asm_eop(x, addr, err, itype, rtype, ltype, eop, errret)	\
++#define __put_user_size_cerr(x, ptr, size, retval, errret)		\
++do {									\
++	__chk_user_ptr(ptr);						\
++	switch (size) {							\
++	case 1:								\
++		__put_user_asm_eop(x, ptr, retval, "b", "b", "iq",	\
++							"or", errret);	\
++		break;							\
++	case 2:								\
++		__put_user_asm_eop(x, ptr, retval, "w", "w", "ir",	\
++							"or", errret);	\
++		break;							\
++	case 4:								\
++		__put_user_asm_eop(x, ptr, retval, "l", "k",  "ir",	\
++							"or", errret);	\
++		break;							\
++	case 8:								\
++		__put_user_asm_eop_u64((__typeof__(*ptr))(x), ptr,	\
++							"or", retval);	\
++		break;							\
++	default:							\
++		__put_user_bad();					\
++	}								\
++} while (0)
++
+ #else
+ 
+ #define __put_user_size(x, ptr, size, retval, errret)			\
+@@ -302,6 +327,14 @@ do {									\
+ 		retval = errret;					\
+ } while (0)
+ 
++#define __put_user_size_cerr(x, ptr, size, retval, errret)		\
++do {									\
++	__typeof__(*(ptr))__pus_tmp = x;				\
++									\
++	if (unlikely(__copy_to_user_ll(ptr, &__pus_tmp, size) != 0))	\
++		retval |= errret;					\
++} while (0)
++
+ #define put_user(x, ptr)					\
+ ({								\
+ 	int __ret_pu;						\
+@@ -346,6 +379,30 @@ do {									\
+ 	}								\
+ } while (0)
+ 
++#define __get_user_size_cerr(x, ptr, size, retval, errret)		\
++do {									\
++	__chk_user_ptr(ptr);						\
++	switch (size) {							\
++	case 1:								\
++		__get_user_asm_eop(x, ptr, retval, "b", "b", "=q",	\
++							"or", errret);	\
++		break;							\
++	case 2:								\
++		__get_user_asm_eop(x, ptr, retval, "w", "w", "=r",	\
++							"or", errret);	\
++		break;							\
++	case 4:								\
++		__get_user_asm_eop(x, ptr, retval, "l", "k", "=r",	\
++							"or", errret);	\
++		break;							\
++	case 8:								\
++		__get_user_asm_eop_u64(x, ptr, retval, "or", errret);	\
++		break;							\
++	default:							\
++		(x) = __get_user_bad();					\
++	}								\
++} while (0)
++
+ #define __get_user_asm_eop(x, addr, err, itype, rtype, ltype, eop, errret)	\
  	asm volatile("1:	mov"itype" %2,%"rtype"1\n"		\
  		     "2:\n"						\
- 		     ".section .fixup,\"ax\"\n"				\
--		     "3:	mov %3,%0\n"				\
-+		     "3:	" eop " %3,%0\n"			\
- 		     "	xor"itype" %"rtype"1,%"rtype"1\n"		\
- 		     "	jmp 2b\n"					\
- 		     ".previous\n"					\
-@@ -350,6 +358,9 @@ do {									\
- 		     : "=r" (err), ltype(x)				\
- 		     : "m" (__m(addr)), "i" (errret), "0" (err))
+@@ -368,6 +425,11 @@ do {									\
+ 	__pu_err;						\
+ })
  
-+#define __get_user_asm(x, addr, err, itype, rtype, ltype, errret)	\
-+	__get_user_asm_eop(x, addr, err, itype, rtype, ltype, "mov", errret)
++#define __put_user_nocheck_cerr(x, ptr, size, err)			\
++do {									\
++	__put_user_size_cerr((x), (ptr), (size), (err), -EFAULT);	\
++} while (0)
 +
- #define __put_user_nocheck(x, ptr, size)			\
- ({								\
- 	long __pu_err;						\
-@@ -375,16 +386,20 @@ struct __large_struct { unsigned long buf[100]; };
-  * we do not write to any memory gcc knows about, so there are no
-  * aliasing issues.
-  */
--#define __put_user_asm(x, addr, err, itype, rtype, ltype, errret)	\
-+#define __put_user_asm_eop(x, addr, err, itype, rtype, ltype, eop, errret)	\
- 	asm volatile("1:	mov"itype" %"rtype"1,%2\n"		\
- 		     "2:\n"						\
- 		     ".section .fixup,\"ax\"\n"				\
--		     "3:	mov %3,%0\n"				\
-+		     "3:	" eop " %3,%0\n"			\
- 		     "	jmp 2b\n"					\
- 		     ".previous\n"					\
- 		     _ASM_EXTABLE(1b, 3b)				\
- 		     : "=r"(err)					\
- 		     : ltype(x), "m" (__m(addr)), "i" (errret), "0" (err))
+ #define __get_user_nocheck(x, ptr, size)				\
+ ({									\
+ 	long __gu_err;							\
+@@ -377,6 +439,13 @@ do {									\
+ 	__gu_err;							\
+ })
+ 
++#define __get_user_nocheck_cerr(x, ptr, size, err)			\
++do {									\
++	unsigned long __gu_val;						\
++	__get_user_size_cerr(__gu_val, (ptr), (size), (err), -EFAULT);	\
++	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
++} while (0)
 +
-+#define __put_user_asm(x, addr, err, itype, rtype, ltype, errret)	\
-+	__put_user_asm_eop(x, addr, err, itype, rtype, ltype, "mov", errret)
-+
+ /* FIXME: this hack is definitely wrong -AK */
+ struct __large_struct { unsigned long buf[100]; };
+ #define __m(x) (*(struct __large_struct __user *)(x))
+@@ -423,6 +492,8 @@ struct __large_struct { unsigned long buf[100]; };
+ 
+ #define __get_user(x, ptr)						\
+ 	__get_user_nocheck((x), (ptr), sizeof(*(ptr)))
++#define __get_user_cerr(x, ptr, err)					\
++	__get_user_nocheck_cerr((x), (ptr), sizeof(*(ptr)), (err))
  /**
-  * __get_user: - Get a simple variable from user space, with less checking.
-  * @x:   Variable to store result.
+  * __put_user: - Write a simple value into user space, with less checking.
+  * @x:   Value to copy to user space.
+@@ -445,6 +516,9 @@ struct __large_struct { unsigned long buf[100]; };
+ 
+ #define __put_user(x, ptr)						\
+ 	__put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
++#define __put_user_cerr(x, ptr, err)					\
++	__put_user_nocheck_cerr((__typeof__(*(ptr)))(x), (ptr),		\
++				sizeof(*(ptr)), (err))
+ 
+ #define __get_user_unaligned __get_user
+ #define __put_user_unaligned __put_user
 -- 
 1.5.6
 
