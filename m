@@ -1,105 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbYIWOqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbYIWOwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754476AbYIWOqa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 10:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYIWOqN
+	id S1753167AbYIWOwh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 10:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYIWOw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 10:46:13 -0400
-Received: from gv-out-0910.google.com ([216.239.58.185]:61339 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753612AbYIWOqK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 10:46:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=aFuZQnvwc/0YI1SVURIm9A7HIKT6SLA5CQVjJObp2S7AcbMB1am2X+qz9I05XBC8AU
-         m848eAGYymcc9dPDFuFePB97VhcDZ02x5qzH4OYms3wDr0g9jnpfr5Vl+eVdOpx5zhSY
-         5ISZ7L8eaPQX08sZBbbhG25BulVEYs0M2+R5c=
-Message-ID: <91b13c310809230746o1c2cb694taebc814bea57c8c5@mail.gmail.com>
-Date: Tue, 23 Sep 2008 22:46:08 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Matthias Urlichs" <smurf@smurf.noris.de>
-Subject: Re: please consider remove those tags named master, which is ambigous with master branch
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, git@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <91b13c310808310948r5e9e825as27bcdf381137e179@mail.gmail.com>
+	Tue, 23 Sep 2008 10:52:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51075 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751422AbYIWOw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 10:52:28 -0400
+Message-ID: <48D901FE.5060604@redhat.com>
+Date: Tue, 23 Sep 2008 10:49:34 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Martin Bligh <mbligh@google.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Steven Rostedt <rostedt@goodmis.org>, darren@dvhart.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: Unified tracing buffer
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>	 <48D7F5E8.3000705@redhat.com>	 <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com>	 <48D81B5F.2030702@redhat.com>	 <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com>	 <48D832B6.3010409@redhat.com> <33307c790809221712x4fbd9781u958c98d4585e92a9@mail.gmail.com>
+In-Reply-To: <33307c790809221712x4fbd9781u958c98d4585e92a9@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <91b13c310808310948r5e9e825as27bcdf381137e179@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To Smurf and Andrew:
-  Did you notice that there's a tag named "master" in the smurf
-mm-trees.git repo,
-this would confuse the git and the users, please consider remove the
-"master" tag, OK?
+Hi Martin,
 
----------- Forwarded message ----------
-From: rae l <crquan@gmail.com>
-Date: Mon, Sep 1, 2008 at 12:48 AM
-Subject: please consider remove those tags named master, which is
-ambigous with master branch
-To: Matthias Urlichs <smurf@smurf.noris.de>
+Martin Bligh wrote:
+>>> But perhaps it would be better if we started with a discussion of which
+>>> platforms can't do global timestamps, and why not? I know some of them
+>>> are fixable, but perhaps not all.
+>> For example, my laptop (this machine/Core2Duo) doesn't return correct TSC. :-(
+> 
+> Can you define incorrect for me (in this case)?
 
-please consider remove those tags named master, which is ambigous with
-master branch
+On my laptop, TSC is disabled at boot time.
 
-http://git.kernel.org/?p=linux/kernel/git/smurf/linux-trees.git;a=tags
+$ dmesg | grep TSC
+checking TSC synchronization [CPU#0 -> CPU#1]:
+Measured 4246549092 cycles TSC warp between CPUs, turning off TSC clock.
+Marking TSC unstable due to: check_tsc_sync_source failed.
 
---
+$ cat /proc/cpuinfo
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz
+stepping	: 6
+cpu MHz		: 1000.000
+cache size	: 4096 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 2
+apicid		: 0
+initial apicid	: 0
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc arch_perfmon pebs bts pni
+monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 3998.45
+clflush size	: 64
+power management:
 
-To Git developers:
-  I found that different git subcommand have inconsitent processing
-about ambiguous refname,
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz
+stepping	: 6
+cpu MHz		: 1000.000
+cache size	: 4096 KB
+physical id	: 0
+siblings	: 2
+core id		: 1
+cpu cores	: 2
+apicid		: 1
+initial apicid	: 1
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc arch_perfmon pebs bts pni
+monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 3994.43
+clflush size	: 64
+power management:
 
-git show will take "master" tag first,
-while git tag -v will take "master" branch first,
+Actually, I had measured TSC drifting and reported to systemtap-bugzilla
+http://sources.redhat.com/bugzilla/show_bug.cgi?id=3916#c19
 
-So what's your suggestion to fix this? Just simple remove ambiguous refnames?
-
-Or we can add a feature to allow same refname in different namespaces
-(tags and branches)?
-Such as "-b" to refer a branch while "-t" to refer a tag name? Else
-how to distinguish them?
-
-gektop@tux ~/sforge/linux-2.6 0 $ PAGER= git show master
-warning: refname 'master' is ambiguous.
-commit 05230bd16821e2ec80321d72e97e7a2b1a07c6f2
-Author:     Adrian Bunk <bunk@stusta.de>
-AuthorDate: Sat Jul 30 00:45:08 2005 +0000
-Commit:     Matthias Urlichs <smurf@hera.kernel.org>
-CommitDate: Mon Aug 1 05:16:36 2005 -0700
-
-    sound-oss-sequencer_syms-unexport-reprogram_timer
-
-    This patch remoes an unneeded EXPORT_SYMBOL.
-
-    Signed-off-by: Andrew Morton <akpm@osdl.org>
-
-diff --git a/sound/oss/sequencer_syms.c b/sound/oss/sequencer_syms.c
-index 45edfd7..5d00879 100644
---- a/sound/oss/sequencer_syms.c
-+++ b/sound/oss/sequencer_syms.c
-@@ -19,7 +19,6 @@ EXPORT_SYMBOL(sequencer_timer);
- EXPORT_SYMBOL(sound_timer_init);
- EXPORT_SYMBOL(sound_timer_interrupt);
- EXPORT_SYMBOL(sound_timer_syncinterval);
--EXPORT_SYMBOL(reprogram_timer);
-
- /* Tuning */
-
-gektop@tux ~/sforge/linux-2.6 0 $ git tag -v master
-error: 05230bd16821e2ec80321d72e97e7a2b1a07c6f2: cannot verify a
-non-tag object of type commit.
-error: could not verify the tag 'master'
+Curiously, I've tested on another Core2Duo laptop, which cpu is same model and
+same stepping, but on that laptop I couldn't see TSC drifting.
+So I think this might be a product level issue and a rare case...
 
 
---
-Denis Cheng Renquan
+> We had similar problems with some AMD platforms that we can fix by syncing
+> the TSCs on exit_idle, etc.
+
+Hmm, very interesting. :-)
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
+
