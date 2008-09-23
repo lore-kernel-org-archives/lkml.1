@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbYIWFZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753775AbYIWF1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbYIWFZn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 01:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYIWFZg
+	id S1753775AbYIWF1G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 01:27:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbYIWF0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 01:25:36 -0400
-Received: from qmta08.westchester.pa.mail.comcast.net ([76.96.62.80]:60560
-	"EHLO QMTA08.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751621AbYIWFZf (ORCPT
+	Tue, 23 Sep 2008 01:26:54 -0400
+Received: from qmta04.emeryville.ca.mail.comcast.net ([76.96.30.40]:39425 "EHLO
+	QMTA04.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751216AbYIWF0x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 01:25:35 -0400
-X-Authority-Analysis: v=1.0 c=1 a=D19gQVrFAAAA:8 a=07d9gI8wAAAA:8
- a=FP58Ms26AAAA:8 a=VE6esQrQcr2oF3tziSAA:9 a=ptGGjXfvWMTrsknNTpQA:7
- a=tdy6LXYDnX2LqHSz8VlFakrfc-AA:4 a=WuK_CZDBSqoA:10
-Subject: Re: Unified tracing buffer
+	Tue, 23 Sep 2008 01:26:53 -0400
+X-Authority-Analysis: v=1.0 c=1 a=SHrlDPp0FdoA:10 a=KrU32zAB29wA:10
+ a=LeUvHer7O8-GrSurfSgA:9 a=KdLd_JjSCIECg3HhAfsA:7
+ a=6bc52D-ia8tU-mSZ8hCLFwqqCRYA:4 a=MSl-tDqOz04A:10 a=955elKCOoL8A:10
+Subject: [PATCH 1/3] relay - clean up subbuf switch
 From: Tom Zanussi <zanussi@comcast.net>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: prasad@linux.vnet.ibm.com, Martin Bligh <mbligh@google.com>,
@@ -31,8 +31,8 @@ References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
 	 <20080922140740.GB5279@in.ibm.com>
 	 <1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
 Content-Type: text/plain
-Date: Tue, 23 Sep 2008 00:25:45 -0500
-Message-Id: <1222147545.6875.135.camel@charm-linux>
+Date: Tue, 23 Sep 2008 00:27:02 -0500
+Message-Id: <1222147622.6875.136.camel@charm-linux>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
@@ -40,146 +40,175 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Clean up relay_switch_subbuf() and make waking up consumers optional.
+    
+Over time, relay_switch_subbuf() has accumulated some cruft - this
+patch cleans it up and at the same time makes available some of it
+available as common functions that any subbuf-switch implementor would
+need (this is partially in preparation for the next patch, which makes
+the subbuf-switch function completely replaceable).  It also removes
+the hard-coded reader wakeup and moves it into a replaceable callback
+called notify_consumers(); this allows any given tracer to implement
+consumer notification as it sees fit.
 
-On Mon, 2008-09-22 at 16:45 +0200, Peter Zijlstra wrote:
-> On Mon, 2008-09-22 at 19:37 +0530, K.Prasad wrote:
-> 
-> > > > INPUT_FUNCTIONS
-> > > > ---------------
-> > > > 
-> > > > allocate_buffer (name, size)
-> > > >         return buffer_handle
-> > > > 
-> > > > register_event (buffer_handle, event_id, print_function)
-> > > >         You can pass in a requested event_id from a fixed set, and
-> > > > will be given it, or an error
-> > > >         0 means allocate me one dynamically
-> > > >         returns event_id     (or -E_ERROR)
-> > > > 
-> > > > record_event (buffer_handle, event_id, length, *buf)
-> > > 
-> > > I'd hoped for an interface like:
-> > > 
-> > > struct ringbuffer *ringbuffer_alloc(const char *name, size_t size);
-> > > void ringbuffer_free(struct ringbuffer *buffer);
-> > > int ringbuffer_write(struct ringbuffer *buffer, const char *buf, size_t size);
-> > > int ringbuffer_read(struct ringbuffer *buffer, int cpu, char *buf, size_t size);
-> > > 
-> > > On top of which you'd do the event thing, the register event with a
-> > > callback idea makes sense, except I'd split the consumption into two:
-> > >  - one method to pull the binary event out, which knows how long it
-> > > ought to be etc..
-> > >  - one method to convert the binary event to ASCII
-> > >
-> > In conjunction with the previous email on this thread
-> > (http://lkml.org/lkml/2008/9/22/160), may I suggest
-> > the equivalent interfaces in -mm tree (2.6.27-rc5-mm1) to be:
-> > 
-> > relay_printk(<some struct with default filenames/pathnames>, <string>,
-> > ....) ;
-> > relay_dump(<some struct with default filenames/pathnames>, <binary
-> > data>);
-> > and
-> > relay_cleanup_all(<the struct name>); - Single interface that cleans up
-> > all files/directories/output data created under a logical entity.
-> 
-> Dude, relayfs is such a bad performing mess that extending it seems like
-> a bad idea. Better to write something new and delete everything relayfs
-> related.
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 
-Hmm, I haven't seen complaints lately about about relayfs being 'bad
-performing'.  The write/reserve functions are pretty fast - they
-don't do much else in the fast path other than update an index, but
-if they're still too slow, please let me know how to make them faster.
-In any case, I'll post a couple patches in a few minutes that give
-complete control over the write path for anyone who doesn't want to be
-hampered by the existing versions.
+diff --git a/include/linux/relay.h b/include/linux/relay.h
+index 953fc05..17f0515 100644
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
+@@ -159,6 +159,15 @@ struct rchan_callbacks
+ 	 * The callback should return 0 if successful, negative if not.
+ 	 */
+ 	int (*remove_buf_file)(struct dentry *dentry);
++
++	/*
++	 * notify_consumers - new sub-buffer available, let consumers know
++	 * @buf: the channel buffer
++	 *
++	 * Called during sub-buffer switch.  Applications which don't
++	 * want to notify anyone should implement an empty version.
++	 */
++        void (*notify_consumers)(struct rchan_buf *buf);
+ };
+ 
+ /*
+@@ -186,6 +195,48 @@ extern size_t relay_switch_subbuf(struct rchan_buf *buf,
+ 				  size_t length);
+ 
+ /**
++ *	relay_event_toobig - is event too big to fit in a sub-buffer?
++ *	@buf: relay channel buffer
++ *	@length: length of event
++ *
++ *	Returns 1 if too big, 0 otherwise.
++ *
++ *	switch_subbuf() helper function.
++ */
++static inline int relay_event_toobig(struct rchan_buf *buf, size_t length)
++{
++	return length > buf->chan->subbuf_size;
++}
++
++/**
++ *	relay_update_filesize - increase relay file i_size by length
++ *	@buf: relay channel buffer
++ *	@length: length to add
++ *
++ *	switch_subbuf() helper function.
++ */
++static inline void relay_update_filesize(struct rchan_buf *buf, size_t length)
++{
++	if (buf->dentry)
++		buf->dentry->d_inode->i_size +=	length;
++	else
++		buf->early_bytes += length;
++
++	smp_mb();
++}
++
++/**
++ *	relay_inc_produced - increase number of sub-buffers produced by 1
++ *	@buf: relay channel buffer
++ *
++ *	switch_subbuf() helper function.
++ */
++static inline void relay_inc_produced(struct rchan_buf *buf)
++{
++	buf->subbufs_produced++;
++}
++
++/**
+  *	relay_write - write data into the channel
+  *	@chan: relay channel
+  *	@data: data to be written
+diff --git a/kernel/relay.c b/kernel/relay.c
+index 8d13a78..53652f1 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -324,6 +324,21 @@ static int remove_buf_file_default_callback(struct dentry *dentry)
+ 	return -EINVAL;
+ }
+ 
++/*
++ * notify_consumers() default callback.
++ */
++static void notify_consumers_default_callback(struct rchan_buf *buf)
++{
++	if (waitqueue_active(&buf->read_wait))
++		/*
++		 * Calling wake_up_interruptible() from here
++		 * will deadlock if we happen to be logging
++		 * from the scheduler (trying to re-grab
++		 * rq->lock), so defer it.
++		 */
++		__mod_timer(&buf->timer, jiffies + 1);
++}
++
+ /* relay channel default callbacks */
+ static struct rchan_callbacks default_channel_callbacks = {
+ 	.subbuf_start = subbuf_start_default_callback,
+@@ -331,6 +346,7 @@ static struct rchan_callbacks default_channel_callbacks = {
+ 	.buf_unmapped = buf_unmapped_default_callback,
+ 	.create_buf_file = create_buf_file_default_callback,
+ 	.remove_buf_file = remove_buf_file_default_callback,
++	.notify_consumers = notify_consumers_default_callback,
+ };
+ 
+ /**
+@@ -508,6 +524,8 @@ static void setup_callbacks(struct rchan *chan,
+ 		cb->create_buf_file = create_buf_file_default_callback;
+ 	if (!cb->remove_buf_file)
+ 		cb->remove_buf_file = remove_buf_file_default_callback;
++	if (!cb->notify_consumers)
++		cb->notify_consumers = notify_consumers_default_callback;
+ 	chan->cb = cb;
+ }
+ 
+@@ -726,30 +744,17 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
+ 	void *old, *new;
+ 	size_t old_subbuf, new_subbuf;
+ 
+-	if (unlikely(length > buf->chan->subbuf_size))
++	if (unlikely(relay_event_toobig(buf, length)))
+ 		goto toobig;
+ 
+ 	if (buf->offset != buf->chan->subbuf_size + 1) {
+ 		buf->prev_padding = buf->chan->subbuf_size - buf->offset;
+ 		old_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
+ 		buf->padding[old_subbuf] = buf->prev_padding;
+-		buf->subbufs_produced++;
+-		if (buf->dentry)
+-			buf->dentry->d_inode->i_size +=
+-				buf->chan->subbuf_size -
+-				buf->padding[old_subbuf];
+-		else
+-			buf->early_bytes += buf->chan->subbuf_size -
+-					    buf->padding[old_subbuf];
+-		smp_mb();
+-		if (waitqueue_active(&buf->read_wait))
+-			/*
+-			 * Calling wake_up_interruptible() from here
+-			 * will deadlock if we happen to be logging
+-			 * from the scheduler (trying to re-grab
+-			 * rq->lock), so defer it.
+-			 */
+-			__mod_timer(&buf->timer, jiffies + 1);
++		relay_inc_produced(buf);
++		relay_update_filesize(buf, buf->chan->subbuf_size -
++				      buf->padding[old_subbuf]);
++		buf->chan->cb->notify_consumers(buf);
+ 	}
+ 
+ 	old = buf->data;
+@@ -763,7 +768,7 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
+ 	buf->data = new;
+ 	buf->padding[new_subbuf] = 0;
+ 
+-	if (unlikely(length + buf->offset > buf->chan->subbuf_size))
++	if (unlikely(relay_event_toobig(buf, length + buf->offset)))
+ 		goto toobig;
+ 
+ 	return length;
 
-As for the interface, yeah, it has gathered some some cruft over time
-and has turned out to be too complex for most people.  The reason a lot
-of that complexity is there in the first place though, ironically, is
-that it was put there in explicit support of the requirements of
-LTT/LTTng (sub-buffers, padding, mmap, etc), which supposedly
-represented the needs of all 'industrial-strength' tracers at the time.
-Well, four years after the 'troll merge' that initially got relayfs
-streamlined and into the kernel, in anticipation of a soon-to-follow
-streamlined LTT/LTTng which has yet to emerge, apparently those
-requirements are no longer valid and neither LTTng nor anything else
-needs the capabilities of relayfs.  That's fine, if it isn't needed, it
-isn't needed.  But since it no longer has to conform to the requirements
-of any imaginary tracer, maybe it should be put through yet another
-streamlining effort and everything that's not required to support
-current users removed:
-
-- get rid of anything having to do with padding, nobody needs it and its
-only affect has been to horribly distort and complicate a lot of the
-code
-- get rid of sub-buffers, they just cause confusion
-- get rid of mmap, nobody uses it
-- no sub-buffers and no mmap support means we can get rid of most of the
-callbacks, and a lot of API confusion along with them
-- add relay flags - they probably should have been used from the
-beginning and options made explicit instead of being shoehorned into the
-callback functions.
-
-Going even further, why not just replace the current write functions
-with versions that write into pages and SPLICE_F_MOVE them to their
-destination - normally userspace doesn't want to see the data anyway -
-and get rid of everything else.  Add support for splice_write() and
-maybe you have an elegant way to do userspace tracing (via vmsplice)
-too.
-
-Another source of complexity has turned out to be the removal of the
-'fs' part of relayfs - it basically meant adding callback hooks so relay
-files could be used in other pseudo filesystems, which is great, but it
-further complicated the API and scared away users.  We could add back
-the fs part, but that would be going backwards, so those callbacks at
-least would have to stay I guess.
-
-Well, I'll post some patches shortly for a few of these things, but I
-doubt I'll do much more than that, since on the one hand I only have a
-few nights a week to work on this stuff and it's become a not-very-fun
-hobby, and since I think you guys have already decided on the way
-forward and anything I post would be removed soon anyway.
-
-As for the relay_printk() etc stuff, the part that adds the common code
-from blktrace for all tracers would definitely be a benefit, but I still
-don't think it goes far enough in providing generic trace control - see
-e.g. the kmemtrace-on-utt code where I still had to add code to add a
-bunch of control files - it would be nice to have a standard and easy
-way to do that.  For the printk() functionality itself, we submitted
-something similar a year ago (dti_printk) and nobody was interested:
-
-http://lwn.net/Articles/240330/
-http://dti.sourceforge.net/
-
-I told the folks in charge at IBM then that doing that kind of in-kernel
-filtering and sorting might be interesting and useful for ad hoc kernel
-hacking, but was basically a sideshow; the really useful part of the
-blktrace tracing code and 90% of the work needed to make it into a
-generically usable tracing system wasn't in the kernel at all, but in
-the unglamorous userspace code that did the streaming and display of the
-trace data via disk/network/live, etc.  Eventually I did go ahead and do
-that 90%, which wasn't a small task, and now anyone can use the blktrace
-code for generic tracing:
-
-http://utt.sourceforge.net/
-
-I can't say I did it justice, but it does work, and in fact, it didn't
-take much time at all to convert the kmemtrace code to using it:
-
-http://utt.sourceforge.net/kmemtrace-utt-kernel.patch
-http://utt.sourceforge.net/kmemtrace-utt-user.patch
-
-It should also be pretty straightforward to extend it to handle the
-output from any number of trace sources as has been mentioned, assuming
-you have a common sequencing source, so regardless of what you guys end
-up replacing relayfs with, you might consider using it anyway...
-
-> 
-> Also, it seems prudent to separate the ring-buffer implementation from
-> the event encoding/decoding facilities.
-> 
-> 
-> 
 
