@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbYIWVIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYIWVJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbYIWVIz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYIWVIr
+	id S1755435AbYIWVJX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYIWVJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:08:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42243 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751766AbYIWVIq (ORCPT
+	Tue, 23 Sep 2008 17:09:12 -0400
+Received: from rn-out-0910.google.com ([64.233.170.189]:22214 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754475AbYIWVJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 17:08:46 -0400
-Message-ID: <48D95A8F.10705@zytor.com>
-Date: Tue, 23 Sep 2008 14:07:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 23 Sep 2008 17:09:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=LQnShakZ5aswjS1lNuVU8OS6K/3yfzx3FmcINaIq1dBXYibNg5Xuq/cGesPqX0eYOt
+         j20iMyojF3aVTdRWsNRsjZYqgjVdJA9nj8p7yFfJ8PqmYq4qv7QbTBwawW+FJ3mTZl5l
+         p/0smRhXaxponQ7uj1YsoYJKZoW0XPh1n2nMg=
+Message-ID: <21d7e9970809231409r3fdd640h53a72a808266d220@mail.gmail.com>
+Date: Wed, 24 Sep 2008 07:09:09 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+Cc: jkosina@suse.cz, david.vrabel@csr.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       chrisl@vmware.com
+In-Reply-To: <20080923.140519.268233735.davem@davemloft.net>
 MIME-Version: 1.0
-To: Alain Knaff <alain@knaff.lu>
-CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, w@1wt.eu
-Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
- initrds
-References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu>
-In-Reply-To: <48D9471E.9090108@knaff.lu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <21d7e9970809221826i76081719pdd749237580fc68e@mail.gmail.com>
+	 <20080922.185902.80812984.davem@davemloft.net>
+	 <alpine.LNX.1.10.0809231229460.4671@pegasus.suse.cz>
+	 <20080923.140519.268233735.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alain Knaff wrote:
-> H. Peter Anvin wrote:
->> Just did so, and it broke my first test build.
+On Wed, Sep 24, 2008 at 7:05 AM, David Miller <davem@davemloft.net> wrote:
+> From: Jiri Kosina <jkosina@suse.cz>
+> Date: Tue, 23 Sep 2008 16:29:16 +0200 (CEST)
+>
+>> On Mon, 22 Sep 2008, David Miller wrote:
 >>
->> arch/x86/boot/compressed/head_64.o: In function `relocated':
->> (.text+0x28): undefined reference to `_end'
->> make[3]: *** [arch/x86/boot/compressed/vmlinux] Error 1
->> make[2]: *** [arch/x86/boot/compressed/vmlinux] Error 2
->> make[1]: *** [bzImage] Error 2
->> make: *** [sub-make] Error 2
+>> > So I went through the changes from 2.6.27-rc5 until the SHA1
+>> > ID ec0c15afb41fd9ad45b53468b60db50170e22346 and there were
+>> > definitely no E1000 or E1000E changes during that time.
 >>
->>     -hpa
-> 
-> Just leave the changes in head_64.S away; this was only about improved
-> memory management. It is not strictly needed, as the change in
-> /include/asm-x86/boot.h still makes sure that the heap is big enough,
-> even for bzip2
+>> Some recent comments on [1] seem to indicate that this is somehow coupled
+>> into prior problems/panics with Intel graphics.
+>
+> My current suspicion in all of this is either the GEM kernel patches
+> or recent X server.
+>
 
-More failures...
+I don't think OpenSUSE was shipping any of the GEM bits.
 
-/bin/sh: scripts/bin_size: No such file or directory
+Dave.
 
-Happens with O=.
-
-	-hpa
+> However, the eeprom/nvram programming sequence seems non-trivial on
+> the e1000e.  You have to execute a set of precise register writes
+> and register polls to successfully write things out to the nvram.
+>
+> This makes something like a random scribble out to MMIO space less
+> likely to cause this problem.
+>
+> Is there some linear mapping of the nvram that could be written to
+> on these cards?
+>
