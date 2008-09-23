@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbYIWNTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752079AbYIWNgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752082AbYIWNTe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYIWNT0
+	id S1752079AbYIWNgl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYIWNgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:19:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54346 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751357AbYIWNTZ (ORCPT
+	Tue, 23 Sep 2008 09:36:31 -0400
+Received: from casper.infradead.org ([85.118.1.10]:34025 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbYIWNga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:19:25 -0400
-Message-ID: <48D8ECB3.8070109@linux-foundation.org>
-Date: Tue, 23 Sep 2008 08:18:43 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Jerome Glisse <glisse@freedesktop.org>
-CC: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>,
-       Nick Piggin <npiggin@suse.de>, keith.packard@intel.com, eric@anholt.net,
-       hugh@veritas.com, hch@infradead.org, airlied@linux.ie,
-       jbarnes@virtuousgeek.org, dri-devel@lists.sourceforge.net,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] mm: pageable memory allocator (for DRM-GEM?)
-References: <20080923091017.GB29718@wotan.suse.de>	<48D8C326.80909@tungstengraphics.com> <20080923133137.c9e1f171.glisse@freedesktop.org>
-In-Reply-To: <20080923133137.c9e1f171.glisse@freedesktop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Sep 2008 09:36:30 -0400
+Message-Id: <20080923133459.116940632@programming.kicks-ass.net>
+References: <20080923133340.929758093@programming.kicks-ass.net>
+User-Agent: quilt/0.46-1
+Date: Tue, 23 Sep 2008 15:33:41 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 1/6] lockstat: fixup signed division
+Content-Disposition: inline; filename=lockstat-fix-div.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jerome Glisse wrote:
-> 
-> Also what about a uncached page allocator ? As some drivers might need
-> them, there is no number but i think their was some concern that changing
-> PAT too often might be costly and that we would better have a poll of
-> such pages.
+Some recent modification to this code made me notice the little todo mark.
+Now that we have more elaborate 64-bit division functions this isn't hard.
 
-IA64 has an uncached allocator. See arch/ia64/include/asm/incached.h and
-arch/ia64/kernel/uncached.c. Probably not exactly what you want but its a
-starting point.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/lockdep_proc.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
+Index: linux-2.6/kernel/lockdep_proc.c
+===================================================================
+--- linux-2.6.orig/kernel/lockdep_proc.c
++++ linux-2.6/kernel/lockdep_proc.c
+@@ -470,11 +470,12 @@ static void seq_line(struct seq_file *m,
+ 
+ static void snprint_time(char *buf, size_t bufsiz, s64 nr)
+ {
+-	unsigned long rem;
++	s64 div;
++	s32 rem;
+ 
+ 	nr += 5; /* for display rounding */
+-	rem = do_div(nr, 1000); /* XXX: do_div_signed */
+-	snprintf(buf, bufsiz, "%lld.%02d", (long long)nr, (int)rem/10);
++	div = div_s64_rem(nr, 1000, &rem);
++	snprintf(buf, bufsiz, "%lld.%02d", (long long)div, (int)rem/10);
+ }
+ 
+ static void seq_time(struct seq_file *m, s64 time)
+
+-- 
 
