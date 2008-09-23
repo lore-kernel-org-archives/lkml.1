@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbYIWPYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbYIWP0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbYIWPYD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 11:24:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYIWPXx
+	id S1753289AbYIWP0Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 11:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbYIWP0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 11:23:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49629 "EHLO mx1.redhat.com"
+	Tue, 23 Sep 2008 11:26:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49714 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751228AbYIWPXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 11:23:52 -0400
-Message-ID: <48D90970.3060409@redhat.com>
-Date: Tue, 23 Sep 2008 11:21:20 -0400
+	id S1751248AbYIWP0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 11:26:17 -0400
+Message-ID: <48D909E9.4090801@redhat.com>
+Date: Tue, 23 Sep 2008 11:23:21 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+To: Martin Bligh <mbligh@google.com>
+CC: Steven Rostedt <rostedt@goodmis.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland Dreier <rdreier@cisco.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>, od@novell.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>, darren@dvhart.com,
        "Frank Ch. Eigler" <fche@redhat.com>,
        systemtap-ml <systemtap@sources.redhat.com>
 Subject: Re: Unified tracing buffer
-References: <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com> <48D81B5F.2030702@redhat.com> <20080923232239.DC1E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20080923232239.DC1E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>	 <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com>	 <48D81B5F.2030702@redhat.com>	 <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com>	 <48D832B6.3010409@redhat.com>	 <alpine.LFD.1.10.0809221718100.3265@nehalem.linux-foundation.org>	 <adaod2f649o.fsf@cisco.com>	 <alpine.LFD.1.10.0809222021230.3265@nehalem.linux-foundation.org>	 <alpine.DEB.1.10.0809222335400.26011@gandalf.stny.rr.com>	 <48D86C38.9000407@redhat.com> <33307c790809222117w655894ffoce7950fb72b60e3f@mail.gmail.com>
+In-Reply-To: <33307c790809222117w655894ffoce7950fb72b60e3f@mail.gmail.com>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -33,40 +33,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Motohiro,
+Hi Martin,
 
-KOSAKI Motohiro wrote:
->> By the way, systemtap uses two modes;
+Martin Bligh wrote:
+>>            log event c
+>> hit event b
+>> log event b
+>>            log event d
 >>
->> - single-channel mode
->>  In this mode, all cpus share one buffer channel to write and read.
->>  each writer locks spinlock and write a probe-local data to buffer.
->>
->> - per-cpu buffer mode
->>  In this mode, we use an atomic sequential number for ordering data. If
->>  user doesn't need it(because they have their own timestamps), they can
->>  choose not to use that seq-number.
+>> so, I think if we really need to order events, we have to stop
+>> irq right after hitting an event.
 > 
-> I can't imazine a merit of the single-channel mode.
-> Could you please explain it?
+> How could you fix that in any practical way?
 
-Actually, single-channel mode is for not-frequently event tracing.
-At least systemtap case, sometimes we just want to collect data
-and watch it periodically(as like as 'top'). Or, just monitoring
-errors as additional printk. in these cases, overhead is not so
-important.
+In that case, I think it's easy to know that event c is irq
+related event by checking source code. :-)
+And practically, in most cases, I think we can presume what
+happened by event arguments and subsequent events.
 
-I think the main reason of using single-channel mode is simplicity of
-userspace reader. We can use 'cat' or 'tail' to read the buffer on-line.
-I'm not sure how much overhead ftrace-like buffer merging routine has,
-but if kernel provides an interface which gives us single-merged buffer
-image(like ftrace buffer), we are grad to use it. :-)
-
-> Because some architecture don't have fine grained timestamp?
-> if so, could you explain which architecture don't have it?
-
-I heard that get_cycles always returns 0 on some cpu (ARM, MIPS, etc)...
-(I think some of their platforms support variants of get_cycles)
+Anyway, since there must be a delay between hitting event(and
+as linus said, happening event) and logging it, I think buffering
+mechanism itself should focus on ensuring only writing and
+reading order.
 
 Thank you,
 
@@ -78,4 +66,5 @@ Hitachi Computer Products (America) Inc.
 Software Solutions Division
 
 e-mail: mhiramat@redhat.com
+
 
