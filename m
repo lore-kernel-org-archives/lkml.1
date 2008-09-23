@@ -1,126 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbYIWDKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYIWDPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755065AbYIWDKv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 23:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbYIWDKn
+	id S1755004AbYIWDPn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 23:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbYIWDPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 23:10:43 -0400
-Received: from mail.suse.de ([195.135.220.2]:39999 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753239AbYIWDKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 23:10:42 -0400
-Date: Tue, 23 Sep 2008 05:10:37 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: PTE access rules & abstraction
-Message-ID: <20080923031037.GA11907@wotan.suse.de>
-References: <1221846139.8077.25.camel@pasglop> <48D739B2.1050202@goop.org> <1222117551.12085.39.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222117551.12085.39.camel@pasglop>
-User-Agent: Mutt/1.5.9i
+	Mon, 22 Sep 2008 23:15:34 -0400
+Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:38639 "EHLO
+	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753239AbYIWDPd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 23:15:33 -0400
+From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+To: Martin Steigerwald <ms@teamix.de>
+Date: Tue, 23 Sep 2008 13:15:21 +1000
+Message-ID: <48D85F49.4080001@gelato.unsw.edu.au>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080618)
+MIME-Version: 1.0
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Documentation on CFQ iosched parameters
+References: <200809221715.33143.ms@teamix.de>
+In-Reply-To: <200809221715.33143.ms@teamix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 07:05:51AM +1000, Benjamin Herrenschmidt wrote:
+Martin Steigerwald wrote:
+> Hi!
 > 
-> > I didn't change the function of that code when I made the change, so the
-> > bug was pre-existing; I think it has been like that for quite a while
-> > (though I haven't done any git archaeology to back that up).  So I don't
-> > think there's a new bug here.
-> > 
-> > What's the consequence of not flushing for you?
+> I am searching documentation about CFQ io scheduler. I can't find it in linux 
+> 2.6.26 Documentation directory.
 > 
-> The bug may have been there, as I said, lots of unwritten rules...
-> sometimes broken. I'm not necessarily blaming you, but there have been
-> lots of changes to the PTE accessors over the last 2 years and not
-> always under any control :-)
+> I found about these in german[1]:
 > 
-> In our case, the consequence is that the entry can be re-hashed because
-> the fact that it was already hashed and where it was hashed, which is
-> encoded in the PTE, gets lost by the clear. That means a potential
-> duplicate entry in the hash. A hard to hit race, but possible. Such a
-> condition is architecturally illegal and can cause things ranging from
-> incorrect translation to machine checks or checkstops (generally, on
-> LPAR machines, what will happen is your partition will get killed).
+> back_seek_max:16384
+> back_seek_penalty:2
+> fifo_expire_async:250
+> fifo_expire_sync:123
+> quantum:4
 > 
-> I know s390 has different issues & constraints. Martin told me during
-> Plumbers that mprotect was probably also broken for him.
+> But I am completely missing about these:
 > 
-> > There have been a few optional-extras calls, which are all fine to leave
-> > as no-ops.  I don't think we've added or changed any must-have interfaces.
-> 
-> Again, I'm not necessarily talking about the very latest round of
-> changes that you did here... More like a general approach as trying to
-> find a better overall interface to PTE access which currently is a total
-> mess as far as I'm concerned.
-> 
-> > It seems to me that the rules are roughly "anything goes while you're
-> > holding the pte lock, but it all must be sane by the time you release
-> > it".  But a bit more precision would be useful.
-> 
-> Well, unfortunately it's a lot more complex than that. For example, on
-> powerpc, we have to keep the hash table in sync and hash misses don't
-> take the PTE lock. They are aking to a non-atomic HW walk of the page
-> tables if you prefer.
-> 
-> So we must be careful about things like never replacing a PTE without
-> first flushing the hash table entry for the previous one (if it was
-> hashed). We also need to ensure we flush before we unlock, but we do
-> that by re-using the new lazy MMU hooks, as to not insert a new PTE
-> (which can potentially be hashed).
-> 
-> s390 has more complex sets of rules.
-> 
-> > I don't know if there's any such rule regarding set_pte_at().  Certainly
-> > if you were overwriting an existing valid entry, you'd have to arrange
-> > for a tlb flush.
-> 
-> Well, for example, the generic copy-on-write case used to do just that,
-> ie set_pte_at() over the previous one, then flush. That is not good for
-> us and thus our set_pte_at() has special code to check whether there's
-> already a present PTE there and does a synchronous flush if there is.
-> 
-> However, that also changed, and nowadays, afaik, set_pte_at() is never
-> called anymore to override a already present PTE. 
-> 
-> We are doing some work on 32 bits code that will need similar
-> constraints and It would be nice if we could rely on the above and make
-> it part of the rules.
-> 
-> > Do you have a reference to Nick's proposals?
-> 
-> Not off hand, Nick ? How far did you go down that path ?
+> slice_async:40
 
-I got something far enough to compile and boot (iirc on x86 and maybe
-ia64). Basically it was designed with fine grained pte locking in
-mind which is why I stopped working on it after the pmd locking from
-Hugh, but I imagine it could be used in some cases to do more
-intelligent things with pte manipulation.
+Base length of an asynchronous queue timeslice (that is, how long the
+queue has to dispatch requests each round).  The actual timeslice
+length is scaled by the I/O priority.
 
-IIRC, basically you would have a pte_modify_start, which gives back a
-cookie and the pte value, and pte_modify_end which takes a new pte
-value and the cookie.
+> slice_async_rq:2
 
-This would allow the arch to see exactly how the pte was changed, but
-I imagine in some cases you would still prefer to do that with
-optimised direct functions rather than test and branches. So I don't
-know if it would be a magic cure ;)
+The base number of requests per round for asynchronous queues.  Like
+slice_async, the actual maximum is a function of slice_async_rq and I/O
+priority.
 
-Part of the problem with the pte API (as well as the cache flush and
-tlb flush APIs) is that it often involves the core mm code telling
-the arch how it thinks ptes,tlbs,caches should be managed, rather than
-I think the better approach would be telling the arch what it wants to
-do.
+> slice_idle:6
 
-We are getting better slowly I think (eg. you note that set_pte_at is
-no longer used as a generic "do anything"), but I won't dispute that
-this whole area could use an overhaul; a document for all the rules,
-a single person or point of responsibility for those rules...
+How long to wait for processes to produce more I/O before switching
+queues. This is for anticipation of sequential I/O, and more even disk
+time distribution for processes doing back to back synchronous I/Os.
+
+> slice_sync:100
+
+Same as slice_async, but for synchronous requests.
 
