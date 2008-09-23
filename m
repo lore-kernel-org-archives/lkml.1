@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYIWPiD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbYIWPoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbYIWPiD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 11:38:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbYIWPhy
+	id S1753307AbYIWPoU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 11:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYIWPoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 11:37:54 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:30681 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbYIWPhx (ORCPT
+	Tue, 23 Sep 2008 11:44:00 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:36737 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbYIWPn7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 11:37:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding:sender;
-        b=Jrv7XQk+ZDW/UBinson1uTLytMEMh0sUyVkWObTU8RSDY0T03LTEHvtDZbnMV0sj3Y
-         HavlBeHgSeHF5jMAezpXEsUcb3I8MJ617m3hzI4KxUoResIdNArzg37jkutSEqle95nz
-         dZEmwLibVA4t2zcczLtSWKDfE0tGmr4NNb2b8=
-Message-ID: <48D90D42.9070401@tuffmail.co.uk>
-Date: Tue, 23 Sep 2008 16:37:38 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 23 Sep 2008 11:43:59 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with hardirq preemption, eHCA is close
+Date: Tue, 23 Sep 2008 17:43:23 +0200
+User-Agent: KMail/1.8.2
+Cc: Christoph Raisch <RAISCH@de.ibm.com>,
+       Benjamin Herrenschmidt <bherren@au1.ibm.com>, gilles.carry@ext.bull.net,
+       Jan-Bernd Themann <THEMANN@de.ibm.com>, jean-pierre.dion@bull.net,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux-rt <linux-rt-users@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
+       Thomas Q Klein <TKLEIN@de.ibm.com>, tinytim@us.ibm.com,
+       Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+References: <20080915100406.342e027a@bull.net> <OFD7842B7A.ADC47EED-ONC12574C8.003A2CB3-C12574C8.003AC948@de.ibm.com> <20080918143146.77db81d5@bull.net>
+In-Reply-To: <20080918143146.77db81d5@bull.net>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: neilb@suse.de, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] raid: make RAID autodetect default a KConfig option
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809231743.23828.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed this Configure option is present even if BLK_DEV_MD=m.  In
-this case the option does nothing, which is inconsistent with the help
-text and generally odd :-).
+Hi,
 
-Would you change it?
+I think these are the "functional" changes that need to be included in
+the ibmebus driver. We'll add a RT flag in the final version to enable
+these changes only for RT-Linux for now. 
+Ben, can you / your team look into the implementation
+of the set_irq_type functionality needed for XICS?
 
-------
+Regards,
+Jan-Bernd & Christoph
 
-Hide RAID autodetect option if MD is compiled as a module.
-
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-
-diff --git a/drivers/md/Configure b/drivers/md/Configure
-index 8e72c91..2281b50 100644
---- a/drivers/md/Configure
-+++ b/drivers/md/Configure
-@@ -32,7 +32,7 @@ config BLK_DEV_MD
+diff -Nurp b/arch/powerpc/kernel/ibmebus.c a/arch/powerpc/kernel/ibmebus.c
+--- b/arch/powerpc/kernel/ibmebus.c	2008-09-22 00:29:55.000000000 +0200
++++ a/arch/powerpc/kernel/ibmebus.c	2008-09-23 12:04:53.000000000 +0200
+@@ -216,12 +216,16 @@ int ibmebus_request_irq(u32 ist, irq_han
+ 			unsigned long irq_flags, const char *devname,
+ 			void *dev_id)
+ {
++	int ret;
+ 	unsigned int irq = irq_create_mapping(NULL, ist);
  
- config MD_AUTODETECT
- 	bool "Autodetect RAID arrays during kernel boot"
--	depends on BLK_DEV_MD
-+	depends on BLK_DEV_MD=y
- 	default y
- 	---help---
- 	  If you say Y here, then the kernel will try to autodetect raid
+ 	if (irq == NO_IRQ)
+ 		return -EINVAL;
+ 
+-	return request_irq(irq, handler, irq_flags, devname, dev_id);
++	ret = request_irq(irq, handler, irq_flags, devname, dev_id);
++	set_irq_type(irq, IRQ_TYPE_EDGE_RISING);
++
++	return ret;
+ }
+ EXPORT_SYMBOL(ibmebus_request_irq);
+ 
+
 
