@@ -1,88 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbYIWS7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbYIWTAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbYIWS7h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 14:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbYIWS73
+	id S1754465AbYIWTAY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 15:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYIWTAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 14:59:29 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:40422 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751839AbYIWS72 (ORCPT
+	Tue, 23 Sep 2008 15:00:10 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:12033 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbYIWTAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 14:59:28 -0400
+	Tue, 23 Sep 2008 15:00:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=tu1aIdJQw0Dtsrid+ZBi+du/Ie0p5Gyl6uw6ps5sq/7U9ghnAemeVq8enYWO4Akero
-         Qsl02NuHpXV1haTLCjooJ+S7w4COE4idqO5xV1WO25lCRGmUEP6K8iwl/BNWwAtPu3X0
-         pOl4evQlECFjXs9zZ2NJHhfq3EPV6cviM/o0o=
-Message-ID: <86802c440809231159x69883d44y26bbd491b6504a0f@mail.gmail.com>
-Date: Tue, 23 Sep 2008 11:59:26 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Jack Steiner" <steiner@sgi.com>
-Subject: Re: [PATCH] - Add early detection of UV system types
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <20080923182817.GA6335@sgi.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YmprLxOg8B5P50hOaDoMbahoqas5/p1d28zx/1NKCRQZjUU6M+Fioq10ahmN8tnP/M
+         nO7Ji1s1OodTN3/GZ6ARPUOqa64kmbO3jBzgJzFI2k3lvZGqVf74mFdRgaiEdsIyaPDA
+         nhnTHuqWDLGMkhvs+vId+raYZlpvZ0sLWp+UY=
+Date: Tue, 23 Sep 2008 23:00:02 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH -tip/master] x86: io-apic - interrupt remapping fix
+Message-ID: <20080923190002.GE10567@localhost>
+References: <20080919123320.GF7222@lenovo> <20080923005737.GA25045@linux-os.sc.intel.com> <20080923011620.GB25045@linux-os.sc.intel.com> <20080923045637.GA7172@localhost> <20080923183411.GD25045@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080923182817.GA6335@sgi.com>
-X-Google-Sender-Auth: 7b09a0348c122bd2
+In-Reply-To: <20080923183411.GD25045@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 11:28 AM, Jack Steiner <steiner@sgi.com> wrote:
-> Portions of system boot needs to know if a system is a UV system prior
-> to genapic initialization. This patch adds a call from acpi_boot_table_init()
-> to the UV code to parse the MADT to determine if the system is a UV system.
->
-> Signed-off-by: Jack Steiner <steiner@sgi.com>
->
-> ---
->  arch/x86/kernel/acpi/boot.c      |    4 ++++
->  arch/x86/kernel/genx2apic_uv_x.c |   21 ++++++++++++---------
->  arch/x86/mm/srat_64.c            |    2 +-
->  include/asm-x86/genapic_64.h     |    2 ++
->  4 files changed, 19 insertions(+), 10 deletions(-)
->
-> Index: linux/arch/x86/kernel/acpi/boot.c
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/acpi/boot.c      2008-09-23 12:55:15.000000000 -0500
-> +++ linux/arch/x86/kernel/acpi/boot.c   2008-09-23 12:55:19.000000000 -0500
-> @@ -1667,6 +1667,10 @@ int __init acpi_boot_table_init(void)
->
->        acpi_table_parse(ACPI_SIG_BOOT, acpi_parse_sbf);
->
-> +#ifdef CONFIG_X86_64
-> +       acpi_table_parse(ACPI_SIG_MADT, uv_early_madt_oem_check);
-> +#endif
-> +
->        /*
->         * blacklist may disable ACPI entirely
->         */
+[Suresh Siddha - Tue, Sep 23, 2008 at 11:34:12AM -0700]
+...
+| 
+| This is too confusing. Please change it to something simple, like:
+| 
+| 	for (i = 0; i < apic; i++)
+| 		kfree(early_ioapic_entries[i]);
+| 
+| or
+| 
+| 	for (apic = 0; apic < nr_ioapics; apic++)
+| 		kfree(early_ioapic_entries[apic]);
+| 
+| thanks,
+| suresh
+| 
 
-you don't need to that.
+Suresh,
 
-please call early_acpi_boot_init instead
+what about this one?
 
-sth like
+		- Cyrill -
+---
+From: Cyrill Gorcunov <gorcunov@gmail.com>
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 3d677b5..7ead2aa 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -997,6 +997,8 @@ void __init setup_arch(char **cmdline_p)
-         */
-        acpi_boot_table_init();
+Clean up obscure for() cycle with straight while() form
 
-+       early_acpi_boot_init();
-+
- #ifdef CONFIG_ACPI_NUMA
-        /*
-         * Parse SRAT to discover nodes.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-YH
+Index: linux-2.6.git/arch/x86/kernel/io_apic.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-22 17:42:33.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-23 22:45:58.000000000 +0400
+@@ -830,9 +830,8 @@ int save_mask_IO_APIC_setup(void)
+ 	return 0;
+ 
+ nomem:
+-	for (; apic > 0; apic--)
+-		kfree(early_ioapic_entries[apic]);
+-	kfree(early_ioapic_entries[apic]);
++	while (apic >= 0)
++		kfree(early_ioapic_entries[apic--]);
+ 	memset(early_ioapic_entries, 0,
+ 		ARRAY_SIZE(early_ioapic_entries));
+ 
