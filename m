@@ -1,77 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbYIWN6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYIWN54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755716AbYIWN6T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbYIWNrs
+	id S1755874AbYIWN54 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYIWNsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:47:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52409 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:48:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52468 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753665AbYIWNrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:47:42 -0400
+	id S1752937AbYIWNsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:48:11 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>
-Subject: [PATCH 25/40] KVM: Ignore DEBUGCTL MSRs with no effect
-Date: Tue, 23 Sep 2008 16:46:39 +0300
-Message-Id: <1222177614-26669-26-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: [PATCH 40/40] KVM: Reduce stack usage in kvm_pv_mmu_op()
+Date: Tue, 23 Sep 2008 16:46:54 +0300
+Message-Id: <1222177614-26669-41-git-send-email-avi@redhat.com>
 In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
 References: <1222177614-26669-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Graf <agraf@suse.de>
+From: Dave Hansen <dave@linux.vnet.ibm.com>
 
-Netware writes to DEBUGCTL and reads from the DEBUGCTL and LAST*IP MSRs
-without further checks and is really confused to receive a #GP during that.
-To make it happy we should just make them stubs, which is exactly what SVM
-already does.
+We're in a hot path.  We can't use kmalloc() because
+it might impact performance.  So, we just stick the buffer that
+we need into the kvm_vcpu_arch structure.  This is used very
+often, so it is not really a waste.
 
-Writes to DEBUGCTL that are vendor-specific are resembled to behave as if the
-virtual CPU does not know them.
+We also have to move the buffer structure's definition to the
+arch-specific x86 kvm header.
 
-Signed-off-by: Alexander Graf <agraf@suse.de>
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/x86.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
+ arch/x86/kvm/mmu.c         |   23 ++++++++---------------
+ include/asm-x86/kvm_host.h |   10 ++++++++++
+ 2 files changed, 18 insertions(+), 15 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 5620df2..94a2165 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -665,6 +665,18 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
- 		pr_unimpl(vcpu, "%s: MSR_IA32_MCG_CTL 0x%llx, nop\n",
- 			__func__, data);
- 		break;
-+	case MSR_IA32_DEBUGCTLMSR:
-+		if (!data) {
-+			/* We support the non-activated case already */
-+			break;
-+		} else if (data & ~(DEBUGCTLMSR_LBR | DEBUGCTLMSR_BTF)) {
-+			/* Values other than LBR and BTF are vendor-specific,
-+			   thus reserved and should throw a #GP */
-+			return 1;
-+		}
-+		pr_unimpl(vcpu, "%s: MSR_IA32_DEBUGCTLMSR 0x%llx, nop\n",
-+			__func__, data);
-+		break;
- 	case MSR_IA32_UCODE_REV:
- 	case MSR_IA32_UCODE_WRITE:
- 		break;
-@@ -757,6 +769,11 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
- 	case MSR_IA32_MC0_MISC+16:
- 	case MSR_IA32_UCODE_REV:
- 	case MSR_IA32_EBL_CR_POWERON:
-+	case MSR_IA32_DEBUGCTLMSR:
-+	case MSR_IA32_LASTBRANCHFROMIP:
-+	case MSR_IA32_LASTBRANCHTOIP:
-+	case MSR_IA32_LASTINTFROMIP:
-+	case MSR_IA32_LASTINTTOIP:
- 		data = 0;
- 		break;
- 	case MSR_MTRRcap:
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index c3afbfe..171bcea 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -135,13 +135,6 @@ module_param(dbg, bool, 0644);
+ #define ACC_USER_MASK    PT_USER_MASK
+ #define ACC_ALL          (ACC_EXEC_MASK | ACC_WRITE_MASK | ACC_USER_MASK)
+ 
+-struct kvm_pv_mmu_op_buffer {
+-	void *ptr;
+-	unsigned len;
+-	unsigned processed;
+-	char buf[512] __aligned(sizeof(long));
+-};
+-
+ struct kvm_rmap_desc {
+ 	u64 *shadow_ptes[RMAP_EXT];
+ 	struct kvm_rmap_desc *more;
+@@ -2292,18 +2285,18 @@ int kvm_pv_mmu_op(struct kvm_vcpu *vcpu, unsigned long bytes,
+ 		  gpa_t addr, unsigned long *ret)
+ {
+ 	int r;
+-	struct kvm_pv_mmu_op_buffer buffer;
++	struct kvm_pv_mmu_op_buffer *buffer = &vcpu->arch.mmu_op_buffer;
+ 
+-	buffer.ptr = buffer.buf;
+-	buffer.len = min_t(unsigned long, bytes, sizeof buffer.buf);
+-	buffer.processed = 0;
++	buffer->ptr = buffer->buf;
++	buffer->len = min_t(unsigned long, bytes, sizeof buffer->buf);
++	buffer->processed = 0;
+ 
+-	r = kvm_read_guest(vcpu->kvm, addr, buffer.buf, buffer.len);
++	r = kvm_read_guest(vcpu->kvm, addr, buffer->buf, buffer->len);
+ 	if (r)
+ 		goto out;
+ 
+-	while (buffer.len) {
+-		r = kvm_pv_mmu_op_one(vcpu, &buffer);
++	while (buffer->len) {
++		r = kvm_pv_mmu_op_one(vcpu, buffer);
+ 		if (r < 0)
+ 			goto out;
+ 		if (r == 0)
+@@ -2312,7 +2305,7 @@ int kvm_pv_mmu_op(struct kvm_vcpu *vcpu, unsigned long bytes,
+ 
+ 	r = 1;
+ out:
+-	*ret = buffer.processed;
++	*ret = buffer->processed;
+ 	return r;
+ }
+ 
+diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
+index 54e92a0..fb7d7b7 100644
+--- a/include/asm-x86/kvm_host.h
++++ b/include/asm-x86/kvm_host.h
+@@ -201,6 +201,13 @@ struct kvm_mmu_page {
+ 	};
+ };
+ 
++struct kvm_pv_mmu_op_buffer {
++	void *ptr;
++	unsigned len;
++	unsigned processed;
++	char buf[512] __aligned(sizeof(long));
++};
++
+ /*
+  * x86 supports 3 paging modes (4-level 64-bit, 3-level 64-bit, and 2-level
+  * 32-bit).  The kvm_mmu structure abstracts the details of the current mmu
+@@ -248,6 +255,9 @@ struct kvm_vcpu_arch {
+ 	bool tpr_access_reporting;
+ 
+ 	struct kvm_mmu mmu;
++	/* only needed in kvm_pv_mmu_op() path, but it's hot so
++	 * put it here to avoid allocation */
++	struct kvm_pv_mmu_op_buffer mmu_op_buffer;
+ 
+ 	struct kvm_mmu_memory_cache mmu_pte_chain_cache;
+ 	struct kvm_mmu_memory_cache mmu_rmap_desc_cache;
 -- 
 1.6.0.1
 
