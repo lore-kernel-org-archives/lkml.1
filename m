@@ -1,98 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYIWN5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbYIWN6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbYIWN5Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYIWNsI
+	id S1756884AbYIWN6g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYIWNrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:48:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52440 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:47:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52405 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752537AbYIWNr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:47:56 -0400
+	id S1753164AbYIWNri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:47:38 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 34/40] x86: KVM guest: use paravirt function to calculate cpu khz
-Date: Tue, 23 Sep 2008 16:46:48 +0300
-Message-Id: <1222177614-26669-35-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Avi Kivity <avi@qumranet.com>
+Subject: [PATCH 24/40] KVM: VMX: Avoid vmwrite(HOST_RSP) when possible
+Date: Tue, 23 Sep 2008 16:46:38 +0300
+Message-Id: <1222177614-26669-25-git-send-email-avi@redhat.com>
 In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
 References: <1222177614-26669-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Glauber Costa <gcosta@redhat.com>
+From: Avi Kivity <avi@qumranet.com>
 
-We're currently facing timing problems in guests that do
-calibration under heavy load, and then the load vanishes.
-This means we'll have a much lower lpj than we actually should,
-and delays end up taking less time than they should, which is a
-nasty bug.
+Usually HOST_RSP retains its value across guest entries.  Take advantage
+of this and avoid a vmwrite() when this is so.
 
-Solution is to pass on the lpj value from host to guest, and have it
-preset.
-
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kernel/kvmclock.c |   30 ++++++++++++++++++++++++++++++
- 1 files changed, 30 insertions(+), 0 deletions(-)
+ arch/x86/kvm/vmx.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
-index d02def0..774ac49 100644
---- a/arch/x86/kernel/kvmclock.c
-+++ b/arch/x86/kernel/kvmclock.c
-@@ -78,6 +78,34 @@ static cycle_t kvm_clock_read(void)
- 	return ret;
- }
- 
-+/*
-+ * If we don't do that, there is the possibility that the guest
-+ * will calibrate under heavy load - thus, getting a lower lpj -
-+ * and execute the delays themselves without load. This is wrong,
-+ * because no delay loop can finish beforehand.
-+ * Any heuristics is subject to fail, because ultimately, a large
-+ * poll of guests can be running and trouble each other. So we preset
-+ * lpj here
-+ */
-+static unsigned long kvm_get_tsc_khz(void)
-+{
-+	return preset_lpj;
-+}
-+
-+static void kvm_get_preset_lpj(void)
-+{
-+	struct pvclock_vcpu_time_info *src;
-+	unsigned long khz;
-+	u64 lpj;
-+
-+	src = &per_cpu(hv_clock, 0);
-+	khz = pvclock_tsc_khz(src);
-+
-+	lpj = ((u64)khz * 1000);
-+	do_div(lpj, HZ);
-+	preset_lpj = lpj;
-+}
-+
- static struct clocksource kvm_clock = {
- 	.name = "kvm-clock",
- 	.read = kvm_clock_read,
-@@ -153,6 +181,7 @@ void __init kvmclock_init(void)
- 		pv_time_ops.get_wallclock = kvm_get_wallclock;
- 		pv_time_ops.set_wallclock = kvm_set_wallclock;
- 		pv_time_ops.sched_clock = kvm_clock_read;
-+		pv_time_ops.get_tsc_khz = kvm_get_tsc_khz;
- #ifdef CONFIG_X86_LOCAL_APIC
- 		pv_apic_ops.setup_secondary_clock = kvm_setup_secondary_clock;
- #endif
-@@ -163,6 +192,7 @@ void __init kvmclock_init(void)
- #ifdef CONFIG_KEXEC
- 		machine_ops.crash_shutdown  = kvm_crash_shutdown;
- #endif
-+		kvm_get_preset_lpj();
- 		clocksource_register(&kvm_clock);
- 	}
- }
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index fc8996b..ddb49e3 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -58,6 +58,7 @@ struct vmcs {
+ struct vcpu_vmx {
+ 	struct kvm_vcpu       vcpu;
+ 	struct list_head      local_vcpus_link;
++	unsigned long         host_rsp;
+ 	int                   launched;
+ 	u8                    fail;
+ 	u32                   idt_vectoring_info;
+@@ -2982,7 +2983,11 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 		/* Store host registers */
+ 		"push %%"R"dx; push %%"R"bp;"
+ 		"push %%"R"cx \n\t"
++		"cmp %%"R"sp, %c[host_rsp](%0) \n\t"
++		"je 1f \n\t"
++		"mov %%"R"sp, %c[host_rsp](%0) \n\t"
+ 		__ex(ASM_VMX_VMWRITE_RSP_RDX) "\n\t"
++		"1: \n\t"
+ 		/* Check if vmlaunch of vmresume is needed */
+ 		"cmpl $0, %c[launched](%0) \n\t"
+ 		/* Load guest registers.  Don't clobber flags. */
+@@ -3039,6 +3044,7 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	      : : "c"(vmx), "d"((unsigned long)HOST_RSP),
+ 		[launched]"i"(offsetof(struct vcpu_vmx, launched)),
+ 		[fail]"i"(offsetof(struct vcpu_vmx, fail)),
++		[host_rsp]"i"(offsetof(struct vcpu_vmx, host_rsp)),
+ 		[rax]"i"(offsetof(struct vcpu_vmx, vcpu.arch.regs[VCPU_REGS_RAX])),
+ 		[rbx]"i"(offsetof(struct vcpu_vmx, vcpu.arch.regs[VCPU_REGS_RBX])),
+ 		[rcx]"i"(offsetof(struct vcpu_vmx, vcpu.arch.regs[VCPU_REGS_RCX])),
 -- 
 1.6.0.1
 
