@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYIWREX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYIWREh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYIWREX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 13:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbYIWREF
+	id S1755147AbYIWREh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 13:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbYIWREH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 13:04:05 -0400
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:60657 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751580AbYIWREB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 13:04:01 -0400
-Message-ID: <48D92174.5010902@nortel.com>
-Date: Tue, 23 Sep 2008 11:03:48 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Tue, 23 Sep 2008 13:04:07 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:60422 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754707AbYIWRED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 13:04:03 -0400
+Date: Tue, 23 Sep 2008 13:03:45 -0400
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: Tom Tucker <tom@opengridcomputing.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
+       neilb@suse.de, linux-nfs@vger.kernel.org
+Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
+Message-ID: <20080923170344.GC2700@fieldses.org>
+References: <20080912224323.GN22126@fieldses.org> <48CAF80A.4010109@opengridcomputing.com> <1221296243.2534.7.camel@localhost.localdomain> <1221544139.2534.18.camel@localhost.localdomain> <48CF9AC3.6060801@opengridcomputing.com> <1221577412.28572.60.camel@zakaz.uk.xensource.com> <48CFD7C3.5080207@opengridcomputing.com> <1221582285.28572.67.camel@zakaz.uk.xensource.com> <1222156770.6869.13.camel@localhost.localdomain> <1222169589.6869.20.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com, steffen.klassert@secunet.com
-Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
-References: <20080919.234824.223177211.davem@davemloft.net> <48D80C9C.2070108@nortel.com> <20080922.151233.229805934.davem@davemloft.net>
-In-Reply-To: <20080922.151233.229805934.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Sep 2008 17:03:49.0793 (UTC) FILETIME=[595AC910:01C91D9E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222169589.6869.20.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: "Chris Friesen" <cfriesen@nortel.com>
-> Date: Mon, 22 Sep 2008 15:22:36 -0600
+On Tue, Sep 23, 2008 at 12:33:09PM +0100, Ian Campbell wrote:
+> On Tue, 2008-09-23 at 08:59 +0100, Ian Campbell wrote:
+> > I've found that the problem was backported into the stable stream since
+> > I cannot reproduce the issue with 2.6.26 but I can with 2.6.26.5. This
+> > is quite useful since there are only 3 relevant looking changesets in
+> > that range. I will bisect between these before confirming the culprit on
+> > mainline.
+
+Could you double-check that this is reproduceable with this commit
+applied, and not reproduceable when it's not?
+
+I suppose it's not impossible that this could be triggering the problem
+in some very roundabout way, but it seems a bit out of left field--so I
+wonder whether one of the bisection points could have gotten marked good
+when it should have been bad, or vice-versa.
+
+> It reports:
 > 
->> I'm not sure this belongs in this particular thread but I was
->> interested in how you're planning on doing this?
+>         daedfbe2a67628a40076a6c75fb945c60f608a2e is first bad commit
+>         commit daedfbe2a67628a40076a6c75fb945c60f608a2e
+>         Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+>         Date:   Wed Jun 11 17:39:04 2008 -0400
+>         
+>             NFS: Ensure we zap only the access and acl caches when setting new acls
+>             
+>             commit f41f741838480aeaa3a189cff6e210503cf9c42d upstream
+>             
+>             ...and ensure that we obey the NFS_INO_INVALID_ACL flag when retrieving the
+>             acls.
+>             
+>             Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+>             Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 > 
-> Something like this patch which I posted last week on
-> netdev.
+> I'm just about to build f41f741838480aeaa3a189cff6e210503cf9c42d and the
+> one before and try those.
+> 
+> I'm not using ACLs as far as I am aware.
 
-That patch basically just picks an arbitrary cpu for each flow.  This 
-would spread the load out across cpus, but it doesn't allow any input 
-from userspace.
+I think commands like "ls" try to get posix acls these days, so it's
+possible that the nfs3_proc_getacl code at least might be getting
+called.  Why that would matter I can't see.
 
-We have a current application where there are 16 cores and 16 threads. 
-They would really like to be able to pin one thread to each core and 
-tell the kernel what packets they're interested in so that the kernel 
-can process those packets on that core to gain the maximum caching 
-benefit as well as reduce reordering issues.  In our case the hardware 
-supports filtering for multiqueues, so we could pass this information 
-down to the hardware to avoid software filtering.
-
-Either way, it requires some way for userspace to indicate interest in a 
-particular flow.  Has anyone given any thought to what an API like this 
-would look like?
-
-I suppose we could automatically look at bound network sockets owned by 
-tasks that are affined to single cpus.  This would simplify userspace 
-but would reduce flexibility for things like packet sockets with socket 
-filters applied.
-
-Chris
+--b.
