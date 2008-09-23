@@ -1,41 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbYIWQuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYIWQtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756013AbYIWQuZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 12:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYIWQqd
+	id S1755963AbYIWQtz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 12:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbYIWQq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 12:46:33 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:65468 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754833AbYIWQqc (ORCPT
+	Tue, 23 Sep 2008 12:46:28 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:47817 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754803AbYIWQqZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 12:46:32 -0400
-Message-ID: <48D91D61.2080800@freescale.com>
-Date: Tue, 23 Sep 2008 11:46:25 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Tue, 23 Sep 2008 12:46:25 -0400
+From: Alex Chiang <achiang@hp.com>
+Subject: [PATCH v3 14/14] PCI Hotplug: fakephp: add duplicate slot name
+	debugging
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx,
+       kaneshige.kenji@jp.fujitsu.com, Alex Chiang <achiang@hp.com>
+Date: Tue, 23 Sep 2008 10:46:24 -0600
+Message-ID: <20080923164624.12628.91248.stgit@bob.kio>
+In-Reply-To: <20080923163753.12628.98683.stgit@bob.kio>
+References: <20080923163753.12628.98683.stgit@bob.kio>
+User-Agent: StGIT/0.14.3.215.gff3d
 MIME-Version: 1.0
-To: Ira Snyder <iws@ovro.caltech.edu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Problems with Freescale DMA driver
-References: <20080825165133.GA20446@ovro.caltech.edu> <e9c3a7c20809181458p4cabccblfde6a92bf35976ee@mail.gmail.com> <48D2D00B.3010001@freescale.com> <20080922230435.GA20825@ovro.caltech.edu> <48D8F73A.4050004@freescale.com> <20080923155935.GA7449@ovro.caltech.edu> <48D914DD.7080702@freescale.com> <20080923164322.GC7449@ovro.caltech.edu>
-In-Reply-To: <20080923164322.GC7449@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ira Snyder wrote:
+The PCI core now manages slot names on behalf of slot detection
+and slot hotplug drivers, including the handling of duplicate
+slot names.
 
-> In this case, I probably would like to reserve a DMA channel for my
-> exclusive use. That way I won't run into problems by programming the DMA
-> by hand.
+We can use the fakephp driver to help test the new functionality.
+Add a 'dup_slots' module param to force fakephp to create multiple
+slots with the same name. We can then verify that the PCI core
+correctly renamed the slots.
 
-If you write your own DMA driver, the current method for reserving a DMA channel
-is to change the compatible property for that channel in the device tree to
-something other than "fsl,elo-dma-channel" (or "fsl,eloplus-dma-channel").
+	sapphire:/sys/bus/pci/slots # modprobe fakephp dup_slots
+	sapphire:/sys/bus/pci/slots # ls
+	fake    fake-10  fake-3  fake-5  fake-7  fake-9
+	fake-1  fake-2   fake-4  fake-6  fake-8
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Cc: jbarnes@virtuousgeek.org
+Cc: kristen.c.accardi@intel.com
+Cc: matthew@wil.cx
+Cc: kaneshige.kenji@jp.fujitsu.com
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+
+ drivers/pci/hotplug/fakephp.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+index 16ec767..71670a4 100644
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -69,6 +69,7 @@ struct dummy_slot {
+ };
+ 
+ static int debug;
++static int dup_slots;
+ static LIST_HEAD(slot_list);
+ static struct workqueue_struct *dummyphp_wq;
+ 
+@@ -121,7 +122,10 @@ static int add_slot(struct pci_dev *dev)
+ 	if (!dslot)
+ 		goto error_info;
+ 
+-	snprintf(name, SLOT_NAME_SIZE, "fake%d", count++);
++	if (dup_slots)
++		snprintf(name, SLOT_NAME_SIZE, "fake");
++	else
++		snprintf(name, SLOT_NAME_SIZE, "fake%d", count++);
+ 	dbg("slot->name = %s\n", name);
+ 	slot->ops = &dummy_hotplug_slot_ops;
+ 	slot->release = &dummy_release;
+@@ -375,4 +379,5 @@ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
+ module_param(debug, bool, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(debug, "Debugging mode enabled or not");
+-
++module_param(dup_slots, bool, S_IRUGO | S_IWUSR);
++MODULE_PARM_DESC(dup_slots, "Force duplicate slot names for debugging");
+
