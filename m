@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbYIWHEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbYIWHWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbYIWHEt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 03:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYIWHEh
+	id S1754017AbYIWHWO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 03:22:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbYIWHV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 03:04:37 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:23170 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752917AbYIWHEh (ORCPT
+	Tue, 23 Sep 2008 03:21:58 -0400
+Received: from burp.tkv.asdf.org ([212.16.99.49]:54227 "EHLO
+	cs181073102.pp.htv.fi" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752917AbYIWHV6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 03:04:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=VKbHlOX4uHdYv03H5SGXfLiCg9hAX7TVMMzCjahXj5sBQ390oJUvl2CrLa0CEI6Qpy
-         SIpXbZ5OdaIghGbrYonVQLwUgu8l+uvzEE7lqBs7CphA701WYTLP+4QqhFWLaZCzNw1i
-         aKi5bTkgnAivu3uhfuxhYHxUG4K0IJ3k3nANs=
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: OOPS bug KERNEL LINUX- Version 2.6.26
-Date: Tue, 23 Sep 2008 09:04:31 +0200
-User-Agent: KMail/1.9.9
-Cc: David Miller <davem@davemloft.net>, andrea_monta@inwind.it,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, stable@kernel.org
-References: <K7M9ZI$69A44BBF23D86D612A80B0EA98EEEE6B@libero.it> <200809230032.37255.IvDoorn@gmail.com> <20080922234649.GA26219@tuxdriver.com>
-In-Reply-To: <20080922234649.GA26219@tuxdriver.com>
+	Tue, 23 Sep 2008 03:21:58 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] file capabilities: add no_file_caps switch (v2)
+References: <beYE7-1Xc-41@gated-at.bofh.it> <beZ72-2GM-5@gated-at.bofh.it>
+	<bf035-3Tp-5@gated-at.bofh.it>
+From: Markku Savela <msa@moth.iki.fi>
+Date: Tue, 23 Sep 2008 10:21:54 +0300
+In-Reply-To: <bf035-3Tp-5@gated-at.bofh.it> (Andreas Gruenbacher's message of "Mon\, 22 Sep 2008 22\:20\:08 +0200")
+Message-ID: <87tzc7fht9.fsf@burp.tkv.asdf.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809230904.31382.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 September 2008, John W. Linville wrote:
-> On Tue, Sep 23, 2008 at 12:32:36AM +0200, Ivo van Doorn wrote:
-> > On Tuesday 23 September 2008, John W. Linville wrote:
-> > > On Tue, Sep 23, 2008 at 12:25:03AM +0200, Ivo van Doorn wrote:
-> > > > Hi,
-> > > > 
-> > > > > > 1. Problem with usb-wireless-key 
-> > > > > > 2. I can't find my device typing ifconfig -a or iwconfig I don't find any wireless attached device. But I have my usb wireless connected. A belkin usb wireless key.Before, with the kernel 2.6.25 all worked well
-> > > > > > 3. nothing
-> > > > > > 4. Linux version 2.6.26 (root@clementino) (gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)) #1 PREEMPT Mon Sep 22 15:57:45 CEST 2008
-> > > > > > 5.
-> > > > 
-> > > > You missed the message from rt2x00 2 lines above this trace, which undoubtly have said something like:
-> > > > 	"Invalid RT chipset detected."
-> > > > which is triggered when rt73usb is loaded for a device it does not support
-> > > > 
-> > > > The current workaround for this issue is blacklisting rt73usb and making sure the driver
-> > > > which is required for your driver is loaded instead.
-> > > > 
-> > > > I'll look into the reason why this actually triggers a NULL pointer, since that is obviously a nasty bug.
-> > > 
-> > > -stable needs a patch similar to the one here:
-> > > 
-> > > 	http://people.redhat.com/linville/kernels/rhel5/patches/jwltest-rt2x00lib-probe-fail.patch
-> > 
-> > Ah yes, that would be a good one.
-> > I kind of assumed it was already merged, and hadn't actually verified that yet. ;)
-> 
-> Well the code in 2.6.27 is different, this patch is no longer necessary
-> (and doesn't apply).
 
-Yeah, but it was send to stable@kernel.org as merge request for 2.6.26 stable only. :)
+Andreas Gruenbacher <agruen@suse.de> writes:
 
-Ivo
+> Sure, that would work as well, except that I think that file
+> capabilities should always default to "on" as they will become a
+> standard security mechanism before long. We just don't have much
+> system management tool support yet, and I would like to give that
+> some more time safely, without putting users at unnecessary risk.
+
+As I've said elsewhere, I consider above a bad move. The "file
+capabilities" are just setgid/setuid executables in disguise (although
+with little finer control).
+
+I would prefer two choices for capabilities:
+
+ 1) file capabilities, for those who think they work
+
+ 2) no file capabilities, but just normal inheritance. There should be
+ nothing mystical about this. The credential (uid, groups) inherit
+ just fine without problems. Why not capabilities?
+
+
