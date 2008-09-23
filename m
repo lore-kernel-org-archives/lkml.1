@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYIWXPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYIWXa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374AbYIWXPJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 19:15:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYIWXO5
+	id S1753483AbYIWXa1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 19:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYIWXaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 19:14:57 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37935 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbYIWXO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 19:14:56 -0400
-Subject: Re: mmotm 2008-09-22-01-36 uploaded (memory_hotplug)
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de, lethal@linux-sh.org
-In-Reply-To: <20080923151748.7268cf16.akpm@linux-foundation.org>
-References: <200809220838.m8M8cwC2031790@imap1.linux-foundation.org>
-	 <20080922112918.c6ea4e05.randy.dunlap@oracle.com>
-	 <20080922125731.0ee87e05.akpm@linux-foundation.org>
-	 <1222207702.6491.10.camel@badari-desktop>
-	 <20080923151748.7268cf16.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 23 Sep 2008 16:14:52 -0700
-Message-Id: <1222211692.6491.12.camel@badari-desktop>
+	Tue, 23 Sep 2008 19:30:11 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60128
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750884AbYIWXaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 19:30:09 -0400
+Date: Tue, 23 Sep 2008 16:29:57 -0700 (PDT)
+Message-Id: <20080923.162957.141669474.davem@davemloft.net>
+To: jeffrey.t.kirsher@intel.com
+Cc: jeff@garzik.org, mingo@elte.hu, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
+       john.ronciak@intel.com, bruce.w.allan@intel.com
+Subject: Re: [PATCH 2/3] e1000e: Useset_memory_ro()/set_memory_rw() to
+ protect flash memory
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080923224535.6869.76210.stgit@jtkirshe-mobile.jf.intel.com>
+References: <20080923224535.6869.76210.stgit@jtkirshe-mobile.jf.intel.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-23 at 15:17 -0700, Andrew Morton wrote:
-> On Tue, 23 Sep 2008 15:08:22 -0700
-> Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> 
-> > > > so it is defined in both mm/memory_hotplug.c and
-> > > > arch/x86/mm/init_64.c when CONFIG_MEMORY_HOTREMOVE=y.
-> > > > 
-> > > 
-> > > OK, thanks, it looks like people are changing things under our feet.
-> > > 
-> > > Badari, can you please check this fix against
-> > > mm-cleanup-to-make-remove_memory-arch-neutral.patch?
-> > > 
-> > 
-> > 
-> > When I made the patch, only ppc64, ia64 and s390 had
-> > memory_remove() support in mainline. I sent a patch against
-> > x86 to add hotplug memory remove support. I guess you
-> > merged Gary's patch and sh-arch patch.
-> > 
-> > I noticed that you cleaned up all these and added to -mm.
-> > Do you want me to merge all these into a single patch and 
-> > resend it (against -mm) ?
-> 
-> No, that's OK.
-> 
-> > (It will look exactly the same
-> > anyway).
-> 
-> Does that mean you reviewed all the fixes I added?  We're sure that all
-> the per-arch implementations of remove_memory() can be replaced by the
-> generic one?
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Tue, 23 Sep 2008 15:45:54 -0700
 
-Yes. I just reviewed all these patches in mmtom 2008-09-23. 
-They looked fine. There is no need for arch-specific ones.
+> From: Bruce Allan <bruce.w.allan@intel.com>
+> 
+> A number of users have reported NVM corruption on various ICHx platform
+> LOMs.  One possible reasons for this could be unexpected and/or malicious
+> writes to the flash memory area mapped into kernel memory.  Once the
+> interface is up, there should be very few reads/writes of the mapped flash
+> memory.  This patch makes use of the x86 set_memory_*() functions to set
+> the mapped memory read-only and temporarily set it writable only when the
+> driver needs to write to it.  With the memory set read-only, any unexpected
+> write will be logged with a stack dump indicating the offending code.
+> 
+> Since these LOMs are only on x86 ICHx platforms, it does not matter that
+> this API is not yet available on other architectures, however it is
+> dependent on a previous patch that exports these function name symbols.
+> 
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Thanks,
-Badari
+If the X server or similar is causing this problem, this patch won't help.
 
+The X server maps MMIO space using mmap() in userspace, and you're only
+protecting the kernel side mapping.
