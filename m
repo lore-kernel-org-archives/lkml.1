@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbYIWWg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbYIWWl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755824AbYIWWg1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 18:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYIWWgR
+	id S1754759AbYIWWl5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 18:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYIWWlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 18:36:17 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:49239 "EHLO
+	Tue, 23 Sep 2008 18:41:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:52132 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbYIWWgQ (ORCPT
+	with ESMTP id S1750950AbYIWWlp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 18:36:16 -0400
+	Tue, 23 Sep 2008 18:41:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:subject:to:cc:date:message-id:user-agent:mime-version
          :content-type:content-transfer-encoding:sender;
-        b=nxeLsA8b6brpeUM2ZQHWsdUcLF3TUuDIs+ndQfrC68wrYvIcPkzViwE7UcWBrxvDAT
-         MKpQ2bjTdk4SXyYYL3xgLIamfzw4lSAyP2xrvEEe8jywXC7AJhLQTsN9kuyeC0E92bsB
-         Yr1v8cpU8y1mV0QHA6PXUqYNAqEh3Qq3imfz0=
+        b=wx7ETjGVEDZOewHZQ4LeziPc3ySlS2KbjX9FhY8pLOJzKNGsQJyrW+B0TL3TVYMw/Y
+         LX+czORkyfn1WwgeT8E0aDMrckdaFiA1QDcr5eh/pNiYTXZbPWeI/H0K7sm4fvXh2tI4
+         uzKIRcceHqv1M5LgMVwx22DKLmRwSN1rOSPiU=
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Subject: [PATCH 0/3] e1000e: protect NVM from corruption
 To: jeff@garzik.org, davem@davemloft.net, mingo@elte.hu
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        jesse.brandeburg@intel.com, john.ronciak@intel.com
-Date: Tue, 23 Sep 2008 15:36:04 -0700
-Message-ID: <20080923223517.15567.94071.stgit@gitlost.lost>
+Date: Tue, 23 Sep 2008 15:41:33 -0700
+Message-ID: <20080923224106.15640.28678.stgit@gitlost.lost>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
