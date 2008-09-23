@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbYIWLBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752192AbYIWLDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752010AbYIWLBa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 07:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYIWLBW
+	id S1752192AbYIWLDc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 07:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYIWLDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 07:01:22 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49762 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750952AbYIWLBV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 07:01:21 -0400
-Date: Tue, 23 Sep 2008 20:00:51 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mm: do_generic_file_read() never gets a NULL 'filp' argument
-Cc: kosaki.motohiro@jp.fujitsu.com, Christoph Hellwig <hch@infradead.org>,
-       Krishna Kumar <krkumar2@in.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080922103635.77d795e4.akpm@linux-foundation.org>
-References: <20080922083945.GA12658@infradead.org> <20080922103635.77d795e4.akpm@linux-foundation.org>
-Message-Id: <20080923193329.F8EA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 23 Sep 2008 07:03:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38089 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751105AbYIWLDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 07:03:23 -0400
+Date: Tue, 23 Sep 2008 13:03:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Russ Anderson <rja@sgi.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>
+Subject: Re: [PATCH 4/4] x86: Add sysfs entries for UV
+Message-ID: <20080923110316.GB29021@elte.hu>
+References: <20080922211051.GG222374@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080922211051.GG222374@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-> > > > The 'filp' argument to do_generic_file_read() is never NULL.
-> > > 
-> > > How did you verify this?
-> > > 
-> > > NFS used to like passing NULL file*'s into VFS functions.  I don't
-> > > recall whether it affected do_generic_file_read().
-> > 
-> > The only thing nfsd passed a NULL file pointer in is ->fsync on
-> > directories.
-> 
-> NFS, not NFSD.  It was page_cache_read(), iirc.
+* Russ Anderson <rja@sgi.com> wrote:
 
-Is it important?
-Cristoph wrote following decision reason at last mail.
-I believe he was right.
+> +struct kobject *sgi_uv_kobj;
 
-> If anyone did pass a NULL file pointer into
-> do_generic_file_read it would oops in it's very first line of code.
+should be static?
 
+> +static int __init sgi_uv_sysfs_init(void)
+> +{
+> +	if (!sgi_uv_kobj)
+> +		sgi_uv_kobj = kobject_create_and_add("sgi_uv", firmware_kobj);
+> +	if (!sgi_uv_kobj) {
+> +		printk(KERN_WARNING "kobject_create_and_add sgi_uv failed \n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	sysfs_create_file(sgi_uv_kobj, &partition_id_attr.attr);
+> +	sysfs_create_file(sgi_uv_kobj, &coherence_id_attr.attr);
 
-IOW, do_generic_file_read() has following calling hieralcy.
+missing checks for failure?
 
-generic_file_aio_read()
-  +- do_generic_file_read()
-
-and fs/nfs/file.c has
-
-	const struct file_operations nfs_file_operations = {
-	        .llseek         = nfs_file_llseek,
-	        .read           = do_sync_read,
-	        .write          = do_sync_write,
-	        .aio_read       = nfs_file_read,
-	        .aio_write      = nfs_file_write,
-
-So, nfs doesn't use generic_file_aio_read.
-it directly indicate nfs doesn't use do_generic_file_read().
-
-in the other hand, page_cache_read() has following calling hieralcy.
-
-filemap_fault()
-  +- page_cache_read()
-      +- a_ops->readpage()
-
-So, page_cache_read is mmap() related helper function and
-do_generic_file_read is read() related helper function.
-they are independent IMHO.
-
-
+	Ingo
