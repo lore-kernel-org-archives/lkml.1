@@ -1,79 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbYIWLcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbYIWLde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753046AbYIWLcn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 07:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYIWLcd
+	id S1753018AbYIWLde (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 07:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbYIWLdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 07:32:33 -0400
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:59892 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbYIWLcc (ORCPT
+	Tue, 23 Sep 2008 07:33:24 -0400
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:30940 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750720AbYIWLdX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 07:32:32 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18LAe/szIHM2HptPDVUC/Zp
-Date: Tue, 23 Sep 2008 14:32:16 +0300
-From: Tony Lindgren <tony@atomide.com>
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "George G. Davis" <gdavis@mvista.com>, Alan Cox <alan@redhat.com>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: How to kick a secondary watchdog? (Re: [PATCH 1/3] watchdog:
-	sync linux-omap changes)
-Message-ID: <20080923113210.GM5102@atomide.com>
-References: <1221873243-18303-1-git-send-email-me@felipebalbi.com> <1221873243-18303-2-git-send-email-me@felipebalbi.com> <20080922182206.GM22550@infomag.infomag.iguana.be> <20080922191353.GB8314@flint.arm.linux.org.uk> <20080923083915.GS22550@infomag.infomag.iguana.be> <20080923102159.GD5102@atomide.com> <20080923111954.GU22550@infomag.infomag.iguana.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080923111954.GU22550@infomag.infomag.iguana.be>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 23 Sep 2008 07:33:23 -0400
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Tom Tucker <tom@opengridcomputing.com>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
+       neilb@suse.de, linux-nfs@vger.kernel.org
+In-Reply-To: <1222156770.6869.13.camel@localhost.localdomain>
+References: <48B2D7F8.5020206@opengridcomputing.com>
+	 <20080826192711.GJ4380@fieldses.org>
+	 <48B567F5.2090605@opengridcomputing.com>
+	 <1220111261.31172.14.camel@localhost.localdomain>
+	 <20080831193037.GB14876@fieldses.org>
+	 <1220211842.31172.18.camel@localhost.localdomain>
+	 <48BAF643.4070808@opengridcomputing.com>
+	 <1220217505.31172.26.camel@localhost.localdomain>
+	 <48BC2466.2070806@opengridcomputing.com>
+	 <1221036015.24993.27.camel@zakaz.uk.xensource.com>
+	 <20080912224323.GN22126@fieldses.org>
+	 <48CAF80A.4010109@opengridcomputing.com>
+	 <1221296243.2534.7.camel@localhost.localdomain>
+	 <1221544139.2534.18.camel@localhost.localdomain>
+	 <48CF9AC3.6060801@opengridcomputing.com>
+	 <1221577412.28572.60.camel@zakaz.uk.xensource.com>
+	 <48CFD7C3.5080207@opengridcomputing.com>
+	 <1221582285.28572.67.camel@zakaz.uk.xensource.com>
+	 <1222156770.6869.13.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ehF1K8LzIdZ1HXirJ3HZ"
+Date: Tue, 23 Sep 2008 12:33:09 +0100
+Message-Id: <1222169589.6869.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-SA-Exim-Connect-IP: 192.168.1.5
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.0 c=1 a=unbeb6qN2T0A:10 a=497XeZ5pv4kA:10 a=skoOCyML1wMEGR22XeQA:9 a=Idsgws0JnRJWTanSGc3iDmyqEicA:4 a=Hf6muOzgCGQA:10 a=0kPLrQdw3YYA:10 a=LY0hPdMaydYA:10 a=p-P7vkYxESJy57_59uAA:9 a=YGHkdD78HK4lTWkOkkczCq3f8m8A:4 a=rPt6xJ-oxjAA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Wim Van Sebroeck <wim@iguana.be> [080923 14:20]:
-> Hi Tony,
-> 
-> > Wim, while at it, here's a related omap_wdt question:
-> > 
-> > Some omap devices like Nokia 770, N800 and N810 have also a secondary
-> > watchdog on the retu chip connected via cbus. This watchdog needs
-> > to be kicked as it cannot be disabled.
-> > 
-> > We've been thinking of adding a function that omap_wdt can
-> > call to also kick retu_wdt too as there is only one wdt interface.
-> > 
-> > Is there some better solution available?
-> 
-> Plan is to go to a uniform watchdog driver first, then add sysfs
-> capabilities and then we can add more devices via sysfs.
-> For the time being: I would kick both of them at the same time
-> via the /dev/watchdog interface.
 
-Looks like we also need to do this for the twl4030 I2C companion chip
-on omap 2430 and 34xx.
+--=-ehF1K8LzIdZ1HXirJ3HZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-So we'll do something like this for now then:
+On Tue, 2008-09-23 at 08:59 +0100, Ian Campbell wrote:
+> I've found that the problem was backported into the stable stream since
+> I cannot reproduce the issue with 2.6.26 but I can with 2.6.26.5. This
+> is quite useful since there are only 3 relevant looking changesets in
+> that range. I will bisect between these before confirming the culprit on
+> mainline.
 
-static void omap_wdt_ping(struct omap_wdt_dev *wdev)
-{
+It reports:
 
-...
+        daedfbe2a67628a40076a6c75fb945c60f608a2e is first bad commit
+        commit daedfbe2a67628a40076a6c75fb945c60f608a2e
+        Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+        Date:   Wed Jun 11 17:39:04 2008 -0400
+       =20
+            NFS: Ensure we zap only the access and acl caches when setting =
+new acls
+           =20
+            commit f41f741838480aeaa3a189cff6e210503cf9c42d upstream
+           =20
+            ...and ensure that we obey the NFS_INO_INVALID_ACL flag when re=
+trieving the
+            acls.
+           =20
+            Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+            Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-    retu_wdt_ping(wdev);
-    twl4030_wdt_ping(wdev);
-    
-...
+I'm just about to build f41f741838480aeaa3a189cff6e210503cf9c42d and the
+one before and try those.
 
-}
+I'm not using ACLs as far as I am aware.
 
-Then have retu_wdt_ping() and twl4030_wdt_ping() functions defined as
-empty static inline functions if not enabled.
+Ian.
 
-Thanks Alan & Wim.
+--=20
+Ian Campbell
 
-Tony
+If we were meant to get up early, God would have created us with alarm cloc=
+ks.
+
+--=-ehF1K8LzIdZ1HXirJ3HZ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkjY0/UACgkQM0+0qS9rzVnQMQCfStP9cFVR2Zrx4l/lxXusHXDO
+zewAoI3TkgRnaeh7ceb/fbYOgrd08zcA
+=zBYW
+-----END PGP SIGNATURE-----
+
+--=-ehF1K8LzIdZ1HXirJ3HZ--
+
