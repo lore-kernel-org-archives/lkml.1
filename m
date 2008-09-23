@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbYIWJxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752605AbYIWJxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894AbYIWJxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 05:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYIWJxJ
+	id S1752605AbYIWJxc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 05:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbYIWJxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 05:53:09 -0400
-Received: from postman.teamix.net ([194.150.191.120]:54528 "EHLO
-	rproxy.teamix.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750807AbYIWJxI (ORCPT
+	Tue, 23 Sep 2008 05:53:11 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:14630 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbYIWJxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Sep 2008 05:53:08 -0400
-From: Martin Steigerwald <ms@teamix.de>
-Organization: team(ix) GmbH
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] CFS scheduler: documentation about scheduling policies
-Date: Tue, 23 Sep 2008 11:53:03 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <200809231101.41624.ms@teamix.de> <20080923091159.GE31189@elte.hu>
-In-Reply-To: <20080923091159.GE31189@elte.hu>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=GzTOPZV5w8pPOUrk0iQHOObL3QaRa7OfzvNXeKiJlcHNXKrVnWsl9JCCAnuToZIoho
+         BBRv+oIQoCiXU2TG0l2CbAhCNKBx0NgoJa7FpiqHbshf5Vnsyo0NauOX4LjpX7gHXm+T
+         CZ0xACJIM0qrR+P6AhDaLhIIr2mQP5Hs7QDAw=
+Message-ID: <e5931ce10809230253m7d821c3ev48676884bb382eaf@mail.gmail.com>
+Date: Tue, 23 Sep 2008 17:53:06 +0800
+From: "=?BIG5?B?sf6kSLq1?=" <killman.bear@msa.hinet.net>
+To: linux-kernel@vger.kernel.org
+Subject: IDE DMA sglist handle probelem
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2130698.tltOMmctJG";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200809231153.04035.ms@teamix.de>
+Content-Disposition: inline
+X-Google-Sender-Auth: a31a0d21b766a9a4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2130698.tltOMmctJG
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi,
 
-Am Dienstag, 23. September 2008 schrieb Ingo Molnar:
-> * Martin Steigerwald <ms@teamix.de> wrote:
-> > The documentation about the CFS scheduler is scarse when it comes to
-> > scheduling policies. This patch adds a chapter about the scheduling
-> > policies it supports. Peter Zijlstra provided most of the information f=
-or
-> > it in
-> >
-> > http://marc.info/?l=3Dlinux-kernel&m=3D122210038326356&w=3D2
-> >
-> > This patch is based on 2.6.27-rc7.
-> >
-> > Signed-off-by: Martin Steigerwald <ms@teamix.de>
->
-> looks good to me - but could you please do the patch against the latest
-> scheduler tree, which has already updated this file (and which made your
-> patch not apply cleanly):
->
->   http://people.redhat.com/mingo/tip.git/README
+I want to test a private cache for IDE R/W in 2.6.26.
+Before develop the private cache, I need to do something with the IDE
+read/write buffer.
+If service a read command, I replace the DMA buffer address of sglist
+by my buffer before transfer, and memcpy the received data(in my
+buffer) to original DMA buffer of sglist.
+If service a write command, I replace the DMA buffer address by my
+buffer, and memcpy the write data from sglist to my buffer, then
+transfer it.
+I implement it on  linux-2.6.26/drivers/ata/libata-core.c.
 
-Should I use=20
+I replace each DMA address of sglist as follow:
+-----------------------------------------------------------------------------
+       for_each_sg(qc->sg, sg, qc->n_elem, si) {
+       u32 addr, len;
+               addr = sg_dma_address(sg);
+               len = sg_dma_len(sg);
 
-checkout -b tip-latest tip/master
+               //if write command, copy data from DMA address to my buf
+               if (qc->tf.command == ATA_CMD_WRITE || qc->tf.command ==
+ATA_CMD_WRITE_EXT) {
+                       memcpy(myBuf[si], bus_to_virt(addr), len);
+               }
 
-as described in the README or tip/sched/devel or even something else?
+               //save orignal DAM address
+               savedAddr[si] = (unsigned char *)addr;
 
-I am new to git. I know Bazaar quite well however, so I am not compeltely n=
-ew=20
-to DVCS.
+               //replace DMA address by my buf
+               sg_dma_address(sg) = myBuf[si];
+       }
+-----------------------------------------------------------------------------
+The book Linux Device Driver say that driver can not access DMA sg
+between dma_map_sg and dma_unmap_sg, so I implement them before
+dma_map_sg and after dma_unmap_sg.
+I use a burn-in tool to test the fixed functions, and found the data
+verify success for 80 hours, buf if I try to extract three big
+packages in the disk at the same time, the kernel panic:
 
-Ciao,
-=2D-=20
-Martin Steigerwald - team(ix) GmbH - http://www.teamix.de
-gpg: 19E3 8D42 896F D004 08AC A0CA 1E10 C593 0399 AE90
+BUG: unable to handle kernel paging request a ff450fd7
+IP:[<c05f5ba4>] iret_exc+0x68c/0x8d2
+*pde = 00008067 *pte = 00000000
+Oop : 0002 [#1] SMP
 
---nextPart2130698.tltOMmctJG
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkjYvH8ACgkQHhDFkwOZrpBncACfVviTTyws576CozUqsc4a2y/M
-ufQAoJg49YsPykYBGxzR7I66G4i5vAkr
-=8v2C
------END PGP SIGNATURE-----
-
---nextPart2130698.tltOMmctJG--
+I do not know what is wrong.
+How to access the sglist DMA buffer correctly?
