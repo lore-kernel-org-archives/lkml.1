@@ -1,87 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYIWVXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbYIWVWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbYIWVXO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbYIWVVh
+	id S1756043AbYIWVWv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYIWVVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:21:37 -0400
-Received: from mga03.intel.com ([143.182.124.21]:37400 "EHLO mga03.intel.com"
+	Tue, 23 Sep 2008 17:21:36 -0400
+Received: from mga02.intel.com ([134.134.136.20]:36375 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753343AbYIWVVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753367AbYIWVVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Sep 2008 17:21:33 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,295,1220252400"; 
-   d="scan'208";a="50419300"
-Message-Id: <20080923211444.670262000@linux-os.sc.intel.com>
+   d="scan'208";a="339695441"
+Message-Id: <20080923211444.950008000@linux-os.sc.intel.com>
 References: <20080923210035.413932000@linux-os.sc.intel.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 23 Sep 2008 14:00:40 -0700
+Date: Tue, 23 Sep 2008 14:00:42 -0700
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, arjan@linux.intel.com,
        venkatesh.pallipadi@intel.com, jeremy@goop.org
 Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 5/7] x86, cpa: no need to check alias for __set_pages_p/__set_pages_np
-Content-Disposition: inline; filename=no_alias_for_np_p.patch
+Subject: [patch 7/7] x86, cpa: srlz cpa(), global flush tlb after splitting big page and before doing cpa
+Content-Disposition: inline; filename=introduce_cpa_lock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No alias checking needed for setting present/not-present mapping. Otherwise,
-we may need to break large pages for 64-bit kernel text mappings (this adds to
-complexity if we want to do this from atomic context especially, for ex:
-with CONFIG_DEBUG_PAGEALLOC). Let's keep it simple!
+Do a global flush tlb after splitting the large page and before we do the
+actual change page attribute in the PTE.
+
+With out this, we violate the TLB application note, which says
+    "The TLBs may contain both ordinary and large-page translations for
+     a 4-KByte range of linear addresses. This may occur if software
+     modifies the paging structures so that the page size used for the
+     address range changes. If the two translations differ with respect
+     to page frame or attributes (e.g., permissions), processor behavior
+     is undefined and may be implementation-specific."
+
+And also serialize cpa() (for !DEBUG_PAGEALLOC which uses large identity
+mappings) using cpa_lock. So that we don't allow any other cpu, with stale
+large tlb entries change the page attribute in parallel to some other cpu
+splitting a large page entry along with changing the attribute.
 
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
 
 Index: tip/arch/x86/mm/pageattr.c
 ===================================================================
---- tip.orig/arch/x86/mm/pageattr.c	2008-09-23 13:45:59.000000000 -0700
-+++ tip/arch/x86/mm/pageattr.c	2008-09-23 13:47:45.000000000 -0700
-@@ -1121,7 +1121,13 @@
- 				.mask_clr = __pgprot(0),
- 				.flags = 0};
+--- tip.orig/arch/x86/mm/pageattr.c	2008-09-23 13:47:51.000000000 -0700
++++ tip/arch/x86/mm/pageattr.c	2008-09-23 13:47:54.000000000 -0700
+@@ -35,6 +35,14 @@
+ 	int		curpage;
+ };
  
--	return __change_page_attr_set_clr(&cpa, 1);
-+	/*
-+	 * No alias checking needed for setting present flag. otherwise,
-+	 * we may need to break large pages for 64-bit kernel text
-+	 * mappings (this adds to complexity if we want to do this from
-+	 * atomic context especially). Let's keep it simple!
-+	 */
-+	return __change_page_attr_set_clr(&cpa, 0);
- }
++/*
++ * Serialize cpa() (for !DEBUG_PAGEALLOC which uses large identity mappings)
++ * using cpa_lock. So that we don't allow any other cpu, with stale large tlb
++ * entries change the page attribute in parallel to some other cpu
++ * splitting a large page entry along with changing the attribute.
++ */
++static DEFINE_SPINLOCK(cpa_lock);
++
+ #define CPA_FLUSHTLB 1
+ #define CPA_ARRAY 2
  
- static int __set_pages_np(struct page *page, int numpages)
-@@ -1133,7 +1139,13 @@
- 				.mask_clr = __pgprot(_PAGE_PRESENT | _PAGE_RW),
- 				.flags = 0};
+@@ -453,7 +461,13 @@
+ 	unsigned int i, level;
+ 	pte_t *pbase, *tmp;
+ 	pgprot_t ref_prot;
+-	struct page *base = alloc_pages(GFP_KERNEL, 0);
++	struct page *base;
++
++	if (!debug_pagealloc)
++		spin_unlock(&cpa_lock);
++	base = alloc_pages(GFP_KERNEL, 0);
++	if (!debug_pagealloc)
++		spin_lock(&cpa_lock);
+ 	if (!base)
+ 		return -ENOMEM;
  
--	return __change_page_attr_set_clr(&cpa, 1);
-+	/*
-+	 * No alias checking needed for setting not present flag. otherwise,
-+	 * we may need to break large pages for 64-bit kernel text
-+	 * mappings (this adds to complexity if we want to do this from
-+	 * atomic context especially). Let's keep it simple!
-+	 */
-+	return __change_page_attr_set_clr(&cpa, 0);
- }
- 
- void kernel_map_pages(struct page *page, int numpages, int enable)
-@@ -1153,11 +1165,8 @@
- 
- 	/*
- 	 * The return value is ignored as the calls cannot fail.
--	 * Large pages are kept enabled at boot time, and are
--	 * split up quickly with DEBUG_PAGEALLOC. If a splitup
--	 * fails here (due to temporary memory shortage) no damage
--	 * is done because we just keep the largepage intact up
--	 * to the next attempt when it will likely be split up:
-+	 * Large pages for identity mappings are not used at boot time
-+	 * and hence no memory allocations during large page split.
+@@ -594,7 +608,25 @@
  	 */
- 	if (enable)
- 		__set_pages_p(page, numpages);
+ 	err = split_large_page(kpte, address);
+ 	if (!err) {
+-		cpa->flags |= CPA_FLUSHTLB;
++		/*
++	 	 * Do a global flush tlb after splitting the large page
++	 	 * and before we do the actual change page attribute in the PTE.
++	 	 *
++	 	 * With out this, we violate the TLB application note, that says
++	 	 * "The TLBs may contain both ordinary and large-page
++		 *  translations for a 4-KByte range of linear addresses. This
++		 *  may occur if software modifies the paging structures so that
++		 *  the page size used for the address range changes. If the two
++		 *  translations differ with respect to page frame or attributes
++		 *  (e.g., permissions), processor behavior is undefined and may
++		 *  be implementation-specific."
++	 	 *
++	 	 * We do this global tlb flush inside the cpa_lock, so that we
++		 * don't allow any other cpu, with stale tlb entries change the
++		 * page attribute in parallel, that also falls into the
++		 * just split large page entry.
++	 	 */
++		flush_tlb_all();
+ 		goto repeat;
+ 	}
+ 
+@@ -686,7 +718,11 @@
+ 		if (cpa->flags & CPA_ARRAY)
+ 			cpa->numpages = 1;
+ 
++		if (!debug_pagealloc)
++			spin_lock(&cpa_lock);
+ 		ret = __change_page_attr(cpa, checkalias);
++		if (!debug_pagealloc)
++			spin_unlock(&cpa_lock);
+ 		if (ret)
+ 			return ret;
+ 
 
 -- 
 
