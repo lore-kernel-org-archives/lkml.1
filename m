@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbYIWVu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbYIWVwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbYIWVu5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYIWVuq
+	id S1755450AbYIWVwX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYIWVwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:50:46 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:47902 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753554AbYIWVuq (ORCPT
+	Tue, 23 Sep 2008 17:52:10 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58177
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752505AbYIWVwJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 17:50:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=TrKE/KgTJUwxJWotXvApVaBeJJWJQtkBlyTHO6EiNQLatbebYjLSgq4OoXd4aAllQS
-         2nXVF34VFPg9kq2CJkYorZnzqumBrT+DIRcY7pJynBcRPAx3cymoOvpXrYRuKCERcQOY
-         B/rST1SPRqJRhWMgsiNyRbnxd4jrc59Xj9AIs=
-Message-ID: <a4e6962a0809231450p1f0a7469i6f40c1159181f7f@mail.gmail.com>
-Date: Tue, 23 Sep 2008 16:50:45 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "Abhishek Kulkarni" <kulkarni@lanl.gov>
-Subject: [PATCH] 9p: fix put_data error handling
-Cc: v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 23 Sep 2008 17:52:09 -0400
+Date: Tue, 23 Sep 2008 14:51:57 -0700 (PDT)
+Message-Id: <20080923.145157.136491514.davem@davemloft.net>
+To: cfriesen@nortel.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com, steffen.klassert@secunet.com
+Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48D92174.5010902@nortel.com>
+References: <48D80C9C.2070108@nortel.com>
+	<20080922.151233.229805934.davem@davemloft.net>
+	<48D92174.5010902@nortel.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Abhishek Kulkarni pointed out an inconsistency in the way
-errors are returned from p9_put_data.  On deeper exploration it
-seems the error handling for this path was completely wrong.
-This patch adds checks for allocation problems and propagates
-errors correctly.
+From: "Chris Friesen" <cfriesen@nortel.com>
+Date: Tue, 23 Sep 2008 11:03:48 -0600
 
-Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
----
- net/9p/conv.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+> That patch basically just picks an arbitrary cpu for each flow.
+> This would spread the load out across cpus, but it doesn't allow any
+> input from userspace.
 
-diff --git a/net/9p/conv.c b/net/9p/conv.c
-index 4454720..5ad3a3b 100644
---- a/net/9p/conv.c
-+++ b/net/9p/conv.c
-@@ -451,8 +451,10 @@ p9_put_data(struct cbuf *bufp, const char *data, int count,
-                   unsigned char **pdata)
- {
-        *pdata = buf_alloc(bufp, count);
-+       if (*pdata == NULL)
-+               return -ENOMEM;
-        memmove(*pdata, data, count);
--       return count;
-+       return 0;
- }
+With hardware RX flow seperation, the same exact thing happens.
 
- static int
-@@ -460,6 +462,8 @@ p9_put_user_data(struct cbuf *bufp, const char
-__user *data, int count,
-                   unsigned char **pdata)
- {
-        *pdata = buf_alloc(bufp, count);
-+       if (*pdata == NULL)
-+               return -ENOMEM;
-        return copy_from_user(*pdata, data, count);
- }
+> We have a current application where there are 16 cores and 16
+> threads. They would really like to be able to pin one thread to each
+> core and tell the kernel what packets they're interested in so that
+> the kernel can process those packets on that core to gain the
+> maximum caching benefit as well as reduce reordering issues.  In our
+> case the hardware supports filtering for multiqueues, so we could
+> pass this information down to the hardware to avoid software
+> filtering.
+>
+> Either way, it requires some way for userspace to indicate interest
+> in a particular flow.  Has anyone given any thought to what an API
+> like this would look like?
 
---
-1.5.4.3
+Many cards cannot configure this, but yes we should allow an interface to configure
+RX flow seperation preferences, and we do plan on adding that at some point.
+
+It's probably be an ethtool operation of some sort.  We already have a minimalistic
+RX flow hashing configuration knob, see ETHTOOL_GRXFH and ETHTOOL_SRXFH.
