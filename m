@@ -1,143 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751648AbYIWJvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbYIWJxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751648AbYIWJvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 05:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYIWJvD
+	id S1751894AbYIWJxS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 05:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYIWJxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 05:51:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53989 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750947AbYIWJvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 05:51:00 -0400
-Date: Tue, 23 Sep 2008 11:50:54 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: PTE access rules & abstraction
-Message-ID: <20080923095054.GA29951@wotan.suse.de>
-References: <1221846139.8077.25.camel@pasglop> <48D739B2.1050202@goop.org> <1222117551.12085.39.camel@pasglop> <20080923031037.GA11907@wotan.suse.de> <1222147886.12085.93.camel@pasglop> <48D88904.4030909@goop.org> <1222152572.12085.129.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222152572.12085.129.camel@pasglop>
-User-Agent: Mutt/1.5.9i
+	Tue, 23 Sep 2008 05:53:09 -0400
+Received: from postman.teamix.net ([194.150.191.120]:54528 "EHLO
+	rproxy.teamix.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750807AbYIWJxI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 05:53:08 -0400
+From: Martin Steigerwald <ms@teamix.de>
+Organization: team(ix) GmbH
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] CFS scheduler: documentation about scheduling policies
+Date: Tue, 23 Sep 2008 11:53:03 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <200809231101.41624.ms@teamix.de> <20080923091159.GE31189@elte.hu>
+In-Reply-To: <20080923091159.GE31189@elte.hu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2130698.tltOMmctJG";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200809231153.04035.ms@teamix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 04:49:32PM +1000, Benjamin Herrenschmidt wrote:
-> 
-> > A good first step might be to define some conventions.  For example,
-> > define that set_pte*() *always* means setting a non-valid pte to either
-> > a new non-valid state (like a swap reference) or to a valid state. 
-> > modify_pte() would modify the flags of a valid
-> > pte, giving a new valid pte.  etc...
-> 
-> Yup. Or make it clear that ptep_set_access_flags() should only be used
-> to -relax- access (ie, set dirty, writeable, accessed, ... but not
-> remove any of them).
-> 
-> > It may be that a given architecture collapses some or all of these down
-> > to the same underlying functionality, but it would allow the core intent
-> > to be clearly expressed.
-> > 
-> > What is the complete set of primitives we need?  I also noticed that a
-> > number of the existing pagetable operations are used only once or twice
-> > in the core code; I wonder if we really need such special cases, or
-> > whether we can make each arch pte operation carry a bit more weight?
-> 
-> Yes, that was some of my concern. It's getting close to having one API
-> per call site :-)
+--nextPart2130698.tltOMmctJG
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I don't think that is a huge problem as such... if there was lots of
-repeated uses of the API I'd also be concerned about mm/ code not being
-well factored :)
+Am Dienstag, 23. September 2008 schrieb Ingo Molnar:
+> * Martin Steigerwald <ms@teamix.de> wrote:
+> > The documentation about the CFS scheduler is scarse when it comes to
+> > scheduling policies. This patch adds a chapter about the scheduling
+> > policies it supports. Peter Zijlstra provided most of the information f=
+or
+> > it in
+> >
+> > http://marc.info/?l=3Dlinux-kernel&m=3D122210038326356&w=3D2
+> >
+> > This patch is based on 2.6.27-rc7.
+> >
+> > Signed-off-by: Martin Steigerwald <ms@teamix.de>
+>
+> looks good to me - but could you please do the patch against the latest
+> scheduler tree, which has already updated this file (and which made your
+> patch not apply cleanly):
+>
+>   http://people.redhat.com/mingo/tip.git/README
 
-My concern is that things aren't well documented, maybe not consistent
-enough, and are usually named according to what their implementation looks
-like on the favourite arch of the person who introduced them, rather than
-what the VM needs to get done :P
+Should I use=20
 
-Which leads some architectures (I'm looking at ia64 ;)) to reinvent things
-or just add new primitives rather than finding existing common code. Which
-makes the problem worse.
+checkout -b tip-latest tip/master
 
-And it makes generic VM developers not be able to follow what's going on
-with all the different architectures...
+as described in the README or tip/sched/devel or even something else?
 
+I am new to git. I know Bazaar quite well however, so I am not compeltely n=
+ew=20
+to DVCS.
 
- 
-> > Also, rather than leaving all the rule enforcing to documentation and a
-> > maintainer, we should also consider having a debug mode which adds
-> > enough paranoid checks to each operation so that any rule breakage will
-> > fail obviously on all architectures.
-> 
-> We could do both.
-> 
-> Now, regarding operations, let's first find the major call sites, see
-> what I miss. I'm omitting free_* in memory.c as those are for freeing
-> pte pages, not accessing PTEs themselves. I'm also ignoring read-only
-> call sites and hugetlb for now.
-> 
-> * None-iterative accessors
-> 
->  - handle_pte_fault in memory.c, on "fixup" faults (pte is present and
-> it's not a COW), for fixing up DIRTY and ACCESSED (btw, could we make
-> that also fixup EXEC ? I would like this for some stuff I'm working on
-> at the moment, ie set it if the vma has VM_EXEC and it was lost from the
-> PTE as I might want to mask it out of PTEs under some circumstances).
-> Textbook usage of ptep_set_access_flags(), so that's fine.
-> 
->  - do_wp_page() in memory.c for COW or fixup of shared writeable mapping
-> writeable-ness. Doesn't overwrite existing PTE for COW anymore, it uses
-> clear_flush nowadays and fixup of shared writeable mapping uses
-> ptep_set_access_flags() as it should, so that's all good.
+Ciao,
+=2D-=20
+Martin Steigerwald - team(ix) GmbH - http://www.teamix.de
+gpg: 19E3 8D42 896F D004 08AC A0CA 1E10 C593 0399 AE90
 
-This is one example of being too low level. It wouldn't be hard to have
-an arch where the SMC race does not apply, or even it is probably possible
-to avoid the flush in the case of single-threaded mm. Can't do that however,
-because the call asks for a flush so we must flush.
+--nextPart2130698.tltOMmctJG
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
- 
->  - insert_pfn() and insert_page() still in memory.c for fancy page
-> faults. Just a trivial set_pte_at() of a !present one, no big deal here
-> 
->   - RMAP ones ? Some ad-hoc stuff due to _notify thingies.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-rmap ones should only do set_pte_at after a clear_flush I think.
- 
+iEYEABECAAYFAkjYvH8ACgkQHhDFkwOZrpBncACfVviTTyws576CozUqsc4a2y/M
+ufQAoJg49YsPykYBGxzR7I66G4i5vAkr
+=8v2C
+-----END PGP SIGNATURE-----
 
-> * Iterative accessors (some don't batch, maybe they could/should).
-> 
->  - zapping a mapping (zap_p*) in memory.c
->  - fork (copy_p*) in memory.c could batch better maybe ?
->  - setting linear user mappings (remap_p*) in memory.c, trivial
-> set_pte_at() on a range, pte's should be !present I think.
-
-Yes.
-
-
->  - mprotect (change_p*) in memory.c, which has the problem I mentioned
->  - moving page tables (move_p*), pretty trivial clear_flush + set_pte_at
->  - clear_regs_pte_range via walk_page_range in fs/proc/task_mmu.c, does
-> a test_and_clear_young, flushes mm afterward, could use some lazy stuff
-> so we can batch properly on ppc64.
->  - vmalloc, that's a bit special and kernel only, doesn't have nasty
-> races between creating/tearing down mappings vs. using them
->  - highmem I leave alone for now, it's mostly trivial set_pte_at &
-> flushing for normal kmap but kmap_atomic can be nasty, though it's arch
-> specific.
-
-It's also for kva rather than uva, so it's a bit different too...
-
-
->  - some stuff in fremap I'm not too familiar with and I need to run...
-
-fremap is only ever doing clear_flush on present ptes, or set_pte_at on
-pte_none_ptes (and in this case it is going from !present to !present,
-which is probably also unusual in some cases for arch code to deal with,
-although it is not restricted to fremap I guess)
-
+--nextPart2130698.tltOMmctJG--
