@@ -1,237 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbYIWJyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751866AbYIWKBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752222AbYIWJyu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 05:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYIWJym
+	id S1751866AbYIWKBL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 06:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbYIWKA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 05:54:42 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:49638 "EHLO
-	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750947AbYIWJyk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 05:54:40 -0400
-From: Srinivasa Ds <srinivasa@in.ibm.com>
-Organization: IBM
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH] Demultiplexing SIGTRAP signal
-Date: Tue, 23 Sep 2008 15:23:52 +0530
-User-Agent: KMail/1.9.9
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
-       linux-parisc@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200809221602.32616.srinivasa@in.ibm.com> <200809221841.27993.srinivasa@in.ibm.com> <20080922145404.GC27956@elte.hu>
-In-Reply-To: <20080922145404.GC27956@elte.hu>
+	Tue, 23 Sep 2008 06:00:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41715 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750774AbYIWKA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 06:00:57 -0400
+Date: Tue, 23 Sep 2008 12:00:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Noonan <steven@uplinklabs.net>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Patch -tip 0/4] Creation of the initcall tracer
+Message-ID: <20080923100034.GA23118@elte.hu>
+References: <48D8C516.4090706@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200809231523.52802.srinivasa@in.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48D8C516.4090706@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,WHOIS_NETSOLPR autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 WHOIS_NETSOLPR         URL registered as a NetSol Private Registration
+	[URIs: youtube.com]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 September 2008 20:24:04 Ingo Molnar wrote:
-> * Srinivasa Ds <srinivasa@in.ibm.com> wrote:
-> > --- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
-> > +++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
->
-> please do not send patches that modify include/asm/ files, the
-> include/asm-x86/ file should be modified instead.
->
-> (this problem will go away in v2.6.28 when we'll move include/asm-x86/
-> to arch/x86/include/)
->
 
-Ingo, Sorry if I have confused you. Arch specific header files of ia64 and powerpc are 
-already moved to arch/ia64/include and arch/powerpc/include dirs.
-So I have developed patch against these files. So Resending patch again. 
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 
-Currently a SIGTRAP can denote any one of below reasons.
-	- Breakpoint hit
-	- H/W debug register hit
-	- Single step
-	- Signal sent through kill() or rasie()
+> This patchset is about the initcall tracer requested by Ingo Molnar. 
+> It is supposed to replace the printk involved during fastboot if the 
+> initcall_debug parameter has been selected.
 
-Architectures like powerpc/parisc provides infrastructure to demultiplex
-SIGTRAP signal by passing down the information for receiving SIGTRAP through
-si_code of siginfot_t structure. Here is an attempt is generalise this 
-infrastructure by extending it to x86 and x86_64 archs. 
+that was fast! :)
 
-Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
+i've created a new -tip topic for your new tracer: tip/tracing/fastboot. 
+That topic is based on the tip/tracing/ftrace + tip/fastboot trees.
 
+Note that i've done a couple of small changes to your patches:
 
----
- arch/ia64/include/asm/siginfo.h    |    5 -----
- arch/powerpc/include/asm/siginfo.h |    5 -----
- arch/x86/kernel/ptrace.c           |    7 ++++---
- arch/x86/kernel/traps_32.c         |    4 +++-
- arch/x86/kernel/traps_64.c         |    2 +-
- include/asm-generic/siginfo.h      |    2 ++
- include/asm-parisc/siginfo.h       |    5 -----
- include/asm-x86/ptrace.h           |    2 +-
- include/asm-x86/traps.h            |   10 ++++++++++
- 9 files changed, 21 insertions(+), 21 deletions(-)
+ - i've done the following renames:
 
-Index: linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
-===================================================================
---- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
-+++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
-@@ -113,11 +113,6 @@ typedef struct siginfo {
- #undef NSIGSEGV
- #define NSIGSEGV	3
- 
--/*
-- * SIGTRAP si_codes
-- */
--#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
--#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
- #undef NSIGTRAP
- #define NSIGTRAP	4
- 
-Index: linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
-===================================================================
---- linux-2.6.27-rc7.orig/arch/powerpc/include/asm/siginfo.h
-+++ linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
-@@ -15,11 +15,6 @@
- 
- #include <asm-generic/siginfo.h>
- 
--/*
-- * SIGTRAP si_codes
-- */
--#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
--#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
- #undef NSIGTRAP
- #define NSIGTRAP	4
- 
-Index: linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
-===================================================================
---- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_32.c
-+++ linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
-@@ -891,6 +891,7 @@ void __kprobes do_debug(struct pt_regs *
- {
- 	struct task_struct *tsk = current;
- 	unsigned int condition;
-+	int si_code;
- 
- 	trace_hardirqs_fixup();
- 
-@@ -935,8 +936,9 @@ void __kprobes do_debug(struct pt_regs *
- 			goto clear_TF_reenable;
- 	}
- 
-+	si_code = get_si_code((unsigned long)condition);
- 	/* Ok, finally something we can handle */
--	send_sigtrap(tsk, regs, error_code);
-+	send_sigtrap(tsk, regs, error_code, si_code);
- 
- 	/*
- 	 * Disable additional traps. They'll be re-enabled when
-Index: linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
-===================================================================
---- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_64.c
-+++ linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
-@@ -936,7 +936,7 @@ asmlinkage void __kprobes do_debug(struc
- 	tsk->thread.error_code = error_code;
- 	info.si_signo = SIGTRAP;
- 	info.si_errno = 0;
--	info.si_code = TRAP_BRKPT;
-+	info.si_code = get_si_code(condition);
- 	info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
- 	force_sig_info(SIGTRAP, &info, tsk);
- 
-Index: linux-2.6.27-rc7/include/asm-generic/siginfo.h
-===================================================================
---- linux-2.6.27-rc7.orig/include/asm-generic/siginfo.h
-+++ linux-2.6.27-rc7/include/asm-generic/siginfo.h
-@@ -199,6 +199,8 @@ typedef struct siginfo {
-  */
- #define TRAP_BRKPT	(__SI_FAULT|1)	/* process breakpoint */
- #define TRAP_TRACE	(__SI_FAULT|2)	/* process trace trap */
-+#define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
-+#define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint/watchpoint */
- #define NSIGTRAP	2
- 
- /*
-Index: linux-2.6.27-rc7/include/asm-parisc/siginfo.h
-===================================================================
---- linux-2.6.27-rc7.orig/include/asm-parisc/siginfo.h
-+++ linux-2.6.27-rc7/include/asm-parisc/siginfo.h
-@@ -3,11 +3,6 @@
- 
- #include <asm-generic/siginfo.h>
- 
--/*
-- * SIGTRAP si_codes
-- */
--#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
--#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
- #undef NSIGTRAP
- #define NSIGTRAP	4
- 
-Index: linux-2.6.27-rc7/arch/x86/kernel/ptrace.c
-===================================================================
---- linux-2.6.27-rc7.orig/arch/x86/kernel/ptrace.c
-+++ linux-2.6.27-rc7/arch/x86/kernel/ptrace.c
-@@ -1357,7 +1357,8 @@ const struct user_regset_view *task_user
- #endif
- }
- 
--void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code)
-+void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
-+					 int error_code, int si_code)
- {
- 	struct siginfo info;
- 
-@@ -1366,7 +1367,7 @@ void send_sigtrap(struct task_struct *ts
- 
- 	memset(&info, 0, sizeof(info));
- 	info.si_signo = SIGTRAP;
--	info.si_code = TRAP_BRKPT;
-+	info.si_code = si_code;
- 
- 	/* User-mode ip? */
- 	info.si_addr = user_mode_vm(regs) ? (void __user *) regs->ip : NULL;
-@@ -1476,5 +1477,5 @@ asmregparm void syscall_trace_leave(stru
- 	 */
- 	if (test_thread_flag(TIF_SINGLESTEP) &&
- 	    (current->ptrace & PT_PTRACED))
--		send_sigtrap(current, regs, 0);
-+		send_sigtrap(current, regs, 0, TRAP_BRKPT);
- }
-Index: linux-2.6.27-rc7/include/asm-x86/traps.h
-===================================================================
---- linux-2.6.27-rc7.orig/include/asm-x86/traps.h
-+++ linux-2.6.27-rc7/include/asm-x86/traps.h
-@@ -36,6 +36,16 @@ void do_invalid_op(struct pt_regs *, lon
- void do_general_protection(struct pt_regs *, long);
- void do_nmi(struct pt_regs *, long);
- 
-+static inline int get_si_code(unsigned long condition)
-+{
-+	if (condition & DR_STEP)
-+		return TRAP_TRACE;
-+	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
-+		return TRAP_HWBKPT;
-+	else
-+		return TRAP_BRKPT;
-+}
-+
- extern int panic_on_unrecovered_nmi;
- extern int kstack_depth_to_print;
- 
-Index: linux-2.6.27-rc7/include/asm-x86/ptrace.h
-===================================================================
---- linux-2.6.27-rc7.orig/include/asm-x86/ptrace.h
-+++ linux-2.6.27-rc7/include/asm-x86/ptrace.h
-@@ -143,7 +143,7 @@ convert_ip_to_linear(struct task_struct 
- 
- #ifdef CONFIG_X86_32
- extern void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
--			 int error_code);
-+			 int error_code, int si_code);
- #else
- void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
- #endif
+      :1,$s/INITCALL_TRACER/BOOT_TRACER/g
+      :1,$s/trace_initcall/trace_boot/g
+      :1,$s/initcall_trace/boot_trace/g
+
+   the reasoning: we eventually want to extend this new tracer to all 
+   things "bootup delay", not just initcalls - hence calling it an
+   'initcall tracer' would be too limiting.
+
+   The goal is to help the Arjan's fastboot project to achieve 5 seconds 
+   to-GUI bootup times like this:
+
+      http://www.youtube.com/watch?v=s7NxCM8ryF8
+
+   [ Even if you know what a 5 seconds bootup is, you've got to check 
+     this "From Naught to Sixty in 5 seconds" video ;-) ]
+
+ - there were a few overlong lines in the commit logs and in the Kconfig 
+   desciption - i fixed them up. You should check your email client and 
+   your editor for line length settings - currently you seem to have no
+   line breaks at all.
+
+ - I also corrected a few capitalization things in commit subject lines 
+   and corrected a few minor coding style errors - you can avoid these 
+   by running scripts/checkpatch.pl over your patches. Nothing overly
+   serious - but you should diff against tip/master to see what the 
+   changes are.
+
+> Currently this tracer is a test. Its output is not yet adapted for 
+> scripts/bootgraph.pl which uses the old initcalls printk to produce a 
+> graph. But since this tracer will output sched_switch and stack_trace, 
+> we should first talk about the future output format of this tracer in 
+> sync with bootgraph.pl
+> 
+> It currently not uses the sched_switch and stack_trace tracers since 
+> related functions of insertion into the ring buffer perhaps need first 
+> to be moved on their own tracer file. But it have to be discussed.
+> 
+> Note that you need the initcall_debug to enable this tracer. When 
+> printk from initcall_debug will disappear, we could surely enable this 
+> tracer by default without this parameter.
+> 
+> Old printk have been kept for backward compatibility.
+
+yes, it's necessary to keep that backwards compatibility.
+
+i've integrated tip/tracing/fastboot into tip/master and have started 
+testing it. It passed the basic tests already so i've just pushed out 
+the new tip/master. Please double-check that i have not messed up the 
+rename or the integration somewhere.
+
+all in one, nice stuff!
+
+	Ingo
