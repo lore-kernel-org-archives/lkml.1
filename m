@@ -1,73 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYIWPwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753736AbYIWPyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbYIWPwA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 11:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYIWPvv
+	id S1753736AbYIWPyd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 11:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYIWPy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 11:51:51 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:60790 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751751AbYIWPvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 11:51:50 -0400
-Date: Tue, 23 Sep 2008 10:51:24 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
-       Andreas Gruenbacher <agruen@suse.de>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 1/2] file capabilities: add no_file_caps switch (v2)
-Message-ID: <20080923155124.GA2123@us.ibm.com>
-References: <20080922184835.GA2826@us.ibm.com> <20080922225733.GB610@sequoia.sous-sol.org>
-MIME-Version: 1.0
+	Tue, 23 Sep 2008 11:54:26 -0400
+Received: from vpnflf.ccur.com ([12.192.68.2]:49926 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751456AbYIWPyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 11:54:24 -0400
+Date: Tue, 23 Sep 2008 11:53:31 -0400
+From: Joe Korty <joe.korty@ccur.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Roland McGrath <roland@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [BUG, TEST PATCH] stallout race between SIGCONT and SIGSTOP
+Message-ID: <20080923155331.GA20380@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080922225733.GB610@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Chris Wright (chrisw@sous-sol.org):
-> * Serge E. Hallyn (serue@us.ibm.com) wrote:
-> > --- a/kernel/capability.c
-> > +++ b/kernel/capability.c
-> > @@ -33,6 +33,19 @@ EXPORT_SYMBOL(__cap_empty_set);
-> >  EXPORT_SYMBOL(__cap_full_set);
-> >  EXPORT_SYMBOL(__cap_init_eff_set);
-> >  
-> > +#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
-> > +int file_caps_enabled = 1;
-> > +
-> > +static int __init file_caps_disable(char *str)
-> > +{
-> > +	file_caps_enabled = 0;
-> > +	return 1;
-> > +}
-> > +__setup("no_file_caps", file_caps_disable);
-> > +#else
-> > +static const int file_caps_enabled = 0;
-> > +#endif
-> 
-> > --- a/security/commoncap.c
-> > +++ b/security/commoncap.c
-> > @@ -27,6 +27,12 @@
-> >  #include <linux/prctl.h>
-> >  #include <linux/securebits.h>
-> >  
-> > +#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
-> > +extern int file_caps_enabled;
-> > +#else
-> > +static const int file_caps_enabled = 0;
-> > +#endif
-> > +
-> 
-> file_caps_enabled cut 'n paste mistake when !CONFIG_SECURITY_FILE_CAPABILITIES?
+Since 2.6.25-git16, the Open POSIX Test Suite test sigaction/10-1 on
+occasion stalls out.  A ^C breaks the test out of the stall.
 
-Oops, yup, thanks.
+To see the problem, one must run the test in a loop.  The stallout happens
+anywhere from 3 to approximately 60 iterations.  To make the test runtime
+more bearable, I've been using a custom version that is 8x faster than
+the original, s/sleep/usleep/g + new sleep constants.
 
-> Also, plan to update Documentation/kernel-parameters.txt?
+The test in essence does 10 SIGSTOPs and SIGCONTs, interleaved, with a
+short delay between each SIGSTOP and SIGCONT, but none (other than the
+small delay of a printf) between each SIGCONT and SIGSTOP:
 
-Will do.
+    for(i=0; i<10; i++) {
+	printf("--> Sending SIGSTOP #%d\n", i);
+	kill (pid, SIGSTOP);
+	usleep(125000);
+	printf("--> Sending SIGCONT #%d\n", i);
+	kill (pid, SIGCONT);
+	// usleep(125000); /* this is missing from the real 10-1 */
+    }
 
-thanks,
--serge
+When the above commented-out usleep is enabled, the stallout disappears.
+If instead of adding a usleep, the printf's are removed, the test stalls
+out immediately.  Therefore the problem has something to do with a SIGSTOP
+being issued 'too soon' after the issuance of a SIGCONT.
+
+Bisection shows that the problem was introduced by
+
+    commit e442055193e4584218006e616c9bdce0c5e9ae5c
+    Author: Oleg Nesterov <oleg@tv-sign.ru>
+    Date:   Wed Apr 30 00:52:44 2008 -0700
+
+This commit adds code that solves serious race problems by deferring the
+actual processing of SIGSTOP and SIGCONT to a later time.  I suspect it
+is this deferring that is making SIGCONT sensitive to a SIGSTOP coming
+in too close on its heels.
+
+The following patch, not to be considered seriously, lends credence to
+that theory.  It reverts a bit of the above commit, forcing SIGCONT (but
+not SIGSTOP) to be processed immediately.  With this patch, I achieved
+some 1,400 runs before manually stopping the test.
+
+Signed-off-by: Joe Korty <joe.korty@ccur.com>
+
+Index: 2.6.27-rc6-git4/kernel/signal.c
+===================================================================
+--- 2.6.27-rc6-git4.orig/kernel/signal.c	2008-09-17 17:42:35.000000000 -0400
++++ 2.6.27-rc6-git4/kernel/signal.c	2008-09-22 16:07:48.000000000 -0400
+@@ -598,6 +598,8 @@
+ 	return security_task_kill(t, info, sig, 0);
+ }
+ 
++static void do_notify_parent_cldstop(struct task_struct *tsk, int why);
++
+ /*
+  * Handle magic process-wide effects of stop/continue signals. Unlike
+  * the signal actions, these happen immediately at signal-generation
+@@ -682,6 +684,10 @@
+ 			signal->flags = why | SIGNAL_STOP_CONTINUED;
+ 			signal->group_stop_count = 0;
+ 			signal->group_exit_code = 0;
++			signal->flags &= ~SIGNAL_CLD_MASK;
++			spin_unlock(&p->sighand->siglock);
++			do_notify_parent_cldstop(p, CLD_CONTINUED);
++			spin_lock(&p->sighand->siglock);
+ 		} else {
+ 			/*
+ 			 * We are not stopped, but there could be a stop
