@@ -1,89 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYIWQtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbYIWQtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbYIWQtz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 12:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbYIWQq2
+	id S1755117AbYIWQtY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 12:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYIWQqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 12:46:28 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:47817 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754803AbYIWQqZ (ORCPT
+	Tue, 23 Sep 2008 12:46:16 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:55683 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754494AbYIWQqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 12:46:25 -0400
-From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH v3 14/14] PCI Hotplug: fakephp: add duplicate slot name
-	debugging
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx,
-       kaneshige.kenji@jp.fujitsu.com, Alex Chiang <achiang@hp.com>
-Date: Tue, 23 Sep 2008 10:46:24 -0600
-Message-ID: <20080923164624.12628.91248.stgit@bob.kio>
-In-Reply-To: <20080923163753.12628.98683.stgit@bob.kio>
-References: <20080923163753.12628.98683.stgit@bob.kio>
-User-Agent: StGIT/0.14.3.215.gff3d
+	Tue, 23 Sep 2008 12:46:13 -0400
+Date: Tue, 23 Sep 2008 17:46:10 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: "Hiremath, Vaibhav" <hvaibhav@ti.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: get_user_pages fails for contiguous memory?
+Message-ID: <20080923164610.GI1916@fluff.org.uk>
+References: <19F8576C6E063C45BE387C64729E739403CD7C968B@dbde02.ent.ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19F8576C6E063C45BE387C64729E739403CD7C968B@dbde02.ent.ti.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The PCI core now manages slot names on behalf of slot detection
-and slot hotplug drivers, including the handling of duplicate
-slot names.
+On Tue, Sep 23, 2008 at 09:19:51PM +0530, Hiremath, Vaibhav wrote:
+> Hi,
+> 
+> For some reason (unknown to me) the VM_IO and VM_PFNMAP vm_flags are set when I use get_user_pages function, causing it to fail for me. I'm currently using 2.6.22 on an ARM platform.
+> 
+> My Actual test case is something -
+> 
+> I trying run/test a simple use case where, I am allocating buffers in one driver using get_free_pages, map them to user application and pass it to another driver for processing. 
+> 
+> I am allocating huge memory in frame buffer driver using get_free_pages at the init time. I would like to use this buffer in resizer driver (scatter gather DMA), which resizes the image depending on user configuration. 
+> 
+> If I allocate a memory using malloc or memalign from in user space and pass it to resizer driver it works fine.
+> 
+> Any suggestions/solution how to achieve this would really helpful to me.
 
-We can use the fakephp driver to help test the new functionality.
-Add a 'dup_slots' module param to force fakephp to create multiple
-slots with the same name. We can then verify that the PCI core
-correctly renamed the slots.
+Firstly, user a later kernel. How hard is upgrading?
 
-	sapphire:/sys/bus/pci/slots # modprobe fakephp dup_slots
-	sapphire:/sys/bus/pci/slots # ls
-	fake    fake-10  fake-3  fake-5  fake-7  fake-9
-	fake-1  fake-2   fake-4  fake-6  fake-8
+Secondly, there is an DMA API for allocating DMA capable memory.
 
-Cc: jbarnes@virtuousgeek.org
-Cc: kristen.c.accardi@intel.com
-Cc: matthew@wil.cx
-Cc: kaneshige.kenji@jp.fujitsu.com
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
+Thirdly, there's a limit of contiguous memory available, are you
+sure that you can actually allocate that much memory in one go? Even
+if you are, you probably can't guarantee to get it again if user processes
+have caused memory map fragmentation.
 
- drivers/pci/hotplug/fakephp.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+And finally, wrong list! How hard is it to find the Linux ARM list?
 
-diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
-index 16ec767..71670a4 100644
---- a/drivers/pci/hotplug/fakephp.c
-+++ b/drivers/pci/hotplug/fakephp.c
-@@ -69,6 +69,7 @@ struct dummy_slot {
- };
- 
- static int debug;
-+static int dup_slots;
- static LIST_HEAD(slot_list);
- static struct workqueue_struct *dummyphp_wq;
- 
-@@ -121,7 +122,10 @@ static int add_slot(struct pci_dev *dev)
- 	if (!dslot)
- 		goto error_info;
- 
--	snprintf(name, SLOT_NAME_SIZE, "fake%d", count++);
-+	if (dup_slots)
-+		snprintf(name, SLOT_NAME_SIZE, "fake");
-+	else
-+		snprintf(name, SLOT_NAME_SIZE, "fake%d", count++);
- 	dbg("slot->name = %s\n", name);
- 	slot->ops = &dummy_hotplug_slot_ops;
- 	slot->release = &dummy_release;
-@@ -375,4 +379,5 @@ MODULE_DESCRIPTION(DRIVER_DESC);
- MODULE_LICENSE("GPL");
- module_param(debug, bool, S_IRUGO | S_IWUSR);
- MODULE_PARM_DESC(debug, "Debugging mode enabled or not");
--
-+module_param(dup_slots, bool, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(dup_slots, "Force duplicate slot names for debugging");
+PS, wrap your emails to 77 characters or less per line.
 
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
