@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753736AbYIWDpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYIWDrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753736AbYIWDpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 23:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYIWDpX
+	id S1754161AbYIWDrh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 23:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbYIWDr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 23:45:23 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33132 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751481AbYIWDpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 23:45:22 -0400
-From: Neil Brown <neilb@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 23 Sep 2008 13:45:19 +1000
+	Mon, 22 Sep 2008 23:47:28 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:32040 "EHLO
+	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753202AbYIWDr1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 23:47:27 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references:x-gmailtapped-by;
+	b=pzPsuz84ZpakdcQewLh9ZOzC3WBgNZuvuZOf4u1zbsvijpwYjL1btMF4hN7Gc2Ha4
+	QnAlwiOyNNbWYD+SK4dcQ==
+Message-ID: <33307c790809222047h7eaae674r8dd165ab8744910a@mail.gmail.com>
+Date: Mon, 22 Sep 2008 20:47:12 -0700
+From: "Martin Bligh" <mbligh@google.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: Unified tracing buffer
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
+       "Steven Rostedt" <rostedt@goodmis.org>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>
+In-Reply-To: <878wtjr0y1.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18648.26191.479291.883160@notabene.brown>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-Subject: Re: [PATCH] raid: make RAID autodetect default a KConfig option
-In-Reply-To: message from Ingo Molnar on Monday September 22
-References: <20080921154541.371f2ebe@infradead.org>
-	<20080922082728.GB6601@elte.hu>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+	 <878wtjr0y1.fsf@basil.nowhere.org>
+X-GMailtapped-By: 172.25.146.36
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday September 22, mingo@elte.hu wrote:
-> 
-> * Arjan van de Ven <arjan@infradead.org> wrote:
-> 
-> > From 812bf9a448d96375a3aec5c51764d74cace85abb Mon Sep 17 00:00:00 2001
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Date: Sun, 21 Sep 2008 15:44:32 -0700
-> > Subject: [PATCH] raid: make RAID autodetect default a KConfig option
-> > 
-> > RAID autodetect has the side effect of requiring synchronisation of 
-> > all device drivers, which can make the boot several seconds longer 
-> > (I've measured 7 on one of my laptops).... even for systems that don't 
-> > have RAID setup for the root filesystem (the only FS where this 
-> > matters).
-> > 
-> > This patch makes the default for autodetect a config option; either 
-> > way the user can always override via the kernel command line.
-> 
-> Neil, if you agree with this patch, could you please send your Acked-by 
-> line? This patch depends on a clean-up in init/do_mounts_md.c that is in 
-> the fastboot tree so it would be logistically easier/better if we could 
-> queue this up towards upstream via tip/fastboot.
+>> During kernel summit and Plumbers conference, Linus and others
+>> expressed a desire for a unified
+>> tracing buffer system for multiple tracing applications (eg ftrace,
+>> lttng, systemtap, blktrace, etc) to use.
+>
+> This is what relayfs always was promised to be, but apparently
+> never quite became. But before adding a new one I would recommend
+> to remove relayfs first.
 
-Yes,
- Acked-by: NeilBrown <neilb@suse.de>
+It's a little different, though similar. relayfs is an unstructured buffer.
+This would be a sequence of events with a common timestamp format,
+and hopefully other commonalties too.
 
-I'm not a big fan of autodetect in any case, and this patch seems to
-cover all the bases I can think of.
+I agree that the underlying buffer structure could be shared, as has
+been pointed out (buried in this long thread). However, in another buried
+comment, it was pointed out that relayfs would have no users once this
+was done, so ...
 
-Thanks,
-NeilBrown
+I don't think we can remove relayfs before adding this and switching over
+the users though (possibly it could all be done at the same time, but messy)
