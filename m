@@ -1,55 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYIWThi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbYIWTjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417AbYIWThi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 15:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbYIWTha
+	id S1754939AbYIWTjT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 15:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbYIWTjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 15:37:30 -0400
-Received: from www.tglx.de ([62.245.132.106]:55355 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751510AbYIWTha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 15:37:30 -0400
-Date: Tue, 23 Sep 2008 21:36:00 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, darren@dvhart.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: Unified tracing buffer
-In-Reply-To: <48D93CAF.8070000@redhat.com>
-Message-ID: <alpine.LFD.1.10.0809232129280.2038@apollo.tec.linutronix.de>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <48D7F5E8.3000705@redhat.com> <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com> <48D81B5F.2030702@redhat.com> <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com>
- <48D832B6.3010409@redhat.com> <33307c790809221712x4fbd9781u958c98d4585e92a9@mail.gmail.com> <48D901FE.5060604@redhat.com> <20080923150410.GA28341@Krystal> <48D90B84.4030905@redhat.com> <alpine.LFD.1.10.0809230847360.3265@nehalem.linux-foundation.org>
- <48D921B3.2060809@redhat.com> <alpine.LFD.1.10.0809231927060.2038@apollo.tec.linutronix.de> <48D93CAF.8070000@redhat.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 23 Sep 2008 15:39:08 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:40076 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbYIWTjH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 15:39:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=U1OGbyvuRyEeRlAGRMVm+HLXWuLOUPsRRdUrCgCXhHexZ5+Bb1eMGD7REa7Eaz4UUd
+         ncdXvLFtkiCKgoaaSGK2gnnaTZ4Y167OBuAflKIBtW/H1nF4RuH2HHvaKmFJD5VlVBnF
+         hSKc5ON5pIPK8KGKNeXYnRtTmaIJVTV6Z/krs=
+Message-ID: <86802c440809231239o207c893ja508a1574bd04706@mail.gmail.com>
+Date: Tue, 23 Sep 2008 12:39:05 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Jack Steiner" <steiner@sgi.com>
+Subject: Re: [PATCH] - Add early detection of UV system types
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+In-Reply-To: <20080923193049.GA21605@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080923182817.GA6335@sgi.com>
+	 <86802c440809231159x69883d44y26bbd491b6504a0f@mail.gmail.com>
+	 <20080923193049.GA21605@sgi.com>
+X-Google-Sender-Auth: 0aaccc39fb5bc0d6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008, Masami Hiramatsu wrote:
-> # cat /sys/devices/system/cpu/cpu0/cpuidle/state3/usage
-> 171210
+On Tue, Sep 23, 2008 at 12:30 PM, Jack Steiner <steiner@sgi.com> wrote:
+> On Tue, Sep 23, 2008 at 11:59:26AM -0700, Yinghai Lu wrote:
+>> On Tue, Sep 23, 2008 at 11:28 AM, Jack Steiner <steiner@sgi.com> wrote:
+>> > Portions of system boot needs to know if a system is a UV system prior
+>> > to genapic initialization. This patch adds a call from acpi_boot_table_init()
+>> > to the UV code to parse the MADT to determine if the system is a UV system.
+>> >
+>> > Signed-off-by: Jack Steiner <steiner@sgi.com>
+>> >
+>> > ---
+>> >  arch/x86/kernel/acpi/boot.c      |    4 ++++
+>> >  arch/x86/kernel/genx2apic_uv_x.c |   21 ++++++++++++---------
+>> >  arch/x86/mm/srat_64.c            |    2 +-
+>> >  include/asm-x86/genapic_64.h     |    2 ++
+>> >  4 files changed, 19 insertions(+), 10 deletions(-)
+>> >
+>> > Index: linux/arch/x86/kernel/acpi/boot.c
+>> > ===================================================================
+>> > --- linux.orig/arch/x86/kernel/acpi/boot.c      2008-09-23 12:55:15.000000000 -0500
+>> > +++ linux/arch/x86/kernel/acpi/boot.c   2008-09-23 12:55:19.000000000 -0500
+>> > @@ -1667,6 +1667,10 @@ int __init acpi_boot_table_init(void)
+>> >
+>> >        acpi_table_parse(ACPI_SIG_BOOT, acpi_parse_sbf);
+>> >
+>> > +#ifdef CONFIG_X86_64
+>> > +       acpi_table_parse(ACPI_SIG_MADT, uv_early_madt_oem_check);
+>> > +#endif
+>> > +
+>> >        /*
+>> >         * blacklist may disable ACPI entirely
+>> >         */
+>>
+>> you don't need to that.
+>>
+>> please call early_acpi_boot_init instead
+>
+> I don't mind moving the new call from acpi_boot_table_init() to early_acpi_boot_init(),
+> but I still need to determine the UV type very early in boot. System type is needed
+> prior to parsing the SRAT.
+>
+>>
+>> sth like
+>>
+>> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+>> index 3d677b5..7ead2aa 100644
+>> --- a/arch/x86/kernel/setup.c
+>> +++ b/arch/x86/kernel/setup.c
+>> @@ -997,6 +997,8 @@ void __init setup_arch(char **cmdline_p)
+>>          */
+>>         acpi_boot_table_init();
+>>
+>> +       early_acpi_boot_init();
+>> +
+>>  #ifdef CONFIG_ACPI_NUMA
+>>         /*
+>>          * Parse SRAT to discover nodes.
+>>
+>> YH
+>
 
-C3 stops the TSC. So depending on how many C3 entries you have on the
-different cores, your TSCs will drift apart. Some BIOSes do even a
-lousy job trying to fixup the TSCs on exit from C3, which makes things
-even worse.
+early_acpi_boot_init ==> early_acpi_process_madt ==>
+acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt) ==> acpi_parse_madt
+==> acpi_madt_oem_check
+==> at last
 
->     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000016] duration[00000000000000000000]
->     C2:                  type[C2] promotion[--] demotion[--] latency[001] usage[00037969] duration[00000000000024288003]
->     C3:                  type[C3] promotion[--] demotion[--] latency[057] usage[00171818] duration[00000000001881257636]
-> 
-> Could these help you?
+int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+{
+        int i;
 
-Yup, explains your TSC observation. Nothing we can do about. Broken by
-system design :( Welcome in the wonderful world of Inhell/BIOS/ACPI !
+        for (i = 0; apic_probe[i]; ++i) {
+                if (apic_probe[i]->acpi_madt_oem_check(oem_id, oem_table_id)) {
+                        genapic = apic_probe[i];
+                        printk(KERN_INFO "Setting APIC routing to %s.\n",
+                                genapic->name);
+                        return 1;
+                }
+        }
+        return 0;
+}
 
-Thanks,
+and
 
-	tglx
+static struct genapic *apic_probe[] __initdata = {
+        &apic_x2apic_uv_x,
+        &apic_x2apic_phys,
+        &apic_x2apic_cluster,
+        &apic_physflat,
+        NULL,
+};
+
+so apic_x2apic_uv_x's uv_acpi_madt_oem_check is called at first.
+
+
+YH
