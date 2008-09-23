@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYIWNsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbYIWNru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753951AbYIWNsX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYIWNrH
+	id S1752191AbYIWNru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbYIWNrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:47:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52344 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:47:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52330 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751940AbYIWNrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:47:05 -0400
+	id S1751592AbYIWNrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:47:00 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Amit Shah <amit.shah@qumranet.com>
-Subject: [PATCH 04/40] KVM: Introduce kvm_set_irq to inject interrupts in guests
-Date: Tue, 23 Sep 2008 16:46:18 +0300
-Message-Id: <1222177614-26669-5-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Sheng Yang <sheng.yang@intel.com>
+Subject: [PATCH 01/40] KVM: VMX: Rename misnamed msr bits
+Date: Tue, 23 Sep 2008 16:46:15 +0300
+Message-Id: <1222177614-26669-2-git-send-email-avi@redhat.com>
 In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
 References: <1222177614-26669-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Amit Shah <amit.shah@qumranet.com>
+From: Sheng Yang <sheng.yang@intel.com>
 
-This function injects an interrupt into the guest given the kvm struct,
-the (guest) irq number and the interrupt level.
+MSR_IA32_FEATURE_LOCKED is just a bit in fact, which shouldn't be prefixed with
+MSR_.  So is MSR_IA32_FEATURE_VMXON_ENABLED.
 
-Signed-off-by: Amit Shah <amit.shah@qumranet.com>
+Signed-off-by: Sheng Yang <sheng.yang@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/irq.c |   11 +++++++++++
- arch/x86/kvm/irq.h |    2 ++
- 2 files changed, 13 insertions(+), 0 deletions(-)
+ arch/x86/kvm/vmx.c |   18 +++++++++---------
+ arch/x86/kvm/vmx.h |    4 ++--
+ 2 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/kvm/irq.c b/arch/x86/kvm/irq.c
-index 76d736b..0d9e552 100644
---- a/arch/x86/kvm/irq.c
-+++ b/arch/x86/kvm/irq.c
-@@ -100,3 +100,14 @@ void __kvm_migrate_timers(struct kvm_vcpu *vcpu)
- 	__kvm_migrate_apic_timer(vcpu);
- 	__kvm_migrate_pit_timer(vcpu);
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 7041cc5..81dac72 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -1031,9 +1031,9 @@ static __init int vmx_disabled_by_bios(void)
+ 	u64 msr;
+ 
+ 	rdmsrl(MSR_IA32_FEATURE_CONTROL, msr);
+-	return (msr & (MSR_IA32_FEATURE_CONTROL_LOCKED |
+-		       MSR_IA32_FEATURE_CONTROL_VMXON_ENABLED))
+-	    == MSR_IA32_FEATURE_CONTROL_LOCKED;
++	return (msr & (IA32_FEATURE_CONTROL_LOCKED_BIT |
++		       IA32_FEATURE_CONTROL_VMXON_ENABLED_BIT))
++	    == IA32_FEATURE_CONTROL_LOCKED_BIT;
+ 	/* locked but not enabled */
  }
-+
-+/* This should be called with the kvm->lock mutex held */
-+void kvm_set_irq(struct kvm *kvm, int irq, int level)
-+{
-+	/* Not possible to detect if the guest uses the PIC or the
-+	 * IOAPIC.  So set the bit in both. The guest will ignore
-+	 * writes to the unused one.
-+	 */
-+	kvm_ioapic_set_irq(kvm->arch.vioapic, irq, level);
-+	kvm_pic_set_irq(pic_irqchip(kvm), irq, level);
-+}
-diff --git a/arch/x86/kvm/irq.h b/arch/x86/kvm/irq.h
-index 7ca47cb..07ff2ae 100644
---- a/arch/x86/kvm/irq.h
-+++ b/arch/x86/kvm/irq.h
-@@ -82,6 +82,8 @@ static inline int irqchip_in_kernel(struct kvm *kvm)
  
- void kvm_pic_reset(struct kvm_kpic_state *s);
+@@ -1045,14 +1045,14 @@ static void hardware_enable(void *garbage)
  
-+void kvm_set_irq(struct kvm *kvm, int irq, int level);
-+
- void kvm_timer_intr_post(struct kvm_vcpu *vcpu, int vec);
- void kvm_inject_pending_timer_irqs(struct kvm_vcpu *vcpu);
- void kvm_inject_apic_timer_irqs(struct kvm_vcpu *vcpu);
+ 	INIT_LIST_HEAD(&per_cpu(vcpus_on_cpu, cpu));
+ 	rdmsrl(MSR_IA32_FEATURE_CONTROL, old);
+-	if ((old & (MSR_IA32_FEATURE_CONTROL_LOCKED |
+-		    MSR_IA32_FEATURE_CONTROL_VMXON_ENABLED))
+-	    != (MSR_IA32_FEATURE_CONTROL_LOCKED |
+-		MSR_IA32_FEATURE_CONTROL_VMXON_ENABLED))
++	if ((old & (IA32_FEATURE_CONTROL_LOCKED_BIT |
++		    IA32_FEATURE_CONTROL_VMXON_ENABLED_BIT))
++	    != (IA32_FEATURE_CONTROL_LOCKED_BIT |
++		IA32_FEATURE_CONTROL_VMXON_ENABLED_BIT))
+ 		/* enable and lock */
+ 		wrmsrl(MSR_IA32_FEATURE_CONTROL, old |
+-		       MSR_IA32_FEATURE_CONTROL_LOCKED |
+-		       MSR_IA32_FEATURE_CONTROL_VMXON_ENABLED);
++		       IA32_FEATURE_CONTROL_LOCKED_BIT |
++		       IA32_FEATURE_CONTROL_VMXON_ENABLED_BIT);
+ 	write_cr4(read_cr4() | X86_CR4_VMXE); /* FIXME: not cpu hotplug safe */
+ 	asm volatile (ASM_VMX_VMXON_RAX
+ 		      : : "a"(&phys_addr), "m"(phys_addr)
+diff --git a/arch/x86/kvm/vmx.h b/arch/x86/kvm/vmx.h
+index 23e8373..41e8c10 100644
+--- a/arch/x86/kvm/vmx.h
++++ b/arch/x86/kvm/vmx.h
+@@ -346,8 +346,8 @@ enum vmcs_field {
+ #define MSR_IA32_VMX_EPT_VPID_CAP               0x48c
+ 
+ #define MSR_IA32_FEATURE_CONTROL                0x3a
+-#define MSR_IA32_FEATURE_CONTROL_LOCKED         0x1
+-#define MSR_IA32_FEATURE_CONTROL_VMXON_ENABLED  0x4
++#define IA32_FEATURE_CONTROL_LOCKED_BIT		0x1
++#define IA32_FEATURE_CONTROL_VMXON_ENABLED_BIT	0x4
+ 
+ #define APIC_ACCESS_PAGE_PRIVATE_MEMSLOT	9
+ #define IDENTITY_PAGETABLE_PRIVATE_MEMSLOT	10
 -- 
 1.6.0.1
 
