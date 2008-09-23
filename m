@@ -1,84 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYIWXK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbYIWXMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754026AbYIWXK0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 19:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYIWXKP
+	id S1753859AbYIWXMm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 19:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYIWXMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 19:10:15 -0400
-Received: from www.tglx.de ([62.245.132.106]:35484 "EHLO www.tglx.de"
+	Tue, 23 Sep 2008 19:12:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52484 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750884AbYIWXKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 19:10:13 -0400
-Date: Wed, 24 Sep 2008 01:10:02 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Greg KH <gregkh@suse.de>, "Andrew G. Harvey" <agh@cisco.com>
-Subject: [PATCH] UIO: Fix mapping of logical and virtual memory
-Message-ID: <20080923230959.GB4066@local>
+	id S1751388AbYIWXMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 19:12:33 -0400
+Date: Tue, 23 Sep 2008 19:11:51 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org, agk@redhat.com,
+       mbroz@redhat.com, chris@arachsys.com
+Subject: Re: [PATCH] Memory management livelock
+In-Reply-To: <20080923154905.50d4b0fa.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+ <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+ <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+ <20080923154905.50d4b0fa.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I received this code by private mail from Andrew G. Harvey who found the
-bug and provided a fix for it. He also tested the patch below, we
-discussed it for a while, and I believe this to be correct. I simply
-took his code and made a patch from it, see below.
 
-Thanks to Andrew for pointing this out!
 
-Hans
----------8<----------------
+On Tue, 23 Sep 2008, Andrew Morton wrote:
 
-From: "Andrew G. Harvey" <agh@cisco.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: "Greg KH" <gregkh@suse.de>, "Hans J. Koch" <hjk@linutronix.de>
-Date: Wed, 24 Sep 2008 00:43:13 +0200
-Subject: UIO: Fix mapping of logical and virtual memory
+> On Tue, 23 Sep 2008 18:34:20 -0400 (EDT)
+> Mikulas Patocka <mpatocka@redhat.com> wrote:
+> 
+> > > On Mon, 22 Sep 2008 17:10:04 -0400 (EDT)
+> > > Mikulas Patocka <mpatocka@xxxxxxxxxx> wrote:
+> > > 
+> > > > The bug happens when one process is doing sequential buffered writes to
+> > > > a block device (or file) and another process is attempting to execute
+> > > > sync(), fsync() or direct-IO on that device (or file). This syncing
+> > > > process will wait indefinitelly, until the first writing process
+> > > > finishes.
+> > > >
+> > > > For example, run these two commands:
+> > > > dd if=/dev/zero of=/dev/sda1 bs=65536 &
+> > > > dd if=/dev/sda1 of=/dev/null bs=4096 count=1 iflag=direct
+> > > >
+> > > > The bug is caused by sequential walking of address space in
+> > > > write_cache_pages and wait_on_page_writeback_range: if some other
+> > > > process is constantly making dirty and writeback pages while these
+> > > > functions run, the functions will wait on every new page, resulting in
+> > > > indefinite wait.
+> > > 
+> > > Shouldn't happen. All the data-syncing functions should have an upper
+> > > bound on the number of pages which they attempt to write. In the
+> > > example above, we end up in here:
+> > > 
+> > > int __filemap_fdatawrite_range(struct address_space *mapping, loff_t
+> > > start,
+> > > loff_t end, int sync_mode)
+> > > {
+> > > int ret;
+> > > struct writeback_control wbc = {
+> > > .sync_mode = sync_mode,
+> > > .nr_to_write = mapping->nrpages * 2, <<--
+> > > .range_start = start,
+> > > .range_end = end,
+> > > };
+> > > 
+> > > so generic_file_direct_write()'s filemap_write_and_wait() will attempt
+> > > to write at most 2* the number of pages which are in cache for that inode.
+> > 
+> > See write_cache_pages:
+> > 
+> > if (wbc->sync_mode != WB_SYNC_NONE)
+> >         wait_on_page_writeback(page);	(1)
+> > if (PageWriteback(page) ||
+> >     !clear_page_dirty_for_io(page)) {
+> >         unlock_page(page);		(2)
+> >         continue;
+> > }
+> > ret = (*writepage)(page, wbc, data);
+> > if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
+> >         unlock_page(page);
+> >         ret = 0;
+> > }
+> > if (ret || (--(wbc->nr_to_write) <= 0))
+> >         done = 1;
+> > 
+> > --- so if it goes by points (1) and (2), the counter is not decremented, 
+> > yet the function waits for the page. If there is constant stream of 
+> > writeback pages being generated, it waits on each on them --- that is, 
+> > forever. I have seen livelock in this function. For you that example with 
+> > two dd's, one buffered write and the other directIO read doesn't work? For 
+> > me it livelocks here.
+> > 
+> > wait_on_page_writeback_range is another example where the livelock 
+> > happened, there is no protection at all against starvation.
+> 
+> um, OK.  So someone else is initiating IO for this inode and this
+> thread *never* gets to initiate any writeback.  That's a bit of a
+> surprise.
+> 
+> How do we fix that?  Maybe decrement nt_to_write for these pages as
+> well?
 
-mmap() doesn't work as expected for UIO_MEM_LOGICAL or UIO_MEM_VIRTUAL
-mappings. The offset into the memory needs to be added, otherwise
-uio_vma_fault always returns the first page only. Note that for UIO
-userspace calls mmap() with offset = N * getpagesize() to access
-mapping N. This must be compensated when calculating the offset. A
-comment was added to explain this since it is not obvious.
+And what do you want to do with wait_on_page_writeback_range? When I 
+solved that livelock in write_cache_pages(), I got another livelock in 
+wait_on_page_writeback_range.
 
-Signed-off-by: "Andrew G. Harvey" <agh@cisco.com>
-Signed-off-by: "Hans J. Koch" <hjk@linutronix.de>
----
- drivers/uio/uio.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+> > BTW. that .nr_to_write = mapping->nrpages * 2 looks like a dangerous thing 
+> > to me.
+> > 
+> > Imagine this case: You have two pages with indices 4 and 5 dirty in a 
+> > file. You call fsync(). It sets nr_to_write to 4.
+> > 
+> > Meanwhile, another process makes pages 0, 1, 2, 3 dirty.
+> > 
+> > The fsync() process goes to write_cache_pages, writes the first 4 dirty 
+> > pages and exits because it goes over the limit.
+> > 
+> > result --- you violate fsync() semantics, pages that were dirty before 
+> > call to fsync() are not written when fsync() exits.
+> 
+> yup, that's pretty much unfixable, really, unless new locks are added
+> which block threads which are writing to unrelated sections of the
+> file, and that could hurt some workloads quite a lot, I expect.
 
-Index: linux-2.6.27-rc/drivers/uio/uio.c
-===================================================================
---- linux-2.6.27-rc.orig/drivers/uio/uio.c	2008-09-24 00:25:17.000000000 +0200
-+++ linux-2.6.27-rc/drivers/uio/uio.c	2008-09-24 00:59:40.000000000 +0200
-@@ -490,15 +490,23 @@
- {
- 	struct uio_device *idev = vma->vm_private_data;
- 	struct page *page;
-+	unsigned long offset;
- 
- 	int mi = uio_find_mem_index(vma);
- 	if (mi < 0)
- 		return VM_FAULT_SIGBUS;
- 
-+	/*
-+	 * We need to subtract mi because userspace uses offset = N*PAGE_SIZE
-+	 * to use mem[N].
-+	 */
-+	offset = (vmf->pgoff - mi) << PAGE_SHIFT;
-+
- 	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
--		page = virt_to_page(idev->info->mem[mi].addr);
-+		page = virt_to_page(idev->info->mem[mi].addr + offset);
- 	else
--		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
-+		page = vmalloc_to_page((void *)idev->info->mem[mi].addr
-+							+ offset);
- 	get_page(page);
- 	vmf->page = page;
- 	return 0;
+It is fixable with the patch I sent --- it doesn't take any locks unless 
+the starvation happens. Then, you don't have to use .nr_to_write for 
+fsync anymore.
+
+Another solution could be to record in page structure jiffies when the 
+page entered dirty state and writeback state. The start writeback/wait on 
+writeback functions could then trivially ignore pages that were 
+dirtied/writebacked while the function was in progress.
+
+> Hopefully high performance applications are instantiating the file
+> up-front and are using sync_file_range() to prevent these sorts of
+> things from happening.  But they probably aren't.
+
+--- for databases it is pretty much possible that one thread is writing 
+already journaled data (so it doesn't care when the data are really 
+written) and another thread is calling fsync() on the same inode 
+simultaneously --- so fsync() could mistakenly write the data generated by 
+the first thread and ignore the data generated by the second thread, that 
+it should really write.
+
+Mikulas
