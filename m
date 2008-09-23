@@ -1,103 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbYIWRyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYIWR4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753105AbYIWRyZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 13:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYIWRyP
+	id S1754572AbYIWR4w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 13:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbYIWR4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 13:54:15 -0400
-Received: from hobbit.corpit.ru ([81.13.33.150]:20865 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752743AbYIWRyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 13:54:14 -0400
-Message-ID: <48D92D43.2070705@msgid.tls.msk.ru>
-Date: Tue, 23 Sep 2008 21:54:11 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 23 Sep 2008 13:56:44 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:37352 "EHLO
+	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751359AbYIWR4n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 13:56:43 -0400
+Date: Tue, 23 Sep 2008 23:25:00 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Martin Bligh <mbligh@google.com>, Tom Zanussi <zanussi@comcast.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>
+Subject: Re: Unified tracing buffer
+Message-ID: <20080923175500.GA3843@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <1221869279.8359.31.camel@lappy.programming.kicks-ass.net> <20080922140740.GB5279@in.ibm.com> <1222094724.16700.11.camel@lappy.programming.kicks-ass.net> <1222147545.6875.135.camel@charm-linux> <33307c790809230700o4bf0d22fg8ab2dcb904f7d66c@mail.gmail.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: PARAVIRT_GUEST bug? [was: Stable regression: usb-storage is stuck
- in 2.6.26.5]
-References: <20080913122143.4B13B908E@gandalf.tls.msk.ru> <48CBB626.4050300@msgid.tls.msk.ru> <48CF6A45.3010204@msgid.tls.msk.ru> <48D22847.5020100@msgid.tls.msk.ru> <48D2AB8E.90305@goop.org>
-In-Reply-To: <48D2AB8E.90305@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <33307c790809230700o4bf0d22fg8ab2dcb904f7d66c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Michael Tokarev wrote:
->> Michael Tokarev wrote:
->>   
->>> Michael Tokarev wrote:
->>>
->>> [usb-storage hangs on asus M2NPV-VM (nVidia GeForce 6150/nForce 430)
->>>  motherboard with latest bios]
->>>
->>>     
->>>> Ok, it turned out to be pretty.. interesting.
->>>>
->>>> It's not a regression within -stable kernel series.  The problem
->>>> happens when BOTH are true:
->>>>
->>>>   - using latest BIOS for this mobo (1401), AND
->>>>   - enabling KVM_GUEST in kernel.
->>>>
->>>> The only difference in my kernel config between .1 and .5 was
->>>> to enable KVM_GUEST and KVM_CLOCK, and also I2C_HELPER_AUTO
->>>> which was added by kernel update.
->>>>
->>>> Going with previous BIOS (1201) OR disabling PARAVIRT_GUEST
->>>> fixes the problem.  I'll try to figure out which config
->>>> option is at problem here.
->>>>       
->>> After seeing similar situation on another motherboard, I
->>> become curious.
->>>
->>> Here's the result:  M3A78-EM motherboard (also from Asus),
->>> AMD780G/SB700 etc.  Updating to one of the latest bios
->>> makes the system unbootable.  Kernel hangs on boot right
->>> after displaying
->>>
->>>  SLUB: Genslabs=12, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
->>>
->>> Reverting to the older BIOS or disabling PARAVIRT_GUEST in kernel
->>>     
->> PARAVIRT it is, not PARAVIRT_GUEST.
->>   
+On Tue, Sep 23, 2008 at 07:00:38AM -0700, Martin Bligh wrote:
+> > - get rid of anything having to do with padding, nobody needs it and its
+> > only affect has been to horribly distort and complicate a lot of the
+> > code
+> > - get rid of sub-buffers, they just cause confusion
+> > - get rid of mmap, nobody uses it
+> > - no sub-buffers and no mmap support means we can get rid of most of the
+> > callbacks, and a lot of API confusion along with them
+> > - add relay flags - they probably should have been used from the
+> > beginning and options made explicit instead of being shoehorned into the
+> > callback functions.
 > 
-> Hm, mysterious.  CONFIG_PARAVIRT should have no functional effect on a
-> native boot.
-> 
-> Could you post the complete dmesg output (with "initcall_debug" on the
-> kernel command line), with both CONFIG_PARAVIRT on and off, and ideally,
-> comparing working vs non-working BIOS?
+> Actually, I think if you did all that, it'd be pretty close to what we
+> want anyway ...
 
-It turned out to be more difficult than I thought.  There were other
-problems with the motherboard I experimented with (my new home machine),
-unrelated.  Also, it wasn't possible to re-flash bios back as it said
-that the old version is incompatible with currently running bios so it
-can't re-flash it.
+In the perspective of having a layered infrastructure, can we consider
+the interfaces later added over relay (to be used as a wrapper), namely
+relay_printk() and relay_dump()?
 
-Also, initcall_debug does not make any difference for my mobo.  All the
-debugging shown by this option are AFTER the place where it hangs.
-And for netconsole I'd need another machine at home, which I don't
-have currently.
+Also add the following features to it and we get close to the
+functionality that is sought:
 
-Instead, while debugging other issues, I tried 2.6.27-rc7 kernel -- this
-one works on 2 motherboards with new BIOSes, no matter which PARAVIRT
-options I turn on.  I'll try this kernel on other mobos where possible,
-and if no issue will be found, I'd declare the issue to be solved.
+- Add callbacks to append fine-granular timestamp information depending
+upon user's requirement
+- Ability to provision more custom-defined control files that can suit
+independent tracer's requirements
 
-If not, I'll try to find some time to debug it later.  After all, this
-very issue is already worked around -- I enabled those options in order
-to add (optimized) support for KVM guests, but for those I just built
-another kernel flavour with only that config change.
+These interfaces already come along with the following features (some
+repetition here from my previous email for the sake of completeness):
 
-Oh well.
+- Very minimal work required to log data using the interfaces. Usage is
+made simple to resemble the printk(). Like
 
-And thank you for your support!
+	struct relay_printk_data *tpk;
+	tpk->parent_dir = "PARENT";
+	tpk->dir = "DIR";
+	relay_printk(tpk, <String to be output>);
+	relay_dump(tpk, <Some binary data to output>); 
 
-/mjt
+Output at:
+	<debugfs_mount>/PARENT/DIR/<TRACE FILES>
+
+- Assumes default values for most tunables, such as per-CPU buffer size,
+relay-flags (such as global vs local per-cpu buffers, flight recorder vs
+overwrite mode), thus reducing the work required for setting up these
+interfaces. They can be over-written in case of advanced needs.
+
+- Well defined control operations to start, stop tracing operations, status
+files to indicate buffer overflow, etc.
+
+- Given the recent patches that Tom Zanussi has sent to bring in the
+erstwhile 'trace' functionality into relay itself, there can be a lot of
+code-reduction in relay.c (in -mm) thereby leading to a light-weight
+implementation.
+
+Thanks,
+K.Prasad
+
