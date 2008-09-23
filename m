@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbYIWUGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbYIWUIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754793AbYIWUGf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 16:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYIWUG2
+	id S1754580AbYIWUIR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 16:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYIWUID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 16:06:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54053 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752040AbYIWUG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 16:06:27 -0400
-Message-ID: <48D94BA8.9030106@redhat.com>
-Date: Tue, 23 Sep 2008 16:03:52 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 23 Sep 2008 16:08:03 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55962 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752074AbYIWUIB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 16:08:01 -0400
+Message-ID: <48D94C72.5020708@zytor.com>
+Date: Tue, 23 Sep 2008 13:07:14 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, darren@dvhart.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: Unified tracing buffer
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <48D7F5E8.3000705@redhat.com> <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com> <48D81B5F.2030702@redhat.com> <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com> <48D832B6.3010409@redhat.com> <33307c790809221712x4fbd9781u958c98d4585e92a9@mail.gmail.com> <48D901FE.5060604@redhat.com> <20080923150410.GA28341@Krystal> <48D90B84.4030905@redhat.com> <alpine.LFD.1.10.0809230847360.3265@nehalem.linux-foundation.org> <48D921B3.2060809@redhat.com> <alpine.LFD.1.10.0809231927060.2038@apollo.tec.linutronix.de> <48D93CAF.8070000@redhat.com> <alpine.LFD.1.10.0809232129280.2038@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0809232129280.2038@apollo.tec.linutronix.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=US-ASCII
+To: Alain Knaff <alain@knaff.lu>
+CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, w@1wt.eu
+Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
+ initrds
+References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu>
+In-Reply-To: <48D9471E.9090108@knaff.lu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Tue, 23 Sep 2008, Masami Hiramatsu wrote:
->> # cat /sys/devices/system/cpu/cpu0/cpuidle/state3/usage
->> 171210
-> 
-> C3 stops the TSC. So depending on how many C3 entries you have on the
-> different cores, your TSCs will drift apart. Some BIOSes do even a
-> lousy job trying to fixup the TSCs on exit from C3, which makes things
-> even worse.
-> 
->>     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000016] duration[00000000000000000000]
->>     C2:                  type[C2] promotion[--] demotion[--] latency[001] usage[00037969] duration[00000000000024288003]
->>     C3:                  type[C3] promotion[--] demotion[--] latency[057] usage[00171818] duration[00000000001881257636]
+Alain Knaff wrote:
+> H. Peter Anvin wrote:
+>> Just did so, and it broke my first test build.
 >>
->> Could these help you?
+>> arch/x86/boot/compressed/head_64.o: In function `relocated':
+>> (.text+0x28): undefined reference to `_end'
+>> make[3]: *** [arch/x86/boot/compressed/vmlinux] Error 1
+>> make[2]: *** [arch/x86/boot/compressed/vmlinux] Error 2
+>> make[1]: *** [bzImage] Error 2
+>> make: *** [sub-make] Error 2
+>>
+>>     -hpa
 > 
-> Yup, explains your TSC observation. Nothing we can do about. Broken by
-> system design :( Welcome in the wonderful world of Inhell/BIOS/ACPI !
-
-Thank you for analyzing! :-)
-Hmm, then could I fix that by fixing my dsdt...?
-
-Thanks again,
-
+> Just leave the changes in head_64.S away; this was only about improved
+> memory management. It is not strictly needed, as the change in
+> /include/asm-x86/boot.h still makes sure that the heap is big enough,
+> even for bzip2
 > 
-> Thanks,
-> 
-> 	tglx
 
--- 
-Masami Hiramatsu
+OK, this kind of underscores something I have been thinking already: 
+this is a really large patch and should be broken down into a patchset. 
+  Presumably something like:
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+- Cleanups to inflate library code
+- Use existing library code for initramfs
+- Add bzip2 library code
+- Add lzma library code
+- Add support for bzip2/lzma initrd
+- Add support for bzip2/lzma bzImage
 
-e-mail: mhiramat@redhat.com
-
+	-hpa
