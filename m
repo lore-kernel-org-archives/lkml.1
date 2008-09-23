@@ -1,61 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbYIWXrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYIWXrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbYIWXrH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 19:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYIWXqw
+	id S1753337AbYIWXrm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 19:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbYIWXrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 19:46:52 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:42154 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750947AbYIWXqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 19:46:51 -0400
-Date: Wed, 24 Sep 2008 01:45:53 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: David Miller <davem@davemloft.net>
-cc: jeffrey.t.kirsher@intel.com, jeff@garzik.org, mingo@elte.hu,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jesse.brandeburg@intel.com, john.ronciak@intel.com,
-       bruce.w.allan@intel.com
-Subject: Re: [PATCH 2/3] e1000e: Useset_memory_ro()/set_memory_rw() to protect
- flash memory
-In-Reply-To: <20080923.162957.141669474.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0809240142030.27884@twin.jikos.cz>
-References: <20080923224535.6869.76210.stgit@jtkirshe-mobile.jf.intel.com>
- <20080923.162957.141669474.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 23 Sep 2008 19:47:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57834 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754187AbYIWXrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 19:47:10 -0400
+Date: Tue, 23 Sep 2008 16:46:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org, agk@redhat.com,
+       mbroz@redhat.com, chris@arachsys.com
+Subject: Re: [PATCH] Memory management livelock
+Message-Id: <20080923164623.ce82c1c2.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+	<Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+	<Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+	<20080923154905.50d4b0fa.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008, David Miller wrote:
+On Tue, 23 Sep 2008 19:11:51 -0400 (EDT)
+Mikulas Patocka <mpatocka@redhat.com> wrote:
 
-> > A number of users have reported NVM corruption on various ICHx platform
-> > LOMs.  One possible reasons for this could be unexpected and/or malicious
-> > writes to the flash memory area mapped into kernel memory.  Once the
-> > interface is up, there should be very few reads/writes of the mapped flash
-> > memory.  This patch makes use of the x86 set_memory_*() functions to set
-> > the mapped memory read-only and temporarily set it writable only when the
-> > driver needs to write to it.  With the memory set read-only, any unexpected
-> > write will be logged with a stack dump indicating the offending code.
-> > Since these LOMs are only on x86 ICHx platforms, it does not matter that
-> > this API is not yet available on other architectures, however it is
-> > dependent on a previous patch that exports these function name symbols.
-> If the X server or similar is causing this problem, this patch won't 
-> help. The X server maps MMIO space using mmap() in userspace, and you're 
-> only protecting the kernel side mapping.
+> 
+> 
+> > > wait_on_page_writeback_range is another example where the livelock 
+> > > happened, there is no protection at all against starvation.
+> > 
+> > um, OK.  So someone else is initiating IO for this inode and this
+> > thread *never* gets to initiate any writeback.  That's a bit of a
+> > surprise.
+> > 
+> > How do we fix that?  Maybe decrement nt_to_write for these pages as
+> > well?
+> 
+> And what do you want to do with wait_on_page_writeback_range?
 
-Yes, probably not a vanilla kernel material, but could be very well used 
-for testing to further isolate whether it is kernel or userspace 
-corrupting the memory mapped eeprom.
+Don't know.  I was asking you.
 
-At least I will build suse kernel package with these patches applied and 
-ask users who are able to reproduce the problem and willing to test (if 
-there are any that have backported their EEPROM properly before running 
-new kernel :) ) to give it a try.
+> When I 
+> solved that livelock in write_cache_pages(), I got another livelock in 
+> wait_on_page_writeback_range.
+> 
+> > > BTW. that .nr_to_write = mapping->nrpages * 2 looks like a dangerous thing 
+> > > to me.
+> > > 
+> > > Imagine this case: You have two pages with indices 4 and 5 dirty in a 
+> > > file. You call fsync(). It sets nr_to_write to 4.
+> > > 
+> > > Meanwhile, another process makes pages 0, 1, 2, 3 dirty.
+> > > 
+> > > The fsync() process goes to write_cache_pages, writes the first 4 dirty 
+> > > pages and exits because it goes over the limit.
+> > > 
+> > > result --- you violate fsync() semantics, pages that were dirty before 
+> > > call to fsync() are not written when fsync() exits.
+> > 
+> > yup, that's pretty much unfixable, really, unless new locks are added
+> > which block threads which are writing to unrelated sections of the
+> > file, and that could hurt some workloads quite a lot, I expect.
+> 
+> It is fixable with the patch I sent --- it doesn't take any locks unless 
+> the starvation happens. Then, you don't have to use .nr_to_write for 
+> fsync anymore.
 
--- 
-Jiri Kosina
-SUSE Labs
+I agree that the patch is low-impact and relatively straightforward. 
+The main problem is making the address_space larger - there can (and
+often are) millions and millions of these things in memory.  Making it
+larger is a big deal.  We should work hard to seek an alternative and
+afacit that isn't happening here.
 
+We already have existing code and design which attempts to avoid
+livelock without adding stuff to the address_space.  Can it be modified
+so as to patch up this quite obscure and rarely-occuring problem?
+
+> Another solution could be to record in page structure jiffies when the 
+> page entered dirty state and writeback state. The start writeback/wait on 
+> writeback functions could then trivially ignore pages that were 
+> dirtied/writebacked while the function was in progress.
+> 
+> > Hopefully high performance applications are instantiating the file
+> > up-front and are using sync_file_range() to prevent these sorts of
+> > things from happening.  But they probably aren't.
+> 
+> --- for databases it is pretty much possible that one thread is writing 
+> already journaled data (so it doesn't care when the data are really 
+> written) and another thread is calling fsync() on the same inode 
+> simultaneously --- so fsync() could mistakenly write the data generated by 
+> the first thread and ignore the data generated by the second thread, that 
+> it should really write.
+> 
+> Mikulas
