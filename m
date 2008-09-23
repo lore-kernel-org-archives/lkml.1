@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbYIWIhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYIWIj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbYIWIhQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 04:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYIWIhE
+	id S1753932AbYIWIj3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 04:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYIWIjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 04:37:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54867 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752119AbYIWIhC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 04:37:02 -0400
-Date: Tue, 23 Sep 2008 10:36:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [PATCH 1/2] corruption check: move the corruption checks into
-	their own file
-Message-ID: <20080923083643.GF23031@elte.hu>
-References: <20080922195810.624d777a@infradead.org>
-MIME-Version: 1.0
+	Tue, 23 Sep 2008 04:39:21 -0400
+Received: from mailrelay006.isp.belgacom.be ([195.238.6.172]:54142 "EHLO
+	mailrelay006.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751228AbYIWIjU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 04:39:20 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AugEANdG2EhR9cQt/2dsb2JhbACBXbUzgWY
+Date: Tue, 23 Sep 2008 10:39:15 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org,
+       Tony Lindgren <tony@atomide.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "George G. Davis" <gdavis@mvista.com>, Alan Cox <alan@redhat.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: Re: [PATCH 1/3] watchdog: sync linux-omap changes
+Message-ID: <20080923083915.GS22550@infomag.infomag.iguana.be>
+References: <1221873243-18303-1-git-send-email-me@felipebalbi.com> <1221873243-18303-2-git-send-email-me@felipebalbi.com> <20080922182206.GM22550@infomag.infomag.iguana.be> <20080922191353.GB8314@flint.arm.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080922195810.624d777a@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0005]
+In-Reply-To: <20080922191353.GB8314@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Russell,
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+> It's unused, but it's a minor point, something that shouldn't stand
+> in the way of it going into the watchdog tree.  It doesn't cause a
+> build error and doesn't cause malfunction.  It's just a little untidy
+> and can be addressed separately.
 
-> updated patch based on feedback from Randy that I should fix 
-> whitespace issues while moving code
+We will need to address it later then. I just added the patches to the
+linux-2.6-watchdog-mm tree.
 
-but that's wrong. You should _never_ change code while moving it because 
-it's utterly unreviewable. Please split into two patches: first move the 
-code, then do the style cleanups in the target file.
+> +               omap_wdt_set_timeout(wdev);
+> +               omap_wdt_enable(wdev);
+>                 spin_unlock(&wdt_lock);
+> +
+> +               omap_wdt_ping(wdev);
+> 
+> which is moving omap_wdt_ping() outside of the spin lock, which I
+> doubt actually causes any problem in real life on OMAP platforms.
+> Granted that theoretically and logically it's wrong.
 
-also, could you please rename the new file to check.c - it's shorter and 
-we might check other things there too.
+And since this is indeed wrong, I changed this back.
 
-	Ingo
+Kind regards,
+Wim.
+
