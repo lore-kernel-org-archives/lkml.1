@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbYIWFnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYIWFpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbYIWFnl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 01:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYIWFnd
+	id S1755029AbYIWFpf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 01:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYIWFpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 01:43:33 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:46826 "EHLO
-	WA4EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751438AbYIWFnc (ORCPT
+	Tue, 23 Sep 2008 01:45:24 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:31016 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751859AbYIWFpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 01:43:32 -0400
-X-BigFish: VPS-34(zz1432R98dR1805M936fO3117Kzzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0K7MVWB-02-V9V-01
-Date: Tue, 23 Sep 2008 07:42:48 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Valdis.Kletnieks@vt.edu, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: c1e_idle: don't mark TSC unstable if CPU has
-	invariant TSC
-Message-ID: <20080923054248.GB16896@alberich.amd.com>
-References: <20080918191210.GD23287@alberich.amd.com> <27087.1221766532@turing-police.cc.vt.edu> <20080919172019.GA16896@alberich.amd.com> <20080920061457.GE25713@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080920061457.GE25713@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 23 Sep 2008 05:43:21.0582 (UTC) FILETIME=[49D830E0:01C91D3F]
+	Tue, 23 Sep 2008 01:45:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=c20s2+mFE6GYgpAsYtPpcOmQCCyoUGSVvl3Z/KVf64Qm5olGtpRj0B8wLnsMsA4OrX
+         qc/Z01jBCSXdauFerMWg8fRmT6QjndlyqyorXkluRVP1qzLYkpM+1ibdVPrzFyi+wyvj
+         1Nt0nCT669vBo1xElAT/iC93hxanKtQGjF1RI=
+Subject: Re: SCTP checksum patch for 2.6.26.5
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: David Miller <davem@davemloft.net>, nickolay@protei.ru,
+       linux-kernel@vger.kernel.org, linux-sctp@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20080923051920.GD24654@1wt.eu>
+References: <48D7C0A2.9090406@protei.ru>
+	 <20080922.131245.193705447.davem@davemloft.net>
+	 <20080923051920.GD24654@1wt.eu>
+Content-Type: text/plain
+Date: Mon, 22 Sep 2008 22:45:18 -0700
+Message-Id: <1222148718.16003.1.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 20, 2008 at 08:14:57AM +0200, Ingo Molnar wrote:
+On Tue, 2008-09-23 at 07:19 +0200, Willy Tarreau wrote:
+> On Mon, Sep 22, 2008 at 01:12:45PM -0700, David Miller wrote:
+> > From: Nickolay Vinogradov <nickolay@protei.ru>
+> > Date: Mon, 22 Sep 2008 19:58:26 +0400
+> > 
+> > CC:'ing correct mailing lists...
+> > 
+> Nickolay,
 > 
-> * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+> you should use swab32(~crc32) instead. It will make use of arch-specific
+> optimisations when available (eg: bswap on x86).
 > 
-> > Currently the kernel assumes TSC is stable and there are various 
-> > places where Linux might spot when TSC is unstable. c1e_idle is one 
-> > such place. But it's wrong to mark TSC unstable for all AMD CPUs in 
-> > this function as newer CPU families have TSC's that are P- and C-state 
-> > invariant.
-> 
-> i agree with the purpose of the patch (as it flags the first really sane 
-> TSC implementation on x86!!!) - but it would be nice to indicate this in 
-> a different CPU feature bit other than X86_FEATURE_CONSTANT_TSC, to 
-> reduce confusion. Perhaps introduce a virtual CPU feature bit for that?
+> Willy
 
-Yes, I thought about it as well, but at the moment I don't see a big
-benefit. I guess you mean that with a new feature bit we could skip
-all those additional checks for good TSCs if the bit is set or exit
-mark_tsc_unstable() early?
+Or look at:
+commit 336d3262df71fcd2661180bb35d5ea41b4cbca58
+Author: Harvey Harrison <harvey.harrison@gmail.com>
+Date:   Fri Jul 18 23:07:09 2008 -0700
 
-But I've observed on one test machine with a dual-core CPU that TSC's
-were P- and C-state invariant but they also had a constant difference
-which was large enough to cause a
-  "Measured ... cycles TSC warp between CPUs, turning off TSC clock"
-message. It was a family 0x11 CPU which has invariant TSCs and
-for it the X86_FEATURE_CONSTANT_TSC bit is set. But obviously both
-cores' TSCs were not correctly synced among themselves at start time.
+    sctp: remove unnecessary byteshifting, calculate directly in big-endian
 
-Thus I think the current behaviour of the kernel to check for good TSC
-in different places is the right thing to do because it is robust enough
-to detect such unexpected behaviour.
+In Linus' tree.
 
+Cheers,
 
-Regards,
-
-Andreas
-
+Harvey
 
