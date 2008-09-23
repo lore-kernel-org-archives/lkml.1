@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYIWI7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbYIWJAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbYIWI7V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 04:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYIWI7K
+	id S1754292AbYIWJAn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 05:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbYIWJAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 04:59:10 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:5042 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbYIWI7I convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 04:59:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZfUNGcjd4N0/cPo4TjChyBZ7e/Yd5KNPFB827T0D6W2woscJhRNNb7dEhKd1eQAePS
-         yb5peflM7Ofwxm7KegW2rLUteJvGurYtn8isfKhOAYAIIAbUlK7joP/4q4DRb4YFcthQ
-         0xu2F64mom+AQGG2nTbCjMXjlKi3drqFs+ggQ=
-Message-ID: <ed7dcf450809230159o16ed28ffweacf46aed08cf345@mail.gmail.com>
-Date: Tue, 23 Sep 2008 10:59:06 +0200
-From: "=?ISO-8859-1?Q?S=F8ren_Hauberg?=" <hauberg@gmail.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: [PATCH] usbtouchscreen, 2.6.25
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-In-Reply-To: <200809231055.35919.oliver@neukum.org>
+	Tue, 23 Sep 2008 05:00:33 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:52520 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751683AbYIWJAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 05:00:32 -0400
+Date: Tue, 23 Sep 2008 11:00:29 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+Cc: Martin Steigerwald <ms@teamix.de>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Documentation on CFQ iosched parameters
+Message-ID: <20080923090029.GV26460@kernel.dk>
+References: <200809221715.33143.ms@teamix.de> <48D85F49.4080001@gelato.unsw.edu.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <ed7dcf450809230142l62bb00aapb92e6cb225f0cbba@mail.gmail.com>
-	 <200809231055.35919.oliver@neukum.org>
+In-Reply-To: <48D85F49.4080001@gelato.unsw.edu.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/23 Oliver Neukum <oliver@neukum.org>:
-> Am Dienstag 23 September 2008 10:42:56 schrieb Søren Hauberg:
->> calibration parameters in the kernel. That way, we can also get usable
->> touchscreens without X, without having to write special purpose
->
->
-> Is that a realistic use?
+On Tue, Sep 23 2008, Aaron Carroll wrote:
+> Martin Steigerwald wrote:
+> >Hi!
+> >
+> >I am searching documentation about CFQ io scheduler. I can't find it in 
+> >linux 2.6.26 Documentation directory.
+> >
+> >I found about these in german[1]:
+> >
+> >back_seek_max:16384
+> >back_seek_penalty:2
+> >fifo_expire_async:250
+> >fifo_expire_sync:123
+> >quantum:4
+> >
+> >But I am completely missing about these:
+> >
+> >slice_async:40
+> 
+> Base length of an asynchronous queue timeslice (that is, how long the
+> queue has to dispatch requests each round).  The actual timeslice
+> length is scaled by the I/O priority.
+> 
+> >slice_async_rq:2
+> 
+> The base number of requests per round for asynchronous queues.  Like
+> slice_async, the actual maximum is a function of slice_async_rq and I/O
+> priority.
+> 
+> >slice_idle:6
+> 
+> How long to wait for processes to produce more I/O before switching
+> queues. This is for anticipation of sequential I/O, and more even disk
+> time distribution for processes doing back to back synchronous I/Os.
+> 
+> >slice_sync:100
+> 
+> Same as slice_async, but for synchronous requests.
 
-Perhaps for people using the framebuffer to create GUIs? To me, it's
-not important, but I guess it's a positive side-effect.
+Nothing further to add, Aaron nailed them.
 
-Søren
+-- 
+Jens Axboe
+
