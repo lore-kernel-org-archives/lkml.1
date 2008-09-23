@@ -1,92 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbYIWOAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbYIWOBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbYIWOAv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 10:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbYIWNvM
+	id S1757572AbYIWOBe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 10:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbYIWNx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:51:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43530 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:53:28 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:42312 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755192AbYIWNvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:51:10 -0400
-From: Avi Kivity <avi@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: [PATCH 39/40] KVM: Reduce stack usage in kvm_arch_vcpu_ioctl()
-Date: Tue, 23 Sep 2008 16:46:53 +0300
-Message-Id: <1222177614-26669-40-git-send-email-avi@redhat.com>
-In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
-References: <1222177614-26669-1-git-send-email-avi@redhat.com>
+	id S1753316AbYIWNx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:53:27 -0400
+Date: Tue, 23 Sep 2008 17:59:17 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frank Mayhar <fmayhar@google.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2.6.27-rc5 re-resubmit] Fix itimer/many thread hang.
+Message-ID: <20080923135917.GA285@tv-sign.ru>
+References: <1221238479.30136.2.camel@bobble.smo.corp.google.com> <20080914150651.GK12522@elte.hu> <20080914150923.GB26984@elte.hu> <1221502142.19012.35.camel@bobble.smo.corp.google.com> <20080916084143.GC17287@elte.hu> <1221678187.13420.17.camel@bobble.smo.corp.google.com> <20080918102353.GD20967@elte.hu> <1222114936.21579.20.camel@bobble.smo.corp.google.com> <20080923114033.GB14840@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080923114033.GB14840@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Hansen <dave@linux.vnet.ibm.com>
+On 09/23, Ingo Molnar wrote:
+>
+> below is the delta patch i've applied to tip/timers/posixtimers - might 
+> be easier to review for those who've seen v1 and who'd like to check the 
+> changes.
+> ...
+>
+> +unsigned long long task_delta_exec(struct task_struct *p)
+>  {
+> +	struct rq *rq;
+> +	unsigned long flags;
+> +	u64 ns = 0;
+> +
+> +	rq = task_rq_lock(p, &flags);
+>  	if (task_current(rq, p)) {
+>  		u64 delta_exec;
+>  
+>  		update_rq_clock(rq);
+>  		delta_exec = rq->clock - p->se.exec_start;
+>  		if ((s64)delta_exec > 0)
+> -			return delta_exec;
+> +			ns = delta_exec;
+>  	}
+> -	return 0;
+> -}
+> -
+> -/*
+> - * Return p->sum_exec_runtime plus any more ns on the sched_clock
+> - * that have not yet been banked in case the task is currently running.
+> - */
+> -unsigned long long task_sched_runtime(struct task_struct *p)
+> -{
+> -	unsigned long flags;
+> -	u64 ns;
+> -	struct rq *rq;
+> -
+> -	rq = task_rq_lock(p, &flags);
+> -	ns = p->se.sum_exec_runtime + task_delta_exec(p, rq);
+> -	task_rq_unlock(rq, &flags);
+> -
+> -	return ns;
+> -}
+> -
+> -/*
+> - * Return sum_exec_runtime for the thread group plus any more ns on the
+> - * sched_clock that have not yet been banked in case the task is currently
+> - * running.
+> - */
+> -unsigned long long thread_group_sched_runtime(struct task_struct *p)
+> -{
+> -	unsigned long flags;
+> -	u64 ns;
+> -	struct rq *rq;
+> -	struct task_cputime totals;
+> -
+> -	rq = task_rq_lock(p, &flags);
+> -	thread_group_cputime(p, &totals);
+> -	ns = totals.sum_exec_runtime + task_delta_exec(p, rq);
+> -	task_rq_unlock(rq, &flags);
+>
+>  	return ns;
 
-[sheng: fix KVM_GET_LAPIC using wrong size]
+Looks like task_delta_exec() forgets to unlock rq.
 
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
-Signed-off-by: Sheng Yang <sheng.yang@intel.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- arch/x86/kvm/x86.c |   23 +++++++++++++++--------
- 1 files changed, 15 insertions(+), 8 deletions(-)
+> +static inline void thread_group_cputime_account_exec_runtime(
+> +	struct thread_group_cputime *tgtimes,
+> +	unsigned long long ns)
+> +{
+> +	if (tgtimes->totals) {
+> +		struct task_cputime *times;
+> +
+> +		times = per_cpu_ptr(tgtimes->totals, get_cpu());
+> +		times->sum_exec_runtime += ns;
+> +		put_cpu_no_resched();
+> +	}
+> +}
+> +
+> +#else /* CONFIG_SMP */
+> +
+> +static inline void thread_group_cputime_account_user(
+> +	struct thread_group_cputime *tgtimes,
+> +	cputime_t cputime)
+> +{
+> +	tgtimes->totals->utime = cputime_add(tgtimes->totals->utime, cputime);
+> +}
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 87d4342..f1b0223 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -1542,28 +1542,33 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
- 	struct kvm_vcpu *vcpu = filp->private_data;
- 	void __user *argp = (void __user *)arg;
- 	int r;
-+	struct kvm_lapic_state *lapic = NULL;
- 
- 	switch (ioctl) {
- 	case KVM_GET_LAPIC: {
--		struct kvm_lapic_state lapic;
-+		lapic = kzalloc(sizeof(struct kvm_lapic_state), GFP_KERNEL);
- 
--		memset(&lapic, 0, sizeof lapic);
--		r = kvm_vcpu_ioctl_get_lapic(vcpu, &lapic);
-+		r = -ENOMEM;
-+		if (!lapic)
-+			goto out;
-+		r = kvm_vcpu_ioctl_get_lapic(vcpu, lapic);
- 		if (r)
- 			goto out;
- 		r = -EFAULT;
--		if (copy_to_user(argp, &lapic, sizeof lapic))
-+		if (copy_to_user(argp, lapic, sizeof(struct kvm_lapic_state)))
- 			goto out;
- 		r = 0;
- 		break;
- 	}
- 	case KVM_SET_LAPIC: {
--		struct kvm_lapic_state lapic;
--
-+		lapic = kmalloc(sizeof(struct kvm_lapic_state), GFP_KERNEL);
-+		r = -ENOMEM;
-+		if (!lapic)
-+			goto out;
- 		r = -EFAULT;
--		if (copy_from_user(&lapic, argp, sizeof lapic))
-+		if (copy_from_user(lapic, argp, sizeof(struct kvm_lapic_state)))
- 			goto out;
--		r = kvm_vcpu_ioctl_set_lapic(vcpu, &lapic);;
-+		r = kvm_vcpu_ioctl_set_lapic(vcpu, lapic);
- 		if (r)
- 			goto out;
- 		r = 0;
-@@ -1661,6 +1666,8 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
- 		r = -EINVAL;
- 	}
- out:
-+	if (lapic)
-+		kfree(lapic);
- 	return r;
- }
- 
--- 
-1.6.0.1
+Confused. Unless I misread the patch, tgtimes->totals can be NULL
+on UP too?
+
+Do we really need the special version for !CONFIG_SMP ? per_cpu_ptr()
+just returns the pointer. Yes, get_cpu() disables preemption, but
+perhaps this is tolerable?
+
+
+(of course, this can't explain the crash)
+
+Oleg.
 
