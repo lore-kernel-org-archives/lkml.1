@@ -1,52 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYIWA1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbYIWAfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754178AbYIWA1R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 20:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYIWA1G
+	id S1754314AbYIWAfg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 20:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbYIWAf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 20:27:06 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:46600 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753030AbYIWA1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 20:27:05 -0400
-Subject: Re: [PATCH 1/2] mfd: Core support for the WM8400 AudioPlus HiFi
-	CODEC and PMU
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Samuel Ortiz <sameo@openedhand.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080922183324.GA4886@localdomain>
-References: <20080916094201.GA15271@rakim.wolfsonmicro.main>
-	 <1221558194-15505-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <20080922183324.GA4886@localdomain>
-Content-Type: text/plain
-Date: Tue, 23 Sep 2008 01:27:01 +0100
-Message-Id: <1222129621.6884.1.camel@dell-desktop.example.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Sep 2008 20:35:27 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:53048 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753427AbYIWAf0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 20:35:26 -0400
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH, RFC] ext4: Use preallocation when reading from the inode table
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KhvsB-0002Ik-Ex@closure.thunk.org>
+Date: Mon, 22 Sep 2008 20:35:23 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-22 at 20:33 +0200, Samuel Ortiz wrote:
-> On Tue, Sep 16, 2008 at 10:43:13AM +0100, Mark Brown wrote:
-> > The WM8400 is a highly integrated audio CODEC and power management
-> unit
-> > optimised for use in mobile multimedia applications.  This patch adds
-> > core support for the WM8400 to the MFD subsystem.
-> > 
-> > Both I2C and SPI access are supported by the hardware but currently only
-> > I2C access is implemented.  The code is structured to allow SPI support
-> > to be slotted in later.
-> > 
-> > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> If it's not too late:
-> Acked-by: Samuel Ortiz <sameo@openedhand.com>
 
-It isn't :)
+With modern hard drives, reading 64k takes roughly the same time as
+reading a 4k block.  So request adjacent inode table blocks to reduce
+the time it takes when iterating over directories (especially when doing
+this in htree sort order) in a cold cache case.  With this patch, the
+time it takes to run "git status" on a kernel tree after flushing the
+caches via "echo 3 > /proc/sys/vm/drop_caches", is reduced by 21%.
 
-Thanks. Will pull & push to voltage tree.
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+----
 
-Liam
+Note: this patch could work for ext3 as well.  Anyone see any downsides?
+A 20% improvement seems too easy...  I guess it does increase what we
+hold in the buffer cache by a small amount, but once the inodes are
+cached, we'll stop needing to do any I/O, and we only try to do the
+readahead when we know that we need to do some I/O anyway.
 
+This patch also eliminates ext4_get_inode_block(), since it's a static
+function which is only called once, and we needed access to the block
+group descriptor, so it simplified the code to move the code into
+__ext4_get_inode_loc().  The interesting bits are in the very last hunk
+of the patch.
+
+
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index eed1265..9f6c10e 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -3833,41 +3833,6 @@ out_stop:
+ 	ext4_journal_stop(handle);
+ }
+ 
+-static ext4_fsblk_t ext4_get_inode_block(struct super_block *sb,
+-		unsigned long ino, struct ext4_iloc *iloc)
+-{
+-	ext4_group_t block_group;
+-	unsigned long offset;
+-	ext4_fsblk_t block;
+-	struct ext4_group_desc *gdp;
+-
+-	if (!ext4_valid_inum(sb, ino)) {
+-		/*
+-		 * This error is already checked for in namei.c unless we are
+-		 * looking at an NFS filehandle, in which case no error
+-		 * report is needed
+-		 */
+-		return 0;
+-	}
+-
+-	block_group = (ino - 1) / EXT4_INODES_PER_GROUP(sb);
+-	gdp = ext4_get_group_desc(sb, block_group, NULL);
+-	if (!gdp)
+-		return 0;
+-
+-	/*
+-	 * Figure out the offset within the block group inode table
+-	 */
+-	offset = ((ino - 1) % EXT4_INODES_PER_GROUP(sb)) *
+-		EXT4_INODE_SIZE(sb);
+-	block = ext4_inode_table(sb, gdp) +
+-		(offset >> EXT4_BLOCK_SIZE_BITS(sb));
+-
+-	iloc->block_group = block_group;
+-	iloc->offset = offset & (EXT4_BLOCK_SIZE(sb) - 1);
+-	return block;
+-}
+-
+ /*
+  * ext4_get_inode_loc returns with an extra refcount against the inode's
+  * underlying buffer_head on success. If 'in_mem' is true, we have all
+@@ -3877,13 +3842,30 @@ static ext4_fsblk_t ext4_get_inode_block(struct super_block *sb,
+ static int __ext4_get_inode_loc(struct inode *inode,
+ 				struct ext4_iloc *iloc, int in_mem)
+ {
++	struct ext4_group_desc *gdp;
+ 	ext4_fsblk_t block;
+ 	struct buffer_head *bh;
+ 
+-	block = ext4_get_inode_block(inode->i_sb, inode->i_ino, iloc);
+-	if (!block)
++	iloc->bh = 0;
++	if (!ext4_valid_inum(inode->i_sb, inode->i_ino))
+ 		return -EIO;
+ 
++	iloc->block_group = (inode->i_ino - 1) / 
++		EXT4_INODES_PER_GROUP(inode->i_sb);
++	gdp = ext4_get_group_desc(inode->i_sb, iloc->block_group, NULL);
++	if (!gdp)
++		return -EIO;
++
++	/*
++	 * Figure out the offset within the block group inode table
++	 */
++	iloc->offset = ((inode->i_ino - 1) % 
++			EXT4_INODES_PER_GROUP(inode->i_sb)) *
++		EXT4_INODE_SIZE(inode->i_sb);
++	block = ext4_inode_table(inode->i_sb, gdp) +
++		(iloc->offset >> EXT4_BLOCK_SIZE_BITS(inode->i_sb));
++	iloc->offset = iloc->offset & (EXT4_BLOCK_SIZE(inode->i_sb) - 1);
++
+ 	bh = sb_getblk(inode->i_sb, block);
+ 	if (!bh) {
+ 		ext4_error (inode->i_sb, "ext4_get_inode_loc",
+@@ -3969,6 +3951,31 @@ static int __ext4_get_inode_loc(struct inode *inode,
+ 
+ make_io:
+ 		/*
++		 * If we need to do any I/O, try to readahead up to 16
++		 * blocks from the inode table.
++		 */
++		{
++			ext4_fsblk_t b, end, table;
++			unsigned num;
++
++			table = ext4_inode_table(inode->i_sb, gdp);
++			b = block & ~15;
++			if (table > b)
++				b = table;
++			end = b+16;
++			num = EXT4_INODES_PER_GROUP(inode->i_sb);
++			if (EXT4_HAS_RO_COMPAT_FEATURE(inode->i_sb, 
++				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
++				num -= le16_to_cpu(gdp->bg_itable_unused);
++			table += num / (EXT4_BLOCK_SIZE(inode->i_sb) /
++					EXT4_INODE_SIZE(inode->i_sb));
++			if (end > table)
++				end = table;
++			while (b <= end)
++				sb_breadahead(inode->i_sb, b++);
++		}
++
++		/*
+ 		 * There are other valid inodes in the buffer, this inode
+ 		 * has in-inode xattrs, or we don't have this inode in memory.
+ 		 * Read the block from disk.
