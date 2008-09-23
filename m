@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751775AbYIWQK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbYIWQLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751775AbYIWQK0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 12:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYIWQKR
+	id S1754027AbYIWQLX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 12:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYIWQLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 12:10:17 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:43506 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141AbYIWQKQ (ORCPT
+	Tue, 23 Sep 2008 12:11:14 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:56830 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbYIWQLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 12:10:16 -0400
-Message-ID: <48D914DD.7080702@freescale.com>
-Date: Tue, 23 Sep 2008 11:10:05 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: Ira Snyder <iws@ovro.caltech.edu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Problems with Freescale DMA driver
-References: <20080825165133.GA20446@ovro.caltech.edu> <e9c3a7c20809181458p4cabccblfde6a92bf35976ee@mail.gmail.com> <48D2D00B.3010001@freescale.com> <20080922230435.GA20825@ovro.caltech.edu> <48D8F73A.4050004@freescale.com> <20080923155935.GA7449@ovro.caltech.edu>
-In-Reply-To: <20080923155935.GA7449@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 23 Sep 2008 12:11:13 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=subject:from:to:cc:in-reply-to:references:content-type:
+	organization:date:message-id:mime-version:x-mailer:
+	content-transfer-encoding:x-gmailtapped-by;
+	b=BRJXD8UAS/lrQfRUxq/P2rUoYHH/q1zXO+Ph6dJlqykOJYd0XaGgnH0SGvkeT2VQX
+	odbH9nyhkotwInih6CvDw==
+Subject: Re: [PATCH 2.6.27-rc5 re-resubmit] Fix itimer/many thread hang.
+From: Frank Mayhar <fmayhar@google.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080923135917.GA285@tv-sign.ru>
+References: <1221238479.30136.2.camel@bobble.smo.corp.google.com>
+	 <20080914150651.GK12522@elte.hu> <20080914150923.GB26984@elte.hu>
+	 <1221502142.19012.35.camel@bobble.smo.corp.google.com>
+	 <20080916084143.GC17287@elte.hu>
+	 <1221678187.13420.17.camel@bobble.smo.corp.google.com>
+	 <20080918102353.GD20967@elte.hu>
+	 <1222114936.21579.20.camel@bobble.smo.corp.google.com>
+	 <20080923114033.GB14840@elte.hu>  <20080923135917.GA285@tv-sign.ru>
+Content-Type: text/plain
+Organization: Google, Inc.
+Date: Tue, 23 Sep 2008 09:09:57 -0700
+Message-Id: <1222186197.1408.2.camel@bobble.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.19
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Removing various CC:'s since this thread is changing topic)
+On Tue, 2008-09-23 at 17:59 +0400, Oleg Nesterov wrote:
+> Confused. Unless I misread the patch, tgtimes->totals can be NULL
+> on UP too?
 
-Ira Snyder wrote:
+Yep.  I've had about four different irons in the fire over the last few
+days and I think because of that I ended up giving this less attention
+than I should have.  I'll beat on this some more and reroll the patch in
+the next day or so.
 
-> I hope that makes sense. I can post the code if anyone would like to see
-> it. It is not ready for mainline inclusion yet, but it is in a fairly
-> good state.
+I'll also provide the delta patch as Ingo requested.
 
-Well, it's a bit goofy, but it does make sense.  Since you don't have an actual
-single-function PCI device, you need to use the MPC8349's DMA controller.
-
-I don't see where you need the ability to reserve a DMA channel, though.  You're
-using fsldma.c as its intended.
-
-> Ok. I was just wondering, since drivers/dma/fsl_dma.c has some code that
-> appears to handle external master. It is 85XX specific though. There are
-> no users in the kernel tree showing example uses.
-
-Indeed it does.  It looks like a feature that was thrown in but never given much
-thought or testing.  It appears that the current code just lets you turn on the
-external master pause bit in the MR register, but there's nothing to make sure
-that it actually works in a meaningful way.  If there's a queue of transfers for
-a given channel, I don't see where the fsldma avoids stalled queues.
-
+Sorry, folks.
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
+
