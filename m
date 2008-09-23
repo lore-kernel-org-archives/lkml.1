@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbYIWNwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbYIWNxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbYIWNwZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbYIWNrg
+	id S1754974AbYIWNxV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYIWNrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:47:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52383 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:47:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52353 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753379AbYIWNr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:47:26 -0400
+	id S1752460AbYIWNrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:47:11 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 17/40] KVM: VMX: Unify register save/restore across 32 and 64 bit hosts
-Date: Tue, 23 Sep 2008 16:46:31 +0300
-Message-Id: <1222177614-26669-18-git-send-email-avi@redhat.com>
+Subject: [PATCH 07/40] KVM: Move NMI IRET fault processing to new vmx_complete_interrupts()
+Date: Tue, 23 Sep 2008 16:46:21 +0300
+Message-Id: <1222177614-26669-8-git-send-email-avi@redhat.com>
 In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
 References: <1222177614-26669-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,164 +23,81 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Avi Kivity <avi@qumranet.com>
 
+Currently most interrupt exit processing is handled on the entry path,
+which is confusing.  Move the NMI IRET fault processing to a new function,
+vmx_complete_interrupts(), which is called on the vmexit path.
+
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/vmx.c |   90 +++++++++++++++++++++-------------------------------
- 1 files changed, 36 insertions(+), 54 deletions(-)
+ arch/x86/kvm/vmx.c |   36 ++++++++++++++++++++++++------------
+ 1 files changed, 24 insertions(+), 12 deletions(-)
 
 diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 2879880..fc8996b 100644
+index 5a3a032..2adfacb 100644
 --- a/arch/x86/kvm/vmx.c
 +++ b/arch/x86/kvm/vmx.c
-@@ -2955,6 +2955,14 @@ static void fixup_rmode_irq(struct vcpu_vmx *vmx)
- 		| vmx->rmode.irq.vector;
+@@ -2817,6 +2817,27 @@ static void enable_intr_window(struct kvm_vcpu *vcpu)
+ 		enable_irq_window(vcpu);
  }
  
-+#ifdef CONFIG_X86_64
-+#define R "r"
-+#define Q "q"
-+#else
-+#define R "e"
-+#define Q "l"
-+#endif
++static void vmx_complete_interrupts(struct vcpu_vmx *vmx)
++{
++	u32 exit_intr_info;
++	bool unblock_nmi;
++	u8 vector;
 +
- static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
++	exit_intr_info = vmcs_read32(VM_EXIT_INTR_INFO);
++	if (cpu_has_virtual_nmis()) {
++		unblock_nmi = (exit_intr_info & INTR_INFO_UNBLOCK_NMI) != 0;
++		vector = exit_intr_info & INTR_INFO_VECTOR_MASK;
++		/*
++		 * SDM 3: 25.7.1.2
++		 * Re-set bit "block by NMI" before VM entry if vmexit caused by
++		 * a guest IRET fault.
++		 */
++		if (unblock_nmi && vector != DF_VECTOR)
++			vmcs_set_bits(GUEST_INTERRUPTIBILITY_INFO,
++				      GUEST_INTR_STATE_NMI);
++	}
++}
++
+ static void vmx_intr_assist(struct kvm_vcpu *vcpu)
  {
  	struct vcpu_vmx *vmx = to_vmx(vcpu);
-@@ -2972,26 +2980,21 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 
- 	asm(
- 		/* Store host registers */
--#ifdef CONFIG_X86_64
--		"push %%rdx; push %%rbp;"
--		"push %%rcx \n\t"
--#else
--		"push %%edx; push %%ebp;"
--		"push %%ecx \n\t"
--#endif
-+		"push %%"R"dx; push %%"R"bp;"
-+		"push %%"R"cx \n\t"
- 		__ex(ASM_VMX_VMWRITE_RSP_RDX) "\n\t"
- 		/* Check if vmlaunch of vmresume is needed */
- 		"cmpl $0, %c[launched](%0) \n\t"
- 		/* Load guest registers.  Don't clobber flags. */
-+		"mov %c[cr2](%0), %%"R"ax \n\t"
-+		"mov %%"R"ax, %%cr2 \n\t"
-+		"mov %c[rax](%0), %%"R"ax \n\t"
-+		"mov %c[rbx](%0), %%"R"bx \n\t"
-+		"mov %c[rdx](%0), %%"R"dx \n\t"
-+		"mov %c[rsi](%0), %%"R"si \n\t"
-+		"mov %c[rdi](%0), %%"R"di \n\t"
-+		"mov %c[rbp](%0), %%"R"bp \n\t"
- #ifdef CONFIG_X86_64
--		"mov %c[cr2](%0), %%rax \n\t"
--		"mov %%rax, %%cr2 \n\t"
--		"mov %c[rax](%0), %%rax \n\t"
--		"mov %c[rbx](%0), %%rbx \n\t"
--		"mov %c[rdx](%0), %%rdx \n\t"
--		"mov %c[rsi](%0), %%rsi \n\t"
--		"mov %c[rdi](%0), %%rdi \n\t"
--		"mov %c[rbp](%0), %%rbp \n\t"
- 		"mov %c[r8](%0),  %%r8  \n\t"
- 		"mov %c[r9](%0),  %%r9  \n\t"
- 		"mov %c[r10](%0), %%r10 \n\t"
-@@ -3000,18 +3003,9 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		"mov %c[r13](%0), %%r13 \n\t"
- 		"mov %c[r14](%0), %%r14 \n\t"
- 		"mov %c[r15](%0), %%r15 \n\t"
--		"mov %c[rcx](%0), %%rcx \n\t" /* kills %0 (rcx) */
--#else
--		"mov %c[cr2](%0), %%eax \n\t"
--		"mov %%eax,   %%cr2 \n\t"
--		"mov %c[rax](%0), %%eax \n\t"
--		"mov %c[rbx](%0), %%ebx \n\t"
--		"mov %c[rdx](%0), %%edx \n\t"
--		"mov %c[rsi](%0), %%esi \n\t"
--		"mov %c[rdi](%0), %%edi \n\t"
--		"mov %c[rbp](%0), %%ebp \n\t"
--		"mov %c[rcx](%0), %%ecx \n\t" /* kills %0 (ecx) */
- #endif
-+		"mov %c[rcx](%0), %%"R"cx \n\t" /* kills %0 (ecx) */
-+
- 		/* Enter guest mode */
- 		"jne .Llaunched \n\t"
- 		__ex(ASM_VMX_VMLAUNCH) "\n\t"
-@@ -3019,15 +3013,15 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		".Llaunched: " __ex(ASM_VMX_VMRESUME) "\n\t"
- 		".Lkvm_vmx_return: "
- 		/* Save guest registers, load host registers, keep flags */
-+		"xchg %0,     (%%"R"sp) \n\t"
-+		"mov %%"R"ax, %c[rax](%0) \n\t"
-+		"mov %%"R"bx, %c[rbx](%0) \n\t"
-+		"push"Q" (%%"R"sp); pop"Q" %c[rcx](%0) \n\t"
-+		"mov %%"R"dx, %c[rdx](%0) \n\t"
-+		"mov %%"R"si, %c[rsi](%0) \n\t"
-+		"mov %%"R"di, %c[rdi](%0) \n\t"
-+		"mov %%"R"bp, %c[rbp](%0) \n\t"
- #ifdef CONFIG_X86_64
--		"xchg %0,     (%%rsp) \n\t"
--		"mov %%rax, %c[rax](%0) \n\t"
--		"mov %%rbx, %c[rbx](%0) \n\t"
--		"pushq (%%rsp); popq %c[rcx](%0) \n\t"
--		"mov %%rdx, %c[rdx](%0) \n\t"
--		"mov %%rsi, %c[rsi](%0) \n\t"
--		"mov %%rdi, %c[rdi](%0) \n\t"
--		"mov %%rbp, %c[rbp](%0) \n\t"
- 		"mov %%r8,  %c[r8](%0) \n\t"
- 		"mov %%r9,  %c[r9](%0) \n\t"
- 		"mov %%r10, %c[r10](%0) \n\t"
-@@ -3036,24 +3030,11 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		"mov %%r13, %c[r13](%0) \n\t"
- 		"mov %%r14, %c[r14](%0) \n\t"
- 		"mov %%r15, %c[r15](%0) \n\t"
--		"mov %%cr2, %%rax   \n\t"
--		"mov %%rax, %c[cr2](%0) \n\t"
+@@ -2873,23 +2894,12 @@ static void vmx_intr_assist(struct kvm_vcpu *vcpu)
+ 		return;
+ 	}
+ 	if (cpu_has_virtual_nmis()) {
+-		/*
+-		 * SDM 3: 25.7.1.2
+-		 * Re-set bit "block by NMI" before VM entry if vmexit caused by
+-		 * a guest IRET fault.
+-		 */
+-		if ((exit_intr_info_field & INTR_INFO_UNBLOCK_NMI) &&
+-		    (exit_intr_info_field & INTR_INFO_VECTOR_MASK) != 8)
+-			vmcs_write32(GUEST_INTERRUPTIBILITY_INFO,
+-				vmcs_read32(GUEST_INTERRUPTIBILITY_INFO) |
+-				GUEST_INTR_STATE_NMI);
+-		else if (vcpu->arch.nmi_pending) {
++		if (vcpu->arch.nmi_pending) {
+ 			if (vmx_nmi_enabled(vcpu))
+ 				vmx_inject_nmi(vcpu);
+ 			enable_intr_window(vcpu);
+ 			return;
+ 		}
 -
--		"pop  %%rbp; pop  %%rbp; pop  %%rdx \n\t"
--#else
--		"xchg %0, (%%esp) \n\t"
--		"mov %%eax, %c[rax](%0) \n\t"
--		"mov %%ebx, %c[rbx](%0) \n\t"
--		"pushl (%%esp); popl %c[rcx](%0) \n\t"
--		"mov %%edx, %c[rdx](%0) \n\t"
--		"mov %%esi, %c[rsi](%0) \n\t"
--		"mov %%edi, %c[rdi](%0) \n\t"
--		"mov %%ebp, %c[rbp](%0) \n\t"
--		"mov %%cr2, %%eax  \n\t"
--		"mov %%eax, %c[cr2](%0) \n\t"
--
--		"pop %%ebp; pop %%ebp; pop %%edx \n\t"
- #endif
-+		"mov %%cr2, %%"R"ax   \n\t"
-+		"mov %%"R"ax, %c[cr2](%0) \n\t"
+ 	}
+ 	if (!kvm_cpu_has_interrupt(vcpu))
+ 		return;
+@@ -3076,6 +3086,8 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 		KVMTRACE_0D(NMI, vcpu, handler);
+ 		asm("int $2");
+ 	}
 +
-+		"pop  %%"R"bp; pop  %%"R"bp; pop  %%"R"dx \n\t"
- 		"setbe %c[fail](%0) \n\t"
- 	      : : "c"(vmx), "d"((unsigned long)HOST_RSP),
- 		[launched]"i"(offsetof(struct vcpu_vmx, launched)),
-@@ -3077,11 +3058,9 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- #endif
- 		[cr2]"i"(offsetof(struct vcpu_vmx, vcpu.arch.cr2))
- 	      : "cc", "memory"
-+		, R"bx", R"di", R"si"
- #ifdef CONFIG_X86_64
--		, "rbx", "rdi", "rsi"
- 		, "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
--#else
--		, "ebx", "edi", "rsi"
- #endif
- 	      );
- 
-@@ -3111,6 +3090,9 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	vmx_complete_interrupts(vmx);
++	vmx_complete_interrupts(vmx);
  }
  
-+#undef R
-+#undef Q
-+
  static void vmx_free_vmcs(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 -- 
 1.6.0.1
 
