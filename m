@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYIWFTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYIWFVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbYIWFTt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 01:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYIWFTi
+	id S1754691AbYIWFVk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 01:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYIWFVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 01:19:38 -0400
-Received: from 1wt.eu ([62.212.114.60]:4441 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbYIWFTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 01:19:37 -0400
-Date: Tue, 23 Sep 2008 07:19:20 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: David Miller <davem@davemloft.net>
-Cc: nickolay@protei.ru, linux-kernel@vger.kernel.org,
-       linux-sctp@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: SCTP checksum patch for 2.6.26.5
-Message-ID: <20080923051920.GD24654@1wt.eu>
-References: <48D7C0A2.9090406@protei.ru> <20080922.131245.193705447.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080922.131245.193705447.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+	Tue, 23 Sep 2008 01:21:32 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:38119 "EHLO
+	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751505AbYIWFVc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 01:21:32 -0400
+In-Reply-To: <20080922141051.GA252@tv-sign.ru>
+References: <20080922040404.10477.24678.sendpatchset@localhost.localdomain> <20080922040417.10477.35834.sendpatchset@localhost.localdomain> <20080922141051.GA252@tv-sign.ru>
+Subject: Re: [PATCH 1/2]: workqueue: Implement the kernel API
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+X-Mailer: Lotus Notes Release 8.0.1 February 07, 2008
+Message-ID: <OF5B8F9145.E318A14A-ON652574CD.0011584E-652574CD.001D5C8F@in.ibm.com>
+From: Krishna Kumar2 <krkumar2@in.ibm.com>
+Date: Tue, 23 Sep 2008 10:50:42 +0530
+X-MIMETrack: Serialize by Router on d23ml172/23/M/IBM(Release 7.0.2FP2HF300 | September
+ 14, 2007) at 09/23/2008 10:53:38
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 01:12:45PM -0700, David Miller wrote:
-> From: Nickolay Vinogradov <nickolay@protei.ru>
-> Date: Mon, 22 Sep 2008 19:58:26 +0400
-> 
-> CC:'ing correct mailing lists...
-> 
-> > SCTP checksum calculation fix for BigEndian.
-> > ntohl() doesn't do anything on BigEndian.
-> > 
-> > diff --git a/Makefile b/Makefile
-> > diff --git a/include/net/sctp/checksum.h b/include/net/sctp/checksum.h
-> > index ba75c67..2f0ed64 100644
-> > --- a/include/net/sctp/checksum.h
-> > +++ b/include/net/sctp/checksum.h
-> > @@ -74,5 +74,19 @@ static inline __u32 sctp_update_cksum(__u8 *buffer, __u16 length, __u32 crc32)
-> > 
-> >   static inline __u32 sctp_end_cksum(__u32 crc32)
-> >   {
-> > -       return ntohl(~crc32);
-> > +       __u32 result;
-> > +       __u8 byte0, byte1, byte2, byte3;
-> > +
-> > +       result = ~crc32;
-> > +
-> > +       byte0 = result & 0xff;
-> > +       byte1 = (result>>8) & 0xff;
-> > +       byte2 = (result>>16) & 0xff;
-> > +       byte3 = (result>>24) & 0xff;
-> > +
-> > +       crc32 = ((byte0 << 24) |
-> > +                (byte1 << 16) |
-> > +                (byte2 << 8)  |
-> > +                byte3);
-> > +       return crc32;
-> >   }
+Oleg Nesterov <oleg@tv-sign.ru> wrote on 09/22/2008 07:40:51 PM:
 
-Nickolay,
+Thanks for your review comments, Oleg.
 
-you should use swab32(~crc32) instead. It will make use of arch-specific
-optimisations when available (eg: bswap on x86).
+> > + * Passing delay=0 will result in immediate queueing of the entry,
+whether
+> > + * queue'd earlier or otherwise.
+>
+> The comment doesn't match the code ;)
 
-Willy
+Right! The delay=0 doesn't result in immediate queueing of the entry iff
+the
+current time has just hit the expiry time (or the timer has not fired yet).
+The intention was to allow the existing code handle the timer/queueing in
+this case, but I agree the comment has to be changed to explain that.
+
+> > +       * Already present in workqueue. Check if the timer expiry is
+> > +       * the same. Also, optimize in case requests are within one
+> > +       * jiffy beyond the set expiry.
+> > +       */
+> > +      if (time_in_range(jiffies + delay, timer->expires,
+> > +              timer->expires + 1))
+> > +         return;
+>
+> Not that I argue, but do we really need to optimize this very unlikely
+case?
+
+Agree.
+
+> This way the fast path is really fast, and the patch becomes simpler.
+>
+> What do you think? We can optimize the code (the usage of
+cancel_work_sync)
+> further, but perhaps this is enough.
+
+Thanks for the suggestion. I will code it up and get some testing numbers.
+Can I run
+this by you?
+
+Thanks,
+
+- KK
 
