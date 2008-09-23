@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbYIWSDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbYIWSEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361AbYIWSDY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 14:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYIWSDP
+	id S1755134AbYIWSEI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 14:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYIWSDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 14:03:15 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:56797 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbYIWSDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 14:03:15 -0400
-Date: Tue, 23 Sep 2008 20:02:25 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] atmel-mci: Platform code for supporting multiple
- mmc slots
-Message-ID: <20080923200225.71a42c95@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080923194012.3907c677@mjolnir.drzeus.cx>
-References: <1222101497-21183-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1222101497-21183-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<1222101497-21183-3-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080923194012.3907c677@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 23 Sep 2008 18:02:16.0089 (UTC) FILETIME=[83451890:01C91DA6]
+	Tue, 23 Sep 2008 14:03:55 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:35302 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751926AbYIWSDy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 14:03:54 -0400
+Date: Tue, 23 Sep 2008 11:03:50 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Ingo Molnar <mingo@elte.hu>, stable@kernel.org
+Cc: linux-kernel@vger.kernel.org,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [PATCH] x86: Fix 27-rc crash on vsmp due to paravirt during
+	module load
+Message-ID: <20080923180350.GB26882@localdomain>
+References: <20080923055847.GA26882@localdomain> <20080923083145.GD23031@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080923083145.GD23031@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-> On Mon, 22 Sep 2008 18:38:15 +0200
-> Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> 
-> > +/**
-> > + * struct mci_platform_data - board-specific MMC/SDcard configuration
-> > + * @dma_slave: DMA slave interface to use in data transfers, or NULL.
-> > + * @slot: Per-slot configuration data.
-> > + */
-> > +struct mci_platform_data {
-> > +	struct mci_slot_pdata	slot[2];
-> > +};  
-> 
-> Comment doesn't match code.
+On Tue, Sep 23, 2008 at 10:31:45AM +0200, Ingo Molnar wrote:
+>
+>* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+>
+>> 27-rc fails to boot up if configured to use modules.  Turns out 
+>> vsmp_patch was marked __init, and vsmp_patch being the pvops 'patch' 
+>> routine for vsmp, a call to vsmp_patch just turns out to execute a 
+>> code page with series of 0xcc (POISON_FREE_INITMEM -- int3).  Since 
+>> apply_paravirt can only be called during init/module load, make 
+>> vsmp_patch with "__init_or_module"
+>
+>applied to tip/x86/urgent, thanks Ravikiran!
+>
 
-You're right -- I switched the order of the DMA and multi-slot patches
-and forgot to update the comments. It will match when all four patches
-are applied, but I'll fix it in the next round.
 
-Haavard
+Thanks Ingo.
+Can this get into 2.6.26 stable as well, please?  (Re-sending patch for -stable,
+re diffed against 2.6.26.5)
+
+Thanks,
+Kiran
+
+---
+
+vsmp_patch has been marked with __init ever since pvops, however,
+apply_paravirt can be called during module load causing calls to
+freed memory location.
+
+Since apply_paravirt can only be called during bootup and module load,
+mark vsmp patch with "__init_or_module"
+
+Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+
+Index: linux-2.6.26.5/arch/x86/kernel/vsmp_64.c
+===================================================================
+--- linux-2.6.26.5.orig/arch/x86/kernel/vsmp_64.c	2008-09-08 10:40:20.000000000 -0700
++++ linux-2.6.26.5/arch/x86/kernel/vsmp_64.c	2008-09-23 10:02:05.000000000 -0700
+@@ -58,7 +58,7 @@
+ 	native_restore_fl((flags | X86_EFLAGS_IF) & (~X86_EFLAGS_AC));
+ }
+ 
+-static unsigned __init vsmp_patch(u8 type, u16 clobbers, void *ibuf,
++static unsigned __init_or_module vsmp_patch(u8 type, u16 clobbers, void *ibuf,
+ 				  unsigned long addr, unsigned len)
+ {
+ 	switch (type) {
