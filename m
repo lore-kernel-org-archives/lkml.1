@@ -1,103 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYIWN5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbYIWN6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYIWN5k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbYIWNsK
+	id S1755716AbYIWN6T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbYIWNrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:48:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52461 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:47:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52409 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752937AbYIWNsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:48:07 -0400
+	id S1753665AbYIWNrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:47:42 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
-Subject: [PATCH 27/40] KVM: ppc: Stop saving host TLB state
-Date: Tue, 23 Sep 2008 16:46:41 +0300
-Message-Id: <1222177614-26669-28-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>
+Subject: [PATCH 25/40] KVM: Ignore DEBUGCTL MSRs with no effect
+Date: Tue, 23 Sep 2008 16:46:39 +0300
+Message-Id: <1222177614-26669-26-git-send-email-avi@redhat.com>
 In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
 References: <1222177614-26669-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hollis Blanchard <hollisb@us.ibm.com>
+From: Alexander Graf <agraf@suse.de>
 
-We're saving the host TLB state to memory on every exit, but never using it.
-Originally I had thought that we'd want to restore host TLB for heavyweight
-exits, but that could actually hurt when context switching to an unrelated host
-process (i.e. not qemu).
+Netware writes to DEBUGCTL and reads from the DEBUGCTL and LAST*IP MSRs
+without further checks and is really confused to receive a #GP during that.
+To make it happy we should just make them stubs, which is exactly what SVM
+already does.
 
-Since this decreases the performance penalty of all exits, this patch improves
-guest boot time by about 15%.
+Writes to DEBUGCTL that are vendor-specific are resembled to behave as if the
+virtual CPU does not know them.
 
-Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+Signed-off-by: Alexander Graf <agraf@suse.de>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/powerpc/include/asm/kvm_host.h |    2 --
- arch/powerpc/kernel/asm-offsets.c   |    1 -
- arch/powerpc/kvm/booke_interrupts.S |   17 +++--------------
- 3 files changed, 3 insertions(+), 17 deletions(-)
+ arch/x86/kvm/x86.c |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 23bad40..dc3a756 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -81,8 +81,6 @@ struct kvm_vcpu_arch {
- 	struct tlbe shadow_tlb[PPC44x_TLB_SIZE];
- 	/* Pages which are referenced in the shadow TLB. */
- 	struct page *shadow_pages[PPC44x_TLB_SIZE];
--	/* Copy of the host's TLB. */
--	struct tlbe host_tlb[PPC44x_TLB_SIZE];
- 
- 	u32 host_stack;
- 	u32 host_pid;
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 92768d3..5940649 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -356,7 +356,6 @@ int main(void)
- 
- 	DEFINE(VCPU_HOST_STACK, offsetof(struct kvm_vcpu, arch.host_stack));
- 	DEFINE(VCPU_HOST_PID, offsetof(struct kvm_vcpu, arch.host_pid));
--	DEFINE(VCPU_HOST_TLB, offsetof(struct kvm_vcpu, arch.host_tlb));
- 	DEFINE(VCPU_SHADOW_TLB, offsetof(struct kvm_vcpu, arch.shadow_tlb));
- 	DEFINE(VCPU_GPRS, offsetof(struct kvm_vcpu, arch.gpr));
- 	DEFINE(VCPU_LR, offsetof(struct kvm_vcpu, arch.lr));
-diff --git a/arch/powerpc/kvm/booke_interrupts.S b/arch/powerpc/kvm/booke_interrupts.S
-index 8eaba26..3e88dfa 100644
---- a/arch/powerpc/kvm/booke_interrupts.S
-+++ b/arch/powerpc/kvm/booke_interrupts.S
-@@ -342,26 +342,15 @@ lightweight_exit:
- 	andc	r6, r5, r6
- 	mtmsr	r6
- 
--	/* Save the host's non-pinned TLB mappings, and load the guest mappings
--	 * over them. Leave the host's "pinned" kernel mappings in place. */
--	/* XXX optimization: use generation count to avoid swapping unmodified
--	 * entries. */
-+	/* Load the guest mappings, leaving the host's "pinned" kernel mappings
-+	 * in place. */
-+	/* XXX optimization: load only modified guest entries. */
- 	mfspr	r10, SPRN_MMUCR			/* Save host MMUCR. */
- 	lis	r8, tlb_44x_hwater@ha
- 	lwz	r8, tlb_44x_hwater@l(r8)
--	addi	r3, r4, VCPU_HOST_TLB - 4
- 	addi	r9, r4, VCPU_SHADOW_TLB - 4
- 	li	r6, 0
- 1:
--	/* Save host entry. */
--	tlbre	r7, r6, PPC44x_TLB_PAGEID
--	mfspr	r5, SPRN_MMUCR
--	stwu	r5, 4(r3)
--	stwu	r7, 4(r3)
--	tlbre	r7, r6, PPC44x_TLB_XLAT
--	stwu	r7, 4(r3)
--	tlbre	r7, r6, PPC44x_TLB_ATTRIB
--	stwu	r7, 4(r3)
- 	/* Load guest entry. */
- 	lwzu	r7, 4(r9)
- 	mtspr	SPRN_MMUCR, r7
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 5620df2..94a2165 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -665,6 +665,18 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
+ 		pr_unimpl(vcpu, "%s: MSR_IA32_MCG_CTL 0x%llx, nop\n",
+ 			__func__, data);
+ 		break;
++	case MSR_IA32_DEBUGCTLMSR:
++		if (!data) {
++			/* We support the non-activated case already */
++			break;
++		} else if (data & ~(DEBUGCTLMSR_LBR | DEBUGCTLMSR_BTF)) {
++			/* Values other than LBR and BTF are vendor-specific,
++			   thus reserved and should throw a #GP */
++			return 1;
++		}
++		pr_unimpl(vcpu, "%s: MSR_IA32_DEBUGCTLMSR 0x%llx, nop\n",
++			__func__, data);
++		break;
+ 	case MSR_IA32_UCODE_REV:
+ 	case MSR_IA32_UCODE_WRITE:
+ 		break;
+@@ -757,6 +769,11 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
+ 	case MSR_IA32_MC0_MISC+16:
+ 	case MSR_IA32_UCODE_REV:
+ 	case MSR_IA32_EBL_CR_POWERON:
++	case MSR_IA32_DEBUGCTLMSR:
++	case MSR_IA32_LASTBRANCHFROMIP:
++	case MSR_IA32_LASTBRANCHTOIP:
++	case MSR_IA32_LASTINTFROMIP:
++	case MSR_IA32_LASTINTTOIP:
+ 		data = 0;
+ 		break;
+ 	case MSR_MTRRcap:
 -- 
 1.6.0.1
 
