@@ -1,98 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbYIWLma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751910AbYIWLsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752411AbYIWLma (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 07:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYIWLmV
+	id S1751910AbYIWLsK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 07:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbYIWLr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 07:42:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:57190 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbYIWLmU (ORCPT
+	Tue, 23 Sep 2008 07:47:56 -0400
+Received: from host254-130-static.190-82-b.business.telecomitalia.it ([82.190.130.254]:58000
+	"EHLO nausicaa2.coritel.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751007AbYIWLr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 07:42:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=X55spzFLBCDz1NuzKNt647w/QC9Am7CG66REjdGN45RhXAwAafLEwnpm/yDt8x00dX
-         Yz3FLZ6XiGS1Wcs8N3l5Lb4UlsRwTWYybZdGfqD20EVm4dGc4ptdoW7kaXsXwpnHfGt3
-         1gyT/MVDn6eDfVMlPwf4nkoDRWf4eqqYCSfRQ=
-Message-ID: <c62985530809230442w217642a7o7742c51da905083d@mail.gmail.com>
-Date: Tue, 23 Sep 2008 13:42:18 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [Patch -tip 0/4] Creation of the initcall tracer
-Cc: linux-kernel@vger.kernel.org, "Steven Rostedt" <rostedt@goodmis.org>,
-       "Steven Noonan" <steven@uplinklabs.net>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <20080923100034.GA23118@elte.hu>
+	Tue, 23 Sep 2008 07:47:56 -0400
+Message-ID: <48D8D7C9.5000602@coritel.it>
+Date: Tue, 23 Sep 2008 13:49:29 +0200
+From: Marco Stornelli <marco.stornelli@coritel.it>
+Organization: CoRiTeL
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: mtk.manpages@gmail.com, linux-doc@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] documentation: xip documentation update
+References: <48D76770.9000808@coritel.it> <20080922083050.3ec7b7e9.rdunlap@xenotime.net>
+In-Reply-To: <20080922083050.3ec7b7e9.rdunlap@xenotime.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48D8C516.4090706@gmail.com> <20080923100034.GA23118@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/23 Ingo Molnar <mingo@elte.hu>:
-> Note that i've done a couple of small changes to your patches:
->
->  - i've done the following renames:
->
->      :1,$s/INITCALL_TRACER/BOOT_TRACER/g
->      :1,$s/trace_initcall/trace_boot/g
->      :1,$s/initcall_trace/boot_trace/g
->
->   the reasoning: we eventually want to extend this new tracer to all
->   things "bootup delay", not just initcalls - hence calling it an
->   'initcall tracer' would be too limiting.
+From: Marco Stornelli <marco.stornelli@gmail.com>
 
-That's right. It's a good thing.
+Fix xip documentation with the comments of Randy Dunlap.
+Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+---
 
->
->   The goal is to help the Arjan's fastboot project to achieve 5 seconds
->   to-GUI bootup times like this:
->
->      http://www.youtube.com/watch?v=s7NxCM8ryF8
->
->   [ Even if you know what a 5 seconds bootup is, you've got to check
->     this "From Naught to Sixty in 5 seconds" video ;-) ]
+--- linux-2.6.26.3/Documentation/filesystems/xip.txt.orig	2008-08-20 20:11:37.000000000 +0200
++++ linux-2.6.26.3/Documentation/filesystems/xip.txt	2008-09-23 13:45:42.000000000 +0200
+@@ -39,10 +39,11 @@ The block device operation is optional,
+ today:
+ - dcssblk: s390 dcss block device driver
+ 
+-An address space operation named get_xip_page is used to retrieve reference
+-to a struct page. To address the target page, a reference to an address_space,
+-and a sector number is provided. A 3rd argument indicates whether the
+-function should allocate blocks if needed.
++An address space operation named get_xip_mem is used to retrieve reference
++to a page frame number and a kernel address. To obtain these values a reference
++to an address_space is provided. This function assigns values to the kmem and
++pfn parameters. The 3rd argument indicates whether the function should allocate
++blocks if needed.
+ 
+ This address space operation is mutually exclusive with readpage&writepage that
+ do page cache read/write operations.
 
-Hehe! I wasn't aware of this project :)
 
->  - there were a few overlong lines in the commit logs and in the Kconfig
->   desciption - i fixed them up. You should check your email client and
->   your editor for line length settings - currently you seem to have no
->   line breaks at all.
 
-That will be a great day when I will be able to send a not line/space
-damaged patch :-)
+Randy Dunlap ha scritto:
+> On Mon, 22 Sep 2008 11:37:52 +0200 Marco Stornelli wrote:
+> 
+>> From: Marco Stornelli <marco.stornelli@gmail.com>
+>>
+>> xip documentation updated
+>> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+>> ---
+>>
+>> --- linux-2.6.26.5/Documentation/filesystems/xip.txt.orig	2008-08-20 20:11:37.000000000 +0200
+>> +++ linux-2.6.26.5/Documentation/filesystems/xip.txt	2008-09-22 11:27:46.000000000 +0200
+>> @@ -39,10 +39,11 @@ The block device operation is optional,
+>>  today:
+>>  - dcssblk: s390 dcss block device driver
+>>  
+>> -An address space operation named get_xip_page is used to retrieve reference
+>> -to a struct page. To address the target page, a reference to an address_space,
+>> -and a sector number is provided. A 3rd argument indicates whether the
+>> -function should allocate blocks if needed.
+>> +An address space operation named get_xip_mem is used to retrieve reference
+>> +to a page frame number and a kernel address. To obtain these values a reference
+>> +to an address_space is provided. This function is in charge to assign values to
+> 
+> How about:
+>                                     This function assigns values to the kmem and
+>    pfn parameters.
+> 
+>> +the pointers kmem and pfn. The 3rd argument indicates whether the function 
+>> +should allocate blocks if needed.
+>>  
+>>  This address space operation is mutually exclusive with readpage&writepage that
+>>  do page cache read/write operations.
+> 
+> 
+> Thanks.
+> 
+> ---
+> ~Randy
+> 
 
->  - I also corrected a few capitalization things in commit subject lines
->   and corrected a few minor coding style errors - you can avoid these
->   by running scripts/checkpatch.pl over your patches. Nothing overly
->   serious - but you should diff against tip/master to see what the
->   changes are.
-
-Hmm I ran this script and it warned about a non conventional format
-(%Lu instead of %llu). Since I picked it from the printk in main.c
-I thought that was a false warning. Ok I will remember about correct
-format for the next times.
-
-> i've integrated tip/tracing/fastboot into tip/master and have started
-> testing it. It passed the basic tests already so i've just pushed out
-> the new tip/master. Please double-check that i have not messed up the
-> rename or the integration somewhere.
-
-I can't test the master branch yet. But as far as I read the diff, it
-seems correct.
-
-> all in one, nice stuff!
-
-Thanks Ingo :)
-I will improve it as I can...
