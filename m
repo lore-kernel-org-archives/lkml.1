@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbYIWVjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbYIWVje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755826AbYIWVjV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYIWVjN
+	id S1753634AbYIWVje (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbYIWVjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:39:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32862 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535AbYIWVjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 17:39:12 -0400
-Date: Tue, 23 Sep 2008 23:39:13 +0200
-From: Karel Zak <kzak@redhat.com>
-To: Martin Steigerwald <ms@teamix.de>
-Cc: util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Support for CFS SCHED_IDLE priority in chrt
-Message-ID: <20080923213913.GP28147@nb.net.home>
-References: <200809231435.54985.ms@teamix.de>
+	Tue, 23 Sep 2008 17:39:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58467 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755868AbYIWVjX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 17:39:23 -0400
+Message-ID: <48D961B7.7030408@zytor.com>
+Date: Tue, 23 Sep 2008 14:37:59 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809231435.54985.ms@teamix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alain Knaff <alain@knaff.lu>
+CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, w@1wt.eu
+Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
+ initrds
+References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu>
+In-Reply-To: <48D95ECC.9010107@knaff.lu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 02:35:49PM +0200, Martin Steigerwald wrote:
-> ms@mango> autoconf      ~/lokal/Kernel/Dokumentation/util-linux-ng
-> configure.ac:7: error: possibly undefined macro: AM_INIT_AUTOMAKE
->       If this token and others are legitimate, please use m4_pattern_allow.
->       See the Autoconf documentation.
-> configure.ac:37: error: possibly undefined macro: AM_CONDITIONAL
-> configure.ac:190: error: possibly undefined macro: AM_GNU_GETTEXT_VERSION
-> configure.ac:191: error: possibly undefined macro: AM_GNU_GETTEXT
-> ms@mango> ./configure      ~/lokal/Kernel/Dokumentation/util-linux-ng
-> configure: error: cannot find install-sh or install.sh in config "."/config
+Alain Knaff wrote:
+> H. Peter Anvin wrote:
+>> More failures...
+>>
+>> /bin/sh: scripts/bin_size: No such file or directory
 > 
-> when trying to compile util-linux-ng from GIT. (Note: I have no glue about 
-> autoconf, I only ever started an pre-existing ./configure script). I tried 
-> with autoconf 2.61-8 from Debian Lenny.
+> Could be a permission issue. Did you try to chmod 755 scripts/bin_size ?
+> Hmmm, diff does indeed not encode permissions, how should such cases be
+> usually handled?
+> 
 
- ./autogen.sh
- 
-> I will test this commit if someone gives me a hint on how to compile 
-> util-linux-ng.
+A few more thoughts:
 
- see README.devel
+quiet_cmd_bzip2 = BZIP2    $@
+cmd_bzip2 = (bzip2 -9 < $< ; $(size_append) $<) > $@
 
+quiet_cmd_lzma = LZMA    $@
+cmd_lzma = (lzma -9 -c $< ; $(size_append) $<) >$@
 
- Applied with minor changes, thanks.
+These will produce stale files on failure.  Using stdout in Makefiles is 
+a bit tricky.  You probably need something like:
 
-    Karel
+(bzip2 -9 < $<  && $(size_append) $<) > $@ || (rm -f $@ ; false)
 
--- 
- Karel Zak  <kzak@redhat.com>
+	-hpa
