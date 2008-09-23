@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYIWBQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYIWBRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbYIWBQa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 21:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYIWBQW
+	id S1754538AbYIWBRF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 21:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYIWBQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 21:16:22 -0400
-Received: from mga02.intel.com ([134.134.136.20]:50634 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753402AbYIWBQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 21:16:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,449,1217833200"; 
-   d="scan'208";a="442395541"
-Date: Mon, 22 Sep 2008 18:16:21 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH -tip/master] x86: io-apic - interrupt remapping fix
-Message-ID: <20080923011620.GB25045@linux-os.sc.intel.com>
-References: <20080919123320.GF7222@lenovo> <20080923005737.GA25045@linux-os.sc.intel.com>
-Mime-Version: 1.0
+	Mon, 22 Sep 2008 21:16:54 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:12222 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753402AbYIWBQw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Sep 2008 21:16:52 -0400
+Date: Mon, 22 Sep 2008 19:16:48 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
+       kaneshige.kenji@jp.fujitsu.com
+Subject: Re: [PATCH v2 04/13] PCI: acpiphp: remove 'name' parameter
+Message-ID: <20080923011648.GC1814@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+	kristen.c.accardi@intel.com, kaneshige.kenji@jp.fujitsu.com
+References: <20080909091813.29542.85613.stgit@bob.kio> <20080909100022.29542.90739.stgit@bob.kio> <20080909143831.GY2772@parisc-linux.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080923005737.GA25045@linux-os.sc.intel.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20080909143831.GY2772@parisc-linux.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 05:57:38PM -0700, Siddha, Suresh B wrote:
-> On Fri, Sep 19, 2008 at 05:33:20AM -0700, Cyrill Gorcunov wrote:
-> > Interrupt remapping could lead to NULL dereference in case of
-> > kzalloc failed and memory leak in other way. So fix the
-> > both cases.
-> >
-> > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> > ---
-> >
-> > Ingo, the patch is on top of applied one.
-> >
-> > If I remember correctly Suresh was involved in
-> > this - so I think he could take a look and review
-> > the patch (please).
-> >
+* Matthew Wilcox <matthew@wil.cx>:
+> On Tue, Sep 09, 2008 at 04:00:22AM -0600, Alex Chiang wrote:
+> > We do not need to manage our own name parameter, especially since
+> > the PCI core can change it on our behalf, in the case of duplicate
+> > slot names.
 > 
-> Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> Looks good, just a question ...
+> 
+> >  	acpiphp_slot->slot = slot;
+> > -	snprintf(slot->name, sizeof(slot->name), "%u", slot->acpi_slot->sun);
+> > +	scnprintf(name, SLOT_NAME_SIZE, "%u", slot->acpi_slot->sun);
+> >  
+> 
+> What's the difference between snprintf and scnprintf?
 
-oops. Cyrill some typo here:
+I think this may have already been answered somewhere else, but
+scnprintf tells you number of characters that actually fits into
+the buffer whereas snprintf tells you the number of characters
+that _would_ have fit into the buffer it were big enough.
 
-+       for (; apic > 0; apic--)
-+               kfree(early_ioapic_entries[apic]);
-+       kfree(early_ioapic_entries[apic]);
+> And why were we bothering to use snprintf anyway?  For when we fall into a
+> parallel universe where a u32 can have more than twenty digits?
+
+Well, I think there are some in-flight patches that want to
+change sun to a 64 bit value, which makes me think we want to
+change SLOT_NAME_SIZE to 21...
+
+/ac
+
