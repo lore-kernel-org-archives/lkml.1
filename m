@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbYIWQro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbYIWQr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755316AbYIWQro (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 12:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbYIWQpv
+	id S1755411AbYIWQr7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 12:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYIWQp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 12:45:51 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:47299 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754614AbYIWQpu (ORCPT
+	Tue, 23 Sep 2008 12:45:56 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:42553 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754653AbYIWQpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 12:45:50 -0400
+	Tue, 23 Sep 2008 12:45:55 -0400
 From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH v3 07/14] PCI: fakephp: remove 'name' parameter
+Subject: [PATCH v3 08/14] PCI: ibmphp: stop managing hotplug_slot->name
 Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
        jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
        Alex Chiang <achiang@hp.com>
-Date: Tue, 23 Sep 2008 10:45:49 -0600
-Message-ID: <20080923164549.12628.49729.stgit@bob.kio>
+Date: Tue, 23 Sep 2008 10:45:54 -0600
+Message-ID: <20080923164554.12628.93744.stgit@bob.kio>
 In-Reply-To: <20080923163753.12628.98683.stgit@bob.kio>
 References: <20080923163753.12628.98683.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -30,83 +30,117 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove 'name' from fakephp's struct dummy_slot, as the PCI core
-will now manage our slot name for us.
+We no longer need to manage our version of hotplug_slot->name
+since the PCI and hotplug core manage it on our behalf.
+
+Now, we simply advise the PCI core of the name that we would
+like, and let the core take care of the rest.
+
+Additionally, slightly rearrange the members of struct slot
+so they are naturally aligned to eliminate holes.
 
 Cc: jbarnes@virtuousgeek.org
 Cc: kristen.c.accardi@intel.com
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/hotplug/fakephp.c |   19 ++++++++++---------
- 1 files changed, 10 insertions(+), 9 deletions(-)
+ drivers/pci/hotplug/ibmphp.h      |    5 ++---
+ drivers/pci/hotplug/ibmphp_ebda.c |   20 +++++++-------------
+ 2 files changed, 9 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
-index 3069f21..16ec767 100644
---- a/drivers/pci/hotplug/fakephp.c
-+++ b/drivers/pci/hotplug/fakephp.c
-@@ -66,7 +66,6 @@ struct dummy_slot {
- 	struct pci_dev *dev;
- 	struct work_struct remove_work;
- 	unsigned long removed;
--	char name[8];
- };
+diff --git a/drivers/pci/hotplug/ibmphp.h b/drivers/pci/hotplug/ibmphp.h
+index 612d963..a8d391a 100644
+--- a/drivers/pci/hotplug/ibmphp.h
++++ b/drivers/pci/hotplug/ibmphp.h
+@@ -707,17 +707,16 @@ struct slot {
+ 	u8 device;
+ 	u8 number;
+ 	u8 real_physical_slot_num;
+-	char name[100];
+ 	u32 capabilities;
+ 	u8 supported_speed;
+ 	u8 supported_bus_mode;
++	u8 flag;		/* this is for disable slot and polling */
++	u8 ctlr_index;
+ 	struct hotplug_slot *hotplug_slot;
+ 	struct controller *ctrl;
+ 	struct pci_func *func;
+ 	u8 irq[4];
+-	u8 flag;		/* this is for disable slot and polling */
+ 	int bit_mode;		/* 0 = 32, 1 = 64 */
+-	u8 ctlr_index;
+ 	struct bus_info *bus_on;
+ 	struct list_head ibm_slot_list;
+ 	u8 status;
+diff --git a/drivers/pci/hotplug/ibmphp_ebda.c b/drivers/pci/hotplug/ibmphp_ebda.c
+index 85528d6..402dc10 100644
+--- a/drivers/pci/hotplug/ibmphp_ebda.c
++++ b/drivers/pci/hotplug/ibmphp_ebda.c
+@@ -587,11 +587,14 @@ static u8 calculate_first_slot (u8 slot_num)
+ 	return first_slot + 1;
  
- static int debug;
-@@ -96,10 +95,13 @@ static void dummy_release(struct hotplug_slot *slot)
- 	kfree(dslot);
  }
- 
-+#define SLOT_NAME_SIZE	8
 +
- static int add_slot(struct pci_dev *dev)
++#define SLOT_NAME_SIZE 30
++
+ static char *create_file_name (struct slot * slot_cur)
  {
- 	struct dummy_slot *dslot;
- 	struct hotplug_slot *slot;
+ 	struct opt_rio *opt_vg_ptr = NULL;
+ 	struct opt_rio_lo *opt_lo_ptr = NULL;
+-	static char str[30];
++	static char str[SLOT_NAME_SIZE];
+ 	int which = 0; /* rxe = 1, chassis = 0 */
+ 	u8 number = 1; /* either chassis or rxe # */
+ 	u8 first_slot = 1;
+@@ -703,7 +706,6 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+ 
+ 	slot = hotplug_slot->private;
+ 	kfree(slot->hotplug_slot->info);
+-	kfree(slot->hotplug_slot->name);
+ 	kfree(slot->hotplug_slot);
+ 	slot->ctrl = NULL;
+ 	slot->bus_on = NULL;
+@@ -734,6 +736,7 @@ static int __init ebda_rsrc_controller (void)
+ 	struct bus_info *bus_info_ptr1, *bus_info_ptr2;
+ 	int rc;
+ 	struct slot *tmp_slot;
 +	char name[SLOT_NAME_SIZE];
- 	int retval = -ENOMEM;
- 	static int count = 1;
  
-@@ -119,15 +121,13 @@ static int add_slot(struct pci_dev *dev)
- 	if (!dslot)
- 		goto error_info;
+ 	addr = hpc_list_ptr->phys_addr;
+ 	for (ctlr = 0; ctlr < hpc_list_ptr->num_ctlrs; ctlr++) {
+@@ -897,12 +900,6 @@ static int __init ebda_rsrc_controller (void)
+ 				goto error_no_hp_info;
+ 			}
  
--	slot->name = dslot->name;
--	snprintf(slot->name, sizeof(dslot->name), "fake%d", count++);
--	dbg("slot->name = %s\n", slot->name);
-+	snprintf(name, SLOT_NAME_SIZE, "fake%d", count++);
-+	dbg("slot->name = %s\n", name);
- 	slot->ops = &dummy_hotplug_slot_ops;
- 	slot->release = &dummy_release;
- 	slot->private = dslot;
+-			hp_slot_ptr->name = kmalloc(30, GFP_KERNEL);
+-			if (!hp_slot_ptr->name) {
+-				rc = -ENOMEM;
+-				goto error_no_hp_name;
+-			}
+-
+ 			tmp_slot = kzalloc(sizeof(*tmp_slot), GFP_KERNEL);
+ 			if (!tmp_slot) {
+ 				rc = -ENOMEM;
+@@ -964,10 +961,9 @@ static int __init ebda_rsrc_controller (void)
+ 	}			/* each hpc  */
  
--	retval = pci_hp_register(slot, dev->bus, PCI_SLOT(dev->devfn),
--				 slot->name);
-+	retval = pci_hp_register(slot, dev->bus, PCI_SLOT(dev->devfn), name);
- 	if (retval) {
- 		err("pci_hp_register failed with error %d\n", retval);
- 		goto error_dslot;
-@@ -168,10 +168,11 @@ static void remove_slot(struct dummy_slot *dslot)
- {
- 	int retval;
+ 	list_for_each_entry(tmp_slot, &ibmphp_slot_head, ibm_slot_list) {
+-		snprintf (tmp_slot->hotplug_slot->name, 30, "%s", create_file_name (tmp_slot));
++		snprintf(name, SLOT_NAME_SIZE, "%s", create_file_name(tmp_slot));
+ 		pci_hp_register(tmp_slot->hotplug_slot,
+-			pci_find_bus(0, tmp_slot->bus), tmp_slot->device,
+-			tmp_slot->hotplug_slot->name);
++			pci_find_bus(0, tmp_slot->bus), tmp_slot->device, name);
+ 	}
  
--	dbg("removing slot %s\n", dslot->slot->name);
-+	dbg("removing slot %s\n", hotplug_slot_name(dslot->slot));
- 	retval = pci_hp_deregister(dslot->slot);
- 	if (retval)
--		err("Problem unregistering a slot %s\n", dslot->slot->name);
-+		err("Problem unregistering a slot %s\n",
-+			hotplug_slot_name(dslot->slot));
- }
- 
- /* called from the single-threaded workqueue handler to remove a slot */
-@@ -309,7 +310,7 @@ static int disable_slot(struct hotplug_slot *slot)
- 		return -ENODEV;
- 	dslot = slot->private;
- 
--	dbg("%s - physical_slot = %s\n", __func__, slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot_name(slot));
- 
- 	for (func = 7; func >= 0; func--) {
- 		dev = pci_get_slot(dslot->dev->bus, dslot->dev->devfn + func);
+ 	print_ebda_hpc ();
+@@ -977,8 +973,6 @@ static int __init ebda_rsrc_controller (void)
+ error:
+ 	kfree (hp_slot_ptr->private);
+ error_no_slot:
+-	kfree (hp_slot_ptr->name);
+-error_no_hp_name:
+ 	kfree (hp_slot_ptr->info);
+ error_no_hp_info:
+ 	kfree (hp_slot_ptr);
 
