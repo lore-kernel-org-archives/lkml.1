@@ -1,67 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbYIWCvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYIWCvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbYIWCvT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 22:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbYIWCvJ
+	id S1755180AbYIWCvq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 22:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbYIWCvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 22:51:09 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55695 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754175AbYIWCvI (ORCPT
+	Mon, 22 Sep 2008 22:51:38 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:39576 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754439AbYIWCvh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 22:51:08 -0400
-Date: Mon, 22 Sep 2008 19:50:59 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, iommu@lists.linux-foundation.org,
-       David Woodhouse <dwmw2@infradead.org>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Amit Shah <amit.shah@qumranet.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 0/9][RFC] stackable dma_ops for x86
-Message-ID: <20080922195059.008de827@infradead.org>
-In-Reply-To: <48D85758.7080303@goop.org>
-References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com>
-	<20080922113619.5075e7e4@infradead.org>
-	<20080922183944.GJ24392@amd.com>
-	<48D85758.7080303@goop.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Mon, 22 Sep 2008 22:51:37 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqEEAOXv10hMQWq+/2dsb2JhbACBXbUXgWY
+Date: Mon, 22 Sep 2008 22:49:26 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: prasad@linux.vnet.ibm.com, Martin Bligh <mbligh@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>, zanussi@comcast.net
+Subject: Re: Unified tracing buffer
+Message-ID: <20080923024926.GG24937@Krystal>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <1221869279.8359.31.camel@lappy.programming.kicks-ass.net> <20080922140740.GB5279@in.ibm.com> <1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+In-Reply-To: <1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:47:24 up 110 days,  7:27,  7 users,  load average: 1.07, 0.56,
+	0.47
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 19:41:28 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Joerg Roedel wrote:
-> > Its implemented using the per-device dma-ops already there. With
-> > this patches there is a list of available dma_ops implementations
-> > which are asked in a particular order if they can handle the
-> > device. The first implementation which returns true is assigned to
-> > the device as the per-device dma_ops structure.
-> >
-> > (Hmm, maybe the name stackable is misleading, is "dma_ops
-> > multiplexing" better?)
+* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> On Mon, 2008-09-22 at 19:37 +0530, K.Prasad wrote:
 > 
-> Is per-device the right level?  Wouldn't per-bus make more sense? 
+> > > > INPUT_FUNCTIONS
+> > > > ---------------
+> > > > 
+> > > > allocate_buffer (name, size)
+> > > >         return buffer_handle
+> > > > 
+> > > > register_event (buffer_handle, event_id, print_function)
+> > > >         You can pass in a requested event_id from a fixed set, and
+> > > > will be given it, or an error
+> > > >         0 means allocate me one dynamically
+> > > >         returns event_id     (or -E_ERROR)
+> > > > 
+> > > > record_event (buffer_handle, event_id, length, *buf)
+> > > 
+> > > I'd hoped for an interface like:
+> > > 
+> > > struct ringbuffer *ringbuffer_alloc(const char *name, size_t size);
+> > > void ringbuffer_free(struct ringbuffer *buffer);
+> > > int ringbuffer_write(struct ringbuffer *buffer, const char *buf, size_t size);
+> > > int ringbuffer_read(struct ringbuffer *buffer, int cpu, char *buf, size_t size);
+> > > 
+> > > On top of which you'd do the event thing, the register event with a
+> > > callback idea makes sense, except I'd split the consumption into two:
+> > >  - one method to pull the binary event out, which knows how long it
+> > > ought to be etc..
+> > >  - one method to convert the binary event to ASCII
+> > >
+> > In conjunction with the previous email on this thread
+> > (http://lkml.org/lkml/2008/9/22/160), may I suggest
+> > the equivalent interfaces in -mm tree (2.6.27-rc5-mm1) to be:
+> > 
+> > relay_printk(<some struct with default filenames/pathnames>, <string>,
+> > ....) ;
+> > relay_dump(<some struct with default filenames/pathnames>, <binary
+> > data>);
+> > and
+> > relay_cleanup_all(<the struct name>); - Single interface that cleans up
+> > all files/directories/output data created under a logical entity.
+> 
+> Dude, relayfs is such a bad performing mess that extending it seems like
+> a bad idea. Better to write something new and delete everything relayfs
+> related.
+> 
 
-not really; all DMA functions get a device as argument already anyway;
-just going to bus makes no sense there.
+LTTng only uses relay for buffer mapping and mmap to userspace. The rest
+of internal buffer management is done within LTTng by overriding relay
+callbacks. One thing we could think of is to incrementally fix relay
+rather than deleting it completely.
 
-Even if you set it the same for the whole bus almost all of the time...
-the APIs just work per device.
+> Also, it seems prudent to separate the ring-buffer implementation from
+> the event encoding/decoding facilities.
+> 
 
-(and device assignment clearly is per device as well)
+Sure, but still I think both are needed, even if they are separated as
+two different layers (as they should).
 
+Mathieu
+
+> 
+> 
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
