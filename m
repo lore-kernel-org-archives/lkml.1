@@ -1,160 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbYIWAfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbYIWAl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754314AbYIWAfg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 20:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbYIWAf1
+	id S1754357AbYIWAl4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 20:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYIWAls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 20:35:27 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:53048 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753427AbYIWAf0 (ORCPT
+	Mon, 22 Sep 2008 20:41:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59727 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751634AbYIWAlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 20:35:26 -0400
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH, RFC] ext4: Use preallocation when reading from the inode table
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1KhvsB-0002Ik-Ex@closure.thunk.org>
-Date: Mon, 22 Sep 2008 20:35:23 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Mon, 22 Sep 2008 20:41:47 -0400
+Date: Mon, 22 Sep 2008 17:39:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+cc: Martin Bligh <mbligh@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Steven Rostedt <rostedt@goodmis.org>, darren@dvhart.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: Unified tracing buffer
+In-Reply-To: <48D832B6.3010409@redhat.com>
+Message-ID: <alpine.LFD.1.10.0809221718100.3265@nehalem.linux-foundation.org>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>  <48D7F5E8.3000705@redhat.com>  <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com>  <48D81B5F.2030702@redhat.com> <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com>
+ <48D832B6.3010409@redhat.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-With modern hard drives, reading 64k takes roughly the same time as
-reading a 4k block.  So request adjacent inode table blocks to reduce
-the time it takes when iterating over directories (especially when doing
-this in htree sort order) in a cold cache case.  With this patch, the
-time it takes to run "git status" on a kernel tree after flushing the
-caches via "echo 3 > /proc/sys/vm/drop_caches", is reduced by 21%.
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-----
+On Mon, 22 Sep 2008, Masami Hiramatsu wrote:
+> 
+> Sure, atomic counter might be more expensive but accurate for ordering.
 
-Note: this patch could work for ext3 as well.  Anyone see any downsides?
-A 20% improvement seems too easy...  I guess it does increase what we
-hold in the buffer cache by a small amount, but once the inodes are
-cached, we'll stop needing to do any I/O, and we only try to do the
-readahead when we know that we need to do some I/O anyway.
+Don't be silly.
 
-This patch also eliminates ext4_get_inode_block(), since it's a static
-function which is only called once, and we needed access to the block
-group descriptor, so it simplified the code to move the code into
-__ext4_get_inode_loc().  The interesting bits are in the very last hunk
-of the patch.
+An atomic counter is no more accurate for ordering than anything else.
 
+Why?
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index eed1265..9f6c10e 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -3833,41 +3833,6 @@ out_stop:
- 	ext4_journal_stop(handle);
- }
- 
--static ext4_fsblk_t ext4_get_inode_block(struct super_block *sb,
--		unsigned long ino, struct ext4_iloc *iloc)
--{
--	ext4_group_t block_group;
--	unsigned long offset;
--	ext4_fsblk_t block;
--	struct ext4_group_desc *gdp;
--
--	if (!ext4_valid_inum(sb, ino)) {
--		/*
--		 * This error is already checked for in namei.c unless we are
--		 * looking at an NFS filehandle, in which case no error
--		 * report is needed
--		 */
--		return 0;
--	}
--
--	block_group = (ino - 1) / EXT4_INODES_PER_GROUP(sb);
--	gdp = ext4_get_group_desc(sb, block_group, NULL);
--	if (!gdp)
--		return 0;
--
--	/*
--	 * Figure out the offset within the block group inode table
--	 */
--	offset = ((ino - 1) % EXT4_INODES_PER_GROUP(sb)) *
--		EXT4_INODE_SIZE(sb);
--	block = ext4_inode_table(sb, gdp) +
--		(offset >> EXT4_BLOCK_SIZE_BITS(sb));
--
--	iloc->block_group = block_group;
--	iloc->offset = offset & (EXT4_BLOCK_SIZE(sb) - 1);
--	return block;
--}
--
- /*
-  * ext4_get_inode_loc returns with an extra refcount against the inode's
-  * underlying buffer_head on success. If 'in_mem' is true, we have all
-@@ -3877,13 +3842,30 @@ static ext4_fsblk_t ext4_get_inode_block(struct super_block *sb,
- static int __ext4_get_inode_loc(struct inode *inode,
- 				struct ext4_iloc *iloc, int in_mem)
- {
-+	struct ext4_group_desc *gdp;
- 	ext4_fsblk_t block;
- 	struct buffer_head *bh;
- 
--	block = ext4_get_inode_block(inode->i_sb, inode->i_ino, iloc);
--	if (!block)
-+	iloc->bh = 0;
-+	if (!ext4_valid_inum(inode->i_sb, inode->i_ino))
- 		return -EIO;
- 
-+	iloc->block_group = (inode->i_ino - 1) / 
-+		EXT4_INODES_PER_GROUP(inode->i_sb);
-+	gdp = ext4_get_group_desc(inode->i_sb, iloc->block_group, NULL);
-+	if (!gdp)
-+		return -EIO;
-+
-+	/*
-+	 * Figure out the offset within the block group inode table
-+	 */
-+	iloc->offset = ((inode->i_ino - 1) % 
-+			EXT4_INODES_PER_GROUP(inode->i_sb)) *
-+		EXT4_INODE_SIZE(inode->i_sb);
-+	block = ext4_inode_table(inode->i_sb, gdp) +
-+		(iloc->offset >> EXT4_BLOCK_SIZE_BITS(inode->i_sb));
-+	iloc->offset = iloc->offset & (EXT4_BLOCK_SIZE(inode->i_sb) - 1);
-+
- 	bh = sb_getblk(inode->i_sb, block);
- 	if (!bh) {
- 		ext4_error (inode->i_sb, "ext4_get_inode_loc",
-@@ -3969,6 +3951,31 @@ static int __ext4_get_inode_loc(struct inode *inode,
- 
- make_io:
- 		/*
-+		 * If we need to do any I/O, try to readahead up to 16
-+		 * blocks from the inode table.
-+		 */
-+		{
-+			ext4_fsblk_t b, end, table;
-+			unsigned num;
-+
-+			table = ext4_inode_table(inode->i_sb, gdp);
-+			b = block & ~15;
-+			if (table > b)
-+				b = table;
-+			end = b+16;
-+			num = EXT4_INODES_PER_GROUP(inode->i_sb);
-+			if (EXT4_HAS_RO_COMPAT_FEATURE(inode->i_sb, 
-+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-+				num -= le16_to_cpu(gdp->bg_itable_unused);
-+			table += num / (EXT4_BLOCK_SIZE(inode->i_sb) /
-+					EXT4_INODE_SIZE(inode->i_sb));
-+			if (end > table)
-+				end = table;
-+			while (b <= end)
-+				sb_breadahead(inode->i_sb, b++);
-+		}
-+
-+		/*
- 		 * There are other valid inodes in the buffer, this inode
- 		 * has in-inode xattrs, or we don't have this inode in memory.
- 		 * Read the block from disk.
+Because all it tells you is the ordering of the atomic increment, not of 
+the caller. The atomic increment is not related to all the other ops that 
+the code that you trace actually does in any shape or form, and so the 
+ordering of the trace doesn't actually imply anything for the ordering of 
+the operations you are tracing!
+
+Except for a single CPU, of course, but for that case you don't need a 
+sequence number either, since the ordering is entirely determined by the 
+ring buffer itself.
+
+So the counter will be more expensive (cross-cpu cache bouncing for EVERY 
+SINGLE EVENT), less useful (no real meaning for people who DO want to have 
+a timestamp), and it's really no more "ordered" than anything that bases 
+itself on a TSC.
+
+The fact is, you cannot order operations based on log messages unless you 
+have a lock around the whole caller - absolutely _no_ amount of locking or 
+atomic accesses in the log itself will guarantee ordering of the upper 
+layers.
+
+And sure, if you have locking at a higher layer, then a sequence number is 
+sufficient, but on the other hand, so is a well-synchronized TSC.
+
+So personally, I think that the optimal solution is:
+
+ - let each ring buffer be associated with a "gettimestamp()" function, so 
+   that everybody _can_ set it to something of their own. But default to 
+   something sane, namely a raw TSC thing.
+
+ - Add synchronization events to the ring buffer often enough that you can 
+   make do with a _raw_ (ie unscaled) 32-bit timestamp. Possibly by simply 
+   noticing when the upper 32 bits change, although you could possibly do 
+   it with a heartbeat too.
+
+ - Similarly, add a synchronization event when the TSC frequency changes.
+
+ - Make the synchronization packet contain the full 64-bit TSC base, in 
+   addition to TSC frequency info _and_ the timebase.
+
+ - From those synchronization events, you should be able to get a very 
+   accurate timestamp *after* the fact from the raw TSC numbers (ie do all 
+   the scaling not when you gather the info, but when you present it), 
+   even if you only spent 32 bits of TSC info on 99% of all events (an 
+   just had a overflow log occasionally to get the rest of the info)
+
+ - Most people will be _way_ happier with a timestamp that has enough 
+   precision to also show ordering (assuming that the caller holds a 
+   lock over the operation _including_ the tracing) than they would ever 
+   be with a sequence number.
+
+ - people who really want to can consider the incrementing counter a TSC, 
+   but it will suck in so many ways that I bet it will not be very popular 
+   at all. But having the option to set a special timestamp function will
+   give people the option (on a per-buffer level) to make the "TSC" be a 
+   simple incrementing 32-bit counter using xaddl and the upper bits 
+   incrementing from a timer, but keep that as a "ok, the TSC is really 
+   broken, or this architecture doesn't support any fast cycle counters at 
+   all, or I really don't care about time, just sequence, and I guarantee 
+   I have a single lock in all callers that makes things unambiguous"
+
+Note the "single lock" part. It's not enough that you make any trace thing 
+under a lock. They must be under the _same_ lock for all relevant events 
+for you to be able to say anything about ordering. And that's actually 
+pretty rare for any complex behavior.
+
+The timestamping, btw, is likely the most important part of the whole 
+logging thing. So we need to get it right. But by "right" I mean really 
+really low-latency so that it's acceptable to everybody, real-time enough 
+that you can tell how far apart events were, and precise enough that you 
+really _can_ see ordering.
+
+The "raw TSC value with correction information" should be able to give you 
+all of that. At least on x86. On some platforms, the TSC may not give you 
+enough resolution to get reasonable guesses on event ordering.
+
+			Linus
