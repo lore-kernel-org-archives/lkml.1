@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbYIWBWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYIWB1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbYIWBWd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Sep 2008 21:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbYIWBWV
+	id S1754603AbYIWB1F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Sep 2008 21:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYIWB0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Sep 2008 21:22:21 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:40882 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753861AbYIWBWV (ORCPT
+	Mon, 22 Sep 2008 21:26:54 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:48383 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753612AbYIWB0y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Sep 2008 21:22:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqEEANvd10hMQWq+/2dsb2JhbACBXbUZgWY
-Date: Mon, 22 Sep 2008 21:22:19 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] [RFC] tracehook: Hook in syscall tracing markers.
-Message-ID: <20080923012219.GB24937@Krystal>
-References: <20080921021630.GA6443@linux-sh.org> <20080922012841.GA6199@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 22 Sep 2008 21:26:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=v80odkCfwGcq0kmSw58YVAeas6WjiaH5V+vOpzy11EDPJ/5B3auhr8W1kEWvAuaLHe
+         KpOesBKwpvvKg/qeGvDVdld3ZkgVOm6W5HctLPcU8DDryrjDnECozf2aUq6B2KpOVynV
+         5AidqIQx/LI+794kj1wHVmGGSgyNHA1of+2Js=
+Message-ID: <21d7e9970809221826i76081719pdd749237580fc68e@mail.gmail.com>
+Date: Tue, 23 Sep 2008 11:26:52 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+Cc: jkosina@suse.cz, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, chrisl@vmware.com, david.vrabel@csr.com
+In-Reply-To: <20080922.152815.22060684.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080922012841.GA6199@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 21:20:41 up 110 days,  6:01,  7 users,  load average: 0.67, 0.47,
-	0.31
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <20080921.165159.67476441.davem@davemloft.net>
+	 <21d7e9970809212359y6876c405ub57dca3e9ee737e4@mail.gmail.com>
+	 <Pine.LNX.4.64.0809230010460.27884@twin.jikos.cz>
+	 <20080922.152815.22060684.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-> Hi -
-> 
-> > At kernel summit, the idea that syscall tracing was generally desirable
-> > for tracing was mentioned several times, as was the argument that kernel
-> > developers aren't placing markers in meaningful locations. This is a
-> > simple patch to try and do that for the syscall case.[...]
-> 
-> One problem with this is that a separate mechanism would be needed to
-> activate these tracehook_report_* calls in the first place: the
-> management of the per-task TIF_SYSCALL_TRACE flag.  This is one of the
-> things the utrace API makes straightforward, in which case its own
-> native syscall reporting callbacks can be used directly.
-> 
-> - FChE
-> 
+On Tue, Sep 23, 2008 at 8:28 AM, David Miller <davem@davemloft.net> wrote:
+> From: Jiri Kosina <jkosina@suse.cz>
+> Date: Tue, 23 Sep 2008 00:15:08 +0200 (CEST)
+>
+>> On Mon, 22 Sep 2008, Dave Airlie wrote:
+>>
+>> > Sep 8th I booted my own 2.6.27-rc5 kernel based from
+>> > ec0c15afb41fd9ad45b53468b60db50170e22346
+>> > This got a corrupted e1000e checksum and every kernel since has.
+>>
+>> Have you restored the EEPROM contents after it got corrupted for the first
+>> time?
+>>
+>> Once the EEPROM contents get corrupted, the card will then be broken
+>> forever even on kernel that gets this fixed one day.
+>>
+>> This is pretty serious bug in fact, as it renders hardware of poor users
+>> unusable, and just patching kernel is then not enough to put things back
+>> to shape.
+>
+> The top priority is to root cause this, so that we can stop the
+> problem from happening as fast as possible, and I'm still waiting for
+> the SHA1 ID that was used for the last kernel Dave booted before the
+> problem occurred which is pretty damn critical for making forward
+> progress here.
 
-There is already a series of patches in the -lttng tree which adds
-TIF_KERNEL_TRACE to every architecture. It basically enables syscall
-tracing for every threads running on the system.
+It was exactly 2.6.27-rc5 + Fedora at the time but we rarely touch
+these areas, most of the extra code is in other places, and since
+people are seeing it on !Fedora
+also I would assume it wasn't these.
 
-It't the best way I found to do system-wide syscall tracing without
-changing anything of the assembly code except adding one flag to the
-tested flags.
+I think people have seen it on earlier kernels maybe but not sure.
 
-Mathieu
+really Intel needs to get a fix of some sort out so we can repair the
+hw so we can root cause the probem.
 
+Dave.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+>
+> It could even be some PCI or x86 layer change that caused the corruption,
+> we don't even know yet.
+>
