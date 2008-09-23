@@ -1,60 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYIWIj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYIWInN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbYIWIj3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 04:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYIWIjV
+	id S1753196AbYIWInN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 04:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYIWIm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 04:39:21 -0400
-Received: from mailrelay006.isp.belgacom.be ([195.238.6.172]:54142 "EHLO
-	mailrelay006.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751228AbYIWIjU (ORCPT
+	Tue, 23 Sep 2008 04:42:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:59821 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751313AbYIWIm6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 04:39:20 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEANdG2EhR9cQt/2dsb2JhbACBXbUzgWY
-Date: Tue, 23 Sep 2008 10:39:15 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org,
-       Tony Lindgren <tony@atomide.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "George G. Davis" <gdavis@mvista.com>, Alan Cox <alan@redhat.com>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: [PATCH 1/3] watchdog: sync linux-omap changes
-Message-ID: <20080923083915.GS22550@infomag.infomag.iguana.be>
-References: <1221873243-18303-1-git-send-email-me@felipebalbi.com> <1221873243-18303-2-git-send-email-me@felipebalbi.com> <20080922182206.GM22550@infomag.infomag.iguana.be> <20080922191353.GB8314@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080922191353.GB8314@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 23 Sep 2008 04:42:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type;
+        b=UlLj2Ce/6FEeaMEsF3hTVJ1oHatyDsvyjsyZauyeiOB+x8Awg/UT4/T8T4VIJoDwlY
+         5dbNzQK8Zc3culNfXu8v0tLyh+ug+++6SmGEB1F29UoNZOurxJCAiHB3cSmGY6PsU45v
+         Skl+Na2tUPk6ZssZwA8PXo/3mwSG4DjWfhEaI=
+Message-ID: <ed7dcf450809230142l62bb00aapb92e6cb225f0cbba@mail.gmail.com>
+Date: Tue, 23 Sep 2008 10:42:56 +0200
+From: "=?ISO-8859-1?Q?S=F8ren_Hauberg?=" <hauberg@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] usbtouchscreen, 2.6.25
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_35810_12681352.1222159376291"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell,
+------=_Part_35810_12681352.1222159376291
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> It's unused, but it's a minor point, something that shouldn't stand
-> in the way of it going into the watchdog tree.  It doesn't cause a
-> build error and doesn't cause malfunction.  It's just a little untidy
-> and can be addressed separately.
+Hi,
+  Currently, the 'usbtouchscreen' module sends raw data from the
+touchscreen directly to the user. However, in general, touchscreens
+need to be calibrated, and the raw data needs to be transformed
+according to the calibration, before the data can be used as an input
+device. Currently, some special purpose drivers exists for this in X,
+but the situation is a bit messy. I propose to add support for
+calibration parameters in the kernel. That way, we can also get usable
+touchscreens without X, without having to write special purpose
+drivers to handle the data from the touchscreen. The attached patch
+adds support for this. A module parameter (transform_xy)
+enables/disables this behavior, so the patch is not very intrusive,
+and should cause issues to current users.
 
-We will need to address it later then. I just added the patches to the
-linux-2.6-watchdog-mm tree.
+Comments would be appricated,
+S=F8ren
 
-> +               omap_wdt_set_timeout(wdev);
-> +               omap_wdt_enable(wdev);
->                 spin_unlock(&wdt_lock);
-> +
-> +               omap_wdt_ping(wdev);
-> 
-> which is moving omap_wdt_ping() outside of the spin lock, which I
-> doubt actually causes any problem in real life on OMAP platforms.
-> Granted that theoretically and logically it's wrong.
+P.S. I'm not subscribed to the list so please keep me in the CC.
 
-And since this is indeed wrong, I changed this back.
+------=_Part_35810_12681352.1222159376291
+Content-Type: text/x-patch; name=usbtouchscreen.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_flga4kuv0
+Content-Disposition: attachment; filename=usbtouchscreen.patch
 
-Kind regards,
-Wim.
+LS0tIC9yb290L3RvdWNoL3VzYnRvdWNoc2NyZWVuLmMub3JnCTIwMDgtMDktMTYgMTU6MzI6NDAu
+MDAwMDAwMDAwICswMjAwCisrKyBkcml2ZXJzL2lucHV0L3RvdWNoc2NyZWVuL3VzYnRvdWNoc2Ny
+ZWVuLmMJMjAwOC0wOS0yMyAxMDoyNjo0My4wMDAwMDAwMDAgKzAyMDAKQEAgLTU5LDYgKzU5LDQ5
+IEBACiBtb2R1bGVfcGFyYW0oc3dhcF94eSwgYm9vbCwgMDY0NCk7CiBNT0RVTEVfUEFSTV9ERVND
+KHN3YXBfeHksICJJZiBzZXQgWCBhbmQgWSBheGVzIGFyZSBzd2FwcGVkLiIpOwogCitzdGF0aWMg
+aW50IGZsaXBfeDsKK21vZHVsZV9wYXJhbShmbGlwX3gsIGJvb2wsIDA2NDQpOworTU9EVUxFX1BB
+Uk1fREVTQyhmbGlwX3gsICJJZiBzZXQgWCBpcyBzdWJ0cmFjdGVkIGZyb20gdGhlIHJhbmdlX3gg
+cGFyYW1ldGVyLiIpOworCitzdGF0aWMgaW50IGZsaXBfeTsKK21vZHVsZV9wYXJhbShmbGlwX3ks
+IGJvb2wsIDA2NDQpOworTU9EVUxFX1BBUk1fREVTQyhmbGlwX3ksICJJZiBzZXQgWCBpcyBzdWJ0
+cmFjdGVkIGZyb20gdGhlIHJhbmdlX3ggcGFyYW1ldGVyLiIpOworCitzdGF0aWMgaW50IHRyYW5z
+Zm9ybV94eTsKK21vZHVsZV9wYXJhbSh0cmFuc2Zvcm1feHksIGJvb2wsIDA2NDQpOworTU9EVUxF
+X1BBUk1fREVTQyh0cmFuc2Zvcm1feHksICJJZiBzZXQgdGhlIFgtY29vcmRpbmF0ZSBpcyBjb21w
+dXRlZCBhc1wKKyAocmFuZ2VfeCAqIChyYXdfeCAtIG1pbl94KSkvKG1heF94LW1pbl94KSBhbmQg
+c2ltaWxhciBmb3IgdGhlIHktY29vcmRpbmF0ZS4iKTsKKworc3RhdGljIGludCBtaW5feDsKK21v
+ZHVsZV9wYXJhbShtaW5feCwgaW50LCAwNjQ0KTsKK01PRFVMRV9QQVJNX0RFU0MobWluX3gsICJU
+aGUgdmFsdWUgb2YgdGhlIG1pbl94IHBhcmFtZXRlci4gU2VlICd0cmFuc2Zvcm1feHknXAorIGZv
+ciBkZXRhaWxzLiIpOworCitzdGF0aWMgaW50IG1heF94OworbW9kdWxlX3BhcmFtKG1heF94LCBp
+bnQsIDA2NDQpOworTU9EVUxFX1BBUk1fREVTQyhtYXhfeCwgIlRoZSB2YWx1ZSBvZiB0aGUgbWF4
+X3ggcGFyYW1ldGVyLiBTZWUgJ3RyYW5zZm9ybV94eSdcCisgZm9yIGRldGFpbHMuIik7CisKK3N0
+YXRpYyBpbnQgbWluX3k7Cittb2R1bGVfcGFyYW0obWluX3ksIGludCwgMDY0NCk7CitNT0RVTEVf
+UEFSTV9ERVNDKG1pbl95LCAiVGhlIHZhbHVlIG9mIHRoZSBtaW5feSBwYXJhbWV0ZXIuIFNlZSAn
+dHJhbnNmb3JtX3h5J1wKKyBmb3IgZGV0YWlscy4iKTsKKworc3RhdGljIGludCBtYXhfeTsKK21v
+ZHVsZV9wYXJhbShtYXhfeSwgaW50LCAwNjQ0KTsKK01PRFVMRV9QQVJNX0RFU0MobWF4X3ksICJU
+aGUgdmFsdWUgb2YgdGhlIG1heF95IHBhcmFtZXRlci4gU2VlICd0cmFuc2Zvcm1feHknXAorIGZv
+ciBkZXRhaWxzLiIpOworCitzdGF0aWMgaW50IHJhbmdlX3g7Cittb2R1bGVfcGFyYW0ocmFuZ2Vf
+eCwgaW50LCAwNjQ0KTsKK01PRFVMRV9QQVJNX0RFU0MocmFuZ2VfeCwgIlRoZSBYLWNvb3JkaW5h
+dGUgb2YgdGhlIG91dHB1dCB3aWxsIGJlIGluIHRoZVwKKyBpbnRlcnZhbCBbMCwgcmFuZ2VfeF0u
+Iik7CisKK3N0YXRpYyBpbnQgcmFuZ2VfeTsKK21vZHVsZV9wYXJhbShyYW5nZV95LCBpbnQsIDA2
+NDQpOworTU9EVUxFX1BBUk1fREVTQyhyYW5nZV95LCAiVGhlIFktY29vcmRpbmF0ZSBvZiB0aGUg
+b3V0cHV0IHdpbGwgYmUgaW4gdGhlXAorIGludGVydmFsIFswLCByYW5nZV95XS4iKTsKKwogLyog
+ZGV2aWNlIHNwZWNpZmMgZGF0YS9mdW5jdGlvbnMgKi8KIHN0cnVjdCB1c2J0b3VjaF91c2I7CiBz
+dHJ1Y3QgdXNidG91Y2hfZGV2aWNlX2luZm8gewpAQCAtNjcyLDYgKzcxNSwxOCBAQAogLyoqKioq
+KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKioqKioqKioqCiAgKiBHZW5lcmljIFBhcnQKICAqLworaW5saW5lIGludCB1c2J0b3Vj
+aF90cmFuc2Zvcm1fcGt0IChpbnQgcCwgaW50IG1pbiwgaW50IG1heCwgaW50IHBoeXMpCit7Cisg
+IGludCByZXN1bHQgPSAocGh5cyAqIChwIC0gbWluKSkvKG1heC1taW4pOworICBpZiAocmVzdWx0
+IDwgMCkgeworICAgIHJldHVybiAwOworICB9IGVsc2UgaWYgKHJlc3VsdCA+IHBoeXMpIHsKKyAg
+ICByZXR1cm4gcGh5czsKKyAgfSBlbHNlIHsKKyAgICByZXR1cm4gcmVzdWx0OworICB9Cit9CisK
+IHN0YXRpYyB2b2lkIHVzYnRvdWNoX3Byb2Nlc3NfcGt0KHN0cnVjdCB1c2J0b3VjaF91c2IgKnVz
+YnRvdWNoLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdW5zaWduZWQgY2hhciAq
+cGt0LCBpbnQgbGVuKQogewpAQCAtNjgwLDE1ICs3MzUsMjcgQEAKIAlpZiAoIXR5cGUtPnJlYWRf
+ZGF0YSh1c2J0b3VjaCwgcGt0KSkKIAkJCXJldHVybjsKIAotCWlucHV0X3JlcG9ydF9rZXkodXNi
+dG91Y2gtPmlucHV0LCBCVE5fVE9VQ0gsIHVzYnRvdWNoLT50b3VjaCk7Ci0KIAlpZiAoc3dhcF94
+eSkgewotCQlpbnB1dF9yZXBvcnRfYWJzKHVzYnRvdWNoLT5pbnB1dCwgQUJTX1gsIHVzYnRvdWNo
+LT55KTsKLQkJaW5wdXRfcmVwb3J0X2Ficyh1c2J0b3VjaC0+aW5wdXQsIEFCU19ZLCB1c2J0b3Vj
+aC0+eCk7Ci0JfSBlbHNlIHsKLQkJaW5wdXRfcmVwb3J0X2Ficyh1c2J0b3VjaC0+aW5wdXQsIEFC
+U19YLCB1c2J0b3VjaC0+eCk7Ci0JCWlucHV0X3JlcG9ydF9hYnModXNidG91Y2gtPmlucHV0LCBB
+QlNfWSwgdXNidG91Y2gtPnkpOworCQlpbnQgdG1wOworCQl0bXAgPSB1c2J0b3VjaC0+eDsKKwkJ
+dXNidG91Y2gtPnggPSB1c2J0b3VjaC0+eTsKKwkJdXNidG91Y2gtPnkgPSB0bXA7CiAJfQorCisJ
+aWYgKHRyYW5zZm9ybV94eSkgeworCQl1c2J0b3VjaC0+eCA9IHVzYnRvdWNoX3RyYW5zZm9ybV9w
+a3QgKHVzYnRvdWNoLT54LCBtaW5feCwgbWF4X3gsIHJhbmdlX3gpOworCQl1c2J0b3VjaC0+eSA9
+IHVzYnRvdWNoX3RyYW5zZm9ybV9wa3QgKHVzYnRvdWNoLT55LCBtaW5feSwgbWF4X3ksIHJhbmdl
+X3kpOworCX0KKworCWlmIChmbGlwX3gpCisJCXVzYnRvdWNoLT54ID0gcmFuZ2VfeCAtIHVzYnRv
+dWNoLT54OworCisJaWYgKGZsaXBfeSkKKwkJdXNidG91Y2gtPnkgPSByYW5nZV95IC0gdXNidG91
+Y2gtPnk7CisJCisJaW5wdXRfcmVwb3J0X2Ficyh1c2J0b3VjaC0+aW5wdXQsIEFCU19YLCB1c2J0
+b3VjaC0+eCk7CisJaW5wdXRfcmVwb3J0X2Ficyh1c2J0b3VjaC0+aW5wdXQsIEFCU19ZLCB1c2J0
+b3VjaC0+eSk7CisJaW5wdXRfcmVwb3J0X2tleSh1c2J0b3VjaC0+aW5wdXQsIEJUTl9UT1VDSCwg
+dXNidG91Y2gtPnRvdWNoKTsKIAlpZiAodHlwZS0+bWF4X3ByZXNzKQogCQlpbnB1dF9yZXBvcnRf
+YWJzKHVzYnRvdWNoLT5pbnB1dCwgQUJTX1BSRVNTVVJFLCB1c2J0b3VjaC0+cHJlc3MpOwogCWlu
+cHV0X3N5bmModXNidG91Y2gtPmlucHV0KTsK
+------=_Part_35810_12681352.1222159376291
+Content-Type: application/octet-stream; name=README
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_flga4phr1
+Content-Disposition: attachment; filename=README
 
+U8O4cmVuIEhhdWJlcmcgPGhhdWJlcmdAZ21haWwuY29tPjogYWRkIHN1cHBvcnQgZm9yIGNhbGli
+cmF0aW9uIHBhcmFtZXRlcnMgaW4gJ3VzYnRvdWNoc2NyZWVuJy4K
+------=_Part_35810_12681352.1222159376291--
