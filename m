@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbYIWLxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751034AbYIWL5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752586AbYIWLxl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 07:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbYIWLxd
+	id S1751034AbYIWL5O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 07:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbYIWL45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 07:53:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46558 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750869AbYIWLxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 07:53:32 -0400
-Date: Tue, 23 Sep 2008 13:53:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: How how latent should non-preemptive scheduling be?
-Message-ID: <20080923115323.GA27240@elte.hu>
-References: <fa.ERZTl/6uH+mhNoef5fPJKTRjJag@ifi.uio.no> <fa.C6WSm5Rh2Nb+Qho7b0qDOZ9RPV8@ifi.uio.no> <fa.ch6j4qXs/2sFpLkHz5fXrtjTR8c@ifi.uio.no> <fa.Jx/Ygtm46CVRawlA6OnfYNn6cN0@ifi.uio.no> <fa.iIHgL48F3T5VAqFw3mqaf9Pzrs4@ifi.uio.no> <fa.Td8xkKZKMSMghlJmEYefTRVF2kc@ifi.uio.no> <48D39312.9000400@yahoo.com> <20080922115749.GE14301@elte.hu> <48D88DB4.9020003@yahoo.com>
+	Tue, 23 Sep 2008 07:56:57 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:64415 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbYIWL45 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 07:56:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=S3OpozvhBQ1Ybds3hDPf0hHJQSpIOjzamJlYe8NLl9UzwRqlBd5R84HZEbIrSUMLD+
+         oiFDWJz+BGiauqxATbv9IZ6VnyTeFaYzh8QQ/3qI/aIgTTETe2pAs8AcgmQGU2yHDCwk
+         SIZB3ZZogjdJrnK8arFhc3eUoVHKC8vquRZSQ=
+Message-ID: <517f3f820809230456r66fa68dcw2362b214ca1de5f6@mail.gmail.com>
+Date: Tue, 23 Sep 2008 13:56:56 +0200
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Remi Machet" <rmachet@slac.stanford.edu>, jens.axboe@oracle.com
+Subject: Re: SPLICE_F_MOVE
+Cc: "Linux Mailing list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1222125940.1313.83.camel@pcds-ts102.slac.stanford.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48D88DB4.9020003@yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1222125940.1313.83.camel@pcds-ts102.slac.stanford.edu>
+X-Google-Sender-Auth: 0c22ac000bc2a1b6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+[CC+=Jens, who should be able to help]
 
-> Ingo Molnar wrote:
->> well, since they went away after you enabled CONFIG_PREEMPT=y, they are 
->> definitely in-kernel latencies, not any external SMM latencies.
->>
->> I.e. they are inherently fixable. Could you enable:
->>
->>   CONFIG_DYNAMIC_FTRACE=y
->>   CONFIG_FTRACE_MCOUNT_RECORD=y
->>
->> that should make the traces a lot more verbose - every kernel function  
->> executed in the latency path will be logged. That way we'll be able to  
->> say which one takes that long.
+On 9/23/08, Remi Machet <rmachet@slac.stanford.edu> wrote:
+> Hi,
 >
-> I do not appear to have the CONFIG_FTRACE_MCOUNT_RECORD option in 
-> 2.6.27rc7. Is it an option that is only in -tip ?
+>  Does anyone know if SPLICE_F_MOVE is obsolete or still in use ?
+>
+>  The documentation says that the flag should be used to tell splice not
+>  to copy the data when moving data to/from a pipe, but I cannot find
+>  anywhere in the kernel where this flag is being used or checked for.
+>
+>  Thanks,
+>
+>  Remi
+>
+>
+>  --
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-yeah - it's a new ftrace feature queued up for v2.6.28.
 
-	Ingo
+-- 
+Michael Kerrisk Linux man-pages maintainer;
+http://www.kernel.org/doc/man-pages/ Found a documentation bug?
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
