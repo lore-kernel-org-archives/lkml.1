@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbYIWI6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYIWI7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598AbYIWI6Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 04:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbYIWI6D
+	id S1753933AbYIWI7V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 04:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYIWI7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 04:58:03 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:59160 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751619AbYIWI6B convert rfc822-to-8bit (ORCPT
+	Tue, 23 Sep 2008 04:59:10 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:5042 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751822AbYIWI7I convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 04:58:01 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Sep 2008 04:58:00 EDT
-From: Ondrej Zary <linux@rainbow-software.org>
-To: "=?iso-8859-1?q?S=F8ren?= Hauberg" <hauberg@gmail.com>
+	Tue, 23 Sep 2008 04:59:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ZfUNGcjd4N0/cPo4TjChyBZ7e/Yd5KNPFB827T0D6W2woscJhRNNb7dEhKd1eQAePS
+         yb5peflM7Ofwxm7KegW2rLUteJvGurYtn8isfKhOAYAIIAbUlK7joP/4q4DRb4YFcthQ
+         0xu2F64mom+AQGG2nTbCjMXjlKi3drqFs+ggQ=
+Message-ID: <ed7dcf450809230159o16ed28ffweacf46aed08cf345@mail.gmail.com>
+Date: Tue, 23 Sep 2008 10:59:06 +0200
+From: "=?ISO-8859-1?Q?S=F8ren_Hauberg?=" <hauberg@gmail.com>
+To: "Oliver Neukum" <oliver@neukum.org>
 Subject: Re: [PATCH] usbtouchscreen, 2.6.25
-Date: Tue, 23 Sep 2008 10:51:13 +0200
-User-Agent: KMail/1.10.1 (Linux/2.6.26-omega; KDE/4.1.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <ed7dcf450809230142l62bb00aapb92e6cb225f0cbba@mail.gmail.com>
-In-Reply-To: <ed7dcf450809230142l62bb00aapb92e6cb225f0cbba@mail.gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+In-Reply-To: <200809231055.35919.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200809231051.14016.linux@rainbow-software.org>
+References: <ed7dcf450809230142l62bb00aapb92e6cb225f0cbba@mail.gmail.com>
+	 <200809231055.35919.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 September 2008, Søren Hauberg wrote:
-> Hi,
->   Currently, the 'usbtouchscreen' module sends raw data from the
-> touchscreen directly to the user. However, in general, touchscreens
-> need to be calibrated, and the raw data needs to be transformed
-> according to the calibration, before the data can be used as an input
-> device. Currently, some special purpose drivers exists for this in X,
-> but the situation is a bit messy. I propose to add support for
-> calibration parameters in the kernel. That way, we can also get usable
-> touchscreens without X, without having to write special purpose
-> drivers to handle the data from the touchscreen. The attached patch
-> adds support for this. A module parameter (transform_xy)
-> enables/disables this behavior, so the patch is not very intrusive,
-> and should cause issues to current users.
+2008/9/23 Oliver Neukum <oliver@neukum.org>:
+> Am Dienstag 23 September 2008 10:42:56 schrieb Søren Hauberg:
+>> calibration parameters in the kernel. That way, we can also get usable
+>> touchscreens without X, without having to write special purpose
 >
-> Comments would be appricated,
-
-Calibration is a per-device thing. You can have more than one touchscreen (the 
-swap_xy feature is also wrong, but better than nothing).
-
-> Søren
 >
-> P.S. I'm not subscribed to the list so please keep me in the CC.
+> Is that a realistic use?
 
--- 
-Ondrej Zary
+Perhaps for people using the framebuffer to create GUIs? To me, it's
+not important, but I guess it's a positive side-effect.
+
+Søren
