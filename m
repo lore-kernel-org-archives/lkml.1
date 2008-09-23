@@ -1,91 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYIWOYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbYIWOZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbYIWOYv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 10:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYIWOYn
+	id S1753844AbYIWOZb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 10:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbYIWOZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 10:24:43 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55815 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751438AbYIWOYm (ORCPT
+	Tue, 23 Sep 2008 10:25:22 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:46966 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751535AbYIWOZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 10:24:42 -0400
-Message-ID: <48D8FC1E.6000601@bull.net>
-Date: Tue, 23 Sep 2008 16:24:30 +0200
-From: Benjamin Thery <benjamin.thery@bull.net>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 23 Sep 2008 10:25:20 -0400
+From: Srinivasa Ds <srinivasa@in.ibm.com>
+Organization: IBM
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH] Demultiplexing SIGTRAP signal -v2
+Date: Tue, 23 Sep 2008 19:55:01 +0530
+User-Agent: KMail/1.9.9
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
+       linux-parisc@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200809221602.32616.srinivasa@in.ibm.com> <20080923112812.GL29021@elte.hu> <20080923113001.GA12531@elte.hu>
+In-Reply-To: <20080923113001.GA12531@elte.hu>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: sysfs: tagged directories not merged completely yet
-References: <48D7AC44.6050208@bull.net> <20080922153455.GA6238@kroah.com>
-In-Reply-To: <20080922153455.GA6238@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809231955.01564.srinivasa@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Sep 22, 2008 at 04:31:32PM +0200, Benjamin Thery wrote:
->> Hi Greg,
->>
->> Someone made me notice that Eric's "sysfs tagged directories" patchset
->> you merged recently  isn't complete in your "patches" tree. The last two
->> patches that actually uses this new feature aren't in your tree yet.
->>
->> * [PATCH 7/8] netns: Enable tagging for net_class directories in sysfs
->> * [PATCH 8/8] sysfs: user namespaces: fix bug with clone(CLONE_NEWUSER)	
->> with fairsched
->>
->> I didn't noticed it sooner because I'm still using my own version of the
->> patchset on top of linux-2.6.
->>
->> I'm wondering why you left these two patches out? Is it on purpose? Do
->> you expect other maintainers to merged them in their respective tree?
->> Dave Miller acked the patch for network namespace and said "You can send
->> it all through Greg or whoever, don't feel obligated to push it through
->> me since it depends upon the earlier bits in this series".
-> 
-> I only got so far through the patch set and then got interrupted (was at
-> different conferences for 2 weeks), sorry.  I'll get the rest of the
-> patchset added later today.
-> 
-> Note, I did talk to Al Viro about these patches last week at the kernel
-> summit, and he advised holding off on sending them to mainline before he
-> could review them.  So I'll keep them in my tree for now, but not push
-> them to Linus until he acks them as he raised a few issues in our
-> conversation.
+On Tuesday 23 September 2008 17:00:01 Ingo Molnar wrote:
 
-Oh.
-It's a pity Al couldn't re-review them before. We've already lost a lot
-of time with this patchset and it's blocking easier testing of network
-namespaces (right now, with a mainline kernel, we have to disable sysfs
-to build network namespaces).
+> > applied to [the new topic] tip/core/signal, thanks Srinivasa! There
+> > are some other pending x86 signal changes already, so i based
+> > tip/core/signal on tip/x86/signal.
+>
+> -tip testing found the following build error with the attached config:
+>
 
-Eric sent the first version at the end of last year, then I've sent it 6
-times between April and July to keep it alive, and finally Eric reworked
-the patchset in July and sent a couple of versions to address the issues
-Tejun Heo had formulated. It would have been great to receive all the
-feedback at that time.
-
-But, I know, we all are busy men and we all have our priorities, and
-it takes time to get the things done right and then merged.
-I have to learn patience. :)
-
-Thanks anyway. It's a good step to have it in a tree.
-
-Benjamin
-
-> thanks,
-> 
-> greg k-h
-> 
-> 
+Ingo, Reproduced build break issue with your config on tip tree. It was a costly overlook 
+to miss one header file. I included it in this patch and tested it out.
 
 
--- 
-B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
+Currently a SIGTRAP can denote any one of below reasons.
+	- Breakpoint hit
+	- H/W debug register hit
+	- Single step
+	- Signal sent through kill() or rasie()
 
-    http://www.bull.com
+Architectures like powerpc/parisc provides infrastructure to demultiplex
+SIGTRAP signal by passing down the information for receiving SIGTRAP through
+si_code of siginfot_t structure. Here is an attempt is generalise this 
+infrastructure by extending it to x86 and x86_64 archs. 
+
+Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
+
+
+---
+ arch/ia64/include/asm/siginfo.h    |    5 -----
+ arch/powerpc/include/asm/siginfo.h |    5 -----
+ arch/x86/kernel/ptrace.c           |    7 ++++---
+ arch/x86/kernel/traps_32.c         |    4 +++-
+ arch/x86/kernel/traps_64.c         |    2 +-
+ include/asm-generic/siginfo.h      |    2 ++
+ include/asm-parisc/siginfo.h       |    5 -----
+ include/asm-x86/ptrace.h           |    2 +-
+ include/asm-x86/traps.h            |   12 ++++++++++++
+ 9 files changed, 23 insertions(+), 21 deletions(-)
+
+Index: linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
++++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+@@ -113,11 +113,6 @@ typedef struct siginfo {
+ #undef NSIGSEGV
+ #define NSIGSEGV	3
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/powerpc/include/asm/siginfo.h
++++ linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
+@@ -15,11 +15,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_32.c
++++ linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
+@@ -891,6 +891,7 @@ void __kprobes do_debug(struct pt_regs *
+ {
+ 	struct task_struct *tsk = current;
+ 	unsigned int condition;
++	int si_code;
+ 
+ 	trace_hardirqs_fixup();
+ 
+@@ -935,8 +936,9 @@ void __kprobes do_debug(struct pt_regs *
+ 			goto clear_TF_reenable;
+ 	}
+ 
++	si_code = get_si_code((unsigned long)condition);
+ 	/* Ok, finally something we can handle */
+-	send_sigtrap(tsk, regs, error_code);
++	send_sigtrap(tsk, regs, error_code, si_code);
+ 
+ 	/*
+ 	 * Disable additional traps. They'll be re-enabled when
+Index: linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_64.c
++++ linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
+@@ -936,7 +936,7 @@ asmlinkage void __kprobes do_debug(struc
+ 	tsk->thread.error_code = error_code;
+ 	info.si_signo = SIGTRAP;
+ 	info.si_errno = 0;
+-	info.si_code = TRAP_BRKPT;
++	info.si_code = get_si_code(condition);
+ 	info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
+ 	force_sig_info(SIGTRAP, &info, tsk);
+ 
+Index: linux-2.6.27-rc7/include/asm-generic/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-generic/siginfo.h
++++ linux-2.6.27-rc7/include/asm-generic/siginfo.h
+@@ -199,6 +199,8 @@ typedef struct siginfo {
+  */
+ #define TRAP_BRKPT	(__SI_FAULT|1)	/* process breakpoint */
+ #define TRAP_TRACE	(__SI_FAULT|2)	/* process trace trap */
++#define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
++#define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint/watchpoint */
+ #define NSIGTRAP	2
+ 
+ /*
+Index: linux-2.6.27-rc7/include/asm-parisc/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-parisc/siginfo.h
++++ linux-2.6.27-rc7/include/asm-parisc/siginfo.h
+@@ -3,11 +3,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/x86/kernel/ptrace.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/ptrace.c
++++ linux-2.6.27-rc7/arch/x86/kernel/ptrace.c
+@@ -1357,7 +1357,8 @@ const struct user_regset_view *task_user
+ #endif
+ }
+ 
+-void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code)
++void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
++					 int error_code, int si_code)
+ {
+ 	struct siginfo info;
+ 
+@@ -1366,7 +1367,7 @@ void send_sigtrap(struct task_struct *ts
+ 
+ 	memset(&info, 0, sizeof(info));
+ 	info.si_signo = SIGTRAP;
+-	info.si_code = TRAP_BRKPT;
++	info.si_code = si_code;
+ 
+ 	/* User-mode ip? */
+ 	info.si_addr = user_mode_vm(regs) ? (void __user *) regs->ip : NULL;
+@@ -1476,5 +1477,5 @@ asmregparm void syscall_trace_leave(stru
+ 	 */
+ 	if (test_thread_flag(TIF_SINGLESTEP) &&
+ 	    (current->ptrace & PT_PTRACED))
+-		send_sigtrap(current, regs, 0);
++		send_sigtrap(current, regs, 0, TRAP_BRKPT);
+ }
+Index: linux-2.6.27-rc7/include/asm-x86/traps.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-x86/traps.h
++++ linux-2.6.27-rc7/include/asm-x86/traps.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_X86_TRAPS_H
+ #define _ASM_X86_TRAPS_H
+ 
++#include <asm/debugreg.h>
++
+ /* Common in X86_32 and X86_64 */
+ asmlinkage void divide_error(void);
+ asmlinkage void debug(void);
+@@ -36,6 +38,16 @@ void do_invalid_op(struct pt_regs *, lon
+ void do_general_protection(struct pt_regs *, long);
+ void do_nmi(struct pt_regs *, long);
+ 
++static inline int get_si_code(unsigned long condition)
++{
++	if (condition & DR_STEP)
++		return TRAP_TRACE;
++	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		return TRAP_HWBKPT;
++	else
++		return TRAP_BRKPT;
++}
++
+ extern int panic_on_unrecovered_nmi;
+ extern int kstack_depth_to_print;
+ 
+Index: linux-2.6.27-rc7/include/asm-x86/ptrace.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-x86/ptrace.h
++++ linux-2.6.27-rc7/include/asm-x86/ptrace.h
+@@ -143,7 +143,7 @@ convert_ip_to_linear(struct task_struct 
+ 
+ #ifdef CONFIG_X86_32
+ extern void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
+-			 int error_code);
++			 int error_code, int si_code);
+ #else
+ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
+ #endif
+
+
+
