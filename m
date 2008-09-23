@@ -1,91 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbYIWVKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbYIWVPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbYIWVKl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbYIWVKb
+	id S1754527AbYIWVPM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:15:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYIWVO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:10:31 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:49594 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbYIWVKa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 17:10:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references:x-gmailtapped-by;
-	b=nDm0Cx0GxKiyQLnSvuB6QScnbP37Zs/RsF9o9x4Mp+kvqZ2HtZOC3EXUb0cLovm3o
-	uTGmIe2CSRD7hghH2XCrw==
-Message-ID: <65634d660809231410v47fb9d84s63fa76f358756729@mail.gmail.com>
-Date: Tue, 23 Sep 2008 14:10:21 -0700
-From: "Tom Herbert" <therbert@google.com>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
-Cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com,
-       steffen.klassert@secunet.com
-In-Reply-To: <48D92174.5010902@nortel.com>
+	Tue, 23 Sep 2008 17:14:58 -0400
+Received: from ns2.suse.de ([195.135.220.15]:41964 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752804AbYIWVO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 17:14:57 -0400
+Date: Tue, 23 Sep 2008 14:12:02 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB patches for 2.6.27-rc7
+Message-ID: <20080923211202.GA2915@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080919.234824.223177211.davem@davemloft.net>
-	 <48D80C9C.2070108@nortel.com>
-	 <20080922.151233.229805934.davem@davemloft.net>
-	 <48D92174.5010902@nortel.com>
-X-GMailtapped-By: 172.25.146.78
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> That patch basically just picks an arbitrary cpu for each flow.  This would
-> spread the load out across cpus, but it doesn't allow any input from
-> userspace.
->
+Here are some USB patches for your 2.6.26-git tree.
 
-We've been running softRSS for a while
-(http://marc.info/?l=linux-netdev&m=120475045519940&w=2) which I
-believe has very similar functionality to this patch.  From this work
-we found some nice ways to improve scaling that might be applicable:
+These paches are:
+	- regression fixes (both run-time and build-time)
+	- new device ids added to some drivers
+	- new usb-storage quirks (lots of new Nokia devices are
+	  broken...)
+	- remove a config option that should never have been added.
+	- a minor documentation update.
 
-- When routing packets to CPU based on hash, sending to another CPU
-sharing L2 or L3 cache is best performance.
-- We added a simple functionality to route packets to the CPU on which
-the application last did a read for the socket.  This seems to be a
-win for cache locality.
-- We added a lookup table that maps the Toeplitz hash to the receiving
-CPU where the application is running.  This is for those devices that
-provide the Toeplitz hash in the receive descriptor.  This is a win
-since the CPU receiving the interrupt doesn't need to take any cache
-misses on the packet itself.
-- In our (preliminary) 10G testing we found that routing packets in
-software with the the above trick actually allows higher PPS and
-better CPU utilization than using hardware RSS.  Also, using both the
-software routing and hardware RSS yields the best results.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-Tom
+All of these patches have been in the -next and -mm trees for quite a
+while, sorry for sitting on them for so long, too many conferences in
+the past few weeks.
 
-> We have a current application where there are 16 cores and 16 threads. They
-> would really like to be able to pin one thread to each core and tell the
-> kernel what packets they're interested in so that the kernel can process
-> those packets on that core to gain the maximum caching benefit as well as
-> reduce reordering issues.  In our case the hardware supports filtering for
-> multiqueues, so we could pass this information down to the hardware to avoid
-> software filtering.
->
-> Either way, it requires some way for userspace to indicate interest in a
-> particular flow.  Has anyone given any thought to what an API like this
-> would look like?
->
-> I suppose we could automatically look at bound network sockets owned by
-> tasks that are affined to single cpus.  This would simplify userspace but
-> would reduce flexibility for things like packet sockets with socket filters
-> applied.
->
-> Chris
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
+
+thanks,
+
+greg k-h
+
+------------
+
+ Documentation/usb/anchors.txt         |   12 ++++++++++
+ drivers/usb/core/hcd.c                |    3 +-
+ drivers/usb/core/hub.c                |   39 ++++++++++++++------------------
+ drivers/usb/gadget/fsl_usb2_udc.c     |    2 +-
+ drivers/usb/gadget/omap_udc.c         |    4 +-
+ drivers/usb/host/ehci-hcd.c           |   26 +++++++++++++--------
+ drivers/usb/host/ehci-sched.c         |   32 +++++++++++---------------
+ drivers/usb/musb/Kconfig              |    1 +
+ drivers/usb/musb/musb_core.c          |    4 +-
+ drivers/usb/musb/omap2430.c           |    4 +-
+ drivers/usb/musb/omap2430.h           |    4 +-
+ drivers/usb/serial/cp2101.c           |    3 ++
+ drivers/usb/serial/ftdi_sio.c         |    3 ++
+ drivers/usb/serial/ftdi_sio.h         |    5 ++++
+ drivers/usb/serial/option.c           |    2 +
+ drivers/usb/serial/sierra.c           |   12 ++++++----
+ drivers/usb/serial/ti_usb_3410_5052.c |    2 +-
+ drivers/usb/serial/usb-serial.c       |    4 ++-
+ drivers/usb/storage/Kconfig           |   12 ----------
+ drivers/usb/storage/Makefile          |    3 +-
+ drivers/usb/storage/unusual_devs.h    |   30 +++++++++++++++++++++++-
+ drivers/usb/storage/usb.c             |    2 -
+ 22 files changed, 124 insertions(+), 85 deletions(-)
+
+---------------
+
+Alan Stern (2):
+      USB: unusual_devs addition for RockChip MP3 player
+      USB: revert recovery from transient errors
+
+Andreas Bombe (1):
+      usb-serial: Add Siemens EF81 to PL-2303 hack triggers
+
+Andrew Morton (1):
+      USB: drivers/usb/musb/: disable it on SuperH
+
+Chris Adams (1):
+      usb serial: ti_usb_3410_5052 obviously broken by firmware changes
+
+Craig Shelley (1):
+      USB: SERIAL CP2101 add device IDs
+
+David Almaroad (1):
+      usb: unusual devs patch for Nokia 5310 Music Xpress
+
+David Brownell (3):
+      USB: ehci: fix some ehci hangs and crashes
+      usb gadget: fix omap_udc DMA regression
+      USB: fix EHCI periodic transfers
+
+Felipe Balbi (1):
+      usb: musb: fix include path
+
+Filip Joelsson (1):
+      USB: Fixing Nokia 3310c in storage mode
+
+Gaetan Carlier (1):
+      usb: ftdi_sio: add support for Domintell devices
+
+Geoff Levand (1):
+      USB: fix hcd interrupt disabling
+
+Jaroslav Kysela (1):
+      USB: ftdi_sio: Add 0x5050/0x0900 USB IDs (Papouch Quido USB 4/4)
+
+Kevin Lloyd (3):
+      USB Storage: Sierra: Non-configurable TRU-Install
+      USB Serial: Sierra: Device addition & version rev
+      USB Serial: Sierra: Add MC8785 VID/PID
+
+Oliver Neukum (1):
+      USB: update of Documentation/usb/anchors.txt
+
+Otavio Salvador (1):
+      USB: serial: add ZTE CDMA Tech id to option driver
+
+Peter Korsgaard (1):
+      USB: fsl_usb2_udc: fix VDBG() format string
+
+Richard Nauber (1):
+      USB: Fix the Nokia 6300 storage-mode.
+
+Tony Murray (1):
+      USB: Correct Sierra Wireless USB EVDO Modem Device ID
+
