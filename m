@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbYIWVZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbYIWV0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755911AbYIWVZd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbYIWVZF
+	id S1756067AbYIWV0U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbYIWV0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:25:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:49541 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754329AbYIWVZD (ORCPT
+	Tue, 23 Sep 2008 17:26:09 -0400
+Received: from outbound-mail-12.bluehost.com ([69.89.18.112]:54227 "HELO
+	outbound-mail-12.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752934AbYIWV0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 17:25:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=XwKrbtOj0OwXNJlYN99hMlvv+gfAw/Y+NtQjW1qrcRukUurJmL9yxe9X6LL8pDYFRl
-         MuiEKva5ZDTZAqbJi2CvqZm9i/iBvYb74aAZKGCRvc78RdaftbFYvB4O2zBHl6nNo4UZ
-         9HBzrBOq4fWmf5OUWUNdPpHl0BgKc8Dgy2xtY=
-Date: Tue, 23 Sep 2008 23:24:59 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: drzeus-mmc@drzeus.cx
-Subject: SDHCI: timeout during data transfer
-Message-ID: <20080923212459.GA13888@dreamland.darkstar.lan>
+	Tue, 23 Sep 2008 17:26:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=FuaAeTMEJdP3gDIczm+QRspcCnSqW0svxz+2p0xFYpPXHJuFrqQ3hYaqRk+v2Eb7zwCu7P2+h8lE4XL138Qyccyx6/Mn3A6q/Cc1EFfoB0iQYKgtYC/qt3Cjn4+ya9WW;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH]pci_dma_mapping_error changes
+Date: Tue, 23 Sep 2008 14:26:05 -0700
+User-Agent: KMail/1.9.9
+Cc: Marin Mitov <mitov@issp.bas.bg>, linux-kernel@vger.kernel.org
+References: <200809180812.25143.mitov@issp.bas.bg> <48D27D9F.7090103@garzik.org>
+In-Reply-To: <48D27D9F.7090103@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200809231426.06194.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I'm seeing timeout errors when transfering "big" (over 1MB or so) files to a SD
-card (small files are ok):
+On Thursday, September 18, 2008 9:11 am Jeff Garzik wrote:
+> Make the example code consistent with changed API.
+>
+> Acked-by: Jeff Garzik <jgarzik@redhat.com>
+> Signed-off-by: Marin Mitov <mitov@ispp.bas.bg>
+>
+> ===================================================
+> --- a/Documentation/DMA-mapping.txt	2008-09-14 11:34:48.000000000 +0300
+> +++ b/Documentation/DMA-mapping.txt	2008-09-14 11:37:17.000000000 +0300
+> @@ -740,7 +740,7 @@ failure can be determined by:
+>  	dma_addr_t dma_handle;
+>
+>  	dma_handle = pci_map_single(pdev, addr, size, direction);
+> -	if (pci_dma_mapping_error(dma_handle)) {
+> +	if (pci_dma_mapping_error(pdev, dma_handle)) {
+>  		/*
+>  		 * reduce current DMA mapping usage,
+>  		 * delay and try again later or
+>
 
-[  251.956666] mmcblk0: error -110 transferring data
-[  251.979810] end_request: I/O error, dev mmcblk0, sector 1572758
-[  251.981477] Buffer I/O error on device mmcblk0p1, logical block 1572742
-[  251.983198] lost page write due to I/O error on mmcblk0p1
-[  251.983788] end_request: I/O error, dev mmcblk0, sector 1572759
-[  251.983788] Buffer I/O error on device mmcblk0p1, logical block 1572743
-[  251.983788] lost page write due to I/O error on mmcblk0p1
-[  251.983788] end_request: I/O error, dev mmcblk0, sector 1572760
-[  251.983788] Buffer I/O error on device mmcblk0p1, logical block 1572744
-[  251.983788] lost page write due to I/O error on mmcblk0p1
-[  251.983788] end_request: I/O error, dev mmcblk0, sector 1572761
-[  251.983788] Buffer I/O error on device mmcblk0p1, logical block 1572745
-[  251.983788] lost page write due to I/O error on mmcblk0p1
-[  253.513336] mmcblk0: error -110 transferring data
-(trashed FS here)
+Applied to linux-next, thanks.
 
-kernel in use is 2.6.27-rc6, and this is the controller:
-
-09:01.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
-09:01.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
-09:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 12)
-09:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 12)
-
-Googling around I found a patch[1] that introduced a quirk to address an
-off-by-one issue for the timeout value in certain controllers.
-
-With this patch:
-
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index e3a8133..46899ee 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -575,7 +575,7 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- 	host->data = data;
- 	host->data_early = 0;
- 
--	count = sdhci_calc_timeout(host, data);
-+	count = sdhci_calc_timeout(host, data) + 1;
- 	writeb(count, host->ioaddr + SDHCI_TIMEOUT_CONTROL);
- 
- 	if (host->flags & SDHCI_USE_DMA)
-
-I don't see timeouts anymore (just for reference, I'm not suggesting to apply it
-as-is).
-
-Luca
-[1] http://www.gossamer-threads.com/lists/linux/kernel/937056
 -- 
-Dicono che  il cane sia  il miglior  amico dell'uomo. Secondo me  non e`
-vero. Quanti dei vostri amici avete fatto castrare, recentemente?
+Jesse Barnes, Intel Open Source Technology Center
