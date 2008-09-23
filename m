@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbYIWRUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbYIWRVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753002AbYIWRUr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 13:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbYIWRUb
+	id S1755174AbYIWRVP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 13:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYIWRUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 13:20:31 -0400
-Received: from igw2.br.ibm.com ([32.104.18.25]:51275 "EHLO igw2.br.ibm.com"
+	Tue, 23 Sep 2008 13:20:55 -0400
+Received: from igw3.br.ibm.com ([32.104.18.26]:49191 "EHLO igw3.br.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752789AbYIWRU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 13:20:28 -0400
+	id S1751517AbYIWRUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 13:20:54 -0400
 From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, jmoriss@namei.org, serue@linux.vnet.ibm.com,
        zohar@linux.vnet.ibm.com, safford@watson.ibm.com,
        paulmck@linux.vnet.ibm.com, debora@linux.vnet.ibm.com
-Subject: [PATCH 3/4] TPM: rcu locking
-Date: Tue, 23 Sep 2008 14:19:28 -0300
-Message-Id: <1222190371-23814-3-git-send-email-srajiv@linux.vnet.ibm.com>
+Subject: [PATCH 4/4] TPM: addition of pnp remove
+Date: Tue, 23 Sep 2008 14:19:29 -0300
+Message-Id: <1222190371-23814-4-git-send-email-srajiv@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <cover.1222136544.git.srajiv@linux.vnet.ibm.com>
 References: <cover.1222136544.git.srajiv@linux.vnet.ibm.com>
@@ -24,162 +24,124 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Protects tpm_chip_list when transversing it.
+
+The tpm_dev_release function is only called for platform devices, not pnp devices, so we
+implemented the .remove function for pnp ones.
+Since it's code is very similar to the one inside tpm_dev_release, we've created a helper
+function tpm_dev_vendor_release, which is called by both.
 
 Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
 Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
 
 ---
- drivers/char/tpm/tpm.c |   58 ++++++++++++++++++-----------------------------
- 1 files changed, 22 insertions(+), 36 deletions(-)
+ drivers/char/tpm/tpm.c     |   22 ++++++++++++++++------
+ drivers/char/tpm/tpm.h     |    1 +
+ drivers/char/tpm/tpm_tis.c |   14 +++++++++++++-
+ 3 files changed, 30 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-index dfd4e7f..ac8982e 100644
+index ac8982e..a771ceb 100644
 --- a/drivers/char/tpm/tpm.c
 +++ b/drivers/char/tpm/tpm.c
-@@ -961,33 +961,27 @@ EXPORT_SYMBOL_GPL(tpm_store_cancel);
-  */
- int tpm_open(struct inode *inode, struct file *file)
- {
--	int rc = 0, minor = iminor(inode);
-+	int minor = iminor(inode);
- 	struct tpm_chip *chip = NULL, *pos;
- 
--	spin_lock(&driver_lock);
--
--	list_for_each_entry(pos, &tpm_chip_list, list) {
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(pos, &tpm_chip_list, list) {
- 		if (pos->vendor.miscdev.minor == minor) {
- 			chip = pos;
-+			get_device(chip->dev);
- 			break;
- 		}
- 	}
-+	rcu_read_unlock();
- 
--	if (chip == NULL) {
--		rc = -ENODEV;
--		goto err_out;
--	}
-+	if (!chip)
-+		return -ENODEV;
- 
- 	if (test_and_set_bit(0, &chip->is_open)) {
- 		dev_dbg(chip->dev, "Another process owns this TPM\n");
--		rc = -EBUSY;
--		goto err_out;
-+		return -EBUSY;
- 	}
- 
--	get_device(chip->dev);
--
--	spin_unlock(&driver_lock);
--
- 	chip->data_buffer = kmalloc(TPM_BUFSIZE * sizeof(u8), GFP_KERNEL);
- 	if (chip->data_buffer == NULL) {
- 		clear_bit(0, &chip->is_open);
-@@ -999,26 +993,23 @@ int tpm_open(struct inode *inode, struct file *file)
- 
- 	file->private_data = chip;
- 	return 0;
--
--err_out:
--	spin_unlock(&driver_lock);
--	return rc;
+@@ -1132,23 +1132,33 @@ int tpm_pm_resume(struct device *dev)
  }
- EXPORT_SYMBOL_GPL(tpm_open);
+ EXPORT_SYMBOL_GPL(tpm_pm_resume);
  
-+/*
-+ * Called on file close
-+ */
- int tpm_release(struct inode *inode, struct file *file)
- {
- 	struct tpm_chip *chip = file->private_data;
- 
- 	flush_scheduled_work();
--	spin_lock(&driver_lock);
- 	file->private_data = NULL;
- 	del_singleshot_timer_sync(&chip->user_read_timer);
- 	atomic_set(&chip->data_pending, 0);
-+	kfree(chip->data_buffer);
- 	clear_bit(0, &chip->is_open);
- 	put_device(chip->dev);
--	kfree(chip->data_buffer);
--	spin_unlock(&driver_lock);
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(tpm_release);
-@@ -1092,13 +1083,11 @@ void tpm_remove_hardware(struct device *dev)
- 	}
- 
- 	spin_lock(&driver_lock);
--
--	list_del(&chip->list);
--
-+	list_del_rcu(&chip->list);
- 	spin_unlock(&driver_lock);
-+	synchronize_rcu();
- 
- 	misc_deregister(&chip->vendor.miscdev);
--
- 	sysfs_remove_group(&dev->kobj, chip->vendor.attr_group);
- 	tpm_bios_log_teardown(chip->bios_dir);
- 
-@@ -1146,8 +1135,7 @@ EXPORT_SYMBOL_GPL(tpm_pm_resume);
++/* In case vendor provided release function, call it too.*/
++
++void tpm_dev_vendor_release(struct tpm_chip *chip)
++{
++	if (chip->vendor.release)
++	 	chip->vendor.release(chip->dev);
++	
++	clear_bit(chip->dev_num, dev_mask);
++	kfree(chip->vendor.miscdev.name);
++}
++EXPORT_SYMBOL_GPL(tpm_dev_vendor_release);
++
++
  /*
   * Once all references to platform device are down to 0,
   * release all allocated structures.
-- * In case vendor provided release function,
-- * call it too.
-+ * In case vendor provided release function, call it too.
+- * In case vendor provided release function, call it too.
   */
  static void tpm_dev_release(struct device *dev)
  {
-@@ -1155,7 +1143,6 @@ static void tpm_dev_release(struct device *dev)
+ 	struct tpm_chip *chip = dev_get_drvdata(dev);
  
- 	if (chip->vendor.release)
- 		chip->vendor.release(dev);
--
- 	chip->release(dev);
+-	if (chip->vendor.release)
+-		chip->vendor.release(dev);
+-	chip->release(dev);
++	tpm_dev_vendor_release(chip);
  
- 	clear_bit(chip->dev_num, dev_mask);
-@@ -1170,8 +1157,8 @@ static void tpm_dev_release(struct device *dev)
-  * upon errant exit from this function specific probe function should call
-  * pci_disable_device
-  */
--struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vendor_specific
--				       *entry)
-+struct tpm_chip *tpm_register_hardware(struct device *dev,
-+		const struct tpm_vendor_specific *entry)
- {
- #define DEVNAME_SIZE 7
- 
-@@ -1230,12 +1217,6 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
- 		return NULL;
- 	}
- 
--	spin_lock(&driver_lock);
--
--	list_add(&chip->list, &tpm_chip_list);
--
--	spin_unlock(&driver_lock);
--
- 	if (sysfs_create_group(&dev->kobj, chip->vendor.attr_group)) {
- 		list_del(&chip->list);
- 		misc_deregister(&chip->vendor.miscdev);
-@@ -1245,6 +1226,11 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
- 
- 	chip->bios_dir = tpm_bios_log_setup(devname);
- 
-+	/* Make chip available */
-+	spin_lock(&driver_lock);
-+	list_add(&chip->list, &tpm_chip_list);
-+	spin_unlock(&driver_lock);
-+
- 	return chip;
+-	clear_bit(chip->dev_num, dev_mask);
+-	kfree(chip->vendor.miscdev.name);
++	chip->release(dev);
+ 	kfree(chip);
  }
- EXPORT_SYMBOL_GPL(tpm_register_hardware);
++EXPORT_SYMBOL_GPL(tpm_dev_release);
+ 
+ /*
+  * Called from tpm_<specific>.c probe function only for devices 
+diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
+index 2756cab..8e30df4 100644
+--- a/drivers/char/tpm/tpm.h
++++ b/drivers/char/tpm/tpm.h
+@@ -132,6 +132,7 @@ extern struct tpm_chip* tpm_register_hardware(struct device *,
+ 				 const struct tpm_vendor_specific *);
+ extern int tpm_open(struct inode *, struct file *);
+ extern int tpm_release(struct inode *, struct file *);
++extern void tpm_dev_vendor_release(struct tpm_chip *);
+ extern ssize_t tpm_write(struct file *, const char __user *, size_t,
+ 			 loff_t *);
+ extern ssize_t tpm_read(struct file *, char __user *, size_t, loff_t *);
+diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+index ed1879c..3491d70 100644
+--- a/drivers/char/tpm/tpm_tis.c
++++ b/drivers/char/tpm/tpm_tis.c
+@@ -630,12 +630,23 @@ static struct pnp_device_id tpm_pnp_tbl[] __devinitdata = {
+ 	{"", 0}			/* Terminator */
+ };
+ 
++static __devexit void tpm_tis_pnp_remove(struct pnp_dev *dev)
++{
++	struct tpm_chip *chip = pnp_get_drvdata(dev);
++	
++	tpm_dev_vendor_release(chip);
++
++	kfree(chip);
++}
++
++
+ static struct pnp_driver tis_pnp_driver = {
+ 	.name = "tpm_tis",
+ 	.id_table = tpm_pnp_tbl,
+ 	.probe = tpm_tis_pnp_init,
+ 	.suspend = tpm_tis_pnp_suspend,
+ 	.resume = tpm_tis_pnp_resume,
++	.remove = tpm_tis_pnp_remove,
+ };
+ 
+ #define TIS_HID_USR_IDX sizeof(tpm_pnp_tbl)/sizeof(struct pnp_device_id) -2
+@@ -683,6 +694,7 @@ static void __exit cleanup_tis(void)
+ 	spin_lock(&tis_lock);
+ 	list_for_each_entry_safe(i, j, &tis_chips, list) {
+ 		chip = to_tpm_chip(i);
++		tpm_remove_hardware(chip->dev);
+ 		iowrite32(~TPM_GLOBAL_INT_ENABLE &
+ 			  ioread32(chip->vendor.iobase +
+ 				   TPM_INT_ENABLE(chip->vendor.
+@@ -694,9 +706,9 @@ static void __exit cleanup_tis(void)
+ 			free_irq(chip->vendor.irq, chip);
+ 		iounmap(i->iobase);
+ 		list_del(&i->list);
+-		tpm_remove_hardware(chip->dev);
+ 	}
+ 	spin_unlock(&tis_lock);
++	
+ 	if (force) {
+ 		platform_device_unregister(pdev);
+ 		driver_unregister(&tis_drv);
 -- 
 1.5.6.3
 
