@@ -1,83 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbYIWTAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbYIWTCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754465AbYIWTAY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 15:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYIWTAK
+	id S1754330AbYIWTCr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 15:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYIWTCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 15:00:10 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:12033 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751911AbYIWTAI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 15:00:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YmprLxOg8B5P50hOaDoMbahoqas5/p1d28zx/1NKCRQZjUU6M+Fioq10ahmN8tnP/M
-         nO7Ji1s1OodTN3/GZ6ARPUOqa64kmbO3jBzgJzFI2k3lvZGqVf74mFdRgaiEdsIyaPDA
-         nhnTHuqWDLGMkhvs+vId+raYZlpvZ0sLWp+UY=
-Date: Tue, 23 Sep 2008 23:00:02 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH -tip/master] x86: io-apic - interrupt remapping fix
-Message-ID: <20080923190002.GE10567@localhost>
-References: <20080919123320.GF7222@lenovo> <20080923005737.GA25045@linux-os.sc.intel.com> <20080923011620.GB25045@linux-os.sc.intel.com> <20080923045637.GA7172@localhost> <20080923183411.GD25045@linux-os.sc.intel.com>
+	Tue, 23 Sep 2008 15:02:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51822 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752444AbYIWTCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 15:02:39 -0400
+Message-ID: <48D93CAF.8070000@redhat.com>
+Date: Tue, 23 Sep 2008 14:59:59 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080923183411.GD25045@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Martin Bligh <mbligh@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, darren@dvhart.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: Unified tracing buffer
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <48D7F5E8.3000705@redhat.com> <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com> <48D81B5F.2030702@redhat.com> <33307c790809221616h5e7410f5gc37c262d83722111@mail.gmail.com> <48D832B6.3010409@redhat.com> <33307c790809221712x4fbd9781u958c98d4585e92a9@mail.gmail.com> <48D901FE.5060604@redhat.com> <20080923150410.GA28341@Krystal> <48D90B84.4030905@redhat.com> <alpine.LFD.1.10.0809230847360.3265@nehalem.linux-foundation.org> <48D921B3.2060809@redhat.com> <alpine.LFD.1.10.0809231927060.2038@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0809231927060.2038@apollo.tec.linutronix.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Suresh Siddha - Tue, Sep 23, 2008 at 11:34:12AM -0700]
-...
-| 
-| This is too confusing. Please change it to something simple, like:
-| 
-| 	for (i = 0; i < apic; i++)
-| 		kfree(early_ioapic_entries[i]);
-| 
-| or
-| 
-| 	for (apic = 0; apic < nr_ioapics; apic++)
-| 		kfree(early_ioapic_entries[apic]);
-| 
-| thanks,
-| suresh
-| 
+Hi Thomas,
 
-Suresh,
+Thomas Gleixner wrote:
+> 
+> Do you have C-States enabled on that machine ?
+> 
+> ls /sys/devices/system/cpu/cpu0/cpuidle/
+> 
+> has it more than a state0 entry ?
 
-what about this one?
+Yes, there are state0 to state3
+# ls /sys/devices/system/cpu/cpu0/cpuidle/
+state0  state1  state2  state3
 
-		- Cyrill -
----
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+> If yes, please do:
+> 
+> cat /sys/devices/system/cpu/cpu0/cpuidle/stateX/usage
+> 
+> where X is the highest number in there.
 
-Clean up obscure for() cycle with straight while() form
+# cat /sys/devices/system/cpu/cpu0/cpuidle/state3/usage
+171210
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>
----
+> 
+> cat /proc/acpi/processor/CPU0/power
+> 
+> might be useful as well.
 
-Index: linux-2.6.git/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-22 17:42:33.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-23 22:45:58.000000000 +0400
-@@ -830,9 +830,8 @@ int save_mask_IO_APIC_setup(void)
- 	return 0;
- 
- nomem:
--	for (; apic > 0; apic--)
--		kfree(early_ioapic_entries[apic]);
--	kfree(early_ioapic_entries[apic]);
-+	while (apic >= 0)
-+		kfree(early_ioapic_entries[apic--]);
- 	memset(early_ioapic_entries, 0,
- 		ARRAY_SIZE(early_ioapic_entries));
- 
+# cat /proc/acpi/processor/CPU0/power
+active state:            C0
+max_cstate:              C8
+bus master activity:     00000000
+maximum allowed latency: 2000000000 usec
+states:
+    C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000016] duration[00000000000000000000]
+    C2:                  type[C2] promotion[--] demotion[--] latency[001] usage[00037969] duration[00000000000024288003]
+    C3:                  type[C3] promotion[--] demotion[--] latency[057] usage[00171818] duration[00000000001881257636]
+
+Could these help you?
+
+Thank you,
+
+> 
+> Thanks,
+> 
+> 	tglx
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
