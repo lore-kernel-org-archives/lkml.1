@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbYIWNs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbYIWNty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472AbYIWNs6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYIWNrO
+	id S1754819AbYIWNty (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYIWNrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:47:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52348 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:47:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52359 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbYIWNrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:47:07 -0400
+	id S1752587AbYIWNrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:47:13 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 05/40] KVM: MMU: Separate the code for unlinking a shadow page from its parents
-Date: Tue, 23 Sep 2008 16:46:19 +0300
-Message-Id: <1222177614-26669-6-git-send-email-avi@redhat.com>
+Subject: [PATCH 09/40] KVM: Clear exception queue before emulating an instruction
+Date: Tue, 23 Sep 2008 16:46:23 +0300
+Message-Id: <1222177614-26669-10-git-send-email-avi@redhat.com>
 In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
 References: <1222177614-26669-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,44 +23,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Avi Kivity <avi@qumranet.com>
 
-Place into own function, in preparation for further cleanups.
+If we're emulating an instruction, either it will succeed, in which case
+any previously queued exception will be spurious, or we will requeue the
+same exception.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/mmu.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+ arch/x86/kvm/x86.c |    2 ++
+ arch/x86/kvm/x86.h |   11 +++++++++++
+ 2 files changed, 13 insertions(+), 0 deletions(-)
+ create mode 100644 arch/x86/kvm/x86.h
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 3da2508..81016a3 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -991,11 +991,10 @@ static void kvm_mmu_reset_last_pte_updated(struct kvm *kvm)
- 			kvm->vcpus[i]->arch.last_pte_updated = NULL;
- }
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 2f0696b..5620df2 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -20,6 +20,7 @@
+ #include "i8254.h"
+ #include "tss.h"
+ #include "kvm_cache_regs.h"
++#include "x86.h"
  
--static void kvm_mmu_zap_page(struct kvm *kvm, struct kvm_mmu_page *sp)
-+static void kvm_mmu_unlink_parents(struct kvm *kvm, struct kvm_mmu_page *sp)
- {
- 	u64 *parent_pte;
+ #include <linux/clocksource.h>
+ #include <linux/kvm.h>
+@@ -2121,6 +2122,7 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
+ 	int r;
+ 	struct decode_cache *c;
  
--	++kvm->stat.mmu_shadow_zapped;
- 	while (sp->multimapped || sp->parent_pte) {
- 		if (!sp->multimapped)
- 			parent_pte = sp->parent_pte;
-@@ -1010,7 +1009,13 @@ static void kvm_mmu_zap_page(struct kvm *kvm, struct kvm_mmu_page *sp)
- 		kvm_mmu_put_page(sp, parent_pte);
- 		set_shadow_pte(parent_pte, shadow_trap_nonpresent_pte);
- 	}
++	kvm_clear_exception_queue(vcpu);
+ 	vcpu->arch.mmio_fault_cr2 = cr2;
+ 	/*
+ 	 * TODO: fix x86_emulate.c to use guest_read/write_register
+diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
+new file mode 100644
+index 0000000..c666649
+--- /dev/null
++++ b/arch/x86/kvm/x86.h
+@@ -0,0 +1,11 @@
++#ifndef ARCH_X86_KVM_X86_H
++#define ARCH_X86_KVM_X86_H
++
++#include <linux/kvm_host.h>
++
++static inline void kvm_clear_exception_queue(struct kvm_vcpu *vcpu)
++{
++	vcpu->arch.exception.pending = false;
 +}
 +
-+static void kvm_mmu_zap_page(struct kvm *kvm, struct kvm_mmu_page *sp)
-+{
-+	++kvm->stat.mmu_shadow_zapped;
- 	kvm_mmu_page_unlink_children(kvm, sp);
-+	kvm_mmu_unlink_parents(kvm, sp);
- 	if (!sp->root_count) {
- 		if (!sp->role.metaphysical && !sp->role.invalid)
- 			unaccount_shadowed(kvm, sp->gfn);
++#endif
 -- 
 1.6.0.1
 
