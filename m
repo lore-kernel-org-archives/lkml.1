@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYIWWMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753129AbYIWWRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbYIWWMy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 18:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYIWWMp
+	id S1753129AbYIWWRZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 18:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYIWWRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 18:12:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:46031 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751357AbYIWWMo (ORCPT
+	Tue, 23 Sep 2008 18:17:15 -0400
+Received: from spamtitan.hbci.com ([206.230.105.6]:56079 "EHLO
+	spamtitan.hbci.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbYIWWRO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 18:12:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=O+kRslnApAHlWdQacjE9vNwkq3cJZWPHgzLOBNRiMTxLtUyaFGQTdkOmm8ichXBqZV
-         +Hu5/QJRya1QJgfg0nGT0yCppXdDPE6HaGY+f50pjOX8kfm3MfeHk7FGUFasuG8RcXXT
-         TgGj4soA3Nqrb5JsrtaD3koPkX0UbylCT7oyc=
-Message-ID: <9929d2390809231512w160d221axa2923a6b293a041@mail.gmail.com>
-Date: Tue, 23 Sep 2008 15:12:43 -0700
-From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-Cc: airlied@gmail.com, jkosina@suse.cz, david.vrabel@csr.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       chrisl@vmware.com
-In-Reply-To: <20080923.150722.141587696.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Sep 2008 18:17:14 -0400
+X-Greylist: delayed 579 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Sep 2008 18:17:14 EDT
+Date: Tue, 23 Sep 2008 16:47:29 -0500
+From: Lance Tagliapietra <lancetag@Luminet.net>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: Adrian Bunk <bunk@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/8] m68k: Reverse platform MMU logic so Sun 3 is last
+Message-ID: <20080923214728.GH25462@luminet.net>
+Reply-To: lancetag@Luminet.net
+References: <20080903071542.615137611@mail.of.borg> <20080903071741.424551678@mail.of.borg> <20080903073629.GD4104@cs181140183.pp.htv.fi> <1220440421.4159.22.camel@frecb07144>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LNX.1.10.0809231229460.4671@pegasus.suse.cz>
-	 <20080923.140519.268233735.davem@davemloft.net>
-	 <21d7e9970809231409r3fdd640h53a72a808266d220@mail.gmail.com>
-	 <20080923.150722.141587696.davem@davemloft.net>
-X-Google-Sender-Auth: 21da3f72bde522c2
+In-Reply-To: <1220440421.4159.22.camel@frecb07144>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 3:07 PM, David Miller <davem@davemloft.net> wrote:
-> From: "Dave Airlie" <airlied@gmail.com>
-> Date: Wed, 24 Sep 2008 07:09:09 +1000
->
->> On Wed, Sep 24, 2008 at 7:05 AM, David Miller <davem@davemloft.net> wrote:
->> > From: Jiri Kosina <jkosina@suse.cz>
->> > Date: Tue, 23 Sep 2008 16:29:16 +0200 (CEST)
->> >
->> >> On Mon, 22 Sep 2008, David Miller wrote:
->> >>
->> >> > So I went through the changes from 2.6.27-rc5 until the SHA1
->> >> > ID ec0c15afb41fd9ad45b53468b60db50170e22346 and there were
->> >> > definitely no E1000 or E1000E changes during that time.
->> >>
->> >> Some recent comments on [1] seem to indicate that this is somehow coupled
->> >> into prior problems/panics with Intel graphics.
->> >
->> > My current suspicion in all of this is either the GEM kernel patches
->> > or recent X server.
->> >
->>
->> I don't think OpenSUSE was shipping any of the GEM bits.
->
-> Good data point, can someone confirm this?  Also, what X server version
-> is the effected OpenSUSE shipping?
+On Wed, Sep 03, 2008 at 01:13:41PM +0200, Laurent Vivier wrote:
+> Le mercredi 03 septembre 2008 ?? 10:36 +0300, Adrian Bunk a ??crit :
+> > On Wed, Sep 03, 2008 at 09:15:44AM +0200, Geert Uytterhoeven wrote:
+> > > From: Geert Uytterhoeven <geert@linux-m68k.org>
+> > > 
+> > > Currently Sun 3 support is the first platform option, as the Sun 3 MMU is
+> > > incompatible with standard Motorola MMUs. However, this means that
+> > > `allmodconfig' enables support for Sun 3, and thus disables support for all
+> > > other platforms.
+> > >...
+> > 
+> > I hope it isn't too heretical to ask whether Sun 3 support actually has 
+> > users and works?
+> > 
+> > Apollo support was broken for over 7 years without anyone noticing, and 
+> > it might not be the only m68k platform that is long unused.
+> > 
+> > Do you have any overview of which m68k platforms still have users?
+> 
+> At least 4 users for amiga and 2 for mac :-P
+> 
+> #rank name                            inst  vote   old recent no-files
+> 42014 linux-image-2.6-amiga              4     0     0     0     4
+> 53844 linux-image-2.6-mac                2     0     0     0     2
+> 
+> from http://popcon.debian.org/by_inst
+> 
+> I'm a mac m68k user (who is the other one ???)
+> 
+> Laurent
+> -- 
+> ----------------- Laurent.Vivier@bull.net  ------------------
+>   "La perfection est atteinte non quand il ne reste rien ??
+> ajouter mais quand il ne reste rien ?? enlever." Saint Exup??ry
+> 
 > --
+> To unsubscribe from this list: send the line "unsubscribe linux-m68k" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
+OK OK, looks like I have to do the upgrade to 2.6 to get on this list
+(currently running a self-compiled 2.4.30, with just the drivers I need
+to have the smallest kernel footprint for the 16M RAM on my A2000) but I
+do run popularity contest, so the common m68k packages that I use daily
+should show up (mutt, apache, etc).  
 
-OpenSuSE 11 ships x server version 7.3.
+Also, I have found that NFS works nicely between my A2000 and my PC
+linux box, thought you typically don't want to burn the RAM on the 8
+processes it is going to default to.  Apache, there are some ways to get
+it to not use up all the RAM resources of the system too.  If anyone is
+interested, I could put together a list of apps that I have configured
+to make the Amiga still be a useful box?
 
--- 
-Cheers,
-Jeff
+--Lance
