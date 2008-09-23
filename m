@@ -1,93 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbYIWJcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751351AbYIWJcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752243AbYIWJcc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 05:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbYIWJcW
+	id S1751351AbYIWJcv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 05:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYIWJci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 05:32:22 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38869 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbYIWJcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 05:32:21 -0400
-Date: Tue, 23 Sep 2008 11:32:18 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Martin Steigerwald <ms@teamix.de>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Aaron Carroll <aaronc@gelato.unsw.edu.au>
-Subject: Re: Documentation on CFQ iosched parameters
-Message-ID: <20080923093218.GY26460@kernel.dk>
-References: <200809221715.33143.ms@teamix.de> <48D85F49.4080001@gelato.unsw.edu.au> <200809231126.51902.ms@teamix.de>
+	Tue, 23 Sep 2008 05:32:38 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:10284 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbYIWJch (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 05:32:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type;
+        b=IGJGUkCa6dI/kmVYla+Qk/C1pZF88LpTZXApz3M7ipZPPaL0fv0npi2/FrP87CweTK
+         NKTk7DTZrF27eHN4jN3zVVCIO9qFxXvEnNJEEgvrXgGREt3MfEVeDbt5vt9MZ5SZQ8Do
+         gCOZ2Oat/VfzRxtJKDCoJAEqGApfz17SBgC7k=
+Message-ID: <48D8C71A.7080204@gmail.com>
+Date: Tue, 23 Sep 2008 11:38:18 +0100
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809231126.51902.ms@teamix.de>
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Noonan <steven@uplinklabs.net>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: [Patch -tip 4/4] Tracing/ftrace: Launch initcall tracing after pre-smp
+ initcalls.
+Content-Type: multipart/mixed;
+ boundary="------------060703030105030100090102"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23 2008, Martin Steigerwald wrote:
-> Am Dienstag, 23. September 2008 schrieb Aaron Carroll:
-> > Martin Steigerwald wrote:
-> > > Hi!
-> > >
-> > > I am searching documentation about CFQ io scheduler. I can't find it in
-> > > linux 2.6.26 Documentation directory.
-> > >
-> > > I found about these in german[1]:
-> > >
-> > > back_seek_max:16384
-> > > back_seek_penalty:2
-> > > fifo_expire_async:250
-> > > fifo_expire_sync:123
-> > > quantum:4
-> > >
-> > > But I am completely missing about these:
-> > >
-> > > slice_async:40
-> >
-> > Base length of an asynchronous queue timeslice (that is, how long the
-> > queue has to dispatch requests each round).  The actual timeslice
-> > length is scaled by the I/O priority.
-> 
-> [...]
-> 
-> Thanks. As I do not find documentation about CFQ at all, I think I need to 
-> create a new file from scratch... how about 
-> Documentation/block/cfq-iosched.txt?
+This is a multi-part message in MIME format.
+--------------060703030105030100090102
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-That would be great!
+Launch the initcall tracing inside the initcall_debug area. Old printk have not been
+removed to keep the old way of initcall tracing for backward compatibility.
 
-> For that I need some more information about CFQ. I found the following 
-> resources:
-> 
-> - CFQ V3 aka CFQ TS: http://lwn.net/Articles/143474/, 
-> http://lwn.net/Articles/114770/ and posts by Jens, 
-> http://lwn.net/Articles/113869/
-> 
-> - CFQ V2: Post by Jens, http://lwn.net/Articles/101029/
-> 
-> - CFQ: Post by Jens, http://lwn.net/Articles/22429/
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
 
-You can mention the links for v1 and v2, but as they have even little
-historic relevance, don't spend more time on that.
+--------------060703030105030100090102
+Content-Type: text/plain;
+ name="patch4.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch4.diff"
 
-> - Documentation/block/as-iosched.txt / deadline-iosched.txt (as for how an IO 
-> scheduler can be documented)
-> 
-> Would that be what I should read in order to write such an documentation? 
+diff --git a/init/main.c b/init/main.c
+index a9e36fb..a90d4f5 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -724,9 +724,12 @@ int do_one_initcall(initcall_t fn)
+ 	ktime_t t0, t1, delta;
+ 	char msgbuf[64];
+ 	int result;
++	struct initcall_trace it;
+ 
+ 	if (initcall_debug) {
+-		printk("calling  %pF @ %i\n", fn, task_pid_nr(current));
++		it.caller = task_pid_nr(current);
++		it.func = fn;
++		printk("calling  %pF @ %i\n", fn, it.caller);
+ 		t0 = ktime_get();
+ 	}
+ 
+@@ -735,9 +738,11 @@ int do_one_initcall(initcall_t fn)
+ 	if (initcall_debug) {
+ 		t1 = ktime_get();
+ 		delta = ktime_sub(t1, t0);
+-
++		it.result = result;
++		it.duration = (unsigned long long) delta.tv64 >> 20;
+ 		printk("initcall %pF returned %d after %Ld msecs\n", fn,
+-			result, (unsigned long long) delta.tv64 >> 20);
++			result, it.duration);
++		trace_initcall(&it);
+ 	}
+ 
+ 	msgbuf[0] = 0;
+@@ -947,6 +952,7 @@ static int __init kernel_init(void * unused)
+ 	smp_prepare_cpus(setup_max_cpus);
+ 
+ 	do_pre_smp_initcalls();
++	start_initcall_trace();
+ 
+ 	smp_init();
+ 	sched_init_smp();
 
-Yes
-
-> How about the relevance of CFQ and CFQ v2 stuff? What of it would be good to 
-> mention? I would like to limit documentation to what is still relevant for 
-> the current implementation of the IO scheduler. Should I mention its 
-> inheritance from SFQ - maybe in a small introduction and historic overview?
-
-Even the very first CFQ posted used per-process queues, so there's
-really very little inheritance from SFQ at all. So I don't think it's
-particularly interesting to mention. But if you want, go ahead :-)
-
-
--- 
-Jens Axboe
-
+--------------060703030105030100090102--
