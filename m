@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbYIWPS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbYIWPYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753261AbYIWPS5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 11:18:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbYIWPSs
+	id S1752853AbYIWPYD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 11:24:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYIWPXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 11:18:48 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:63645 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752147AbYIWPSq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 11:18:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=eLu1ZzPjKpM90yTWF1JeFP1qpgfMB0v0N9u5GKgd/Hsqz23UYeq6FezbbEaRIt+7AO
-         dG5mWUkdqJEx1FHQl2cRn09Tb+jIXMoYJw4qeLAubPZDb5Ya2um8xnJw9XSNhSXRu5yi
-         3GiO84Te7LP/r6dAtsp4veVVac1U9tG1+6bUg=
-Date: Tue, 23 Sep 2008 19:20:53 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: david@lang.hm, James Morris <jmorris@namei.org>,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: Re: [PATCH] Introduce new LSM hooks where vfsmount is available.
-Message-ID: <20080923152053.GA6622@x200.localdomain>
-References: <48C65E9D.3070106@nttdata.co.jp> <5fb14edc0809090902m32431bf6yf518a457e410764d@mail.gmail.com> <20080910134540.45ec1272.akpm@linux-foundation.org> <48C877DE.4040402@nttdata.co.jp> <48D06865.8070602@nttdata.co.jp> <alpine.LRH.1.10.0809231604040.25628@tundra.namei.org> <alpine.DEB.1.10.0809222310450.25430@asgard.lang.hm> <1222182167.28396.11.camel@moss-spartans.epoch.ncsc.mil>
+	Tue, 23 Sep 2008 11:23:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49629 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751228AbYIWPXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 11:23:52 -0400
+Message-ID: <48D90970.3060409@redhat.com>
+Date: Tue, 23 Sep 2008 11:21:20 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222182167.28396.11.camel@moss-spartans.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Martin Bligh <mbligh@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Steven Rostedt <rostedt@goodmis.org>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: Unified tracing buffer
+References: <33307c790809221313s3532d851g7239c212bc72fe71@mail.gmail.com> <48D81B5F.2030702@redhat.com> <20080923232239.DC1E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080923232239.DC1E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 11:02:47AM -0400, Stephen Smalley wrote:
+Hi Motohiro,
+
+KOSAKI Motohiro wrote:
+>> By the way, systemtap uses two modes;
+>>
+>> - single-channel mode
+>>  In this mode, all cpus share one buffer channel to write and read.
+>>  each writer locks spinlock and write a probe-local data to buffer.
+>>
+>> - per-cpu buffer mode
+>>  In this mode, we use an atomic sequential number for ordering data. If
+>>  user doesn't need it(because they have their own timestamps), they can
+>>  choose not to use that seq-number.
 > 
-> On Mon, 2008-09-22 at 23:12 -0700, david@lang.hm wrote:
-> > On Tue, 23 Sep 2008, James Morris wrote:
-> > 
-> > > On Wed, 17 Sep 2008, Kentaro Takeda wrote:
-> > >
-> > >> TOMOYO Linux needs method for calculating pathname in LSM module.
-> > >> However, we have received comment from Al Viro, the vfs maintainer,
-> > >> that adding vfsmount parameter to vfs helper functions (and LSM hooks)
-> > >> is not preferable. We have asked some people (including Al), and we
-> > >> came back to the most straightforward approach; adding new LSM hooks
-> > >> where vfsmount is available.
-> > >>
-> > >> The attached patch introduces several new LSM hooks TOMOYO Linux
-> > >> needs. It has less impact to existing LSM module and no impact to vfs
-> > >> helper functions. Please review it.
-> > >
-> > > I don't see any technical errors in this patch.
-> > >
-> > > If it is going to be merged, please make a new config option for
-> > > path-based hooks (similar to that for the network hooks), so they can be
-> > > compiled out.
+> I can't imazine a merit of the single-channel mode.
+> Could you please explain it?
 
-Another pointless config option.
+Actually, single-channel mode is for not-frequently event tracing.
+At least systemtap case, sometimes we just want to collect data
+and watch it periodically(as like as 'top'). Or, just monitoring
+errors as additional printk. in these cases, overhead is not so
+important.
 
-It's actually pretty surprising that SECURITY_NETWORK is
-a) user-visible and b) is not SECURITY && NET.
+I think the main reason of using single-channel mode is simplicity of
+userspace reader. We can use 'cat' or 'tail' to read the buffer on-line.
+I'm not sure how much overhead ftrace-like buffer merging routine has,
+but if kernel provides an interface which gives us single-merged buffer
+image(like ftrace buffer), we are grad to use it. :-)
 
-Same for SECURITY_NETWORK_XFRM.
+> Because some architecture don't have fine grained timestamp?
+> if so, could you explain which architecture don't have it?
+
+I heard that get_cycles always returns 0 on some cpu (ARM, MIPS, etc)...
+(I think some of their platforms support variants of get_cycles)
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
