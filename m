@@ -1,242 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbYIWN4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYIWN4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756377AbYIWN4U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYIWNsB
+	id S1755554AbYIWN4w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbYIWNsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:48:01 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52434 "EHLO mx2.redhat.com"
+	Tue, 23 Sep 2008 09:48:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52438 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752524AbYIWNrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:47:53 -0400
+	id S1753856AbYIWNrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:47:55 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [PATCH 32/40] KVM: PIT: fix injection logic and count
-Date: Tue, 23 Sep 2008 16:46:46 +0300
-Message-Id: <1222177614-26669-33-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 33/40] x86: paravirt: factor out cpu_khz to common code
+Date: Tue, 23 Sep 2008 16:46:47 +0300
+Message-Id: <1222177614-26669-34-git-send-email-avi@redhat.com>
 In-Reply-To: <1222177614-26669-1-git-send-email-avi@redhat.com>
 References: <1222177614-26669-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcelo Tosatti <mtosatti@redhat.com>
+From: Glauber Costa <gcosta@redhat.com>
 
-The PIT injection logic is problematic under the following cases:
+KVM intends to use paravirt code to calibrate khz. Xen
+current code will do just fine. So as a first step, factor out
+code to pvclock.c.
 
-1) If there is a higher priority vector to be delivered by the time
-kvm_pit_timer_intr_post is invoked ps->inject_pending won't be set.
-This opens the possibility for missing many PIT event injections (say if
-guest executes hlt at this point).
-
-2) ps->inject_pending is racy with more than two vcpus. Since there's no locking
-around read/dec of pt->pending, two vcpu's can inject two interrupts for a single
-pt->pending count.
-
-Fix 1 by using an irq ack notifier: only reinject when the previous irq
-has been acked. Fix 2 with appropriate locking around manipulation of
-pending count and irq_ack by the injection / ack paths.
-
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/i8254.c |   70 +++++++++++++++++++++++++-------------------------
- arch/x86/kvm/i8254.h |    7 ++---
- arch/x86/kvm/irq.c   |    1 -
- 3 files changed, 38 insertions(+), 40 deletions(-)
+ arch/x86/kernel/pvclock.c |   12 ++++++++++++
+ arch/x86/xen/time.c       |   11 ++---------
+ include/asm-x86/pvclock.h |    1 +
+ 3 files changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
-index c0f7872..7d04dd3 100644
---- a/arch/x86/kvm/i8254.c
-+++ b/arch/x86/kvm/i8254.c
-@@ -207,6 +207,8 @@ static int __pit_timer_fn(struct kvm_kpit_state *ps)
- 
- 	pt->timer.expires = ktime_add_ns(pt->timer.expires, pt->period);
- 	pt->scheduled = ktime_to_ns(pt->timer.expires);
-+	if (pt->period)
-+		ps->channels[0].count_load_time = pt->timer.expires;
- 
- 	return (pt->period == 0 ? 0 : 1);
- }
-@@ -215,12 +217,22 @@ int pit_has_pending_timer(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_pit *pit = vcpu->kvm->arch.vpit;
- 
--	if (pit && vcpu->vcpu_id == 0 && pit->pit_state.inject_pending)
-+	if (pit && vcpu->vcpu_id == 0 && pit->pit_state.irq_ack)
- 		return atomic_read(&pit->pit_state.pit_timer.pending);
--
- 	return 0;
+diff --git a/arch/x86/kernel/pvclock.c b/arch/x86/kernel/pvclock.c
+index 05fbe9a..1c54b5f 100644
+--- a/arch/x86/kernel/pvclock.c
++++ b/arch/x86/kernel/pvclock.c
+@@ -97,6 +97,18 @@ static unsigned pvclock_get_time_values(struct pvclock_shadow_time *dst,
+ 	return dst->version;
  }
  
-+void kvm_pit_ack_irq(struct kvm_irq_ack_notifier *kian)
++unsigned long pvclock_tsc_khz(struct pvclock_vcpu_time_info *src)
 +{
-+	struct kvm_kpit_state *ps = container_of(kian, struct kvm_kpit_state,
-+						 irq_ack_notifier);
-+	spin_lock(&ps->inject_lock);
-+	if (atomic_dec_return(&ps->pit_timer.pending) < 0)
-+		WARN_ON(1);
-+	ps->irq_ack = 1;
-+	spin_unlock(&ps->inject_lock);
++	u64 tsc_khz = 1000000ULL << 32;
++
++	do_div(tsc_khz, src->tsc_to_system_mul);
++	if (src->tsc_shift < 0)
++		tsc_khz <<= -src->tsc_shift;
++	else
++		tsc_khz >>= src->tsc_shift;
++	return tsc_khz;
 +}
 +
- static enum hrtimer_restart pit_timer_fn(struct hrtimer *data)
+ cycle_t pvclock_clocksource_read(struct pvclock_vcpu_time_info *src)
  {
- 	struct kvm_kpit_state *ps;
-@@ -255,8 +267,9 @@ static void destroy_pit_timer(struct kvm_kpit_timer *pt)
- 	hrtimer_cancel(&pt->timer);
- }
- 
--static void create_pit_timer(struct kvm_kpit_timer *pt, u32 val, int is_period)
-+static void create_pit_timer(struct kvm_kpit_state *ps, u32 val, int is_period)
+ 	struct pvclock_shadow_time shadow;
+diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
+index 685b774..1eb88fe 100644
+--- a/arch/x86/xen/time.c
++++ b/arch/x86/xen/time.c
+@@ -200,17 +200,10 @@ unsigned long long xen_sched_clock(void)
+ /* Get the TSC speed from Xen */
+ unsigned long xen_tsc_khz(void)
  {
-+	struct kvm_kpit_timer *pt = &ps->pit_timer;
- 	s64 interval;
+-	u64 xen_khz = 1000000ULL << 32;
+-	const struct pvclock_vcpu_time_info *info =
++	struct pvclock_vcpu_time_info *info =
+ 		&HYPERVISOR_shared_info->vcpu_info[0].time;
  
- 	interval = muldiv64(val, NSEC_PER_SEC, KVM_PIT_FREQ);
-@@ -268,6 +281,7 @@ static void create_pit_timer(struct kvm_kpit_timer *pt, u32 val, int is_period)
- 	pt->period = (is_period == 0) ? 0 : interval;
- 	pt->timer.function = pit_timer_fn;
- 	atomic_set(&pt->pending, 0);
-+	ps->irq_ack = 1;
- 
- 	hrtimer_start(&pt->timer, ktime_add_ns(ktime_get(), interval),
- 		      HRTIMER_MODE_ABS);
-@@ -302,11 +316,11 @@ static void pit_load_count(struct kvm *kvm, int channel, u32 val)
- 	case 1:
-         /* FIXME: enhance mode 4 precision */
- 	case 4:
--		create_pit_timer(&ps->pit_timer, val, 0);
-+		create_pit_timer(ps, val, 0);
- 		break;
- 	case 2:
- 	case 3:
--		create_pit_timer(&ps->pit_timer, val, 1);
-+		create_pit_timer(ps, val, 1);
- 		break;
- 	default:
- 		destroy_pit_timer(&ps->pit_timer);
-@@ -520,7 +534,7 @@ void kvm_pit_reset(struct kvm_pit *pit)
- 	mutex_unlock(&pit->pit_state.lock);
- 
- 	atomic_set(&pit->pit_state.pit_timer.pending, 0);
--	pit->pit_state.inject_pending = 1;
-+	pit->pit_state.irq_ack = 1;
- }
- 
- struct kvm_pit *kvm_create_pit(struct kvm *kvm)
-@@ -534,6 +548,7 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm)
- 
- 	mutex_init(&pit->pit_state.lock);
- 	mutex_lock(&pit->pit_state.lock);
-+	spin_lock_init(&pit->pit_state.inject_lock);
- 
- 	/* Initialize PIO device */
- 	pit->dev.read = pit_ioport_read;
-@@ -555,6 +570,9 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm)
- 	pit_state->pit = pit;
- 	hrtimer_init(&pit_state->pit_timer.timer,
- 		     CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-+	pit_state->irq_ack_notifier.gsi = 0;
-+	pit_state->irq_ack_notifier.irq_acked = kvm_pit_ack_irq;
-+	kvm_register_irq_ack_notifier(kvm, &pit_state->irq_ack_notifier);
- 	mutex_unlock(&pit->pit_state.lock);
- 
- 	kvm_pit_reset(pit);
-@@ -592,37 +610,19 @@ void kvm_inject_pit_timer_irqs(struct kvm_vcpu *vcpu)
- 	struct kvm_kpit_state *ps;
- 
- 	if (vcpu && pit) {
-+		int inject = 0;
- 		ps = &pit->pit_state;
- 
--		/* Try to inject pending interrupts when:
--		 * 1. Pending exists
--		 * 2. Last interrupt was accepted or waited for too long time*/
--		if (atomic_read(&ps->pit_timer.pending) &&
--		    (ps->inject_pending ||
--		    (jiffies - ps->last_injected_time
--				>= KVM_MAX_PIT_INTR_INTERVAL))) {
--			ps->inject_pending = 0;
--			__inject_pit_timer_intr(kvm);
--			ps->last_injected_time = jiffies;
--		}
--	}
--}
+-	do_div(xen_khz, info->tsc_to_system_mul);
+-	if (info->tsc_shift < 0)
+-		xen_khz <<= -info->tsc_shift;
+-	else
+-		xen_khz >>= info->tsc_shift;
 -
--void kvm_pit_timer_intr_post(struct kvm_vcpu *vcpu, int vec)
--{
--	struct kvm_arch *arch = &vcpu->kvm->arch;
--	struct kvm_kpit_state *ps;
--
--	if (vcpu && arch->vpit) {
--		ps = &arch->vpit->pit_state;
--		if (atomic_read(&ps->pit_timer.pending) &&
--		(((arch->vpic->pics[0].imr & 1) == 0 &&
--		  arch->vpic->pics[0].irq_base == vec) ||
--		  (arch->vioapic->redirtbl[0].fields.vector == vec &&
--		  arch->vioapic->redirtbl[0].fields.mask != 1))) {
--			ps->inject_pending = 1;
--			atomic_dec(&ps->pit_timer.pending);
--			ps->channels[0].count_load_time = ktime_get();
-+		/* Try to inject pending interrupts when
-+		 * last one has been acked.
-+		 */
-+		spin_lock(&ps->inject_lock);
-+		if (atomic_read(&ps->pit_timer.pending) && ps->irq_ack) {
-+			ps->irq_ack = 0;
-+			inject = 1;
- 		}
-+		spin_unlock(&ps->inject_lock);
-+		if (inject)
-+			__inject_pit_timer_intr(kvm);
- 	}
+-	return xen_khz;
++	return pvclock_tsc_khz(info);
  }
-diff --git a/arch/x86/kvm/i8254.h b/arch/x86/kvm/i8254.h
-index db25c2a..e436d49 100644
---- a/arch/x86/kvm/i8254.h
-+++ b/arch/x86/kvm/i8254.h
-@@ -8,7 +8,6 @@ struct kvm_kpit_timer {
- 	int irq;
- 	s64 period; /* unit: ns */
- 	s64 scheduled;
--	ktime_t last_update;
- 	atomic_t pending;
- };
  
-@@ -34,8 +33,9 @@ struct kvm_kpit_state {
- 	u32    speaker_data_on;
- 	struct mutex lock;
- 	struct kvm_pit *pit;
--	bool inject_pending; /* if inject pending interrupts */
--	unsigned long last_injected_time;
-+	spinlock_t inject_lock;
-+	unsigned long irq_ack;
-+	struct kvm_irq_ack_notifier irq_ack_notifier;
- };
+ static cycle_t xen_clocksource_read(void)
+diff --git a/include/asm-x86/pvclock.h b/include/asm-x86/pvclock.h
+index 85b1bba..28783bc 100644
+--- a/include/asm-x86/pvclock.h
++++ b/include/asm-x86/pvclock.h
+@@ -6,6 +6,7 @@
  
- struct kvm_pit {
-@@ -54,7 +54,6 @@ struct kvm_pit {
- #define KVM_PIT_CHANNEL_MASK	    0x3
- 
- void kvm_inject_pit_timer_irqs(struct kvm_vcpu *vcpu);
--void kvm_pit_timer_intr_post(struct kvm_vcpu *vcpu, int vec);
- void kvm_pit_load_count(struct kvm *kvm, int channel, u32 val);
- struct kvm_pit *kvm_create_pit(struct kvm *kvm);
- void kvm_free_pit(struct kvm *kvm);
-diff --git a/arch/x86/kvm/irq.c b/arch/x86/kvm/irq.c
-index 3c508af..8c1b9c5 100644
---- a/arch/x86/kvm/irq.c
-+++ b/arch/x86/kvm/irq.c
-@@ -90,7 +90,6 @@ EXPORT_SYMBOL_GPL(kvm_inject_pending_timer_irqs);
- void kvm_timer_intr_post(struct kvm_vcpu *vcpu, int vec)
- {
- 	kvm_apic_timer_intr_post(vcpu, vec);
--	kvm_pit_timer_intr_post(vcpu, vec);
- 	/* TODO: PIT, RTC etc. */
- }
- EXPORT_SYMBOL_GPL(kvm_timer_intr_post);
+ /* some helper functions for xen and kvm pv clock sources */
+ cycle_t pvclock_clocksource_read(struct pvclock_vcpu_time_info *src);
++unsigned long pvclock_tsc_khz(struct pvclock_vcpu_time_info *src);
+ void pvclock_read_wallclock(struct pvclock_wall_clock *wall,
+ 			    struct pvclock_vcpu_time_info *vcpu,
+ 			    struct timespec *ts);
 -- 
 1.6.0.1
 
