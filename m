@@ -1,75 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYIWVU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYIWVVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbYIWVU6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYIWVUq
+	id S1755550AbYIWVVn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbYIWVVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:20:46 -0400
-Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:1500 "EHLO
-	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755225AbYIWVUp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 17:20:45 -0400
-Date: Tue, 23 Sep 2008 23:20:18 +0200
-From: Mark de Wever <koraq@xs4all.nl>
-To: petkovbb@gmail.com
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Gadi Oxman <gadio@netvision.net.il>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: IDE-TAPE regressions [was: [PATCH] IDE-TAPE NULL terminate
-	strings.]
-Message-ID: <20080923212018.GA3348@localhost>
-References: <20080921185138.GA16310@localhost> <48D79ABD.8060805@ru.mvista.com> <9ea470500809220656j6dfcf4c9q7a5a4185481ec994@mail.gmail.com> <20080922204129.GA3495@localhost> <48D80949.4080901@ru.mvista.com> <20080923074845.GB5656@gollum.tnic> <20080923165914.GA7803@localhost> <9ea470500809231011p5ea37fc4u71eeeddf6ccec45a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9ea470500809231011p5ea37fc4u71eeeddf6ccec45a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 23 Sep 2008 17:21:33 -0400
+Received: from mga11.intel.com ([192.55.52.93]:5914 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753196AbYIWVVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 17:21:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,295,1220252400"; 
+   d="scan'208";a="383612350"
+Message-Id: <20080923211444.081261000@linux-os.sc.intel.com>
+References: <20080923210035.413932000@linux-os.sc.intel.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 23 Sep 2008 14:00:36 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, arjan@linux.intel.com,
+       venkatesh.pallipadi@intel.com, jeremy@goop.org
+Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 1/7] x86, cpa: rename PTE attribute macros for kernel direct mapping in early boot
+Content-Disposition: inline; filename=rename_init_pte_macros.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 07:11:04PM +0200, Boris Petkov wrote:
-> No worries and thanks. By the way, you mentioned something about other problems
-> with ide-tape. FWIW, it seems you're its only user and we were about to kill it
-> but decided not to yet and did the whole cleanup kinda only by compile-testing
-> since almost no one (well, except you :)) has the hardware. So, feel free to
-> send me any dmesg/debug/error messages you get and I'll look into them. Also,
-> set IDETAPE_DEBUG_LOG to 1 before compiling for full debug info.
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-Thanks for not killing the driver :-) Feel free to add me to your list
-of testers in case you need more testing in the future.
-
-I already posted the problem [1] but didn't CC you since your name
-wasn't listed in MAINTAINERS. I recompiled the kernel and tested again,
-but the output doesn't seem to contain extra output.
-
-In order to compile the kernel with IDETAPE_DEBUG_LOG enabled I had to
-apply the following build fix.
-
-Signed-off-by: Mark de Wever <koraq@xs4all.nl>
-
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 3833189..7258eca 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -978,9 +978,10 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
- 	struct request *postponed_rq = tape->postponed_rq;
- 	u8 stat;
+Index: tip/arch/x86/kernel/head_32.S
+===================================================================
+--- tip.orig/arch/x86/kernel/head_32.S	2008-09-22 14:01:06.000000000 -0700
++++ tip/arch/x86/kernel/head_32.S	2008-09-22 14:01:07.000000000 -0700
+@@ -172,10 +172,6 @@
+  *
+  * Note that the stack is not yet set up!
+  */
+-#define PTE_ATTR	0x007		/* PRESENT+RW+USER */
+-#define PDE_ATTR	0x067		/* PRESENT+RW+USER+DIRTY+ACCESSED */
+-#define PGD_ATTR	0x001		/* PRESENT (no other attributes) */
+-
+ default_entry:
+ #ifdef CONFIG_X86_PAE
  
--	debug_log(DBG_SENSE, "sector: %ld, nr_sectors: %ld,"
-+	debug_log(DBG_SENSE, "sector: %llu, nr_sectors: %ld,"
- 			" current_nr_sectors: %d\n",
--			rq->sector, rq->nr_sectors, rq->current_nr_sectors);
-+			(unsigned long long)rq->sector, rq->nr_sectors, 
-+			rq->current_nr_sectors);
+@@ -196,9 +192,9 @@
+ 	movl $pa(pg0), %edi
+ 	movl %edi, pa(init_pg_tables_start)
+ 	movl $pa(swapper_pg_pmd), %edx
+-	movl $PTE_ATTR, %eax
++	movl $PTE_IDENT_ATTR, %eax
+ 10:
+-	leal PDE_ATTR(%edi),%ecx		/* Create PMD entry */
++	leal PDE_IDENT_ATTR(%edi),%ecx		/* Create PMD entry */
+ 	movl %ecx,(%edx)			/* Store PMD entry */
+ 						/* Upper half already zero */
+ 	addl $8,%edx
+@@ -215,7 +211,7 @@
+ 	 * End condition: we must map up to and including INIT_MAP_BEYOND_END
+ 	 * bytes beyond the end of our own page tables.
+ 	 */
+-	leal (INIT_MAP_BEYOND_END+PTE_ATTR)(%edi),%ebp
++	leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
+ 	cmpl %ebp,%eax
+ 	jb 10b
+ 1:
+@@ -224,7 +220,7 @@
+ 	movl %eax, pa(max_pfn_mapped)
  
- 	if (!blk_special_request(rq)) {
- 		/* We do not support buffer cache originated requests. */
+ 	/* Do early initialization of the fixmap area */
+-	movl $pa(swapper_pg_fixmap)+PDE_ATTR,%eax
++	movl $pa(swapper_pg_fixmap)+PDE_IDENT_ATTR,%eax
+ 	movl %eax,pa(swapper_pg_pmd+0x1000*KPMDS-8)
+ #else	/* Not PAE */
+ 
+@@ -233,9 +229,9 @@
+ 	movl $pa(pg0), %edi
+ 	movl %edi, pa(init_pg_tables_start)
+ 	movl $pa(swapper_pg_dir), %edx
+-	movl $PTE_ATTR, %eax
++	movl $PTE_IDENT_ATTR, %eax
+ 10:
+-	leal PDE_ATTR(%edi),%ecx		/* Create PDE entry */
++	leal PDE_IDENT_ATTR(%edi),%ecx		/* Create PDE entry */
+ 	movl %ecx,(%edx)			/* Store identity PDE entry */
+ 	movl %ecx,page_pde_offset(%edx)		/* Store kernel PDE entry */
+ 	addl $4,%edx
+@@ -249,7 +245,7 @@
+ 	 * bytes beyond the end of our own page tables; the +0x007 is
+ 	 * the attribute bits
+ 	 */
+-	leal (INIT_MAP_BEYOND_END+PTE_ATTR)(%edi),%ebp
++	leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
+ 	cmpl %ebp,%eax
+ 	jb 10b
+ 	movl %edi,pa(init_pg_tables_end)
+@@ -257,7 +253,7 @@
+ 	movl %eax, pa(max_pfn_mapped)
+ 
+ 	/* Do early initialization of the fixmap area */
+-	movl $pa(swapper_pg_fixmap)+PDE_ATTR,%eax
++	movl $pa(swapper_pg_fixmap)+PDE_IDENT_ATTR,%eax
+ 	movl %eax,pa(swapper_pg_dir+0xffc)
+ #endif
+ 	jmp 3f
+@@ -634,19 +630,19 @@
+ 	/* Page-aligned for the benefit of paravirt? */
+ 	.align PAGE_SIZE_asm
+ ENTRY(swapper_pg_dir)
+-	.long	pa(swapper_pg_pmd+PGD_ATTR),0		/* low identity map */
++	.long	pa(swapper_pg_pmd+PGD_IDENT_ATTR),0	/* low identity map */
+ # if KPMDS == 3
+-	.long	pa(swapper_pg_pmd+PGD_ATTR),0
+-	.long	pa(swapper_pg_pmd+PGD_ATTR+0x1000),0
+-	.long	pa(swapper_pg_pmd+PGD_ATTR+0x2000),0
++	.long	pa(swapper_pg_pmd+PGD_IDENT_ATTR),0
++	.long	pa(swapper_pg_pmd+PGD_IDENT_ATTR+0x1000),0
++	.long	pa(swapper_pg_pmd+PGD_IDENT_ATTR+0x2000),0
+ # elif KPMDS == 2
+ 	.long	0,0
+-	.long	pa(swapper_pg_pmd+PGD_ATTR),0
+-	.long	pa(swapper_pg_pmd+PGD_ATTR+0x1000),0
++	.long	pa(swapper_pg_pmd+PGD_IDENT_ATTR),0
++	.long	pa(swapper_pg_pmd+PGD_IDENT_ATTR+0x1000),0
+ # elif KPMDS == 1
+ 	.long	0,0
+ 	.long	0,0
+-	.long	pa(swapper_pg_pmd+PGD_ATTR),0
++	.long	pa(swapper_pg_pmd+PGD_IDENT_ATTR),0
+ # else
+ #  error "Kernel PMDs should be 1, 2 or 3"
+ # endif
+Index: tip/arch/x86/kernel/head_64.S
+===================================================================
+--- tip.orig/arch/x86/kernel/head_64.S	2008-09-22 14:01:06.000000000 -0700
++++ tip/arch/x86/kernel/head_64.S	2008-09-22 14:01:07.000000000 -0700
+@@ -110,7 +110,7 @@
+ 	movq	%rdi, %rax
+ 	shrq	$PMD_SHIFT, %rax
+ 	andq	$(PTRS_PER_PMD - 1), %rax
+-	leaq	__PAGE_KERNEL_LARGE_EXEC(%rdi), %rdx
++	leaq	__PAGE_KERNEL_IDENT_LARGE_EXEC(%rdi), %rdx
+ 	leaq	level2_spare_pgt(%rip), %rbx
+ 	movq	%rdx, 0(%rbx, %rax, 8)
+ ident_complete:
+@@ -374,7 +374,7 @@
+ 	/* Since I easily can, map the first 1G.
+ 	 * Don't set NX because code runs from these pages.
+ 	 */
+-	PMDS(0, __PAGE_KERNEL_LARGE_EXEC, PTRS_PER_PMD)
++	PMDS(0, __PAGE_KERNEL_IDENT_LARGE_EXEC, PTRS_PER_PMD)
+ 
+ NEXT_PAGE(level2_kernel_pgt)
+ 	/*
+Index: tip/include/asm-x86/pgtable.h
+===================================================================
+--- tip.orig/include/asm-x86/pgtable.h	2008-09-22 14:01:06.000000000 -0700
++++ tip/include/asm-x86/pgtable.h	2008-09-22 14:01:07.000000000 -0700
+@@ -142,6 +142,17 @@
+ #define __S110	PAGE_SHARED_EXEC
+ #define __S111	PAGE_SHARED_EXEC
+ 
++/*
++ * early identity mapping  pte attrib macros.
++ */
++#ifdef CONFIG_X86_64
++#define __PAGE_KERNEL_IDENT_LARGE_EXEC	__PAGE_KERNEL_LARGE_EXEC
++#else
++#define PTE_IDENT_ATTR	 0x007		/* PRESENT+RW+USER */
++#define PDE_IDENT_ATTR	 0x067		/* PRESENT+RW+USER+DIRTY+ACCESSED */
++#define PGD_IDENT_ATTR	 0x001		/* PRESENT (no other attributes) */
++#endif
++
+ #ifndef __ASSEMBLY__
+ 
+ /*
 
+-- 
 
-[1] http://marc.info/?l=linux-kernel&m=122203193728465&w=2
-
-Regards,
-Mark de Wever
