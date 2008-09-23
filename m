@@ -1,125 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYIWQZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbYIWQ36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbYIWQZa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 12:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYIWQZX
+	id S1753559AbYIWQ36 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 12:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYIWQ3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 12:25:23 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59845 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752034AbYIWQZW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 12:25:22 -0400
-Date: Tue, 23 Sep 2008 17:25:10 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] mtd: Export the ROM enable/disable helpers and use them in
- mtd
-Message-ID: <20080923172510.37419440@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 23 Sep 2008 12:29:50 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:46912 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752070AbYIWQ3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 12:29:49 -0400
+Date: Tue, 23 Sep 2008 20:35:30 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Joe Korty <joe.korty@ccur.com>
+Cc: Roland McGrath <roland@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG, TEST PATCH] stallout race between SIGCONT and SIGSTOP
+Message-ID: <20080923163530.GA656@tv-sign.ru>
+References: <20080923155331.GA20380@tsunami.ccur.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080923155331.GA20380@tsunami.ccur.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are some other future conversions to follow if folks are ok with
-this interface being exported.
+Sorry! I have to run avay right now, and I will be completely offline
+tomorrow. I'll return on Thursday.
 
+On 09/23, Joe Korty wrote:
+>
+> Since 2.6.25-git16, the Open POSIX Test Suite test sigaction/10-1 on
+> occasion stalls out.  A ^C breaks the test out of the stall.
+>
+> To see the problem, one must run the test in a loop.  The stallout happens
+> anywhere from 3 to approximately 60 iterations.  To make the test runtime
+> more bearable, I've been using a custom version that is 8x faster than
+> the original, s/sleep/usleep/g + new sleep constants.
+>
+> The test in essence does 10 SIGSTOPs and SIGCONTs, interleaved, with a
+> short delay between each SIGSTOP and SIGCONT, but none (other than the
+> small delay of a printf) between each SIGCONT and SIGSTOP:
+>
+>     for(i=0; i<10; i++) {
+> 	printf("--> Sending SIGSTOP #%d\n", i);
+> 	kill (pid, SIGSTOP);
+> 	usleep(125000);
+> 	printf("--> Sending SIGCONT #%d\n", i);
+> 	kill (pid, SIGCONT);
+> 	// usleep(125000); /* this is missing from the real 10-1 */
+>     }
+>
+> When the above commented-out usleep is enabled, the stallout disappears.
+> If instead of adding a usleep, the printf's are removed, the test stalls
+> out immediately.
 
-mtd: intel_dc21285 switch to ROM API
+Could you clarify? Do you mean that the task hangs in sys_kill() ?
 
-From: Alan Cox <alan@redhat.com>
+Better yet, to avoid a possible confusion, could you please send me
+the (modified) source code to re-produce the stall ?
 
-Expose the needed helpers and it becomes a nice
-simple switch over. Closes #9420
+> Therefore the problem has something to do with a SIGSTOP
+> being issued 'too soon' after the issuance of a SIGCONT.
+>
+> Bisection shows that the problem was introduced by
+>
+>     commit e442055193e4584218006e616c9bdce0c5e9ae5c
+>     Author: Oleg Nesterov <oleg@tv-sign.ru>
+>     Date:   Wed Apr 30 00:52:44 2008 -0700
+>
+> This commit adds code that solves serious race problems by deferring the
+> actual processing of SIGSTOP and SIGCONT to a later time.  I suspect it
+> is this deferring that is making SIGCONT sensitive to a SIGSTOP coming
+> in too close on its heels.
+>
+> The following patch, not to be considered seriously,
 
-Signed-off-by: Alan Cox <alan@redhat.com>
----
+Yes, the patch is not for production, but thanks a lot! I am sure it will
+help to diagnose the problem.
 
- drivers/mtd/maps/pci.c |   16 +++-------------
- drivers/pci/rom.c      |    6 ++++--
- include/linux/pci.h    |    2 ++
- 3 files changed, 9 insertions(+), 15 deletions(-)
+Thanks Joe!
 
+Oleg.
 
-diff --git a/drivers/mtd/maps/pci.c b/drivers/mtd/maps/pci.c
-index 5c6a25c..d978c2e 100644
---- a/drivers/mtd/maps/pci.c
-+++ b/drivers/mtd/maps/pci.c
-@@ -203,15 +203,8 @@ intel_dc21285_init(struct pci_dev *dev, struct map_pci_info *map)
- 		 * not enabled, should we be allocating a new resource for it
- 		 * or simply enabling it?
- 		 */
--		if (!(pci_resource_flags(dev, PCI_ROM_RESOURCE) &
--				    IORESOURCE_ROM_ENABLE)) {
--		     	u32 val;
--			pci_resource_flags(dev, PCI_ROM_RESOURCE) |= IORESOURCE_ROM_ENABLE;
--			pci_read_config_dword(dev, PCI_ROM_ADDRESS, &val);
--			val |= PCI_ROM_ADDRESS_ENABLE;
--			pci_write_config_dword(dev, PCI_ROM_ADDRESS, val);
--			printk("%s: enabling expansion ROM\n", pci_name(dev));
--		}
-+		pci_enable_rom(dev);
-+		printk("%s: enabling expansion ROM\n", pci_name(dev));
- 	}
- 
- 	if (!len || !base)
-@@ -240,10 +233,7 @@ intel_dc21285_exit(struct pci_dev *dev, struct map_pci_info *map)
- 	/*
- 	 * We need to undo the PCI BAR2/PCI ROM BAR address alteration.
- 	 */
--	pci_resource_flags(dev, PCI_ROM_RESOURCE) &= ~IORESOURCE_ROM_ENABLE;
--	pci_read_config_dword(dev, PCI_ROM_ADDRESS, &val);
--	val &= ~PCI_ROM_ADDRESS_ENABLE;
--	pci_write_config_dword(dev, PCI_ROM_ADDRESS, val);
-+	pci_disable_rom(dev);
- }
- 
- static unsigned long
-diff --git a/drivers/pci/rom.c b/drivers/pci/rom.c
-index bd5c0e0..1f5f614 100644
---- a/drivers/pci/rom.c
-+++ b/drivers/pci/rom.c
-@@ -21,7 +21,7 @@
-  * between the ROM and other resources, so enabling it may disable access
-  * to MMIO registers or other card memory.
-  */
--static int pci_enable_rom(struct pci_dev *pdev)
-+int pci_enable_rom(struct pci_dev *pdev)
- {
- 	struct resource *res = pdev->resource + PCI_ROM_RESOURCE;
- 	struct pci_bus_region region;
-@@ -45,7 +45,7 @@ static int pci_enable_rom(struct pci_dev *pdev)
-  * Disable ROM decoding on a PCI device by turning off the last bit in the
-  * ROM BAR.
-  */
--static void pci_disable_rom(struct pci_dev *pdev)
-+void pci_disable_rom(struct pci_dev *pdev)
- {
- 	u32 rom_addr;
- 	pci_read_config_dword(pdev, pdev->rom_base_reg, &rom_addr);
-@@ -260,3 +260,5 @@ void pci_cleanup_rom(struct pci_dev *pdev)
- 
- EXPORT_SYMBOL(pci_map_rom);
- EXPORT_SYMBOL(pci_unmap_rom);
-+EXPORT_SYMBOL_GPL(pci_enable_rom);
-+EXPORT_SYMBOL_GPL(pci_disable_rom);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index c0e1400..7a4cee0 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -631,6 +631,8 @@ int __must_check pci_assign_resource(struct pci_dev *dev, int i);
- int pci_select_bars(struct pci_dev *dev, unsigned long flags);
- 
- /* ROM control related routines */
-+int pci_enable_rom(struct pci_dev *pdev);
-+void pci_disable_rom(struct pci_dev *pdev);
- void __iomem __must_check *pci_map_rom(struct pci_dev *pdev, size_t *size);
- void pci_unmap_rom(struct pci_dev *pdev, void __iomem *rom);
- size_t pci_get_rom_size(void __iomem *rom, size_t size);
