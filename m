@@ -1,92 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870AbYIWJxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbYIWJyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752870AbYIWJxr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 05:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYIWJxS
+	id S1752222AbYIWJyu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 05:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYIWJym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 05:53:18 -0400
-Received: from hs-out-0708.google.com ([64.233.178.248]:21750 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbYIWJxR (ORCPT
+	Tue, 23 Sep 2008 05:54:42 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:49638 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750947AbYIWJyk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 05:53:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=HIUnmHGRQPnJDjbA+uGNzdIRw9jPc8Q4JQLfZfDRoDukim8XhYhta19PlmE3TSzMKa
-         iIkz7AE4FmPytZEgS9V69HQ5po/F4gA0ut1dBfe6n2w+/6d/c2cYfoihe8ML603Q6UPx
-         lRjYUQBuu7RJ4EV7Sjl3q2h0VeMfgdrOhri38=
-Message-ID: <bc64b4640809230253s79e0c257qfd559787e15ef8d8@mail.gmail.com>
-Date: Tue, 23 Sep 2008 13:53:14 +0400
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-Subject: Re: [Linux-fbdev-devel] [fbdev] Lockdep error
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rpurdie@rpsys.net, adaplas@gmail.com
-In-Reply-To: <20080916233916.4f9c0dfd.krzysztof.h1@wp.pl>
+	Tue, 23 Sep 2008 05:54:40 -0400
+From: Srinivasa Ds <srinivasa@in.ibm.com>
+Organization: IBM
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH] Demultiplexing SIGTRAP signal
+Date: Tue, 23 Sep 2008 15:23:52 +0530
+User-Agent: KMail/1.9.9
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
+       linux-parisc@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200809221602.32616.srinivasa@in.ibm.com> <200809221841.27993.srinivasa@in.ibm.com> <20080922145404.GC27956@elte.hu>
+In-Reply-To: <20080922145404.GC27956@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080915122152.GA4570@doriath.ww600.siemens.net>
-	 <20080916233916.4f9c0dfd.krzysztof.h1@wp.pl>
+Message-Id: <200809231523.52802.srinivasa@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/17 Krzysztof Helt <krzysztof.h1@wp.pl>:
-> On Mon, 15 Sep 2008 16:21:52 +0400
-> Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+On Monday 22 September 2008 20:24:04 Ingo Molnar wrote:
+> * Srinivasa Ds <srinivasa@in.ibm.com> wrote:
+> > --- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
+> > +++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
 >
->> Hi,
->>
->> After doing
->> # echo 1 > /sys/class/graphics/fb0/blank
->> I got the following in my kernel log:
->>
->> =============================================
->> [ INFO: possible recursive locking detected ]
->> 2.6.27-rc6-00086-gda63874-dirty #97
->> ---------------------------------------------
->> echo/1564 is trying to acquire lock:
->>  ((fb_notifier_list).rwsem){..--}, at: [<c005a384>] __blocking_notifier_call_chain+0x38/0x6c
->>
+> please do not send patches that modify include/asm/ files, the
+> include/asm-x86/ file should be modified instead.
 >
-> Does the patch below fix the problem for you?
-
-Sorry for the delay.
-Yes, the patch does fix the issue for me. Thank you.
-
->
-> Kind regards,
-> Krzysztof
->
-> diff -urp linux-ref/drivers/video/console/fbcon.c linux-mm/drivers/video/console/fbcon.c
-> --- linux-ref/drivers/video/console/fbcon.c     2008-09-05 23:38:47.000000000 +0200
-> +++ linux-mm/drivers/video/console/fbcon.c      2008-09-16 23:30:52.309604454 +0200
-> @@ -2400,11 +2400,15 @@ static int fbcon_blank(struct vc_data *v
->
->        if (!fbcon_is_inactive(vc, info)) {
->                if (ops->blank_state != blank) {
-> +                       int ret = 1;
-> +
->                        ops->blank_state = blank;
->                        fbcon_cursor(vc, blank ? CM_ERASE : CM_DRAW);
->                        ops->cursor_flash = (!blank);
->
-> -                       if (fb_blank(info, blank))
-> +                       if (info->fbops->fb_blank)
-> +                               ret = info->fbops->fb_blank(blank, info);
-> +                       if (ret)
->                                fbcon_generic_blank(vc, info, blank);
->                }
->
+> (this problem will go away in v2.6.28 when we'll move include/asm-x86/
+> to arch/x86/include/)
 >
 
+Ingo, Sorry if I have confused you. Arch specific header files of ia64 and powerpc are 
+already moved to arch/ia64/include and arch/powerpc/include dirs.
+So I have developed patch against these files. So Resending patch again. 
+
+Currently a SIGTRAP can denote any one of below reasons.
+	- Breakpoint hit
+	- H/W debug register hit
+	- Single step
+	- Signal sent through kill() or rasie()
+
+Architectures like powerpc/parisc provides infrastructure to demultiplex
+SIGTRAP signal by passing down the information for receiving SIGTRAP through
+si_code of siginfot_t structure. Here is an attempt is generalise this 
+infrastructure by extending it to x86 and x86_64 archs. 
+
+Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
 
 
--- 
-With best wishes
-Dmitry
+---
+ arch/ia64/include/asm/siginfo.h    |    5 -----
+ arch/powerpc/include/asm/siginfo.h |    5 -----
+ arch/x86/kernel/ptrace.c           |    7 ++++---
+ arch/x86/kernel/traps_32.c         |    4 +++-
+ arch/x86/kernel/traps_64.c         |    2 +-
+ include/asm-generic/siginfo.h      |    2 ++
+ include/asm-parisc/siginfo.h       |    5 -----
+ include/asm-x86/ptrace.h           |    2 +-
+ include/asm-x86/traps.h            |   10 ++++++++++
+ 9 files changed, 21 insertions(+), 21 deletions(-)
+
+Index: linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
++++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+@@ -113,11 +113,6 @@ typedef struct siginfo {
+ #undef NSIGSEGV
+ #define NSIGSEGV	3
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/powerpc/include/asm/siginfo.h
++++ linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
+@@ -15,11 +15,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_32.c
++++ linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
+@@ -891,6 +891,7 @@ void __kprobes do_debug(struct pt_regs *
+ {
+ 	struct task_struct *tsk = current;
+ 	unsigned int condition;
++	int si_code;
+ 
+ 	trace_hardirqs_fixup();
+ 
+@@ -935,8 +936,9 @@ void __kprobes do_debug(struct pt_regs *
+ 			goto clear_TF_reenable;
+ 	}
+ 
++	si_code = get_si_code((unsigned long)condition);
+ 	/* Ok, finally something we can handle */
+-	send_sigtrap(tsk, regs, error_code);
++	send_sigtrap(tsk, regs, error_code, si_code);
+ 
+ 	/*
+ 	 * Disable additional traps. They'll be re-enabled when
+Index: linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_64.c
++++ linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
+@@ -936,7 +936,7 @@ asmlinkage void __kprobes do_debug(struc
+ 	tsk->thread.error_code = error_code;
+ 	info.si_signo = SIGTRAP;
+ 	info.si_errno = 0;
+-	info.si_code = TRAP_BRKPT;
++	info.si_code = get_si_code(condition);
+ 	info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
+ 	force_sig_info(SIGTRAP, &info, tsk);
+ 
+Index: linux-2.6.27-rc7/include/asm-generic/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-generic/siginfo.h
++++ linux-2.6.27-rc7/include/asm-generic/siginfo.h
+@@ -199,6 +199,8 @@ typedef struct siginfo {
+  */
+ #define TRAP_BRKPT	(__SI_FAULT|1)	/* process breakpoint */
+ #define TRAP_TRACE	(__SI_FAULT|2)	/* process trace trap */
++#define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
++#define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint/watchpoint */
+ #define NSIGTRAP	2
+ 
+ /*
+Index: linux-2.6.27-rc7/include/asm-parisc/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-parisc/siginfo.h
++++ linux-2.6.27-rc7/include/asm-parisc/siginfo.h
+@@ -3,11 +3,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/x86/kernel/ptrace.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/ptrace.c
++++ linux-2.6.27-rc7/arch/x86/kernel/ptrace.c
+@@ -1357,7 +1357,8 @@ const struct user_regset_view *task_user
+ #endif
+ }
+ 
+-void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code)
++void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
++					 int error_code, int si_code)
+ {
+ 	struct siginfo info;
+ 
+@@ -1366,7 +1367,7 @@ void send_sigtrap(struct task_struct *ts
+ 
+ 	memset(&info, 0, sizeof(info));
+ 	info.si_signo = SIGTRAP;
+-	info.si_code = TRAP_BRKPT;
++	info.si_code = si_code;
+ 
+ 	/* User-mode ip? */
+ 	info.si_addr = user_mode_vm(regs) ? (void __user *) regs->ip : NULL;
+@@ -1476,5 +1477,5 @@ asmregparm void syscall_trace_leave(stru
+ 	 */
+ 	if (test_thread_flag(TIF_SINGLESTEP) &&
+ 	    (current->ptrace & PT_PTRACED))
+-		send_sigtrap(current, regs, 0);
++		send_sigtrap(current, regs, 0, TRAP_BRKPT);
+ }
+Index: linux-2.6.27-rc7/include/asm-x86/traps.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-x86/traps.h
++++ linux-2.6.27-rc7/include/asm-x86/traps.h
+@@ -36,6 +36,16 @@ void do_invalid_op(struct pt_regs *, lon
+ void do_general_protection(struct pt_regs *, long);
+ void do_nmi(struct pt_regs *, long);
+ 
++static inline int get_si_code(unsigned long condition)
++{
++	if (condition & DR_STEP)
++		return TRAP_TRACE;
++	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		return TRAP_HWBKPT;
++	else
++		return TRAP_BRKPT;
++}
++
+ extern int panic_on_unrecovered_nmi;
+ extern int kstack_depth_to_print;
+ 
+Index: linux-2.6.27-rc7/include/asm-x86/ptrace.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-x86/ptrace.h
++++ linux-2.6.27-rc7/include/asm-x86/ptrace.h
+@@ -143,7 +143,7 @@ convert_ip_to_linear(struct task_struct 
+ 
+ #ifdef CONFIG_X86_32
+ extern void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
+-			 int error_code);
++			 int error_code, int si_code);
+ #else
+ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
+ #endif
