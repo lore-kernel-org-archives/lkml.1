@@ -1,146 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbYIWVZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbYIWVZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbYIWVZF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYIWVYw
+	id S1755911AbYIWVZd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbYIWVZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:24:52 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:11565 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752732AbYIWVYv (ORCPT
+	Tue, 23 Sep 2008 17:25:05 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:49541 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754329AbYIWVZD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 17:24:51 -0400
-Message-ID: <48D95EA2.9040804@mvista.com>
-Date: Tue, 23 Sep 2008 14:24:50 -0700
-From: Drew Moseley <dmoseley@mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 23 Sep 2008 17:25:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=XwKrbtOj0OwXNJlYN99hMlvv+gfAw/Y+NtQjW1qrcRukUurJmL9yxe9X6LL8pDYFRl
+         MuiEKva5ZDTZAqbJi2CvqZm9i/iBvYb74aAZKGCRvc78RdaftbFYvB4O2zBHl6nNo4UZ
+         9HBzrBOq4fWmf5OUWUNdPpHl0BgKc8Dgy2xtY=
+Date: Tue, 23 Sep 2008 23:24:59 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: drzeus-mmc@drzeus.cx
+Subject: SDHCI: timeout during data transfer
+Message-ID: <20080923212459.GA13888@dreamland.darkstar.lan>
 MIME-Version: 1.0
-To: ambx1@neo.rr.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Create PNP device attributes via dev_attrs field of struct
- device
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi,
+I'm seeing timeout errors when transfering "big" (over 1MB or so) files to a SD
+card (small files are ok):
 
-I have seen an issue where the sysfs entries for a PNP device are
-created nonatomically resulting in a race condition with freedesktop
-HAL.  The patch below is my first attempt at addressing this by creating
-the device attributes as default bus attributes and allowing the
-device_register() call to create them.  Any nasty side effects I am not
-addressing?  Comments?
+[  251.956666] mmcblk0: error -110 transferring data
+[  251.979810] end_request: I/O error, dev mmcblk0, sector 1572758
+[  251.981477] Buffer I/O error on device mmcblk0p1, logical block 1572742
+[  251.983198] lost page write due to I/O error on mmcblk0p1
+[  251.983788] end_request: I/O error, dev mmcblk0, sector 1572759
+[  251.983788] Buffer I/O error on device mmcblk0p1, logical block 1572743
+[  251.983788] lost page write due to I/O error on mmcblk0p1
+[  251.983788] end_request: I/O error, dev mmcblk0, sector 1572760
+[  251.983788] Buffer I/O error on device mmcblk0p1, logical block 1572744
+[  251.983788] lost page write due to I/O error on mmcblk0p1
+[  251.983788] end_request: I/O error, dev mmcblk0, sector 1572761
+[  251.983788] Buffer I/O error on device mmcblk0p1, logical block 1572745
+[  251.983788] lost page write due to I/O error on mmcblk0p1
+[  253.513336] mmcblk0: error -110 transferring data
+(trashed FS here)
 
-Regards,
-Drew Moseley
+kernel in use is 2.6.27-rc6, and this is the controller:
 
+09:01.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
+09:01.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
+09:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 12)
+09:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 12)
 
-Signed-off-by: Drew Moseley <dmoseley@mvista.com>
-diff --git a/drivers/pnp/base.h b/drivers/pnp/base.h
-index 9fd7bb9..b07787f 100644
---- a/drivers/pnp/base.h
-+++ b/drivers/pnp/base.h
-@@ -16,7 +16,7 @@ struct pnp_card *pnp_alloc_card(struct pnp_protocol *,
-int id, char *pnpid);
+Googling around I found a patch[1] that introduced a quirk to address an
+off-by-one issue for the timeout value in certain controllers.
 
- int pnp_add_device(struct pnp_dev *dev);
- struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
--int pnp_interface_attach_device(struct pnp_dev *dev);
-+void pnp_interface_attach_device(struct pnp_dev *dev);
+With this patch:
 
- int pnp_add_card(struct pnp_card *card);
- void pnp_remove_card(struct pnp_card *card);
-diff --git a/drivers/pnp/core.c b/drivers/pnp/core.c
-index a411582..bcd49ba 100644
---- a/drivers/pnp/core.c
-+++ b/drivers/pnp/core.c
-@@ -159,8 +159,6 @@ struct pnp_dev *pnp_alloc_dev(struct pnp_protocol
-*protocol, int id, char *pnpid
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index e3a8133..46899ee 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -575,7 +575,7 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+ 	host->data = data;
+ 	host->data_early = 0;
+ 
+-	count = sdhci_calc_timeout(host, data);
++	count = sdhci_calc_timeout(host, data) + 1;
+ 	writeb(count, host->ioaddr + SDHCI_TIMEOUT_CONTROL);
+ 
+ 	if (host->flags & SDHCI_USE_DMA)
 
- int __pnp_add_device(struct pnp_dev *dev)
- {
--	int ret;
--
- 	pnp_fixup_device(dev);
- 	dev->status = PNP_READY;
- 	spin_lock(&pnp_lock);
-@@ -168,12 +166,8 @@ int __pnp_add_device(struct pnp_dev *dev)
- 	list_add_tail(&dev->protocol_list, &dev->protocol->devices);
- 	spin_unlock(&pnp_lock);
+I don't see timeouts anymore (just for reference, I'm not suggesting to apply it
+as-is).
 
--	ret = device_register(&dev->dev);
--	if (ret)
--		return ret;
--
- 	pnp_interface_attach_device(dev);
--	return 0;
-+	return device_register(&dev->dev);
- }
-
- /*
-diff --git a/drivers/pnp/interface.c b/drivers/pnp/interface.c
-index a876ecf..442684d 100644
---- a/drivers/pnp/interface.c
-+++ b/drivers/pnp/interface.c
-@@ -243,8 +243,6 @@ static ssize_t pnp_show_options(struct device *dmdev,
- 	return ret;
- }
-
--static DEVICE_ATTR(options, S_IRUGO, pnp_show_options, NULL);
--
- static ssize_t pnp_show_current_resources(struct device *dmdev,
- 					  struct device_attribute *attr,
- 					  char *buf)
-@@ -420,9 +418,6 @@ done:
- 	return count;
- }
-
--static DEVICE_ATTR(resources, S_IRUGO | S_IWUSR,
--		   pnp_show_current_resources, pnp_set_current_resources);
--
- static ssize_t pnp_show_current_ids(struct device *dmdev,
- 				    struct device_attribute *attr, char *buf)
- {
-@@ -437,27 +432,16 @@ static ssize_t pnp_show_current_ids(struct device
-*dmdev,
- 	return (str - buf);
- }
-
--static DEVICE_ATTR(id, S_IRUGO, pnp_show_current_ids, NULL);
-+static struct device_attribute pnp_interface_attrs[] = {
-+	__ATTR(resources, S_IRUGO | S_IWUSR,
-+		   pnp_show_current_resources,
-+		   pnp_set_current_resources),
-+	__ATTR(options, S_IRUGO, pnp_show_options, NULL),
-+	__ATTR(id, S_IRUGO, pnp_show_current_ids, NULL),
-+	__ATTR_NULL,
-+};
-
--int pnp_interface_attach_device(struct pnp_dev *dev)
-+void pnp_interface_attach_device(struct pnp_dev *dev)
- {
--	int rc = device_create_file(&dev->dev, &dev_attr_options);
--
--	if (rc)
--		goto err;
--	rc = device_create_file(&dev->dev, &dev_attr_resources);
--	if (rc)
--		goto err_opt;
--	rc = device_create_file(&dev->dev, &dev_attr_id);
--	if (rc)
--		goto err_res;
--
--	return 0;
--
--err_res:
--	device_remove_file(&dev->dev, &dev_attr_resources);
--err_opt:
--	device_remove_file(&dev->dev, &dev_attr_options);
--err:
--	return rc;
-+	dev->dev.bus->dev_attrs = pnp_interface_attrs;
- }
+Luca
+[1] http://www.gossamer-threads.com/lists/linux/kernel/937056
+-- 
+Dicono che  il cane sia  il miglior  amico dell'uomo. Secondo me  non e`
+vero. Quanti dei vostri amici avete fatto castrare, recentemente?
