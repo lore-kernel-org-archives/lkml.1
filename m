@@ -1,67 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYIWWau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYIWWep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbYIWWau (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 18:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYIWWai
+	id S1755183AbYIWWep (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 18:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYIWWeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 18:30:38 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:51136 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751445AbYIWWah (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 18:30:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:subject:to:cc:date:message-id:user-agent:mime-version
-         :content-type:content-transfer-encoding:sender;
-        b=uyy14OzCxU5U2TYoY2Q3Kd/4/O7roGZJcaTFh7uH7GTSjYrRLMY7OXSShHJlpTLzIW
-         j/SfX6gyGvHp6BQtuj471w7lT+RUn52x6fUY7/O6wWHbQJDPjwtnd98X+8r5WtpVE//J
-         YXk4mczuwWixpR24JsPgslJ+n/bIEwXqfEhxQ=
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [PATCH 1/3] x86: export set_memory_ro() and set_memory_rw() calls
-To: jeff@garzik.org, mingo@elte.hu, davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jesse.brandeburg@intel.com, john.ronciak@intel.com,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 23 Sep 2008 15:30:42 -0700
-Message-ID: <20080923223042.6448.30999.stgit@jtkirshe-mobile.jf.intel.com>
-User-Agent: StGIT/0.14.3
+	Tue, 23 Sep 2008 18:34:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43009 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750958AbYIWWef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 18:34:35 -0400
+Date: Tue, 23 Sep 2008 18:34:20 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-mm@vger.kernel.org
+cc: Alasdair G Kergon <agk@redhat.com>, Milan Broz <mbroz@redhat.com>,
+       Chris Webb <chris@arachsys.com>
+Subject: Re: [PATCH] Memory management livelock
+In-Reply-To: <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+Message-ID: <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+ <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+> On Mon, 22 Sep 2008 17:10:04 -0400 (EDT)
+> Mikulas Patocka <mpatocka@xxxxxxxxxx> wrote:
+> 
+> > The bug happens when one process is doing sequential buffered writes to
+> > a block device (or file) and another process is attempting to execute
+> > sync(), fsync() or direct-IO on that device (or file). This syncing
+> > process will wait indefinitelly, until the first writing process
+> > finishes.
+> >
+> > For example, run these two commands:
+> > dd if=/dev/zero of=/dev/sda1 bs=65536 &
+> > dd if=/dev/sda1 of=/dev/null bs=4096 count=1 iflag=direct
+> >
+> > The bug is caused by sequential walking of address space in
+> > write_cache_pages and wait_on_page_writeback_range: if some other
+> > process is constantly making dirty and writeback pages while these
+> > functions run, the functions will wait on every new page, resulting in
+> > indefinite wait.
+> 
+> Shouldn't happen. All the data-syncing functions should have an upper
+> bound on the number of pages which they attempt to write. In the
+> example above, we end up in here:
+> 
+> int __filemap_fdatawrite_range(struct address_space *mapping, loff_t
+> start,
+> loff_t end, int sync_mode)
+> {
+> int ret;
+> struct writeback_control wbc = {
+> .sync_mode = sync_mode,
+> .nr_to_write = mapping->nrpages * 2, <<--
+> .range_start = start,
+> .range_end = end,
+> };
+> 
+> so generic_file_direct_write()'s filemap_write_and_wait() will attempt
+> to write at most 2* the number of pages which are in cache for that inode.
 
-Export set_memory_ro() and set_memory_rw() calls needed by a follow-on
-patch to the e1000e driver.
+See write_cache_pages:
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
+if (wbc->sync_mode != WB_SYNC_NONE)
+        wait_on_page_writeback(page);	(1)
+if (PageWriteback(page) ||
+    !clear_page_dirty_for_io(page)) {
+        unlock_page(page);		(2)
+        continue;
+}
+ret = (*writepage)(page, wbc, data);
+if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
+        unlock_page(page);
+        ret = 0;
+}
+if (ret || (--(wbc->nr_to_write) <= 0))
+        done = 1;
 
- arch/x86/mm/pageattr.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+--- so if it goes by points (1) and (2), the counter is not decremented, 
+yet the function waits for the page. If there is constant stream of 
+writeback pages being generated, it waits on each on them --- that is, 
+forever. I have seen livelock in this function. For you that example with 
+two dd's, one buffered write and the other directIO read doesn't work? For 
+me it livelocks here.
 
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 43e2f84..0991e15 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -906,11 +906,13 @@ int set_memory_ro(unsigned long addr, int numpages)
- {
- 	return change_page_attr_clear(addr, numpages, __pgprot(_PAGE_RW));
- }
-+EXPORT_SYMBOL(set_memory_ro);
- 
- int set_memory_rw(unsigned long addr, int numpages)
- {
- 	return change_page_attr_set(addr, numpages, __pgprot(_PAGE_RW));
- }
-+EXPORT_SYMBOL(set_memory_rw);
- 
- int set_memory_np(unsigned long addr, int numpages)
- {
+wait_on_page_writeback_range is another example where the livelock 
+happened, there is no protection at all against starvation.
 
+
+BTW. that .nr_to_write = mapping->nrpages * 2 looks like a dangerous thing 
+to me.
+
+Imagine this case: You have two pages with indices 4 and 5 dirty in a 
+file. You call fsync(). It sets nr_to_write to 4.
+
+Meanwhile, another process makes pages 0, 1, 2, 3 dirty.
+
+The fsync() process goes to write_cache_pages, writes the first 4 dirty 
+pages and exits because it goes over the limit.
+
+result --- you violate fsync() semantics, pages that were dirty before 
+call to fsync() are not written when fsync() exits.
+
+> I'd say that either a) that logic got broken or b) you didn't wait long
+> enough, and we might need to do something to make it not wait so long.
+> 
+> But before we patch anything we should fully understand what is
+> happening and why the current anti-livelock code isn't working in this
+> case.
+
+Mikulas
