@@ -1,111 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbYIWU1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbYIWU3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754247AbYIWU1j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 16:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbYIWU12
+	id S1753623AbYIWU3n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 16:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYIWU3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 16:27:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53004 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753324AbYIWU11 (ORCPT
+	Tue, 23 Sep 2008 16:29:34 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:60081 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbYIWU3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 16:27:27 -0400
-Date: Tue, 23 Sep 2008 13:20:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tom Zanussi <zanussi@comcast.net>
-Cc: a.p.zijlstra@chello.nl, prasad@linux.vnet.ibm.com, mbligh@google.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       tglx@linutronix.de, compudj@krystal.dyndns.org, rostedt@goodmis.org,
-       od@novell.com, fche@redhat.com, hch@lst.de, dwilder@us.ibm.com
-Subject: Re: [PATCH 3/3] relay - add channel flags
-Message-Id: <20080923132053.eb2cf871.akpm@linux-foundation.org>
-In-Reply-To: <1222147676.6875.138.camel@charm-linux>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
-	<1221869279.8359.31.camel@lappy.programming.kicks-ass.net>
-	<20080922140740.GB5279@in.ibm.com>
-	<1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
-	<1222147676.6875.138.camel@charm-linux>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Sep 2008 16:29:33 -0400
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       dan.j.williams@intel.com, scottwood@freescale.com,
+       galak@kernel.crashing.org, leoli@freescale.com
+Subject: [PATCH] fsldma: remove internal self-test from Freescale Elo DMA driver
+Date: Tue, 23 Sep 2008 15:29:16 -0500
+Message-Id: <1222201756-21374-1-git-send-email-timur@freescale.com>
+X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008 00:27:56 -0500
-Tom Zanussi <zanussi@comcast.net> wrote:
+The Freescale Elo DMA driver runs an internal self-test before registering
+the channels with the DMA engine.  This self-test has a fundemental flaw in
+that it calls the DMA engine's callback functions directly before the
+registration.  However, the registration initializes some variables that the
+callback functions uses, namely the device struct.
 
-> Add channel flags to relay, remove global callback param.
->     
-> relay should probably have had a flags param from the beginning; it
-> wasn't originally added because it wasn't originally needed - it
-> probably would have helped avoid some of the callback contortions
-> that were added due to a lack of flags.  This adds them and does a
-> small amount of low-hanging cleanup, and is also in preparation for
-> some new flags in future patches.
-> 
-> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
-> 
-> diff --git a/block/blktrace.c b/block/blktrace.c
-> index eb9651c..150c5f7 100644
-> --- a/block/blktrace.c
-> +++ b/block/blktrace.c
-> @@ -356,8 +356,7 @@ static int blk_remove_buf_file_callback(struct dentry *dentry)
->  static struct dentry *blk_create_buf_file_callback(const char *filename,
->  						   struct dentry *parent,
->  						   int mode,
-> -						   struct rchan_buf *buf,
-> -						   int *is_global)
-> +						   struct rchan_buf *buf)
->  {
->  	return debugfs_create_file(filename, mode, parent, buf,
->  					&relay_file_operations);
-> @@ -424,7 +423,7 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
->  		goto err;
->  
->  	bt->rchan = relay_open("trace", dir, buts->buf_size,
-> -				buts->buf_nr, &blk_relay_callbacks, bt);
-> +			       buts->buf_nr, &blk_relay_callbacks, bt, 0UL);
->  	if (!bt->rchan)
->  		goto err;
->  
-> diff --git a/include/linux/relay.h b/include/linux/relay.h
-> index 52e4d61..18fd269 100644
-> --- a/include/linux/relay.h
-> +++ b/include/linux/relay.h
-> @@ -25,7 +25,13 @@
->  /*
->   * Tracks changes to rchan/rchan_buf structs
->   */
-> -#define RELAYFS_CHANNEL_VERSION		7
-> +#define RELAYFS_CHANNEL_VERSION		8
+The code works today because there are two device structs: the one created
+by the DMA engine, and one created by the Open Firmware (OF) subsystem.  The
+self-test currently uses the device struct created by OF.  However, in the
+future, some of the device structs created by OF will be eliminated.
+This means that the self-test will only have access to the device struct
+created by the DMA engine.  But this device struct isn't initialized when
+the self-test runs, and this causes a kernel panic.
 
-What is the significance of this change?  Does it affect the
-kernel<->userspace interface?  Is it back-compatible with existing
-userspace?
+Since there is already a DMA test module (dmatest), the internal self-test
+code is not useful anyway.  It is extremely unlikely that the test will fail
+in normal usage.  It may have been helpful during development, but not any more.
 
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-> +/*
-> + * relay channel flags
-> + */
-> +#define RCHAN_MODE_OVERWRITE		0x00000001	/* 'flight' mode */
-> +#define RCHAN_GLOBAL_BUFFER		0x00000002	/* not using per-cpu */
->  
->
-> ...
->
-> @@ -480,7 +478,7 @@ static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
->   	buf->cpu = cpu;
->   	__relay_reset(buf, 1);
->  
-> - 	if(chan->is_global) {
-> +	if(chan->flags & RCHAN_GLOBAL_BUFFER) {
-	
-Please use checkpatch.  It's a little thing, but it's so easy to fix..
+This patch is for 2.6.28.
 
->   		chan->buf[0] = buf;
->   		buf->cpu = 0;
->    	}
->
-> ...
+ drivers/dma/fsldma.c |  132 --------------------------------------------------
+ 1 files changed, 0 insertions(+), 132 deletions(-)
+
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index c0059ca..e9b2638 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -786,132 +786,6 @@ static void dma_do_tasklet(unsigned long data)
+ 	fsl_chan_ld_cleanup(fsl_chan);
+ }
+ 
+-static void fsl_dma_callback_test(void *param)
+-{
+-	struct fsl_dma_chan *fsl_chan = param;
+-	if (fsl_chan)
+-		dev_dbg(fsl_chan->dev, "selftest: callback is ok!\n");
+-}
+-
+-static int fsl_dma_self_test(struct fsl_dma_chan *fsl_chan)
+-{
+-	struct dma_chan *chan;
+-	int err = 0;
+-	dma_addr_t dma_dest, dma_src;
+-	dma_cookie_t cookie;
+-	u8 *src, *dest;
+-	int i;
+-	size_t test_size;
+-	struct dma_async_tx_descriptor *tx1, *tx2, *tx3;
+-
+-	test_size = 4096;
+-
+-	src = kmalloc(test_size * 2, GFP_KERNEL);
+-	if (!src) {
+-		dev_err(fsl_chan->dev,
+-				"selftest: Cannot alloc memory for test!\n");
+-		return -ENOMEM;
+-	}
+-
+-	dest = src + test_size;
+-
+-	for (i = 0; i < test_size; i++)
+-		src[i] = (u8) i;
+-
+-	chan = &fsl_chan->common;
+-
+-	if (fsl_dma_alloc_chan_resources(chan, NULL) < 1) {
+-		dev_err(fsl_chan->dev,
+-				"selftest: Cannot alloc resources for DMA\n");
+-		err = -ENODEV;
+-		goto out;
+-	}
+-
+-	/* TX 1 */
+-	dma_src = dma_map_single(fsl_chan->dev, src, test_size / 2,
+-				 DMA_TO_DEVICE);
+-	dma_dest = dma_map_single(fsl_chan->dev, dest, test_size / 2,
+-				  DMA_FROM_DEVICE);
+-	tx1 = fsl_dma_prep_memcpy(chan, dma_dest, dma_src, test_size / 2, 0);
+-	async_tx_ack(tx1);
+-
+-	cookie = fsl_dma_tx_submit(tx1);
+-	fsl_dma_memcpy_issue_pending(chan);
+-	msleep(2);
+-
+-	if (fsl_dma_is_complete(chan, cookie, NULL, NULL) != DMA_SUCCESS) {
+-		dev_err(fsl_chan->dev, "selftest: Time out!\n");
+-		err = -ENODEV;
+-		goto free_resources;
+-	}
+-
+-	/* Test free and re-alloc channel resources */
+-	fsl_dma_free_chan_resources(chan);
+-
+-	if (fsl_dma_alloc_chan_resources(chan, NULL) < 1) {
+-		dev_err(fsl_chan->dev,
+-				"selftest: Cannot alloc resources for DMA\n");
+-		err = -ENODEV;
+-		goto free_resources;
+-	}
+-
+-	/* Continue to test
+-	 * TX 2
+-	 */
+-	dma_src = dma_map_single(fsl_chan->dev, src + test_size / 2,
+-					test_size / 4, DMA_TO_DEVICE);
+-	dma_dest = dma_map_single(fsl_chan->dev, dest + test_size / 2,
+-					test_size / 4, DMA_FROM_DEVICE);
+-	tx2 = fsl_dma_prep_memcpy(chan, dma_dest, dma_src, test_size / 4, 0);
+-	async_tx_ack(tx2);
+-
+-	/* TX 3 */
+-	dma_src = dma_map_single(fsl_chan->dev, src + test_size * 3 / 4,
+-					test_size / 4, DMA_TO_DEVICE);
+-	dma_dest = dma_map_single(fsl_chan->dev, dest + test_size * 3 / 4,
+-					test_size / 4, DMA_FROM_DEVICE);
+-	tx3 = fsl_dma_prep_memcpy(chan, dma_dest, dma_src, test_size / 4, 0);
+-	async_tx_ack(tx3);
+-
+-	/* Interrupt tx test */
+-	tx1 = fsl_dma_prep_interrupt(chan, 0);
+-	async_tx_ack(tx1);
+-	cookie = fsl_dma_tx_submit(tx1);
+-
+-	/* Test exchanging the prepared tx sort */
+-	cookie = fsl_dma_tx_submit(tx3);
+-	cookie = fsl_dma_tx_submit(tx2);
+-
+-	if (dma_has_cap(DMA_INTERRUPT, ((struct fsl_dma_device *)
+-	    dev_get_drvdata(fsl_chan->dev->parent))->common.cap_mask)) {
+-		tx3->callback = fsl_dma_callback_test;
+-		tx3->callback_param = fsl_chan;
+-	}
+-	fsl_dma_memcpy_issue_pending(chan);
+-	msleep(2);
+-
+-	if (fsl_dma_is_complete(chan, cookie, NULL, NULL) != DMA_SUCCESS) {
+-		dev_err(fsl_chan->dev, "selftest: Time out!\n");
+-		err = -ENODEV;
+-		goto free_resources;
+-	}
+-
+-	err = memcmp(src, dest, test_size);
+-	if (err) {
+-		for (i = 0; (*(src + i) == *(dest + i)) && (i < test_size);
+-				i++);
+-		dev_err(fsl_chan->dev, "selftest: Test failed, data %d/%ld is "
+-				"error! src 0x%x, dest 0x%x\n",
+-				i, (long)test_size, *(src + i), *(dest + i));
+-	}
+-
+-free_resources:
+-	fsl_dma_free_chan_resources(chan);
+-out:
+-	kfree(src);
+-	return err;
+-}
+-
+ static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
+ 			const struct of_device_id *match)
+ {
+@@ -1000,17 +874,11 @@ static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
+ 		}
+ 	}
+ 
+-	err = fsl_dma_self_test(new_fsl_chan);
+-	if (err)
+-		goto err_self_test;
+-
+ 	dev_info(&dev->dev, "#%d (%s), irq %d\n", new_fsl_chan->id,
+ 				match->compatible, new_fsl_chan->irq);
+ 
+ 	return 0;
+ 
+-err_self_test:
+-	free_irq(new_fsl_chan->irq, new_fsl_chan);
+ err_no_irq:
+ 	list_del(&new_fsl_chan->common.device_node);
+ err_no_chan:
+-- 
+1.5.5
+
