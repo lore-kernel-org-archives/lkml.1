@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbYIWIzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbYIWIzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753127AbYIWIzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 04:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYIWIzb
+	id S1754093AbYIWIzx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 04:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYIWIzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 04:55:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57662 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751528AbYIWIza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 04:55:30 -0400
-Date: Tue, 23 Sep 2008 10:55:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH -tip 0/4] x86: signal handler improvement
-Message-ID: <20080923085518.GA29703@elte.hu>
-References: <48D84A2A.2030009@ct.jp.nec.com> <20080923085027.GA25698@elte.hu>
+	Tue, 23 Sep 2008 04:55:40 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:52879 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753108AbYIWIzi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 04:55:38 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: "=?utf-8?q?S=C3=B8ren?= Hauberg" <hauberg@gmail.com>
+Subject: Re: [PATCH] usbtouchscreen, 2.6.25
+Date: Tue, 23 Sep 2008 10:55:35 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <ed7dcf450809230142l62bb00aapb92e6cb225f0cbba@mail.gmail.com>
+In-Reply-To: <ed7dcf450809230142l62bb00aapb92e6cb225f0cbba@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080923085027.GA25698@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200809231055.35919.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Dienstag 23 September 2008 10:42:56 schrieb Søren Hauberg:
+> calibration parameters in the kernel. That way, we can also get usable
+> touchscreens without X, without having to write special purpose
 
-* Ingo Molnar <mingo@elte.hu> wrote:
 
-> could we perhaps first finish unifying them into signal.c, and then 
-> introduce __put_user_cerr() in signal_32/64.c?
+Is that a realistic use?
 
-i've got an API suggestion as well. Instead of:
-
--               err |= __put_user(UC_FP_XSTATE, &frame->uc.uc_flags);
-+               __put_user_cerr(UC_FP_XSTATE, &frame->uc.uc_flags, err);
-
-could you instead please make it:
-
-+               __put_user_cerr(UC_FP_XSTATE, &frame->uc.uc_flags, &err);
-
-i.e. pass in 'err' as a reference. This makes it clear to the casual 
-reader, in a C calling convention sense, that there's a side-effect to 
-'err'. [ There should be no change to the resulting code as 
-__put_user_cerr() is a macro. ]
-
-	Ingo
+	Regards
+		Oliver
