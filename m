@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbYIWLbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbYIWLcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbYIWLbx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 07:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbYIWLbl
+	id S1753046AbYIWLcn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 07:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYIWLcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 07:31:41 -0400
-Received: from nox.protox.org ([88.191.38.29]:56238 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbYIWLbk convert rfc822-to-8bit (ORCPT
+	Tue, 23 Sep 2008 07:32:33 -0400
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:59892 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbYIWLcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 07:31:40 -0400
-Date: Tue, 23 Sep 2008 13:31:37 +0200
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>
-Cc: Nick Piggin <npiggin@suse.de>, keith.packard@intel.com, eric@anholt.net,
-       hugh@veritas.com, hch@infradead.org, airlied@linux.ie,
-       jbarnes@virtuousgeek.org, dri-devel@lists.sourceforge.net,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] mm: pageable memory allocator (for DRM-GEM?)
-Message-Id: <20080923133137.c9e1f171.glisse@freedesktop.org>
-In-Reply-To: <48D8C326.80909@tungstengraphics.com>
-References: <20080923091017.GB29718@wotan.suse.de>
-	<48D8C326.80909@tungstengraphics.com>
-Organization: freedesktop.org
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 23 Sep 2008 07:32:32 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX18LAe/szIHM2HptPDVUC/Zp
+Date: Tue, 23 Sep 2008 14:32:16 +0300
+From: Tony Lindgren <tony@atomide.com>
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "George G. Davis" <gdavis@mvista.com>, Alan Cox <alan@redhat.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: Re: How to kick a secondary watchdog? (Re: [PATCH 1/3] watchdog:
+	sync linux-omap changes)
+Message-ID: <20080923113210.GM5102@atomide.com>
+References: <1221873243-18303-1-git-send-email-me@felipebalbi.com> <1221873243-18303-2-git-send-email-me@felipebalbi.com> <20080922182206.GM22550@infomag.infomag.iguana.be> <20080922191353.GB8314@flint.arm.linux.org.uk> <20080923083915.GS22550@infomag.infomag.iguana.be> <20080923102159.GD5102@atomide.com> <20080923111954.GU22550@infomag.infomag.iguana.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080923111954.GU22550@infomag.infomag.iguana.be>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008 12:21:26 +0200
-Thomas Hellström <thomas@tungstengraphics.com> wrote:
-
-> Nick Piggin wrote:
-> > Hi,
-> >
-> > So I promised I would look at this again, because I (and others) have some
-> > issues with exporting shmem_file_setup for DRM-GEM to go off and do things
-> > with.
-> >
-> > The rationale for using shmem seems to be that pageable "objects" are needed,
-> > and they can't be created by userspace because that would be ugly for some
-> > reason, and/or they are required before userland is running.
-> >
-> > I particularly don't like the idea of exposing these vfs objects to random
-> > drivers because they're likely to get things wrong or become out of synch
-> > or unreviewed if things change. I suggested a simple pageable object allocator
-> > that could live in mm and hide the exact details of how shmem / pagecache
-> > works. So I've coded that up quickly.
-> >
-> > Upon actually looking at how "GEM" makes use of its shmem_file_setup filp, I
-> > see something strange... it seems that userspace actually gets some kind of
-> > descriptor, a descriptor to an object backed by this shmem file (let's call it
-> > a "file descriptor"). Anyway, it turns out that userspace sometimes needs to
-> > pread, pwrite, and mmap these objects, but unfortunately it has no direct way
-> > to do that, due to not having open(2)ed the files directly. So what GEM does
-> > is to add some ioctls which take the "file descriptor" things, and derives
-> > the shmem file from them, and then calls into the vfs to perform the operation.
-> >
-> > If my cursory reading is correct, then my allocator won't work so well as a
-> > drop in replacement because one isn't allowed to know about the filp behind
-> > the pageable object. It would also indicate some serious crack smoking by
-> > anyone who thinks open(2), pread(2), mmap(2), etc is ugly in comparison...
-> >
-> > So please, nobody who worked on that code is allowed to use ugly as an
-> > argument. Technical arguments are fine, so let's try to cover them.
-> >
-> >   
-> Nick,
->  From my point of view, this is exactly what's needed, although there 
-> might be some different opinions among the
-> DRM developers. A question:
+* Wim Van Sebroeck <wim@iguana.be> [080923 14:20]:
+> Hi Tony,
 > 
-> Sometimes it's desirable to indicate that a page / object is "cleaned", 
-> which would mean data has moved and is backed by device memory. In that 
-> case one could either free the object or indicate to it that it can 
-> release it's pages. Is freeing / recreating such an object an expensive 
-> operation? Would it, in that case, be possible to add an object / page 
-> "cleaned" function?
+> > Wim, while at it, here's a related omap_wdt question:
+> > 
+> > Some omap devices like Nokia 770, N800 and N810 have also a secondary
+> > watchdog on the retu chip connected via cbus. This watchdog needs
+> > to be kicked as it cannot be disabled.
+> > 
+> > We've been thinking of adding a function that omap_wdt can
+> > call to also kick retu_wdt too as there is only one wdt interface.
+> > 
+> > Is there some better solution available?
 > 
-> /Thomas
+> Plan is to go to a uniform watchdog driver first, then add sysfs
+> capabilities and then we can add more devices via sysfs.
+> For the time being: I would kick both of them at the same time
+> via the /dev/watchdog interface.
 
-Also what about a uncached page allocator ? As some drivers might need
-them, there is no number but i think their was some concern that changing
-PAT too often might be costly and that we would better have a poll of
-such pages.
+Looks like we also need to do this for the twl4030 I2C companion chip
+on omap 2430 and 34xx.
 
-Cheers,
-Jerome Glisse <glisse@freedesktop.org>
+So we'll do something like this for now then:
+
+static void omap_wdt_ping(struct omap_wdt_dev *wdev)
+{
+
+...
+
+    retu_wdt_ping(wdev);
+    twl4030_wdt_ping(wdev);
+    
+...
+
+}
+
+Then have retu_wdt_ping() and twl4030_wdt_ping() functions defined as
+empty static inline functions if not enabled.
+
+Thanks Alan & Wim.
+
+Tony
