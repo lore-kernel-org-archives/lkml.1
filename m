@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbYIWWZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbYIWW2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754357AbYIWWZp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 18:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYIWWZd
+	id S1755671AbYIWW2i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 18:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYIWW21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 18:25:33 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:51395 "EHLO
+	Tue, 23 Sep 2008 18:28:27 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:49471 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbYIWWZc (ORCPT
+	with ESMTP id S1751538AbYIWW20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 18:25:32 -0400
+	Tue, 23 Sep 2008 18:28:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:subject:to:cc:date:message-id:user-agent:mime-version
          :content-type:content-transfer-encoding:sender;
-        b=LQgOYUZGxNUdgTYGzvzR9LA/ehFXExLi+FRJ25xtNxXN/R6wF3yy2CU8MZCwEHpJ4e
-         Ilhfv3wNuqzDit1DYnq777C1QlKigcc83VjUqPlMd6whM61QaFOy+u/E/rT2C/65qi+D
-         tEtA3S3lahxcArZOfchohYIoXac7mlavjWlgQ=
+        b=T1MXkmLdecWputNLtH0H2TFh3ny/ftPruMe7S6nEPDUpkmwPx0rUpy+yOh5nfZhjpp
+         Ncu/uCFLg8lQXewoZJySwlCnUiFQ9TkRbEC7B3kiQYwElizNwZqIi330/bTuJbzQbAD0
+         O9rSYY1fQev/kOVg5tV6PhBGINpU8fYtZZKIA=
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [PATCH 0/3] e1000e: protect NVM from corruption 
+Subject: [PATCH 0/3] e1000e: protect NVM from corruption
 To: jeff@garzik.org, mingo@elte.hu, davem@davemloft.net
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        jesse.brandeburg@intel.com, john.ronciak@intel.com
-Date: Tue, 23 Sep 2008 15:25:37 -0700
-Message-ID: <20080923222320.6075.90496.stgit@jtkirshe-mobile.jf.intel.com>
+Date: Tue, 23 Sep 2008 15:28:31 -0700
+Message-ID: <20080923222653.6193.86231.stgit@jtkirshe-mobile.jf.intel.com>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
