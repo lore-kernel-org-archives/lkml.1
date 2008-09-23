@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbYIWSEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYIWSE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755134AbYIWSEI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 14:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYIWSDz
+	id S1755273AbYIWSE3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 14:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYIWSES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 14:03:55 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:35302 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751926AbYIWSDy (ORCPT
+	Tue, 23 Sep 2008 14:04:18 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55062 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753081AbYIWSER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 14:03:54 -0400
-Date: Tue, 23 Sep 2008 11:03:50 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Ingo Molnar <mingo@elte.hu>, stable@kernel.org
-Cc: linux-kernel@vger.kernel.org,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH] x86: Fix 27-rc crash on vsmp due to paravirt during
-	module load
-Message-ID: <20080923180350.GB26882@localdomain>
-References: <20080923055847.GA26882@localdomain> <20080923083145.GD23031@elte.hu>
+	Tue, 23 Sep 2008 14:04:17 -0400
+Date: Wed, 24 Sep 2008 02:59:37 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: Unified tracing buffer
+Cc: kosaki.motohiro@jp.fujitsu.com, Martin Bligh <mbligh@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Steven Rostedt <rostedt@goodmis.org>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap-ml <systemtap@sources.redhat.com>
+In-Reply-To: <48D90970.3060409@redhat.com>
+References: <20080923232239.DC1E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48D90970.3060409@redhat.com>
+Message-Id: <20080924025457.DC24.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080923083145.GD23031@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 10:31:45AM +0200, Ingo Molnar wrote:
->
->* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
->
->> 27-rc fails to boot up if configured to use modules.  Turns out 
->> vsmp_patch was marked __init, and vsmp_patch being the pvops 'patch' 
->> routine for vsmp, a call to vsmp_patch just turns out to execute a 
->> code page with series of 0xcc (POISON_FREE_INITMEM -- int3).  Since 
->> apply_paravirt can only be called during init/module load, make 
->> vsmp_patch with "__init_or_module"
->
->applied to tip/x86/urgent, thanks Ravikiran!
->
+> > I can't imazine a merit of the single-channel mode.
+> > Could you please explain it?
+> 
+> Actually, single-channel mode is for not-frequently event tracing.
+> At least systemtap case, sometimes we just want to collect data
+> and watch it periodically(as like as 'top'). Or, just monitoring
+> errors as additional printk. in these cases, overhead is not so
+> important.
+> 
+> I think the main reason of using single-channel mode is simplicity of
+> userspace reader. We can use 'cat' or 'tail' to read the buffer on-line.
+> I'm not sure how much overhead ftrace-like buffer merging routine has,
+> but if kernel provides an interface which gives us single-merged buffer
+> image(like ftrace buffer), we are grad to use it. :-)
+
+Yup, I also think it is better.
+
+Thanks.
 
 
-Thanks Ingo.
-Can this get into 2.6.26 stable as well, please?  (Re-sending patch for -stable,
-re diffed against 2.6.26.5)
 
-Thanks,
-Kiran
-
----
-
-vsmp_patch has been marked with __init ever since pvops, however,
-apply_paravirt can be called during module load causing calls to
-freed memory location.
-
-Since apply_paravirt can only be called during bootup and module load,
-mark vsmp patch with "__init_or_module"
-
-Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-
-Index: linux-2.6.26.5/arch/x86/kernel/vsmp_64.c
-===================================================================
---- linux-2.6.26.5.orig/arch/x86/kernel/vsmp_64.c	2008-09-08 10:40:20.000000000 -0700
-+++ linux-2.6.26.5/arch/x86/kernel/vsmp_64.c	2008-09-23 10:02:05.000000000 -0700
-@@ -58,7 +58,7 @@
- 	native_restore_fl((flags | X86_EFLAGS_IF) & (~X86_EFLAGS_AC));
- }
- 
--static unsigned __init vsmp_patch(u8 type, u16 clobbers, void *ibuf,
-+static unsigned __init_or_module vsmp_patch(u8 type, u16 clobbers, void *ibuf,
- 				  unsigned long addr, unsigned len)
- {
- 	switch (type) {
