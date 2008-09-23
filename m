@@ -1,86 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbYIWS16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYIWS2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754114AbYIWS16 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 14:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYIWS1u
+	id S1754898AbYIWS2a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 14:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYIWS2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 14:27:50 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:21930 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752177AbYIWS1t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 14:27:49 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references:x-gmailtapped-by;
-	b=qTPm3QuHu78HsSuvz9lIJjwLwtqpDjoTFhrfuL5v4jxBTZPA/RHRVkilRT7jDnpZM
-	GdmfDlPDB4YIRKbdv3acA==
-Message-ID: <33307c790809231127w274be5b9lba7931f2e6c4ef73@mail.gmail.com>
-Date: Tue, 23 Sep 2008 11:27:37 -0700
-From: "Martin Bligh" <mbligh@google.com>
-To: prasad@linux.vnet.ibm.com
-Subject: Re: Unified tracing buffer
-Cc: "Tom Zanussi" <zanussi@comcast.net>,
-       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, hch@lst.de,
-       "David Wilder" <dwilder@us.ibm.com>
-In-Reply-To: <20080923175500.GA3843@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Sep 2008 14:28:21 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:44280 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751205AbYIWS2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 14:28:20 -0400
+Date: Tue, 23 Sep 2008 13:28:17 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] - Add early detection of UV system types
+Message-ID: <20080923182817.GA6335@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
-	 <1221869279.8359.31.camel@lappy.programming.kicks-ass.net>
-	 <20080922140740.GB5279@in.ibm.com>
-	 <1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
-	 <1222147545.6875.135.camel@charm-linux>
-	 <33307c790809230700o4bf0d22fg8ab2dcb904f7d66c@mail.gmail.com>
-	 <20080923175500.GA3843@in.ibm.com>
-X-GMailtapped-By: 172.24.198.97
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 10:55 AM, K.Prasad <prasad@linux.vnet.ibm.com> wrote:
-> On Tue, Sep 23, 2008 at 07:00:38AM -0700, Martin Bligh wrote:
->> > - get rid of anything having to do with padding, nobody needs it and its
->> > only affect has been to horribly distort and complicate a lot of the
->> > code
->> > - get rid of sub-buffers, they just cause confusion
->> > - get rid of mmap, nobody uses it
->> > - no sub-buffers and no mmap support means we can get rid of most of the
->> > callbacks, and a lot of API confusion along with them
->> > - add relay flags - they probably should have been used from the
->> > beginning and options made explicit instead of being shoehorned into the
->> > callback functions.
->>
->> Actually, I think if you did all that, it'd be pretty close to what we
->> want anyway ...
->
-> In the perspective of having a layered infrastructure, can we consider
-> the interfaces later added over relay (to be used as a wrapper), namely
-> relay_printk() and relay_dump()?
+Portions of system boot needs to know if a system is a UV system prior
+to genapic initialization. This patch adds a call from acpi_boot_table_init()
+to the UV code to parse the MADT to determine if the system is a UV system.
 
-Might well work, but let's see what relayfs comes out looking like.
-If it's heavily simplfiied, hopefully people will like it.
+Signed-off-by: Jack Steiner <steiner@sgi.com>
 
-> - Very minimal work required to log data using the interfaces. Usage is
-> made simple to resemble the printk(). Like
->
->        struct relay_printk_data *tpk;
->        tpk->parent_dir = "PARENT";
->        tpk->dir = "DIR";
->        relay_printk(tpk, <String to be output>);
->        relay_dump(tpk, <Some binary data to output>);
+---
+ arch/x86/kernel/acpi/boot.c      |    4 ++++
+ arch/x86/kernel/genx2apic_uv_x.c |   21 ++++++++++++---------
+ arch/x86/mm/srat_64.c            |    2 +-
+ include/asm-x86/genapic_64.h     |    2 ++
+ 4 files changed, 19 insertions(+), 10 deletions(-)
 
-You really don't want to store strings in the buffer, it's horribly
-inefficient. I think the intent was to store binary data from tagged
-events, along with the format strings, and do all the expansion later.
+Index: linux/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux.orig/arch/x86/kernel/acpi/boot.c	2008-09-23 12:55:15.000000000 -0500
++++ linux/arch/x86/kernel/acpi/boot.c	2008-09-23 12:55:19.000000000 -0500
+@@ -1667,6 +1667,10 @@ int __init acpi_boot_table_init(void)
+ 
+ 	acpi_table_parse(ACPI_SIG_BOOT, acpi_parse_sbf);
+ 
++#ifdef CONFIG_X86_64
++	acpi_table_parse(ACPI_SIG_MADT, uv_early_madt_oem_check);
++#endif
++
+ 	/*
+ 	 * blacklist may disable ACPI entirely
+ 	 */
+Index: linux/arch/x86/kernel/genx2apic_uv_x.c
+===================================================================
+--- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-09-23 12:55:19.000000000 -0500
++++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-09-23 12:56:15.000000000 -0500
+@@ -18,6 +18,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/module.h>
+ #include <linux/hardirq.h>
++#include <linux/acpi.h>
+ #include <asm/smp.h>
+ #include <asm/ipi.h>
+ #include <asm/genapic.h>
+@@ -25,26 +26,28 @@
+ #include <asm/uv/uv_mmrs.h>
+ #include <asm/uv/uv_hub.h>
+ #include <asm/uv/bios.h>
+-
+ DEFINE_PER_CPU(int, x2apic_extra_bits);
+ 
+ static enum uv_system_type uv_system_type;
+ 
+-static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
++int __init uv_early_madt_oem_check(struct acpi_table_header *table)
+ {
+-	if (!strcmp(oem_id, "SGI")) {
+-		if (!strcmp(oem_table_id, "UVL"))
++	if (!strcmp(table->oem_id, "SGI")) {
++		if (!strcmp(table->oem_table_id, "UVL"))
+ 			uv_system_type = UV_LEGACY_APIC;
+-		else if (!strcmp(oem_table_id, "UVX"))
++		else if (!strcmp(table->oem_table_id, "UVX"))
+ 			uv_system_type = UV_X2APIC;
+-		else if (!strcmp(oem_table_id, "UVH")) {
++		else if (!strcmp(table->oem_table_id, "UVH"))
+ 			uv_system_type = UV_NON_UNIQUE_APIC;
+-			return 1;
+-		}
+ 	}
+ 	return 0;
+ }
+ 
++static int is_uv_apic(char *oem_id, char *oem_table_id)
++{
++	return uv_system_type == UV_NON_UNIQUE_APIC;
++}
++
+ enum uv_system_type get_uv_system_type(void)
+ {
+ 	return uv_system_type;
+@@ -211,7 +214,7 @@ static void uv_send_IPI_self(int vector)
+ 
+ struct genapic apic_x2apic_uv_x = {
+ 	.name = "UV large system",
+-	.acpi_madt_oem_check = uv_acpi_madt_oem_check,
++	.acpi_madt_oem_check = is_uv_apic,
+ 	.int_delivery_mode = dest_Fixed,
+ 	.int_dest_mode = (APIC_DEST_PHYSICAL != 0),
+ 	.target_cpus = uv_target_cpus,
+Index: linux/arch/x86/mm/srat_64.c
+===================================================================
+--- linux.orig/arch/x86/mm/srat_64.c	2008-09-23 12:55:15.000000000 -0500
++++ linux/arch/x86/mm/srat_64.c	2008-09-23 12:55:19.000000000 -0500
+@@ -138,7 +138,7 @@ acpi_numa_processor_affinity_init(struct
+ 		return;
+ 	}
+ 
+-	if (is_uv_system())
++	if (get_uv_system_type() >= UV_X2APIC)
+ 		apic_id = (pa->apic_id << 8) | pa->local_sapic_eid;
+ 	else
+ 		apic_id = pa->apic_id;
+Index: linux/include/asm-x86/genapic_64.h
+===================================================================
+--- linux.orig/include/asm-x86/genapic_64.h	2008-09-23 12:55:15.000000000 -0500
++++ linux/include/asm-x86/genapic_64.h	2008-09-23 12:55:19.000000000 -0500
+@@ -46,6 +46,8 @@ extern void apic_send_IPI_self(int vecto
+ enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC, UV_NON_UNIQUE_APIC};
+ extern enum uv_system_type get_uv_system_type(void);
+ extern int is_uv_system(void);
++struct acpi_table_header;
++extern int uv_early_madt_oem_check(struct acpi_table_header *table);
+ 
+ extern struct genapic apic_x2apic_uv_x;
+ DECLARE_PER_CPU(int, x2apic_extra_bits);
