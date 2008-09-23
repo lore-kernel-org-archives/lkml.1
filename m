@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbYIWMKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752090AbYIWMQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752806AbYIWMKZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 08:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYIWMKP
+	id S1752090AbYIWMQP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 08:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbYIWMP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 08:10:15 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55099 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbYIWMKO (ORCPT
+	Tue, 23 Sep 2008 08:15:59 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50696 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbYIWMP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 08:10:14 -0400
-Subject: Re: [PATCH] CFS scheduler: documentation about scheduling policies
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Martin Steigerwald <ms@teamix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <200809231401.23432.ms@teamix.de>
-References: <200809231101.41624.ms@teamix.de>
-	 <200809231348.50834.ms@teamix.de> <20080923115045.GG14840@elte.hu>
-	 <200809231401.23432.ms@teamix.de>
-Content-Type: text/plain
-Date: Tue, 23 Sep 2008 14:10:11 +0200
-Message-Id: <1222171811.16700.76.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 23 Sep 2008 08:15:59 -0400
+Date: Tue, 23 Sep 2008 21:15:33 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] Report the pagesize backing a VMA in /proc/pid/smaps
+Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
+In-Reply-To: <1222102098.8533.62.camel@nimitz>
+References: <20080922162152.GB7716@csn.ul.ie> <1222102098.8533.62.camel@nimitz>
+Message-Id: <20080923211140.DC16.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-23 at 14:01 +0200, Martin Steigerwald wrote:
-> Am Dienstag, 23. September 2008 schrieb Ingo Molnar:
-> > * Martin Steigerwald <ms@teamix.de> wrote:
-> > > > please use -p1 to create patches - or since you've just set up the
-> > > > tip/master tracking, do something like:
-> > >
-> > > Okay, lets see how this works out.
-> > >
-> > > ---
-> > > From a57581d4ec3b13f63920b89c336ac9c93c6cf9f0 Mon Sep 17 00:00:00 2001
-> > > From: Martin Steigerwald <ms@teamix.de>
-> > > Date: Tue, 23 Sep 2008 13:45:46 +0200
-> > > Subject: [PATCH] CFS: Documentation about scheduling policies
-> >
-> > Applied to tip/sched/devel, merged it into tip/master and pushed the
-> > result out - thanks Martin.
-> >
-> > this was a perfect patch :)
+> > The corollary is that someone running with a 64K base page kernel may be
+> > surprised that the pagesize is always 4K. However I'll check if there is
+> > a simple way of checking out if the MMU size differs from PAGE_SIZE.
 > 
-> Thanks. Now I can learn how I can update my local tip-master ;-). Hmmm, git 
-> pull seemed to do the trick although it did not touch 
-> Documentation/scheduler/sched-design-CFS.txt again. Seems it detected that I 
-> applied the patch I sent you already.
+> Sure.  If it isn't easy, the best thing to do is probably just to
+> document the "interesting" behavior.
 
-'git remote update' will be best, 'git pull' only works if the
-underlying stuff never gets rebased.
+Dave, please let me know getpagesize() function return to 4k or 64k on ppc64.
+I think the PageSize line of the /proc/pid/smap and getpagesize() result should be matched.
+
+otherwise, enduser may be confused.
+
 
 
