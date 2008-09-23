@@ -1,167 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751741AbYIWJQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752341AbYIWJQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751741AbYIWJQR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 05:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbYIWJQG
+	id S1752341AbYIWJQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 05:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYIWJQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 05:16:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49966 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750838AbYIWJQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 05:16:03 -0400
-Date: Tue, 23 Sep 2008 11:15:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org, davej@redhat.com
-Subject: Re: [PATCH] raid: make RAID autodetect default a KConfig option
-Message-ID: <20080923091547.GF31189@elte.hu>
-References: <20080921154541.371f2ebe@infradead.org> <20080922082728.GB6601@elte.hu> <18648.26191.479291.883160@notabene.brown> <20080922205808.033436f7@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080922205808.033436f7@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 23 Sep 2008 05:16:38 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52315 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750899AbYIWJQh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 05:16:37 -0400
+Date: Tue, 23 Sep 2008 10:16:13 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext4: Use preallocation when reading from the
+ inode table
+Message-ID: <20080923101613.58768083@lxorguk.ukuu.org.uk>
+In-Reply-To: <E1KhvsB-0002Ik-Ex@closure.thunk.org>
+References: <E1KhvsB-0002Ik-Ex@closure.thunk.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 22 Sep 2008 20:35:23 -0400
+"Theodore Ts'o" <tytso@mit.edu> wrote:
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
-
-> On Tue, 23 Sep 2008 13:45:19 +1000
-> Neil Brown <neilb@suse.de> wrote:
 > 
-> > On Monday September 22, mingo@elte.hu wrote:
-> > > 
-> > > * Arjan van de Ven <arjan@infradead.org> wrote:
-> > > 
-> > > > From 812bf9a448d96375a3aec5c51764d74cace85abb Mon Sep 17 00:00:00
-> > > > 2001 From: Arjan van de Ven <arjan@linux.intel.com>
-> > > > Date: Sun, 21 Sep 2008 15:44:32 -0700
-> > > > Subject: [PATCH] raid: make RAID autodetect default a KConfig
-> > > > option
-> > > > 
-> > > > RAID autodetect has the side effect of requiring synchronisation
-> > > > of all device drivers, which can make the boot several seconds
-> > > > longer (I've measured 7 on one of my laptops).... even for
-> > > > systems that don't have RAID setup for the root filesystem (the
-> > > > only FS where this matters).
-> > > > 
-> > > > This patch makes the default for autodetect a config option;
-> > > > either way the user can always override via the kernel command
-> > > > line.
-> > > 
-> > > Neil, if you agree with this patch, could you please send your
-> > > Acked-by line? This patch depends on a clean-up in
-> > > init/do_mounts_md.c that is in the fastboot tree so it would be
-> > > logistically easier/better if we could queue this up towards
-> > > upstream via tip/fastboot.
-> > 
-> > Yes,
-> >  Acked-by: NeilBrown <neilb@suse.de>
-> > 
-> > I'm not a big fan of autodetect in any case, and this patch seems to
-> > cover all the bases I can think of.
-> > 
+> With modern hard drives, reading 64k takes roughly the same time as
+> reading a 4k block.  So request adjacent inode table blocks to reduce
+> the time it takes when iterating over directories (especially when doing
+> this in htree sort order) in a cold cache case.  With this patch, the
+> time it takes to run "git status" on a kernel tree after flushing the
+> caches via "echo 3 > /proc/sys/vm/drop_caches", is reduced by 21%.
 > 
-> thanks
-> pushed to
-> git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-fastboot.git
-> master
-> 
-> Ingo, please pull
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 
-pulled the commit below into tip/fastboot, thanks Arjan and Neil!
+Acked-by: Alan Cox <alan@redhat.com>
 
-	Ingo
+I'm actually suprised that 16 is the magic tuning number you've used and
+a bigger one isn't even more of a win
 
----------------->
->From da827bea62d62cabfe913e05fc05879faa614af8 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 21 Sep 2008 15:44:32 -0700
-Subject: [PATCH] raid: make RAID autodetect default a KConfig option
-
-RAID autodetect has the side effect of requiring synchronisation
-of all device drivers, which can make the boot several seconds longer
-(I've measured 7 on one of my laptops).... even for systems that don't
-have RAID setup for the root filesystem (the only FS where this matters).
-
-This patch makes the default for autodetect a config option; either way
-the user can always override via the kernel command line.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Acked-by: NeilBrown <neilb@suse.de>
----
- drivers/md/Kconfig  |   14 ++++++++++++++
- init/do_mounts_md.c |   11 +++++++++--
- 2 files changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/md/Kconfig b/drivers/md/Kconfig
-index 07d92c1..8e72c91 100644
---- a/drivers/md/Kconfig
-+++ b/drivers/md/Kconfig
-@@ -30,6 +30,20 @@ config BLK_DEV_MD
- 
- 	  If unsure, say N.
- 
-+config MD_AUTODETECT
-+	bool "Autodetect RAID arrays during kernel boot"
-+	depends on BLK_DEV_MD
-+	default y
-+	---help---
-+	  If you say Y here, then the kernel will try to autodetect raid
-+	  arrays as part of its boot process. 
-+
-+	  If you don't use raid and say Y, this autodetection can cause 
-+	  a several-second delay in the boot time due to various
-+	  synchronisation steps that are part of this step.
-+
-+	  If unsure, say Y.
-+
- config MD_LINEAR
- 	tristate "Linear (append) mode"
- 	depends on BLK_DEV_MD
-diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
-index c0dfd3c..48b3fad 100644
---- a/init/do_mounts_md.c
-+++ b/init/do_mounts_md.c
-@@ -12,7 +12,12 @@
-  * The code for that is here.
-  */
- 
--static int __initdata raid_noautodetect, raid_autopart;
-+#ifdef CONFIG_MD_AUTODETECT
-+static int __initdata raid_noautodetect;
-+#else
-+static int __initdata raid_noautodetect=1;
-+#endif
-+static int __initdata raid_autopart;
- 
- static struct {
- 	int minor;
-@@ -252,6 +257,8 @@ static int __init raid_setup(char *str)
- 
- 		if (!strncmp(str, "noautodetect", wlen))
- 			raid_noautodetect = 1;
-+		if (!strncmp(str, "autodetect", wlen))
-+			raid_noautodetect = 0;
- 		if (strncmp(str, "partitionable", wlen)==0)
- 			raid_autopart = 1;
- 		if (strncmp(str, "part", wlen)==0)
-@@ -288,7 +295,7 @@ void __init md_run_setup(void)
- 	create_dev("/dev/md0", MKDEV(MD_MAJOR, 0));
- 
- 	if (raid_noautodetect)
--		printk(KERN_INFO "md: Skipping autodetection of RAID arrays. (raid=noautodetect)\n");
-+		printk(KERN_INFO "md: Skipping autodetection of RAID arrays. (raid=autodetect will force)\n");
- 	else
- 		autodetect_raid();
- 	md_setup_drive();
+Alan
