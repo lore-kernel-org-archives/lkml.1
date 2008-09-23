@@ -1,58 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbYIWVwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYIWVyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755450AbYIWVwX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 17:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYIWVwK
+	id S1755438AbYIWVyc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 17:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbYIWVyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 17:52:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58177
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752505AbYIWVwJ (ORCPT
+	Tue, 23 Sep 2008 17:54:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51030 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751686AbYIWVyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 17:52:09 -0400
-Date: Tue, 23 Sep 2008 14:51:57 -0700 (PDT)
-Message-Id: <20080923.145157.136491514.davem@davemloft.net>
-To: cfriesen@nortel.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com, steffen.klassert@secunet.com
-Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48D92174.5010902@nortel.com>
-References: <48D80C9C.2070108@nortel.com>
-	<20080922.151233.229805934.davem@davemloft.net>
-	<48D92174.5010902@nortel.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 23 Sep 2008 17:54:22 -0400
+Date: Tue, 23 Sep 2008 14:53:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: sqazi@google.com (Salman Qazi)
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: mlock: Make the mlock system call interruptible by fatal
+ signals.
+Message-Id: <20080923145342.7a14fb4f.akpm@linux-foundation.org>
+In-Reply-To: <20080923213811.GA24086@google.com>
+References: <20080923213811.GA24086@google.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Chris Friesen" <cfriesen@nortel.com>
-Date: Tue, 23 Sep 2008 11:03:48 -0600
+On Tue, 23 Sep 2008 14:38:11 -0700
+sqazi@google.com (Salman Qazi) wrote:
 
-> That patch basically just picks an arbitrary cpu for each flow.
-> This would spread the load out across cpus, but it doesn't allow any
-> input from userspace.
+> 
+> Make the mlock system call interruptible by fatal signals, so that programs
+> that are mlocking a large number of pages terminate quickly when killed.
+> 
+> Signed-off-by: Salman Qazi <sqazi@google.com>
+> ---
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 72a15dc..a2531e6 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -807,7 +807,8 @@ static inline int handle_mm_fault(struct mm_struct *mm,
+>  }
+>  #endif
+>  
+> -extern int make_pages_present(unsigned long addr, unsigned long end);
+> +extern int make_pages_present(unsigned long addr, unsigned long end,
+> +			int interruptible);
+>  extern int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, int len, int write);
+>  
+>  int get_user_pages(struct task_struct *tsk, struct mm_struct *mm, unsigned long start,
+> diff --git a/mm/fremap.c b/mm/fremap.c
+> index 7881638..f5eff74 100644
+> --- a/mm/fremap.c
+> +++ b/mm/fremap.c
+> @@ -223,7 +223,7 @@ asmlinkage long sys_remap_file_pages(unsigned long start, unsigned long size,
+>  			downgrade_write(&mm->mmap_sem);
+>  			has_write_lock = 0;
+>  		}
+> -		make_pages_present(start, start+size);
+> +		make_pages_present(start, start+size, 0);
+>  	}
+>  
+>  	/*
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 1002f47..4088fd0 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1129,9 +1129,10 @@ static inline int use_zero_page(struct vm_area_struct *vma)
+>  	return !vma->vm_ops || !vma->vm_ops->fault;
+>  }
+>  
+> -int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+> -		unsigned long start, int len, int write, int force,
+> -		struct page **pages, struct vm_area_struct **vmas)
+> +static int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+> +			unsigned long start, int len, int write, int force,
+> +			struct page **pages, struct vm_area_struct **vmas,
+> +			int interruptible)
+>  {
+>  	int i;
+>  	unsigned int vm_flags;
+> @@ -1223,6 +1224,8 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+>  			cond_resched();
+>  			while (!(page = follow_page(vma, start, foll_flags))) {
+>  				int ret;
+> +				if (interruptible && fatal_signal_pending(tsk))
+> +					return -EINTR;
 
-With hardware RX flow seperation, the same exact thing happens.
+This isn't a terribly good interface.  Someone could now call
+__get_user_pages() with pages!=NULL and interruptible=1 and they would
+get a return value of -EINTR, even though some page*'s were placed in
+their pages array.
 
-> We have a current application where there are 16 cores and 16
-> threads. They would really like to be able to pin one thread to each
-> core and tell the kernel what packets they're interested in so that
-> the kernel can process those packets on that core to gain the
-> maximum caching benefit as well as reduce reordering issues.  In our
-> case the hardware supports filtering for multiqueues, so we could
-> pass this information down to the hardware to avoid software
-> filtering.
->
-> Either way, it requires some way for userspace to indicate interest
-> in a particular flow.  Has anyone given any thought to what an API
-> like this would look like?
+That caller now has no way of knowing how many pages need to be
+released to clean up.
 
-Many cards cannot configure this, but yes we should allow an interface to configure
-RX flow seperation preferences, and we do plan on adding that at some point.
+Can we do
 
-It's probably be an ethtool operation of some sort.  We already have a minimalistic
-RX flow hashing configuration knob, see ETHTOOL_GRXFH and ETHTOOL_SRXFH.
+	return i ? i : -EINTR;
+
+in the usual fashion?
