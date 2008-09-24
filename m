@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbYIXKFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbYIXKLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752974AbYIXKFt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 06:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYIXKFk
+	id S1752917AbYIXKLQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 06:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYIXKLC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 06:05:40 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:35455 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751685AbYIXKFk (ORCPT
+	Wed, 24 Sep 2008 06:11:02 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:37156 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751573AbYIXKLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 06:05:40 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <48D94B64.3070004@goop.org> <20080924084558.GD5576@elte.hu>
-Date: Wed, 24 Sep 2008 02:54:16 -0700
-In-Reply-To: <20080924084558.GD5576@elte.hu> (Ingo Molnar's message of "Wed,
-	24 Sep 2008 10:45:58 +0200")
-Message-ID: <m18wthna2f.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de, jeremy@goop.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.0997]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: Should irq_chip->mask disable percpu interrupts to all cpus, or just to this cpu?
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Wed, 24 Sep 2008 06:11:00 -0400
+Date: Wed, 24 Sep 2008 19:10:59 +0900 (JST)
+Message-Id: <20080924.191059.193698894.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Cc: agk@sourceware.org, balbir@linux.vnet.ibm.com, xemul@openvz.org,
+       kamezawa.hiroyu@jp.fujitsu.com, fernando@oss.ntt.co.jp
+Subject: [PATCH 0/8] I/O bandwidth controller and BIO tracking
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Hi everyone,
 
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->> Hi,
->> 
->> I'm reworking Xen's interrupt handling to isolate it a bit from the 
->> workings of the apic-based code, as Eric suggested a while back.
->> 
->> As I've mentioned before, Xen represents interrupts as event channels. 
->> There are two major classes of event channels: per-cpu and, erm, not 
->> percpu.  Per-cpu event channels are for things like timers and IPI 
->> function calls which are inherently per-cpu; it's meaningless to 
->> consider, for example, migrating them from cpu to cpu.  I guess 
->> they're analogous to the the local apic vectors.
->> 
->> (Non-percpu event channels can be bound to a particular cpu, and 
->> rebound at will; I'm not worried about them here.)
->> 
->> Previously I allocated an irq per percpu event channel per cpu.  This 
->> was pretty wasteful, since I need about 5-6 of them per cpu, so the 
->> number of interrupts increases quite quickly as cpus does.  There's no 
->> deep problem with that, but it gets fairly ugly in /proc/interrupts, 
->> and there's some tricky corners to manage in suspend/resume.
+These patchsets are the new releases of dm-ioband and bio-cgroup which
+are ported to 2.6.27-rc5-mm1.
 
-Every high performance device wants one irq per cpu.
-So if it gets ugly in /proc/interrupts we should look at fixing
-/proc/interrupts.
+dm-ioband
+  Dm-ioband is an I/O bandwidth controller implemented as a
+  device-mapper driver, which gives specified bandwidth to each job
+  running on the same block device. A job is a group of processes
+  with the same pid or pgrp or uid or a virtual machine such as KVM
+  or Xen. A job can also be a cgroup by applying the bio-cgroup patch.
 
-It looked like in Xen each of those interrupts were delivered
-to different event channels.  Did I misread that code?
+bio-cgroup
+  Bio-cgroup is a BIO tracking mechanism, which is implemented on the
+  cgroup memory subsystem. With the mechanism, it is able to determine
+  which cgroup each of bio belongs to, even when the bio is one of
+  delayed-write requests issued from a kernel thread such as pdflush.
 
-I really hate the notion of sharing a single irq_desc across
-multiple cpus as a preferred mode of operation.  As NUMA comes
-into play it guarantees we will have cross cpu memory fetches
-on a fast path for irq handling.
+The following is a list of patches:
 
-Other than the beautiful way we print things in /proc/interrupts
-IRQ_PER_CPU feels like a really bad idea.  Especially in that
-it enshrines the nasty per cpu irq counters that scale horribly.
+  [PATCH 1/8] dm-ioband: Patch of device-mapper driver
+  [PATCH 2/8] dm-ioband: Documentation of design overview, installation,
+                         command reference and examples.
+  [PATCH 3/8] bio-cgroup: Introduction
+  [PATCH 4/8] bio-cgroup: Split the cgroup memory subsystem into two parts
+  [PATCH 5/8] bio-cgroup: Remove a lot of "#ifdef"s
+  [PATCH 6/8] bio-cgroup: Implement the bio-cgroup
+  [PATCH 7/8] bio-cgroup: Add a cgroup support to dm-ioband
+  [PATCH 8/8] bio-cgroup: Dirty page tracking
 
-Eric
+Please see the following site for more information:
+  Linux Block I/O Bandwidth Control Project
+  http://people.valinux.co.jp/~ryov/bwctl/
+
+Thanks,
+Ryo Tsuruta
