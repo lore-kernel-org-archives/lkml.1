@@ -1,110 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYIXUre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbYIXUrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbYIXUre (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 16:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYIXUrW
+	id S1755312AbYIXUrw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 16:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYIXUrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 16:47:22 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47593 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753742AbYIXUrU (ORCPT
+	Wed, 24 Sep 2008 16:47:42 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:52980 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752721AbYIXUrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 16:47:20 -0400
-Date: Wed, 24 Sep 2008 16:47:17 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com>
-References: <20080924051056.650388887@goodmis.org>  <20080924051400.195780424@goodmis.org>  <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
- <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com> <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com> <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 24 Sep 2008 16:47:41 -0400
+Date: Wed, 24 Sep 2008 16:47:15 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: David Miller <davem@davemloft.net>, airlied@gmail.com, jkosina@suse.cz,
+       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       chrisl@vmware.com
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+Message-ID: <20080924204715.GL9929@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jonathan Corbet <corbet@lwn.net>,
+	David Miller <davem@davemloft.net>, airlied@gmail.com,
+	jkosina@suse.cz, jeffrey.t.kirsher@intel.com, david.vrabel@csr.com,
+	rjw@sisk.pl, linux-kernel@vger.kernel.org,
+	kernel-testers@vger.kernel.org, chrisl@vmware.com
+References: <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz> <20080923.211215.193696086.davem@davemloft.net> <21d7e9970809232245x6a91c6e2l552ff039d07e2017@mail.gmail.com> <20080924.003638.71148740.davem@davemloft.net> <20080924102730.31ee305a@bike.lwn.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080924102730.31ee305a@bike.lwn.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 24 Sep 2008, Linus Torvalds wrote:
-
+On Wed, Sep 24, 2008 at 10:27:30AM -0600, Jonathan Corbet wrote:
+> On Wed, 24 Sep 2008 00:36:38 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
 > 
+> > I'm about to leave for a week or so in Paris for the netfilter
+> > workshop, so I hope that someone other than myself will do some data
+> > mining like I have instead of (merely) tossing theories around and
+> > finger pointing.
 > 
-> On Wed, 24 Sep 2008, Steven Rostedt wrote:
-> 
-> > I will now have a ring_buffer API, which will do basic recording. It will 
-> > have two modes when allocated. Fixed sized entry mode where you can just 
-> > put whatever you want in (I'm still aligning everything by 8 bytes, just 
-> > since memory is cheap). Or you can have variable length mode that will 
-> > make the following event header:
-> > 
-> > struct {
-> > 	unsigned char length;
-> > 	unsigned char buff[];
-> > };
-> 
-> So the only reason I'm not thrilled with this is that I really think that 
-> timestamping should be inherent, and at the lowest level.
+> A data point, just in case it helps...  I've not had time to update my
+> desktop system, so this all-Intel, ICH9, e1000e-based box has been stuck
+> at 2.6.27-rc3.  It has rawhide as of shortly after the floodgates
+> reopened (but with my own kernel); that means X server 1.5.0 and i810
+> 2.4.2-3.
 
-OK, then how about this?
+I'm running a 2.6.26-rc6 kernel on a X61s laptop, which is an
+all-Intel ICH8, using the e1000e driver, and I haven't been been
+bitten with the problem either.  I'm using an Ubuntu Hardy userspace,
+which means I'm using an 1.4.0.90 X Server with an i915 drm version
+1.6.0 20060119, and my e1000 EEPROM hasn't been blasted to oblivion
+yet!
 
-Each page will start with a time stamp (I'm still aligning everything by 8 
-bytes, just because it simplifies things). Then we can have a 3 byte
-(24 bit) counter offset? Then we can have a header that looks like:
+Personally, I don't plan on upgrading to a newer userspace until we
+figure out what the heck is going on.  :-)
 
-struct {
-	unsigned char time[3];
-	unsigned char length;
-	unsigned char buff[];
-};
-
-This still allows me to have the 2048 byte size buffer.
-
-Or is 24 bits for time too small? The offest will be from the previous
-entry, and not the beginning of the page.
-
-If one defines a fixed size entry, we could just use the full 32 bits for 
-the timestamp, since the length will be ignored in that case, and will 
-become part of the buffer.
-
-Hence,
-
-struct {
-	unsigned int time;
-	unsigned char length;
-	unsigend char buff[];
-};
-
-
-
-> 
-> Without timestamping, what's the real point? EVERYBODY eventually wants a 
-> timestamp. We added it even to the kernel printk()'s. People want them for 
-> network packets to user space. X wants it for all its events. It's one of 
-> those things that people never do from the beginning, but that everybody 
-> eventually wants anyway.
-
-OK, I'll hack something up like this.
-
-> 
-> So I certainly don't mind layering, but I *do* mind it if it then means 
-> that some people will use a broken model and not have timestamps. So I 
-> think the timestamping code should just be there - without it, a trace 
-> buffer is pointless.
-
-OK, the bottom layer will have some kind of timestamps. Now we only need 
-to agree on what the header will look like.
-
-Thanks,
-
--- Steve
-
+					- Ted
