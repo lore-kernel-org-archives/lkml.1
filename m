@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYIXXVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372AbYIXXWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014AbYIXXVg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 19:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYIXXVZ
+	id S1753372AbYIXXWe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 19:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYIXXWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 19:21:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46244
+	Wed, 24 Sep 2008 19:22:22 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46250
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752082AbYIXXVZ (ORCPT
+	by vger.kernel.org with ESMTP id S1752276AbYIXXWV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 19:21:25 -0400
-Date: Wed, 24 Sep 2008 16:21:12 -0700 (PDT)
-Message-Id: <20080924.162112.127047035.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, torvalds@gtf.org,
-       akpm@linux-foundation.org
-Subject: Re: [git patches] net driver updates for .28
+	Wed, 24 Sep 2008 19:22:21 -0400
+Date: Wed, 24 Sep 2008 16:22:10 -0700 (PDT)
+Message-Id: <20080924.162210.113237792.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-09-24
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080924230710.GA22856@havoc.gtf.org>
-References: <20080924230710.GA22856@havoc.gtf.org>
+In-Reply-To: <20080924231720.GD3639@tuxdriver.com>
+References: <20080924231720.GD3639@tuxdriver.com>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,12 +27,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Wed, 24 Sep 2008 19:07:10 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Wed, 24 Sep 2008 19:17:33 -0400
 
-> Please pull from 'davem-next' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-next
+> One more for 2.6.27 -- a fix for a possible interrupt storm.  There is
+> even a link in the commit log to a youtube video of the storm in
+> progress. :-)
 > 
-> to receive the following updates:
+> Let me know if there are problems!
 
-Pulled and pushed back out to net-next-2.6, thanks!
+Pulled, thanks John.
