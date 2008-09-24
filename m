@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753693AbYIXVR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYIXVSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753693AbYIXVR7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 17:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYIXVRv
+	id S1754099AbYIXVSW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 17:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYIXVRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 17:17:51 -0400
-Received: from gate.crashing.org ([63.228.1.57]:43525 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbYIXVRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 17:17:51 -0400
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
-	hardirq preemption
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: Milton Miller <miltonm@bga.com>, Jan-Bernd Themann <ossthema@de.ibm.com>,
-       Christoph Raisch <RAISCH@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080924143552.29a14f10@bull.net>
-References: <200809231743.23828.ossthema@de.ibm.com>
-	 <20080915100406.342e027a@bull.net>
-	 <200809240958.m8O9wM7k010996@sullivan.realtime.net>
-	 <1222251467.8277.73.camel@pasglop>  <20080924143552.29a14f10@bull.net>
-Content-Type: text/plain
-Date: Thu, 25 Sep 2008 07:15:17 +1000
-Message-Id: <1222290917.8277.83.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Sep 2008 17:17:55 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:41582 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753162AbYIXVRy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 17:17:54 -0400
+Date: Wed, 24 Sep 2008 17:17:52 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Martin Bligh <mbligh@google.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0809241712270.10631@gandalf.stny.rr.com>
+References: <20080924051056.650388887@goodmis.org>  <20080924051400.195780424@goodmis.org>  <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
+  <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com>  <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>  <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> 
+ <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-24 at 14:35 +0200, Sebastien Dugue wrote:
-> Hi Ben,
-> 
-> On Wed, 24 Sep 2008 20:17:47 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > On Wed, 2008-09-24 at 04:58 -0500, Milton Miller wrote:
-> > > The per-interrupt mask and unmask calls have to go through RTAS, a
-> > > single-threaded global context, which in addition to increasing
-> > > path length will really limit scalability.  The interrupt controller
-> > > poll and reject facilities are accessed through hypervisor calls
-> > > which are comparable to a fast syscall, and parallel to all cpus.
-> > 
-> > Note also that the XICS code thus assumes, iirc, as does the cell IIC
-> > code, that eoi is called on the -same- cpu that fetched the interrupt
-> > initially. That assumption can be broken with IRQ threads no ?
-> 
->   No, the fetch and the eoi are both done in interrupt context before
-> the hardirq thread is woken up.
-> 
->   On the other hand, the mask+eoi and the unmask may well happen
-> on different cpus as there's only one hardirq thread per irq on
-> the system. Don't know if this is a problem with the XICS though.
 
-Ok, that's the right approach then. It should work. I don't know what
-the specific problems with HEA are at this stage. It doesn't seem to
-make sense to implement a set_irq_type(), what would it do ? The
-XICS doesn't expose any concept of interrupt type...
+On Wed, 24 Sep 2008, Martin Bligh wrote:
+> 
+> How about we just steal 5 bits from the timestamp to indicate event
+> lengths up to 32 bytes, and if it's 0, that means there's a length
+> field following? Also that'd mean you could use a longer length field
+> and get beyond 256 bytes to 4096, without impacting most events.
+> 
+> struct {
+>         u32 length:5, time_delta:27;
 
-Ben.
+I think you mean this is where length == 0 ;-)
+
+>         u16 length;
+>         u8 buf[];
+> };
+> 
+> struct {
+>         u32 length:5, time_delta:27;        /* where length == 0 */
+>         u8 buf[];
+> };
+> 
+> Obviously we could less than 5 bits, even just 1 for a flag ...
+> 
+
+OK then. Since I like the idea of aligning the buffer to 8 bytes, we can 
+always shift the length field by 3. So...
+
+For records 256 bytes or less, we only have:
+
+struct {
+	u32 length:5, time_delta: 27;
+	u8 buf[];
+};
+
+For 257 bytes or more we have:
+
+struct {
+	u32 length:5 (=0), time_delta: 27;
+	u16 large_length;
+	u8 buf[];
+};
+
+This is what you want?
+
+-- Steve
 
