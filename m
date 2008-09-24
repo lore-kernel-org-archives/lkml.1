@@ -1,158 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYIXQvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbYIXQw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbYIXQvo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 12:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbYIXQvf
+	id S1755013AbYIXQw7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 12:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYIXQwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 12:51:35 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:43258 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751517AbYIXQve (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 12:51:34 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqYEALYK2khMQWq+/2dsb2JhbACBXrwIgWU
-Date: Wed, 24 Sep 2008 12:51:31 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Martin Bligh <mbligh@google.com>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-Message-ID: <20080924165131.GA1045@Krystal>
-References: <20080924051056.650388887@goodmis.org> <20080924051400.195780424@goodmis.org> <1222268595.16700.149.camel@lappy.programming.kicks-ass.net> <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com> <20080924161347.GA31451@Krystal> <1222274361.16700.182.camel@lappy.programming.kicks-ass.net>
+	Wed, 24 Sep 2008 12:52:50 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:52420 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752341AbYIXQwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 12:52:50 -0400
+Date: Wed, 24 Sep 2008 20:58:42 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Chad Zanonie <chad.zanonie@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       rientjes@google.com
+Subject: Re: + mm-oom-killer-kills-more-than-needed.patch added to -mm tree
+Message-ID: <20080924165842.GA5355@tv-sign.ru>
+References: <200809222238.m8MMcgAp001695@imap1.linux-foundation.org> <20080923124035.GA253@tv-sign.ru> <2137b82d0809231025n359b3f59h53714d5acabd2107@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1222274361.16700.182.camel@lappy.programming.kicks-ass.net>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:41:24 up 111 days, 21:21,  8 users,  load average: 1.54, 0.97,
-	0.83
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <2137b82d0809231025n359b3f59h53714d5acabd2107@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Wed, 2008-09-24 at 12:13 -0400, Mathieu Desnoyers wrote:
-> > * Martin Bligh (mbligh@google.com) wrote:
-> > > Thanks for creating this so quickly ;-)
-> > > 
-> > > >> We can record either the fast way of reserving a part of the buffer:
-> > > >>
-> > > >> event = ring_buffer_lock_reserve(buffer, event_id, length, &flags);
-> > > >> event->data = record_this_data;
-> > > >> ring_buffer_unlock_commit(buffer, event, flags);
-> > > >
-> > > > This can, in generic, not work. Due to the simple fact that we might
-> > > > straddle a page boundary. Therefore I think its best to limit our self
-> > > > to the write interface below, so that it can handle that.
-> > > 
-> > > I'm not sure why this is any harder to deal with in write, than it is
-> > > in reserve? We should be able to make reserve handle this just
-> > > as well?
-> > > 
-> > > If you use write rather than reserve, you have to copy all the data
-> > > twice for every event.
-> > > 
-> > 
-> > I think we all agree that a supplementary copy is no wanted, but I think
-> > this question is orthogonal to having a write wrapper. 
-> 
-> >  This reserve/commit mechanism
-> > deals with synchronization (cli/spinlock or cmpxchg_local scheme...).
-> 
-> Right
-> 
-> > We can then use this offset to see in which page(s) we have to write.
-> > This offset + len can in fact cross multiple page boundaries.
-> 
-> Sure
-> 
-> > Doing this elegantly could involve a page array that would represent the
-> > buffer data :
-> > 
-> > struct page **buffer;
-> 
-> I really don't like the page array, but we can do without..
-> 
-> > And be given as parameter to the read() and write() methods, which would
-> > deal with page-crossing.
-> > 
-> > e.g.
-> 
-> > size_t write(struct page **buffer, size_t woffset, void *data, size_t len);
-> > 
-> > Therefore, we could have code which writes in the buffers, without extra
-> > copy, and without using vmap, in multiple writes for a single event,
-> > which would deal with data alignment, e.g. :
-> > 
-> > size_t woffset, evsize = 0;
-> > 
-> > evsize += write(NULL, evsize, &var1, sizeof(var1));
-> > evsize += write(NULL, evsize, &var2, sizeof(var2));
-> > evsize += write(NULL, evsize, &var3, sizeof(var3));
-> > 
-> > woffset = reserve(..., evsize);
-> > 
-> > woffset += write(buffer, woffset, &var1, sizeof(var1));
-> > woffset += write(buffer, woffset, &var2, sizeof(var2));
-> > woffset += write(buffer, woffset, &var3, sizeof(var3));
-> > 
-> > commit(..., evsize);
-> > 
-> > Does that make sense ?
-> 
-> Yes, we can do the sub-write, how about:
-> 
-> struct ringbuffer_write_state 
-> ringbuffer_write_start(struct ringbuffer *buffer, unsigned long size);
-> 
-> int ringbuffer_write(struct ringbuffer_write_state *state, 
->                      const void *buf, unsigned long size);
-> 
-> void ringbuffer_write_finish(struct ringbuffer_write_state *state);
-> 
-> 
-> That way write_start() can do the reserve and set a local write
-> iterator. write() can then do whatever, either the direct copy of break
-> it up - will error on overflowing the reserved size. write_finish() will
-> clean up (sti, preempt_enable etc..)
-> 
+On 09/23, Chad Zanonie wrote:
+>
+> On Tue, Sep 23, 2008 at 5:40 AM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> > On 09/22, Andrew Morton wrote:
+> >>
+> >> ------------------------------------------------------
+> >> Subject: mm: oom-killer kills more than needed
+> >> From: "Chad Zanonie" <chad.zanonie@gmail.com>
+> >>
+> >> Possibility exists for an exiting application to be in between marking its
+> >> mm NULL and calling mmput when out_of_memory is invoked.
+> >> select_bad_process() will continue past this process as opposed to
+> >> returning -1UL due to its mm being NULL.  This causes the oom killer in
+> >> certain scenarios to not only kill the memory culprit, but also kill the
+> >> runner up.
+> >>
+> >> EXIT_DEAD seems to be the only flag that guarantees that mmput() has
+> >> finished.
+> >
+> > I don't think this is right.
+> >
+> > Let's suppose we have a single zombie. Now select_bad_process() always
+> > returns -1 ? IOW, doesn't this means that, say,
+> >
+> >        $ perl -e 'fork && sleep'
+> >
+> > disables oom-kill completely and forever?
+>
+> Ugh, looks like my description was slightly incorrect. I don't mean
+> for it to return -1 upon noticing a null mm. I mean for
+> select_bad_process to not skip (continue) over processes that haven't
+> provably finished unmapping their memory
 
-Yup, that looks neat. I don't know if it's worth separating data
-alignment concerns from this part of the infrastructure so it stays
-simple. OTOH, embedding automatic alignment of data elements would be
-easy to do here, e.g. :
+Yes I see. But if select_bad_process() sees the PF_EXITING task it returns
+-1 (unless the task == current). So, with this change select_bad_process()
+will return -1 more often, because it doesn't skip the tasks without ->mm.
+And of course, !mm implies PF_EXITING.
 
-struct ringbuffer_write_state 
-ringbuffer_write_start(struct ringbuffer *buffer, unsigned long size);
+I don't claim this is wrong. Unless we use EXIT_DEAD as the patch did, in
+that case the 'fork && sleep' above really disables oom-kill.
 
-int ringbuffer_write(struct ringbuffer_write_state *state, 
-                     const void *buf,
-                     unsigned long size,
-                     unsigned long alignment);
+I must admit I don't understand why this change is good but this does not
+matter, I don't understand oom-kill anyway (but I think it has numerous
+bugs ;).
 
-#define ringbuffer_compute_size(size, alignment) \
-  ringbuffer_write(NULL, NULL, size, alignment)
+> Before I propagate this blunder anymore, I've found the root of my mistake.
+>
+> I really mean TASK_DEAD, not EXIT_DEAD.
+>
+> (p->state & TASK_DEAD)
 
-void ringbuffer_write_finish(struct ringbuffer_write_state *state);
+Yes, this should work. But I think this "defers" the decision too far.
 
-So ringbuffer_compute_size could be useds to compute the total slot size
-needed to write the event before doing the ringbuffer_write_start(). It
-would be good to keep ringbuffer_write() mostly as a static inline so
-the compiler could statically compile in much of these operations.
+You can check "p->exit_state != 0". But still this is a bit strange,
+and needs a comment. For example, you can check p->files == NULL with
+the same effect to verify that the task has already passed
+exit_mm()->mmput().
 
-Mathieu
+The task can spend a lot of time before it sets TASK_DEAD or ->exit_state,
+and again, during this time oom-kill will be "disabled". Contrary,
+the window between "tsk->mm = NULL;" and mmput() in exit_mm() is very
+small. Well, unless CONFIG_MM_OWNER.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+In short, I can't judge this patch, but could you please improve the
+changelog?
+
+Oleg.
+
