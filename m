@@ -1,97 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbYIXQw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYIXQzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755013AbYIXQw7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 12:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYIXQwu
+	id S1754727AbYIXQzT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 12:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYIXQzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 12:52:50 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:52420 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752341AbYIXQwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 12:52:50 -0400
-Date: Wed, 24 Sep 2008 20:58:42 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Chad Zanonie <chad.zanonie@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       rientjes@google.com
-Subject: Re: + mm-oom-killer-kills-more-than-needed.patch added to -mm tree
-Message-ID: <20080924165842.GA5355@tv-sign.ru>
-References: <200809222238.m8MMcgAp001695@imap1.linux-foundation.org> <20080923124035.GA253@tv-sign.ru> <2137b82d0809231025n359b3f59h53714d5acabd2107@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2137b82d0809231025n359b3f59h53714d5acabd2107@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	Wed, 24 Sep 2008 12:55:03 -0400
+Received: from styx.suse.cz ([82.119.242.94]:59613 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752036AbYIXQzC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 12:55:02 -0400
+Date: Wed, 24 Sep 2008 18:56:01 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jonathan Corbet <corbet@lwn.net>
+cc: David Miller <davem@davemloft.net>, airlied@gmail.com,
+       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       chrisl@vmware.com
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+In-Reply-To: <20080924102730.31ee305a@bike.lwn.net>
+Message-ID: <alpine.LNX.1.10.0809241852230.4671@pegasus.suse.cz>
+References: <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz> <20080923.211215.193696086.davem@davemloft.net> <21d7e9970809232245x6a91c6e2l552ff039d07e2017@mail.gmail.com> <20080924.003638.71148740.davem@davemloft.net>
+ <20080924102730.31ee305a@bike.lwn.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/23, Chad Zanonie wrote:
->
-> On Tue, Sep 23, 2008 at 5:40 AM, Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> > On 09/22, Andrew Morton wrote:
-> >>
-> >> ------------------------------------------------------
-> >> Subject: mm: oom-killer kills more than needed
-> >> From: "Chad Zanonie" <chad.zanonie@gmail.com>
-> >>
-> >> Possibility exists for an exiting application to be in between marking its
-> >> mm NULL and calling mmput when out_of_memory is invoked.
-> >> select_bad_process() will continue past this process as opposed to
-> >> returning -1UL due to its mm being NULL.  This causes the oom killer in
-> >> certain scenarios to not only kill the memory culprit, but also kill the
-> >> runner up.
-> >>
-> >> EXIT_DEAD seems to be the only flag that guarantees that mmput() has
-> >> finished.
-> >
-> > I don't think this is right.
-> >
-> > Let's suppose we have a single zombie. Now select_bad_process() always
-> > returns -1 ? IOW, doesn't this means that, say,
-> >
-> >        $ perl -e 'fork && sleep'
-> >
-> > disables oom-kill completely and forever?
->
-> Ugh, looks like my description was slightly incorrect. I don't mean
-> for it to return -1 upon noticing a null mm. I mean for
-> select_bad_process to not skip (continue) over processes that haven't
-> provably finished unmapping their memory
+On Wed, 24 Sep 2008, Jonathan Corbet wrote:
 
-Yes I see. But if select_bad_process() sees the PF_EXITING task it returns
--1 (unless the task == current). So, with this change select_bad_process()
-will return -1 more often, because it doesn't skip the tasks without ->mm.
-And of course, !mm implies PF_EXITING.
+> A data point, just in case it helps...  I've not had time to update my 
+> desktop system, so this all-Intel, ICH9, e1000e-based box has been stuck 
+> at 2.6.27-rc3.  It has rawhide as of shortly after the floodgates 
+> reopened (but with my own kernel); that means X server 1.5.0 and i810 
+> 2.4.2-3.
+> It's happy as a clam. I'm not sure how often this problem bites, but it
+> hasn't gotten me.
 
-I don't claim this is wrong. Unless we use EXIT_DEAD as the patch did, in
-that case the 'fork && sleep' above really disables oom-kill.
+Thanks for the information.
 
-I must admit I don't understand why this change is good but this does not
-matter, I don't understand oom-kill anyway (but I think it has numerous
-bugs ;).
+Seems like it quite often triggers during the very first probing of 
+graphics card during the initial X startup. Karsten is currently writing a 
+tool that will safely restore the EEPROM contents to the card. When this 
+gets done, testing will get much easier and hopefully we'll be able to 
+isolate whether it is e1000e driver (I currently don't think so), DRM 
+kernel code, or xorg 7.4 causing this.
 
-> Before I propagate this blunder anymore, I've found the root of my mistake.
->
-> I really mean TASK_DEAD, not EXIT_DEAD.
->
-> (p->state & TASK_DEAD)
+Thanks,
 
-Yes, this should work. But I think this "defers" the decision too far.
-
-You can check "p->exit_state != 0". But still this is a bit strange,
-and needs a comment. For example, you can check p->files == NULL with
-the same effect to verify that the task has already passed
-exit_mm()->mmput().
-
-The task can spend a lot of time before it sets TASK_DEAD or ->exit_state,
-and again, during this time oom-kill will be "disabled". Contrary,
-the window between "tsk->mm = NULL;" and mmput() in exit_mm() is very
-small. Well, unless CONFIG_MM_OWNER.
-
-
-In short, I can't judge this patch, but could you please improve the
-changelog?
-
-Oleg.
-
+-- 
+Jiri Kosina
+SUSE Labs
