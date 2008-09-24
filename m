@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbYIXFzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYIXF52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577AbYIXFzr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 01:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbYIXFzj
+	id S1754141AbYIXF52 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 01:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYIXF5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 01:55:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51049 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750938AbYIXFzi (ORCPT
+	Wed, 24 Sep 2008 01:57:20 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:59559 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbYIXF5T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 01:55:38 -0400
-Date: Tue, 23 Sep 2008 22:54:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Hugh Dickins <hugh@veritas.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [PATCH 2/3] corruption check: run the corruption checks from a
- work queue
-Message-Id: <20080923225452.e93186c0.akpm@linux-foundation.org>
-In-Reply-To: <20080923215413.0da97008@infradead.org>
-References: <20080923215335.05678239@infradead.org>
-	<20080923215413.0da97008@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 24 Sep 2008 01:57:19 -0400
+Message-ID: <48D9D666.8010402@oss.ntt.co.jp>
+Date: Wed, 24 Sep 2008 14:55:50 +0900
+From: Kazuo Ito <ito.kazuo@oss.ntt.co.jp>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: device-mapper development <dm-devel@redhat.com>
+CC: 7eggert@gmx.de, kjamieson@bycast.com, linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: [PATCH] dm-snapshot: poor copy-on-write performance
+ due to I/O reordering
+References: <bd0gX-4ma-13@gated-at.bofh.it>	<E1KfzFv-00041e-8A@be1.7eggert.dyndns.org> <48D1AA84.3050603@oss.ntt.co.jp>
+In-Reply-To: <48D1AA84.3050603@oss.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008 21:54:13 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+Hello,
 
-> 
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Mon, 22 Sep 2008 13:42:15 -0700
-> Subject: [PATCH] corruption check: run the corruption checks from a work queue
-> 
-> the corruption checks are better off run from a work queue; there's nothing
-> time critical about them and this way the amount of interrupt-context work
-> is reduced.
-> 
-> ...
->
-> +int start_periodic_check_for_corruption(void)
->  {
->  	if (!memory_corruption_check || corruption_check_period == 0)
-> -		return;
-> +		return 0;
->  
->  	printk(KERN_INFO "Scanning for low memory corruption every %d seconds\n",
->  	       corruption_check_period);
->  
->  	init_timer(&periodic_check_timer);
->  	periodic_check_timer.function = &periodic_check_for_corruption;
-> -	periodic_check_for_corruption(0);
-> +	mod_timer(&periodic_check_timer,
-> +			round_jiffies(jiffies + corruption_check_period*HZ));
-> +	return 0;
->  }
+ > Bodo Eggert wrote:
+ >> Kazuo Ito <ito.kazuo@oss.ntt.co.jp> wrote:
+ >>
+ >>> Write throughput to LVM snapshot origin volume is an order
+ >>> of magnitude slower than those to LV without snapshots or
+ >>> snapshot target volumes, especially in the case of sequential
+ >>> writes with O_SYNC on.
+ >>>
+ >>> The following patch originally written by Kevin Jamieson and
+ >>> Jan Blunck and slightly modified for the current RCs by myself
+ >>> tries to improve the performance by modifying the behaviour
+ >>> of kcopyd, so that it pushes back an I/O job to the head of
+ >>> the job queue instead of the tail as process_jobs() currently
+ >>> does when it has to wait for free pages. This way, write
+ >>> requests aren't shuffled to cause extra seeks.
+ >>
+ >> Did you check for starvation problems, too?
 
-Could use schedule_delayed_work() and zap the timer altogether?
+I have twice and four times as many pages allocated
+to each kcopyd client without patching the queuing behaviour
+and got these figures (MiB/s) -- allocating more buffers doesn't
+seem to help much, so I don't think it's memory shortage
+that matters here.
 
+test \ # of buffer pages   256(default)      512        1024
+  10M dd+fsync, create        16.00          18.60      18.95
+  10M dd+fsync, update        16.14          18.39      19.70
+100M dd+fsync, create        15.18          18.80      19.29
+100M dd+fsync, update        15.28          19.29      19.45
+
+--
+> Kazuo Ito, NTT Open Source Software Center
+> Phone: +81-3-5860-5125 / FAX: +81-3-5463-5690 / E-mail: 
+> ito.kazuo@oss.ntt.co.jp
 
