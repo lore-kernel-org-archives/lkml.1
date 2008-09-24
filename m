@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYIXUTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754370AbYIXUV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbYIXUTi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 16:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYIXUT1
+	id S1754370AbYIXUV5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 16:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYIXUVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 16:19:27 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:35023 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752160AbYIXUT1 (ORCPT
+	Wed, 24 Sep 2008 16:21:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43590 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752160AbYIXUVs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 16:19:27 -0400
-Date: Wed, 24 Sep 2008 22:19:03 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: John Gumb <john.gumb@tandberg.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>
-Subject: Re: D945GCLF  intel atom board & r8169 ethernet broken in
-	linux-2.6.27-rc5??
-Message-ID: <20080924201903.GA10546@electric-eye.fr.zoreil.com>
-References: <9F6ACAE02B6DD040A1E259977622CFDB03F5BCCB@oslexcp1.eu.tandberg.int>
+	Wed, 24 Sep 2008 16:21:48 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH 08/18] lirc driver for the Soundgraph IMON IR Receivers
+Date: Wed, 24 Sep 2008 16:21:38 -0400
+User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>
+References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <20080910150229.2b4f990d@bike.lwn.net> <200809221747.57170.jwilson@redhat.com>
+In-Reply-To: <200809221747.57170.jwilson@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <9F6ACAE02B6DD040A1E259977622CFDB03F5BCCB@oslexcp1.eu.tandberg.int>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200809241621.38715.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Gumb <john.gumb@tandberg.com> :
-[...]
-> With linux-2.6.27-rc5, "ifconfig eth0" just hangs. lspci -vvx reports,
-> after loading the driver,
-> 
-> > 01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E
-> PCI Express Fast Ethernet controller (rev ff) (prog-if ff)
-> >       !!! Unknown header type 7f
-> 00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-> 10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-> 20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-> 30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff  
-> 
-> Before I load the driver lspci -vvx looks OK.
+On Monday 22 September 2008 17:47:56 Jarod Wilson wrote:
+> > > +/**
+> > > + * Called by lirc_dev when the application opens /dev/lirc
+> > > + */
+> > > +static int ir_open(void *data)
+> > > +{
+> > > +   int retval = SUCCESS;
+> > > +   struct imon_context *context;
+> > > +
+> > > +   /* prevent races with disconnect */
+> > > +   down(&disconnect_sem);
+> > > +
+> > > +   context = (struct imon_context *) data;
+> > > +
+> > > +   LOCK_CONTEXT;
+> > > +
+> > > +   if (context->ir_isopen) {
+> > > +           err("%s: IR port is already open", __func__);
+> > > +           retval = -EBUSY;
+> > > +           goto exit;
+> > > +   }
+> >
+> > I wonder if the single-open semantics are really doing what the author
+> > intended?  It is unsufficient to prevent concurrent calls elsewhere.
+>
+> I think we're good to go with disconnect_sem being converted to an actual
+> mutex, no?
 
-It is probably the driver's responsibility then.
-
-> I do not have (much) time to look into this any further but hopefully
-> this might help someone.
-
-Can you try patches #0001 .. #0008 at
-http://userweb.kernel.org/~romieu/r8169/2.6.27-rc6/20080913/ ?
+No. The lock here is worthless, as is the check for context->ir_isopen, as 
+this function *only* gets called with the driver_lock held in lirc_dev, and 
+lirc_dev won't call this if the device is already open. I've simply dropped 
+the context lock, as its not needed at all (and in fact, triggered lockdep 
+spew).
 
 -- 
-Ueimor
+Jarod Wilson
+jarod@redhat.com
+
