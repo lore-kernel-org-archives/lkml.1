@@ -1,84 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbYIXUZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbYIXUa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887AbYIXUZu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 16:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYIXUZm
+	id S1754152AbYIXUa5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 16:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYIXUau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 16:25:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57222 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752034AbYIXUZl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 16:25:41 -0400
-Date: Wed, 24 Sep 2008 13:23:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>
-Message-ID: <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>
-References: <20080924051056.650388887@goodmis.org>  <20080924051400.195780424@goodmis.org>  <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
- <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com> <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 24 Sep 2008 16:30:50 -0400
+Received: from 1wt.eu ([62.212.114.60]:4468 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752189AbYIXUat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 16:30:49 -0400
+Date: Wed, 24 Sep 2008 22:30:44 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: yun lin <liny.linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Virtual Memory problem in kernel 2.4.18xsmp
+Message-ID: <20080924203044.GF24654@1wt.eu>
+References: <43c7dbff0809170711h3a48ff4ia3e6d89838868103@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43c7dbff0809170711h3a48ff4ia3e6d89838868103@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+On Wed, Sep 17, 2008 at 10:11:31PM +0800, yun lin wrote:
+> Hi all,
+>    I am using redhat 8 (kernel 2.4.18 xsmp) on an old cluster (2CPU
+> each nodes, 2GB RAM, 4GB swap and NFS). Recently I had encountered a
+> problem about virtual memory. A parallel program terminated with
+> Segmentation fault (Signal 11). While using gdb to debug, it turns out
+> that the exact error message is "virtual memory exhausted". The
+> program was compiled using Intel compiler 8.1. I had compiled it on a
+> CentOS 5.2(2GB RAM, 4GB swap) with Intel compiler 10.1, and the
+> program runs well. It requires about 200 MB RAM, as watching by 'top'
+> command. And during its running, 'kswapd' demon would be awakened.
+>    While running this program in the cluster, it always dies when the
+> RSS reach about 150MB with a signal 11 (or using gdb with 'virtual
+> memory exhaust'). During its running, the system has more than 1.2GB
+> free RAM, 4GB free swap and the 'kswapd' keeps in 'SW' status. I had
+> checked the /etc/security/limits.conf file, which sets no limit. And I
+> had tried bash and csh with the stack size, virtual memory, max memory
+> size, file size unlimited. I had also doubled the max_map_count in
+> /proc/sys/vm/. But all of the above actions had no effect on the
+> program, it still died when it occupies about 150MB RAM and reports
+> Sig 11 (in gdb 'VM exhauxted'). I had manually set some limits on the
+> virtual memory (such as 'virtual memory' limit in the shell or
+> max_map_count), the program dies with some different message like
+> 'forrtl: not enough virtual memory ...."
 
-On Wed, 24 Sep 2008, Steven Rostedt wrote:
-> 
-> Right now I have a list of pages that make up the ring buffer. Are you 
-> saying that the first entry in the page should be a timestamp?
+First, do not confuse RSS with VSZ. Apparently your program tries to
+allocate too much virtual memory, which does not mean that it really
+uses it. For instance, it may allocate 1 GB but only use 150 MB. Then
+the memory is not really allocated by the system as long as it is not
+touched (otherwise you would go out buy RAM sticks every time you
+start firefox). I don't now what's in RH 2.4.18, but it is likely
+that this kernel does not allow a process to allocate more than one
+gig, thus causing trouble to your process. 2.4.18 is quite old, and
+a patched RH one makes it even harder to compare to recent things.
+But you might be interested in trying to apply one patch which was
+lying around at that time in 2.4-aa kernels, to change the memory
+split to allow 2G for kernel and as much for user. Look for
+"00_3.5G-address-space" in pub/linux/kernel/people/andrea on kernel.org.
 
-I think the most straightforward model would be that the "head" of the 
-ring buffer (regardless of size in pages) would have that timestamp. 
-Making them per-page is an option, of course, I have no strong opinions 
-either way. The per-page one could have advantages (ie it would give a 
-nice upper limit for just how many entries you have to walk in order to 
-convert an entry into a full timestamp), but I certainly don't think 
-that's a big decision, more of a detail.
+>    Are there any other limits that restrain a process from getting
+> more virtual memory? I had tried to speed up the fresh frequency of
+> 'kswapd', but I can't find 'freepages' file in my /proc/sys/vm
+> directory. It is said that this key had been removed since kernel 2.4,
+> so how can I increase the fresh frequency of 'kswapd'? Besides, are
+> there any special rules in virtual memory control of SMP kernel?
+>    Thanks for reading my letters. I hope to get some helps.
 
-But if we start out with having the full TSC in each entry, that's easily 
-going to be painful to fix later. If we start out with a delta system, 
-changing the details of where the base is gotten is likely to be exactly 
-that - just a detail.
+You will not change the process' virtual memory size because it's
+simply defined by the difference between the top and the bottom of
+its address space. So only the process may change it using sbrk()
+or munmap().
 
-So I'd like the thing to have small headers, and be designed from the 
-start to have small headers.
+I hope this helps you a bit,
+Willy
 
-> I will now have a ring_buffer API, which will do basic recording. It will 
-> have two modes when allocated. Fixed sized entry mode where you can just 
-> put whatever you want in (I'm still aligning everything by 8 bytes, just 
-> since memory is cheap). Or you can have variable length mode that will 
-> make the following event header:
-> 
-> struct {
-> 	unsigned char length;
-> 	unsigned char buff[];
-> };
-
-So the only reason I'm not thrilled with this is that I really think that 
-timestamping should be inherent, and at the lowest level.
-
-Without timestamping, what's the real point? EVERYBODY eventually wants a 
-timestamp. We added it even to the kernel printk()'s. People want them for 
-network packets to user space. X wants it for all its events. It's one of 
-those things that people never do from the beginning, but that everybody 
-eventually wants anyway.
-
-So I certainly don't mind layering, but I *do* mind it if it then means 
-that some people will use a broken model and not have timestamps. So I 
-think the timestamping code should just be there - without it, a trace 
-buffer is pointless.
-
-		Linus
