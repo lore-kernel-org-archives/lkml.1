@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbYIXSNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbYIXSNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753427AbYIXSNX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 14:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYIXSNM
+	id S1754555AbYIXSNj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 14:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYIXSNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 14:13:12 -0400
-Received: from mga02.intel.com ([134.134.136.20]:22931 "EHLO mga02.intel.com"
+	Wed, 24 Sep 2008 14:13:24 -0400
+Received: from bavaria.utcluj.ro ([193.226.5.35]:50268 "EHLO bavaria.utcluj.ro"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbYIXSNL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 14:13:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,301,1220252400"; 
-   d="scan'208";a="443214158"
-From: "Allan, Bruce W" <bruce.w.allan@intel.com>
-To: Kyle McMartin <kyle@redhat.com>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
-CC: "jeff@garzik.org" <jeff@garzik.org>, "mingo@elte.hu" <mingo@elte.hu>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>
-Date: Wed, 24 Sep 2008 11:13:04 -0700
-Subject: RE: [PATCH 2/3] e1000e: Useset_memory_ro()/set_memory_rw() to
-	protect flash memory
-Thread-Topic: [PATCH 2/3] e1000e: Useset_memory_ro()/set_memory_rw() to
-	protect flash memory
-Thread-Index: AckebpUqZ+IZv8xFQ8Ka+Iuir+oAfgAAoKgA
-Message-ID: <B27EBC40D200ED48A3F4CC2EBEABAE0B15607F81@orsmsx501.amr.corp.intel.com>
-References: <20080923224535.6869.76210.stgit@jtkirshe-mobile.jf.intel.com>
- <20080924175358.GA2591@phobos.i.cabal.ca>
-In-Reply-To: <20080924175358.GA2591@phobos.i.cabal.ca>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1753157AbYIXSNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 14:13:22 -0400
+Subject: Re: [PATCH 1/2] VMware guest detection for x86 and x86-64
+From: Cristi Magherusan <cristi.magherusan@net.utcluj.ro>
+Reply-To: cristi.magherusan@net.utcluj.ro
+To: Yan Li <elliot.li.tech@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, joerg.roedel@amd.com,
+       rjmaomao@gmail.com, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
+In-Reply-To: <20080924142322.GA21049@yantp.cn.ibm.com>
+References: <48D12490.5010003@zytor.com>
+	 <48da36b9.160d6e0a.22a5.ffffec9d@mx.google.com>
+	 <1222265424.5708.5.camel@localhost>
+	 <20080924142322.GA21049@yantp.cn.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IH0m2sdDBsGgzsgiWbQ0"
+Organization: Universitatea Tehnica din Cluj-Napoca, Centrul de Comunicatii
+	"Pusztai Kalman"
+Date: Wed, 24 Sep 2008 21:13:14 +0300
+Message-Id: <1222279994.27604.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's a single page.
 
-We have not been able to reproduce it in-house as yet.
+--=-IH0m2sdDBsGgzsgiWbQ0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
------Original Message-----
-From: Kyle McMartin [mailto:kyle@redhat.com]
-Sent: Wednesday, September 24, 2008 10:54 AM
-To: Kirsher, Jeffrey T
-Cc: jeff@garzik.org; mingo@elte.hu; davem@davemloft.net; netdev@vger.kernel.org; linux-kernel@vger.kernel.org; Brandeburg, Jesse; Ronciak, John; Allan, Bruce W
-Subject: Re: [PATCH 2/3] e1000e: Useset_memory_ro()/set_memory_rw() to protect flash memory
+On Wed, 2008-09-24 at 22:23 +0800, Yan Li wrote:=20
+> On Wed, Sep 24, 2008 at 05:10:24PM +0300, Cristi Magherusan wrote:
+> > On Wed, 2008-09-24 at 20:22 +0800, Yan Li wrote:
+> > > Detects whether we are running as a VMware guest or not. Detection is
+> > > based upon DMI vendor string.
+> > >=20
+> > > It provides a function:
+> > > int is_vmware_guest(void)
+> > > that can be used easily to detect if we are running as a VMware guest
+> > > or not.
+> >=20
+> > We can also use this feature to force the HZ value to 100 or 250 at mos=
+t
+> > when running in a virtual environment, since VirtualBox had some issues
+> > with this by taking a lot of CPU time when the HZ was set to 1000.
+>=20
+> That's good. But this function is used for detecting VMware guest
+> only.  Do you think VMware also suffers from this problem?
+>=20
+I don't know for sure about VMware, but someone who has it installed can
+try it. I had this issue with a CentOS 5-server virtual machine
+downloaded from http://www.thoughtpolice.co.uk/vmware/
 
-On Tue, Sep 23, 2008 at 03:45:54PM -0700, Jeff Kirsher wrote:
-> +#ifdef _ASM_X86_CACHEFLUSH_H
-> +     set_memory_rw((unsigned long)hw->flash_address,
-> +                   hw->flash_len >> PAGE_SHIFT);
-> +#endif
->       writew(val, hw->flash_address + reg);
-> +#ifdef _ASM_X86_CACHEFLUSH_H
-> +     set_memory_ro((unsigned long)hw->flash_address,
-> +                   hw->flash_len >> PAGE_SHIFT);
-> +#endif
->  }
+The fix consisted in using a kernel compiled with the HZ value set to
+100 instead of the default which was 1000.
 
-Hi Jeff,
+Cristi
 
-You're making the entire read-only mapping read-write for the single
-writel call... why not just limit it to the page that the writel is
-targetting?
+--=20
+Cristi M=C4=83gheru=C8=99an,
+Inginer de sistem/retea
+Universitatea Tehnic=C4=83 din Cluj-Napoca
+Centrul de Comunica=C8=9Bii "Pusztai Kalman"
+Tel. 0264/401247  http://cc.utcluj.ro
 
-regards, Kyle
-[sorry, I've only been following this at a glance, but it's somewhat
- important for rawhide... does someone have a way to reproduce this at
- whim? Has someone tried catching it using an IOMMU on one of the newer
- Intel boxes, if it is a DMA going awry?]
+--=-IH0m2sdDBsGgzsgiWbQ0
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkjagzoACgkQfwrBISYVZFWDWwCePyAPUGRuG0+J6U89tYDQluJR
+GFwAoIbCwKpPYIEU1bYSPi0sIAVGA58C
+=0ePk
+-----END PGP SIGNATURE-----
+
+--=-IH0m2sdDBsGgzsgiWbQ0--
+
