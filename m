@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756583AbYIXWN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbYIXWNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756583AbYIXWN4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYIXWCD
+	id S1756523AbYIXWNk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbYIXWCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:02:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52253 "EHLO mx2.suse.de"
+	Wed, 24 Sep 2008 18:02:00 -0400
+Received: from ns2.suse.de ([195.135.220.15]:52257 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753514AbYIXWAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:00:44 -0400
+	id S1752842AbYIXWAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:00:45 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
        linux-fsdevel@vger.kernel.org, Tao Ma <tao.ma@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 34/39] ocfs2: bug-fix for journal extend in xattr.
-Date: Wed, 24 Sep 2008 15:01:15 -0700
-Message-Id: <1222293680-15451-35-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 35/39] ocfs2: Resolve deadlock in ocfs2_xattr_free_block.
+Date: Wed, 24 Sep 2008 15:01:16 -0700
+Message-Id: <1222293680-15451-36-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
 References: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
@@ -26,53 +26,219 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tao Ma <tao.ma@oracle.com>
 
-In ocfs2_extend_trans, when we can't extend the current
-transaction, it will commit current transaction and restart
-a new one. So if the previous credits we have allocated aren't
-used(the block isn't dirtied before our extend), we will not
-have enough credits for any future operation(it will cause jbd
-complain and bug out). So check this and re-extend it.
+In ocfs2_xattr_free_block, we take a cluster lock on xb_alloc_inode while we
+have a transaction open. This will deadlock the downconvert thread, so fix
+it.
+
+We can clean up how xattr blocks are removed while here - this patch also
+moves the mechanism of releasing xattr block (including both value, xattr
+tree and xattr block) into this function.
 
 Signed-off-by: Tao Ma <tao.ma@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/xattr.c |   15 ++++++++++++++-
- 1 files changed, 14 insertions(+), 1 deletions(-)
+ fs/ocfs2/xattr.c |  152 +++++++++++++++++++++++++++++-------------------------
+ 1 files changed, 82 insertions(+), 70 deletions(-)
 
 diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 1a4de3d..38e3e5e 100644
+index 38e3e5e..b2e25a8 100644
 --- a/fs/ocfs2/xattr.c
 +++ b/fs/ocfs2/xattr.c
-@@ -1336,8 +1336,9 @@ static int ocfs2_xattr_set_entry(struct inode *inode,
- 	}
+@@ -1427,51 +1427,6 @@ out:
  
- 	if (!(flag & OCFS2_INLINE_XATTR_FL)) {
--		/*set extended attribue in external blcok*/
-+		/* set extended attribute in external block. */
- 		ret = ocfs2_extend_trans(handle,
-+					 OCFS2_INODE_UPDATE_CREDITS +
- 					 OCFS2_XATTR_BLOCK_UPDATE_CREDITS);
- 		if (ret) {
- 			mlog_errno(ret);
-@@ -3701,6 +3702,18 @@ static int ocfs2_add_new_xattr_cluster(struct inode *inode,
+ }
+ 
+-static int ocfs2_xattr_free_block(handle_t *handle,
+-				  struct ocfs2_super *osb,
+-				  struct ocfs2_xattr_block *xb)
+-{
+-	struct inode *xb_alloc_inode;
+-	struct buffer_head *xb_alloc_bh = NULL;
+-	u64 blk = le64_to_cpu(xb->xb_blkno);
+-	u16 bit = le16_to_cpu(xb->xb_suballoc_bit);
+-	u64 bg_blkno = ocfs2_which_suballoc_group(blk, bit);
+-	int ret = 0;
+-
+-	xb_alloc_inode = ocfs2_get_system_file_inode(osb,
+-				EXTENT_ALLOC_SYSTEM_INODE,
+-				le16_to_cpu(xb->xb_suballoc_slot));
+-	if (!xb_alloc_inode) {
+-		ret = -ENOMEM;
+-		mlog_errno(ret);
+-		goto out;
+-	}
+-	mutex_lock(&xb_alloc_inode->i_mutex);
+-
+-	ret = ocfs2_inode_lock(xb_alloc_inode, &xb_alloc_bh, 1);
+-	if (ret < 0) {
+-		mlog_errno(ret);
+-		goto out_mutex;
+-	}
+-	ret = ocfs2_extend_trans(handle, OCFS2_SUBALLOC_FREE);
+-	if (ret < 0) {
+-		mlog_errno(ret);
+-		goto out_unlock;
+-	}
+-	ret = ocfs2_free_suballoc_bits(handle, xb_alloc_inode, xb_alloc_bh,
+-				       bit, bg_blkno, 1);
+-	if (ret < 0)
+-		mlog_errno(ret);
+-out_unlock:
+-	ocfs2_inode_unlock(xb_alloc_inode, 1);
+-	brelse(xb_alloc_bh);
+-out_mutex:
+-	mutex_unlock(&xb_alloc_inode->i_mutex);
+-	iput(xb_alloc_inode);
+-out:
+-	return ret;
+-}
+-
+ static int ocfs2_remove_value_outside(struct inode*inode,
+ 				      struct buffer_head *bh,
+ 				      struct ocfs2_xattr_header *header)
+@@ -1533,6 +1488,84 @@ static int ocfs2_xattr_block_remove(struct inode *inode,
+ 	return ret;
+ }
+ 
++static int ocfs2_xattr_free_block(struct inode *inode,
++				  u64 block)
++{
++	struct inode *xb_alloc_inode;
++	struct buffer_head *xb_alloc_bh = NULL;
++	struct buffer_head *blk_bh = NULL;
++	struct ocfs2_xattr_block *xb;
++	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
++	handle_t *handle;
++	int ret = 0;
++	u64 blk, bg_blkno;
++	u16 bit;
++
++	ret = ocfs2_read_block(osb, block, &blk_bh,
++			       OCFS2_BH_CACHED, inode);
++	if (ret < 0) {
++		mlog_errno(ret);
++		goto out;
++	}
++
++	/*Verify the signature of xattr block*/
++	if (memcmp((void *)blk_bh->b_data, OCFS2_XATTR_BLOCK_SIGNATURE,
++		   strlen(OCFS2_XATTR_BLOCK_SIGNATURE))) {
++		ret = -EFAULT;
++		goto out;
++	}
++
++	ret = ocfs2_xattr_block_remove(inode, blk_bh);
++	if (ret < 0) {
++		mlog_errno(ret);
++		goto out;
++	}
++
++	xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
++	blk = le64_to_cpu(xb->xb_blkno);
++	bit = le16_to_cpu(xb->xb_suballoc_bit);
++	bg_blkno = ocfs2_which_suballoc_group(blk, bit);
++
++	xb_alloc_inode = ocfs2_get_system_file_inode(osb,
++				EXTENT_ALLOC_SYSTEM_INODE,
++				le16_to_cpu(xb->xb_suballoc_slot));
++	if (!xb_alloc_inode) {
++		ret = -ENOMEM;
++		mlog_errno(ret);
++		goto out;
++	}
++	mutex_lock(&xb_alloc_inode->i_mutex);
++
++	ret = ocfs2_inode_lock(xb_alloc_inode, &xb_alloc_bh, 1);
++	if (ret < 0) {
++		mlog_errno(ret);
++		goto out_mutex;
++	}
++
++	handle = ocfs2_start_trans(osb, OCFS2_SUBALLOC_FREE);
++	if (IS_ERR(handle)) {
++		ret = PTR_ERR(handle);
++		mlog_errno(ret);
++		goto out_unlock;
++	}
++
++	ret = ocfs2_free_suballoc_bits(handle, xb_alloc_inode, xb_alloc_bh,
++				       bit, bg_blkno, 1);
++	if (ret < 0)
++		mlog_errno(ret);
++
++	ocfs2_commit_trans(osb, handle);
++out_unlock:
++	ocfs2_inode_unlock(xb_alloc_inode, 1);
++	brelse(xb_alloc_bh);
++out_mutex:
++	mutex_unlock(&xb_alloc_inode->i_mutex);
++	iput(xb_alloc_inode);
++out:
++	brelse(blk_bh);
++	return ret;
++}
++
+ /*
+  * ocfs2_xattr_remove()
+  *
+@@ -1540,9 +1573,6 @@ static int ocfs2_xattr_block_remove(struct inode *inode,
+  */
+ int ocfs2_xattr_remove(struct inode *inode, struct buffer_head *di_bh)
+ {
+-	struct ocfs2_xattr_block *xb;
+-	struct buffer_head *blk_bh = NULL;
+-	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+ 	struct ocfs2_inode_info *oi = OCFS2_I(inode);
+ 	struct ocfs2_dinode *di = (struct ocfs2_dinode *)di_bh->b_data;
+ 	handle_t *handle;
+@@ -1561,22 +1591,10 @@ int ocfs2_xattr_remove(struct inode *inode, struct buffer_head *di_bh)
+ 			goto out;
  		}
  	}
+-	if (di->i_xattr_loc) {
+-		ret = ocfs2_read_block(OCFS2_SB(inode->i_sb),
+-				       le64_to_cpu(di->i_xattr_loc),
+-				       &blk_bh, OCFS2_BH_CACHED, inode);
+-		if (ret < 0) {
+-			mlog_errno(ret);
+-			return ret;
+-		}
+-		/*Verify the signature of xattr block*/
+-		if (memcmp((void *)blk_bh->b_data, OCFS2_XATTR_BLOCK_SIGNATURE,
+-			   strlen(OCFS2_XATTR_BLOCK_SIGNATURE))) {
+-			ret = -EFAULT;
+-			goto out;
+-		}
  
-+	if (handle->h_buffer_credits < credits) {
-+		/*
-+		 * The journal has been restarted before, and don't
-+		 * have enough space for the insertion, so extend it
-+		 * here.
-+		 */
-+		ret = ocfs2_extend_trans(handle, credits);
-+		if (ret) {
-+			mlog_errno(ret);
-+			goto leave;
-+		}
-+	}
- 	mlog(0, "Insert %u clusters at block %llu for xattr at %u\n",
- 	     num_bits, block, v_start);
- 	ret = ocfs2_insert_extent(osb, handle, inode, &et, v_start, block,
+-		ret = ocfs2_xattr_block_remove(inode, blk_bh);
++	if (di->i_xattr_loc) {
++		ret = ocfs2_xattr_free_block(inode,
++					     le64_to_cpu(di->i_xattr_loc));
+ 		if (ret < 0) {
+ 			mlog_errno(ret);
+ 			goto out;
+@@ -1597,11 +1615,7 @@ int ocfs2_xattr_remove(struct inode *inode, struct buffer_head *di_bh)
+ 		goto out_commit;
+ 	}
+ 
+-	if (di->i_xattr_loc) {
+-		xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
+-		ocfs2_xattr_free_block(handle, osb, xb);
+-		di->i_xattr_loc = cpu_to_le64(0);
+-	}
++	di->i_xattr_loc = 0;
+ 
+ 	spin_lock(&oi->ip_lock);
+ 	oi->ip_dyn_features &= ~(OCFS2_INLINE_XATTR_FL | OCFS2_HAS_XATTR_FL);
+@@ -1614,8 +1628,6 @@ int ocfs2_xattr_remove(struct inode *inode, struct buffer_head *di_bh)
+ out_commit:
+ 	ocfs2_commit_trans(OCFS2_SB(inode->i_sb), handle);
+ out:
+-	brelse(blk_bh);
+-
+ 	return ret;
+ }
+ 
 -- 
 1.5.4.5
 
