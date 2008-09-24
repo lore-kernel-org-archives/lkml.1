@@ -1,44 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbYIXSJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbYIXSNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753992AbYIXSJq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 14:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYIXSJh
+	id S1753427AbYIXSNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 14:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYIXSNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 14:09:37 -0400
-Received: from styx.suse.cz ([82.119.242.94]:33615 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751436AbYIXSJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 14:09:37 -0400
-Date: Wed, 24 Sep 2008 20:10:36 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Dave Airlie <airlied@gmail.com>
-cc: David Miller <davem@davemloft.net>, jeffrey.t.kirsher@intel.com,
-       david.vrabel@csr.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, chrisl@vmware.com
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-In-Reply-To: <alpine.LNX.1.10.0809241836180.4671@pegasus.suse.cz>
-Message-ID: <alpine.LNX.1.10.0809242008550.4671@pegasus.suse.cz>
-References: <21d7e9970809232245x6a91c6e2l552ff039d07e2017@mail.gmail.com>  <20080924.003638.71148740.davem@davemloft.net>  <21d7e9970809240159u6db747eex51892061846b2251@mail.gmail.com>  <20080924.020116.193720569.davem@davemloft.net>
- <21d7e9970809240216m4a93a339sb51a5928fcb5f6fb@mail.gmail.com> <alpine.LNX.1.10.0809241829500.4671@pegasus.suse.cz> <alpine.LNX.1.10.0809241836180.4671@pegasus.suse.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 24 Sep 2008 14:13:12 -0400
+Received: from mga02.intel.com ([134.134.136.20]:22931 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750991AbYIXSNL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 14:13:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,301,1220252400"; 
+   d="scan'208";a="443214158"
+From: "Allan, Bruce W" <bruce.w.allan@intel.com>
+To: Kyle McMartin <kyle@redhat.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
+CC: "jeff@garzik.org" <jeff@garzik.org>, "mingo@elte.hu" <mingo@elte.hu>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>
+Date: Wed, 24 Sep 2008 11:13:04 -0700
+Subject: RE: [PATCH 2/3] e1000e: Useset_memory_ro()/set_memory_rw() to
+	protect flash memory
+Thread-Topic: [PATCH 2/3] e1000e: Useset_memory_ro()/set_memory_rw() to
+	protect flash memory
+Thread-Index: AckebpUqZ+IZv8xFQ8Ka+Iuir+oAfgAAoKgA
+Message-ID: <B27EBC40D200ED48A3F4CC2EBEABAE0B15607F81@orsmsx501.amr.corp.intel.com>
+References: <20080923224535.6869.76210.stgit@jtkirshe-mobile.jf.intel.com>
+ <20080924175358.GA2591@phobos.i.cabal.ca>
+In-Reply-To: <20080924175358.GA2591@phobos.i.cabal.ca>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008, Jiri Kosina wrote:
+It's a single page.
 
-> > Dave (Airlie, too many Daves on CC here really), do you by any chance 
-> > see any recent change in kernel intel graphic parts of DRM be causing 
-> > this breakage?
-> BTW, why is the PAT fix implented in commit 242e3df80 needed only for 
-> radeons?
+We have not been able to reproduce it in-house as yet.
 
-Further important observation -- as far as I can see, all affected 
-machines by this bug whatsoever (and the number of reportes is increasing) 
-were using i915 DRM.
+-----Original Message-----
+From: Kyle McMartin [mailto:kyle@redhat.com]
+Sent: Wednesday, September 24, 2008 10:54 AM
+To: Kirsher, Jeffrey T
+Cc: jeff@garzik.org; mingo@elte.hu; davem@davemloft.net; netdev@vger.kernel.org; linux-kernel@vger.kernel.org; Brandeburg, Jesse; Ronciak, John; Allan, Bruce W
+Subject: Re: [PATCH 2/3] e1000e: Useset_memory_ro()/set_memory_rw() to protect flash memory
 
--- 
-Jiri Kosina
-SUSE Labs
+On Tue, Sep 23, 2008 at 03:45:54PM -0700, Jeff Kirsher wrote:
+> +#ifdef _ASM_X86_CACHEFLUSH_H
+> +     set_memory_rw((unsigned long)hw->flash_address,
+> +                   hw->flash_len >> PAGE_SHIFT);
+> +#endif
+>       writew(val, hw->flash_address + reg);
+> +#ifdef _ASM_X86_CACHEFLUSH_H
+> +     set_memory_ro((unsigned long)hw->flash_address,
+> +                   hw->flash_len >> PAGE_SHIFT);
+> +#endif
+>  }
+
+Hi Jeff,
+
+You're making the entire read-only mapping read-write for the single
+writel call... why not just limit it to the page that the writel is
+targetting?
+
+regards, Kyle
+[sorry, I've only been following this at a glance, but it's somewhat
+ important for rawhide... does someone have a way to reproduce this at
+ whim? Has someone tried catching it using an IOMMU on one of the newer
+ Intel boxes, if it is a DMA going awry?]
