@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbYIXMdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbYIXMhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753477AbYIXMdA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 08:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYIXMcu
+	id S1752848AbYIXMhn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 08:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbYIXMhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 08:32:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57676 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbYIXMct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 08:32:49 -0400
-Message-ID: <48DA333C.2050900@redhat.com>
-Date: Wed, 24 Sep 2008 15:31:56 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickens <hugh@veritas.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: Populating multiple ptes at fault time
-References: <48D142B2.3040607@goop.org> <48D17E75.80807@redhat.com> <48D1851B.70703@goop.org> <48D18919.9060808@redhat.com> <48D18C6B.5010407@goop.org> <48D2B970.7040903@redhat.com> <48D2D3B2.10503@goop.org> <48D2E65A.6020004@redhat.com> <48D2EBBB.205@goop.org> <48D2F05C.4040000@redhat.com> <48D2F571.4010504@goop.org>
-In-Reply-To: <48D2F571.4010504@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 24 Sep 2008 08:37:35 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37494 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbYIXMhe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 08:37:34 -0400
+Date: Wed, 24 Sep 2008 14:35:52 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: benh@kernel.crashing.org
+Cc: Milton Miller <miltonm@bga.com>, Jan-Bernd Themann <ossthema@de.ibm.com>,
+       Christoph Raisch <RAISCH@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+ hardirq preemption
+Message-ID: <20080924143552.29a14f10@bull.net>
+In-Reply-To: <1222251467.8277.73.camel@pasglop>
+References: <200809231743.23828.ossthema@de.ibm.com>
+	<20080915100406.342e027a@bull.net>
+	<200809240958.m8O9wM7k010996@sullivan.realtime.net>
+	<1222251467.8277.73.camel@pasglop>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Avi Kivity wrote:
->   
->>> The only direct use of pte_young() is in zap_pte_range, within a
->>> mmu_lazy region.  So syncing the A bit state on entering lazy mmu mode
->>> would work fine there.
->>>
->>>   
->>>       
->> Ugh, leaving lazy pte.a mode when entering lazy mmu mode?
->>     
->
-> Well, sort of but not quite.  The kernel's announcing its about to start
-> processing a batch of ptes, so the hypervisor can take the opportunity
-> to update their state before processing.  "Lazy-mode" is from the
-> perspective of the kernel lazily updating some state the hypervisor
-> might care about, and the sync happens when leaving mode.
->
-> The flip-side is when the hypervisor is lazily updating some state the
-> kernel cares about, so it makes sense that the sync when the kernel
-> enters its lazy mode.  But the analogy isn't very good because we don't
-> really have an explicit notion of "hypervisor lazy mode", or a formal
-> handoff of shared state between the kernel and hypervisor.  But in this
-> case the behaviour isn't too bad.
->
->   
 
-Handwavy.  I think the two notions are separate <insert handwavy 
-counter-arguments>.
+  Hi Ben,
 
->>> The call via page_referenced_one() doesn't seem to have a very
->>> convenient hook though.  Perhaps putting something in
->>> page_check_address() would do the job.
->>>
->>>   
->>>       
->> Why there?
->>
->> Why not explicitly in the callers?  We need more than to exit lazy
->> pte.a mode, we also need to enter it again later.
->>
->>     
->
-> Because that's the code that actually walks the pagetable and has the
-> address of the pte; it just returns a pte_t, not a pte_t *.  It depends
-> on whether you want fetch the A bit via ptep or vaddr (in general we
-> pass mm, ptep and vaddr to ops which operate on the current pagetable).
->   
+On Wed, 24 Sep 2008 20:17:47 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-pte_clear_flush_young_notify_etc() seems even closer.
+> On Wed, 2008-09-24 at 04:58 -0500, Milton Miller wrote:
+> > The per-interrupt mask and unmask calls have to go through RTAS, a
+> > single-threaded global context, which in addition to increasing
+> > path length will really limit scalability.  The interrupt controller
+> > poll and reject facilities are accessed through hypervisor calls
+> > which are comparable to a fast syscall, and parallel to all cpus.
+> 
+> Note also that the XICS code thus assumes, iirc, as does the cell IIC
+> code, that eoi is called on the -same- cpu that fetched the interrupt
+> initially. That assumption can be broken with IRQ threads no ?
 
--- 
-error compiling committee.c: too many arguments to function
+  No, the fetch and the eoi are both done in interrupt context before
+the hardirq thread is woken up.
 
+  On the other hand, the mask+eoi and the unmask may well happen
+on different cpus as there's only one hardirq thread per irq on
+the system. Don't know if this is a problem with the XICS though.
+
+  Thanks,
+
+  Sebastien.
+
+> 
+> Ben.
+> 
+> 
+> 
