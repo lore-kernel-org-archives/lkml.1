@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbYIXCcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbYIXCkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752919AbYIXCcc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 22:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYIXCcX
+	id S1753232AbYIXCkV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 22:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYIXCkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 22:32:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47357 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbYIXCcW (ORCPT
+	Tue, 23 Sep 2008 22:40:07 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:20942 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbYIXCkG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 22:32:22 -0400
-Date: Tue, 23 Sep 2008 19:30:53 -0700
-From: Greg KH <greg@kroah.com>
-To: fangxiaozhi 00110321 <huananhu@huawei.com>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, zihan@huawei.com,
-       Lin.Lei@huawei.com, zhangqianchun@huawei.com
-Subject: Re: [PATCH 10/4]linux-usb: To support more Huawei data card
-	product IDs, fix kernel 2.6.26.5
-Message-ID: <20080924023053.GA24846@kroah.com>
-References: <faf7c9cb3c6f0.3c6f0faf7c9cb@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <faf7c9cb3c6f0.3c6f0faf7c9cb@huawei.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 23 Sep 2008 22:40:06 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Message-id: <48D9A882.4080804@gmail.com>
+Date: Tue, 23 Sep 2008 22:40:02 -0400
+From: Marc Dionne <marc.c.dionne@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] Fix build error introduced by commit
+ 4faac97d44ac27bdbb010a9c3597401a8f89341f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 10:07:31AM +0800, fangxiaozhi 00110321 wrote:
-> 
-> From: fangxiaozhi <huananhu@huawei.com>
-> 
-> 1. This patch is based on the kernel of 2.6.26.5
+process_32.c needs to include idle.h to get the prototype for 
+c1e_remove_cpu()
 
-Can you rebase this on 2.6.27-rc7 instead?  Lots of device ids have been
-added to this driver since 2.6.26.5
+Signed-off-by: Marc Dionne <marc.c.dionne@gmail.com>
+---
+ arch/x86/kernel/process_32.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-> 2. To declare the unusual device for new Huawei data card devices in unusual_devs.h
-> 3. To modify the data value and length in the function of usb_stor_huawei_e220_init in initializers.c
-> 4. To declare more new product IDs in option.c.
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 4b3cfdf..31f40b2 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -55,6 +55,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/cpu.h>
+ #include <asm/kdebug.h>
++#include <asm/idle.h>
+ 
+ asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
+ 
+-- 
+1.6.0.1
 
-This should be split up into 4 different patches, as it does 4 different
-things.  Care to redo it please?
-
-thanks,
-
-greg k-h
