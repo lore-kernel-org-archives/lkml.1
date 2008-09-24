@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbYIXEY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbYIXEyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752460AbYIXEY4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 00:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYIXEYs
+	id S1752471AbYIXEyy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 00:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYIXEym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 00:24:48 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:38676 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750937AbYIXEYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 00:24:47 -0400
-Date: Tue, 23 Sep 2008 23:24:46 -0500
-From: Russ Anderson <rja@sgi.com>
-To: Huang Ying <ying.huang@intel.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: Re: [PATCH 0/4] x86: UV runtime bios calls
-Message-ID: <20080924042445.GB135367@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-References: <20080922210644.GC222374@sgi.com> <1222225747.23099.104.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Sep 2008 00:54:42 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:50973 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751318AbYIXEyl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 00:54:41 -0400
+Date: Wed, 24 Sep 2008 12:54:04 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: David Miller <davem@davemloft.net>, dwalker@mvista.com,
+       arjan@infradead.org, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, jens.axboe@oracle.com,
+       steffen.klassert@secunet.com
+Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
+Message-ID: <20080924045404.GA6010@gondor.apana.org.au>
+References: <20080920.125949.193703969.davem@davemloft.net> <E1KhI4n-0002Fk-7C@gondolin.me.apana.org.au> <20080920.235727.247411045.davem@davemloft.net> <Pine.LNX.4.64.0809221329140.1034@wrl-59.cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1222225747.23099.104.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0809221329140.1034@wrl-59.cs.helsinki.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 11:09:07AM +0800, Huang Ying wrote:
-> Hi, Russ,
+On Mon, Sep 22, 2008 at 01:36:24PM +0300, Ilpo Järvinen wrote:
+> On Sat, 20 Sep 2008, David Miller wrote:
 > 
-> On Mon, 2008-09-22 at 16:06 -0500, Russ Anderson wrote:
-> > 	This patch uses sal_systab.  sal_systab is used on ia64, but was
-> > 	not used on x86.  An alternative would be to create a new
-> > 	EFI entry type (uv_systab), though that would require adding 
-> > 	to struct efi.
+> > From: Herbert Xu <herbert@gondor.apana.org.au>
+> > Date: Sun, 21 Sep 2008 15:05:45 +0900
+> > 
+> > > Of course, we need to balance any effort spent on this with the
+> > > likelihood that hardware improvements will soon make this obsolete
+> > > (for IPsec anyway).
+> > 
+> > True, but old hardware will always exist.
 > 
-> I don't think it is a good idea to use sal_systab, if it is not a real
-> sal_systab. It's better to add new field such as uv_systab to struct
-> efi, which is not defined by UEFI standard, so can be changed.
+> ...Also, producing buggy hardware will not suddently just vanish either 
+> ("can you please turn of ipsec offloading and see if you can still
+> reproduce" :-))...
 
-OK.  My first development version took that approach, so
-it I just have to put that code back in. 
+That's fine.  If your AES hardware is buggy you just fall back
+to using the software version.
 
-Thanks,
+In fact if this was done through the crypto API it would even
+happen automatically.
+
+Cheers,
 -- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
