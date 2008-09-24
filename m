@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbYIXOiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbYIXOmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753000AbYIXOiY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 10:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYIXOiP
+	id S1753356AbYIXOmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 10:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYIXOmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 10:38:15 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:52580 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751436AbYIXOiO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 10:38:14 -0400
-Date: Wed, 24 Sep 2008 10:38:14 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: fangxiaozhi 00110321 <huananhu@huawei.com>
-cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>,
-       <zihan@huawei.com>, <Lin.Lei@huawei.com>, <zhangqianchun@huawei.com>,
-       <greg@kroah.com>
-Subject: Re: PATCH 10/4]linux-usb: To support more Huawei data card product
- IDs, fix kernel 2.6.27-rc7
-In-Reply-To: <f9fd97f63cf97.3cf97f9fd97f6@huawei.com>
-Message-ID: <Pine.LNX.4.44L0.0809241033580.2650-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 24 Sep 2008 10:42:24 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:39149 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751733AbYIXOmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 10:42:24 -0400
+Date: Wed, 24 Sep 2008 16:35:27 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] atmel-mci: support multiple mmc slots
+Message-ID: <20080924163527.30cfc223@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080923211222.551389ab@mjolnir.drzeus.cx>
+References: <1222101497-21183-1-git-send-email-haavard.skinnemoen@atmel.com>
+	<1222101497-21183-2-git-send-email-haavard.skinnemoen@atmel.com>
+	<1222101497-21183-3-git-send-email-haavard.skinnemoen@atmel.com>
+	<1222101497-21183-4-git-send-email-haavard.skinnemoen@atmel.com>
+	<20080923195342.52b1164d@mjolnir.drzeus.cx>
+	<20080923201650.4525b883@hskinnemo-gx745.norway.atmel.com>
+	<20080923211222.551389ab@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 24 Sep 2008 14:35:15.0117 (UTC) FILETIME=[C234EDD0:01C91E52]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008, fangxiaozhi 00110321 wrote:
+Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+> On Tue, 23 Sep 2008 20:16:50 +0200
+> Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+> 
+> > Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+> > > 
+> > > You forgot the most important part; how to handle the clock given two
+> > > different requests.
+> > 
+> > I don't think I did. The set_ios() function merely calculates the value
+> > of MR and stashes it away. It isn't written to the controller until
+> > after the host has been claimed for a request.
+> > 
+> 
+> I see... It still doesn't take into account conflicting clocks. Or does
+> the multiplexer disable the clock for the inactive slot?
 
->  From: fangxiaozhi <huananhu@huawei.com>
->  
->  1. This patch is based on the kernel of 2.6.27-rc7 2. To declare the unusual device for new Huawei data card devices 
->  in unusual_devs.h
->  3. To modify the data value and length in the function of 
->  usb_stor_huawei_e220_init in initializers.c
+On AP7000, the clock line is shared. Do I have to run the clock at the
+minimum of the two slots' maximum rates, or does it only matter when
+the card is being accessed?
 
-Is this really a good idea?  Haven't a lot of people worked on that 
-function and carefully made it do what they want?  If yes then your 
-changes will break their systems.
+> > > (This will also get a bit more painful when/if the core starts
+> > > disabling the clock when a card is idle)
+> > 
+> > The atmel-mci driver already stops the clock between requests.
+> 
+> Then I expect a patch to remove that. Fiddling with the clock is
+> dangerous and I've seen everything from hung cards to silently broken
+> writes when you disable the clock too early after a request.
 
-Or have I confused it with a different initializer?
+Ok. I'll see if I can fix that -- I take it you want a patch for
+2.6.27, then?
 
+> > Though I don't understand why the core would care about clocks.
+> > 
+> 
+> Power management. But it needs to be handled centrally. Primarily
+> because of the reason above, but you might also have such things as
+> SDIO functions requiring the clock to be on.
 
-> --- linux-2.6.27-rc7-orig/drivers/usb/storage/initializers.c	2008-09-22 06:29:55.000000000 +0800
-> +++ linux-2.6.27-rc7/drivers/usb/storage/initializers.c	2008-09-24 12:04:40.000000000 +0800
-> @@ -95,11 +95,11 @@ int usb_stor_huawei_e220_init(struct us_
->  {
->  	int result;
->  
-> -	us->iobuf[0] = 0x1;
-> +	us->iobuf[0] = 0x0;
->  	result = usb_stor_control_msg(us, us->send_ctrl_pipe,
->  				      USB_REQ_SET_FEATURE,
->  				      USB_TYPE_STANDARD | USB_RECIP_DEVICE,
-> -				      0x01, 0x0, us->iobuf, 0x1, 1000);
-> +				      0x01, 0x0, us->iobuf, 0x0, 1000);
+I see.
 
-What reason is there for setting us->iobuf[0] to 0, or passing
-us->iobuf as an argument, if the length is 0?
+> > > 
+> > > Fall back to polling?
+> > 
+> > Probably, yes. Can I fall back to polling after the host has been
+> > registered?
+> > 
+> 
+> Hmm... no. Not sure how to handle this...
 
-> --- linux-2.6.27-rc7-orig/drivers/usb/storage/unusual_devs.h	2008-09-22 06:29:55.000000000 +0800
-> +++ linux-2.6.27-rc7/drivers/usb/storage/unusual_devs.h	2008-09-24 12:08:58.000000000 +0800
-> @@ -1622,11 +1622,21 @@ UNUSUAL_DEV( 0x12d1, 0x1401, 0x0000, 0x0
->  		"Mass Storage",
->  		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
->  		0),
-> +UNUSUAL_DEV( 0x12d1, 0x1402, 0x0000, 0x0000,
-> +                "HUAWEI MOBILE",
-> +		"Mass Storage",
-> +		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-> +                0),		
+I'll see if I can figure out a way to do it. I'm not giving it high
+priority since it's a fairly obscure error case which shouldn't happen
+with properly implemented board code.
 
-Please use tabs for indentation, not spaces.
-
-Alan Stern
-
+Haavard
