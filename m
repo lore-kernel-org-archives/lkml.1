@@ -1,87 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbYIXXSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbYIXXTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbYIXXSW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 19:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYIXXSJ
+	id S1753891AbYIXXTa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 19:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYIXXTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 19:18:09 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:40142 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637AbYIXXSH (ORCPT
+	Wed, 24 Sep 2008 19:19:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55852 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751878AbYIXXTW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 19:18:07 -0400
-Date: Wed, 24 Sep 2008 19:17:33 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: pull request: wireless-2.6 2008-09-24
-Message-ID: <20080924231720.GD3639@tuxdriver.com>
+	Wed, 24 Sep 2008 19:19:22 -0400
+Date: Wed, 24 Sep 2008 16:18:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Frans Pop <elendil@planet.nl>
+cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       tglx@tglx.de, mingo@elte.hu
+Subject: Re: Warning/Oops report of the week of September 16th, 2008
+In-Reply-To: <200809250112.40661.elendil@planet.nl>
+Message-ID: <alpine.LFD.1.10.0809241616080.3265@nehalem.linux-foundation.org>
+References: <20080916092206.6342c498@infradead.org> <200809250036.47277.elendil@planet.nl> <alpine.LFD.1.10.0809241541320.3265@nehalem.linux-foundation.org> <200809250112.40661.elendil@planet.nl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
 
-One more for 2.6.27 -- a fix for a possible interrupt storm.  There is
-even a link in the commit log to a youtube video of the storm in
-progress. :-)
 
-Let me know if there are problems!
+On Thu, 25 Sep 2008, Frans Pop wrote:
+> 
+> If no other solution is found soon, would a patch to just skip the sysctl 
+> table check for this particular case be acceptable?
 
-John
+Well, it would be even _more_ acceptable to have a new Kconfig option that 
+just disables the insane parport registrations.
 
----
+Them you could turn off the /proc files, and if it turns out you don't 
+have anything that uses it, you can avoid the warning by actually having a 
+smaller kernel with less crap, rather than adding more crap to hide the 
+crap. Wouldn't that be nicer?
 
-Individual patch is available here:
+It would have to be a Kconfig option since we don't _know_ that it's not 
+used by anything..
 
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
-
----
-
-The following changes since commit 4c07ab0fe4b4eaa0fc31f640ca65da7c173f5043:
-  David S. Miller (1):
-        Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
-
-Luis R. Rodriguez (1):
-      ath9k: disable MIB interrupts to fix interrupt storm
-
- drivers/net/wireless/ath9k/core.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/net/wireless/ath9k/core.c b/drivers/net/wireless/ath9k/core.c
-index c049593..87e37bc 100644
---- a/drivers/net/wireless/ath9k/core.c
-+++ b/drivers/net/wireless/ath9k/core.c
-@@ -795,6 +795,12 @@ int ath_open(struct ath_softc *sc, struct ath9k_channel *initial_chan)
- 	if (ah->ah_caps.hw_caps & ATH9K_HW_CAP_HT)
- 		sc->sc_imask |= ATH9K_INT_CST;
- 
-+	/* Note: We disable MIB interrupts for now as we don't yet
-+	 * handle processing ANI, otherwise you will get an interrupt
-+	 * storm after about 7 hours of usage making the system unusable
-+	 * with huge latency. Once we do have ANI processing included
-+	 * we can re-enable this interrupt. */
-+#if 0
- 	/*
- 	 * Enable MIB interrupts when there are hardware phy counters.
- 	 * Note we only do this (at the moment) for station mode.
-@@ -802,6 +808,7 @@ int ath_open(struct ath_softc *sc, struct ath9k_channel *initial_chan)
- 	if (ath9k_hw_phycounters(ah) &&
- 	    ((sc->sc_opmode == ATH9K_M_STA) || (sc->sc_opmode == ATH9K_M_IBSS)))
- 		sc->sc_imask |= ATH9K_INT_MIB;
-+#endif
- 	/*
- 	 * Some hardware processes the TIM IE and fires an
- 	 * interrupt when the TIM bit is set.  For hardware
--- 
-John W. Linville		Linux should be at the core
-linville@tuxdriver.com			of your literate lifestyle.
+		Linus
