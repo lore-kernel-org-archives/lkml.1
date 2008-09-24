@@ -1,66 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYIXF52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbYIXGCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141AbYIXF52 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 01:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYIXF5U
+	id S1752170AbYIXGCm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 02:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbYIXGCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 01:57:20 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:59559 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbYIXF5T (ORCPT
+	Wed, 24 Sep 2008 02:02:33 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:36370 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbYIXGCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 01:57:19 -0400
-Message-ID: <48D9D666.8010402@oss.ntt.co.jp>
-Date: Wed, 24 Sep 2008 14:55:50 +0900
-From: Kazuo Ito <ito.kazuo@oss.ntt.co.jp>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 24 Sep 2008 02:02:33 -0400
+Message-ID: <48D9D7EF.9030604@davidnewall.com>
+Date: Wed, 24 Sep 2008 15:32:23 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: device-mapper development <dm-devel@redhat.com>
-CC: 7eggert@gmx.de, kjamieson@bycast.com, linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: [PATCH] dm-snapshot: poor copy-on-write performance
- due to I/O reordering
-References: <bd0gX-4ma-13@gated-at.bofh.it>	<E1KfzFv-00041e-8A@be1.7eggert.dyndns.org> <48D1AA84.3050603@oss.ntt.co.jp>
-In-Reply-To: <48D1AA84.3050603@oss.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Miller <davem@davemloft.net>
+CC: airlied@gmail.com, jkosina@suse.cz, david.vrabel@csr.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       chrisl@vmware.com
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+References: <20080922.185902.80812984.davem@davemloft.net>	<alpine.LNX.1.10.0809231229460.4671@pegasus.suse.cz>	<21d7e9970809231403wf766660u39908aca70548ca7@mail.gmail.com> <20080923.150559.34795136.davem@davemloft.net>
+In-Reply-To: <20080923.150559.34795136.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+David Miller wrote:
+> Right now we don't have any real leads, so data acquisition is really
+> important at this phase.
 
- > Bodo Eggert wrote:
- >> Kazuo Ito <ito.kazuo@oss.ntt.co.jp> wrote:
- >>
- >>> Write throughput to LVM snapshot origin volume is an order
- >>> of magnitude slower than those to LV without snapshots or
- >>> snapshot target volumes, especially in the case of sequential
- >>> writes with O_SYNC on.
- >>>
- >>> The following patch originally written by Kevin Jamieson and
- >>> Jan Blunck and slightly modified for the current RCs by myself
- >>> tries to improve the performance by modifying the behaviour
- >>> of kcopyd, so that it pushes back an I/O job to the head of
- >>> the job queue instead of the tail as process_jobs() currently
- >>> does when it has to wait for free pages. This way, write
- >>> requests aren't shuffled to cause extra seeks.
- >>
- >> Did you check for starvation problems, too?
-
-I have twice and four times as many pages allocated
-to each kcopyd client without patching the queuing behaviour
-and got these figures (MiB/s) -- allocating more buffers doesn't
-seem to help much, so I don't think it's memory shortage
-that matters here.
-
-test \ # of buffer pages   256(default)      512        1024
-  10M dd+fsync, create        16.00          18.60      18.95
-  10M dd+fsync, update        16.14          18.39      19.70
-100M dd+fsync, create        15.18          18.80      19.29
-100M dd+fsync, update        15.28          19.29      19.45
-
---
-> Kazuo Ito, NTT Open Source Software Center
-> Phone: +81-3-5860-5125 / FAX: +81-3-5463-5690 / E-mail: 
-> ito.kazuo@oss.ntt.co.jp
-
+Isn't this reliably reproducible?  Assuming yes, Intel are such swell
+guys that you might ask them to ship a few dozen cards to you to break
+until you've tracked down the problem.  I mean, it's a lot easier to
+find this sorts of fault when you can see it first hand than trying to
+guess from third parties' reports, isn't it?  For some reasonable value
+of "you", that so.
