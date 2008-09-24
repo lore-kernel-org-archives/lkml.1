@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbYIXAE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbYIXAO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbYIXAE0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 20:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbYIXADm
+	id S1753871AbYIXAO3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 20:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYIXAOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 20:03:42 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:31664 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754745AbYIXADl (ORCPT
+	Tue, 23 Sep 2008 20:14:21 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:55826 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbYIXAOU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 20:03:41 -0400
-Date: Wed, 24 Sep 2008 04:03:40 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Greg Kroah-Hartman <greg@kroah.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Timur Tabi <timur@freescale.com>, Li Yang <leoli@freescale.com>,
-       Laurent Pinchart <laurentp@cse-semaphore.com>, linuxppc-dev@ozlabs.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] USB: Protect hcd.h from multiple inclusions
-Message-ID: <20080924000340.GC29733@oksana.dev.rtsoft.ru>
-References: <20080924000255.GA28054@oksana.dev.rtsoft.ru>
+	Tue, 23 Sep 2008 20:14:20 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=dz9Uz24-bVE81DiM-LMA:9 a=uAqhTRXLft-Q-TG0U2CimIofN3IA:4 a=W6NcNfrOW04A:10 a=ajM0KTv7SNIA:10
+Message-ID: <48D9865B.8080806@mail.usask.ca>
+Date: Tue, 23 Sep 2008 18:14:19 -0600
+From: Robert Hancock <rwh461@mail.usask.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-In-Reply-To: <20080924000255.GA28054@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Larry Finger <Larry.Finger@lwfinger.net>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Logs being spammed with "Unable to enumerate USB device"
+References: <fa.dl+pVhW/kcgBFo0dsyPEgn0MhtE@ifi.uio.no>
+In-Reply-To: <fa.dl+pVhW/kcgBFo0dsyPEgn0MhtE@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will let us use this header in other header files.
-Will be needed for the FHCI USB Host driver.
+Larry Finger wrote:
+> At times, my logs are filled with multiple copies of the following
+> message:
+> 
+> hub 4-0:1.0: unable to enumerate USB device on port 5
+> 
+> The output of lsusb is as follows:
+> 
+> Bus 003 Device 002: ID 04f2:b016 Chicony Electronics Co., Ltd
+> Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+> Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> Bus 004 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+> Bus 001 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> 
+> The hubs are built into an HP dv2815nr laptop, and nothing is plugged in.
+> 
+> I'm currently running v2.6.27-rc7 from the linux-2.6 git tree, but it
+> does not seem to be a regression. In checking my back logs, my first
+> such "storm" happened on July 25, with successive ones on September 8,
+> 9, 12 and 21.
+> 
+> Is this an indication of hardware failure? What further info is
+> required? Any suggestions for debugging code to try to pinpoint the
+> problem?
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/usb/core/hcd.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/usb/core/hcd.h b/drivers/usb/core/hcd.h
-index e710ce0..66b64d7 100644
---- a/drivers/usb/core/hcd.h
-+++ b/drivers/usb/core/hcd.h
-@@ -16,6 +16,8 @@
-  * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
- 
-+#ifndef __USB_CORE_HCD_H
-+#define __USB_CORE_HCD_H
- 
- #ifdef __KERNEL__
- 
-@@ -483,3 +485,5 @@ static inline void usbmon_urb_complete(struct usb_bus *bus, struct urb *urb,
- extern struct rw_semaphore ehci_cf_port_reset_rwsem;
- 
- #endif /* __KERNEL__ */
-+
-+#endif /* __USB_CORE_HCD_H */
--- 
-1.5.6.3
-
+Is this just occurring during bootup? I think this is normal if the EHCI 
+driver is loaded after UHCI or OHCI because it causes the device to be 
+switched away from the other controller that's trying to enumerate it, 
+at least momentarily.
