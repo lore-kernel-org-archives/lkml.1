@@ -1,58 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbYIXIRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbYIXI3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753186AbYIXIRY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 04:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYIXIRM
+	id S1752476AbYIXI3v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 04:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbYIXI3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 04:17:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32821 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751514AbYIXIRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 04:17:10 -0400
-Date: Wed, 24 Sep 2008 10:15:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: hpa@zytor.com, tglx@linutronix.de, arjan@linux.intel.com,
-       venkatesh.pallipadi@intel.com, jeremy@goop.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/7] x86, cpa: cpa related changes to be inline with
-	TLB Application note - v2
-Message-ID: <20080924081511.GB19354@elte.hu>
-References: <20080923210035.413932000@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080923210035.413932000@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 24 Sep 2008 04:29:43 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:49132 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750968AbYIXI3m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 04:29:42 -0400
+Date: Wed, 24 Sep 2008 17:29:37 +0900 (JST)
+Message-Id: <20080924.172937.72827863.taka@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       righi.andrea@gmail.com, jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080922143042.GA19222@redhat.com>
+References: <20080919131019.GA3606@redhat.com>
+	<20080922.183651.62951479.taka@valinux.co.jp>
+	<20080922143042.GA19222@redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> > > > > > I have got excellent results of dm-ioband, that controls the disk I/O
+> > > > > > bandwidth even when it accepts delayed write requests.
+> > > > > > 
+> > > > > > In this time, I ran some benchmarks with a high-end storage. The
+> > > > > > reason was to avoid a performance bottleneck due to mechanical factors
+> > > > > > such as seek time.
+> > > > > > 
+> > > > > > You can see the details of the benchmarks at:
+> > > > > > http://people.valinux.co.jp/~ryov/dm-ioband/hps/
+> > > > 
+> > > >   (snip)
+> > > > 
+> > > > > Secondly, why do we have to create an additional dm-ioband device for 
+> > > > > every device we want to control using rules. This looks little odd
+> > > > > atleast to me. Can't we keep it in line with rest of the controllers
+> > > > > where task grouping takes place using cgroup and rules are specified in
+> > > > > cgroup itself (The way Andrea Righi does for io-throttling patches)?
+> > > > 
+> > > > It isn't essential dm-band is implemented as one of the device-mappers.
+> > > > I've been also considering that this algorithm itself can be implemented
+> > > > in the block layer directly.
+> > > > 
+> > > > Although, the current implementation has merits. It is flexible.
+> > > >   - Dm-ioband can be place anywhere you like, which may be right before
+> > > >     the I/O schedulers or may be placed on top of LVM devices.
+> > > 
+> > > Hi,
+> > > 
+> > > An rb-tree per request queue also should be able to give us this
+> > > flexibility. Because logic is implemented per request queue, rules can be 
+> > > placed at any layer. Either at bottom most layer where requests are
+> > > passed to elevator or at higher layer where requests will be passed to 
+> > > lower level block devices in the stack. Just that we shall have to do
+> > > modifications to some of the higher level dm/md drivers to make use of
+> > > queuing cgroup requests and releasing cgroup requests to lower layers.
+> > 
+> > Request descriptors are allocated just right before passing I/O requests
+> > to the elevators. Even if you move the descriptor allocation point
+> > before calling the dm/md drivers, the drivers can't make use of them.
+> > 
+> 
+> You are right. request descriptors are currently allocated at bottom
+> most layer. Anyway, in the rb-tree, we put bio cgroups as logical elements
+> and every bio cgroup then contains the list of either bios or requeust
+> descriptors. So what kind of list bio-cgroup maintains can depend on
+> whether it is a higher layer driver (will maintain bios) or a lower layer
+> driver (will maintain list of request descriptors per bio-cgroup).
 
-> v2:
->  1. Fix the deadlock associated with smp call function and spin_lock_irqsave()
->     for pgd_lock.
->  2. No alias checks for __set_pages_np()/__set_pages_p() avoiding the large
->     text page split from atomic context in CONFIG_DEBUG_PAGEALLOC.
->  3. Serialize cpa() for !CONFIG_DEBUG_PAGEALLOC, so that a cpu with stale
->     large page tlb's(but small PTE's in memory) won't do a cpa() in parallel
->     to some other cpu splitting large pages and changing page attribute for
->     a small page.
+I'm getting confused about your idea.
 
-ok, looks good and the code got simpler as well. I've started testing it 
-in tip/master and will push out these updates to tip/x86/pat if they 
-pass. (v1 had stability problems)
+I thought you wanted to make each cgroup have its own rb-tree,
+and wanted to make all the layers share the same rb-tree.
+If so, are you going to put different things into the same tree?
+Do you even want all the I/O schedlers use the same tree?
+
+Are you going to block request descriptors in the tree?
+>From the view point of performance, all the request descriptors
+should be passed to the I/O schedulers, since the maximum number
+of request descriptors is limited. 
+
+And I still don't understand if you want to make your rb-tree
+work efficiently, you need to put a lot of bios or request descriptors
+into the tree. Is that what you are going to do?
+On the other hand, dm-ioband tries to minimize to have bios blocked.
+And I have a plan on reducing the maximum number that can be
+blocked there.
+
+Sorry to bother you that I just don't understand the concept clearly.
+
+> So basically mechanism of maintaining an rb-tree can be completely
+> ignorant of the fact whether a driver is keeping track of bios or keeping
+> track of requests per cgroup. 
+
+I don't care whether the queue is implemented as a rb-tee or some
+kind of list because they are logically the same thing.
+
+> > When one of the dm drivers accepts a I/O request, the request
+> > won't have either a real device number or a real sector number.
+> > The request will be re-mapped to another sector of another device
+> > in every dm drivers. The request may even be replicated there.
+> > So it is really hard to find the right request queue to put
+> > the request into and sort them on the queue.
+> 
+> Hmm.., I thought that all the incoming requests to dm/md driver will
+> remain in a single queue maintained by that drvier (irrespective of the
+> fact in which request queue these requests go in lower layers after
+> replication or other operation). I am not very familiar with dm/md
+> implementation. I will read more about it....
+
+They never look into the queues maintained in drivers.
+Some of them have its own little queue and others don't.
+Some may just modify the sector numbers of I/O requests or may
+create a new I/O request themselves. Others such as md-raid5
+have their own queues to control I/Os, where A write request may
+cause several read requests and have to wait for their completions
+before the actual write starts.
+
 
 Thanks,
-
-	Ingo
+Hirokazu Takahashi.
