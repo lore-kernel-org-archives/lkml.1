@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbYIXOt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbYIXOy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbYIXOt7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 10:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYIXOtu
+	id S1753025AbYIXOy7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 10:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYIXOyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 10:49:50 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55427 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752043AbYIXOtt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 10:49:49 -0400
-Date: Wed, 24 Sep 2008 10:49:48 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: suspend (uhci_hcd) defunct in mmotm 2008-09-13-03-09
-In-Reply-To: <48DA1CA5.20409@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0809241047500.2650-100000@iolanthe.rowland.org>
+	Wed, 24 Sep 2008 10:54:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49736 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750991AbYIXOyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 10:54:51 -0400
+Date: Wed, 24 Sep 2008 10:53:31 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Hirokazu Takahashi <taka@valinux.co.jp>
+Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       righi.andrea@gmail.com, jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+Message-ID: <20080924145331.GD547@redhat.com>
+References: <20080919131019.GA3606@redhat.com> <20080922.183651.62951479.taka@valinux.co.jp> <20080922143042.GA19222@redhat.com> <20080924.193414.22923673.taka@valinux.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080924.193414.22923673.taka@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008, Jiri Slaby wrote:
-
-> >> pm_op(): pci_pm_suspend+0x0/0xd0 returns -16
-> >> PM: Device 0000:00:1d.0 failed to suspend: error -16
-> >> PM: Some devices failed to suspend
+On Wed, Sep 24, 2008 at 07:34:14PM +0900, Hirokazu Takahashi wrote:
+> Hi,
+> 
+> > > It's possible the algorithm of dm-ioband can be placed in the block layer
+> > > if it is really a big problem.
+> > > But I doubt it can control every control block I/O as we wish since
+> > > the interface the cgroup supports is quite poor.
 > > 
-> > The reason for this error is that the root hub wasn't already 
-> > suspended.  Was there a USB device plugged into that controller?
+> > Had a question regarding cgroup interface. I am assuming that in a system,
+> > one will be using other controllers as well apart from IO-controller.
+> > Other controllers will be using cgroup as a grouping mechanism.
+> > Now coming up with additional grouping mechanism for only io-controller seems
+> > little odd to me. It will make the job of higher level management software
+> > harder.
+> > 
+> > Looking at the dm-ioband grouping examples given in patches, I think cases
+> > of grouping based  in pid, pgrp, uid and kvm can be handled by creating right
+> > cgroup and making sure applications are launched/moved into right cgroup by
+> > user space tools. 
 > 
-> No:
-
-> > If you still run into problems, post more of the dmesg log (with 
-> > CONFIG_USB_DEBUG enabled, of course!).
+> Grouping in pid, pgrp and uid is not the point, which I've been thinking
+> can be replaced with cgroup once the implementation of bio-cgroup is done.
 > 
-> Hm, it doesn't work. 2 dmesgs from mmotm 2008-09-10-19-39 (without usb debug)
-> [ok] and -rc6+gkh-all (with usb debug) [fail]:
-> http://decibel.fi.muni.cz/~xslaby/dmesg_fail.hcd
-> http://decibel.fi.muni.cz/~xslaby/dmesg_ok.hcd
+> I think problems of cgroup are that they can't support lots of storages
+> and hotplug devices, it just handle them as if they were just one resource.
+> I don't insist the interface of dm-ioband is the best. I just hope the
+> cgroup infrastructure support this kind of resources.
+> 
 
-In fact neither of those logs includes USB debugging messages.  Maybe
-you omitted a mkinitrd step.
+Sorry, I did not understand fully. Can you please explain in detail what
+kind of situation will not be covered by cgroup interface.
 
-Alan Stern
-
+Thanks
+Vivek
