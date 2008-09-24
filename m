@@ -1,122 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbYIXQu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYIXQum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754878AbYIXQu6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 12:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbYIXQtz
+	id S1755472AbYIXQum (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 12:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbYIXQtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 12:49:55 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:13323 "EHLO
-	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754402AbYIXQty (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 12:49:54 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references:x-gmailtapped-by;
-	b=Re0MV7QnOLrog7NG09jS+iGcvdRT4NrY3PsX3DhYl317ld7cwGIQqPfoqgXF/E0J0
-	m2zfM17c5HGE5duCrH47w==
-Message-ID: <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com>
-Date: Wed, 24 Sep 2008 09:49:25 -0700
-From: "Martin Bligh" <mbligh@google.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-Cc: "Steven Rostedt" <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       "David Wilder" <dwilder@us.ibm.com>, hch@lst.de,
-       "Tom Zanussi" <zanussi@comcast.net>,
-       "Steven Rostedt" <srostedt@redhat.com>
-In-Reply-To: <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
+	Wed, 24 Sep 2008 12:49:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34587 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755205AbYIXQtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 12:49:41 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 2/2] MN10300: Make sched_clock() report time since boot
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, a.p.zijlstra@chello.nl, nico@cam.org,
+       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
+Date: Wed, 24 Sep 2008 17:48:31 +0100
+Message-ID: <20080924164831.14867.11054.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080924164826.14867.63020.stgit@warthog.procyon.org.uk>
+References: <20080924164826.14867.63020.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080924051056.650388887@goodmis.org>
-	 <20080924051400.195780424@goodmis.org>
-	 <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>
-	 <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>
-	 <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
-X-GMailtapped-By: 172.28.16.146
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> I'm not sure why this is any harder to deal with in write, than it is
->> in reserve? We should be able to make reserve handle this just
->> as well?
->
-> No, imagine the mentioned case where we're straddling a page boundary.
->
-> A----|   |----B
->    ^------|
->
-> So when we reserve we get a pointer into page A, but our reserve length
-> will run over into page B. A write() method will know how to check for
-> this and break up the memcpy to copy up-to the end of A and continue
-> into B.
->
-> You cannot expect the reserve/commit interface users to do this
-> correctly - it would also require one to expose too much internals,
-> you'd need to be able to locate page B for starters.
+Make sched_clock() report time since boot rather than time since last timer
+interrupt.
 
-Can't the reserve interface just put a padding event into page A,
-or otherwise mark it, and return the start of page B?
+Make sched_clock() expand and scale the 32-bit TSC value running at IOCLK
+speed (~33MHz) to a 64-bit nanosecond counter, using cnt32_to_63() acquired
+from the ARM arch and without using slow DIVU instructions every call.
 
->> If you use write rather than reserve, you have to copy all the data
->> twice for every event.
->
-> Well, once. I'm not seeing where the second copy comes from.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Depends how you count ;-) One more time than you would have to
-with reserve - the temporarily packed structure doesn't exist.
+ arch/mn10300/kernel/time.c |   52 +++++++++++++++++++++++++++++++++++---------
+ 1 files changed, 41 insertions(+), 11 deletions(-)
 
->> > On top of that foundation build an eventbuffer, which knows about
->> > encoding/decoding/printing events.
->> >
->> > This too needs to be a flexible layer -
->>
->> That would be nice. However, we need to keep at least the length
->> and timestamp fields common so we can do parsing and the mergesort?
->
-> And here I was thinking you guys bit encoded the event id into the
-> timestamp delta :-)
 
-+/* header plus 32-bits of event data */
-+struct ktrace_entry {
-+       u32 event_type:5, tsc_shifted:27;
-+       u32 data;
-+};
+diff --git a/arch/mn10300/kernel/time.c b/arch/mn10300/kernel/time.c
+index babb7c2..e460658 100644
+--- a/arch/mn10300/kernel/time.c
++++ b/arch/mn10300/kernel/time.c
+@@ -1,6 +1,6 @@
+ /* MN10300 Low level time management
+  *
+- * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Copyright (C) 2007-2008 Red Hat, Inc. All Rights Reserved.
+  * Written by David Howells (dhowells@redhat.com)
+  * - Derived from arch/i386/kernel/time.c
+  *
+@@ -16,6 +16,7 @@
+ #include <linux/init.h>
+ #include <linux/smp.h>
+ #include <linux/profile.h>
++#include <linux/cnt32_to_63.h>
+ #include <asm/irq.h>
+ #include <asm/div64.h>
+ #include <asm/processor.h>
+@@ -40,27 +41,54 @@ static struct irqaction timer_irq = {
+ 	.name		= "timer",
+ };
+ 
++static unsigned long sched_clock_multiplier;
++
+ /*
+  * scheduler clock - returns current time in nanosec units.
+  */
+ unsigned long long sched_clock(void)
+ {
+ 	union {
+-		unsigned long long l;
+-		u32 w[2];
+-	} quot;
++		unsigned long long ll;
++		unsigned l[2];
++	} tsc64, result;
++	unsigned long tsc, tmp;
++	unsigned product[3]; /* 96-bit intermediate value */
++
++	/* read the TSC value
++	 */
++	tsc = 0 - get_cycles(); /* get_cycles() counts down */
+ 
+-	quot.w[0] = mn10300_last_tsc - get_cycles();
+-	quot.w[1] = 1000000000;
++	/* expand to 64-bits.
++	 * - sched_clock() must be called once a minute or better or the
++	 *   following will go horribly wrong - see cnt32_to_63()
++	 */
++	tsc64.ll = cnt32_to_63(tsc) & 0x7fffffffffffffffULL;
+ 
+-	asm("mulu %2,%3,%0,%1"
+-	    : "=r"(quot.w[1]), "=r"(quot.w[0])
+-	    : "0"(quot.w[1]), "1"(quot.w[0])
++	/* scale the 64-bit TSC value to a nanosecond value via a 96-bit
++	 * intermediate
++	 */
++	asm("mulu	%2,%0,%3,%0	\n"	/* LSW * mult ->  0:%3:%0 */
++	    "mulu	%2,%1,%2,%1	\n"	/* MSW * mult -> %2:%1:0 */
++	    "add	%3,%1		\n"
++	    "addc	0,%2		\n"	/* result in %2:%1:%0 */
++	    : "=r"(product[0]), "=r"(product[1]), "=r"(product[2]), "=r"(tmp)
++	    :  "0"(tsc64.l[0]),  "1"(tsc64.l[1]),  "2"(sched_clock_multiplier)
+ 	    : "cc");
+ 
+-	do_div(quot.l, MN10300_TSCCLK);
++	result.l[0] = product[1] << 16 | product[0] >> 16;
++	result.l[1] = product[2] << 16 | product[1] >> 16;
+ 
+-	return quot.l;
++	return result.ll;
++}
++
++/*
++ * initialise the scheduler clock
++ */
++static void __init mn10300_sched_clock_init(void)
++{
++	sched_clock_multiplier =
++		__muldiv64u(NSEC_PER_SEC, 1 << 16, MN10300_TSCCLK);
+ }
+ 
+ /*
+@@ -128,4 +156,6 @@ void __init time_init(void)
+ 	/* start the watchdog timer */
+ 	watchdog_go();
+ #endif
++
++	mn10300_sched_clock_init();
+ }
 
-was our basic data type. So ... sort of ;-)
-
->> So type would move into the body here?
->
-> All of it would, basically I have no notion of an event in the
-> ringbuffer API. You write $something and your read routine would need to
-> be smart enough to figure it out.
-
-If you don't have timestamps, you need domain-specific context to merge
-the per-cpu buffers back together. As long as these are common format
-amongst all the event-level alternatives, I guess it doesn't matter.
-
-> Another option is to start out with a fixed sized header that contains a
-> length field.
-
-That's what we discussed at KS/plumbers, and seems like the simplest
-option by far to start with.
-
-> But the raw ringbuffer layer, the one concerned with fiddling the pages
-> and writing/reading thereto need not be aware of anything else.
-
-When you loop around the ringbuffer, you need to shift the starting "read"
-pointer up to the next event, don't you? How do you do that to start on
-a whole event without knowing the event size?
-
-> Exactly - which is why a flexible encoding layer makes sense to me -
-> aside from the abstraction itself.
-
-I like the abstraction, yes ;-) Just not convinced how much we can put in it.
