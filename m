@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbYIXJGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbYIXJGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbYIXJGM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 05:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbYIXJF1
+	id S1755069AbYIXJGq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 05:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbYIXJFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 05:05:27 -0400
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:61464 "EHLO
+	Wed, 24 Sep 2008 05:05:43 -0400
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:61481 "EHLO
 	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751922AbYIXJFW (ORCPT
+	with ESMTP id S1753613AbYIXJF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 05:05:22 -0400
-Message-Id: <20080924090342.499950273@nttdata.co.jp>
+	Wed, 24 Sep 2008 05:05:29 -0400
+Message-Id: <20080924090348.299303451@nttdata.co.jp>
 References: <20080924090317.359685535@nttdata.co.jp>
 User-Agent: quilt/0.45-1
-Date: Wed, 24 Sep 2008 18:03:19 +0900
+Date: Wed, 24 Sep 2008 18:03:21 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, haradats@nttdata.co.jp,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #9 (2.6.27-rc7-mm1) 2/6] Memory and pathname management functions.
-X-OriginalArrivalTime: 24 Sep 2008 09:05:20.0314 (UTC) FILETIME=[AB95B1A0:01C91E24]
+Subject: [TOMOYO #9 (2.6.27-rc7-mm1) 4/6] Domain transition handler.
+X-OriginalArrivalTime: 24 Sep 2008 09:05:26.0627 (UTC) FILETIME=[AF58FB30:01C91E24]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux performs pathname based access control.
-To remove factors that make pathname based access control difficult
-(e.g. symbolic links, "..", "//" etc.), TOMOYO Linux derives realpath
-of requested pathname from "struct dentry" and "struct vfsmount".
+This file controls domain creation/deletion/transition.
 
-The maximum length of string data is limited to 4000 including trailing '\0'.
-Since TOMOYO Linux uses '\ooo' style representation for non ASCII printable
-characters, may be TOMOYO Linux should be able to support 16336 (which means
-(NAME_MAX * (PATH_MAX / (NAME_MAX + 1)) * 4 + (PATH_MAX / (NAME_MAX + 1)))
-including trailing '\0'), but I think 4000 is enough for practical use.
+Every process belongs to a domain in TOMOYO Linux.
+Domain transition occurs when execve(2) is called
+and the domain is expressed as 'process invocation history',
+such as '<kernel> /sbin/init /etc/init.d/rc'.
+Domain information is stored in task_struct->cred->security field.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- security/tomoyo/realpath.c |  723 +++++++++++++++++++++++++++++++++++++++++++++
- security/tomoyo/realpath.h |   60 +++
- 2 files changed, 783 insertions(+)
+ security/tomoyo/domain.c |  856 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 856 insertions(+)
 
 --- /dev/null
-+++ linux-2.6.27-rc7-mm1/security/tomoyo/realpath.c
-@@ -0,0 +1,723 @@
++++ linux-2.6.27-rc7-mm1/security/tomoyo/domain.c
+@@ -0,0 +1,856 @@
 +/*
-+ * security/tomoyo/realpath.c
++ * security/tomoyo/domain.c
 + *
-+ * Get the canonicalized absolute pathnames. The basis for TOMOYO.
++ * Implementation of the Domain-Based Mandatory Access Control.
 + *
 + * Copyright (C) 2005-2008  NTT DATA CORPORATION
 + *
@@ -58,781 +54,851 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 + *
 + */
 +
-+#include <linux/types.h>
-+#include <linux/mount.h>
-+#include <linux/magic.h>
-+#include <linux/sysctl.h>
 +#include "common.h"
++#include "tomoyo.h"
 +#include "realpath.h"
++#include <linux/binfmts.h>
++
++/* Variables definitions.*/
++
++/* The initial domain. */
++struct domain_info KERNEL_DOMAIN;
++
++/* The list for "struct domain_info". */
++LIST1_HEAD(domain_list);
++
++/* Lock for appending domain's ACL. */
++DEFINE_MUTEX(domain_acl_lock);
++
++/* Domain creation lock. */
++static DEFINE_MUTEX(new_domain_assign_lock);
++
++/* Structure for "initialize_domain" and "no_initialize_domain" keyword. */
++struct domain_initializer_entry {
++	struct list1_head list;
++	const struct path_info *domainname;    /* This may be NULL */
++	const struct path_info *program;
++	bool is_deleted;
++	bool is_not;       /* True if this entry is "no_initialize_domain".  */
++	bool is_last_name; /* True if the domainname is tmy_get_last_name(). */
++};
++
++/* Structure for "keep_domain" and "no_keep_domain" keyword. */
++struct domain_keeper_entry {
++	struct list1_head list;
++	const struct path_info *domainname;
++	const struct path_info *program;       /* This may be NULL */
++	bool is_deleted;
++	bool is_not;       /* True if this entry is "no_keep_domain".        */
++	bool is_last_name; /* True if the domainname is tmy_get_last_name(). */
++};
++
++/* Structure for "alias" keyword. */
++struct alias_entry {
++	struct list1_head list;
++	const struct path_info *original_name;
++	const struct path_info *aliased_name;
++	bool is_deleted;
++};
 +
 +/**
-+ * get_absolute_path - Get the path of a dentry but ignores chroot'ed root.
++ * tmy_set_domain_flag - Set or clear domain's attribute flags.
 + *
-+ * @dentry: Pointer to "struct dentry".
-+ * @vfsmnt: Pointer to "struct vfsmount".
-+ * @buffer: Pointer to buffer to return value in.
-+ * @buflen: Sizeof @buffer.
++ * @domain:    Pointer to "struct domain_info".
++ * @is_delete: True if it is a delete request.
++ * @flags:     Flags to set or clear.
 + *
-+ * Returns 0 on success, -ENOMEM otherwise.
-+ *
-+ * Caller holds the dcache_lock and vfsmount_lock.
-+ * Based on __d_path() in fs/dcache.c
-+ *
-+ * If dentry is a directory, trailing '/' is appended.
-+ * Characters out of 0x20 < c < 0x7F range are converted to
-+ * \ooo style octal string.
-+ * Character \ is converted to \\ string.
++ * Returns nothing.
 + */
-+static int get_absolute_path(struct dentry *dentry, struct vfsmount *vfsmnt,
-+			     char *buffer, int buflen)
++void tmy_set_domain_flag(struct domain_info *domain, const bool is_delete,
++			 const u8 flags)
 +{
-+	/***** CRITICAL SECTION START *****/
-+	char *start = buffer;
-+	char *end = buffer + buflen;
-+	bool is_dir = (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode));
-+
-+	if (buflen < 256)
-+		goto out;
-+
-+	*--end = '\0';
-+	buflen--;
-+
-+	for (;;) {
-+		struct dentry *parent;
-+
-+		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
-+			/* Global root? */
-+			if (vfsmnt->mnt_parent == vfsmnt)
-+				break;
-+			dentry = vfsmnt->mnt_mountpoint;
-+			vfsmnt = vfsmnt->mnt_parent;
-+			continue;
-+		}
-+		if (is_dir) {
-+			is_dir = false;
-+			*--end = '/';
-+			buflen--;
-+		}
-+		parent = dentry->d_parent;
-+		{
-+			const char *sp = dentry->d_name.name;
-+			const char *cp = sp + dentry->d_name.len - 1;
-+			unsigned char c;
-+
-+			/*
-+			 * Exception: Use /proc/self/ rather than
-+			 * /proc/\$/ for current process.
-+			 */
-+			if (IS_ROOT(parent) && *sp > '0' && *sp <= '9' &&
-+			    parent->d_sb &&
-+			    parent->d_sb->s_magic == PROC_SUPER_MAGIC) {
-+				unsigned long pid;
-+				if (!strict_strtoul(sp, 10, &pid) &&
-+				    (pid_t) pid == current->tgid) {
-+					sp = "self";
-+					cp = sp + 3;
-+				}
-+			}
-+
-+			while (sp <= cp) {
-+				c = *(unsigned char *) cp;
-+				if (c == '\\') {
-+					buflen -= 2;
-+					if (buflen < 0)
-+						goto out;
-+					*--end = '\\';
-+					*--end = '\\';
-+				} else if (c > ' ' && c < 127) {
-+					if (--buflen < 0)
-+						goto out;
-+					*--end = (char) c;
-+				} else {
-+					buflen -= 4;
-+					if (buflen < 0)
-+						goto out;
-+					*--end = (c & 7) + '0';
-+					*--end = ((c >> 3) & 7) + '0';
-+					*--end = (c >> 6) + '0';
-+					*--end = '\\';
-+				}
-+				cp--;
-+			}
-+			if (--buflen < 0)
-+				goto out;
-+			*--end = '/';
-+		}
-+		dentry = parent;
-+	}
-+	if (*end == '/') {
-+		buflen++;
-+		end++;
-+	}
-+	{
-+		const char *sp = dentry->d_name.name;
-+		const char *cp = sp + dentry->d_name.len - 1;
-+		unsigned char c;
-+		while (sp <= cp) {
-+			c = *(unsigned char *) cp;
-+			if (c == '\\') {
-+				buflen -= 2;
-+				if (buflen < 0)
-+					goto out;
-+				*--end = '\\';
-+				*--end = '\\';
-+			} else if (c > ' ' && c < 127) {
-+				if (--buflen < 0)
-+					goto out;
-+				*--end = (char) c;
-+			} else {
-+				buflen -= 4;
-+				if (buflen < 0)
-+					goto out;
-+				*--end = (c & 7) + '0';
-+				*--end = ((c >> 3) & 7) + '0';
-+				*--end = (c >> 6) + '0';
-+				*--end = '\\';
-+			}
-+			cp--;
-+		}
-+	}
-+	/* Move the pathname to the top of the buffer. */
-+	memmove(start, end, strlen(end) + 1);
-+	return 0;
-+out:
-+	return -ENOMEM;
-+	/***** CRITICAL SECTION END *****/
++	mutex_lock(&new_domain_assign_lock);
++	if (!is_delete)
++		domain->flags |= flags;
++	else
++		domain->flags &= ~flags;
++	mutex_unlock(&new_domain_assign_lock);
 +}
 +
 +/**
-+ * tmy_realpath_from_dentry2 - Returns realpath(3) of the given dentry but ignores chroot'ed root.
++ * tmy_get_last_name - Get last component of a domainname.
 + *
-+ * @dentry:      Pointer to "struct dentry".
-+ * @mnt:         Pointer to "struct vfsmount".
-+ * @newname:     Pointer to buffer to return value in.
-+ * @newname_len: Size of @newname.
++ * @domain: Pointer to "struct domain_info".
++ *
++ * Returns the last component of the domainname.
++ */
++const char *tmy_get_last_name(const struct domain_info *domain)
++{
++	const char *cp0 = domain->domainname->name, *cp1 = strrchr(cp0, ' ');
++	if (cp1)
++		return cp1 + 1;
++	return cp0;
++}
++
++/**
++ * tmy_add_domain_acl - Add the given ACL to the given domain.
++ *
++ * @domain: Pointer to "struct domain_info". May be NULL.
++ * @acl:    Pointer to "struct acl_info".
++ *
++ * Returns 0.
++ */
++int tmy_add_domain_acl(struct domain_info *domain, struct acl_info *acl)
++{
++	if (domain)
++		list1_add_tail_mb(&acl->list, &domain->acl_info_list);
++	else
++		acl->type &= ~ACL_DELETED;
++	tmy_update_counter(TMY_UPDATES_COUNTER_DOMAIN_POLICY);
++	return 0;
++}
++
++/**
++ * tmy_del_domain_acl - Delete the given ACL from the domain.
++ *
++ * @acl: Pointer to "struct acl_info". May be NULL.
++ *
++ * Returns 0.
++ */
++int tmy_del_domain_acl(struct acl_info *acl)
++{
++	if (acl)
++		acl->type |= ACL_DELETED;
++	tmy_update_counter(TMY_UPDATES_COUNTER_DOMAIN_POLICY);
++	return 0;
++}
++
++/* The list for "struct domain_initializer_entry". */
++static LIST1_HEAD(domain_initializer_list);
++
++/**
++ * update_domain_initializer_entry - Update "struct domain_initializer_entry" list.
++ *
++ * @domainname: The name of domain. May be NULL.
++ * @program:    The name of program.
++ * @is_not:     True if it is "no_initialize_domain" entry.
++ * @is_delete:  True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int tmy_realpath_from_dentry2(struct dentry *dentry, struct vfsmount *mnt,
-+			      char *newname, int newname_len)
++static int update_domain_initializer_entry(const char *domainname,
++					   const char *program,
++					   const bool is_not,
++					   const bool is_delete)
 +{
-+	int error;
-+	struct dentry *d_dentry;
-+	struct vfsmount *d_mnt;
-+	if (!dentry || !mnt || !newname || newname_len <= 2048)
-+		return -EINVAL;
-+	if (dentry->d_op && dentry->d_op->d_dname) {
-+		/* For "socket:[\$]" and "pipe:[\$]". */
-+		static const int offset = 1536;
-+		char *dp = newname;
-+		char *sp = dentry->d_op->d_dname(dentry, newname + offset,
-+						 newname_len - offset);
-+		if (IS_ERR(sp)) {
-+			error = PTR_ERR(sp);
-+			goto out;
-+		}
-+		error = -ENOMEM;
-+		newname += offset;
-+		while (1) {
-+			const unsigned char c = *(unsigned char *) sp++;
-+			if (c == '\\') {
-+				if (dp + 2 >= newname)
-+					break;
-+				*dp++ = '\\';
-+				*dp++ = '\\';
-+			} else if (c > ' ' && c < 127) {
-+				if (dp + 1 >= newname)
-+					break;
-+				*dp++ = (char) c;
-+			} else if (c) {
-+				if (dp + 4 >= newname)
-+					break;
-+				*dp++ = '\\';
-+				*dp++ = (c >> 6) + '0';
-+				*dp++ = ((c >> 3) & 7) + '0';
-+				*dp++ = (c & 7) + '0';
-+			} else {
-+				*dp = '\0';
-+				return 0;
-+			}
-+		}
++	struct domain_initializer_entry *new_entry;
++	struct domain_initializer_entry *ptr;
++	static DEFINE_MUTEX(lock);
++	const struct path_info *saved_program;
++	const struct path_info *saved_domainname = NULL;
++	int error = -ENOMEM;
++	bool is_last_name = false;
++	if (!tmy_is_correct_path(program, 1, -1, -1, __func__))
++		return -EINVAL; /* No patterns allowed. */
++	if (domainname) {
++		if (!tmy_is_domain_def(domainname) &&
++		    tmy_is_correct_path(domainname, 1, -1, -1, __func__))
++			is_last_name = true;
++		else if (!tmy_is_correct_domain(domainname, __func__))
++			return -EINVAL;
++		saved_domainname = tmy_save_name(domainname);
++		if (!saved_domainname)
++			return -ENOMEM;
++	}
++	saved_program = tmy_save_name(program);
++	if (!saved_program)
++		return -ENOMEM;
++	mutex_lock(&lock);
++	list1_for_each_entry(ptr, &domain_initializer_list, list) {
++		if (ptr->is_not != is_not ||
++		    ptr->domainname != saved_domainname ||
++		    ptr->program != saved_program)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
 +		goto out;
 +	}
-+	d_dentry = dget(dentry);
-+	d_mnt = mntget(mnt);
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&dcache_lock);
-+	spin_lock(&vfsmount_lock);
-+	error = get_absolute_path(d_dentry, d_mnt, newname, newname_len);
-+	spin_unlock(&vfsmount_lock);
-+	spin_unlock(&dcache_lock);
-+	/***** CRITICAL SECTION END *****/
-+	dput(d_dentry);
-+	mntput(d_mnt);
-+ out:
-+	if (error)
-+		printk(KERN_WARNING "tmy_realpath: Pathname too long.\n");
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++	new_entry->domainname = saved_domainname;
++	new_entry->program = saved_program;
++	new_entry->is_not = is_not;
++	new_entry->is_last_name = is_last_name;
++	list1_add_tail_mb(&new_entry->list, &domain_initializer_list);
++	error = 0;
++out:
++	mutex_unlock(&lock);
++	tmy_update_counter(TMY_UPDATES_COUNTER_EXCEPTION_POLICY);
 +	return error;
 +}
 +
 +/**
-+ * tmy_realpath_from_dentry - Returns realpath(3) of the given pathname but ignores chroot'ed root.
++ * tmy_read_domain_initializer_policy - Read "struct domain_initializer_entry" list.
 + *
-+ * @dentry: Pointer to "struct dentry".
-+ * @mnt:    Pointer to "struct vfsmount".
++ * @head: Pointer to "struct tmy_io_buffer".
 + *
-+ * Returns the realpath of the given @dentry and @mnt on success,
-+ * NULL otherwise.
-+ *
-+ * These functions use tmy_alloc(), so caller must tmy_free()
-+ * if these functions didn't return NULL.
++ * Returns true on success, false otherwise.
 + */
-+char *tmy_realpath_from_dentry(struct dentry *dentry, struct vfsmount *mnt)
++bool tmy_read_domain_initializer_policy(struct tmy_io_buffer *head)
 +{
-+	char *buf = tmy_alloc(sizeof(struct tmy_page_buffer));
-+	if (buf && tmy_realpath_from_dentry2(dentry, mnt, buf,
-+					     TMY_MAX_PATHNAME_LEN - 1) == 0)
-+		return buf;
-+	tmy_free(buf);
-+	return NULL;
-+}
-+
-+/**
-+ * tmy_realpath - Get realpath of a pathname.
-+ *
-+ * @pathname: The pathname to solve.
-+ *
-+ * Returns the realpath of @pathname on success, NULL otherwise.
-+ */
-+char *tmy_realpath(const char *pathname)
-+{
-+	struct nameidata nd;
-+	if (pathname && path_lookup(pathname, LOOKUP_FOLLOW, &nd) == 0) {
-+		char *buf = tmy_realpath_from_dentry(nd.path.dentry,
-+						     nd.path.mnt);
-+		path_put(&nd.path);
-+		return buf;
-+	}
-+	return NULL;
-+}
-+
-+/**
-+ * tmy_realpath_nofollow - Get realpath of a pathname.
-+ *
-+ * @pathname: The pathname to solve.
-+ *
-+ * Returns the realpath of @pathname on success, NULL otherwise.
-+ */
-+char *tmy_realpath_nofollow(const char *pathname)
-+{
-+	struct nameidata nd;
-+	if (pathname && path_lookup(pathname, 0, &nd) == 0) {
-+		char *buf = tmy_realpath_from_dentry(nd.path.dentry,
-+						     nd.path.mnt);
-+		path_put(&nd.path);
-+		return buf;
-+	}
-+	return NULL;
-+}
-+
-+/**
-+ * round_up - Round up an integer so that the returned pointers are appropriately aligned.
-+ *
-+ * @size: Size in bytes.
-+ *
-+ * Returns rounded value of @size.
-+ *
-+ * FIXME: Are there more requirements that is needed for assigning value
-+ * atomically?
-+ */
-+static inline unsigned int round_up(const unsigned int size)
-+{
-+	if (sizeof(void *) >= sizeof(long))
-+		return ((size + sizeof(void *) - 1)
-+			/ sizeof(void *)) * sizeof(void *);
-+	else
-+		return ((size + sizeof(long) - 1)
-+			/ sizeof(long)) * sizeof(long);
-+}
-+
-+static unsigned int allocated_memory_for_elements;
-+static unsigned int quota_for_elements;
-+
-+/**
-+ * tmy_alloc_element - Allocate permanent memory for structures.
-+ *
-+ * @size: Size in bytes.
-+ *
-+ * Returns pointer to allocated memory on success, NULL otherwise.
-+ *
-+ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
-+ */
-+void *tmy_alloc_element(const unsigned int size)
-+{
-+	static DEFINE_MUTEX(lock);
-+	static char *buf;
-+	static unsigned int buf_used_len = PAGE_SIZE;
-+	char *ptr = NULL;
-+	const unsigned int word_aligned_size = round_up(size);
-+	if (word_aligned_size > PAGE_SIZE)
-+		return NULL;
-+	mutex_lock(&lock);
-+	if (buf_used_len + word_aligned_size > PAGE_SIZE) {
-+		if (!quota_for_elements || allocated_memory_for_elements
-+		    + PAGE_SIZE <= quota_for_elements)
-+			ptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+		if (!ptr) {
-+			printk(KERN_WARNING "ERROR: Out of memory "
-+			       "for tmy_alloc_element().\n");
-+			if (!sbin_init_started)
-+				panic("MAC Initialization failed.\n");
-+		} else {
-+			buf = ptr;
-+			allocated_memory_for_elements += PAGE_SIZE;
-+			buf_used_len = word_aligned_size;
-+			ptr = buf;
++	struct list1_head *pos;
++	list1_for_each_cookie(pos, head->read_var2, &domain_initializer_list) {
++		const char *no;
++		const char *from = "";
++		const char *domain = "";
++		struct domain_initializer_entry *ptr;
++		ptr = list1_entry(pos, struct domain_initializer_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		no = ptr->is_not ? "no_" : "";
++		if (ptr->domainname) {
++			from = " from ";
++			domain = ptr->domainname->name;
 +		}
-+	} else if (word_aligned_size) {
-+		int i;
-+		ptr = buf + buf_used_len;
-+		buf_used_len += word_aligned_size;
-+		for (i = 0; i < word_aligned_size; i++) {
-+			if (!ptr[i])
-+				continue;
-+			printk(KERN_ERR "WARNING: Reserved memory was tainted! "
-+			       "The system might go wrong.\n");
-+			ptr[i] = '\0';
-+		}
-+	}
-+	mutex_unlock(&lock);
-+	return ptr;
-+}
-+
-+static unsigned int allocated_memory_for_savename;
-+static unsigned int quota_for_savename;
-+
-+#define MAX_HASH 256
-+
-+/* Structure for string data. */
-+struct name_entry {
-+	struct list1_head list;
-+	struct path_info entry;
-+};
-+
-+/* Structure for available memory region. */
-+struct free_memory_block_list {
-+	struct list_head list;
-+	char *ptr;             /* Pointer to a free area. */
-+	int len;               /* Length of the area.     */
-+};
-+
-+/* The list for "struct name_entry". */
-+static struct list1_head name_list[MAX_HASH];
-+
-+/**
-+ * tmy_save_name - Allocate permanent memory for string data.
-+ *
-+ * @name: The string to store into the permernent memory.
-+ *
-+ * Returns pointer to "struct path_info" on success, NULL otherwise.
-+ *
-+ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
-+ */
-+const struct path_info *tmy_save_name(const char *name)
-+{
-+	static LIST_HEAD(fmb_list);
-+	static DEFINE_MUTEX(lock);
-+	struct name_entry *ptr;
-+	unsigned int hash;
-+	struct free_memory_block_list *fmb;
-+	int len;
-+	char *cp;
-+	if (!name)
-+		return NULL;
-+	len = strlen(name) + 1;
-+	if (len > TMY_MAX_PATHNAME_LEN) {
-+		printk(KERN_WARNING "ERROR: Name too long "
-+		       "for tmy_save_name().\n");
-+		return NULL;
-+	}
-+	hash = full_name_hash((const unsigned char *) name, len - 1);
-+	mutex_lock(&lock);
-+	list1_for_each_entry(ptr, &name_list[hash % MAX_HASH], list) {
-+		if (hash == ptr->entry.hash && !strcmp(name, ptr->entry.name))
++		if (!tmy_io_printf(head,
++				   "%s" KEYWORD_INITIALIZE_DOMAIN "%s%s%s\n",
++				   no, ptr->program->name, from, domain))
 +			goto out;
 +	}
-+	list_for_each_entry(fmb, &fmb_list, list) {
-+		if (len <= fmb->len)
-+			goto ready;
-+	}
-+	if (!quota_for_savename || allocated_memory_for_savename + PAGE_SIZE
-+	    <= quota_for_savename)
-+		cp = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+	else
-+		cp = NULL;
-+	fmb = kzalloc(sizeof(*fmb), GFP_KERNEL);
-+	if (!cp || !fmb) {
-+		kfree(cp);
-+		kfree(fmb);
-+		printk(KERN_WARNING "ERROR: Out of memory "
-+		       "for tmy_save_name().\n");
-+		if (!sbin_init_started)
-+			panic("MAC Initialization failed.\n");
-+		ptr = NULL;
-+		goto out;
-+	}
-+	allocated_memory_for_savename += PAGE_SIZE;
-+	list_add(&fmb->list, &fmb_list);
-+	fmb->ptr = cp;
-+	fmb->len = PAGE_SIZE;
-+ready:
-+	ptr = tmy_alloc_element(sizeof(*ptr));
-+	if (!ptr)
-+		goto out;
-+	ptr->entry.name = fmb->ptr;
-+	memmove(fmb->ptr, name, len);
-+	tmy_fill_path_info(&ptr->entry);
-+	fmb->ptr += len;
-+	fmb->len -= len;
-+	list1_add_tail_mb(&ptr->list, &name_list[hash % MAX_HASH]);
-+	if (fmb->len == 0) {
-+		list_del(&fmb->list);
-+		kfree(fmb);
-+	}
++	return true;
 +out:
-+	mutex_unlock(&lock);
-+	return ptr ? &ptr->entry : NULL;
++	return false;
 +}
 +
-+/* Structure for temporarily allocated memory. */
-+struct cache_entry {
-+	struct list_head list;
-+	void *ptr;
-+	int size;
-+};
-+
-+static struct kmem_cache *tmy_cachep;
++/**
++ * tmy_write_domain_initializer_policy - Write "struct domain_initializer_entry" list.
++ *
++ * @data:      String to parse.
++ * @is_not:    True if it is "no_initialize_domain" entry.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int tmy_write_domain_initializer_policy(char *data, const bool is_not,
++					const bool is_delete)
++{
++	char *cp = strstr(data, " from ");
++	if (cp) {
++		*cp = '\0';
++		return update_domain_initializer_entry(cp + 6, data, is_not,
++						       is_delete);
++	}
++	return update_domain_initializer_entry(NULL, data, is_not, is_delete);
++}
 +
 +/**
-+ * tmy_realpath_init - Initialize realpath related code.
++ * is_domain_initializer - Check whether the given program causes domainname reinitialization.
++ *
++ * @domainname: The name of domain.
++ * @program:    The name of program.
++ * @last_name:  The last component of @domainname.
++ *
++ * Returns true if executing @program reinitializes domain transition,
++ * false otherwise.
++ */
++static bool is_domain_initializer(const struct path_info *domainname,
++				  const struct path_info *program,
++				  const struct path_info *last_name)
++{
++	struct domain_initializer_entry *ptr;
++	bool flag = false;
++	list1_for_each_entry(ptr,  &domain_initializer_list, list) {
++		if (ptr->is_deleted)
++			continue;
++		if (ptr->domainname) {
++			if (!ptr->is_last_name) {
++				if (ptr->domainname != domainname)
++					continue;
++			} else {
++				if (tmy_pathcmp(ptr->domainname, last_name))
++					continue;
++			}
++		}
++		if (tmy_pathcmp(ptr->program, program))
++			continue;
++		if (ptr->is_not)
++			return false;
++		flag = true;
++	}
++	return flag;
++}
++
++/* The list for "struct domain_keeper_entry". */
++static LIST1_HEAD(domain_keeper_list);
++
++/**
++ * update_domain_keeper_entry - Update "struct domain_keeper_entry" list.
++ *
++ * @domainname: The name of domain.
++ * @program:    The name of program. May be NULL.
++ * @is_not:     True if it is "no_keep_domain" entry.
++ * @is_delete:  True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int update_domain_keeper_entry(const char *domainname,
++				      const char *program,
++				      const bool is_not, const bool is_delete)
++{
++	struct domain_keeper_entry *new_entry;
++	struct domain_keeper_entry *ptr;
++	const struct path_info *saved_domainname;
++	const struct path_info *saved_program = NULL;
++	static DEFINE_MUTEX(lock);
++	int error = -ENOMEM;
++	bool is_last_name = false;
++	if (!tmy_is_domain_def(domainname) &&
++	    tmy_is_correct_path(domainname, 1, -1, -1, __func__))
++		is_last_name = true;
++	else if (!tmy_is_correct_domain(domainname, __func__))
++		return -EINVAL;
++	if (program) {
++		if (!tmy_is_correct_path(program, 1, -1, -1, __func__))
++			return -EINVAL;
++		saved_program = tmy_save_name(program);
++		if (!saved_program)
++			return -ENOMEM;
++	}
++	saved_domainname = tmy_save_name(domainname);
++	if (!saved_domainname)
++		return -ENOMEM;
++	mutex_lock(&lock);
++	list1_for_each_entry(ptr, &domain_keeper_list, list) {
++		if (ptr->is_not != is_not ||
++		    ptr->domainname != saved_domainname ||
++		    ptr->program != saved_program)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		goto out;
++	}
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++	new_entry->domainname = saved_domainname;
++	new_entry->program = saved_program;
++	new_entry->is_not = is_not;
++	new_entry->is_last_name = is_last_name;
++	list1_add_tail_mb(&new_entry->list, &domain_keeper_list);
++	error = 0;
++out:
++	mutex_unlock(&lock);
++	tmy_update_counter(TMY_UPDATES_COUNTER_EXCEPTION_POLICY);
++	return error;
++}
++
++/**
++ * tmy_write_domain_keeper_policy - Write "struct domain_keeper_entry" list.
++ *
++ * @data:      String to parse.
++ * @is_not:    True if it is "no_keep_domain" entry.
++ * @is_delete: True if it is a delete request.
++ *
++ */
++int tmy_write_domain_keeper_policy(char *data, const bool is_not,
++				   const bool is_delete)
++{
++	char *cp = strstr(data, " from ");
++	if (cp) {
++		*cp = '\0';
++		return update_domain_keeper_entry(cp + 6, data,
++						  is_not, is_delete);
++	}
++	return update_domain_keeper_entry(data, NULL, is_not, is_delete);
++}
++
++/**
++ * tmy_read_domain_keeper_policy - Read "struct domain_keeper_entry" list.
++ *
++ * @head: Pointer to "struct tmy_io_buffer".
++ *
++ * Returns true on success, false otherwise.
++ */
++bool tmy_read_domain_keeper_policy(struct tmy_io_buffer *head)
++{
++	struct list1_head *pos;
++	list1_for_each_cookie(pos, head->read_var2, &domain_keeper_list) {
++		struct domain_keeper_entry *ptr;
++		const char *no;
++		const char *from = "";
++		const char *program = "";
++		ptr = list1_entry(pos, struct domain_keeper_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		no = ptr->is_not ? "no_" : "";
++		if (ptr->program) {
++			from = " from ";
++			program = ptr->program->name;
++		}
++		if (!tmy_io_printf(head,
++				   "%s" KEYWORD_KEEP_DOMAIN "%s%s%s\n", no,
++				   program, from, ptr->domainname->name))
++			goto out;
++	}
++	return true;
++out:
++	return false;
++}
++
++/**
++ * is_domain_keeper - Check whether the given program causes domain transition suppression.
++ *
++ * @domainname: The name of domain.
++ * @program:    The name of program.
++ * @last_name:  The last component of @domainname.
++ *
++ * Returns true if executing @program supresses domain transition,
++ * false otherwise.
++ */
++static bool is_domain_keeper(const struct path_info *domainname,
++			     const struct path_info *program,
++			     const struct path_info *last_name)
++{
++	struct domain_keeper_entry *ptr;
++	bool flag = false;
++	list1_for_each_entry(ptr, &domain_keeper_list, list) {
++		if (ptr->is_deleted)
++			continue;
++		if (!ptr->is_last_name) {
++			if (ptr->domainname != domainname)
++				continue;
++		} else {
++			if (tmy_pathcmp(ptr->domainname, last_name))
++				continue;
++		}
++		if (ptr->program && tmy_pathcmp(ptr->program, program))
++			continue;
++		if (ptr->is_not)
++			return false;
++		flag = true;
++	}
++	return flag;
++}
++
++/* The list for "struct alias_entry". */
++static LIST1_HEAD(alias_list);
++
++/**
++ * update_alias_entry - Update "struct alias_entry" list.
++ *
++ * @original_name: The original program's real name.
++ * @aliased_name:  The symbolic program's symbolic link's name.
++ * @is_delete:     True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int update_alias_entry(const char *original_name,
++			      const char *aliased_name,
++			      const bool is_delete)
++{
++	struct alias_entry *new_entry;
++	struct alias_entry *ptr;
++	static DEFINE_MUTEX(lock);
++	const struct path_info *saved_original_name;
++	const struct path_info *saved_aliased_name;
++	int error = -ENOMEM;
++	if (!tmy_is_correct_path(original_name, 1, -1, -1, __func__) ||
++	    !tmy_is_correct_path(aliased_name, 1, -1, -1, __func__))
++		return -EINVAL; /* No patterns allowed. */
++	saved_original_name = tmy_save_name(original_name);
++	saved_aliased_name = tmy_save_name(aliased_name);
++	if (!saved_original_name || !saved_aliased_name)
++		return -ENOMEM;
++	mutex_lock(&lock);
++	list1_for_each_entry(ptr, &alias_list, list) {
++		if (ptr->original_name != saved_original_name ||
++		    ptr->aliased_name != saved_aliased_name)
++			continue;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		goto out;
++	}
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++	new_entry->original_name = saved_original_name;
++	new_entry->aliased_name = saved_aliased_name;
++	list1_add_tail_mb(&new_entry->list, &alias_list);
++	error = 0;
++out:
++	mutex_unlock(&lock);
++	tmy_update_counter(TMY_UPDATES_COUNTER_EXCEPTION_POLICY);
++	return error;
++}
++
++/**
++ * tmy_read_alias_policy - Read "struct alias_entry" list.
++ *
++ * @head: Pointer to "struct tmy_io_buffer".
++ *
++ * Returns true on success, false otherwise.
++ */
++bool tmy_read_alias_policy(struct tmy_io_buffer *head)
++{
++	struct list1_head *pos;
++	list1_for_each_cookie(pos, head->read_var2, &alias_list) {
++		struct alias_entry *ptr;
++		ptr = list1_entry(pos, struct alias_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (!tmy_io_printf(head, KEYWORD_ALIAS "%s %s\n",
++				   ptr->original_name->name,
++				   ptr->aliased_name->name))
++			goto out;
++	}
++	return true;
++out:
++	return false;
++}
++
++/**
++ * tmy_write_alias_policy - Write "struct alias_entry" list.
++ *
++ * @data:      String to parse.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int tmy_write_alias_policy(char *data, const bool is_delete)
++{
++	char *cp = strchr(data, ' ');
++	if (!cp)
++		return -EINVAL;
++	*cp++ = '\0';
++	return update_alias_entry(data, cp, is_delete);
++}
++
++/* Domain create/delete/undelete handler. */
++
++/* #define DEBUG_DOMAIN_UNDELETE */
++
++/**
++ * tmy_delete_domain - Delete a domain.
++ *
++ * @domainname: The name of domain.
 + *
 + * Returns 0.
 + */
-+static int __init tmy_realpath_init(void)
++int tmy_delete_domain(char *domainname)
 +{
-+	int i;
-+	if (TMY_MAX_PATHNAME_LEN > PAGE_SIZE)
-+		panic("Bad size.");
-+	tmy_cachep = kmem_cache_create("tmy_cache", sizeof(struct cache_entry),
-+				       0, 0, NULL);
-+	if (!tmy_cachep)
-+		panic("Can't create cache.\n");
-+	for (i = 0; i < MAX_HASH; i++)
-+		INIT_LIST1_HEAD(&name_list[i]);
-+	INIT_LIST1_HEAD(&KERNEL_DOMAIN.acl_info_list);
-+	KERNEL_DOMAIN.domainname = tmy_save_name(ROOT_NAME);
-+	list1_add_tail_mb(&KERNEL_DOMAIN.list, &domain_list);
-+	if (tmy_find_domain(ROOT_NAME) != &KERNEL_DOMAIN)
-+		panic("Can't register KERNEL_DOMAIN");
-+	return 0;
-+}
-+
-+security_initcall(tmy_realpath_init);
-+
-+/* The list for "struct cache_entry". */
-+static LIST_HEAD(cache_list);
-+
-+static DEFINE_SPINLOCK(cache_list_lock);
-+
-+static unsigned int dynamic_memory_size;
-+
-+/**
-+ * tmy_alloc - Allocate memory for temporal purpose.
-+ *
-+ * @size: Size in bytes.
-+ *
-+ * Returns pointer to allocated memory on success, NULL otherwise.
-+ */
-+void *tmy_alloc(const size_t size)
-+{
-+	struct cache_entry *new_entry;
-+	void *ret = kzalloc(size, GFP_KERNEL);
-+	if (!ret)
-+		goto out;
-+	new_entry = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
-+	if (!new_entry) {
-+		kfree(ret);
-+		ret = NULL;
-+		goto out;
-+	}
-+	INIT_LIST_HEAD(&new_entry->list);
-+	new_entry->ptr = ret;
-+	new_entry->size = ksize(ret);
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&cache_list_lock);
-+	list_add_tail(&new_entry->list, &cache_list);
-+	dynamic_memory_size += new_entry->size;
-+	spin_unlock(&cache_list_lock);
-+	/***** CRITICAL SECTION END *****/
-+out:
-+	return ret;
-+}
-+
-+/**
-+ * tmy_free - Release memory allocated by tmy_alloc().
-+ *
-+ * @p: Pointer returned by tmy_alloc(). May be NULL.
-+ *
-+ * Returns nothing.
-+ */
-+void tmy_free(const void *p)
-+{
-+	struct list_head *v;
-+	struct cache_entry *entry = NULL;
-+	if (!p)
-+		return;
-+	/***** CRITICAL SECTION START *****/
-+	spin_lock(&cache_list_lock);
-+	list_for_each(v, &cache_list) {
-+		entry = list_entry(v, struct cache_entry, list);
-+		if (entry->ptr != p) {
-+			entry = NULL;
++	struct domain_info *domain;
++	struct path_info name;
++	name.name = domainname;
++	tmy_fill_path_info(&name);
++	mutex_lock(&new_domain_assign_lock);
++#ifdef DEBUG_DOMAIN_UNDELETE
++	printk(KERN_DEBUG "tmy_delete_domain %s\n", domainname);
++	list1_for_each_entry(domain, &domain_list, list) {
++		if (tmy_pathcmp(domain->domainname, &name))
 +			continue;
++		printk(KERN_DEBUG "List: %p %u\n", domain, domain->is_deleted);
++	}
++#endif
++	/* Is there an active domain? */
++	list1_for_each_entry(domain, &domain_list, list) {
++		struct domain_info *domain2;
++		/* Never delete KERNEL_DOMAIN */
++		if (domain == &KERNEL_DOMAIN)
++			continue;
++		if (domain->is_deleted ||
++		    tmy_pathcmp(domain->domainname, &name))
++			continue;
++		/* Mark already deleted domains as non undeletable. */
++		list1_for_each_entry(domain2, &domain_list, list) {
++			if (!domain2->is_deleted ||
++			    tmy_pathcmp(domain2->domainname, &name))
++				continue;
++#ifdef DEBUG_DOMAIN_UNDELETE
++			if (domain2->is_deleted != 255)
++				printk(KERN_DEBUG
++				       "Marked %p as non undeletable\n",
++				       domain2);
++#endif
++			domain2->is_deleted = 255;
 +		}
-+		list_del(&entry->list);
-+		dynamic_memory_size -= entry->size;
++		/* Delete and mark active domain as undeletable. */
++		domain->is_deleted = 1;
++#ifdef DEBUG_DOMAIN_UNDELETE
++		printk(KERN_DEBUG "Marked %p as undeletable\n", domain);
++#endif
 +		break;
 +	}
-+	spin_unlock(&cache_list_lock);
-+	/***** CRITICAL SECTION END *****/
-+	if (entry) {
-+		kfree(p);
-+		kmem_cache_free(tmy_cachep, entry);
-+	} else {
-+		printk(KERN_WARNING "BUG: tmy_free() with invalid pointer.\n");
-+	}
-+}
-+
-+static int tmy_print_ascii(const char *sp, const char *cp,
-+			   int *buflen0, char **end0)
-+{
-+	int buflen = *buflen0;
-+	char *end = *end0;
-+
-+	while (sp <= cp) {
-+		unsigned char c;
-+
-+		c = *(unsigned char *) cp;
-+		if (c == '\\') {
-+			buflen -= 2;
-+			if (buflen < 0)
-+				goto out;
-+			*--end = '\\';
-+			*--end = '\\';
-+		} else if (c > ' ' && c < 127) {
-+			if (--buflen < 0)
-+				goto out;
-+			*--end = (char) c;
-+		} else {
-+			buflen -= 4;
-+			if (buflen < 0)
-+				goto out;
-+			*--end = (c & 7) + '0';
-+			*--end = ((c >> 3) & 7) + '0';
-+			*--end = (c >> 6) + '0';
-+			*--end = '\\';
-+		}
-+		cp--;
-+	}
-+
-+	*buflen0 = buflen;
-+	*end0 = end;
-+
++	mutex_unlock(&new_domain_assign_lock);
 +	return 0;
-+out:
-+	return -ENOMEM;
 +}
 +
-+
-+/* tmy_get_absolute_path() for "struct ctl_table". */
-+static int tmy_sysctl_path(struct ctl_table *table, char *buffer, int buflen)
++/**
++ * tmy_undelete_domain - Undelete a domain.
++ *
++ * @domainname: The name of domain.
++ *
++ * Returns pointer to "struct domain_info" on success, NULL otherwise.
++ */
++struct domain_info *tmy_undelete_domain(const char *domainname)
 +{
-+	char *end = buffer + buflen;
++	struct domain_info *domain;
++	struct domain_info *candidate_domain = NULL;
++	struct path_info name;
++	name.name = domainname;
++	tmy_fill_path_info(&name);
++	mutex_lock(&new_domain_assign_lock);
++#ifdef DEBUG_DOMAIN_UNDELETE
++	printk(KERN_DEBUG "tmy_undelete_domain %s\n", domainname);
++	list1_for_each_entry(domain, &domain_list, list) {
++		if (tmy_pathcmp(domain->domainname, &name))
++			continue;
++		printk(KERN_DEBUG "List: %p %u\n", domain, domain->is_deleted);
++	}
++#endif
++	list1_for_each_entry(domain, &domain_list, list) {
++		if (tmy_pathcmp(&name, domain->domainname))
++			continue;
++		if (!domain->is_deleted) {
++			/* This domain is active. I can't undelete. */
++			candidate_domain = NULL;
++#ifdef DEBUG_DOMAIN_UNDELETE
++			printk(KERN_DEBUG "%p is active. I can't undelete.\n",
++			       domain);
++#endif
++			break;
++		}
++		/* Is this domain undeletable? */
++		if (domain->is_deleted == 1)
++			candidate_domain = domain;
++	}
++	if (candidate_domain) {
++		candidate_domain->is_deleted = 0;
++#ifdef DEBUG_DOMAIN_UNDELETE
++		printk(KERN_DEBUG "%p was undeleted.\n", candidate_domain);
++#endif
++	}
++	mutex_unlock(&new_domain_assign_lock);
++	return candidate_domain;
++}
 +
-+	if (buflen < 256)
++/**
++ * tmy_find_or_assign_new_domain - Create a domain.
++ *
++ * @domainname: The name of domain.
++ * @profile:    Profile number to assign if the domain was newly created.
++ *
++ * Returns pointer to "struct domain_info" on success, NULL otherwise.
++ */
++struct domain_info *tmy_find_or_assign_new_domain(const char *domainname,
++						  const u8 profile)
++{
++	struct domain_info *domain = NULL;
++	const struct path_info *saved_domainname;
++	mutex_lock(&new_domain_assign_lock);
++	domain = tmy_find_domain(domainname);
++	if (domain)
++		goto out;
++	if (!tmy_is_correct_domain(domainname, __func__))
++		goto out;
++	saved_domainname = tmy_save_name(domainname);
++	if (!saved_domainname)
++		goto out;
++	/* Can I reuse memory of deleted domain? */
++	list1_for_each_entry(domain, &domain_list, list) {
++		struct task_struct *p;
++		struct acl_info *ptr;
++		bool flag;
++		if (!domain->is_deleted ||
++		    domain->domainname != saved_domainname)
++			continue;
++		flag = false;
++		/***** CRITICAL SECTION START *****/
++		read_lock(&tasklist_lock);
++		rcu_read_lock();
++		for_each_process(p) {
++			if (tmy_domain(p) != domain)
++				continue;
++			flag = true;
++			break;
++		}
++		rcu_read_unlock();
++		read_unlock(&tasklist_lock);
++		/***** CRITICAL SECTION END *****/
++		if (flag)
++			continue;
++#ifdef DEBUG_DOMAIN_UNDELETE
++		printk(KERN_DEBUG "Reusing %p %s\n", domain,
++		       domain->domainname->name);
++#endif
++		list1_for_each_entry(ptr, &domain->acl_info_list, list) {
++			ptr->type |= ACL_DELETED;
++		}
++		/*
++		 * Don't use tmy_set_domain_flag() because
++		 * new_domain_assign_lock is held.
++		 */
++		domain->flags = 0;
++		domain->profile = profile;
++		domain->quota_warned = false;
++		mb(); /* Avoid out-of-order execution. */
++		domain->is_deleted = 0;
++		goto out;
++	}
++	/* No memory reusable. Create using new memory. */
++	domain = tmy_alloc_element(sizeof(*domain));
++	if (domain) {
++		INIT_LIST1_HEAD(&domain->acl_info_list);
++		domain->domainname = saved_domainname;
++		domain->profile = profile;
++		list1_add_tail_mb(&domain->list, &domain_list);
++	}
++out:
++	mutex_unlock(&new_domain_assign_lock);
++	return domain;
++}
++
++/**
++ * tmy_find_next_domain - Find a domain.
++ *
++ * @bprm:           Pointer to "struct linux_binprm".
++ * @next_domain:    Pointer to pointer to "struct domain_info".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int tmy_find_next_domain(struct linux_binprm *bprm,
++			 struct domain_info **next_domain)
++{
++	/*
++	 * This function assumes that the size of buffer returned by
++	 * tmy_realpath() = TMY_MAX_PATHNAME_LEN.
++	 */
++	struct tmy_page_buffer *tmp = tmy_alloc(sizeof(*tmp));
++	struct domain_info *old_domain = tmy_domain(current);
++	struct domain_info *domain = NULL;
++	const char *old_domain_name = old_domain->domainname->name;
++	const char *original_name = bprm->filename;
++	char *new_domain_name = NULL;
++	char *real_program_name = NULL;
++	char *symlink_program_name = NULL;
++	const u8 mode = tmy_check_flags(TMY_TOMOYO_MAC_FOR_FILE);
++	const bool is_enforce = (mode == 3);
++	int retval = -ENOMEM;
++	struct path_info r; /* real name */
++	struct path_info s; /* symlink name */
++	struct path_info l; /* last name */
++
++	if (!tmp)
 +		goto out;
 +
-+	*--end = '\0';
-+	buflen--;
-+
-+	buflen -= 9; /* for "/proc/sys" prefix */
-+
-+	while (table) {
-+		char buf[32];
-+		const char *sp = table->procname;
-+		const char *cp;
-+
-+		if (!sp) {
-+			memset(buf, 0, sizeof(buf));
-+			snprintf(buf, sizeof(buf) - 1, "=%d=", table->ctl_name);
-+			sp = buf;
++	{
++		/*
++		 * Built-in initializers. This is needed because policies are
++		 * not loaded until starting /sbin/init.
++		 */
++		static bool first = true;
++		if (first) {
++			update_domain_initializer_entry(NULL, "/sbin/hotplug",
++							false, false);
++			update_domain_initializer_entry(NULL, "/sbin/modprobe",
++							false, false);
++			first = false;
 +		}
-+		cp = strchr(sp, '\0') - 1;
-+
-+		if (tmy_print_ascii(sp, cp, &buflen, &end))
-+			goto out;
-+
-+		if (--buflen < 0)
-+			goto out;
-+
-+		*--end = '/';
-+		table = table->parent;
 +	}
 +
-+	/* Move the pathname to the top of the buffer. */
-+	memmove(buffer, "/proc/sys", 9);
-+	memmove(buffer + 9, end, strlen(end) + 1);
-+	return 0;
-+out: ;
-+	return -ENOMEM;
-+}
++	/* Get tmy_realpath of program. */
++	retval = -ENOENT; /* I hope tmy_realpath() won't fail with -ENOMEM. */
++	real_program_name = tmy_realpath(original_name);
++	if (!real_program_name)
++		goto out;
++	/* Get tmy_realpath of symbolic link. */
++	symlink_program_name = tmy_realpath_nofollow(original_name);
++	if (!symlink_program_name)
++		goto out;
 +
-+/**
-+ * sysctlpath_from_table - return the realpath of a ctl_table.
-+ * @table: pointer to "struct ctl_table".
-+ *
-+ * Returns realpath(3) of the @table on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function uses tmy_alloc(), so caller must call tmy_free()
-+ * if this function didn't return NULL.
-+ */
-+char *sysctlpath_from_table(struct ctl_table *table)
-+{
-+	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
++	r.name = real_program_name;
++	tmy_fill_path_info(&r);
++	s.name = symlink_program_name;
++	tmy_fill_path_info(&s);
++	l.name = tmy_get_last_name(old_domain);
++	tmy_fill_path_info(&l);
 +
-+	if (buf && tmy_sysctl_path(table, buf, TMY_MAX_PATHNAME_LEN - 1) == 0)
-+		return buf;
-+
-+	tmy_free(buf);
-+	return NULL;
-+}
-+
-+/**
-+ * tmy_read_memory_counter - Check for memory usage.
-+ *
-+ * @head: Pointer to "struct tmy_io_buffer".
-+ *
-+ * Returns memory usage.
-+ */
-+int tmy_read_memory_counter(struct tmy_io_buffer *head)
-+{
-+	if (!head->read_eof) {
-+		const unsigned int shared = allocated_memory_for_savename;
-+		const unsigned int private = allocated_memory_for_elements;
-+		const unsigned int dynamic = dynamic_memory_size;
-+		char buffer[64];
-+		memset(buffer, 0, sizeof(buffer));
-+		if (quota_for_savename)
-+			snprintf(buffer, sizeof(buffer) - 1,
-+				 "   (Quota: %10u)", quota_for_savename);
-+		else
-+			buffer[0] = '\0';
-+		tmy_io_printf(head, "Shared:  %10u%s\n", shared, buffer);
-+		if (quota_for_elements)
-+			snprintf(buffer, sizeof(buffer) - 1,
-+				 "   (Quota: %10u)", quota_for_elements);
-+		else
-+			buffer[0] = '\0';
-+		tmy_io_printf(head, "Private: %10u%s\n", private, buffer);
-+		tmy_io_printf(head, "Dynamic: %10u\n", dynamic);
-+		tmy_io_printf(head, "Total:   %10u\n",
-+			      shared + private + dynamic);
-+		head->read_eof = true;
++	/* Check 'alias' directive. */
++	if (tmy_pathcmp(&r, &s)) {
++		struct alias_entry *ptr;
++		/* Is this program allowed to be called via symbolic links? */
++		list1_for_each_entry(ptr, &alias_list, list) {
++			if (ptr->is_deleted ||
++			    tmy_pathcmp(&r, ptr->original_name) ||
++			    tmy_pathcmp(&s, ptr->aliased_name))
++				continue;
++			memset(real_program_name, 0, TMY_MAX_PATHNAME_LEN);
++			strncpy(real_program_name, ptr->aliased_name->name,
++				TMY_MAX_PATHNAME_LEN - 1);
++			tmy_fill_path_info(&r);
++			break;
++		}
 +	}
-+	return 0;
++
++	/* Check execute permission. */
++	retval = tmy_check_exec_perm(&r, tmp);
++	if (retval < 0)
++		goto out;
++
++	new_domain_name = tmp->buffer;
++	if (is_domain_initializer(old_domain->domainname, &r, &l)) {
++		/* Transit to the child of KERNEL_DOMAIN domain. */
++		snprintf(new_domain_name, TMY_MAX_PATHNAME_LEN + 1,
++			 ROOT_NAME " " "%s", real_program_name);
++	} else if (old_domain == &KERNEL_DOMAIN && !sbin_init_started) {
++		/*
++		 * Needn't to transit from kernel domain before starting
++		 * /sbin/init. But transit from kernel domain if executing
++		 * initializers because they might start before /sbin/init.
++		 */
++		domain = old_domain;
++	} else if (is_domain_keeper(old_domain->domainname, &r, &l)) {
++		/* Keep current domain. */
++		domain = old_domain;
++	} else {
++		/* Normal domain transition. */
++		snprintf(new_domain_name, TMY_MAX_PATHNAME_LEN + 1,
++			 "%s %s", old_domain_name, real_program_name);
++	}
++	if (domain || strlen(new_domain_name) >= TMY_MAX_PATHNAME_LEN)
++		goto done;
++	domain = tmy_find_domain(new_domain_name);
++	if (domain)
++		goto done;
++	if (is_enforce)
++		goto done;
++	domain = tmy_find_or_assign_new_domain(new_domain_name,
++					       old_domain->profile);
++done:
++	if (domain)
++		goto out;
++	printk(KERN_WARNING "TOMOYO-ERROR: Domain '%s' not defined.\n",
++	       new_domain_name);
++	if (is_enforce)
++		retval = -EPERM;
++	else
++		tmy_set_domain_flag(old_domain, false,
++				    DOMAIN_FLAGS_TRANSITION_FAILED);
++out:
++	tmy_free(real_program_name);
++	tmy_free(symlink_program_name);
++	*next_domain = domain ? domain : old_domain;
++	tmy_free(tmp);
++	return retval;
 +}
-+
-+/**
-+ * tmy_write_memory_quota - Set memory quota.
-+ *
-+ * @head: Pointer to "struct tmy_io_buffer".
-+ *
-+ * Returns 0.
-+ */
-+int tmy_write_memory_quota(struct tmy_io_buffer *head)
-+{
-+	char *data = head->write_buf;
-+	unsigned int size;
-+	if (sscanf(data, "Shared: %u", &size) == 1)
-+		quota_for_savename = size;
-+	else if (sscanf(data, "Private: %u", &size) == 1)
-+		quota_for_elements = size;
-+	return 0;
-+}
---- /dev/null
-+++ linux-2.6.27-rc7-mm1/security/tomoyo/realpath.h
-@@ -0,0 +1,60 @@
-+/*
-+ * security/tomoyo/realpath.h
-+ *
-+ * Get the canonicalized absolute pathnames. The basis for TOMOYO.
-+ *
-+ * Copyright (C) 2005-2008  NTT DATA CORPORATION
-+ *
-+ * Version: 2.2.0-pre   2008/09/24
-+ *
-+ */
-+
-+#ifndef _LINUX_REALPATH_H
-+#define _LINUX_REALPATH_H
-+
-+struct dentry;
-+struct vfsmount;
-+struct condition_list;
-+struct path_info;
-+struct tmy_io_buffer;
-+
-+/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
-+int tmy_realpath_from_dentry2(struct dentry *dentry, struct vfsmount *mnt,
-+			      char *newname, int newname_len);
-+
-+/*
-+ * Returns realpath(3) of the given pathname but ignores chroot'ed root.
-+ * These functions use tmy_alloc(), so caller must tmy_free()
-+ * if these functions didn't return NULL.
-+ */
-+char *tmy_realpath(const char *pathname);
-+/* Same with tmy_realpath() except that it doesn't follow the final symlink. */
-+char *tmy_realpath_nofollow(const char *pathname);
-+/* Same with tmy_realpath() except that the pathname is already solved. */
-+char *tmy_realpath_from_dentry(struct dentry *dentry, struct vfsmount *mnt);
-+
-+/*
-+ * Allocate memory for ACL entry.
-+ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
-+ */
-+void *tmy_alloc_element(const unsigned int size);
-+
-+/*
-+ * Keep the given name on the RAM.
-+ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
-+ */
-+const struct path_info *tmy_save_name(const char *name);
-+
-+/* Allocate memory for temporary use (e.g. permission checks). */
-+void *tmy_alloc(const size_t size);
-+
-+/* Free memory allocated by tmy_alloc(). */
-+void tmy_free(const void *p);
-+
-+/* Check for memory usage. */
-+int tmy_read_memory_counter(struct tmy_io_buffer *head);
-+
-+/* Set memory quota. */
-+int tmy_write_memory_quota(struct tmy_io_buffer *head);
-+
-+#endif
 
 --
 
