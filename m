@@ -1,81 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbYIXAWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbYIXAda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524AbYIXAWl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 20:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYIXAWc
+	id S1753225AbYIXAda (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 20:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbYIXAdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 20:22:32 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:6803 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751550AbYIXAWc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 20:22:32 -0400
-Message-ID: <48D98848.3060209@ct.jp.nec.com>
-Date: Tue, 23 Sep 2008 17:22:32 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] x86: signal: cosmetic unification of handle_signal()
-References: <48D987A0.50508@ct.jp.nec.com>
-In-Reply-To: <48D987A0.50508@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Sep 2008 20:33:21 -0400
+Received: from mail.vpac.org ([202.158.218.6]:48573 "EHLO mail.vpac.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751388AbYIXAdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 20:33:20 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -4.307
+Subject: forcedeth network hang
+From: Brett Pemberton <brett@vpac.org>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-jNhCqOmwp6y7e9Gdg5Y9"
+Organization: VPAC
+Date: Wed, 24 Sep 2008 10:33:00 +1000
+Message-Id: <1222216380.4019.253.camel@sys05.in.vpac.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Make handle_signal() same.
+--=-jNhCqOmwp6y7e9Gdg5Y9
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/signal_32.c |    9 +++++++++
- arch/x86/kernel/signal_64.c |    2 ++
- 2 files changed, 11 insertions(+), 0 deletions(-)
+Hey,
 
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index b94463f..bb05917 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -550,6 +550,15 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
- 	if (ret)
- 		return ret;
- 
-+#ifdef CONFIG_X86_64
-+	/*
-+	 * This has nothing to do with segment registers,
-+	 * despite the name.  This magic affects uaccess.h
-+	 * macros' behavior.  Reset it to the normal setting.
-+	 */
-+	set_fs(USER_DS);
-+#endif
-+
- 	/*
- 	 * Clear the direction flag as per the ABI for function entry.
- 	 */
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index 9087752..963236f 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -346,12 +346,14 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
- 	if (ret)
- 		return ret;
- 
-+#ifdef CONFIG_X86_64
- 	/*
- 	 * This has nothing to do with segment registers,
- 	 * despite the name.  This magic affects uaccess.h
- 	 * macros' behavior.  Reset it to the normal setting.
- 	 */
- 	set_fs(USER_DS);
-+#endif
- 
- 	/*
- 	 * Clear the direction flag as per the ABI for function entry.
--- 
-1.5.6
+Had a problem with 13 nodes all halting network traffic at the same time
+last night. =20
+
+Although this trace is from 2.6.26.3, a variety of kernels hung,
+including 2.6.26.5.
+
+Any help would be great, please CC as am not on lists.
+
+	/ Brett
+
+A sample from /var/log/messages:
+
+Sep 23 17:55:31 tango055 kernel: NETDEV WATCHDOG: eth0: transmit timed
+out
+Sep 23 17:55:31 tango055 kernel: eth0: Got tx_timeout. irq: 00000000
+Sep 23 17:55:31 tango055 kernel: eth0: Ring at 41c5c8000
+Sep 23 17:55:31 tango055 kernel: eth0: Dumping tx registers
+....
+Sep 23 17:55:31 tango055 kernel: ------------[ cut here ]------------
+Sep 23 17:55:31 tango055 kernel: WARNING: at net/sched/sch_generic.c:222
+dev_watchdog+0xa6/0xfb()
+Sep 23 17:55:31 tango055 kernel: Modules linked in: ipmi_devintf ipmi_si
+ipmi_msghandler autofs4 nfs lockd nfs_acl sunrpc ipv6 ib_ipoib rdma_ucm
+ib_ucm ib_uverbs ib_umad rdma_cm ib_cm iw_cm ib_
+addr ib_sa xfs dm_mirror dm_log dm_multipath dm_mod sbs sbshc battery
+backlight ac ib_mthca ib_mad sg ib_core button serio_raw forcedeth
+usb_storage sata_nv libata raid0 sd_mod scsi_mod ext3 jb
+d uhci_hcd ohci_hcd ehci_hcd
+Sep 23 17:55:31 tango055 kernel: Pid: 0, comm: swapper Not tainted
+2.6.26.3 #2
+Sep 23 17:55:31 tango055 kernel:
+Sep 23 17:55:31 tango055 kernel: Call Trace:
+Sep 23 17:55:31 tango055 kernel:  <IRQ>  [<ffffffff802308a5>]
+warn_on_slowpath+0x51/0x79
+Sep 23 17:55:31 tango055 kernel:
+[<ffffffffa00b1f50>] :forcedeth:reg_delay+0x40/0x8a
+Sep 23 17:55:31 tango055 kernel:
+[<ffffffffa00b2b28>] :forcedeth:nv_drain_tx+0xb4/0x186
+Sep 23 17:55:31 tango055 kernel:
+[<ffffffffa00b7156>] :forcedeth:nv_tx_timeout+0x1f1/0x29b
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff803c273a>] dev_watchdog
++0x0/0xfb
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff803c273a>] dev_watchdog
++0x0/0xfb
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff803c27e0>] dev_watchdog
++0xa6/0xfb
+Sep 23 17:55:31 tango055 kernel:
+[<ffffffffa00b19c8>] :forcedeth:nv_do_stats_poll+0x0/0x3b
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff8023856e>] run_timer_softirq
++0x12c/0x192
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff8023501b>] __do_softirq
++0x55/0xc4
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff8020cf1c>] call_softirq
++0x1c/0x28
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff8020e5be>] do_softirq
++0x2c/0x68
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff802195da>]
+smp_apic_timer_interrupt+0x8a/0xa4
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff8020af78>] default_idle
++0x0/0x3c
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff8020c9c6>]
+apic_timer_interrupt+0x66/0x70
+Sep 23 17:55:31 tango055 kernel:  <EOI>  [<ffffffff8020af9f>]
+default_idle+0x27/0x3c
+Sep 23 17:55:31 tango055 kernel:  [<ffffffff8020ab82>] cpu_idle
++0x6d/0x8b
+Sep 23 17:55:31 tango055 kernel:
+Sep 23 17:55:31 tango055 kernel: ---[ end trace 368cd674b4c787ca ]---
+
+
+--=20
+Brett Pemberton - VPAC Senior Systems Administrator
+http://www.vpac.org/ - (03) 9925 4899
+
+--=-jNhCqOmwp6y7e9Gdg5Y9
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkjZirwACgkQ/XtBayFVLhOeJgCg0yPMMMw+RNOEHVyQ+Bli0Xmq
+A3QAn2pkPCpz4QYvbGZN7aVEB8U2fiQD
+=+TnF
+-----END PGP SIGNATURE-----
+
+--=-jNhCqOmwp6y7e9Gdg5Y9--
 
