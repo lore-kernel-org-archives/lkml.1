@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYIXNNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbYIXNSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYIXNNU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 09:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbYIXNNN
+	id S1753132AbYIXNSt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 09:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYIXNSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 09:13:13 -0400
-Received: from sh.osrg.net ([192.16.179.4]:37050 "EHLO sh.osrg.net"
+	Wed, 24 Sep 2008 09:18:41 -0400
+Received: from igw3.br.ibm.com ([32.104.18.26]:53905 "EHLO igw3.br.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751056AbYIXNNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 09:13:12 -0400
-Date: Wed, 24 Sep 2008 22:12:48 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove fullflush and nofullflush in IOMMU generic
- option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080922183414.GI24392@amd.com>
-References: <20080922162314.GC24392@amd.com>
-	<20080923015059M.fujita.tomonori@lab.ntt.co.jp>
-	<20080922183414.GI24392@amd.com>
+	id S1751337AbYIXNSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 09:18:40 -0400
+Subject: Re: [PATCH 1/4] TPM: update char dev BKL pushdown
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jmoriss@namei.org,
+       serue@linux.vnet.ibm.com, zohar@linux.vnet.ibm.com,
+       safford@watson.ibm.com, paulmck@linux.vnet.ibm.com,
+       debora@linux.vnet.ibm.com
+In-Reply-To: <20080923145807.63f9b904@bike.lwn.net>
+References: <cover.1222136544.git.srajiv@linux.vnet.ibm.com>
+	 <1222190371-23814-1-git-send-email-srajiv@linux.vnet.ibm.com>
+	 <20080923145807.63f9b904@bike.lwn.net>
+Content-Type: text/plain
+Date: Wed, 24 Sep 2008 10:14:40 -0300
+Message-Id: <1222262080.24276.32.camel@blackbox>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080924221144W.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Sep 2008 20:34:14 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> On Tue, Sep 23, 2008 at 01:51:05AM +0900, FUJITA Tomonori wrote:
-> > The patch that I sent doesn't make any changes for you. GART works as
-> > before and AMD IOMMU takes a new parameter, fullflush, as you want. It
-> > does the exact same thing that the first version of your patchset for
-> > 2.6.28.
-> > 
-> > So please let me apply it then we can stop this discussion.
+On Tue, 2008-09-23 at 14:58 -0600, Jonathan Corbet wrote:
+> On Tue, 23 Sep 2008 14:19:26 -0300
+> Rajiv Andrade <srajiv@linux.vnet.ibm.com> wrote:
 > 
-> Ok, so it was not nice from me to let Ingo pull this patch without your
-> ack, I already admitted.
+> > + * It's assured that the chip will be opened just once,
+> > + * by the check of is_open variable, which is protected
+> > + * by driver_lock.
+> 
+> Taking a look at the code, I'm convinced.  BKL removal seems
+> appropriate.
+> 
+> While I was in the neighborhood, though, something caught my eye:
+> 
+> int tpm_release(struct inode *inode, struct file *file)
+> {
+> 	struct tpm_chip *chip = file->private_data;
+> 
+> 	flush_scheduled_work();
+> 
+> Here you have waited until you've got nothing in the workqueue.
+> 
+> 	spin_lock(&driver_lock);
+> 	file->private_data = NULL;
+> 	del_singleshot_timer_sync(&chip->user_read_timer);
+> 
+> But, until you get here, your timer could have resubmitted a job into
+> the workqueue - job which could run after you've freed "chip" and
+> forgotten all about it. I think you need either a "don't resubmit" flag,
+> or you need to delete the timer first.
+> 
+> jon
 
-I didn't ask you to try to get my ACK before pushing the patches that
-affect all the IOMMUs. I'll never ask for such.
+Yes, like in tpm_read(), the timer must be deleted before
+flush_scheduled_work(). Since it's a fix to a new issue, I'm going to
+submit a another patch.
 
-I asked you to get the ACKs from the IOMMUs maintainers that your
-patches affect.
+Thanks,
+Rajiv Andrade
+IBM Linux Technology Center
+Security Development
 
-If the IOMMUs maintainers who your patch affects agree on your patch,
-I will not be against it even if I don't like it.
-
-This time, you tried to add a generic parameter that would be useful
-for VT-d, but seems that the VT-d maintainer is not ready for such
-decision. Thus, I think that postponing adding the parameter was a
-reasonable decision for everyone.
-
-I also insisted that we need serious consideration about how all the
-generic parameters interact with each other before changing them, but
-again, if all the IOMMUs maintainers agree on a different plan, it's
-fine by me.
-
-
-> To end this discussion and get to productive
-> discussions, Ingo, please apply this patch. I hope we will work together
-> on a final solution for the problem.
-
-Thanks very much.
