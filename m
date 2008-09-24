@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755118AbYIXTES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYIXTEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755118AbYIXTES (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 15:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYIXTED
+	id S1755416AbYIXTEc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 15:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYIXTEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 15:04:03 -0400
-Received: from mail.op5.se ([193.201.96.20]:43355 "EHLO mail.op5.se"
+	Wed, 24 Sep 2008 15:04:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52076 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752000AbYIXTEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 15:04:01 -0400
-X-Greylist: delayed 423 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Sep 2008 15:04:00 EDT
-X-Spam-Flag: NO
-X-Spam-Score: -3.109
-Message-ID: <48DA8D76.1070207@op5.se>
-Date: Wed, 24 Sep 2008 20:56:54 +0200
-From: Andreas Ericsson <ae@op5.se>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Alex Riesen <raa.lkml@gmail.com>
-CC: rae l <crquan@gmail.com>, Matthias Urlichs <smurf@smurf.noris.de>,
-       Andrew Morton <akpm@linux-foundation.org>, git@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: please consider remove those tags named master, which is ambigous
- with master branch
-References: <91b13c310808310948r5e9e825as27bcdf381137e179@mail.gmail.com>	 <91b13c310809230746o1c2cb694taebc814bea57c8c5@mail.gmail.com> <81b0412b0809240844y42218bedqe0e1eb22c067fcc3@mail.gmail.com>
-In-Reply-To: <81b0412b0809240844y42218bedqe0e1eb22c067fcc3@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754550AbYIXTEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 15:04:20 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1222280971.4425.42.camel@calx>
+References: <1222280971.4425.42.camel@calx> <20080923053228.GA5825@wotan.suse.de> <20080914073906.GA6184@elte.hu> <20080914004442.4f8e851f.akpm@linux-foundation.org> <20080914080631.GA10720@elte.hu> <20080914221231.GG27080@wotan.suse.de> <20080917131419.e6b7622e.akpm@linux-foundation.org> <20080918111226.GD29968@elte.hu> <48D2ABFD.3040103@goop.org> <1221772310.4779.29.camel@calx> <1221877119.8533.2.camel@nimitz> <13787.1222095249@redhat.com> <22749.1222280305@redhat.com> 
+To: Matt Mackall <mpm@selenic.com>
+Cc: dhowells@redhat.com, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh@veritas.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
+Date: Wed, 24 Sep 2008 19:56:58 +0100
+Message-ID: <24051.1222282618@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Riesen wrote:
-> 2008/9/23 rae l <crquan@gmail.com>:
->> To Git developers:
->>  I found that different git subcommand have inconsitent processing
->> about ambiguous refname,
->>
->> git show will take "master" tag first,
->> while git tag -v will take "master" branch first,
->>
->> So what's your suggestion to fix this? Just simple remove ambiguous refnames?
-> 
-> You can use "refs/tags/master" and "refs/heads/master"...
+Matt Mackall <mpm@selenic.com> wrote:
 
-Apart from that..
+> Is there any reason I shouldn't use truncate() in regular shmem.c if I
+> were to unify the two files?
 
-"git tag -v" taking a branch *at all* is not something we want to
-happen, as it's supposed to verify the pgp signature of a signed
-tag. Are you absolutely 100% certain that "git tag -v" tries to
-verify refs/heads/master as a tag object?
+It would be nice to keep tiny-shmem.c, well, tiny for NOMMU systems that can't
+have swap and can't have virtual memory.  Note that regular shmem does not now
+build on top of ramfs, so you'd have to port the ramfs internals to it.
 
--- 
-Andreas Ericsson                   andreas.ericsson@op5.se
-OP5 AB                             www.op5.se
-Tel: +46 8-230225                  Fax: +46 8-230231
+David
