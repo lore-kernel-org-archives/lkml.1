@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYIXTLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYIXTRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbYIXTLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 15:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYIXTLM
+	id S1754016AbYIXTRS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 15:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYIXTQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 15:11:12 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:55546 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752311AbYIXTLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 15:11:11 -0400
-Date: Wed, 24 Sep 2008 20:11:08 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, agl@us.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/2] Report the pagesize backing a VMA in /proc/pid/smaps
-Message-ID: <20080924191107.GA31324@csn.ul.ie>
-References: <20080923211140.DC16.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080923194655.GA25542@csn.ul.ie> <20080924210309.8C3B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080924154120.GA10837@csn.ul.ie> <1222272395.15523.3.camel@nimitz> <20080924171003.GD10837@csn.ul.ie> <1222282749.15523.59.camel@nimitz>
+	Wed, 24 Sep 2008 15:16:59 -0400
+Received: from h155.mvista.com ([63.81.120.155]:4899 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752095AbYIXTQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 15:16:58 -0400
+Message-ID: <48DA9263.5060103@ru.mvista.com>
+Date: Wed, 24 Sep 2008 23:17:55 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1222282749.15523.59.camel@nimitz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: David Brownell <david-b@pacbell.net>
+Cc: avorontsov@ru.mvista.com, Andrew Morton <akpm@linux-foundation.org>,
+       greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, leoli@freescale.com, timur@freescale.com
+Subject: Re: [PATCH 3/3] USB: driver for Freescale QUICC Engine USB Host Controller
+References: <20080918151659.GA20140@oksana.dev.rtsoft.ru> <20080923225730.GB13617@oksana.dev.rtsoft.ru> <48DA1544.5010307@ru.mvista.com> <200809241159.04427.david-b@pacbell.net>
+In-Reply-To: <200809241159.04427.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (24/09/08 11:59), Dave Hansen didst pronounce:
-> On Wed, 2008-09-24 at 18:10 +0100, Mel Gorman wrote:
-> > On (24/09/08 09:06), Dave Hansen didst pronounce:
-> > > On Wed, 2008-09-24 at 16:41 +0100, Mel Gorman wrote:
-> > > > I admit it's ppc64-specific. In the latest patch series, I made this a
-> > > > separate patch so that it could be readily dropped again for this reason.
-> > > > Maybe an alternative would be to display MMUPageSize *only* where it differs
-> > > > from KernelPageSize. Would that be better or similarly confusing?
-> > > 
-> > > I would also think that any arch implementing fallback from large to
-> > > small pages in a hugetlbfs area (Adam needs to post his patches :) would
-> > > also use this.
-> > > 
-> > 
-> > Fair point. Maybe the thing to do is backburner this patch for the moment and
-> > reintroduce it when/if an architecture supports demotion? The KernelPageSize
-> > reporting in smaps and what the hpagesize in maps is still useful though
-> > I believe. Any comment?
-> 
-> I'd kinda prefer to see it normalized into a single place rather than
-> sprinkle it in each smaps file. 
+Hello.
 
-I don't get what you mean by it being sprinkled in each smaps file. How
-would you present the data?
+David Brownell wrote:
 
-> We should be able to figure out which
-> mount the file is from and, from there, maybe we need some per-mount
-> information exported.  
-> 
+>>>>  ... then the root hub emulation is completely pointless.
 
-Per-mount information is already exported and you can infer the data about
-huge pagesizes. For example, if you know the default huge pagesize (from
-/proc/meminfo), and the file is on hugetlbfs (read maps, then /proc/mounts)
-and there is no pagesize= mount option (mounts again), you could guess what the
-hugepage that is backing a VMA is. Shared memory segments are a little harder
-but again, you can infer the information if you look around for long enough.
+>>>It isn't. We always should emulate the root hub. The root hub
+>>>is part and parcel of any USB Host. Even the one-port one.
 
-However, this is awkward and not very user-friendly. With the patches (minus
-MMUPageSize as I think we've agreed to postpone that), it's easy to see what
-pagesize is being used at a glance. Without it, you need to know a fair bit
-about hugepages are implemented in Linux to infer the information correctly.
+>>   Hm, maybe that's what USB core thinks (because UHCI/OHCI/EHCI all 
+>>have it) but e.g. MUSB doesn't have the root hub registers...
 
-> > (future stuff from here on)
-> > 
-> > In the future if demotion does happen then the MMUPageSize information may
-> > be genuinely useful instead of just a curious oddity on ppc64. As you point
-> > out, Adam (added to cc) has worked on this area (starting with x86 demotion)
-> > in the past but it's a while before it'll be considered for merging I believe.
-> > 
-> > That aside, more would need to be done with the page size reporting then
-> > anyway. For example, it maybe indicate how much of each pagesize is in a VMA
-> > or indicate that KernelPageSize is what is being requested but in reality
-> > it is mixed like;
-> > 
-> > KernelPageSize:		2048 kB (mixed)
-> > 
-> > or
-> > 
-> > KernelPageSize:		2048 kB * 5, 4096 kB * 20
-> 
-> Looks a bit verbose, but I agree with the sentiment.
-> 
+> Only the OHCI registers have bit positions matching what the USB
+> spec says for hub status bits.
 
-Grand, I'll keep note of this to revisit it in the future when/if
-pagesizes get mixed in a VMA. Thanks
+    Oh, didn't know that.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> Everything else, including musb_hdrc, has the relevant status encoded in other bits.
+
+    Yes, but I thought that if there are no multiple ports, having the hub is 
+just pointless.
+
+>>I looked at the core and figured that USB core seems to use the root hub 
+>>interface for port PM, etc. and expects it to bee present, so it seems 
+>>unavoidable indeed... :-/
+
+> Or more fundamentally:  for enumeration.  "Unavoidable" is correct.  ;)
+
+    Not sure what you mean here but I guess having a root hub alows an uniform 
+model of controlling the ports... anyway, USB specifies that it must be 
+present in the host.
+
+WBR, Sergei
