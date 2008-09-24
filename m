@@ -1,105 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbYIXRky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYIXRuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbYIXRky (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 13:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYIXRkr
+	id S1753342AbYIXRuR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 13:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYIXRuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 13:40:47 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:20258 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751517AbYIXRkq (ORCPT
+	Wed, 24 Sep 2008 13:50:04 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:41814 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbYIXRuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 13:40:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=mq1kuTRXsN8Ra1S7QZHTtIsg0llm701QBZn3gbXCT7BJzi321Wz5kbwsHsQAzB3Fuh6EKWhg2kgnxc1fZ45U5aLgiLjkkUN1WmkYMp8W8pDOdm3Ic6B0Y3LBo3acSE1UeY/kgLvHIdFs8fWXGUiw+s8GMuKtC3BojcHPpuEaUxU=  ;
-X-YMail-OSG: imhnkFcVM1m2YOCWDSDME_C6nctesWXCgs8RBKGygBmZjDWarS7t.hCbox0WwSidPKLyB8GSGg7dfbjS.INnVRlZy_hET5WrsgwsRQMhNRAStQvmyzLp0yD.yuD23WUQiMKy95kWHAFzer_pzFIE5_yQ
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: [patch 2.6.27-rc7] gpio: i2c expanders use subsys_init
-Date: Wed, 24 Sep 2008 10:40:43 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org
+	Wed, 24 Sep 2008 13:50:01 -0400
+Date: Wed, 24 Sep 2008 13:49:56 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>
+References: <20080924051056.650388887@goodmis.org>  <20080924051400.195780424@goodmis.org>  <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
+ <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com> <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809241040.43943.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
 
-Make the I2C external GPIO expander drivers register themselves
-at subsys_initcall() time when they're statically linked.
+On Wed, 24 Sep 2008, Linus Torvalds wrote:
 
-SOC-integrated GPIOs are available starting very early -- early
-in arch_initcall() at latest, but often even before initcalls
-start to run -- so this improves consistency, so more subsystems
-can rely on GPIOs in their own subsys_initcall() code.
+> 
+> 
+> On Wed, 24 Sep 2008, Martin Bligh wrote:
+> > 
+> > Can't the reserve interface just put a padding event into page A,
+> > or otherwise mark it, and return the start of page B?
+> 
+> Yes, I think having a "padding" entry that just gets skipped on read would 
+> simplify things. Use that to fill up the end of the page.
 
-(This isn't a theoretical problem.  This is one of several patches
-needed to resolve oopsing observed when statically linking kernels
-on a DaVinci EVM.  Its pcf857x GPIOs needed to be available well
-before some other drivers initialized.)
+Yep, that is what the RFC patch did.
 
-This depends on a patch moving I2C's driver model init earlier
-in the boot sequence; otherwise this change would cause oopsing.
+> 
+> > > And here I was thinking you guys bit encoded the event id into the
+> > > timestamp delta :-)
+> > 
+> > +/* header plus 32-bits of event data */
+> > +struct ktrace_entry {
+> > +       u32 event_type:5, tsc_shifted:27;
+> > +       u32 data;
+> > +};
+> > 
+> > was our basic data type. So ... sort of ;-)
+> 
+> Why "tsc_shifted"?
+> 
+> I think 27 bits is probably fine, but not by removing precision. Instead 
+> of shifting it so it will fit (and dropping low bits as uninteresting), do 
+> it by encoding it as a delta against the previous thing. 27 bits would 
+> still be sufficient for any high-performance thing that has tons and tons 
+> of packets, and if you only have a few trace events you can afford to have 
+> the "TSC overflow" event type (and if you want it that dense, you could 
+> just make 'data' be the high bits, for a total of 59 bits rather than 64 
+> bits of TSC.
+> 
+> 59 bits of cycle counters is perfectly fine unless you are talking trace 
+> events over a year or so (I didn't do the math, but let's assume a 4GHz 
+> TSC as a reasonable thing even going forward - even _if_ CPU's get faster 
+> than that, the TSC is unlikely to tick faster since it's just not worth it 
+> from a power standpoint).
+> 
+> Ok, I did the math. 1<<27 seconds (assuming the low 32 bits are just 
+> fractions) is something like 4+ years. I _really_ don't think we need more 
+> than that (or even close to that) in TSC timestamps for tracing within one 
+> single buffer.
+> 
+> Once you go to the next ring buffer, you'd get a new time-base anyway.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-For the 2.6.28-rc0 merge window.  Jean, can you include this
-in your I2C tree, so it only merges after the I2C init patch
-on which it depends?  We want "git bisect" to work.  ;)
+Right now I have a list of pages that make up the ring buffer. Are you 
+saying that the first entry in the page should be a timestamp?
 
- drivers/gpio/max732x.c |    5 ++++-
- drivers/gpio/pca953x.c |    5 ++++-
- drivers/gpio/pcf857x.c |    5 ++++-
- 3 files changed, 12 insertions(+), 3 deletions(-)
+Anyway, after talking with Peter Zijlstra, I'm working on RFC-v2, which
+splits up the ring buffer a bit more. I'm removing all the debugfs crud, 
+and I even will remove the merge sort from the ring buffer.
 
---- a/drivers/gpio/max732x.c
-+++ b/drivers/gpio/max732x.c
-@@ -372,7 +372,10 @@ static int __init max732x_init(void)
- {
- 	return i2c_add_driver(&max732x_driver);
- }
--module_init(max732x_init);
-+/* register after i2c postcore initcall and before
-+ * subsys initcalls that may rely on these GPIOs
-+ */
-+subsys_initcall(max732x_init);
- 
- static void __exit max732x_exit(void)
- {
---- a/drivers/gpio/pca953x.c
-+++ b/drivers/gpio/pca953x.c
-@@ -289,7 +289,10 @@ static int __init pca953x_init(void)
- {
- 	return i2c_add_driver(&pca953x_driver);
- }
--module_init(pca953x_init);
-+/* register after i2c postcore initcall and before
-+ * subsys initcalls that may rely on these GPIOs
-+ */
-+subsys_initcall(pca953x_init);
- 
- static void __exit pca953x_exit(void)
- {
---- a/drivers/gpio/pcf857x.c
-+++ b/drivers/gpio/pcf857x.c
-@@ -351,7 +351,10 @@ static int __init pcf857x_init(void)
- {
- 	return i2c_add_driver(&pcf857x_driver);
- }
--module_init(pcf857x_init);
-+/* register after i2c postcore initcall and before
-+ * subsys initcalls that may rely on these GPIOs
-+ */
-+subsys_initcall(pcf857x_init);
- 
- static void __exit pcf857x_exit(void)
- {
+I will now have a ring_buffer API, which will do basic recording. It will 
+have two modes when allocated. Fixed sized entry mode where you can just 
+put whatever you want in (I'm still aligning everything by 8 bytes, just 
+since memory is cheap). Or you can have variable length mode that will 
+make the following event header:
+
+struct {
+	unsigned char length;
+	unsigned char buff[];
+};
+
+The length will be shifted 3 since we are 8 byte aligned anyway, making 
+the largest entry 2046 bytes (2045 bytes of data since 1 byte is already 
+taken for the length field). If the next entry is not large enough to fit
+on the page, I will enter a zero length and that will tell the tracer that 
+the entry is padding to the end of the page.
+
+For fixed sized entries, a simple calculation of whether an entry can fit 
+on a page will determine if there is an entry or padding.
+
+Then I will add a trace_buffer API that will add the counting and merge 
+sort on top of this interface. If you don't care about the 
+trace_buffering, one could simply use the ring_buffering and be done with 
+it.
+
+Note, I am still keeping the reserve and commit interface for now.
+
+-- Steve
+
