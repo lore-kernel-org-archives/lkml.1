@@ -1,287 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbYIXTe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYIXTht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbYIXTe6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 15:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYIXTer
+	id S1754156AbYIXTht (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 15:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYIXThl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 15:34:47 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:45994 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbYIXTeq (ORCPT
+	Wed, 24 Sep 2008 15:37:41 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:21738 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752095AbYIXThl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 15:34:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Fn1spY5NeezhZypPYpXV1c9MshLdIuPREY/gB7LhE/DFgJJUm6ciyGmYMLrYcrshz/
-         973EqUdX+mDkc2MUnjLCoxvypYq57wdvOxU8X1t8axz+HP+nJi7FeaU05BRl/tEmPArz
-         tOLcbltWa1o0InTrIQEatg0fvJP4vbwUpmPYM=
-Message-ID: <524f69650809241234h427c79f8lac19ff069da9aac4@mail.gmail.com>
-Date: Wed, 24 Sep 2008 14:34:44 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Subject: Re: [PATCH] cifs: Convert cifs to new aops.
-Cc: "Jeff Layton" <jlayton@redhat.com>, linux-cifs-client@lists.samba.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       npiggin@suse.de
-In-Reply-To: <20080924175426.GA12155@infradead.org>
+	Wed, 24 Sep 2008 15:37:41 -0400
+Message-ID: <48DA9702.4020106@mvista.com>
+Date: Wed, 24 Sep 2008 12:37:38 -0700
+From: Drew Moseley <dmoseley@mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: ambx1@neo.rr.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Create PNP device attributes via dev_attrs field of struct
+ device
+References: <48D95EA2.9040804@mvista.com>	 <3ae72650809232159k20f19f2ele5acbc7ee77dfb65@mail.gmail.com>	 <48DA774A.9010206@mvista.com> <3ae72650809241203o41b62a10m31377887d44fd05e@mail.gmail.com>
+In-Reply-To: <3ae72650809241203o41b62a10m31377887d44fd05e@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1222277953-3669-1-git-send-email-jlayton@redhat.com>
-	 <20080924175426.GA12155@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have reviewed the patch and merged into cifs-2.6.git tree.
+Kay Sievers wrote:
+> Yeah, it looks weird to mangle the bus_type values from a device
+> routine, and set the same value again and again with every device
+> creation. Just declare the array non-static, if moving the code around
+> between files does not allow a static declaration.
 
-Will do some additional testing (with fsx and other test tools) while
-at SDC plugfest this week.
+Updated patch.
 
-On Wed, Sep 24, 2008 at 12:54 PM, Christoph Hellwig <hch@infradead.org> wrote:
-> Might be worth Ccing Nick as he's started on finishing the last aops
-> conversions again at Kernel Summit.
->
-> On Wed, Sep 24, 2008 at 01:39:13PM -0400, Jeff Layton wrote:
->> This patch is based on the one originally posted by Nick Piggin. His
->> patch was very close, but had a couple of small bugs. Nick's original
->> comments follow:
->>
->> ---------------[snip]--------------
->>
->> This is another relatively naive conversion. Always do the read upfront
->> when the page is not uptodate (unless we're in the writethrough path).
->>
->> Fix an uninitialized data exposure where SetPageUptodate was called
->> before the page was uptodate.
->>
->> SetPageUptodate and switch to writeback mode in the case that the full
->> page was dirtied.
->>
->> Signed-off-by: Jeff Layton <jlayton@redhat.com>
->> Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com>
->> Acked-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
->> Cc: Steve French <smfrench@gmail.com>
->> Cc: Nick Piggin <npiggin@suse.de>
->> ---
->>  fs/cifs/file.c |  120 +++++++++++++++++++++++++++----------------------------
->>  1 files changed, 59 insertions(+), 61 deletions(-)
->>
->> diff --git a/fs/cifs/file.c b/fs/cifs/file.c
->> index d39e852..c4a8a06 100644
->> --- a/fs/cifs/file.c
->> +++ b/fs/cifs/file.c
->> @@ -107,7 +107,7 @@ static inline int cifs_open_inode_helper(struct inode *inode, struct file *file,
->>
->>       /* want handles we can use to read with first
->>          in the list so we do not have to walk the
->> -        list to search for one in prepare_write */
->> +        list to search for one in write_begin */
->>       if ((file->f_flags & O_ACCMODE) == O_WRONLY) {
->>               list_add_tail(&pCifsFile->flist,
->>                             &pCifsInode->openFileList);
->> @@ -915,7 +915,7 @@ ssize_t cifs_user_write(struct file *file, const char __user *write_data,
->>  }
->>
->>  static ssize_t cifs_write(struct file *file, const char *write_data,
->> -     size_t write_size, loff_t *poffset)
->> +                       size_t write_size, loff_t *poffset)
->>  {
->>       int rc = 0;
->>       unsigned int bytes_written = 0;
->> @@ -1455,49 +1455,52 @@ static int cifs_writepage(struct page *page, struct writeback_control *wbc)
->>       return rc;
->>  }
->>
->> -static int cifs_commit_write(struct file *file, struct page *page,
->> -     unsigned offset, unsigned to)
->> +static int cifs_write_end(struct file *file, struct address_space *mapping,
->> +                     loff_t pos, unsigned len, unsigned copied,
->> +                     struct page *page, void *fsdata)
->>  {
->> -     int xid;
->> -     int rc = 0;
->> -     struct inode *inode = page->mapping->host;
->> -     loff_t position = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
->> -     char *page_data;
->> +     int rc;
->> +     struct inode *inode = mapping->host;
->>
->> -     xid = GetXid();
->> -     cFYI(1, ("commit write for page %p up to position %lld for %d",
->> -              page, position, to));
->> -     spin_lock(&inode->i_lock);
->> -     if (position > inode->i_size)
->> -             i_size_write(inode, position);
->> +     cFYI(1, ("write_end for page %p from pos %lld with %d bytes",
->> +              page, pos, copied));
->> +
->> +     if (!PageUptodate(page) && copied == PAGE_CACHE_SIZE)
->> +             SetPageUptodate(page);
->>
->> -     spin_unlock(&inode->i_lock);
->>       if (!PageUptodate(page)) {
->> -             position =  ((loff_t)page->index << PAGE_CACHE_SHIFT) + offset;
->> -             /* can not rely on (or let) writepage write this data */
->> -             if (to < offset) {
->> -                     cFYI(1, ("Illegal offsets, can not copy from %d to %d",
->> -                             offset, to));
->> -                     FreeXid(xid);
->> -                     return rc;
->> -             }
->> +             char *page_data;
->> +             unsigned offset = pos & (PAGE_CACHE_SIZE - 1);
->> +             int xid;
->> +
->> +             xid = GetXid();
->>               /* this is probably better than directly calling
->>                  partialpage_write since in this function the file handle is
->>                  known which we might as well leverage */
->>               /* BB check if anything else missing out of ppw
->>                  such as updating last write time */
->>               page_data = kmap(page);
->> -             rc = cifs_write(file, page_data + offset, to-offset,
->> -                             &position);
->> -             if (rc > 0)
->> -                     rc = 0;
->> -             /* else if (rc < 0) should we set writebehind rc? */
->> +             rc = cifs_write(file, page_data + offset, copied, &pos);
->> +             /* if (rc < 0) should we set writebehind rc? */
->>               kunmap(page);
->> +
->> +             FreeXid(xid);
->>       } else {
->> +             rc = copied;
->> +             pos += copied;
->>               set_page_dirty(page);
->>       }
->>
->> -     FreeXid(xid);
->> +     if (rc > 0) {
->> +             spin_lock(&inode->i_lock);
->> +             if (pos > inode->i_size)
->> +                     i_size_write(inode, pos);
->> +             spin_unlock(&inode->i_lock);
->> +     }
->> +
->> +     unlock_page(page);
->> +     page_cache_release(page);
->> +
->>       return rc;
->>  }
->>
->> @@ -2043,49 +2046,44 @@ bool is_size_safe_to_change(struct cifsInodeInfo *cifsInode, __u64 end_of_file)
->>               return true;
->>  }
->>
->> -static int cifs_prepare_write(struct file *file, struct page *page,
->> -     unsigned from, unsigned to)
->> +static int cifs_write_begin(struct file *file, struct address_space *mapping,
->> +                     loff_t pos, unsigned len, unsigned flags,
->> +                     struct page **pagep, void **fsdata)
->>  {
->> -     int rc = 0;
->> -     loff_t i_size;
->> -     loff_t offset;
->> +     pgoff_t index = pos >> PAGE_CACHE_SHIFT;
->> +     loff_t offset = pos & (PAGE_CACHE_SIZE - 1);
->> +
->> +     cFYI(1, ("write_begin from %lld len %d", (long long)pos, len));
->> +
->> +     *pagep = __grab_cache_page(mapping, index);
->> +     if (!*pagep)
->> +             return -ENOMEM;
->>
->> -     cFYI(1, ("prepare write for page %p from %d to %d", page, from, to));
->> -     if (PageUptodate(page))
->> +     if (PageUptodate(*pagep))
->>               return 0;
->>
->>       /* If we are writing a full page it will be up to date,
->>          no need to read from the server */
->> -     if ((to == PAGE_CACHE_SIZE) && (from == 0)) {
->> -             SetPageUptodate(page);
->> +     if (len == PAGE_CACHE_SIZE && flags & AOP_FLAG_UNINTERRUPTIBLE)
->>               return 0;
->> -     }
->>
->> -     offset = (loff_t)page->index << PAGE_CACHE_SHIFT;
->> -     i_size = i_size_read(page->mapping->host);
->> +     if ((file->f_flags & O_ACCMODE) != O_WRONLY) {
->> +             int rc;
->>
->> -     if ((offset >= i_size) ||
->> -         ((from == 0) && (offset + to) >= i_size)) {
->> -             /*
->> -              * We don't need to read data beyond the end of the file.
->> -              * zero it, and set the page uptodate
->> -              */
->> -             simple_prepare_write(file, page, from, to);
->> -             SetPageUptodate(page);
->> -     } else if ((file->f_flags & O_ACCMODE) != O_WRONLY) {
->>               /* might as well read a page, it is fast enough */
->> -             rc = cifs_readpage_worker(file, page, &offset);
->> +             rc = cifs_readpage_worker(file, *pagep, &offset);
->> +
->> +             /* we do not need to pass errors back
->> +                e.g. if we do not have read access to the file
->> +                because cifs_write_end will attempt synchronous writes
->> +                -- shaggy */
->>       } else {
->>               /* we could try using another file handle if there is one -
->>                  but how would we lock it to prevent close of that handle
->>                  racing with this read? In any case
->> -                this will be written out by commit_write so is fine */
->> +                this will be written out by write_end so is fine */
->>       }
->>
->> -     /* we do not need to pass errors back
->> -        e.g. if we do not have read access to the file
->> -        because cifs_commit_write will do the right thing.  -- shaggy */
->> -
->>       return 0;
->>  }
->>
->> @@ -2094,8 +2092,8 @@ const struct address_space_operations cifs_addr_ops = {
->>       .readpages = cifs_readpages,
->>       .writepage = cifs_writepage,
->>       .writepages = cifs_writepages,
->> -     .prepare_write = cifs_prepare_write,
->> -     .commit_write = cifs_commit_write,
->> +     .write_begin = cifs_write_begin,
->> +     .write_end = cifs_write_end,
->>       .set_page_dirty = __set_page_dirty_nobuffers,
->>       /* .sync_page = cifs_sync_page, */
->>       /* .direct_IO = */
->> @@ -2110,8 +2108,8 @@ const struct address_space_operations cifs_addr_ops_smallbuf = {
->>       .readpage = cifs_readpage,
->>       .writepage = cifs_writepage,
->>       .writepages = cifs_writepages,
->> -     .prepare_write = cifs_prepare_write,
->> -     .commit_write = cifs_commit_write,
->> +     .write_begin = cifs_write_begin,
->> +     .write_end = cifs_write_end,
->>       .set_page_dirty = __set_page_dirty_nobuffers,
->>       /* .sync_page = cifs_sync_page, */
->>       /* .direct_IO = */
->> --
->> 1.5.5.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
-> ---end quoted text---
->
+Drew
 
+Signed-off-by: Drew Moseley <dmoseley@mvista.com>
+Index: linux-2.6.21/drivers/pnp/base.h
+===================================================================
+--- linux-2.6.21.orig/drivers/pnp/base.h
++++ linux-2.6.21/drivers/pnp/base.h
+@@ -1,6 +1,5 @@
+ extern spinlock_t pnp_lock;
+ void *pnp_alloc(long size);
+-int pnp_interface_attach_device(struct pnp_dev *dev);
+ void pnp_fixup_device(struct pnp_dev *dev);
+ void pnp_free_option(struct pnp_option *option);
+ int __pnp_add_device(struct pnp_dev *dev);
+Index: linux-2.6.21/drivers/pnp/core.c
+===================================================================
+--- linux-2.6.21.orig/drivers/pnp/core.c
++++ linux-2.6.21/drivers/pnp/core.c
+@@ -111,7 +111,6 @@ static void pnp_release_device(struct de
 
+ int __pnp_add_device(struct pnp_dev *dev)
+ {
+-	int ret;
+ 	pnp_fixup_device(dev);
+ 	dev->dev.bus = &pnp_bus_type;
+ 	dev->dev.release = &pnp_release_device;
+@@ -120,11 +119,7 @@ int __pnp_add_device(struct pnp_dev *dev
+ 	list_add_tail(&dev->global_list, &pnp_global);
+ 	list_add_tail(&dev->protocol_list, &dev->protocol->devices);
+ 	spin_unlock(&pnp_lock);
+-
+-	ret = device_register(&dev->dev);
+-	if (ret == 0)
+-		pnp_interface_attach_device(dev);
+-	return ret;
++	return device_register(&dev->dev);
+ }
 
--- 
-Thanks,
+ /*
+Index: linux-2.6.21/drivers/pnp/interface.c
+===================================================================
+--- linux-2.6.21.orig/drivers/pnp/interface.c
++++ linux-2.6.21/drivers/pnp/interface.c
+@@ -233,9 +233,6 @@ static ssize_t pnp_show_options(struct d
+ 	return ret;
+ }
 
-Steve
+-static DEVICE_ATTR(options,S_IRUGO,pnp_show_options,NULL);
+-
+-
+ static ssize_t pnp_show_current_resources(struct device *dmdev, struct
+device_attribute *attr, char *buf)
+ {
+ 	struct pnp_dev *dev = to_pnp_dev(dmdev);
+@@ -441,9 +438,6 @@ pnp_set_current_resources(struct device
+ 	return count;
+ }
+
+-static DEVICE_ATTR(resources,S_IRUGO | S_IWUSR,
+-		   pnp_show_current_resources,pnp_set_current_resources);
+-
+ static ssize_t pnp_show_current_ids(struct device *dmdev, struct
+device_attribute *attr, char *buf)
+ {
+ 	char *str = buf;
+@@ -457,23 +451,11 @@ static ssize_t pnp_show_current_ids(stru
+ 	return (str - buf);
+ }
+
+-static DEVICE_ATTR(id,S_IRUGO,pnp_show_current_ids,NULL);
+-
+-int pnp_interface_attach_device(struct pnp_dev *dev)
+-{
+-	int rc = device_create_file(&dev->dev,&dev_attr_options);
+-	if (rc) goto err;
+-	rc = device_create_file(&dev->dev,&dev_attr_resources);
+-	if (rc) goto err_opt;
+-	rc = device_create_file(&dev->dev,&dev_attr_id);
+-	if (rc) goto err_res;
+-
+-	return 0;
+-
+-err_res:
+-	device_remove_file(&dev->dev,&dev_attr_resources);
+-err_opt:
+-	device_remove_file(&dev->dev,&dev_attr_options);
+-err:
+-	return rc;
+-}
++struct device_attribute pnp_interface_attrs[] = {
++	__ATTR(resources, S_IRUGO | S_IWUSR,
++		   pnp_show_current_resources,
++		   pnp_set_current_resources),
++	__ATTR(options, S_IRUGO, pnp_show_options, NULL),
++	__ATTR(id, S_IRUGO, pnp_show_current_ids, NULL),
++	__ATTR_NULL,
++};
+Index: linux-2.6.21/drivers/pnp/driver.c
+===================================================================
+--- linux-2.6.21.orig/drivers/pnp/driver.c
++++ linux-2.6.21/drivers/pnp/driver.c
+@@ -191,6 +191,7 @@ static int pnp_bus_resume(struct device
+ 	return 0;
+ }
+
++extern struct device_attribute pnp_interface_attrs[];
+ struct bus_type pnp_bus_type = {
+ 	.name	= "pnp",
+ 	.match	= pnp_bus_match,
+@@ -198,6 +199,7 @@ struct bus_type pnp_bus_type = {
+ 	.remove	= pnp_device_remove,
+ 	.suspend = pnp_bus_suspend,
+ 	.resume = pnp_bus_resume,
++	.dev_attrs = pnp_interface_attrs,
+ };
+
+ int pnp_register_driver(struct pnp_driver *drv)
