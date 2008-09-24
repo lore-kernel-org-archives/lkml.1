@@ -1,99 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYIXUgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYIXUhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbYIXUgd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 16:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYIXUgZ
+	id S1754669AbYIXUhm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 16:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYIXUhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 16:36:25 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:44563 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752034AbYIXUgY (ORCPT
+	Wed, 24 Sep 2008 16:37:34 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44590
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751652AbYIXUhe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 16:36:24 -0400
-Date: Wed, 24 Sep 2008 16:35:59 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Ric Wheeler <rwheeler@redhat.com>, Chris Mason <chris.mason@oracle.com>
-Cc: Andreas Dilger <adilger@sun.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] ext4: Use preallocation when reading from the
-	inode table
-Message-ID: <20080924203559.GK9929@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Ric Wheeler <rwheeler@redhat.com>,
-	Chris Mason <chris.mason@oracle.com>,
-	Andreas Dilger <adilger@sun.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <48D8DEAE.4080309@redhat.com> <20080924013014.GA9747@mit.edu> <48DA3F56.8090806@redhat.com> <1222266034.7160.191.camel@think.oraclecorp.com> <E1KhvsB-0002Ik-Ex@closure.thunk.org> <20080923101613.58768083@lxorguk.ukuu.org.uk> <20080923115045.GI10950@webber.adilger.int> <48D8DEAE.4080309@redhat.com> <20080924013014.GA9747@mit.edu> <48DA3F56.8090806@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222266034.7160.191.camel@think.oraclecorp.com> <48DA3F56.8090806@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Wed, 24 Sep 2008 16:37:34 -0400
+Date: Wed, 24 Sep 2008 13:37:20 -0700 (PDT)
+Message-Id: <20080924.133720.72895701.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: rostedt@goodmis.org, mbligh@google.com, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       akpm@linux-foundation.org, prasad@linux.vnet.ibm.com,
+       compudj@krystal.dyndns.org, fche@redhat.com, dwilder@us.ibm.com,
+       hch@lst.de, zanussi@comcast.net, srostedt@redhat.com
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>
+	<alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>
+	<alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 09:23:34AM -0400, Ric Wheeler wrote:
->
-> That sounds about right for modern S-ATA/SAS drives. I would expect that  
-> having this be a tunable knob might help for some types of storage (SSD  
-> might not care, but should be faster in any case?).
->
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 24 Sep 2008 13:23:47 -0700 (PDT)
 
-Well, for SSD's, wouldn't seek time not matter, but then the limiting
-factor should be the overhead of the read transaction, and the I/O
-bandwidth of the SSD.  So prefetching too much might hurt even more
-for SSD's, although in comparison with spinning rust platters, it
-would probably still be faster.  :-)
+> So I'd like the thing to have small headers, and be designed from the 
+> start to have small headers.
 
-So I'm pretty sure that with an SSD we'll want to turn the tunable
-down, not up.
+Small headers are good, but I'd suggest making sure there is an
+"offset" or similar field in there.
 
-On Wed, Sep 24, 2008 at 10:20:34AM -0400, Chris Mason wrote:
->For the test runs being done here, there's a pretty high chance that all
->of the inodes you read ahead will get used before the pages are dropped,
->so we want to find a balance between those and the worst case workloads
->where inode reads are basically random.  
-
-Yep, agreed.
-
-On the other hand, if we take your iop/s and translate them to
-milliseconds so we can measure the latency in the case where the
-workload is essentialy doing random reads, and then cross correlated
-it with my measurements, we get this table:
-
-i/o size iops/s  ms latency  % degredation         % improvement
-    	 	    	     of random inodes   of related inodes I/O
-   4k	  131       7.634      
-   8k	  130	    7.692	0.77%		    11.3%
-  16k	  128	    7.813	2.34%		    21.8%
-  32k	  126	    7.937	3.97%		    29.6%
-  64k	  121	    8.264	8.26%		    35.5%
- 128k	  113	    8.850      15.93%		    40.0%
- 256k	  100	   10.000      31.00%		    42.4%
-
-Depending on whether you believe that workloads involving random inode
-reads are more common compared to related inodes I/O, the sweet spot
-is probably somewhere between 32k and 128k.  I'm open to opinions
-(preferably backed up with more benchmarks of likely workloads) of
-whether we should use a default value of inode_readahead_bits of 4 or
-5 (i.e., 64k, my original guess, or 128k, in v2 of the patch).  But
-yes, making it tunable is definitely going to be necessary, since for
-different workloads (i.e squid vs. git repositories) will have very
-different requirements.
-
-The other thought are the one which comes to mind is whether we should
-use a similar large readahead if all we are doing writes vs. reads.
-For example, if we are just updating a single inode, and we are
-reading a block to do a read/modify write cycle, maybe we shouldn't be
-doing as much readahead.
-
-						- Ted
-
-P.S.  One caveat is that my numbers were taken from a Laptop SATA, and
-if Chris's were taken from a Desktop/Sever SATA drive the numbers
-might not be properly comparable.
+Not that I want to encourage frequent changes to header layout, but if
+you do need to add something, then this offset field allows you to do
+so while keeping existing analysis tools working.  They will just
+ignore the new information in the headers, but they will still be able
+to get at the data bits using the offset.
