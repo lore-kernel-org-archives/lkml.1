@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754318AbYIXWIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbYIXWI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754318AbYIXWIR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYIXWBN
+	id S1754294AbYIXWI4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbYIXWBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:01:13 -0400
-Received: from ns.suse.de ([195.135.220.2]:41459 "EHLO mx1.suse.de"
+	Wed, 24 Sep 2008 18:01:25 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52200 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753311AbYIXWA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:00:29 -0400
+	id S1752208AbYIXWAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:00:18 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-fsdevel@vger.kernel.org, Tao Ma <tao.ma@oracle.com>,
-       Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 15/39] ocfs2: Add xattr bucket iteration for large numbers of EAs
-Date: Wed, 24 Sep 2008 15:00:56 -0700
-Message-Id: <1222293680-15451-16-git-send-email-mfasheh@suse.com>
+       linux-fsdevel@vger.kernel.org, Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 04/39] ocfs2: track local alloc state via debugfs
+Date: Wed, 24 Sep 2008 15:00:45 -0700
+Message-Id: <1222293680-15451-5-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
 References: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
@@ -24,412 +23,160 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tao Ma <tao.ma@oracle.com>
+A per-mount debugfs file, "local_alloc" is created which when read will
+expose live state of the nodes local alloc file. Performance impact is
+minimal, only a bit of memory overhead per mount point. Still, the code is
+hidden behind CONFIG_OCFS2_FS_STATS. This feature will help us debug
+local alloc performance problems on a live system.
 
-Ocfs2 breaks up xattr index tree leaves into 4k regions, called buckets.
-Attributes are stored within a given bucket, depending on hash value.
-
-After a discussion with Mark, we decided that the per-bucket index
-(xe_entry[]) would only exist in the 1st block of a bucket. Likewise,
-name/value pairs will not straddle more than one block. This allows the
-majority of operations to work directly on the buffer heads in a leaf block.
-
-This patch adds code to iterate the buckets in an EA. A new abstration of
-ocfs2_xattr_bucket is added. It records the bhs in this bucket and
-ocfs2_xattr_header. This keeps the code neat, improving readibility.
-
-Signed-off-by: Tao Ma <tao.ma@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/ocfs2_fs.h |   35 +++++++-
- fs/ocfs2/xattr.c    |  255 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- fs/ocfs2/xattr.h    |    9 ++
- 3 files changed, 293 insertions(+), 6 deletions(-)
+ fs/ocfs2/localalloc.c |   87 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ocfs2/ocfs2.h      |    5 +++
+ 2 files changed, 92 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
-index 98e1f8b..8d5e72f 100644
---- a/fs/ocfs2/ocfs2_fs.h
-+++ b/fs/ocfs2/ocfs2_fs.h
-@@ -755,8 +755,13 @@ struct ocfs2_xattr_header {
- 	__le16	xh_count;                       /* contains the count of how
- 						   many records are in the
- 						   local xattr storage. */
--	__le16	xh_reserved1;
--	__le32	xh_reserved2;
-+	__le16	xh_free_start;                  /* current offset for storing
-+						   xattr. */
-+	__le16	xh_name_value_len;              /* total length of name/value
-+						   length in this bucket. */
-+	__le16	xh_num_buckets;                 /* bucket nums in one extent
-+						   record, only valid in the
-+						   first bucket. */
- 	__le64  xh_csum;
- 	struct ocfs2_xattr_entry xh_entries[0]; /* xattr entry list. */
- };
-@@ -793,6 +798,10 @@ struct ocfs2_xattr_tree_root {
- #define OCFS2_XATTR_SIZE(size)	(((size) + OCFS2_XATTR_ROUND) & \
- 				~(OCFS2_XATTR_ROUND))
+diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
+index f71658a..b889f10 100644
+--- a/fs/ocfs2/localalloc.c
++++ b/fs/ocfs2/localalloc.c
+@@ -28,6 +28,7 @@
+ #include <linux/slab.h>
+ #include <linux/highmem.h>
+ #include <linux/bitops.h>
++#include <linux/debugfs.h>
  
-+#define OCFS2_XATTR_BUCKET_SIZE			4096
-+#define OCFS2_XATTR_MAX_BLOCKS_PER_BUCKET 	(OCFS2_XATTR_BUCKET_SIZE \
-+						 / OCFS2_MIN_BLOCKSIZE)
-+
- /*
-  * On disk structure for xattr block.
-  */
-@@ -963,6 +972,17 @@ static inline u64 ocfs2_backup_super_blkno(struct super_block *sb, int index)
- 	return 0;
+ #define MLOG_MASK_PREFIX ML_DISK_ALLOC
+ #include <cluster/masklog.h>
+@@ -73,6 +74,85 @@ static int ocfs2_local_alloc_new_window(struct ocfs2_super *osb,
+ static int ocfs2_local_alloc_slide_window(struct ocfs2_super *osb,
+ 					  struct inode *local_alloc_inode);
  
- }
++#ifdef CONFIG_OCFS2_FS_STATS
 +
-+static inline u16 ocfs2_xattr_recs_per_xb(struct super_block *sb)
++DEFINE_MUTEX(la_debug_mutex);
++
++static int ocfs2_la_debug_open(struct inode *inode, struct file *file)
 +{
-+	int size;
-+
-+	size = sb->s_blocksize -
-+		offsetof(struct ocfs2_xattr_block,
-+			 xb_attrs.xb_root.xt_list.l_recs);
-+
-+	return size / sizeof(struct ocfs2_extent_rec);
-+}
- #else
- static inline int ocfs2_fast_symlink_chars(int blocksize)
- {
-@@ -1046,6 +1066,17 @@ static inline uint64_t ocfs2_backup_super_blkno(int blocksize, int index)
- 
- 	return 0;
- }
-+
-+static inline int ocfs2_xattr_recs_per_xb(int blocksize)
-+{
-+	int size;
-+
-+	size = blocksize -
-+		offsetof(struct ocfs2_xattr_block,
-+			 xb_attrs.xb_root.xt_list.l_recs);
-+
-+	return size / sizeof(struct ocfs2_extent_rec);
-+}
- #endif  /* __KERNEL__ */
- 
- 
-diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 67bebd9..fb17f7f 100644
---- a/fs/ocfs2/xattr.c
-+++ b/fs/ocfs2/xattr.c
-@@ -52,6 +52,7 @@
- #include "suballoc.h"
- #include "uptodate.h"
- #include "buffer_head_io.h"
-+#include "super.h"
- #include "xattr.h"
- 
- 
-@@ -60,6 +61,11 @@ struct ocfs2_xattr_def_value_root {
- 	struct ocfs2_extent_rec		er;
- };
- 
-+struct ocfs2_xattr_bucket {
-+	struct buffer_head *bhs[OCFS2_XATTR_MAX_BLOCKS_PER_BUCKET];
-+	struct ocfs2_xattr_header *xh;
-+};
-+
- #define OCFS2_XATTR_ROOT_SIZE	(sizeof(struct ocfs2_xattr_def_value_root))
- #define OCFS2_XATTR_INLINE_SIZE	80
- 
-@@ -99,6 +105,11 @@ struct ocfs2_xattr_search {
- 	int not_found;
- };
- 
-+static int ocfs2_xattr_tree_list_index_block(struct inode *inode,
-+					struct ocfs2_xattr_tree_root *xt,
-+					char *buffer,
-+					size_t buffer_size);
-+
- static inline struct xattr_handler *ocfs2_xattr_handler(int name_index)
- {
- 	struct xattr_handler *handler = NULL;
-@@ -483,7 +494,7 @@ static int ocfs2_xattr_block_list(struct inode *inode,
- 				  size_t buffer_size)
- {
- 	struct buffer_head *blk_bh = NULL;
--	struct ocfs2_xattr_header *header = NULL;
-+	struct ocfs2_xattr_block *xb;
- 	int ret = 0;
- 
- 	if (!di->i_xattr_loc)
-@@ -503,10 +514,17 @@ static int ocfs2_xattr_block_list(struct inode *inode,
- 		goto cleanup;
- 	}
- 
--	header = &((struct ocfs2_xattr_block *)blk_bh->b_data)->
--		 xb_attrs.xb_header;
-+	xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
- 
--	ret = ocfs2_xattr_list_entries(inode, header, buffer, buffer_size);
-+	if (!(le16_to_cpu(xb->xb_flags) & OCFS2_XATTR_INDEXED)) {
-+		struct ocfs2_xattr_header *header = &xb->xb_attrs.xb_header;
-+		ret = ocfs2_xattr_list_entries(inode, header,
-+					       buffer, buffer_size);
-+	} else {
-+		struct ocfs2_xattr_tree_root *xt = &xb->xb_attrs.xb_root;
-+		ret = ocfs2_xattr_tree_list_index_block(inode, xt,
-+						   buffer, buffer_size);
-+	}
- cleanup:
- 	brelse(blk_bh);
- 
-@@ -1923,3 +1941,232 @@ cleanup:
- 	return ret;
- }
- 
-+/*
-+ * Find the xattr extent rec which may contains name_hash.
-+ * e_cpos will be the first name hash of the xattr rec.
-+ * el must be the ocfs2_xattr_header.xb_attrs.xb_root.xt_list.
-+ */
-+static int ocfs2_xattr_get_rec(struct inode *inode,
-+			       u32 name_hash,
-+			       u64 *p_blkno,
-+			       u32 *e_cpos,
-+			       u32 *num_clusters,
-+			       struct ocfs2_extent_list *el)
-+{
-+	int ret = 0, i;
-+	struct buffer_head *eb_bh = NULL;
-+	struct ocfs2_extent_block *eb;
-+	struct ocfs2_extent_rec *rec = NULL;
-+	u64 e_blkno = 0;
-+
-+	if (el->l_tree_depth) {
-+		ret = ocfs2_find_leaf(inode, el, name_hash, &eb_bh);
-+		if (ret) {
-+			mlog_errno(ret);
-+			goto out;
-+		}
-+
-+		eb = (struct ocfs2_extent_block *) eb_bh->b_data;
-+		el = &eb->h_list;
-+
-+		if (el->l_tree_depth) {
-+			ocfs2_error(inode->i_sb,
-+				    "Inode %lu has non zero tree depth in "
-+				    "xattr tree block %llu\n", inode->i_ino,
-+				    (unsigned long long)eb_bh->b_blocknr);
-+			ret = -EROFS;
-+			goto out;
-+		}
-+	}
-+
-+	for (i = le16_to_cpu(el->l_next_free_rec) - 1; i >= 0; i--) {
-+		rec = &el->l_recs[i];
-+
-+		if (le32_to_cpu(rec->e_cpos) <= name_hash) {
-+			e_blkno = le64_to_cpu(rec->e_blkno);
-+			break;
-+		}
-+	}
-+
-+	if (!e_blkno) {
-+		ocfs2_error(inode->i_sb, "Inode %lu has bad extent "
-+			    "record (%u, %u, 0) in xattr", inode->i_ino,
-+			    le32_to_cpu(rec->e_cpos),
-+			    ocfs2_rec_clusters(el, rec));
-+		ret = -EROFS;
-+		goto out;
-+	}
-+
-+	*p_blkno = le64_to_cpu(rec->e_blkno);
-+	*num_clusters = le16_to_cpu(rec->e_leaf_clusters);
-+	if (e_cpos)
-+		*e_cpos = le32_to_cpu(rec->e_cpos);
-+out:
-+	brelse(eb_bh);
-+	return ret;
-+}
-+
-+typedef int (xattr_bucket_func)(struct inode *inode,
-+				struct ocfs2_xattr_bucket *bucket,
-+				void *para);
-+
-+static int ocfs2_iterate_xattr_buckets(struct inode *inode,
-+				       u64 blkno,
-+				       u32 clusters,
-+				       xattr_bucket_func *func,
-+				       void *para)
-+{
-+	int i, j, ret = 0;
-+	int blk_per_bucket = ocfs2_blocks_per_xattr_bucket(inode->i_sb);
-+	u32 bpc = ocfs2_xattr_buckets_per_cluster(OCFS2_SB(inode->i_sb));
-+	u32 num_buckets = clusters * bpc;
-+	struct ocfs2_xattr_bucket bucket;
-+
-+	memset(&bucket, 0, sizeof(bucket));
-+
-+	mlog(0, "iterating xattr buckets in %u clusters starting from %llu\n",
-+	     clusters, blkno);
-+
-+	for (i = 0; i < num_buckets; i++, blkno += blk_per_bucket) {
-+		ret = ocfs2_read_blocks(OCFS2_SB(inode->i_sb),
-+					blkno, blk_per_bucket,
-+					bucket.bhs, OCFS2_BH_CACHED, inode);
-+		if (ret) {
-+			mlog_errno(ret);
-+			goto out;
-+		}
-+
-+		bucket.xh = (struct ocfs2_xattr_header *)bucket.bhs[0]->b_data;
-+		/*
-+		 * The real bucket num in this series of blocks is stored
-+		 * in the 1st bucket.
-+		 */
-+		if (i == 0)
-+			num_buckets = le16_to_cpu(bucket.xh->xh_num_buckets);
-+
-+		mlog(0, "iterating xattr bucket %llu\n", blkno);
-+		if (func) {
-+			ret = func(inode, &bucket, para);
-+			if (ret) {
-+				mlog_errno(ret);
-+				break;
-+			}
-+		}
-+
-+		for (j = 0; j < blk_per_bucket; j++)
-+			brelse(bucket.bhs[j]);
-+		memset(&bucket, 0, sizeof(bucket));
-+	}
-+
-+out:
-+	for (j = 0; j < blk_per_bucket; j++)
-+		brelse(bucket.bhs[j]);
-+
-+	return ret;
-+}
-+
-+struct ocfs2_xattr_tree_list {
-+	char *buffer;
-+	size_t buffer_size;
-+};
-+
-+static int ocfs2_xattr_bucket_get_name_value(struct inode *inode,
-+					     struct ocfs2_xattr_header *xh,
-+					     int index,
-+					     int *block_off,
-+					     int *new_offset)
-+{
-+	u16 name_offset;
-+
-+	if (index < 0 || index >= le16_to_cpu(xh->xh_count))
-+		return -EINVAL;
-+
-+	name_offset = le16_to_cpu(xh->xh_entries[index].xe_name_offset);
-+
-+	*block_off = name_offset >> inode->i_sb->s_blocksize_bits;
-+	*new_offset = name_offset % inode->i_sb->s_blocksize;
-+
++	file->private_data = inode->i_private;
 +	return 0;
 +}
 +
-+static int ocfs2_list_xattr_bucket(struct inode *inode,
-+				   struct ocfs2_xattr_bucket *bucket,
-+				   void *para)
++#define LA_DEBUG_BUF_SZ	PAGE_CACHE_SIZE
++#define LA_DEBUG_VER	1
++static ssize_t ocfs2_la_debug_read(struct file *file, char __user *userbuf,
++				   size_t count, loff_t *ppos)
 +{
-+	int ret = 0;
-+	struct ocfs2_xattr_tree_list *xl = (struct ocfs2_xattr_tree_list *)para;
-+	size_t size;
-+	int i, block_off, new_offset;
++	struct ocfs2_super *osb = file->private_data;
++	int written, ret;
++	char *buf = osb->local_alloc_debug_buf;
 +
-+	for (i = 0 ; i < le16_to_cpu(bucket->xh->xh_count); i++) {
-+		struct ocfs2_xattr_entry *entry = &bucket->xh->xh_entries[i];
-+		struct xattr_handler *handler =
-+			ocfs2_xattr_handler(ocfs2_xattr_get_type(entry));
++	mutex_lock(&la_debug_mutex);
++	memset(buf, 0, LA_DEBUG_BUF_SZ);
 +
-+		if (handler) {
-+			ret = ocfs2_xattr_bucket_get_name_value(inode,
-+								bucket->xh,
-+								i,
-+								&block_off,
-+								&new_offset);
-+			if (ret)
-+				break;
-+			size = handler->list(inode, xl->buffer, xl->buffer_size,
-+					     bucket->bhs[block_off]->b_data +
-+					     new_offset,
-+					     entry->xe_name_len);
-+			if (xl->buffer) {
-+				if (size > xl->buffer_size)
-+					return -ERANGE;
-+				xl->buffer += size;
-+			}
-+			xl->buffer_size -= size;
-+		}
-+	}
++	written = snprintf(buf, LA_DEBUG_BUF_SZ,
++			   "0x%x\t0x%llx\t%u\t%u\t0x%x\n",
++			   LA_DEBUG_VER,
++			   (unsigned long long)osb->la_last_gd,
++			   osb->local_alloc_default_bits,
++			   osb->local_alloc_bits, osb->local_alloc_state);
 +
++	ret = simple_read_from_buffer(userbuf, count, ppos, buf, written);
++
++	mutex_unlock(&la_debug_mutex);
 +	return ret;
 +}
 +
-+static int ocfs2_xattr_tree_list_index_block(struct inode *inode,
-+					     struct ocfs2_xattr_tree_root *xt,
-+					     char *buffer,
-+					     size_t buffer_size)
++static const struct file_operations ocfs2_la_debug_fops = {
++	.open =		ocfs2_la_debug_open,
++	.read =		ocfs2_la_debug_read,
++};
++
++static void ocfs2_init_la_debug(struct ocfs2_super *osb)
 +{
-+	struct ocfs2_extent_list *el = &xt->xt_list;
-+	int ret = 0;
-+	u32 name_hash = UINT_MAX, e_cpos = 0, num_clusters = 0;
-+	u64 p_blkno = 0;
-+	struct ocfs2_xattr_tree_list xl = {
-+		.buffer = buffer,
-+		.buffer_size = buffer_size,
-+	};
++	osb->local_alloc_debug_buf = kmalloc(LA_DEBUG_BUF_SZ, GFP_NOFS);
++	if (!osb->local_alloc_debug_buf)
++		return;
 +
-+	if (le16_to_cpu(el->l_next_free_rec) == 0)
-+		return 0;
-+
-+	while (name_hash > 0) {
-+		ret = ocfs2_xattr_get_rec(inode, name_hash, &p_blkno,
-+					  &e_cpos, &num_clusters, el);
-+		if (ret) {
-+			mlog_errno(ret);
-+			goto out;
-+		}
-+
-+		ret = ocfs2_iterate_xattr_buckets(inode, p_blkno, num_clusters,
-+						  ocfs2_list_xattr_bucket,
-+						  &xl);
-+		if (ret) {
-+			mlog_errno(ret);
-+			goto out;
-+		}
-+
-+		if (e_cpos == 0)
-+			break;
-+
-+		name_hash = e_cpos - 1;
++	osb->local_alloc_debug = debugfs_create_file("local_alloc_stats",
++						     S_IFREG|S_IRUSR,
++						     osb->osb_debug_root,
++						     osb,
++						     &ocfs2_la_debug_fops);
++	if (!osb->local_alloc_debug) {
++		kfree(osb->local_alloc_debug_buf);
++		osb->local_alloc_debug_buf = NULL;
 +	}
-+
-+	ret = buffer_size - xl.buffer_size;
-+out:
-+	return ret;
 +}
-diff --git a/fs/ocfs2/xattr.h b/fs/ocfs2/xattr.h
-index ed32377..02afa87 100644
---- a/fs/ocfs2/xattr.h
-+++ b/fs/ocfs2/xattr.h
-@@ -48,4 +48,13 @@ extern int ocfs2_xattr_set(struct inode *, int, const char *, const void *,
- extern int ocfs2_xattr_remove(struct inode *inode, struct buffer_head *di_bh);
- extern struct xattr_handler *ocfs2_xattr_handlers[];
++
++static void ocfs2_shutdown_la_debug(struct ocfs2_super *osb)
++{
++	if (osb->local_alloc_debug)
++		debugfs_remove(osb->local_alloc_debug);
++
++	if (osb->local_alloc_debug_buf)
++		kfree(osb->local_alloc_debug_buf);
++
++	osb->local_alloc_debug_buf = NULL;
++	osb->local_alloc_debug = NULL;
++}
++#else	/* CONFIG_OCFS2_FS_STATS */
++static void ocfs2_init_la_debug(struct ocfs2_super *osb)
++{
++	return;
++}
++static void ocfs2_shutdown_la_debug(struct ocfs2_super *osb)
++{
++	return;
++}
++#endif
++
+ static inline int ocfs2_la_state_enabled(struct ocfs2_super *osb)
+ {
+ 	return (osb->local_alloc_state == OCFS2_LA_THROTTLED ||
+@@ -146,6 +226,8 @@ int ocfs2_load_local_alloc(struct ocfs2_super *osb)
  
-+static inline u16 ocfs2_xattr_buckets_per_cluster(struct ocfs2_super *osb)
-+{
-+	return (1 << osb->s_clustersize_bits) / OCFS2_XATTR_BUCKET_SIZE;
-+}
+ 	mlog_entry_void();
+ 
++	ocfs2_init_la_debug(osb);
 +
-+static inline u16 ocfs2_blocks_per_xattr_bucket(struct super_block *sb)
-+{
-+	return OCFS2_XATTR_BUCKET_SIZE / (1 << sb->s_blocksize_bits);
-+}
- #endif /* OCFS2_XATTR_H */
+ 	if (osb->local_alloc_bits == 0)
+ 		goto bail;
+ 
+@@ -218,6 +300,9 @@ bail:
+ 	if (inode)
+ 		iput(inode);
+ 
++	if (status < 0)
++		ocfs2_shutdown_la_debug(osb);
++
+ 	mlog(0, "Local alloc window bits = %d\n", osb->local_alloc_bits);
+ 
+ 	mlog_exit(status);
+@@ -247,6 +332,8 @@ void ocfs2_shutdown_local_alloc(struct ocfs2_super *osb)
+ 	cancel_delayed_work(&osb->la_enable_wq);
+ 	flush_workqueue(ocfs2_wq);
+ 
++	ocfs2_shutdown_la_debug(osb);
++
+ 	if (osb->local_alloc_state == OCFS2_LA_UNUSED)
+ 		goto out;
+ 
+diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
+index 4d6e200..1282799 100644
+--- a/fs/ocfs2/ocfs2.h
++++ b/fs/ocfs2/ocfs2.h
+@@ -272,6 +272,11 @@ struct ocfs2_super
+ 
+ 	u64 la_last_gd;
+ 
++#ifdef CONFIG_OCFS2_FS_STATS
++	struct dentry *local_alloc_debug;
++	char *local_alloc_debug_buf;
++#endif
++
+ 	/* Next two fields are for local node slot recovery during
+ 	 * mount. */
+ 	int dirty;
 -- 
 1.5.4.5
 
