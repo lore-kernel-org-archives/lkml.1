@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYIXUsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbYIXUs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbYIXUsp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 16:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbYIXUsB
+	id S1755061AbYIXUs2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 16:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbYIXUr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 16:48:01 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:37532 "HELO
+	Wed, 24 Sep 2008 16:47:59 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:37523 "HELO
 	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754850AbYIXUr6 (ORCPT
+	by vger.kernel.org with SMTP id S1753387AbYIXUr5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 16:47:58 -0400
+	Wed, 24 Sep 2008 16:47:57 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=UcMMpqx8koQ8+Faj1bGxtSUfbC1SZMm/CGIbvEuCSbAfzSXp/LufFofgdNNTAhne3Mv7LLMTkziJ4iK4clzJWF7LUfqNYS0eXVZADyOzlKILk8EbTsRBinybfOi4EuuC4zEG8oH5yOIaA2NUq2/PlOhCgvThweurPu2FyjEn6hQ=  ;
-X-YMail-OSG: i9.JdloVM1lHVqezOWcDvOthoQDlG8LsDftzSqq5gZvlRJvJYB8vyQUqbhBTl0dH6QwAiWxc09xhhbC8kTYs39P1ZJ_4FHkLX7.J8AE_sf1tHh9GENNXPhz5ggmDdYMkzzk-
+  b=Vhj3EiOPtqXwyt0ffbZ5lYZ8osTtKF+FSSvSFp7gvjZmRAqTY/96Y9AuzyPIAgvKSLx1U5j7WskLzgdXwVbHmY4zmu0bUAn5N6ZI5J/H7dLZEmCvJPasg0U8bCLHH9Fv+BuPphhxnu5hQg3IRHi/TYuUwge3CUu5zhLta2xqBtc=  ;
+X-YMail-OSG: n9JxKt0VM1msZb.DkC_U8f.Uou6fHJQJ7TS76bR9lYtTM0mQt7A6TtLbNNC0xYmnEYxpDqa8vKlC11.UEnlLzubZGe018h8awco_FzpArrIxsHp.Wa7FZY8ne9GGD7Ksda4-
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
-Date: Wed, 24 Sep 2008 13:10:02 -0700
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH 0/3] Patches to support QE USB Host Controller
+Date: Wed, 24 Sep 2008 13:04:24 -0700
 User-Agent: KMail/1.9.9
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, greg@kroah.com,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1219916613-28827-1-git-send-email-leoli@freescale.com> <200808281704.20999.arnd@arndb.de>
-In-Reply-To: <200808281704.20999.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, avorontsov@ru.mvista.com,
+       "Greg Kroah-Hartman" <greg@kroah.com>, linux-usb@vger.kernel.org,
+       Li Yang <leoli@freescale.com>, linux-kernel@vger.kernel.org,
+       Timur Tabi <timur@freescale.com>
+References: <20080808161717.GA19095@polina.dev.rtsoft.ru> <200808141415.42109.laurentp@cse-semaphore.com>
+In-Reply-To: <200808141415.42109.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809241310.03171.david-b@pacbell.net>
+Message-Id: <200809241304.24878.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 August 2008, Arnd Bergmann wrote:
-> > +/*-------------------------------------------------------------------------
-> > +     Gadget driver register and unregister.
-> > + --------------------------------------------------------------------------*/
-> > +int usb_gadget_register_driver(struct usb_gadget_driver *driver)
-> > +EXPORT_SYMBOL(usb_gadget_register_driver);
-> > +
-> > +int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
-> > +EXPORT_SYMBOL(usb_gadget_unregister_driver);
+On Thursday 14 August 2008, Laurent Pinchart wrote:
 > 
-> Not addressing this driver in particular, but the USB gadget layer in
-> general: This is a horrible interface, since every gadget driver exports
-> the same symbols, 
+> > David, could you bear with gpio_to_chip() exported function, just as
+> > a stopgap for a proper api?
+> 
+> I need gpio_to_chip() (or another 'proper API') as well for RTS/CTS
+> based flow control in the CPM/CPM2 UART driver. 
 
-Bad terminology.  Gadget drivers are what sit on TOP of peripheral
-controller drivers ... only peripheral controller drivers touch the
-actual hardware registers.  They export an abstract "gadget" interface.
+I'l still say "proper".  This should be straightforward; along
+the lines of
 
-Gadget drivers are what talk *to* that abstract interface.
+	struct qe_pin {
+		struct ... *qe_ports;	/* includes gpio_chip */
+		unsigned offset;
+	};
 
+And instead of having the driver look up a "gpio" for such
+non-GPIO usage, have it call something that sets up a qe_pin.
+All that infrastructure exists already...
 
-> you can never build a kernel that includes more than 
-> one gadget driver. Even if the drivers are all built as modules, simply
-> loading one of them prevents loading another one.
+Then drivers can use calls which mux the pin into its "normal"
+mode (QE function of some kind), or into its "gpio" mode.
 
-That's never been a particular requirement.  Systems won't get
-USB branding if they have more than one USB peripheral (upstream)
-port.  Supporting more than one type of controller hardware is
-at best a pretty esoteric configuration.
+The gpio number would be gpio_chip->base + offset, and the
+gpio_chip is visible -- in a fully typesafe manner! -- from
+the qe_ports structure.
 
-If you really want to see such stuff ... -ENOPATCH.  :)
+No type-unsafe interfaces.  No confusion between roles of a
+given pin.  No hidden assumption there's only one kind of GPIO
+(backed by QE ports).  And ... no need to change any core
+structural assumptions of the GPIO framework.
 
 - Dave
 
