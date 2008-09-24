@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYIXVSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753049AbYIXVTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754099AbYIXVSW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 17:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYIXVRz
+	id S1753049AbYIXVTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 17:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYIXVTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 17:17:55 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:41582 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753162AbYIXVRy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 17:17:54 -0400
-Date: Wed, 24 Sep 2008 17:17:52 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Martin Bligh <mbligh@google.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0809241712270.10631@gandalf.stny.rr.com>
-References: <20080924051056.650388887@goodmis.org>  <20080924051400.195780424@goodmis.org>  <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
-  <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com>  <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>  <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> 
- <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 24 Sep 2008 17:19:09 -0400
+Received: from ns2.suse.de ([195.135.220.15]:49773 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751882AbYIXVTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 17:19:08 -0400
+Message-ID: <48DAAEAB.50009@suse.com>
+Date: Wed, 24 Sep 2008 17:18:35 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, arjan@linux.intel.com,
+       reiserfs-devel@vger.kernel.org, peterz@infradead.org
+Subject: Re: [LOCKDEP linux-2.6.27-rc7] reiserfs circular locking
+References: <4807377b0809241139x18ea8ce4x7dbc66ba680be3e7@mail.gmail.com>	<48DA8D27.5080908@suse.com> <20080924221425.3b4939ba@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080924221425.3b4939ba@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Wed, 24 Sep 2008, Martin Bligh wrote:
+Alan Cox wrote:
+>> I have a reiserfs patch set that should address this. I haven't
+>> submitted it recently because I'm chasing down a reiserfs bug report
+>> that may or may not be related to the patch set.
+>>
+>> You can grab the patch set out of an opensuse kernel src rpm.
 > 
-> How about we just steal 5 bits from the timestamp to indicate event
-> lengths up to 32 bytes, and if it's 0, that means there's a length
-> field following? Also that'd mean you could use a longer length field
-> and get beyond 256 bytes to 4096, without impacting most events.
+> Jeff: See also bugzilla.kernel.org #9136 which seems to match
 > 
-> struct {
->         u32 length:5, time_delta:27;
+> BTW - does anyone have a view where the existing reiserfs bugs should be
+> assigned as they are currently assigned to namesys...
 
-I think you mean this is where length == 0 ;-)
+They're fine being assigned to the reiserfs development list, it's just
+that the address in bko is wrong. The current address is
+reiserfs-devel@vger.kernel.org.
 
->         u16 length;
->         u8 buf[];
-> };
-> 
-> struct {
->         u32 length:5, time_delta:27;        /* where length == 0 */
->         u8 buf[];
-> };
-> 
-> Obviously we could less than 5 bits, even just 1 for a flag ...
-> 
+I'll take this bug over, though.
 
-OK then. Since I like the idea of aligning the buffer to 8 bytes, we can 
-always shift the length field by 3. So...
+- -Jeff
 
-For records 256 bytes or less, we only have:
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-struct {
-	u32 length:5, time_delta: 27;
-	u8 buf[];
-};
-
-For 257 bytes or more we have:
-
-struct {
-	u32 length:5 (=0), time_delta: 27;
-	u16 large_length;
-	u8 buf[];
-};
-
-This is what you want?
-
--- Steve
-
+iEYEARECAAYFAkjarqsACgkQLPWxlyuTD7LCLQCdF5BDrD+cdYGlqFUZ+Pu5oi5/
+aFsAnAhfHjv8oXjbR/zXTd1fuEa8abkj
+=7ayP
+-----END PGP SIGNATURE-----
