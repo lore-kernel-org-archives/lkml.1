@@ -1,51 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYIXQ1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYIXQ14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbYIXQ1n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 12:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYIXQ1e
+	id S1754813AbYIXQ14 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 12:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbYIXQ1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 12:27:34 -0400
-Received: from vena.lwn.net ([206.168.112.25]:35422 "EHLO vena.lwn.net"
+	Wed, 24 Sep 2008 12:27:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54745 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751635AbYIXQ1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 12:27:33 -0400
-Date: Wed, 24 Sep 2008 10:27:30 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: David Miller <davem@davemloft.net>
-Cc: airlied@gmail.com, jkosina@suse.cz, jeffrey.t.kirsher@intel.com,
-       david.vrabel@csr.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, chrisl@vmware.com
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-Message-ID: <20080924102730.31ee305a@bike.lwn.net>
-In-Reply-To: <20080924.003638.71148740.davem@davemloft.net>
-References: <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz>
-	<20080923.211215.193696086.davem@davemloft.net>
-	<21d7e9970809232245x6a91c6e2l552ff039d07e2017@mail.gmail.com>
-	<20080924.003638.71148740.davem@davemloft.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.0; x86_64-unknown-linux-gnu)
+	id S1753461AbYIXQ1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 12:27:39 -0400
+Date: Wed, 24 Sep 2008 12:23:38 -0400 (EDT)
+Message-Id: <20080924.122338.78703707.k-ueda@ct.jp.nec.com>
+To: martin.petersen@oracle.com
+Cc: k-ueda@ct.jp.nec.com, dm-devel@redhat.com, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, agk@sourceware.org
+Subject: Re: [dm-devel] [PATCH 2/2] dm: Add support for data integrity to DM
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20080923.152942.41629825.k-ueda@ct.jp.nec.com>
+References: <20080920211433.9e1a6872.akpm@linux-foundation.org>
+	<1222195272-18674-3-git-send-email-martin.petersen@oracle.com>
+	<20080923.152942.41629825.k-ueda@ct.jp.nec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008 00:36:38 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+Hi Martin,
 
-> I'm about to leave for a week or so in Paris for the netfilter
-> workshop, so I hope that someone other than myself will do some data
-> mining like I have instead of (merely) tossing theories around and
-> finger pointing.
+On Tue, 23 Sep 2008 15:29:42 -0400 (EDT), Kiyoshi Ueda wrote:
+> On Tue, 23 Sep 2008 14:41:12 -0400, "Martin K. Petersen" wrote:
+> > If all subdevices support the same protection format the DM device is
+> > flagged as capable.
+> > 
+> > Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+> > ---
+> >  drivers/md/dm-table.c         |   35 ++++++++++++++++++++++++++++++++++-
+> >  drivers/md/dm.c               |   24 ++++++++++++++++++++++--
+> >  drivers/md/dm.h               |    2 +-
+> >  include/linux/device-mapper.h |    1 +
+> >  4 files changed, 58 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
+> > index 61f4414..7290a90 100644
+> > --- a/drivers/md/dm-table.c
+> > +++ b/drivers/md/dm-table.c
+> > @@ -841,8 +841,12 @@ struct dm_target *dm_table_find_target(struct dm_table *t, sector_t sector)
+> >  	return &t->targets[(KEYS_PER_NODE * n) + k];
+> >  }
+> >  
+> > -void dm_table_set_restrictions(struct dm_table *t, struct request_queue *q)
+> > +void dm_table_set_restrictions(struct dm_table *t, struct mapped_device *md)
+> >  {
+> > +	struct request_queue *q = dm_queue(md);
+> > +	struct list_head *devices = dm_table_get_devices(t);
+> > +	struct dm_dev *prev, *cur;
+> > +
+> >  	/*
+> >  	 * Make sure we obey the optimistic sub devices
+> >  	 * restrictions.
+> > @@ -861,6 +865,35 @@ void dm_table_set_restrictions(struct dm_table *t, struct request_queue *q)
+> >  	else
+> >  		queue_flag_set_unlocked(QUEUE_FLAG_CLUSTER, q);
+> >  
+> > +	/*
+> > +	 * Run through all devices to ensure they have matching
+> > +	 * integrity profile
+> > +	 */
+> > +	cur = prev = NULL;
+> > +
+> > +	list_for_each_entry(cur, devices, list) {
+> > +
+> > +		if (prev && blk_integrity_compare(prev->bdev, cur->bdev) < 0) {
+> > +			printk(KERN_ERR "%s: %s %s Integrity mismatch!\n",
+> > +			       __func__, prev->bdev->bd_disk->disk_name,
+> > +			       cur->bdev->bd_disk->disk_name);
+> > +			return;
+> > +		}
+> > +		prev = cur;
+> > +	}
+> > +
+> > +	/* Register dm device as being integrity capable */
+> > +	if (prev && bdev_get_integrity(prev->bdev)) {
+> > +		struct gendisk *disk = dm_disk(md);
+> > +
+> > +		if (blk_integrity_register(dm_disk(md),
+> > +					   bdev_get_integrity(prev->bdev)))
+> > +			printk(KERN_ERR "%s: %s Could not register integrity!\n",
+> > +			       __func__, disk->disk_name);
+> > +		else
+> > +			printk(KERN_INFO "Enabling data integrity on %s\n",
+> > +			       disk->disk_name);
+> > +	}
+> >  }
+> <snip>
+> > @@ -1200,7 +1216,6 @@ static void __set_size(struct mapped_device *md, sector_t size)
+> >  
+> >  static int __bind(struct mapped_device *md, struct dm_table *t)
+> >  {
+> > -	struct request_queue *q = md->queue;
+> >  	sector_t size;
+> >  
+> >  	size = dm_table_get_size(t);
+> > @@ -1221,7 +1236,7 @@ static int __bind(struct mapped_device *md, struct dm_table *t)
+> >  
+> >  	write_lock(&md->map_lock);
+> >  	md->map = t;
+> > -	dm_table_set_restrictions(t, q);
+> > +	dm_table_set_restrictions(t, md);
+> >  	write_unlock(&md->map_lock);
+> >  
+> >  	return 0;
+> 
+> Creating another function (e.g. dm_table_set_integrity(t, md)) may
+> be better, since then you wouldn't need dm_queue() nor need to change
+> the function interface of dm_table_set_restrictions() I think.
 
-A data point, just in case it helps...  I've not had time to update my
-desktop system, so this all-Intel, ICH9, e1000e-based box has been stuck
-at 2.6.27-rc3.  It has rawhide as of shortly after the floodgates
-reopened (but with my own kernel); that means X server 1.5.0 and i810
-2.4.2-3.
+Or you can also get md from t->md or q->queuedata, if you don't mind
+to pass q as an argument of the function which sets integrity feature.
+(I thought you mind that, since the integrity feature is set to
+ md (md->disk), not q.)
 
-It's happy as a clam. I'm not sure how often this problem bites, but it
-hasn't gotten me.
-
-jon
+Thanks,
+Kiyoshi Ueda
