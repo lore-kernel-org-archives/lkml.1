@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699AbYIXVdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYIXVk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752699AbYIXVdx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 17:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbYIXVdp
+	id S1752778AbYIXVk5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 17:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYIXVks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 17:33:45 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:38723 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625AbYIXVdp (ORCPT
+	Wed, 24 Sep 2008 17:40:48 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:45560 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750875AbYIXVkr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 17:33:45 -0400
-Date: Wed, 24 Sep 2008 17:33:43 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Frank Ch. Eigler" <fche@redhat.com>
-cc: Martin Bligh <mbligh@google.com>, David Miller <davem@davemloft.net>,
-       torvalds@linux-foundation.org, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       akpm@linux-foundation.org, prasad@linux.vnet.ibm.com,
-       compudj@krystal.dyndns.org, dwilder@us.ibm.com, hch@lst.de,
-       zanussi@comcast.net, srostedt@redhat.com
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <20080924212433.GB14763@redhat.com>
-Message-ID: <alpine.DEB.1.10.0809241731020.10631@gandalf.stny.rr.com>
-References: <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com> <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> <20080924.133720.72895701.davem@davemloft.net>
- <33307c790809241351k53f322a1o794dd73255393e11@mail.gmail.com> <20080924212433.GB14763@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 24 Sep 2008 17:40:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=eqUAm/ehYX6eUEaEhQHLHzm+fEZHpvdjcVqoiLsRcbnHSFVOmk8lfZTPlDUG9YkjceemSj7vG+B+YFE3CxAI9uhBfw41/JKtVuii9KEvC6AIAsNq+FEdG+WJA9RDGfqMXpGIGim+KGmpv2IkuYd4q78tzznlbEb01IbPr7ShYek=  ;
+X-YMail-OSG: DEG.hBcVM1muH.Z51H8K5Kz9L9feX7b7.Rkq3RESE1_qgq.c2jzhvwFZoEFWtTdI3uHoi2g.vujJrCgsub6zIoOJNdJHZ16m7.7n5rSMa0tA6FPVVYvfzzz5KpiwRKDDMmE-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/4] gpiolib: make gpio_to_chip() public
+Date: Wed, 24 Sep 2008 14:40:43 -0700
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <greg@kroah.com>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Timur Tabi <timur@freescale.com>, Li Yang <leoli@freescale.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>, linuxppc-dev@ozlabs.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080924182027.GA11180@oksana.dev.rtsoft.ru> <20080924182113.GA25744@oksana.dev.rtsoft.ru>
+In-Reply-To: <20080924182113.GA25744@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809241440.43978.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 24 Sep 2008, Frank Ch. Eigler wrote:
-
-> Hi -
+On Wednesday 24 September 2008, Anton Vorontsov wrote:
+> We'll need this function to write platform-specific hooks to deal
+> with pin's dedicated functions. Quite obviously this will work only
+> for the platforms with 1-to-1 GPIO to PIN mapping.
 > 
-> On Wed, Sep 24, 2008 at 01:51:55PM -0700, Martin Bligh wrote:
-> > [...]
-> > One thing we said we could do is compile the "decompaction" tools
-> > along with the kernel, in the kernel tree. Then if we change the in-kernel
-> > format, you don't break all the userspace tools. 
+> This is stopgap solution till we think out and implement a proper
+> api (pinlib?).
 > 
-> If the common tracing idea still includes kernel-supplied ASCII as an
-> alternative to binary (so that one could grep some debugfs file), then
-> it would be nice to have some common code for decoding the trace
-> records offline.
+> p.s. This patch actually exports gpio_desc and places gpio_to_chip
+> into the asm-generic/gpio.h as `static inline'. This is needed
+> to not cause function calls for this trivial translation.
 > 
-> If we can associate a simple specific struct type ("struct
-> ftrace_event") with each trace id type in an object-code-resident
-> table, we could automate some of this.  The kernel build process could
-> sniff dwarf data (a la acme's struct-layout-printing dwarves) at or
-> before modpost time to generate a snippet of C code for each such
-> event struct.  That C code could be the generic ASCII-printing
-> callback for use by debugfs.  A variant could be a userspace-usable
-> version.  Given the same id-to-struct-name mapping, Sytemtap could
-> expose event records field by field, by name.
+> Also, the patch does not export FLAG_*s... the names are too
+> generic, and nobody is using them outside of gpiolib.c.
 
-Hi Frank,
+For the record:  NAK, still.  The concept has problems,
+there is no "need" for this.  I sketched a cleaner way
+to address the issues of the QE USB driver; I'm sure it
+would only take an hour or two to code, using what's
+already present.
 
-I think we are going a step below this. That is, the ring buffer itself 
-will not be expecting to expose anything to the user interface.
+And if I were to approve something like this it would
+be a lot simpler, not exposing internals, and with
+appropriate kerneldoc.  Simpler such as
 
-That will need to be done in a higher layer. Right now we just want a way 
-to stabilize the ring buffer infrastructure. Then we can add a tracing 
-infrastructure on top that can do the above work.
+	struct gpio_chip *gpio_to_gpiochip(unsigned gpio)
+	{
+		return gpio_to_chip(gpio);
+	}
+	EXPORT_SYMBOL_NOTREALLY(gpio_to_gpiochip);
 
-I'm working on having a ring_buffer.c that will do the bare minimum, and a 
-trace_buffer.c that will be a layer on top that will add more 
-functionality. What you are asking for may apply there.
+with a declaration in a header.  It's not like THIS
+version would be performance-critical (unlike the one
+inside gpiolib).
 
-Thanks,
-
--- Steve
-
+- Dave
