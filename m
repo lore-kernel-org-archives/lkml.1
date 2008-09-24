@@ -1,40 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYIXUIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbYIXUSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbYIXUIS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 16:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbYIXUIG
+	id S1753711AbYIXUSE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 16:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYIXURx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 16:08:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33350 "EHLO mx1.redhat.com"
+	Wed, 24 Sep 2008 16:17:53 -0400
+Received: from 1wt.eu ([62.212.114.60]:4466 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752036AbYIXUIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 16:08:04 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0809242030090.12147@blonde.site>
-References: <Pine.LNX.4.64.0809242030090.12147@blonde.site> <20080923053228.GA5825@wotan.suse.de> <20080914073906.GA6184@elte.hu> <20080914004442.4f8e851f.akpm@linux-foundation.org> <20080914080631.GA10720@elte.hu> <20080914221231.GG27080@wotan.suse.de> <20080917131419.e6b7622e.akpm@linux-foundation.org> <20080918111226.GD29968@elte.hu> <48D2ABFD.3040103@goop.org> <1221772310.4779.29.camel@calx> <1221877119.8533.2.camel@nimitz> <13787.1222095249@redhat.com> <22749.1222280305@redhat.com> <1222280971.4425.42.camel@calx> 
-To: Hugh Dickins <hugh@veritas.com>
-Cc: dhowells@redhat.com, Matt Mackall <mpm@selenic.com>,
-       Nick Piggin <npiggin@suse.de>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
-Date: Wed, 24 Sep 2008 20:59:36 +0100
-Message-ID: <30202.1222286376@redhat.com>
+	id S1752036AbYIXURx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 16:17:53 -0400
+Date: Wed, 24 Sep 2008 22:17:45 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Sylwester Gruszka <gruszex@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Broken XFS partition
+Message-ID: <20080924201745.GE24654@1wt.eu>
+References: <200809241236.26135.gruszex@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809241236.26135.gruszex@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins <hugh@veritas.com> wrote:
+On Wed, Sep 24, 2008 at 12:36:25PM +0200, Sylwester Gruszka wrote:
+> Hello,
+> 
+> I have a problem with XFS partition, it has broken down suddenly. I was doing 
+> no special things, just browsing www and suddenly my PC has restarted, after 
+> that I could not boot by PLD Th linux, after few usual kernel messages I get 
+> some matrix of numbers and it stops.
+> 
+> I realised that it is broken partition after I tried to repair system, I just 
+> could not mount this partition (using sysrescuecd), 'mount' gave me lots of 
+> weird numbers instead of mounting partition. It only do that way at first try, 
+> the second try always freezes mount program and nothing is happening.
+> 
+> Here are some screenshots (mount using SystemRescueCd-1.1.0 so the kernel is 
+> propably 2.6.25.16):
+> http://img397.imageshack.us/my.php?image=dsc01043ko6.jpg
+> http://img179.imageshack.us/my.php?image=dsc01044yj4.jpg
+> http://img158.imageshack.us/my.php?image=dsc01045sr3.jpg
+> http://img221.imageshack.us/my.php?image=dsc01047js4.jpg
+> 
+> PLD Linux Th booting:
+> http://img530.imageshack.us/my.php?image=dsc01048mk3.jpg
+> 
+> Suse booting:
+> http://img87.imageshack.us/my.php?image=dsc01050as4.jpg
+> Except this warning it boots normal.
+> 
+> Now I'm running Suse and I tried xfs_check this partition but xfs_check is 
+> freezing too.
+> 
+> Somebody on PLD Linux mailing list told me to mail this problem here.
+> 
+> I'm nod subscribed to this list so please send me CC.
 
-> If we're hell-bent on #ifdefs throughout mm/shmem.c, I wouldn't
-> mind scattering some CONFIG_SWAPs in there too, would cut out
-> lots of overhead when swap unconfigured.  But again, how ugly?
+I'm sure there's an XFS mailing list where people are really skilled
+and will surely help for such trouble, I just don't have the address
+here at hand. You should search the list archives on the net (google
+for "linux xfs mailing list" and check the first or second one).
 
-That might be necessary: NOMMU doesn't support swap.
+In the mean time, do not modify your FS unless told to do so!
 
-David
+Regards,
+Willy
+
