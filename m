@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbYIXPTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYIXPUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752978AbYIXPTr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 11:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYIXPTj
+	id S1753884AbYIXPUm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 11:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYIXPUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 11:19:39 -0400
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:55256 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751550AbYIXPTj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 11:19:39 -0400
-Message-ID: <48DA5A84.8030704@nortel.com>
-Date: Wed, 24 Sep 2008 09:19:32 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: unpredictability in scheduler test results -- still present
-References: <48D2DA0D.4060300@nortel.com>
-In-Reply-To: <48D2DA0D.4060300@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Sep 2008 15:19:33.0962 (UTC) FILETIME=[F3007AA0:01C91E58]
+	Wed, 24 Sep 2008 11:20:34 -0400
+Received: from flusers.ccur.com ([12.192.68.2]:50612 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751954AbYIXPUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 11:20:33 -0400
+Date: Wed, 24 Sep 2008 11:19:33 -0400
+From: Joe Korty <joe.korty@ccur.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Roland McGrath <roland@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG, TEST PATCH] stallout race between SIGCONT and SIGSTOP
+Message-ID: <20080924151933.GA17531@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+References: <20080923155331.GA20380@tsunami.ccur.com> <20080923163530.GA656@tv-sign.ru> <20080924150541.GA119@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080924150541.GA119@tv-sign.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-
-> I'm using the test config listed at the bottom.  It's pretty 
-> straightforward.
-
-> On the second run, the task distribution is almost perfect, but the 
-> system was only using one of the two cpus as seen by the difference 
-> between actual and expected cpu time.
+On Wed, Sep 24, 2008 at 11:05:41AM -0400, Oleg Nesterov wrote:
+> Joe says:
+>> So it looks like the test is in error, not the kernel.
 > 
-> Warning, actual cpu time different than expected. actual: 10033.011108, 
-> expected: 20000.000000
-> group       actual(%)     expected(%)  avg latency(ms) max_latency(ms)
->      1   0.24(30.59/29.88)    30.00      26/27             68/58
->      2       39.87            40.00       20                36
->      3   29.89(29.87/29.91)   30.00      28/27             47/60
+> and I am happy to agree.
+> I think sigaction/10-1.c should be fixed, please see the patch below.
 
-This behaviour (that load balancing is messed up) is now almost 
-continuous with both current tip/master and current Linus git.  On the 
-first test after booting, it seems to work okay (although there are 
-still issues with fairness).  On every subsequent test, fairness is good 
-but it only uses one of the two cpus.
+A year or two ago I sent to Intel some OpenPosixTestSuite fixes, and they
+were accepted.  Send it in (to the people listed in the comments at the
+front of the .c file), hopefully they are still at Intel.
 
-Also, building a kernel with "-j10" results in one cpu being mostly idle 
-while the other one is 100% busy. It used to be both 100% busy--if I get 
-time today I may try bisecting it.
 
-Chris
+> Now, since SIGCHLD is a non-rt signal, the second SIGCHLD is lost,
+> and wait_until_we_receive_CLD_STOPPED() hangs.
+> 
+> I did the test patch to be sure:
+> 
+>         --- 26-rc2/kernel/signal.c~     2008-09-20 20:37:52.000000000 +0400
+>         +++ 26-rc2/kernel/signal.c      2008-09-24 18:43:34.000000000 +0400
+>         @@ -808,7 +808,7 @@ static int send_signal(int sig, struct s
+>                  * exactly one non-rt signal, so that we can get more
+>                  * detailed information about the cause of the signal.
+>                  */
+>         -       if (legacy_queue(pending, sig))
+>         +       if (sig != SIGCHLD && legacy_queue(pending, sig))
+>                         return 0;
+>                 /*
+>                  * fast-pathed signals for kernel-internal things like SIGSTOP
+> 
+> and now your test-case doesn't hang.
+
+Very interesting!  I am not sure this is Posix conformant, as Posix
+seems to say that posting a SIGSTOP or SIGCHLD clears out all pending
+SIGSTOPs or SIGCHLDs, so queueing the SIGCHLD might violate the standard.
+Still it might be workable as it would be hard to see, from userspace, any
+behavioral difference between queueing (possibly illegal) and synchronous
+operation (which seems legal), both of which service all SIGCONTs and
+SIGSTOPs without loss.
+
+Joe
