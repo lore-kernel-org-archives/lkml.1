@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbYIXXc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYIXXeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753858AbYIXXc1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 19:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYIXXcT
+	id S1754033AbYIXXeh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 19:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYIXXeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 19:32:19 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:56446 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752103AbYIXXcS (ORCPT
+	Wed, 24 Sep 2008 19:34:25 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49732
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752201AbYIXXeZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 19:32:18 -0400
-Subject: [PATCH] x86: Fix 32 bit compile failure in process_32.c
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 24 Sep 2008 16:32:00 -0700
-Message-Id: <1222299120.18916.17.camel@localhost.localdomain>
+	Wed, 24 Sep 2008 19:34:25 -0400
+Date: Wed, 24 Sep 2008 16:34:13 -0700 (PDT)
+Message-Id: <20080924.163413.119422112.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This commit:
 
-commit 4faac97d44ac27bdbb010a9c3597401a8f89341f
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Mon Sep 22 18:54:29 2008 +0200
+[ This should be my last set of bug fixes before leaving for the
+  netfilter workshop in Paris. ]
 
-    x86: prevent stale state of c1e_mask across CPU offline/online
+1) ATH9K interrupt storm fix.  Statistic interrupts are not handled fully,
+   so the interrupt doesn't get cleared.  The condition that isn't handled
+   happens after about 7 hours of operation.
 
-Introduced a compile failure into the 32 bit x86 path:
+   The fix is to not enable these interrupts, as they aren't even really
+   needed as of yet.
 
-arch/x86/kernel/process_32.c: In function 'cpu_exit_clear':
-arch/x86/kernel/process_32.c:91: error: implicit declaration of function
-'c1e_remove_cpu'
-make[1]: *** [arch/x86/kernel/process_32.o] Error 1
+2) Three bluetooth btusb driver fixes to deal with some regression list
+   entries:
+   1) A flag bit gets set in the wrong set of flags :-)  Also, the
+      URB is queued to the wrong anchor.
+   2) A quirk list entry is needed for newer MacBooks
+   3) The INTF and ISOC interfaces need to be bound together to prevent
+      misbehavior when only one of them is disconneted.
 
-because the prototype for c1e_remove_cpu() gets put into asm/idle.h but
-this isn't directly included in process_32.c
+3) And ipv6 netfilter fix from Yasuyuki Kozakai.  IP6T_OPTS_NSTRICT is
+   silently accepted (with a pr_debug() message), even though this
+   functionality is currently not even implemented.  We need to reject
+   this as the user will think the successful rule addition will mean
+   that the iptables rule will behave as requested, when in fact it
+   will not.
 
-Fix by making this a direct include.
+Please pull, thanks a lot!
 
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+The following changes since commit 4c07ab0fe4b4eaa0fc31f640ca65da7c173f5043:
+  David S. Miller (1):
+        Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
 
----
+are available in the git repository at:
 
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 4b3cfdf..260a96f 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -42,6 +42,7 @@
- #include <asm/pgtable.h>
- #include <asm/system.h>
- #include <asm/io.h>
-+#include <asm/idle.h>
- #include <asm/ldt.h>
- #include <asm/processor.h>
- #include <asm/i387.h>
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
 
+David S. Miller (1):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
 
+Luis R. Rodriguez (1):
+      ath9k: disable MIB interrupts to fix interrupt storm
 
+Marcel Holtmann (3):
+      [Bluetooth] Fix I/O errors on MacBooks with Broadcom chips
+      [Bluetooth] Fix wrong URB handling of btusb driver
+      [Bluetooth] Fix USB disconnect handling of btusb driver
+
+Yasuyuki Kozakai (1):
+      netfilter: ip6t_{hbh,dst}: Rejects not-strict mode on rule insertion
+
+ drivers/bluetooth/btusb.c         |   28 ++++++++++++++++++++++------
+ drivers/net/wireless/ath9k/core.c |    7 +++++++
+ net/ipv6/netfilter/ip6t_hbh.c     |    8 ++++++--
+ 3 files changed, 35 insertions(+), 8 deletions(-)
