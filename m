@@ -1,189 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbYIXTk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbYIXTkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbYIXTk3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 15:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYIXTkM
+	id S1755386AbYIXTkt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 15:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbYIXTkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 15:40:12 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:39962 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751528AbYIXTkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 15:40:10 -0400
-Date: Wed, 24 Sep 2008 12:40:06 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: minyard@acm.org
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/1] Use RCU for the UDP hash lock
-Message-ID: <20080924124006.6bb41b49@extreme>
-In-Reply-To: <20080924172827.GA1573@minyard.local>
-References: <20080924172827.GA1573@minyard.local>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Sep 2008 15:40:37 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:46648 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752533AbYIXTkg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 15:40:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=cqXIFmQJXNyUGZMmaErMtLXQCBTTZanVZr7UVnsiL7jDMcKtmeMHY8vUOjOBM4Ns6T
+         bltBLZOVmUcgmb99Kqg5m2kK6p9UNwCZjiS1CEyd5uutiL8mQSXBmaqzGoHX0GSa4SOA
+         TXZvcrvSsaOjNKCOrrlonkiRRmQFZdD0WG1Mo=
+Date: Wed, 24 Sep 2008 21:40:00 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Antonino Daplas <adaplas@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] vgacon: optimize scrolling
+Message-ID: <20080924193943.GA8544@joi>
+References: <1222012809-5783-1-git-send-email-marcin.slusarz@gmail.com> <1222012809-5783-2-git-send-email-marcin.slusarz@gmail.com> <20080921203757.455ead71.krzysztof.h1@poczta.fm> <20080921212205.GA5740@joi> <20080923235918.114b5147.krzysztof.h1@poczta.fm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080923235918.114b5147.krzysztof.h1@poczta.fm>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008 12:28:27 -0500
-Corey Minyard <minyard@acm.org> wrote:
+On Tue, Sep 23, 2008 at 11:59:18PM +0200, Krzysztof Helt wrote:
+> On Sun, 21 Sep 2008 23:22:17 +0200
+> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> 
+> > On Sun, Sep 21, 2008 at 08:37:57PM +0200, Krzysztof Helt wrote:
+> > > On Sun, 21 Sep 2008 18:00:08 +0200
+> > > Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> > > 
+> > > > Join multiple scr_memcpyw into 1-3 calls (usually 2).
+> > > > (benchmarked average speedup: 1%)
+> > > > 
+> > > 
+> > > The scr_memcpyw is an inline function so there is no real call here.
+> > 
+> > ... or it's defined to memcpy
+> >  
+> > > However, have you tested the patch with scroll range > 2 *  vgacon_scrollback_size?
+> > >
+> > > It seems that your patch only handles scrolling if it is not bigger than 2 * vgacon_scrollback_size.
+> > 
+> > No. count is always within range <0, c->vc_rows> (look how it's computed
+> > just before this loop). Second copy is needed only when end of screen
+> > crosses end/beginning of scrollback (it's a circular buffer).
+> > 
+> 
+> This is not what I asked for. If the vgacon_scrollback_cnt is smaller then c->vc_rows it can happen.
+> The answer to my question is that count is always < vgacon_scrollback_cnt (set earlier before 
+> checking if it is in the <0,c->vc_rows> range).
 
-> From: Corey Minyard <cminyard@mvista.com>
-> 
-> Convert access to the udp_hash table to use RCU.
-> 
-> Signed-off-by: Corey Minyard <cminyard@mvista.com>
-> ---
->  include/linux/rculist.h |   19 +++++++++++++++++++
->  include/net/sock.h      |   39 +++++++++++++++++++++++++++++++++++++++
->  include/net/udp.h       |    9 +++++----
->  net/ipv4/udp.c          |   36 +++++++++++++++++++++---------------
->  net/ipv6/udp.c          |   13 +++++++------
->  5 files changed, 91 insertions(+), 25 deletions(-)
-> 
-> This patch is pretty straightforward; I've tested it a while and it
-> seems to work properly with a test program that constantly creates and
-> destroys UDP sockets while sending and receiving large numbers of
-> packets on an SMP box.  I think I've covered all the bases, though RCU
-> is subtle.
-> 
-> This doesn't make much difference when using no preempt or desktop,
-> but it makes a huge difference when used with PREEMPT_RT.  More than
-> 10 times more UDP throughput on a 16-way machine.
-> 
-> So I'm not sure if this belongs in the RT patch or in the mainstream
-> kernel.
-> 
-> diff --git a/include/linux/rculist.h b/include/linux/rculist.h
-> index eb4443c..4d3cc58 100644
-> --- a/include/linux/rculist.h
-> +++ b/include/linux/rculist.h
-> @@ -397,5 +397,24 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
->  		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
->  		pos = rcu_dereference(pos->next))
->  
-> +
-> +/**
-> + * hlist_for_each_entry_from_rcu - iterate over rcu list starting from pos
-> + * @tpos:      the type * to use as a loop cursor.
-> + * @pos:       the &struct hlist_node to use as a loop cursor.
-> + * @head:      the head for your list.
-> + * @member:    the name of the hlist_node within the struct.
-> + *
-> + * This list-traversal primitive may safely run concurrently with
-> + * the _rcu list-mutation primitives such as hlist_add_head_rcu()
-> + * as long as the traversal is guarded by rcu_read_lock().
-> + */
-> +#define hlist_for_each_entry_from_rcu(tpos, pos, member)                \
-> +	for (;                                                          \
-> +	     rcu_dereference(pos) && ({ prefetch(pos->next); 1; }) &&    \
-> +	       ({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
-> +	     pos = pos->next)
-> +
-> +
->  #endif	/* __KERNEL__ */
->  #endif
-> diff --git a/include/net/sock.h b/include/net/sock.h
-> index 06c5259..ada44ad 100644
-> --- a/include/net/sock.h
-> +++ b/include/net/sock.h
-> @@ -42,6 +42,7 @@
->  
->  #include <linux/kernel.h>
->  #include <linux/list.h>
-> +#include <linux/rculist.h>
->  #include <linux/timer.h>
->  #include <linux/cache.h>
->  #include <linux/module.h>
-> @@ -361,6 +362,27 @@ static __inline__ int sk_del_node_init(struct sock *sk)
->  	return rc;
->  }
->  
-> +static inline int __sk_del_node_rcu(struct sock *sk)
-> +{
-> +	if (sk_hashed(sk)) {
-> +		hlist_del_rcu(&sk->sk_node);
-> +		return 1;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static inline int sk_del_node_rcu(struct sock *sk)
-> +{
-> +	int rc = __sk_del_node_rcu(sk);
-> +
-> +	if (rc) {
-> +		/* paranoid for a while -acme */
-> +		WARN_ON(atomic_read(&sk->sk_refcnt) == 1);
-> +		__sock_put(sk);
-> +	}
-> +	return rc;
-> +}
-> +
->  static __inline__ void __sk_add_node(struct sock *sk, struct hlist_head *list)
->  {
->  	hlist_add_head(&sk->sk_node, list);
-> @@ -372,6 +394,18 @@ static __inline__ void sk_add_node(struct sock *sk, struct hlist_head *list)
->  	__sk_add_node(sk, list);
->  }
->  
-> +static inline void __sk_add_node_rcu(struct sock *sk,
-> +					 struct hlist_head *list)
-> +{
-> +	hlist_add_head_rcu(&sk->sk_node, list);
-> +}
-> +
-> +static inline void sk_add_node_rcu(struct sock *sk, struct hlist_head *list)
-> +{
-> +	sock_hold(sk);
-> +	__sk_add_node_rcu(sk, list);
-> +}
-> +
->  static __inline__ void __sk_del_bind_node(struct sock *sk)
->  {
->  	__hlist_del(&sk->sk_bind_node);
-> @@ -385,9 +419,14 @@ static __inline__ void sk_add_bind_node(struct sock *sk,
->  
->  #define sk_for_each(__sk, node, list) \
->  	hlist_for_each_entry(__sk, node, list, sk_node)
-> +#define sk_for_each_rcu(__sk, node, list) \
-> +	hlist_for_each_entry_rcu(__sk, node, list, sk_node)
->  #define sk_for_each_from(__sk, node) \
->  	if (__sk && ({ node = &(__sk)->sk_node; 1; })) \
->  		hlist_for_each_entry_from(__sk, node, sk_node)
-> +#define sk_for_each_from_rcu(__sk, node) \
-> +	if (__sk && ({ node = &(__sk)->sk_node; 1; })) \
-> +		hlist_for_each_entry_from_rcu(__sk, node, sk_node)
->  #define sk_for_each_continue(__sk, node) \
->  	if (__sk && ({ node = &(__sk)->sk_node; 1; })) \
->  		hlist_for_each_entry_continue(__sk, node, sk_node)
-> diff --git a/include/net/udp.h b/include/net/udp.h
-> index addcdc6..04181f8 100644
-> --- a/include/net/udp.h
-> +++ b/include/net/udp.h
-> @@ -51,7 +51,7 @@ struct udp_skb_cb {
->  #define UDP_SKB_CB(__skb)	((struct udp_skb_cb *)((__skb)->cb))
->  
->  extern struct hlist_head udp_hash[UDP_HTABLE_SIZE];
-> -extern rwlock_t udp_hash_lock;
-> +extern spinlock_t udp_hash_wlock;
->  
->  
->  /* Note: this must match 'valbool' in sock_setsockopt */
-> @@ -112,12 +112,13 @@ static inline void udp_lib_hash(struct sock *sk)
->  
->  static inline void udp_lib_unhash(struct sock *sk)
->  {
-> -	write_lock_bh(&udp_hash_lock);
-> -	if (sk_del_node_init(sk)) {
-> +	spin_lock_bh(&udp_hash_wlock);
-> +	if (sk_del_node_rcu(sk)) {
->  		inet_sk(sk)->num = 0;
->  		sock_prot_inuse_add(sock_net(sk), sk->sk_prot, -1);
->  	}
-> -	write_unlock_bh(&udp_hash_lock);
-> +	spin_unlock_bh(&udp_hash_wlock);
-> +	synchronize_sched();
+Yep
 
-Could this be synchronize_rcu? You are using rcu_read_lock() protected sections.
+> (...)
+> 
+> > > > +	if (count) {
+> > > > +		int copysize;
+> > > > +		count *= c->vc_size_row;
+> > > > +		/* how much memory to end of buffer left? */
+> > > > +		copysize = min(count, vgacon_scrollback_size - soff);
+> > > > +		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
+> > > > +		d += copysize;
+> > > > +		count -= copysize;
+> > > > +		
+> > > > +		if (count) {
+> > > > +			copysize = min(count, vgacon_scrollback_size);
+> 
+> This line I got confused by. If the count is always smaller then
+> the vgacon_scrollback_cnt before (thus the vgacon_scrollback_size 
+> inside the if clause) this line always evaluates to copysize = count here.
+
+You are right. I dropped this "call".
+Thanks for a review.
+
+---
+Subject: [PATCH 1/2] vgacon: optimize scrolling
+
+Join multiple scr_memcpyw into 1-3 calls (usually 2).
+(benchmarked average speedup: 1%)
+
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
+---
+ drivers/video/console/vgacon.c |   27 +++++++++++++++------------
+ 1 files changed, 15 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index bd1f57b..29d1209 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -292,23 +292,26 @@ static int vgacon_scrolldelta(struct vc_data *c, int lines)
+ 	d = (void *) c->vc_origin;
+ 	s = (void *) c->vc_screenbuf;
+ 
+-	while (count--) {
+-		scr_memcpyw(d, vgacon_scrollback + soff, c->vc_size_row);
+-		d += c->vc_size_row;
+-		soff += c->vc_size_row;
+-
+-		if (soff >= vgacon_scrollback_size)
+-			soff = 0;
++	if (count) {
++		int copysize;
++		count *= c->vc_size_row;
++		/* how much memory to end of buffer left? */
++		copysize = min(count, vgacon_scrollback_size - soff);
++		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
++		d += copysize;
++		count -= copysize;
++
++		if (count) {
++			scr_memcpyw(d, vgacon_scrollback, count);
++			d += count;
++		}
+ 	}
+ 
+ 	if (diff == c->vc_rows) {
+ 		vgacon_cursor(c, CM_MOVE);
+ 	} else {
+-		while (diff--) {
+-			scr_memcpyw(d, s, c->vc_size_row);
+-			d += c->vc_size_row;
+-			s += c->vc_size_row;
+-		}
++		if (diff)
++			scr_memcpyw(d, s, diff * c->vc_size_row);
+ 	}
+ 
+ 	return 1;
+-- 
+1.5.6.4
+
