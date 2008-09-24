@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbYIXWJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYIXWJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755093AbYIXWJW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbYIXWB2
+	id S1755929AbYIXWJx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYIXWBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:01:28 -0400
-Received: from ns1.suse.de ([195.135.220.2]:41434 "EHLO mx1.suse.de"
+	Wed, 24 Sep 2008 18:01:31 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41491 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752192AbYIXWAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:00:17 -0400
+	id S1753277AbYIXWAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:00:41 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
        linux-fsdevel@vger.kernel.org, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 03/39] ocfs2: throttle back local alloc when low on disk space
-Date: Wed, 24 Sep 2008 15:00:44 -0700
-Message-Id: <1222293680-15451-4-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 30/39] ocfs2: Add an insertion check to ocfs2_extent_tree_operations.
+Date: Wed, 24 Sep 2008 15:01:11 -0700
+Message-Id: <1222293680-15451-31-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
 References: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
@@ -23,491 +23,163 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ocfs2's local allocator disables itself for the duration of a mount point
-when it has trouble allocating a large enough area from the primary bitmap.
-That can cause performance problems, especially for disks which were only
-temporarily full or fragmented. This patch allows for the allocator to
-shrink it's window first, before being disabled. Later, it can also be
-re-enabled so that any performance drop is minimized.
+From: Joel Becker <joel.becker@oracle.com>
 
-To do this, we allow the value of osb->local_alloc_bits to be shrunk when
-needed. The default value is recorded in a mostly read-only variable so that
-we can re-initialize when required.
+A couple places check an extent_tree for a valid inode.  We move that
+out to add an eo_insert_check() operation.  It can be called from
+ocfs2_insert_extent() and elsewhere.
 
-Locking had to be updated so that we could protect changes to
-local_alloc_bits. Mostly this involves protecting various local alloc values
-with the osb spinlock. A new state is also added, OCFS2_LA_THROTTLED, which
-is used when the local allocator is has shrunk, but is not disabled. If the
-available space dips below 1 megabyte, the local alloc file is disabled. In
-either case, local alloc is re-enabled 30 seconds after the event, or when
-an appropriate amount of bits is seen in the primary bitmap.
+We also have the wrapper calls ocfs2_et_insert_check() and
+ocfs2_et_sanity_check() ignore NULL ops.  That way we don't have to
+provide useless operations for xattr types.
 
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/localalloc.c |  198 ++++++++++++++++++++++++++++++++++++++++++++++---
- fs/ocfs2/localalloc.h |    4 +
- fs/ocfs2/ocfs2.h      |   23 +++++-
- fs/ocfs2/suballoc.c   |   31 ++++----
- fs/ocfs2/suballoc.h   |    1 +
- fs/ocfs2/super.c      |    4 +-
- 6 files changed, 230 insertions(+), 31 deletions(-)
+ fs/ocfs2/alloc.c |   69 ++++++++++++++++++++++++++++++++++-------------------
+ 1 files changed, 44 insertions(+), 25 deletions(-)
 
-diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
-index b05ce66..f71658a 100644
---- a/fs/ocfs2/localalloc.c
-+++ b/fs/ocfs2/localalloc.c
-@@ -73,16 +73,51 @@ static int ocfs2_local_alloc_new_window(struct ocfs2_super *osb,
- static int ocfs2_local_alloc_slide_window(struct ocfs2_super *osb,
- 					  struct inode *local_alloc_inode);
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index 243bacf..2083c2c 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -71,6 +71,9 @@ struct ocfs2_extent_tree_operations {
+ 	void (*eo_update_clusters)(struct inode *inode,
+ 				   struct ocfs2_extent_tree *et,
+ 				   u32 new_clusters);
++	int (*eo_insert_check)(struct inode *inode,
++			       struct ocfs2_extent_tree *et,
++			       struct ocfs2_extent_rec *rec);
+ 	int (*eo_sanity_check)(struct inode *inode, struct ocfs2_extent_tree *et);
  
-+static inline int ocfs2_la_state_enabled(struct ocfs2_super *osb)
+ 	/* These are internal to ocfs2_extent_tree and don't have
+@@ -125,6 +128,25 @@ static void ocfs2_dinode_update_clusters(struct inode *inode,
+ 	spin_unlock(&OCFS2_I(inode)->ip_lock);
+ }
+ 
++static int ocfs2_dinode_insert_check(struct inode *inode,
++				     struct ocfs2_extent_tree *et,
++				     struct ocfs2_extent_rec *rec)
 +{
-+	return (osb->local_alloc_state == OCFS2_LA_THROTTLED ||
-+		osb->local_alloc_state == OCFS2_LA_ENABLED);
++	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
++
++	BUG_ON(OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL);
++	mlog_bug_on_msg(!ocfs2_sparse_alloc(osb) &&
++			(OCFS2_I(inode)->ip_clusters != rec->e_cpos),
++			"Device %s, asking for sparse allocation: inode %llu, "
++			"cpos %u, clusters %u\n",
++			osb->dev_str,
++			(unsigned long long)OCFS2_I(inode)->ip_blkno,
++			rec->e_cpos,
++			OCFS2_I(inode)->ip_clusters);
++
++	return 0;
 +}
 +
-+void ocfs2_local_alloc_seen_free_bits(struct ocfs2_super *osb,
-+				      unsigned int num_clusters)
-+{
-+	spin_lock(&osb->osb_lock);
-+	if (osb->local_alloc_state == OCFS2_LA_DISABLED ||
-+	    osb->local_alloc_state == OCFS2_LA_THROTTLED)
-+		if (num_clusters >= osb->local_alloc_default_bits) {
-+			cancel_delayed_work(&osb->la_enable_wq);
-+			osb->local_alloc_state = OCFS2_LA_ENABLED;
-+		}
-+	spin_unlock(&osb->osb_lock);
-+}
-+
-+void ocfs2_la_enable_worker(struct work_struct *work)
-+{
-+	struct ocfs2_super *osb =
-+		container_of(work, struct ocfs2_super,
-+			     la_enable_wq.work);
-+	spin_lock(&osb->osb_lock);
-+	osb->local_alloc_state = OCFS2_LA_ENABLED;
-+	spin_unlock(&osb->osb_lock);
-+}
-+
- /*
-  * Tell us whether a given allocation should use the local alloc
-  * file. Otherwise, it has to go to the main bitmap.
-+ *
-+ * This function does semi-dirty reads of local alloc size and state!
-+ * This is ok however, as the values are re-checked once under mutex.
-  */
- int ocfs2_alloc_should_use_local(struct ocfs2_super *osb, u64 bits)
+ static int ocfs2_dinode_sanity_check(struct inode *inode,
+ 				     struct ocfs2_extent_tree *et)
  {
--	int la_bits = osb->local_alloc_bits;
- 	int ret = 0;
-+	int la_bits;
-+
-+	spin_lock(&osb->osb_lock);
-+	la_bits = osb->local_alloc_bits;
- 
--	if (osb->local_alloc_state != OCFS2_LA_ENABLED)
-+	if (!ocfs2_la_state_enabled(osb))
- 		goto bail;
- 
- 	/* la_bits should be at least twice the size (in clusters) of
-@@ -96,6 +131,7 @@ int ocfs2_alloc_should_use_local(struct ocfs2_super *osb, u64 bits)
- bail:
- 	mlog(0, "state=%d, bits=%llu, la_bits=%d, ret=%d\n",
- 	     osb->local_alloc_state, (unsigned long long)bits, la_bits, ret);
-+	spin_unlock(&osb->osb_lock);
- 	return ret;
+@@ -148,6 +170,7 @@ static struct ocfs2_extent_tree_operations ocfs2_dinode_et_ops = {
+ 	.eo_set_last_eb_blk	= ocfs2_dinode_set_last_eb_blk,
+ 	.eo_get_last_eb_blk	= ocfs2_dinode_get_last_eb_blk,
+ 	.eo_update_clusters	= ocfs2_dinode_update_clusters,
++	.eo_insert_check	= ocfs2_dinode_insert_check,
+ 	.eo_sanity_check	= ocfs2_dinode_sanity_check,
+ 	.eo_fill_root_el	= ocfs2_dinode_fill_root_el,
+ };
+@@ -186,17 +209,10 @@ static void ocfs2_xattr_value_update_clusters(struct inode *inode,
+ 	le32_add_cpu(&xv->xr_clusters, clusters);
  }
  
-@@ -208,6 +244,9 @@ void ocfs2_shutdown_local_alloc(struct ocfs2_super *osb)
- 
- 	mlog_entry_void();
- 
-+	cancel_delayed_work(&osb->la_enable_wq);
-+	flush_workqueue(ocfs2_wq);
-+
- 	if (osb->local_alloc_state == OCFS2_LA_UNUSED)
- 		goto out;
- 
-@@ -445,7 +484,7 @@ out:
- }
- 
- /*
-- * make sure we've got at least bitswanted contiguous bits in the
-+ * make sure we've got at least bits_wanted contiguous bits in the
-  * local alloc. You lose them when you drop i_mutex.
-  *
-  * We will add ourselves to the transaction passed in, but may start
-@@ -476,16 +515,18 @@ int ocfs2_reserve_local_alloc_bits(struct ocfs2_super *osb,
- 
- 	mutex_lock(&local_alloc_inode->i_mutex);
- 
--	if (osb->local_alloc_state != OCFS2_LA_ENABLED) {
--		status = -ENOSPC;
--		goto bail;
--	}
+-static int ocfs2_xattr_value_sanity_check(struct inode *inode,
+-					  struct ocfs2_extent_tree *et)
+-{
+-	return 0;
+-}
 -
--	if (bits_wanted > osb->local_alloc_bits) {
--		mlog(0, "Asking for more than my max window size!\n");
-+	/*
-+	 * We must double check state and allocator bits because
-+	 * another process may have changed them while holding i_mutex.
-+	 */
-+	spin_lock(&osb->osb_lock);
-+	if (!ocfs2_la_state_enabled(osb) ||
-+	    (bits_wanted > osb->local_alloc_bits)) {
-+		spin_unlock(&osb->osb_lock);
- 		status = -ENOSPC;
- 		goto bail;
- 	}
-+	spin_unlock(&osb->osb_lock);
- 
- 	alloc = (struct ocfs2_dinode *) osb->local_alloc_bh->b_data;
- 
-@@ -513,6 +554,21 @@ int ocfs2_reserve_local_alloc_bits(struct ocfs2_super *osb,
- 				mlog_errno(status);
- 			goto bail;
- 		}
-+
-+		/*
-+		 * Under certain conditions, the window slide code
-+		 * might have reduced the number of bits available or
-+		 * disabled the the local alloc entirely. Re-check
-+		 * here and return -ENOSPC if necessary.
-+		 */
-+		status = -ENOSPC;
-+		if (!ocfs2_la_state_enabled(osb))
-+			goto bail;
-+
-+		free_bits = le32_to_cpu(alloc->id1.bitmap1.i_total) -
-+			le32_to_cpu(alloc->id1.bitmap1.i_used);
-+		if (bits_wanted > free_bits)
-+			goto bail;
- 	}
- 
- 	ac->ac_inode = local_alloc_inode;
-@@ -780,6 +836,85 @@ bail:
- 	return status;
- }
- 
-+enum ocfs2_la_event {
-+	OCFS2_LA_EVENT_SLIDE,		/* Normal window slide. */
-+	OCFS2_LA_EVENT_FRAGMENTED,	/* The global bitmap has
-+					 * enough bits theoretically
-+					 * free, but a contiguous
-+					 * allocation could not be
-+					 * found. */
-+	OCFS2_LA_EVENT_ENOSPC,		/* Global bitmap doesn't have
-+					 * enough bits free to satisfy
-+					 * our request. */
-+};
-+#define OCFS2_LA_ENABLE_INTERVAL (30 * HZ)
-+/*
-+ * Given an event, calculate the size of our next local alloc window.
-+ *
-+ * This should always be called under i_mutex of the local alloc inode
-+ * so that local alloc disabling doesn't race with processes trying to
-+ * use the allocator.
-+ *
-+ * Returns the state which the local alloc was left in. This value can
-+ * be ignored by some paths.
-+ */
-+static int ocfs2_recalc_la_window(struct ocfs2_super *osb,
-+				  enum ocfs2_la_event event)
-+{
-+	unsigned int bits;
-+	int state;
-+
-+	spin_lock(&osb->osb_lock);
-+	if (osb->local_alloc_state == OCFS2_LA_DISABLED) {
-+		WARN_ON_ONCE(osb->local_alloc_state == OCFS2_LA_DISABLED);
-+		goto out_unlock;
-+	}
-+
-+	/*
-+	 * ENOSPC and fragmentation are treated similarly for now.
-+	 */
-+	if (event == OCFS2_LA_EVENT_ENOSPC ||
-+	    event == OCFS2_LA_EVENT_FRAGMENTED) {
-+		/*
-+		 * We ran out of contiguous space in the primary
-+		 * bitmap. Drastically reduce the number of bits used
-+		 * by local alloc until we have to disable it.
-+		 */
-+		bits = osb->local_alloc_bits >> 1;
-+		if (bits > ocfs2_megabytes_to_clusters(osb->sb, 1)) {
-+			/*
-+			 * By setting state to THROTTLED, we'll keep
-+			 * the number of local alloc bits used down
-+			 * until an event occurs which would give us
-+			 * reason to assume the bitmap situation might
-+			 * have changed.
-+			 */
-+			osb->local_alloc_state = OCFS2_LA_THROTTLED;
-+			osb->local_alloc_bits = bits;
-+		} else {
-+			osb->local_alloc_state = OCFS2_LA_DISABLED;
-+		}
-+		queue_delayed_work(ocfs2_wq, &osb->la_enable_wq,
-+				   OCFS2_LA_ENABLE_INTERVAL);
-+		goto out_unlock;
-+	}
-+
-+	/*
-+	 * Don't increase the size of the local alloc window until we
-+	 * know we might be able to fulfill the request. Otherwise, we
-+	 * risk bouncing around the global bitmap during periods of
-+	 * low space.
-+	 */
-+	if (osb->local_alloc_state != OCFS2_LA_THROTTLED)
-+		osb->local_alloc_bits = osb->local_alloc_default_bits;
-+
-+out_unlock:
-+	state = osb->local_alloc_state;
-+	spin_unlock(&osb->osb_lock);
-+
-+	return state;
-+}
-+
- static int ocfs2_local_alloc_reserve_for_window(struct ocfs2_super *osb,
- 						struct ocfs2_alloc_context **ac,
- 						struct inode **bitmap_inode,
-@@ -794,12 +929,21 @@ static int ocfs2_local_alloc_reserve_for_window(struct ocfs2_super *osb,
- 		goto bail;
- 	}
- 
-+retry_enospc:
- 	(*ac)->ac_bits_wanted = osb->local_alloc_bits;
- 
- 	status = ocfs2_reserve_cluster_bitmap_bits(osb, *ac);
-+	if (status == -ENOSPC) {
-+		if (ocfs2_recalc_la_window(osb, OCFS2_LA_EVENT_ENOSPC) ==
-+		    OCFS2_LA_DISABLED)
-+			goto bail;
-+
-+		ocfs2_free_ac_resource(*ac);
-+		memset(*ac, 0, sizeof(struct ocfs2_alloc_context));
-+		goto retry_enospc;
-+	}
- 	if (status < 0) {
--		if (status != -ENOSPC)
--			mlog_errno(status);
-+		mlog_errno(status);
- 		goto bail;
- 	}
- 
-@@ -852,6 +996,34 @@ static int ocfs2_local_alloc_new_window(struct ocfs2_super *osb,
- 	 * the more specific cluster api to claim bits. */
- 	status = ocfs2_claim_clusters(osb, handle, ac, osb->local_alloc_bits,
- 				      &cluster_off, &cluster_count);
-+	if (status == -ENOSPC) {
-+retry_enospc:
-+		/*
-+		 * Note: We could also try syncing the journal here to
-+		 * allow use of any free bits which the current
-+		 * transaction can't give us access to. --Mark
-+		 */
-+		if (ocfs2_recalc_la_window(osb, OCFS2_LA_EVENT_FRAGMENTED) ==
-+		    OCFS2_LA_DISABLED)
-+			goto bail;
-+
-+		status = ocfs2_claim_clusters(osb, handle, ac,
-+					      osb->local_alloc_bits,
-+					      &cluster_off,
-+					      &cluster_count);
-+		if (status == -ENOSPC)
-+			goto retry_enospc;
-+		/*
-+		 * We only shrunk the *minimum* number of in our
-+		 * request - it's entirely possible that the allocator
-+		 * might give us more than we asked for.
-+		 */
-+		if (status == 0) {
-+			spin_lock(&osb->osb_lock);
-+			osb->local_alloc_bits = cluster_count;
-+			spin_unlock(&osb->osb_lock);
-+		}
-+	}
- 	if (status < 0) {
- 		if (status != -ENOSPC)
- 			mlog_errno(status);
-@@ -895,6 +1067,8 @@ static int ocfs2_local_alloc_slide_window(struct ocfs2_super *osb,
- 
- 	mlog_entry_void();
- 
-+	ocfs2_recalc_la_window(osb, OCFS2_LA_EVENT_SLIDE);
-+
- 	/* This will lock the main bitmap for us. */
- 	status = ocfs2_local_alloc_reserve_for_window(osb,
- 						      &ac,
-diff --git a/fs/ocfs2/localalloc.h b/fs/ocfs2/localalloc.h
-index 3f76631..ac5ea9f 100644
---- a/fs/ocfs2/localalloc.h
-+++ b/fs/ocfs2/localalloc.h
-@@ -52,4 +52,8 @@ int ocfs2_claim_local_alloc_bits(struct ocfs2_super *osb,
- 				 u32 *bit_off,
- 				 u32 *num_bits);
- 
-+void ocfs2_local_alloc_seen_free_bits(struct ocfs2_super *osb,
-+				      unsigned int num_clusters);
-+void ocfs2_la_enable_worker(struct work_struct *work);
-+
- #endif /* OCFS2_LOCALALLOC_H */
-diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
-index 43dd42e..4d6e200 100644
---- a/fs/ocfs2/ocfs2.h
-+++ b/fs/ocfs2/ocfs2.h
-@@ -171,9 +171,13 @@ struct ocfs2_alloc_stats
- 
- enum ocfs2_local_alloc_state
- {
--	OCFS2_LA_UNUSED = 0,
--	OCFS2_LA_ENABLED,
--	OCFS2_LA_DISABLED
-+	OCFS2_LA_UNUSED = 0,	/* Local alloc will never be used for
-+				 * this mountpoint. */
-+	OCFS2_LA_ENABLED,	/* Local alloc is in use. */
-+	OCFS2_LA_THROTTLED,	/* Local alloc is in use, but number
-+				 * of bits has been reduced. */
-+	OCFS2_LA_DISABLED	/* Local alloc has temporarily been
-+				 * disabled. */
+ static struct ocfs2_extent_tree_operations ocfs2_xattr_value_et_ops = {
+ 	.eo_set_last_eb_blk	= ocfs2_xattr_value_set_last_eb_blk,
+ 	.eo_get_last_eb_blk	= ocfs2_xattr_value_get_last_eb_blk,
+ 	.eo_update_clusters	= ocfs2_xattr_value_update_clusters,
+-	.eo_sanity_check	= ocfs2_xattr_value_sanity_check,
+ 	.eo_fill_root_el	= ocfs2_xattr_value_fill_root_el,
  };
  
- enum ocfs2_mount_options
-@@ -252,9 +256,20 @@ struct ocfs2_super
- 	struct ocfs2_journal *journal;
- 	unsigned long osb_commit_interval;
- 
-+	struct delayed_work		la_enable_wq;
-+
-+	/*
-+	 * Must hold local alloc i_mutex and osb->osb_lock to change
-+	 * local_alloc_bits. Reads can be done under either lock.
-+	 */
- 	unsigned int local_alloc_bits;
--	enum ocfs2_local_alloc_state local_alloc_state;
-+	unsigned int local_alloc_default_bits;
-+
-+	enum ocfs2_local_alloc_state local_alloc_state; /* protected
-+							 * by osb_lock */
-+
- 	struct buffer_head *local_alloc_bh;
-+
- 	u64 la_last_gd;
- 
- 	/* Next two fields are for local node slot recovery during
-diff --git a/fs/ocfs2/suballoc.c b/fs/ocfs2/suballoc.c
-index d2d278f..de7b93d 100644
---- a/fs/ocfs2/suballoc.c
-+++ b/fs/ocfs2/suballoc.c
-@@ -111,7 +111,7 @@ static inline void ocfs2_block_to_cluster_group(struct inode *inode,
- 						u64 *bg_blkno,
- 						u16 *bg_bit_off);
- 
--static void ocfs2_free_ac_resource(struct ocfs2_alloc_context *ac)
-+void ocfs2_free_ac_resource(struct ocfs2_alloc_context *ac)
- {
- 	struct inode *inode = ac->ac_inode;
- 
-@@ -686,15 +686,6 @@ int ocfs2_reserve_clusters(struct ocfs2_super *osb,
- 		if ((status < 0) && (status != -ENOSPC)) {
- 			mlog_errno(status);
- 			goto bail;
--		} else if (status == -ENOSPC) {
--			/* reserve_local_bits will return enospc with
--			 * the local alloc inode still locked, so we
--			 * can change this safely here. */
--			mlog(0, "Disabling local alloc\n");
--			/* We set to OCFS2_LA_DISABLED so that umount
--			 * can clean up what's left of the local
--			 * allocation */
--			osb->local_alloc_state = OCFS2_LA_DISABLED;
- 		}
- 	}
- 
-@@ -1005,6 +996,7 @@ static int ocfs2_cluster_group_search(struct inode *inode,
- 	int search = -ENOSPC;
- 	int ret;
- 	struct ocfs2_group_desc *gd = (struct ocfs2_group_desc *) group_bh->b_data;
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
- 	u16 tmp_off, tmp_found;
- 	unsigned int max_bits, gd_cluster_off;
- 
-@@ -1045,6 +1037,12 @@ static int ocfs2_cluster_group_search(struct inode *inode,
- 			*bit_off = tmp_off;
- 			*bits_found = tmp_found;
- 			search = 0; /* success */
-+		} else if (tmp_found) {
-+			/*
-+			 * Don't show bits which we'll be returning
-+			 * for allocation to the local alloc bitmap.
-+			 */
-+			ocfs2_local_alloc_seen_free_bits(osb, tmp_found);
- 		}
- 	}
- 
-@@ -1203,9 +1201,8 @@ static int ocfs2_search_chain(struct ocfs2_alloc_context *ac,
- 	status = -ENOSPC;
- 	/* for now, the chain search is a bit simplistic. We just use
- 	 * the 1st group with any empty bits. */
--	while ((status = ac->ac_group_search(alloc_inode, group_bh,
--					     bits_wanted, min_bits, bit_off,
--					     &tmp_bits)) == -ENOSPC) {
-+	while ((status = ac->ac_group_search(alloc_inode, group_bh, bits_wanted,
-+					     min_bits, bit_off, &tmp_bits)) == -ENOSPC) {
- 		if (!bg->bg_next_group)
- 			break;
- 
-@@ -1838,9 +1835,15 @@ int ocfs2_free_clusters(handle_t *handle,
- 	status = ocfs2_free_suballoc_bits(handle, bitmap_inode, bitmap_bh,
- 					  bg_start_bit, bg_blkno,
- 					  num_clusters);
--	if (status < 0)
-+	if (status < 0) {
- 		mlog_errno(status);
-+		goto out;
-+	}
-+
-+	ocfs2_local_alloc_seen_free_bits(OCFS2_SB(bitmap_inode->i_sb),
-+					 num_clusters);
- 
-+out:
- 	mlog_exit(status);
- 	return status;
+@@ -241,17 +257,10 @@ static void ocfs2_xattr_tree_update_clusters(struct inode *inode,
+ 	le32_add_cpu(&xb->xb_attrs.xb_root.xt_clusters, clusters);
  }
-diff --git a/fs/ocfs2/suballoc.h b/fs/ocfs2/suballoc.h
-index 544c600..40d51da 100644
---- a/fs/ocfs2/suballoc.h
-+++ b/fs/ocfs2/suballoc.h
-@@ -147,6 +147,7 @@ static inline int ocfs2_is_cluster_bitmap(struct inode *inode)
-  * apis above. */
- int ocfs2_reserve_cluster_bitmap_bits(struct ocfs2_super *osb,
- 				      struct ocfs2_alloc_context *ac);
-+void ocfs2_free_ac_resource(struct ocfs2_alloc_context *ac);
  
- /* given a cluster offset, calculate which block group it belongs to
-  * and return that block offset. */
-diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index c7bb4b8..e58a525 100644
---- a/fs/ocfs2/super.c
-+++ b/fs/ocfs2/super.c
-@@ -637,7 +637,8 @@ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
- 	osb->s_atime_quantum = parsed_options.atime_quantum;
- 	osb->preferred_slot = parsed_options.slot;
- 	osb->osb_commit_interval = parsed_options.commit_interval;
--	osb->local_alloc_bits = ocfs2_megabytes_to_clusters(sb, parsed_options.localalloc_opt);
-+	osb->local_alloc_default_bits = ocfs2_megabytes_to_clusters(sb, parsed_options.localalloc_opt);
-+	osb->local_alloc_bits = osb->local_alloc_default_bits;
+-static int ocfs2_xattr_tree_sanity_check(struct inode *inode,
+-					 struct ocfs2_extent_tree *et)
+-{
+-	return 0;
+-}
+-
+ static struct ocfs2_extent_tree_operations ocfs2_xattr_tree_et_ops = {
+ 	.eo_set_last_eb_blk	= ocfs2_xattr_tree_set_last_eb_blk,
+ 	.eo_get_last_eb_blk	= ocfs2_xattr_tree_get_last_eb_blk,
+ 	.eo_update_clusters	= ocfs2_xattr_tree_update_clusters,
+-	.eo_sanity_check	= ocfs2_xattr_tree_sanity_check,
+ 	.eo_fill_root_el	= ocfs2_xattr_tree_fill_root_el,
+ 	.eo_fill_max_leaf_clusters = ocfs2_xattr_tree_fill_max_leaf_clusters,
+ };
+@@ -344,10 +353,25 @@ static inline void ocfs2_et_update_clusters(struct inode *inode,
+ 	et->et_ops->eo_update_clusters(inode, et, clusters);
+ }
  
- 	status = ocfs2_verify_userspace_stack(osb, &parsed_options);
- 	if (status)
-@@ -1425,6 +1426,7 @@ static int ocfs2_initialize_super(struct super_block *sb,
++static inline int ocfs2_et_insert_check(struct inode *inode,
++					struct ocfs2_extent_tree *et,
++					struct ocfs2_extent_rec *rec)
++{
++	int ret = 0;
++
++	if (et->et_ops->eo_insert_check)
++		ret = et->et_ops->eo_insert_check(inode, et, rec);
++	return ret;
++}
++
+ static inline int ocfs2_et_sanity_check(struct inode *inode,
+ 					struct ocfs2_extent_tree *et)
+ {
+-	return et->et_ops->eo_sanity_check(inode, et);
++	int ret = 0;
++
++	if (et->et_ops->eo_sanity_check)
++		ret = et->et_ops->eo_sanity_check(inode, et);
++	return ret;
+ }
  
- 	osb->local_alloc_state = OCFS2_LA_UNUSED;
- 	osb->local_alloc_bh = NULL;
-+	INIT_DELAYED_WORK(&osb->la_enable_wq, ocfs2_la_enable_worker);
+ static void ocfs2_free_truncate_context(struct ocfs2_truncate_context *tc);
+@@ -4408,24 +4432,19 @@ static int ocfs2_insert_extent(struct ocfs2_super *osb,
+ 	struct ocfs2_insert_type insert = {0, };
+ 	struct ocfs2_extent_rec rec;
  
- 	init_waitqueue_head(&osb->osb_mount_event);
+-	BUG_ON(OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL);
+-
+ 	mlog(0, "add %u clusters at position %u to inode %llu\n",
+ 	     new_clusters, cpos, (unsigned long long)OCFS2_I(inode)->ip_blkno);
  
+-	mlog_bug_on_msg(!ocfs2_sparse_alloc(osb) &&
+-			(OCFS2_I(inode)->ip_clusters != cpos),
+-			"Device %s, asking for sparse allocation: inode %llu, "
+-			"cpos %u, clusters %u\n",
+-			osb->dev_str,
+-			(unsigned long long)OCFS2_I(inode)->ip_blkno, cpos,
+-			OCFS2_I(inode)->ip_clusters);
+-
+ 	memset(&rec, 0, sizeof(rec));
+ 	rec.e_cpos = cpu_to_le32(cpos);
+ 	rec.e_blkno = cpu_to_le64(start_blk);
+ 	rec.e_leaf_clusters = cpu_to_le16(new_clusters);
+ 	rec.e_flags = flags;
++	status = ocfs2_et_insert_check(inode, et, &rec);
++	if (status) {
++		mlog_errno(status);
++		goto bail;
++	}
+ 
+ 	status = ocfs2_figure_insert_type(inode, et, &last_eb_bh, &rec,
+ 					  &free_records, &insert);
 -- 
 1.5.4.5
 
