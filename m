@@ -1,80 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYIXOBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbYIXOGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbYIXOBl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 10:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYIXOBc
+	id S1752884AbYIXOGn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 10:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYIXOGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 10:01:32 -0400
-Received: from gate.crashing.org ([63.228.1.57]:35114 "EHLO gate.crashing.org"
+	Wed, 24 Sep 2008 10:06:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45366 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752117AbYIXOBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 10:01:31 -0400
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Greg Kroah-Hartman <greg@kroah.com>, Timur Tabi <timur@freescale.com>,
-       Li Yang <leoli@freescale.com>,
-       Laurent Pinchart <laurentp@cse-semaphore.com>, linuxppc-dev@ozlabs.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-Id: <E8A37756-794A-4829-ABEC-AACA9DB54620@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080924114231.GA8469@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 2/4] powerpc/qe: new call to revert a gpio to a dedicated function
-Date: Wed, 24 Sep 2008 09:00:03 -0500
-References: <20080924000255.GA28054@oksana.dev.rtsoft.ru> <20080924000336.GB29733@oksana.dev.rtsoft.ru> <B8BAAB1F-10B5-419D-84A7-F724A7E77F41@kernel.crashing.org> <20080924114231.GA8469@oksana.dev.rtsoft.ru>
-X-Mailer: Apple Mail (2.929.2)
+	id S1751932AbYIXOGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 10:06:34 -0400
+Date: Wed, 24 Sep 2008 10:03:55 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Hirokazu Takahashi <taka@valinux.co.jp>
+Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       righi.andrea@gmail.com, jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+Message-ID: <20080924140355.GB547@redhat.com>
+References: <20080919131019.GA3606@redhat.com> <20080922.183651.62951479.taka@valinux.co.jp> <20080922143042.GA19222@redhat.com> <20080924.172937.72827863.taka@valinux.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080924.172937.72827863.taka@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 24, 2008 at 05:29:37PM +0900, Hirokazu Takahashi wrote:
+> Hi,
+> 
+> > > > > > > I have got excellent results of dm-ioband, that controls the disk I/O
+> > > > > > > bandwidth even when it accepts delayed write requests.
+> > > > > > > 
+> > > > > > > In this time, I ran some benchmarks with a high-end storage. The
+> > > > > > > reason was to avoid a performance bottleneck due to mechanical factors
+> > > > > > > such as seek time.
+> > > > > > > 
+> > > > > > > You can see the details of the benchmarks at:
+> > > > > > > http://people.valinux.co.jp/~ryov/dm-ioband/hps/
+> > > > > 
+> > > > >   (snip)
+> > > > > 
+> > > > > > Secondly, why do we have to create an additional dm-ioband device for 
+> > > > > > every device we want to control using rules. This looks little odd
+> > > > > > atleast to me. Can't we keep it in line with rest of the controllers
+> > > > > > where task grouping takes place using cgroup and rules are specified in
+> > > > > > cgroup itself (The way Andrea Righi does for io-throttling patches)?
+> > > > > 
+> > > > > It isn't essential dm-band is implemented as one of the device-mappers.
+> > > > > I've been also considering that this algorithm itself can be implemented
+> > > > > in the block layer directly.
+> > > > > 
+> > > > > Although, the current implementation has merits. It is flexible.
+> > > > >   - Dm-ioband can be place anywhere you like, which may be right before
+> > > > >     the I/O schedulers or may be placed on top of LVM devices.
+> > > > 
+> > > > Hi,
+> > > > 
+> > > > An rb-tree per request queue also should be able to give us this
+> > > > flexibility. Because logic is implemented per request queue, rules can be 
+> > > > placed at any layer. Either at bottom most layer where requests are
+> > > > passed to elevator or at higher layer where requests will be passed to 
+> > > > lower level block devices in the stack. Just that we shall have to do
+> > > > modifications to some of the higher level dm/md drivers to make use of
+> > > > queuing cgroup requests and releasing cgroup requests to lower layers.
+> > > 
+> > > Request descriptors are allocated just right before passing I/O requests
+> > > to the elevators. Even if you move the descriptor allocation point
+> > > before calling the dm/md drivers, the drivers can't make use of them.
+> > > 
+> > 
+> > You are right. request descriptors are currently allocated at bottom
+> > most layer. Anyway, in the rb-tree, we put bio cgroups as logical elements
+> > and every bio cgroup then contains the list of either bios or requeust
+> > descriptors. So what kind of list bio-cgroup maintains can depend on
+> > whether it is a higher layer driver (will maintain bios) or a lower layer
+> > driver (will maintain list of request descriptors per bio-cgroup).
+> 
+> I'm getting confused about your idea.
+> 
+> I thought you wanted to make each cgroup have its own rb-tree,
+> and wanted to make all the layers share the same rb-tree.
+> If so, are you going to put different things into the same tree?
+> Do you even want all the I/O schedlers use the same tree?
+> 
 
-On Sep 24, 2008, at 6:42 AM, Anton Vorontsov wrote:
+Ok, I will give more details of the thought process.
 
-> On Tue, Sep 23, 2008 at 11:07:00PM -0500, Kumar Gala wrote:
->>
->> On Sep 23, 2008, at 7:03 PM, Anton Vorontsov wrote:
->>
->>> qe_gpio_set_dedicated() is a platform specific function, which is  
->>> used
->>> to revert a pin to a dedicated function. Caller should have already
->>> obtained the gpio via gpio_request().
->>>
->>> This is needed to support Freescale USB Host Controller.
->>>
->>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>> ---
->>> arch/powerpc/include/asm/qe.h     |    1 +
->>> arch/powerpc/sysdev/qe_lib/gpio.c |   46 ++++++++++++++++++++++++++ 
->>> ++
->>> +++++++++
->>> 2 files changed, 47 insertions(+), 0 deletions(-)
->>
->> what do you mean by dedicated function.. be a bit clearer in the  
->> commit
->> log.
->
-> This term is from the QE spec, I didn't invent anything. ;-)
->
-> "Each pin in the I/O ports can be configured as a general-purpose
-> I/O signal or as a dedicated peripheral interface signal. ...many
-> dedicated peripheral functions are multiplexed onto the ports."
+I was thinking of maintaing an rb-tree per request queue and not an
+rb-tree per cgroup. This tree can contain all the bios submitted to that
+request queue through __make_request(). Every node in the tree will represent
+one cgroup and will contain a list of bios issued from the tasks from that
+cgroup.
 
-I understand but I think 'dedicated' could be interpreted in another  
-way (like the GPIO pin is dedicated, not that the pin is used for a  
-dedicated SoC block).
+Every bio entering the request queue through __make_request() function
+first will be queued in one of the nodes in this rb-tree, depending on which
+cgroup that bio belongs to.
 
-If it the commit message had said 'to a dedicated on chip peripheral'  
-it would be clearer.
+Once the bios are buffered in rb-tree, we release these to underlying
+elevator depending on the proportionate weight of the nodes/cgroups.
 
->> Also, does this depend on gpio_to_chip() patch?
->
-> Yeah, the point of exported gpio_to_chip is to let us write
-> this function.
+Some more details which I was trying to implement yesterday.
 
-I meant can I take this patch w/o the gpio_to_chip() patch? (not clear  
-from your response)
+There will be one bio_cgroup object per cgroup. This object will contain
+many bio_group objects. Each bio_group object will be created for each
+request queue where a bio from bio_cgroup is queued. Essentially the idea
+is that bios belonging to a cgroup can be on various request queues in the
+system. So a single object can not serve the purpose as it can not be on
+many rb-trees at the same time.  Hence create one sub object which will keep
+track of bios belonging to one cgroup on a particular request queue.
 
-- k
+Each bio_group will contain a list of bios and this bio_group object will
+be a node in the rb-tree of request queue. For example. Lets say there are
+two request queues in the system q1 and q2 (lets say they belong to /dev/sda
+and /dev/sdb). Let say a task t1 in /cgroup/io/test1 is issueing io both
+for /dev/sda and /dev/sdb.
+
+bio_cgroup belonging to /cgroup/io/test1 will have two sub bio_group
+objects, say bio_group1 and bio_group2. bio_group1 will be in q1's rb-tree
+and bio_group2 will be in q2's rb-tree. bio_group1 will contain a list of
+bios issued by task t1 for /dev/sda and bio_group2 will contain a list of
+bios issued by task t1 for /dev/sdb. I thought the same can be extended
+for stacked devices also.
+  
+I am still trying to implementing it and hopefully this is doable idea.
+I think at the end of the day it will be something very close to dm-ioband
+algorithm just that there will be no lvm driver and no notion of separate
+dm-ioband device. 
+
+> Are you going to block request descriptors in the tree?
+> >From the view point of performance, all the request descriptors
+> should be passed to the I/O schedulers, since the maximum number
+> of request descriptors is limited. 
+> 
+
+In my initial implementation I was queuing the request descriptors. Then
+you mentioned that it is not a good idea because potentially a cgroup
+issuing more requests might win the race.
+
+Yesterday night I thought, then why not start queuing the bios as they
+are submitted to the request_queue, using __make_request() and then
+release these to underlying elevator or underlying request queue (in case
+of stacked device). This will remove few issues.
+
+- All the layers can uniformly queue bios and no intermixing of queuing
+ bios and request descriptors.
+
+- Will get rid of issue of one cgroup winning the race because of limited
+  number of request descriptors.
+
+> And I still don't understand if you want to make your rb-tree
+> work efficiently, you need to put a lot of bios or request descriptors
+> into the tree. Is that what you are going to do?
+> On the other hand, dm-ioband tries to minimize to have bios blocked.
+> And I have a plan on reducing the maximum number that can be
+> blocked there.
+> 
+
+Now I am planning to queue bios and probably there is no need to queue
+request descriptors. I think that's what dm-ioband is doing. Queueing
+bios for cgroups per io-band device.
+
+Thinking more about it, In dm-ioband case, you seem to be buffering bios
+from various cgroups on a separate request queue belonging to dm-ioband
+device. I was thinking of moving all that buffering logic to existing
+request queues instead of creating another request queue on top of request
+queue I want to control (dm-ioband device).
+
+> Sorry to bother you that I just don't understand the concept clearly.
+> 
+> > So basically mechanism of maintaining an rb-tree can be completely
+> > ignorant of the fact whether a driver is keeping track of bios or keeping
+> > track of requests per cgroup. 
+> 
+> I don't care whether the queue is implemented as a rb-tee or some
+> kind of list because they are logically the same thing.
+
+That's true. rb-tree or list is just data structure detail. It is not
+important. The core thing I am trying to achive is that is there a way that
+I can get rid of notion of creating a separate dm-ioband device for every
+device I want to control.
+
+Is it just me who finds creation of dm-ioband devices odd and difficult to
+manage or there are other people who think that it would be nice if we can get
+rid of it?
+
+Thanks
+Vivek
