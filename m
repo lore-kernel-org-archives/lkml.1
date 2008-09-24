@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbYIXNSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbYIXNX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753132AbYIXNSt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 09:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYIXNSl
+	id S1752859AbYIXNX6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 09:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYIXNXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 09:18:41 -0400
-Received: from igw3.br.ibm.com ([32.104.18.26]:53905 "EHLO igw3.br.ibm.com"
+	Wed, 24 Sep 2008 09:23:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54475 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbYIXNSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 09:18:40 -0400
-Subject: Re: [PATCH 1/4] TPM: update char dev BKL pushdown
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jmoriss@namei.org,
-       serue@linux.vnet.ibm.com, zohar@linux.vnet.ibm.com,
-       safford@watson.ibm.com, paulmck@linux.vnet.ibm.com,
-       debora@linux.vnet.ibm.com
-In-Reply-To: <20080923145807.63f9b904@bike.lwn.net>
-References: <cover.1222136544.git.srajiv@linux.vnet.ibm.com>
-	 <1222190371-23814-1-git-send-email-srajiv@linux.vnet.ibm.com>
-	 <20080923145807.63f9b904@bike.lwn.net>
-Content-Type: text/plain
-Date: Wed, 24 Sep 2008 10:14:40 -0300
-Message-Id: <1222262080.24276.32.camel@blackbox>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1751517AbYIXNXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 09:23:48 -0400
+Message-ID: <48DA3F56.8090806@redhat.com>
+Date: Wed, 24 Sep 2008 09:23:34 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Andreas Dilger <adilger@sun.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext4: Use preallocation when reading from the inode
+ table
+References: <E1KhvsB-0002Ik-Ex@closure.thunk.org> <20080923101613.58768083@lxorguk.ukuu.org.uk> <20080923115045.GI10950@webber.adilger.int> <48D8DEAE.4080309@redhat.com> <20080924013014.GA9747@mit.edu>
+In-Reply-To: <20080924013014.GA9747@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-23 at 14:58 -0600, Jonathan Corbet wrote:
-> On Tue, 23 Sep 2008 14:19:26 -0300
-> Rajiv Andrade <srajiv@linux.vnet.ibm.com> wrote:
-> 
-> > + * It's assured that the chip will be opened just once,
-> > + * by the check of is_open variable, which is protected
-> > + * by driver_lock.
-> 
-> Taking a look at the code, I'm convinced.  BKL removal seems
-> appropriate.
-> 
-> While I was in the neighborhood, though, something caught my eye:
-> 
-> int tpm_release(struct inode *inode, struct file *file)
-> {
-> 	struct tpm_chip *chip = file->private_data;
-> 
-> 	flush_scheduled_work();
-> 
-> Here you have waited until you've got nothing in the workqueue.
-> 
-> 	spin_lock(&driver_lock);
-> 	file->private_data = NULL;
-> 	del_singleshot_timer_sync(&chip->user_read_timer);
-> 
-> But, until you get here, your timer could have resubmitted a job into
-> the workqueue - job which could run after you've freed "chip" and
-> forgotten all about it. I think you need either a "don't resubmit" flag,
-> or you need to delete the timer first.
-> 
-> jon
+Theodore Tso wrote:
+> On Tue, Sep 23, 2008 at 08:18:54AM -0400, Ric Wheeler wrote:
+>   
+>> I think that Alan is probably right - the magic number for modern drives  
+>> is probably closer to 256K. Having it be a /sys tunable (with a larger  
+>> default) would be a nice way to verify this.
+>>     
+>
+> I've played with this a bit, and with the "git status" workload,
+> increasing the magic number beyond 16 (64k) doesn't actually help,
+> because the number of inodes we need to touch wasn't big enough.
+>
+> So I switched to a different workload, which ran "find /path -size 0
+> -print" with a much larger directory hierarchy.  With that workload I
+> got the following results:
+>
+> ra_bits	ra_blocks  ra_kb  seconds  % improvement
+> 0	   1	     4	  53.3		 -
+> 1	   2	     8	  47.3		11.3%
+> 2	   4	    16	  41.7		21.8%
+> 3	   8	    32	  37.5		29.6%
+> 4	  16	    64	  34.4		35.5%
+> 5	  32	   128	  32		40.0%
+> 6	  64	   256	  30.7		42.4%
+> 7	 128	   512	  28.8		46.0%
+> 8	 256	  1024	  28.3		46.9%
+> 9	 512	  2048	  27.5		48.4%
+>
+> Given these numbers, I'm using a default of inode_readahead_bits of 5
+> (i.3., 32 blocks, or 128k for 4k blocksize filesystems).  For a
+> workload that is 100% stat-based, without any I/O, it is possible to
+> get better results by using a higher number, yes, but I'm concerned
+> that a larger readahead may end up interfering with other reads.  We
+> need to run some other workloads to be sure a larger number won't
+> cause problems before we go more aggressive on this parameter.
+>
+> I'll send the revised patch in another message.
+>
+> 					- Ted
+>   
 
-Yes, like in tpm_read(), the timer must be deleted before
-flush_scheduled_work(). Since it's a fix to a new issue, I'm going to
-submit a another patch.
+That sounds about right for modern S-ATA/SAS drives. I would expect that 
+having this be a tunable knob might help for some types of storage (SSD 
+might not care, but should be faster in any case?).
 
-Thanks,
-Rajiv Andrade
-IBM Linux Technology Center
-Security Development
+ric
 
