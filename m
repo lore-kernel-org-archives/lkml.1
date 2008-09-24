@@ -1,64 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYIXXEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbYIXXEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYIXXEg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 19:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbYIXXE2
+	id S1752647AbYIXXEx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 19:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbYIXXEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 19:04:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55703 "EHLO mx2.suse.de"
+	Wed, 24 Sep 2008 19:04:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55706 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751084AbYIXXE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 19:04:27 -0400
-Date: Wed, 24 Sep 2008 16:00:54 -0700
+	id S1753227AbYIXXEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 19:04:33 -0400
+Date: Wed, 24 Sep 2008 16:01:10 -0700
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
        Jeff Mahoney <jeffm@suse.de>
-Subject: [patch 00/04] RFC: Staging tree (drivers/staging)
-Message-ID: <20080924230054.GA27730@suse.de>
+Subject: [patch 01/04] Staging: add TAINT_CRAP for all drivers/staging code
+Message-ID: <20080924230110.GB27730@suse.de>
+References: <20080924224638.514504825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="staging-add-taint_crap-for-all-drivers-staging-code.patch"
+In-Reply-To: <20080924230054.GA27730@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As we all discussed at the Kernel Summit this past week, I said I would
-create a drivers/staging directory and start throwing lots of drivers
-that are not of "mergable" status into it.
+We need to add a flag for all code that is in the drivers/staging/
+directory to prevent all other kernel developers from worrying about
+issues here, and to notify users that the drivers might not be as good
+as they are normally used to.
 
-For those not at the kernel summit, lwn.net has a summary of this
-session at:
-	http://www.lwn.net/Articles/298570/
+Based on code from Andreas Gruenbacher and Jeff Mahoney to provide a
+TAINT flag for the support level of a kernel module in the Novell
+enterprise kernel release.
 
-So, here's 4 patches for review/comments that show how this could be
-done.
+This is the kernel portion of this feature, the ability for the flag to
+be set needs to be done in the build process and will happen in a
+follow-up patch.
 
-The first 2 patches create a TAINT_CRAP flag and set it for anything
-that comes from the drivers/staging/ directory.  When a driver from this
-directory is loaded into the kernel, the user is warned, and any oops
-message that happens also properly shows the "bad" modules.
+Cc: Andreas Gruenbacher <agruen@suse.de>
+Cc: Jeff Mahoney <jeffm@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-The 3rd patch creates the drivers/staging/ directory and Kconfig entries
-and adds it to the build system.
+---
 
-The 4th patch is an example of a driver that would go into this
-directory, along with a driver_name.README file detailing what needs to
-be done to this driver for cleanup/fixing, and who to contact about it.
-It's also in such bad shape it doesn't even build against the kernel
-kernel :)
+ Documentation/sysctl/kernel.txt |    1 +
+ include/linux/kernel.h          |    1 +
+ kernel/module.c                 |    9 +++++++++
+ kernel/panic.c                  |    6 ++++--
+ 4 files changed, 15 insertions(+), 2 deletions(-)
 
-(I'll fix that up before submitting, all drivers should at least build
-properly...)
+--- a/Documentation/sysctl/kernel.txt
++++ b/Documentation/sysctl/kernel.txt
+@@ -368,4 +368,5 @@ can be ORed together:
+   2 - A module was force loaded by insmod -f.
+       Set by modutils >= 2.4.9 and module-init-tools.
+   4 - Unsafe SMP processors: SMP with CPUs not designed for SMP.
++ 64 - A module from drivers/staging was loaded.
+ 
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -261,6 +261,7 @@ extern enum system_states {
+ #define TAINT_DIE			(1<<7)
+ #define TAINT_OVERRIDDEN_ACPI_TABLE	(1<<8)
+ #define TAINT_WARN			(1<<9)
++#define TAINT_CRAP			(1<<10)
+ 
+ extern void dump_stack(void) __cold;
+ 
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1834,6 +1834,7 @@ static noinline struct module *load_modu
+ 	Elf_Ehdr *hdr;
+ 	Elf_Shdr *sechdrs;
+ 	char *secstrings, *args, *modmagic, *strtab = NULL;
++	char *staging;
+ 	unsigned int i;
+ 	unsigned int symindex = 0;
+ 	unsigned int strindex = 0;
+@@ -1989,6 +1990,14 @@ static noinline struct module *load_modu
+ 		goto free_hdr;
+ 	}
+ 
++	staging = get_modinfo(sechdrs, infoindex, "staging");
++	if (staging) {
++		add_taint_module(mod, TAINT_CRAP);
++		printk(KERN_WARNING "%s: module is from the staging directory,"
++		       " the quality is unknown, you have been warned.\n",
++		       mod->name);
++	}
++
+ 	/* Now copy in args */
+ 	args = strndup_user(uargs, ~0UL >> 1);
+ 	if (IS_ERR(args)) {
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -155,6 +155,7 @@ EXPORT_SYMBOL(panic);
+  *  'U' - Userspace-defined naughtiness.
+  *  'A' - ACPI table overridden.
+  *  'W' - Taint on warning.
++ *  'C' - modules from drivers/staging are loaded.
+  *
+  *	The string is overwritten by the next call to print_taint().
+  */
+@@ -163,7 +164,7 @@ const char *print_tainted(void)
+ {
+ 	static char buf[20];
+ 	if (tainted) {
+-		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c%c%c",
++		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c%c%c%c",
+ 			tainted & TAINT_PROPRIETARY_MODULE ? 'P' : 'G',
+ 			tainted & TAINT_FORCED_MODULE ? 'F' : ' ',
+ 			tainted & TAINT_UNSAFE_SMP ? 'S' : ' ',
+@@ -173,7 +174,8 @@ const char *print_tainted(void)
+ 			tainted & TAINT_USER ? 'U' : ' ',
+ 			tainted & TAINT_DIE ? 'D' : ' ',
+ 			tainted & TAINT_OVERRIDDEN_ACPI_TABLE ? 'A' : ' ',
+-			tainted & TAINT_WARN ? 'W' : ' ');
++			tainted & TAINT_WARN ? 'W' : ' ',
++			tainted & TAINT_CRAP ? 'C' : ' ');
+ 	}
+ 	else
+ 		snprintf(buf, sizeof(buf), "Not tainted");
 
-So, does this all look good to everyone?  Any questions/issues?
-
-Oh, I guess I should add a MAINTAINER entry for this section of the
-kernel, so to paraphrase Linus, I now get to be known as the "Maintainer
-of Crap".
-
-thanks,
-
-greg k-h
+-- 
