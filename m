@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbYIXWBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYIXWCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753848AbYIXWBp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbYIXWAV
+	id S1754094AbYIXWCw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbYIXWA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:00:21 -0400
-Received: from ns2.suse.de ([195.135.220.15]:52196 "EHLO mx2.suse.de"
+	Wed, 24 Sep 2008 18:00:29 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52211 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751900AbYIXWAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:00:16 -0400
+	id S1753178AbYIXWAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:00:22 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-fsdevel@vger.kernel.org, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 02/39] ocfs2: Track local alloc bits internally
-Date: Wed, 24 Sep 2008 15:00:43 -0700
-Message-Id: <1222293680-15451-3-git-send-email-mfasheh@suse.com>
+       linux-fsdevel@vger.kernel.org, Tao Ma <tao.ma@oracle.com>,
+       Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 09/39] ocfs2: Add the basic xattr disk layout in ocfs2_fs.h
+Date: Wed, 24 Sep 2008 15:00:50 -0700
+Message-Id: <1222293680-15451-10-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
 References: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
@@ -23,183 +24,162 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do this instead of tracking absolute local alloc size. This avoids
-needless re-calculatiion of bits from bytes in localalloc.c. Additionally,
-the value is now in a more natural unit for internal file system bitmap
-work.
+From: Tao Ma <tao.ma@oracle.com>
 
+Ocfs2 uses a very flexible structure for storing extended attributes on
+disk. Small amount of attributes are stored directly in the inode block - up
+to 256 bytes worth. If that fills up, attributes are also stored in an
+external block, linked to from the inode block. That block can in turn
+expand to a btree, capable of storing large numbers of attributes.
+
+Individual attribute values are stored inline if they're small enough
+(currently about 80 bytes, this can be changed though), and otherwise are
+expanded to a btree. The theoretical limit to the size of an individual
+attribute is about the same as an inode, though the kernel's upper bound on
+the size of an attributes data is far smaller.
+
+Signed-off-by: Tao Ma <tao.ma@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/localalloc.c |   34 ++++++++++++----------------------
- fs/ocfs2/ocfs2.h      |   10 +++++++++-
- fs/ocfs2/super.c      |    8 +++++---
- 3 files changed, 26 insertions(+), 26 deletions(-)
+ fs/ocfs2/ocfs2_fs.h |  118 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 118 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
-index 28e492e..b05ce66 100644
---- a/fs/ocfs2/localalloc.c
-+++ b/fs/ocfs2/localalloc.c
-@@ -47,8 +47,6 @@
+diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
+index 4f61985..1b46505 100644
+--- a/fs/ocfs2/ocfs2_fs.h
++++ b/fs/ocfs2/ocfs2_fs.h
+@@ -64,6 +64,7 @@
+ #define OCFS2_INODE_SIGNATURE		"INODE01"
+ #define OCFS2_EXTENT_BLOCK_SIGNATURE	"EXBLK01"
+ #define OCFS2_GROUP_DESC_SIGNATURE      "GROUP01"
++#define OCFS2_XATTR_BLOCK_SIGNATURE	"XATTR01"
  
- #define OCFS2_LOCAL_ALLOC(dinode)	(&((dinode)->id2.i_lab))
+ /* Compatibility flags */
+ #define OCFS2_HAS_COMPAT_FEATURE(sb,mask)			\
+@@ -715,6 +716,123 @@ struct ocfs2_group_desc
+ /*40*/	__u8    bg_bitmap[0];
+ };
  
--static inline int ocfs2_local_alloc_window_bits(struct ocfs2_super *osb);
--
- static u32 ocfs2_local_alloc_count_bits(struct ocfs2_dinode *alloc);
- 
- static int ocfs2_local_alloc_find_clear_bits(struct ocfs2_super *osb,
-@@ -75,21 +73,13 @@ static int ocfs2_local_alloc_new_window(struct ocfs2_super *osb,
- static int ocfs2_local_alloc_slide_window(struct ocfs2_super *osb,
- 					  struct inode *local_alloc_inode);
- 
--static inline int ocfs2_local_alloc_window_bits(struct ocfs2_super *osb)
--{
--	BUG_ON(osb->s_clustersize_bits > 20);
--
--	/* Size local alloc windows by the megabyte */
--	return osb->local_alloc_size << (20 - osb->s_clustersize_bits);
--}
--
- /*
-  * Tell us whether a given allocation should use the local alloc
-  * file. Otherwise, it has to go to the main bitmap.
-  */
- int ocfs2_alloc_should_use_local(struct ocfs2_super *osb, u64 bits)
- {
--	int la_bits = ocfs2_local_alloc_window_bits(osb);
-+	int la_bits = osb->local_alloc_bits;
- 	int ret = 0;
- 
- 	if (osb->local_alloc_state != OCFS2_LA_ENABLED)
-@@ -120,14 +110,16 @@ int ocfs2_load_local_alloc(struct ocfs2_super *osb)
- 
- 	mlog_entry_void();
- 
--	if (osb->local_alloc_size == 0)
-+	if (osb->local_alloc_bits == 0)
- 		goto bail;
- 
--	if (ocfs2_local_alloc_window_bits(osb) >= osb->bitmap_cpg) {
-+	if (osb->local_alloc_bits >= osb->bitmap_cpg) {
- 		mlog(ML_NOTICE, "Requested local alloc window %d is larger "
- 		     "than max possible %u. Using defaults.\n",
--		     ocfs2_local_alloc_window_bits(osb), (osb->bitmap_cpg - 1));
--		osb->local_alloc_size = OCFS2_DEFAULT_LOCAL_ALLOC_SIZE;
-+		     osb->local_alloc_bits, (osb->bitmap_cpg - 1));
-+		osb->local_alloc_bits =
-+			ocfs2_megabytes_to_clusters(osb->sb,
-+						    OCFS2_DEFAULT_LOCAL_ALLOC_SIZE);
- 	}
- 
- 	/* read the alloc off disk */
-@@ -190,8 +182,7 @@ bail:
- 	if (inode)
- 		iput(inode);
- 
--	mlog(0, "Local alloc window bits = %d\n",
--	     ocfs2_local_alloc_window_bits(osb));
-+	mlog(0, "Local alloc window bits = %d\n", osb->local_alloc_bits);
- 
- 	mlog_exit(status);
- 	return status;
-@@ -490,7 +481,7 @@ int ocfs2_reserve_local_alloc_bits(struct ocfs2_super *osb,
- 		goto bail;
- 	}
- 
--	if (bits_wanted > ocfs2_local_alloc_window_bits(osb)) {
-+	if (bits_wanted > osb->local_alloc_bits) {
- 		mlog(0, "Asking for more than my max window size!\n");
- 		status = -ENOSPC;
- 		goto bail;
-@@ -803,7 +794,7 @@ static int ocfs2_local_alloc_reserve_for_window(struct ocfs2_super *osb,
- 		goto bail;
- 	}
- 
--	(*ac)->ac_bits_wanted = ocfs2_local_alloc_window_bits(osb);
-+	(*ac)->ac_bits_wanted = osb->local_alloc_bits;
- 
- 	status = ocfs2_reserve_cluster_bitmap_bits(osb, *ac);
- 	if (status < 0) {
-@@ -849,7 +840,7 @@ static int ocfs2_local_alloc_new_window(struct ocfs2_super *osb,
- 		     "one\n");
- 
- 	mlog(0, "Allocating %u clusters for a new window.\n",
--	     ocfs2_local_alloc_window_bits(osb));
-+	     osb->local_alloc_bits);
- 
- 	/* Instruct the allocation code to try the most recently used
- 	 * cluster group. We'll re-record the group used this pass
-@@ -859,8 +850,7 @@ static int ocfs2_local_alloc_new_window(struct ocfs2_super *osb,
- 	/* we used the generic suballoc reserve function, but we set
- 	 * everything up nicely, so there's no reason why we can't use
- 	 * the more specific cluster api to claim bits. */
--	status = ocfs2_claim_clusters(osb, handle, ac,
--				      ocfs2_local_alloc_window_bits(osb),
-+	status = ocfs2_claim_clusters(osb, handle, ac, osb->local_alloc_bits,
- 				      &cluster_off, &cluster_count);
- 	if (status < 0) {
- 		if (status != -ENOSPC)
-diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
-index 7f625f2..43dd42e 100644
---- a/fs/ocfs2/ocfs2.h
-+++ b/fs/ocfs2/ocfs2.h
-@@ -252,7 +252,7 @@ struct ocfs2_super
- 	struct ocfs2_journal *journal;
- 	unsigned long osb_commit_interval;
- 
--	int local_alloc_size;
-+	unsigned int local_alloc_bits;
- 	enum ocfs2_local_alloc_state local_alloc_state;
- 	struct buffer_head *local_alloc_bh;
- 	u64 la_last_gd;
-@@ -554,6 +554,14 @@ static inline unsigned int ocfs2_pages_per_cluster(struct super_block *sb)
- 	return pages_per_cluster;
- }
- 
-+static inline unsigned int ocfs2_megabytes_to_clusters(struct super_block *sb,
-+						       unsigned int megs)
-+{
-+	BUILD_BUG_ON(OCFS2_MAX_CLUSTERSIZE > 1048576);
++/*
++ * On disk extended attribute structure for OCFS2.
++ */
 +
-+	return megs << (20 - OCFS2_SB(sb)->s_clustersize_bits);
++/*
++ * ocfs2_xattr_entry indicates one extend attribute.
++ *
++ * Note that it can be stored in inode, one block or one xattr bucket.
++ */
++struct ocfs2_xattr_entry {
++	__le32	xe_name_hash;    /* hash value of xattr prefix+suffix. */
++	__le16	xe_name_offset;  /* byte offset from the 1st etnry in the local
++				    local xattr storage(inode, xattr block or
++				    xattr bucket). */
++	__u8	xe_name_len;	 /* xattr name len, does't include prefix. */
++	__u8	xe_type;         /* the low 7 bits indicates the name prefix's
++				  * type and the highest 1 bits indicate whether
++				  * the EA is stored in the local storage. */
++	__le64	xe_value_size;	 /* real xattr value length. */
++};
++
++/*
++ * On disk structure for xattr header.
++ *
++ * One ocfs2_xattr_header describes how many ocfs2_xattr_entry records in
++ * the local xattr storage.
++ */
++struct ocfs2_xattr_header {
++	__le16	xh_count;                       /* contains the count of how
++						   many records are in the
++						   local xattr storage. */
++	__le16	xh_reserved1;
++	__le32	xh_reserved2;
++	__le64  xh_csum;
++	struct ocfs2_xattr_entry xh_entries[0]; /* xattr entry list. */
++};
++
++/*
++ * On disk structure for xattr value root.
++ *
++ * It is used when one extended attribute's size is larger, and we will save it
++ * in an outside cluster. It will stored in a b-tree like file content.
++ */
++struct ocfs2_xattr_value_root {
++/*00*/	__le32	xr_clusters;              /* clusters covered by xattr value. */
++	__le32	xr_reserved0;
++	__le64	xr_last_eb_blk;           /* Pointer to last extent block */
++/*10*/	struct ocfs2_extent_list xr_list; /* Extent record list */
++};
++
++/*
++ * On disk structure for xattr tree root.
++ *
++ * It is used when there are too many extended attributes for one file. These
++ * attributes will be organized and stored in an indexed-btree.
++ */
++struct ocfs2_xattr_tree_root {
++/*00*/	__le32	xt_clusters;              /* clusters covered by xattr. */
++	__le32	xt_reserved0;
++	__le64	xt_last_eb_blk;           /* Pointer to last extent block */
++/*10*/	struct ocfs2_extent_list xt_list; /* Extent record list */
++};
++
++#define OCFS2_XATTR_INDEXED 0x1
++
++/*
++ * On disk structure for xattr block.
++ */
++struct ocfs2_xattr_block {
++/*00*/	__u8	xb_signature[8];     /* Signature for verification */
++	__le16	xb_suballoc_slot;    /* Slot suballocator this
++					block belongs to. */
++	__le16	xb_suballoc_bit;     /* Bit offset in suballocator
++					block group */
++	__le32	xb_fs_generation;    /* Must match super block */
++/*10*/	__le64	xb_blkno;            /* Offset on disk, in blocks */
++	__le64	xb_csum;
++/*20*/	__le16	xb_flags;            /* Indicates whether this block contains
++					real xattr or a xattr tree. */
++	__le16	xb_reserved0;
++	__le32  xb_reserved1;
++	__le64	xb_reserved2;
++/*30*/	union {
++		struct ocfs2_xattr_header xb_header; /* xattr header if this
++							block contains xattr */
++		struct ocfs2_xattr_tree_root xb_root;/* xattr tree root if this
++							block cotains xattr
++							tree. */
++	} xb_attrs;
++};
++
++#define OCFS2_XATTR_ENTRY_LOCAL		0x80
++#define OCFS2_XATTR_TYPE_MASK		0x7F
++static inline void ocfs2_xattr_set_local(struct ocfs2_xattr_entry *xe,
++					 int local)
++{
++	if (local)
++		xe->xe_type |= OCFS2_XATTR_ENTRY_LOCAL;
++	else
++		xe->xe_type &= ~OCFS2_XATTR_ENTRY_LOCAL;
 +}
 +
- static inline void ocfs2_init_inode_steal_slot(struct ocfs2_super *osb)
++static inline int ocfs2_xattr_is_local(struct ocfs2_xattr_entry *xe)
++{
++	return xe->xe_type & OCFS2_XATTR_ENTRY_LOCAL;
++}
++
++static inline void ocfs2_xattr_set_type(struct ocfs2_xattr_entry *xe, int type)
++{
++	xe->xe_type |= type & OCFS2_XATTR_TYPE_MASK;
++}
++
++static inline int ocfs2_xattr_get_type(struct ocfs2_xattr_entry *xe)
++{
++	return xe->xe_type & OCFS2_XATTR_TYPE_MASK;
++}
++
+ #ifdef __KERNEL__
+ static inline int ocfs2_fast_symlink_chars(struct super_block *sb)
  {
- 	spin_lock(&osb->osb_lock);
-diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index 88255d3..c7bb4b8 100644
---- a/fs/ocfs2/super.c
-+++ b/fs/ocfs2/super.c
-@@ -637,7 +637,7 @@ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
- 	osb->s_atime_quantum = parsed_options.atime_quantum;
- 	osb->preferred_slot = parsed_options.slot;
- 	osb->osb_commit_interval = parsed_options.commit_interval;
--	osb->local_alloc_size = parsed_options.localalloc_opt;
-+	osb->local_alloc_bits = ocfs2_megabytes_to_clusters(sb, parsed_options.localalloc_opt);
- 
- 	status = ocfs2_verify_userspace_stack(osb, &parsed_options);
- 	if (status)
-@@ -938,6 +938,7 @@ static int ocfs2_show_options(struct seq_file *s, struct vfsmount *mnt)
- {
- 	struct ocfs2_super *osb = OCFS2_SB(mnt->mnt_sb);
- 	unsigned long opts = osb->s_mount_opt;
-+	unsigned int local_alloc_megs;
- 
- 	if (opts & OCFS2_MOUNT_HB_LOCAL)
- 		seq_printf(s, ",_netdev,heartbeat=local");
-@@ -970,8 +971,9 @@ static int ocfs2_show_options(struct seq_file *s, struct vfsmount *mnt)
- 		seq_printf(s, ",commit=%u",
- 			   (unsigned) (osb->osb_commit_interval / HZ));
- 
--	if (osb->local_alloc_size != OCFS2_DEFAULT_LOCAL_ALLOC_SIZE)
--		seq_printf(s, ",localalloc=%d", osb->local_alloc_size);
-+	local_alloc_megs = osb->local_alloc_bits >> (20 - osb->s_clustersize_bits);
-+	if (local_alloc_megs != OCFS2_DEFAULT_LOCAL_ALLOC_SIZE)
-+		seq_printf(s, ",localalloc=%d", local_alloc_megs);
- 
- 	if (opts & OCFS2_MOUNT_LOCALFLOCKS)
- 		seq_printf(s, ",localflocks,");
 -- 
 1.5.4.5
 
