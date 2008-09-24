@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbYIXWNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756583AbYIXWN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756459AbYIXWNW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbYIXWB5
+	id S1756583AbYIXWN4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYIXWCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:01:57 -0400
-Received: from ns1.suse.de ([195.135.220.2]:41506 "EHLO mx1.suse.de"
+	Wed, 24 Sep 2008 18:02:03 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52253 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752510AbYIXWAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:00:46 -0400
+	id S1753514AbYIXWAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:00:44 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-fsdevel@vger.kernel.org, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 37/39] ocfs2: Add the 'inode64' mount option.
-Date: Wed, 24 Sep 2008 15:01:18 -0700
-Message-Id: <1222293680-15451-38-git-send-email-mfasheh@suse.com>
+       linux-fsdevel@vger.kernel.org, Tao Ma <tao.ma@oracle.com>,
+       Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 34/39] ocfs2: bug-fix for journal extend in xattr.
+Date: Wed, 24 Sep 2008 15:01:15 -0700
+Message-Id: <1222293680-15451-35-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
 References: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
@@ -23,120 +24,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joel Becker <joel.becker@oracle.com>
+From: Tao Ma <tao.ma@oracle.com>
 
-Now that ocfs2 limits inode numbers to 32bits, add a mount option to
-disable the limit.  This parallels XFS.  64bit systems can handle the
-larger inode numbers.
+In ocfs2_extend_trans, when we can't extend the current
+transaction, it will commit current transaction and restart
+a new one. So if the previous credits we have allocated aren't
+used(the block isn't dirtied before our extend), we will not
+have enough credits for any future operation(it will cause jbd
+complain and bug out). So check this and re-extend it.
 
-[ Added description of inode64 mount option in ocfs2.txt. --Mark ]
-
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
+Signed-off-by: Tao Ma <tao.ma@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- Documentation/filesystems/ocfs2.txt |    4 ++++
- fs/ocfs2/ocfs2.h                    |    1 +
- fs/ocfs2/suballoc.c                 |    5 +++--
- fs/ocfs2/super.c                    |   17 +++++++++++++++++
- 4 files changed, 25 insertions(+), 2 deletions(-)
+ fs/ocfs2/xattr.c |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/filesystems/ocfs2.txt b/Documentation/filesystems/ocfs2.txt
-index c318a8b..6acf1b4 100644
---- a/Documentation/filesystems/ocfs2.txt
-+++ b/Documentation/filesystems/ocfs2.txt
-@@ -76,3 +76,7 @@ localalloc=8(*)		Allows custom localalloc size in MB. If the value is too
- 			large, the fs will silently revert it to the default.
- 			Localalloc is not enabled for local mounts.
- localflocks		This disables cluster aware flock.
-+inode64			Indicates that Ocfs2 is allowed to create inodes at
-+			any location in the filesystem, including those which
-+			will result in inode numbers occupying more than 32
-+			bits of significance.
-diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
-index 6d3c10d..78ae4f8 100644
---- a/fs/ocfs2/ocfs2.h
-+++ b/fs/ocfs2/ocfs2.h
-@@ -189,6 +189,7 @@ enum ocfs2_mount_options
- 	OCFS2_MOUNT_DATA_WRITEBACK = 1 << 4, /* No data ordering */
- 	OCFS2_MOUNT_LOCALFLOCKS = 1 << 5, /* No cluster aware user file locks */
- 	OCFS2_MOUNT_NOUSERXATTR = 1 << 6, /* No user xattr */
-+	OCFS2_MOUNT_INODE64 = 1 << 7,	/* Allow inode numbers > 2^32 */
- };
- 
- #define OCFS2_OSB_SOFT_RO	0x0001
-diff --git a/fs/ocfs2/suballoc.c b/fs/ocfs2/suballoc.c
-index 213bdca..d7a6f92 100644
---- a/fs/ocfs2/suballoc.c
-+++ b/fs/ocfs2/suballoc.c
-@@ -601,9 +601,10 @@ int ocfs2_reserve_new_inode(struct ocfs2_super *osb,
- 	/*
- 	 * stat(2) can't handle i_ino > 32bits, so we tell the
- 	 * lower levels not to allocate us a block group past that
--	 * limit.
-+	 * limit.  The 'inode64' mount option avoids this behavior.
- 	 */
--	(*ac)->ac_max_block = (u32)~0U;
-+	if (!(osb->s_mount_opt & OCFS2_MOUNT_INODE64))
-+		(*ac)->ac_max_block = (u32)~0U;
- 
- 	/*
- 	 * slot is set when we successfully steal inode from other nodes.
-diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index 973d99f..f95469c 100644
---- a/fs/ocfs2/super.c
-+++ b/fs/ocfs2/super.c
-@@ -157,6 +157,7 @@ enum {
- 	Opt_stack,
- 	Opt_user_xattr,
- 	Opt_nouser_xattr,
-+	Opt_inode64,
- 	Opt_err,
- };
- 
-@@ -178,6 +179,7 @@ static match_table_t tokens = {
- 	{Opt_stack, "cluster_stack=%s"},
- 	{Opt_user_xattr, "user_xattr"},
- 	{Opt_nouser_xattr, "nouser_xattr"},
-+	{Opt_inode64, "inode64"},
- 	{Opt_err, NULL}
- };
- 
-@@ -411,6 +413,15 @@ static int ocfs2_remount(struct super_block *sb, int *flags, char *data)
- 		goto out;
+diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
+index 1a4de3d..38e3e5e 100644
+--- a/fs/ocfs2/xattr.c
++++ b/fs/ocfs2/xattr.c
+@@ -1336,8 +1336,9 @@ static int ocfs2_xattr_set_entry(struct inode *inode,
  	}
  
-+	/* Probably don't want this on remount; it might
-+	 * mess with other nodes */
-+	if (!(osb->s_mount_opt & OCFS2_MOUNT_INODE64) &&
-+	    (parsed_options.mount_opt & OCFS2_MOUNT_INODE64)) {
-+		ret = -EINVAL;
-+		mlog(ML_ERROR, "Cannot enable inode64 on remount\n");
-+		goto out;
+ 	if (!(flag & OCFS2_INLINE_XATTR_FL)) {
+-		/*set extended attribue in external blcok*/
++		/* set extended attribute in external block. */
+ 		ret = ocfs2_extend_trans(handle,
++					 OCFS2_INODE_UPDATE_CREDITS +
+ 					 OCFS2_XATTR_BLOCK_UPDATE_CREDITS);
+ 		if (ret) {
+ 			mlog_errno(ret);
+@@ -3701,6 +3702,18 @@ static int ocfs2_add_new_xattr_cluster(struct inode *inode,
+ 		}
+ 	}
+ 
++	if (handle->h_buffer_credits < credits) {
++		/*
++		 * The journal has been restarted before, and don't
++		 * have enough space for the insertion, so extend it
++		 * here.
++		 */
++		ret = ocfs2_extend_trans(handle, credits);
++		if (ret) {
++			mlog_errno(ret);
++			goto leave;
++		}
 +	}
-+
- 	/* We're going to/from readonly mode. */
- 	if ((*flags & MS_RDONLY) != (sb->s_flags & MS_RDONLY)) {
- 		/* Lock here so the check of HARD_RO and the potential
-@@ -930,6 +941,9 @@ static int ocfs2_parse_options(struct super_block *sb,
- 			       OCFS2_STACK_LABEL_LEN);
- 			mopt->cluster_stack[OCFS2_STACK_LABEL_LEN] = '\0';
- 			break;
-+		case Opt_inode64:
-+			mopt->mount_opt |= OCFS2_MOUNT_INODE64;
-+			break;
- 		default:
- 			mlog(ML_ERROR,
- 			     "Unrecognized mount option \"%s\" "
-@@ -994,6 +1008,9 @@ static int ocfs2_show_options(struct seq_file *s, struct vfsmount *mnt)
- 		seq_printf(s, ",cluster_stack=%.*s", OCFS2_STACK_LABEL_LEN,
- 			   osb->osb_cluster_stack);
- 
-+	if (opts & OCFS2_MOUNT_INODE64)
-+		seq_printf(s, ",inode64");
-+
- 	return 0;
- }
- 
+ 	mlog(0, "Insert %u clusters at block %llu for xattr at %u\n",
+ 	     num_bits, block, v_start);
+ 	ret = ocfs2_insert_extent(osb, handle, inode, &et, v_start, block,
 -- 
 1.5.4.5
 
