@@ -1,40 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959AbYIXIG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbYIXIQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752959AbYIXIG2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 04:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYIXIGN
+	id S1752525AbYIXIQb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 04:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbYIXIQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 04:06:13 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:52740 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968AbYIXIGM (ORCPT
+	Wed, 24 Sep 2008 04:16:15 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:55787 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbYIXIQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 04:06:12 -0400
-Date: Wed, 24 Sep 2008 10:05:48 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Regression in 2.6.27-rc7: Wake On LAN with sky2 broken
-Message-ID: <20080924080546.GA21108@x61>
-Mail-Followup-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-MIME-Version: 1.0
+	Wed, 24 Sep 2008 04:16:13 -0400
+To: Dave Chinner <david@fromorbit.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/10] xfs: Fix error handling inwrite_super_lockfs/unlockfs
+Message-Id: <20080924171439t-sato@mail.jp.nec.com>
+Mime-Version: 1.0
+X-Mailer: WeMail32[2.51] ID:1K0086
+From: Takashi Sato <t-sato@yk.jp.nec.com>
+Date: Wed, 24 Sep 2008 17:14:39 +0900
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-Wake On LAN from suspend to RAM doesn't work on my Mac mini Core Duo
-with 2.6.27-rc7. I tested the same configuration with 2.6.26.3, and it
-worked. With 2.6.27-rc7, the computer stays in suspended state. I can
-still wake it up using the keyboard or power switch.
+Dave Chinner wrote:
+>> diff -uprN -X linux-2.6.27-rc7-lockfs/Documentation/dontdiff linux-2.6.27-rc7-lockfs/fs/xfs/linux-2.6/xfs_super.c lin
+ux-
+>> 2.6.27-rc7-lockfs-xfs/fs/xfs/linux-2.6/xfs_super.c
+>> --- linux-2.6.27-rc7-lockfs/fs/xfs/linux-2.6/xfs_super.c 2008-09-22 07:29:55.000000000 +0900
+>> +++ linux-2.6.27-rc7-lockfs-xfs/fs/xfs/linux-2.6/xfs_super.c 2008-09-22 10:13:39.000000000 +0900
+>> @@ -1351,7 +1351,7 @@ xfs_fs_remount(
+>>   * need to take care of themetadata. Once that's done write a dummy
+>>   * record to dirty the log in case of a crash while frozen.
+>>   */
+>> -STATIC void
+>> +STATIC int
+>>  xfs_fs_lockfs(
+>>  	struct super_block *sb)
+>>  {
+>> @@ -1359,6 +1359,7 @@ xfs_fs_lockfs(
+>>  
+>>  	xfs_attr_quiesce(mp);
+>>  	xfs_fs_log_dummy(mp);
+>> + 	return 0;
+>>  }
+> 
+> xfs_fs_log_dummy() currently is void because it had nowhere to
+> return errors to. It silently throws away errors because of this.
+> Hence the correct thing to do here is to fix xfs_fs_log_dummy()
+> to return the errors it currently ignores. i.e. catch the errors
+> from xfs_trans_reserve() and xfs_trans_commit() calls in
+> xfs_fs_log_dummy().
 
-In my suspend script, I use the command "ethtool -s eth0 wol g" to
-enable WOL even if it was disabled before.
+OK.
+I've fixed the patch for xfs as following.
+Could you review it?
+If it's OK, I will include it in new freeze patch-set.
 
-Any hints what commit I should try to revert, before I start bisecting?
-
-Regards,
-Tino
+Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
+Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
+---
+diff -uprN -X linux-2.6.27-rc7.org/Documentation/dontdiff linux-2.6.27-rc7-ext4_3/fs/xfs/linux-2.6/xfs_super.c linux-2.6
+.27-rc7-xfs_4/fs/xfs/linux-2.6/xfs_super.c
+--- linux-2.6.27-rc7-ext4_3/fs/xfs/linux-2.6/xfs_super.c	2008-09-24 10:48:02.000000000 +0900
++++ linux-2.6.27-rc7-xfs_4/fs/xfs/linux-2.6/xfs_super.c	2008-09-24 11:24:08.000000000 +0900
+@@ -1351,14 +1351,14 @@ xfs_fs_remount(
+  * need to take care of themetadata. Once that's done write a dummy
+  * record to dirty the log in case of a crash while frozen.
+  */
+-STATIC void
++STATIC int
+ xfs_fs_lockfs(
+ 	struct super_block	*sb)
+ {
+ 	struct xfs_mount	*mp = XFS_M(sb);
+ 
+ 	xfs_attr_quiesce(mp);
+-	xfs_fs_log_dummy(mp);
++	return -xfs_fs_log_dummy(mp);
+ }
+ 
+ STATIC int
+diff -uprN -X linux-2.6.27-rc7.org/Documentation/dontdiff linux-2.6.27-rc7-ext4_3/fs/xfs/xfs_fsops.c linux-2.6.27-rc7-xf
+s_4/fs/xfs/xfs_fsops.c
+--- linux-2.6.27-rc7-ext4_3/fs/xfs/xfs_fsops.c	2008-09-24 10:48:02.000000000 +0900
++++ linux-2.6.27-rc7-xfs_4/fs/xfs/xfs_fsops.c	2008-09-24 11:47:08.000000000 +0900
+@@ -589,17 +589,19 @@ out:
+ 	return 0;
+ }
+ 
+-void
++int
+ xfs_fs_log_dummy(
+ 	xfs_mount_t	*mp)
+ {
+ 	xfs_trans_t	*tp;
+ 	xfs_inode_t	*ip;
++	int		error;
+ 
+ 	tp = _xfs_trans_alloc(mp, XFS_TRANS_DUMMY1);
+-	if (xfs_trans_reserve(tp, 0, XFS_ICHANGE_LOG_RES(mp), 0, 0, 0)) {
++	error = xfs_trans_reserve(tp, 0, XFS_ICHANGE_LOG_RES(mp), 0, 0, 0);
++	if (error) {
+ 		xfs_trans_cancel(tp, 0);
+-		return;
++		return error;
+ 	}
+ 
+ 	ip = mp->m_rootip;
+@@ -609,9 +611,10 @@ xfs_fs_log_dummy(
+ 	xfs_trans_ihold(tp, ip);
+ 	xfs_trans_log_inode(tp, ip, XFS_ILOG_CORE);
+ 	xfs_trans_set_sync(tp);
+-	xfs_trans_commit(tp, 0);
++	error = xfs_trans_commit(tp, 0);
+ 
+ 	xfs_iunlock(ip, XFS_ILOCK_EXCL);
++	return error;
+ }
+ 
+ int
+diff -uprN -X linux-2.6.27-rc7.org/Documentation/dontdiff linux-2.6.27-rc7-ext4_3/fs/xfs/xfs_fsops.h linux-2.6.27-rc7-xf
+s_4/fs/xfs/xfs_fsops.h
+--- linux-2.6.27-rc7-ext4_3/fs/xfs/xfs_fsops.h	2008-09-24 10:48:02.000000000 +0900
++++ linux-2.6.27-rc7-xfs_4/fs/xfs/xfs_fsops.h	2008-09-24 11:36:29.000000000 +0900
+@@ -25,6 +25,6 @@ extern int xfs_fs_counts(xfs_mount_t *mp
+ extern int xfs_reserve_blocks(xfs_mount_t *mp, __uint64_t *inval,
+ 				xfs_fsop_resblks_t *outval);
+ extern int xfs_fs_goingdown(xfs_mount_t *mp, __uint32_t inflags);
+-extern void xfs_fs_log_dummy(xfs_mount_t *mp);
++extern int xfs_fs_log_dummy(xfs_mount_t *mp);
+ 
+ #endif	/* __XFS_FSOPS_H__ */
