@@ -1,341 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753133AbYIXV7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbYIXWAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753133AbYIXV7q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 17:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYIXV7h
+	id S1753435AbYIXWAj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYIXWAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 17:59:37 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:42347 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbYIXV7g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 17:59:36 -0400
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       dan.j.williams@intel.com, leoli@freescale.com
-Subject: [PATCH v2] fsl-dma: allow Freescale Elo DMA driver to be compiled as a module
-Date: Wed, 24 Sep 2008 16:59:27 -0500
-Message-Id: <1222293567-17694-1-git-send-email-timur@freescale.com>
-X-Mailer: git-send-email 1.5.5
+	Wed, 24 Sep 2008 18:00:16 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52193 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751211AbYIXWAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:00:14 -0400
+From: Mark Fasheh <mfasheh@suse.com>
+To: linux-kernel@vger.kernel.org
+Cc: joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
+       linux-fsdevel@vger.kernel.org
+Subject: [PATCH 0/39] Ocfs2 updates for 2.6.28
+Date: Wed, 24 Sep 2008 15:00:41 -0700
+Message-Id: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Modify the Freescale Elo / Elo Plus DMA driver so that it can be compiled as
-a module.
+Hi,
 
-The primary change is to stop treating the DMA controller as a bus, and the
-DMA channels as devices on the bus.  This is because the Open Firmware (OF)
-kernel code does not allow busses to be removed, so although we can call
-of_platform_bus_probe() to probe the DMA channels, there is no
-of_platform_bus_remove().  Instead, the DMA channels are manually probed,
-similar to what fsl_elbc_nand.c does.
+	The following patches comprise the bulk of Ocfs2 updates for the
+2.6.28 merge window. They can roughly be broken up into 4 sets which add
+incremental features to Ocfs2. The patches are presented as they come in
+git.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
 
-v2: updated per comments
+EA Support
 
-This patch is for the 2.6.28 kernel.  This patch exposes a bug in the dmatest
-module, so my other patch "dmatest: properly handle duplicate DMA channels"
-should be applied if this patch is applied.
+The largest set adds support for extended attributes in Ocfs2. Extended
+attributes are stored both within the inode block, and externally, when their
+numbers grow. Individual attributes can be arbitrarily sized. Smaller ones
+have their data stored inline. Larger attributes grow out to a btree. In
+theory the btrees have similar limits to inode data. In practice though, the
+VFS limits EA sizes to 64K.
 
- drivers/dma/Kconfig  |   10 ++--
- drivers/dma/fsldma.c |  138 ++++++++++++++++++++++++++++++++------------------
- drivers/dma/fsldma.h |    1 +
- 3 files changed, 94 insertions(+), 55 deletions(-)
+When inode space for attributes run low, new ones are created in an external
+disk block. When the block fills up, external attributes are moved to an
+indexed btree. The btree can store many thousands of attributes, if needed.
 
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index cd30390..904e575 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -48,13 +48,13 @@ config DW_DMAC
- 	  can be integrated in chips such as the Atmel AT32ap7000.
- 
- config FSL_DMA
--	bool "Freescale MPC85xx/MPC83xx DMA support"
--	depends on PPC
-+	tristate "Freescale Elo and Elo Plus DMA support"
-+	depends on FSL_SOC
- 	select DMA_ENGINE
- 	---help---
--	  Enable support for the Freescale DMA engine. Now, it support
--	  MPC8560/40, MPC8555, MPC8548 and MPC8641 processors.
--	  The MPC8349, MPC8360 is also supported.
-+	  Enable support for the Freescale Elo and Elo Plus DMA controllers.
-+	  The Elo is the DMA controller on some 82xx and 83xx parts, and the
-+	  Elo Plus is the DMA controller on 85xx and 86xx parts.
- 
- config MV_XOR
- 	bool "Marvell XOR engine support"
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index e9b2638..0b95dcc 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -370,7 +370,10 @@ static int fsl_dma_alloc_chan_resources(struct dma_chan *chan,
- 					struct dma_client *client)
- {
- 	struct fsl_dma_chan *fsl_chan = to_fsl_chan(chan);
--	LIST_HEAD(tmp_list);
-+
-+	/* Has this channel already been allocated? */
-+	if (fsl_chan->desc_pool)
-+		return 1;
- 
- 	/* We need the descriptor to be aligned to 32bytes
- 	 * for meeting FSL DMA specification requirement.
-@@ -410,6 +413,8 @@ static void fsl_dma_free_chan_resources(struct dma_chan *chan)
- 	}
- 	spin_unlock_irqrestore(&fsl_chan->desc_lock, flags);
- 	dma_pool_destroy(fsl_chan->desc_pool);
-+
-+	fsl_chan->desc_pool = NULL;
- }
- 
- static struct dma_async_tx_descriptor *
-@@ -786,33 +791,29 @@ static void dma_do_tasklet(unsigned long data)
- 	fsl_chan_ld_cleanup(fsl_chan);
- }
- 
--static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
--			const struct of_device_id *match)
-+static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
-+	struct device_node *node, u32 feature, const char *compatible)
- {
--	struct fsl_dma_device *fdev;
- 	struct fsl_dma_chan *new_fsl_chan;
- 	int err;
- 
--	fdev = dev_get_drvdata(dev->dev.parent);
--	BUG_ON(!fdev);
--
- 	/* alloc channel */
- 	new_fsl_chan = kzalloc(sizeof(struct fsl_dma_chan), GFP_KERNEL);
- 	if (!new_fsl_chan) {
--		dev_err(&dev->dev, "No free memory for allocating "
-+		dev_err(fdev->dev, "No free memory for allocating "
- 				"dma channels!\n");
- 		return -ENOMEM;
- 	}
- 
- 	/* get dma channel register base */
--	err = of_address_to_resource(dev->node, 0, &new_fsl_chan->reg);
-+	err = of_address_to_resource(node, 0, &new_fsl_chan->reg);
- 	if (err) {
--		dev_err(&dev->dev, "Can't get %s property 'reg'\n",
--				dev->node->full_name);
-+		dev_err(fdev->dev, "Can't get %s property 'reg'\n",
-+				node->full_name);
- 		goto err_no_reg;
- 	}
- 
--	new_fsl_chan->feature = *(u32 *)match->data;
-+	new_fsl_chan->feature = feature;
- 
- 	if (!fdev->feature)
- 		fdev->feature = new_fsl_chan->feature;
-@@ -822,13 +823,13 @@ static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
- 	 */
- 	WARN_ON(fdev->feature != new_fsl_chan->feature);
- 
--	new_fsl_chan->dev = &dev->dev;
-+	new_fsl_chan->dev = &new_fsl_chan->common.dev;
- 	new_fsl_chan->reg_base = ioremap(new_fsl_chan->reg.start,
- 			new_fsl_chan->reg.end - new_fsl_chan->reg.start + 1);
- 
- 	new_fsl_chan->id = ((new_fsl_chan->reg.start - 0x100) & 0xfff) >> 7;
- 	if (new_fsl_chan->id > FSL_DMA_MAX_CHANS_PER_DEVICE) {
--		dev_err(&dev->dev, "There is no %d channel!\n",
-+		dev_err(fdev->dev, "There is no %d channel!\n",
- 				new_fsl_chan->id);
- 		err = -EINVAL;
- 		goto err_no_chan;
-@@ -862,20 +863,20 @@ static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
- 			&fdev->common.channels);
- 	fdev->common.chancnt++;
- 
--	new_fsl_chan->irq = irq_of_parse_and_map(dev->node, 0);
-+	new_fsl_chan->irq = irq_of_parse_and_map(node, 0);
- 	if (new_fsl_chan->irq != NO_IRQ) {
- 		err = request_irq(new_fsl_chan->irq,
- 					&fsl_dma_chan_do_interrupt, IRQF_SHARED,
- 					"fsldma-channel", new_fsl_chan);
- 		if (err) {
--			dev_err(&dev->dev, "DMA channel %s request_irq error "
--				"with return %d\n", dev->node->full_name, err);
-+			dev_err(fdev->dev, "DMA channel %s request_irq error "
-+				"with return %d\n", node->full_name, err);
- 			goto err_no_irq;
- 		}
- 	}
- 
--	dev_info(&dev->dev, "#%d (%s), irq %d\n", new_fsl_chan->id,
--				match->compatible, new_fsl_chan->irq);
-+	dev_info(fdev->dev, "#%d (%s), irq %d\n", new_fsl_chan->id,
-+				compatible, new_fsl_chan->irq);
- 
- 	return 0;
- 
-@@ -888,38 +889,20 @@ err_no_reg:
- 	return err;
- }
- 
--const u32 mpc8540_dma_ip_feature = FSL_DMA_IP_85XX | FSL_DMA_BIG_ENDIAN;
--const u32 mpc8349_dma_ip_feature = FSL_DMA_IP_83XX | FSL_DMA_LITTLE_ENDIAN;
--
--static struct of_device_id of_fsl_dma_chan_ids[] = {
--	{
--		.compatible = "fsl,eloplus-dma-channel",
--		.data = (void *)&mpc8540_dma_ip_feature,
--	},
--	{
--		.compatible = "fsl,elo-dma-channel",
--		.data = (void *)&mpc8349_dma_ip_feature,
--	},
--	{}
--};
--
--static struct of_platform_driver of_fsl_dma_chan_driver = {
--	.name = "of-fsl-dma-channel",
--	.match_table = of_fsl_dma_chan_ids,
--	.probe = of_fsl_dma_chan_probe,
--};
--
--static __init int of_fsl_dma_chan_init(void)
-+static void fsl_dma_chan_remove(struct fsl_dma_chan *fchan)
- {
--	return of_register_platform_driver(&of_fsl_dma_chan_driver);
-+	free_irq(fchan->irq, fchan);
-+	list_del(&fchan->common.device_node);
-+	iounmap(fchan->reg_base);
-+	kfree(fchan);
- }
- 
- static int __devinit of_fsl_dma_probe(struct of_device *dev,
- 			const struct of_device_id *match)
- {
- 	int err;
--	unsigned int irq;
- 	struct fsl_dma_device *fdev;
-+	struct device_node *child;
- 
- 	fdev = kzalloc(sizeof(struct fsl_dma_device), GFP_KERNEL);
- 	if (!fdev) {
-@@ -953,9 +936,9 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
- 	fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
- 	fdev->common.dev = &dev->dev;
- 
--	irq = irq_of_parse_and_map(dev->node, 0);
--	if (irq != NO_IRQ) {
--		err = request_irq(irq, &fsl_dma_do_interrupt, IRQF_SHARED,
-+	fdev->irq = irq_of_parse_and_map(dev->node, 0);
-+	if (fdev->irq != NO_IRQ) {
-+		err = request_irq(fdev->irq, &fsl_dma_do_interrupt, IRQF_SHARED,
- 					"fsldma-device", fdev);
- 		if (err) {
- 			dev_err(&dev->dev, "DMA device request_irq error "
-@@ -965,7 +948,21 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
- 	}
- 
- 	dev_set_drvdata(&(dev->dev), fdev);
--	of_platform_bus_probe(dev->node, of_fsl_dma_chan_ids, &dev->dev);
-+
-+	/* We cannot use of_platform_bus_probe() because there is no
-+	 * of_platform_bus_remove.  Instead, we manually instantiate every DMA
-+	 * channel object.
-+	 */
-+	for_each_child_of_node(dev->node, child) {
-+		if (of_device_is_compatible(child, "fsl,eloplus-dma-channel"))
-+			fsl_dma_chan_probe(fdev, child,
-+				FSL_DMA_IP_85XX | FSL_DMA_BIG_ENDIAN,
-+				"fsl,eloplus-dma-channel");
-+		if (of_device_is_compatible(child, "fsl,elo-dma-channel"))
-+			fsl_dma_chan_probe(fdev, child,
-+				FSL_DMA_IP_83XX | FSL_DMA_LITTLE_ENDIAN,
-+				"fsl,elo-dma-channel");
-+	}
- 
- 	dma_async_device_register(&fdev->common);
- 	return 0;
-@@ -977,6 +974,30 @@ err_no_reg:
- 	return err;
- }
- 
-+static int of_fsl_dma_remove(struct of_device *of_dev)
-+{
-+	struct fsl_dma_device *fdev;
-+	unsigned int i;
-+
-+	fdev = dev_get_drvdata(&of_dev->dev);
-+
-+	dma_async_device_unregister(&fdev->common);
-+
-+	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++)
-+		if (fdev->chan[i])
-+			fsl_dma_chan_remove(fdev->chan[i]);
-+
-+	if (fdev->irq != NO_IRQ)
-+		free_irq(fdev->irq, fdev);
-+
-+	iounmap(fdev->reg_base);
-+
-+	kfree(fdev);
-+	dev_set_drvdata(&of_dev->dev, NULL);
-+
-+	return 0;
-+}
-+
- static struct of_device_id of_fsl_dma_ids[] = {
- 	{ .compatible = "fsl,eloplus-dma", },
- 	{ .compatible = "fsl,elo-dma", },
-@@ -984,15 +1005,32 @@ static struct of_device_id of_fsl_dma_ids[] = {
- };
- 
- static struct of_platform_driver of_fsl_dma_driver = {
--	.name = "of-fsl-dma",
-+	.name = "fsl-elo-dma",
- 	.match_table = of_fsl_dma_ids,
- 	.probe = of_fsl_dma_probe,
-+	.remove = of_fsl_dma_remove,
- };
- 
- static __init int of_fsl_dma_init(void)
- {
--	return of_register_platform_driver(&of_fsl_dma_driver);
-+	int ret;
-+
-+	pr_info("Freescale Elo / Elo Plus DMA driver\n");
-+
-+	ret = of_register_platform_driver(&of_fsl_dma_driver);
-+	if (ret)
-+		pr_err("fsldma: failed to register platform driver\n");
-+
-+	return ret;
-+}
-+
-+static void __exit of_fsl_dma_exit(void)
-+{
-+	of_unregister_platform_driver(&of_fsl_dma_driver);
- }
- 
--subsys_initcall(of_fsl_dma_chan_init);
- subsys_initcall(of_fsl_dma_init);
-+module_exit(of_fsl_dma_exit);
-+
-+MODULE_DESCRIPTION("Freescale Elo / Elo Plus DMA driver");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-index 6faf07b..4f21a51 100644
---- a/drivers/dma/fsldma.h
-+++ b/drivers/dma/fsldma.h
-@@ -114,6 +114,7 @@ struct fsl_dma_device {
- 	struct dma_device common;
- 	struct fsl_dma_chan *chan[FSL_DMA_MAX_CHANS_PER_DEVICE];
- 	u32 feature;		/* The same as DMA channels */
-+	int irq;		/* Channel IRQ */
- };
- 
- /* Define macros for fsl_dma_chan->feature property */
--- 
-1.5.5
+The patches leading up to EA support further abstracted portions of the Ocfs2
+btree code. Ultimately, this means we can "add" a btree to any Ocfs2 structure
+by embedding a header, and providing the proper callbacks to manipulate
+certain key fields. The xattr code makes use of this, as will future Ocfs2
+features.
+
+Joel made some further improvements to our 'generic' (for Ocfs2 at least)
+btree support which completed the interface by cleaning things up and
+providing for proper callbacks in a static operations structure. Those patches
+follow the xattr series as they were developed afterwards.
+
+
+JBD2 Support
+
+Ocfs2 can now use JBD2. Amongst other benefits, this allows us to support
+large block devices with more than 32 bits worth of block numbers. As a part
+of these patches, and 'inode64' mount option is added which toggles creation
+of inodes whose inode number requires more than 32 bits to be adequately
+described.
+
+JBD2 support in Ocfs2 is compiled in by default, however since journaling is
+so central to the operation of a file system, we kept our 'legacy' JBD
+support. We did this to provide a fallback for any users who might hit a
+problem, while we fix it. Legacy JBD support will be removed from Ocfs2 in
+2.6.29.
+
+
+Cluster Aware POSIX File Locks
+
+This was added via the 'plock' interface which Dave Teigland pulled into
+fs/dlm last merge window. The majority of the support is actually provided in
+userspace via the dlm_controld. As a result, cluster-aware POSIX locks only
+work for userspace cluster stacks right now.
+
+
+Local Alloc Throttling
+
+These patches allow the "local alloc" file in Ocfs2 to throttle back the
+number of free disk blocks it caches. This is done during times of extreme
+fragmentation, or very low disk space. The traditional behavior was to
+completely disable the local alloc feature, which resulted in performance
+problems on some corner cases. The throttling has increased performance by 10
+times during such situations.
+
+
+Please pull from 'merge_window' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git merge_window
+
+to receive the following updates:
+
+ Documentation/filesystems/ocfs2.txt |    4 +
+ fs/Kconfig                          |   40 +-
+ fs/ocfs2/Makefile                   |    5 +-
+ fs/ocfs2/alloc.c                    |  857 +++++--
+ fs/ocfs2/alloc.h                    |   86 +-
+ fs/ocfs2/aops.c                     |   49 +-
+ fs/ocfs2/cluster/masklog.c          |    1 +
+ fs/ocfs2/cluster/masklog.h          |    1 +
+ fs/ocfs2/dir.c                      |   26 +-
+ fs/ocfs2/extent_map.c               |   60 +
+ fs/ocfs2/extent_map.h               |    3 +
+ fs/ocfs2/file.c                     |  313 +--
+ fs/ocfs2/file.h                     |   32 +-
+ fs/ocfs2/inode.c                    |   28 +-
+ fs/ocfs2/inode.h                    |    4 +
+ fs/ocfs2/journal.c                  |   72 +-
+ fs/ocfs2/journal.h                  |   52 +-
+ fs/ocfs2/localalloc.c               |  362 +++-
+ fs/ocfs2/localalloc.h               |    4 +
+ fs/ocfs2/locks.c                    |   15 +
+ fs/ocfs2/locks.h                    |    1 +
+ fs/ocfs2/namei.c                    |   13 +-
+ fs/ocfs2/ocfs2.h                    |   56 +-
+ fs/ocfs2/ocfs2_fs.h                 |  220 ++-
+ fs/ocfs2/ocfs2_jbd_compat.h         |   82 +
+ fs/ocfs2/stack_user.c               |   33 +
+ fs/ocfs2/stackglue.c                |   20 +
+ fs/ocfs2/stackglue.h                |   19 +
+ fs/ocfs2/suballoc.c                 |  205 ++-
+ fs/ocfs2/suballoc.h                 |   26 +-
+ fs/ocfs2/super.c                    |   59 +-
+ fs/ocfs2/symlink.c                  |    9 +
+ fs/ocfs2/uptodate.c                 |   38 +-
+ fs/ocfs2/uptodate.h                 |    3 +
+ fs/ocfs2/xattr.c                    | 4851 +++++++++++++++++++++++++++++++++++
+ fs/ocfs2/xattr.h                    |   68 +
+ fs/ocfs2/xattr_trusted.c            |   82 +
+ fs/ocfs2/xattr_user.c               |   94 +
+ 38 files changed, 7271 insertions(+), 622 deletions(-)
+ create mode 100644 fs/ocfs2/ocfs2_jbd_compat.h
+ create mode 100644 fs/ocfs2/xattr.c
+ create mode 100644 fs/ocfs2/xattr.h
+ create mode 100644 fs/ocfs2/xattr_trusted.c
+ create mode 100644 fs/ocfs2/xattr_user.c
+
+Joel Becker (15):
+      ocfs2: Prefix the extent tree operations structure.
+      ocfs2: Prefix the ocfs2_extent_tree structure.
+      ocfs2: Make ocfs2_extent_tree get/put instead of alloc.
+      ocfs2: Make 'private' into 'object' on ocfs2_extent_tree.
+      ocfs2: Provide the get_root_el() method to ocfs2_extent_tree_operations.
+      ocfs2: Use struct ocfs2_extent_tree in ocfs2_num_free_extents().
+      ocfs2: Determine an extent tree's max_leaf_clusters in an et_op.
+      ocfs2: Create specific get_extent_tree functions.
+      ocfs2: Add an insertion check to ocfs2_extent_tree_operations.
+      ocfs2: Make ocfs2_extent_tree the first-class representation of a tree.
+      ocfs2: Comment struct ocfs2_extent_tree_operations.
+      ocfs2: Change ocfs2_get_*_extent_tree() to ocfs2_init_*_extent_tree()
+      ocfs2: Limit inode allocation to 32bits.
+      ocfs2: Add the 'inode64' mount option.
+      ocfs2: Switch over to JBD2.
+
+Mark Fasheh (5):
+      ocfs2: POSIX file locks support
+      ocfs2: Track local alloc bits internally
+      ocfs2: throttle back local alloc when low on disk space
+      ocfs2: track local alloc state via debugfs
+      ocfs2: fix printk format warnings
+
+Sunil Mushran (1):
+      ocfs2: Add xattr mount option in ocfs2_show_options()
+
+Tao Ma (15):
+      ocfs2: Modify ocfs2_num_free_extents for future xattr usage.
+      ocfs2: Use ocfs2_extent_list instead of ocfs2_dinode.
+      ocfs2: Abstract ocfs2_extent_tree in b-tree operations.
+      ocfs2: Make high level btree extend code generic
+      ocfs2: Add the basic xattr disk layout in ocfs2_fs.h
+      ocfs2: Add helper function in uptodate.c for removing xattr clusters
+      ocfs2: Add extent tree operation for xattr value btrees
+      ocfs2: Add xattr index tree operations
+      ocfs2: Add xattr bucket iteration for large numbers of EAs
+      ocfs2: Add xattr lookup code xattr btrees
+      ocfs2: Optionally limit extent size in ocfs2_insert_extent()
+      ocfs2: Enable xattr set in index btree
+      ocfs2: Delete all xattr buckets during inode removal
+      ocfs2: bug-fix for journal extend in xattr.
+      ocfs2: Resolve deadlock in ocfs2_xattr_free_block.
+
+Tiger Yang (3):
+      ocfs2: reserve inline space for extended attribute
+      ocfs2: Add extended attribute support
+      ocfs2: Add incompatible flag for extended attribute
 
