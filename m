@@ -1,60 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbYIXEyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751699AbYIXEzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752471AbYIXEyy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 00:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYIXEym
+	id S1751699AbYIXEzL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 00:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYIXEyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 00:54:42 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:50973 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751318AbYIXEyl (ORCPT
+	Wed, 24 Sep 2008 00:54:46 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53732 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbYIXEym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 00:54:41 -0400
-Date: Wed, 24 Sep 2008 12:54:04 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: David Miller <davem@davemloft.net>, dwalker@mvista.com,
-       arjan@infradead.org, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, jens.axboe@oracle.com,
-       steffen.klassert@secunet.com
-Subject: Re: [PATCH 0/2]: Remote softirq invocation infrastructure.
-Message-ID: <20080924045404.GA6010@gondor.apana.org.au>
-References: <20080920.125949.193703969.davem@davemloft.net> <E1KhI4n-0002Fk-7C@gondolin.me.apana.org.au> <20080920.235727.247411045.davem@davemloft.net> <Pine.LNX.4.64.0809221329140.1034@wrl-59.cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0809221329140.1034@wrl-59.cs.helsinki.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 24 Sep 2008 00:54:42 -0400
+Date: Tue, 23 Sep 2008 21:54:13 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu,
+       Hugh Dickins <hugh@veritas.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: [PATCH 2/3] corruption check: run the corruption checks from a work
+ queue
+Message-ID: <20080923215413.0da97008@infradead.org>
+In-Reply-To: <20080923215335.05678239@infradead.org>
+References: <20080923215335.05678239@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 01:36:24PM +0300, Ilpo Järvinen wrote:
-> On Sat, 20 Sep 2008, David Miller wrote:
-> 
-> > From: Herbert Xu <herbert@gondor.apana.org.au>
-> > Date: Sun, 21 Sep 2008 15:05:45 +0900
-> > 
-> > > Of course, we need to balance any effort spent on this with the
-> > > likelihood that hardware improvements will soon make this obsolete
-> > > (for IPsec anyway).
-> > 
-> > True, but old hardware will always exist.
-> 
-> ...Also, producing buggy hardware will not suddently just vanish either 
-> ("can you please turn of ipsec offloading and see if you can still
-> reproduce" :-))...
 
-That's fine.  If your AES hardware is buggy you just fall back
-to using the software version.
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Mon, 22 Sep 2008 13:42:15 -0700
+Subject: [PATCH] corruption check: run the corruption checks from a work queue
 
-In fact if this was done through the crypto API it would even
-happen automatically.
+the corruption checks are better off run from a work queue; there's nothing
+time critical about them and this way the amount of interrupt-context work
+is reduced.
 
-Cheers,
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ arch/x86/kernel/check.c |   21 +++++++++++++++++----
+ arch/x86/mm/init_32.c   |    2 --
+ arch/x86/mm/init_64.c   |    2 --
+ include/linux/kernel.h  |    2 +-
+ 4 files changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/kernel/check.c b/arch/x86/kernel/check.c
+index a7e80ed..b22733f 100644
+--- a/arch/x86/kernel/check.c
++++ b/arch/x86/kernel/check.c
+@@ -1,5 +1,6 @@
+ #include <linux/module.h>
+ #include <linux/sched.h>
++#include <linux/kthread.h>
+ 
+ #include <asm/e820.h>
+ #include <asm/proto.h>
+@@ -135,22 +136,34 @@ void check_for_bios_corruption(void)
+ 	WARN(corruption, KERN_ERR "Memory corruption detected in low memory\n");
+ }
+ 
+-static void periodic_check_for_corruption(unsigned long data)
++static void check_corruption(struct work_struct *dummy)
+ {
+ 	check_for_bios_corruption();
++}
++
++static void periodic_check_for_corruption(unsigned long data)
++{
++	static DECLARE_WORK(corruptioncheck_work, check_corruption);
++	schedule_work(&corruptioncheck_work);
+ 	mod_timer(&periodic_check_timer, round_jiffies(jiffies + corruption_check_period*HZ));
+ }
+ 
+-void start_periodic_check_for_corruption(void)
++
++
++int start_periodic_check_for_corruption(void)
+ {
+ 	if (!memory_corruption_check || corruption_check_period == 0)
+-		return;
++		return 0;
+ 
+ 	printk(KERN_INFO "Scanning for low memory corruption every %d seconds\n",
+ 	       corruption_check_period);
+ 
+ 	init_timer(&periodic_check_timer);
+ 	periodic_check_timer.function = &periodic_check_for_corruption;
+-	periodic_check_for_corruption(0);
++	mod_timer(&periodic_check_timer,
++			round_jiffies(jiffies + corruption_check_period*HZ));
++	return 0;
+ }
++
++module_init(start_periodic_check_for_corruption);
+ #endif
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index b4c3a92..16ea9d0 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -905,8 +905,6 @@ void __init mem_init(void)
+ 	int codesize, reservedpages, datasize, initsize;
+ 	int tmp;
+ 
+-	start_periodic_check_for_corruption();
+-
+ #ifdef CONFIG_FLATMEM
+ 	BUG_ON(!mem_map);
+ #endif
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index b565721..b65492e 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -822,8 +822,6 @@ void __init mem_init(void)
+ {
+ 	long codesize, reservedpages, datasize, initsize;
+ 
+-	start_periodic_check_for_corruption();
+-
+ 	pci_iommu_alloc();
+ 
+ 	/* clear_bss() already clear the empty_zero_page */
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index a5afee2..01085d2 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -260,7 +260,7 @@ extern int root_mountflags;
+  * able to scatter it around anywhere in the kernel.
+  */
+ void check_for_bios_corruption(void);
+-void start_periodic_check_for_corruption(void);
++int start_periodic_check_for_corruption(void);
+ #else
+ static inline void check_for_bios_corruption(void)
+ {
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.5.5.1
+
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
