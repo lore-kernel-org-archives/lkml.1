@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbYIXW5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbYIXW5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629AbYIXW5O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbYIXW44
+	id S1753740AbYIXW5k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYIXW5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:56:56 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:60530 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751945AbYIXW4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:56:55 -0400
-Date: Thu, 25 Sep 2008 00:55:57 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Kyle McMartin <kyle@redhat.com>
-cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>, jeff@garzik.org, mingo@elte.hu,
-       davem@davemloft.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
-       john.ronciak@intel.com, Bruce Allan <bruce.w.allan@intel.com>
-Subject: Re: [PATCH 2/3] e1000e: Useset_memory_ro()/set_memory_rw() to protect
- flash memory
-In-Reply-To: <20080924175358.GA2591@phobos.i.cabal.ca>
-Message-ID: <Pine.LNX.4.64.0809250054080.27884@twin.jikos.cz>
-References: <20080923224535.6869.76210.stgit@jtkirshe-mobile.jf.intel.com>
- <20080924175358.GA2591@phobos.i.cabal.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 24 Sep 2008 18:57:31 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45486 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752268AbYIXW53 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:57:29 -0400
+Date: Wed, 24 Sep 2008 15:57:37 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, tglx@tglx.de,
+       mingo@elte.hu
+Subject: Re: Warning/Oops report of the week of September 16th, 2008
+Message-ID: <20080924155737.35e68866@infradead.org>
+In-Reply-To: <alpine.LFD.1.10.0809241541320.3265@nehalem.linux-foundation.org>
+References: <20080916092206.6342c498@infradead.org>
+	<200809250036.47277.elendil@planet.nl>
+	<alpine.LFD.1.10.0809241541320.3265@nehalem.linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008, Kyle McMartin wrote:
+On Wed, 24 Sep 2008 15:45:30 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> [sorry, I've only been following this at a glance, but it's somewhat
->  important for rawhide... does someone have a way to reproduce this at
->  whim? Has someone tried catching it using an IOMMU on one of the newer
->  Intel boxes, if it is a DMA going awry?]
+> 
+> I think Arjan agreed to just remove it from his statistics, but maybe
+> he's just ignoring _new_ entries ;)
 
-We have a few machines in-house that are affected by this, and they 
-currently have EEPROMs of their ethernet cards filled all over with 0xff. 
-After Karsten finishes writing the tool to restore the original contents 
-of the EEPROM, we will immediately start debugging this.
+yeah I blacklisted it on submission; I haven't removed it from the
+database
+
 
 -- 
-Jiri Kosina
-SUSE Labs
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
