@@ -1,110 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbYIXPvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbYIXPwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754331AbYIXPvY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 11:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYIXPvP
+	id S1754520AbYIXPwX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 11:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYIXPwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 11:51:15 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:34837 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752034AbYIXPvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 11:51:14 -0400
-Date: Wed, 24 Sep 2008 18:50:15 +0300
-From: Adrian Bunk <bunk@stusta.de>
-To: Daniel Gollub <dgollub@suse.de>, viro@zeniv.linux.org.uk,
-       mtk.manpages@gmail.com
-Cc: ltp-list@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: ltp getdents syscalls testcases and 2.6.27-rcX
-Message-ID: <20080924155015.GA27090@cs181140183.pp.htv.fi>
-References: <200809161427.36373.dgollub@suse.de>
+	Wed, 24 Sep 2008 11:52:15 -0400
+Received: from mail-relay-04.mailcluster.net ([77.221.130.216]:49167 "EHLO
+	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752415AbYIXPwP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 11:52:15 -0400
+X-Greylist: delayed 1706 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Sep 2008 11:52:14 EDT
+Message-ID: <48DA5B85.7090102@vlnb.net>
+Date: Wed, 24 Sep 2008 19:23:49 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200809161427.36373.dgollub@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Patterson <andrew.patterson@hp.com>
+CC: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
+       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
+       jmoyer@redhat.com
+Subject: Re: [PATCH 0/6] detect online disk resize
+References: <20080829231254.25065.66052.stgit@bluto.andrew>
+In-Reply-To: <20080829231254.25065.66052.stgit@bluto.andrew>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ kernel people added to Cc ]
 
-On Tue, Sep 16, 2008 at 02:27:36PM +0200, Daniel Gollub wrote:
-> Hi,
+Andrew Patterson wrote:
+> This is version 2 of a patch series I submitted back in May 2008. This
+> version now checks for device size changes in the rescan_partitions()
+> routine.  Which in turn is called when a device is opened and in the
+> BLKRRPART ioctl.
 > 
-> with 2.6.27-rc1(?) linux/dirent.h got removed Kbuild headers_install targe and 
-> dirent struct got removed:
+> I am resubmitting this patch series as I got little response the
+> previous time.  Al Viro has told me offline that he would look at it this
+> time.
 > 
+> This patch series handles online disk resizes that are currently not
+> completely recognized by the kernel using the existing revalidate_disk
+> routines.  An online resize can occur when growing or shrinking a
+> Fibre Channel LUN or perhaps by adding a disk to an existing RAID
+> volume.
 > 
-> commit cf6ae8b50e0ee3f764392dadd1970e3f03c40773
-> Author: Adrian Bunk <bunk@kernel.org>
-> Date:   Fri Jul 25 01:46:46 2008 -0700
+> The kernel currently recognizes a device size change when the
+> lower-level revalidate_disk routines are called; however, the block
+> layer does not use the new size while it has any current openers on
+> the device. So, for example, if LVM has an volume open on the device,
+> you will generally not see the size change until after a reboot. We
+> fix this problem by creating a wrapper to be used with lower-level
+> revalidate_disk routines.  This wrapper first calls the lower-level
+> driver's revalidate_disk routine. It then compares the gendisk
+> capacity to the block devices inode size. If there is a difference, we
+> adjust the block device's size. If the size has changed, we then flush
+> the disk for safety. The size is also checked in rescan_partitions
+> which is called when the device is opened or when the BLKRRPART ioctl
+> is called.
 > 
->     remove the in-kernel struct dirent{,64}
->     
->     The kernel struct dirent{,64} were different from the ones in
->     userspace.
->     
->     Even worse, we exported the kernel ones to userspace.
->     
->     But after the fat usages are fixed we can remove the conflicting
->     kernel versions.
+> There are several ways to "kick off" a device size change:
 > 
+> 1. For SCSI devices do:
 > 
-> This broke the build of some LTP syscalls testcases for "getdents", since the 
-> <linux/dirent.h> include is missing and the "internal" dirent struct get/got 
-> used in:
+>   # echo 1 > /sys/class/scsi_device/<device>/device/rescan
 > 
-> testcases/kernel/syscalls/getdents/getdents01.c  
-> testcases/kernel/syscalls/getdents/getdents03.c
-> testcases/kernel/syscalls/getdents/getdents02.c  
-> testcases/kernel/syscalls/getdents/getdents04.c
+>   or
 > 
-> http://ltp.cvs.sourceforge.net/ltp/ltp/testcases/kernel/syscalls/getdents/
+>   # blockdev --rereadpt <device file>
 > 
-> Is it safe to use the userspace dirent struct from <dirent.h> to fix the build 
-> of this? Or what should be used for testing the getdents interface instead?
+> 2. Other devices (not device mapper)
+> 
+>   # blockdev --rereadpt <device file>
 
-Thanks for your report.
+It would be great if you extend this functionality to automatic resizing 
+by handling "CAPACITY DATA HAS CHANGED" Unit Attention. If necessary, I 
+can assist in testing by adding online virtual disks resize feature 
+together with generation of that UA in SCST (http://scst.sf.net). (It's 
+not been implemented yet, because no known initiators so far have been 
+able to use this feature.)
 
-I missed this since the kernel sys_getdents() did not use the
-"struct dirent" from the header but an own "struct linux_dirent".
-
-It might be safe since the LTP tests don't seem to care whether 
-getdents() returns nonsense.
-
-But it is not correct since the reason why I removed this struct from 
-the userspace headers was that the kernel and libc structs are
-*different*.
-
-E.g. when I enable the commented out code in getdents01.c I get the 
-expected result that using <dirent.h> instead of <linux/dirent.h> 
-changes a PASS into a FAIL. [1]
-
-IMHO the solution is something like:
-- move "struct linux_dirent" from fs/readdir.c to include/linux/dirent.h
-- re-export linux/dirent.h to userspace
-- change getdents(2) to consistently use "struct linux_dirent"
-
-Questions to fsdevel:
-- Do we need to preserve API compatibility with compatibility #define's
-  for struct dirent{,64} here?
-- LTP does malloc(sizeof(struct dirent)).
-  Is this considered a valid API usage that must continue to work?
-
-> best regards,
-> Daniel
-
-cu
-Adrian
-
-[1] I don't know whether the code is valid and guaranteed to pass,
-    but it's obvious why it fails after the #include change
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Vlad
 
