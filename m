@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYIXW5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbYIXXBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbYIXW5z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbYIXW5o
+	id S1753822AbYIXXBS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 19:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYIXXBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:57:44 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:52488
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754016AbYIXW5m (ORCPT
+	Wed, 24 Sep 2008 19:01:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55708 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751882AbYIXXBH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:57:42 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AncBACNi2kh8qNU+/2dsb2JhbAAIvVSBZQ
-X-IronPort-AV: E=Sophos;i="4.33,303,1220198400"; 
-   d="scan'208";a="392163350"
-Subject: Re: UIO device name
-From: Ben Nizette <bn@niasdigital.com>
-To: joakim.tjernlund@transmode.se
-Cc: Paul Mundt <lethal@linux-sh.org>, "Hans J. Koch" <hjk@linutronix.de>,
-       gregkh@suse.de, Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1222259894.12624.247.camel@gentoo-jocke.transmode.se>
-References: <1222248093.12624.188.camel@gentoo-jocke.transmode.se>
-	 <20080924093551.GB7591@linux-sh.org>
-	 <1222250279.12624.195.camel@gentoo-jocke.transmode.se>
-	 <20080924102230.GB2973@local>
-	 <1222255981.12624.215.camel@gentoo-jocke.transmode.se>
-	 <20080924114743.GA9694@linux-sh.org>
-	 <1222259894.12624.247.camel@gentoo-jocke.transmode.se>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Thu, 25 Sep 2008 08:57:37 +1000
-Message-Id: <1222297057.4037.12.camel@moss.renham>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Sep 2008 19:01:07 -0400
+Date: Wed, 24 Sep 2008 16:00:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Frans Pop <elendil@planet.nl>
+cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       tglx@tglx.de, mingo@elte.hu
+Subject: Re: Warning/Oops report of the week of September 16th, 2008
+In-Reply-To: <alpine.LFD.1.10.0809241541320.3265@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0809241559100.3265@nehalem.linux-foundation.org>
+References: <20080916092206.6342c498@infradead.org> <200809250036.47277.elendil@planet.nl> <alpine.LFD.1.10.0809241541320.3265@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-09-24 at 14:38 +0200, Joakim Tjernlund wrote:
-> On Wed, 2008-09-24 at 20:47 +0900, Paul Mundt wrote:
-> > > 
-> > Nonsense, there is nothing wrong with UIO's interface as it is today.
-> > It is no different from sound cards, cdroms, and so on. If you want the
+
+On Wed, 24 Sep 2008, Linus Torvalds wrote:
 > 
-> It is different, cdroms and audio are named differently. If they were
-> using UIO they would all be named /dev/uio%d.
-> 
-> Consider uio_cif and uio_smx, is it impossible to image that such
-> devices could use another name such as crypto_smx%d instead?
-> 
+> Or rather, it's a warnign about the parport /proc interface. The fact is, 
+> the parport code can generate multiple "instances" of things that 
+> time-slice on the port, but they have all ended up always just registering 
+> under the same name. IOW, it's a bug in the _user_ interface, not the 
+> kernel.
 
-My system does use uio_smx and uio_pdrv, they both appear as /dev/uioX.
-This to me is just like having /dev/hda, /dev/hdb rather
-than /dev/myrootpartition, /dev/somebackupspace or whatever.  In this
-case you do have a /dev/cdrom symlink but it's just that, a symlink set
-up by scripts.  The kernel doesn't (and shouldn't) make that naming
-decision for you.
+Side note: the reason nobody cares is that the files exported there are 
+likely never used anyway. But we don't _know_ that. Maybe somebody depends 
+on the totally broken things that get registered in /proc. I doubt it, 
+but..
 
-My software just walks /sys/class/uio/uioX/name, finds the one which
-matches then opens the corresponding device.  No scripts needed, no
-in-kernel hackery or policy making, just the interface used as the maker
-intended.  What's your problem with this approach?
-
-The only software you need is the software you have anyway, the stuff
-which opens the device also discovers which device to open.
-
-	--Ben.
-
-
+		Linus
