@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbYIXVO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbYIXVQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078AbYIXVO7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 17:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbYIXVOt
+	id S1753478AbYIXVQi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 17:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYIXVQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 17:14:49 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38667 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751616AbYIXVOs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 17:14:48 -0400
-Date: Wed, 24 Sep 2008 22:14:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, arjan@linux.intel.com,
-       reiserfs-devel@vger.kernel.org, peterz@infradead.org
-Subject: Re: [LOCKDEP linux-2.6.27-rc7] reiserfs circular locking
-Message-ID: <20080924221425.3b4939ba@lxorguk.ukuu.org.uk>
-In-Reply-To: <48DA8D27.5080908@suse.com>
-References: <4807377b0809241139x18ea8ce4x7dbc66ba680be3e7@mail.gmail.com>
-	<48DA8D27.5080908@suse.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 24 Sep 2008 17:16:30 -0400
+Received: from gate.crashing.org ([63.228.1.57]:43497 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751616AbYIXVQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 17:16:29 -0400
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+	hardirq preemption
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Milton Miller <miltonm@bga.com>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+       Christoph Raisch <RAISCH@de.ibm.com>, linuxppc-dev@ozlabs.org,
+       Jan-Bernd Themann <ossthema@de.ibm.com>,
+       Sebastien Dugue <sebastien.dugue@bull.net>
+In-Reply-To: <f30d1d832fd4ad096afccf198c14a7bb@bga.com>
+References: <200809231743.23828.ossthema@de.ibm.com>
+	 , <20080915100406.342e027a@bull.net>
+	 <200809240958.m8O9wM7k010996@sullivan.realtime.net>
+	 <1222251467.8277.73.camel@pasglop>
+	 <f30d1d832fd4ad096afccf198c14a7bb@bga.com>
+Content-Type: text/plain
+Date: Thu, 25 Sep 2008 07:14:07 +1000
+Message-Id: <1222290847.8277.81.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have a reiserfs patch set that should address this. I haven't
-> submitted it recently because I'm chasing down a reiserfs bug report
-> that may or may not be related to the patch set.
-> 
-> You can grab the patch set out of an opensuse kernel src rpm.
 
-Jeff: See also bugzilla.kernel.org #9136 which seems to match
+> There may be some implicit assumption in that we expect the cpu 
+> priority to be returned to normal by the EOI, but there is nothing in 
+> the hardware that requires the EOI to come from the same cpu as 
+> accepted the interrupt for processing, with the exception of the IPI 
+> which is per-cpu (and the only interrupt that is per-cpu).
 
-BTW - does anyone have a view where the existing reiserfs bugs should be
-assigned as they are currently assigned to namesys...
+Well, there is one fundamental one: The XIRR register we access is
+per-CPU, so if we are to return the right processor priority, we must
+make sure we write the right XIRR.
 
-Alan
+Same with Cell, MPIC, actually and a few others. In general I'd say most
+fast_eoi type PICs have this requirement.
+
+> It would probably mean adding the concept of the current cpu priority 
+> vs interrupts and making sure we write it to hardware at irq_exit() 
+> time when deferring the actual irq handlers.
+
+I think we need something like a special -rt variant of the fast_eoi
+handler that masks & eoi's in ack() before the thread is spun off, and
+unmasks instead of eoi() when the irq processing is complete.
+
+Ben.
+
 
