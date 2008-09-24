@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbYIXDJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbYIXDNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753489AbYIXDJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 23:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYIXDJM
+	id S1753505AbYIXDNK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 23:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbYIXDMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 23:09:12 -0400
-Received: from mga03.intel.com ([143.182.124.21]:16609 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751248AbYIXDJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 23:09:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,297,1220252400"; 
-   d="asc'?scan'208";a="50536772"
-Subject: Re: [PATCH 0/4] x86: UV runtime bios calls
-From: Huang Ying <ying.huang@intel.com>
-To: Russ Anderson <rja@sgi.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>
-In-Reply-To: <20080922210644.GC222374@sgi.com>
-References: <20080922210644.GC222374@sgi.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-L89Juf8XdXTgSYAVDcNP"
-Date: Wed, 24 Sep 2008 11:09:07 +0800
-Message-Id: <1222225747.23099.104.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 23 Sep 2008 23:12:55 -0400
+Received: from szxga03-in.huawei.com ([119.145.14.66]:21829 "EHLO
+	szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751591AbYIXDMz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 23:12:55 -0400
+X-Greylist: delayed 601 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Sep 2008 23:12:55 EDT
+Date: Wed, 24 Sep 2008 11:02:52 +0800
+From: Franko Fang <huananhu@huawei.com>
+Subject: Re: [PATCH 10/4]linux-usb: To support more Huawei data card	product
+ IDs, fix kernel 2.6.26.5
+To: Greg KH <greg@kroah.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, zihan@huawei.com,
+       Lin.Lei@huawei.com, zhangqianchun@huawei.com
+Message-id: <019701c91df2$08d1d430$f9100b0a@china.huawei.com>
+MIME-version: 1.0
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+X-Priority: 3
+X-MSMail-priority: Normal
+References: <faf7c9cb3c6f0.3c6f0faf7c9cb@huawei.com>
+ <20080924023053.GA24846@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear Greg KH,
 
---=-L89Juf8XdXTgSYAVDcNP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+ I am sorry, but I can only get the newest version from http://www.kernel.org/pub/linux/kernel/ is 2.6.26.5.
 
-Hi, Russ,
+ Can you tell me the link to download 2.6.27-rc7 ?
 
-On Mon, 2008-09-22 at 16:06 -0500, Russ Anderson wrote:
-> 	This patch uses sal_systab.  sal_systab is used on ia64, but was
-> 	not used on x86.  An alternative would be to create a new
-> 	EFI entry type (uv_systab), though that would require adding=20
-> 	to struct efi.
-
-I don't think it is a good idea to use sal_systab, if it is not a real
-sal_systab. It's better to add new field such as uv_systab to struct
-efi, which is not defined by UEFI standard, so can be changed.
+  Thanks very much.
 
 Best Regards,
-Huang Ying
+Franko Fang
+2008-9-24
+----- Original Message ----- 
+From: "Greg KH" <greg@kroah.com>
+To: "fangxiaozhi 00110321" <huananhu@huawei.com>
+Cc: <linux-usb@vger.kernel.org>; <linux-kernel@vger.kernel.org>; <zihan@huawei.com>; <Lin.Lei@huawei.com>; <zhangqianchun@huawei.com>
+Sent: Wednesday, September 24, 2008 10:30 AM
+Subject: Re: [PATCH 10/4]linux-usb: To support more Huawei data card product IDs, fix kernel 2.6.26.5
 
 
---=-L89Juf8XdXTgSYAVDcNP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkjZr1AACgkQKhFGF+eHlpi7iwCgogO3zW+MOO8X++OCKHWG3N55
-fuYAnisP7AxcHj5tA5qBW47maRNAUwX/
-=pzOl
------END PGP SIGNATURE-----
-
---=-L89Juf8XdXTgSYAVDcNP--
-
+> On Wed, Sep 24, 2008 at 10:07:31AM +0800, fangxiaozhi 00110321 wrote:
+>> 
+>> From: fangxiaozhi <huananhu@huawei.com>
+>> 
+>> 1. This patch is based on the kernel of 2.6.26.5
+> 
+> Can you rebase this on 2.6.27-rc7 instead?  Lots of device ids have been
+> added to this driver since 2.6.26.5
+> 
+>> 2. To declare the unusual device for new Huawei data card devices in unusual_devs.h
+>> 3. To modify the data value and length in the function of usb_stor_huawei_e220_init in initializers.c
+>> 4. To declare more new product IDs in option.c.
+> 
+> This should be split up into 4 different patches, as it does 4 different
+> things.  Care to redo it please?
+> 
+> thanks,
+> 
+> greg k-h
