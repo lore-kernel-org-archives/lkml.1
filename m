@@ -1,132 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbYIXR3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbYIXReS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753889AbYIXR3T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 13:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYIXR3L
+	id S1753750AbYIXReS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 13:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYIXReG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 13:29:11 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:53179 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752164AbYIXR3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 13:29:11 -0400
-Date: Wed, 24 Sep 2008 21:34:59 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Joe Korty <joe.korty@ccur.com>
-Cc: Roland McGrath <roland@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG, TEST PATCH] stallout race between SIGCONT and SIGSTOP
-Message-ID: <20080924173459.GA5426@tv-sign.ru>
-References: <20080923155331.GA20380@tsunami.ccur.com> <20080923163530.GA656@tv-sign.ru> <20080924150541.GA119@tv-sign.ru> <20080924151933.GA17531@tsunami.ccur.com> <20080924155611.GA5334@tv-sign.ru> <20080924171143.GA18733@tsunami.ccur.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080924171143.GA18733@tsunami.ccur.com>
-User-Agent: Mutt/1.5.11
+	Wed, 24 Sep 2008 13:34:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40990 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751517AbYIXReF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 13:34:05 -0400
+Date: Wed, 24 Sep 2008 10:25:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@google.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <alpine.DEB.1.10.0809241231520.5017@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.1.10.0809241014250.3265@nehalem.linux-foundation.org>
+References: <20080924051056.650388887@goodmis.org>  <20080924051400.195780424@goodmis.org>  <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com> <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
+ <alpine.LFD.1.10.0809240921430.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241231520.5017@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/24, Joe Korty wrote:
->
-> On Wed, Sep 24, 2008 at 11:56:11AM -0400, Oleg Nesterov wrote:
-> > Confused. Do you agree the kernel is not buggy?
->
-> I agree with you that what the kernel is doing now is correct.
-
-Great. Thanks a lot for the report and discussion! And thanks
-for your analysis (sent privately), the problem was completely
-explained by you.
-
-BTW, I forgot to show the test-case you sent me privately, perhaps
-someone from CC might want to look... It really helped.
-
-Oleg.
-
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/select.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-#define NUMSTOPS 10
-
-int child_stopped = 0;
-int waiting = 1;
-
-void handler(int signo, siginfo_t *info, void *context) 
-{
-	if (info && info->si_code == CLD_STOPPED) {
-		printf("Child has been stopped\n");
-		waiting = 0;
-		child_stopped++;
-	}
-}
 
 
-int main(void)
-{
-	pid_t pid;
-	struct sigaction act;
-	struct timeval tv;
+On Wed, 24 Sep 2008, Steven Rostedt wrote:
+> 
+> The event counter is just the timestamp (quick patch, simple to fix). The 
+> term "counter" was bad. It should have been timestamp, which one would 
+> want a 64bit timestamp.
 
-	act.sa_sigaction = handler;
-	act.sa_flags = SA_SIGINFO;
-	sigemptyset(&act.sa_mask);
-	sigaction(SIGCHLD,  &act, 0);     
+One definitely would _not_ want the full 64-bit timestamp.
 
-	setbuf(stdout, NULL);
-	printf("%d SIGSTOP/SIGCONT combinations to be sent.\n", NUMSTOPS);
+There are two cases:
 
-	if ((pid = fork()) == 0) {
-		/* child */
-		while(1) {
-			/* wait forever, or until we are 
-			   interrupted by a signal */
-			tv.tv_sec = 0;
-			tv.tv_usec = 0;
-			select(0, NULL, NULL, NULL, &tv);
-		}
-		return 0;
-	} else {
-		/* parent */
-		int s; 		
-		int i;
+ - lots and lots of events
 
-		usleep(12000);
-		for (i = 0; i < NUMSTOPS; i++) {
-			waiting = 1;
+   just do a 32 bit "timestamp delta" to the previous packet (where the 
+   first packet in the queue would be a delta from a value in the queue 
+   header - and we can obviously make that value be the TSC so that the 
+   first delta is always zero, but it may also make sense to make it a 
+   real delta, and the queue header would contain some good 
+   synchronization point value).
 
-			printf("--> Sending SIGSTOP #%d\n", i);
-			kill(pid, SIGSTOP);
+ - occasional events
 
-			/*
-			  Don't let the kernel optimize away queued
-			  SIGSTOP/SIGCONT signals.
-			*/
-			while (waiting)
-				usleep(12000);
+   Oops. The delta wouldn't fit. So create a new "timestamp update" packet 
+   with a 64-bit thing when doing the reservation. There's obviously no 
+   cost issue (since this would only happen for things where there was a 
+   multi-second delay - or at least an appreciable fraction of a delay - 
+   between events)
 
-			printf("--> Sending SIGCONT\n");
-			kill(pid, SIGCONT);
-			// usleep(12000);
-		}
+This definitely is worth doing. If we have small trace objects (and many 
+things really do have pretty small traces), using just a 32-bit TSC not 
+only saves 4 bytes per trace event, but it makes it quite reasonable to 
+keep the trace data 4-byte-aligned rather than requiring 8-byte alignment.
 
-		/* POSIX specifies default action to be abnormal termination */
-		usleep(12000);
-		kill(pid, SIGKILL);
-		waitpid(pid, &s, 0);
-	}
+Of course, if the traces end up being horribly bloated, none of that will 
+matter. But I really would hope that you we keep the header itself to just 
+8 bytes (and being 2 4-byte entities), so that small payloads are 
+reasonable. And that looks doable, if you have a 16-bit "type" and a 
+16-bit "size" field.
 
-	if (child_stopped == NUMSTOPS) {
-		printf("Test PASSED\n");
-		return 0;
-	}
+One thing I'd like to do is to also architecturally reserve a few of the 
+types for internal queue management stuff. Things like "padding" objects 
+(or a "end-of-ringbuffer" object), and the TSC overflow object, and a 
+"time sync" object (or heartbeat). So maybe the type would have the high 
+bit set as a "reserved for internal ringbuffer use" or whatever.
 
-	printf("Test FAILED\n");
-	return -1;
-}
-
+			Linus
