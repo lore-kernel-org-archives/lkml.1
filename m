@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbYIXN7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYIXOBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753198AbYIXN7W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 09:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbYIXN7O
+	id S1753457AbYIXOBl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 10:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYIXOBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 09:59:14 -0400
-Received: from smtp.inet.fi ([192.89.123.192]:46023 "EHLO
-	gulo-int.media.sonera.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752112AbYIXN7N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 09:59:13 -0400
-X-Greylist: delayed 2120 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Sep 2008 09:59:13 EDT
-Message-ID: <48DA3FB4.1060207@gmail.com>
-Date: Wed, 24 Sep 2008 16:25:08 +0300
-From: tike64@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: KDGKBENT and unicode
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 24 Sep 2008 10:01:32 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35114 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752117AbYIXOBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 10:01:31 -0400
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <greg@kroah.com>, Timur Tabi <timur@freescale.com>,
+       Li Yang <leoli@freescale.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>, linuxppc-dev@ozlabs.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-Id: <E8A37756-794A-4829-ABEC-AACA9DB54620@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20080924114231.GA8469@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 2/4] powerpc/qe: new call to revert a gpio to a dedicated function
+Date: Wed, 24 Sep 2008 09:00:03 -0500
+References: <20080924000255.GA28054@oksana.dev.rtsoft.ru> <20080924000336.GB29733@oksana.dev.rtsoft.ru> <B8BAAB1F-10B5-419D-84A7-F724A7E77F41@kernel.crashing.org> <20080924114231.GA8469@oksana.dev.rtsoft.ru>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear linux-kernel,
 
-I am trying to read keyboard in raw mode (K_MEDIUMRAW, to be exact). I 
-hope to avoid reading all the keymaps from the kernel to the application 
-for keycode translation. Therefore I call KDGKBENT ioctl for every 
-keycode I get from the tty. Basically this works except, when the 
-translation result is an unicode keysym or should I say the unicode 
-value happens to be greater than 0xFF, I get K_HOLE.
+On Sep 24, 2008, at 6:42 AM, Anton Vorontsov wrote:
 
-This observation seems to be in harmony with the drivers/char/vt_ioctl.c 
-code. There I learned that, if I had the keyboard in the K_UNICODE mode, 
-I could get directly the 16 bit unicode values.
+> On Tue, Sep 23, 2008 at 11:07:00PM -0500, Kumar Gala wrote:
+>>
+>> On Sep 23, 2008, at 7:03 PM, Anton Vorontsov wrote:
+>>
+>>> qe_gpio_set_dedicated() is a platform specific function, which is  
+>>> used
+>>> to revert a pin to a dedicated function. Caller should have already
+>>> obtained the gpio via gpio_request().
+>>>
+>>> This is needed to support Freescale USB Host Controller.
+>>>
+>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> ---
+>>> arch/powerpc/include/asm/qe.h     |    1 +
+>>> arch/powerpc/sysdev/qe_lib/gpio.c |   46 ++++++++++++++++++++++++++ 
+>>> ++
+>>> +++++++++
+>>> 2 files changed, 47 insertions(+), 0 deletions(-)
+>>
+>> what do you mean by dedicated function.. be a bit clearer in the  
+>> commit
+>> log.
+>
+> This term is from the QE spec, I didn't invent anything. ;-)
+>
+> "Each pin in the I/O ports can be configured as a general-purpose
+> I/O signal or as a dedicated peripheral interface signal. ...many
+> dedicated peripheral functions are multiplexed onto the ports."
 
-So I have two options:
+I understand but I think 'dedicated' could be interpreted in another  
+way (like the GPIO pin is dedicated, not that the pin is used for a  
+dedicated SoC block).
 
-1) Read the keymaps in K_UNICODE mode and do the translations myself 
-while in K_MEDIUMRAW mode
+If it the commit message had said 'to a dedicated on chip peripheral'  
+it would be clearer.
 
-2) For each keycode switch to K_UNICODE mode, ask the translation from 
-kernel, switch back to K_MEDIUMRAW mode and read the next keycode (the 
-continuous switching might have severe side effects).
+>> Also, does this depend on gpio_to_chip() patch?
+>
+> Yeah, the point of exported gpio_to_chip is to let us write
+> this function.
 
-The question is am I correct so far or am I miserably confused? Aren't 
-there any smarter ways to do the translation?
+I meant can I take this patch w/o the gpio_to_chip() patch? (not clear  
+from your response)
 
-The next question probably must be how do I handle CAPS with kernel 
-keymaps? As the CAPS sensitivity is encoded in the type field of keysym 
-value, it is lost when the value is 16 bit unicode. I am seeing this 
-phenomenon in ordinary VT when I manage to load some keysyms as 16 bit 
-unicode.
-
---
-
-Timo
+- k
