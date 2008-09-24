@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbYIXNH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYIXNKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752652AbYIXNH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 09:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYIXNHQ
+	id S1753320AbYIXNKg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 09:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYIXNK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 09:07:16 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37579 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750991AbYIXNHP (ORCPT
+	Wed, 24 Sep 2008 09:10:28 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:6844 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751456AbYIXNK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 09:07:15 -0400
-Date: Wed, 24 Sep 2008 14:06:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 3/3] x86: restore old GART alloc_coherent behavior
-Message-ID: <20080924140644.569cdd1d@lxorguk.ukuu.org.uk>
-In-Reply-To: <1222256917-14321-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1222256917-14321-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1222256917-14321-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1222256917-14321-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1222256917-14321-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Sep 2008 09:10:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=l7VaZtuC4XvlssM/UR7x/gV3dUeBzfw2u212vGRGU1Bus5ymB1Wd6aMOxEatnsYvbA
+         GHCZc7HlbLriuplFHDRWy2atgFCwlmFR1ZYNiJyDAa0xC33h1oWrZMHi1DJ7wR/w5ure
+         Pl45eBQ3laxzjtVRxlTwouG4c6BSI1n9ScDuQ=
+Date: Wed, 24 Sep 2008 21:10:19 +0800
+From: Yan Li <elliot.li.tech@gmail.com>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: Yan Li <elliot.li.tech@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       joerg.roedel@amd.com, rjmaomao@gmail.com,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
+Subject: Re: [PATCH 2/2] Suppress false "mtrr all empty" warning message
+	when running as VMware guest
+Message-ID: <20080924131018.GA17256@yantp.cn.ibm.com>
+References: <a120cfa37281607d8dc361deda1a35419accd193.1222258080.git.elliot.li.tech@gmail.com> <48da36b3.0e0d6e0a.1c8e.fffff980@mx.google.com> <1222260854.4166.3.camel@frecb07144>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1222260854.4166.3.camel@frecb07144>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008 20:48:37 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+On Wed, Sep 24, 2008 at 02:54:14PM +0200, Laurent Vivier wrote:
+> Le mercredi 24 septembre 2008 à 20:24 +0800, Yan Li a écrit :
+> > +#ifdef CONFIG_VMWARE_GUEST_DETECT
+> > +		/* the "mtrr all blank" warning will be deferred until
+> > +		 * after DMI scanning and we know the machine is not a
+> > +		 * VMware guest
+> > +		 */
+> > +		printk(KERN_INFO "CPU MTRRs all blank\n");
+> > +		return EMTRR_ALL_BLANK;
+> > +#else
+> >  		WARN(!kvm_para_available(), KERN_WARNING
+> >  				"WARNING: strange, CPU MTRRs all blank?\n");
+> >  		return 0;
+> > +#endif
+> >  	}
+> 
+> perhaps something like:
+> 
+> #ifdef CONFIG_VMWARE_GUEST_DETECT
+>  		WARN(!kvm_para_available() && !is_vmware_guest(), KERN_WARNING
+> 				"WARNING: strange, CPU MTRRs all blank?\n");
+> #else
+>  		WARN(!kvm_para_available(), KERN_WARNING
+>   				"WARNING: strange, CPU MTRRs all blank?\n");
+> ...
+> 
+> ???
 
-> Currently, GART alloc_coherent tries to allocate pages with GFP_DMA32
-> for a device having dma_masks > 24bit < 32bits. If GART gets an
-> address that a device can't access to, GART try to map the address to
-> a virtual I/O address that the device can access to.
-> 
-> But Andi pointed out, "The GART is somewhere in the 4GB range so you
-> cannot use it to map anything < 4GB. Also GART is pretty small."
-> 
-> http://lkml.org/lkml/2008/9/12/43
-> 
-> That is, it's possible that GART doesn't have virtual I/O address
-> space that a device can access to. The above behavior doesn't work for
-> a device having dma_masks > 24bit < 32bits.
-> 
-> This patch restores old GART alloc_coherent behavior (before the
-> alloc_coherent rewrite).
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+As stated in the comments: the warning has to be deferred. The reason
+is that "is_vmware_guest()" replies on DMI and can only be used after
+dmi_scan().  These mtrr codes here are run very early during
+setup_arch() when the DMI is not available. So when I've detected all
+MTRRs are blank, I returned a status code to setup_arch(), who will
+call "is_vmware_guest()" later, after dmi_scan(), to decide whether to
+issue a warning or not.
 
-Acked-by: Alan Cox <alan@redhat.com>
 
-This is indeed a specific problem found with things like older AACRAID
-where control blocks must be below 31bits and the GART is above 0x80000000
+-- 
+Li, Yan
 
-Alan
+"Everything that is really great and inspiring is created by the
+individual who can labor in freedom."
+              - Albert Einstein, in Out of My Later Years (1950)
