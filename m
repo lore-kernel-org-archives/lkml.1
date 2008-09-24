@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbYIXKXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbYIXKYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754634AbYIXKXb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 06:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYIXKXK
+	id S1752981AbYIXKYZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 06:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbYIXKYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 06:23:10 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34509 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754743AbYIXKXI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 06:23:08 -0400
-Date: Wed, 24 Sep 2008 11:22:55 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: sqazi@google.com (Salman Qazi)
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: mlock: Make the mlock system call interruptible by fatal
-Message-ID: <20080924112255.64304a64@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080923224751.GA2790@google.com>
-References: <20080923224751.GA2790@google.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 24 Sep 2008 06:24:16 -0400
+Received: from ns2.mvista.com ([63.81.120.155]:59639 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751467AbYIXKYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 06:24:14 -0400
+Message-ID: <48DA1544.5010307@ru.mvista.com>
+Date: Wed, 24 Sep 2008 14:24:04 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, dbrownell@users.sourceforge.net,
+       greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, leoli@freescale.com, timur@freescale.com
+Subject: Re: [PATCH 3/3] USB: driver for Freescale QUICC Engine USB Host	Controller
+References: <20080918151659.GA20140@oksana.dev.rtsoft.ru> <20080918151746.GC31187@oksana.dev.rtsoft.ru> <20080919162324.e354ed2f.akpm@linux-foundation.org> <20080923183129.GA19024@oksana.dev.rtsoft.ru> <48D96052.6090005@ru.mvista.com> <48D9612D.7060601@ru.mvista.com> <20080923225730.GB13617@oksana.dev.rtsoft.ru>
+In-Reply-To: <20080923225730.GB13617@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=windows-1251; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Can we do
-> >
-> >        return i ? i : -EINTR;
-> >
-> > in the usual fashion?
-> 
-> Fixed.
+Hello.
 
-If its only interruptible by fatal signals why do we care what the return
-is ?
+Anton Vorontsov wrote:
+>>>>>> This controller does not integrate the root hub, so this driver also
+>>>>>> fakes one-port hub. External hub is required to support more than
+>>>>>> one device.
+>>>>>>
+>>>>>> ...
+>>>>>>
+>>>>>>       
+>>>>>>             
+>>>>> Please, no.
+>>>>>     
+>>>>>           
+>>>> What exactly 'no'? ;-)
+>>>>   
+>>>>         
+>>>   No one-port hubs I guess -- they are pointless. Though e.g. MUSB  
+>>> driver creates one -- I guess to impersonate a transaction translating  
+>>> high-speed hub...
+>>>
+>>>       
+>>   ... then the root hub emulation is completely pointless.
+>>     
+>
+> It isn't. We always should emulate the root hub. The root hub
+> is part and parcel of any USB Host. Even the one-port one.
 
-Alan (confused)
+   Hm, maybe that's what USB core thinks (because UHCI/OHCI/EHCI all 
+have it) but e.g. MUSB doesn't have the root hub registers...
+I looked at the core and figured that USB core seems to use the root hub 
+interface for port PM, etc. and expects it to bee present, so it seems 
+unavoidable indeed... :-/
+
+WBR, Sergei
+
+
