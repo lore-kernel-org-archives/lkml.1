@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbYIXXMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYIXXPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753633AbYIXXMx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 19:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYIXXMo
+	id S1753551AbYIXXPA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 19:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbYIXXOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 19:12:44 -0400
-Received: from cpsmtpo-eml01.kpnxchange.com ([213.75.38.150]:35596 "EHLO
-	cpsmtpo-eml01.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751748AbYIXXMn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 19:12:43 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Warning/Oops report of the week of September 16th, 2008
-Date: Thu, 25 Sep 2008 01:12:39 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       tglx@tglx.de, mingo@elte.hu
-References: <20080916092206.6342c498@infradead.org> <200809250036.47277.elendil@planet.nl> <alpine.LFD.1.10.0809241541320.3265@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0809241541320.3265@nehalem.linux-foundation.org>
+	Wed, 24 Sep 2008 19:14:52 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42774 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751652AbYIXXOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 19:14:51 -0400
+Date: Thu, 25 Sep 2008 01:15:53 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: David Miller <davem@davemloft.net>
+cc: jeffrey.t.kirsher@intel.com, airlied@gmail.com, david.vrabel@csr.com,
+       rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, chrisl@vmware.com,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+In-Reply-To: <20080923.211215.193696086.davem@davemloft.net>
+Message-ID: <alpine.LNX.1.10.0809250110070.4671@pegasus.suse.cz>
+References: <20080923.150722.141587696.davem@davemloft.net> <9929d2390809231512w160d221axa2923a6b293a041@mail.gmail.com> <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz> <20080923.211215.193696086.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809250112.40661.elendil@planet.nl>
-X-OriginalArrivalTime: 24 Sep 2008 23:12:41.0366 (UTC) FILETIME=[0B369360:01C91E9B]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 September 2008, Linus Torvalds wrote:
-> In the meantime, that warning is just best ignored entirely. It's not a
-> kernel bug per se, or even anything that is fixable without changing
-> exported user interfaces that in my opinion aren't necessarily even
-> _worth_ changing (the only reasonable change is extending on the insane
-> interface that nobody cares about).
+On Tue, 23 Sep 2008, David Miller wrote:
 
-Yep, I agree it's basically harmless and I have been ignoring it. But that 
-does not make it less annoying as, because of the call trace, it will 
-continue to show up in logcheck mails every time.
+> I did some snooping around, and while doing so I noticed that the PCI 
+> mmap code for x86 doesn't do one bit of range checking on the size, or 
+> any other aspect of the request, wrt. the MMIO regions actually mapped 
+> in the BARs of the PCI device.
 
-If no other solution is found soon, would a patch to just skip the sysctl 
-table check for this particular case be acceptable?
+Ugh, indeed. Added Ingo and Jesse to CC.
+
+> Yikes!
+> 
+> It just does a reserve_memtype() on the address range, and says "ok".
+> 
+> So if, for example, the X server tries to mmap() more than an MMIO bar
+> actually maps, the kernel lets the user do this.
+> 
+> It would be very interesting to add the appropriate checks to
+> pci_mmap_page_range() in arch/x86/pci/i386.c, anyone who wants to do
+> this can use the code in arch/sparc64/kernel/pci.c:
+> __pci_mmap_make_offset() as a guide, and see what happens.
+
+Absolutely. Or we can even do some dirty hackery in userspace, like 
+LD_PRELOADing X server and checking mmaps() that are close to MMIO regions 
+of affected devices.
+
+> If the MMIO space regions of the video cards sit right before the
+> E1000E ones on the effected systems, that would pretty much
+> convince me that this is the kind of problem we are having here.
+
+Unfortunately, looking at the lspci outputs that are in 
+https://bugzilla.novell.com/show_bug.cgi?id=425480 it seems to me that the 
+MMIO regions are quite far away from each other.
+
+-- 
+Jiri Kosina
+SUSE Labs
