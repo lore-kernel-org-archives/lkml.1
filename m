@@ -1,71 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbYIXVvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbYIXV4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752934AbYIXVvy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 17:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYIXVvr
+	id S1753056AbYIXV4R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 17:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYIXV4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 17:51:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53976 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751652AbYIXVvq (ORCPT
+	Wed, 24 Sep 2008 17:56:05 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52807 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbYIXV4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 17:51:46 -0400
-Date: Wed, 24 Sep 2008 17:51:43 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Martin Bligh <mbligh@google.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0809241748220.10631@gandalf.stny.rr.com>
-References: <20080924051056.650388887@goodmis.org>  <20080924051400.195780424@goodmis.org>  <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
-  <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com>  <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>  <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> 
- <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 24 Sep 2008 17:56:04 -0400
+Date: Thu, 25 Sep 2008 00:01:01 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, andi@firstfloor.org,
+       joerg.roedel@amd.com
+Subject: Re: [PATCH 3/3] x86: restore old GART alloc_coherent behavior
+Message-ID: <20080924220101.GL25711@one.firstfloor.org>
+References: <1222256917-14321-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1222256917-14321-2-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1222256917-14321-3-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1222256917-14321-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222256917-14321-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 24 Sep 2008, Martin Bligh wrote:
+Thanks for changing it back.
 
-> 
-> How about we just steal 5 bits from the timestamp to indicate event
-> lengths up to 32 bytes, and if it's 0, that means there's a length
-> field following? Also that'd mean you could use a longer length field
-> and get beyond 256 bytes to 4096, without impacting most events.
-> 
-> struct {
->         u32 length:5, time_delta:27;
->         u16 length;
->         u8 buf[];
-> };
-> 
-> struct {
->         u32 length:5, time_delta:27;        /* where length == 0 */
->         u8 buf[];
-> };
+Acked-by: Andi Kleen <ak@linux.intel.com>
 
-BTW, if we declare the ring buffer to have fixed length entries, do we 
-still want to record the length?
-
-Hmm, probably should. It would make the code easier. If it is fixed length 
-under 256 bytes, we still need to record the timestamp, and the length is 
-only 5 bits. It could probably store something else, but we can leave that 
-for version two ;-)
-
-Heck, for now, I'll remove the work I did to add the fix length option, 
-and just use this default. If you have fixed length entries, it will
-just make it easier to code the above layers.
-
--- Steve
-
+-- 
+ak@linux.intel.com
