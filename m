@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYIXKa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbYIXKeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbYIXKa7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 06:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYIXKat
+	id S1753947AbYIXKeZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 06:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYIXKeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 06:30:49 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:53921 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648AbYIXKat (ORCPT
+	Wed, 24 Sep 2008 06:34:17 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:36770 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752012AbYIXKeQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 06:30:49 -0400
-Date: Wed, 24 Sep 2008 11:30:40 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: =?iso-8859-1?Q?S=F8ren?= Hauberg <hauberg@gmail.com>
-Cc: Oliver Neukum <oliver@neukum.org>,
-       Ondrej Zary <linux@rainbow-software.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH] usbtouchscreen, 2.6.25
-Message-ID: <20080924103040.GA13392@srcf.ucam.org>
-References: <ed7dcf450809230142l62bb00aapb92e6cb225f0cbba@mail.gmail.com> <200809231051.14016.linux@rainbow-software.org> <ed7dcf450809230236v762e0aa3v8748c76a64121f0c@mail.gmail.com> <200809231613.41905.oliver@neukum.org> <ed7dcf450809240004r1d3c7b3ds619cd7441ae0365e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ed7dcf450809240004r1d3c7b3ds619cd7441ae0365e@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Wed, 24 Sep 2008 06:34:16 -0400
+Date: Wed, 24 Sep 2008 19:34:14 +0900 (JST)
+Message-Id: <20080924.193414.22923673.taka@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       righi.andrea@gmail.com, jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080922143042.GA19222@redhat.com>
+References: <20080919131019.GA3606@redhat.com>
+	<20080922.183651.62951479.taka@valinux.co.jp>
+	<20080922143042.GA19222@redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 09:04:55AM +0200, Søren Hauberg wrote:
-> Obviously that depends on how you define "better" :-) The problem I'm
-> facing is that with the X driver there is no way to change calibration
-> without restarting X several times, which isn't acceptable for the
-> application we're developing. Sure, I could fix the X driver to allow
-> run-time changes to the calibration parameters, but that's a very
-> large task. 
+Hi,
 
-This is the sort of thing that input device properties were added for. 
-If you're able to use 1.5 of the X server, it's not a huge body of work 
-to add this functionality.
+> > It's possible the algorithm of dm-ioband can be placed in the block layer
+> > if it is really a big problem.
+> > But I doubt it can control every control block I/O as we wish since
+> > the interface the cgroup supports is quite poor.
+> 
+> Had a question regarding cgroup interface. I am assuming that in a system,
+> one will be using other controllers as well apart from IO-controller.
+> Other controllers will be using cgroup as a grouping mechanism.
+> Now coming up with additional grouping mechanism for only io-controller seems
+> little odd to me. It will make the job of higher level management software
+> harder.
+> 
+> Looking at the dm-ioband grouping examples given in patches, I think cases
+> of grouping based  in pid, pgrp, uid and kvm can be handled by creating right
+> cgroup and making sure applications are launched/moved into right cgroup by
+> user space tools. 
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Grouping in pid, pgrp and uid is not the point, which I've been thinking
+can be replaced with cgroup once the implementation of bio-cgroup is done.
+
+I think problems of cgroup are that they can't support lots of storages
+and hotplug devices, it just handle them as if they were just one resource.
+I don't insist the interface of dm-ioband is the best. I just hope the
+cgroup infrastructure support this kind of resources.
+
+> I think keeping grouping mechanism in line with rest of the controllers
+> should help because a uniform grouping mechanism should make life simpler.
+> 
+> I am not very sure about moving dm-ioband algorithm in block layer. Looks
+> like it will make life simpler at least in terms of configuration. 
+
+
+Thanks,
+Hirokazu Takahashi.
