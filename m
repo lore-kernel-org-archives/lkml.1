@@ -1,48 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbYIXK75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbYIXLHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752782AbYIXK75 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 06:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYIXK7t
+	id S1752792AbYIXLHR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 07:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYIXLHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 06:59:49 -0400
-Received: from mail.ku-gbr.de ([81.3.11.18]:45960 "EHLO ku-gbr.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750988AbYIXK7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 06:59:48 -0400
-Date: Wed, 24 Sep 2008 12:59:43 +0200
-From: Konstantin Kletschke <lists@ku-gbr.de>
-To: linux-kernel@vger.kernel.org
-Cc: tj@kernel.org
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-Message-ID: <20080924105943.GB2094@anita>
-Mail-Followup-To: linux-kernel@vger.kernel.org, tj@kernel.org
-References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org>
+	Wed, 24 Sep 2008 07:07:04 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:49453 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbYIXLHB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 07:07:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=dnH4JW4gflmOvCTgu4DmdgRrbogjBf/nx4nZsbj5+NmMntmayQWktdttBF9usGCqzR
+         cmE9ZoPm6C2dbjLOeYsJXo6fNhQoIQbsoePXy+dNyFybpbITUcvrpjJ3Mk111Z+AgwVz
+         UvsJs4hT6aE9q8+bYykuqI2Yzu9OlyLKPhKgI=
+Message-ID: <661de9470809240407m7f50b6dav897fef3b37295bb2@mail.gmail.com>
+Date: Wed, 24 Sep 2008 16:37:00 +0530
+From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+To: "Hirokazu Takahashi" <taka@valinux.co.jp>
+Subject: Re: [Xen-devel] Re: [dm-devel] Re: dm-ioband + bio-cgroup benchmarks
+Cc: righi.andrea@gmail.com, dm-devel@redhat.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, agk@sourceware.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       vgoyal@redhat.com, xemul@openvz.org
+In-Reply-To: <661de9470809240404i62300942o15337ecec335fe22@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48DA0A2C.8010008@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <48D267B5.20402@gmail.com> <20080918150634.GH20640@redhat.com>
+	 <48D2715A.6060002@gmail.com>
+	 <20080919.123405.91829935.taka@valinux.co.jp>
+	 <661de9470809240404i62300942o15337ecec335fe22@mail.gmail.com>
+X-Google-Sender-Auth: d50b5d9db0de69e3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 2008-09-24 18:36 +0900 schrieb Tejun Heo:
-> Please apply the attached patch and post the resulting log.  Please
-> don't forget to turn on KALLSYMS.
+On Wed, Sep 24, 2008 at 4:34 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+>
+> On Fri, Sep 19, 2008 at 9:04 AM, Hirokazu Takahashi <taka@valinux.co.jp>
+> wrote:
+>>
+>> Hi,
+>>
+>> > >> Vivek Goyal wrote:
+>> > >>> On Thu, Sep 18, 2008 at 09:04:18PM +0900, Ryo Tsuruta wrote:
+>> > >>>> Hi All,
+>> > >>>>
+>> > >>>> I have got excellent results of dm-ioband, that controls the disk
+>> > >>>> I/O
+>> > >>>> bandwidth even when it accepts delayed write requests.
+>> > >>>>
+>> > >>>> In this time, I ran some benchmarks with a high-end storage. The
+>> > >>>> reason was to avoid a performance bottleneck due to mechanical
+>> > >>>> factors
+>> > >>>> such as seek time.
+>> > >>>>
+>> > >>>> You can see the details of the benchmarks at:
+>> > >>>> http://people.valinux.co.jp/~ryov/dm-ioband/hps/
+>> > >>>>
+>> > >>> Hi Ryo,
+>> > >>>
+>> > >>> I had a query about dm-ioband patches. IIUC, dm-ioband patches will
+>> > >>> break
+>> > >>> the notion of process priority in CFQ because now dm-ioband device
+>> > >>> will
+>> > >>> hold the bio and issue these to lower layers later based on which
+>> > >>> bio's
+>> > >>> become ready. Hence actual bio submitting context might be different
+>> > >>> and
+>> > >>> because cfq derives the io_context from current task, it will be
+>> > >>> broken.
+>> > >>>
+>> > >>> To mitigate that problem, we probably need to implement Fernando's
+>> > >>> suggestion of putting io_context pointer in bio.
+>> > >>>
+>> > >>> Have you already done something to solve this issue?
+>> > >>>
+>> > >>> Secondly, why do we have to create an additional dm-ioband device
+>> > >>> for
+>> > >>> every device we want to control using rules. This looks little odd
+>> > >>> atleast to me. Can't we keep it in line with rest of the controllers
+>> > >>> where task grouping takes place using cgroup and rules are specified
+>> > >>> in
+>> > >>> cgroup itself (The way Andrea Righi does for io-throttling patches)?
+>> > >>>
+>> > >>> To avoid creation of stacking another device (dm-ioband) on top of
+>> > >>> every
+>> > >>> device we want to subject to rules, I was thinking of maintaining an
+>> > >>> rb-tree per request queue. Requests will first go into this rb-tree
+>> > >>> upon
+>> > >>> __make_request() and then will filter down to elevator associated
+>> > >>> with the
+>> > >>> queue (if there is one). This will provide us the control of
+>> > >>> releasing
+>> > >>> bio's to elevaor based on policies (proportional weight, max
+>> > >>> bandwidth
+>> > >>> etc) and no need of stacking additional block device.
+>> > >>>
+>> > >>> I am working on some experimental proof of concept patches. It will
+>> > >>> take
+>> > >>> some time though.
+>> > >>>
+>> > >>> I was thinking of following.
+>> > >>>
+>> > >>> - Adopt the Andrea Righi's style of specifying rules for devices and
+>> > >>>   group the tasks using cgroups.
+>> > >>>
+>> > >>> - To begin with, adopt dm-ioband's approach of proportional
+>> > >>> bandwidth
+>> > >>>   controller. It makes sense to me limit the bandwidth usage only in
+>> > >>>   case of contention. If there is really a need to limit max
+>> > >>> bandwidth,
+>> > >>>   then probably we can do something to implement additional rules or
+>> > >>>   implement some policy switcher where user can decide what kind of
+>> > >>>   policies need to be implemented.
+>> > >>>
+>> > >>> - Get rid of dm-ioband and instead buffer requests on an rb-tree on
+>> > >>> every
+>> > >>>   request queue which is controlled by some kind of cgroup rules.
+>> > >>>
+>> > >>> It would be good to discuss above approach now whether it makes
+>> > >>> sense or
+>> > >>> not. I think it is kind of fusion of io-throttling and dm-ioband
+>> > >>> patches
+>> > >>> with additional idea of doing io-control just above elevator on the
+>> > >>> request
+>> > >>> queue using an rb-tree.
+>> > >> Thanks Vivek. All sounds reasonable to me and I think this is be the
+>> > >> right way
+>> > >> to proceed.
+>> > >>
+>> > >> I'll try to design and implement your rb-tree per request-queue idea
+>> > >> into my
+>> > >> io-throttle controller, maybe we can reuse it also for a more generic
+>> > >> solution.
+>> > >> Feel free to send me your experimental proof of concept if you want,
+>> > >> even if
+>> > >> it's not yet complete, I can review it, test and contribute.
+>> > >
+>> > > Currently I have taken code from bio-cgroup to implement cgroups and
+>> > > to
+>> > > provide functionality to associate a bio to a cgroup. I need this to
+>> > > be
+>> > > able to queue the bio's at right node in the rb-tree and then also to
+>> > > be
+>> > > able to take a decision when is the right time to release few
+>> > > requests.
+>> > >
+>> > > Right now in crude implementation, I am working on making system boot.
+>> > > Once patches are at least in little bit working shape, I will send it
+>> > > to you
+>> > > to have a look.
+>> > >
+>> > > Thanks
+>> > > Vivek
+>> >
+>> > I wonder... wouldn't be simpler to just use the memory controller
+>> > to retrieve this information starting from struct page?
+>> >
+>> > I mean, following this path (in short, obviously using the appropriate
+>> > interfaces for locking and referencing the different objects):
+>> >
+>> > cgrp = page->page_cgroup->mem_cgroup->css.cgroup
+>> >
+>> > Once you get the cgrp it's very easy to use the corresponding controller
+>> > structure.
+>> >
+>> > Actually, this is how I'm doing in cgroup-io-throttle to associate a bio
+>> > to a cgroup. What other functionalities/advantages bio-cgroup provide in
+>> > addition to that?
+>>
+>> I've decided to get Ryo to post the accurate dirty-page tracking patch
+>> for bio-cgroup, which isn't perfect yet though. The memory controller
+>> never wants to support this tracking because migrating a page between
+>> memory cgroups is really heavy.
 
-Mainly this is the patch you posted in
+It depends on the migration. The cost is proportional to the number of
+pages moved. The cost can be brought down (I do have a  design on
+paper  -- from long long ago), where moving mm's will reduce the cost
+of migration, but it adds an additional dereference in the common
+path.
 
-http://marc.info/?l=linux-kernel&m=122033025206886&w=2
+>
+>>
+>> I also thought enhancing the memory controller would be good enough,
+>> but a lot of people said they wanted to control memory resource and
+>> block I/O resource separately.
+>
+> Yes, ideally we do want that.
+>
+>>
+>> So you can create several bio-cgroup in one memory-cgroup,
+>> or you can use bio-cgroup without memory-cgroup.
+>>
+>> I also have a plan to implement more acurate tracking mechanism
+>> on bio-cgroup after the memory cgroup team re-implement the
+>> infrastructure,
+>> which won't be supported by memory-cgroup.
+>> When a process are moved into another memory cgroup,
+>> the pages belonging to the process don't move to the new cgroup
+>> because migrating pages is so heavy. It's hard to find the pages
+>> from the process and migrating pages may cause some memory pressure.
+>> I'll implement this feature only on bio-cgroup with minimum overhead
+>
 
-which I replied with a useless reply containing no debug.
-After that I turned KALLSYMS on and posted, did you miss this?
+Kamezawa has also wanted the page migration feature and we've agreed
+to provide a per-cgroup flag to decide to turn migration on/off. I
+would not mind refactoring memcontrol.c if that can help the IO
+controller and if you want migration, force the migration flag to on
+and warn the user if they try to turn it off.
 
-here:
-
-http://marc.info/?l=linux-kernel&m=122033745615187&w=2
-
-Kind Regards, Konsti
-
--- 
-GPG KeyID EF62FCEF
-Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
+Balbir
