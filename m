@@ -1,69 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbYIXKPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbYIXKST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755015AbYIXKPz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 06:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYIXKPp
+	id S1754208AbYIXKST (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 06:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYIXKSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 06:15:45 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:2292 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752084AbYIXKPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 06:15:44 -0400
-Date: Wed, 24 Sep 2008 19:14:39 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: hjk@linutronix.de, gregkh@suse.de,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: UIO device name
-Message-ID: <20080924101439.GC7591@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Joakim Tjernlund <joakim.tjernlund@transmode.se>, hjk@linutronix.de,
-	gregkh@suse.de, Linux-Kernel <linux-kernel@vger.kernel.org>
-References: <1222248093.12624.188.camel@gentoo-jocke.transmode.se> <20080924093551.GB7591@linux-sh.org> <1222250279.12624.195.camel@gentoo-jocke.transmode.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222250279.12624.195.camel@gentoo-jocke.transmode.se>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 24 Sep 2008 06:18:09 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:43521 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752036AbYIXKSI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 06:18:08 -0400
+Date: Wed, 24 Sep 2008 19:18:03 +0900 (JST)
+Message-Id: <20080924.191803.100102323.taka@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       righi.andrea@gmail.com, jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080922143042.GA19222@redhat.com>
+References: <20080919131019.GA3606@redhat.com>
+	<20080922.183651.62951479.taka@valinux.co.jp>
+	<20080922143042.GA19222@redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 11:57:59AM +0200, Joakim Tjernlund wrote:
-> On Wed, 2008-09-24 at 18:35 +0900, Paul Mundt wrote:
-> > On Wed, Sep 24, 2008 at 11:21:33AM +0200, Joakim Tjernlund wrote:
-> > > As far as I can see there isn't a way to name the /dev/uio%d device file
-> > > to something more useful, is that so?
-> > > I would like to name the device file from within the kernel so I can
-> > > find the correct device from userspace.
-> > > The very least is to control the minor(%d) number.
-> > > 
-> > You have a couple of options for this:
-> > 
-> > 	- the 'name' sysfs entry for each of the uio devices, which
-> > 	  corresponds to the uio device name.
-> > 	- extracting the relevant data from things like 'lsuio'.
-> > 	- hooking in the pretty mame through udev to create an alias.
-> 
-> Right, but I want to do it from within the kernel when I create the
-> device because that the only place I truly know what HW the uio maps to.
-> 
-> I found that this works:
->  struct uio_info *info,
->  struct uio_device *idev;
-> 
->  idev = info->uio_dev;
->  device_rename(idev->dev, "irq4");
-> 
-> but then I have to copy the private uio_device struct from uio.c
-> Is there a better way to get at idev->dev?
-> 
-I fail to see what this will buy you that you can't already do with udev
-(or a set of scripts that look at sysfs) today. "the only place I truly
-know what HW the uio maps to" doesn't make any sense, the name is fully
-preserved and exposed. If you can't figure out your device from looking
-at /sys/class/uio/uio?/name, I'm not sure how a rename is going to make
-any difference.
+Hi,
 
-If you need to poke at uio private data, you are almost certainly doing
-something wrong.
+> > > > > To avoid creation of stacking another device (dm-ioband) on top of every
+> > > > > device we want to subject to rules, I was thinking of maintaining an
+> > > > > rb-tree per request queue. Requests will first go into this rb-tree upon
+> > > > > __make_request() and then will filter down to elevator associated with the
+> > > > > queue (if there is one). This will provide us the control of releasing
+> > > > > bio's to elevaor based on policies (proportional weight, max bandwidth
+> > > > > etc) and no need of stacking additional block device.
+> > > > 
+> > > > I think it's a bit late to control I/O requests there, since process
+> > > > may be blocked in get_request_wait when the I/O load is high.
+> > > > Please imagine the situation that cgroups with low bandwidths are
+> > > > consuming most of "struct request"s while another cgroup with a high
+> > > > bandwidth is blocked and can't get enough "struct request"s.
+> > > > 
+> > > > It means cgroups that issues lot of I/O request can win the game.
+> > > > 
+> > > 
+> > > Ok, this is a good point. Because number of struct requests are limited
+> > > and they seem to be allocated on first come first serve basis, so if a
+> > > cgroup is generating lot of IO, then it might win.
+> > > 
+> > > But dm-ioband will face the same issue. 
+> > 
+> > Nope. Dm-ioband doesn't have this issue since it works before allocating
+> > the descriptors. Only I/O requests dm-ioband has passed can allocate its
+> > descriptor.
+> > 
+> 
+> Ok. Got it. dm-ioband does not block on allocation of request descriptors.
+> It does seem to be blocking in prevent_burst_bios() but that would be
+> per group so it should be fine.
+
+Yes. There is also another little mechanism that prevent_burst_bios()
+tries not to block kernel threads if possible.
+
+> That means for lower layers, one shall have to do request descritor
+> allocation as per the cgroup weight to make sure a cgroup with lower
+> weight does not get higher % of disk because it is generating more
+> requests.
+
+Yes. But when cgroups with higher weight aren't issueing a lot of I/Os,
+even a cgroup with lower weight can allocate a lot of request descriptors.
+
+> One additional issue with my scheme I just noticed is that I am putting
+> bio-cgroup in rb-tree. If there are stacked devices then bio/requests from
+> same cgroup can be at multiple levels of processing at same time. That
+> would mean that a single cgroup needs to be in multiple rb-trees at the
+> same time in various layers. So I might have to create a temporary object
+> which can associate with cgroup and get rid of that object once I don't
+> have the requests any more...
+
+You mean each layer should have its rb-tree? Is it per device?
+One lvm logical volume may probably consist from several physical
+volumes, which will be shared with other logical volumes.
+And some layers may split one bio into several bios.
+I hardly can imagine how these structures will be.
+
+But I guess it is a good thing that we are going to support
+a general infrastructure for I/O requests.
+
+> Well, implementing rb-tree per request queue seems to be harder than I 
+> had thought. Especially taking care of decoupling the elevator and reqeust
+> descriptor logic at lower layers. Long way to go..
+
+Thanks,
+Hirokazu Takahashi.
