@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYIXSVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbYIXSWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbYIXSVi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 14:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbYIXSVU
+	id S1754011AbYIXSWD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 14:22:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYIXSVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 14:21:20 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:35985 "EHLO
+	Wed, 24 Sep 2008 14:21:47 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:35994 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753909AbYIXSVS (ORCPT
+	by vger.kernel.org with ESMTP id S1752790AbYIXSVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 14:21:18 -0400
-Date: Wed, 24 Sep 2008 22:21:17 +0400
+	Wed, 24 Sep 2008 14:21:46 -0400
+Date: Wed, 24 Sep 2008 22:21:45 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
@@ -19,9 +19,8 @@ Cc: David Brownell <dbrownell@users.sourceforge.net>,
        Timur Tabi <timur@freescale.com>, Li Yang <leoli@freescale.com>,
        Laurent Pinchart <laurentp@cse-semaphore.com>, linuxppc-dev@ozlabs.org,
        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] powerpc/qe: new call to revert a gpio to a dedicated
-	function
-Message-ID: <20080924182117.GB25744@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/4] USB: Protect hcd.h from multiple inclusions
+Message-ID: <20080924182145.GC25744@oksana.dev.rtsoft.ru>
 References: <20080924182027.GA11180@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -32,101 +31,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-qe_gpio_set_dedicated() is a platform specific function that is used
-to revert a pin to a dedicated on chip peripheral function. Caller
-should have already obtained the gpio via gpio_request().
-
-This is needed to support Freescale USB Host Controller.
+This will let us use this header in other header files.
+Will be needed for the FHCI USB Host driver.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
- arch/powerpc/include/asm/qe.h     |    1 +
- arch/powerpc/sysdev/qe_lib/gpio.c |   46 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 47 insertions(+), 0 deletions(-)
+ drivers/usb/core/hcd.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
-index edee15d..c926147 100644
---- a/arch/powerpc/include/asm/qe.h
-+++ b/arch/powerpc/include/asm/qe.h
-@@ -111,6 +111,7 @@ extern void __par_io_config_pin(struct qe_pio_regs __iomem *par_io, u8 pin,
- extern int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
- 			     int assignment, int has_irq);
- extern int par_io_data_set(u8 port, u8 pin, u8 val);
-+extern int qe_gpio_set_dedicated(unsigned int gpio);
+diff --git a/drivers/usb/core/hcd.h b/drivers/usb/core/hcd.h
+index e710ce0..66b64d7 100644
+--- a/drivers/usb/core/hcd.h
++++ b/drivers/usb/core/hcd.h
+@@ -16,6 +16,8 @@
+  * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
  
- /* QE internal API */
- int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol, u32 cmd_input);
-diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
-index 8e5a0bc..bd7278f 100644
---- a/arch/powerpc/sysdev/qe_lib/gpio.c
-+++ b/arch/powerpc/sysdev/qe_lib/gpio.c
-@@ -26,6 +26,9 @@ struct qe_gpio_chip {
++#ifndef __USB_CORE_HCD_H
++#define __USB_CORE_HCD_H
  
- 	/* shadowed data register to clear/set bits safely */
- 	u32 cpdata;
-+
-+	/* saved_regs used to restore dedicated functions */
-+	struct qe_pio_regs saved_regs;
- };
+ #ifdef __KERNEL__
  
- static inline struct qe_gpio_chip *
-@@ -40,6 +43,12 @@ static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
- 	struct qe_pio_regs __iomem *regs = mm_gc->regs;
+@@ -483,3 +485,5 @@ static inline void usbmon_urb_complete(struct usb_bus *bus, struct urb *urb,
+ extern struct rw_semaphore ehci_cf_port_reset_rwsem;
  
- 	qe_gc->cpdata = in_be32(&regs->cpdata);
-+	qe_gc->saved_regs.cpdata = qe_gc->cpdata;
-+	qe_gc->saved_regs.cpdir1 = in_be32(&regs->cpdir1);
-+	qe_gc->saved_regs.cpdir2 = in_be32(&regs->cpdir2);
-+	qe_gc->saved_regs.cppar1 = in_be32(&regs->cppar1);
-+	qe_gc->saved_regs.cppar2 = in_be32(&regs->cppar2);
-+	qe_gc->saved_regs.cpodr = in_be32(&regs->cpodr);
- }
- 
- static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
-@@ -103,6 +112,43 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	return 0;
- }
- 
-+int qe_gpio_set_dedicated(unsigned int gpio)
-+{
-+	struct gpio_chip *gc = gpio_to_chip(gpio);
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
-+	struct qe_pio_regs __iomem *regs = mm_gc->regs;
-+	struct qe_pio_regs *sregs = &qe_gc->saved_regs;
-+	u8 pin = gpio - gc->base;
-+	u32 mask1 = 1 << (QE_PIO_PINS - (pin + 1));
-+	u32 mask2 = 0x3 << (QE_PIO_PINS - (pin % (QE_PIO_PINS / 2) + 1) * 2);
-+	bool second_reg = pin > (QE_PIO_PINS / 2) - 1;
-+	unsigned long flags;
+ #endif /* __KERNEL__ */
 +
-+	spin_lock_irqsave(&qe_gc->lock, flags);
-+
-+	if (second_reg) {
-+		clrsetbits_be32(&regs->cpdir2, mask2, sregs->cpdir2 & mask2);
-+		clrsetbits_be32(&regs->cppar2, mask2, sregs->cppar2 & mask2);
-+	} else {
-+		clrsetbits_be32(&regs->cpdir1, mask2, sregs->cpdir1 & mask2);
-+		clrsetbits_be32(&regs->cppar1, mask2, sregs->cppar1 & mask2);
-+	}
-+
-+	if (sregs->cpdata & mask1)
-+		qe_gc->cpdata |= mask1;
-+	else
-+		qe_gc->cpdata &= ~mask1;
-+
-+	out_be32(&regs->cpdata, qe_gc->cpdata);
-+	clrsetbits_be32(&regs->cpodr, mask1, sregs->cpodr & mask1);
-+
-+	spin_unlock_irqrestore(&qe_gc->lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(qe_gpio_set_dedicated);
-+
- static int __init qe_add_gpiochips(void)
- {
- 	struct device_node *np;
++#endif /* __USB_CORE_HCD_H */
 -- 
 1.5.6.3
 
