@@ -1,98 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYIXVDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYIXVFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbYIXVDn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 17:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYIXVDf
+	id S1754845AbYIXVFD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 17:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbYIXVEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 17:03:35 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:58739 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752254AbYIXVDe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 17:03:34 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references:x-gmailtapped-by;
-	b=FXZtj6e0XWpszHiFpyg0DJUXKu5Rsta4wBtUYWf7xsrtFC8wgcMpB99w0NR2c4TYv
-	HYIpgDxNw+AkOghGu370w==
-Message-ID: <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
-Date: Wed, 24 Sep 2008 14:03:18 -0700
-From: "Martin Bligh" <mbligh@google.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       "David Wilder" <dwilder@us.ibm.com>, hch@lst.de,
-       "Tom Zanussi" <zanussi@comcast.net>,
-       "Steven Rostedt" <srostedt@redhat.com>
-In-Reply-To: <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com>
+	Wed, 24 Sep 2008 17:04:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49471 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751652AbYIXVEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 17:04:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: Regression in 2.6.27-rc7: Wake On LAN with sky2 broken
+Date: Wed, 24 Sep 2008 23:10:22 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20080924080546.GA21108@x61> <200809242113.52256.rjw@sisk.pl> <20080924194906.GA25874@x61>
+In-Reply-To: <20080924194906.GA25874@x61>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080924051056.650388887@goodmis.org>
-	 <20080924051400.195780424@goodmis.org>
-	 <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>
-	 <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>
-	 <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
-	 <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com>
-	 <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>
-	 <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>
-	 <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>
-	 <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com>
-X-GMailtapped-By: 172.28.16.143
+Message-Id: <200809242310.23477.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK, then how about this?
->
-> Each page will start with a time stamp (I'm still aligning everything by 8
-> bytes, just because it simplifies things). Then we can have a 3 byte
-> (24 bit) counter offset? Then we can have a header that looks like:
->
-> struct {
->        unsigned char time[3];
->        unsigned char length;
->        unsigned char buff[];
-> };
->
-> This still allows me to have the 2048 byte size buffer.
->
-> Or is 24 bits for time too small? The offest will be from the previous
-> entry, and not the beginning of the page.
->
-> If one defines a fixed size entry, we could just use the full 32 bits for
-> the timestamp, since the length will be ignored in that case, and will
-> become part of the buffer.
->
-> Hence,
->
-> struct {
->        unsigned int time;
->        unsigned char length;
->        unsigend char buff[];
-> };
+On Wednesday, 24 of September 2008, Tino Keitel wrote:
+> On Wed, Sep 24, 2008 at 21:13:51 +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, 24 of September 2008, Tino Keitel wrote:
+> > > Hi,
+> > > 
+> > > Wake On LAN from suspend to RAM doesn't work on my Mac mini Core Duo
+> > > with 2.6.27-rc7. I tested the same configuration with 2.6.26.3, and it
+> > > worked. With 2.6.27-rc7, the computer stays in suspended state. I can
+> > > still wake it up using the keyboard or power switch.
+> > > 
+> > > In my suspend script, I use the command "ethtool -s eth0 wol g" to
+> > > enable WOL even if it was disabled before.
+> > > 
+> > > Any hints what commit I should try to revert, before I start bisecting?
+> > 
+> > Please try the appended patch.
+> 
+> With this patch, the computer hangs during suspend.
 
-How about we just steal 5 bits from the timestamp to indicate event
-lengths up to 32 bytes, and if it's 0, that means there's a length
-field following? Also that'd mean you could use a longer length field
-and get beyond 256 bytes to 4096, without impacting most events.
+This is not good.  It probably means that it actually tries to set up the NIC
+for waking up the system, but something broke _that_ for you.
 
-struct {
-        u32 length:5, time_delta:27;
-        u16 length;
-        u8 buf[];
-};
+FWIW, I tried it on my test machine with sky2 and it worked.
 
-struct {
-        u32 length:5, time_delta:27;        /* where length == 0 */
-        u8 buf[];
-};
+Can you try:
 
-Obviously we could less than 5 bits, even just 1 for a flag ...
+# ethtool -s eth0 wol g
+# echo devices > /sys/power/pm_test
+# echo mem > /sys/power/state
+(this should wait for 5 seconds and return to the command line)
+
+and see if the machine hangs during this operation?
+
+Please also attach the boot log from your system.
+
+Thanks,
+Rafael
