@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYIXXps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbYIXXub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbYIXXps (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 19:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYIXXpk
+	id S1753636AbYIXXub (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 19:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbYIXXuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 19:45:40 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:56288 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751097AbYIXXpk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 19:45:40 -0400
-Date: Thu, 25 Sep 2008 00:43:37 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: David Howells <dhowells@redhat.com>
-cc: Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
-In-Reply-To: <30202.1222286376@redhat.com>
-Message-ID: <Pine.LNX.4.64.0809250035030.21674@blonde.site>
-References: <Pine.LNX.4.64.0809242030090.12147@blonde.site>
- <20080923053228.GA5825@wotan.suse.de> <20080914073906.GA6184@elte.hu>
- <20080914004442.4f8e851f.akpm@linux-foundation.org> <20080914080631.GA10720@elte.hu>
- <20080914221231.GG27080@wotan.suse.de> <20080917131419.e6b7622e.akpm@linux-foundation.org>
- <20080918111226.GD29968@elte.hu> <48D2ABFD.3040103@goop.org>
- <1221772310.4779.29.camel@calx> <1221877119.8533.2.camel@nimitz>
- <13787.1222095249@redhat.com> <22749.1222280305@redhat.com>
- <1222280971.4425.42.camel@calx>  <30202.1222286376@redhat.com>
+	Wed, 24 Sep 2008 19:50:22 -0400
+Received: from sous-sol.org ([216.99.217.87]:50032 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752346AbYIXXuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 19:50:22 -0400
+Date: Wed, 24 Sep 2008 16:49:03 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       Andreas Gruenbacher <agruen@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 2/2] file capabilities: remove
+	CONFIG_SECURITY_FILE_CAPABILITIES
+Message-ID: <20080924234857.GA22375@sequoia.sous-sol.org>
+References: <20080924020432.GA25997@us.ibm.com> <20080924020526.GA26058@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080924020526.GA26058@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008, David Howells wrote:
-> Hugh Dickins <hugh@veritas.com> wrote:
+* Serge E. Hallyn (serue@us.ibm.com) wrote:
+> Remove the option to compile the kernel without file capabilities.  Not
+> compiling file capabilities actually makes the kernel less safe, as it
+> includes the possibility for a task changing another task's capabilities.
 > 
-> > If we're hell-bent on #ifdefs throughout mm/shmem.c, I wouldn't
-> > mind scattering some CONFIG_SWAPs in there too, would cut out
-> > lots of overhead when swap unconfigured.  But again, how ugly?
-> 
-> That might be necessary: NOMMU doesn't support swap.
+> Some are concerned that userspace tools (and user education) are not
+> up to the task of properly configuring file capabilities on a system.
+> For those cases, there is now the ability to boot with the no_file_caps
+> boot option.  This will prevent file capabilities from being used in
+> the capabilities recalculation at exec, but will not change the rest
+> of the kernel behavior which used to be switchable using the
+> CONFIG_SECURITY_FILE_CAPABILITIES option.
 
-Matt would be dealing with that aspect in his unification: SHMEM
-depends on MMU, so !MMU gives you TINY_SHMEM - I'm sure he wouldn't
-have any of the SWAP stuff in the TINY_SHMEM part of his unification.
-But there's still value in adding CONFIG_SWAPs too (if the #ifdefs
-were tolerable, by no means clear).
+(note: defconfig has CONFIG_SECURITY_FILE_CAPABILITIES=y)
+   text    data     bss     dec     hex filename
+6805157 1018344  671900 8495401  81a129 obj64-defconfig/vmlinux
+6805151 1018368  671900 8495419  81a13b obj64-defconfig-patch1/vmlinux
+6805151 1018368  671900 8495419  81a13b obj64-defconfig-patch2/vmlinux
+6804605 1018344  671900 8494849  819f01 obj64-nofcap/vmlinux
+6804604 1018344  671900 8494848  819f00 obj64-nofcap-patch1/vmlinux
+6805150 1018368  671900 8495418  81a13a obj64-nofcap-patch2/vmlinux
 
-Hugh
+The last 2 show the real diff now, add 570 bytes by effectively forcing
+CONFIG_SECURITY_FILE_CAPABILITIES on.
+
+What is being done to enable userspace in distros to make those 570
+bytes generally useful?
+
+thanks,
+-chris
