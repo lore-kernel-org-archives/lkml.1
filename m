@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbYIXUrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYIXUsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755312AbYIXUrw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 16:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYIXUrm
+	id S1755255AbYIXUsp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 16:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbYIXUsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 16:47:42 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:52980 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752721AbYIXUrl (ORCPT
+	Wed, 24 Sep 2008 16:48:01 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:37532 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754850AbYIXUr6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 16:47:41 -0400
-Date: Wed, 24 Sep 2008 16:47:15 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: David Miller <davem@davemloft.net>, airlied@gmail.com, jkosina@suse.cz,
-       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       chrisl@vmware.com
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-Message-ID: <20080924204715.GL9929@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jonathan Corbet <corbet@lwn.net>,
-	David Miller <davem@davemloft.net>, airlied@gmail.com,
-	jkosina@suse.cz, jeffrey.t.kirsher@intel.com, david.vrabel@csr.com,
-	rjw@sisk.pl, linux-kernel@vger.kernel.org,
-	kernel-testers@vger.kernel.org, chrisl@vmware.com
-References: <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz> <20080923.211215.193696086.davem@davemloft.net> <21d7e9970809232245x6a91c6e2l552ff039d07e2017@mail.gmail.com> <20080924.003638.71148740.davem@davemloft.net> <20080924102730.31ee305a@bike.lwn.net>
+	Wed, 24 Sep 2008 16:47:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=UcMMpqx8koQ8+Faj1bGxtSUfbC1SZMm/CGIbvEuCSbAfzSXp/LufFofgdNNTAhne3Mv7LLMTkziJ4iK4clzJWF7LUfqNYS0eXVZADyOzlKILk8EbTsRBinybfOi4EuuC4zEG8oH5yOIaA2NUq2/PlOhCgvThweurPu2FyjEn6hQ=  ;
+X-YMail-OSG: i9.JdloVM1lHVqezOWcDvOthoQDlG8LsDftzSqq5gZvlRJvJYB8vyQUqbhBTl0dH6QwAiWxc09xhhbC8kTYs39P1ZJ_4FHkLX7.J8AE_sf1tHh9GENNXPhz5ggmDdYMkzzk-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
+Date: Wed, 24 Sep 2008 13:10:02 -0700
+User-Agent: KMail/1.9.9
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, greg@kroah.com,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1219916613-28827-1-git-send-email-leoli@freescale.com> <200808281704.20999.arnd@arndb.de>
+In-Reply-To: <200808281704.20999.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20080924102730.31ee305a@bike.lwn.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200809241310.03171.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 10:27:30AM -0600, Jonathan Corbet wrote:
-> On Wed, 24 Sep 2008 00:36:38 -0700 (PDT)
-> David Miller <davem@davemloft.net> wrote:
+On Thursday 28 August 2008, Arnd Bergmann wrote:
+> > +/*-------------------------------------------------------------------------
+> > +     Gadget driver register and unregister.
+> > + --------------------------------------------------------------------------*/
+> > +int usb_gadget_register_driver(struct usb_gadget_driver *driver)
+> > +EXPORT_SYMBOL(usb_gadget_register_driver);
+> > +
+> > +int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
+> > +EXPORT_SYMBOL(usb_gadget_unregister_driver);
 > 
-> > I'm about to leave for a week or so in Paris for the netfilter
-> > workshop, so I hope that someone other than myself will do some data
-> > mining like I have instead of (merely) tossing theories around and
-> > finger pointing.
-> 
-> A data point, just in case it helps...  I've not had time to update my
-> desktop system, so this all-Intel, ICH9, e1000e-based box has been stuck
-> at 2.6.27-rc3.  It has rawhide as of shortly after the floodgates
-> reopened (but with my own kernel); that means X server 1.5.0 and i810
-> 2.4.2-3.
+> Not addressing this driver in particular, but the USB gadget layer in
+> general: This is a horrible interface, since every gadget driver exports
+> the same symbols, 
 
-I'm running a 2.6.26-rc6 kernel on a X61s laptop, which is an
-all-Intel ICH8, using the e1000e driver, and I haven't been been
-bitten with the problem either.  I'm using an Ubuntu Hardy userspace,
-which means I'm using an 1.4.0.90 X Server with an i915 drm version
-1.6.0 20060119, and my e1000 EEPROM hasn't been blasted to oblivion
-yet!
+Bad terminology.  Gadget drivers are what sit on TOP of peripheral
+controller drivers ... only peripheral controller drivers touch the
+actual hardware registers.  They export an abstract "gadget" interface.
 
-Personally, I don't plan on upgrading to a newer userspace until we
-figure out what the heck is going on.  :-)
+Gadget drivers are what talk *to* that abstract interface.
 
-					- Ted
+
+> you can never build a kernel that includes more than 
+> one gadget driver. Even if the drivers are all built as modules, simply
+> loading one of them prevents loading another one.
+
+That's never been a particular requirement.  Systems won't get
+USB branding if they have more than one USB peripheral (upstream)
+port.  Supporting more than one type of controller hardware is
+at best a pretty esoteric configuration.
+
+If you really want to see such stuff ... -ENOPATCH.  :)
+
+- Dave
+
