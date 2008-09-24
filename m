@@ -1,53 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbYIXIex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYIXIky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbYIXIex (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 04:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYIXIer
+	id S1752766AbYIXIky (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 04:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYIXIkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 04:34:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41464 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750968AbYIXIeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 04:34:46 -0400
-Date: Wed, 24 Sep 2008 10:34:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] - V2 Add early detection of UV system types
-Message-ID: <20080924083436.GB5576@elte.hu>
-References: <20080923182817.GA6335@sgi.com> <86802c440809231159x69883d44y26bbd491b6504a0f@mail.gmail.com> <20080923193049.GA21605@sgi.com> <86802c440809231239o207c893ja508a1574bd04706@mail.gmail.com> <20080923203713.GA9606@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080923203713.GA9606@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 24 Sep 2008 04:40:46 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57985 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbYIXIkp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 04:40:45 -0400
+Date: Wed, 24 Sep 2008 17:46:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 9/13] memcg: lookup page cgroup (and remove pointer from
+ struct page)
+Message-Id: <20080924174650.ed59c615.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48D9FAFF.8070404@linux.vnet.ibm.com>
+References: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080922201206.e73d9ce6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080924084839.f5901719.kamezawa.hiroyu@jp.fujitsu.com>
+	<661de9470809231909h24ca4a39k470e322f2c1019dc@mail.gmail.com>
+	<20080924120940.5aea6907.kamezawa.hiroyu@jp.fujitsu.com>
+	<48D9FAFF.8070404@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 24 Sep 2008 01:31:59 -0700
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-* Jack Steiner <steiner@sgi.com> wrote:
-
-> Portions of the ACPI code needs to know if a system is a UV system prior
-> to genapic initialization. This patch adds a call early_acpi_boot_init()
-> so that the apic type is discovered earlier.
+> KAMEZAWA Hiroyuki wrote:
+> > On Wed, 24 Sep 2008 07:39:58 +0530
+> > "Balbir Singh" <balbir@linux.vnet.ibm.com> wrote:
+> >>> I'll add FLATMEM/DISCONTIGMEM/SPARSEMEM support directly.
+> >>> I already have wasted a month on this not-interesting work and want to fix
+> >>> this soon.
+> >>>
+> >> Let's look at the basic requirement, make memory resource controller
+> >> not suck with 32 bit systems. I have been thinking of about removing
+> >> page_cgroup from struct page only for 32 bit systems (use radix tree),
+> >> 32 bit systems can have a maximum of 64GB if PAE is enabled, I suspect
+> >> radix tree should work there and let the 64 bit systems work as is. If
+> >> performance is an issue, I would recommend the 32 bit folks upgrade to
+> >> 64 bit :) Can we build consensus around this approach?
+> >>
+> > My thinking is below. (assume 64bit)
+> > 
 > 
-> Signed-off-by: Jack Steiner <steiner@sgi.com>
+> assume 64 bit for the calculations below?
 > 
-> ---
+yes.
+
+> >   - remove page_cgroup pointer from struct page allows us to reduce
+> >     static memory usage at boot by 8bytes/4096bytes if memory cgroup is disabled.
+> >     This reaches 96MB on my 48 GB box. I think this is big.
+> >   - pre-allocation of page_cgroup gives us following.
+> >    Pros.
+> >       - We are not necessary to be afraid of "failure of kmalloc" and
+> >         "goes down to memory reclaim at kmalloc"
+> >         This makes memory resource controller much simpler and robust.
+> >       - We can know what amount of kernel memory will be used for
+> >         LRU pages management.
+> >    Cons.
+> >       - All page_cgroups are allocated at boot.
+> >         This reaches 480MB on my 48GB box.
+> > 
+> >   But I think we can ignore "Cons.". If we use up memory, we'll use tons of
+> >   page_cgroup. Considering memory fragmentation caused by allocating a lots of
+> >   very small object, pre-allocation makes memcg better.
 > 
-> V2 of the patch adding fixes from Yinghai Lu.
-> Much cleaner and smaller.
+> This looks like a good patch. I'll review and test it.
+> 
 
-applied to tip/x86/uv, thanks!
+At least, I should handle "use vmalloc if kmalloc fails" case.
+But will not have no major updates. I'll update the whole to the newest
+mmotm and post tomorrow if I can start test tonight.
 
-	Ingo
+Thanks,
+-Kame
+
+
