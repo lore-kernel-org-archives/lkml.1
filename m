@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbYIXQ4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYIXQ6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755257AbYIXQ4l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 12:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYIXQ43
+	id S1754806AbYIXQ6R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 12:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYIXQ6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 12:56:29 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:14814 "EHLO
-	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752699AbYIXQ42 (ORCPT
+	Wed, 24 Sep 2008 12:58:05 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:47385 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751166AbYIXQ6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 12:56:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=JsZ2P2LlwN7tIClVgz66PnrtHEkDMufLwAHb7C3I4dmWg+jN3Ge49yuwRG5mjIwan
-	CtU9UB2rjkZsuop3iZrAA==
-Message-ID: <33307c790809240956o6552e570vaf4adb3b7e1b2415@mail.gmail.com>
-Date: Wed, 24 Sep 2008 09:56:20 -0700
-From: "Martin Bligh" <mbligh@google.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       "David Wilder" <dwilder@us.ibm.com>, hch@lst.de,
-       "Tom Zanussi" <zanussi@comcast.net>,
-       "Steven Rostedt" <srostedt@redhat.com>
-In-Reply-To: <alpine.DEB.1.10.0809241231520.5017@gandalf.stny.rr.com>
+	Wed, 24 Sep 2008 12:58:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=S7cnGXJeqc3PRkW4WKmPRTNARAU70efyePL4K8lNMyKR2aipRMvRi8JE6M4f4e1eXT
+         N5Yd5t02RBrKGHpH7zPu0Wax4jDHiI9CsJ8DPn9aEaPeqMJ/tt02DcjR8FkDWLRaX+QE
+         D5QcGEzwSdjxewRfzjPEZ6nSIUnXPqno5a87g=
+Message-ID: <e9c3a7c20809240958i3ed4b7fbv3c13b6bbc31ac6ee@mail.gmail.com>
+Date: Wed, 24 Sep 2008 09:58:02 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: [PATCH] fsldma: remove internal self-test from Freescale Elo DMA driver
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       scottwood@freescale.com, galak@kernel.crashing.org, leoli@freescale.com
+In-Reply-To: <1222201756-21374-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080924051056.650388887@goodmis.org>
-	 <20080924051400.195780424@goodmis.org>
-	 <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>
-	 <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>
-	 <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
-	 <alpine.LFD.1.10.0809240921430.3265@nehalem.linux-foundation.org>
-	 <alpine.DEB.1.10.0809241231520.5017@gandalf.stny.rr.com>
+References: <1222201756-21374-1-git-send-email-timur@freescale.com>
+X-Google-Sender-Auth: a117085906d158b4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Most people will want the events to be as _small_ as humanly possible. The
->> normal event size should hopefully be in the 8-16 bytes, and I think the
->> RFC patch is already broken because it allocates that insane 64-bit event
->> counter for things. Who the hell wants a 64-bit event counter that much?
->> That's broken.
+On Tue, Sep 23, 2008 at 1:29 PM, Timur Tabi <timur@freescale.com> wrote:
+> The Freescale Elo DMA driver runs an internal self-test before registering
+> the channels with the DMA engine.  This self-test has a fundemental flaw in
+> that it calls the DMA engine's callback functions directly before the
+> registration.  However, the registration initializes some variables that the
+> callback functions uses, namely the device struct.
 >
-> The event counter is just the timestamp (quick patch, simple to fix). The
-> term "counter" was bad. It should have been timestamp, which one would
-> want a 64bit timestamp. Or at least a way to figure it out. Yes, we can
-> store a special event called "timestamp" and have a smaller counter. But
-> for simplicity, the 64 bit was easy. The event id was just 16 bits, which
-> I think is way more than enough.
+> The code works today because there are two device structs: the one created
+> by the DMA engine, and one created by the Open Firmware (OF) subsystem.  The
+> self-test currently uses the device struct created by OF.  However, in the
+> future, some of the device structs created by OF will be eliminated.
+> This means that the self-test will only have access to the device struct
+> created by the DMA engine.  But this device struct isn't initialized when
+> the self-test runs, and this causes a kernel panic.
+>
+> Since there is already a DMA test module (dmatest), the internal self-test
+> code is not useful anyway.  It is extremely unlikely that the test will fail
+> in normal usage.  It may have been helpful during development, but not any more.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>
+> This patch is for 2.6.28.
 
-Yup, is just a confusing name. we can definitely make this a smaller field
-by doing an offset time from the last event, but we agreed on 64 bits to
-keep version 1 simple ;-)
+Applied to the 'next' [1] branch.
 
-I think in retrospect the timestamp events we used with wall time stuck
-in them were a mistake, as NTP will make them difficult. We should have
-just recorded wall time at the start of the buffer, and done offsets from
-there.
+Thanks,
+Dan
 
-Without relayfs subbuffers, the offset thing gets trickier, as you'd have
-to update the "start time" constantly once you'd filled the buffer and
-were shifting the start pointer. OTOH, I guess it's only 1 cacheline.
-
-M.
+[1] http://git.kernel.org/?p=linux/kernel/git/djbw/async_tx.git;a=shortlog;h=next
