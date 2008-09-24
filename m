@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYIXVF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbYIXVIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbYIXVF0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 17:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbYIXVFI
+	id S1754696AbYIXVIn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 17:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYIXVIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 17:05:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36821 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754885AbYIXVFG convert rfc822-to-8bit (ORCPT
+	Wed, 24 Sep 2008 17:08:35 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44596 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752293AbYIXVIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 17:05:06 -0400
-Date: Wed, 24 Sep 2008 14:05:16 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "=?UTF-8?B?UGF3ZcWC?= Sikora" <pluto@agmk.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [kernel-abi] symbol versioning vs. out-of-tree modules.
-Message-ID: <20080924140516.3771c413@infradead.org>
-In-Reply-To: <Y165ES5i.1222268879.9618400.pluto@agmk.net>
-References: <Y165ES5i.1222268879.9618400.pluto@agmk.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 24 Sep 2008 17:08:35 -0400
+Date: Wed, 24 Sep 2008 17:08:33 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Martin Bligh <mbligh@google.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <33307c790809241356l79acc57cxa4fb84c1e5dae1da@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0809241703560.10529@gandalf.stny.rr.com>
+References: <20080924051056.650388887@goodmis.org>  <20080924051400.195780424@goodmis.org>  <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
+  <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com>  <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>  <33307c790809241054n47addd27hef90930f109599fd@mail.gmail.com>  <33307c790809241104k2af4b900w781aba1a1393004b@mail.gmail.com> 
+ <alpine.LFD.1.10.0809241330270.3265@nehalem.linux-foundation.org> <33307c790809241356l79acc57cxa4fb84c1e5dae1da@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008 17:07:59 +0200
-"Paweł Sikora" <pluto@agmk.net> wrote:
 
-> Hi All,
+On Wed, 24 Sep 2008, Martin Bligh wrote:
+
+> > On Wed, 24 Sep 2008, Martin Bligh wrote:
+> >>
+> >> If we use 32 bits instead of 27, then the timestamp events are only
+> >> about once per second, which is probably fine for overhead ... ?
+> >
+> > You'd have them ONCE IN A BLUE MOON.
+> >
+> > If there is nothing going on, you don't need the timestamps at all.
 > 
-> with out-of-tree kernel modules we (users and linux distributions)
-> have a problem - with every frequent kernel release we need
-> to rebuild them all due to vermagic and possible abi changes.
-> this leads to lot of useless work (bumping rpm specs releases,
-> preparing rpm packages and so on).
+> Yeah, you're right - we can just mark it dirty, and 'pre-log' the timestamp
+> events when someone calls a reserve and we haven't logged anything
+> for more time than we can store. Did not think of that. Was only 5 bits
+> for us, not an extra 37, but still, is much better.
 > 
-> naturally we could workaround the modprobe vermagic errors
-> but we currently can't detect the big-bang kernel abi changes.
-> e.g., some kernel function changes its parameter list while
-> the exported function(symbol) name still staying unchanged.
-> finally we get a modprobe-big-bang.
+> Is a 5-bit event id generic enough though?
 > 
-> in fact, we can't use a c++ symbol name mangling to avoid
-> such problems but kernel build system could use a linker script
-> to versioning symbols (like glibc/libgcc). during the abi change,
-> kernel developers could just bump the symbol version and
-> external modules could be refused during loading with
-> 'unresolved symbol' error which is imho much better solutio
 
+Actually, I was keeping the event id completely out of the ring buffer and 
+let a higher layer deal with that. For padding, I just made the length 
+field zero.
 
-if it were up to me we would remove modversions from the kernel and
-just hard require an exact build of the module to the kernel; anything
-else is .. at best an educated wild guess.
+For overflows of the timestamp, we can reserve the -1 timestamp as a 
+trigger to read the tsc again and put the full 64 bits into the record.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Just an idea.
+
+-- Steve
+
