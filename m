@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbYIXStR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbYIXSvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753791AbYIXStR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 14:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbYIXStH
+	id S1753885AbYIXSvR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 14:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYIXSvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 14:49:07 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:39891 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751517AbYIXStG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 14:49:06 -0400
-Message-ID: <48DA8B9C.1070200@skyrush.com>
-Date: Wed, 24 Sep 2008 12:49:00 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071119)
+	Wed, 24 Sep 2008 14:51:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57002 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752122AbYIXSvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 14:51:07 -0400
+Date: Wed, 24 Sep 2008 14:50:23 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org, agk@redhat.com,
+       mbroz@redhat.com, chris@arachsys.com
+Subject: Re: [PATCH] Memory management livelock
+In-Reply-To: <20080923164623.ce82c1c2.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0809241439580.17357@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+ <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+ <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+ <20080923154905.50d4b0fa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
+ <20080923164623.ce82c1c2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Advice sought: pty/tty gets into "gridlock" if it does too much input/output
- while stopped
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been investigating an issue I ran into recently, and I am not yet sure how
-to fix it, so I am soliciting suggestions.
+> > > yup, that's pretty much unfixable, really, unless new locks are added
+> > > which block threads which are writing to unrelated sections of the
+> > > file, and that could hurt some workloads quite a lot, I expect.
+> > 
+> > It is fixable with the patch I sent --- it doesn't take any locks unless 
+> > the starvation happens. Then, you don't have to use .nr_to_write for 
+> > fsync anymore.
+> 
+> I agree that the patch is low-impact and relatively straightforward. 
+> The main problem is making the address_space larger - there can (and
+> often are) millions and millions of these things in memory.  Making it
+> larger is a big deal.  We should work hard to seek an alternative and
+> afacit that isn't happening here.
+> 
+> We already have existing code and design which attempts to avoid
+> livelock without adding stuff to the address_space.  Can it be modified
+> so as to patch up this quite obscure and rarely-occuring problem?
 
-Basically, it is quite easy to "gridlock" (I avoided the term "deadlock", since
-this is not a locking issue) a shell/xterm session by stopping the tty (e.g.
-hitting ^S) and then causing lots of input and output.  Here is an easy way to
-do it:
+I reworked my patch to use a bit in address_space->flags and hashes wait 
+queues, so it doesn't take any extra memory. I'm sending it in three 
+parts.
+1 - make generic function wait_action_schedule
+2 - fix the livelock, the logic is exactly the same as in my previous 
+patch, wait_on_bit_lock is used instead of mutexes
+3 - remove that nr_pages * 2 limit, because it causes misbehavior and 
+possible data loss.
 
-1) open an xterm
-2) type "grep foo"
-3) hit ^S
-4) paste a large number of lines (more than the 4k size)
-   containing the word "foo" (this causes output for every input)
-
-There is now no way to break out of this condition in a normal way.  Signals
-(e.g. ^C, ^Z) and ^Q cannot break out of this state, since the input character
-cannot make it into the line discipline (I never see it in the buffer in
-pty_write() after the condition takes hold).  The only thing that can be done is
-to close the xterm window.
-
-The problem is that pty_write() (when trying to process typed characters) finds
-that "to->receive_room" is zero, so no data is passed to n_tty_receive_buf(),
-and nothing can move.  Since both the reads and writes (both of which pass
-through the pty_write() function) are waiting to have some space with which to
-work, and the tty is stopped, things are stuck.  Since signal and ^Q chars do
-not need buffer space, perhaps these could (perhaps) get a higher priority and
-be sent through, but since I do not see them in the pty_write() buffer when
-issued *during* the condition, it is not clear where this should be done, or if
-it is the right solution.  I've verified this as far back as 2.6.24.
-
-							-Joe
-
-
+Mikulas
