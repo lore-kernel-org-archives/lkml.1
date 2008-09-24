@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYIXS7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbYIXS7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbYIXS7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 14:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYIXS7J
+	id S1752724AbYIXS7j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 14:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYIXS73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 14:59:09 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:32451 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752202AbYIXS7I (ORCPT
+	Wed, 24 Sep 2008 14:59:29 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:59878 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753812AbYIXS72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 14:59:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=IW3wl+jDQ4VHiuwWnd9As30em6zOtn70/gfOOioxvh4pNYLFPRsZpkL/Y14TJ1LHFtCwfQ7YhQiUcvaGMpzZTK1cFLqbfO2Gcyn6VyZ0O67EuGbSidgNTFnT9qPThw804mhq/UmvHCb+QPadbw1+EfAuWb+4MhE232Q5dcqeSac=  ;
-X-YMail-OSG: mG1n0t4VM1mqr3.ehoTAonQp_zLMtfVsORDm.iJGGtDyrVFr_48e_yZTy8o5L9d4XorzFGW7N6Gx4g4LGvuzxLjGCEolzOioykV4up0D56NuRk2a1y4cDlTldqQ7cA3HRgQ-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 3/3] USB: driver for Freescale QUICC Engine USB =?iso-8859-1?q?Host=09Controller?=
-Date: Wed, 24 Sep 2008 11:59:03 -0700
-User-Agent: KMail/1.9.9
-Cc: avorontsov@ru.mvista.com, Andrew Morton <akpm@linux-foundation.org>,
-       greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, leoli@freescale.com, timur@freescale.com
-References: <20080918151659.GA20140@oksana.dev.rtsoft.ru> <20080923225730.GB13617@oksana.dev.rtsoft.ru> <48DA1544.5010307@ru.mvista.com>
-In-Reply-To: <48DA1544.5010307@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200809241159.04427.david-b@pacbell.net>
+	Wed, 24 Sep 2008 14:59:28 -0400
+Subject: Re: [PATCH 1/2] Report the pagesize backing a VMA in
+	/proc/pid/smaps
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, agl@us.ibm.com,
+       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
+In-Reply-To: <20080924171003.GD10837@csn.ul.ie>
+References: <20080923211140.DC16.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080923194655.GA25542@csn.ul.ie>
+	 <20080924210309.8C3B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080924154120.GA10837@csn.ul.ie> <1222272395.15523.3.camel@nimitz>
+	 <20080924171003.GD10837@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 24 Sep 2008 11:59:09 -0700
+Message-Id: <1222282749.15523.59.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 September 2008, Sergei Shtylyov wrote:
+On Wed, 2008-09-24 at 18:10 +0100, Mel Gorman wrote:
+> On (24/09/08 09:06), Dave Hansen didst pronounce:
+> > On Wed, 2008-09-24 at 16:41 +0100, Mel Gorman wrote:
+> > > I admit it's ppc64-specific. In the latest patch series, I made this a
+> > > separate patch so that it could be readily dropped again for this reason.
+> > > Maybe an alternative would be to display MMUPageSize *only* where it differs
+> > > from KernelPageSize. Would that be better or similarly confusing?
+> > 
+> > I would also think that any arch implementing fallback from large to
+> > small pages in a hugetlbfs area (Adam needs to post his patches :) would
+> > also use this.
+> > 
 > 
-> >>   ... then the root hub emulation is completely pointless.
-> >>     
-> >
-> > It isn't. We always should emulate the root hub. The root hub
-> > is part and parcel of any USB Host. Even the one-port one.
+> Fair point. Maybe the thing to do is backburner this patch for the moment and
+> reintroduce it when/if an architecture supports demotion? The KernelPageSize
+> reporting in smaps and what the hpagesize in maps is still useful though
+> I believe. Any comment?
+
+I'd kinda prefer to see it normalized into a single place rather than
+sprinkle it in each smaps file.  We should be able to figure out which
+mount the file is from and, from there, maybe we need some per-mount
+information exported.  
+
+> (future stuff from here on)
 > 
->    Hm, maybe that's what USB core thinks (because UHCI/OHCI/EHCI all 
-> have it) but e.g. MUSB doesn't have the root hub registers...
+> In the future if demotion does happen then the MMUPageSize information may
+> be genuinely useful instead of just a curious oddity on ppc64. As you point
+> out, Adam (added to cc) has worked on this area (starting with x86 demotion)
+> in the past but it's a while before it'll be considered for merging I believe.
+> 
+> That aside, more would need to be done with the page size reporting then
+> anyway. For example, it maybe indicate how much of each pagesize is in a VMA
+> or indicate that KernelPageSize is what is being requested but in reality
+> it is mixed like;
+> 
+> KernelPageSize:		2048 kB (mixed)
+> 
+> or
+> 
+> KernelPageSize:		2048 kB * 5, 4096 kB * 20
 
-Only the OHCI registers have bit positions matching what the USB
-spec says for hub status bits.  Everything else, including musb_hdrc,
-has the relevant status encoded in other bits.
+Looks a bit verbose, but I agree with the sentiment.
 
-
-> I looked at the core and figured that USB core seems to use the root hub 
-> interface for port PM, etc. and expects it to bee present, so it seems 
-> unavoidable indeed... :-/
-
-Or more fundamentally:  for enumeration.  "Unavoidable" is correct.  ;)
+-- Dave
 
