@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYIXWnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbYIXWny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753139AbYIXWnZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbYIXWnR
+	id S1753634AbYIXWny (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYIXWnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:43:17 -0400
-Received: from gw.goop.org ([64.81.55.164]:52489 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbYIXWnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:43:16 -0400
-Message-ID: <48DAC285.80507@goop.org>
-Date: Wed, 24 Sep 2008 15:43:17 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 24 Sep 2008 18:43:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34455 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750892AbYIXWno (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:43:44 -0400
+Date: Wed, 24 Sep 2008 15:41:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <alpine.LFD.1.10.0809241458270.3265@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0809241534400.3265@nehalem.linux-foundation.org>
+References: <20080924051056.650388887@goodmis.org> <20080924051400.195780424@goodmis.org> <1222268595.16700.149.camel@lappy.programming.kicks-ass.net> <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com> <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
+ <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com> <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <33307c790809241054n47addd27hef90930f109599fd@mail.gmail.com> <alpine.LFD.1.10.0809241323590.3265@nehalem.linux-foundation.org>
+ <20080924205334.GB12248@Krystal> <alpine.LFD.1.10.0809241458270.3265@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Hugh Dickins <hugh@veritas.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Peter Chubb <peterc@gelato.unsw.edu.au>
-Subject: Re: PTE access rules & abstraction
-References: <1221846139.8077.25.camel@pasglop>  <48D739B2.1050202@goop.org>	 <1222117551.12085.39.camel@pasglop>	 <Pine.LNX.4.64.0809241919520.575@blonde.site>	 <1222291248.8277.90.camel@pasglop>  <48DAB7E2.5030009@goop.org> <1222294041.8277.104.camel@pasglop>
-In-Reply-To: <1222294041.8277.104.camel@pasglop>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
->> What do you propose then?  Ideally one would like to get something that
->> works for powerpc, s390, all the wacky ia64 modes as well as x86.  The
->> ia64 folks proposed something, but I've not looked at it closely.  From
->> an x86 virtualization perspective, something that's basically x86 with
->> as much scope for batching and deferring as possible would be fine.
->>     
->
-> That's where things get interesting. I liked Nick ideas of doing
-> something transactional that could encompass the lock, bach and flushing
-> but that may be too much at this stage...
->   
 
-Yes, that sounds fine in principle, but the practise gets tricky.  The
-trouble with that kind of interface is that it can be fairly heavyweight
-unless you amortise the cost of the transaction setup/commit with
-multiple operations.
 
->> ptep_get_and_clear() is not batchable anyway, because the x86
->> implementation requires an atomic xchg on the pte, which will likely
->> result in some sort of trap (and if it doesn't then it doesn't need
->> batching).
->>     
->
-> Well, ptep_get_and_clear() used to be used by zap_pte_range() which I
-> _HOPE_ was batchable on x86 :-)
->
-> Nowadays, there's this new ptep_get_and_clear_full() (yet another
-> totally meaningless name for an ad-hoc API added for some random special
-> purpose) that zap_pte_range() uses. Maybe that one is now subtly
-> different such as it can be used to batch on x86 ?
->   
+On Wed, 24 Sep 2008, Linus Torvalds wrote:
+> 
+>  - case 1: TSCExtend marker
+> 	data = extended TSC (bits 28..59)
+> 	size = 8
+> 
+>  - case 2: TimeStamp marker
+> 	data = tv_nsec
+> 	array[0] = tv_sec
+> 	size = 16
 
-Yeah.  zap_pte_range isn't great when doing a munmap, but the _full gunk
-lets it special-case process teardown and it ends up not being a
-performance problem (in the Xen case, we've already switch to another
-pagetable at that point, so it isn't really a pagetable any more and
-needs no hypercalls).
+Btw, in case it wasn't clear, those two are totally different things.
 
-> In any case, powerpc batches -everything- (unless it's called *_flush in
-> which case the flush is immediate) in a private per-cpu batch and
-> flushes the hash when leaving lazy mode.
->   
+The "case 1" thing is the thing that gets inserted automatically by the 
+trace code when it's needed because the 27-bit TSC is too limited.
 
-Are you using the lazy_mmu hooks we put in, or something else?
+The "case 2" thing is to allow us to occasionally synchronize with some 
+global known wall-time clock like the HPET + xtime. IOW, it would be 
+something that on demand creates a mapping from wall clock to TSC for that 
+particular CPU. 
 
->>   The start/commit API was specifically so that we can do the
->> mprotect (and fork COW updates) in a batchable way (in Xen its
->> implemented with a pte update hypercall which updates the pte without
->> affecting the A/D bits).
->>     
->
-> I think we have different ideas of what batch means but yeah, we do
-> batch everything including these on powerpc without the new start/commit
-> interface.
+I guess I should perhaps have put the TSC frequency in there in that "case 
+2" thing too. Maybe that should be in "data" (in kHz) and tv_sec/tv_nsec 
+should be in array[0..1], and the time sync packet would be 24 bytes.
 
-Likely; it's one of those overused generic words.  The specific meaning
-I'm using is "we can roll a bunch of updates into a single hypercall". 
-Operations which do atomic RMW  or fetch-set are typically not batchable
-because the caller wants the result *now* and can't wait for a deferred
-result.
-
-    J
+			Linus
