@@ -1,92 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYIXJih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbYIXJmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbYIXJih (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 05:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYIXJi0
+	id S1753792AbYIXJmT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 05:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYIXJmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 05:38:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55325 "EHLO hera.kernel.org"
+	Wed, 24 Sep 2008 05:42:09 -0400
+Received: from filter2.host.bg ([87.120.40.156]:50653 "EHLO filter2.host.bg"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753473AbYIXJiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 05:38:25 -0400
-Message-ID: <48DA0A2C.8010008@kernel.org>
-Date: Wed, 24 Sep 2008 18:36:44 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	id S1751514AbYIXJmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 05:42:08 -0400
+Message-ID: <48DA0B39.5050401@saturnosoft.biz>
+Date: Wed, 24 Sep 2008 12:41:13 +0300
+From: Todor Gyumyushev <todor@saturnosoft.biz>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, lists@ku-gbr.de, bhalevy.lists@gmail.com
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita>
-In-Reply-To: <20080924084846.GA2094@anita>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------070207090508010706020306"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 24 Sep 2008 09:38:18 +0000 (UTC)
+To: linux-kernel@vger.kernel.org
+Subject: bug report
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070207090508010706020306
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+------------[ cut here ]------------
+WARNING: at drivers/ata/libata-sff.c:944 ata_sff_hsm_move+0x4a9/0x6a0()
+Modules linked in: cdc_acm eth1394 vboxdrv isofs zlib_inflate ath5k 
+aes_generic nls_utf8 nls_cp437 vfat fat nls_base i915 drm kvm 
+acpi_cpufreq hci_usb rfcomm l2cap pktcdvd nfsd lockd nfs_acl auth_rpcgss 
+sunrpc exportfs fan ac battery microcode firmware_class loop usb_storage 
+usbhid snd_hda_intel arc4 snd_pcm_oss sg ecb crypto_blkcipher 
+snd_mixer_oss cryptomgr snd_pcm snd_timer tpm_infineon sr_mod usblp snd 
+rng_core cdrom ehci_hcd mac80211 thermal ohci1394 ieee1394 processor 
+evdev thermal_sys tpm uhci_hcd iTCO_wdt iTCO_vendor_support soundcore 
+cfg80211 tpm_bios sky2 hwmon snd_page_alloc intel_agp button [last 
+unloaded: ath5k]
+Pid: 0, comm: swapper Tainted: G        W 2.6.26.5 #6
 
-Please apply the attached patch and post the resulting log.  Please
-don't forget to turn on KALLSYMS.
+Call Trace:
+ <IRQ>  [<ffffffff80236214>] warn_on_slowpath+0x64/0xc0
+ [<ffffffff803c9ec8>] ata_sff_data_xfer+0x98/0xc0
+ [<ffffffff803c96c9>] ata_sff_hsm_move+0x4a9/0x6a0
+ [<ffffffff803c9c13>] ata_sff_interrupt+0x1a3/0x2c0
+ [<ffffffff802748e4>] handle_IRQ_event+0x34/0x70
+ [<ffffffff80275e60>] handle_edge_irq+0xc0/0x160
+ [<ffffffff8020ebac>] do_IRQ+0x7c/0x100
+ [<ffffffff8020bc51>] ret_from_intr+0x0/0xa
+ <EOI>  [<ffffffff8021c800>] lapic_next_event+0x0/0x10
+ [<ffffffff803fbc10>] cpuidle_idle_call+0x0/0x120
+ [<ffffffffa00564bc>] :processor:acpi_idle_enter_simple+0x1c5/0x235
+ [<ffffffffa00564b2>] :processor:acpi_idle_enter_simple+0x1bb/0x235
+ [<ffffffff803fbc10>] cpuidle_idle_call+0x0/0x120
+ [<ffffffff803fbce7>] cpuidle_idle_call+0xd7/0x120
+ [<ffffffff803fbc10>] cpuidle_idle_call+0x0/0x120
+ [<ffffffff803fbc10>] cpuidle_idle_call+0x0/0x120
+ [<ffffffff80209410>] default_idle+0x0/0x50
+ [<ffffffff8020a720>] cpu_idle+0x60/0xd0
 
-Thanks.
-
--- 
-tejun
-
---------------070207090508010706020306
-Content-Type: text/x-patch;
- name="sata_nv-eh-debug.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="sata_nv-eh-debug.patch"
-
----
- drivers/ata/libata-eh.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-Index: tree0/drivers/ata/libata-eh.c
-===================================================================
---- tree0.orig/drivers/ata/libata-eh.c
-+++ tree0/drivers/ata/libata-eh.c
-@@ -671,6 +671,9 @@ static void ata_eh_set_pending(struct at
- 
- 	ap->pflags |= ATA_PFLAG_EH_PENDING;
- 
-+	ata_port_printk(ap, KERN_INFO, "XXX EH_SET_PENDING\n");
-+	dump_stack();
-+
- 	if (!fastdrain)
- 		return;
- 
-@@ -1077,6 +1080,11 @@ void ata_eh_about_to_do(struct ata_link
- 	struct ata_eh_context *ehc = &link->eh_context;
- 	unsigned long flags;
- 
-+	if (link)
-+		ata_link_printk(link, KERN_INFO, "XXX about_to_do %x\n", action);
-+	else if (dev)
-+		ata_dev_printk(dev, KERN_INFO, "XXX about_to_do %x\n", action);
-+
- 	spin_lock_irqsave(ap->lock, flags);
- 
- 	ata_eh_clear_action(link, dev, ehi, action);
-@@ -1890,8 +1898,8 @@ static void ata_eh_link_report(struct at
- 		nr_failed++;
- 	}
- 
--	if (!nr_failed && !ehc->i.err_mask)
--		return;
-+	//if (!nr_failed && !ehc->i.err_mask)
-+	//	return;
- 
- 	frozen = "";
- 	if (ap->pflags & ATA_PFLAG_FROZEN)
-
---------------070207090508010706020306--
+---[ end trace 05ba06d61030bbb9 ]---
 
