@@ -1,222 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbYIXHFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268AbYIXHLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbYIXHFl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 03:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbYIXHFc
+	id S1752268AbYIXHLO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 03:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYIXHLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 03:05:32 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53246 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751436AbYIXHFb (ORCPT
+	Wed, 24 Sep 2008 03:11:03 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:1881 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751076AbYIXHLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 03:05:31 -0400
-Date: Wed, 24 Sep 2008 16:11:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3.6/13] memcg: add function to move account.
-Message-Id: <20080924161140.f2d46113.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080924155011.6fcbc78e.nishimura@mxp.nes.nec.co.jp>
-References: <20080922195159.41a9d2bc.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080922200948.83b4ef26.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080924155011.6fcbc78e.nishimura@mxp.nes.nec.co.jp>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Sep 2008 03:11:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent:from;
+        b=Ct/FqKHZ1cL55+f0V5zM/ZuRGEXH2jB0v4nepplYpEOQTzMY5Iy6DynNtUHxTZlJ3e
+         /Sn17iFdKb74Yk06fr0CT2JnYFEGsv/H8FIhg0yrJBzWQikorbogqAGstd0B0v8CNw+k
+         U/RmRZIDx2R+p67VVqff//rEBjWV9edunP6vE=
+Date: Wed, 24 Sep 2008 09:10:55 +0200
+To: bzolnier@gmail.com
+Cc: Mark de Wever <koraq@xs4all.nl>, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Gadi Oxman <gadio@netvision.net.il>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IDE-TAPE NULL terminate strings.
+Message-ID: <20080924071055.GB16949@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, bzolnier@gmail.com,
+	Mark de Wever <koraq@xs4all.nl>,
+	Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+	Gadi Oxman <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080921185138.GA16310@localhost> <48D79ABD.8060805@ru.mvista.com> <9ea470500809220656j6dfcf4c9q7a5a4185481ec994@mail.gmail.com> <20080922204129.GA3495@localhost> <48D80949.4080901@ru.mvista.com> <20080923074845.GB5656@gollum.tnic> <20080923165914.GA7803@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080923165914.GA7803@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008 15:50:11 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-
-> On Mon, 22 Sep 2008 20:09:48 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > Sorry, this patchs is after "3.5" , before "4"....
-> > 
-> > ==
-> > This patch provides a function to move account information of a page between
-> > mem_cgroups.
-> > 
-> > This moving of page_cgroup is done under
-> >  - the page is locked.
-> >  - lru_lock of source/destination mem_cgroup is held.
-> > 
-> > Then, a routine which touches pc->mem_cgroup without page_lock() should
-> > confirm pc->mem_cgroup is still valid or not. Typlical code can be following.
-> > 
-> > (while page is not under lock_page())
-> > 	mem = pc->mem_cgroup;
-> > 	mz = page_cgroup_zoneinfo(pc)
-> > 	spin_lock_irqsave(&mz->lru_lock);
-> > 	if (pc->mem_cgroup == mem)
-> > 		...../* some list handling */
-> > 	spin_unlock_irq(&mz->lru_lock);
-> > 
-> 
-> Is this check needed?
-> Both move_lists and move_account takes page_cgroup lock.
-> 
-__mem_cgroup_move_lists() doesn't take.
-But yes, if you know what it does, you can reduce checks.
-Above is example.
-
-
-Thanks,
--Kame
-
-
-> 
-> Thanks,
-> Daisuke Nishimura.
-> 
-> > If you find page_cgroup from mem_cgroup's LRU under mz->lru_lock, you don't
-> > have to worry about anything.
-> > 
-> > Changelog: (v3) -> (v4)
-> >   - no changes.
-> > Changelog: (v2) -> (v3)
-> >   - added lock_page_cgroup().
-> >   - splitted out from new-force-empty patch.
-> >   - added how-to-use text.
-> >   - fixed race in __mem_cgroup_uncharge_common().
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> >  mm/memcontrol.c |   85 ++++++++++++++++++++++++++++++++++++++++++++++++++++++--
-> >  1 file changed, 82 insertions(+), 3 deletions(-)
-> > 
-> > Index: mmotm-2.6.27-rc6+/mm/memcontrol.c
-> > ===================================================================
-> > --- mmotm-2.6.27-rc6+.orig/mm/memcontrol.c
-> > +++ mmotm-2.6.27-rc6+/mm/memcontrol.c
-> > @@ -424,6 +424,7 @@ int task_in_mem_cgroup(struct task_struc
-> >  void mem_cgroup_move_lists(struct page *page, enum lru_list lru)
+On Tue, Sep 23, 2008 at 06:59:14PM +0200, Mark de Wever wrote:
+> On Tue, Sep 23, 2008 at 09:48:45AM +0200, Borislav Petkov wrote:
+> > ---
+> > diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> > index 1bce84b..3833189 100644
+> > --- a/drivers/ide/ide-tape.c
+> > +++ b/drivers/ide/ide-tape.c
+> > @@ -2338,7 +2338,7 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
 > >  {
-> >  	struct page_cgroup *pc;
-> > +	struct mem_cgroup *mem;
-> >  	struct mem_cgroup_per_zone *mz;
-> >  	unsigned long flags;
+> >  	idetape_tape_t *tape = drive->driver_data;
+> >  	struct ide_atapi_pc pc;
+> > -	char fw_rev[6], vendor_id[10], product_id[18];
+> > +	char fw_rev[4], vendor_id[8], product_id[16];
 > >  
-> > @@ -442,9 +443,14 @@ void mem_cgroup_move_lists(struct page *
+> >  	idetape_create_inquiry_cmd(&pc);
+> >  	if (idetape_queue_pc_tail(drive, &pc)) {
+> > @@ -2350,11 +2350,11 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
+> >  	memcpy(product_id, &pc.buf[16], 16);
+> >  	memcpy(fw_rev, &pc.buf[32], 4);
 > >  
-> >  	pc = page_get_page_cgroup(page);
-> >  	if (pc) {
-> > +		mem = pc->mem_cgroup;
-> >  		mz = page_cgroup_zoneinfo(pc);
-> >  		spin_lock_irqsave(&mz->lru_lock, flags);
-> > -		__mem_cgroup_move_lists(pc, lru);
-> > +		/*
-> > +		 * check against the race with move_account.
-> > +		 */
-> > +		if (likely(mem == pc->mem_cgroup))
-> > +			__mem_cgroup_move_lists(pc, lru);
-> >  		spin_unlock_irqrestore(&mz->lru_lock, flags);
-> >  	}
-> >  	unlock_page_cgroup(page);
-> > @@ -565,6 +571,71 @@ unsigned long mem_cgroup_isolate_pages(u
-> >  	return nr_taken;
+> > -	ide_fixstring(vendor_id, 10, 0);
+> > -	ide_fixstring(product_id, 18, 0);
+> > -	ide_fixstring(fw_rev, 6, 0);
+> > +	ide_fixstring(vendor_id, 8, 0);
+> > +	ide_fixstring(product_id, 16, 0);
+> > +	ide_fixstring(fw_rev, 4, 0);
+> >  
+> > -	printk(KERN_INFO "ide-tape: %s <-> %s: %s %s rev %s\n",
+> > +	printk(KERN_INFO "ide-tape: %s <-> %s: %.8s %.16s rev %.4s\n",
+> >  			drive->name, tape->name, vendor_id, product_id, fw_rev);
 > >  }
 > >  
-> > +/**
-> > + * mem_cgroup_move_account - move account of the page
-> > + * @page ... the target page of being moved.
-> > + * @pc   ... page_cgroup of the page.
-> > + * @from ... mem_cgroup which the page is moved from.
-> > + * @to   ... mem_cgroup which the page is moved to.
-> > + *
-> > + * The caller must confirm following.
-> > + * 1. lock the page by lock_page().
-> > + * 2. disable irq.
-> > + * 3. lru_lock of old mem_cgroup should be held.
-> > + * 4. pc is guaranteed to be valid and on mem_cgroup's LRU.
-> > + *
-> > + * Because we cannot call try_to_free_page() here, the caller must guarantee
-> > + * this moving of change never fails. Currently this is called only against
-> > + * root cgroup, which has no limitation of resource.
-> > + * Returns 0 at success, returns 1 at failure.
-> > + */
-> > +int mem_cgroup_move_account(struct page *page, struct page_cgroup *pc,
-> > +	struct mem_cgroup *from, struct mem_cgroup *to)
-> > +{
-> > +	struct mem_cgroup_per_zone *from_mz, *to_mz;
-> > +	int nid, zid;
-> > +	int ret = 1;
-> > +
-> > +	VM_BUG_ON(!irqs_disabled());
-> > +	VM_BUG_ON(!PageLocked(page));
-> > +
-> > +	nid = page_to_nid(page);
-> > +	zid = page_zonenum(page);
-> > +	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
-> > +	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
-> > +
-> > +	if (res_counter_charge(&to->res, PAGE_SIZE)) {
-> > +		/* Now, we assume no_limit...no failure here. */
-> > +		return ret;
-> > +	}
-> > +	if (!try_lock_page_cgroup(page)) {
-> > +		res_counter_uncharge(&to->res, PAGE_SIZE);
-> > +		return ret;
-> > +	}
-> > +
-> > +	if (page_get_page_cgroup(page) != pc) {
-> > +		res_counter_uncharge(&to->res, PAGE_SIZE);
-> > +		goto out;
-> > +	}
-> > +
-> > +	if (spin_trylock(&to_mz->lru_lock)) {
-> > +		__mem_cgroup_remove_list(from_mz, pc);
-> > +		css_put(&from->css);
-> > +		res_counter_uncharge(&from->res, PAGE_SIZE);
-> > +		pc->mem_cgroup = to;
-> > +		css_get(&to->css);
-> > +		__mem_cgroup_add_list(to_mz, pc);
-> > +		ret = 0;
-> > +		spin_unlock(&to_mz->lru_lock);
-> > +	} else {
-> > +		res_counter_uncharge(&to->res, PAGE_SIZE);
-> > +	}
-> > +out:
-> > +	unlock_page_cgroup(page);
-> > +
-> > +	return ret;
-> > +}
-> > +
-> >  /*
-> >   * Charge the memory controller for page usage.
-> >   * Return
-> > @@ -752,16 +823,24 @@ __mem_cgroup_uncharge_common(struct page
-> >  	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
-> >  	    && ((PageCgroupCache(pc) || page_mapped(page))))
-> >  		goto unlock;
-> > -
-> > +retry:
-> > +	mem = pc->mem_cgroup;
-> >  	mz = page_cgroup_zoneinfo(pc);
-> >  	spin_lock_irqsave(&mz->lru_lock, flags);
-> > +	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED &&
-> > +	    unlikely(mem != pc->mem_cgroup)) {
-> > +		/* MAPPED account can be done without lock_page().
-> > +		   Check race with mem_cgroup_move_account() */
-> > +		spin_unlock_irqrestore(&mz->lru_lock, flags);
-> > +		goto retry;
-> > +	}
-> >  	__mem_cgroup_remove_list(mz, pc);
-> >  	spin_unlock_irqrestore(&mz->lru_lock, flags);
-> >  
-> >  	page_assign_page_cgroup(page, NULL);
-> >  	unlock_page_cgroup(page);
-> >  
-> > -	mem = pc->mem_cgroup;
-> > +
-> >  	res_counter_uncharge(&mem->res, PAGE_SIZE);
-> >  	css_put(&mem->css);
-> >  
-> > 
+> >
 > 
+> I think this patch looks good, better as all previous versions
+> (including my initial version). I just tested it and it solves the
+> problem. Feel free to add my tested-by.
+> 
+> Regards,
+> Mark de Wever
+> 
+> PS I was not able to test earlier ;-)
 
+Bart,
+
+please apply the following patch.
+
+@Sergei: would you like to add your Signed-off-by too?
+
+--
+Subject: ide-tape: fix vendor strings
+
+Remove superfluous two bytes from each string buffer and add proper length
+format specifiers.
+
+There should be no functional change resulting from this patch.
+
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+Tested-by: Mark de Wever <koraq@xs4all.nl>
+
+--
+
+diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+index 1bce84b..3833189 100644
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -2338,7 +2338,7 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
+ {
+ 	idetape_tape_t *tape = drive->driver_data;
+ 	struct ide_atapi_pc pc;
+-	char fw_rev[6], vendor_id[10], product_id[18];
++	char fw_rev[4], vendor_id[8], product_id[16];
+ 
+ 	idetape_create_inquiry_cmd(&pc);
+ 	if (idetape_queue_pc_tail(drive, &pc)) {
+@@ -2350,11 +2350,11 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
+ 	memcpy(product_id, &pc.buf[16], 16);
+ 	memcpy(fw_rev, &pc.buf[32], 4);
+ 
+-	ide_fixstring(vendor_id, 10, 0);
+-	ide_fixstring(product_id, 18, 0);
+-	ide_fixstring(fw_rev, 6, 0);
++	ide_fixstring(vendor_id, 8, 0);
++	ide_fixstring(product_id, 16, 0);
++	ide_fixstring(fw_rev, 4, 0);
+ 
+-	printk(KERN_INFO "ide-tape: %s <-> %s: %s %s rev %s\n",
++	printk(KERN_INFO "ide-tape: %s <-> %s: %.8s %.16s rev %.4s\n",
+ 			drive->name, tape->name, vendor_id, product_id, fw_rev);
+ }
+ 
+
+-- 
+Regards/Gruss,
+    Boris.
