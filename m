@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYIXRKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYIXRL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbYIXRKV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 13:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbYIXRKI
+	id S1753395AbYIXRL0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 13:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbYIXRLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 13:10:08 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:45718 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752112AbYIXRKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 13:10:07 -0400
-Date: Wed, 24 Sep 2008 18:10:04 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, agl@us.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/2] Report the pagesize backing a VMA in /proc/pid/smaps
-Message-ID: <20080924171003.GD10837@csn.ul.ie>
-References: <20080923211140.DC16.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080923194655.GA25542@csn.ul.ie> <20080924210309.8C3B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080924154120.GA10837@csn.ul.ie> <1222272395.15523.3.camel@nimitz>
+	Wed, 24 Sep 2008 13:11:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:14473 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751550AbYIXRLR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 13:11:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=n9FUhUZl3UPAVNixgWPhsMQLBRpsmwT4aVyss7X06auH+spryow259SLBeG3SZ3BTs
+         nLRsrfrPflWGSbi4ihPfvAxETpmqeA5Sbks/GGy5Yw0rGo4IXAXUXTEG+/pVU9MBqrfd
+         FUrrvnQR2olstR9BlzOTeHP/ke1DNHtcNeo+g=
+Message-ID: <86802c440809241011l7c8a27c5x19829e49cbc3f6f9@mail.gmail.com>
+Date: Wed, 24 Sep 2008 10:11:16 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [patch 0/3] [x86 -tip/master] apic cleanup
+Cc: mingo@elte.hu, macro@linux-mips.org, linux-kernel@vger.kernel.org
+In-Reply-To: <48da6f73.0405560a.6f2f.ffffa11c@mx.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1222272395.15523.3.camel@nimitz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <48da6f73.0405560a.6f2f.ffffa11c@mx.google.com>
+X-Google-Sender-Auth: 5fe7bb9338e7ec8c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (24/09/08 09:06), Dave Hansen didst pronounce:
-> On Wed, 2008-09-24 at 16:41 +0100, Mel Gorman wrote:
-> > I admit it's ppc64-specific. In the latest patch series, I made this a
-> > separate patch so that it could be readily dropped again for this reason.
-> > Maybe an alternative would be to display MMUPageSize *only* where it differs
-> > from KernelPageSize. Would that be better or similarly confusing?
-> 
-> I would also think that any arch implementing fallback from large to
-> small pages in a hugetlbfs area (Adam needs to post his patches :) would
-> also use this.
-> 
+On Wed, Sep 24, 2008 at 9:46 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>  Hello there,
+>
+> this series does contain a few apic,ioapic cleanup patches.
+> Please review. Any comments are _quite_ appreciated!
+>
+> They are quite trivial so should not take too much time
+> to review :)
 
-Fair point. Maybe the thing to do is backburner this patch for the moment and
-reintroduce it when/if an architecture supports demotion? The KernelPageSize
-reporting in smaps and what the hpagesize in maps is still useful though
-I believe. Any comment?
+all three look good.
 
-(future stuff from here on)
-
-In the future if demotion does happen then the MMUPageSize information may
-be genuinely useful instead of just a curious oddity on ppc64. As you point
-out, Adam (added to cc) has worked on this area (starting with x86 demotion)
-in the past but it's a while before it'll be considered for merging I believe.
-
-That aside, more would need to be done with the page size reporting then
-anyway. For example, it maybe indicate how much of each pagesize is in a VMA
-or indicate that KernelPageSize is what is being requested but in reality
-it is mixed like;
-
-KernelPageSize:		2048 kB (mixed)
-
-or
-
-KernelPageSize:		2048 kB * 5, 4096 kB * 20
-
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+YH
