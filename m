@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbYIXM62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbYIXNH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbYIXM62 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 08:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYIXM6U
+	id S1752652AbYIXNH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 09:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYIXNHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 08:58:20 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:27221 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbYIXM6T (ORCPT
+	Wed, 24 Sep 2008 09:07:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37579 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750991AbYIXNHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 08:58:19 -0400
-X-BigFish: VPS-28(zz1432R98dR1805M936fOzzzz2f39iz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K7PAOV-03-LIR-01
-Date: Wed, 24 Sep 2008 14:58:08 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
+	Wed, 24 Sep 2008 09:07:15 -0400
+Date: Wed, 24 Sep 2008 14:06:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, andi@firstfloor.org
-Subject: Re: [PATCH 0/3] x86: restore old GART alloc_coherent
-Message-ID: <20080924125808.GU24392@amd.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, andi@firstfloor.org,
+       joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 3/3] x86: restore old GART alloc_coherent behavior
+Message-ID: <20080924140644.569cdd1d@lxorguk.ukuu.org.uk>
+In-Reply-To: <1222256917-14321-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1222256917-14321-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1222256917-14321-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 24 Sep 2008 12:58:08.0129 (UTC) FILETIME=[310D1F10:01C91E45]
+	<1222256917-14321-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1222256917-14321-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1222256917-14321-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 08:48:34PM +0900, FUJITA Tomonori wrote:
-> This pachset is against tip/iommu.
-> 
-> What this patchset does is restoring old GART alloc_coherent behavior
-> (before the alloc_coherent rewrite):
-> 
-> http://lkml.org/lkml/2008/8/12/200
-> 
+On Wed, 24 Sep 2008 20:48:37 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+
 > Currently, GART alloc_coherent tries to allocate pages with GFP_DMA32
 > for a device having dma_masks > 24bit < 32bits. If GART gets an
-> address that a device can't access to, GART tries to map the address
-> to a virtual I/O address that the device can access to.
+> address that a device can't access to, GART try to map the address to
+> a virtual I/O address that the device can access to.
 > 
 > But Andi pointed out, "The GART is somewhere in the 4GB range so you
 > cannot use it to map anything < 4GB. Also GART is pretty small."
 > 
 > http://lkml.org/lkml/2008/9/12/43
 > 
-> So it's possible that GART doesn't have virtual I/O address space that
-> a device can access to. The current behavior might not work for a
-> device having dma_masks > 24bit < 32bits. This patchset restores old
-> GART alloc_coherent behavior, which doesn't use GART hardware (if an
-> user doesn't enable force_iommu option).
+> That is, it's possible that GART doesn't have virtual I/O address
+> space that a device can access to. The above behavior doesn't work for
+> a device having dma_masks > 24bit < 32bits.
+> 
+> This patch restores old GART alloc_coherent behavior (before the
+> alloc_coherent rewrite).
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-Acked-by: Joerg Roedel <joerg.roedel@amd.com>
+Acked-by: Alan Cox <alan@redhat.com>
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+This is indeed a specific problem found with things like older AACRAID
+where control blocks must be below 31bits and the GART is above 0x80000000
 
+Alan
