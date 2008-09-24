@@ -1,164 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbYIXMrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbYIXMsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754193AbYIXMrV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 08:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYIXMqx
+	id S1753686AbYIXMsu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 08:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYIXMsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 08:46:53 -0400
-Received: from ti-out-0910.google.com ([209.85.142.187]:63112 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbYIXMqv (ORCPT
+	Wed, 24 Sep 2008 08:48:42 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:53436 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751151AbYIXMsl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 08:46:51 -0400
+	Wed, 24 Sep 2008 08:48:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=b5S/DhiLGji/ug1jx3a0kbCWRek07hMP9yr4uKsbEoB1We+T2rOGU487yPxBniMfg7
-         /tEqXiTtX8AyvFdA+iGmt1SukB5GHxUOJskN13BHeDNm4vWh5XOUI4ddhnJF084EcC6C
-         /k91YaTtErynUJazHYSYjBVbv3FboB1T+KL30=
-Date: Wed, 24 Sep 2008 20:22:10 +0800
-From: Yan Li <elliot.li.tech@gmail.com>
-To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: Yan Li <elliot.li.tech@gmail.com>, joerg.roedel@amd.com,
-       rjmaomao@gmail.com, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
-Subject: [PATCH 1/2] VMware guest detection for x86 and x86-64
-References: <48D12490.5010003@zytor.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=P8fZGDOn7n+T3ua7Th1huDSQrOkbhGoddh0SS5ykS+gcv+tD5O/XiW2ux0rrWMdxWX
+         RoyN69VuKScqW3cwrXZxhSVpn0LqG6+bakvQ9/7Sxsa0D4O73vEJWkdK0umW5R7CLbmX
+         wGkT13sUubmSCyn7BRp5uSscmhhCq2Z1ttiok=
+Message-ID: <ed7dcf450809240548v1946068chf60dc42ff1f901d4@mail.gmail.com>
+Date: Wed, 24 Sep 2008 14:48:39 +0200
+From: "=?ISO-8859-1?Q?S=F8ren_Hauberg?=" <hauberg@gmail.com>
+To: "Matthew Garrett" <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] usbtouchscreen, 2.6.25
+Cc: "Oliver Neukum" <oliver@neukum.org>,
+       "Ondrej Zary" <linux@rainbow-software.org>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+In-Reply-To: <20080924103040.GA13392@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <48D12490.5010003@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-Message-ID: <48da36b9.160d6e0a.22a5.ffffec9d@mx.google.com>
+References: <ed7dcf450809230142l62bb00aapb92e6cb225f0cbba@mail.gmail.com>
+	 <200809231051.14016.linux@rainbow-software.org>
+	 <ed7dcf450809230236v762e0aa3v8748c76a64121f0c@mail.gmail.com>
+	 <200809231613.41905.oliver@neukum.org>
+	 <ed7dcf450809240004r1d3c7b3ds619cd7441ae0365e@mail.gmail.com>
+	 <20080924103040.GA13392@srcf.ucam.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Detects whether we are running as a VMware guest or not. Detection is
-based upon DMI vendor string.
+2008/9/24 Matthew Garrett <mjg59@srcf.ucam.org>:
+> On Wed, Sep 24, 2008 at 09:04:55AM +0200, Søren Hauberg wrote:
+>> Obviously that depends on how you define "better" :-) The problem I'm
+>> facing is that with the X driver there is no way to change calibration
+>> without restarting X several times, which isn't acceptable for the
+>> application we're developing. Sure, I could fix the X driver to allow
+>> run-time changes to the calibration parameters, but that's a very
+>> large task.
+>
+> This is the sort of thing that input device properties were added for.
+> If you're able to use 1.5 of the X server, it's not a huge body of work
+> to add this functionality.
 
-It provides a function:
-int is_vmware_guest(void)
-that can be used easily to detect if we are running as a VMware guest
-or not.
+Well, 1.5 isn't an option for me. But this does remove the main
+problem with handling calibration in X. So, I guess that means my
+patch shouldn't be applied. I'll continue to use it in-house for a
+while, but it won't be a long term solution.
 
-I haven't used PCI vendor Id since that requires copying a trunk of
-codes from early_quirks() and I think copying code is not good. And
-reusing codes from early_quirks() needs intrivial change to present
-codes structure. Comparatively, checking "VMware" string against DMI
-manufacturer is a lot more simpler (one-line code). Also there's no
-evidence indicating that VMware will change their vendor string in
-near future. Therefore I choose to use simpler way.
-
-Tested on x86 and x86-64 VMs and machines.
-
-Signed-off-by: Yan Li <elliot.li.tech@gmail.com>
----
- arch/x86/Kconfig         |   10 ++++++++++
- arch/x86/kernel/Makefile |    1 +
- arch/x86/kernel/vmware.c |   23 +++++++++++++++++++++++
- include/asm-x86/vmware.h |   20 ++++++++++++++++++++
- 4 files changed, 54 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/kernel/vmware.c
- create mode 100644 include/asm-x86/vmware.h
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index ed92864..85dfebd 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -445,6 +445,16 @@ config PARAVIRT_DEBUG
-          Enable to debug paravirt_ops internals.  Specifically, BUG if
- 	 a paravirt_op is missing when it is called.
- 
-+config VMWARE_GUEST_DETECT
-+	bool "VMware guest detection support"
-+	default y
-+	depends on DMI && !X86_VOYAGER
-+	help
-+          This enables detection of running as a full-virtualized
-+          VMware guest (as under VMware Workstation or VMware
-+          Server). Currently this is used to suppress false warnings
-+          from initialization.
-+
- config MEMTEST
- 	bool "Memtest"
- 	help
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 3db651f..a3a16a8 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -87,6 +87,7 @@ obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
- obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
- 
- obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
-+obj-$(CONFIG_VMWARE_GUEST_DETECT)	+= vmware.o
- obj-$(CONFIG_KVM_GUEST)		+= kvm.o
- obj-$(CONFIG_KVM_CLOCK)		+= kvmclock.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o
-diff --git a/arch/x86/kernel/vmware.c b/arch/x86/kernel/vmware.c
-new file mode 100644
-index 0000000..352d5d8
---- /dev/null
-+++ b/arch/x86/kernel/vmware.c
-@@ -0,0 +1,23 @@
-+/*
-+ * Check if we are running as a VMware guest or not
-+ *
-+ * Copyright (C) 2008 Yan Li <elliot.li.tech@gmail.com>
-+ *
-+ */
-+
-+#include <linux/dmi.h>
-+#include <linux/kernel.h>
-+#include <asm/vmware.h>
-+
-+/*
-+ * detect whether we are running as a VMware guest or not. this
-+ * function depends on DMI so it should not be used early before
-+ * dmi_scan_machine() in setup_arch()
-+ */
-+int is_vmware_guest(void)
-+{
-+	if (!dmi_available)
-+		return 0;
-+	else
-+		return dmi_name_in_vendors("VMware");
-+}
-diff --git a/include/asm-x86/vmware.h b/include/asm-x86/vmware.h
-new file mode 100644
-index 0000000..554f0f9
---- /dev/null
-+++ b/include/asm-x86/vmware.h
-@@ -0,0 +1,20 @@
-+/*
-+ * Check if we are running as a VMware guest or not
-+ *
-+ * Copyright (C) 2008 Yan Li <elliot.li.tech@gmail.com>
-+ *
-+ */
-+
-+#ifndef _ASM_X86_VMWARE_H
-+#define _ASM_X86_VMWARE_H
-+
-+/*
-+ *  is_vmware_guest - return non-zero if running as a VMware guest
-+ */
-+#ifdef CONFIG_VMWARE_GUEST_DETECT
-+extern int is_vmware_guest(void);
-+#else
-+int is_vmware_guest(void) { return 0; }
-+#endif /* CONFIG_VMWARE_GUEST_DETECT */
-+
-+#endif /* _ASM_X86_VMWARE_H */
--- 
-1.5.4.3
-
-
--- 
-Li, Yan
-
-"Everything that is really great and inspiring is created by the
-individual who can labor in freedom."
-              - Albert Einstein, in Out of My Later Years (1950)
+Thanks,
+Søren
