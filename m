@@ -1,39 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYIXItl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbYIXIut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbYIXItl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 04:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbYIXItd
+	id S1753988AbYIXIut (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 04:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYIXIul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 04:49:33 -0400
-Received: from cnmailgate04.alcatel-sbell.com.cn ([211.144.215.47]:56542 "EHLO
-	cnshjsmin03.cn.alcatel-lucent.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751733AbYIXItc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 04:49:32 -0400
-X-AuditID: ac189297-ab782bb000000fe5-ac-48da0d0305de
-Message-ID: <48D9FEF2.2010405@alcatel-lucent.com>
-Date: Wed, 24 Sep 2008 16:48:50 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-CC: Jeroen van Rijn <jvrnix@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Create real-time process from shell script
-References: <48D99E0D.9000003@alcatel-lucent.com> <8ee0b8e80809240054r7197072exde7f75e47f56f120@mail.gmail.com> <48D9FDF3.4000008@yahoo.com>
-In-Reply-To: <48D9FDF3.4000008@yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 24 Sep 2008 04:50:41 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55013 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751919AbYIXIuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 04:50:40 -0400
+Subject: Re: [git pull] timers fixes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20080924074245.GA11474@elte.hu>
+References: <200809240137.40403.rjw@sisk.pl> <20080924074038.GD3655@elte.hu>
+	 <20080924074245.GA11474@elte.hu>
+Content-Type: text/plain
+Date: Wed, 24 Sep 2008 18:49:46 +1000
+Message-Id: <1222246186.8277.69.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Sep 2008 08:48:48.0150 (UTC) FILETIME=[5C357B60:01C91E22]
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-09-24 at 09:42 +0200, Ingo Molnar wrote:
+> Linus,
+> 
+> Please pull the latest timers-fixes-for-linus git tree from:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
+> 
+> Thanks,
+> 
+> 	Ingo
+> 
+> ------------------>
+> Marc Dionne (1):
+>       x86: prevent stale state of c1e_mask across CPU offline/online, fix
 
->
-> If you prefer realtime scheduling (as in SCHED_FIFO etc) you may want 
-> to look at chrt (but this isn't really a linux kernel question so this 
-> might be the wrong list to ask).
->
-I'm sorry for that. But chrt only take effect on real-time processes?
+Is that all the changeset comment ? Am I the only one to find that
+totally useless ? Or is that the mail doesn't contain the actual
+comment, only the title followed by the patch ?
+
+Cheers,
+Ben.
+
+> 
+>  arch/x86/kernel/process_32.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+> index 4b3cfdf..31f40b2 100644
+> --- a/arch/x86/kernel/process_32.c
+> +++ b/arch/x86/kernel/process_32.c
+> @@ -55,6 +55,7 @@
+>  #include <asm/tlbflush.h>
+>  #include <asm/cpu.h>
+>  #include <asm/kdebug.h>
+> +#include <asm/idle.h>
+>  
+>  asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
+>  
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
