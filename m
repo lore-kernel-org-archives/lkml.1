@@ -1,70 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYIXUcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYIXUgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbYIXUcq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 16:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbYIXUci
+	id S1753828AbYIXUgd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 16:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYIXUgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 16:32:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51202 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752034AbYIXUch (ORCPT
+	Wed, 24 Sep 2008 16:36:25 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:44563 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752034AbYIXUgY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 16:32:37 -0400
-Date: Wed, 24 Sep 2008 13:30:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Martin Bligh <mbligh@google.com>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <33307c790809241054n47addd27hef90930f109599fd@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0809241323590.3265@nehalem.linux-foundation.org>
-References: <20080924051056.650388887@goodmis.org>  <20080924051400.195780424@goodmis.org>  <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
-  <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com>  <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <33307c790809241054n47addd27hef90930f109599fd@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 24 Sep 2008 16:36:24 -0400
+Date: Wed, 24 Sep 2008 16:35:59 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Ric Wheeler <rwheeler@redhat.com>, Chris Mason <chris.mason@oracle.com>
+Cc: Andreas Dilger <adilger@sun.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext4: Use preallocation when reading from the
+	inode table
+Message-ID: <20080924203559.GK9929@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Ric Wheeler <rwheeler@redhat.com>,
+	Chris Mason <chris.mason@oracle.com>,
+	Andreas Dilger <adilger@sun.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <48D8DEAE.4080309@redhat.com> <20080924013014.GA9747@mit.edu> <48DA3F56.8090806@redhat.com> <1222266034.7160.191.camel@think.oraclecorp.com> <E1KhvsB-0002Ik-Ex@closure.thunk.org> <20080923101613.58768083@lxorguk.ukuu.org.uk> <20080923115045.GI10950@webber.adilger.int> <48D8DEAE.4080309@redhat.com> <20080924013014.GA9747@mit.edu> <48DA3F56.8090806@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222266034.7160.191.camel@think.oraclecorp.com> <48DA3F56.8090806@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 24, 2008 at 09:23:34AM -0400, Ric Wheeler wrote:
+>
+> That sounds about right for modern S-ATA/SAS drives. I would expect that  
+> having this be a tunable knob might help for some types of storage (SSD  
+> might not care, but should be faster in any case?).
+>
 
+Well, for SSD's, wouldn't seek time not matter, but then the limiting
+factor should be the overhead of the read transaction, and the I/O
+bandwidth of the SSD.  So prefetching too much might hurt even more
+for SSD's, although in comparison with spinning rust platters, it
+would probably still be faster.  :-)
 
-On Wed, 24 Sep 2008, Martin Bligh wrote:
-> 
-> If we just record the TSC unshifted, in 27 bits, at 4GHz, that gives us
-> about 1/30 of a second? So we either shift, use > 27 bits, or record
-> at least 30 events a second, none of which I like much ...
+So I'm pretty sure that with an SSD we'll want to turn the tunable
+down, not up.
 
-No, we don't shift (we don't want to lose precision), and we don't use 
-more than 27 bits by default.
+On Wed, Sep 24, 2008 at 10:20:34AM -0400, Chris Mason wrote:
+>For the test runs being done here, there's a pretty high chance that all
+>of the inodes you read ahead will get used before the pages are dropped,
+>so we want to find a balance between those and the worst case workloads
+>where inode reads are basically random.  
 
-the TSC at each entry should be a _delta_. It's the difference from the 
-last one. And if you get less than 30 events per second, and you need a 
-bigger difference, you insert an extra "sync" tracepoint that has a 59-bit 
-thing (27 bits _plus_ the extra 'data').
+Yep, agreed.
 
-Yes, it adds 8 bytes (assuming that minimal format), but it does so only 
-for any trace event that is more than 1/30th of a second from its previous 
-one. IOW, think of this not in bytes, but in bytes-per-second. It adds at 
-most 8*30=240 bytes per second, but what it _saves_ is that when you have 
-tens of thousands of events, it shaves 4 bytes FOR EACH EVENT.
+On the other hand, if we take your iop/s and translate them to
+milliseconds so we can measure the latency in the case where the
+workload is essentialy doing random reads, and then cross correlated
+it with my measurements, we get this table:
 
-See?
+i/o size iops/s  ms latency  % degredation         % improvement
+    	 	    	     of random inodes   of related inodes I/O
+   4k	  131       7.634      
+   8k	  130	    7.692	0.77%		    11.3%
+  16k	  128	    7.813	2.34%		    21.8%
+  32k	  126	    7.937	3.97%		    29.6%
+  64k	  121	    8.264	8.26%		    35.5%
+ 128k	  113	    8.850      15.93%		    40.0%
+ 256k	  100	   10.000      31.00%		    42.4%
 
-Also, quite often, the clock won't be running at 4GHz even if the CPU 
-might. Intel already doesn't make the TSC be the nominal frequency, and 
-other architectures with TSC's have long had the TSC be something like a 
-"divide-by-16" clock rather than every single cycle because it's more 
-power-efficient.
+Depending on whether you believe that workloads involving random inode
+reads are more common compared to related inodes I/O, the sweet spot
+is probably somewhere between 32k and 128k.  I'm open to opinions
+(preferably backed up with more benchmarks of likely workloads) of
+whether we should use a default value of inode_readahead_bits of 4 or
+5 (i.e., 64k, my original guess, or 128k, in v2 of the patch).  But
+yes, making it tunable is definitely going to be necessary, since for
+different workloads (i.e squid vs. git repositories) will have very
+different requirements.
 
-So there is often a built-in shift, and I doubt we'll see 10GHz TSC's even 
-if we see 10GHz CPU's (which many people consider unlikely anyway, but 
-I'm not going to bet against technology).
+The other thought are the one which comes to mind is whether we should
+use a similar large readahead if all we are doing writes vs. reads.
+For example, if we are just updating a single inode, and we are
+reading a block to do a read/modify write cycle, maybe we shouldn't be
+doing as much readahead.
 
-			Linus
+						- Ted
+
+P.S.  One caveat is that my numbers were taken from a Laptop SATA, and
+if Chris's were taken from a Desktop/Sever SATA drive the numbers
+might not be properly comparable.
