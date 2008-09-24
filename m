@@ -1,221 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbYIXQzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbYIXQ4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306AbYIXQzw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 12:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbYIXQzT
+	id S1755257AbYIXQ4l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 12:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYIXQ43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 12:55:19 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44110 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754467AbYIXQzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 12:55:16 -0400
-X-Authenticated: #476490
-X-Provags-ID: V01U2FsdGVkX18Tnh9tRP4TOuMRwCC5Vrk6HQ43yqj9fN+vJ+dNQn
-	PPYNXhsfY+VWwa
-From: Oliver Endriss <o.endriss@gmx.de>
-Organization: ESCAPE GmbH EDV-Loesungen
-To: linux-dvb@linuxtv.org
-Subject: Re: [linux-dvb] Multiproto API/Driver Update
-Date: Wed, 24 Sep 2008 18:54:41 +0200
-User-Agent: KMail/1.9.6
-Cc: Julian Scheel <julian@jusst.de>, "Michael Krufky" <mkrufky@linuxtv.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Manu Abraham <abraham.manu@gmail.com>
-References: <466109.26020.qm@web46101.mail.sp1.yahoo.com> <37219a840809150842l3a6260j4b57f14026e5c40a@mail.gmail.com> <200809191258.35827.julian@jusst.de>
-In-Reply-To: <200809191258.35827.julian@jusst.de>
+	Wed, 24 Sep 2008 12:56:29 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:14814 "EHLO
+	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752699AbYIXQ42 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 12:56:28 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=JsZ2P2LlwN7tIClVgz66PnrtHEkDMufLwAHb7C3I4dmWg+jN3Ge49yuwRG5mjIwan
+	CtU9UB2rjkZsuop3iZrAA==
+Message-ID: <33307c790809240956o6552e570vaf4adb3b7e1b2415@mail.gmail.com>
+Date: Wed, 24 Sep 2008 09:56:20 -0700
+From: "Martin Bligh" <mbligh@google.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       "David Wilder" <dwilder@us.ibm.com>, hch@lst.de,
+       "Tom Zanussi" <zanussi@comcast.net>,
+       "Steven Rostedt" <srostedt@redhat.com>
+In-Reply-To: <alpine.DEB.1.10.0809241231520.5017@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809241854.42271@orion.escape-edv.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.52
+References: <20080924051056.650388887@goodmis.org>
+	 <20080924051400.195780424@goodmis.org>
+	 <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>
+	 <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>
+	 <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
+	 <alpine.LFD.1.10.0809240921430.3265@nehalem.linux-foundation.org>
+	 <alpine.DEB.1.10.0809241231520.5017@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julian Scheel wrote:
-> Michael,
-> 
-> On Monday 15 September 2008 17:42:06 Michael Krufky wrote:
-> > In summary, the bottom line is this:
-> >
-> > Manu did a great job with the multiproto API, people were happy using
-> > it, and all of the LinuxDVB developer community was happy with the
-> > work that was done, and we all wanted to merge it ~ two years ago.
-> >
-> > Back then, Manu said that it wasnt ready, so for some time we waited
-> > for him in hopes that he would agree that it was ready for merge.
-> >
-> > As more months went by, Manu was asked if he would be merging his
-> > changes, and he kept answering to the effect of "it's not ready yet,
-> > but should be in a few weeks"
-> >
-> > Months and months and months went by since then, with an occasional
-> > ping to Manu, with the reply "not ready yet" ...
-> >
-> > Two years is a very long time to wait for a new API, especially
-> > considering that it was functional from the start.  It was looking
-> > like Manu may not have had any intention at all to merge his work into
-> > the master v4l/dvb development repository --  It should be not be
-> > surprising at all that Steven Toth felt the need to come up with his
-> > own solution.
-> >
-> > Steven posted a proposal for his API expansion solution, and he
-> > received positive feedback.  Immediately, Manu broke out of his
-> > silence and sent in a pull request.
-> >
-> >
-> > Is there malice here??  No.  There is development, and developers
-> > looking to move forward.  Nobody is at fault.
-> >
-> >
-> > I have posted the above just to clarify what the "politics" actually
-> > are, here.  The only real politics going around are those that are
-> > accusing others of politics themselves.
-> >
-> > Had Manu been willing to merge his work earlier, this would have all
-> > been a non-issue.  However, now there is an alternative proposal on
-> > the table, which appears to be more robust and may have more potential
-> > that the multiproto proposal.
-> >
-> > Does that mean multiproto is disqualified?   Absolutely not.
-> >
-> > Does the fact that multiproto was there first mean that it will be
-> > merged without question now that it is suddenly available?  No, not
-> > necessarily.
-> >
-> > What does it mean?  It means that now there are two proposals on the
-> > table.  Two ways to solve a problem using different ideas and methods.
-> >
-> > The end users that have piped into the discussion are mostly concerned
-> > with which API demonstration repository already contains support for
-> > their device.  This should have no bearing whatsoever on the decision
-> > of the linuxDVB API extension.  All drivers will be ported to
-> > whichever solution is decided upon.
-> >
-> > Now is the time to examine these solutions from a developer point of
-> > view, in terms of how this affects kernel developers and application
-> > developers alike.  There is no reason to rush into things just because
-> > a pull request has been made -- the outcome of this decision is highly
-> > important, and we will have to live with the decision for a good long
-> > time.
-> 
-> Thanks for your version of the history. I just have to say I can't really 
-> agree with the way you describe the history. To point this out I looked up 
-> some of the old threads...
-> 
-> So everything started in 2005 with initial proposals for a DVB-S2 extension of 
-> the API by Marcel. In early 2006 there were some discussions about it on the 
-> lists:
-> http://thread.gmane.org/gmane.linux.drivers.dvb/23914/focus=24030
-> http://thread.gmane.org/gmane.linux.drivers.dvb/24239
-> 
-> At that thought not much (if any) capable hardware was available, so the idea 
-> was put off for the moment.
-> Then in April 2006 Manu started to work at the things and provided a first 
-> draft based on the changes from Marcel:
-> http://thread.gmane.org/gmane.linux.drivers.dvb/25401
-> 
-> An initial driver for KNC cards was provided by Manu based on this API 
-> proposal. After some discussions on 05 May 2006 Manu requested for a pull of 
-> the API:
-> http://www.linuxtv.org/pipermail/v4l-dvb-maintainer/2006-May/001006.html
-> 
-> Immediately followed by Johannes stating that he is not satisfied with the API 
-> yet and suggested a rework:
-> http://www.linuxtv.org/pipermail/v4l-dvb-maintainer/2006-May/001007.html
-> 
-> At that time rework began while in parallel some people (including jusst 
-> technologies) started testing the first drivers. As expected they were still 
-> far away from running perfect.
-> 
-> So it took a while to come to obvious progress. In January 2007 Manu announced 
-> the mp-stb0899-c5 tree - not even the current multiproto tree - which included 
-> the results of the rework. Some testing was done on that by more people.
-> http://thread.gmane.org/gmane.linux.drivers.dvb/31146/focus=31159
-> 
-> In February Steven came up with initial support for HVR 4000 in the multiproto 
-> tree.
-> http://thread.gmane.org/gmane.linux.drivers.dvb/31605/focus=31644
-> 
-> Furthermore at this time the dvb-apps (at least parts of) were started to be 
-> extended by multiproto support, so that more people (which do not write their 
-> own applications...) could start testing.
-> http://thread.gmane.org/gmane.linux.drivers.dvb/31726/focus=31729
-> 
-> In March Steven asked for the status of multiproto. Manu noted that the API 
-> should be fine, but also asked Steve to look into dvb_frontend where Manu was 
-> not sure of not having introduced new issues.
-> http://thread.gmane.org/gmane.linux.drivers.dvb/31938/focus=32144
-> 
-> End of May 2007 still problems in dvb-core, which were related to the new API 
-> came up and were fixed:
-> http://thread.gmane.org/gmane.linux.drivers.dvb/33893
-> 
-> Then in Sept 2007 discussions came up how to integrate the multiproto API, 
-> doing this as experimental or non-experimental.
-> http://thread.gmane.org/gmane.linux.drivers.dvb/36082/focus=36411
-> 
-> In Oct 2007 Steven abandons his support for multiproto, due to delays caused 
-> by several reasons. Political, surely also personal, but also technical.
-> http://thread.gmane.org/gmane.linux.drivers.dvb/36583/focus=36670
-> 
-> At the same time some more sophisticated DVB-S2 featues were requestes by the 
-> users:
-> http://thread.gmane.org/gmane.linux.drivers.dvb/36785/focus=36789
-> 
-> Finally in Nov 2007 Oliver did a full review of the new code, which was 
-> necessary for merging. Still he asked for more reviewers.
-> http://article.gmane.org/gmane.linux.drivers.dvb/37665
-> 
-> In January 2008 another user-initialised thread came up:
-> http://thread.gmane.org/gmane.linux.drivers.dvb/38529/focus=38544
-> Still testing is obviously needed as bugs still come up.
-> 
-> In Apr 2008 VDR announced support for multiproto tree, so that more testing 
-> can be done by many users.
-> 
-> End of May Manu left for travelling and personal stuff until August, just with 
-> short breaks apllying some minor patches. Still some users report issues with 
-> multiproro, which were not fully taken care of.
-> 
-> After his vacation Manu came back on this topic and did another shot at a pull 
-> request.
-> 
-> ---
-> 
-> So this is how I see the history. Still 2 years is a very long time, but 
-> everyone should keep in mind that introduction of DVB-S2 support has been 
-> (still is) a big task with many problems. At first of course it is a big API 
-> extension, which is always problematic.
-> Furthermore it is an API extension for a hardware which still is not spread 
-> too widely and especially was not spread in 2006. And even those who had 
-> proper cards for receiving DVB-S2 still were not able to make any use out of 
-> the received data. To properly do testing at user side it was really necessary 
-> to at least have a way to watch some of the distributed content, just to be 
-> sure it is working well.
-> This was not possible for a long time due to lacing features in ffmpeg and 
-> missing alternatives. Still I think the only really working way is using a 
-> binary Windows codec named CoreAVC.
-> 
-> Keeping all this in mind two years are not too long in my eyes.
-> 
-> So this are just my 2 cents on this topic. All that I am interested in is a 
-> properly working API with wide application and driver support. Which proposal 
-> ever fits better - but decided on a technical base and not on historical or 
-> personal terms.
-> 
-> Regards,
-> Julian
+>> Most people will want the events to be as _small_ as humanly possible. The
+>> normal event size should hopefully be in the 8-16 bytes, and I think the
+>> RFC patch is already broken because it allocates that insane 64-bit event
+>> counter for things. Who the hell wants a 64-bit event counter that much?
+>> That's broken.
+>
+> The event counter is just the timestamp (quick patch, simple to fix). The
+> term "counter" was bad. It should have been timestamp, which one would
+> want a 64bit timestamp. Or at least a way to figure it out. Yes, we can
+> store a special event called "timestamp" and have a smaller counter. But
+> for simplicity, the 64 bit was easy. The event id was just 16 bits, which
+> I think is way more than enough.
 
-Thanks for the detailed (and imho correct) description of the history.
+Yup, is just a confusing name. we can definitely make this a smaller field
+by doing an offset time from the last event, but we agreed on 64 bits to
+keep version 1 simple ;-)
 
-CU
-Oliver
+I think in retrospect the timestamp events we used with wall time stuck
+in them were a mistake, as NTP will make them difficult. We should have
+just recorded wall time at the start of the buffer, and done offsets from
+there.
 
--- 
-----------------------------------------------------------------
-VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
-----------------------------------------------------------------
+Without relayfs subbuffers, the offset thing gets trickier, as you'd have
+to update the "start time" constantly once you'd filled the buffer and
+were shifting the start pointer. OTOH, I guess it's only 1 cacheline.
+
+M.
