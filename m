@@ -1,41 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYIXTEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbYIXTI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbYIXTEc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 15:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYIXTEW
+	id S1754065AbYIXTI3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 15:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYIXTIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 15:04:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52076 "EHLO mx1.redhat.com"
+	Wed, 24 Sep 2008 15:08:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48886 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754550AbYIXTEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 15:04:20 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1222280971.4425.42.camel@calx>
-References: <1222280971.4425.42.camel@calx> <20080923053228.GA5825@wotan.suse.de> <20080914073906.GA6184@elte.hu> <20080914004442.4f8e851f.akpm@linux-foundation.org> <20080914080631.GA10720@elte.hu> <20080914221231.GG27080@wotan.suse.de> <20080917131419.e6b7622e.akpm@linux-foundation.org> <20080918111226.GD29968@elte.hu> <48D2ABFD.3040103@goop.org> <1221772310.4779.29.camel@calx> <1221877119.8533.2.camel@nimitz> <13787.1222095249@redhat.com> <22749.1222280305@redhat.com> 
-To: Matt Mackall <mpm@selenic.com>
-Cc: dhowells@redhat.com, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh@veritas.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
-Date: Wed, 24 Sep 2008 19:56:58 +0100
-Message-ID: <24051.1222282618@redhat.com>
+	id S1752040AbYIXTIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 15:08:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: Regression in 2.6.27-rc7: Wake On LAN with sky2 broken
+Date: Wed, 24 Sep 2008 21:13:51 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20080924080546.GA21108@x61>
+In-Reply-To: <20080924080546.GA21108@x61>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809242113.52256.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall <mpm@selenic.com> wrote:
+On Wednesday, 24 of September 2008, Tino Keitel wrote:
+> Hi,
+> 
+> Wake On LAN from suspend to RAM doesn't work on my Mac mini Core Duo
+> with 2.6.27-rc7. I tested the same configuration with 2.6.26.3, and it
+> worked. With 2.6.27-rc7, the computer stays in suspended state. I can
+> still wake it up using the keyboard or power switch.
+> 
+> In my suspend script, I use the command "ethtool -s eth0 wol g" to
+> enable WOL even if it was disabled before.
+> 
+> Any hints what commit I should try to revert, before I start bisecting?
 
-> Is there any reason I shouldn't use truncate() in regular shmem.c if I
-> were to unify the two files?
+Please try the appended patch.
 
-It would be nice to keep tiny-shmem.c, well, tiny for NOMMU systems that can't
-have swap and can't have virtual memory.  Note that regular shmem does not now
-build on top of ramfs, so you'd have to port the ramfs internals to it.
+Thanks,
+Rafael
 
-David
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+sky2: Fix wake-on-LAN regression
+
+* Since dev->power.should_wakeup bit is used by the PCI core to
+  decide whether the device should wake up the system from sleep
+  states, set/unset this bit whenever WOL is enabled/disabled using
+  sky2_set_wol().
+
+* Use pci_prepare_to_sleep() and pci_back_from_sleep() in
+  ->sky2_suspend() and ->sky2_resume(), respectively, instead of the
+  older less suitable interfaces.
+
+* Prevent pci_enable_wake() from being called twice unnecessarily in
+  sky2_shutdown().
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+
+ drivers/net/sky2.c |   34 ++++++++++------------------------
+ 1 file changed, 10 insertions(+), 24 deletions(-)
+
+diff -puN drivers/net/sky2.c~skty2-adapt-to-the-reworked-pci-pm drivers/net/sky2.c
+--- a/drivers/net/sky2.c~skty2-adapt-to-the-reworked-pci-pm
++++ a/drivers/net/sky2.c
+@@ -3034,7 +3034,8 @@ static int sky2_set_wol(struct net_devic
+ 	struct sky2_port *sky2 = netdev_priv(dev);
+ 	struct sky2_hw *hw = sky2->hw;
+ 
+-	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
++	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
++	    || !device_can_wakeup(&hw->pdev->dev))
+ 		return -EOPNOTSUPP;
+ 
+ 	sky2->wol = wol->wolopts;
+@@ -3045,6 +3046,8 @@ static int sky2_set_wol(struct net_devic
+ 		sky2_write32(hw, B0_CTST, sky2->wol
+ 			     ? Y2_HW_WOL_ON : Y2_HW_WOL_OFF);
+ 
++	device_set_wakeup_enable(&hw->pdev->dev, sky2->wol);
++
+ 	if (!netif_running(dev))
+ 		sky2_wol_init(sky2);
+ 	return 0;
+@@ -4179,18 +4182,6 @@ static int __devinit sky2_test_msi(struc
+ 	return err;
+ }
+ 
+-static int __devinit pci_wake_enabled(struct pci_dev *dev)
+-{
+-	int pm  = pci_find_capability(dev, PCI_CAP_ID_PM);
+-	u16 value;
+-
+-	if (!pm)
+-		return 0;
+-	if (pci_read_config_word(dev, pm + PCI_PM_CTRL, &value))
+-		return 0;
+-	return value & PCI_PM_CTRL_PME_ENABLE;
+-}
+-
+ /* This driver supports yukon2 chipset only */
+ static const char *sky2_name(u8 chipid, char *buf, int sz)
+ {
+@@ -4314,7 +4305,7 @@ static int __devinit sky2_probe(struct p
+ 		}
+ 	}
+ 
+-	wol_default = pci_wake_enabled(pdev) ? WAKE_MAGIC : 0;
++	wol_default = device_may_wakeup(&pdev->dev) ? WAKE_MAGIC : 0;
+ 
+ 	err = -ENOMEM;
+ 	hw = kzalloc(sizeof(*hw), GFP_KERNEL);
+@@ -4479,7 +4470,7 @@ static void __devexit sky2_remove(struct
+ static int sky2_suspend(struct pci_dev *pdev, pm_message_t state)
+ {
+ 	struct sky2_hw *hw = pci_get_drvdata(pdev);
+-	int i, wol = 0;
++	int i;
+ 
+ 	if (!hw)
+ 		return 0;
+@@ -4497,8 +4488,6 @@ static int sky2_suspend(struct pci_dev *
+ 
+ 		if (sky2->wol)
+ 			sky2_wol_init(sky2);
+-
+-		wol |= sky2->wol;
+ 	}
+ 
+ 	sky2_write32(hw, B0_IMSK, 0);
+@@ -4506,8 +4495,7 @@ static int sky2_suspend(struct pci_dev *
+ 	sky2_power_aux(hw);
+ 
+ 	pci_save_state(pdev);
+-	pci_enable_wake(pdev, pci_choose_state(pdev, state), wol);
+-	pci_set_power_state(pdev, pci_choose_state(pdev, state));
++	pci_prepare_to_sleep(pdev);
+ 
+ 	return 0;
+ }
+@@ -4520,7 +4508,7 @@ static int sky2_resume(struct pci_dev *p
+ 	if (!hw)
+ 		return 0;
+ 
+-	err = pci_set_power_state(pdev, PCI_D0);
++	err = pci_back_from_sleep(pdev);
+ 	if (err)
+ 		goto out;
+ 
+@@ -4528,8 +4516,6 @@ static int sky2_resume(struct pci_dev *p
+ 	if (err)
+ 		goto out;
+ 
+-	pci_enable_wake(pdev, PCI_D0, 0);
+-
+ 	/* Re-enable all clocks */
+ 	if (hw->chip_id == CHIP_ID_YUKON_EX ||
+ 	    hw->chip_id == CHIP_ID_YUKON_EC_U ||
+@@ -4588,8 +4574,8 @@ static void sky2_shutdown(struct pci_dev
+ 	if (wol)
+ 		sky2_power_aux(hw);
+ 
+-	pci_enable_wake(pdev, PCI_D3hot, wol);
+-	pci_enable_wake(pdev, PCI_D3cold, wol);
++	if (pci_enable_wake(pdev, PCI_D3cold, wol))
++		pci_enable_wake(pdev, PCI_D3hot, wol);
+ 
+ 	pci_disable_device(pdev);
+ 	pci_set_power_state(pdev, PCI_D3hot);
+_
+
+
