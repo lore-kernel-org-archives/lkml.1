@@ -1,68 +1,341 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752215AbYIXV6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753133AbYIXV7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752215AbYIXV6G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 17:58:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYIXV5y
+	id S1753133AbYIXV7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 17:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYIXV7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 17:57:54 -0400
-Received: from gw.goop.org ([64.81.55.164]:55263 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752162AbYIXV5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 17:57:53 -0400
-Message-ID: <48DAB7E2.5030009@goop.org>
-Date: Wed, 24 Sep 2008 14:57:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Hugh Dickins <hugh@veritas.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Peter Chubb <peterc@gelato.unsw.edu.au>
-Subject: Re: PTE access rules & abstraction
-References: <1221846139.8077.25.camel@pasglop>  <48D739B2.1050202@goop.org>	 <1222117551.12085.39.camel@pasglop>	 <Pine.LNX.4.64.0809241919520.575@blonde.site> <1222291248.8277.90.camel@pasglop>
-In-Reply-To: <1222291248.8277.90.camel@pasglop>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Sep 2008 17:59:37 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:42347 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbYIXV7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 17:59:36 -0400
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       dan.j.williams@intel.com, leoli@freescale.com
+Subject: [PATCH v2] fsl-dma: allow Freescale Elo DMA driver to be compiled as a module
+Date: Wed, 24 Sep 2008 16:59:27 -0500
+Message-Id: <1222293567-17694-1-git-send-email-timur@freescale.com>
+X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> Well, the current set accessor, as far as I'm concerned is a big pile of
-> steaming shit that evolved from x86-specific gunk raped in different
-> horrible ways to make it looks like it fits on other architectures and
-> additionally mashed with goo to make it somewhat palatable by
-> virtualization stuff. Yes, bugs can be fixed but it's still an horrible
-> mess.
->   
+Modify the Freescale Elo / Elo Plus DMA driver so that it can be compiled as
+a module.
 
-What do you propose then?  Ideally one would like to get something that
-works for powerpc, s390, all the wacky ia64 modes as well as x86.  The
-ia64 folks proposed something, but I've not looked at it closely.  From
-an x86 virtualization perspective, something that's basically x86 with
-as much scope for batching and deferring as possible would be fine.
+The primary change is to stop treating the DMA controller as a bus, and the
+DMA channels as devices on the bus.  This is because the Open Firmware (OF)
+kernel code does not allow busses to be removed, so although we can call
+of_platform_bus_probe() to probe the DMA channels, there is no
+of_platform_bus_remove().  Instead, the DMA channels are manually probed,
+similar to what fsl_elbc_nand.c does.
 
-As a start, what's the state machine for a pte?  What states can it be
-in, and how does it move from state to state?  It sounds like powerpc
-has at least one extra state above x86 (hashed, with the hash key stored
-in the pte itself?).
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-> Now, regarding the above bug, I'm afraid the only approaches I see that
-> would work would be to have either a ptep_get_and_clear_flush(), which I
-> suppose x86 virt. people will hate, or maybe to actually have a powerpc
-> specific variant of the new start/commit hooks that does the flush.
->   
+v2: updated per comments
 
-ptep_get_and_clear() is not batchable anyway, because the x86
-implementation requires an atomic xchg on the pte, which will likely
-result in some sort of trap (and if it doesn't then it doesn't need
-batching).  The start/commit API was specifically so that we can do the
-mprotect (and fork COW updates) in a batchable way (in Xen its
-implemented with a pte update hypercall which updates the pte without
-affecting the A/D bits).
+This patch is for the 2.6.28 kernel.  This patch exposes a bug in the dmatest
+module, so my other patch "dmatest: properly handle duplicate DMA channels"
+should be applied if this patch is applied.
 
-    J
+ drivers/dma/Kconfig  |   10 ++--
+ drivers/dma/fsldma.c |  138 ++++++++++++++++++++++++++++++++------------------
+ drivers/dma/fsldma.h |    1 +
+ 3 files changed, 94 insertions(+), 55 deletions(-)
+
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index cd30390..904e575 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -48,13 +48,13 @@ config DW_DMAC
+ 	  can be integrated in chips such as the Atmel AT32ap7000.
+ 
+ config FSL_DMA
+-	bool "Freescale MPC85xx/MPC83xx DMA support"
+-	depends on PPC
++	tristate "Freescale Elo and Elo Plus DMA support"
++	depends on FSL_SOC
+ 	select DMA_ENGINE
+ 	---help---
+-	  Enable support for the Freescale DMA engine. Now, it support
+-	  MPC8560/40, MPC8555, MPC8548 and MPC8641 processors.
+-	  The MPC8349, MPC8360 is also supported.
++	  Enable support for the Freescale Elo and Elo Plus DMA controllers.
++	  The Elo is the DMA controller on some 82xx and 83xx parts, and the
++	  Elo Plus is the DMA controller on 85xx and 86xx parts.
+ 
+ config MV_XOR
+ 	bool "Marvell XOR engine support"
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index e9b2638..0b95dcc 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -370,7 +370,10 @@ static int fsl_dma_alloc_chan_resources(struct dma_chan *chan,
+ 					struct dma_client *client)
+ {
+ 	struct fsl_dma_chan *fsl_chan = to_fsl_chan(chan);
+-	LIST_HEAD(tmp_list);
++
++	/* Has this channel already been allocated? */
++	if (fsl_chan->desc_pool)
++		return 1;
+ 
+ 	/* We need the descriptor to be aligned to 32bytes
+ 	 * for meeting FSL DMA specification requirement.
+@@ -410,6 +413,8 @@ static void fsl_dma_free_chan_resources(struct dma_chan *chan)
+ 	}
+ 	spin_unlock_irqrestore(&fsl_chan->desc_lock, flags);
+ 	dma_pool_destroy(fsl_chan->desc_pool);
++
++	fsl_chan->desc_pool = NULL;
+ }
+ 
+ static struct dma_async_tx_descriptor *
+@@ -786,33 +791,29 @@ static void dma_do_tasklet(unsigned long data)
+ 	fsl_chan_ld_cleanup(fsl_chan);
+ }
+ 
+-static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
+-			const struct of_device_id *match)
++static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
++	struct device_node *node, u32 feature, const char *compatible)
+ {
+-	struct fsl_dma_device *fdev;
+ 	struct fsl_dma_chan *new_fsl_chan;
+ 	int err;
+ 
+-	fdev = dev_get_drvdata(dev->dev.parent);
+-	BUG_ON(!fdev);
+-
+ 	/* alloc channel */
+ 	new_fsl_chan = kzalloc(sizeof(struct fsl_dma_chan), GFP_KERNEL);
+ 	if (!new_fsl_chan) {
+-		dev_err(&dev->dev, "No free memory for allocating "
++		dev_err(fdev->dev, "No free memory for allocating "
+ 				"dma channels!\n");
+ 		return -ENOMEM;
+ 	}
+ 
+ 	/* get dma channel register base */
+-	err = of_address_to_resource(dev->node, 0, &new_fsl_chan->reg);
++	err = of_address_to_resource(node, 0, &new_fsl_chan->reg);
+ 	if (err) {
+-		dev_err(&dev->dev, "Can't get %s property 'reg'\n",
+-				dev->node->full_name);
++		dev_err(fdev->dev, "Can't get %s property 'reg'\n",
++				node->full_name);
+ 		goto err_no_reg;
+ 	}
+ 
+-	new_fsl_chan->feature = *(u32 *)match->data;
++	new_fsl_chan->feature = feature;
+ 
+ 	if (!fdev->feature)
+ 		fdev->feature = new_fsl_chan->feature;
+@@ -822,13 +823,13 @@ static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
+ 	 */
+ 	WARN_ON(fdev->feature != new_fsl_chan->feature);
+ 
+-	new_fsl_chan->dev = &dev->dev;
++	new_fsl_chan->dev = &new_fsl_chan->common.dev;
+ 	new_fsl_chan->reg_base = ioremap(new_fsl_chan->reg.start,
+ 			new_fsl_chan->reg.end - new_fsl_chan->reg.start + 1);
+ 
+ 	new_fsl_chan->id = ((new_fsl_chan->reg.start - 0x100) & 0xfff) >> 7;
+ 	if (new_fsl_chan->id > FSL_DMA_MAX_CHANS_PER_DEVICE) {
+-		dev_err(&dev->dev, "There is no %d channel!\n",
++		dev_err(fdev->dev, "There is no %d channel!\n",
+ 				new_fsl_chan->id);
+ 		err = -EINVAL;
+ 		goto err_no_chan;
+@@ -862,20 +863,20 @@ static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
+ 			&fdev->common.channels);
+ 	fdev->common.chancnt++;
+ 
+-	new_fsl_chan->irq = irq_of_parse_and_map(dev->node, 0);
++	new_fsl_chan->irq = irq_of_parse_and_map(node, 0);
+ 	if (new_fsl_chan->irq != NO_IRQ) {
+ 		err = request_irq(new_fsl_chan->irq,
+ 					&fsl_dma_chan_do_interrupt, IRQF_SHARED,
+ 					"fsldma-channel", new_fsl_chan);
+ 		if (err) {
+-			dev_err(&dev->dev, "DMA channel %s request_irq error "
+-				"with return %d\n", dev->node->full_name, err);
++			dev_err(fdev->dev, "DMA channel %s request_irq error "
++				"with return %d\n", node->full_name, err);
+ 			goto err_no_irq;
+ 		}
+ 	}
+ 
+-	dev_info(&dev->dev, "#%d (%s), irq %d\n", new_fsl_chan->id,
+-				match->compatible, new_fsl_chan->irq);
++	dev_info(fdev->dev, "#%d (%s), irq %d\n", new_fsl_chan->id,
++				compatible, new_fsl_chan->irq);
+ 
+ 	return 0;
+ 
+@@ -888,38 +889,20 @@ err_no_reg:
+ 	return err;
+ }
+ 
+-const u32 mpc8540_dma_ip_feature = FSL_DMA_IP_85XX | FSL_DMA_BIG_ENDIAN;
+-const u32 mpc8349_dma_ip_feature = FSL_DMA_IP_83XX | FSL_DMA_LITTLE_ENDIAN;
+-
+-static struct of_device_id of_fsl_dma_chan_ids[] = {
+-	{
+-		.compatible = "fsl,eloplus-dma-channel",
+-		.data = (void *)&mpc8540_dma_ip_feature,
+-	},
+-	{
+-		.compatible = "fsl,elo-dma-channel",
+-		.data = (void *)&mpc8349_dma_ip_feature,
+-	},
+-	{}
+-};
+-
+-static struct of_platform_driver of_fsl_dma_chan_driver = {
+-	.name = "of-fsl-dma-channel",
+-	.match_table = of_fsl_dma_chan_ids,
+-	.probe = of_fsl_dma_chan_probe,
+-};
+-
+-static __init int of_fsl_dma_chan_init(void)
++static void fsl_dma_chan_remove(struct fsl_dma_chan *fchan)
+ {
+-	return of_register_platform_driver(&of_fsl_dma_chan_driver);
++	free_irq(fchan->irq, fchan);
++	list_del(&fchan->common.device_node);
++	iounmap(fchan->reg_base);
++	kfree(fchan);
+ }
+ 
+ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 			const struct of_device_id *match)
+ {
+ 	int err;
+-	unsigned int irq;
+ 	struct fsl_dma_device *fdev;
++	struct device_node *child;
+ 
+ 	fdev = kzalloc(sizeof(struct fsl_dma_device), GFP_KERNEL);
+ 	if (!fdev) {
+@@ -953,9 +936,9 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 	fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
+ 	fdev->common.dev = &dev->dev;
+ 
+-	irq = irq_of_parse_and_map(dev->node, 0);
+-	if (irq != NO_IRQ) {
+-		err = request_irq(irq, &fsl_dma_do_interrupt, IRQF_SHARED,
++	fdev->irq = irq_of_parse_and_map(dev->node, 0);
++	if (fdev->irq != NO_IRQ) {
++		err = request_irq(fdev->irq, &fsl_dma_do_interrupt, IRQF_SHARED,
+ 					"fsldma-device", fdev);
+ 		if (err) {
+ 			dev_err(&dev->dev, "DMA device request_irq error "
+@@ -965,7 +948,21 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 	}
+ 
+ 	dev_set_drvdata(&(dev->dev), fdev);
+-	of_platform_bus_probe(dev->node, of_fsl_dma_chan_ids, &dev->dev);
++
++	/* We cannot use of_platform_bus_probe() because there is no
++	 * of_platform_bus_remove.  Instead, we manually instantiate every DMA
++	 * channel object.
++	 */
++	for_each_child_of_node(dev->node, child) {
++		if (of_device_is_compatible(child, "fsl,eloplus-dma-channel"))
++			fsl_dma_chan_probe(fdev, child,
++				FSL_DMA_IP_85XX | FSL_DMA_BIG_ENDIAN,
++				"fsl,eloplus-dma-channel");
++		if (of_device_is_compatible(child, "fsl,elo-dma-channel"))
++			fsl_dma_chan_probe(fdev, child,
++				FSL_DMA_IP_83XX | FSL_DMA_LITTLE_ENDIAN,
++				"fsl,elo-dma-channel");
++	}
+ 
+ 	dma_async_device_register(&fdev->common);
+ 	return 0;
+@@ -977,6 +974,30 @@ err_no_reg:
+ 	return err;
+ }
+ 
++static int of_fsl_dma_remove(struct of_device *of_dev)
++{
++	struct fsl_dma_device *fdev;
++	unsigned int i;
++
++	fdev = dev_get_drvdata(&of_dev->dev);
++
++	dma_async_device_unregister(&fdev->common);
++
++	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++)
++		if (fdev->chan[i])
++			fsl_dma_chan_remove(fdev->chan[i]);
++
++	if (fdev->irq != NO_IRQ)
++		free_irq(fdev->irq, fdev);
++
++	iounmap(fdev->reg_base);
++
++	kfree(fdev);
++	dev_set_drvdata(&of_dev->dev, NULL);
++
++	return 0;
++}
++
+ static struct of_device_id of_fsl_dma_ids[] = {
+ 	{ .compatible = "fsl,eloplus-dma", },
+ 	{ .compatible = "fsl,elo-dma", },
+@@ -984,15 +1005,32 @@ static struct of_device_id of_fsl_dma_ids[] = {
+ };
+ 
+ static struct of_platform_driver of_fsl_dma_driver = {
+-	.name = "of-fsl-dma",
++	.name = "fsl-elo-dma",
+ 	.match_table = of_fsl_dma_ids,
+ 	.probe = of_fsl_dma_probe,
++	.remove = of_fsl_dma_remove,
+ };
+ 
+ static __init int of_fsl_dma_init(void)
+ {
+-	return of_register_platform_driver(&of_fsl_dma_driver);
++	int ret;
++
++	pr_info("Freescale Elo / Elo Plus DMA driver\n");
++
++	ret = of_register_platform_driver(&of_fsl_dma_driver);
++	if (ret)
++		pr_err("fsldma: failed to register platform driver\n");
++
++	return ret;
++}
++
++static void __exit of_fsl_dma_exit(void)
++{
++	of_unregister_platform_driver(&of_fsl_dma_driver);
+ }
+ 
+-subsys_initcall(of_fsl_dma_chan_init);
+ subsys_initcall(of_fsl_dma_init);
++module_exit(of_fsl_dma_exit);
++
++MODULE_DESCRIPTION("Freescale Elo / Elo Plus DMA driver");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index 6faf07b..4f21a51 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -114,6 +114,7 @@ struct fsl_dma_device {
+ 	struct dma_device common;
+ 	struct fsl_dma_chan *chan[FSL_DMA_MAX_CHANS_PER_DEVICE];
+ 	u32 feature;		/* The same as DMA channels */
++	int irq;		/* Channel IRQ */
+ };
+ 
+ /* Define macros for fsl_dma_chan->feature property */
+-- 
+1.5.5
+
