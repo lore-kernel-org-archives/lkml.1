@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbYIXBAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752906AbYIXBT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753086AbYIXBAh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 21:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYIXBA3
+	id S1752906AbYIXBT0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 21:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYIXBTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 21:00:29 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:32900 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751445AbYIXBA2 (ORCPT
+	Tue, 23 Sep 2008 21:19:18 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:45769 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbYIXBTR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 21:00:28 -0400
-Message-ID: <48D9912A.20303@lwfinger.net>
-Date: Tue, 23 Sep 2008 20:00:26 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Robert Hancock <rwh461@mail.usask.ca>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Logs being spammed with "Unable to enumerate USB device"
-References: <fa.dl+pVhW/kcgBFo0dsyPEgn0MhtE@ifi.uio.no> <48D9865B.8080806@mail.usask.ca>
-In-Reply-To: <48D9865B.8080806@mail.usask.ca>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 23 Sep 2008 21:19:17 -0400
+Subject: Re: [Bug #11548] kernel BUG at drivers/pci/intel-iommu.c:1373!
+From: Chris Mason <chris.mason@oracle.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <7lIhZC4hCxE.A.oAH.j0q1IB@albercik>
+References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik>
+	 <7lIhZC4hCxE.A.oAH.j0q1IB@albercik>
+Content-Type: text/plain
+Date: Tue, 23 Sep 2008 21:18:41 -0400
+Message-Id: <1222219121.7160.162.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
+On Sun, 2008-09-21 at 20:54 +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Is this just occurring during bootup? I think this is normal if the EHCI
-> driver is loaded after UHCI or OHCI because it causes the device to be
-> switched away from the other controller that's trying to enumerate it,
-> at least momentarily.
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+> 
 
-It sometimes happens at bootup, but at other times I will get hundreds
-of them in a row in the logs. I have put in some debugging where the
-message is triggered, but have not seen any of the flood-type since.
+I'm unable to reproduce this on 2.6.27-rc7.  I don't think it has been
+fixed, but I'm having a hard time finding a reliable way to trigger it
+on newer kernels.
 
-Larry
+-chris
 
 
