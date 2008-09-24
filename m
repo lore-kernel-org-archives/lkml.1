@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbYIXHyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbYIXHyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752923AbYIXHyG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 03:54:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbYIXHxx
+	id S1753795AbYIXHyZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 03:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYIXHyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 03:53:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50930 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751097AbYIXHxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 03:53:53 -0400
-Date: Wed, 24 Sep 2008 09:53:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] olpc: fix endian bug in openfirmware workaround
-Message-ID: <20080924075338.GE3655@elte.hu>
-References: <1222208409.16003.25.camel@brick>
+	Wed, 24 Sep 2008 03:54:06 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:40810 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752757AbYIXHyF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 03:54:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jNUV/ZFfCUzcRsN4717eQKD6xtKxTHyv8ZQCO7GCll/iYqc6uWa10zHqhMzSg3eN5/
+         hps5/wRULxJ/EWoGdbv0CsPBLSDbV8l9OBkXl046QSxc5D4tjdkp3OgQ861nAwACLKYY
+         dVHJzWiP4q2I879uiI6WMiHBkMCiFHAJBHNOQ=
+Message-ID: <8ee0b8e80809240054r7197072exde7f75e47f56f120@mail.gmail.com>
+Date: Wed, 24 Sep 2008 09:54:03 +0200
+From: "Jeroen van Rijn" <jvrnix@gmail.com>
+To: gshan <gshan@alcatel-lucent.com>
+Subject: Re: Create real-time process from shell script
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <48D99E0D.9000003@alcatel-lucent.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1222208409.16003.25.camel@brick>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <48D99E0D.9000003@alcatel-lucent.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 24, 2008 at 3:55 AM, gshan <gshan@alcatel-lucent.com> wrote:
+> Hello, Is there any way (or linux utilities) could be used to create a
+> real-time process in shell script?
+>
+> Thanks,
+> Gavin
 
-* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+nice -20 <command> <args>
 
-> Boardrev is always treated as a u32 everywhere else, no reason to 
-> byteswap the 0xc2 value.  The only use is to print out if it is a 
-> prerelease board, the test being:
-> 
-> (olpc_platform_info.boardrev & 0xf) < 8
-> 
-> Which is currently always true as be32_to_cpu(0xc2) & 0xf = 0
-> but I doubt that was the intention here.  The consequences of the bug
-> are pretty minor though (incorrect boardrev displayed in dmesg when
-> ofw support not configured)
-> 
-> Also annotate the temporary used to read the boardrev in the ofw
-> case.
-> 
-> The confusion was noticed by sparse:
-> arch/x86/kernel/olpc.c:206:32: warning: cast to restricted __be32
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+or:
 
-applied to tip/x86/sparse-fixes, thanks Harvey!
+<command> <args> & pid=$!
+renice -20 -p $pid
 
-	Ingo
+-- Jeroen
