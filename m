@@ -1,116 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYIXOz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbYIXPAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbYIXOz0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 10:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYIXOzH
+	id S1753176AbYIXPAL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 11:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbYIXO76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 10:55:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49747 "EHLO mx1.redhat.com"
+	Wed, 24 Sep 2008 10:59:58 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:49069 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753419AbYIXOzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 10:55:06 -0400
-Date: Wed, 24 Sep 2008 10:52:02 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Hirokazu Takahashi <taka@valinux.co.jp>
-Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
-       righi.andrea@gmail.com, jens.axboe@oracle.com
-Subject: Re: dm-ioband + bio-cgroup benchmarks
-Message-ID: <20080924145202.GC547@redhat.com>
-References: <20080919131019.GA3606@redhat.com> <20080922.183651.62951479.taka@valinux.co.jp> <20080922143042.GA19222@redhat.com> <20080924.191803.100102323.taka@valinux.co.jp>
-MIME-Version: 1.0
+	id S1751665AbYIXO75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 10:59:57 -0400
+Date: Wed, 24 Sep 2008 19:05:41 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Joe Korty <joe.korty@ccur.com>
+Cc: Roland McGrath <roland@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG, TEST PATCH] stallout race between SIGCONT and SIGSTOP
+Message-ID: <20080924150541.GA119@tv-sign.ru>
+References: <20080923155331.GA20380@tsunami.ccur.com> <20080923163530.GA656@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080924.191803.100102323.taka@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080923163530.GA656@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 07:18:03PM +0900, Hirokazu Takahashi wrote:
-> Hi,
-> 
-> > > > > > To avoid creation of stacking another device (dm-ioband) on top of every
-> > > > > > device we want to subject to rules, I was thinking of maintaining an
-> > > > > > rb-tree per request queue. Requests will first go into this rb-tree upon
-> > > > > > __make_request() and then will filter down to elevator associated with the
-> > > > > > queue (if there is one). This will provide us the control of releasing
-> > > > > > bio's to elevaor based on policies (proportional weight, max bandwidth
-> > > > > > etc) and no need of stacking additional block device.
-> > > > > 
-> > > > > I think it's a bit late to control I/O requests there, since process
-> > > > > may be blocked in get_request_wait when the I/O load is high.
-> > > > > Please imagine the situation that cgroups with low bandwidths are
-> > > > > consuming most of "struct request"s while another cgroup with a high
-> > > > > bandwidth is blocked and can't get enough "struct request"s.
-> > > > > 
-> > > > > It means cgroups that issues lot of I/O request can win the game.
-> > > > > 
-> > > > 
-> > > > Ok, this is a good point. Because number of struct requests are limited
-> > > > and they seem to be allocated on first come first serve basis, so if a
-> > > > cgroup is generating lot of IO, then it might win.
-> > > > 
-> > > > But dm-ioband will face the same issue. 
-> > > 
-> > > Nope. Dm-ioband doesn't have this issue since it works before allocating
-> > > the descriptors. Only I/O requests dm-ioband has passed can allocate its
-> > > descriptor.
-> > > 
-> > 
-> > Ok. Got it. dm-ioband does not block on allocation of request descriptors.
-> > It does seem to be blocking in prevent_burst_bios() but that would be
-> > per group so it should be fine.
-> 
-> Yes. There is also another little mechanism that prevent_burst_bios()
-> tries not to block kernel threads if possible.
-> 
-> > That means for lower layers, one shall have to do request descritor
-> > allocation as per the cgroup weight to make sure a cgroup with lower
-> > weight does not get higher % of disk because it is generating more
-> > requests.
-> 
-> Yes. But when cgroups with higher weight aren't issueing a lot of I/Os,
-> even a cgroup with lower weight can allocate a lot of request descriptors.
-> 
+On 09/23, Oleg Nesterov wrote:
+>
+> I will be completely offline tomorrow.
 
-ok. Now with the new thought, I am completely deprecating the idea of
-queuing the request descriptors. Now I am thinking of capturing the bios
-and buffering these into the rb-tree as soon as these enter the request
-queue using associated request function. All the request descriptor
-allocation will come later when bios are actually release to elevator from
-the rb-tree. That way we should be able to get rid of this issue. 
+Cancelled...
 
-> > One additional issue with my scheme I just noticed is that I am putting
-> > bio-cgroup in rb-tree. If there are stacked devices then bio/requests from
-> > same cgroup can be at multiple levels of processing at same time. That
-> > would mean that a single cgroup needs to be in multiple rb-trees at the
-> > same time in various layers. So I might have to create a temporary object
-> > which can associate with cgroup and get rid of that object once I don't
-> > have the requests any more...
-> 
-> You mean each layer should have its rb-tree? Is it per device?
-> One lvm logical volume may probably consist from several physical
-> volumes, which will be shared with other logical volumes.
-> And some layers may split one bio into several bios.
-> I hardly can imagine how these structures will be.
-> 
+> Better yet, to avoid a possible confusion, could you please send me
+> the (modified) source code to re-produce the stall ?
 
-Yes, one rb-tree per device, be it physical device or logical device
-(because there is one request queue associated per physical/logical block
-device).
+Thanks Joe for the test-case and for your comments.
 
-I was thinking of getting hold/hijack the bios as soon as they are
-submitted to the device using associated request function. So if there
-is a logical device built on top of two physical device, the associated
-bio copy or other logic should not even see the bio the moment it is 
-submitted to the deivce. It will see the bio only when it is released
-from associated rb-tree to them. Do you think this will not work? To me
-this is what dm-ioband is doing logically. The only difference is that it
-does this with the help of a separate request queue. 
+Joe says:
+>
+> So it looks like the test is in error, not the kernel.
 
-Thanks
-Vivek
+and I am happy to agree.
+
+I think sigaction/10-1.c should be fixed, please see the patch below.
+
+In essence the code does:
+
+	for (1 .. 10) {
+		kill(pid, SIGSTOP);
+		wait_until_we_receive_CLD_STOPPED(); // <---- HANGS
+		kill(pid, SIGCONT);
+	}
+
+We can look at the code from the different angle, this loop does
+
+		kill(pid, SIGCONT);
+		kill(pid, SIGSTOP);
+		wait_until_we_receive_CLD_STOPPED(); // <---- HANGS
+
+and it hangs because CLD_CONTINUED (which is ignored by the SIGCHLD
+handler) masks CLD_STOPPED.
+
+And yes, the mentioned patch makes the difference. To clarify, it
+does not defer the "result" of SIGCONT, it only defers the sending
+of SIGCHLD with .si_code == CLD_CONTINUED.
+
+So, what happens is:
+
+	kill(SIGCONT) does its job, CLD_CONTINUED will be sent a
+	bit later.
+
+	kill(SIGSTOP) starts another group-stop.
+
+	the child sends CLD_CONTINUED, and before the parent deques
+	the signal, it stops and sends CLD_STOPPED.
+
+Now, since SIGCHLD is a non-rt signal, the second SIGCHLD is lost,
+and wait_until_we_receive_CLD_STOPPED() hangs.
+
+I did the test patch to be sure:
+
+	--- 26-rc2/kernel/signal.c~	2008-09-20 20:37:52.000000000 +0400
+	+++ 26-rc2/kernel/signal.c	2008-09-24 18:43:34.000000000 +0400
+	@@ -808,7 +808,7 @@ static int send_signal(int sig, struct s
+		 * exactly one non-rt signal, so that we can get more
+		 * detailed information about the cause of the signal.
+		 */
+	-	if (legacy_queue(pending, sig))
+	+	if (sig != SIGCHLD && legacy_queue(pending, sig))
+			return 0;
+		/*
+		 * fast-pathed signals for kernel-internal things like SIGSTOP
+
+and now your test-case doesn't hang.
+
+Oleg.
+
+--- tmp/posixtestsuite/conformance/interfaces/sigaction/10-1.c~	2003-04-15 01:18:58.000000000 +0400
++++ tmp/posixtestsuite/conformance/interfaces/sigaction/10-1.c	2008-09-24 18:01:23.000000000 +0400
+@@ -19,19 +19,41 @@
+ #define NUMSTOPS 10
+ 
+ int child_stopped = 0;
+-int waiting = 1;
++int child_continued = 0;
++int notification;
+ 
+-void handler(int signo, siginfo_t *info, void *context) 
++void handler(int signo, siginfo_t *info, void *context)
+ {
+-	if (info && info->si_code == CLD_STOPPED) {
++	if (!info)
++		return;
++
++	notification = info->si_code;
++
++	switch (notification) {
++	case CLD_STOPPED:
+ 		printf("Child has been stopped\n");
+-		waiting = 0;
+ 		child_stopped++;
++		break;
++	case CLD_CONTINUED:
++		printf("Child has been continued\n");
++		child_continued++;
++		break;
+ 	}
+ }
+ 
++void wait_for_notification(int val)
++{
++	struct timeval tv;
++
++	while (notification != val) {
++		tv.tv_sec = 1;
++		tv.tv_usec = 0;
++		if (!select(0, NULL, NULL, NULL, &tv))
++			break;
++	}
++}
+ 
+-int main()
++int main(void)
+ {
+ 	pid_t pid;
+ 	struct sigaction act;
+@@ -40,7 +62,7 @@ int main()
+ 	act.sa_sigaction = handler;
+ 	act.sa_flags = SA_SIGINFO;
+ 	sigemptyset(&act.sa_mask);
+-	sigaction(SIGCHLD,  &act, 0);     
++	sigaction(SIGCHLD,  &act, 0);
+ 
+ 	if ((pid = fork()) == 0) {
+ 		/* child */
+@@ -54,37 +76,36 @@ int main()
+ 		return 0;
+ 	} else {
+ 		/* parent */
+-		int s; 		
++		int s;
+ 		int i;
+ 
+ 		for (i = 0; i < NUMSTOPS; i++) {
+-			waiting = 1;
+-
+ 			printf("--> Sending SIGSTOP\n");
++			notification = 0;
+ 			kill(pid, SIGSTOP);
+ 
+ 			/*
+ 			  Don't let the kernel optimize away queued
+ 			  SIGSTOP/SIGCONT signals.
+ 			*/
+-			while (waiting) {
+-				tv.tv_sec = 1;
+-				tv.tv_usec = 0;
+-				if (!select(0, NULL, NULL, NULL, &tv))
+-				  break;
+-			}
+-
++			wait_for_notification(CLD_STOPPED);
+ 
+ 			printf("--> Sending SIGCONT\n");
++			notification = 0;
+ 			kill(pid, SIGCONT);
++			/*
++			  SIGCHLD doesn't queue, make sure CLD_CONTINUED
++			  doesn't mask the next CLD_STOPPED
++			*/
++			wait_for_notification(CLD_CONTINUED);
+ 		}
+-		
++
+ 		/* POSIX specifies default action to be abnormal termination */
+ 		kill(pid, SIGHUP);
+ 		waitpid(pid, &s, 0);
+ 	}
+ 
+-	if (child_stopped == NUMSTOPS) {
++	if (child_stopped == NUMSTOPS && child_continued == NUMSTOPS) {
+ 		printf("Test PASSED\n");
+ 		return 0;
+ 	}
+@@ -92,4 +113,3 @@ int main()
+ 	printf("Test FAILED\n");
+ 	return -1;
+ }
+-
+
