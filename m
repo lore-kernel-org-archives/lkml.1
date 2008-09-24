@@ -1,103 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbYIXKST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751686AbYIXKSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754208AbYIXKST (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 06:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYIXKSJ
+	id S1751686AbYIXKSm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 06:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbYIXKSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 06:18:09 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:43521 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752036AbYIXKSI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 06:18:08 -0400
-Date: Wed, 24 Sep 2008 19:18:03 +0900 (JST)
-Message-Id: <20080924.191803.100102323.taka@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
-       righi.andrea@gmail.com, jens.axboe@oracle.com
-Subject: Re: dm-ioband + bio-cgroup benchmarks
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <20080922143042.GA19222@redhat.com>
-References: <20080919131019.GA3606@redhat.com>
-	<20080922.183651.62951479.taka@valinux.co.jp>
-	<20080922143042.GA19222@redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Sep 2008 06:18:30 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59563 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751915AbYIXKS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 06:18:29 -0400
+Date: Wed, 24 Sep 2008 12:18:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Should irq_chip->mask disable percpu interrupts to all cpus,
+	or just to this cpu?
+Message-ID: <20080924101811.GC26267@elte.hu>
+References: <48D94B64.3070004@goop.org> <20080924084558.GD5576@elte.hu> <m18wthna2f.fsf@frodo.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m18wthna2f.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1609]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-> > > > > To avoid creation of stacking another device (dm-ioband) on top of every
-> > > > > device we want to subject to rules, I was thinking of maintaining an
-> > > > > rb-tree per request queue. Requests will first go into this rb-tree upon
-> > > > > __make_request() and then will filter down to elevator associated with the
-> > > > > queue (if there is one). This will provide us the control of releasing
-> > > > > bio's to elevaor based on policies (proportional weight, max bandwidth
-> > > > > etc) and no need of stacking additional block device.
-> > > > 
-> > > > I think it's a bit late to control I/O requests there, since process
-> > > > may be blocked in get_request_wait when the I/O load is high.
-> > > > Please imagine the situation that cgroups with low bandwidths are
-> > > > consuming most of "struct request"s while another cgroup with a high
-> > > > bandwidth is blocked and can't get enough "struct request"s.
-> > > > 
-> > > > It means cgroups that issues lot of I/O request can win the game.
-> > > > 
-> > > 
-> > > Ok, this is a good point. Because number of struct requests are limited
-> > > and they seem to be allocated on first come first serve basis, so if a
-> > > cgroup is generating lot of IO, then it might win.
-> > > 
-> > > But dm-ioband will face the same issue. 
-> > 
-> > Nope. Dm-ioband doesn't have this issue since it works before allocating
-> > the descriptors. Only I/O requests dm-ioband has passed can allocate its
-> > descriptor.
-> > 
-> 
-> Ok. Got it. dm-ioband does not block on allocation of request descriptors.
-> It does seem to be blocking in prevent_burst_bios() but that would be
-> per group so it should be fine.
+* Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-Yes. There is also another little mechanism that prevent_burst_bios()
-tries not to block kernel threads if possible.
+> Other than the beautiful way we print things in /proc/interrupts 
+> IRQ_PER_CPU feels like a really bad idea.  Especially in that it 
+> enshrines the nasty per cpu irq counters that scale horribly.
 
-> That means for lower layers, one shall have to do request descritor
-> allocation as per the cgroup weight to make sure a cgroup with lower
-> weight does not get higher % of disk because it is generating more
-> requests.
+ok - i thought the idea was to still have a per cpu irq desc.
 
-Yes. But when cgroups with higher weight aren't issueing a lot of I/Os,
-even a cgroup with lower weight can allocate a lot of request descriptors.
+so lets fix /proc/interrupts in that model. Only a single entry for 
+every class of interrupts or so?
 
-> One additional issue with my scheme I just noticed is that I am putting
-> bio-cgroup in rb-tree. If there are stacked devices then bio/requests from
-> same cgroup can be at multiple levels of processing at same time. That
-> would mean that a single cgroup needs to be in multiple rb-trees at the
-> same time in various layers. So I might have to create a temporary object
-> which can associate with cgroup and get rid of that object once I don't
-> have the requests any more...
-
-You mean each layer should have its rb-tree? Is it per device?
-One lvm logical volume may probably consist from several physical
-volumes, which will be shared with other logical volumes.
-And some layers may split one bio into several bios.
-I hardly can imagine how these structures will be.
-
-But I guess it is a good thing that we are going to support
-a general infrastructure for I/O requests.
-
-> Well, implementing rb-tree per request queue seems to be harder than I 
-> had thought. Especially taking care of decoupling the elevator and reqeust
-> descriptor logic at lower layers. Long way to go..
-
-Thanks,
-Hirokazu Takahashi.
+	Ingo
