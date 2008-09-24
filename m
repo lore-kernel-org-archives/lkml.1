@@ -1,237 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbYIXQmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbYIXQtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbYIXQmX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 12:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYIXQmQ
+	id S1753562AbYIXQtF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 12:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYIXQsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 12:42:16 -0400
-Received: from mercury.realtime.net ([205.238.132.86]:50439 "EHLO
-	mercury.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbYIXQmP (ORCPT
+	Wed, 24 Sep 2008 12:48:53 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:50050 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbYIXQsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 12:42:15 -0400
-In-Reply-To: <20080924143055.6102f317@bull.net>
-References: <200809231743.23828.ossthema@de.ibm.com> <20080915100406.342e027a@bull.net> <200809240958.m8O9wM7k010996@sullivan.realtime.net> <20080924143055.6102f317@bull.net>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0fa2693104ff3250114d82837911b9e8@bga.com>
-Content-Transfer-Encoding: 7bit
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       Christoph Raisch <RAISCH@de.ibm.com>, linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jan-Bernd Themann <ossthema@de.ibm.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with hardirq preemption
-Date: Wed, 24 Sep 2008 11:42:15 -0500
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-X-Mailer: Apple Mail (2.624)
-X-Originating-IP: 216.126.174.42
+	Wed, 24 Sep 2008 12:48:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:user-agent:date:from:to:cc:subject:content-disposition
+         :message-id;
+        b=i+U2CGVjwvWy68sG9DIvrAzhM/Is6j+zQPEQE4LAOTDb9KPGsWQX8hS3ZXdau9IIzr
+         w/Bq3ieSfGtxX/myXYAxKfHrTSHORyNDfnQWnCu89vYH1CZm03cDTZvxd+F6ZCvhlXs7
+         ppO0/nqsCVDHz4u21I66mqcc15a4aSeNidnOw=
+References: <20080924164618.588609232@gmail.com>>
+User-Agent: quilt/0.46-1
+Date: Wed, 24 Sep 2008 20:46:21 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: mingo@elte.hu, macro@linux-mips.org, yhlu.kernel@gmail.com
+Cc: linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: [patch 3/3] x86: apic - remove dead ifdef from lapic_is_integrated
+Content-Disposition: inline; filename=x86-apic-lapic_is_integrated-cleanup
+Message-ID: <48da6f73.0637560a.586e.4ec0@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 24, 2008, at 7:30 AM, Sebastien Dugue wrote:
->   Hi Milton,
-> On Wed, 24 Sep 2008 04:58:22 -0500 (CDT) Milton Miller 
-> <miltonm@bga.com> wrote:
->> On Mon Sep 15 at 18:04:06 EST in 2008, Sebastien Dugue wrote:
->>> When entering the low level handler, level sensitive interrupts are
->>> masked, then eio'd in interrupt context and then unmasked at the
->>> end of hardirq processing.  That's fine as any interrupt comming
->>> in-between will still be processed since the kernel replays those
->>> pending interrupts.
->>
->> Is this to generate some kind of software managed nesting and priority
->> of the hardware level interrupts?
->
->   No, not really. This is only to be sure to not miss interrupts coming
-> from the same source that were received during threaded hardirq 
-> processing.
-> Some instrumentation showed that it never seems to happen in the eHEA
-> interrupt case, so I think we can forget this aspect.
+We already have #ifdef in apicdef.h which depends
+on cpu type so no need to re-introduce it.
 
-I don't trust "the interrupt can never happen during hea hardirq", 
-because I think there will be a race between their rearming the next 
-interrupt and the unmask being called.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-I was trying to understand why the mask and early eoi, but I guess its 
-to handle other more limited interrupt controllers where the interrupts 
-stack in hardware instead of software.
+Index: linux-2.6.git/arch/x86/kernel/apic.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic.c	2008-09-24 19:33:31.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/apic.c	2008-09-24 20:25:05.000000000 +0400
+@@ -167,11 +167,7 @@ static unsigned long apic_phys;
+  */
+ static inline int lapic_is_integrated(void)
+ {
+-#ifdef CONFIG_X86_64
+-	return 1;
+-#else
+ 	return APIC_INTEGRATED(lapic_get_version());
+-#endif
+ }
+ 
+ /*
 
->   Also, the problem only manifests with the eHEA RX interrupt. For 
-> example,
-> the IBM Power Raid (ipr) SCSI exhibits absolutely no problem under an 
-> RT
-> kernel. From this I conclude that:
->
->   IPR - PCI - XICS is OK
->   eHEA - IBMEBUS - XICS is broken with hardirq preemption.
->
->   I also checked that forcing the eHEA interrupt to take the non 
-> threaded
-> path does work.
-
-For a long period of time, XICS dealt only with level interrupts.   
-First Micro Channel, and later PCI buses.  The IPI is made level by 
-software conventions.  Recently, EHCA, EHEA, and MSI interrupts were 
-added which by their nature are edge based.  The logic that converts 
-those interrupts to the XICS layer is responsible for the resend when 
-no cpu can accept them, but not to retrigger after an EOI.
-
->   Here is a side by side comparison of the fasteoi flow with and 
-> without hardirq
-> threading (sorry it's a bit wide)
-(removed)
->   the non-threaded flow does (in interrupt context):
->
->     mask
->     handle interrupt
->     unmask
->     eoi
->
->   the threaded flow does:
->
->     mask
->     eoi
-> 		handle interrupt
-> 		unmask
->
->   If I remove the mask() call, then the eHEA is no longer hanging.
-
-Hmm, I guess I'm confused.  You are saying the irq does not appear if 
-it occurs while it is masked?  Well, in that case, I would guess that 
-the hypervisor is checking if the irq is previously pending while it 
-was masked and resetting it as part of the unmask.   It can't do it on 
-level, but can on the true edge sources.  I would further say the 
-justification for this might be the hardware might make it pending from 
-some previous stale event that might result in the false interrupt on 
-startup were it not to do this clear.
-
->> The reason I ask is the xics controller can do unlimited nesting
->> of hardware interrupts.  In fact, the hardware has 255 levels of
->> priority, of which 16 or so are reserved by the hypervisor, leaving
->> over 200 for the os to manage.  Higher numbers are lower in priority,
->> and the hardware will only dispatch an interrupt to a given cpu if
->> it is currenty at a lower priority.  If it is at a higher priority
->> and the interrupt is not bound to a specific cpu it will look for
->> another cpu to dispatch it.  The hardware will not re-present an
->> irq until the it is EOId (managed by a small state machine per
->> interrupt at the source, which also handles no cpu available try
->> again later), but software can return its cpu priority to the
->> previous level to recieve other interrupt sources at the same level.
->> The hardware also supports lazy update of the cpu priority register
->> when an interrupt is presented; as long as the cpu is hard-irq
->> enabled it can take the irq then write is real priority and let the
->> hw decide if the irq is still pending or it must defer or try another
->> cpu in the rejection scenerio.  The only restriction is that the
->> EOI can not cause an interrupt reject by raising the priority while
->> sending the EOI command.
->>
->> The per-interrupt mask and unmask calls have to go through RTAS, a
->> single-threaded global context, which in addition to increasing
->> path length will really limit scalability.  The interrupt controller
->> poll and reject facilities are accessed through hypervisor calls
->> which are comparable to a fast syscall, and parallel to all cpus.
->>
->> We used to lower the priority to allow other interrupts in, but we
->> realized that in addition to the questionable latency in doing so,
->> it only caused unlimited stack nesting and overflow without per-irq
->> stacks.  We currently set IPIs above other irqs so we typically
->> only process them during a hard irq (but we return to base level
->> after IPI and could take another base irq, a bug).
->>
->>
->> So, Sebastien, with this information, is does the RT kernel have
->> a strategy that better matches this hardware?
->
->   Don't think so. I think that the problem may be elsewhere as
-> everything is fine with PCI devices (well at least SCSI).
-
-Those are true level sources, and not edge.
-
->   As I said earlier in another mail, it seems that the eHEA
-> is behaving as if it was generating edge interrupts which do not
-> support masking. Don't know.
-
-(I wrote this next paragraph before parsing the "remove mask and it 
-works" / I'm confused paragraph above, so it may not be a problem).
-
-These sources are truly edge.  Once you do an EOI you are taking 
-responsibility to do the replay yourself.  In your threaded case, you 
-EOI and therefore the hardware will arm for the next event.  When you 
-add the mask, the delivery is deferred until it is unmasked at the end 
-of your EOI loop.  When you do not, the new interrupt may come in but 
-you just EOI it but do not tell the running thread that it happened, 
-then you are dropping the irq event.   Since the source is truly edge, 
-there is no hardware replay and the interrupt is lost.
-
-(I think the pci express gigabit is one of the few msi interrupt 
-adapters that both IBM and Linux support).
-
->   Thanks a lot for the explanation, looks like the xics + hypervisor
-> combo is way more complex than I thought.
-
-While the hypervisor adds a bit of path length (an hcall vs a single 
-mmio access for get_irq/eoi with multiple priority irq nesting), the 
-model is no more or less complicated than native xics.
-
-The path lengh for mask and unmask is always VERY slow and single 
-threaded global lock and single context in xics.  It is designed and 
-tuned to run at driver startup and shutdown (and adapter reset and 
-reinitalize during pci error processing), not during normal irq 
-processing.
-
-The XICS hardware implicitly masks the specific source as part of 
-interrupt ack (get_irq), and implicitly undoes this mask at eoi.   In 
-addition, it helps to manage the cpu priority by supplying the previous 
-priority as part of the get_irq process and providing for the priority 
-to be restored (lowered only) as part of the eoi.  The hardware does 
-support setting the cpu priority independently.
-
-We should only be using this implicit masking for xics, and not the 
-explicit masking for any normal interrupt processing.  I don't know if 
-this means making the mask/unmask setting a bit in software, and the 
-enable/disable to actually call what we do now on mask/unmask, or if it 
-means we need a new flow type on real time.
-
-While call to mask and unmask might work on level interrupts, its 
-really slow and will limit performance if done on every interrupt.
-
->   the non-threaded flow does (in interrupt context):
->
->     mask
->     handle interrupt
->     unmask
->     eoi
->
->   the threaded flow does:
->
->     mask
->     eoi
-> 		handle interrupt
-> 		unmask
-
-I think the flows we want on xics are:
-
-(non-threaded)
-	getirq (implicit source specific mask until eoi)
-	handle interrupt
-	eoi (implicit cpu priority restore)
-
-(threaded)
-	getirq (implicit source specific mask until eoi)
-	explicit cpu priority restore
-	handle interrupt
-	eoi (implicit cpu priority restore to same as explicit level)
-
-Where the cpu priority restore allows receiving other interrupts of the 
-same priority from the hardware.
-
-So I guess the question is can the rt kernel interrupt processing take 
-advantage of xics auto mask, or does someone need to write state 
-tracking in the xics code to work around this, changing mask under 
-interrupt to "defer eoi to unmask" (which I can not see as clean, and 
-having shutdown problems).
-
-milton
-
+-- 
