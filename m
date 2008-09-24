@@ -1,110 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbYIXE4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbYIXE73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753667AbYIXE4s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 00:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYIXE4k
+	id S1752922AbYIXE73 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 00:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbYIXE7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 00:56:40 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:5322 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbYIXE4j (ORCPT
+	Wed, 24 Sep 2008 00:59:22 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:56797 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbYIXE7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 00:56:39 -0400
+	Wed, 24 Sep 2008 00:59:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=jq6+t7+2HcRV2MBD7TfLxxF6pprp+62dRe/zdwBWHy8xTWIEKhpbg0cpvpbd+Cuzcn
-         +oS41HTusws4Z5nsekQA0xoIQAW7agUdTELfwvEDb6deBRugh1+aC7fySHk3Cv+CFMJs
-         jhy5b1y8npaQneoZR0tiPWvtuSO1d5zOOjYdY=
-Date: Wed, 24 Sep 2008 08:56:33 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: ds.c ptrace.c integer as NULL pointer sparse fixes
-Message-ID: <20080924045633.GA7603@localhost>
-References: <1222207004.16003.20.camel@brick>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=FkkmjZ3YjLYFnW/YWIe3h5Oklze8InOuWym9dZSXlajhEwncujmVGBVonAAkEeuq+f
+         DpdHkeKG46E9klbrzIMU8AmcfQIp+MHTg1Cr+t2sJO6P46M6J5oYMZ2PXMaSTCxIsQDn
+         /AsFZ6WNNV8CulT1ytSephba1fFyyzxVrsISo=
+Message-ID: <3ae72650809232159k20f19f2ele5acbc7ee77dfb65@mail.gmail.com>
+Date: Tue, 23 Sep 2008 21:59:19 -0700
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Drew Moseley" <dmoseley@mvista.com>
+Subject: Re: [PATCH] Create PNP device attributes via dev_attrs field of struct device
+Cc: ambx1@neo.rr.com, linux-kernel@vger.kernel.org
+In-Reply-To: <48D95EA2.9040804@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1222207004.16003.20.camel@brick>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <48D95EA2.9040804@mvista.com>
+X-Google-Sender-Auth: 4a7e8e06d9a8fab9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Harvey Harrison - Tue, Sep 23, 2008 at 02:56:44PM -0700]
-| arch/x86/kernel/ptrace.c:763:29: warning: Using plain integer as NULL pointer
-| arch/x86/kernel/ptrace.c:777:46: warning: Using plain integer as NULL pointer
-| arch/x86/kernel/ptrace.c:1115:45: warning: Using plain integer as NULL pointer
-| arch/x86/kernel/ds.c:482:26: warning: Using plain integer as NULL pointer
-| arch/x86/kernel/ds.c:487:25: warning: Using plain integer as NULL pointer
-| 
-| Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-| ---
-|  arch/x86/kernel/ds.c     |    4 ++--
-|  arch/x86/kernel/ptrace.c |    6 +++---
-|  2 files changed, 5 insertions(+), 5 deletions(-)
-| 
-| diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
-| index ab21c27..2b69994 100644
-| --- a/arch/x86/kernel/ds.c
-| +++ b/arch/x86/kernel/ds.c
-| @@ -479,12 +479,12 @@ static int ds_release(struct task_struct *task, enum ds_qualifier qual)
-|  		goto out;
-|  
-|  	kfree(context->buffer[qual]);
-| -	context->buffer[qual] = 0;
-| +	context->buffer[qual] = NULL;
-|  
-|  	current->mm->total_vm  -= context->pages[qual];
-|  	current->mm->locked_vm -= context->pages[qual];
-|  	context->pages[qual] = 0;
-| -	context->owner[qual] = 0;
-| +	context->owner[qual] = NULL;
-|  
-|  	/*
-|  	 * we put the context twice:
-| diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-| index 42801a5..4e1ef66 100644
-| --- a/arch/x86/kernel/ptrace.c
-| +++ b/arch/x86/kernel/ptrace.c
-| @@ -760,7 +760,7 @@ static int ptrace_bts_config(struct task_struct *child,
-|  		goto errout;
-|  
-|  	if (cfg.flags & PTRACE_BTS_O_ALLOC) {
-| -		ds_ovfl_callback_t ovfl = 0;
-| +		ds_ovfl_callback_t ovfl = NULL;
-|  		unsigned int sig = 0;
-|  
-|  		/* we ignore the error in case we were not tracing child */
-| @@ -774,7 +774,7 @@ static int ptrace_bts_config(struct task_struct *child,
-|  			ovfl = ptrace_bts_ovfl;
-|  		}
-|  
-| -		error = ds_request_bts(child, /* base = */ 0, cfg.size, ovfl);
-| +		error = ds_request_bts(child, /* base = */ NULL, cfg.size, ovfl);
-|  		if (error < 0)
-|  			goto errout;
-|  
-| @@ -1112,7 +1112,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
-|  		break;
-|  
-|  	case PTRACE_BTS_SIZE:
-| -		ret = ds_get_bts_index(child, /* pos = */ 0);
-| +		ret = ds_get_bts_index(child, /* pos = */ NULL);
-|  		break;
-|  
-|  	case PTRACE_BTS_GET:
-| -- 
-| 1.6.0.2.471.g47a76
-| 
-| 
-| 
+On Tue, Sep 23, 2008 at 14:24, Drew Moseley <dmoseley@mvista.com> wrote:
+> I have seen an issue where the sysfs entries for a PNP device are
+> created nonatomically resulting in a race condition with freedesktop
+> HAL.  The patch below is my first attempt at addressing this by creating
+> the device attributes as default bus attributes and allowing the
+> device_register() call to create them.  Any nasty side effects I am not
+> addressing?  Comments?
 
-Looks good for me, thanks Harvey!
+> diff --git a/drivers/pnp/base.h b/drivers/pnp/base.h
+> index 9fd7bb9..b07787f 100644
+> --- a/drivers/pnp/base.h
+> +++ b/drivers/pnp/base.h
+> @@ -16,7 +16,7 @@ struct pnp_card *pnp_alloc_card(struct pnp_protocol *,
+> int id, char *pnpid);
+>
+>  int pnp_add_device(struct pnp_dev *dev);
+>  struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
+> -int pnp_interface_attach_device(struct pnp_dev *dev);
+> +void pnp_interface_attach_device(struct pnp_dev *dev);
+>
+>  int pnp_add_card(struct pnp_card *card);
+>  void pnp_remove_card(struct pnp_card *card);
+> diff --git a/drivers/pnp/core.c b/drivers/pnp/core.c
+> index a411582..bcd49ba 100644
+> --- a/drivers/pnp/core.c
+> +++ b/drivers/pnp/core.c
+> @@ -159,8 +159,6 @@ struct pnp_dev *pnp_alloc_dev(struct pnp_protocol
+> *protocol, int id, char *pnpid
+>
+>  int __pnp_add_device(struct pnp_dev *dev)
+>  {
+> -       int ret;
+> -
+>        pnp_fixup_device(dev);
+>        dev->status = PNP_READY;
+>        spin_lock(&pnp_lock);
+> @@ -168,12 +166,8 @@ int __pnp_add_device(struct pnp_dev *dev)
+>        list_add_tail(&dev->protocol_list, &dev->protocol->devices);
+>        spin_unlock(&pnp_lock);
+>
+> -       ret = device_register(&dev->dev);
+> -       if (ret)
+> -               return ret;
+> -
+>        pnp_interface_attach_device(dev);
+> -       return 0;
+> +       return device_register(&dev->dev);
+>  }
+>
+>  /*
+> diff --git a/drivers/pnp/interface.c b/drivers/pnp/interface.c
+> index a876ecf..442684d 100644
+> --- a/drivers/pnp/interface.c
+> +++ b/drivers/pnp/interface.c
+> @@ -243,8 +243,6 @@ static ssize_t pnp_show_options(struct device *dmdev,
+>        return ret;
+>  }
+>
+> -static DEVICE_ATTR(options, S_IRUGO, pnp_show_options, NULL);
+> -
+>  static ssize_t pnp_show_current_resources(struct device *dmdev,
+>                                          struct device_attribute *attr,
+>                                          char *buf)
+> @@ -420,9 +418,6 @@ done:
+>        return count;
+>  }
+>
+> -static DEVICE_ATTR(resources, S_IRUGO | S_IWUSR,
+> -                  pnp_show_current_resources, pnp_set_current_resources);
+> -
+>  static ssize_t pnp_show_current_ids(struct device *dmdev,
+>                                    struct device_attribute *attr, char *buf)
+>  {
+> @@ -437,27 +432,16 @@ static ssize_t pnp_show_current_ids(struct device
+> *dmdev,
+>        return (str - buf);
+>  }
+>
+> -static DEVICE_ATTR(id, S_IRUGO, pnp_show_current_ids, NULL);
+> +static struct device_attribute pnp_interface_attrs[] = {
+> +       __ATTR(resources, S_IRUGO | S_IWUSR,
+> +                  pnp_show_current_resources,
+> +                  pnp_set_current_resources),
+> +       __ATTR(options, S_IRUGO, pnp_show_options, NULL),
+> +       __ATTR(id, S_IRUGO, pnp_show_current_ids, NULL),
+> +       __ATTR_NULL,
+> +};
+>
+> -int pnp_interface_attach_device(struct pnp_dev *dev)
+> +void pnp_interface_attach_device(struct pnp_dev *dev)
+>  {
+> -       int rc = device_create_file(&dev->dev, &dev_attr_options);
+> -
+> -       if (rc)
+> -               goto err;
+> -       rc = device_create_file(&dev->dev, &dev_attr_resources);
+> -       if (rc)
+> -               goto err_opt;
+> -       rc = device_create_file(&dev->dev, &dev_attr_id);
+> -       if (rc)
+> -               goto err_res;
+> -
+> -       return 0;
+> -
+> -err_res:
+> -       device_remove_file(&dev->dev, &dev_attr_resources);
+> -err_opt:
+> -       device_remove_file(&dev->dev, &dev_attr_options);
+> -err:
+> -       return rc;
+> +       dev->dev.bus->dev_attrs = pnp_interface_attrs;
 
-Feel free to add (if needed)
-Acked-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Any reason not to assign it statically to pnp_bus_type at in
+drivers/pnp/driver.c?
 
-		- Cyrill -
+>  }
+
+Thanks,
+Kay
