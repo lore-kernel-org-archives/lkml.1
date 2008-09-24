@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbYIXXEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbYIXXFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752647AbYIXXEx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 19:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbYIXXEe
+	id S1754373AbYIXXFN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 19:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbYIXXEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 19:04:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55706 "EHLO mx2.suse.de"
+	Wed, 24 Sep 2008 19:04:38 -0400
+Received: from ns2.suse.de ([195.135.220.15]:55709 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753227AbYIXXEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 19:04:33 -0400
-Date: Wed, 24 Sep 2008 16:01:10 -0700
+	id S1754002AbYIXXEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 19:04:37 -0400
+Date: Wed, 24 Sep 2008 16:01:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
        Jeff Mahoney <jeffm@suse.de>
-Subject: [patch 01/04] Staging: add TAINT_CRAP for all drivers/staging code
-Message-ID: <20080924230110.GB27730@suse.de>
+Subject: [patch 02/04] Staging: add TAINT_CRAP flag to drivers/staging
+	modules
+Message-ID: <20080924230113.GC27730@suse.de>
 References: <20080924224638.514504825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="staging-add-taint_crap-for-all-drivers-staging-code.patch"
+Content-Disposition: inline; filename="staging-add-taint_crap-flag-to-drivers-staging-modules.patch"
 In-Reply-To: <20080924230054.GA27730@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,9 +37,8 @@ Based on code from Andreas Gruenbacher and Jeff Mahoney to provide a
 TAINT flag for the support level of a kernel module in the Novell
 enterprise kernel release.
 
-This is the kernel portion of this feature, the ability for the flag to
-be set needs to be done in the build process and will happen in a
-follow-up patch.
+This is the code that actually modifies the modules, adding the flag to
+any files in the drivers/staging directory.
 
 Cc: Andreas Gruenbacher <agruen@suse.de>
 Cc: Jeff Mahoney <jeffm@suse.de>
@@ -46,83 +46,33 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
 
- Documentation/sysctl/kernel.txt |    1 +
- include/linux/kernel.h          |    1 +
- kernel/module.c                 |    9 +++++++++
- kernel/panic.c                  |    6 ++++--
- 4 files changed, 15 insertions(+), 2 deletions(-)
+ scripts/mod/modpost.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
---- a/Documentation/sysctl/kernel.txt
-+++ b/Documentation/sysctl/kernel.txt
-@@ -368,4 +368,5 @@ can be ORed together:
-   2 - A module was force loaded by insmod -f.
-       Set by modutils >= 2.4.9 and module-init-tools.
-   4 - Unsafe SMP processors: SMP with CPUs not designed for SMP.
-+ 64 - A module from drivers/staging was loaded.
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1726,6 +1726,14 @@ static void add_header(struct buffer *b,
+ 	buf_printf(b, "};\n");
+ }
  
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -261,6 +261,7 @@ extern enum system_states {
- #define TAINT_DIE			(1<<7)
- #define TAINT_OVERRIDDEN_ACPI_TABLE	(1<<8)
- #define TAINT_WARN			(1<<9)
-+#define TAINT_CRAP			(1<<10)
- 
- extern void dump_stack(void) __cold;
- 
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1834,6 +1834,7 @@ static noinline struct module *load_modu
- 	Elf_Ehdr *hdr;
- 	Elf_Shdr *sechdrs;
- 	char *secstrings, *args, *modmagic, *strtab = NULL;
-+	char *staging;
- 	unsigned int i;
- 	unsigned int symindex = 0;
- 	unsigned int strindex = 0;
-@@ -1989,6 +1990,14 @@ static noinline struct module *load_modu
- 		goto free_hdr;
- 	}
- 
-+	staging = get_modinfo(sechdrs, infoindex, "staging");
-+	if (staging) {
-+		add_taint_module(mod, TAINT_CRAP);
-+		printk(KERN_WARNING "%s: module is from the staging directory,"
-+		       " the quality is unknown, you have been warned.\n",
-+		       mod->name);
-+	}
++void add_staging_flag(struct buffer *b, const char *name)
++{
++	static const char *staging_dir = "drivers/staging";
 +
- 	/* Now copy in args */
- 	args = strndup_user(uargs, ~0UL >> 1);
- 	if (IS_ERR(args)) {
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -155,6 +155,7 @@ EXPORT_SYMBOL(panic);
-  *  'U' - Userspace-defined naughtiness.
-  *  'A' - ACPI table overridden.
-  *  'W' - Taint on warning.
-+ *  'C' - modules from drivers/staging are loaded.
-  *
-  *	The string is overwritten by the next call to print_taint().
-  */
-@@ -163,7 +164,7 @@ const char *print_tainted(void)
- {
- 	static char buf[20];
- 	if (tainted) {
--		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c%c%c",
-+		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c%c%c%c",
- 			tainted & TAINT_PROPRIETARY_MODULE ? 'P' : 'G',
- 			tainted & TAINT_FORCED_MODULE ? 'F' : ' ',
- 			tainted & TAINT_UNSAFE_SMP ? 'S' : ' ',
-@@ -173,7 +174,8 @@ const char *print_tainted(void)
- 			tainted & TAINT_USER ? 'U' : ' ',
- 			tainted & TAINT_DIE ? 'D' : ' ',
- 			tainted & TAINT_OVERRIDDEN_ACPI_TABLE ? 'A' : ' ',
--			tainted & TAINT_WARN ? 'W' : ' ');
-+			tainted & TAINT_WARN ? 'W' : ' ',
-+			tainted & TAINT_CRAP ? 'C' : ' ');
- 	}
- 	else
- 		snprintf(buf, sizeof(buf), "Not tainted");
++	if (strncmp(staging_dir, name, strlen(staging_dir)) == 0)
++		buf_printf(b, "\nMODULE_INFO(staging, \"Y\");\n");
++}
++
+ /**
+  * Record CRCs for unresolved symbols
+  **/
+@@ -2133,6 +2141,7 @@ int main(int argc, char **argv)
+ 		buf.pos = 0;
+ 
+ 		add_header(&buf, mod);
++		add_staging_flag(&buf, mod->name);
+ 		err |= add_versions(&buf, mod);
+ 		add_depends(&buf, mod, modules);
+ 		add_moddevtable(&buf, mod);
 
 -- 
