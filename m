@@ -1,199 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbYIXS40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbYIXS6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbYIXS40 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 14:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYIXS4J
+	id S1754914AbYIXS6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 14:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYIXS6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 14:56:09 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40799 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752616AbYIXS4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 14:56:07 -0400
-Message-ID: <48DA8D27.5080908@suse.com>
-Date: Wed, 24 Sep 2008 14:55:35 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Wed, 24 Sep 2008 14:58:15 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:60714 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbYIXS6O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 14:58:14 -0400
+Message-ID: <48DA8DC4.90203@ct.jp.nec.com>
+Date: Wed, 24 Sep 2008 11:58:12 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       arjan@linux.intel.com, reiserfs-devel@vger.kernel.org,
-       peterz@infradead.org
-Subject: Re: [LOCKDEP linux-2.6.27-rc7] reiserfs circular locking
-References: <4807377b0809241139x18ea8ce4x7dbc66ba680be3e7@mail.gmail.com>
-In-Reply-To: <4807377b0809241139x18ea8ce4x7dbc66ba680be3e7@mail.gmail.com>
-X-Enigmail-Version: 0.95.2
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: mingo@elte.hu, macro@linux-mips.org, yhlu.kernel@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/3] x86: apic - simplify lapic_get_maxlvt
+References: <20080924164618.588609232@gmail.com>> <48da6f73.0c07560a.1702.41f4@mx.google.com>
+In-Reply-To: <48da6f73.0c07560a.1702.41f4@mx.google.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Jesse Brandeburg wrote:
-> while debugging another issue and just using git I got:
+Cyrill Gorcunov wrote:
+> Lets use lapic_get_version helper and hide
+> register being read. Also it allow us to
+> make code a bit tighter.
 > 
-> Sep 23 23:23:25 jbrandeb-bw kernel: [ INFO: possible circular locking
-> dependency detected ]
-> Sep 23 23:23:26 jbrandeb-bw syslog-ng[3750]: new configuration initialized
-> Sep 23 23:23:25 jbrandeb-bw kernel: 2.6.27-rc7-jesse-00036-g146761c #4
-> Sep 23 23:23:26 jbrandeb-bw syslog-ng[3750]: Changing permissions on
-> special file /dev/xconsole
-> Sep 23 23:23:26 jbrandeb-bw syslog-ng[3750]: Changing permissions on
-> special file /dev/tty10
-> Sep 23 23:23:26 jbrandeb-bw kernel:·
-> Sep 23 23:23:26 jbrandeb-bw kernel: -> #2
-> (&REISERFS_SB(s)->xattr_dir_sem){----}:
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff80256fb4>]
-> validate_chain+0x946/0xbe6
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802578f9>]
-> __lock_acquire+0x6a5/0x70e
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802579b7>]
-> lock_acquire+0x55/0x71
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff804e1544>]
-> down_read+0x50/0x80
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff8031a3f5>]
-> reiserfs_listxattr+0x85/0x152
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802cb542>]
-> vfs_listxattr+0x50/0x82
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802cb5d5>]
-> listxattr+0x61/0xb9
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802cb673>]
-> sys_llistxattr+0x46/0x5f
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff8020c0ab>]
-> system_call_fastpath+0x16/0x1b
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffffffffffff>]
-> 0xffffffffffffffff
-> Sep 23 23:23:26 jbrandeb-bw kernel:·
-> Sep 23 23:23:26 jbrandeb-bw kernel: -> #1 (&REISERFS_I(inode)->xattr_sem){----}:
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff80256fb4>]
-> validate_chain+0x946/0xbe6
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802578f9>]
-> __lock_acquire+0x6a5/0x70e
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802579b7>]
-> lock_acquire+0x55/0x71
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff804e1544>]
-> down_read+0x50/0x80
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff8031bd28>]
-> reiserfs_cache_default_acl+0x46/0xcd
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802fe700>]
-> reiserfs_create+0x53/0x1dd
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802b7cba>]
-> vfs_create+0xa7/0x11d
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802b9f4f>]
-> do_filp_open+0x219/0x7de
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802ad25e>]
-> do_sys_open+0x58/0xd8
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802ad311>]
-> sys_open+0x20/0x22
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff8020c0ab>]
-> system_call_fastpath+0x16/0x1b
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffffffffffff>]
-> 0xffffffffffffffff
-> Sep 23 23:23:26 jbrandeb-bw kernel:·
-> Sep 23 23:23:26 jbrandeb-bw kernel: -> #0 (&type->i_mutex_dir_key#4){--..}:
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff80256c9c>]
-> validate_chain+0x62e/0xbe6
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802578f9>]
-> __lock_acquire+0x6a5/0x70e
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802579b7>]
-> lock_acquire+0x55/0x71
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff804e0ee2>]
-> mutex_lock_nested+0xfe/0x28b
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802b77b3>]
-> vfs_rmdir+0x5f/0xe8
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff8031a919>]
-> reiserfs_delete_xattrs+0x110/0x171
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff80302b2e>]
-> reiserfs_delete_inode+0x46/0xc9
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802c2bc1>]
-> generic_delete_inode+0x88/0x108
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802c2c5d>]
-> generic_drop_inode+0x1c/0x174
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802c2197>] iput+0x66/0x6a
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802b9449>]
-> do_unlinkat+0xff/0x176
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff802b94d6>]
-> sys_unlink+0x16/0x18
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffff8020c0ab>]
-> system_call_fastpath+0x16/0x1b
-> Sep 23 23:23:26 jbrandeb-bw kernel:        [<ffffffffffffffff>]
-> 0xffffffffffffffff
-> Sep 23 23:23:26 jbrandeb-bw kernel:·
-> Sep 23 23:23:26 jbrandeb-bw kernel: other info that might help us debug this:
-> Sep 23 23:23:26 jbrandeb-bw kernel:·
-> Sep 23 23:23:26 jbrandeb-bw kernel: 1 lock held by git-merge-recur/5032:
-> Sep 23 23:23:26 jbrandeb-bw kernel:  #0:
-> (&REISERFS_SB(s)->xattr_dir_sem){----}, at: [<ffffffff8031a90d>]
-> reiserfs_delete_xattrs+0x104/0x171
-> Sep 23 23:23:26 jbrandeb-bw kernel:·
-> Sep 23 23:23:26 jbrandeb-bw kernel: stack backtrace:
-> Sep 23 23:23:26 jbrandeb-bw kernel: Pid: 5032, comm: git-merge-recur
-> Not tainted 2.6.27-rc7-jesse-00036-g146761c #4
-> Sep 23 23:23:26 jbrandeb-bw kernel:·
-> Sep 23 23:23:26 jbrandeb-bw kernel: Call Trace:
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff80256663>]
-> print_circular_bug_tail+0xba/0xc5
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802540cf>] ?
-> print_circular_bug_entry+0x48/0x4f
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff80256c9c>]
-> validate_chain+0x62e/0xbe6
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802578f9>]
-> __lock_acquire+0x6a5/0x70e
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802579b7>] lock_acquire+0x55/0x71
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802b77b3>] ? vfs_rmdir+0x5f/0xe8
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff804e0ee2>]
-> mutex_lock_nested+0xfe/0x28b
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802b77b3>] ? vfs_rmdir+0x5f/0xe8
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802b77b3>] ? vfs_rmdir+0x5f/0xe8
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802b77b3>] vfs_rmdir+0x5f/0xe8
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff8031a90d>] ?
-> reiserfs_delete_xattrs+0x104/0x171
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff8031a919>]
-> reiserfs_delete_xattrs+0x110/0x171
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff80302b2e>]
-> reiserfs_delete_inode+0x46/0xc9
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff80302ae8>] ?
-> reiserfs_delete_inode+0x0/0xc9
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802c2bc1>]
-> generic_delete_inode+0x88/0x108
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802c2c5d>]
-> generic_drop_inode+0x1c/0x174
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802c2197>] iput+0x66/0x6a
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802b9449>] do_unlinkat+0xff/0x176
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff804e21fa>] ?
-> trace_hardirqs_on_thunk+0x3a/0x3f
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff80255fd8>] ?
-> trace_hardirqs_on_caller+0xf1/0x115
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff804e21fa>] ?
-> trace_hardirqs_on_thunk+0x3a/0x3f
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff802b94d6>] sys_unlink+0x16/0x18
-> Sep 23 23:23:26 jbrandeb-bw kernel:  [<ffffffff8020c0ab>]
-> system_call_fastpath+0x16/0x1b
-> Sep 23 23:23:26 jbrandeb-bw kernel:·
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
 > 
-> may be related to http://bugzilla.kernel.org/show_bug.cgi?id=9136
-> 
-> .config or other questions gladly answered.
+> Index: linux-2.6.git/arch/x86/kernel/apic.c
+> ===================================================================
+> --- linux-2.6.git.orig/arch/x86/kernel/apic.c	2008-09-24 19:17:20.000000000 +0400
+> +++ linux-2.6.git/arch/x86/kernel/apic.c	2008-09-24 19:33:31.000000000 +0400
+> @@ -309,14 +309,14 @@ int get_physical_broadcast(void)
+>   */
+>  int lapic_get_maxlvt(void)
+>  {
+> -	unsigned int v;
+> +	unsigned int ver;
+>  
+> -	v = apic_read(APIC_LVR);
+> +	ver = lapic_get_version();
+>  	/*
+>  	 * - we always have APIC integrated on 64bit mode
+>  	 * - 82489DXs do not report # of LVT entries
+>  	 */
+> -	return APIC_INTEGRATED(GET_APIC_VERSION(v)) ? GET_APIC_MAXLVT(v) : 2;
+> +	return APIC_INTEGRATED(ver) ? GET_APIC_MAXLVT(ver) : 2;
+                                                      ^^^
+Hi, is this correct?
+Does ver have the full content of apic_read(APIC_LVR)?
 
-I have a reiserfs patch set that should address this. I haven't
-submitted it recently because I'm chasing down a reiserfs bug report
-that may or may not be related to the patch set.
-
-You can grab the patch set out of an opensuse kernel src rpm.
-
-- -Jeff
-
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkjajScACgkQLPWxlyuTD7JthQCeOLvlAhYlYo43qANcDbYifwgZ
-Ww8AoJlnGF0mL0ok8DGVtX/l7asLqIti
-=I0Br
------END PGP SIGNATURE-----
+thanks,
+Hiroshi Shimamoto
