@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbYIXIzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbYIXI7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbYIXIzh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 04:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbYIXIza
+	id S1753106AbYIXI7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 04:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbYIXI7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 04:55:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37859 "EHLO mx3.mail.elte.hu"
+	Wed, 24 Sep 2008 04:59:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38691 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbYIXIza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 04:55:30 -0400
-Date: Wed, 24 Sep 2008 10:55:09 +0200
+	id S1751234AbYIXI7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 04:59:08 -0400
+Date: Wed, 24 Sep 2008 10:58:48 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] timers fixes
-Message-ID: <20080924085509.GG5576@elte.hu>
-References: <200809240137.40403.rjw@sisk.pl> <20080924074038.GD3655@elte.hu> <20080924074245.GA11474@elte.hu> <1222246186.8277.69.camel@pasglop> <1222246291.8277.71.camel@pasglop>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Noonan <steven@uplinklabs.net>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Patch -tip 0/4] Creation of the initcall tracer
+Message-ID: <20080924085848.GA22251@elte.hu>
+References: <48D8C516.4090706@gmail.com> <20080923100034.GA23118@elte.hu> <20080923193106.GA21422@elte.hu> <48DA0A09.5080709@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1222246291.8277.71.camel@pasglop>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48DA0A09.5080709@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,69 +39,120 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 
-> On Wed, 2008-09-24 at 18:49 +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2008-09-24 at 09:42 +0200, Ingo Molnar wrote:
-> > > Linus,
-> > > 
-> > > Please pull the latest timers-fixes-for-linus git tree from:
-> > > 
-> > >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
-> > > 
-> > > Thanks,
-> > > 
-> > > 	Ingo
-> > > 
-> > > ------------------>
-> > > Marc Dionne (1):
-> > >       x86: prevent stale state of c1e_mask across CPU offline/online, fix
+> Ingo Molnar a écrit :
+> > * Ingo Molnar <mingo@elte.hu> wrote:
 > > 
-> > Is that all the changeset comment ? Am I the only one to find that
-> > totally useless ? Or is that the mail doesn't contain the actual
-> > comment, only the title followed by the patch ?
+> >> i've integrated tip/tracing/fastboot into tip/master and have started 
+> >> testing it. It passed the basic tests already so i've just pushed out 
+> >> the new tip/master. Please double-check that i have not messed up the 
+> >> rename or the integration somewhere.
+> > 
+> > FYI, -tip testing found a boot hang with CONFIG_BOOT_TRACER=y, on a 
+> > 32-bit T60 laptop. I've attached the config that provokes the hang. (you 
+> > need initcall_debug on the boot commandline)
+> > 
+> > The hang always happens after a specific initcall, shortly after tracing 
+> > is enabled. It just hangs indefinitely there, the last line displayed 
+> > was:
+> > 
+> >  [   0.004017] initcall ehci_hcd_init+0x0/0x80 returned 0 after 228 msecs
+> > 
+> > it should have printed this next:
+> > 
+> > [    0.808024] calling  ohci_hcd_mod_init+0x0/0x80 @ 10
+> > 
+> > but that line is never printed.
+> > 
+> > i've bisected the hang down to this specific commit:
+> > 
+> >  | 35df98dfe2b2503436a8cfda301657810df50a3a is first bad commit
+> >  | commit 35df98dfe2b2503436a8cfda301657810df50a3a
+> >  | Author: Frédéric Weisbecker <fweisbec@gmail.com>
+> >  | Date:   Tue Sep 23 11:38:18 2008 +0100
+> >  |
+> >  |     tracing/ftrace: launch boot tracing after pre-smp initcalls
+> > 
+> > An idea: maybe the boot tracer is interacting with the ftrace self-tests 
+> > somehow? CONFIG_FTRACE_SELFTEST=y is enabled.
+> > 
+> > another thing i noticed is that the sysprof tracer was initialized and 
+> > self-tested shortly before the hang occured. Might be unrelated.
+> > 
+> > the bisection log is:
+> > 
+> >  # bad:  [6522eab5] Merge branch 'x86/uv'
+> >  # good: [699b81f5] Merge branch 'x86/iommu'
+> >  # bad:  [8007aae9] timers: fix build error in !oneshot case
+> >  # good: [7f29b23d] Merge branch 'core/rcu'
+> >  # bad:  [a54f17e3] manual merge of tracing/fastboot
+> >  # good: [bcbbe946] tracing/ftrace: make tracing suitable to run the b
+> >  # good: [d7095e5a] Merge branch 'fastboot'
+> >  # bad:  [35df98df] tracing/ftrace: launch boot tracing after pre-smp
+> >  # good: [42aaa6be] tracing/ftrace: give an entry on the config for bo
+> > 
+> > 	Ingo
+> > 
+> Ingo Molnar a écrit :
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> >> i've integrated tip/tracing/fastboot into tip/master and have started 
+> >> testing it. It passed the basic tests already so i've just pushed out 
+> >> the new tip/master. Please double-check that i have not messed up the 
+> >> rename or the integration somewhere.
+> > 
+> > FYI, -tip testing found a boot hang with CONFIG_BOOT_TRACER=y, on a 
+> > 32-bit T60 laptop. I've attached the config that provokes the hang. (you 
+> > need initcall_debug on the boot commandline)
+> > 
+> > The hang always happens after a specific initcall, shortly after tracing 
+> > is enabled. It just hangs indefinitely there, the last line displayed 
+> > was:
+> > 
+> >  [   0.004017] initcall ehci_hcd_init+0x0/0x80 returned 0 after 228 msecs
+> > 
+> > it should have printed this next:
+> > 
+> > [    0.808024] calling  ohci_hcd_mod_init+0x0/0x80 @ 10
+> > 
+> > but that line is never printed.
+> > 
+> > i've bisected the hang down to this specific commit:
+> > 
+> >  | 35df98dfe2b2503436a8cfda301657810df50a3a is first bad commit
+> >  | commit 35df98dfe2b2503436a8cfda301657810df50a3a
+> >  | Author: Frédéric Weisbecker <fweisbec@gmail.com>
+> >  | Date:   Tue Sep 23 11:38:18 2008 +0100
+> >  |
+> >  |     tracing/ftrace: launch boot tracing after pre-smp initcalls
+> > 
+> > An idea: maybe the boot tracer is interacting with the ftrace self-tests 
+> > somehow? CONFIG_FTRACE_SELFTEST=y is enabled.
+> > 
+> > another thing i noticed is that the sysprof tracer was initialized and 
+> > self-tested shortly before the hang occured. Might be unrelated.
+> > 
+> > the bisection log is:
+> > 
+> >  # bad:  [6522eab5] Merge branch 'x86/uv'
+> >  # good: [699b81f5] Merge branch 'x86/iommu'
+> >  # bad:  [8007aae9] timers: fix build error in !oneshot case
+> >  # good: [7f29b23d] Merge branch 'core/rcu'
+> >  # bad:  [a54f17e3] manual merge of tracing/fastboot
+> >  # good: [bcbbe946] tracing/ftrace: make tracing suitable to run the b
+> >  # good: [d7095e5a] Merge branch 'fastboot'
+> >  # bad:  [35df98df] tracing/ftrace: launch boot tracing after pre-smp
+> >  # good: [42aaa6be] tracing/ftrace: give an entry on the config for bo
+> > 
+> > 	Ingo
+> > 
 > 
-> Allright, so in fact, it's more like the log doesn't match
-> the patch in the email..
+> Hehe! I was preparing a patch because I saw last night that the self-tests were reseting and touching the ring-buffer during the initcall tracing.
+> And now I can see the results of this problem....
+> 
+> Following is a patch that should fix it.
 
-only because i already picked up a different submission at that time, 
-and posted in this thread.
-
-i picked up this one from lkml:
-
-  Subject: [PATCH] Fix build error introduced by commit 4faac97d44ac27bdbb010a9c3597401a8f89341f
-
-see the full commit log below, it has all the details.
+applied to tip/tracing/fastboot, thanks Frédéric!
 
 	Ingo
-
------------->
->From 1eda81495a49a4ee91d8863b0a441a624375efea Mon Sep 17 00:00:00 2001
-From: Marc Dionne <marc.c.dionne@gmail.com>
-Date: Tue, 23 Sep 2008 22:40:02 -0400
-Subject: [PATCH] x86: prevent stale state of c1e_mask across CPU offline/online, fix
-
-Fix build error introduced by commit 4faac97d44ac27 ("x86: prevent stale
-state of c1e_mask across CPU offline/online").
-
-process_32.c needs to include idle.h to get the prototype for
-c1e_remove_cpu()
-
-Signed-off-by: Marc Dionne <marc.c.dionne@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/process_32.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 4b3cfdf..31f40b2 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -55,6 +55,7 @@
- #include <asm/tlbflush.h>
- #include <asm/cpu.h>
- #include <asm/kdebug.h>
-+#include <asm/idle.h>
- 
- asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
- 
