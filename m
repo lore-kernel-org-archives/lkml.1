@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbYIXWFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYIXWFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbYIXWFA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYIXWAx
+	id S1754251AbYIXWFk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYIXWA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:00:53 -0400
-Received: from mx1.suse.de ([195.135.220.2]:41439 "EHLO mx1.suse.de"
+	Wed, 24 Sep 2008 18:00:56 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41461 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752350AbYIXWAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:00:19 -0400
+	id S1753320AbYIXWAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:00:30 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
        linux-fsdevel@vger.kernel.org, Tao Ma <tao.ma@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 05/39] ocfs2: Modify ocfs2_num_free_extents for future xattr usage.
-Date: Wed, 24 Sep 2008 15:00:46 -0700
-Message-Id: <1222293680-15451-6-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 16/39] ocfs2: Add xattr lookup code xattr btrees
+Date: Wed, 24 Sep 2008 15:00:57 -0700
+Message-Id: <1222293680-15451-17-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
 References: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
@@ -26,155 +26,494 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tao Ma <tao.ma@oracle.com>
 
-ocfs2_num_free_extents() is used to find the number of free extent records
-in an inode btree. Hence, it takes an "ocfs2_dinode" parameter. We want to
-use this for extended attribute trees in the future, so genericize the
-interface the take a buffer head. A future patch will allow that buffer_head
-to contain any structure rooting an ocfs2 btree.
+Add code to lookup a given extended attribute in the xattr btree. Lookup
+follows this general scheme:
+
+1. Use ocfs2_xattr_get_rec to find the xattr extent record
+
+2. Find the xattr bucket within the extent which may contain this xattr
+
+3. Iterate the bucket to find the xattr. In ocfs2_xattr_block_get(), we need
+   to recalcuate the block offset and name offset for the right position of
+   name/value.
 
 Signed-off-by: Tao Ma <tao.ma@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/alloc.c |    3 ++-
- fs/ocfs2/alloc.h |    2 +-
- fs/ocfs2/aops.c  |    5 +++--
- fs/ocfs2/dir.c   |    3 ++-
- fs/ocfs2/file.c  |   11 ++++++-----
- fs/ocfs2/file.h  |    2 +-
- 6 files changed, 15 insertions(+), 11 deletions(-)
+ fs/ocfs2/xattr.c |  351 ++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 328 insertions(+), 23 deletions(-)
 
-diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
-index 10bfb46..c74711f 100644
---- a/fs/ocfs2/alloc.c
-+++ b/fs/ocfs2/alloc.c
-@@ -368,12 +368,13 @@ struct ocfs2_merge_ctxt {
-  */
- int ocfs2_num_free_extents(struct ocfs2_super *osb,
- 			   struct inode *inode,
--			   struct ocfs2_dinode *fe)
-+			   struct buffer_head *bh)
+diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
+index fb17f7f..acccdfa 100644
+--- a/fs/ocfs2/xattr.c
++++ b/fs/ocfs2/xattr.c
+@@ -99,12 +99,25 @@ struct ocfs2_xattr_search {
+ 	 */
+ 	struct buffer_head *xattr_bh;
+ 	struct ocfs2_xattr_header *header;
++	struct ocfs2_xattr_bucket bucket;
+ 	void *base;
+ 	void *end;
+ 	struct ocfs2_xattr_entry *here;
+ 	int not_found;
+ };
+ 
++static int ocfs2_xattr_bucket_get_name_value(struct inode *inode,
++					     struct ocfs2_xattr_header *xh,
++					     int index,
++					     int *block_off,
++					     int *new_offset);
++
++static int ocfs2_xattr_index_block_find(struct inode *inode,
++					struct buffer_head *root_bh,
++					int name_index,
++					const char *name,
++					struct ocfs2_xattr_search *xs);
++
+ static int ocfs2_xattr_tree_list_index_block(struct inode *inode,
+ 					struct ocfs2_xattr_tree_root *xt,
+ 					char *buffer,
+@@ -604,7 +617,7 @@ static int ocfs2_xattr_find_entry(int name_index,
+ }
+ 
+ static int ocfs2_xattr_get_value_outside(struct inode *inode,
+-					 struct ocfs2_xattr_search *xs,
++					 struct ocfs2_xattr_value_root *xv,
+ 					 void *buffer,
+ 					 size_t len)
  {
- 	int retval;
+@@ -613,12 +626,8 @@ static int ocfs2_xattr_get_value_outside(struct inode *inode,
+ 	int i, ret = 0;
+ 	size_t cplen, blocksize;
+ 	struct buffer_head *bh = NULL;
+-	struct ocfs2_xattr_value_root *xv;
  	struct ocfs2_extent_list *el;
- 	struct ocfs2_extent_block *eb;
- 	struct buffer_head *eb_bh = NULL;
-+	struct ocfs2_dinode *fe = (struct ocfs2_dinode *)bh->b_data;
  
- 	mlog_entry_void();
- 
-diff --git a/fs/ocfs2/alloc.h b/fs/ocfs2/alloc.h
-index 42ff94b..758dbda 100644
---- a/fs/ocfs2/alloc.h
-+++ b/fs/ocfs2/alloc.h
-@@ -47,7 +47,7 @@ int ocfs2_remove_extent(struct inode *inode, struct buffer_head *di_bh,
- 			struct ocfs2_cached_dealloc_ctxt *dealloc);
- int ocfs2_num_free_extents(struct ocfs2_super *osb,
- 			   struct inode *inode,
--			   struct ocfs2_dinode *fe);
-+			   struct buffer_head *bh);
- /* how many new metadata chunks would an allocation need at maximum? */
- static inline int ocfs2_extend_meta_needed(struct ocfs2_dinode *fe)
+-	xv = (struct ocfs2_xattr_value_root *)
+-		(xs->base + le16_to_cpu(xs->here->xe_name_offset) +
+-		OCFS2_XATTR_SIZE(xs->here->xe_name_len));
+ 	el = &xv->xr_list;
+ 	clusters = le32_to_cpu(xv->xr_clusters);
+ 	bpc = ocfs2_clusters_to_blocks(inode->i_sb, 1);
+@@ -668,6 +677,7 @@ static int ocfs2_xattr_ibody_get(struct inode *inode,
  {
-diff --git a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
-index a53da14..e2008dc 100644
---- a/fs/ocfs2/aops.c
-+++ b/fs/ocfs2/aops.c
-@@ -1712,8 +1712,9 @@ int ocfs2_write_begin_nolock(struct address_space *mapping,
- 		 * ocfs2_lock_allocators(). It greatly over-estimates
- 		 * the work to be done.
- 		 */
--		ret = ocfs2_lock_allocators(inode, di, clusters_to_alloc,
--					    extents_to_split, &data_ac, &meta_ac);
-+		ret = ocfs2_lock_allocators(inode, wc->w_di_bh,
-+					    clusters_to_alloc, extents_to_split,
-+					    &data_ac, &meta_ac);
- 		if (ret) {
- 			mlog_errno(ret);
- 			goto out;
-diff --git a/fs/ocfs2/dir.c b/fs/ocfs2/dir.c
-index 9cce563..fda09c3 100644
---- a/fs/ocfs2/dir.c
-+++ b/fs/ocfs2/dir.c
-@@ -1479,7 +1479,8 @@ static int ocfs2_extend_dir(struct ocfs2_super *osb,
- 	spin_lock(&OCFS2_I(dir)->ip_lock);
- 	if (dir_i_size == ocfs2_clusters_to_bytes(sb, OCFS2_I(dir)->ip_clusters)) {
- 		spin_unlock(&OCFS2_I(dir)->ip_lock);
--		num_free_extents = ocfs2_num_free_extents(osb, dir, fe);
-+		num_free_extents = ocfs2_num_free_extents(osb, dir,
-+							  parent_fe_bh);
- 		if (num_free_extents < 0) {
- 			status = num_free_extents;
- 			mlog_errno(status);
-diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
-index 60232b1..92460f1 100644
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -521,7 +521,7 @@ int ocfs2_do_extend_allocation(struct ocfs2_super *osb,
- 	if (mark_unwritten)
- 		flags = OCFS2_EXT_UNWRITTEN;
+ 	struct ocfs2_inode_info *oi = OCFS2_I(inode);
+ 	struct ocfs2_dinode *di = (struct ocfs2_dinode *)xs->inode_bh->b_data;
++	struct ocfs2_xattr_value_root *xv;
+ 	size_t size;
+ 	int ret = 0;
  
--	free_extents = ocfs2_num_free_extents(osb, inode, fe);
-+	free_extents = ocfs2_num_free_extents(osb, inode, fe_bh);
- 	if (free_extents < 0) {
- 		status = free_extents;
- 		mlog_errno(status);
-@@ -609,7 +609,7 @@ leave:
-  * File systems which don't support holes call this from
-  * ocfs2_extend_allocation().
-  */
--int ocfs2_lock_allocators(struct inode *inode, struct ocfs2_dinode *di,
-+int ocfs2_lock_allocators(struct inode *inode, struct buffer_head *di_bh,
- 			  u32 clusters_to_add, u32 extents_to_split,
- 			  struct ocfs2_alloc_context **data_ac,
- 			  struct ocfs2_alloc_context **meta_ac)
-@@ -617,6 +617,7 @@ int ocfs2_lock_allocators(struct inode *inode, struct ocfs2_dinode *di,
- 	int ret = 0, num_free_extents;
- 	unsigned int max_recs_needed = clusters_to_add + 2 * extents_to_split;
- 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	struct ocfs2_dinode *di = (struct ocfs2_dinode *)di_bh->b_data;
+@@ -692,7 +702,11 @@ static int ocfs2_xattr_ibody_get(struct inode *inode,
+ 			       le16_to_cpu(xs->here->xe_name_offset) +
+ 			       OCFS2_XATTR_SIZE(xs->here->xe_name_len), size);
+ 		} else {
+-			ret = ocfs2_xattr_get_value_outside(inode, xs,
++			xv = (struct ocfs2_xattr_value_root *)
++				(xs->base + le16_to_cpu(
++				 xs->here->xe_name_offset) +
++				OCFS2_XATTR_SIZE(xs->here->xe_name_len));
++			ret = ocfs2_xattr_get_value_outside(inode, xv,
+ 							    buffer, size);
+ 			if (ret < 0) {
+ 				mlog_errno(ret);
+@@ -714,12 +728,15 @@ static int ocfs2_xattr_block_get(struct inode *inode,
+ 	struct ocfs2_dinode *di = (struct ocfs2_dinode *)xs->inode_bh->b_data;
+ 	struct buffer_head *blk_bh = NULL;
+ 	struct ocfs2_xattr_block *xb;
++	struct ocfs2_xattr_value_root *xv;
+ 	size_t size;
+-	int ret = -ENODATA;
++	int ret = -ENODATA, name_offset, name_len, block_off, i;
  
- 	*meta_ac = NULL;
- 	if (data_ac)
-@@ -629,7 +630,7 @@ int ocfs2_lock_allocators(struct inode *inode, struct ocfs2_dinode *di,
- 	     (unsigned long long)OCFS2_I(inode)->ip_blkno, (long long)i_size_read(inode),
- 	     le32_to_cpu(di->i_clusters), clusters_to_add, extents_to_split);
- 
--	num_free_extents = ocfs2_num_free_extents(osb, inode, di);
-+	num_free_extents = ocfs2_num_free_extents(osb, inode, di_bh);
- 	if (num_free_extents < 0) {
- 		ret = num_free_extents;
- 		mlog_errno(ret);
-@@ -724,7 +725,7 @@ static int __ocfs2_extend_allocation(struct inode *inode, u32 logical_start,
- restart_all:
- 	BUG_ON(le32_to_cpu(fe->i_clusters) != OCFS2_I(inode)->ip_clusters);
- 
--	status = ocfs2_lock_allocators(inode, fe, clusters_to_add, 0, &data_ac,
-+	status = ocfs2_lock_allocators(inode, bh, clusters_to_add, 0, &data_ac,
- 				       &meta_ac);
- 	if (status) {
- 		mlog_errno(status);
-@@ -1395,7 +1396,7 @@ static int __ocfs2_remove_inode_range(struct inode *inode,
- 	struct ocfs2_alloc_context *meta_ac = NULL;
- 	struct ocfs2_dinode *di = (struct ocfs2_dinode *)di_bh->b_data;
- 
--	ret = ocfs2_lock_allocators(inode, di, 0, 1, NULL, &meta_ac);
-+	ret = ocfs2_lock_allocators(inode, di_bh, 0, 1, NULL, &meta_ac);
- 	if (ret) {
- 		mlog_errno(ret);
+ 	if (!di->i_xattr_loc)
  		return ret;
-diff --git a/fs/ocfs2/file.h b/fs/ocfs2/file.h
-index 5a6d3e4..c96b805 100644
---- a/fs/ocfs2/file.h
-+++ b/fs/ocfs2/file.h
-@@ -57,7 +57,7 @@ int ocfs2_do_extend_allocation(struct ocfs2_super *osb,
- 			       enum ocfs2_alloc_restarted *reason_ret);
- int ocfs2_extend_no_holes(struct inode *inode, u64 new_i_size,
- 			  u64 zero_to);
--int ocfs2_lock_allocators(struct inode *inode, struct ocfs2_dinode *di,
-+int ocfs2_lock_allocators(struct inode *inode, struct buffer_head *fe,
- 			  u32 clusters_to_add, u32 extents_to_split,
- 			  struct ocfs2_alloc_context **data_ac,
- 			  struct ocfs2_alloc_context **meta_ac);
+ 
++	memset(&xs->bucket, 0, sizeof(xs->bucket));
++
+ 	ret = ocfs2_read_block(OCFS2_SB(inode->i_sb),
+ 			       le64_to_cpu(di->i_xattr_loc),
+ 			       &blk_bh, OCFS2_BH_CACHED, inode);
+@@ -736,12 +753,19 @@ static int ocfs2_xattr_block_get(struct inode *inode,
+ 
+ 	xs->xattr_bh = blk_bh;
+ 	xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
+-	xs->header = &xb->xb_attrs.xb_header;
+-	xs->base = (void *)xs->header;
+-	xs->end = (void *)(blk_bh->b_data) + blk_bh->b_size;
+-	xs->here = xs->header->xh_entries;
+ 
+-	ret = ocfs2_xattr_find_entry(name_index, name, xs);
++	if (!(le16_to_cpu(xb->xb_flags) & OCFS2_XATTR_INDEXED)) {
++		xs->header = &xb->xb_attrs.xb_header;
++		xs->base = (void *)xs->header;
++		xs->end = (void *)(blk_bh->b_data) + blk_bh->b_size;
++		xs->here = xs->header->xh_entries;
++
++		ret = ocfs2_xattr_find_entry(name_index, name, xs);
++	} else
++		ret = ocfs2_xattr_index_block_find(inode, blk_bh,
++						   name_index,
++						   name, xs);
++
+ 	if (ret)
+ 		goto cleanup;
+ 	size = le64_to_cpu(xs->here->xe_value_size);
+@@ -749,12 +773,26 @@ static int ocfs2_xattr_block_get(struct inode *inode,
+ 		ret = -ERANGE;
+ 		if (size > buffer_size)
+ 			goto cleanup;
++
++		name_offset = le16_to_cpu(xs->here->xe_name_offset);
++		name_len = OCFS2_XATTR_SIZE(xs->here->xe_name_len);
++		i = xs->here - xs->header->xh_entries;
++
++		if (le16_to_cpu(xb->xb_flags) & OCFS2_XATTR_INDEXED) {
++			ret = ocfs2_xattr_bucket_get_name_value(inode,
++								xs->bucket.xh,
++								i,
++								&block_off,
++								&name_offset);
++			xs->base = xs->bucket.bhs[block_off]->b_data;
++		}
+ 		if (ocfs2_xattr_is_local(xs->here)) {
+ 			memcpy(buffer, (void *)xs->base +
+-			       le16_to_cpu(xs->here->xe_name_offset) +
+-			       OCFS2_XATTR_SIZE(xs->here->xe_name_len), size);
++			       name_offset + name_len, size);
+ 		} else {
+-			ret = ocfs2_xattr_get_value_outside(inode, xs,
++			xv = (struct ocfs2_xattr_value_root *)
++				(xs->base + name_offset + name_len);
++			ret = ocfs2_xattr_get_value_outside(inode, xv,
+ 							    buffer, size);
+ 			if (ret < 0) {
+ 				mlog_errno(ret);
+@@ -764,8 +802,11 @@ static int ocfs2_xattr_block_get(struct inode *inode,
+ 	}
+ 	ret = size;
+ cleanup:
+-	brelse(blk_bh);
++	for (i = 0; i < OCFS2_XATTR_MAX_BLOCKS_PER_BUCKET; i++)
++		brelse(xs->bucket.bhs[i]);
++	memset(&xs->bucket, 0, sizeof(xs->bucket));
+ 
++	brelse(blk_bh);
+ 	return ret;
+ }
+ 
+@@ -1679,6 +1720,7 @@ static int ocfs2_xattr_block_find(struct inode *inode,
+ {
+ 	struct ocfs2_dinode *di = (struct ocfs2_dinode *)xs->inode_bh->b_data;
+ 	struct buffer_head *blk_bh = NULL;
++	struct ocfs2_xattr_block *xb;
+ 	int ret = 0;
+ 
+ 	if (!di->i_xattr_loc)
+@@ -1699,20 +1741,26 @@ static int ocfs2_xattr_block_find(struct inode *inode,
+ 	}
+ 
+ 	xs->xattr_bh = blk_bh;
+-	xs->header = &((struct ocfs2_xattr_block *)blk_bh->b_data)->
+-			xb_attrs.xb_header;
+-	xs->base = (void *)xs->header;
+-	xs->end = (void *)(blk_bh->b_data) + blk_bh->b_size;
+-	xs->here = xs->header->xh_entries;
++	xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
++
++	if (!(le16_to_cpu(xb->xb_flags) & OCFS2_XATTR_INDEXED)) {
++		xs->header = &xb->xb_attrs.xb_header;
++		xs->base = (void *)xs->header;
++		xs->end = (void *)(blk_bh->b_data) + blk_bh->b_size;
++		xs->here = xs->header->xh_entries;
++
++		ret = ocfs2_xattr_find_entry(name_index, name, xs);
++	} else
++		ret = ocfs2_xattr_index_block_find(inode, blk_bh,
++						   name_index,
++						   name, xs);
+ 
+-	ret = ocfs2_xattr_find_entry(name_index, name, xs);
+ 	if (ret && ret != -ENODATA) {
+ 		xs->xattr_bh = NULL;
+ 		goto cleanup;
+ 	}
+ 	xs->not_found = ret;
+ 	return 0;
+-
+ cleanup:
+ 	brelse(blk_bh);
+ 
+@@ -1941,6 +1989,18 @@ cleanup:
+ 	return ret;
+ }
+ 
++static inline u32 ocfs2_xattr_hash_by_name(struct inode *inode,
++					   int name_index,
++					   const char *suffix_name)
++{
++	struct xattr_handler *handler = ocfs2_xattr_handler(name_index);
++	char *prefix = handler->prefix;
++	int prefix_len = strlen(handler->prefix);
++
++	return ocfs2_xattr_name_hash(inode, prefix, prefix_len,
++				     (char *)suffix_name, strlen(suffix_name));
++}
++
+ /*
+  * Find the xattr extent rec which may contains name_hash.
+  * e_cpos will be the first name hash of the xattr rec.
+@@ -2010,6 +2070,251 @@ typedef int (xattr_bucket_func)(struct inode *inode,
+ 				struct ocfs2_xattr_bucket *bucket,
+ 				void *para);
+ 
++static int ocfs2_find_xe_in_bucket(struct inode *inode,
++				   struct buffer_head *header_bh,
++				   int name_index,
++				   const char *name,
++				   u32 name_hash,
++				   u16 *xe_index,
++				   int *found)
++{
++	int i, ret = 0, cmp = 1, block_off, new_offset;
++	struct ocfs2_xattr_header *xh =
++			(struct ocfs2_xattr_header *)header_bh->b_data;
++	size_t name_len = strlen(name);
++	struct ocfs2_xattr_entry *xe = NULL;
++	struct buffer_head *name_bh = NULL;
++	char *xe_name;
++
++	/*
++	 * We don't use binary search in the bucket because there
++	 * may be multiple entries with the same name hash.
++	 */
++	for (i = 0; i < le16_to_cpu(xh->xh_count); i++) {
++		xe = &xh->xh_entries[i];
++
++		if (name_hash > le32_to_cpu(xe->xe_name_hash))
++			continue;
++		else if (name_hash < le32_to_cpu(xe->xe_name_hash))
++			break;
++
++		cmp = name_index - ocfs2_xattr_get_type(xe);
++		if (!cmp)
++			cmp = name_len - xe->xe_name_len;
++		if (cmp)
++			continue;
++
++		ret = ocfs2_xattr_bucket_get_name_value(inode,
++							xh,
++							i,
++							&block_off,
++							&new_offset);
++		if (ret) {
++			mlog_errno(ret);
++			break;
++		}
++
++		ret = ocfs2_read_block(OCFS2_SB(inode->i_sb),
++				       header_bh->b_blocknr + block_off,
++				       &name_bh, OCFS2_BH_CACHED, inode);
++		if (ret) {
++			mlog_errno(ret);
++			break;
++		}
++		xe_name = name_bh->b_data + new_offset;
++
++		cmp = memcmp(name, xe_name, name_len);
++		brelse(name_bh);
++		name_bh = NULL;
++
++		if (cmp == 0) {
++			*xe_index = i;
++			*found = 1;
++			ret = 0;
++			break;
++		}
++	}
++
++	return ret;
++}
++
++/*
++ * Find the specified xattr entry in a series of buckets.
++ * This series start from p_blkno and last for num_clusters.
++ * The ocfs2_xattr_header.xh_num_buckets of the first bucket contains
++ * the num of the valid buckets.
++ *
++ * Return the buffer_head this xattr should reside in. And if the xattr's
++ * hash is in the gap of 2 buckets, return the lower bucket.
++ */
++static int ocfs2_xattr_bucket_find(struct inode *inode,
++				   int name_index,
++				   const char *name,
++				   u32 name_hash,
++				   u64 p_blkno,
++				   u32 first_hash,
++				   u32 num_clusters,
++				   struct ocfs2_xattr_search *xs)
++{
++	int ret, found = 0;
++	struct buffer_head *bh = NULL;
++	struct buffer_head *lower_bh = NULL;
++	struct ocfs2_xattr_header *xh = NULL;
++	struct ocfs2_xattr_entry *xe = NULL;
++	u16 index = 0;
++	u16 blk_per_bucket = ocfs2_blocks_per_xattr_bucket(inode->i_sb);
++	int low_bucket = 0, bucket, high_bucket;
++	u32 last_hash;
++	u64 blkno;
++
++	ret = ocfs2_read_block(OCFS2_SB(inode->i_sb), p_blkno,
++			       &bh, OCFS2_BH_CACHED, inode);
++	if (ret) {
++		mlog_errno(ret);
++		goto out;
++	}
++
++	xh = (struct ocfs2_xattr_header *)bh->b_data;
++	high_bucket = le16_to_cpu(xh->xh_num_buckets) - 1;
++
++	while (low_bucket <= high_bucket) {
++		brelse(bh);
++		bh = NULL;
++		bucket = (low_bucket + high_bucket) / 2;
++
++		blkno = p_blkno + bucket * blk_per_bucket;
++
++		ret = ocfs2_read_block(OCFS2_SB(inode->i_sb), blkno,
++				       &bh, OCFS2_BH_CACHED, inode);
++		if (ret) {
++			mlog_errno(ret);
++			goto out;
++		}
++
++		xh = (struct ocfs2_xattr_header *)bh->b_data;
++		xe = &xh->xh_entries[0];
++		if (name_hash < le32_to_cpu(xe->xe_name_hash)) {
++			high_bucket = bucket - 1;
++			continue;
++		}
++
++		/*
++		 * Check whether the hash of the last entry in our
++		 * bucket is larger than the search one.
++		 */
++		xe = &xh->xh_entries[le16_to_cpu(xh->xh_count) - 1];
++		last_hash = le32_to_cpu(xe->xe_name_hash);
++
++		/* record lower_bh which may be the insert place. */
++		brelse(lower_bh);
++		lower_bh = bh;
++		bh = NULL;
++
++		if (name_hash > le32_to_cpu(xe->xe_name_hash)) {
++			low_bucket = bucket + 1;
++			continue;
++		}
++
++		/* the searched xattr should reside in this bucket if exists. */
++		ret = ocfs2_find_xe_in_bucket(inode, lower_bh,
++					      name_index, name, name_hash,
++					      &index, &found);
++		if (ret) {
++			mlog_errno(ret);
++			goto out;
++		}
++		break;
++	}
++
++	/*
++	 * Record the bucket we have found.
++	 * When the xattr's hash value is in the gap of 2 buckets, we will
++	 * always set it to the previous bucket.
++	 */
++	if (!lower_bh) {
++		/*
++		 * We can't find any bucket whose first name_hash is less
++		 * than the find name_hash.
++		 */
++		BUG_ON(bh->b_blocknr != p_blkno);
++		lower_bh = bh;
++		bh = NULL;
++	}
++	xs->bucket.bhs[0] = lower_bh;
++	xs->bucket.xh = (struct ocfs2_xattr_header *)
++					xs->bucket.bhs[0]->b_data;
++	lower_bh = NULL;
++
++	xs->header = xs->bucket.xh;
++	xs->base = xs->bucket.bhs[0]->b_data;
++	xs->end = xs->base + inode->i_sb->s_blocksize;
++
++	if (found) {
++		/*
++		 * If we have found the xattr enty, read all the blocks in
++		 * this bucket.
++		 */
++		ret = ocfs2_read_blocks(OCFS2_SB(inode->i_sb),
++					xs->bucket.bhs[0]->b_blocknr + 1,
++					blk_per_bucket - 1, &xs->bucket.bhs[1],
++					OCFS2_BH_CACHED, inode);
++		if (ret) {
++			mlog_errno(ret);
++			goto out;
++		}
++
++		xs->here = &xs->header->xh_entries[index];
++		mlog(0, "find xattr %s in bucket %llu, entry = %u\n", name,
++		     (unsigned long long)xs->bucket.bhs[0]->b_blocknr, index);
++	} else
++		ret = -ENODATA;
++
++out:
++	brelse(bh);
++	brelse(lower_bh);
++	return ret;
++}
++
++static int ocfs2_xattr_index_block_find(struct inode *inode,
++					struct buffer_head *root_bh,
++					int name_index,
++					const char *name,
++					struct ocfs2_xattr_search *xs)
++{
++	int ret;
++	struct ocfs2_xattr_block *xb =
++			(struct ocfs2_xattr_block *)root_bh->b_data;
++	struct ocfs2_xattr_tree_root *xb_root = &xb->xb_attrs.xb_root;
++	struct ocfs2_extent_list *el = &xb_root->xt_list;
++	u64 p_blkno = 0;
++	u32 first_hash, num_clusters = 0;
++	u32 name_hash = ocfs2_xattr_hash_by_name(inode, name_index, name);
++
++	if (le16_to_cpu(el->l_next_free_rec) == 0)
++		return -ENODATA;
++
++	mlog(0, "find xattr %s, hash = %u, index = %d in xattr tree\n",
++	     name, name_hash, name_index);
++
++	ret = ocfs2_xattr_get_rec(inode, name_hash, &p_blkno, &first_hash,
++				  &num_clusters, el);
++	if (ret) {
++		mlog_errno(ret);
++		goto out;
++	}
++
++	BUG_ON(p_blkno == 0 || num_clusters == 0 || first_hash > name_hash);
++
++	mlog(0, "find xattr extent rec %u clusters from %llu, the first hash "
++	     "in the rec is %u\n", num_clusters, p_blkno, first_hash);
++
++	ret = ocfs2_xattr_bucket_find(inode, name_index, name, name_hash,
++				      p_blkno, first_hash, num_clusters, xs);
++
++out:
++	return ret;
++}
++
+ static int ocfs2_iterate_xattr_buckets(struct inode *inode,
+ 				       u64 blkno,
+ 				       u32 clusters,
 -- 
 1.5.4.5
 
