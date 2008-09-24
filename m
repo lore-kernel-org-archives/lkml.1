@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbYIXXDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYIXXEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753704AbYIXXDi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 19:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbYIXXDa
+	id S1753960AbYIXXEg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 19:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbYIXXE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 19:03:30 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:13416 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751528AbYIXXDa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 19:03:30 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAItj2kh5LF82/2dsb2JhbAC9UIFl
-X-IronPort-AV: E=Sophos;i="4.33,303,1220193000"; 
-   d="scan'208";a="214073458"
-Date: Thu, 25 Sep 2008 09:03:26 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.27-rc7 no init found on the root partition?
-Message-ID: <20080924230326.GM5448@disturbed>
-Mail-Followup-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-	linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-References: <20080924192227.GC31582@ics.muni.cz>
+	Wed, 24 Sep 2008 19:04:28 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55703 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751084AbYIXXE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 19:04:27 -0400
+Date: Wed, 24 Sep 2008 16:00:54 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
+       Jeff Mahoney <jeffm@suse.de>
+Subject: [patch 00/04] RFC: Staging tree (drivers/staging)
+Message-ID: <20080924230054.GA27730@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080924192227.GC31582@ics.muni.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 09:22:27PM +0200, Lukas Hejtmanek wrote:
-> Hello,
-> 
-> I have a box that has XFS root partition, I have kernel 2.6.26.3 that boots
-> pretty well on that box. Today, I've tried 2.6.27-rc7 (so that I can test
-> NFSv4 over IPv6), but the kernel is unable to boot. It says that root
-> partition is mounted, XFS file system but no init found.
+As we all discussed at the Kernel Summit this past week, I said I would
+create a drivers/staging directory and start throwing lots of drivers
+that are not of "mergable" status into it.
 
-Can you paste the error messages or send pointers to screen shots of
-the error?
+For those not at the kernel summit, lwn.net has a summary of this
+session at:
+	http://www.lwn.net/Articles/298570/
 
-If you go back to 2.6.26.3, does the kernel boot ok?
+So, here's 4 patches for review/comments that show how this could be
+done.
 
-Cheers,
+The first 2 patches create a TAINT_CRAP flag and set it for anything
+that comes from the drivers/staging/ directory.  When a driver from this
+directory is loaded into the kernel, the user is warned, and any oops
+message that happens also properly shows the "bad" modules.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+The 3rd patch creates the drivers/staging/ directory and Kconfig entries
+and adds it to the build system.
+
+The 4th patch is an example of a driver that would go into this
+directory, along with a driver_name.README file detailing what needs to
+be done to this driver for cleanup/fixing, and who to contact about it.
+It's also in such bad shape it doesn't even build against the kernel
+kernel :)
+
+(I'll fix that up before submitting, all drivers should at least build
+properly...)
+
+So, does this all look good to everyone?  Any questions/issues?
+
+Oh, I guess I should add a MAINTAINER entry for this section of the
+kernel, so to paraphrase Linus, I now get to be known as the "Maintainer
+of Crap".
+
+thanks,
+
+greg k-h
