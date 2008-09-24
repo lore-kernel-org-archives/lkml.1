@@ -1,157 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYIXKPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbYIXKPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbYIXKPY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 06:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYIXKPH
+	id S1755015AbYIXKPz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 06:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYIXKPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 06:15:07 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:37746 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752286AbYIXKPF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 06:15:05 -0400
-Date: Wed, 24 Sep 2008 19:15:04 +0900 (JST)
-Message-Id: <20080924.191504.59669845.ryov@valinux.co.jp>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Cc: agk@sourceware.org, balbir@linux.vnet.ibm.com, xemul@openvz.org,
-       kamezawa.hiroyu@jp.fujitsu.com, fernando@oss.ntt.co.jp
-Subject: [PATCH 8/8] bio-cgroup: Dirty page tracking
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20080924.191432.39172089.ryov@valinux.co.jp>
-References: <20080924.191338.112608181.ryov@valinux.co.jp>
-	<20080924.191402.183039492.ryov@valinux.co.jp>
-	<20080924.191432.39172089.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Sep 2008 06:15:45 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:2292 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752084AbYIXKPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 06:15:44 -0400
+Date: Wed, 24 Sep 2008 19:14:39 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Cc: hjk@linutronix.de, gregkh@suse.de,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: UIO device name
+Message-ID: <20080924101439.GC7591@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Joakim Tjernlund <joakim.tjernlund@transmode.se>, hjk@linutronix.de,
+	gregkh@suse.de, Linux-Kernel <linux-kernel@vger.kernel.org>
+References: <1222248093.12624.188.camel@gentoo-jocke.transmode.se> <20080924093551.GB7591@linux-sh.org> <1222250279.12624.195.camel@gentoo-jocke.transmode.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222250279.12624.195.camel@gentoo-jocke.transmode.se>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch supports migrating pages between bio-cgroups with minimum overhead,
+On Wed, Sep 24, 2008 at 11:57:59AM +0200, Joakim Tjernlund wrote:
+> On Wed, 2008-09-24 at 18:35 +0900, Paul Mundt wrote:
+> > On Wed, Sep 24, 2008 at 11:21:33AM +0200, Joakim Tjernlund wrote:
+> > > As far as I can see there isn't a way to name the /dev/uio%d device file
+> > > to something more useful, is that so?
+> > > I would like to name the device file from within the kernel so I can
+> > > find the correct device from userspace.
+> > > The very least is to control the minor(%d) number.
+> > > 
+> > You have a couple of options for this:
+> > 
+> > 	- the 'name' sysfs entry for each of the uio devices, which
+> > 	  corresponds to the uio device name.
+> > 	- extracting the relevant data from things like 'lsuio'.
+> > 	- hooking in the pretty mame through udev to create an alias.
+> 
+> Right, but I want to do it from within the kernel when I create the
+> device because that the only place I truly know what HW the uio maps to.
+> 
+> I found that this works:
+>  struct uio_info *info,
+>  struct uio_device *idev;
+> 
+>  idev = info->uio_dev;
+>  device_rename(idev->dev, "irq4");
+> 
+> but then I have to copy the private uio_device struct from uio.c
+> Is there a better way to get at idev->dev?
+> 
+I fail to see what this will buy you that you can't already do with udev
+(or a set of scripts that look at sysfs) today. "the only place I truly
+know what HW the uio maps to" doesn't make any sense, the name is fully
+preserved and exposed. If you can't figure out your device from looking
+at /sys/class/uio/uio?/name, I'm not sure how a rename is going to make
+any difference.
 
-Based on 2.6.27-rc5-mm1
-Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
-Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
-
-diff -Ndupr linux-2.6.27-rc5-mm1.cg3/fs/buffer.c linux-2.6.27-rc5-mm1.cg4/fs/buffer.c
---- linux-2.6.27-rc5-mm1.cg3/fs/buffer.c	2008-09-24 16:23:02.000000000 +0900
-+++ linux-2.6.27-rc5-mm1.cg4/fs/buffer.c	2008-09-24 16:34:53.000000000 +0900
-@@ -36,6 +36,7 @@
- #include <linux/buffer_head.h>
- #include <linux/task_io_accounting_ops.h>
- #include <linux/bio.h>
-+#include <linux/biocontrol.h>
- #include <linux/notifier.h>
- #include <linux/cpu.h>
- #include <linux/bitops.h>
-@@ -722,6 +723,7 @@ static int __set_page_dirty(struct page 
- 			__inc_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
- 			task_io_account_write(PAGE_CACHE_SIZE);
-+			bio_cgroup_recharge(page, current->mm);
- 		}
- 		radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
-diff -Ndupr linux-2.6.27-rc5-mm1.cg3/include/linux/biocontrol.h linux-2.6.27-rc5-mm1.cg4/include/linux/biocontrol.h
---- linux-2.6.27-rc5-mm1.cg3/include/linux/biocontrol.h	2008-09-24 16:34:52.000000000 +0900
-+++ linux-2.6.27-rc5-mm1.cg4/include/linux/biocontrol.h	2008-09-24 16:34:53.000000000 +0900
-@@ -100,6 +100,8 @@ static inline struct bio_cgroup *mm_get_
- 
- extern struct io_context *get_bio_cgroup_iocontext(struct bio *bio);
- 
-+extern void bio_cgroup_recharge(struct page *page, struct mm_struct *mm);
-+
- #else	/* CONFIG_CGROUP_BIO */
- 
- struct bio_cgroup;
-@@ -154,6 +156,10 @@ static inline struct io_context *get_bio
- 	return NULL;
- }
- 
-+static inline void bio_cgroup_recharge(struct page *page, struct mm_struct *mm)
-+{
-+}
-+
- #endif	/* CONFIG_CGROUP_BIO */
- 
- #endif /* _LINUX_BIOCONTROL_H */
-diff -Ndupr linux-2.6.27-rc5-mm1.cg3/mm/biocontrol.c linux-2.6.27-rc5-mm1.cg4/mm/biocontrol.c
---- linux-2.6.27-rc5-mm1.cg3/mm/biocontrol.c	2008-09-24 16:34:52.000000000 +0900
-+++ linux-2.6.27-rc5-mm1.cg4/mm/biocontrol.c	2008-09-24 16:34:53.000000000 +0900
-@@ -217,3 +217,52 @@ struct cgroup_subsys bio_cgroup_subsys =
- 	.attach		= bio_cgroup_move_task,
- 	.early_init	= 0,
- };
-+
-+/*
-+ * Change the owner of a given page.
-+ */
-+void bio_cgroup_recharge(struct page *page, struct mm_struct *mm)
-+{
-+	struct page_cgroup *pc;
-+	struct bio_cgroup *biog;
-+
-+	if (bio_cgroup_disabled() || !mm)
-+		return;
-+	if (PageSwapCache(page) || PageAnon(page))
-+		return;
-+	/* Check if the owner should be changed without any lock. */
-+	pc = page_get_page_cgroup(page);
-+	if (unlikely(!pc))
-+		return;
-+	rcu_read_lock();
-+	biog = bio_cgroup_from_task(rcu_dereference(mm->owner));
-+	rcu_read_unlock();
-+	/*
-+	 * This won't cause any trouble even when the page_cgroup has been
-+	 * released since its memory still exists where it was.
-+	 */
-+	if (biog == pc->bio_cgroup)
-+		return;
-+
-+	/* Re-check if the owner should be changed with the lock. */
-+	lock_page_cgroup(page);
-+	pc = page_get_page_cgroup(page);
-+	if (unlikely(!pc))
-+		goto out;
-+	rcu_read_lock();
-+	biog = mm_get_bio_cgroup(mm);
-+	rcu_read_unlock();
-+	if (biog == pc->bio_cgroup) {
-+		put_bio_cgroup(biog);
-+		goto out;
-+	}
-+
-+	/* Move the page into the bio_cgroup associating with "mm." */
-+	bio_cgroup_remove_page(pc);
-+	clear_bio_cgroup(pc);
-+	set_bio_cgroup(pc, biog);
-+	bio_cgroup_add_page(pc);
-+out:
-+	unlock_page_cgroup(page);
-+}
-+
-diff -Ndupr linux-2.6.27-rc5-mm1.cg3/mm/page-writeback.c linux-2.6.27-rc5-mm1.cg4/mm/page-writeback.c
---- linux-2.6.27-rc5-mm1.cg3/mm/page-writeback.c	2008-09-24 16:23:03.000000000 +0900
-+++ linux-2.6.27-rc5-mm1.cg4/mm/page-writeback.c	2008-09-24 16:34:53.000000000 +0900
-@@ -23,6 +23,7 @@
- #include <linux/init.h>
- #include <linux/backing-dev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/biocontrol.h>
- #include <linux/blkdev.h>
- #include <linux/mpage.h>
- #include <linux/rmap.h>
-@@ -1094,6 +1095,7 @@ int __set_page_dirty_nobuffers(struct pa
- 				__inc_bdi_stat(mapping->backing_dev_info,
- 						BDI_RECLAIMABLE);
- 				task_io_account_write(PAGE_CACHE_SIZE);
-+				bio_cgroup_recharge(page, current->mm);
- 			}
- 			radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
+If you need to poke at uio private data, you are almost certainly doing
+something wrong.
