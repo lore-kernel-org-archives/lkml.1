@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbYIXQbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYIXQbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbYIXQbW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 12:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYIXQbH
+	id S1753974AbYIXQbe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 12:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbYIXQbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 12:31:07 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41881 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbYIXQbG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 12:31:06 -0400
-Date: Wed, 24 Sep 2008 12:31:04 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <20080924161347.GA31451@Krystal>
-Message-ID: <alpine.DEB.1.10.0809241229380.5017@gandalf.stny.rr.com>
-References: <20080924051056.650388887@goodmis.org> <20080924051400.195780424@goodmis.org> <1222268595.16700.149.camel@lappy.programming.kicks-ass.net> <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com> <20080924161347.GA31451@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 24 Sep 2008 12:31:11 -0400
+Received: from the.earth.li ([217.147.81.2]:60507 "EHLO the.earth.li"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754187AbYIXQbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 12:31:10 -0400
+Date: Wed, 24 Sep 2008 17:31:09 +0100
+From: Jonathan McDowell <noodles@earth.li>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Compile error in v2.6.27-rc7-78-gfb478da [PATCH]
+Message-ID: <20080924163109.GA19145@earth.li>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In article <48DA07FE.6020002@upcomillas.es> (earth.lists.linux-kernel)
+Romano Giannetti wrote:
 
-On Wed, 24 Sep 2008, Mathieu Desnoyers wrote:
-> /*
->  * Perform an aligned write of the input data into the buffer.
->  *
->  * buffer : page pointer array
->  * woffset : offset in the page pointer array where write starts from
->  * data : input data
->  * len : length of data to copy
->  *
->  * Note : if a NULL buffer is passed, no copy is performed, but the
->  * alignment and offset calculation is done. Useful to calculate the
->  * size to reserve.
->  *
->  * return : length written
->  */
-> size_t write(struct page **buffer, size_t woffset, void *data, size_t len);
-> 
-> Therefore, we could have code which writes in the buffers, without extra
-> copy, and without using vmap, in multiple writes for a single event,
-> which would deal with data alignment, e.g. :
-> 
-> size_t woffset, evsize = 0;
-> 
-> evsize += write(NULL, evsize, &var1, sizeof(var1));
-> evsize += write(NULL, evsize, &var2, sizeof(var2));
-> evsize += write(NULL, evsize, &var3, sizeof(var3));
-> 
-> woffset = reserve(..., evsize);
-> 
-> woffset += write(buffer, woffset, &var1, sizeof(var1));
-> woffset += write(buffer, woffset, &var2, sizeof(var2));
-> woffset += write(buffer, woffset, &var3, sizeof(var3));
-> 
-> commit(..., evsize);
-> 
-> Does that make sense ?
+>    CALL    scripts/checksyscalls.sh
+>    CC      init/main.o
+>    CC      arch/x86/kernel/process_32.o
+> arch/x86/kernel/process_32.c: In function ‘cpu_exit_clear’:
+> arch/x86/kernel/process_32.c:91: error: implicit declaration of function 
+> ‘c1e_remove_cpu’
+> make[1]: *** [arch/x86/kernel/process_32.o] Error 1
+> make: *** [arch/x86/kernel] Error 2
+> make: *** Waiting for unfinished jobs....
 
-Mathieu,
+Just hit the same myself; looks like a missing include of <asm/idle.h>
 
-I'm starting to think that you are just too smart for your own good ;-)
-No it does not make sense. Well, it does not after looking at it for 10 
-seconds.
+Signed-Off-By: Jonathan McDowell <noodles@earth.li>
 
-Which brings up my point, the interface must be simple, and not cause 
-people to spend minutes trying to figure out what the trace is doing.
+-----
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 4b3cfdf..66d13d9 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -41,6 +41,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
++#include <asm/idle.h>
+ #include <asm/io.h>
+ #include <asm/ldt.h>
+ #include <asm/processor.h>
+-----
 
--- Steve
+J.
 
+-- 
+"Every now and then I get an insane urge to move to Finland." -- Peter
+da Silva, The Scary Devil Monastery
