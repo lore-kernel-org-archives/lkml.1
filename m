@@ -1,117 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbYIXFvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbYIXFyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752776AbYIXFvi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 01:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYIXFv3
+	id S1753123AbYIXFyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 01:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbYIXFyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 01:51:29 -0400
-Received: from colo.lackof.org ([198.49.126.79]:39364 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750968AbYIXFv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 01:51:28 -0400
-Date: Tue, 23 Sep 2008 23:51:16 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Notes from LPC PCI/MSI BoF session
-Message-ID: <20080924055116.GA3101@colo.lackof.org>
-References: <200809221229.18501.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809221229.18501.jbarnes@virtuousgeek.org>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 24 Sep 2008 01:54:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40093 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750884AbYIXFyD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 01:54:03 -0400
+Date: Tue, 23 Sep 2008 22:53:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Hugh Dickins <hugh@veritas.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH 1/3] corruption check: move the corruption checks into
+ their own file
+Message-Id: <20080923225306.09fc27b4.akpm@linux-foundation.org>
+In-Reply-To: <20080923215335.05678239@infradead.org>
+References: <20080923215335.05678239@infradead.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 12:29:18PM -0700, Jesse Barnes wrote:
-> Matthew was kind enough to set up a BoF for those of us interested in PCI and 
-> MSI issues at this year's LPC.  We went over several issues there:  MSI, PCI 
-> hotplug, PCIe virtualization, VGA arbitration and PCI address space 
-> management.
+On Tue, 23 Sep 2008 21:53:35 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
 
-Jesse,
-thanks for summarizing and posting this....let me use this as an opportunity
-to write up an MSI API proposal like I promised.
+> 
+> >From 19058f850aaf82d8185f06b54582a3d8e1ca8d97 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Mon, 22 Sep 2008 09:35:06 -0700
+> Subject: [PATCH] corruption check: move the corruption checks into their own file
+> 
+> There'll be more checks over time (based on kerneloops data I have
+> several ideas already) and making the checks their own file rather
+> than setup.c makes sense in that light.
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  arch/x86/kernel/Makefile |    1 +
+>  arch/x86/kernel/check.c  |  156 ++++++++++++++++++++++++++++++++++++++++++++++
+>  arch/x86/kernel/setup.c  |  151 --------------------------------------------
 
-> Issue:
-> MSI API improvements.  Need ways to allocate MSIs at runtime, and perhaps
-> on a per-CPU level and get affinity information.  And of course we need
-> a way to get more than one legacy MSI allocated.
-> Owner:
-> Matthew is handling the first pass of this (the more than one legacy MSI 
-> addition).  I think we'll need some detailed requirements from the driver 
-> guys to make further improvements (e.g. per-CPU or affinity stuff).
+So this is long-standing code.  Let's pretend otherwise ;)
 
-Being one of the "driver guys", let me add my thoughts.
-For the following discussion, I think we can treat MSI and MSI-X the
-same and will just say "MSI". The issue is smp_affinity and how
-drivers want to bind MSIs to specific CPUs based on topology/architecture
-for optimal performance.
+>  include/asm-x86/setup.h  |    4 +
+>  4 files changed, 161 insertions(+), 151 deletions(-)
+>  create mode 100644 arch/x86/kernel/check.c
+> 
+> diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+> index c71722d..5d788ea 100644
+> --- a/arch/x86/kernel/Makefile
+> +++ b/arch/x86/kernel/Makefile
+> @@ -36,6 +36,7 @@ obj-y			+= bootflag.o e820.o
+>  obj-y			+= pci-dma.o quirks.o i8237.o topology.o kdebugfs.o
+>  obj-y			+= alternative.o i8253.o pci-nommu.o
+>  obj-y			+= tsc.o io_delay.o rtc.o
+> +obj-y			+= check.o
+>  
+>  obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
+>  obj-y				+= process.o
+> diff --git a/arch/x86/kernel/check.c b/arch/x86/kernel/check.c
+> new file mode 100644
+> index 0000000..a7e80ed
+> --- /dev/null
+> +++ b/arch/x86/kernel/check.c
+> @@ -0,0 +1,156 @@
+> +#include <linux/module.h>
+> +#include <linux/sched.h>
+> +
+> +#include <asm/e820.h>
+> +#include <asm/proto.h>
+> +
+> +/*
+> + * Some BIOSes seem to corrupt the low 64k of memory during events
+> + * like suspend/resume and unplugging an HDMI cable.  Reserve all
+> + * remaining free memory in that area and fill it with a distinct
+> + * pattern.
+> + */
+> +#ifdef CONFIG_X86_CHECK_BIOS_CORRUPTION
+> +#define MAX_SCAN_AREAS	8
+> +
+> +static int __read_mostly memory_corruption_check = -1;
+> +
+> +static unsigned __read_mostly corruption_check_size = 64*1024;
+> +static unsigned __read_mostly corruption_check_period = 60; /* seconds */
+> +
+> +static struct e820entry scan_areas[MAX_SCAN_AREAS];
+> +static int num_scan_areas;
+> +
+> +
+> +static int set_corruption_check(char *arg)
+> +{
+> +	char *end;
+> +
+> +	memory_corruption_check = simple_strtol(arg, &end, 10);
+> +
+> +	return (*end == 0) ? 0 : -EINVAL;
+> +}
+> +early_param("memory_corruption_check", set_corruption_check);
 
-"queue pairs" means command/completion queues.
-"multiple queues" means more than one such pairs.
+__init?
 
-The problem is multi-queue capable devices want to bind MSIs
-to specific queues. How those queues are bound to each MSI depends
-on how the device uses the queues. I can think of three cases:
-1) 1:1 mapping between queue pairs and MSI.
-2) 1:N mapping of MSI to multiple queues - e.g. different classes of service.
-3) N:1 mapping of MSI to a queue pair - e.g. different event types
-   (error vs good status). 
+> +static int set_corruption_check_period(char *arg)
+> +{
+> +	char *end;
+> +
+> +	corruption_check_period = simple_strtoul(arg, &end, 10);
+> +
+> +	return (*end == 0) ? 0 : -EINVAL;
+> +}
+> +early_param("memory_corruption_check_period", set_corruption_check_period);
 
-"classes of service" could be 1:N or N:1.
-"event types" case would typically be 1 command queue with
-multiple completion queues and one MSI per completion queue.
+__init?
 
-Dave Miller (and others) have clearly stated they don't want to see
-CPU affinity handled in the device drivers and want irqbalanced
-to handle interrupt distribution. The problem with this is irqbalanced
-needs to know how each device driver is binding multiple MSI to it's queues.
-Some devices could prefer several MSI go to the same processor and
-others want each MSI bound to a different "node" (NUMA).
+> +static int set_corruption_check_size(char *arg)
+> +{
+> +	char *end;
+> +	unsigned size;
+> +
+> +	size = memparse(arg, &end);
+> +
+> +	if (*end == '\0')
+> +		corruption_check_size = size;
+> +
+> +	return (size == corruption_check_size) ? 0 : -EINVAL;
+> +}
+> +early_param("memory_corruption_check_size", set_corruption_check_size);
 
-Without any additional API, this means the device driver has to
-update irqbalanced for each device it supports. We thought pci_ids.h
-was a PITA...that would be trivial compared to maintaining this.
+__init?
 
-Initially, at the BOF, I proposed "pci_enable_msix_for_nodes()"
-to spread out MSI across multiple NUMA nodes by default. CPU Cores which
-share cache was my definition of a "NUMA Node" for the purpose of
-this discussion. But each arch would have to define that. The device
-driver would also need an API to map each "node" to a queue pair as well.
+> +
+> +void __init setup_bios_corruption_check(void)
+> +{
+> +	u64 addr = PAGE_SIZE;	/* assume first page is reserved anyway */
+> +
+> +	if (memory_corruption_check == -1) {
+> +		memory_corruption_check =
+> +#ifdef CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK
+> +			1
+> +#else
+> +			0
+> +#endif
+> +			;
+> +	}
+> +
+> +	if (corruption_check_size == 0)
+> +		memory_corruption_check = 0;
+> +
+> +	if (!memory_corruption_check)
+> +		return;
+> +
+> +	corruption_check_size = round_up(corruption_check_size, PAGE_SIZE);
+> +
+> +	while(addr < corruption_check_size && num_scan_areas < MAX_SCAN_AREAS) {
+> +		u64 size;
+> +		addr = find_e820_area_size(addr, &size, PAGE_SIZE);
+> +
+> +		if (addr == 0)
+> +			break;
+> +
+> +		if ((addr + size) > corruption_check_size)
+> +			size = corruption_check_size - addr;
+> +
+> +		if (size == 0)
+> +			break;
+> +
+> +		e820_update_range(addr, size, E820_RAM, E820_RESERVED);
+> +		scan_areas[num_scan_areas].addr = addr;
+> +		scan_areas[num_scan_areas].size = size;
+> +		num_scan_areas++;
+> +
+> +		/* Assume we've already mapped this early memory */
+> +		memset(__va(addr), 0, size);
+> +
+> +		addr += size;
+> +	}
+> +
+> +	printk(KERN_INFO "Scanning %d areas for low memory corruption\n",
+> +	       num_scan_areas);
+> +	update_e820();
+> +}
+> +
+> +static struct timer_list periodic_check_timer;
 
-In retrospect, I think this API only work well for smaller systems
-and simple 1:1 MSI/queue mappings. and we'd still have to teach
-irqbalanced to not touch some MSIs which are "optimally" allocated.
+Could use DEFINE_TIMER() here.
 
-A second solution I thought of later might be for the device driver to
-export (sysfs?) to irqbalanced which MSIs the driver instance owns and
-how many "domains" those MSIs can serve.  irqbalanced can then write
-back into the same (sysfs?) the mapping of MSI to domains and update
-the smp_affinity mask for each of those MSI.
+> +void check_for_bios_corruption(void)
+> +{
+> +	int i;
+> +	int corruption = 0;
+> +
+> +	if (!memory_corruption_check)
+> +		return;
+> +
+> +	for(i = 0; i < num_scan_areas; i++) {
+> +		unsigned long *addr = __va(scan_areas[i].addr);
+> +		unsigned long size = scan_areas[i].size;
+> +
+> +		for(; size; addr++, size -= sizeof(unsigned long)) {
+> +			if (!*addr)
+> +				continue;
+> +			printk(KERN_ERR "Corrupted low memory at %p (%lx phys) = %08lx\n",
+> +			       addr, __pa(addr), *addr);
+> +			corruption = 1;
+> +			*addr = 0;
+> +		}
+> +	}
+> +
+> +	WARN(corruption, KERN_ERR "Memory corruption detected in low memory\n");
+> +}
+> +
+> +static void periodic_check_for_corruption(unsigned long data)
+> +{
+> +	check_for_bios_corruption();
+> +	mod_timer(&periodic_check_timer, round_jiffies(jiffies + corruption_check_period*HZ));
+> +}
+> +
+> +void start_periodic_check_for_corruption(void)
+> +{
+> +	if (!memory_corruption_check || corruption_check_period == 0)
+> +		return;
+> +
+> +	printk(KERN_INFO "Scanning for low memory corruption every %d seconds\n",
+> +	       corruption_check_period);
+> +
+> +	init_timer(&periodic_check_timer);
+> +	periodic_check_timer.function = &periodic_check_for_corruption;
 
-The driver could quickly look up the reverse map CPUs to "domains".
-When a process attempts to start an IO, driver wants to know which
-queue pair the IO should be placed on so the completion event will
-be handled in the same "domain". The result is IOs could start/complete
-on the same (now warm) "CPU cache" with minimal spinlock bouncing.
+and zap those.
 
-I'm not clear on details right now. I belive this would allow
-irqbalanced to manage IRQs in an optimal way without having to
-have device specific code in it. Unfortunately, I'm not in a position
-propose patches due to current work/family commitments. It would
-be fun to work on. *sigh*
+> +	periodic_check_for_corruption(0);
+> +}
+> +#endif
 
-
-I suspect the same thing could be implemented without irqbalanced since
-I believe process management knows about the same NUMA attributes we care
-about here...maybe it's time for PM to start dealing with interrupt
-"scheduling" (kthreads like the RT folks want?) as well?
-
-Ok..maybe I should stop before my asbestos underwear aren't sufficient. :)
-
-hth,
-grant
