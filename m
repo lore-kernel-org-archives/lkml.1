@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbYIXWF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbYIXWGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755159AbYIXWF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbYIXWA5
+	id S1753817AbYIXWGY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYIXWA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:00:57 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41473 "EHLO mx1.suse.de"
+	Wed, 24 Sep 2008 18:00:59 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52224 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753343AbYIXWAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:00:33 -0400
+	id S1753358AbYIXWAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:00:34 -0400
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-fsdevel@vger.kernel.org, Tao Ma <tao.ma@oracle.com>,
+       linux-fsdevel@vger.kernel.org, Tiger Yang <tiger.yang@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 19/39] ocfs2: Delete all xattr buckets during inode removal
-Date: Wed, 24 Sep 2008 15:01:00 -0700
-Message-Id: <1222293680-15451-20-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 20/39] ocfs2: Add incompatible flag for extended attribute
+Date: Wed, 24 Sep 2008 15:01:01 -0700
+Message-Id: <1222293680-15451-21-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
 References: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
@@ -24,126 +24,148 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tao Ma <tao.ma@oracle.com>
+From: Tiger Yang <tiger.yang@oracle.com>
 
-In inode removal, we need to iterate all the buckets, remove any
-externally-stored EA values and delete the xattr buckets.
+This patch adds the s_incompat flag for extended attribute support. This
+helps us ensure that older versions of Ocfs2 or ocfs2-tools will not be able
+to mount a volume with xattr support.
 
-Signed-off-by: Tao Ma <tao.ma@oracle.com>
+Signed-off-by: Tiger Yang <tiger.yang@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/xattr.c |   84 +++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 80 insertions(+), 4 deletions(-)
+ fs/ocfs2/ocfs2.h    |    7 +++++++
+ fs/ocfs2/ocfs2_fs.h |   19 +++++++++++++------
+ fs/ocfs2/super.c    |    3 ++-
+ fs/ocfs2/xattr.c    |   12 ++++++++++++
+ 4 files changed, 34 insertions(+), 7 deletions(-)
 
+diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
+index cae0dd4..6d3c10d 100644
+--- a/fs/ocfs2/ocfs2.h
++++ b/fs/ocfs2/ocfs2.h
+@@ -363,6 +363,13 @@ static inline int ocfs2_supports_inline_data(struct ocfs2_super *osb)
+ 	return 0;
+ }
+ 
++static inline int ocfs2_supports_xattr(struct ocfs2_super *osb)
++{
++	if (osb->s_feature_incompat & OCFS2_FEATURE_INCOMPAT_XATTR)
++		return 1;
++	return 0;
++}
++
+ /* set / clear functions because cluster events can make these happen
+  * in parallel so we want the transitions to be atomic. this also
+  * means that any future flags osb_flags must be protected by spinlock
+diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
+index 8d5e72f..f24ce3d 100644
+--- a/fs/ocfs2/ocfs2_fs.h
++++ b/fs/ocfs2/ocfs2_fs.h
+@@ -91,7 +91,8 @@
+ 					 | OCFS2_FEATURE_INCOMPAT_SPARSE_ALLOC \
+ 					 | OCFS2_FEATURE_INCOMPAT_INLINE_DATA \
+ 					 | OCFS2_FEATURE_INCOMPAT_EXTENDED_SLOT_MAP \
+-					 | OCFS2_FEATURE_INCOMPAT_USERSPACE_STACK)
++					 | OCFS2_FEATURE_INCOMPAT_USERSPACE_STACK \
++					 | OCFS2_FEATURE_INCOMPAT_XATTR)
+ #define OCFS2_FEATURE_RO_COMPAT_SUPP	OCFS2_FEATURE_RO_COMPAT_UNWRITTEN
+ 
+ /*
+@@ -128,10 +129,6 @@
+ /* Support for data packed into inode blocks */
+ #define OCFS2_FEATURE_INCOMPAT_INLINE_DATA	0x0040
+ 
+-/* Support for the extended slot map */
+-#define OCFS2_FEATURE_INCOMPAT_EXTENDED_SLOT_MAP 0x100
+-
+-
+ /*
+  * Support for alternate, userspace cluster stacks.  If set, the superblock
+  * field s_cluster_info contains a tag for the alternate stack in use as
+@@ -143,6 +140,12 @@
+  */
+ #define OCFS2_FEATURE_INCOMPAT_USERSPACE_STACK	0x0080
+ 
++/* Support for the extended slot map */
++#define OCFS2_FEATURE_INCOMPAT_EXTENDED_SLOT_MAP 0x100
++
++/* Support for extended attributes */
++#define OCFS2_FEATURE_INCOMPAT_XATTR		0x0200
++
+ /*
+  * backup superblock flag is used to indicate that this volume
+  * has backup superblocks.
+@@ -578,7 +581,11 @@ struct ocfs2_super_block {
+ /*A0*/  struct ocfs2_cluster_info s_cluster_info; /* Selected userspace
+ 						     stack.  Only valid
+ 						     with INCOMPAT flag. */
+-/*B8*/  __le64 s_reserved2[17];		/* Fill out superblock */
++/*B8*/	__le16 s_xattr_inline_size;	/* extended attribute inline size
++					   for this fs*/
++	__le16 s_reserved0;
++	__le32 s_reserved1;
++/*C0*/  __le64 s_reserved2[16];		/* Fill out superblock */
+ /*140*/
+ 
+ 	/*
+diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+index 67e7e77..973d99f 100644
+--- a/fs/ocfs2/super.c
++++ b/fs/ocfs2/super.c
+@@ -1437,7 +1437,8 @@ static int ocfs2_initialize_super(struct super_block *sb,
+ 
+ 	osb->slot_num = OCFS2_INVALID_SLOT;
+ 
+-	osb->s_xattr_inline_size = OCFS2_MIN_XATTR_INLINE_SIZE;
++	osb->s_xattr_inline_size = le16_to_cpu(
++					di->id2.i_super.s_xattr_inline_size);
+ 
+ 	osb->local_alloc_state = OCFS2_LA_UNUSED;
+ 	osb->local_alloc_bh = NULL;
 diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 5e8fae9..9ec7136 100644
+index 9ec7136..090449f 100644
 --- a/fs/ocfs2/xattr.c
 +++ b/fs/ocfs2/xattr.c
-@@ -131,6 +131,9 @@ static int ocfs2_xattr_set_entry_index_block(struct inode *inode,
- 					     struct ocfs2_xattr_info *xi,
- 					     struct ocfs2_xattr_search *xs);
+@@ -564,6 +564,9 @@ ssize_t ocfs2_listxattr(struct dentry *dentry,
+ 	struct ocfs2_dinode *di = NULL;
+ 	struct ocfs2_inode_info *oi = OCFS2_I(dentry->d_inode);
  
-+static int ocfs2_delete_xattr_index_block(struct inode *inode,
-+					  struct buffer_head *xb_bh);
++	if (!ocfs2_supports_xattr(OCFS2_SB(dentry->d_sb)))
++		return -EOPNOTSUPP;
 +
- static inline struct xattr_handler *ocfs2_xattr_handler(int name_index)
- {
- 	struct xattr_handler *handler = NULL;
-@@ -1511,13 +1514,14 @@ static int ocfs2_xattr_block_remove(struct inode *inode,
- 				    struct buffer_head *blk_bh)
- {
- 	struct ocfs2_xattr_block *xb;
--	struct ocfs2_xattr_header *header;
- 	int ret = 0;
+ 	if (!(oi->ip_dyn_features & OCFS2_HAS_XATTR_FL))
+ 		return ret;
  
- 	xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
--	header = &(xb->xb_attrs.xb_header);
--
--	ret = ocfs2_remove_value_outside(inode, blk_bh, header);
-+	if (!(le16_to_cpu(xb->xb_flags) & OCFS2_XATTR_INDEXED)) {
-+		struct ocfs2_xattr_header *header = &(xb->xb_attrs.xb_header);
-+		ret = ocfs2_remove_value_outside(inode, blk_bh, header);
-+	} else
-+		ret = ocfs2_delete_xattr_index_block(inode, blk_bh);
+@@ -843,6 +846,9 @@ int ocfs2_xattr_get(struct inode *inode,
+ 		.not_found = -ENODATA,
+ 	};
  
- 	return ret;
- }
-@@ -4738,3 +4742,75 @@ out:
- 	mlog_exit(ret);
- 	return ret;
- }
++	if (!ocfs2_supports_xattr(OCFS2_SB(inode->i_sb)))
++		return -EOPNOTSUPP;
 +
-+static int ocfs2_delete_xattr_in_bucket(struct inode *inode,
-+					struct ocfs2_xattr_bucket *bucket,
-+					void *para)
-+{
-+	int ret = 0;
-+	struct ocfs2_xattr_header *xh = bucket->xh;
-+	u16 i;
-+	struct ocfs2_xattr_entry *xe;
-+
-+	for (i = 0; i < le16_to_cpu(xh->xh_count); i++) {
-+		xe = &xh->xh_entries[i];
-+		if (ocfs2_xattr_is_local(xe))
-+			continue;
-+
-+		ret = ocfs2_xattr_bucket_value_truncate(inode,
-+							bucket->bhs[0],
-+							i, 0);
-+		if (ret) {
-+			mlog_errno(ret);
-+			break;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+static int ocfs2_delete_xattr_index_block(struct inode *inode,
-+					  struct buffer_head *xb_bh)
-+{
-+	struct ocfs2_xattr_block *xb =
-+			(struct ocfs2_xattr_block *)xb_bh->b_data;
-+	struct ocfs2_extent_list *el = &xb->xb_attrs.xb_root.xt_list;
-+	int ret = 0;
-+	u32 name_hash = UINT_MAX, e_cpos, num_clusters;
-+	u64 p_blkno;
-+
-+	if (le16_to_cpu(el->l_next_free_rec) == 0)
+ 	if (!(oi->ip_dyn_features & OCFS2_HAS_XATTR_FL))
+ 		ret = -ENODATA;
+ 
+@@ -1541,6 +1547,9 @@ int ocfs2_xattr_remove(struct inode *inode, struct buffer_head *di_bh)
+ 	handle_t *handle;
+ 	int ret;
+ 
++	if (!ocfs2_supports_xattr(OCFS2_SB(inode->i_sb)))
 +		return 0;
 +
-+	while (name_hash > 0) {
-+		ret = ocfs2_xattr_get_rec(inode, name_hash, &p_blkno,
-+					  &e_cpos, &num_clusters, el);
-+		if (ret) {
-+			mlog_errno(ret);
-+			goto out;
-+		}
+ 	if (!(oi->ip_dyn_features & OCFS2_HAS_XATTR_FL))
+ 		return 0;
+ 
+@@ -1977,6 +1986,9 @@ int ocfs2_xattr_set(struct inode *inode,
+ 		.not_found = -ENODATA,
+ 	};
+ 
++	if (!ocfs2_supports_xattr(OCFS2_SB(inode->i_sb)))
++		return -EOPNOTSUPP;
 +
-+		ret = ocfs2_iterate_xattr_buckets(inode, p_blkno, num_clusters,
-+						  ocfs2_delete_xattr_in_bucket,
-+						  NULL);
-+		if (ret) {
-+			mlog_errno(ret);
-+			goto out;
-+		}
-+
-+		ret = ocfs2_rm_xattr_cluster(inode, xb_bh,
-+					     p_blkno, e_cpos, num_clusters);
-+		if (ret) {
-+			mlog_errno(ret);
-+			break;
-+		}
-+
-+		if (e_cpos == 0)
-+			break;
-+
-+		name_hash = e_cpos - 1;
-+	}
-+
-+out:
-+	return ret;
-+}
+ 	ret = ocfs2_inode_lock(inode, &di_bh, 1);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
 -- 
 1.5.4.5
 
