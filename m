@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbYIXQE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbYIXQGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753127AbYIXQE2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 12:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYIXQET
+	id S1753283AbYIXQGz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 12:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYIXQGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 12:04:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:28213 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbYIXQES (ORCPT
+	Wed, 24 Sep 2008 12:06:48 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:53635 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbYIXQGr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 12:04:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=xBE5koKCIQLfsFlBD+5LwWnbXy1tYRNrr4lcQAAh88Q1ejRCm+xb7ZcNI3qtx3wnBK
-         J08tLs/3u/+dY7zpApIl72F8vfvRp8C4xScQNrcbHniM7jRCYzLWz+5Q1DMCK6L+g2pF
-         3mXm9cgjpNW0rKeHfLxEl8WjTiXnjLyU2ZYwc=
-Message-ID: <48DA64FC.4020706@gmail.com>
-Date: Wed, 24 Sep 2008 18:04:12 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: suspend (uhci_hcd) defunct in mmotm 2008-09-13-03-09
-References: <Pine.LNX.4.44L0.0809241047500.2650-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0809241047500.2650-100000@iolanthe.rowland.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 24 Sep 2008 12:06:47 -0400
+Subject: Re: [PATCH 1/2] Report the pagesize backing a VMA in
+	/proc/pid/smaps
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
+In-Reply-To: <20080924154120.GA10837@csn.ul.ie>
+References: <20080923211140.DC16.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080923194655.GA25542@csn.ul.ie>
+	 <20080924210309.8C3B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080924154120.GA10837@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 24 Sep 2008 09:06:35 -0700
+Message-Id: <1222272395.15523.3.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/24/2008 04:49 PM, Alan Stern wrote:
-> On Wed, 24 Sep 2008, Jiri Slaby wrote:
-> 
->>>> pm_op(): pci_pm_suspend+0x0/0xd0 returns -16
->>>> PM: Device 0000:00:1d.0 failed to suspend: error -16
->>>> PM: Some devices failed to suspend
->>> The reason for this error is that the root hub wasn't already 
->>> suspended.  Was there a USB device plugged into that controller?
->> No:
-> 
->>> If you still run into problems, post more of the dmesg log (with 
->>> CONFIG_USB_DEBUG enabled, of course!).
->> Hm, it doesn't work. 2 dmesgs from mmotm 2008-09-10-19-39 (without usb debug)
->> [ok] and -rc6+gkh-all (with usb debug) [fail]:
->> http://decibel.fi.muni.cz/~xslaby/dmesg_fail.hcd
->> http://decibel.fi.muni.cz/~xslaby/dmesg_ok.hcd
-> 
-> In fact neither of those logs includes USB debugging messages.  Maybe
-> you omitted a mkinitrd step.
+On Wed, 2008-09-24 at 16:41 +0100, Mel Gorman wrote:
+> I admit it's ppc64-specific. In the latest patch series, I made this a
+> separate patch so that it could be readily dropped again for this reason.
+> Maybe an alternative would be to display MMUPageSize *only* where it differs
+> from KernelPageSize. Would that be better or similarly confusing?
 
-I don't think so. I don't use neither vanilla nor initrd so this must be the
-kernel. Anyway I recompiled with .config linked in and did
-# dmesg >dmesg_config.hcd
-# zcat /proc/config.gz >>dmesg_config.hcd
-in the built kernel. The file is here:
-http://decibel.fi.muni.cz/~xslaby/dmesg_config.hcd
+I would also think that any arch implementing fallback from large to
+small pages in a hugetlbfs area (Adam needs to post his patches :) would
+also use this.
+
+-- Dave
+
