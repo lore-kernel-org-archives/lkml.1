@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753049AbYIXVTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbYIXVT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753049AbYIXVTU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 17:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYIXVTJ
+	id S1753744AbYIXVT4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 17:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbYIXVTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 17:19:09 -0400
-Received: from ns2.suse.de ([195.135.220.15]:49773 "EHLO mx2.suse.de"
+	Wed, 24 Sep 2008 17:19:45 -0400
+Received: from tundra.namei.org ([65.99.196.166]:54561 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbYIXVTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 17:19:08 -0400
-Message-ID: <48DAAEAB.50009@suse.com>
-Date: Wed, 24 Sep 2008 17:18:35 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	id S1751211AbYIXVTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 17:19:44 -0400
+Date: Thu, 25 Sep 2008 07:18:38 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Toshiharu Harada <haradats@nttdata.co.jp>
+Subject: Re: [PATCH] Introduce new LSM hooks where vfsmount is available.
+In-Reply-To: <20080924132855.GB10756@us.ibm.com>
+Message-ID: <alpine.LRH.1.10.0809250715030.5963@tundra.namei.org>
+References: <48C65E9D.3070106@nttdata.co.jp> <5fb14edc0809090902m32431bf6yf518a457e410764d@mail.gmail.com> <20080910134540.45ec1272.akpm@linux-foundation.org> <48C877DE.4040402@nttdata.co.jp> <48D06865.8070602@nttdata.co.jp> <alpine.LRH.1.10.0809231604040.25628@tundra.namei.org>
+ <48D9F399.4070002@nttdata.co.jp> <20080924132855.GB10756@us.ibm.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, arjan@linux.intel.com,
-       reiserfs-devel@vger.kernel.org, peterz@infradead.org
-Subject: Re: [LOCKDEP linux-2.6.27-rc7] reiserfs circular locking
-References: <4807377b0809241139x18ea8ce4x7dbc66ba680be3e7@mail.gmail.com>	<48DA8D27.5080908@suse.com> <20080924221425.3b4939ba@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080924221425.3b4939ba@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Wed, 24 Sep 2008, Serge E. Hallyn wrote:
 
-Alan Cox wrote:
->> I have a reiserfs patch set that should address this. I haven't
->> submitted it recently because I'm chasing down a reiserfs bug report
->> that may or may not be related to the patch set.
->>
->> You can grab the patch set out of an opensuse kernel src rpm.
+> Quoting Kentaro Takeda (takedakn@nttdata.co.jp):
+
+[please trim quoted material..]
+
+> > 
+> > +config SECURITY_PATH
+> > +	bool "Security hooks for pathname based access control"
+> > +	depends on SECURITY
+> > +	help
+> > +	  This enables the security hooks for pathname based access control.
+> > +	  If enabled, a security module can use these hooks to
+> > +	  implement pathname based access controls.
+> > +	  If you are unsure how to answer this question, answer N.
 > 
-> Jeff: See also bugzilla.kernel.org #9136 which seems to match
-> 
-> BTW - does anyone have a view where the existing reiserfs bugs should be
-> assigned as they are currently assigned to namesys...
+> Is there any reason why users should have to deal with this option?
+> Would it make sense in this case to make the option and have tomoyo and
+> apparmor select it?
 
-They're fine being assigned to the reiserfs development list, it's just
-that the address in bko is wrong. The current address is
-reiserfs-devel@vger.kernel.org.
+Who are users in this case?  It's probably useful as a separate option for 
+testing purposes and for people doing development.  LSMs which depend on 
+it should probably still use SELECT in any case.
 
-I'll take this bug over, though.
-
-- -Jeff
-
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkjarqsACgkQLPWxlyuTD7LCLQCdF5BDrD+cdYGlqFUZ+Pu5oi5/
-aFsAnAhfHjv8oXjbR/zXTd1fuEa8abkj
-=7ayP
------END PGP SIGNATURE-----
+-- 
+James Morris
+<jmorris@namei.org>
