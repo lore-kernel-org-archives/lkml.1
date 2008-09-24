@@ -1,49 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbYIXWh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYIXWnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753443AbYIXWh1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 18:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYIXWgv
+	id S1753139AbYIXWnZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 18:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbYIXWnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 18:36:51 -0400
-Received: from styx.suse.cz ([82.119.242.94]:41111 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751151AbYIXWgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 18:36:50 -0400
-Date: Thu, 25 Sep 2008 00:37:51 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Kyle McMartin <kyle@mcmartin.ca>
-cc: David Miller <davem@davemloft.net>, airlied@gmail.com,
-       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       chrisl@vmware.com
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-In-Reply-To: <20080924191022.GC2591@phobos.i.cabal.ca>
-Message-ID: <alpine.LNX.1.10.0809250036090.4671@pegasus.suse.cz>
-References: <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz> <20080923.211215.193696086.davem@davemloft.net> <21d7e9970809232245x6a91c6e2l552ff039d07e2017@mail.gmail.com> <20080924.003638.71148740.davem@davemloft.net>
- <20080924191022.GC2591@phobos.i.cabal.ca>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 24 Sep 2008 18:43:17 -0400
+Received: from gw.goop.org ([64.81.55.164]:52489 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750822AbYIXWnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 18:43:16 -0400
+Message-ID: <48DAC285.80507@goop.org>
+Date: Wed, 24 Sep 2008 15:43:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: benh@kernel.crashing.org
+CC: Hugh Dickins <hugh@veritas.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Peter Chubb <peterc@gelato.unsw.edu.au>
+Subject: Re: PTE access rules & abstraction
+References: <1221846139.8077.25.camel@pasglop>  <48D739B2.1050202@goop.org>	 <1222117551.12085.39.camel@pasglop>	 <Pine.LNX.4.64.0809241919520.575@blonde.site>	 <1222291248.8277.90.camel@pasglop>  <48DAB7E2.5030009@goop.org> <1222294041.8277.104.camel@pasglop>
+In-Reply-To: <1222294041.8277.104.camel@pasglop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008, Kyle McMartin wrote:
+Benjamin Herrenschmidt wrote:
+>> What do you propose then?  Ideally one would like to get something that
+>> works for powerpc, s390, all the wacky ia64 modes as well as x86.  The
+>> ia64 folks proposed something, but I've not looked at it closely.  From
+>> an x86 virtualization perspective, something that's basically x86 with
+>> as much scope for batching and deferring as possible would be fine.
+>>     
+>
+> That's where things get interesting. I liked Nick ideas of doing
+> something transactional that could encompass the lock, bach and flushing
+> but that may be too much at this stage...
+>   
 
-> I've been working on a patch to detect (using a timer and checking at
->  up/down) whether or not the flash has been corrupted, and, if it is
-> rewrite it with the saved good copy (which obviously only helps if
-> it's the same boot.)
+Yes, that sounds fine in principle, but the practise gets tricky.  The
+trouble with that kind of interface is that it can be fairly heavyweight
+unless you amortise the cost of the transaction setup/commit with
+multiple operations.
 
-Thanks, looks interesting e1000e hack that might possibly be of some help.
+>> ptep_get_and_clear() is not batchable anyway, because the x86
+>> implementation requires an atomic xchg on the pte, which will likely
+>> result in some sort of trap (and if it doesn't then it doesn't need
+>> batching).
+>>     
+>
+> Well, ptep_get_and_clear() used to be used by zap_pte_range() which I
+> _HOPE_ was batchable on x86 :-)
+>
+> Nowadays, there's this new ptep_get_and_clear_full() (yet another
+> totally meaningless name for an ad-hoc API added for some random special
+> purpose) that zap_pte_range() uses. Maybe that one is now subtly
+> different such as it can be used to batch on x86 ?
+>   
 
-BUT! please have a look at
+Yeah.  zap_pte_range isn't great when doing a munmap, but the _full gunk
+lets it special-case process teardown and it ends up not being a
+performance problem (in the Xen case, we've already switch to another
+pagetable at that point, so it isn't really a pagetable any more and
+needs no hypercalls).
 
-	http://lkml.org/lkml/2008/9/24/133
+> In any case, powerpc batches -everything- (unless it's called *_flush in
+> which case the flush is immediate) in a private per-cpu batch and
+> flushes the hash when leaving lazy mode.
+>   
 
-Looks like this device got a lot of 0xff written somewhere in its config 
-space, right? But it isn't Intel card at all.
+Are you using the lazy_mmu hooks we put in, or something else?
 
--- 
-Jiri Kosina
-SUSE Labs
+>>   The start/commit API was specifically so that we can do the
+>> mprotect (and fork COW updates) in a batchable way (in Xen its
+>> implemented with a pte update hypercall which updates the pte without
+>> affecting the A/D bits).
+>>     
+>
+> I think we have different ideas of what batch means but yeah, we do
+> batch everything including these on powerpc without the new start/commit
+> interface.
+
+Likely; it's one of those overused generic words.  The specific meaning
+I'm using is "we can roll a bunch of updates into a single hypercall". 
+Operations which do atomic RMW  or fetch-set are typically not batchable
+because the caller wants the result *now* and can't wait for a deferred
+result.
+
+    J
