@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYIXOHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613AbYIXOKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbYIXOHa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 10:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbYIXOHO
+	id S1753613AbYIXOKh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 10:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYIXOKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 10:07:14 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:57046 "EHLO e3.ny.us.ibm.com"
+	Wed, 24 Sep 2008 10:10:30 -0400
+Received: from bavaria.utcluj.ro ([193.226.5.35]:63973 "EHLO bavaria.utcluj.ro"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954AbYIXOHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 10:07:12 -0400
-Subject: Re: [PATCH 7/10] jfs: Fix error handling in
-	write_super_lockfs/unlockfs
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080922195742t-sato@mail.jp.nec.com>
-References: <20080922195742t-sato@mail.jp.nec.com>
-Content-Type: text/plain
-Date: Wed, 24 Sep 2008 09:05:29 -0500
-Message-Id: <1222265129.19388.12.camel@norville.austin.ibm.com>
+	id S1751932AbYIXOK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 10:10:29 -0400
+Subject: Re: [PATCH 1/2] VMware guest detection for x86 and x86-64
+From: Cristi Magherusan <cristi.magherusan@net.utcluj.ro>
+Reply-To: cristi.magherusan@net.utcluj.ro
+To: Yan Li <elliot.li.tech@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, joerg.roedel@amd.com,
+       rjmaomao@gmail.com, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
+In-Reply-To: <48da36b9.160d6e0a.22a5.ffffec9d@mx.google.com>
+References: <48D12490.5010003@zytor.com>
+	 <48da36b9.160d6e0a.22a5.ffffec9d@mx.google.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-V5xXsQf1BtKtKoUE5a8C"
+Organization: Universitatea Tehnica din Cluj-Napoca, Centrul de Comunicatii
+	"Pusztai Kalman"
+Date: Wed, 24 Sep 2008 17:10:24 +0300
+Message-Id: <1222265424.5708.5.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-22 at 19:57 +0900, Takashi Sato wrote:
-> I've changed write_super_lockfs/unlockfs so that they always return
-> 0 (success) to keep a current behavior.
 
-Address Christoph's concerns, and you can add my ack.  The bits that
-change the return code need to be a single patch.
+--=-V5xXsQf1BtKtKoUE5a8C
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
-> Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
-Acked-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+On Wed, 2008-09-24 at 20:22 +0800, Yan Li wrote:
+> Detects whether we are running as a VMware guest or not. Detection is
+> based upon DMI vendor string.
+>=20
+> It provides a function:
+> int is_vmware_guest(void)
+> that can be used easily to detect if we are running as a VMware guest
+> or not.
 
+We can also use this feature to force the HZ value to 100 or 250 at most
+when running in a virtual environment, since VirtualBox had some issues
+with this by taking a lot of CPU time when the HZ was set to 1000.
 
-> -static void jfs_write_super_lockfs(struct super_block *sb)
-> +static int jfs_write_super_lockfs(struct super_block *sb)
->  {
->  	struct jfs_sb_info *sbi = JFS_SBI(sb);
->  	struct jfs_log *log = sbi->log;
-> @@ -553,9 +553,10 @@ static void jfs_write_super_lockfs(struc
->  		lmLogShutdown(log);
->  		updateSuper(sb, FM_CLEAN);
->  	}
-> +	return 0;
+Cristi
 
-Alright.  Nothing should fail here, and if it does, we're screwed
-anyway.
+--=20
+Cristi M=C4=83gheru=C8=99an,
+Inginer de sistem/retea
+Universitatea Tehnic=C4=83 din Cluj-Napoca
+Centrul de Comunica=C8=9Bii "Pusztai Kalman"
+Tel. 0264/401247  http://cc.utcluj.ro
 
-> -static void jfs_unlockfs(struct super_block *sb)
-> +static int jfs_unlockfs(struct super_block *sb)
->  {
->  	struct jfs_sb_info *sbi = JFS_SBI(sb);
->  	struct jfs_log *log = sbi->log;
-> @@ -568,6 +569,7 @@ static void jfs_unlockfs(struct super_bl
->  		else
->  			txResume(sb);
->  	}
-> +	return 0;
+--=-V5xXsQf1BtKtKoUE5a8C
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-jfs_unlockfs() could return non-zero in the case where lmLogInit()
-fails.  I'm not sure what good that does though.  There isn't much the
-caller can do when an unfreeze fails.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+iEYEABECAAYFAkjaSlAACgkQfwrBISYVZFWpggCeOWzdiWDyk0s6udCHheNDkLwe
+ETsAnApovgTSQlID5bGxDIKm9JAOmyAx
+=ReHD
+-----END PGP SIGNATURE-----
+
+--=-V5xXsQf1BtKtKoUE5a8C--
 
