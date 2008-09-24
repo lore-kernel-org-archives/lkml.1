@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbYIXS7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYIXTDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724AbYIXS7j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 14:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYIXS73
+	id S1754123AbYIXTDt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 15:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYIXTDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 14:59:29 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:59878 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753812AbYIXS72 (ORCPT
+	Wed, 24 Sep 2008 15:03:41 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:33702 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbYIXTDk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 14:59:28 -0400
-Subject: Re: [PATCH 1/2] Report the pagesize backing a VMA in
-	/proc/pid/smaps
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, agl@us.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
-In-Reply-To: <20080924171003.GD10837@csn.ul.ie>
-References: <20080923211140.DC16.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080923194655.GA25542@csn.ul.ie>
-	 <20080924210309.8C3B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080924154120.GA10837@csn.ul.ie> <1222272395.15523.3.camel@nimitz>
-	 <20080924171003.GD10837@csn.ul.ie>
-Content-Type: text/plain
-Date: Wed, 24 Sep 2008 11:59:09 -0700
-Message-Id: <1222282749.15523.59.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 24 Sep 2008 15:03:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=mt7iE4mnDqbljTfkSpVVJ+gJ7sQxNO+413Qx6LWIynAf4mQOZRgoy2BFCh62a8ioFN
+         0kjAuoxfo4Zm1VLMgwJgvrVWHbErVGuJXu+YEoXzTugkZxO2VXV6AEy1Ox1Z6TxGKYUV
+         vhxhxAVJiQ4F+gnkNxLvQ7YQcft02SI1DNc7g=
+Message-ID: <3ae72650809241203o41b62a10m31377887d44fd05e@mail.gmail.com>
+Date: Wed, 24 Sep 2008 12:03:39 -0700
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Drew Moseley" <dmoseley@mvista.com>
+Subject: Re: [PATCH] Create PNP device attributes via dev_attrs field of struct device
+Cc: ambx1@neo.rr.com, linux-kernel@vger.kernel.org
+In-Reply-To: <48DA774A.9010206@mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48D95EA2.9040804@mvista.com>
+	 <3ae72650809232159k20f19f2ele5acbc7ee77dfb65@mail.gmail.com>
+	 <48DA774A.9010206@mvista.com>
+X-Google-Sender-Auth: 5a938cb963695baa
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-24 at 18:10 +0100, Mel Gorman wrote:
-> On (24/09/08 09:06), Dave Hansen didst pronounce:
-> > On Wed, 2008-09-24 at 16:41 +0100, Mel Gorman wrote:
-> > > I admit it's ppc64-specific. In the latest patch series, I made this a
-> > > separate patch so that it could be readily dropped again for this reason.
-> > > Maybe an alternative would be to display MMUPageSize *only* where it differs
-> > > from KernelPageSize. Would that be better or similarly confusing?
-> > 
-> > I would also think that any arch implementing fallback from large to
-> > small pages in a hugetlbfs area (Adam needs to post his patches :) would
-> > also use this.
-> > 
-> 
-> Fair point. Maybe the thing to do is backburner this patch for the moment and
-> reintroduce it when/if an architecture supports demotion? The KernelPageSize
-> reporting in smaps and what the hpagesize in maps is still useful though
-> I believe. Any comment?
+On Wed, Sep 24, 2008 at 10:22, Drew Moseley <dmoseley@mvista.com> wrote:
+> Kay Sievers wrote:
+>>
+>> Any reason not to assign it statically to pnp_bus_type at in
+>> drivers/pnp/driver.c?
 
-I'd kinda prefer to see it normalized into a single place rather than
-sprinkle it in each smaps file.  We should be able to figure out which
-mount the file is from and, from there, maybe we need some per-mount
-information exported.  
+> Not really but since everything in the dev_attrs array is statically
+> defined in interface.c it was simpler to implement it this way.  To
+> assign it in driver.c, the array can be made non-static and an extern
+> added in driver.c, or the array definition can be moved to driver.c and
+> all the set and show functions be made non-static.  Is there a preference?
 
-> (future stuff from here on)
-> 
-> In the future if demotion does happen then the MMUPageSize information may
-> be genuinely useful instead of just a curious oddity on ppc64. As you point
-> out, Adam (added to cc) has worked on this area (starting with x86 demotion)
-> in the past but it's a while before it'll be considered for merging I believe.
-> 
-> That aside, more would need to be done with the page size reporting then
-> anyway. For example, it maybe indicate how much of each pagesize is in a VMA
-> or indicate that KernelPageSize is what is being requested but in reality
-> it is mixed like;
-> 
-> KernelPageSize:		2048 kB (mixed)
-> 
-> or
-> 
-> KernelPageSize:		2048 kB * 5, 4096 kB * 20
+Yeah, it looks weird to mangle the bus_type values from a device
+routine, and set the same value again and again with every device
+creation. Just declare the array non-static, if moving the code around
+between files does not allow a static declaration.
 
-Looks a bit verbose, but I agree with the sentiment.
-
--- Dave
-
+Thanks,
+Kay
