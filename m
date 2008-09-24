@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYIXDua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbYIXDxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbYIXDua (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 23:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYIXDuV
+	id S1754022AbYIXDxR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 23:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYIXDxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 23:50:21 -0400
-Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:47907
-	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751645AbYIXDuU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 23:50:20 -0400
-X-Authority-Analysis: v=1.0 c=1 a=_CjcERenb9QvQhTn4TEA:9
- a=ZJkrfDNY93o6deFdua5cs8HCMz0A:4 a=WuK_CZDBSqoA:10
-Subject: Re: Unified tracing buffer
-From: Tom Zanussi <zanussi@comcast.net>
-To: Martin Bligh <mbligh@google.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
-       David Wilder <dwilder@us.ibm.com>
-In-Reply-To: <33307c790809230700o4bf0d22fg8ab2dcb904f7d66c@mail.gmail.com>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
-	 <1221869279.8359.31.camel@lappy.programming.kicks-ass.net>
-	 <20080922140740.GB5279@in.ibm.com>
-	 <1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
-	 <1222147545.6875.135.camel@charm-linux>
-	 <33307c790809230700o4bf0d22fg8ab2dcb904f7d66c@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 23 Sep 2008 22:50:15 -0500
-Message-Id: <1222228215.7761.0.camel@charm-linux>
+	Tue, 23 Sep 2008 23:53:03 -0400
+Received: from 1wt.eu ([62.212.114.60]:4453 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751645AbYIXDxC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 23:53:02 -0400
+Date: Wed, 24 Sep 2008 05:52:22 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Alain Knaff <alain@knaff.lu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and initrds
+Message-ID: <20080924035222.GA6457@1wt.eu>
+References: <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D95ECC.9010107@knaff.lu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-09-23 at 07:00 -0700, Martin Bligh wrote:
-> > - get rid of anything having to do with padding, nobody needs it and its
-> > only affect has been to horribly distort and complicate a lot of the
-> > code
-> > - get rid of sub-buffers, they just cause confusion
-> > - get rid of mmap, nobody uses it
-> > - no sub-buffers and no mmap support means we can get rid of most of the
-> > callbacks, and a lot of API confusion along with them
-> > - add relay flags - they probably should have been used from the
-> > beginning and options made explicit instead of being shoehorned into the
-> > callback functions.
+On Tue, Sep 23, 2008 at 11:25:32PM +0200, Alain Knaff wrote:
+> H. Peter Anvin wrote:
+> > More failures...
+> > 
+> > /bin/sh: scripts/bin_size: No such file or directory
 > 
-> Actually, I think if you did all that, it'd be pretty close to what we
-> want anyway ...
+> Could be a permission issue. Did you try to chmod 755 scripts/bin_size ?
+> Hmmm, diff does indeed not encode permissions, how should such cases be
+> usually handled?
 
-OK, then, I'll continue with the cleanup patchset and see where it
-goes...
+either you find a way to chmod +x from a makefile (but this is a bit tricky)
+or better, you call it with $(CONFIG_SHELL) :
 
-Tom
+   $(CONFIG_SHELL) scripts/bin_size
+
+Some other commands in the makefiles are already handled this way.
+
+Willy
 
