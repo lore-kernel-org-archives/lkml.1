@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752958AbYIXHj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbYIXHk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752958AbYIXHj0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 03:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbYIXHjT
+	id S1753362AbYIXHk4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 03:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYIXHks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 03:39:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58102 "EHLO mx3.mail.elte.hu"
+	Wed, 24 Sep 2008 03:40:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58381 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbYIXHjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 03:39:18 -0400
-Date: Wed, 24 Sep 2008 09:39:00 +0200
+	id S1751216AbYIXHks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 03:40:48 -0400
+Date: Wed, 24 Sep 2008 09:40:38 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86: signal: cosmetic unification of do_signal()
-Message-ID: <20080924073859.GC3655@elte.hu>
-References: <48D987A0.50508@ct.jp.nec.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: Add missing idle.h include to process_32.c
+Message-ID: <20080924074038.GD3655@elte.hu>
+References: <200809240137.40403.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48D987A0.50508@ct.jp.nec.com>
+In-Reply-To: <200809240137.40403.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
+X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0131]
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> Hi,
 > 
-> Make do_signal() same.
-> Thia patch modifies only comments in signal_64.c.
-> 
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> This fixes a very recent compilation breakage on 32-bit x86.
 
-applied your patches to tip/x86/signal:
-
- 86d3237: x86: signal: cosmetic unification of handle_signal()
- ee847c5: x86: signal: cosmetic unification of do_notify_resume()
- 5fd9333: x86: signal: cosmetic unification of do_signal()
-
-thanks!
+the fix is queued up in tip/timers/urgent - sorry about that.
 
 	Ingo
