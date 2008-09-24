@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbYIXSRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYIXSRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbYIXSRr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 14:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbYIXSRc
+	id S1754672AbYIXSRd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 14:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbYIXSRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 14:17:32 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48493 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754640AbYIXSRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 14:17:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chris Mason <chris.mason@oracle.com>
-Subject: Re: [Bug #11548] kernel BUG at drivers/pci/intel-iommu.c:1373!
-Date: Wed, 24 Sep 2008 20:23:03 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik> <7lIhZC4hCxE.A.oAH.j0q1IB@albercik> <1222219121.7160.162.camel@think.oraclecorp.com>
-In-Reply-To: <1222219121.7160.162.camel@think.oraclecorp.com>
+	Wed, 24 Sep 2008 14:17:08 -0400
+Received: from [198.145.64.141] ([198.145.64.141]:49089 "EHLO coco.kroah.org"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752510AbYIXSRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 14:17:06 -0400
+Date: Wed, 24 Sep 2008 11:14:03 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: suspend (uhci_hcd) defunct in mmotm 2008-09-13-03-09
+Message-ID: <20080924181403.GA6336@kroah.com>
+References: <48DA64FC.4020706@gmail.com> <Pine.LNX.4.44L0.0809241229070.5963-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809242023.03809.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0809241229070.5963-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 24 of September 2008, Chris Mason wrote:
-> On Sun, 2008-09-21 at 20:54 +0200, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.26.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
+On Wed, Sep 24, 2008 at 12:38:45PM -0400, Alan Stern wrote:
+> On Wed, 24 Sep 2008, Jiri Slaby wrote:
 > 
-> I'm unable to reproduce this on 2.6.27-rc7.  I don't think it has been
-> fixed, but I'm having a hard time finding a reliable way to trigger it
-> on newer kernels.
+> > > In fact neither of those logs includes USB debugging messages.  Maybe
+> > > you omitted a mkinitrd step.
+> > 
+> > I don't think so. I don't use neither vanilla nor initrd so this must be the
+> > kernel. Anyway I recompiled with .config linked in and did
+> > # dmesg >dmesg_config.hcd
+> > # zcat /proc/config.gz >>dmesg_config.hcd
+> > in the built kernel. The file is here:
+> > http://decibel.fi.muni.cz/~xslaby/dmesg_config.hcd
+> 
+> Still no debugging messages.  It's because you have 
+> CONFIG_DYNAMIC_PRINTK_DEBUG enabled.
 
-Thanks for the update.
+If you have that enabled, you can turn on debugging "on the fly" by
+writing to the debugfs file as described in the documentation for that
+option.
 
-For now, I'll close it as 'unreproducible'.  Please reopen if it happens again.
+thanks,
 
-Thanks,
-Rafael
+greg k-h
