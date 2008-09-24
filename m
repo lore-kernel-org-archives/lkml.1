@@ -1,247 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbYIXPxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753525AbYIXP5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754455AbYIXPxo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 11:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYIXPxg
+	id S1753525AbYIXP5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 11:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbYIXP5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 11:53:36 -0400
-Received: from mga01.intel.com ([192.55.52.88]:56908 "EHLO mga01.intel.com"
+	Wed, 24 Sep 2008 11:57:12 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:45910 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752183AbYIXPxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 11:53:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,300,1220252400"; 
-   d="scan'208";a="383930807"
-Date: Wed, 24 Sep 2008 08:53:33 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [patch 1/2] x86: track memtype for RAM in page struct - v3
-Message-ID: <20080924155332.GA29041@linux-os.sc.intel.com>
-References: <20080913000003.732756000@linux-os.sc.intel.com> <20080913000051.819383000@linux-os.sc.intel.com> <48CBF25B.5030107@goop.org> <20080914132952.GC554@elte.hu> <48CD1D1E.1050906@goop.org> <20080914142213.GA28162@elte.hu> <20080923214558.GA13357@linux-os.sc.intel.com> <48D966AE.1040008@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751359AbYIXP5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 11:57:11 -0400
+From: Julien Brunel <brunel@diku.dk>
+To: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/usb/host: Use an IS_ERR test rather than a NULL test
+Date: Wed, 24 Sep 2008 18:00:36 +0200
+User-Agent: KMail/1.9.9
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48D966AE.1040008@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200809241800.36320.brunel@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 02:59:10PM -0700, Christoph Lameter wrote:
-> I'd suggest to avoid the open coding of page flag handling using set bit etc.
-> 
-> It may be best to slowly migrate the arch specific definitions into
-> page-flags.h. Otherwise we wont have a central authority on page flags.
-> 
+In case of error, the function isp1760_register returns an ERR
+pointer, but never returns a NULL pointer. So after a call to this
+function, a NULL test should be replaced by an IS_ERR test. Moreover,
+we have noticed that:
+(1) the result of isp1760_register is assigned through the function
+pci_set_drvdata without an error test,
+(2) if the call to isp1760_register fails, the current function
+(isp1761_pci_probe) returns 0, and if it succeeds, it returns -ENOMEM,
+which seems odd.
 
-OK. Below is the updated patch that does not use set/clear directly on page
-flag.
+Thus, we suggest to move the test before the call to pci_set_drvdata
+to correct (1), and to turn it into a non IS_ERR test to correct (2).
 
-x86: track memtype for RAM in page struct
+The semantic match that finds this problem is as follows: 
+(http://www.emn.fr/x-info/coccinelle/)
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: x86: track memtype for RAM in page struct
+// <smpl>
+@bad_null_test@
+expression x,E;
+statement S1, S2;
+@@
+x =  isp1760_register(...)
+... when != x = E
+* if (x == NULL)
+S1 else S2
+// </smpl>
 
-Track the memtype for RAM pages in page struct instead of using the memtype
-list. This avoids the explosion in the number of entries in memtype list
-(of the order of 20,000 with AGP) and makes the PAT tracking simpler. We are
-using PG_arch_1 bit in page->flags.
-
-We still use the memtype list for non RAM pages.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by:  Julien Brunel <brunel@diku.dk>
+Signed-off-by:  Julia Lawall <julia@diku.dk>
 
 ---
- arch/x86/mm/ioremap.c        |   19 +++++++++
- arch/x86/mm/pat.c            |   83 +++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/cacheflush.h |    2 +
- include/asm-x86/page.h       |    1 
- 4 files changed, 105 insertions(+)
+ drivers/usb/host/isp1760-if.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Index: tip/arch/x86/mm/ioremap.c
-===================================================================
---- tip.orig/arch/x86/mm/ioremap.c	2008-09-23 13:31:31.000000000 -0700
-+++ tip/arch/x86/mm/ioremap.c	2008-09-24 08:39:29.000000000 -0700
-@@ -102,6 +102,25 @@ int page_is_ram(unsigned long pagenr)
- 	return 0;
- }
- 
-+int pagerange_is_ram(unsigned long start, unsigned long end)
-+{
-+	int ram_page = 0, not_rampage = 0;
-+	unsigned long page_nr;
-+
-+	for (page_nr = (start >> PAGE_SHIFT); page_nr < (end >> PAGE_SHIFT);
-+	     ++page_nr) {
-+		if (page_is_ram(page_nr))
-+			ram_page = 1;
-+		else
-+			not_rampage = 1;
-+
-+		if (ram_page == not_rampage)
-+			return -1;
-+	}
-+
-+	return ram_page;
-+}
-+
- /*
-  * Fix up the linear direct mapping of the kernel to avoid cache attribute
-  * conflicts.
-Index: tip/arch/x86/mm/pat.c
-===================================================================
---- tip.orig/arch/x86/mm/pat.c	2008-09-23 13:31:31.000000000 -0700
-+++ tip/arch/x86/mm/pat.c	2008-09-24 08:39:27.000000000 -0700
-@@ -211,6 +211,75 @@ static struct memtype *cached_entry;
- static u64 cached_start;
- 
- /*
-+ * RED-PEN:  TODO: Add PageReserved() check as well here,
-+ * once we add SetPageReserved() to all the drivers using
-+ * set_memory_* or set_pages_*.
-+ *
-+ * This will help prevent accidentally freeing pages
-+ * before setting the attribute back to WB.
-+ */
-+
-+/*
-+ * For RAM pages, mark the pages as non WB memory type using
-+ * PageNonWB (PG_arch_1). We allow only one set_memory_uc() or
-+ * set_memory_wc() on a RAM page at a time before marking it as WB again.
-+ * This is ok, because only one driver will be owning the page and
-+ * doing set_memory_*() calls.
-+ *
-+ * For now, we use PageNonWB to track that the RAM page is being mapped
-+ * as non WB. In future, we will have to use one more flag
-+ * (or some other mechanism in page_struct) to distinguish between
-+ * UC and WC mapping.
-+ */
-+static int reserve_ram_pages_type(u64 start, u64 end, unsigned long req_type,
-+		       unsigned long *new_type)
-+{
-+	struct page *page;
-+	u64 pfn, end_pfn;
-+
-+	for (pfn = (start >> PAGE_SHIFT); pfn < (end >> PAGE_SHIFT); ++pfn) {
-+		page = pfn_to_page(pfn);
-+		if (page_mapped(page) || PageNonWB(page))
-+			goto out;
-+
-+		SetPageNonWB(page);
-+	}
-+	return 0;
-+
-+out:
-+	end_pfn = pfn;
-+	for (pfn = (start >> PAGE_SHIFT); pfn < end_pfn; ++pfn) {
-+		page = pfn_to_page(pfn);
-+		ClearPageNonWB(page);
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int free_ram_pages_type(u64 start, u64 end)
-+{
-+	struct page *page;
-+	u64 pfn, end_pfn;
-+
-+	for (pfn = (start >> PAGE_SHIFT); pfn < (end >> PAGE_SHIFT); ++pfn) {
-+		page = pfn_to_page(pfn);
-+		if (page_mapped(page) || !PageNonWB(page))
-+			goto out;
-+
-+		ClearPageNonWB(page);
-+	}
-+	return 0;
-+
-+out:
-+	end_pfn = pfn;
-+	for (pfn = (start >> PAGE_SHIFT); pfn < end_pfn; ++pfn) {
-+		page = pfn_to_page(pfn);
-+		SetPageNonWB(page);
-+	}
-+	return -EINVAL;
-+}
-+
-+/*
-  * req_type typically has one of the:
-  * - _PAGE_CACHE_WB
-  * - _PAGE_CACHE_WC
-@@ -232,6 +301,7 @@ int reserve_memtype(u64 start, u64 end, 
- 	unsigned long actual_type;
- 	struct list_head *where;
- 	int err = 0;
-+	int is_range_ram;
- 
-  	BUG_ON(start >= end); /* end is exclusive */
- 
-@@ -270,6 +340,12 @@ int reserve_memtype(u64 start, u64 end, 
- 		actual_type = pat_x_mtrr_type(start, end,
- 					      req_type & _PAGE_CACHE_MASK);
- 
-+	is_range_ram = pagerange_is_ram(start,end);
-+	if (is_range_ram == 1)
-+		return reserve_ram_pages_type(start, end, req_type, new_type);
-+	else if (is_range_ram < 0)
-+		return -EINVAL;
-+
- 	new  = kmalloc(sizeof(struct memtype), GFP_KERNEL);
- 	if (!new)
- 		return -ENOMEM;
-@@ -358,6 +434,7 @@ int free_memtype(u64 start, u64 end)
- {
- 	struct memtype *entry;
- 	int err = -EINVAL;
-+	int is_range_ram;
- 
- 	if (!pat_enabled)
+diff -u -p a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
+--- a/drivers/usb/host/isp1760-if.c
++++ b/drivers/usb/host/isp1760-if.c
+@@ -232,9 +232,10 @@ static int __devinit isp1761_pci_probe(s
+ 	hcd = isp1760_register(pci_mem_phy0, length, dev->irq,
+ 		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev_name(&dev->dev),
+ 		devflags);
+-	pci_set_drvdata(dev, hcd);
+-	if (!hcd)
++	if (!IS_ERR(hcd)) {
++		pci_set_drvdata(dev, hcd);
  		return 0;
-@@ -366,6 +443,12 @@ int free_memtype(u64 start, u64 end)
- 	if (is_ISA_range(start, end - 1))
- 		return 0;
- 
-+	is_range_ram = pagerange_is_ram(start,end);
-+	if (is_range_ram == 1)
-+		return free_ram_pages_type(start, end);
-+	else if (is_range_ram < 0)
-+		return -EINVAL;
-+
- 	spin_lock(&memtype_lock);
- 	list_for_each_entry(entry, &memtype_list, nd) {
- 		if (entry->start == start && entry->end == end) {
-Index: tip/include/asm-x86/page.h
-===================================================================
---- tip.orig/include/asm-x86/page.h	2008-09-23 13:31:31.000000000 -0700
-+++ tip/include/asm-x86/page.h	2008-09-23 13:32:26.000000000 -0700
-@@ -57,6 +57,7 @@ typedef struct { pgdval_t pgd; } pgd_t;
- typedef struct { pgprotval_t pgprot; } pgprot_t;
- 
- extern int page_is_ram(unsigned long pagenr);
-+extern int pagerange_is_ram(unsigned long start, unsigned long end);
- extern int devmem_is_allowed(unsigned long pagenr);
- extern void map_devmem(unsigned long pfn, unsigned long size,
- 		       pgprot_t vma_prot);
-Index: tip/include/asm-x86/cacheflush.h
-===================================================================
---- tip.orig/include/asm-x86/cacheflush.h	2008-09-23 13:32:10.000000000 -0700
-+++ tip/include/asm-x86/cacheflush.h	2008-09-24 08:36:02.000000000 -0700
-@@ -24,6 +24,8 @@
- #define copy_from_user_page(vma, page, vaddr, dst, src, len)	\
- 	memcpy((dst), (src), (len))
- 
-+#define PG_non_WB				PG_arch_1
-+PAGEFLAG(NonWB, non_WB)
- 
- /*
-  * The set_memory_* API can be used to change various attributes of a virtual
++	}
+ clean:
+ 	status = -ENODEV;
+ 	iounmap(iobase);
