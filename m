@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbYIXFnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbYIXFp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752576AbYIXFnm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 01:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbYIXFne
+	id S1752777AbYIXFp5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 01:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbYIXFps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 01:43:34 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:49096 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750844AbYIXFne (ORCPT
+	Wed, 24 Sep 2008 01:45:48 -0400
+Received: from rn-out-0910.google.com ([64.233.170.191]:20343 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbYIXFpr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 01:43:34 -0400
-Date: Wed, 24 Sep 2008 11:12:00 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Tom Zanussi <zanussi@comcast.net>
-Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
-       David Wilder <dwilder@us.ibm.com>
-Subject: Re: Unified tracing buffer
-Message-ID: <20080924054200.GA7103@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <1221869279.8359.31.camel@lappy.programming.kicks-ass.net> <20080922140740.GB5279@in.ibm.com> <1222094724.16700.11.camel@lappy.programming.kicks-ass.net> <1222147545.6875.135.camel@charm-linux> <33307c790809230700o4bf0d22fg8ab2dcb904f7d66c@mail.gmail.com> <1222228215.7761.0.camel@charm-linux>
+	Wed, 24 Sep 2008 01:45:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=b8LeM/GtriKptc0FYEbbc5i9euKTpaoc85GckZPzerC/Kw5BQg6TK4y2UJW2WOXBPr
+         FFM2L7ofZckmu20Oix+dnzxmTtqqvL5S102ZSVo5NcvFmF+jTR4+0QahsnzU3iAc9i28
+         HTZvQbb5ZiNpFyS4clm7BAaSPP9BQ/ydc7jws=
+Message-ID: <21d7e9970809232245x6a91c6e2l552ff039d07e2017@mail.gmail.com>
+Date: Wed, 24 Sep 2008 15:45:46 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+Cc: jkosina@suse.cz, jeffrey.t.kirsher@intel.com, david.vrabel@csr.com,
+       rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, chrisl@vmware.com
+In-Reply-To: <20080923.211215.193696086.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1222228215.7761.0.camel@charm-linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20080923.150722.141587696.davem@davemloft.net>
+	 <9929d2390809231512w160d221axa2923a6b293a041@mail.gmail.com>
+	 <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz>
+	 <20080923.211215.193696086.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 10:50:15PM -0500, Tom Zanussi wrote:
-> 
-> On Tue, 2008-09-23 at 07:00 -0700, Martin Bligh wrote:
-> > > - get rid of anything having to do with padding, nobody needs it and its
-> > > only affect has been to horribly distort and complicate a lot of the
-> > > code
-> > > - get rid of sub-buffers, they just cause confusion
-> > > - get rid of mmap, nobody uses it
-> > > - no sub-buffers and no mmap support means we can get rid of most of the
-> > > callbacks, and a lot of API confusion along with them
-> > > - add relay flags - they probably should have been used from the
-> > > beginning and options made explicit instead of being shoehorned into the
-> > > callback functions.
-> > 
-> > Actually, I think if you did all that, it'd be pretty close to what we
-> > want anyway ...
-> 
-> OK, then, I'll continue with the cleanup patchset and see where it
-> goes...
-> 
-> Tom
+On Wed, Sep 24, 2008 at 2:12 PM, David Miller <davem@davemloft.net> wrote:
+> From: Jiri Kosina <jkosina@suse.cz>
+> Date: Wed, 24 Sep 2008 00:19:00 +0200 (CEST)
 >
-Hi Tom,
-	Kindly let us know if the patches are available in some
-downloadable location or have been maintained in a git tree.
+>> On Tue, 23 Sep 2008, Jeff Kirsher wrote:
+>>
+>> > >> I don't think OpenSUSE was shipping any of the GEM bits.
+>> > > Good data point, can someone confirm this?  Also, what X server version
+>> > > is the effected OpenSUSE shipping?
+>> > OpenSuSE 11 ships x server version 7.3.
+>>
+>> Opensuse 11 is fine.
+>>
+>> The problem can be reproduced [not only] on opensuse 11.1 beta1, which has
+>>
+>>       xorg-x11-7.4-1.6.x86_64.rpm
+>
+> I did some snooping around, and while doing so I noticed that the PCI
+> mmap code for x86 doesn't do one bit of range checking on the size, or
+> any other aspect of the request, wrt. the MMIO regions actually mapped
+> in the BARs of the PCI device.
+>
+> Yikes!
+>
+> It just does a reserve_memtype() on the address range, and says "ok".
+>
+> So if, for example, the X server tries to mmap() more than an MMIO bar
+> actually maps, the kernel lets the user do this.
+>
+> It would be very interesting to add the appropriate checks to
+> pci_mmap_page_range() in arch/x86/pci/i386.c, anyone who wants to do
+> this can use the code in arch/sparc64/kernel/pci.c:
+> __pci_mmap_make_offset() as a guide, and see what happens.
+>
+> If the MMIO space regions of the video cards sit right before the
+> E1000E ones on the effected systems, that would pretty much
+> convince me that this is the kind of problem we are having here.
+>
+> This also reminds me that there was that whole set of issues that
+> had to get worked out wrt. write-caching of mappings on x86.
+>
 
-I'm planning to re-base the relay_* interfaces (erstwhile 'trace' code),
-to work on top of your patches.
+I'm still dubious about this, wouldn't we see other wierdass side
+effects if X was trashing the BARs on other devices?
 
-Thanks,
-K.Prasad
- 
+I think tglx is on the right path, same problem as e1000, code is
+stupid, it can reenter the nvram read/write code from irq
+context, and pwn itself.
+
+Dave.
