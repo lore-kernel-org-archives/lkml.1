@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbYIXARS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbYIXATw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbYIXARS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 20:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYIXARI
+	id S1754000AbYIXATw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 20:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYIXATp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 20:17:08 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:27536 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbYIXARF (ORCPT
+	Tue, 23 Sep 2008 20:19:45 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:5694 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751662AbYIXATo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 20:17:05 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=5MlKb6vH5mDGvGU_b_UA:9 a=EQG0dCsfXVmRGcDnXpoA:7 a=Q_Su7wDZ7RSdoHiZK-3wy3rS90IA:4 a=6P13upv5DxEA:10 a=khtglLVS-hsA:10
-Message-ID: <48D98701.60406@shaw.ca>
-Date: Tue, 23 Sep 2008 18:17:05 -0600
-From: Robert Hancock <hancockr@shaw.ca>
+	Tue, 23 Sep 2008 20:19:44 -0400
+Message-ID: <48D987A0.50508@ct.jp.nec.com>
+Date: Tue, 23 Sep 2008 17:19:44 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: Singaravelan Nallasellan <singaravelann@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Interrupt handler latency and Interrupt handling issues
-References: <fa.VvqVAPI7JzOrmNWy4fN1kaXpY2o@ifi.uio.no>
-In-Reply-To: <fa.VvqVAPI7JzOrmNWy4fN1kaXpY2o@ifi.uio.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] x86: signal: cosmetic unification of do_signal()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Singaravelan Nallasellan wrote:
-> I have an issue in determining the source of the interrupt due to the
-> latency to access the register. The driver needs to send an read
-> request to another kernel driver. The other driver will use an
-> Indirect IO read to through an IO port. It will could also potentially
-> generate interrupt. It will lead to the latency issues in the
-> interrupt handler.
-> 
-> The driver may not be able to realiably identify the source of the
-> interrupt before coming out of the IRQ handler if it has to come out
-> the handler within a letency period.  Because of this, The driver will
-> not be able to say IRQ handled before coming out of the handler. If
-> the driver says IRQ handled assuming that the interrupt belongs to it,
-> it could also cause conflict with the other interrupt handler
-> registered for the same interrupt.
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-The driver does not need to determine exactly if its device caused the 
-interrupts (with some devices it's not even possible to tell for sure). 
-You can always say IRQ_HANDLED if you can't tell. This doesn't affect 
-whether other IRQ handlers on that interrupt will be called. The only 
-downside is that the screaming IRQ detection won't work on that IRQ 
-since that driver always says it handled the interrupt.
+Make do_signal() same.
+Thia patch modifies only comments in signal_64.c.
 
-> 
-> I am planning to say that IRQ handled in the Interrupt handler and
-> schedule a work queue to handle the identification and handling. Does
-> anybody see issues here? Are there any better mechanism to handle this
-> case?
-> 
-> Is there any latency requirements from the kernel?
-> 
-> How much is the tolerable latency for the interrupt handlers?
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/kernel/signal_64.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+index bf77d47..5a5fbc3 100644
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -410,7 +410,8 @@ static void do_signal(struct pt_regs *regs)
+ 
+ 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
+ 	if (signr > 0) {
+-		/* Re-enable any watchpoints before delivering the
++		/*
++		 * Re-enable any watchpoints before delivering the
+ 		 * signal to user space. The processor register will
+ 		 * have been cleared if the watchpoint triggered
+ 		 * inside the kernel.
+@@ -418,7 +419,7 @@ static void do_signal(struct pt_regs *regs)
+ 		if (current->thread.debugreg7)
+ 			set_debugreg(current->thread.debugreg7, 7);
+ 
+-		/* Whee!  Actually deliver the signal.  */
++		/* Whee! Actually deliver the signal.  */
+ 		if (handle_signal(signr, &info, &ka, oldset, regs) == 0) {
+ 			/*
+ 			 * A signal was successfully delivered; the saved
+@@ -441,6 +442,7 @@ static void do_signal(struct pt_regs *regs)
+ 			regs->ax = regs->orig_ax;
+ 			regs->ip -= 2;
+ 			break;
++
+ 		case -ERESTART_RESTARTBLOCK:
+ 			regs->ax = NR_restart_syscall;
+ 			regs->ip -= 2;
+-- 
+1.5.6
 
