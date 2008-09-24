@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYIXTDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755118AbYIXTES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbYIXTDt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 15:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYIXTDl
+	id S1755118AbYIXTES (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 15:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYIXTED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 15:03:41 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:33702 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751517AbYIXTDk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 15:03:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=mt7iE4mnDqbljTfkSpVVJ+gJ7sQxNO+413Qx6LWIynAf4mQOZRgoy2BFCh62a8ioFN
-         0kjAuoxfo4Zm1VLMgwJgvrVWHbErVGuJXu+YEoXzTugkZxO2VXV6AEy1Ox1Z6TxGKYUV
-         vhxhxAVJiQ4F+gnkNxLvQ7YQcft02SI1DNc7g=
-Message-ID: <3ae72650809241203o41b62a10m31377887d44fd05e@mail.gmail.com>
-Date: Wed, 24 Sep 2008 12:03:39 -0700
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Drew Moseley" <dmoseley@mvista.com>
-Subject: Re: [PATCH] Create PNP device attributes via dev_attrs field of struct device
-Cc: ambx1@neo.rr.com, linux-kernel@vger.kernel.org
-In-Reply-To: <48DA774A.9010206@mvista.com>
+	Wed, 24 Sep 2008 15:04:03 -0400
+Received: from mail.op5.se ([193.201.96.20]:43355 "EHLO mail.op5.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752000AbYIXTEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 15:04:01 -0400
+X-Greylist: delayed 423 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Sep 2008 15:04:00 EDT
+X-Spam-Flag: NO
+X-Spam-Score: -3.109
+Message-ID: <48DA8D76.1070207@op5.se>
+Date: Wed, 24 Sep 2008 20:56:54 +0200
+From: Andreas Ericsson <ae@op5.se>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Alex Riesen <raa.lkml@gmail.com>
+CC: rae l <crquan@gmail.com>, Matthias Urlichs <smurf@smurf.noris.de>,
+       Andrew Morton <akpm@linux-foundation.org>, git@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: please consider remove those tags named master, which is ambigous
+ with master branch
+References: <91b13c310808310948r5e9e825as27bcdf381137e179@mail.gmail.com>	 <91b13c310809230746o1c2cb694taebc814bea57c8c5@mail.gmail.com> <81b0412b0809240844y42218bedqe0e1eb22c067fcc3@mail.gmail.com>
+In-Reply-To: <81b0412b0809240844y42218bedqe0e1eb22c067fcc3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48D95EA2.9040804@mvista.com>
-	 <3ae72650809232159k20f19f2ele5acbc7ee77dfb65@mail.gmail.com>
-	 <48DA774A.9010206@mvista.com>
-X-Google-Sender-Auth: 5a938cb963695baa
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 10:22, Drew Moseley <dmoseley@mvista.com> wrote:
-> Kay Sievers wrote:
+Alex Riesen wrote:
+> 2008/9/23 rae l <crquan@gmail.com>:
+>> To Git developers:
+>>  I found that different git subcommand have inconsitent processing
+>> about ambiguous refname,
 >>
->> Any reason not to assign it statically to pnp_bus_type at in
->> drivers/pnp/driver.c?
+>> git show will take "master" tag first,
+>> while git tag -v will take "master" branch first,
+>>
+>> So what's your suggestion to fix this? Just simple remove ambiguous refnames?
+> 
+> You can use "refs/tags/master" and "refs/heads/master"...
 
-> Not really but since everything in the dev_attrs array is statically
-> defined in interface.c it was simpler to implement it this way.  To
-> assign it in driver.c, the array can be made non-static and an extern
-> added in driver.c, or the array definition can be moved to driver.c and
-> all the set and show functions be made non-static.  Is there a preference?
+Apart from that..
 
-Yeah, it looks weird to mangle the bus_type values from a device
-routine, and set the same value again and again with every device
-creation. Just declare the array non-static, if moving the code around
-between files does not allow a static declaration.
+"git tag -v" taking a branch *at all* is not something we want to
+happen, as it's supposed to verify the pgp signature of a signed
+tag. Are you absolutely 100% certain that "git tag -v" tries to
+verify refs/heads/master as a tag object?
 
-Thanks,
-Kay
+-- 
+Andreas Ericsson                   andreas.ericsson@op5.se
+OP5 AB                             www.op5.se
+Tel: +46 8-230225                  Fax: +46 8-230231
