@@ -1,93 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753632AbYIXTjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbYIXTk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753632AbYIXTjQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 15:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbYIXTis
+	id S1755218AbYIXTk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 15:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYIXTkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 15:38:48 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:43242 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752995AbYIXTir (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 15:38:47 -0400
-Date: Wed, 24 Sep 2008 20:29:39 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Nick Piggin <npiggin@suse.de>
-cc: David Howells <dhowells@redhat.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Matt Mackall <mpm@selenic.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
-In-Reply-To: <20080923053228.GA5825@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0809242026190.12147@blonde.site>
-References: <20080914073906.GA6184@elte.hu> <20080914004442.4f8e851f.akpm@linux-foundation.org>
- <20080914080631.GA10720@elte.hu> <20080914221231.GG27080@wotan.suse.de>
- <20080917131419.e6b7622e.akpm@linux-foundation.org> <20080918111226.GD29968@elte.hu>
- <48D2ABFD.3040103@goop.org> <1221772310.4779.29.camel@calx>
- <1221877119.8533.2.camel@nimitz> <13787.1222095249@redhat.com>
- <20080923053228.GA5825@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 24 Sep 2008 15:40:12 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:39962 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751528AbYIXTkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 15:40:10 -0400
+Date: Wed, 24 Sep 2008 12:40:06 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: minyard@acm.org
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH 1/1] Use RCU for the UDP hash lock
+Message-ID: <20080924124006.6bb41b49@extreme>
+In-Reply-To: <20080924172827.GA1573@minyard.local>
+References: <20080924172827.GA1573@minyard.local>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008, Nick Piggin wrote:
+On Wed, 24 Sep 2008 12:28:27 -0500
+Corey Minyard <minyard@acm.org> wrote:
+
+> From: Corey Minyard <cminyard@mvista.com>
 > 
-> RFC Quick patch to fix nommu anonymous shared memory without breaking
-> locking...
-
-Looks good to me, thanks Nick.
-And I see David's Ack that it works, so
-Acked-by: Hugh Dickins <hugh@veritas.com>
-
-Please push to Andrew and/or Linus now git is broken for !MMU.
-
-Hugh
-
+> Convert access to the udp_hash table to use RCU.
+> 
+> Signed-off-by: Corey Minyard <cminyard@mvista.com>
 > ---
+>  include/linux/rculist.h |   19 +++++++++++++++++++
+>  include/net/sock.h      |   39 +++++++++++++++++++++++++++++++++++++++
+>  include/net/udp.h       |    9 +++++----
+>  net/ipv4/udp.c          |   36 +++++++++++++++++++++---------------
+>  net/ipv6/udp.c          |   13 +++++++------
+>  5 files changed, 91 insertions(+), 25 deletions(-)
 > 
-> Index: linux-2.6/include/linux/ramfs.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/ramfs.h
-> +++ linux-2.6/include/linux/ramfs.h
-> @@ -6,6 +6,7 @@ extern int ramfs_get_sb(struct file_syst
->  	 int flags, const char *dev_name, void *data, struct vfsmount *mnt);
+> This patch is pretty straightforward; I've tested it a while and it
+> seems to work properly with a test program that constantly creates and
+> destroys UDP sockets while sending and receiving large numbers of
+> packets on an SMP box.  I think I've covered all the bases, though RCU
+> is subtle.
+> 
+> This doesn't make much difference when using no preempt or desktop,
+> but it makes a huge difference when used with PREEMPT_RT.  More than
+> 10 times more UDP throughput on a 16-way machine.
+> 
+> So I'm not sure if this belongs in the RT patch or in the mainstream
+> kernel.
+> 
+> diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+> index eb4443c..4d3cc58 100644
+> --- a/include/linux/rculist.h
+> +++ b/include/linux/rculist.h
+> @@ -397,5 +397,24 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+>  		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+>  		pos = rcu_dereference(pos->next))
 >  
->  #ifndef CONFIG_MMU
-> +extern int ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize);
->  extern unsigned long ramfs_nommu_get_unmapped_area(struct file *file,
->  						   unsigned long addr,
->  						   unsigned long len,
-> Index: linux-2.6/mm/tiny-shmem.c
-> ===================================================================
-> --- linux-2.6.orig/mm/tiny-shmem.c
-> +++ linux-2.6/mm/tiny-shmem.c
-> @@ -80,6 +80,12 @@ struct file *shmem_file_setup(char *name
->          inode->i_nlink = 0;     /* It is unlinked */
->          init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
->                          &ramfs_file_operations);
 > +
-> +#ifndef CONFIG_MMU
-> +	error = ramfs_nommu_expand_for_mapping(inode, size);
-> +	if (error)
-> +		goto close_file;
-> +#endif
->  	return file;
+> +/**
+> + * hlist_for_each_entry_from_rcu - iterate over rcu list starting from pos
+> + * @tpos:      the type * to use as a loop cursor.
+> + * @pos:       the &struct hlist_node to use as a loop cursor.
+> + * @head:      the head for your list.
+> + * @member:    the name of the hlist_node within the struct.
+> + *
+> + * This list-traversal primitive may safely run concurrently with
+> + * the _rcu list-mutation primitives such as hlist_add_head_rcu()
+> + * as long as the traversal is guarded by rcu_read_lock().
+> + */
+> +#define hlist_for_each_entry_from_rcu(tpos, pos, member)                \
+> +	for (;                                                          \
+> +	     rcu_dereference(pos) && ({ prefetch(pos->next); 1; }) &&    \
+> +	       ({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+> +	     pos = pos->next)
+> +
+> +
+>  #endif	/* __KERNEL__ */
+>  #endif
+> diff --git a/include/net/sock.h b/include/net/sock.h
+> index 06c5259..ada44ad 100644
+> --- a/include/net/sock.h
+> +++ b/include/net/sock.h
+> @@ -42,6 +42,7 @@
 >  
->  close_file:
-> Index: linux-2.6/fs/ramfs/file-nommu.c
-> ===================================================================
-> --- linux-2.6.orig/fs/ramfs/file-nommu.c
-> +++ linux-2.6/fs/ramfs/file-nommu.c
-> @@ -58,7 +58,7 @@ const struct inode_operations ramfs_file
->   * size 0 on the assumption that it's going to be used for an mmap of shared
->   * memory
->   */
-> -static int ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize)
-> +int ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize)
+>  #include <linux/kernel.h>
+>  #include <linux/list.h>
+> +#include <linux/rculist.h>
+>  #include <linux/timer.h>
+>  #include <linux/cache.h>
+>  #include <linux/module.h>
+> @@ -361,6 +362,27 @@ static __inline__ int sk_del_node_init(struct sock *sk)
+>  	return rc;
+>  }
+>  
+> +static inline int __sk_del_node_rcu(struct sock *sk)
+> +{
+> +	if (sk_hashed(sk)) {
+> +		hlist_del_rcu(&sk->sk_node);
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static inline int sk_del_node_rcu(struct sock *sk)
+> +{
+> +	int rc = __sk_del_node_rcu(sk);
+> +
+> +	if (rc) {
+> +		/* paranoid for a while -acme */
+> +		WARN_ON(atomic_read(&sk->sk_refcnt) == 1);
+> +		__sock_put(sk);
+> +	}
+> +	return rc;
+> +}
+> +
+>  static __inline__ void __sk_add_node(struct sock *sk, struct hlist_head *list)
 >  {
->  	struct pagevec lru_pvec;
->  	unsigned long npages, xpages, loop, limit;
+>  	hlist_add_head(&sk->sk_node, list);
+> @@ -372,6 +394,18 @@ static __inline__ void sk_add_node(struct sock *sk, struct hlist_head *list)
+>  	__sk_add_node(sk, list);
+>  }
+>  
+> +static inline void __sk_add_node_rcu(struct sock *sk,
+> +					 struct hlist_head *list)
+> +{
+> +	hlist_add_head_rcu(&sk->sk_node, list);
+> +}
+> +
+> +static inline void sk_add_node_rcu(struct sock *sk, struct hlist_head *list)
+> +{
+> +	sock_hold(sk);
+> +	__sk_add_node_rcu(sk, list);
+> +}
+> +
+>  static __inline__ void __sk_del_bind_node(struct sock *sk)
+>  {
+>  	__hlist_del(&sk->sk_bind_node);
+> @@ -385,9 +419,14 @@ static __inline__ void sk_add_bind_node(struct sock *sk,
+>  
+>  #define sk_for_each(__sk, node, list) \
+>  	hlist_for_each_entry(__sk, node, list, sk_node)
+> +#define sk_for_each_rcu(__sk, node, list) \
+> +	hlist_for_each_entry_rcu(__sk, node, list, sk_node)
+>  #define sk_for_each_from(__sk, node) \
+>  	if (__sk && ({ node = &(__sk)->sk_node; 1; })) \
+>  		hlist_for_each_entry_from(__sk, node, sk_node)
+> +#define sk_for_each_from_rcu(__sk, node) \
+> +	if (__sk && ({ node = &(__sk)->sk_node; 1; })) \
+> +		hlist_for_each_entry_from_rcu(__sk, node, sk_node)
+>  #define sk_for_each_continue(__sk, node) \
+>  	if (__sk && ({ node = &(__sk)->sk_node; 1; })) \
+>  		hlist_for_each_entry_continue(__sk, node, sk_node)
+> diff --git a/include/net/udp.h b/include/net/udp.h
+> index addcdc6..04181f8 100644
+> --- a/include/net/udp.h
+> +++ b/include/net/udp.h
+> @@ -51,7 +51,7 @@ struct udp_skb_cb {
+>  #define UDP_SKB_CB(__skb)	((struct udp_skb_cb *)((__skb)->cb))
+>  
+>  extern struct hlist_head udp_hash[UDP_HTABLE_SIZE];
+> -extern rwlock_t udp_hash_lock;
+> +extern spinlock_t udp_hash_wlock;
+>  
+>  
+>  /* Note: this must match 'valbool' in sock_setsockopt */
+> @@ -112,12 +112,13 @@ static inline void udp_lib_hash(struct sock *sk)
+>  
+>  static inline void udp_lib_unhash(struct sock *sk)
+>  {
+> -	write_lock_bh(&udp_hash_lock);
+> -	if (sk_del_node_init(sk)) {
+> +	spin_lock_bh(&udp_hash_wlock);
+> +	if (sk_del_node_rcu(sk)) {
+>  		inet_sk(sk)->num = 0;
+>  		sock_prot_inuse_add(sock_net(sk), sk->sk_prot, -1);
+>  	}
+> -	write_unlock_bh(&udp_hash_lock);
+> +	spin_unlock_bh(&udp_hash_wlock);
+> +	synchronize_sched();
+
+Could this be synchronize_rcu? You are using rcu_read_lock() protected sections.
