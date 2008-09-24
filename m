@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752578AbYIXLmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbYIXLmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752578AbYIXLmM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 07:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbYIXLl5
+	id S1753656AbYIXLmn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 07:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYIXLme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 07:41:57 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:38026 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbYIXLl5 convert rfc822-to-8bit (ORCPT
+	Wed, 24 Sep 2008 07:42:34 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:34176 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751602AbYIXLmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 07:41:57 -0400
-Date: Wed, 24 Sep 2008 13:42:26 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] i2c fixes for 2.6.27
-Message-ID: <20080924134226.4a98666e@hyperion.delvare>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 24 Sep 2008 07:42:33 -0400
+Date: Wed, 24 Sep 2008 15:42:31 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <greg@kroah.com>, Timur Tabi <timur@freescale.com>,
+       Li Yang <leoli@freescale.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>, linuxppc-dev@ozlabs.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] powerpc/qe: new call to revert a gpio to a
+	dedicated function
+Message-ID: <20080924114231.GA8469@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080924000255.GA28054@oksana.dev.rtsoft.ru> <20080924000336.GB29733@oksana.dev.rtsoft.ru> <B8BAAB1F-10B5-419D-84A7-F724A7E77F41@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+In-Reply-To: <B8BAAB1F-10B5-419D-84A7-F724A7E77F41@kernel.crashing.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, Sep 23, 2008 at 11:07:00PM -0500, Kumar Gala wrote:
+>
+> On Sep 23, 2008, at 7:03 PM, Anton Vorontsov wrote:
+>
+>> qe_gpio_set_dedicated() is a platform specific function, which is used
+>> to revert a pin to a dedicated function. Caller should have already
+>> obtained the gpio via gpio_request().
+>>
+>> This is needed to support Freescale USB Host Controller.
+>>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>> ---
+>> arch/powerpc/include/asm/qe.h     |    1 +
+>> arch/powerpc/sysdev/qe_lib/gpio.c |   46 ++++++++++++++++++++++++++++ 
+>> +++++++++
+>> 2 files changed, 47 insertions(+), 0 deletions(-)
+>
+> what do you mean by dedicated function.. be a bit clearer in the commit 
+> log.
 
-Please pull the i2c subsystem fixes for Linux 2.6.27 from:
+This term is from the QE spec, I didn't invent anything. ;-)
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
+"Each pin in the I/O ports can be configured as a general-purpose
+I/O signal or as a dedicated peripheral interface signal. ...many
+dedicated peripheral functions are multiplexed onto the ports."
 
+> Also, does this depend on gpio_to_chip() patch?
 
- MAINTAINERS                       |    4 ++--
- drivers/i2c/busses/i2c-powermac.c |    4 ++--
- drivers/i2c/i2c-dev.c             |    4 +++-
- 3 files changed, 7 insertions(+), 5 deletions(-)
+Yeah, the point of exported gpio_to_chip is to let us write
+this function.
 
----------------
+Thanks!
 
-Jean Delvare (1):
-      i2c: Fix mailing lists in two MAINTAINERS entries
-
-Sven Wegener (1):
-      i2c-dev: Return correct error code on class_create() failure
-
-Uwe Kleine-König (1):
-      i2c-powermac: Fix section for probe and remove functions
-
-Thanks,
 -- 
-Jean Delvare
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
