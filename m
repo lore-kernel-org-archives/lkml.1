@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbYIXEMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbYIXEY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753569AbYIXEMx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 00:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYIXEMc
+	id S1752460AbYIXEY4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 00:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYIXEYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 00:12:32 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57412 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751151AbYIXEMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 00:12:30 -0400
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Greg Kroah-Hartman <greg@kroah.com>, Timur Tabi <timur@freescale.com>,
-       Li Yang <leoli@freescale.com>,
-       Laurent Pinchart <laurentp@cse-semaphore.com>, linuxppc-dev@ozlabs.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-Id: <B8BAAB1F-10B5-419D-84A7-F724A7E77F41@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080924000336.GB29733@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 2/4] powerpc/qe: new call to revert a gpio to a dedicated function
-Date: Tue, 23 Sep 2008 23:07:00 -0500
-References: <20080924000255.GA28054@oksana.dev.rtsoft.ru> <20080924000336.GB29733@oksana.dev.rtsoft.ru>
-X-Mailer: Apple Mail (2.929.2)
+	Wed, 24 Sep 2008 00:24:48 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:38676 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750937AbYIXEYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 00:24:47 -0400
+Date: Tue, 23 Sep 2008 23:24:46 -0500
+From: Russ Anderson <rja@sgi.com>
+To: Huang Ying <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: Re: [PATCH 0/4] x86: UV runtime bios calls
+Message-ID: <20080924042445.GB135367@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+References: <20080922210644.GC222374@sgi.com> <1222225747.23099.104.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222225747.23099.104.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 24, 2008 at 11:09:07AM +0800, Huang Ying wrote:
+> Hi, Russ,
+> 
+> On Mon, 2008-09-22 at 16:06 -0500, Russ Anderson wrote:
+> > 	This patch uses sal_systab.  sal_systab is used on ia64, but was
+> > 	not used on x86.  An alternative would be to create a new
+> > 	EFI entry type (uv_systab), though that would require adding 
+> > 	to struct efi.
+> 
+> I don't think it is a good idea to use sal_systab, if it is not a real
+> sal_systab. It's better to add new field such as uv_systab to struct
+> efi, which is not defined by UEFI standard, so can be changed.
 
-On Sep 23, 2008, at 7:03 PM, Anton Vorontsov wrote:
+OK.  My first development version took that approach, so
+it I just have to put that code back in. 
 
-> qe_gpio_set_dedicated() is a platform specific function, which is used
-> to revert a pin to a dedicated function. Caller should have already
-> obtained the gpio via gpio_request().
->
-> This is needed to support Freescale USB Host Controller.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/include/asm/qe.h     |    1 +
-> arch/powerpc/sysdev/qe_lib/gpio.c |   46 ++++++++++++++++++++++++++++ 
-> +++++++++
-> 2 files changed, 47 insertions(+), 0 deletions(-)
-
-what do you mean by dedicated function.. be a bit clearer in the  
-commit log.  Also, does this depend on gpio_to_chip() patch?
-
-- k
+Thanks,
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
