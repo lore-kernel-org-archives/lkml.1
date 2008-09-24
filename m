@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbYIXS3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYIXSa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754316AbYIXS3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 14:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYIXS3L
+	id S1754146AbYIXSa5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 14:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYIXSau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 14:29:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38264 "EHLO mx1.redhat.com"
+	Wed, 24 Sep 2008 14:30:50 -0400
+Received: from gate.crashing.org ([63.228.1.57]:45189 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751996AbYIXS3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 14:29:10 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080923053228.GA5825@wotan.suse.de>
-References: <20080923053228.GA5825@wotan.suse.de> <20080914073906.GA6184@elte.hu> <20080914004442.4f8e851f.akpm@linux-foundation.org> <20080914080631.GA10720@elte.hu> <20080914221231.GG27080@wotan.suse.de> <20080917131419.e6b7622e.akpm@linux-foundation.org> <20080918111226.GD29968@elte.hu> <48D2ABFD.3040103@goop.org> <1221772310.4779.29.camel@calx> <1221877119.8533.2.camel@nimitz> <13787.1222095249@redhat.com> 
-To: Nick Piggin <npiggin@suse.de>
-Cc: dhowells@redhat.com, Hugh Dickins <hugh@veritas.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
-Date: Wed, 24 Sep 2008 19:18:25 +0100
-Message-ID: <22749.1222280305@redhat.com>
+	id S1750991AbYIXSat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 14:30:49 -0400
+Cc: Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>,
+       zw@zh-kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-Id: <47B7FAA6-434C-440A-B55D-03C9882809CE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Dan Williams <dan.j.williams@intel.com>
+In-Reply-To: <1221837088-19539-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] fsl-dma: allow Freescale Elo DMA driver to be compiled as a module
+Date: Wed, 24 Sep 2008 13:30:27 -0500
+References: <1221837088-19539-1-git-send-email-timur@freescale.com>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <npiggin@suse.de> wrote:
 
-> RFC Quick patch to fix nommu anonymous shared memory without breaking
-> locking...
+On Sep 19, 2008, at 10:11 AM, Timur Tabi wrote:
 
-That works:
+> Modify the Freescale Elo / Elo Plus DMA driver so that it can be  
+> compiled as
+> a module.
+>
+> The primary change is to stop treating the DMA controller as a bus,  
+> and the
+> DMA channels as devices on the bus.  This is because the Open  
+> Firmware (OF)
+> kernel code does not allow busses to be removed, so although we can  
+> call
+> of_platform_bus_probe() to probe the DMA channels, there is no
+> of_platform_bus_remove().  Therefore, the DMA channels must be  
+> manually probed.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>
+> (Reposting because I forgot to CC: the maintainers)
+>
+> This patch is for the 2.6.28 kernel.  This patch exposes a bug in  
+> the dmatest
+> module, so my other patch "dmatest: properly handle duplicate DMA  
+> channels"
+> should be applied if this patch is applied.
+>
+> drivers/dma/Kconfig  |   10 ++--
+> drivers/dma/fsldma.c |  165 +++++++++++++++++++++++++++++++++ 
+> +----------------
+> drivers/dma/fsldma.h |    2 +
+> 3 files changed, 119 insertions(+), 58 deletions(-)
 
-# /doshm sysv                                                                   
-Command: sysv                                                                   
-shmid: 0                                                                        
-memory: 0xc3b00000                                                              
-c3060000-c306a788 r-xs 00000000 00:0b 14582157   /lib/ld-uClibc-0.9.28.so       
-c3100000-c315ede4 r-xs 00000000 00:0b 14582179   /lib/libuClibc-0.9.28.so       
-c3938000-c393c000 rw-p 00000000 00:00 0                                         
-c3a68000-c3a6c000 rw-p 00008000 00:0b 14582157   /lib/ld-uClibc-0.9.28.so       
-c3a78000-c3a7c000 rw-p 00000000 00:0b 13763417   /doshm                         
-c3a80000-c3aa0000 rwxp 00000000 00:00 0                                         
-c3aa0000-c3aac000 rw-p 00000000 00:00 0                                         
-c3ab8000-c3abc000 r-xs 00000000 00:0b 13763417   /doshm                         
-c3b00000-c3bfa000 rw-S 00000000 00:07 0          /SYSV00000000 (deleted)        
-c3b00000-c3bfa000 rw-S 00000000 00:07 0          /SYSV00000000 (deleted)        
-nattch 2                                                                        
+Dan, any update on this patch?
 
-
-Acked-by: David Howells <dhowells@redhat.com>
+- k
