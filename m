@@ -1,246 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYIXRja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbYIXRky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbYIXRja (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 13:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYIXRjU
+	id S1754489AbYIXRky (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 13:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYIXRkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 13:39:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40887 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbYIXRjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 13:39:19 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: smfrench@gmail.com
-Cc: linux-cifs-client@lists.samba.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] cifs: Convert cifs to new aops.
-Date: Wed, 24 Sep 2008 13:39:13 -0400
-Message-Id: <1222277953-3669-1-git-send-email-jlayton@redhat.com>
+	Wed, 24 Sep 2008 13:40:47 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:20258 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751517AbYIXRkq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 13:40:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=mq1kuTRXsN8Ra1S7QZHTtIsg0llm701QBZn3gbXCT7BJzi321Wz5kbwsHsQAzB3Fuh6EKWhg2kgnxc1fZ45U5aLgiLjkkUN1WmkYMp8W8pDOdm3Ic6B0Y3LBo3acSE1UeY/kgLvHIdFs8fWXGUiw+s8GMuKtC3BojcHPpuEaUxU=  ;
+X-YMail-OSG: imhnkFcVM1m2YOCWDSDME_C6nctesWXCgs8RBKGygBmZjDWarS7t.hCbox0WwSidPKLyB8GSGg7dfbjS.INnVRlZy_hET5WrsgwsRQMhNRAStQvmyzLp0yD.yuD23WUQiMKy95kWHAFzer_pzFIE5_yQ
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: [patch 2.6.27-rc7] gpio: i2c expanders use subsys_init
+Date: Wed, 24 Sep 2008 10:40:43 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809241040.43943.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is based on the one originally posted by Nick Piggin. His
-patch was very close, but had a couple of small bugs. Nick's original
-comments follow:
+From: David Brownell <dbrownell@users.sourceforge.net>
 
----------------[snip]--------------
+Make the I2C external GPIO expander drivers register themselves
+at subsys_initcall() time when they're statically linked.
 
-This is another relatively naive conversion. Always do the read upfront
-when the page is not uptodate (unless we're in the writethrough path).
+SOC-integrated GPIOs are available starting very early -- early
+in arch_initcall() at latest, but often even before initcalls
+start to run -- so this improves consistency, so more subsystems
+can rely on GPIOs in their own subsys_initcall() code.
 
-Fix an uninitialized data exposure where SetPageUptodate was called
-before the page was uptodate.
+(This isn't a theoretical problem.  This is one of several patches
+needed to resolve oopsing observed when statically linking kernels
+on a DaVinci EVM.  Its pcf857x GPIOs needed to be available well
+before some other drivers initialized.)
 
-SetPageUptodate and switch to writeback mode in the case that the full
-page was dirtied.
+This depends on a patch moving I2C's driver model init earlier
+in the boot sequence; otherwise this change would cause oopsing.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com>
-Acked-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Steve French <smfrench@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
- fs/cifs/file.c |  120 +++++++++++++++++++++++++++----------------------------
- 1 files changed, 59 insertions(+), 61 deletions(-)
+For the 2.6.28-rc0 merge window.  Jean, can you include this
+in your I2C tree, so it only merges after the I2C init patch
+on which it depends?  We want "git bisect" to work.  ;)
 
-diff --git a/fs/cifs/file.c b/fs/cifs/file.c
-index d39e852..c4a8a06 100644
---- a/fs/cifs/file.c
-+++ b/fs/cifs/file.c
-@@ -107,7 +107,7 @@ static inline int cifs_open_inode_helper(struct inode *inode, struct file *file,
- 
- 	/* want handles we can use to read with first
- 	   in the list so we do not have to walk the
--	   list to search for one in prepare_write */
-+	   list to search for one in write_begin */
- 	if ((file->f_flags & O_ACCMODE) == O_WRONLY) {
- 		list_add_tail(&pCifsFile->flist,
- 			      &pCifsInode->openFileList);
-@@ -915,7 +915,7 @@ ssize_t cifs_user_write(struct file *file, const char __user *write_data,
- }
- 
- static ssize_t cifs_write(struct file *file, const char *write_data,
--	size_t write_size, loff_t *poffset)
-+			  size_t write_size, loff_t *poffset)
- {
- 	int rc = 0;
- 	unsigned int bytes_written = 0;
-@@ -1455,49 +1455,52 @@ static int cifs_writepage(struct page *page, struct writeback_control *wbc)
- 	return rc;
- }
- 
--static int cifs_commit_write(struct file *file, struct page *page,
--	unsigned offset, unsigned to)
-+static int cifs_write_end(struct file *file, struct address_space *mapping,
-+			loff_t pos, unsigned len, unsigned copied,
-+			struct page *page, void *fsdata)
- {
--	int xid;
--	int rc = 0;
--	struct inode *inode = page->mapping->host;
--	loff_t position = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
--	char *page_data;
-+	int rc;
-+	struct inode *inode = mapping->host;
- 
--	xid = GetXid();
--	cFYI(1, ("commit write for page %p up to position %lld for %d",
--		 page, position, to));
--	spin_lock(&inode->i_lock);
--	if (position > inode->i_size)
--		i_size_write(inode, position);
-+	cFYI(1, ("write_end for page %p from pos %lld with %d bytes",
-+		 page, pos, copied));
-+
-+	if (!PageUptodate(page) && copied == PAGE_CACHE_SIZE)
-+		SetPageUptodate(page);
- 
--	spin_unlock(&inode->i_lock);
- 	if (!PageUptodate(page)) {
--		position =  ((loff_t)page->index << PAGE_CACHE_SHIFT) + offset;
--		/* can not rely on (or let) writepage write this data */
--		if (to < offset) {
--			cFYI(1, ("Illegal offsets, can not copy from %d to %d",
--				offset, to));
--			FreeXid(xid);
--			return rc;
--		}
-+		char *page_data;
-+		unsigned offset = pos & (PAGE_CACHE_SIZE - 1);
-+		int xid;
-+
-+		xid = GetXid();
- 		/* this is probably better than directly calling
- 		   partialpage_write since in this function the file handle is
- 		   known which we might as well	leverage */
- 		/* BB check if anything else missing out of ppw
- 		   such as updating last write time */
- 		page_data = kmap(page);
--		rc = cifs_write(file, page_data + offset, to-offset,
--				&position);
--		if (rc > 0)
--			rc = 0;
--		/* else if (rc < 0) should we set writebehind rc? */
-+		rc = cifs_write(file, page_data + offset, copied, &pos);
-+		/* if (rc < 0) should we set writebehind rc? */
- 		kunmap(page);
-+
-+		FreeXid(xid);
- 	} else {
-+		rc = copied;
-+		pos += copied;
- 		set_page_dirty(page);
- 	}
- 
--	FreeXid(xid);
-+	if (rc > 0) {
-+		spin_lock(&inode->i_lock);
-+		if (pos > inode->i_size)
-+			i_size_write(inode, pos);
-+		spin_unlock(&inode->i_lock);
-+	}
-+
-+	unlock_page(page);
-+	page_cache_release(page);
-+
- 	return rc;
- }
- 
-@@ -2043,49 +2046,44 @@ bool is_size_safe_to_change(struct cifsInodeInfo *cifsInode, __u64 end_of_file)
- 		return true;
- }
- 
--static int cifs_prepare_write(struct file *file, struct page *page,
--	unsigned from, unsigned to)
-+static int cifs_write_begin(struct file *file, struct address_space *mapping,
-+			loff_t pos, unsigned len, unsigned flags,
-+			struct page **pagep, void **fsdata)
- {
--	int rc = 0;
--	loff_t i_size;
--	loff_t offset;
-+	pgoff_t index = pos >> PAGE_CACHE_SHIFT;
-+	loff_t offset = pos & (PAGE_CACHE_SIZE - 1);
-+
-+	cFYI(1, ("write_begin from %lld len %d", (long long)pos, len));
-+
-+	*pagep = __grab_cache_page(mapping, index);
-+	if (!*pagep)
-+		return -ENOMEM;
- 
--	cFYI(1, ("prepare write for page %p from %d to %d", page, from, to));
--	if (PageUptodate(page))
-+	if (PageUptodate(*pagep))
- 		return 0;
- 
- 	/* If we are writing a full page it will be up to date,
- 	   no need to read from the server */
--	if ((to == PAGE_CACHE_SIZE) && (from == 0)) {
--		SetPageUptodate(page);
-+	if (len == PAGE_CACHE_SIZE && flags & AOP_FLAG_UNINTERRUPTIBLE)
- 		return 0;
--	}
- 
--	offset = (loff_t)page->index << PAGE_CACHE_SHIFT;
--	i_size = i_size_read(page->mapping->host);
-+	if ((file->f_flags & O_ACCMODE) != O_WRONLY) {
-+		int rc;
- 
--	if ((offset >= i_size) ||
--	    ((from == 0) && (offset + to) >= i_size)) {
--		/*
--		 * We don't need to read data beyond the end of the file.
--		 * zero it, and set the page uptodate
--		 */
--		simple_prepare_write(file, page, from, to);
--		SetPageUptodate(page);
--	} else if ((file->f_flags & O_ACCMODE) != O_WRONLY) {
- 		/* might as well read a page, it is fast enough */
--		rc = cifs_readpage_worker(file, page, &offset);
-+		rc = cifs_readpage_worker(file, *pagep, &offset);
-+
-+		/* we do not need to pass errors back
-+		   e.g. if we do not have read access to the file
-+		   because cifs_write_end will attempt synchronous writes
-+		   -- shaggy */
- 	} else {
- 		/* we could try using another file handle if there is one -
- 		   but how would we lock it to prevent close of that handle
- 		   racing with this read? In any case
--		   this will be written out by commit_write so is fine */
-+		   this will be written out by write_end so is fine */
- 	}
- 
--	/* we do not need to pass errors back
--	   e.g. if we do not have read access to the file
--	   because cifs_commit_write will do the right thing.  -- shaggy */
--
- 	return 0;
- }
- 
-@@ -2094,8 +2092,8 @@ const struct address_space_operations cifs_addr_ops = {
- 	.readpages = cifs_readpages,
- 	.writepage = cifs_writepage,
- 	.writepages = cifs_writepages,
--	.prepare_write = cifs_prepare_write,
--	.commit_write = cifs_commit_write,
-+	.write_begin = cifs_write_begin,
-+	.write_end = cifs_write_end,
- 	.set_page_dirty = __set_page_dirty_nobuffers,
- 	/* .sync_page = cifs_sync_page, */
- 	/* .direct_IO = */
-@@ -2110,8 +2108,8 @@ const struct address_space_operations cifs_addr_ops_smallbuf = {
- 	.readpage = cifs_readpage,
- 	.writepage = cifs_writepage,
- 	.writepages = cifs_writepages,
--	.prepare_write = cifs_prepare_write,
--	.commit_write = cifs_commit_write,
-+	.write_begin = cifs_write_begin,
-+	.write_end = cifs_write_end,
- 	.set_page_dirty = __set_page_dirty_nobuffers,
- 	/* .sync_page = cifs_sync_page, */
- 	/* .direct_IO = */
--- 
-1.5.5.1
+ drivers/gpio/max732x.c |    5 ++++-
+ drivers/gpio/pca953x.c |    5 ++++-
+ drivers/gpio/pcf857x.c |    5 ++++-
+ 3 files changed, 12 insertions(+), 3 deletions(-)
 
+--- a/drivers/gpio/max732x.c
++++ b/drivers/gpio/max732x.c
+@@ -372,7 +372,10 @@ static int __init max732x_init(void)
+ {
+ 	return i2c_add_driver(&max732x_driver);
+ }
+-module_init(max732x_init);
++/* register after i2c postcore initcall and before
++ * subsys initcalls that may rely on these GPIOs
++ */
++subsys_initcall(max732x_init);
+ 
+ static void __exit max732x_exit(void)
+ {
+--- a/drivers/gpio/pca953x.c
++++ b/drivers/gpio/pca953x.c
+@@ -289,7 +289,10 @@ static int __init pca953x_init(void)
+ {
+ 	return i2c_add_driver(&pca953x_driver);
+ }
+-module_init(pca953x_init);
++/* register after i2c postcore initcall and before
++ * subsys initcalls that may rely on these GPIOs
++ */
++subsys_initcall(pca953x_init);
+ 
+ static void __exit pca953x_exit(void)
+ {
+--- a/drivers/gpio/pcf857x.c
++++ b/drivers/gpio/pcf857x.c
+@@ -351,7 +351,10 @@ static int __init pcf857x_init(void)
+ {
+ 	return i2c_add_driver(&pcf857x_driver);
+ }
+-module_init(pcf857x_init);
++/* register after i2c postcore initcall and before
++ * subsys initcalls that may rely on these GPIOs
++ */
++subsys_initcall(pcf857x_init);
+ 
+ static void __exit pcf857x_exit(void)
+ {
