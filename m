@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbYIXUs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbYIXUtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755061AbYIXUs2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 16:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbYIXUr7
+	id S1755626AbYIXUtA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 16:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbYIXUsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 16:47:59 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:37523 "HELO
+	Wed, 24 Sep 2008 16:48:03 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:37543 "HELO
 	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753387AbYIXUr5 (ORCPT
+	by vger.kernel.org with SMTP id S1754884AbYIXUr7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 16:47:57 -0400
+	Wed, 24 Sep 2008 16:47:59 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Vhj3EiOPtqXwyt0ffbZ5lYZ8osTtKF+FSSvSFp7gvjZmRAqTY/96Y9AuzyPIAgvKSLx1U5j7WskLzgdXwVbHmY4zmu0bUAn5N6ZI5J/H7dLZEmCvJPasg0U8bCLHH9Fv+BuPphhxnu5hQg3IRHi/TYuUwge3CUu5zhLta2xqBtc=  ;
-X-YMail-OSG: n9JxKt0VM1msZb.DkC_U8f.Uou6fHJQJ7TS76bR9lYtTM0mQt7A6TtLbNNC0xYmnEYxpDqa8vKlC11.UEnlLzubZGe018h8awco_FzpArrIxsHp.Wa7FZY8ne9GGD7Ksda4-
+  b=VdYsl/cjbJwtrx3wEL6dMqIFiIIZAqglOxxrhZE14NyLeUknxuCXzg/bTzSj7O4/cSBR2YfQ9+wzqq1To4SagGqG7nomZBZJ0DPY/46BCVPcBM8185E2OHBv4MEPovEexHVyGf3QH16UgoxSgSPsYyV2gCNguP05k9imqfXkIHg=  ;
+X-YMail-OSG: b9WZR0EVM1kmst7sRGWwxdOMpKPTkcqV0u0dzp8dwRfpvFtwtsLzaSamUCI8QdVXyPfo.9UdYft9zo1r_FA7yxj_PyHCT6aVp.owIhmsixuT9wzYh7_I.l3IjeJl0mRBJmMCiWTWbIIw.ift.NszhlxRzIqT
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH 0/3] Patches to support QE USB Host Controller
-Date: Wed, 24 Sep 2008 13:04:24 -0700
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
+Date: Wed, 24 Sep 2008 13:15:26 -0700
 User-Agent: KMail/1.9.9
-Cc: linuxppc-dev@ozlabs.org, avorontsov@ru.mvista.com,
-       "Greg Kroah-Hartman" <greg@kroah.com>, linux-usb@vger.kernel.org,
-       Li Yang <leoli@freescale.com>, linux-kernel@vger.kernel.org,
-       Timur Tabi <timur@freescale.com>
-References: <20080808161717.GA19095@polina.dev.rtsoft.ru> <200808141415.42109.laurentp@cse-semaphore.com>
-In-Reply-To: <200808141415.42109.laurentp@cse-semaphore.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Scott Wood <scottwood@freescale.com>, greg@kroah.com,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+References: <Pine.LNX.4.44L0.0808281613540.3844-100000@iolanthe.rowland.org> <200808290027.59127.arnd@arndb.de>
+In-Reply-To: <200808290027.59127.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809241304.24878.david-b@pacbell.net>
+Message-Id: <200809241315.26794.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 August 2008, Laurent Pinchart wrote:
-> 
-> > David, could you bear with gpio_to_chip() exported function, just as
-> > a stopgap for a proper api?
-> 
-> I need gpio_to_chip() (or another 'proper API') as well for RTS/CTS
-> based flow control in the CPM/CPM2 UART driver. 
+On Thursday 28 August 2008, Arnd Bergmann wrote:
+> If the gadget hardware drivers were registering the device with a
+> gadget_bus_type, you could still enforce the "only one protocol"
+> rule by binding every protocol to every device in that bus type.
 
-I'l still say "proper".  This should be straightforward; along
-the lines of
+And you'd have to rewrite all the gadget drivers ("protocol")
+to work with multiple upstream ports.
 
-	struct qe_pin {
-		struct ... *qe_ports;	/* includes gpio_chip */
-		unsigned offset;
-	};
+That gets messy with e.g. the Ethernet links ... each would
+need to be configured with unique ethernet address pairs.
+Likewise with serial numbers.
 
-And instead of having the driver look up a "gpio" for such
-non-GPIO usage, have it call something that sets up a qe_pin.
-All that infrastructure exists already...
-
-Then drivers can use calls which mux the pin into its "normal"
-mode (QE function of some kind), or into its "gpio" mode.
-
-The gpio number would be gpio_chip->base + offset, and the
-gpio_chip is visible -- in a fully typesafe manner! -- from
-the qe_ports structure.
-
-No type-unsafe interfaces.  No confusion between roles of a
-given pin.  No hidden assumption there's only one kind of GPIO
-(backed by QE ports).  And ... no need to change any core
-structural assumptions of the GPIO framework.
-
-- Dave
+I've learned to just accept complaints in this area as sort
+of a price for existing.  It's all complaints, no patches.
+So obviously the complaints don't have any requirements
+backing them.  ;)
 
