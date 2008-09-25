@@ -1,129 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbYIYAfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588AbYIYAiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615AbYIYAfy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 20:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYIYAfm
+	id S1753588AbYIYAiV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 20:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYIYAiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 20:35:42 -0400
-Received: from mail.windriver.com ([147.11.1.11]:65515 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752000AbYIYAfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 20:35:42 -0400
-From: Kevin Hao <kexin.hao@windriver.com>
-To: Jeff Garzik <jgarzik@redhat.com>, Jay Cliburn <jacliburn@bellsouth.net>,
-       Chris Snook <csnook@redhat.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] net: remove LLTX in atl2 driver
-Date: Thu, 25 Sep 2008 08:35:22 +0800
-Message-Id: <1222302922-13200-1-git-send-email-kexin.hao@windriver.com>
-X-Mailer: git-send-email 1.5.6.2.220.g44701
+	Wed, 24 Sep 2008 20:38:13 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33896 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751734AbYIYAiM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 20:38:12 -0400
+Message-ID: <48DADD5D.9010703@zytor.com>
+Date: Wed, 24 Sep 2008 17:37:49 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Yan Li <elliot.li.tech@gmail.com>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       joerg.roedel@amd.com, rjmaomao@gmail.com,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
+Subject: Re: [PATCH 1/2] VMware guest detection for x86 and x86-64
+References: <48D12490.5010003@zytor.com> <48da36b9.160d6e0a.22a5.ffffec9d@mx.google.com> <48DA6887.1060709@zytor.com> <20080925003220.GE21049@yantp.cn.ibm.com>
+In-Reply-To: <20080925003220.GE21049@yantp.cn.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When NETIF_F_LLTX is set, the atlx driver will use a private lock.
-But in recent kernels this implementation seems redundant and
-can cause problems where AF_PACKET sees things twice. Since
-NETIF_F_LLTX is marked as deprecated and shouldn't be used in
-new driver, this patch removes NETIF_F_LLTX and adds a mmiowb
-before sending packet.
+Yan Li wrote:
+> 
+> If you can tell me what manufacture vendor string is in Virtual PC I
+> can make another similar patch using dmi_name_in_vendors().
+> 
 
-Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
----
- drivers/net/atlx/atl2.c |   24 +-----------------------
- drivers/net/atlx/atl2.h |    1 -
- 2 files changed, 1 insertions(+), 24 deletions(-)
+Supposedly "Microsoft Corporation", "Virtual Machine".  No idea what 
+pre-MS versions of VPC return.
 
-diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
-index b2995ac..3df4ee1 100644
---- a/drivers/net/atlx/atl2.c
-+++ b/drivers/net/atlx/atl2.c
-@@ -116,7 +116,6 @@ static int __devinit atl2_sw_init(struct atl2_adapter *adapter)
- 	hw->max_frame_size = adapter->netdev->mtu;
- 
- 	spin_lock_init(&adapter->stats_lock);
--	spin_lock_init(&adapter->tx_lock);
- 
- 	set_bit(__ATL2_DOWN, &adapter->flags);
- 
-@@ -749,11 +748,7 @@ static void atl2_down(struct atl2_adapter *adapter)
- 	 * reschedule our watchdog timer */
- 	set_bit(__ATL2_DOWN, &adapter->flags);
- 
--#ifdef NETIF_F_LLTX
--	netif_stop_queue(netdev);
--#else
- 	netif_tx_disable(netdev);
--#endif
- 
- 	/* reset MAC to disable all RX/TX */
- 	atl2_reset_hw(&adapter->hw);
-@@ -829,7 +824,6 @@ static inline int TxdFreeBytes(struct atl2_adapter *adapter)
- static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
- {
- 	struct atl2_adapter *adapter = netdev_priv(netdev);
--	unsigned long flags;
- 	struct tx_pkt_header *txph;
- 	u32 offset, copy_len;
- 	int txs_unused;
-@@ -845,16 +839,6 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
- 		return NETDEV_TX_OK;
- 	}
- 
--#ifdef NETIF_F_LLTX
--	local_irq_save(flags);
--	if (!spin_trylock(&adapter->tx_lock)) {
--		/* Collision - tell upper layer to requeue */
--		local_irq_restore(flags);
--		return NETDEV_TX_LOCKED;
--	}
--#else
--	spin_lock_irqsave(&adapter->tx_lock, flags);
--#endif
- 	txs_unused = TxsFreeUnit(adapter);
- 	txbuf_unused = TxdFreeBytes(adapter);
- 
-@@ -862,7 +846,6 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
- 		txs_unused < 1) {
- 		/* not enough resources */
- 		netif_stop_queue(netdev);
--		spin_unlock_irqrestore(&adapter->tx_lock, flags);
- 		return NETDEV_TX_BUSY;
- 	}
- 
-@@ -908,8 +891,7 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
- 	ATL2_WRITE_REGW(&adapter->hw, REG_MB_TXD_WR_IDX,
- 		(adapter->txd_write_ptr >> 2));
- 
--	spin_unlock_irqrestore(&adapter->tx_lock, flags);
--
-+	mmiowb();
- 	netdev->trans_start = jiffies;
- 	dev_kfree_skb_any(skb);
- 	return NETDEV_TX_OK;
-@@ -1447,10 +1429,6 @@ static int __devinit atl2_probe(struct pci_dev *pdev,
- 	netdev->features |= (NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX);
- #endif
- 
--#ifdef NETIF_F_LLTX
--	netdev->features |= NETIF_F_LLTX;
--#endif
--
- 	/* Init PHY as early as possible due to power saving issue  */
- 	atl2_phy_init(&adapter->hw);
- 
-diff --git a/drivers/net/atlx/atl2.h b/drivers/net/atlx/atl2.h
-index 6e1f28f..09974df 100644
---- a/drivers/net/atlx/atl2.h
-+++ b/drivers/net/atlx/atl2.h
-@@ -462,7 +462,6 @@ struct atl2_adapter {
- 	u16 link_duplex;
- 
- 	spinlock_t stats_lock;
--	spinlock_t tx_lock;
- 
- 	struct work_struct reset_task;
- 	struct work_struct link_chg_task;
--- 
-1.5.6.2.220.g44701
-
+	-hpa
