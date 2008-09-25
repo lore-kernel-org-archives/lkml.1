@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYIYBgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYIYBhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753245AbYIYBgm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 21:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYIYBgd
+	id S1753922AbYIYBhX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 21:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYIYBhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 21:36:33 -0400
-Received: from szxga04-in.huawei.com ([119.145.14.67]:39769 "EHLO
-	szxga04-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYIYBgc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 21:36:32 -0400
-Date: Thu, 25 Sep 2008 09:36:29 +0800
-From: Franko Fang <huananhu@huawei.com>
-Subject: Re: PATCH 10/4]linux-usb: To support more Huawei data card productIDs,
- fix kernel 2.6.27-rc7
-To: Greg KH <greg@kroah.com>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, zihan@huawei.com,
-       Lin.Lei@huawei.com, zhangqianchun@huawei.com
-Message-id: <025201c91eaf$224001e0$f9100b0a@china.huawei.com>
-MIME-version: 1.0
-X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-X-Priority: 3
-X-MSMail-priority: Normal
-References: <faf7c9cb3c6f0.3c6f0faf7c9cb@huawei.com>
- <f9fd97f63cf97.3cf97f9fd97f6@huawei.com> <20080924150304.GC26466@kroah.com>
+	Wed, 24 Sep 2008 21:37:07 -0400
+Received: from mx1.suse.de ([195.135.220.2]:56091 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752077AbYIYBhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 21:37:05 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs / Novell
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH 2/2] file capabilities: remove CONFIG_SECURITY_FILE_CAPABILITIES
+Date: Thu, 25 Sep 2008 03:36:27 +0200
+User-Agent: KMail/1.9.9
+Cc: Chris Wright <chrisw@sous-sol.org>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Randy Dunlap <randy.dunlap@oracle.com>
+References: <20080924020432.GA25997@us.ibm.com> <20080924234857.GA22375@sequoia.sous-sol.org> <20080925010233.GB7324@us.ibm.com>
+In-Reply-To: <20080925010233.GB7324@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809250336.27647.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. In this patch, we want to do one thing: add more Huawei product IDs into the USB driver. Then it can support  more Huawei data card devices. 
-    So I make them in one patch.
+On Thursday, 25 September 2008 3:02:33 Serge E. Hallyn wrote:
+> Quoting Chris Wright (chrisw@sous-sol.org):
+> > What is being done to enable userspace in distros to make those 570
+> > bytes generally useful?
+>
+> Fedora 9 and ubuntu intrepid already have full capabilities support and
+> modern libcap.  Sles is set to ship with a modern libcap, and according
+> to what Andreas is saying, if we can provide them with the no_file_caps
+> boot option then suse is willing to have a kernel with capabilities
+> turned on.
 
-2. To change usb_stor_huawei_e220_init function as follows, that's because in the USB standard, while sending SET_FETURE_D to the device, it requires the corresponding data to be zero, and its sending length also must be zero.
-    In our old solution, it can be compatible with our WCDMA data card devices, but can not support our CDMA data card devices. 
-    But in this new solution, it can be compatible with all of our data card devices.
+Yes.
 
-    Hope that my interpreting can satify you.
------------------------------
->> --- linux-2.6.27-rc7-orig/drivers/usb/storage/initializers.c 2008-09-22 06:29:55.000000000 +0800
->> +++ linux-2.6.27-rc7/drivers/usb/storage/initializers.c 2008-09-24 12:04:40.000000000 +0800
->> @@ -95,11 +95,11 @@ int usb_stor_huawei_e220_init(struct us_
->>  {
->>  int result;
->>  
->> - us->iobuf[0] = 0x1;
->> + us->iobuf[0] = 0x0;
->>  result = usb_stor_control_msg(us, us->send_ctrl_pipe,
->>        USB_REQ_SET_FEATURE,
->>        USB_TYPE_STANDARD | USB_RECIP_DEVICE,
->> -       0x01, 0x0, us->iobuf, 0x1, 1000);
->> +       0x01, 0x0, us->iobuf, 0x0, 1000);
--------------------------------------------------------------------------
+> I think gentoo still comes with libcap-1.  Need to look into 
+> changing that.
+>
+> I suppose the next baby-step will be to do get rid of setuid on little
+> things like ping.
 
-Franko Fang
-2008-9-25
+Real file capability support in RPM seems important to me; hacking this 
+into %post scripts is not a reasonable approach.
 
-
-
------ Original Message ----- 
-From: "Greg KH" <greg@kroah.com>
-To: "fangxiaozhi 00110321" <huananhu@huawei.com>
-Cc: <linux-usb@vger.kernel.org>; <linux-kernel@vger.kernel.org>; <zihan@huawei.com>; <Lin.Lei@huawei.com>; <zhangqianchun@huawei.com>
-Sent: Wednesday, September 24, 2008 11:03 PM
-Subject: Re: PATCH 10/4]linux-usb: To support more Huawei data card productIDs, fix kernel 2.6.27-rc7
-
-
-> On Wed, Sep 24, 2008 at 02:08:12PM +0800, fangxiaozhi 00110321 wrote:
->> 
->>  From: fangxiaozhi <huananhu@huawei.com>
->>  
->>  1. This patch is based on the kernel of 2.6.27-rc7 2. To declare the unusual device for new Huawei data card devices 
->>  in unusual_devs.h
->>  3. To modify the data value and length in the function of 
->>  usb_stor_huawei_e220_init in initializers.c
->>  4. To declare more new product IDs in option.c.
-> 
-> I thought I asked you to split this up into 4 different patches?  Hm,
-> maybe three should be all that is needed, I thought your original one
-> did 4 different things.
-> 
-> And isn't your modification of the usb_stor_huawei_e220_init function
-> going to break the devices that it currently works for?  Or has it
-> always been wrong?
-> 
-> thanks,
-> 
-> greg k-h
+Thanks,
+Andreas
