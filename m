@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYIYO5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbYIYO7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbYIYO5w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 10:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbYIYO5i
+	id S1755982AbYIYO7x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 10:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYIYO7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 10:57:38 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:44320 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755768AbYIYO5g (ORCPT
+	Thu, 25 Sep 2008 10:59:43 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34817 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbYIYO7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 10:57:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=X3eTDAd2NGFdYLKVbG1GieA3zgF+9cu80PfCmmfcOwrW++UlNrfjhFhZnVLbV91RJA
-         5F2Gg7PM/HD6kclW8prXpGEaBkA+19jg8AvsXbvqfg+hVOCuge/1ot7MrjuZ3OrRHIxc
-         Ybha08OeGsAYchqMNDJl11RrUTRfOdtVdzhE4=
-Message-ID: <1ba2fa240809250757x32aa450k523d71e555c221e4@mail.gmail.com>
-Date: Thu, 25 Sep 2008 17:57:33 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: pull request: wireless-2.6 2008-09-24
-Cc: "Zhu Yi" <yi.zhu@intel.com>, "davem@davemloft.net" <davem@davemloft.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080925114133.GA5044@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Sep 2008 10:59:42 -0400
+Subject: Re: [PATCH] x86/pci: fix dmar_tbl early_ioremap leak v2
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, mark gross <mgross@linux.intel.com>
+In-Reply-To: <200809250743.35271.jbarnes@virtuousgeek.org>
+References: <1222327705-22048-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080925081158.GA30349@elte.hu>
+	 <200809250743.35271.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Thu, 25 Sep 2008 07:59:17 -0700
+Message-Id: <1222354757.19709.5.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080924231720.GD3639@tuxdriver.com>
-	 <1222321622.2510.455.camel@debian.sh.intel.com>
-	 <20080925114133.GA5044@tuxdriver.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 2:41 PM, John W. Linville
-<linville@tuxdriver.com> wrote:
-> On Thu, Sep 25, 2008 at 01:47:02PM +0800, Zhu Yi wrote:
->> On Wed, 2008-09-24 at 17:17 -0600, John W. Linville wrote:
->> > Dave,
->> >
->> > One more for 2.6.27 -- a fix for a possible interrupt storm.  There is
->> > even a link in the commit log to a youtube video of the storm in
->> > progress. :-)
->> >
->> > Let me know if there are problems!
->>
->> Can you also add this one? It doesn't panic the kernel when a frame from
->> firmware is invalid.
->>
->> http://marc.info/?l=linux-wireless&m=122219037706528&w=2
->
-> Is there an open bug report for that anywhere?  Is this something
-> that real users (no offense to Johannes) are likely to hit?
+On Thu, 2008-09-25 at 07:43 -0700, Jesse Barnes wrote:
+> On Thursday, September 25, 2008 1:11 am Ingo Molnar wrote:
+> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > > use early_acpi_os_unmap_memory
+> > >
+> > > v2: move unmap_memory early...
+> > >
+> > > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> > >
+> > > ---
+> > >  drivers/pci/dmar.c |    9 +++++++--
+> > >  1 file changed, 7 insertions(+), 2 deletions(-)
+> >
+> > since this depends on other x2apic/sparseirq changes in -tip i've
+> > applied it to tip/irq/sparseirq.
+> >
+> > Jesse, any objections?
+> 
+> Nope, but it would be good to get Dave or Mark's ack (Dave owns this code 
+> now).
 
-I'm just exporting the major bugs from our internal database to
-buzilla, 5000 is new so
-we are hitting the problems during testing  before users report them.
+I own the code in theory, but am not yet sufficiently competent.
 
-Now I don't know if it was good idea to push the driver upstream same
-time as it hits the market.
-Tomas
+My VT-d hardware arrived just before I left the country for KS+LPC, so
+is gathering dust in my absence. I get home this weekend.
+
+_Next_ week, if you see me thinking about _anything_ other than the
+IOMMU, please slap me.
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
