@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYIYJ5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbYIYKGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbYIYJ5K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 05:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbYIYJ44
+	id S1753855AbYIYKGI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 06:06:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbYIYKFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 05:56:56 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:47767 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752626AbYIYJ44 (ORCPT
+	Thu, 25 Sep 2008 06:05:55 -0400
+Received: from mail.transmode.se ([83.241.175.147]:15537 "EHLO
+	mail.transmode.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863AbYIYKFz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 05:56:56 -0400
-From: David Sanders <linux@sandersweb.net>
-Reply-To: linux@sandersweb.net
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] VMware guest detection for x86 and x86-64
-Date: Thu, 25 Sep 2008 05:56:48 -0400
-User-Agent: KMail/1.9.5
-Cc: Yan Li <elliot.li.tech@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, joerg.roedel@amd.com, rjmaomao@gmail.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
-References: <48D12490.5010003@zytor.com> <48DA6887.1060709@zytor.com> <20080925003220.GE21049@yantp.cn.ibm.com>
-In-Reply-To: <20080925003220.GE21049@yantp.cn.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 25 Sep 2008 06:05:55 -0400
+Subject: Re: UIO device name
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Reply-To: joakim.tjernlund@transmode.se
+To: Ben Nizette <bn@niasdigital.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, "Hans J. Koch" <hjk@linutronix.de>,
+       gregkh@suse.de, Linux-Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1222297057.4037.12.camel@moss.renham>
+References: <1222248093.12624.188.camel@gentoo-jocke.transmode.se>
+	 <20080924093551.GB7591@linux-sh.org>
+	 <1222250279.12624.195.camel@gentoo-jocke.transmode.se>
+	 <20080924102230.GB2973@local>
+	 <1222255981.12624.215.camel@gentoo-jocke.transmode.se>
+	 <20080924114743.GA9694@linux-sh.org>
+	 <1222259894.12624.247.camel@gentoo-jocke.transmode.se>
+	 <1222297057.4037.12.camel@moss.renham>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809250556.49887.linux@sandersweb.net>
+Organization: Transmode AB
+Date: Thu, 25 Sep 2008 12:05:51 +0200
+Message-Id: <1222337151.12624.293.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 September 2008 20:32, Yan Li wrote:
-> If you can tell me what manufacture vendor string is in Virtual PC I
-> can make another similar patch using dmi_name_in_vendors().
-From: i8042-x86ia64io.h
+On Thu, 2008-09-25 at 08:57 +1000, Ben Nizette wrote:
+> On Wed, 2008-09-24 at 14:38 +0200, Joakim Tjernlund wrote:
+> > On Wed, 2008-09-24 at 20:47 +0900, Paul Mundt wrote:
+> > > > 
+> > > Nonsense, there is nothing wrong with UIO's interface as it is today.
+> > > It is no different from sound cards, cdroms, and so on. If you want the
+> > 
+> > It is different, cdroms and audio are named differently. If they were
+> > using UIO they would all be named /dev/uio%d.
+> > 
+> > Consider uio_cif and uio_smx, is it impossible to image that such
+> > devices could use another name such as crypto_smx%d instead?
+> > 
+> 
+> My system does use uio_smx and uio_pdrv, they both appear as /dev/uioX.
+> This to me is just like having /dev/hda, /dev/hdb rather
+> than /dev/myrootpartition, /dev/somebackupspace or whatever.  In this
+> case you do have a /dev/cdrom symlink but it's just that, a symlink set
+> up by scripts.  The kernel doesn't (and shouldn't) make that naming
+> decision for you.
+> 
+> My software just walks /sys/class/uio/uioX/name, finds the one which
+> matches then opens the corresponding device.  No scripts needed, no
+> in-kernel hackery or policy making, just the interface used as the maker
+> intended.  What's your problem with this approach?
 
-	{
-		.ident = "Microsoft Virtual Machine",
-		.matches = {
-			DMI_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "Virtual Machine"),
-			DMI_MATCH(DMI_PRODUCT_VERSION, "VS2005R2"),
-		},
-	},
+My problem is this, uio is a generic container for any user space device
+and by itself it doesn't mean much. You put some protocol driver on top
+of uio, such as uio_smx, to make it mean something. 
+
+Comparing uio with hdX is wrong as hdX means something, it is a block
+device for a disk. 
+A better comparison would be if all kernel devices were named kio%d and
+you had to scan /sys to find the name hdX.
+
+Look at the spi subsystem, the protocol drivers name them self.
+
+ Jocke
