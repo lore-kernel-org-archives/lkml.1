@@ -1,39 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbYIYUIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbYIYULS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755468AbYIYUIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 16:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYIYUID
+	id S1755307AbYIYULS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 16:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbYIYULI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 16:08:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50346
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753457AbYIYUIB (ORCPT
+	Thu, 25 Sep 2008 16:11:08 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:26234 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753652AbYIYULH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 16:08:01 -0400
-Date: Thu, 25 Sep 2008 13:07:49 -0700 (PDT)
-Message-Id: <20080925.130749.220797021.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: sebastien.dugue@bull.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, torvalds@gtf.org,
-       akpm@linux-foundation.org, osstklei@de.ibm.com
-Subject: Re: [git patches] net driver updates for .28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48DBCC8D.7060709@garzik.org>
-References: <20080924230710.GA22856@havoc.gtf.org>
-	<20080925085556.4c430028@bull.net>
-	<48DBCC8D.7060709@garzik.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 25 Sep 2008 16:11:07 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: matthieu castet <castet.matthieu@free.fr>
+Subject: Re: [Bug 11603] Re: ACPI PnP on Intel MU440EX
+Date: Thu, 25 Sep 2008 13:53:55 -0600
+User-Agent: KMail/1.9.9
+Cc: Martin Doucha <next_ghost@quick.cz>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       bugme-daemon@bugzilla.kernel.org
+References: <48BA9B2C.7060007@quick.cz> <200809241705.13410.bjorn.helgaas@hp.com> <48DBDDE6.3060301@free.fr>
+In-Reply-To: <48DBDDE6.3060301@free.fr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809251353.55554.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Thu, 25 Sep 2008 13:38:21 -0400
+> Aren't parport still probing it's own port if pnp failed ?
 
-> David, please revert 2eefbd63d0c85daa1317636474c226e236beba81 by
-> request of author, maintainer, and maintainer's maintainer :)
+Could be; I haven't looked.  I just assumed parport didn't do the
+legacy probe because Martin reported that the port didn't work when
+PNPACPI was enabled.
 
-Done.
+And I retract my "parport.nopnp" idea.  A positive statement like
+"parport.legacy" or something along the lines of "look here" would
+be better.  It's safe to use PNP to probe; it just won't find anything.
+All we want is something to tell parport to do the legacy probe in
+addition.
+
