@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbYIYQjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbYIYQlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbYIYQjX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 12:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbYIYQjP
+	id S1755157AbYIYQlI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 12:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYIYQkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 12:39:15 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:54057 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753016AbYIYQjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 12:39:14 -0400
-Date: Thu, 25 Sep 2008 20:45:17 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Ani Sinha <kernel@anirban.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: wait_event_interruptible_timeout
-Message-ID: <20080925164517.GA194@tv-sign.ru>
-References: <13c67e2c0809242105t77ca9a6k2faf1e85064967aa@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 25 Sep 2008 12:40:55 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:37613 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752658AbYIYQkz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 12:40:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Zvh6bPTOOVj4QQKtPEvbezsQEu43VA4V6xEBnBQsL7j6HW2WIsTyi2a3V94zeoRm7S
+         ubHKSv1bOvZxD/GliIvWMiYySyoZi7MSS8NezXdXadvak7WxyIb1gzqxJyECpa5fbPEe
+         E8+b4LR76tEPsfQBejG833PoBtm6Dvp2TU5j4=
+Message-ID: <c62985530809250940s1cdab6dau87bee24b6bc6c089@mail.gmail.com>
+Date: Thu, 25 Sep 2008 18:40:53 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Pekka Paalanen" <pq@iki.fi>
+Subject: Re: [Patch -tip 1/3] Tracing/ftrace: Relay unhandled entry output
+Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080925190149.208ee3a4@daedalus.pq.iki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <13c67e2c0809242105t77ca9a6k2faf1e85064967aa@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+References: <48DB81BA.2050204@gmail.com> <20080925123802.GA6900@elte.hu>
+	 <48DBA683.8000708@gmail.com>
+	 <20080925180916.75d3c9ec@daedalus.pq.iki.fi>
+	 <c62985530809250833x2468f07an547a82eaa1329d9@mail.gmail.com>
+	 <20080925184919.016d8957@daedalus.pq.iki.fi>
+	 <c62985530809250856l2c4e827cv2123b6c3c21210d7@mail.gmail.com>
+	 <20080925190149.208ee3a4@daedalus.pq.iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/24, Ani Sinha wrote:
->
-> I have noticed an issue with wait_event_interruptible_timeout() API
-> which I will try to explain below:
->
-> wait_event_interruptible_timeout() is supposed to wait until one of
-> the following happens:
->
-> (a)    Timeout occurs (with no signals or the event of interest
-> happening), in which case it returns 0
->
-> (b)   The process receives a signal and wakes up prematurely (i.e.,
-> before its timeout expired or the event of interest occurred). In this
-> case, it returns ?ERESTARTSYS. I will come back to this later.
->
-> (c)    Of course, the last obvious way to wake up is that the event of
-> interest occurs and it wakes up all (or one) process on the wait
-> queue. In that case, it returns the # of jiffies that is left before
-> the timeout would have occurred (unslept or balance jiffies).
->
->
-> What if I really wanted to sleep for timeout interval and no more?
-> That is to say, if I wake up on a signal and I wanted to know how many
-> jiffies I did used up while sleeping and how many I am left with (just
-> like poll or select does)?
+2008/9/25 Pekka Paalanen <pq@iki.fi>:
+> Oh cool, sounds like I should try linux-next when I can.
 
-You can read jiffies before and after wait_event_interruptible_timeout().
 
-> That way,  when I retry the API, I can tell
-> it to sleep only by the amount of my balance sleeping time.
+It is on -tip if you want :)
 
-Something like
+So, unless someone is opposed to. I will send a patch which define
+three possible values
+for the print_line callback. I will define these values on trace.h
+Why not:
 
-	unsigned long now = jiffies;
-	ret = wait_event_interruptible_timeout(..., timeout);
-	if (ret < 0) {
-		next_timeout = now + timeout - jiffies;
-		if (next_timeout < 0)
-			next_timeout = 0;
-	}
+#define TRACE_TYPE_PARTIAL_LINE 0
+#define TRACE_TYPE_HANDLED 1
+#define TRACE_TYPE_UNHANDLED 2   => will relay on default functions
 
-We can even add another wait_ helper which treats "timeout" as lvalue
-and updates it before return. I dunno.
-
-> Unfortunately, the interface looses this information since it
-> overrides the return value with ERESTARTSYS.
-
-Yes you are right, but
-
-> I feel there is a need to
-> modify the code in order to correct this behavior.
-
-I'm afraid it would be a pain to modify this API. But please
-do not hesitate to make the patch if you think the current API
-can be improved. At worst, the patch will be nacked ;)
-
-Oleg.
-
+Hmm I'm questionning about the relevance of this kind of patch since
+the tracing API is in refactoring...
