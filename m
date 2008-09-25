@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbYIYVti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbYIYVwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbYIYVti (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbYIYVt3
+	id S1753680AbYIYVwP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYIYVv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:49:29 -0400
-Received: from styx.suse.cz ([82.119.242.94]:59763 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752908AbYIYVt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:49:28 -0400
-Date: Fri, 26 Sep 2008 00:45:57 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Dave Airlie <airlied@gmail.com>
-cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
-       Jeff Garzik <jeff@garzik.org>, davem@davemloft.net,
-       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       chrisl@vmware.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-In-Reply-To: <21d7e9970809251445s216efcc3kaba639d5e29c51aa@mail.gmail.com>
-Message-ID: <alpine.LNX.1.10.0809260042380.3389@pegasus.suse.cz>
-References: <20080923.150722.141587696.davem@davemloft.net>  <200809251156.10648.jbarnes@virtuousgeek.org>  <alpine.LNX.1.10.0809252218470.3389@pegasus.suse.cz>  <200809251236.12287.jbarnes@virtuousgeek.org>  <alpine.LNX.1.10.0809252234400.3389@pegasus.suse.cz>
-  <21d7e9970809251406gb2bdacbuf9ff1bde3d118cdb@mail.gmail.com>  <4807377b0809251442x67e4e9eia706b70ae1c177ca@mail.gmail.com> <21d7e9970809251445s216efcc3kaba639d5e29c51aa@mail.gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Thu, 25 Sep 2008 17:51:59 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39768 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753705AbYIYVv6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 17:51:58 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48DC07E0.5090007@s5r6.in-berlin.de>
+Date: Thu, 25 Sep 2008 23:51:28 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Greg KH <gregkh@suse.de>, Paul Mundt <lethal@linux-sh.org>,
+       Parag Warudkar <parag.lkml@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andreas Gruenbacher <agruen@suse.de>, Jeff Mahoney <jeffm@suse.de>
+Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
+References: <20080924230054.GA27730@suse.de> <f7848160809241639hbe716c9q76b0e1b83d853721@mail.gmail.com> <20080925020608.GA13869@suse.de> <f7848160809241959s3f3092b2nf05d2245a08bed03@mail.gmail.com> <20080925052725.GA5739@linux-sh.org> <20080925074923.4845005b.randy.dunlap@oracle.com> <20080925105320.ef70065b.randy.dunlap@oracle.com> <20080925204800.GA11225@suse.de> <48DBFCDD.5090908@oracle.com>
+In-Reply-To: <48DBFCDD.5090908@oracle.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Sep 2008, Dave Airlie wrote:
+Randy Dunlap wrote:
+>>> ISTM that the real problems are (a) it's easier to introduce new staging/crap
+>>> than it is to fix EXPERIMENTAL and (b) no one wants to try to fix EXPERIMENTAL.
+...
+> I don't disagree with the CRAP name... fwiw.
+> I think that we have enough quality problems without adding crap.
 
-> >> I'd target three areas PAT, pciaccess and e1000e itself.
-> > ubuntu has CONFIG_X86_PAT disabled for at least i386 arch, maybe that
-> > is relevant.
-> It rules out PAT I suppose, they have seen the issue as well.
-
-I wasn't able to rule out PAT from the suse bugreports POV, as we have PAT 
-enabled both for 32bit and 64bit x86.
-
-If Ubuntu has it disabled also for 64bit x86 (where do these guys have 
-.config files to check?), I think we can definitely rule out PAT, as there 
-has been at least one report from Ubuntu user on this very issue.
-
+True.  OTOH many if not most of the -staging drivers are ones which are 
+already in use.  Their users already deal with whatever quality problems 
+these drivers have, in addition to having to fight with the installation 
+hassles that are inherent to out-of-tree drivers.
 -- 
-Jiri Kosina
-SUSE Labs
+Stefan Richter
+-=====-==--- =--= ==--=
+http://arcgraph.de/sr/
