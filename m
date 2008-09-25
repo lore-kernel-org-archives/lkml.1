@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYIYTc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYIYThH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYIYTc7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 15:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYIYTcv
+	id S1754578AbYIYThH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 15:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYIYTgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 15:32:51 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:14699 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbYIYTcu (ORCPT
+	Thu, 25 Sep 2008 15:36:55 -0400
+Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:43466 "HELO
+	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753223AbYIYTgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 15:32:50 -0400
-X-BigFish: VPS-35(zz1432R98dR936eQ62a3L1805Mzzzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K7RNM3-01-8PH-01
-Date: Thu, 25 Sep 2008 21:32:28 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net
-Subject: Re: oprofile: Implement Intel architectural perfmon
-Message-ID: <20080925193228.GH23557@erda.amd.com>
-References: <1219250433-25516-1-git-send-email-andi@firstfloor.org>
+	Thu, 25 Sep 2008 15:36:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=fhGcbrgvCyZjdKJ6hT+NzwpI/8x3pzoG4SmzSHblN2b/y1/y9HP2HQN67QYql+K99pq80g/1OYMXzxx1mn9YFVUIcbV1+1Ew5iWQE5m6s2HOSvEUYP06yIsWeSAE3XF0;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+Date: Thu, 25 Sep 2008 12:36:09 -0700
+User-Agent: KMail/1.9.9
+Cc: Frans Pop <elendil@planet.nl>, airlied@gmail.com,
+       Jeff Garzik <jeff@garzik.org>, davem@davemloft.net,
+       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       chrisl@vmware.com, Ingo Molnar <mingo@elte.hu>,
+       jesse.brandeburg@gmail.com
+References: <20080923.150722.141587696.davem@davemloft.net> <200809251156.10648.jbarnes@virtuousgeek.org> <alpine.LNX.1.10.0809252218470.3389@pegasus.suse.cz>
+In-Reply-To: <alpine.LNX.1.10.0809252218470.3389@pegasus.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1219250433-25516-1-git-send-email-andi@firstfloor.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 25 Sep 2008 19:32:33.0875 (UTC) FILETIME=[75592230:01C91F45]
+Message-Id: <200809251236.12287.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
+On Thursday, September 25, 2008 1:22 pm Jiri Kosina wrote:
+> On Thu, 25 Sep 2008, Jesse Barnes wrote:
+> > > Yes, I think that xorg/xorg i915 driver/libdrm/GEM/whatever are the
+> > > biggest suspect currently, according to the data that has been
+> > > gathered so far.
+> >
+> > We have confirmation that this isn't GEM related; according to the
+> > Novell bug at https://bugzilla.novell.com/show_bug.cgi?id=425480 people
+> > have hit the problem with kernels w/o GEM.
+>
+> But the xorg intel driver shipped with xorg 7.4 already has support for
+> GEM, right? So there could still be some bug in the GEM-aware driver
+> running on non-GEM kernel, can't it?
 
-I have uploaded all pending OProfile patches to my kernel.org
-repository. As we already talked about this, there are changes in that
-implement model specific init/exit functions. Please change your patch
-in a way that it uses these functions. This will make your
-implementation cleaner. I will also send some more comments to the
-patches itself. It would help me if you could send the new patches
-relative to my tree.
+X.Org 7.4 came with xf86-video-intel 2.4.2 right?  That doesn't have any GEM 
+bits in it either.
 
-Thanks a lot,
+However, the "Factory" log at #425480 *does* indicate that a GEM aware 2D 
+driver was loaded (the "[drm:i915_getparam] *ERROR* Unknown parameter 5" 
+message indicates as much), but the kernel was definitely not GEM aware 
+otherwise the call would have succeeded.  So that rules out GEM proper, but 
+it could still be a bug in one of the non-GEM paths in the experimental 
+xf86-video-intel bits the various distros seem to be picking up.
 
--Robert
+> > That doesn't rule out i915 (though I don't think any changes have gone
+> > in since 2.6.26 that would have caused this) or xf86-video-intel.  It's
+> > possible that X is getting confused about BAR mappings somehow,
+> > resulting in a clobbered e1000e NVRAM, but why would the kernel version
+> > matter in that case?  The only thing that comes to mind would be PAT...
+>
+> Yes, booting with 'nopat' is on my list to try immediately after we are
+> able to recover the corrupted EEPROM.
+>
+> > Recent versions of the X drivers (using recent libpciaccess code) will
+> > try to map the resourceN_wc file in sysfs.  It's possible that the map
+> > size we end up using is wrong, leading to the situation Dave described
+> > earlier where we map too much MMIO space.
+>
+> This we could catch easily even with strace, right?
 
-On 20.08.08 18:40:29, Andi Kleen wrote:
-> 
-> This patchkit implements architectural perfmon support in oprofile.
-> This allows to do generic profiling of a few standard events in all 
-> newer Intel CPUs, including Atom and Nehalem. The CPU describes
-> its event in CPUID so they can be used without knowing anything
-> about the CPU.
-> 
-> The code requires some changes to the oprofile userland, which
-> I am posting separately to the oprofile list.
-> 
-> -Andi
-> 
+Yep, that one's easy to catch.
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+Jesse Barnes, Intel Open Source Technology Center
