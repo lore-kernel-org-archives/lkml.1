@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYIYQXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYIYQ0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYIYQXo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 12:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYIYQXY
+	id S1754590AbYIYQ0j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 12:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYIYQ0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 12:23:24 -0400
-Received: from mga07.intel.com ([143.182.124.22]:34632 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752699AbYIYQXX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 12:23:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,309,1220252400"; 
-   d="scan'208";a="51363259"
-Date: Thu, 25 Sep 2008 09:24:34 -0700
-From: mark gross <mgross@linux.intel.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] x86/pci: fix dmar_tbl early_ioremap leak v2
-Message-ID: <20080925162434.GA30374@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <1222327705-22048-1-git-send-email-yhlu.kernel@gmail.com> <20080925081158.GA30349@elte.hu> <200809250743.35271.jbarnes@virtuousgeek.org>
+	Thu, 25 Sep 2008 12:26:31 -0400
+Received: from khc.piap.pl ([195.187.100.11]:57021 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752804AbYIYQ0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 12:26:30 -0400
+To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Cc: Dave Airlie <airlied@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+       David Miller <davem@davemloft.net>, jeffrey.t.kirsher@intel.com,
+       david.vrabel@csr.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, chrisl@vmware.com,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+References: <20080923.150722.141587696.davem@davemloft.net>
+	<9929d2390809231512w160d221axa2923a6b293a041@mail.gmail.com>
+	<alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz>
+	<20080923.211215.193696086.davem@davemloft.net>
+	<alpine.LNX.1.10.0809250110070.4671@pegasus.suse.cz>
+	<21d7e9970809241722w7c3bb6a5w1af5801b7380169d@mail.gmail.com>
+	<48DB12C9.5080104@gmail.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 25 Sep 2008 18:26:27 +0200
+In-Reply-To: <48DB12C9.5080104@gmail.com> (Jesse Brandeburg's message of "Wed\, 24 Sep 2008 21\:25\:45 -0700")
+Message-ID: <m38wtgw5sc.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809250743.35271.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 07:43:34AM -0700, Jesse Barnes wrote:
-> On Thursday, September 25, 2008 1:11 am Ingo Molnar wrote:
-> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > > use early_acpi_os_unmap_memory
-> > >
-> > > v2: move unmap_memory early...
-> > >
-> > > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> > >
-> > > ---
-> > >  drivers/pci/dmar.c |    9 +++++++--
-> > >  1 file changed, 7 insertions(+), 2 deletions(-)
-> >
-> > since this depends on other x2apic/sparseirq changes in -tip i've
-> > applied it to tip/irq/sparseirq.
-> >
-> > Jesse, any objections?
-> 
-> Nope, but it would be good to get Dave or Mark's ack (Dave owns this code 
-> now).
->
-Sorry for the dumb question but where is acpi_get_table_with_size
-defined?  Its not in linus's git. /me goes and gets linux-next...
+Jesse Brandeburg <jesse.brandeburg@gmail.com> writes:
 
---mgross
- 
+> I'm really sorry to hear that, I wonder if the laptop has an
+> "emergency bios update" mode like many PCs used to through a jumper.
+> Dave A., let us know if you make any recovery progress.
+
+I guess it's more about the E1000's serial configuration EEPROM, the
+registers seem to live in BAR0 (EECD and for reading perhaps EERD).
+Corrupted EEPROM (and thus PCI config registers) can easily result in
+a dead machine.
+
+I will be writing a tool for writing 82541PI EEPROMs on a custom
+board soon (unless there is one available, for Linux, of course),
+I only have to fight non-working JTAG first :-)
+
+> I plan to try some random writes tomorrow to my BAR1 space and see if
+> my flash gets erased.
+
+I'm not sure it's the flash that is corrupted. Anyway booting the
+laptop should be quite easy (physically disabling the EEPROM on boot
+should do the trick), though it would require taking the machine
+apart.
+-- 
+Krzysztof Halasa
