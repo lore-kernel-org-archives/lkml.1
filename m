@@ -1,99 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYIYFId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbYIYFO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbYIYFId (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 01:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYIYFIY
+	id S1753215AbYIYFO4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 01:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYIYFOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 01:08:24 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48727 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751030AbYIYFIX (ORCPT
+	Thu, 25 Sep 2008 01:14:47 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:58395 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751616AbYIYFOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 01:08:23 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <48DB1CC4.2040004@s5r6.in-berlin.de>
-Date: Thu, 25 Sep 2008 07:08:20 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org
-Subject: Re: Differend udev names with different kernels
-References: <20080924200127.GA2452@dose.home.local> <3ae72650809242012r7d144a64l35777f2a7bacbaa0@mail.gmail.com>
-In-Reply-To: <3ae72650809242012r7d144a64l35777f2a7bacbaa0@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 25 Sep 2008 01:14:46 -0400
+Subject: Re: [PATCH 1/6] bfa: Brocade BFA FC SCSI Driver submission
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Greg KH <greg@kroah.com>
+Cc: Jing Huang <huangj@Brocade.COM>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Ramkumar Vadivelu <rvadivel@Brocade.COM>,
+       Vinodh Ravindran <vravindr@Brocade.COM>,
+       "Srikanth Rayas (CW)" <srayas@Brocade.COM>
+In-Reply-To: <20080925044923.GA4310@kroah.com>
+References: <4C94DE2070B172459E4F1EE14BD2364E01F27D19@HQ-EXCH-5.corp.brocade.com>
+	 <20080925044923.GA4310@kroah.com>
+Content-Type: text/plain
+Date: Wed, 24 Sep 2008 22:14:04 -0700
+Message-Id: <1222319644.3602.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Wed, Sep 24, 2008 at 13:01, Tino Keitel <tino.keitel@gmx.de> wrote:
->> what's the intention of /dev/disk/by-id/?
->>
->> My firewire hard disk seems to have different names with different
->> kernels.
->>
->> With 2.6.26.3, it's name is
->> /dev/disk/by-id/ieee1394-0030e001e0006585:00043c:0000.
->>
->> With someting after 2.6.27-rc7, merged with Arjan's fastboot branch,
->> the disk has the same name.
-
-Then this is a regression of the fastboot patch or whatever.
-
-I will watch what will happen in 2.6.28-rc.
-
->> With 2.6.27-rc7, it is called
->> /dev/disk/by-id/scsi-1WDC_WD10EACS-00D6B0_WD-WCAU41668315.
+On Wed, 2008-09-24 at 21:49 -0700, Greg KH wrote:
+> On Wed, Sep 24, 2008 at 08:56:14PM -0700, Jing Huang wrote:
+> > --- orig/drivers/scsi/bfa/bfad_attr.c	1969-12-31 16:00:00.000000000
+> > -0800
+> > +++ patch/drivers/scsi/bfa/bfad_attr.c	2008-09-24 12:08:23.000000000
+> > -0700
+> > @@ -0,0 +1,660 @@
+> > +/*
+> > + * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
+> > + * All rights reserved
+> > + * www.brocade.com
+> > + *
+> > + * Linux driver for Brocade Fibre Channel Host Bus Adapter.
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > it
 > 
-> Seems, for some reason, the "ieee1394_id" attribute becomes readable
-> because of lucky timing, which wasn't the case before.
-> 
->> One major config difference is that 2.6.26.3 has CONFIG_FIREWIRE and
->> CONFIG_FIREWIRE_SBP2 set to "m", whereas the 2.6.27 kernels have set
->> them to "y". But that doesn't explain the difference between both
->> 2.6.27-rc kernels.
-> 
-> I guess, it's just a not-easy-to-reproduce timing issue with the sysfs
-> attribute.
-> 
->> Shouldn't these names be somewhat constant? Otherwise they would be
->> totally useless.
-> 
-> Yeah, sure they should not change like this.
-> 
-> We could just drop the ieee1394-* link creation entirely, if they
-> never worked as expected.
+> Your patch is line-wrapped and can't be applied :(
 
-They currently work.  I never heard of them not working.
+Actually, it's more than just linewrapping.  The patch to the Makefile
+looks to be actively mangled:
 
-Even if there were already problems now, then the necessary course of 
-action would be to fix them instead of dropping them.
++++ patch/drivers/scsi/bfa/Makefile     2008-09-24 12:08:24.000000000
+-0700
+@@ -0,0 +1,25 @@
++#
++# Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
++# All rights reserved
++# www.brocade.com
++#
++# Linux driver for Brocade Fibre Channel Host Bus Adapter.
++#
++# This program is free software; you can redistribute it and/or modify 
++it # under the terms of the GNU General Public License (GPL) Version 2 
++as # published by the Free Software Foundation # # This program is 
++distributed in the hope that it will be useful, but # WITHOUT ANY 
++WARRANTY; without even the implied warranty of # MERCHANTABILITY or 
++FITNESS FOR A PARTICULAR PURPOSE.  See the GNU # General Public License
 
-Or fix the fine SCSI stack already to properly export target identifiers 
-and LU identifiers.  (Not going to happen because the SCSI folks just 
-don't get any midlayer stuff of that sort done, ever.)
+The # beginning the line got wrapped here before the patch was made.
+
+James
 
 
-> Or we can provide it as an additional link
-> instead of making it skip the scsi-* link creation.
-
-The scsi-* link may not be unique because it may be based on unsuitable 
-information generated by the SBP-2 bridge device's firmware.
-
-
-> Tino, care to try
-> if something like the attached works for your setup and creates at
-> least the scsi-links, and, if luckily timed, the ieee1394 links?
-> 
-> Stefan, ieee1394 hooks into scsi logic which, i guess, creates the
-> attribute _after_ event time, so udev will not see the attribute when
-> the device is announced. Any idea how to fix that?
-
-I will look into it.
--- 
-Stefan Richter
--=====-==--- =--= ==--=
-http://arcgraph.de/sr/
