@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbYIYNc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbYIYNdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755003AbYIYNc1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 09:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYIYNcT
+	id S1755287AbYIYNdS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 09:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbYIYNdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 09:32:19 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:47601 "EHLO smtp6.pp.htv.fi"
+	Thu, 25 Sep 2008 09:33:04 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:47801 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753209AbYIYNcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 09:32:19 -0400
-Date: Thu, 25 Sep 2008 16:31:16 +0300
+	id S1753665AbYIYNdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 09:33:03 -0400
+Date: Thu, 25 Sep 2008 16:31:59 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: David Howells <dhowells@redhat.com>
-Cc: "Keith A. Prickett" <keithp@marvell.com>, linux-kernel@vger.kernel.org
-Subject: Re: Building Kernel with -O0
-Message-ID: <20080925133116.GB9566@cs181140183.pp.htv.fi>
-References: <20080909160452.GB30160@cs181140183.pp.htv.fi> <1220550653.15123.6.camel@CV-LAB2> <21949.1220999065@redhat.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Greg Ungerer <gerg@snapgear.com>, jbarnes@virtuousgeek.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [2.6 patch] m68k: remove the dead PCI code
+Message-ID: <20080925133159.GC9566@cs181140183.pp.htv.fi>
+References: <20080819134718.GH8852@cs181140183.pp.htv.fi> <48B24E2C.9060703@snapgear.com> <20080825204333.GA13027@cs181140183.pp.htv.fi> <48B77764.6060607@snapgear.com> <20080829070103.GD16462@cs181140183.pp.htv.fi> <Pine.LNX.4.64.0808290929280.22326@anakin> <20080831161016.GE3695@cs181140183.pp.htv.fi> <Pine.LNX.4.64.0809061422510.4138@anakin>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <21949.1220999065@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0809061422510.4138@anakin>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 09, 2008 at 11:24:25PM +0100, David Howells wrote:
-> Adrian Bunk <bunk@kernel.org> wrote:
+On Sat, Sep 06, 2008 at 02:23:50PM +0200, Geert Uytterhoeven wrote:
+> On Sun, 31 Aug 2008, Adrian Bunk wrote:
+> > This patch removes the no longer used m68k PCI code.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > 
+> > --- a/include/asm-m68k/pci.h
+> > +++ b/include/asm-m68k/pci.h
 > 
-> > Compiling with -O0 never worked, and is not likely to ever work.
+> > -/* The PCI address space does equal the physical memory
+> > - * address space.  The networking and block device layers use
+> > - * this boolean for bounce buffer decisions.
+> > - */
 > 
-> Compiling with -O0 has worked previously, but not for a while.
+> I'd like to keep this comment, as the #define is still there.
+> Is that OK for you?
 
-You can call me surprised.
+Sorry for the late answer.
 
-When did it work?
+That's fine for me.
 
-> David
+> >  #define PCI_DMA_BUS_IS_PHYS	(1)
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
 
 cu
 Adrian
