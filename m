@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYIYT6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbYIYUCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbYIYT6g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 15:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYIYT60
+	id S1755243AbYIYUCW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 16:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYIYUCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 15:58:26 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:33085 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752293AbYIYT6Z (ORCPT
+	Thu, 25 Sep 2008 16:02:10 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:53837 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753389AbYIYUCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 15:58:25 -0400
-X-Sasl-enc: 6/XXm8NfEt6/Psb73PoYoHyzFyb1o2Iun3T8bOTiQsKe 1222372703
-Date: Thu, 25 Sep 2008 16:58:20 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: carbonated beverage <ramune@net-ronin.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_ACPI_VIDEO on Thinkpad blanks display.
-Message-ID: <20080925195820.GD30858@khazad-dum.debian.net>
-References: <20080925060244.GA18945@net-ronin.org> <20080925070741.GA22376@net-ronin.org> <20080925100746.GA13185@srcf.ucam.org> <20080925190930.GA17184@net-ronin.org>
+	Thu, 25 Sep 2008 16:02:08 -0400
+Date: Thu, 25 Sep 2008 22:03:11 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Regression in 2.6.27-rc7: Wake On LAN with sky2 broken
+Message-ID: <20080925200311.GA4582@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20080924080546.GA21108@x61> <200809242113.52256.rjw@sisk.pl> <20080924194906.GA25874@x61> <200809242310.23477.rjw@sisk.pl> <20080925194253.GA2783@dose.home.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080925190930.GA17184@net-ronin.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
+In-Reply-To: <20080925194253.GA2783@dose.home.local>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008, carbonated beverage wrote:
-> On Thu, Sep 25, 2008 at 11:07:46AM +0100, Matthew Garrett wrote:
-> > > Without CONFIG_ACPI_VIDEO, the above message don't appear.  From this point,
-> > > any pointers on figuring out why the ACPI features makes the screen go blank?
-> > 
-> > Yes. X assumed that any ACPI key press was a request to switch the video 
-> > output. Upgrade X.
-> 
-> Since CONFIG_ACPI_VIDEO wasn't required before 2.6.26.x to change the LCD
-> brightness, I'd rather the kernel go back to whatever it was doing for
+Hi,
 
-Well, we do give you a way out: do not load ACPI video, and load
-thinkpad-acpi with the proper parameters to enable its backlight control (if
-it is getting disabled by default).  Check the docs.
+I just found a method how I can enable WOL again:
 
-> 2.6.25.x.  Upgrading X past what's currently packaged by the distribution
-> just to get a new kernel working is somewhat of a pain.
+echo enabled >
+/sys/devices/pci0000:00/0000:00:1c.0/0000:01:00.0/power/wakeup
 
-Your X is broken, and in an extremely hideous way.  You could try to get it
-to disable ACPI key support, or you can make sure nothing EVER sends ACPI
-video events to it.  That means you must not use the ACPI video module in
-your kernel until you install a fixed X.org.
+This device is the NIC device, of cause.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I already had another case (EHCI) where I needed to do this to be able
+to wake the computer up with the USB keyboard. It seems like 2.6.27
+behaves different here compared to 2.6.26, and things that worked with
+2.6.26 need manual fixing to work again. Or did I make something wrong?
+
+Regards,
+Tino
