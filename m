@@ -1,125 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYIYGGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbYIYGH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbYIYGGz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 02:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbYIYGGr
+	id S1753042AbYIYGH1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 02:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbYIYGHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 02:06:47 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39874 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbYIYGGr (ORCPT
+	Thu, 25 Sep 2008 02:07:11 -0400
+Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:36147 "EHLO
+	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752733AbYIYGHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 02:06:47 -0400
-Date: Thu, 25 Sep 2008 15:13:07 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: [PATCH 1/12] memcg avoid accounting special mappings not on LRU
-Message-Id: <20080925151307.f9cf352f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Thu, 25 Sep 2008 02:07:10 -0400
+X-Authority-Analysis: v=1.0 c=1 a=qJl3jAXflj4A:10 a=OjkjO2y-e4IA:10
+ a=4uOlucCFMxh5rItqBgwA:9 a=-Jt9Tx1taKRbT4p8-_8A:7
+ a=b4i523rOK-WioxX114lWgn9Jjc8A:4 a=b8hG5vVbyAkA:10
+Subject: [RFC PATCH 0/8] current relay cleanup patchset
+From: Tom Zanussi <zanussi@comcast.net>
+To: Martin Bligh <mbligh@google.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>
+In-Reply-To: <1222228215.7761.0.camel@charm-linux>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
+	 <1221869279.8359.31.camel@lappy.programming.kicks-ass.net>
+	 <20080922140740.GB5279@in.ibm.com>
+	 <1222094724.16700.11.camel@lappy.programming.kicks-ass.net>
+	 <1222147545.6875.135.camel@charm-linux>
+	 <33307c790809230700o4bf0d22fg8ab2dcb904f7d66c@mail.gmail.com>
+	 <1222228215.7761.0.camel@charm-linux>
+Content-Type: text/plain
+Date: Thu, 25 Sep 2008 01:07:05 -0500
+Message-Id: <1222322825.6435.55.camel@charm-linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are not-on-LRU pages which can be mapped and they are not worth to
-be accounted. (becasue we can't shrink them and need dirty codes to handle
-specical case) We'd like to make use of usual objrmap/radix-tree's protcol
-and don't want to account out-of-vm's control pages.
+Here's the current relay cleanup patchset.  The first two patches make
+the write path completely replaceable, the third adds flags along with
+some related cleanup, and the next 5 remove the padding in several
+stages. 
 
-When special_mapping_fault() is called, page->mapping is tend to be NULL 
-and it's charged as Anonymous page.
-insert_page() also handles some special pages from drivers.
+It's a work in progress, but because I wanted the intermediate stages to
+actually work and not break anything, some of these patches, especially
+05, are just temporary and will be removed in the next iteration.
 
-This patch is for avoiding to account special pages.
+I didn't have time to clean up the first 3 either - I'll also do that
+the next time around.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Anyway, removing the padding has simplified the read/splice code
+significantly; it's always been a source of headaches so I'm glad it's
+gone, and it doesn't seem to have broken anything - a quick test using
+blktrace in both read() and splice() modes didn't show any problems.
 
- mm/memory.c |   18 ++++++------------
- mm/rmap.c   |    4 ++--
- 2 files changed, 8 insertions(+), 14 deletions(-)
+In the next round I plan to do vmap and sub-buffer removal.
 
-Index: mmotm-2.6.27-rc6+/mm/memory.c
-===================================================================
---- mmotm-2.6.27-rc6+.orig/mm/memory.c
-+++ mmotm-2.6.27-rc6+/mm/memory.c
-@@ -1323,18 +1323,14 @@ static int insert_page(struct vm_area_st
- 	pte_t *pte;
- 	spinlock_t *ptl;
- 
--	retval = mem_cgroup_charge(page, mm, GFP_KERNEL);
--	if (retval)
--		goto out;
--
- 	retval = -EINVAL;
- 	if (PageAnon(page))
--		goto out_uncharge;
-+		goto out;
- 	retval = -ENOMEM;
- 	flush_dcache_page(page);
- 	pte = get_locked_pte(mm, addr, &ptl);
- 	if (!pte)
--		goto out_uncharge;
-+		goto out;
- 	retval = -EBUSY;
- 	if (!pte_none(*pte))
- 		goto out_unlock;
-@@ -1350,8 +1346,6 @@ static int insert_page(struct vm_area_st
- 	return retval;
- out_unlock:
- 	pte_unmap_unlock(pte, ptl);
--out_uncharge:
--	mem_cgroup_uncharge_page(page);
- out:
- 	return retval;
- }
-@@ -2542,7 +2536,7 @@ static int __do_fault(struct mm_struct *
- 
- 	}
- 
--	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
-+	if (anon && mem_cgroup_charge(page, mm, GFP_KERNEL)) {
- 		ret = VM_FAULT_OOM;
- 		goto out;
- 	}
-@@ -2584,10 +2578,10 @@ static int __do_fault(struct mm_struct *
- 		/* no need to invalidate: a not-present page won't be cached */
- 		update_mmu_cache(vma, address, entry);
- 	} else {
--		mem_cgroup_uncharge_page(page);
--		if (anon)
-+		if (anon) {
-+			mem_cgroup_uncharge_page(page);
- 			page_cache_release(page);
--		else
-+		} else
- 			anon = 1; /* no anon but release faulted_page */
- 	}
- 
-Index: mmotm-2.6.27-rc6+/mm/rmap.c
-===================================================================
---- mmotm-2.6.27-rc6+.orig/mm/rmap.c
-+++ mmotm-2.6.27-rc6+/mm/rmap.c
-@@ -725,8 +725,8 @@ void page_remove_rmap(struct page *page,
- 			page_clear_dirty(page);
- 			set_page_dirty(page);
- 		}
--
--		mem_cgroup_uncharge_page(page);
-+		if (PageAnon(page))
-+			mem_cgroup_uncharge_page(page);
- 		__dec_zone_page_state(page,
- 			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
- 		/*
+Tom
+
+
+
 
