@@ -1,340 +1,763 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755118AbYIYGaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbYIYGfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755118AbYIYGaQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 02:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbYIYG3u
+	id S1754612AbYIYGfR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 02:35:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYIYGfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 02:29:50 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59588 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754855AbYIYG3s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 02:29:48 -0400
-Date: Thu, 25 Sep 2008 15:36:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: [PATCH 12/12] memcg: fix race at charging swap-in
-Message-Id: <20080925153630.b59da31e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Sep 2008 02:35:05 -0400
+Received: from brak.cowlabs.com ([208.96.51.45]:43342 "EHLO brak.cowlabs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750955AbYIYGfB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 02:35:01 -0400
+X-Greylist: delayed 1922 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Sep 2008 02:35:00 EDT
+Date: Wed, 24 Sep 2008 23:02:44 -0700
+From: carbonated beverage <ramune@net-ronin.org>
+To: linux-kernel@vger.kernel.org
+Subject: Thinkpad brightness keys kill X on 2.6.26.5
+Message-ID: <20080925060244.GA18945@net-ronin.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="MGYHOYXEY6WxJCY8"
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a small race in do_swap_page(). When the page swapped-in is charged,
-the mapcount can be greater than 0. But, at the same time some process (shares
-it ) call unmap and make mapcount 1->0 and the page is uncharged.
 
-For fixing this, I added a new interface.
-  - precharge
-   account to res_counter by PAGE_SIZE and try to free pages if necessary.
-  - commit	
-   register page_cgroup and add to LRU if necessary.
-  - cancel
-   uncharge PAGE_SIZE because of do_swap_page failure.
+--MGYHOYXEY6WxJCY8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-This protocol uses PCG_USED bit on page_cgroup for avoiding over accounting.
-Usual mem_cgroup_charge_common() does precharge -> commit at a time.
+Hi all,
 
-These precharge/commit/cancel is useful and can be used for other places,
- - shmem, (and other places need precharge.)
- - migration
- - move_account(force_empty) etc...
-etc..we'll revisit later.
+I just upgraded from 2.6.25.17 to 2.6.26.5 on my Thinkpad Z61t, and found
+the brightness keys will cause the X server to die.  When using the
+brightness up/down keys, the screen will go blank -- Control+Alt+F# will
+still switch to a different virtual console, but switching back will not
+restore the video state.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+After killing the window manager, I was able to bring up X again without
+a problem -- but using the brightness keys still causes it to go blank
+again within X, while the brightness does get changed correctly on the
+console.
 
- include/linux/memcontrol.h |   21 +++++++
- mm/memcontrol.c            |  135 +++++++++++++++++++++++++++++++--------------
- mm/memory.c                |    6 +-
- 3 files changed, 120 insertions(+), 42 deletions(-)
+There were no kernel messages, but this appeared in the Xorg log:
 
-Index: mmotm-2.6.27-rc7+/include/linux/memcontrol.h
-===================================================================
---- mmotm-2.6.27-rc7+.orig/include/linux/memcontrol.h
-+++ mmotm-2.6.27-rc7+/include/linux/memcontrol.h
-@@ -31,6 +31,13 @@ struct mm_struct;
- 
- extern int mem_cgroup_charge(struct page *page, struct mm_struct *mm,
- 				gfp_t gfp_mask);
-+/* for swap handling */
-+extern int mem_cgroup_precharge(struct mm_struct *mm,
-+		gfp_t gfp_mask, struct mem_cgroup **ptr);
-+extern void mem_cgroup_commit_charge_swap(struct page *page,
-+					struct mem_cgroup *ptr);
-+extern void mem_cgroup_cancel_charge_swap(struct mem_cgroup *ptr);
-+
- extern int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
- 					gfp_t gfp_mask);
- extern void mem_cgroup_move_lists(struct page *page, enum lru_list lru);
-@@ -85,6 +92,20 @@ static inline int mem_cgroup_cache_charg
- 	return 0;
- }
- 
-+static int mem_cgroup_precharge(struct mm_struct *mm,
-+				gfp_t gfp_mask, struct mem_cgroup **ptr)
-+{
-+	return 0;
-+}
-+
-+static void mem_cgroup_commit_charge_swap(struct page *page,
-+					  struct mem_cgroup *ptr)
-+{
-+}
-+static void mem_cgroup_cancel_charge_swap(struct mem_cgroup *ptr)
-+{
-+}
-+
- static inline void mem_cgroup_uncharge_page(struct page *page)
- {
- }
-Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
-+++ mmotm-2.6.27-rc7+/mm/memcontrol.c
-@@ -698,52 +698,44 @@ static void drain_page_cgroup_all(void)
- 
- 
- /*
-- * Charge the memory controller for page usage.
-- * Return
-- * 0 if the charge was successful
-- * < 0 if the cgroup is over its limit
-+ * charge against mem_cgroup linked to this mm. (or *ptr)
-+ *
-+ * This just charge PAGE_SIZE and reduce memory usage if necessary.
-+ *
-+ * Pages on radix-tree is charged at radix-tree add/remove under lock.
-+ * new pages are charged at allocation and both are guaranteed to be that
-+ * there are no racy users. We does precharge->commit at once.
-+ *
-+ * About swapcache, we can't trust page->mapcount until it's mapped.
-+ * Then we do precharge before map and commit/cancel after the mapping is
-+ * established. (see below, we have commit_swap and cancel_swap)
-  */
--static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
--				gfp_t gfp_mask, enum charge_type ctype,
--				struct mem_cgroup *memcg)
-+
-+int mem_cgroup_precharge(struct mm_struct *mm,
-+			 gfp_t mask, struct mem_cgroup **ptr)
- {
- 	struct mem_cgroup *mem;
--	struct page_cgroup *pc;
--	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
--	struct mem_cgroup_per_zone *mz;
--	unsigned long flags;
--
--	pc = lookup_page_cgroup(page);
--	/* can happen at boot */
--	if (unlikely(!pc))
--		return 0;
--	prefetchw(pc);
--	/*
--	 * We always charge the cgroup the mm_struct belongs to.
--	 * The mm_struct's mem_cgroup changes on task migration if the
--	 * thread group leader migrates. It's possible that mm is not
--	 * set, if so charge the init_mm (happens for pagecache usage).
--	 */
-+	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
- 
--	if (likely(!memcg)) {
--		rcu_read_lock();
-+	rcu_read_lock();
-+	if (!*ptr) {
- 		mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
- 		if (unlikely(!mem)) {
- 			rcu_read_unlock();
--			return 0;
-+			return -ESRCH;
- 		}
--		rcu_read_unlock();
-+		*ptr = mem;
- 	} else {
--		mem = memcg;
-+		mem = *ptr;
- 	}
-+	rcu_read_unlock();
- 
-+	css_get(&mem->css);
- 	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
--		if (!(gfp_mask & __GFP_WAIT))
--			goto out;
--
--		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
-+		if (!(mask & __GFP_WAIT))
-+			goto nomem;
-+		if (try_to_free_mem_cgroup_pages(mem, mask))
- 			continue;
--
- 		/*
- 		 * try_to_free_mem_cgroup_pages() might not give us a full
- 		 * picture of reclaim. Some pages are reclaimed and might be
-@@ -755,16 +747,31 @@ static int mem_cgroup_charge_common(stru
- 			continue;
- 
- 		if (!nr_retries--) {
--			mem_cgroup_out_of_memory(mem, gfp_mask);
--			goto out;
-+			mem_cgroup_out_of_memory(mem, mask);
-+			goto nomem;
- 		}
- 	}
-+	return 0;
-+nomem:
-+	css_put(&mem->css);
-+	return -ENOMEM;
-+}
- 
-+void mem_cgroup_commit_charge(struct page_cgroup *pc,
-+			      struct mem_cgroup *mem,
-+			      enum charge_type ctype)
-+{
-+	struct mem_cgroup_per_zone *mz;
-+	unsigned long flags;
-+
-+	if (!mem)
-+		return;
- 	preempt_disable();
- 	if (TestSetPageCgroupUsed(pc)) {
- 		res_counter_uncharge(&mem->res, PAGE_SIZE);
-+		css_put(&mem->css);
- 		preempt_enable();
--		goto done;
-+		return;
- 	}
- 	/*
-  	 *  page cgroup is *unused* now....but....
-@@ -786,14 +793,43 @@ static int mem_cgroup_charge_common(stru
- 
- 	pc->mem_cgroup = mem;
- 	set_page_cgroup_lru(pc);
-+	css_put(&mem->css);
- 	preempt_enable();
-+}
- 
--done:
-+/*
-+ * Charge the memory controller for page usage.
-+ * Return
-+ * 0 if the charge was successful
-+ * < 0 if the cgroup is over its limit
-+ */
-+static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
-+				gfp_t gfp_mask, enum charge_type ctype,
-+				struct mem_cgroup *memcg)
-+{
-+	struct page_cgroup *pc;
-+	struct mem_cgroup *ptr = memcg;
-+	int ret;
-+
-+	pc = lookup_page_cgroup(page);
-+	/* can happen at boot */
-+	if (unlikely(!pc))
-+		return 0;
-+	prefetchw(pc);
-+
-+	ret = mem_cgroup_precharge(mm, gfp_mask, &ptr);
-+	if (likely(!ret)) {
-+		mem_cgroup_commit_charge(pc, ptr, ctype);
-+		return 0;
-+	}
-+	if (unlikely((ret == -ENOMEM)))
-+		return ret;
-+	/* ESRCH case */
- 	return 0;
--out:
--	return -ENOMEM;
- }
- 
-+
-+
- int mem_cgroup_charge(struct page *page, struct mm_struct *mm, gfp_t gfp_mask)
- {
- 	if (mem_cgroup_subsys.disabled)
-@@ -806,7 +842,7 @@ int mem_cgroup_charge(struct page *page,
- 	 * But page->mapping may have out-of-use anon_vma pointer,
- 	 * detecit it by PageAnon() check. newly-mapped-anon's page->mapping
- 	 * is NULL.
--  	 */
-+	 */
- 	if (page_mapped(page) || (page->mapping && !PageAnon(page)))
- 		return 0;
- 	if (unlikely(!mm))
-@@ -857,6 +893,25 @@ int mem_cgroup_cache_charge(struct page 
- 				MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
- }
- 
-+
-+void mem_cgroup_commit_charge_swap(struct page *page, struct mem_cgroup *ptr)
-+{
-+	struct page_cgroup *pc;
-+	if (!ptr)
-+		return;
-+	pc = lookup_page_cgroup(page);
-+	mem_cgroup_commit_charge(pc, ptr, MEM_CGROUP_CHARGE_TYPE_MAPPED);
-+}
-+
-+void mem_cgroup_cancel_charge_swap(struct mem_cgroup *mem)
-+{
-+	if (!mem)
-+		return;
-+	res_counter_uncharge(&mem->res, PAGE_SIZE);
-+	css_put(&mem->css);
-+}
-+
-+
- /*
-  * uncharge if !page_mapped(page)
-  */
-Index: mmotm-2.6.27-rc7+/mm/memory.c
-===================================================================
---- mmotm-2.6.27-rc7+.orig/mm/memory.c
-+++ mmotm-2.6.27-rc7+/mm/memory.c
-@@ -2287,6 +2287,7 @@ static int do_swap_page(struct mm_struct
- 	struct page *page;
- 	swp_entry_t entry;
- 	pte_t pte;
-+	struct mem_cgroup *ptr = NULL;
- 	int ret = 0;
- 
- 	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
-@@ -2323,7 +2324,7 @@ static int do_swap_page(struct mm_struct
- 	lock_page(page);
- 	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
- 
--	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
-+	if (mem_cgroup_precharge(mm, GFP_KERNEL, &ptr) == -ENOMEM) {
- 		ret = VM_FAULT_OOM;
- 		goto out;
- 	}
-@@ -2353,6 +2354,7 @@ static int do_swap_page(struct mm_struct
- 	flush_icache_page(vma, page);
- 	set_pte_at(mm, address, page_table, pte);
- 	page_add_anon_rmap(page, vma, address);
-+	mem_cgroup_commit_charge_swap(page, ptr);
- 
- 	swap_free(entry);
- 	if (vm_swap_full() || (vma->vm_flags & VM_LOCKED) || PageMlocked(page))
-@@ -2373,7 +2375,7 @@ unlock:
- out:
- 	return ret;
- out_nomap:
--	mem_cgroup_uncharge_page(page);
-+	mem_cgroup_cancel_charge_swap(ptr);
- 	pte_unmap_unlock(page_table, ptl);
- 	unlock_page(page);
- 	page_cache_release(page);
+Backtrace:
+0: X(xf86SigHandler+0x84) [0x80c43e4]
+1: [0xffffe420]
+2: /usr/lib/xorg/modules/extensions/libglx.so(__glXVendorPrivate+0x19c) [0xb7c9d
+bec]
+3: /usr/lib/xorg/modules/extensions/libglx.so [0xb7ca1f6a]
+4: X(Dispatch+0x19b) [0x8086ccb]
+5: X(main+0x489) [0x806e6b9]
+6: /lib/tls/libc.so.6(__libc_start_main+0xc8) [0xb7de4ea8]
+7: X(FontFileCompleteXLFD+0xa5) [0x806d9f1]
 
+
+Fatal server error:
+Caught signal 4.  Server aborting
+
+(WW) I810(0): Successfully set original devices
+(WW) I810(0): Setting the original video mode instead of restoring
+        the saved state
+(--) I810(0): A non-CRT device is attached to pipe B.
+        No refresh rate overrides will be attempted.
+(WW) I810(0): Extended BIOS function 0x5f05 failed.
+(II) I810(0): BIOS call 0x5f05 not supported, setting refresh with VBE 3 method.
+(II) I810(0): xf86UnbindGARTMemory: unbind key 12
+(II) I810(0): xf86UnbindGARTMemory: unbind key 8
+(II) I810(0): xf86UnbindGARTMemory: unbind key 9
+(II) I810(0): xf86UnbindGARTMemory: unbind key 11
+(II) I810(0): xf86UnbindGARTMemory: unbind key 10
+(WW) I810(0): Successfully set original devices (2)
+
+I'm currently running on a Debian/etch system with the following packages:
+xserver-xorg                     7.1.0-19
+xserver-xorg-video-i810          1.7.2-4
+
+gcc 4.1.2 from Debian, Core Duo (T2500).
+
+00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS/940GML Express Integrated Graphics Controller (rev 03)
+
+.config attached -- is this a known issue?  In the meantime, I'm starting
+a bisection to figure out where the problem crops up.
+
+-- DN
+Daniel
+
+
+
+--MGYHOYXEY6WxJCY8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="2.6.26.5.config"
+
+CONFIG_X86_32=y
+CONFIG_X86=y
+CONFIG_ARCH_DEFCONFIG="arch/x86/configs/i386_defconfig"
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_CLOCKSOURCE_WATCHDOG=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+CONFIG_FAST_CMPXCHG_LOCAL=y
+CONFIG_MMU=y
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_GENERIC_BUG=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_ARCH_HAS_CPU_RELAX=y
+CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
+CONFIG_HAVE_SETUP_PER_CPU_AREA=y
+CONFIG_ARCH_HIBERNATION_POSSIBLE=y
+CONFIG_ARCH_SUSPEND_POSSIBLE=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_ARCH_SUPPORTS_AOUT=y
+CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_GENERIC_PENDING_IRQ=y
+CONFIG_X86_SMP=y
+CONFIG_X86_32_SMP=y
+CONFIG_X86_HT=y
+CONFIG_X86_BIOS_REBOOT=y
+CONFIG_X86_TRAMPOLINE=y
+CONFIG_KTIME_SCALAR=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+
+CONFIG_EXPERIMENTAL=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_BSD_PROCESS_ACCT=y
+CONFIG_BSD_PROCESS_ACCT_V3=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=17
+CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
+CONFIG_GROUP_SCHED=y
+CONFIG_USER_SCHED=y
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_SYSFS_DEPRECATED_V2=y
+CONFIG_RELAY=y
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+CONFIG_EMBEDDED=y
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_SYSCTL_SYSCALL_CHECK=y
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLUB_DEBUG=y
+CONFIG_SLUB=y
+CONFIG_PROFILING=y
+CONFIG_OPROFILE=y
+CONFIG_HAVE_OPROFILE=y
+CONFIG_HAVE_KPROBES=y
+CONFIG_HAVE_KRETPROBES=y
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+CONFIG_BLK_DEV_IO_TRACE=y
+
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_DEFAULT_DEADLINE=y
+CONFIG_DEFAULT_IOSCHED="deadline"
+CONFIG_PREEMPT_NOTIFIERS=y
+CONFIG_CLASSIC_RCU=y
+
+CONFIG_TICK_ONESHOT=y
+CONFIG_NO_HZ=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+CONFIG_SMP=y
+CONFIG_X86_PC=y
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+CONFIG_PARAVIRT_GUEST=y
+CONFIG_KVM_CLOCK=y
+CONFIG_PARAVIRT=y
+CONFIG_PARAVIRT_CLOCK=y
+CONFIG_MCORE2=y
+CONFIG_X86_CPU=y
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_L1_CACHE_SHIFT=6
+CONFIG_X86_XADD=y
+CONFIG_X86_WP_WORKS_OK=y
+CONFIG_X86_INVLPG=y
+CONFIG_X86_BSWAP=y
+CONFIG_X86_POPAD_OK=y
+CONFIG_X86_GOOD_APIC=y
+CONFIG_X86_INTEL_USERCOPY=y
+CONFIG_X86_USE_PPRO_CHECKSUM=y
+CONFIG_X86_P6_NOP=y
+CONFIG_X86_TSC=y
+CONFIG_X86_MINIMUM_CPU_FAMILY=6
+CONFIG_X86_DEBUGCTLMSR=y
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+CONFIG_DMI=y
+CONFIG_NR_CPUS=2
+CONFIG_SCHED_MC=y
+CONFIG_PREEMPT=y
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_X86_IO_APIC=y
+CONFIG_X86_MCE=y
+CONFIG_X86_MCE_NONFATAL=y
+CONFIG_X86_MCE_P4THERMAL=y
+CONFIG_VM86=y
+CONFIG_X86_REBOOTFIXUPS=y
+CONFIG_MICROCODE=y
+CONFIG_MICROCODE_OLD_INTERFACE=y
+CONFIG_X86_MSR=y
+CONFIG_X86_CPUID=y
+CONFIG_HIGHMEM4G=y
+CONFIG_VMSPLIT_3G=y
+CONFIG_PAGE_OFFSET=0xC0000000
+CONFIG_HIGHMEM=y
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_SPARSEMEM_STATIC=y
+CONFIG_PAGEFLAGS_EXTENDED=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_HIGHPTE=y
+CONFIG_MTRR=y
+CONFIG_X86_PAT=y
+CONFIG_HZ_300=y
+CONFIG_HZ=300
+CONFIG_SCHED_HRTICK=y
+CONFIG_PHYSICAL_START=0x100000
+CONFIG_PHYSICAL_ALIGN=0x100000
+CONFIG_COMPAT_VDSO=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+
+CONFIG_PM=y
+CONFIG_ACPI=y
+CONFIG_ACPI_PROCFS=y
+CONFIG_ACPI_PROCFS_POWER=y
+CONFIG_ACPI_SYSFS_POWER=y
+CONFIG_ACPI_PROC_EVENT=y
+CONFIG_ACPI_AC=y
+CONFIG_ACPI_BATTERY=y
+CONFIG_ACPI_BUTTON=y
+CONFIG_ACPI_VIDEO=y
+CONFIG_ACPI_FAN=y
+CONFIG_ACPI_DOCK=y
+CONFIG_ACPI_BAY=m
+CONFIG_ACPI_PROCESSOR=y
+CONFIG_ACPI_THERMAL=y
+CONFIG_ACPI_CUSTOM_DSDT_FILE=""
+CONFIG_ACPI_BLACKLIST_YEAR=0
+CONFIG_ACPI_EC=y
+CONFIG_ACPI_POWER=y
+CONFIG_ACPI_SYSTEM=y
+CONFIG_X86_PM_TIMER=y
+
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_STAT=y
+CONFIG_CPU_FREQ_STAT_DETAILS=y
+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+
+CONFIG_X86_ACPI_CPUFREQ=y
+
+CONFIG_CPU_IDLE=y
+CONFIG_CPU_IDLE_GOV_LADDER=y
+CONFIG_CPU_IDLE_GOV_MENU=y
+
+CONFIG_PCI=y
+CONFIG_PCI_GOANY=y
+CONFIG_PCI_BIOS=y
+CONFIG_PCI_DIRECT=y
+CONFIG_PCI_MMCONFIG=y
+CONFIG_PCI_DOMAINS=y
+CONFIG_PCIEPORTBUS=y
+CONFIG_PCIEAER=y
+CONFIG_ARCH_SUPPORTS_MSI=y
+CONFIG_PCI_MSI=y
+CONFIG_HT_IRQ=y
+CONFIG_ISA_DMA_API=y
+CONFIG_ISA=y
+CONFIG_PCCARD=m
+CONFIG_PCMCIA=m
+CONFIG_PCMCIA_LOAD_CIS=y
+CONFIG_CARDBUS=y
+
+CONFIG_YENTA=m
+CONFIG_YENTA_TI=y
+CONFIG_YENTA_ENE_TUNE=y
+CONFIG_PCMCIA_PROBE=y
+CONFIG_PCCARD_NONSTATIC=m
+
+CONFIG_BINFMT_ELF=y
+
+CONFIG_NET=y
+
+CONFIG_PACKET=y
+CONFIG_PACKET_MMAP=y
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_XFRM_USER=y
+CONFIG_NET_KEY=y
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_FIB_HASH=y
+CONFIG_INET_AH=y
+CONFIG_INET_ESP=y
+CONFIG_INET_IPCOMP=y
+CONFIG_INET_XFRM_TUNNEL=y
+CONFIG_INET_TUNNEL=y
+CONFIG_INET_XFRM_MODE_TRANSPORT=y
+CONFIG_INET_XFRM_MODE_TUNNEL=y
+CONFIG_INET_LRO=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+CONFIG_NETFILTER=y
+CONFIG_NETFILTER_ADVANCED=y
+CONFIG_BRIDGE_NETFILTER=y
+
+CONFIG_NF_CONNTRACK=y
+CONFIG_NF_CONNTRACK_EVENTS=y
+CONFIG_NF_CONNTRACK_FTP=y
+CONFIG_NF_CONNTRACK_IRC=y
+CONFIG_NF_CONNTRACK_NETBIOS_NS=y
+CONFIG_NF_CONNTRACK_TFTP=y
+CONFIG_NETFILTER_XTABLES=y
+CONFIG_NETFILTER_XT_MATCH_CONNTRACK=y
+CONFIG_NETFILTER_XT_MATCH_HELPER=y
+CONFIG_NETFILTER_XT_MATCH_IPRANGE=y
+CONFIG_NETFILTER_XT_MATCH_LENGTH=y
+CONFIG_NETFILTER_XT_MATCH_OWNER=y
+CONFIG_NETFILTER_XT_MATCH_POLICY=y
+CONFIG_NETFILTER_XT_MATCH_MULTIPORT=y
+CONFIG_NETFILTER_XT_MATCH_STATE=y
+CONFIG_NETFILTER_XT_MATCH_U32=y
+
+CONFIG_NF_CONNTRACK_IPV4=y
+CONFIG_NF_CONNTRACK_PROC_COMPAT=y
+CONFIG_IP_NF_IPTABLES=y
+CONFIG_IP_NF_FILTER=y
+CONFIG_IP_NF_TARGET_REJECT=y
+CONFIG_IP_NF_TARGET_LOG=y
+CONFIG_NF_NAT=y
+CONFIG_NF_NAT_NEEDED=y
+CONFIG_IP_NF_TARGET_MASQUERADE=y
+CONFIG_IP_NF_TARGET_REDIRECT=y
+CONFIG_NF_NAT_FTP=y
+CONFIG_NF_NAT_IRC=y
+CONFIG_NF_NAT_TFTP=y
+
+CONFIG_BRIDGE_NF_EBTABLES=y
+CONFIG_BRIDGE_EBT_BROUTE=y
+CONFIG_BRIDGE_EBT_T_FILTER=y
+CONFIG_BRIDGE_EBT_T_NAT=y
+CONFIG_BRIDGE_EBT_802_3=y
+CONFIG_BRIDGE_EBT_IP=y
+CONFIG_BRIDGE_EBT_ARPREPLY=y
+CONFIG_BRIDGE_EBT_DNAT=y
+CONFIG_BRIDGE_EBT_REDIRECT=y
+CONFIG_BRIDGE_EBT_SNAT=y
+CONFIG_BRIDGE_EBT_LOG=y
+CONFIG_BRIDGE=y
+CONFIG_VLAN_8021Q=y
+CONFIG_LLC=y
+CONFIG_NET_SCH_FIFO=y
+
+
+CONFIG_CFG80211=y
+CONFIG_NL80211=y
+CONFIG_WIRELESS_EXT=y
+CONFIG_MAC80211=y
+
+CONFIG_MAC80211_RC_DEFAULT_PID=y
+
+
+CONFIG_MAC80211_RC_DEFAULT="pid"
+CONFIG_MAC80211_RC_PID=y
+CONFIG_IEEE80211=y
+CONFIG_IEEE80211_CRYPT_WEP=y
+CONFIG_IEEE80211_CRYPT_CCMP=y
+CONFIG_IEEE80211_CRYPT_TKIP=y
+CONFIG_RFKILL=y
+CONFIG_RFKILL_INPUT=y
+
+
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+CONFIG_PNP=y
+
+CONFIG_PNPACPI=y
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_CDROM_PKTCDVD=y
+CONFIG_CDROM_PKTCDVD_BUFFERS=8
+CONFIG_VIRTIO_BLK=y
+CONFIG_MISC_DEVICES=y
+CONFIG_THINKPAD_ACPI=y
+CONFIG_THINKPAD_ACPI_DEBUG=y
+CONFIG_THINKPAD_ACPI_BAY=y
+CONFIG_THINKPAD_ACPI_VIDEO=y
+CONFIG_THINKPAD_ACPI_HOTKEY_POLL=y
+CONFIG_HAVE_IDE=y
+
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+CONFIG_SCSI_PROC_FS=y
+
+CONFIG_BLK_DEV_SD=y
+CONFIG_BLK_DEV_SR=m
+CONFIG_CHR_DEV_SG=y
+
+CONFIG_SCSI_WAIT_SCAN=m
+
+CONFIG_ATA=y
+CONFIG_ATA_ACPI=y
+CONFIG_SATA_PMP=y
+CONFIG_SATA_AHCI=y
+CONFIG_ATA_SFF=y
+CONFIG_ATA_PIIX=m
+CONFIG_MD=y
+CONFIG_BLK_DEV_MD=y
+CONFIG_MD_LINEAR=y
+CONFIG_BLK_DEV_DM=y
+CONFIG_DM_CRYPT=y
+CONFIG_DM_SNAPSHOT=m
+
+
+CONFIG_NETDEVICES=y
+CONFIG_TUN=y
+CONFIG_NETDEV_1000=y
+CONFIG_TIGON3=m
+
+CONFIG_WLAN_80211=y
+CONFIG_AIRO=m
+CONFIG_AIRO_CS=m
+CONFIG_IWLWIFI=y
+CONFIG_IWLCORE=y
+CONFIG_IWLWIFI_RFKILL=y
+CONFIG_IWL3945=m
+CONFIG_IWL3945_SPECTRUM_MEASUREMENT=y
+
+CONFIG_VIRTIO_NET=y
+
+CONFIG_INPUT=y
+
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+CONFIG_INPUT_EVDEV=y
+
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+CONFIG_INPUT_MOUSE=y
+CONFIG_MOUSE_PS2=y
+CONFIG_MOUSE_PS2_SYNAPTICS=y
+
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+CONFIG_SERIO_LIBPS2=y
+
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_DEVKMEM=y
+
+CONFIG_FIX_EARLYCON_MEM=y
+
+CONFIG_UNIX98_PTYS=y
+CONFIG_NVRAM=y
+CONFIG_RTC=y
+
+CONFIG_HPET=y
+CONFIG_HPET_RTC_IRQ=y
+CONFIG_HPET_MMAP=y
+CONFIG_DEVPORT=y
+CONFIG_I2C=y
+CONFIG_I2C_BOARDINFO=y
+CONFIG_I2C_HELPER_AUTO=y
+CONFIG_I2C_ALGOBIT=y
+
+
+CONFIG_POWER_SUPPLY=y
+CONFIG_HWMON=y
+CONFIG_SENSORS_CORETEMP=y
+CONFIG_THERMAL=y
+CONFIG_THERMAL_HWMON=y
+
+CONFIG_SSB_POSSIBLE=y
+
+
+
+
+
+CONFIG_AGP=y
+CONFIG_AGP_INTEL=y
+CONFIG_DRM=y
+CONFIG_DRM_I915=y
+CONFIG_VIDEO_OUTPUT_CONTROL=y
+CONFIG_FB=y
+CONFIG_FIRMWARE_EDID=y
+CONFIG_FB_DDC=y
+CONFIG_FB_CFB_FILLRECT=y
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+CONFIG_FB_MODE_HELPERS=y
+
+CONFIG_FB_INTEL=y
+CONFIG_FB_INTEL_I2C=y
+CONFIG_BACKLIGHT_LCD_SUPPORT=y
+CONFIG_LCD_CLASS_DEVICE=y
+CONFIG_BACKLIGHT_CLASS_DEVICE=y
+
+
+CONFIG_VGA_CONSOLE=y
+CONFIG_VIDEO_SELECT=y
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE=y
+CONFIG_FONT_8x8=y
+CONFIG_FONT_8x16=y
+
+CONFIG_SOUND=m
+
+CONFIG_SND=m
+CONFIG_SND_TIMER=m
+CONFIG_SND_PCM=m
+CONFIG_SND_SEQUENCER=m
+CONFIG_SND_OSSEMUL=y
+CONFIG_SND_MIXER_OSS=m
+CONFIG_SND_PCM_OSS=m
+CONFIG_SND_PCM_OSS_PLUGINS=y
+CONFIG_SND_SEQUENCER_OSS=y
+CONFIG_SND_RTCTIMER=m
+CONFIG_SND_SEQ_RTCTIMER_DEFAULT=y
+CONFIG_SND_DYNAMIC_MINORS=y
+CONFIG_SND_SUPPORT_OLD_API=y
+CONFIG_SND_VERBOSE_PROCFS=y
+CONFIG_SND_VMASTER=y
+
+CONFIG_SND_AC97_CODEC=m
+
+
+CONFIG_SND_HDA_INTEL=m
+CONFIG_SND_HDA_CODEC_ANALOG=y
+CONFIG_SND_HDA_POWER_SAVE=y
+CONFIG_SND_HDA_POWER_SAVE_DEFAULT=120
+CONFIG_SND_INTEL8X0=m
+
+
+
+
+
+
+CONFIG_AC97_BUS=m
+CONFIG_HID_SUPPORT=y
+CONFIG_HID=y
+
+CONFIG_USB_HID=y
+CONFIG_USB_SUPPORT=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_USB=y
+CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
+
+CONFIG_USB_DEVICEFS=y
+CONFIG_USB_DEVICE_CLASS=y
+CONFIG_USB_DYNAMIC_MINORS=y
+CONFIG_USB_SUSPEND=y
+
+CONFIG_USB_EHCI_HCD=m
+CONFIG_USB_EHCI_ROOT_HUB_TT=y
+CONFIG_USB_UHCI_HCD=m
+
+
+
+CONFIG_USB_STORAGE=y
+CONFIG_USB_LIBUSUAL=y
+
+CONFIG_USB_MON=y
+
+
+CONFIG_NEW_LEDS=y
+CONFIG_LEDS_CLASS=y
+
+
+CONFIG_DMADEVICES=y
+
+
+CONFIG_DMIID=y
+
+CONFIG_EXT2_FS=m
+CONFIG_EXT3_FS=y
+CONFIG_JBD=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+
+CONFIG_ISO9660_FS=y
+CONFIG_JOLIET=y
+CONFIG_UDF_FS=y
+CONFIG_UDF_NLS=y
+
+CONFIG_FAT_FS=y
+CONFIG_MSDOS_FS=y
+CONFIG_VFAT_FS=y
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+CONFIG_NTFS_FS=y
+
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_CONFIGFS_FS=y
+
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+CONFIG_SUNRPC_BIND34=y
+CONFIG_SMB_FS=y
+CONFIG_SMB_NLS_DEFAULT=y
+CONFIG_SMB_NLS_REMOTE="cp437"
+CONFIG_CIFS=y
+CONFIG_CIFS_STATS=y
+CONFIG_CIFS_STATS2=y
+CONFIG_CIFS_WEAK_PW_HASH=y
+CONFIG_CIFS_XATTR=y
+CONFIG_CIFS_POSIX=y
+
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_MAC_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_LDM_PARTITION=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="utf8"
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_CODEPAGE_932=y
+CONFIG_NLS_ASCII=y
+CONFIG_NLS_ISO8859_1=y
+CONFIG_NLS_ISO8859_15=y
+CONFIG_NLS_UTF8=y
+
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_FRAME_WARN=1024
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_DEBUG_FS=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_TIMER_STATS=y
+CONFIG_SLUB_STATS=y
+CONFIG_HAVE_ARCH_KGDB=y
+CONFIG_NONPROMISC_DEVMEM=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_DEBUG_RODATA=y
+CONFIG_4KSTACKS=y
+CONFIG_X86_FIND_SMP_CONFIG=y
+CONFIG_X86_MPPARSE=y
+CONFIG_DOUBLEFAULT=y
+CONFIG_IO_DELAY_TYPE_0X80=0
+CONFIG_IO_DELAY_TYPE_0XED=1
+CONFIG_IO_DELAY_TYPE_UDELAY=2
+CONFIG_IO_DELAY_TYPE_NONE=3
+CONFIG_IO_DELAY_0X80=y
+CONFIG_DEFAULT_IO_DELAY_TYPE=0
+
+CONFIG_CRYPTO=y
+
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_AEAD=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_AUTHENC=y
+
+CONFIG_CRYPTO_SEQIV=y
+
+CONFIG_CRYPTO_CBC=y
+CONFIG_CRYPTO_ECB=y
+
+CONFIG_CRYPTO_HMAC=y
+
+CONFIG_CRYPTO_MD5=y
+CONFIG_CRYPTO_MICHAEL_MIC=y
+CONFIG_CRYPTO_SHA1=y
+CONFIG_CRYPTO_SHA256=y
+
+CONFIG_CRYPTO_AES=y
+CONFIG_CRYPTO_AES_586=y
+CONFIG_CRYPTO_ARC4=y
+CONFIG_CRYPTO_DES=y
+
+CONFIG_CRYPTO_DEFLATE=y
+CONFIG_CRYPTO_LZO=y
+CONFIG_HAVE_KVM=y
+CONFIG_VIRTUALIZATION=y
+CONFIG_KVM=y
+CONFIG_KVM_INTEL=y
+CONFIG_VIRTIO=y
+CONFIG_VIRTIO_RING=y
+CONFIG_VIRTIO_PCI=y
+CONFIG_VIRTIO_BALLOON=y
+
+CONFIG_BITREVERSE=y
+CONFIG_GENERIC_FIND_FIRST_BIT=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_CRC_ITU_T=y
+CONFIG_CRC32=y
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=y
+CONFIG_LZO_COMPRESS=y
+CONFIG_LZO_DECOMPRESS=y
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+
+--MGYHOYXEY6WxJCY8--
