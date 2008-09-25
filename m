@@ -1,81 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbYIYGT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbYIYGVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754410AbYIYGT4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 02:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbYIYGTr
+	id S1754410AbYIYGVR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 02:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYIYGVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 02:19:47 -0400
-Received: from mx10.brocade.com ([208.185.105.18]:58195 "EHLO mx10.brocade.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbYIYGTq convert rfc822-to-8bit (ORCPT
+	Thu, 25 Sep 2008 02:21:04 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59185 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbYIYGVC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 02:19:46 -0400
-X-Greylist: delayed 572 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Sep 2008 02:19:45 EDT
-X-IronPort-AV: E=Sophos;i="4.33,306,1220252400"; 
-   d="scan'208";a="126917787"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/6] bfa: Brocade BFA FC SCSI Driver submission
-Date: Wed, 24 Sep 2008 23:09:54 -0700
-Message-ID: <4C94DE2070B172459E4F1EE14BD2364E01F27D54@HQ-EXCH-5.corp.brocade.com>
-In-Reply-To: <20080925055725.GC66712@sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/6] bfa: Brocade BFA FC SCSI Driver submission
-Thread-Index: Acke05cekC7R5tnRQ4GO+x/93yESZwAAGKfA
-References: <4C94DE2070B172459E4F1EE14BD2364E01F27D19@HQ-EXCH-5.corp.brocade.com> <20080925044923.GA4310@kroah.com> <1222319644.3602.1.camel@localhost.localdomain> <4C94DE2070B172459E4F1EE14BD2364E01F27D49@HQ-EXCH-5.corp.brocade.com> <20080925055725.GC66712@sgi.com>
-From: "Jing Huang" <huangj@Brocade.COM>
-To: "Jeremy Higdon" <jeremy@sgi.com>
-Cc: "James Bottomley" <James.Bottomley@HansenPartnership.com>,
-       "Greg KH" <greg@kroah.com>, <linux-scsi@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>,
-       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
-       "Vinodh Ravindran" <vravindr@Brocade.COM>,
-       "Srikanth Rayas (CW)" <srayas@Brocade.COM>
-X-OriginalArrivalTime: 25 Sep 2008 06:10:13.0226 (UTC) FILETIME=[5F490CA0:01C91ED5]
+	Thu, 25 Sep 2008 02:21:02 -0400
+Date: Thu, 25 Sep 2008 15:27:22 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: [PATCH 7/12] memcg add function to move account
+Message-Id: <20080925152722.7a678ea1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi James,
+This patch provides a function to move account information of a page between
+mem_cgroups.
 
-I looked at Documentation/email-clients.txt. There is no info about
-outlook. So I believe Jeremy is right. 
+This moving of page_cgroup is done under
+ - lru_lock of source/destination mem_cgroup is held.
+ - lock_page_cgroup() is held.
 
-Is attachment acceptable for my first submission? Meanwhile I will find
-out if I can use other email client in my company.
+Then, a routine which touches pc->mem_cgroup without lock_page_cgroup() should
+confirm pc->mem_cgroup is still valid or not. Typlical code can be following.
 
-Jing
+(while page is not under lock_page())
+	mem = pc->mem_cgroup;
+	mz = page_cgroup_zoneinfo(pc)
+	spin_lock_irqsave(&mz->lru_lock);
+	if (pc->mem_cgroup == mem)
+		...../* some list handling */
+	spin_unlock_irq(&mz->lru_lock);
 
------Original Message-----
-From: Jeremy Higdon [mailto:jeremy@sgi.com] 
-Sent: Wednesday, September 24, 2008 10:57 PM
-To: Jing Huang
-Cc: James Bottomley; Greg KH; linux-scsi@vger.kernel.org;
-linux-kernel@vger.kernel.org; Ramkumar Vadivelu; Vinodh Ravindran;
-Srikanth Rayas (CW)
-Subject: Re: [PATCH 1/6] bfa: Brocade BFA FC SCSI Driver submission
+Or better way is
+	lock_page_cgroup(pc);
+	....
+	unlock_page_cgroup(pc);
 
-On Wed, Sep 24, 2008 at 10:33:26PM -0700, Jing Huang wrote:
-> Thanks James and Greg for the quick check on the patches.
-> 
-> I check the original patch, it is correct. I need to check the outlook
-> setting to see how to prevent this issue.
-> 
-> This is my first time sending a patch, is there any trick to prevent
-> line-wrap? I did send it using plain text and I tried to send to
-myself
-> before sending to lkml, and I did't see this problem.
+But you should confirm the nest of lock and avoid deadlock.
+(trylock is better if it's ok.)
 
+If you find page_cgroup from mem_cgroup's LRU under mz->lru_lock,
+you don't have to worry about what pc->mem_cgroup points to.
 
-The fix is not to use Outlook -- I've never known anyone to be able
-to get it not to mangle email.  If you're stuck with that, try attaching
-the patch as a text document, if that's acceptable to James.
+Changelog: (v4) -> (v5)
+  - check for lock_page() is removed.
+  - rewrote description.
 
-I know someone that uses mutt on Windows, and it seems to work fine.
+Changelog: (v2) -> (v4)
+  - added lock_page_cgroup().
+  - splitted out from new-force-empty patch.
+  - added how-to-use text.
+  - fixed race in __mem_cgroup_uncharge_common().
 
-jeremy
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ mm/memcontrol.c |   84 ++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 81 insertions(+), 3 deletions(-)
+
+Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+@@ -426,6 +426,7 @@ int task_in_mem_cgroup(struct task_struc
+ void mem_cgroup_move_lists(struct page *page, enum lru_list lru)
+ {
+ 	struct page_cgroup *pc;
++	struct mem_cgroup *mem;
+ 	struct mem_cgroup_per_zone *mz;
+ 	unsigned long flags;
+ 
+@@ -444,9 +445,14 @@ void mem_cgroup_move_lists(struct page *
+ 
+ 	pc = page_get_page_cgroup(page);
+ 	if (pc) {
++		mem = pc->mem_cgroup;
+ 		mz = page_cgroup_zoneinfo(pc);
+ 		spin_lock_irqsave(&mz->lru_lock, flags);
+-		__mem_cgroup_move_lists(pc, lru);
++		/*
++		 * check against the race with move_account.
++		 */
++		if (likely(mem == pc->mem_cgroup))
++			__mem_cgroup_move_lists(pc, lru);
+ 		spin_unlock_irqrestore(&mz->lru_lock, flags);
+ 	}
+ 	unlock_page_cgroup(page);
+@@ -567,6 +573,70 @@ unsigned long mem_cgroup_isolate_pages(u
+ 	return nr_taken;
+ }
+ 
++/**
++ * mem_cgroup_move_account - move account of the page
++ * @page ... the target page of being moved.
++ * @pc   ... page_cgroup of the page.
++ * @from ... mem_cgroup which the page is moved from.
++ * @to   ... mem_cgroup which the page is moved to.
++ *
++ * The caller must confirm following.
++ * 1. disable irq.
++ * 2. lru_lock of old mem_cgroup should be held.
++ * 3. pc is guaranteed to be valid and on mem_cgroup's LRU.
++ *
++ * Because we cannot call try_to_free_page() here, the caller must guarantee
++ * this moving of charge never fails. (if charge fails, this call fails.)
++ * Currently this is called only against root cgroup.
++ * which has no limitation of resource.
++ * Returns 0 at success, returns 1 at failure.
++ */
++int mem_cgroup_move_account(struct page *page, struct page_cgroup *pc,
++	struct mem_cgroup *from, struct mem_cgroup *to)
++{
++	struct mem_cgroup_per_zone *from_mz, *to_mz;
++	int nid, zid;
++	int ret = 1;
++
++	VM_BUG_ON(!irqs_disabled());
++
++	nid = page_to_nid(page);
++	zid = page_zonenum(page);
++	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
++	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
++
++	if (res_counter_charge(&to->res, PAGE_SIZE)) {
++		/* Now, we assume no_limit...no failure here. */
++		return ret;
++	}
++	if (!try_lock_page_cgroup(page)) {
++		res_counter_uncharge(&to->res, PAGE_SIZE);
++		return ret;
++	}
++
++	if (page_get_page_cgroup(page) != pc) {
++		res_counter_uncharge(&to->res, PAGE_SIZE);
++		goto out;
++	}
++
++	if (spin_trylock(&to_mz->lru_lock)) {
++		__mem_cgroup_remove_list(from_mz, pc);
++		css_put(&from->css);
++		res_counter_uncharge(&from->res, PAGE_SIZE);
++		pc->mem_cgroup = to;
++		css_get(&to->css);
++		__mem_cgroup_add_list(to_mz, pc);
++		ret = 0;
++		spin_unlock(&to_mz->lru_lock);
++	} else {
++		res_counter_uncharge(&to->res, PAGE_SIZE);
++	}
++out:
++	unlock_page_cgroup(page);
++
++	return ret;
++}
++
+ /*
+  * Charge the memory controller for page usage.
+  * Return
+@@ -754,16 +824,24 @@ __mem_cgroup_uncharge_common(struct page
+ 	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+ 	    && ((PageCgroupCache(pc) || page_mapped(page))))
+ 		goto unlock;
+-
++retry:
++	mem = pc->mem_cgroup;
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
++	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED &&
++	    unlikely(mem != pc->mem_cgroup)) {
++		/* MAPPED account can be done without lock_page().
++		   Check race with mem_cgroup_move_account() */
++		spin_unlock_irqrestore(&mz->lru_lock, flags);
++		goto retry;
++	}
+ 	__mem_cgroup_remove_list(mz, pc);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+ 
+ 	page_assign_page_cgroup(page, NULL);
+ 	unlock_page_cgroup(page);
+ 
+-	mem = pc->mem_cgroup;
++
+ 	res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 	css_put(&mem->css);
+ 
+
