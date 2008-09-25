@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbYIYHuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbYIYHvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753178AbYIYHuG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 03:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYIYHtz
+	id S1753768AbYIYHvw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 03:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYIYHvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 03:49:55 -0400
-Received: from ptb-relay03.plus.net ([212.159.14.147]:45878 "EHLO
-	ptb-relay03.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751672AbYIYHty (ORCPT
+	Thu, 25 Sep 2008 03:51:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:35836 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752034AbYIYHvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 03:49:54 -0400
-Message-ID: <48DB429C.4050904@yahoo.com>
-Date: Thu, 25 Sep 2008 08:49:48 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Thu, 25 Sep 2008 03:51:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to
+         :mime-version:content-type:content-disposition:user-agent:from;
+        b=ML4aqiQQf/T2M8ZaNhU+KjF4/+8NoC0r6lTn+T4JlrrJONauL8a4Qhwd4c1aCPf4/D
+         pcWsQnBkgpkdI5BHkLiYVb/vclnYVkntHPMGOBx9dNcBGKpCkgGSyB7aaoJr3hhkqZdW
+         jQFYaftSPmesZcF81RVGppQDOi6L4nYY2QghE=
+Date: Thu, 25 Sep 2008 09:51:33 +0200
+To: bzolnier@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: [PATCH] ide-cd: fix another NULL ptr in debug statement
+Message-ID: <20080925075133.GC13100@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, bzolnier@gmail.com,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
 MIME-Version: 1.0
-To: =?UTF-8?B?UGF3ZcWCIFNpa29yYQ==?= <pluto@agmk.net>
-CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [kernel-abi] symbol versioning vs. out-of-tree modules.
-References: <Y165ES5i.1222268879.9618400.pluto@agmk.net> <20080925024840.GA14575@kroah.com> <200809250829.22294.pluto@agmk.net>
-In-Reply-To: <200809250829.22294.pluto@agmk.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Plusnet-Relay: 5cd476a50e94034bcc11c3d035e8df0e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paweł Sikora wrote:
-> On Thursday 25 of September 2008 04:48:40 Greg KH wrote:
->> What kernel modules do you currently use/rely on that are not in the
->> main kernel tree?  Do you have links to them?  I'd be glad to add them.
-> 
-> here's a quick list:
-> 
-> - http://www.lirc.org
+Hi Bart,
 
-^^^^ People are taking steps to adapt this to be included in kernel. See 
-  http://lwn.net/Articles/297770/ . I could have sworn I saw someone 
-posting an input layer patch for lirc the other day too... Aha - 
-http://lkml.org/lkml/2008/9/24/328 .
+here's another null ptr fix in the debugging code. I'll be auditing all the
+debug fragments in case I've missed some.
 
-> - http://rt2x00.serialmonkey.com
+---
+From: Borislav Petkov <petkovbb@gmail.com>
+Date: Thu, 25 Sep 2008 09:36:26 +0200
+Subject: [PATCH] ide-cd: fix another NULL ptr in debug statement
 
-Isn't this one already in the wireless tree? I believe it was merged in 
-2.6.24 - 
-http://kernelnewbies.org/Linux_2_6_24#head-62e9ebf067c978bbf70898986c0aa3904d1a3543 
-.
+There should be no functionality change resulting from this patch.
 
-> - http://aufs.sourceforge.net
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ drivers/ide/ide-cd.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
 
-I've read rumblings about one of the stacking FSes being merged but thus 
-far nothing seems to have happened - http://lwn.net/Articles/265240/ .
-
-> - http://linux-uvc.berlios.de
-
-USB video has already been merged into mainline in 2.6.25 - 
-http://kernelnewbies.org/Linux_2_6_26#head-6d4ee1ddea983f5c8ac491b8685a94ea6fa4132b 
-! I'm using it on my eeepc...
-
-Those are the ones I recognise off the top of my head. I'll have to 
-search with regard to the other ones you mentioned...
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 5ed925d..c830817 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -166,10 +166,13 @@ static void cdrom_analyze_sense_data(ide_drive_t *drive,
+ 	unsigned long bio_sectors;
+ 	struct cdrom_info *info = drive->driver_data;
+ 
+-	ide_debug_log(IDE_DBG_SENSE, "Call %s, failed cmd: 0x%x, "
+-		      "error_code: 0x%x, sense_key: 0x%x\n",
+-		      __func__, failed_command->cmd[0], sense->error_code,
+-		      sense->sense_key);
++	ide_debug_log(IDE_DBG_SENSE, "Call %s, error_code: 0x%x, "
++			"sense_key: 0x%x\n", __func__, sense->error_code,
++			sense->sense_key);
++
++	if (failed_command)
++		ide_debug_log(IDE_DBG_SENSE, "%s: failed cmd: 0x%x\n",
++				__func__, failed_command->cmd[0]);
+ 
+ 	if (!cdrom_log_sense(drive, failed_command, sense))
+ 		return;
+-- 
+1.5.5.4
 
 -- 
-Sitsofe | http://sucs.org/~sits/
+Regards/Gruss,
+    Boris.
