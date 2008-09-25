@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbYIYMJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbYIYMLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332AbYIYMJF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 08:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYIYL5v
+	id S1755200AbYIYMLw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 08:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbYIYMLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 07:57:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48647 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755380AbYIYL5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 07:57:49 -0400
-From: Avi Kivity <avi@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: [PATCH 39/39] KVM: s390: change help text of guest Kconfig
-Date: Thu, 25 Sep 2008 14:55:11 +0300
-Message-Id: <1222343711-12508-40-git-send-email-avi@redhat.com>
-In-Reply-To: <1222343711-12508-1-git-send-email-avi@redhat.com>
-References: <1222343711-12508-1-git-send-email-avi@redhat.com>
+	Thu, 25 Sep 2008 08:11:44 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:39147 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753189AbYIYMLn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 08:11:43 -0400
+Date: Thu, 25 Sep 2008 08:11:29 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fix PCI in Holly device tree
+Message-ID: <20080925081129.7f882085@zod.rchland.ibm.com>
+In-Reply-To: <20080925023904.GC15169@yookeroo.seuss>
+References: <20080925023904.GC15169@yookeroo.seuss>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+On Thu, 25 Sep 2008 12:39:04 +1000
+David Gibson <david@gibson.dropbear.id.au> wrote:
 
-The current help text for CONFIG_S390_GUEST is not very helpful.
-Lets add more text.
+> The PCI bridge on the Holly board is current incorrectly represented
+> in the device tree.  The current device tree node for the PCI bridge
+> sits under the tsi-bridge node.  That's not obviously wrong, but the
+> PCI bridge translated some PCI spaces into CPU address ranges which
+> were not translated by the tsi-bridge node.
+> 
+> We used to get away with this problem because the PCI bridge discovery
+> code was also buggy, assuming incorrectly that PCI host bridge nodes
+> were always directly under the root bus and treating the translated
+> addresses as raw CPU addresses, rather than parent bus addresses.
+> This has since been fixed, breaking Holly.
+> 
+> This could be fixed by adding extra translations to the tsi-bridge
+> node, but this patch instead moves the Holly PCI bridge out of the
+> tsi-bridge node to the root bus.  This makes the tsi-bridge node
+> represent only the built-in IO devices in the bridge, with a
+> more-or-less contiguous address range.  This is the same convention
+> used on Freescale SoC chips, where the "soc" node represents only the
+> IMMR region, and the PCI and other bus bridges are separate nodes
+> under the root bus.
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- arch/s390/Kconfig |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 8d41908..c9bfed9 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -564,13 +564,16 @@ config ZFCPDUMP
- 	  Refer to <file:Documentation/s390/zfcpdump.txt> for more details on this.
- 
- config S390_GUEST
--bool "s390 guest support (EXPERIMENTAL)"
-+bool "s390 guest support for KVM (EXPERIMENTAL)"
- 	depends on 64BIT && EXPERIMENTAL
- 	select VIRTIO
- 	select VIRTIO_RING
- 	select VIRTIO_CONSOLE
- 	help
--	  Select this option if you want to run the kernel under s390 linux
-+	  Select this option if you want to run the kernel as a guest under
-+	  the KVM hypervisor. This will add detection for KVM as well  as a
-+	  virtio transport. If KVM is detected, the virtio console will be
-+	  the default console.
- endmenu
- 
- source "net/Kconfig"
--- 
-1.6.0.1
+Paul, I can include this in my 'next' branch if you aren't opposed.
+I'll have another set of patches going in there today/tomorrow.
 
+josh
