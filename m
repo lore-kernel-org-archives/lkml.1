@@ -1,71 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbYIYUhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYIYUka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755737AbYIYUhN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 16:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYIYUhA
+	id S1755431AbYIYUka (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 16:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYIYUkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 16:37:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57489 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752760AbYIYUhA (ORCPT
+	Thu, 25 Sep 2008 16:40:21 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:53058 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbYIYUkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 16:37:00 -0400
-Date: Thu, 25 Sep 2008 13:29:21 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <alpine.LFD.1.10.0809251318270.3265@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0809251325450.3265@nehalem.linux-foundation.org>
-References: <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org>
- <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809251247010.27920@gandalf.stny.rr.com> <alpine.LFD.1.10.0809251002290.3265@nehalem.linux-foundation.org>
- <20080925195522.GA22248@elte.hu> <20080925201211.GA1878@elte.hu> <alpine.LFD.1.10.0809251318270.3265@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 25 Sep 2008 16:40:20 -0400
+Date: Thu, 25 Sep 2008 13:40:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: scsi <linux-scsi@vger.kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+Message-Id: <20080925134000.9b133f8c.randy.dunlap@oracle.com>
+In-Reply-To: <48DBF583.3050307@oracle.com>
+References: <20080821091514.8f56e2d5.randy.dunlap@oracle.com>
+	<0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
+	<20080821172653.3e3e855c.randy.dunlap@oracle.com>
+	<0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>
+	<1219420487.3339.22.camel@localhost.localdomain>
+	<48AEEE0A.1010900@oracle.com>
+	<1219424538.3339.51.camel@localhost.localdomain>
+	<0F5B06BAB751E047AB5C87D1F77A77883511810894@GVW0547EXC.americas.hpqcorp.net>
+	<48C013D9.7060309@oracle.com>
+	<0F5B06BAB751E047AB5C87D1F77A7788413663D229@GVW0547EXC.americas.hpqcorp.net>
+	<20080905092838.GS20055@kernel.dk>
+	<48DBF583.3050307@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 25 Sep 2008 13:33:07 -0700 Randy Dunlap wrote:
 
-
-On Thu, 25 Sep 2008, Linus Torvalds wrote:
+> Jens Axboe wrote:
+> > On Thu, Sep 04 2008, Miller, Mike (OS Dev) wrote:
+> >>>>>> 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
+> >>>>>> 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
+> >>>>>> 0x3bba <do_cciss_intr+1657>:    je     0x3f0e <do_cciss_intr+2509>
+> >>>>>>
+> >>>>>>
+> >>>>>> $ addr2line -e cciss.o -f  do_cciss_intr+0x627 SA5_fifo_full
+> >>>>>>
+> >>> /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:206
+> >>>>> OK ...that's confusing.  It seems to be saying that ctrlr_info_t *
+> >>>>> was NULL.  However, I can't see a way of getting into the
+> >>> fifo_full
+> >>>>> callback from do_cciss_intr ..
+> >>>>> especially not with an NULL host.
+> >>>>>
+> >>>>> James
+> >>>> That is weird. Even if we could get there fifo_full doesn't
+> >>> do anything but wait for a bit.
+> >>>
+> >>> Hi,
+> >>>
+> >>> This just happened again.  This time it's on 2.6.27-rc5-git3.
+> >>>
+> >>> ~Randy
+> >> Thanks Randy. I think. :)
+> >>
+> >> I'll try to recreate in my lab.
+> > 
+> > This looks somewhat strange, mostly like 'c' is NULL and it's oopsing in
+> > in removeQ (I don't think Randy's analysis is correct in assuming it's
+> > 'h' and it's in fifo_full). Given that 'c' cannot be NULL, it's c->prev
+> > or c->next that are NULL.
 > 
-> You also ignore the early trace issues, and have apparently not used it 
-> for FTRACE. You also ignore the fact that without TSC, it goes into the 
-> same "crap mode" that is appropriate for the scheduler, but totally 
-> useless for tracing.
+> Yes, correct IMO.  I checked my daily test logs and I have had this problem
+> in do_cciss_intr() 3 times, all at the same location, which appears to be
+> in removeQ(), as Jens says.
 
-Oh, and I didn't notice (because Steven pointed out "notrace" and I didn't 
-see any of them), that in order to get things to work you had just added
+Mike, also notice this:  it's always during driver init, as indicated by
+the (+) in the dump ('+' means that the module is in the process of being
+loaded, but module load has not completed):
 
-CFLAGS_REMOVE_lockdep.o = -pg
-CFLAGS_REMOVE_lockdep_proc.o = -pg
-CFLAGS_REMOVE_mutex-debug.o = -pg
-CFLAGS_REMOVE_rtmutex-debug.o = -pg
-CFLAGS_REMOVE_cgroup-debug.o = -pg
-CFLAGS_REMOVE_sched_clock.o = -pg
-CFLAGS_REMOVE_sched.o = -mno-spe -pg
+calling  cciss_init+0x0/0x2e [cciss]
+HP CISS Driver (v 3.6.20)
+ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54
+cciss 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high) -> IRQ 54
+cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 503 using DAC
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000248
+IP: [<ffffffffa001bb68>] do_cciss_intr+0x627/0xa6c [cciss]
+PGD 17e422067 PUD 17e423067 PMD 0
+Oops: 0002 [1] SMP
+CPU 2
+Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
+RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>] do_cciss_intr+0x627/0xa6c [cciss]
 
-all ovr the place, which was part of my argument against this crap in the 
-first place.
 
-Yes, by using all that common infrastructure, you can share some code, but 
-you will always hit that case that now you have serious issues with 
-actually marking it. Now the tracer has to have recursion detection if you 
-ever want to trace any function that might be used for the clock - and 
-quite frankly, especially with virtualization, it's not AT ALL obvious 
-what those are all the time..
-
-That is exactly one of the examples I gave for _not_ doing this. Go back 
-and read my previous emails. Rather than talking about how I call your 
-arguments BS without saying why.
-
-			Linus
+---
+~Randy
