@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYIYENA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbYIYENd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753953AbYIYENA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 00:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbYIYEMu
+	id S1753018AbYIYENd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 00:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYIYENX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 00:12:50 -0400
-Received: from mx30.brocade.com ([144.49.194.4]:48579 "EHLO mx30.brocade.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750812AbYIYEMt convert rfc822-to-8bit (ORCPT
+	Thu, 25 Sep 2008 00:13:23 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:44793 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750834AbYIYENW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 00:12:49 -0400
-X-IronPort-AV: E=Sophos;i="4.33,305,1220252400"; 
-   d="scan'208";a="48025552"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 25 Sep 2008 00:13:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=NdUWU6I7GUJrg4F4x6LamD1+hgVlCy2L3WXAL75wvYhLPp4kI8VNw7gdbDAVKWfh1YdAd1uygG+xwSxcBM5O1GyugrNYLRFp+eejzhvuvxAzO3IMP+z0n2Ceul9lXpAxZijHvvLh65DOWm1AYJmTs90t0I3W7q2O/4qDm/lIFLE=  ;
+X-YMail-OSG: iBy_beUVM1m4utLYTTllFjZLzebU8UrdgcWR4Pj5r6muKMCud160twQCQSk1QSJjgzFyvSZ2v.jDWzQ10t1XWf50k5jD4hBp1aT.ta9YtWo8AOg5YXHsukOJzdDuZJh25uzzS5W9gpSUxYlxjnK0oF0.8fdO
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 2/4] powerpc/qe: new call to revert a gpio to a dedicated function
+Date: Wed, 24 Sep 2008 21:13:18 -0700
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <greg@kroah.com>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Timur Tabi <timur@freescale.com>, Li Yang <leoli@freescale.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>, linuxppc-dev@ozlabs.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080924000255.GA28054@oksana.dev.rtsoft.ru> <200809241154.25722.david-b@pacbell.net> <20080924232956.GA27533@oksana.dev.rtsoft.ru>
+In-Reply-To: <20080924232956.GA27533@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH 6/6] bfa: Brocade BFA FC SCSI Driver submission
-Date: Wed, 24 Sep 2008 21:12:24 -0700
-Message-ID: <4C94DE2070B172459E4F1EE14BD2364E01F27D25@HQ-EXCH-5.corp.brocade.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 6/6] bfa: Brocade BFA FC SCSI Driver submission
-Thread-Index: AckexOolYSTQSDDWQjmuyVL6dU6BRA==
-From: "Jing Huang" <huangj@Brocade.COM>
-To: <James.Bottomley@HansenPartnership.com>
-Cc: <linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
-       "Vinodh Ravindran" <vravindr@Brocade.COM>,
-       "Srikanth Rayas (CW)" <srayas@Brocade.COM>
-X-OriginalArrivalTime: 25 Sep 2008 04:12:48.0974 (UTC) FILETIME=[F8957EE0:01C91EC4]
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809242113.18992.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jing Huang <huangj@brocade.com>
+On Wednesday 24 September 2008, Anton Vorontsov wrote:
+> 
+> Anyway, just want to thank you for your time and persistence on this
+> matter, you're forcing others' people brains to *work*.  And since you 
+> rejected this approach too, I have no other option but to implement
+> something else... something better. ;-)
 
-This patch contains updated MAINTAINERS file. It is created using
-2.6.27-rc7 kernel.
-
-Signed-off-by: Jing Huang <huangj@brocade.com>
----
- MAINTAINERS |    6 ++++++
- 1 files changed, 6 insertions(+)
-
-diff -urpN orig/MAINTAINERS patch/MAINTAINERS
---- orig/MAINTAINERS	2008-09-24 13:40:12.000000000 -0700
-+++ patch/MAINTAINERS	2008-09-24 13:44:25.000000000 -0700
-@@ -995,6 +995,12 @@ M:	mchan@broadcom.com
- L:	netdev@vger.kernel.org
- S:	Supported
- 
-+BROCADE BFA FC SCSI DRIVER
-+P:	Jing Huang 
-+M:	huangj@brocade.com
-+L:	linux-scsi@vger.kernel.org
-+S:	Supported
-+
- BSG (block layer generic sg v4 driver)
- P:	FUJITA Tomonori
- M:	fujita.tomonori@lab.ntt.co.jp
+I think you have enough pieces in place to get that
+"something better" _very_ quickly.  Or I'd feel worse
+about abusing those poor little grey cells.  ;)
