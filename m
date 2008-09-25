@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYIYLMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYIYLMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754509AbYIYLMK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 07:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYIYLLy
+	id S1754681AbYIYLMg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 07:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYIYLM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 07:11:54 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:46763 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752347AbYIYLLw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 07:11:52 -0400
-Date: Thu, 25 Sep 2008 13:09:07 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: Frank Blaschka <frank.blaschka@de.ibm.com>,
-       Ursula Braun <braunu@de.ibm.com>,
-       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [PATCH] iucv: Fix mismerge again.
-Message-ID: <20080925110907.GA22433@osiris.boeblingen.de.ibm.com>
+	Thu, 25 Sep 2008 07:12:28 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:53107 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753127AbYIYLM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 07:12:27 -0400
+Date: Thu, 25 Sep 2008 13:12:40 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: 2.6.27-rc7 no init found on the root partition?
+Message-ID: <20080925111239.GF31582@ics.muni.cz>
+References: <20080924192227.GC31582@ics.muni.cz> <20080924230326.GM5448@disturbed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080924230326.GM5448@disturbed>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 25 Sep 2008 13:12:20 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] iucv: Fix mismerge again.
+On Thu, Sep 25, 2008 at 09:03:26AM +1000, Dave Chinner wrote:
+> On Wed, Sep 24, 2008 at 09:22:27PM +0200, Lukas Hejtmanek wrote:
+> > Hello,
+> > 
+> > I have a box that has XFS root partition, I have kernel 2.6.26.3 that boots
+> > pretty well on that box. Today, I've tried 2.6.27-rc7 (so that I can test
+> > NFSv4 over IPv6), but the kernel is unable to boot. It says that root
+> > partition is mounted, XFS file system but no init found.
+> 
+> Can you paste the error messages or send pointers to screen shots of
+> the error?
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+http://undomiel.ics.muni.cz/tmp/IMG_2962.JPG
 
-fb65a7c091529bfffb1262515252c0d0f6241c5c ("iucv: Fix bad merging.") fixed
-a merge error, but in a wrong way. We now end up with the bug below.
-This patch corrects the mismerge like it was intended.
+this one is if I pass init=/bin/bash
+http://undomiel.ics.muni.cz/tmp/IMG_2961.JPG
 
-BUG: scheduling while atomic: swapper/1/0x00000000
-Modules linked in:
-CPU: 1 Not tainted 2.6.27-rc7-00094-gc0f4d6d #9
-Process swapper (pid: 1, task: 000000003fe7d988, ksp: 000000003fe838c0)
-0000000000000000 000000003fe839b8 0000000000000002 0000000000000000
-       000000003fe83a58 000000003fe839d0 000000003fe839d0 0000000000390de6
-       000000000058acd8 00000000000000d0 000000003fe7dcd8 0000000000000000
-       000000000000000c 000000000000000d 0000000000000000 000000003fe83a28
-       000000000039c5b8 0000000000015e5e 000000003fe839b8 000000003fe83a00
-Call Trace:
-([<0000000000015d6a>] show_trace+0xe6/0x134)
- [<0000000000039656>] __schedule_bug+0xa2/0xa8
- [<0000000000391744>] schedule+0x49c/0x910
- [<0000000000391f64>] schedule_timeout+0xc4/0x114
- [<00000000003910d4>] wait_for_common+0xe8/0x1b4
- [<00000000000549ae>] call_usermodehelper_exec+0xa6/0xec
- [<00000000001af7b8>] kobject_uevent_env+0x418/0x438
- [<00000000001d08fc>] bus_add_driver+0x1e4/0x298
- [<00000000001d1ee4>] driver_register+0x90/0x18c
- [<0000000000566848>] netiucv_init+0x168/0x2c8
- [<00000000000120be>] do_one_initcall+0x3e/0x17c
- [<000000000054a31a>] kernel_init+0x1ce/0x248
- [<000000000001a97a>] kernel_thread_starter+0x6/0xc
- [<000000000001a974>] kernel_thread_starter+0x0/0xc
- iucv: NETIUCV driver initialized
-initcall netiucv_init+0x0/0x2c8 returned with preemption imbalance
+> If you go back to 2.6.26.3, does the kernel boot ok?
 
-Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Cc: Ursula Braun <braunu@de.ibm.com>
-Cc: Frank Blaschka <frank.blaschka@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
+indeed.
 
-If possible this should get in before 2.6.27.
 
- net/iucv/iucv.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+this is a grub record:
 
-Index: linux-2.6/net/iucv/iucv.c
-===================================================================
---- linux-2.6.orig/net/iucv/iucv.c
-+++ linux-2.6/net/iucv/iucv.c
-@@ -524,7 +524,6 @@ static int iucv_enable(void)
- 	get_online_cpus();
- 	for_each_online_cpu(cpu)
- 		smp_call_function_single(cpu, iucv_declare_cpu, NULL, 1);
--	preempt_enable();
- 	if (cpus_empty(iucv_buffer_cpumask))
- 		/* No cpu could declare an iucv buffer. */
- 		goto out_path;
-@@ -547,7 +546,9 @@ out:
-  */
- static void iucv_disable(void)
- {
-+	get_online_cpus();
- 	on_each_cpu(iucv_retrieve_cpu, NULL, 1);
-+	put_online_cpus();
- 	kfree(iucv_path_table);
- }
- 
+title Linux 2.6.26.3
+root (hd0,0)
+kernel /boot/vmlinuz-2.6.26.3 root=/dev/sda1 ro console=tty0
+
+title Linux 2.6.27-rc7
+root (hd0,0)
+kernel /boot/vmlinuz-2.6.27-rc7 root=/dev/sda1 ro 
+
+
+-- 
+Luká¹ Hejtmánek
