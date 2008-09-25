@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbYIYW21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbYIYW2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364AbYIYW21 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 18:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbYIYW14
+	id S1756720AbYIYW2m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 18:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbYIYW2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 18:27:56 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53991 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753029AbYIYW1y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 18:27:54 -0400
-Message-ID: <48DC105D.9050803@zytor.com>
-Date: Thu, 25 Sep 2008 15:27:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 25 Sep 2008 18:28:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:44669 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754387AbYIYW17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 18:27:59 -0400
+Message-ID: <48DC106D.9010601@goop.org>
+Date: Thu, 25 Sep 2008 15:27:57 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Alok Kataria <akataria@vmware.com>, Alok kataria <alokkataria1@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Yan Li <elliot.li.tech@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
-       "rjmaomao@gmail.com" <rjmaomao@gmail.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
-References: <20080221115452.GB13948@elte.hu>	 <20080907234510.GA24133@yantp.cn.ibm.com>	 <20080908140423.GG11993@elte.hu>	 <35f686220809241928k3669e30bi8a98b440443c4bff@mail.gmail.com>	 <48DB15DB.8040501@zytor.com> <1222317978.23524.117.camel@alok-dev1>	 <48DB1984.8020704@zytor.com> <1222318928.23524.121.camel@alok-dev1>	 <48DB1BCE.2070106@zytor.com>  <1222320201.23524.135.camel@alok-dev1>	 <1222375694.27056.179.camel@bodhitayantram.eng.vmware.com>	 <48DC09D9.7040204@zytor.com> <1222381254.27056.194.camel@bodhitayantram.eng.vmware.com>
-In-Reply-To: <1222381254.27056.194.camel@bodhitayantram.eng.vmware.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: benh@kernel.crashing.org
+CC: Hugh Dickins <hugh@veritas.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: PTE access rules & abstraction
+References: <1221846139.8077.25.camel@pasglop>  <48D739B2.1050202@goop.org>	 <1222117551.12085.39.camel@pasglop>	 <Pine.LNX.4.64.0809241919520.575@blonde.site>	 <1222291248.8277.90.camel@pasglop>	 <Pine.LNX.4.64.0809250049270.21674@blonde.site>	 <1222304686.8277.136.camel@pasglop>  <48DBD532.80607@goop.org> <1222379063.8277.202.camel@pasglop>
+In-Reply-To: <1222379063.8277.202.camel@pasglop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> On Thu, 2008-09-25 at 14:59 -0700, H. Peter Anvin wrote:
-> 
->> However, it is the particular use of this for detection use that is
->> utterly damning.  Using random I/O port probes for hardware detect
->> should have disappeared in the early 1990's, and it's really disturbing
->> that virtualization vendors -- not just VMWare -- are, in effect,
->> re-making all the mistakes hardware vendors did in the 1980's.
-> 
-> It's not disturbing, it's expected.  Re-using old broken solutions happens all the time, they can be perfectly valid in some contexts.  The problem is that they tend to live on and evolve into a larger context where they break again.  Surely we can do better, but how to do that isn't always clear-cut.  DMI is a pretty good standard for this, but it still doesn't solve the problem in all contexts (userspace apps).
-> 
+Benjamin Herrenschmidt wrote:
+> On Thu, 2008-09-25 at 11:15 -0700, Jeremy Fitzhardinge wrote:
+>   
+>> The ptep_modify_prot_start/commit pair specifies a single pte update in
+>> such a way to allow more implementation flexibility - ie, there's no
+>> naked requirement for an atomic fetch-and-clear operation.  I chose the
+>> transaction-like terminology to emphasize that the start/commit
+>> functions must be strictly paired; there's no way to fail or abort the
+>> "transaction".  A whole group of those start/commit pairs can be batched
+>> together without affecting their semantics.
+>>     
+>
+> I still can't see the point of having now 3 functions instead of just
+> one such as ptep_modify_protection(). I don't see what it buys you other
+> than adding gratuituous new interfaces.
+>   
 
-This, of course, is what CPUID is for.
+Yeah, that would work too; that's pretty much how Xen implements it
+anyway.  The main advantage of the start/commit pair is that the
+resulting code was completely unchanged from the old code.  The mprotect
+sequence using ptep_modify_protection would end up reading the pte twice
+before writing it.
 
-	-hpa
+    J
