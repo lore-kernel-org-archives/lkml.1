@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYIYQpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbYIYQqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbYIYQpx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 12:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYIYQpF
+	id S1756442AbYIYQqa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 12:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYIYQpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 12:45:05 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:57665 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753509AbYIYQpB (ORCPT
+	Thu, 25 Sep 2008 12:45:36 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:46379 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756010AbYIYQpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 12:45:01 -0400
-Message-Id: <20080925162827.818261893@de.ibm.com>
+	Thu, 25 Sep 2008 12:45:34 -0400
+Message-Id: <20080925163019.210654702@de.ibm.com>
+References: <20080925162827.818261893@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 25 Sep 2008 18:28:27 +0200
+Date: Thu, 25 Sep 2008 18:28:28 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
        lf_kernel_messages@lists.linux-foundation.org,
@@ -27,46 +28,142 @@ To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
        Kunai Takashi <kunai@linux-foundation.jp>,
        Tim Bird <tim.bird@am.sony.com>, Jan Blunck <jblunck@suse.de>,
        Rick Troth <rmt@casita.net>, Utz Bacher <utz.bacher@de.ibm.com>
-Subject: [patch 0/6] [RFC] kmsg macros, take x+3.
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 1/6] kmsg: tagged kernel messages.
+Content-Disposition: inline; filename=800-kmsg-macros.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
-after a short chat with Greg on the kernel summit here is now the
-hopefully final version of the kernel message catalog patches. As
-version x+2 this uses automatically generated message hashes. The
-new thing is that there are no more special kmsg_dev_xxx macros,
-this version uses the standard dev_xxx macros. If a KMSG_COMPONENT
-is defined then dev_xxx will include the message hash after the
-driver name in the format:
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+From: Michael Holzheu <holzheu@de.ibm.com>
 
-   <driver-name>.<message hash>: <device name>: <message>
+Introduce a new family of printk macros which prefixes each kmsg message
+with a component name and allows to tag the message with a 24 bit hash of
+the message text. The kmsg component name is defined per source file with
+the KMSG_COMPONENT macro. In order to use the kmsg_xxx macros KMSG_COMPONENT
+has to be defined.
 
-The problem with finding the correct driver name in the kmsg-doc
-script has been solved by requiring that the driver name and
-KMSG_COMPONENT have to match. See patch #2.
+If the message hash will be printed to the console / syslog at all depends
+on CONFIG_MSG_IDS. If it is "n" then a kmsg_xxx call is just another
+printk wrapper. These macros are intended to be used uniformly in the
+s390 architecture and the s390 device drivers.
 
-To convert a driver to use the message tags you need to do:
-1) Add KMSG_COMPONENT to the start of each source file of the driver:
-   #define KMSG_COMPONENT "driver-name"
-   The define should be before any of the includes.
-2) Replace all normal printks with kmsg_err/kmsg_warn/kmsg_info/..
-   The dev_xxx printks do not need to be changed in any way.
-3) Compile the driver
-4) Check for missing messages by running "make D=1 <?.o>" on each of
-   the object files of the driver. For example if I want to check the
-   lcs driver I do "make D=1 drivers/s390/net/lcs.o". Alternatively you
-   can check all object files of your current configuration with just
-   "make D=1". Be prepared that this will take a while..
-   For each message that misses its documentation you'll get a blueprint.
-5) Fill in the ksmg blueprint of the messages and copy the result to
-   either the source file where the respective message is located or to
-   a text file with the component as its name in Documentation/kmsg.
-6) Create the man pages your driver with "make D=2 <?.o>".
+Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-Greg: could you please comment on patch number #2 if this is ok with
-you now?
+ arch/s390/Kconfig    |    9 +++++++++
+ include/linux/kmsg.h |   42 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/printk.c      |   24 ++++++++++++++++++++++++
+ 3 files changed, 75 insertions(+)
+
+Index: kmsg-2.6/arch/s390/Kconfig
+===================================================================
+--- kmsg-2.6.orig/arch/s390/Kconfig
++++ kmsg-2.6/arch/s390/Kconfig
+@@ -571,6 +571,15 @@ bool "s390 guest support (EXPERIMENTAL)"
+ 	select VIRTIO_CONSOLE
+ 	help
+ 	  Select this option if you want to run the kernel under s390 linux
++
++config KMSG_IDS
++	bool "Kernel message numbers"
++	default y
++	help
++	  Select this option if you want to include a message number to the
++	  prefix for kernel messages issued by the s390 architecture and
++	  driver code. See "Documentation/s390/kmsg.txt" for more details.
++
+ endmenu
+ 
+ source "net/Kconfig"
+Index: kmsg-2.6/include/linux/kmsg.h
+===================================================================
+--- /dev/null
++++ kmsg-2.6/include/linux/kmsg.h
+@@ -0,0 +1,42 @@
++#ifndef _LINUX_KMSG_H
++#define _LINUX_KMSG_H
++
++#define kmsg_printk(level, format, ...) \
++	printk(level KMSG_COMPONENT  ": " format, ##__VA_ARGS__)
++
++#if defined(__KMSG_CHECKER)
++/* generate magic string for scripts/kmsg-doc to parse */
++#define kmsg_printk_hash(level, format, ...) \
++	__KMSG_PRINT(level _FMT_ format _ARGS_ ##__VA_ARGS__ _END_)
++#elif defined(CONFIG_KMSG_IDS)
++int printk_hash(const char *, const char *, ...);
++#define kmsg_printk_hash(level, format, ...) \
++	printk_hash(level KMSG_COMPONENT ".%06x" ": ", format, ##__VA_ARGS__)
++#else /* !defined(CONFIG_KMSG_IDS) */
++#define kmsg_printk_hash kmsg_printk
++#endif
++
++#define kmsg_emerg(fmt, ...) \
++	kmsg_printk_hash(KERN_EMERG, fmt, ##__VA_ARGS__)
++#define kmsg_alert(fmt, ...) \
++	kmsg_printk_hash(KERN_ALERT, fmt, ##__VA_ARGS__)
++#define kmsg_crit(fmt, ...) \
++	kmsg_printk_hash(KERN_CRIT, fmt, ##__VA_ARGS__)
++#define kmsg_err(fmt, ...) \
++	kmsg_printk_hash(KERN_ERR, fmt, ##__VA_ARGS__)
++#define kmsg_warn(fmt, ...) \
++	kmsg_printk_hash(KERN_WARNING, fmt, ##__VA_ARGS__)
++#define kmsg_notice(fmt, ...) \
++	kmsg_printk_hash(KERN_NOTICE, fmt, ##__VA_ARGS__)
++#define kmsg_info(fmt, ...) \
++	kmsg_printk_hash(KERN_INFO, fmt, ##__VA_ARGS__)
++
++#ifdef DEBUG
++#define kmsg_dbg(fmt, ...) \
++	kmsg_printk(KERN_DEBUG, fmt, ##__VA_ARGS__)
++#else
++#define kmsg_dbg(fmt, ...) \
++	({ if (0) kmsg_printk(KERN_DEBUG, fmt, ##__VA_ARGS__); 0; })
++#endif
++
++#endif /* _LINUX_KMSG_H */
+Index: kmsg-2.6/kernel/printk.c
+===================================================================
+--- kmsg-2.6.orig/kernel/printk.c
++++ kmsg-2.6/kernel/printk.c
+@@ -32,6 +32,8 @@
+ #include <linux/security.h>
+ #include <linux/bootmem.h>
+ #include <linux/syscalls.h>
++#include <linux/jhash.h>
++#include <linux/device.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -1343,3 +1345,25 @@ bool printk_timed_ratelimit(unsigned lon
+ }
+ EXPORT_SYMBOL(printk_timed_ratelimit);
+ #endif
++
++#if defined CONFIG_PRINTK && defined CONFIG_KMSG_IDS
++
++/**
++ * printk_hash - print a kernel message include a hash over the message
++ * @prefix: message prefix including the ".%06x" for the hash
++ * @fmt: format string
++ */
++asmlinkage int printk_hash(const char *prefix, const char *fmt, ...)
++{
++	va_list args;
++	int r;
++
++	r = printk(prefix, jhash(fmt, strlen(fmt), 0) & 0xffffff);
++	va_start(args, fmt);
++	r += vprintk(fmt, args);
++	va_end(args);
++
++	return r;
++}
++EXPORT_SYMBOL(printk_hash);
++#endif
 
 -- 
 blue skies,
