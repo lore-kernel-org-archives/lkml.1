@@ -1,119 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbYIYKP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbYIYKUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbYIYKP2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 06:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbYIYKOW
+	id S1754284AbYIYKUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 06:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYIYKUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 06:14:22 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:4654 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754201AbYIYKOV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 06:14:21 -0400
-X-BigFish: VPS3(zzzzzzz32i43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K7QXRA-03-FWG-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
-CC: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 1/3] x86/iommu: make GART driver checkpatch clean
-Date: Thu, 25 Sep 2008 12:13:53 +0200
-Message-ID: <1222337635-28285-2-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <1222337635-28285-1-git-send-email-joerg.roedel@amd.com>
-References: <1222337635-28285-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 25 Sep 2008 10:13:55.0502 (UTC) FILETIME=[6AD74CE0:01C91EF7]
+	Thu, 25 Sep 2008 06:20:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39994 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751705AbYIYKUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 06:20:34 -0400
+Date: Thu, 25 Sep 2008 12:20:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 3/3] x86/iommu: use __GFP_ZERO instead of memset for
+	GART
+Message-ID: <20080925102012.GA13631@elte.hu>
+References: <1222337635-28285-1-git-send-email-joerg.roedel@amd.com> <1222337635-28285-4-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222337635-28285-4-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/pci-gart_64.c |   17 +++++++++--------
- include/asm-x86/gart.h        |    2 ++
- 2 files changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index b85a2f9..aa569db 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -27,8 +27,8 @@
- #include <linux/scatterlist.h>
- #include <linux/iommu-helper.h>
- #include <linux/sysdev.h>
-+#include <linux/io.h>
- #include <asm/atomic.h>
--#include <asm/io.h>
- #include <asm/mtrr.h>
- #include <asm/pgtable.h>
- #include <asm/proto.h>
-@@ -175,7 +175,8 @@ static void dump_leak(void)
- 	       iommu_leak_pages);
- 	for (i = 0; i < iommu_leak_pages; i += 2) {
- 		printk(KERN_DEBUG "%lu: ", iommu_pages-i);
--		printk_address((unsigned long) iommu_leak_tab[iommu_pages-i], 0);
-+		printk_address((unsigned long) iommu_leak_tab[iommu_pages-i],
-+				0);
- 		printk(KERN_CONT "%c", (i+1)%2 == 0 ? '\n' : ' ');
- 	}
- 	printk(KERN_DEBUG "\n");
-@@ -688,7 +689,8 @@ static __init int init_k8_gatt(struct agp_kern_info *info)
- 	if (!error)
- 		error = sysdev_register(&device_gart);
- 	if (error)
--		panic("Could not register gart_sysdev -- would corrupt data on next suspend");
-+		panic("Could not register gart_sysdev -- "
-+		      "would corrupt data on next suspend");
- 
- 	flush_gart();
- 
-@@ -710,8 +712,6 @@ static __init int init_k8_gatt(struct agp_kern_info *info)
- 	return -1;
- }
- 
--extern int agp_amd64_init(void);
--
- static struct dma_mapping_ops gart_dma_ops = {
- 	.map_single			= gart_map_single,
- 	.unmap_single			= gart_unmap_single,
-@@ -777,8 +777,8 @@ void __init gart_iommu_init(void)
- 	    (no_agp && init_k8_gatt(&info) < 0)) {
- 		if (max_pfn > MAX_DMA32_PFN) {
- 			printk(KERN_WARNING "More than 4GB of memory "
--			       	          "but GART IOMMU not available.\n"
--			       KERN_WARNING "falling back to iommu=soft.\n");
-+			       "but GART IOMMU not available.\n");
-+			printk(KERN_WARNING "falling back to iommu=soft.\n");
- 		}
- 		return;
- 	}
-@@ -868,7 +868,8 @@ void __init gart_parse_options(char *p)
- 	if (!strncmp(p, "leak", 4)) {
- 		leak_trace = 1;
- 		p += 4;
--		if (*p == '=') ++p;
-+		if (*p == '=')
-+			++p;
- 		if (isdigit(*p) && get_option(&p, &arg))
- 			iommu_leak_pages = arg;
- 	}
-diff --git a/include/asm-x86/gart.h b/include/asm-x86/gart.h
-index 3f62a83..cdf4f78 100644
---- a/include/asm-x86/gart.h
-+++ b/include/asm-x86/gart.h
-@@ -29,6 +29,8 @@ extern int fix_aperture;
- #define AMD64_GARTCACHECTL	0x9c
- #define AMD64_GARTEN		(1<<0)
- 
-+extern int agp_amd64_init(void);
-+
- static inline void enable_gart_translation(struct pci_dev *dev, u64 addr)
- {
- 	u32 tmp, ctl;
--- 
-1.5.6.4
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
+>  #ifdef CONFIG_IOMMU_LEAK
+>  	if (leak_trace) {
+> -		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL,
+> +		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL|__GFP_ZERO,
+>  				  get_order(iommu_pages*sizeof(void *)));
+> -		if (iommu_leak_tab)
+> -			memset(iommu_leak_tab, 0, iommu_pages * 8);
+>  		else
+>  			printk(KERN_DEBUG
+>  			       "PCI-DMA: Cannot allocate leak trace area\n");
 
+hm, that looks broken.
+
+	Ingo
