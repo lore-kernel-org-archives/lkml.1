@@ -1,112 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbYIYMAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYIYMBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754419AbYIYMAp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 08:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbYIYLzs
+	id S1755171AbYIYMBB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 08:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbYIYLzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 07:55:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48551 "EHLO mx2.redhat.com"
+	Thu, 25 Sep 2008 07:55:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48563 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754834AbYIYLzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 07:55:41 -0400
+	id S1754869AbYIYLzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 07:55:47 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Mohammed Gamal <m.gamal005@gmail.com>
-Subject: [PATCH 12/39] KVM: VMX: Modify mode switching and vmentry functions
-Date: Thu, 25 Sep 2008 14:54:44 +0300
-Message-Id: <1222343711-12508-13-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Xiantao Zhang <xiantao.zhang@intel.com>
+Subject: [PATCH 16/39] KVM: ia64: add a dummy irq ack notification
+Date: Thu, 25 Sep 2008 14:54:48 +0300
+Message-Id: <1222343711-12508-17-git-send-email-avi@redhat.com>
 In-Reply-To: <1222343711-12508-1-git-send-email-avi@redhat.com>
 References: <1222343711-12508-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mohammed Gamal <m.gamal005@gmail.com>
+From: Xiantao Zhang <xiantao.zhang@intel.com>
 
-This patch modifies mode switching and vmentry function in order to
-drive invalid guest state emulation.
+Before enabling notify_acked_irq for ia64, leave the related APIs as
+nop-op first.
 
-Signed-off-by: Mohammed Gamal <m.gamal005@gmail.com>
+Signed-off-by: Xiantao Zhang <xiantao.zhang@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/vmx.c |   20 ++++++++++++++++++++
- 1 files changed, 20 insertions(+), 0 deletions(-)
+ arch/ia64/kvm/irq.h |   32 ++++++++++++++++++++++++++++++++
+ virt/kvm/ioapic.c   |    2 +-
+ 2 files changed, 33 insertions(+), 1 deletions(-)
+ create mode 100644 arch/ia64/kvm/irq.h
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index eae1f2c..9840f37 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -1298,7 +1298,9 @@ static void fix_pmode_dataseg(int seg, struct kvm_save_segment *save)
- static void enter_pmode(struct kvm_vcpu *vcpu)
- {
- 	unsigned long flags;
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
- 
-+	vmx->emulation_required = 1;
- 	vcpu->arch.rmode.active = 0;
- 
- 	vmcs_writel(GUEST_TR_BASE, vcpu->arch.rmode.tr.base);
-@@ -1315,6 +1317,9 @@ static void enter_pmode(struct kvm_vcpu *vcpu)
- 
- 	update_exception_bitmap(vcpu);
- 
-+	if (emulate_invalid_guest_state)
-+		return;
+diff --git a/arch/ia64/kvm/irq.h b/arch/ia64/kvm/irq.h
+new file mode 100644
+index 0000000..f2e6545
+--- /dev/null
++++ b/arch/ia64/kvm/irq.h
+@@ -0,0 +1,32 @@
++/*
++ * irq.h: In-kernel interrupt controller related definitions
++ * Copyright (c) 2008, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
++ * Place - Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * Authors:
++ *   Xiantao Zhang <xiantao.zhang@intel.com>
++ *
++ */
 +
- 	fix_pmode_dataseg(VCPU_SREG_ES, &vcpu->arch.rmode.es);
- 	fix_pmode_dataseg(VCPU_SREG_DS, &vcpu->arch.rmode.ds);
- 	fix_pmode_dataseg(VCPU_SREG_GS, &vcpu->arch.rmode.gs);
-@@ -1355,7 +1360,9 @@ static void fix_rmode_seg(int seg, struct kvm_save_segment *save)
- static void enter_rmode(struct kvm_vcpu *vcpu)
- {
- 	unsigned long flags;
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
- 
-+	vmx->emulation_required = 1;
- 	vcpu->arch.rmode.active = 1;
- 
- 	vcpu->arch.rmode.tr.base = vmcs_readl(GUEST_TR_BASE);
-@@ -1377,6 +1384,9 @@ static void enter_rmode(struct kvm_vcpu *vcpu)
- 	vmcs_writel(GUEST_CR4, vmcs_readl(GUEST_CR4) | X86_CR4_VME);
- 	update_exception_bitmap(vcpu);
- 
-+	if (emulate_invalid_guest_state)
-+		goto continue_rmode;
++#ifndef __IRQ_H
++#define __IRQ_H
 +
- 	vmcs_write16(GUEST_SS_SELECTOR, vmcs_readl(GUEST_SS_BASE) >> 4);
- 	vmcs_write32(GUEST_SS_LIMIT, 0xffff);
- 	vmcs_write32(GUEST_SS_AR_BYTES, 0xf3);
-@@ -1392,6 +1402,7 @@ static void enter_rmode(struct kvm_vcpu *vcpu)
- 	fix_rmode_seg(VCPU_SREG_GS, &vcpu->arch.rmode.gs);
- 	fix_rmode_seg(VCPU_SREG_FS, &vcpu->arch.rmode.fs);
- 
-+continue_rmode:
- 	kvm_mmu_reset_context(vcpu);
- 	init_rmode(vcpu->kvm);
- }
-@@ -2317,6 +2328,9 @@ static int vmx_vcpu_reset(struct kvm_vcpu *vcpu)
- 
- 	ret = 0;
- 
-+	/* HACK: Don't enable emulation on guest boot/reset */
-+	vmx->emulation_required = 0;
++struct kvm;
 +
- out:
- 	up_read(&vcpu->kvm->slots_lock);
- 	return ret;
-@@ -3190,6 +3204,12 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
- 	u32 intr_info;
- 
-+	/* Handle invalid guest state instead of entering VMX */
-+	if (vmx->emulation_required && emulate_invalid_guest_state) {
-+		handle_invalid_guest_state(vcpu, kvm_run);
-+		return;
-+	}
++static inline void kvm_notify_acked_irq(struct kvm *kvm, unsigned gsi)
++{
++}
 +
- 	if (test_bit(VCPU_REGS_RSP, (unsigned long *)&vcpu->arch.regs_dirty))
- 		vmcs_writel(GUEST_RSP, vcpu->arch.regs[VCPU_REGS_RSP]);
- 	if (test_bit(VCPU_REGS_RIP, (unsigned long *)&vcpu->arch.regs_dirty))
++#endif
+diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
+index 515cd7c..53772bb 100644
+--- a/virt/kvm/ioapic.c
++++ b/virt/kvm/ioapic.c
+@@ -386,7 +386,7 @@ static void ioapic_mmio_write(struct kvm_io_device *this, gpa_t addr, int len,
+ 		break;
+ #ifdef	CONFIG_IA64
+ 	case IOAPIC_REG_EOI:
+-		kvm_ioapic_update_eoi(ioapic->kvm, data);
++		kvm_ioapic_update_eoi(ioapic->kvm, data, IOAPIC_LEVEL_TRIG);
+ 		break;
+ #endif
+ 
 -- 
 1.6.0.1
 
