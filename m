@@ -1,93 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbYIYXlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYIYXp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbYIYXlo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 19:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYIYXlg
+	id S1755548AbYIYXp3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 19:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYIYXpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 19:41:36 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:57623 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753796AbYIYXlf (ORCPT
+	Thu, 25 Sep 2008 19:45:15 -0400
+Received: from fmailhost05.isp.att.net ([204.127.217.105]:36333 "EHLO
+	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbYIYXpN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 19:41:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjADABO820h5LF82iGdsb2JhbACTHwEBARUiqDuBZQ
-X-IronPort-AV: E=Sophos;i="4.33,309,1220193000"; 
-   d="scan'208";a="214758138"
-Date: Fri, 26 Sep 2008 09:41:30 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.27-rc7 no init found on the root partition?
-Message-ID: <20080925234130.GD27997@disturbed>
-Mail-Followup-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-	linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-References: <20080924192227.GC31582@ics.muni.cz> <20080924230326.GM5448@disturbed> <20080925111239.GF31582@ics.muni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080925111239.GF31582@ics.muni.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 25 Sep 2008 19:45:13 -0400
+X-Originating-IP: [74.251.44.253]
+Date: Thu, 25 Sep 2008 18:45:09 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Kevin Hao <kexin.hao@windriver.com>
+Cc: Jeff Garzik <jgarzik@redhat.com>, Chris Snook <csnook@redhat.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: add net poll support for atl2 driver
+Message-ID: <20080925184509.42bfabc2@osprey.hogchain.net>
+In-Reply-To: <1221897404-20290-1-git-send-email-kexin.hao@windriver.com>
+References: <1221897404-20290-1-git-send-email-kexin.hao@windriver.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEV2dXOAgYNxSD+aemaal42A
+ gIBqYV2UU07Ik5GXfoFMRTdbKiVwAAACbUlEQVQ4jXXTzWvbMBQAcG3EZsmt0Owc3pgNPo1oxNFt
+ pQnEN3Wrs3UnkdXq5tOwIdq9Pci3gUqJexo55KC/cs9O/dHBRIiMfpb03rNE4v800jxIQRzsXPEP
+ jDwndhNelo9/ngE/SFdKmZQnfOT0YSSlQBKLiJBDH6w9SPwlp5evpduDr9biQqkV8Rh7p4NRNSO1
+ 4BHhpjLpIK2gWksIgl0LPLCHoBIcX6dp2kGKMYnfGJnjIFungZeuHA6dhSvqLXrA1zJmVKayCu1w
+ DKuGAU+WZRRCsLdBFXgLl2Sw3N2ZEJDAn3VwEV9FK12YUGW+yqlIWiD30U5rbSi2efGuhRfxEXRB
+ 8e+uJE/AL5z78xrqVg6aBHlMTj9V7x/RJOMGHHI11ItVUW+B0JakkGPcUsJNHuY7/ZA04X4xwQ/D
+ 3I0FGgaT8iFponoJ26F+sNbu51O7l7QHHtNTbxMc5o/W+kw0S31Ub5i+pQBq/hjYPVPbJ/ic/aoC
+ pbTQtxlAvvnZgNod89Y4D2sFXpMHZWU1yHb6Ft+g2aTJY84iY2iY4ySGmWdvmxlDprHkCgd1yDRV
+ bXVfFQiZjyuyaU5p1pZkTbXBbxRagAyU2rZfcH2tTQ7+FpNQ4Ofb7lxdFzTHDGqAvHdEv0cIezi2
+ be+0vzdUqawaDSATHfB7itGiIfrQu2p8UQOOooHTh5lUPn6lva/qQrWwQpCUTv08hGe3dkU9KWmJ
+ Z2EGpAeDFc3kN8oMNbNJ/AzMFERUhjmehB7ws6XBTTnfeOXT9T/C9dn4HEshpPWIjDvgi5Px2U0G
+ Hl7dzaQHg8U4Xn6oa4g3vVnqLz3ribDLdyFmAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 01:12:40PM +0200, Lukas Hejtmanek wrote:
-> On Thu, Sep 25, 2008 at 09:03:26AM +1000, Dave Chinner wrote:
-> > On Wed, Sep 24, 2008 at 09:22:27PM +0200, Lukas Hejtmanek wrote:
-> > > Hello,
-> > > 
-> > > I have a box that has XFS root partition, I have kernel
-> > > 2.6.26.3 that boots pretty well on that box. Today, I've tried
-> > > 2.6.27-rc7 (so that I can test NFSv4 over IPv6), but the
-> > > kernel is unable to boot. It says that root partition is
-> > > mounted, XFS file system but no init found.
-> > 
-> > Can you paste the error messages or send pointers to screen
-> > shots of the error?
+On Sat, 20 Sep 2008 15:56:44 +0800
+Kevin Hao <kexin.hao@windriver.com> wrote:
+
+> Add netconsole support for Atheros L2 10/100 network device.
 > 
-> http://undomiel.ics.muni.cz/tmp/IMG_2962.JPG
-
-Hmmm - the filesystem mounted without errors, but init was not
-found. Strange.
-
-> this one is if I pass init=/bin/bash
-> http://undomiel.ics.muni.cz/tmp/IMG_2961.JPG
-
-Same again, it's unable to run the init process.
-
-Of course, kernel_execve() throws away any error that might
-have occurred, so without hacking the init code we can't find out
-why it failed.
-
-> > If you go back to 2.6.26.3, does the kernel boot ok?
+> Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
+> ---
+>  drivers/net/atlx/atl2.c |   12 ++++++++++++
+>  1 files changed, 12 insertions(+), 0 deletions(-)
 > 
-> indeed.
+> diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
+> index d548a67..b2995ac 100644
+> --- a/drivers/net/atlx/atl2.c
+> +++ b/drivers/net/atlx/atl2.c
+> @@ -1327,6 +1327,15 @@ static void atl2_setup_pcicmd(struct pci_dev
+> *pdev) pci_write_config_dword(pdev, REG_PM_CTRLSTAT, 0);
+>  }
+>  
+> +#ifdef CONFIG_NET_POLL_CONTROLLER
+> +static void atl2_poll_controller(struct net_device *netdev)
+> +{
+> +	disable_irq(netdev->irq);
+> +	atl2_intr(netdev->irq, netdev);
+> +	enable_irq(netdev->irq);
+> +}
+> +#endif
+> +
+>  /*
+>   * atl2_probe - Device Initialization Routine
+>   * @pdev: PCI device information struct
+> @@ -1410,6 +1419,9 @@ static int __devinit atl2_probe(struct pci_dev
+> *pdev, netdev->do_ioctl = &atl2_ioctl;
+>  	atl2_set_ethtool_ops(netdev);
+>  
+> +#ifdef CONFIG_NET_POLL_CONTROLLER
+> +	netdev->poll_controller = atl2_poll_controller;
+> +#endif
+>  #ifdef HAVE_TX_TIMEOUT
+>  	netdev->tx_timeout = &atl2_tx_timeout;
+>  	netdev->watchdog_timeo = 5 * HZ;
 
-Ok, is the 2.6.27 kernel based on the same config as the 2.6.26
-kernel?
-
-> this is a grub record:
-> 
-> title Linux 2.6.26.3 root (hd0,0) kernel /boot/vmlinuz-2.6.26.3
-> root=/dev/sda1 ro console=tty0
-> 
-> title Linux 2.6.27-rc7 root (hd0,0) kernel
-> /boot/vmlinuz-2.6.27-rc7 root=/dev/sda1 ro 
-
-Does it boot if you take away the "ro" option?
-
-Cheers,
-
-Dave.
-> 
-> 
-> -- Lukáš Hejtmánek
-> 
-> 
-> 
-
--- 
-Dave Chinner
-david@fromorbit.com
+Acked-by: Jay Cliburn <jacliburn@bellsouth.net>
