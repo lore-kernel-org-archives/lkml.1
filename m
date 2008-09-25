@@ -1,59 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbYIYVHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756623AbYIYVHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbYIYVHK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbYIYVGy
+	id S1756623AbYIYVHu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbYIYVHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:06:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39341 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754321AbYIYVGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:06:53 -0400
-Message-ID: <48DBFD42.6030307@redhat.com>
-Date: Thu, 25 Sep 2008 17:06:10 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 25 Sep 2008 17:07:41 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54188 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752985AbYIYVHk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 17:07:40 -0400
+Date: Thu, 25 Sep 2008 17:07:39 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Jiri Slaby <jirislaby@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: [PATCH] PM: use pm_op methods for device types
+In-Reply-To: <48DBF9C5.3030001@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0809251704580.2181-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, Takashi Sato <t-sato@yk.jp.nec.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] Add timeout feature
-References: <20080908205337t-sato@mail.jp.nec.com> <20080908171119.GB22521@infradead.org>
-In-Reply-To: <20080908171119.GB22521@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Mon, Sep 08, 2008 at 08:53:37PM +0900, Takashi Sato wrote:
->   
->> The timeout feature is added to "freeze ioctl" to solve a deadlock
->> when the freezer accesses a frozen filesystem. And new ioctl
->> to reset the timeout period is added to extend the timeout period.
->> For example, the freezer resets the timeout period to 10 seconds every 5
->> seconds.  In this approach, even if the freezer causes a deadlock by
->> accessing the frozen filesystem, it will be solved by the timeout
->> in 10 seconds and the freezer will be able to recognize that
->> at the next reset of timeout period.
->>     
->
-> And as with all previous posting I still fundamentally disagree about
-> the need of this functionality.  We don't need a timeout for freezing.
->
->   
+This patch (as1141) adds code to use the device type's pm_op methods,
+if they are defined.  It fixes a regression in the USB PM code; the
+various suspend and resume methods are defined in the device type
+rather than in the bus, because USB devices have to be handled
+differently from USB interfaces.  Without the patch, those methods
+never get called.
 
-I agree with Christoph here, I think that the timeout is unneeded.
+The patch also fixes a couple of spelling errors.
 
-Regards,
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Jiri Slaby <jirislaby@gmail.com>
 
-Ric
+---
+
+This should be merged before 2.6.27 is released, if possible.  
+Otherwise people will find their systems refuse to suspend when any USB
+devices are attached.
+
+
+
+Index: usb-2.6/drivers/base/power/main.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/main.c
++++ usb-2.6/drivers/base/power/main.c
+@@ -107,7 +107,7 @@ void device_pm_remove(struct device *dev
+ }
+ 
+ /**
+- *	pm_op - execute the PM operation appropiate for given PM event
++ *	pm_op - execute the PM operation appropriate for given PM event
+  *	@dev:	Device.
+  *	@ops:	PM operations to choose from.
+  *	@state:	PM transition of the system being carried out.
+@@ -166,7 +166,7 @@ static int pm_op(struct device *dev, str
+ }
+ 
+ /**
+- *	pm_noirq_op - execute the PM operation appropiate for given PM event
++ *	pm_noirq_op - execute the PM operation appropriate for given PM event
+  *	@dev:	Device.
+  *	@ops:	PM operations to choose from.
+  *	@state: PM transition of the system being carried out.
+@@ -363,6 +363,13 @@ static int resume_device(struct device *
+ 			goto End;
+ 	}
+ 
++	if (dev->type && dev->type->pm) {
++		pm_dev_dbg(dev, state, "type ");
++		error = pm_op(dev, dev->type->pm, state);
++		if (error)
++			goto End;
++	}
++
+ 	if (dev->class) {
+ 		if (dev->class->pm) {
+ 			pm_dev_dbg(dev, state, "class ");
+@@ -596,6 +603,13 @@ static int suspend_device(struct device 
+ 			goto End;
+ 	}
+ 
++	if (dev->type && dev->type->pm) {
++		pm_dev_dbg(dev, state, "type ");
++		error = pm_op(dev, dev->type->pm, state);
++		if (error)
++			goto End;
++	}
++
+ 	if (dev->bus) {
+ 		if (dev->bus->pm) {
+ 			pm_dev_dbg(dev, state, "");
 
