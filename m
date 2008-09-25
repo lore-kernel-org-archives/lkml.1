@@ -1,57 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYIYP44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYIYP5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbYIYP44 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 11:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbYIYP4h
+	id S1753196AbYIYP5q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 11:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYIYP5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 11:56:37 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:17422 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753196AbYIYP4e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 11:56:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=RZBIOfz0UQgMNFxxK5zi7Oe1vBIRgGaE64O/16rmZdYxN57QEQaeKRFqJQ/VY5dT0n
-         N8Dh1SeciwGTnVxG2TuwZDyA+YEXDuVz+ztl4wSNQY+XpfTz/0vTGPROCViwW4XRgWPl
-         vUZIuYIYggURxYalftZ5fmCdG/QUsrxJDF1E0=
-Message-ID: <c62985530809250856l2c4e827cv2123b6c3c21210d7@mail.gmail.com>
-Date: Thu, 25 Sep 2008 17:56:32 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Pekka Paalanen" <pq@iki.fi>
-Subject: Re: [Patch -tip 1/3] Tracing/ftrace: Relay unhandled entry output
-Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080925184919.016d8957@daedalus.pq.iki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Sep 2008 11:57:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49292 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753368AbYIYP5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 11:57:36 -0400
+Date: Thu, 25 Sep 2008 11:54:58 -0400 (EDT)
+Message-Id: <20080925.115458.104029926.k-ueda@ct.jp.nec.com>
+To: akpm@linux-foundation.org, jens.axboe@oracle.com,
+       James.Bottomley@HansenPartnership.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: [RFC PATCH 1/2] block: add lld busy state exporting interface
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20080925.115355.71085765.k-ueda@ct.jp.nec.com>
+References: <20080925.115355.71085765.k-ueda@ct.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48DB81BA.2050204@gmail.com> <20080925123802.GA6900@elte.hu>
-	 <48DBA683.8000708@gmail.com>
-	 <20080925180916.75d3c9ec@daedalus.pq.iki.fi>
-	 <c62985530809250833x2468f07an547a82eaa1329d9@mail.gmail.com>
-	 <20080925184919.016d8957@daedalus.pq.iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/25 Pekka Paalanen <pq@iki.fi>:
-> My understanding is that the pipe will be broken only, if the trace
-> framework believes tracing is disabled. Recall the discussion about
-> tracer_enabled = 0. Which is a bug, and I hoped Steven would have
-> commented on how to fix that properly.
->
-> Or was it fixed already, and this is a different issue?
-> I didn't notice.
+This patch adds an new interface, blk_lld_busy(), to check lld's
+busy state from the block layer.
+blk_lld_busy() calls down into low-level drivers for the checking
+if the drivers set q->lld_busy_fn() using blk_queue_lld_busy().
 
-Actually there was two bugs which broke the pipe:
-_ As you say the old one when none tracer put tracer_enabled = 0
-_ And the new one I described here.
+This resolves a performance problem on request stacking devices below.
 
-I think the first is fixed since none tracer has been replaced by "nop
-tracer" (a recently implemented) which doesn't touch
-tracer_enabled at all.
+Some drivers like scsi mid layer stop dispatching request when
+they detect busy state on its low-level device like host/target/device.
+It allows other requests to stay in the I/O scheduler's queue
+for a chance of merging.
+
+Request stacking drivers like request-based dm should follow
+the same logic.
+However, there is no generic interface for the stacked device
+to check if the underlying device(s) are busy.
+If the request stacking driver dispatches and submits requests to
+the busy underlying device, the requests will stay in
+the underlying device's queue without a chance of merging.
+This causes performance problem on burst I/O load.
+
+With this patch, busy state of the underlying device is exported
+via q->lld_busy_fn().  So the request stacking driver can check it
+and stop dispatching requests if busy.
+
+The underlying device driver must return the busy state appropriately:
+    1: when the device driver can't process requests immediately.
+    0: when the device driver can process requests immediately,
+       including abnormal situations where the device driver needs
+       to kill all requests.
+
+
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+---
+ block/blk-core.c       |   25 +++++++++++++++++++++++++
+ block/blk-settings.c   |    6 ++++++
+ include/linux/blkdev.h |    4 ++++
+ 3 files changed, 35 insertions(+)
+
+Index: linux-2.6-block/block/blk-settings.c
+===================================================================
+--- linux-2.6-block.orig/block/blk-settings.c
++++ linux-2.6-block/block/blk-settings.c
+@@ -89,6 +89,12 @@ void blk_queue_rq_timed_out(struct reque
+ }
+ EXPORT_SYMBOL_GPL(blk_queue_rq_timed_out);
+ 
++void blk_queue_lld_busy(struct request_queue *q, lld_busy_fn *fn)
++{
++	q->lld_busy_fn = fn;
++}
++EXPORT_SYMBOL_GPL(blk_queue_lld_busy);
++
+ /**
+  * blk_queue_make_request - define an alternate make_request function for a device
+  * @q:  the request queue for the device to be affected
+Index: linux-2.6-block/include/linux/blkdev.h
+===================================================================
+--- linux-2.6-block.orig/include/linux/blkdev.h
++++ linux-2.6-block/include/linux/blkdev.h
+@@ -269,6 +269,7 @@ typedef int (merge_bvec_fn) (struct requ
+ typedef void (prepare_flush_fn) (struct request_queue *, struct request *);
+ typedef void (softirq_done_fn)(struct request *);
+ typedef int (dma_drain_needed_fn)(struct request *);
++typedef int (lld_busy_fn) (struct request_queue *q);
+ 
+ enum blk_eh_timer_return {
+ 	BLK_EH_NOT_HANDLED,
+@@ -325,6 +326,7 @@ struct request_queue
+ 	softirq_done_fn		*softirq_done_fn;
+ 	rq_timed_out_fn		*rq_timed_out_fn;
+ 	dma_drain_needed_fn	*dma_drain_needed;
++	lld_busy_fn		*lld_busy_fn;
+ 
+ 	/*
+ 	 * Dispatch queue sorting
+@@ -699,6 +701,7 @@ extern struct request *blk_get_request(s
+ extern void blk_insert_request(struct request_queue *, struct request *, int, void *);
+ extern void blk_requeue_request(struct request_queue *, struct request *);
+ extern int blk_rq_check_limits(struct request_queue *q, struct request *rq);
++extern int blk_lld_busy(struct request_queue *q);
+ extern int blk_insert_cloned_request(struct request_queue *q,
+ 				     struct request *rq);
+ extern void blk_plug_device(struct request_queue *);
+@@ -835,6 +838,7 @@ extern void blk_queue_update_dma_pad(str
+ extern int blk_queue_dma_drain(struct request_queue *q,
+ 			       dma_drain_needed_fn *dma_drain_needed,
+ 			       void *buf, unsigned int size);
++extern void blk_queue_lld_busy(struct request_queue *q, lld_busy_fn *fn);
+ extern void blk_queue_segment_boundary(struct request_queue *, unsigned long);
+ extern void blk_queue_prep_rq(struct request_queue *, prep_rq_fn *pfn);
+ extern void blk_queue_merge_bvec(struct request_queue *, merge_bvec_fn *);
+Index: linux-2.6-block/block/blk-core.c
+===================================================================
+--- linux-2.6-block.orig/block/blk-core.c
++++ linux-2.6-block/block/blk-core.c
+@@ -2098,6 +2098,31 @@ void blk_rq_bio_prep(struct request_queu
+ 		rq->rq_disk = bio->bi_bdev->bd_disk;
+ }
+ 
++/**
++ * blk_lld_busy - Check if underlying low-level drivers of a device are busy
++ * @q : the queue of the device being checked
++ *
++ * Description:
++ *    Check if underlying low-level drivers of a device are busy.
++ *    If the drivers want to export their busy state, they must set own
++ *    exporting function using blk_queue_lld_busy() first.
++ *
++ *    Basically, this function is used only by request stacking drivers
++ *    to stop dispatching requests to underlying devices when underlying
++ *    devices are busy.  This behavior helps more I/O merging on the queue
++ *    of the request stacking driver and prevents I/O throughput regression
++ *    on burst I/O load.
++ *
++ * Return:
++ *    0 - Not busy (The request stacking driver should dispatch request)
++ *    1 - Busy (The request stacking driver should stop dispatching request)
++ */
++int blk_lld_busy(struct request_queue *q)
++{
++	return q->lld_busy_fn ? q->lld_busy_fn(q) : 0;
++}
++EXPORT_SYMBOL_GPL(blk_lld_busy);
++
+ int kblockd_schedule_work(struct request_queue *q, struct work_struct *work)
+ {
+ 	return queue_work(kblockd_workqueue, work);
