@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbYIYSwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753495AbYIYSwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753662AbYIYSwg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 14:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbYIYSw1
+	id S1753495AbYIYSwx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 14:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbYIYSwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 14:52:27 -0400
-Received: from smtp3-g19.free.fr ([212.27.42.29]:37539 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752934AbYIYSw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 14:52:26 -0400
-Message-ID: <48DBDDE6.3060301@free.fr>
-Date: Thu, 25 Sep 2008 20:52:22 +0200
-From: matthieu castet <castet.matthieu@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080702 Iceape/1.1.11 (Debian-1.1.11-1)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Martin Doucha <next_ghost@quick.cz>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 11603] Re: ACPI PnP on Intel MU440EX
-References: <48BA9B2C.7060007@quick.cz> <200809221701.13569.bjorn.helgaas@hp.com> <48D95FB2.4050108@free.fr> <200809241705.13410.bjorn.helgaas@hp.com>
-In-Reply-To: <200809241705.13410.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Sep 2008 14:52:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57033 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbYIYSwi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 14:52:38 -0400
+Message-Id: <20080925185154.230259579@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 25 Sep 2008 14:51:54 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: [RFC PATCH 0/2 v3] Unified trace buffer
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
->> If you want you could try to run the attached program on your pc in 
->> "auto/bidirectional" or "auto/EPP" mode.
->>
->> This program does what _STA methods do.
-> 
-> I'm just curious -- what do you hope to learn from this program?
-> Do you think it will tell us more than what actually running _STA
-> did?
-> 
-Yes I was curious of the value before the mask : some of the mask and 
-comparaison look strange.
 
-> The best solution I can think of would be to have a parameter like
-> "parport.nopnp" that made parport just probe the legacy addresses,
-> and document that you might need that on machines with broken ACPI
-> firmware.  But I'm a little afraid to touch parport_pc.c.
-Aren't parport still probing it's own port if pnp failed ?
+[ NOTE function comments have not been updated. Comments within the
+ code has.]
 
 
-Matthieu
+This version I change the event header to what Peter Zijlstra requested.
+The buffer alignment is now 4 from 8.  The minimum event is 8 bytes.
+The event header is now:
+
+struct event_header {
+	u32	type:2, len:3, time_delta:27;
+	u32	array[];
+};
+
+The length of the record is determined as:
+
+  if (data size > 28 bytes)
+	lenght = event->array[0] + sizeof(event_header);
+  else
+  	length = event->len << 4 + sizeof(event_header);
+
+For data
+
+  if (date size > 28 bytes)
+	data = &event->array[0];
+  else
+  	data = &event->array[1];
+
+
+There are now only 4 internal data types:
+
+0 - Padding
+1 - time extent
+2 - time stamp
+3 - data
+
+This is for internal buffer management only. Other event types should be
+pushed to a higher layer, and stored in the data field.
+
+The timing is basically the same as v2 but I added a reader side
+ring_buffer_normalize_time_stamp() operation. As a test, I mult the
+timestamp to -1, in both set and normalize operations. Whether this
+actually tests anything is another story ;-)
+
+
+I actually like this header and structure the best. And this may be
+what I start working on for real.
+
+So please speak up on this one.
+
+I'm going to take a break from this and start doing my real work.
+This will let others soak it up for a bit.
+
+-- Steve
+
+
