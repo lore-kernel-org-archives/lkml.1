@@ -1,72 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYIYNzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbYIYN62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403AbYIYNzq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 09:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbYIYNzf
+	id S1754885AbYIYN62 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 09:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYIYN6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 09:55:35 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:45100 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbYIYNze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 09:55:34 -0400
-Date: Thu, 25 Sep 2008 15:55:26 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH] BUG: ll_merge_requests_fn() updates req->nr_phys_segments wrongly
-Message-ID: <20080925135526.GO2677@kernel.dk>
-References: <200809232358.02810.knikanth@suse.de>
+	Thu, 25 Sep 2008 09:58:21 -0400
+Received: from oslproxyp1.tandberg.com ([194.0.215.2]:41187 "EHLO
+	oslproxyp1.tandberg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbYIYN6U convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 09:58:20 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809232358.02810.knikanth@suse.de>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Re: D945GCLF  intel atom board & r8169 ethernet broken in linux-2.6.27-rc5??
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Thu, 25 Sep 2008 15:58:17 +0200
+Message-ID: <9F6ACAE02B6DD040A1E259977622CFDB03F5C24B@oslexcp1.eu.tandberg.int>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: D945GCLF  intel atom board & r8169 ethernet broken in linux-2.6.27-rc5??
+Thread-Index: AckeOFvaMeK2OhXFQcWGhCCuFr63ngA3YPwg
+From: "John Gumb" <john.gumb@tandberg.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 25 Sep 2008 13:58:18.0274 (UTC) FILETIME=[C3474820:01C91F16]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23 2008, Nikanth Karthikesan wrote:
-> 
-> From: Nikanth Karthikesan <knikanth@suse.de>
-> 
-> ll_merge_requests_fn() decreases the req->nr_phys_segments if 
-> blk_phys_contig_segment() returns true, but it is perfectly possible that 
-> blk_hw_contig_segment() is false. A new hw_segment implies a new phys_segment. 
-> So decrementing nr_phys_segments wrongly here triggers the BUG_ON() in 
-> scsi_init_sgtable(), as blk_rq_map_sg() would map 1 phys_segment more than  
-> req->nr_phys_segment. This is easily reproducible. Other callers of 
-> blk_rq_map_sg() should also be affected by this bug.
-> 
-> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> ---
-> 
->  block/blk-merge.c |   10 ++++------
->  1 files changed, 4 insertions(+), 6 deletions(-)
-> 
-> diff --git a/block/blk-merge.c b/block/blk-merge.c
-> index 5efc9e7..6e6d04b 100644
-> --- a/block/blk-merge.c
-> +++ b/block/blk-merge.c
-> @@ -392,11 +392,6 @@ static int ll_merge_requests_fn(struct request_queue *q, 
-> struct request *req,
->  		return 0;
->  
->  	total_phys_segments = req->nr_phys_segments + next->nr_phys_segments;
-> -	if (blk_phys_contig_segment(q, req->biotail, next->bio))
-> -		total_phys_segments--;
+My fault
 
-This is totally broken, I gather you are thinking the bug is fixed since
-the counts always match up. Well that's mainly because you know don't do
-ANY merging.
+linux-2.6.27-rc7 fixes this. I should have tested this.
 
-> -	if (total_phys_segments > q->max_phys_segments)
-> -		return 0;
+Thanks to all who responded with fixes.
 
-Hmm?
+John
 
-I think you should try and describe the problem you are seeing instead,
-then we can perhaps find the real issue.
+-----Original Message-----
+From: John Gumb 
+Sent: 24 September 2008 12:26
+To: linux-kernel@vger.kernel.org
+Cc: 'netdev@vger.kernel.org'
+Subject: D945GCLF intel atom board & r8169 ethernet broken in
+linux-2.6.27-rc5??
 
--- 
-Jens Axboe
+Hi
 
+I have an Intel Atom D945GCLF based system. It has a realtek RTL8101E
+PCI network interface.
+
+With linux-2.6.27-rc4 - everything seems fine. I think we've been
+working OK since 2.6.26ish.
+
+With linux-2.6.27-rc5, "ifconfig eth0" just hangs. lspci -vvx reports,
+after loading the driver,
+
+> 01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E
+PCI Express Fast Ethernet controller (rev ff) (prog-if ff)
+>       !!! Unknown header type 7f
+00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+
+10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+
+20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+
+30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff  
+
+Before I load the driver lspci -vvx looks OK.
+
+I do not have (much) time to look into this any further but hopefully
+this might help someone.
+
+I know there are problems with this device on the atom board
+particularly around warm start but thus far I seem to have avoided this
+issue.
+
+A cold start in this case does not help.
+
+Lspci.bad comes from -rc5 with the r8169 driver loaded.
+Lspci.good comes from -rc4 with the r8169 driver loaded
+
+Cheers
+
+John
