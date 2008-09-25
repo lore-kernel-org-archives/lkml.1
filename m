@@ -1,68 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbYIYAcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbYIYAfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbYIYAcn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 20:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYIYAc2
+	id S1753615AbYIYAfy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 20:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYIYAfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 20:32:28 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:28810 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753026AbYIYAc1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 20:32:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=p66aSBG2Uo7oTG+ni/Rs4Xbk3/QUxbFSL36ba8/1WfNDGOabBgm8chZ3jDFJ/gk1GP
-         6KO1Zg/PozEB6I/pe9NeM9HLzFovtp841jcd6cD3tQEjYp+glYVbPC6CH4iMYvew/dqB
-         mNq6UVhy11nvC6JGAYYZOZ2gIsWheeIa/ie94=
-Date: Thu, 25 Sep 2008 08:32:20 +0800
-From: Yan Li <elliot.li.tech@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Yan Li <elliot.li.tech@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, joerg.roedel@amd.com, rjmaomao@gmail.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
-Subject: Re: [PATCH 1/2] VMware guest detection for x86 and x86-64
-Message-ID: <20080925003220.GE21049@yantp.cn.ibm.com>
-References: <48D12490.5010003@zytor.com> <48da36b9.160d6e0a.22a5.ffffec9d@mx.google.com> <48DA6887.1060709@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48DA6887.1060709@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 24 Sep 2008 20:35:42 -0400
+Received: from mail.windriver.com ([147.11.1.11]:65515 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752000AbYIYAfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 20:35:42 -0400
+From: Kevin Hao <kexin.hao@windriver.com>
+To: Jeff Garzik <jgarzik@redhat.com>, Jay Cliburn <jacliburn@bellsouth.net>,
+       Chris Snook <csnook@redhat.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] net: remove LLTX in atl2 driver
+Date: Thu, 25 Sep 2008 08:35:22 +0800
+Message-Id: <1222302922-13200-1-git-send-email-kexin.hao@windriver.com>
+X-Mailer: git-send-email 1.5.6.2.220.g44701
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 09:19:19AM -0700, H. Peter Anvin wrote:
-> Yan Li wrote:
->> I haven't used PCI vendor Id since that requires copying a trunk of
->> codes from early_quirks() and I think copying code is not good. And
->> reusing codes from early_quirks() needs intrivial change to present
->> codes structure. Comparatively, checking "VMware" string against DMI
->> manufacturer is a lot more simpler (one-line code). Also there's no
->> evidence indicating that VMware will change their vendor string in
->> near future. Therefore I choose to use simpler way.
->>
->> Tested on x86 and x86-64 VMs and machines.
->
-> I'd like to make this a general VM platform detection subsystem.  We  
-> have similar issues with Virtual PC, and again, DMI appears to be the  
-> sanest way to detect it -- at least to a primary screen.
+When NETIF_F_LLTX is set, the atlx driver will use a private lock.
+But in recent kernels this implementation seems redundant and
+can cause problems where AF_PACKET sees things twice. Since
+NETIF_F_LLTX is marked as deprecated and shouldn't be used in
+new driver, this patch removes NETIF_F_LLTX and adds a mmiowb
+before sending packet.
 
-I think if Virtual PC has similar problems we should add codes to
-detect Virtual PC to be used by mtrr/main.c. A general interface might
-not be good for this specific problem (false MTRR blank warning) since
-we have no way to know all VMs has MTRR set to blank thus handling
-KVM, VMware and Virtual PC here should be enough for now.
+Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
+---
+ drivers/net/atlx/atl2.c |   24 +-----------------------
+ drivers/net/atlx/atl2.h |    1 -
+ 2 files changed, 1 insertions(+), 24 deletions(-)
 
-If you can tell me what manufacture vendor string is in Virtual PC I
-can make another similar patch using dmi_name_in_vendors().
-
-So at first I'd like to see the false warning for VMware and Virtual
-PC get fixed soon.
-
+diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
+index b2995ac..3df4ee1 100644
+--- a/drivers/net/atlx/atl2.c
++++ b/drivers/net/atlx/atl2.c
+@@ -116,7 +116,6 @@ static int __devinit atl2_sw_init(struct atl2_adapter *adapter)
+ 	hw->max_frame_size = adapter->netdev->mtu;
+ 
+ 	spin_lock_init(&adapter->stats_lock);
+-	spin_lock_init(&adapter->tx_lock);
+ 
+ 	set_bit(__ATL2_DOWN, &adapter->flags);
+ 
+@@ -749,11 +748,7 @@ static void atl2_down(struct atl2_adapter *adapter)
+ 	 * reschedule our watchdog timer */
+ 	set_bit(__ATL2_DOWN, &adapter->flags);
+ 
+-#ifdef NETIF_F_LLTX
+-	netif_stop_queue(netdev);
+-#else
+ 	netif_tx_disable(netdev);
+-#endif
+ 
+ 	/* reset MAC to disable all RX/TX */
+ 	atl2_reset_hw(&adapter->hw);
+@@ -829,7 +824,6 @@ static inline int TxdFreeBytes(struct atl2_adapter *adapter)
+ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ {
+ 	struct atl2_adapter *adapter = netdev_priv(netdev);
+-	unsigned long flags;
+ 	struct tx_pkt_header *txph;
+ 	u32 offset, copy_len;
+ 	int txs_unused;
+@@ -845,16 +839,6 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 		return NETDEV_TX_OK;
+ 	}
+ 
+-#ifdef NETIF_F_LLTX
+-	local_irq_save(flags);
+-	if (!spin_trylock(&adapter->tx_lock)) {
+-		/* Collision - tell upper layer to requeue */
+-		local_irq_restore(flags);
+-		return NETDEV_TX_LOCKED;
+-	}
+-#else
+-	spin_lock_irqsave(&adapter->tx_lock, flags);
+-#endif
+ 	txs_unused = TxsFreeUnit(adapter);
+ 	txbuf_unused = TxdFreeBytes(adapter);
+ 
+@@ -862,7 +846,6 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 		txs_unused < 1) {
+ 		/* not enough resources */
+ 		netif_stop_queue(netdev);
+-		spin_unlock_irqrestore(&adapter->tx_lock, flags);
+ 		return NETDEV_TX_BUSY;
+ 	}
+ 
+@@ -908,8 +891,7 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 	ATL2_WRITE_REGW(&adapter->hw, REG_MB_TXD_WR_IDX,
+ 		(adapter->txd_write_ptr >> 2));
+ 
+-	spin_unlock_irqrestore(&adapter->tx_lock, flags);
+-
++	mmiowb();
+ 	netdev->trans_start = jiffies;
+ 	dev_kfree_skb_any(skb);
+ 	return NETDEV_TX_OK;
+@@ -1447,10 +1429,6 @@ static int __devinit atl2_probe(struct pci_dev *pdev,
+ 	netdev->features |= (NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX);
+ #endif
+ 
+-#ifdef NETIF_F_LLTX
+-	netdev->features |= NETIF_F_LLTX;
+-#endif
+-
+ 	/* Init PHY as early as possible due to power saving issue  */
+ 	atl2_phy_init(&adapter->hw);
+ 
+diff --git a/drivers/net/atlx/atl2.h b/drivers/net/atlx/atl2.h
+index 6e1f28f..09974df 100644
+--- a/drivers/net/atlx/atl2.h
++++ b/drivers/net/atlx/atl2.h
+@@ -462,7 +462,6 @@ struct atl2_adapter {
+ 	u16 link_duplex;
+ 
+ 	spinlock_t stats_lock;
+-	spinlock_t tx_lock;
+ 
+ 	struct work_struct reset_task;
+ 	struct work_struct link_chg_task;
 -- 
-Li, Yan
+1.5.6.2.220.g44701
+
