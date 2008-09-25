@@ -1,93 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbYIYDvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbYIYD4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbYIYDvg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 23:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYIYDv0
+	id S1753522AbYIYD4d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 23:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYIYD4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 23:51:26 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:41832 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752733AbYIYDvY (ORCPT
+	Wed, 24 Sep 2008 23:56:25 -0400
+Received: from mercury.realtime.net ([205.238.132.86]:58193 "EHLO
+	mercury.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752760AbYIYD4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 23:51:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QqOE9YGQwYZydraA8RcvzWy5LUblbPev30yejbavg/yAmwZ2lEsY9lgTBjBVpUshUd
-         mhB/oHvymf/6ydx4uIiUrTrFLfilds7kOoSOFQsLAak7xfvDoN8fP3o8OkS+D4XQ924T
-         rlL97jxP6FYVx0bA6CCbtD0u3872da3z4D1Bs=
-Message-ID: <21d7e9970809242051x17785159ya7510d92f705f3cf@mail.gmail.com>
-Date: Thu, 25 Sep 2008 13:51:23 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-Cc: "Jiri Kosina" <jkosina@suse.cz>, "David Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       chrisl@vmware.com, "Ingo Molnar" <mingo@elte.hu>,
-       jbarnes@virtuousgeek.org, jesse.brandeburg@gmail.com
-In-Reply-To: <48DAF75D.4050908@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 24 Sep 2008 23:56:24 -0400
+In-Reply-To: <1222291005.8277.86.camel@pasglop>
+References: <200809231743.23828.ossthema@de.ibm.com> <20080915100406.342e027a@bull.net> <200809240958.m8O9wM7k010996@sullivan.realtime.net> <20080924143055.6102f317@bull.net> <0fa2693104ff3250114d82837911b9e8@bga.com> <1222291005.8277.86.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9eea138fe97eb1e63e5169a4d7647883@bga.com>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080923.150722.141587696.davem@davemloft.net>
-	 <9929d2390809231512w160d221axa2923a6b293a041@mail.gmail.com>
-	 <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz>
-	 <20080923.211215.193696086.davem@davemloft.net>
-	 <alpine.LNX.1.10.0809250110070.4671@pegasus.suse.cz>
-	 <21d7e9970809241722w7c3bb6a5w1af5801b7380169d@mail.gmail.com>
-	 <alpine.LNX.1.10.0809250310190.4671@pegasus.suse.cz>
-	 <48DAF75D.4050908@garzik.org>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+       Christoph Raisch <RAISCH@de.ibm.com>, linuxppc-dev@ozlabs.org,
+       Jan-Bernd Themann <ossthema@de.ibm.com>,
+       Sebastien Dugue <sebastien.dugue@bull.net>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with hardirq preemption
+Date: Wed, 24 Sep 2008 22:56:54 -0500
+To: benh@kernel.crashing.org
+X-Mailer: Apple Mail (2.624)
+X-Originating-IP: 216.126.174.40
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 12:28 PM, Jeff Garzik <jeff@garzik.org> wrote:
-> Jiri Kosina wrote:
+On Sep 24, 2008, at 4:16 PM, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-09-24 at 11:42 -0500, Milton Miller wrote:
 >>
->> On Thu, 25 Sep 2008, Dave Airlie wrote:
->>
->>> Well I'm out of the race, my attempts to re-write my eeprom using an
->>> eeprom from an equivalent laptop have totally failed and my BIOS won't boot
->>> anymore - so my laptop is == a brick.
->>
->> Uh oh. Shouldn't we put something like the patch below in Linus' tree
->> unless we get this sorted out? Otherwise more and more people who use -rc
->> kernels will run into this, and will get their hardware [hopefully
->> temporarily, but not all users are able to re-flash their network card
->> EEPROMs, right] bricked.
->>
->> I know that it is quite aggressive and is going to disable wired
->> networking on a lot of systems that have been functioning properly,
->> therefore RFC ...
->>
->>
->>
->> From: Jiri Kosina <jkosina@suse.cz>
->> Subject: [PATCH] [RFC] E1000E: temporarily disable e1000e driver
->>
->> E1000E: temporarily disable e1000e driver
+>> I was trying to understand why the mask and early eoi, but I guess its
+>> to handle other more limited interrupt controllers where the 
+>> interrupts
+>> stack in hardware instead of software.
 >
-> That seems a bit drastic, particularly when the debugging was beginning to
-> point to another culprit.
->
-> We have equal case at this point to disable r8169 and i915_drm, no?
->
+> No Milton, we must do it that way, because the EOI must be done on the
+> right CPU even on XICS, or we won't get the CPU priority back properly.
 
-No we actually are more likely unable to do anything from the kernel,
-if its happening from userspace
+Ben and I had a online chat, and he pointed out I needed to be more 
+specific in saying what I was thinking.
 
-firstly we need a reflash utility that is safe, otherwise people who
-have the issue can't reproduce it,
-and people who don't have the issue don't want to play with it.
+>> I think the flows we want on xics are:
+>>
+>> (non-threaded)
+>> 	getirq (implicit source specific mask until eoi)
+>> 	handle interrupt
+>> 	eoi (implicit cpu priority restore)
+>>
+>> (threaded)
+>> 	getirq (implicit source specific mask until eoi)
+>> 	explicit cpu priority restore
+>> 	handle interrupt
+>> 	eoi (implicit cpu priority restore to same as explicit level)
 
-I think e1000e may enable a BAR or something that causes the issue to
-break this hw., I haven't seen it broken on any
-machine where e1000e wasn't loaded yet. Again the r8169 might be the
-same issue, but it maybe because the bar was enabled.
 
-Dave.
+cpu takes interrupt, checks soft disabled
+if so,
+	set hard disabled
+else
+	call get_irq
+	if threaded
+		write cppr to restore this cpu irq dispatch state to non-interrupt
+		mark irq thread as irq pending
+	else
+		handle interrupt
+		eoi (cppr = base)
+
+irq thread will
+	handle interrupt
+	eoi
+	wait for marked pending again
+
+The part Ben did not follow was that the cppr write to base priority is 
+done by the interrupted cpu (like the mask and eoi in the current flow) 
+and only the final eoi (where the mask is in the existing flow) is done 
+on which ever cpu happens to run the irq thread.
+
+
+(optional) As I was discussing with Paul, when taking an irq when 
+soft-disabled but still hard enabled, it is possible to write the cppr 
+such that it would reject the pending irq and have it be considered for 
+dispatch to another cpu.   But it would increase pathlength on both the 
+go-to-hard-disabled and return-from-hard-disabled and the hardware will 
+have some latency as it will likely send it back to the io source until 
+it retrys, so we would only want to do this if the hard-disable period 
+is sufficiently long.
+
+milton
+
