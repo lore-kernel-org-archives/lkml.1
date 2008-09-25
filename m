@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbYIYFEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYIYFId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753281AbYIYFEm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 01:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYIYFEe
+	id S1753374AbYIYFId (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 01:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYIYFIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 01:04:34 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40183 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751686AbYIYFEe (ORCPT
+	Thu, 25 Sep 2008 01:08:24 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48727 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751030AbYIYFIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 01:04:34 -0400
-Message-ID: <48DB1BCE.2070106@zytor.com>
-Date: Wed, 24 Sep 2008 22:04:14 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 25 Sep 2008 01:08:23 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48DB1CC4.2040004@s5r6.in-berlin.de>
+Date: Thu, 25 Sep 2008 07:08:20 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
 MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Alok kataria <alokkataria1@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Yan Li <elliot.li.tech@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
-       "rjmaomao@gmail.com" <rjmaomao@gmail.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Daniel Hecht <dhecht@vmware.com>,
-       Zach Amsden <zach@vmware.com>
-Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
-References: <20080221115452.GB13948@elte.hu>	 <20080907234510.GA24133@yantp.cn.ibm.com>	 <20080908140423.GG11993@elte.hu>	 <35f686220809241928k3669e30bi8a98b440443c4bff@mail.gmail.com>	 <48DB15DB.8040501@zytor.com> <1222317978.23524.117.camel@alok-dev1>	 <48DB1984.8020704@zytor.com> <1222318928.23524.121.camel@alok-dev1>
-In-Reply-To: <1222318928.23524.121.camel@alok-dev1>
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org
+Subject: Re: Differend udev names with different kernels
+References: <20080924200127.GA2452@dose.home.local> <3ae72650809242012r7d144a64l35777f2a7bacbaa0@mail.gmail.com>
+In-Reply-To: <3ae72650809242012r7d144a64l35777f2a7bacbaa0@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
->>>
->> You accessed a bloody I/O port!
+Kay Sievers wrote:
+> On Wed, Sep 24, 2008 at 13:01, Tino Keitel <tino.keitel@gmx.de> wrote:
+>> what's the intention of /dev/disk/by-id/?
 >>
->> If you think it's harmless because it was an IN, you're sorely mistaken.
+>> My firewire hard disk seems to have different names with different
+>> kernels.
+>>
+>> With 2.6.26.3, it's name is
+>> /dev/disk/by-id/ieee1394-0030e001e0006585:00043c:0000.
+>>
+>> With someting after 2.6.27-rc7, merged with Arjan's fastboot branch,
+>> the disk has the same name.
+
+Then this is a regression of the fastboot patch or whatever.
+
+I will watch what will happen in 2.6.28-rc.
+
+>> With 2.6.27-rc7, it is called
+>> /dev/disk/by-id/scsi-1WDC_WD10EACS-00D6B0_WD-WCAU41668315.
 > 
-> Hi Peter, 
+> Seems, for some reason, the "ieee1394_id" attribute becomes readable
+> because of lucky timing, which wasn't the case before.
 > 
-> It would be really helpful if you could explain me when can this go
-> wrong or what kinds of problems can this cause on native hardware.
+>> One major config difference is that 2.6.26.3 has CONFIG_FIREWIRE and
+>> CONFIG_FIREWIRE_SBP2 set to "m", whereas the 2.6.27 kernels have set
+>> them to "y". But that doesn't explain the difference between both
+>> 2.6.27-rc kernels.
 > 
+> I guess, it's just a not-easy-to-reproduce timing issue with the sysfs
+> attribute.
+> 
+>> Shouldn't these names be somewhat constant? Otherwise they would be
+>> totally useless.
+> 
+> Yeah, sure they should not change like this.
+> 
+> We could just drop the ieee1394-* link creation entirely, if they
+> never worked as expected.
 
-You accessed an unknown I/O port.
+They currently work.  I never heard of them not working.
 
-This means you caused an unknown action in an unknown peripheral device.
+Even if there were already problems now, then the necessary course of 
+action would be to fix them instead of dropping them.
 
-This could cause ANYTHING to happen.
+Or fix the fine SCSI stack already to properly export target identifiers 
+and LU identifiers.  (Not going to happen because the SCSI folks just 
+don't get any midlayer stuff of that sort done, ever.)
 
-	-hpa
 
+> Or we can provide it as an additional link
+> instead of making it skip the scsi-* link creation.
+
+The scsi-* link may not be unique because it may be based on unsuitable 
+information generated by the SBP-2 bridge device's firmware.
+
+
+> Tino, care to try
+> if something like the attached works for your setup and creates at
+> least the scsi-links, and, if luckily timed, the ieee1394 links?
+> 
+> Stefan, ieee1394 hooks into scsi logic which, i guess, creates the
+> attribute _after_ event time, so udev will not see the attribute when
+> the device is announced. Any idea how to fix that?
+
+I will look into it.
+-- 
+Stefan Richter
+-=====-==--- =--= ==--=
+http://arcgraph.de/sr/
