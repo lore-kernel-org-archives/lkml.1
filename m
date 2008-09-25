@@ -1,81 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbYIYQNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbYIYQQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbYIYQNy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 12:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYIYQNr
+	id S1753987AbYIYQQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 12:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbYIYQQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 12:13:47 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:54125 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751030AbYIYQNq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 12:13:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=cFmkjr8wVhz+nvbe1JqNJaF97kA7l3ccVRKyvsMKAfPYzV0NtmkmwGhuf/4aiYXEaZ
-         8uHwkf67JNZePGqevAjkpAFw3VO1rwGDmdBBUsXPnXHgSaeWQchvzHHnyTEdFUpjDs5k
-         oXV3qHl4+TDtcQRcqR9tUvl2581B3mNX4kGr8=
-Message-ID: <c62985530809250913q227a5876k19b1b0ec591ad3cd@mail.gmail.com>
-Date: Thu, 25 Sep 2008 18:13:44 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Pekka Paalanen" <pq@iki.fi>
-Subject: Re: [Patch -tip 3/3] Tracing/ftrace: Don't consume entries unhandled by mmiotrace
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080925183608.283babfb@daedalus.pq.iki.fi>
+	Thu, 25 Sep 2008 12:16:06 -0400
+Received: from colo.lackof.org ([198.49.126.79]:41085 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752658AbYIYQQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 12:16:03 -0400
+Date: Thu, 25 Sep 2008 10:15:52 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Notes from LPC PCI/MSI BoF session
+Message-ID: <20080925161552.GD2997@colo.lackof.org>
+References: <200809221229.18501.jbarnes@virtuousgeek.org> <20080924055116.GA3101@colo.lackof.org> <20080924154439.GM27204@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48DB8408.7080408@gmail.com>
-	 <20080925173435.5f525557@daedalus.pq.iki.fi>
-	 <c62985530809250744t3ce0011ajebd8343eb748cf24@mail.gmail.com>
-	 <20080925183608.283babfb@daedalus.pq.iki.fi>
+In-Reply-To: <20080924154439.GM27204@parisc-linux.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/25 Pekka Paalanen <pq@iki.fi>:
-> We can (must) return to this if/when multiple tracers are allowed
-> to be active simultaneously. But in the current situation, I do not
-> see a way to trace more than one thing, but I haven't really looked
-> into the other tracers.
+On Wed, Sep 24, 2008 at 09:44:40AM -0600, Matthew Wilcox wrote:
+> On Tue, Sep 23, 2008 at 11:51:16PM -0600, Grant Grundler wrote:
+> > Being one of the "driver guys", let me add my thoughts.
+> > For the following discussion, I think we can treat MSI and MSI-X the
+> > same and will just say "MSI".
+> 
+> I really don't think so.  MSI suffers from numerous problems, including
+> on x86 the need to have all interrupts targetted at the same CPU.  You
+> effectively can't reprogram the number of MSI allocated while the device
+> is active.  So I would say this discussion applies *only* to MSI-X.
 
-You can enable another tracer simultaneously. I never tried it but you can
-launch one from debugfs and another from kernel code for example.
-The new boot tracer will have to launch the sched_switch tracer.
-And since the functions which display the sched_switch entries are
-already inside
-trace.c I wanted to relay the display to the "default display
-functions". That's one of
-the reason of my patch (+ the bug).
-But I could proceed in a another way than default relaying. Why not
-using a function exported
-by the tracing engine to display sched_switches.
+I would entirely agree with this but we have the "N:1" case that I described.
+(multiple vectors which by design should target one CPU.)
+In any case, MSI-X is clearly more interesting for this discussion.
 
-> but tracing functions is useless
-> or harmful in the usual use case of mmiotrace, i.e. tracing a binary-only
-> proprietary driver. The functions will be anonymous anyway, and we can't
-> disassemble the driver due to possible legal reasons. That's why mmiotrace
-> does not even collect instruction pointers by default, although it
-> supports them (or did, can't recall if it works now, since it hasn't been
-> needed). I assume the goal is to create a free open driver without any
-> legal issues by watching what the proprietary driver does.
->
-> Even if the log would be cluttered with MMIO from other, uninteresting
-> drivers, you can use the physical address to filter the entries by
-> device (and therefore driver) afterwards. This is one reason why
-> an mmiotrace log starts with the contents of /proc/bus/pci/devices.
->
-> Was there some other scenario you were thinking about?
+> > Dave Miller (and others) have clearly stated they don't want to see
+> > CPU affinity handled in the device drivers and want irqbalanced
+> > to handle interrupt distribution. The problem with this is irqbalanced
+> > needs to know how each device driver is binding multiple MSI to it's queues.
+> > Some devices could prefer several MSI go to the same processor and
+> > others want each MSI bound to a different "node" (NUMA).
+> 
+> But that's *policy*.  It's not what the device wants, it's what the
+> sysadmin wants.
 
-When I wanted to help on the ath5k project, I used to compare madwifi
-traces with the ath5k traces. The goal was to find where was the
-trouble when support for ar2425 cards didn't worked.
-And I wanted to see the name of the functions where the code entered
-to see where I was in the traces. That's why I wanted to have
-an mmiotrace_printk function primarily :)
-But I think one could use it for debugging too. Just to know where we
-are in the trace.
+That sounds remarkable close saying the sysadmin has to know about
+each devices attributes. If interpreted that way, I'll argue that's
+not realistic in 99% of the cases and certainly not how sysadmins
+want to spend their time (frobbing irqbalanced policy).
+
+> 
+> > A second solution I thought of later might be for the device driver to
+> > export (sysfs?) to irqbalanced which MSIs the driver instance owns and
+> > how many "domains" those MSIs can serve.  irqbalanced can then write
+> > back into the same (sysfs?) the mapping of MSI to domains and update
+> > the smp_affinity mask for each of those MSI.
+> > 
+> > The driver could quickly look up the reverse map CPUs to "domains".
+> > When a process attempts to start an IO, driver wants to know which
+> > queue pair the IO should be placed on so the completion event will
+> > be handled in the same "domain". The result is IOs could start/complete
+> > on the same (now warm) "CPU cache" with minimal spinlock bouncing.
+> > 
+> > I'm not clear on details right now. I belive this would allow
+> > irqbalanced to manage IRQs in an optimal way without having to
+> > have device specific code in it. Unfortunately, I'm not in a position
+> > propose patches due to current work/family commitments. It would
+> > be fun to work on. *sigh*
+> 
+> I think looking at this in terms of MSIs is the wrong level.  The driver
+> needs to be instructed how many and what type of *queues* to create.
+> Then allocation of MSIs falls out naturally from that.
+
+Yes, good point. That's certainly a better approach and could precede
+the "second proposal" above. ie driver queries how many domains it
+should "plan" for, set up that many queues, and request the same number
+of MSI-X vectors.
+
+That still leaves open which code is going to export queue attribute
+information to irqbalanced. My guess is the driver query could provide
+a table which could be exported. But it would make more sense to export
+when the msi's are allocated since we want to associate with actually
+allocated MSI-X vectors.
+
+thanks,
+grant
