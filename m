@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbYIYCGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYIYCHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753914AbYIYCGr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 22:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYIYCFX
+	id S1754029AbYIYCHf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 22:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYIYCF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 22:05:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:61605 "EHLO
+	Wed, 24 Sep 2008 22:05:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:2631 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbYIYCFT (ORCPT
+	with ESMTP id S1752895AbYIYCFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 22:05:19 -0400
+	Wed, 24 Sep 2008 22:05:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=GBUfYGAQLBIV/kKAWUi4saOllIgUM5FRsM4wGKANAie+z0W58FnRGWGFRf6kzn3aLF
-         5iCTt3+FvZyR1npOSkSgHVT90+m/3iuiONcEtbma1G6lCwZzc63kdXL124IIiE+Uswxn
-         VHCQ9jbyvjYlqHGHIhrQNV75EK6puToIKgvxI=
+        b=rk69u31iDUiNhMZKJiL7quiRmKn+iQOqWb4OYarSJEPRp9eeeOAQ/AF0mHKw0g6qRB
+         q70WEyX60pgdcjp83Vg8L8xN8uAF66C3kUF08NDaGofrJqSDBht6fwvpMtoTqdMQwJnL
+         yDabm+Xvv/M8iYDz5Yf7ZijdU5NZXQurub+cg=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
        Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -23,9 +23,9 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        linux-acpi@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 5/7] x86: fix typo in irq_desc array
-Date: Wed, 24 Sep 2008 19:04:35 -0700
-Message-Id: <1222308277-10984-5-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 7/7] x86: print out irq nr for msi/ht
+Date: Wed, 24 Sep 2008 19:04:37 -0700
+Message-Id: <1222308277-10984-7-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1222308277-10984-1-git-send-email-yhlu.kernel@gmail.com>
 References: <1222308277-10984-1-git-send-email-yhlu.kernel@gmail.com>
@@ -33,26 +33,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-when SPARSE_IRQ is not used, should still use irq_desc->lock
-
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- kernel/irq/handle.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/kernel/hpet.c    |    3 +++
+ arch/x86/kernel/io_apic.c |    7 +++++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index 7f625fb..fb6bdb6 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -253,7 +253,7 @@ struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
- 		.chip = &no_irq_chip,
- 		.handle_irq = handle_bad_irq,
- 		.depth = 1,
--		.lock = __SPIN_LOCK_UNLOCKED(sparse_irqs->lock),
-+		.lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
- #ifdef CONFIG_SMP
- 		.affinity = CPU_MASK_ALL
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 422c577..686505a 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -467,6 +467,9 @@ static int hpet_setup_irq(struct hpet_dev *dev)
+ 	irq_set_affinity(dev->irq, cpumask_of_cpu(dev->cpu));
+ 	enable_irq(dev->irq);
+ 
++	printk(KERN_DEBUG "hpet: %s is using irq %#x aka %d for MSI\n",
++			 dev->name, irq, irq);
++
+ 	return 0;
+ }
+ 
+diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+index 4cc9cb6..dc82397 100644
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -3355,6 +3355,9 @@ static int setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc, int irq)
  #endif
+ 		set_irq_chip_and_handler_name(irq, &msi_chip, handle_edge_irq, "edge");
+ 
++	printk(KERN_DEBUG "PCI: %s is using irq %#x aka %d for MSI/MSI-X\n",
++			 pci_name(dev), irq, irq);
++
+ 	return 0;
+ }
+ 
+@@ -3587,6 +3590,7 @@ int arch_setup_hpet_msi(unsigned int irq)
+ 	hpet_msi_write(irq, &msg);
+ 	set_irq_chip_and_handler_name(irq, &hpet_msi_type, handle_edge_irq,
+ 		"edge");
++
+ 	return 0;
+ }
+ #endif
+@@ -3683,6 +3687,9 @@ int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev)
+ 
+ 		set_irq_chip_and_handler_name(irq, &ht_irq_chip,
+ 					      handle_edge_irq, "edge");
++
++		printk(KERN_DEBUG "PCI: %s is using irq %#x aka %d for HT\n",
++				 pci_name(dev), irq, irq);
+ 	}
+ 	return err;
+ }
 -- 
 1.5.6
 
