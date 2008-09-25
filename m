@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbYIYPdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbYIYPek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbYIYPdR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 11:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbYIYPdH
+	id S1753682AbYIYPek (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 11:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbYIYPe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 11:33:07 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:47622 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbYIYPdF (ORCPT
+	Thu, 25 Sep 2008 11:34:29 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:52161 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752967AbYIYPe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 11:33:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DkaPFModptfHYfUATk/zfOan5zJwZ7008iYaGh6ViZrePXquXwTGf/NTSfuBA/YSgI
-         3ChqwCyJIcdTMUdkNHqt8LVcdxxEYpY2Iy8xrveJpcUWIZn8U2OS6eJBFMwUxTPE195X
-         kGmai2oycTAH6a3LxlCJ3Se+MNpZt7W4HPwhY=
-Message-ID: <c62985530809250833x2468f07an547a82eaa1329d9@mail.gmail.com>
-Date: Thu, 25 Sep 2008 17:33:02 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Pekka Paalanen" <pq@iki.fi>
-Subject: Re: [Patch -tip 1/3] Tracing/ftrace: Relay unhandled entry output
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <20080925180916.75d3c9ec@daedalus.pq.iki.fi>
+	Thu, 25 Sep 2008 11:34:28 -0400
+Date: Thu, 25 Sep 2008 11:20:24 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Martin Bligh <mbligh@mbligh.org>, Martin Bligh <mbligh@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <1222354409.16700.215.camel@lappy.programming.kicks-ass.net>
+Message-ID: <alpine.DEB.1.10.0809251118350.27300@gandalf.stny.rr.com>
+References: <20080924051056.650388887@goodmis.org>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>  <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com> 
+ <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>  <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> 
+ <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>  <1222339303.16700.197.camel@lappy.programming.kicks-ass.net>  <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48DB81BA.2050204@gmail.com> <20080925123802.GA6900@elte.hu>
-	 <48DBA683.8000708@gmail.com>
-	 <20080925180916.75d3c9ec@daedalus.pq.iki.fi>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/25 Pekka Paalanen <pq@iki.fi>:
-> Frederic, in the future, could you just copy the patch
-> into the email body (watch out for line wraps and other damage),
-> attachments are not usually included in "reply with quote",
-> so commenting on them is a tiny bit harder. Thanks.
 
-Ok. I think I have to change my email client. I'm starting to get rid of all
-these blank lines or other issues with the patches...
-I will think about it...
+On Thu, 25 Sep 2008, Peter Zijlstra wrote:
+> 
+> Also, I agree on the 4byte alignment, rather than the 8byte Steve seems
+> to favour.
 
-> IMHO this breaks the trace_seq handling. trace_seq may contain
-> the output of several entries, as far as they fit in it as a whole.
-> E.g. trace_seq_printf() does not print partial lines but returns 0,
-> so that the entry is not consumed right now. The user space reader
-> must consume trace_seq content, before trace_seq_printf()
-> is attempted again, hopefully with enough space in trace_seq to
-> succeed. See tracing_read_pipe().
-> print_line() callback works the same way. Returning 0 means "could
-> not print it this time, call me back later". You can't use that to
-> say "use the default output function instead". Note, that possibly
-> the default output function will fail, too, so it could actually
-> try many of the default output functions and still fail, eventually
-> leading by luck to the correct behaviour in most cases.
-> Note, that mmiotrace follows this convention: it deliberatly
-> returns 1 without processing when it wants the entry discarded, and
-> it returns 0 when there was not enough space to process the entry.
-> This is explained in my other email.
+Pretty much all CPUs word align on a 8 byte bounder (until we get those 
+128bit boxes running), but not all can word align on 4 bytes. I was hoping 
+to make the buffer output somewhat the same across archs.
 
-Hmm you're right. I didn't thought about the partial line which must
-not be printed.
-The problem is that with this convention, 0 means two things: "I will
-handle this entry
-later" or "I can't handle it".
-But if you return 0 because you can't handle it, and if the current
-len of the seq is 0, the
-pipe will be broken.
+Otherwise, this is going to be quite a complex mess IMHO.
 
-> What is the supposed return value of print_trace_line(), I do not
-> know. Looks like it is used as boolean, so maybe the type should be
-> changed to bool. Unless we want three options:
-> - 0: could not print now, try again
-> - 1: success, entry processed, it can be thrown away
-> - 2: fall back to the default output formatting
-> Cases 0 and 1 must exist like that, I do not know how useful 2 is,
-> but it must be distinct from the first two.
+-- Steve
 
-I think it's a good solution.
-
-Thanks to you! I didn't see these issues.
