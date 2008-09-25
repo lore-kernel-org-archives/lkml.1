@@ -1,94 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbYIYUuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYIYUui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754433AbYIYUuS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 16:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbYIYUuD
+	id S1756185AbYIYUui (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 16:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbYIYUuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 16:50:03 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:50917 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752705AbYIYUuB (ORCPT
+	Thu, 25 Sep 2008 16:50:23 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46134 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756089AbYIYUuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 16:50:01 -0400
-Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
-From: Zachary Amsden <zach@vmware.com>
-To: Alok Kataria <akataria@vmware.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Alok kataria <alokkataria1@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Yan Li <elliot.li.tech@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
-       "rjmaomao@gmail.com" <rjmaomao@gmail.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Daniel Hecht <dhecht@vmware.com>
-In-Reply-To: <1222320201.23524.135.camel@alok-dev1>
-References: <20080221115452.GB13948@elte.hu>
-	 <20080907234510.GA24133@yantp.cn.ibm.com>	 <20080908140423.GG11993@elte.hu>
-	 <35f686220809241928k3669e30bi8a98b440443c4bff@mail.gmail.com>
-	 <48DB15DB.8040501@zytor.com> <1222317978.23524.117.camel@alok-dev1>
-	 <48DB1984.8020704@zytor.com> <1222318928.23524.121.camel@alok-dev1>
-	 <48DB1BCE.2070106@zytor.com>  <1222320201.23524.135.camel@alok-dev1>
-Content-Type: text/plain
-Date: Thu, 25 Sep 2008 13:48:14 -0700
-Message-Id: <1222375694.27056.179.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Thu, 25 Sep 2008 16:50:22 -0400
+Message-ID: <48DBF964.7070106@zytor.com>
+Date: Thu, 25 Sep 2008 13:49:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, x86@kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: v2.6.27-rc7: x86: #GP on panic?
+References: <19f34abd0809241209l3a69d607v153549ee43e085e9@mail.gmail.com>	 <20080925080417.GB27048@elte.hu> <48DB5186.8060502@zytor.com>	 <19f34abd0809250707i18ded94aib177c884d4d6a3bd@mail.gmail.com>	 <19f34abd0809250820q2df15e93u43374b7317e2f7be@mail.gmail.com> <19f34abd0809251346r62cff1ck4730260f17e643b3@mail.gmail.com>
+In-Reply-To: <19f34abd0809251346r62cff1ck4730260f17e643b3@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-24 at 22:23 -0700, Alok Kataria wrote:
-> On Wed, 2008-09-24 at 22:04 -0700, H. Peter Anvin wrote:
-> > Alok Kataria wrote:
-> > >>>
-> > >> You accessed a bloody I/O port!
-> > >>
-> > >> If you think it's harmless because it was an IN, you're sorely mistaken.
-> > >
-> > > Hi Peter,
-> > >
-> > > It would be really helpful if you could explain me when can this go
-> > > wrong or what kinds of problems can this cause on native hardware.
-> > >
-> >
-> > You accessed an unknown I/O port.
-> >
-> > This means you caused an unknown action in an unknown peripheral device.
-> >
-> > This could cause ANYTHING to happen.
+Vegard Nossum wrote:
+> 
+> But I don't see how the divide error could occur here:
+> 
+> ffffffff8103918b:       fb                      sti
+> ffffffff8103918c:       49 c7 c4 80 c0 6e 81    mov    $0xffffffff816ec080,%r12
+> ffffffff81039193:       f6 c3 01                test   $0x1,%bl
+> ffffffff81039196:       74 27                   je     ffffffff810391bf <__do_so
+> ffffffff81039198:       4c 89 e7                mov    %r12,%rdi
+> ffffffff8103919b:       41 ff 14 24             callq  *(%r12)
+> 
+> Seems like an external interrupt happened and was delivered after the sti?
+> 
+> Hm. I guess it smells like a qemu bug since it's rather easily
+> reproducible here and sounds strange that nobody else saw it. Is qemu
+> 0.9.1.
+> 
 
-Peter's right.  The hardware device simply sees an I/O request to a port
-and a read / write.  The actual internal implementation may not even see
-whether it is a R/W, and may do anything.  Some of our virtual hardware
-is activated in strange ways, reads where you would expect writes, etc.
+Yes, but there shouldn't be any external interrupts that could turn into 
+  a divide error.  It really smells like a Qemu problem -- possibly even 
+a Qemu miscompile -- to me.
 
-For example, a device made by Exploder Technologies has two ports, 3686,
-and 3687.  Read access to port 3686 returns the status register and any
-access at all to port 3687 moves the robot arm, activating the
-thermonuclear self destruct device and destroying the earth.  I have
-such a device in my basement, but I have to be careful not to issue any
-I/O to port 3687 on it, whether it is writes OR reads.
+Does it reproduce in KVM?
 
-A less contrived example is a LFSR that returns a new cryptographically
-random value on every read.  Reading a register would cause a state
-change in the hardware, and this could be fatal to something that
-requires exact synchronization of tokens, perhaps securID type
-applications.
-
-All that said, we've never encountered an I/O device that uses this ISA
-port for anything at all.  However, some old broken hardware might
-misdecode bus addresses and try to service the I/O request anyway.  So
-while it might be an acceptible way for us to use in VMware tools where
-it only ever makes sense to install in a VM anyway, it could be
-considered non-appropriate for general kernel application.
-
-The whole backdoor thing is also broken because it requires
-non-architectural side effects to operate (IN instructions can not
-arbitrarily change all GPRs).  This can confuse applications which are
-very smart and try to single step over the instruction by emulating it,
-logging the port I/O, then restoring GPRs to the state before execution
-and writing the 1 register affected by the IN.  Such clever debuggers
-and profiling tools have been written.
-
-Zach
-
+	-hpa
