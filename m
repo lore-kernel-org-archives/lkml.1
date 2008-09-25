@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYIYGs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbYIYGzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbYIYGs7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 02:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbYIYGsu
+	id S1753031AbYIYGzJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 02:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbYIYGy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 02:48:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:20781 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbYIYGst (ORCPT
+	Thu, 25 Sep 2008 02:54:56 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:32579 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbYIYGy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 02:48:49 -0400
+	Thu, 25 Sep 2008 02:54:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references:x-google-sender-auth;
-        b=esL+JVT7HAoK2bZirQbdiJUsLwVLmzTTafwsJbi2QNQ4gEw/HrAnVWbya/h4mhnZXK
-         UByNCl8L2T2GtGXwyHJs0TUjVAyoYZqF26wcaPNDNJbUlTyeCTfXXtJFqDQabXoO40yN
-         qgH77Ofm5gzd/JMSF1yDWRxMK9h3i+mY6CATo=
-Message-ID: <86802c440809242348g10939ca2p79b5bd1ce7e5fac0@mail.gmail.com>
-Date: Wed, 24 Sep 2008 23:48:31 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86/pci: fix dmar_tbl early_ioremap leak
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-In-Reply-To: <1222324048-13853-1-git-send-email-yhlu.kernel@gmail.com>
+        b=WT0nb3HhyDIylSWqSOVqYNf3QHEsUTFa79pE3AhAiODZGkjawXDIhuUlojaqZYorj9
+         F1XbL6FcqIJ3NHrsI0ercZnGQlx3+IFaCM34PkKPuiFH8EVqLDrSzu6fG+SrWpdK1CzN
+         e72N4ScYfPjZYQMJlkey1Ky9cgrWkARmYyS1I=
+Message-ID: <2a27d3730809242354u4cc24b96yda3973bfc3ddac92@mail.gmail.com>
+Date: Thu, 25 Sep 2008 14:54:54 +0800
+From: "Li Yang" <leoli@freescale.com>
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: [PATCH v2] fsl-dma: allow Freescale Elo DMA driver to be compiled as a module
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       dan.j.williams@intel.com
+In-Reply-To: <1222293567-17694-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1222324048-13853-1-git-send-email-yhlu.kernel@gmail.com>
-X-Google-Sender-Auth: eae36ed53d1e677f
+References: <1222293567-17694-1-git-send-email-timur@freescale.com>
+X-Google-Sender-Auth: b16961991502c5a5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 11:27 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> use early_acpi_os_unmap_memory
+On Thu, Sep 25, 2008 at 5:59 AM, Timur Tabi <timur@freescale.com> wrote:
+> Modify the Freescale Elo / Elo Plus DMA driver so that it can be compiled as
+> a module.
 >
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> The primary change is to stop treating the DMA controller as a bus, and the
+> DMA channels as devices on the bus.  This is because the Open Firmware (OF)
+> kernel code does not allow busses to be removed, so although we can call
+> of_platform_bus_probe() to probe the DMA channels, there is no
+> of_platform_bus_remove().  Instead, the DMA channels are manually probed,
+> similar to what fsl_elbc_nand.c does.
 >
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
->  drivers/pci/dmar.c |    9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
 >
-> Index: linux-2.6/drivers/pci/dmar.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/dmar.c
-> +++ linux-2.6/drivers/pci/dmar.c
-> @@ -42,6 +42,7 @@
->  LIST_HEAD(dmar_drhd_units);
+> v2: updated per comments
 >
->  static struct acpi_table_header * __initdata dmar_tbl;
-> +static acpi_size __initdata dmar_tbl_size;
+> This patch is for the 2.6.28 kernel.  This patch exposes a bug in the dmatest
+> module, so my other patch "dmatest: properly handle duplicate DMA channels"
+> should be applied if this patch is applied.
+[snip]
+> +static void __exit of_fsl_dma_exit(void)
+> +{
+> +       of_unregister_platform_driver(&of_fsl_dma_driver);
+>  }
 >
->  static void __init dmar_register_drhd_unit(struct dmar_drhd_unit *drhd)
->  {
-> @@ -296,9 +297,13 @@ static int __init dmar_table_detect(void
->  {
->        acpi_status status = AE_OK;
->
-> +       if (dmar_tbl)
-> +               early_acpi_os_unmap_memory(dmar_tbl, dmar_tbl_size);
+> -subsys_initcall(of_fsl_dma_chan_init);
+>  subsys_initcall(of_fsl_dma_init);
+
+Not a critical problem.  But module_init() are preferred for modules.
+
+> +module_exit(of_fsl_dma_exit);
 > +
+> +MODULE_DESCRIPTION("Freescale Elo / Elo Plus DMA driver");
+> +MODULE_LICENSE("GPL");
 
-need more work..
+Acked-by: Li Yang <leoli@freescale.com>
 
-YH
+- Leo
