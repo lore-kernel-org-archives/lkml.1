@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYIYBCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYIYBDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371AbYIYBCu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 21:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYIYBCi
+	id S1753953AbYIYBDF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 21:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYIYBCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 21:02:38 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:40175 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752547AbYIYBCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 21:02:37 -0400
-Date: Thu, 25 Sep 2008 03:00:14 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Jeff Garzik <jeff@garzik.org>
-cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       davem@davemloft.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
-       john.ronciak@intel.com, Bruce Allan <bruce.w.allan@intel.com>
-Subject: Re: [PATCH 3/3] e1000e: remove failed request for sw/fw/hw flag
-In-Reply-To: <48DAE089.20307@garzik.org>
-Message-ID: <Pine.LNX.4.64.0809250257070.27884@twin.jikos.cz>
-References: <20080923224630.6927.28967.stgit@jtkirshe-mobile.jf.intel.com>
- <48DAE089.20307@garzik.org>
+	Wed, 24 Sep 2008 21:02:47 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:43106 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753031AbYIYBCq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 21:02:46 -0400
+Date: Wed, 24 Sep 2008 20:02:33 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       Andreas Gruenbacher <agruen@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 2/2] file capabilities: remove
+	CONFIG_SECURITY_FILE_CAPABILITIES
+Message-ID: <20080925010233.GB7324@us.ibm.com>
+References: <20080924020432.GA25997@us.ibm.com> <20080924020526.GA26058@us.ibm.com> <20080924234857.GA22375@sequoia.sous-sol.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080924234857.GA22375@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Sep 2008, Jeff Garzik wrote:
+Quoting Chris Wright (chrisw@sous-sol.org):
+> * Serge E. Hallyn (serue@us.ibm.com) wrote:
+> > Remove the option to compile the kernel without file capabilities.  Not
+> > compiling file capabilities actually makes the kernel less safe, as it
+> > includes the possibility for a task changing another task's capabilities.
+> > 
+> > Some are concerned that userspace tools (and user education) are not
+> > up to the task of properly configuring file capabilities on a system.
+> > For those cases, there is now the ability to boot with the no_file_caps
+> > boot option.  This will prevent file capabilities from being used in
+> > the capabilities recalculation at exec, but will not change the rest
+> > of the kernel behavior which used to be switchable using the
+> > CONFIG_SECURITY_FILE_CAPABILITIES option.
+> 
+> (note: defconfig has CONFIG_SECURITY_FILE_CAPABILITIES=y)
+>    text    data     bss     dec     hex filename
+> 6805157 1018344  671900 8495401  81a129 obj64-defconfig/vmlinux
+> 6805151 1018368  671900 8495419  81a13b obj64-defconfig-patch1/vmlinux
+> 6805151 1018368  671900 8495419  81a13b obj64-defconfig-patch2/vmlinux
+> 6804605 1018344  671900 8494849  819f01 obj64-nofcap/vmlinux
+> 6804604 1018344  671900 8494848  819f00 obj64-nofcap-patch1/vmlinux
+> 6805150 1018368  671900 8495418  81a13a obj64-nofcap-patch2/vmlinux
 
-> > When the driver fails to acquire the control flag used to serialize
-> > NVM and PHY accesses between the driver, firmware and hardware, remove the
-> > request for the flag otherwise the hardware might grant the flag when it
-> > becomes available but the driver will not release the flag.  This could
-> > cause the firmware to prevent the driver getting the flag for all future
-> > attempts.
-> applied
+(what are you using to get these numbers?)
 
-BTW are you going to take the whole series, or just this fix?
+> The last 2 show the real diff now, add 570 bytes by effectively forcing
+> CONFIG_SECURITY_FILE_CAPABILITIES on.
 
-I don't think that the other patches should be really applied to upstream 
-(they could be very handy for debugging this horrible issue, once we could 
-do any debugging of it, thoug), as they don't protect against anyone 
-creating a new rw mapping, which can then be freely used to still 
-overwrite the mmio area without any problems.
+That surprises me - I thought a reasonable amount of code was cut as
+well.  Sounds like it may be worth it to refactor some of the code.
 
--- 
-Jiri Kosina
-SUSE Labs
+> What is being done to enable userspace in distros to make those 570
+> bytes generally useful?
 
+Fedora 9 and ubuntu intrepid already have full capabilities support and
+modern libcap.  Sles is set to ship with a modern libcap, and according
+to what Andreas is saying, if we can provide them with the no_file_caps
+boot option then suse is willing to have a kernel with capabilities
+turned on.  I think gentoo still comes with libcap-1.  Need to look into
+changing that.
+
+I suppose the next baby-step will be to do get rid of setuid on little
+things like ping.  Actually using inheritable caps for pseudo-admin
+'roles' may be a bit farther off, and a particularly interesting problem
+will be to take huge pieces of cross-os software like ssh which make
+assumptions about setuid behavior, and find ways to make them work
+correctly with capabilities, with capabilities in
+SECURE_NOROOT|SECURE_NOSETUIDFIXUP, and with non-linux oses.
+
+-serge
