@@ -1,78 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbYIYUFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbYIYUGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755261AbYIYUFu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 16:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYIYUFm
+	id S1755532AbYIYUGl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 16:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYIYUGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 16:05:42 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:39904 "EHLO
-	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752293AbYIYUFm (ORCPT
+	Thu, 25 Sep 2008 16:06:32 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50336
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752293AbYIYUGc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 16:05:42 -0400
-X-BigFish: VPS-35(zz1432R98dR936eQ62a3L1805Mzzzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K7RP4W-02-AYN-01
-Date: Thu, 25 Sep 2008 22:05:21 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: [PATCH] oprofile: Don't report Nehalem as core_2
-Message-ID: <20080925200521.GJ23557@erda.amd.com>
-References: <1219250433-25516-1-git-send-email-andi@firstfloor.org> <1219250433-25516-2-git-send-email-andi@firstfloor.org> <1219250433-25516-3-git-send-email-andi@firstfloor.org> <1219250433-25516-4-git-send-email-andi@firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1219250433-25516-4-git-send-email-andi@firstfloor.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 25 Sep 2008 20:05:26.0307 (UTC) FILETIME=[0D025F30:01C91F4A]
+	Thu, 25 Sep 2008 16:06:32 -0400
+Date: Thu, 25 Sep 2008 13:06:19 -0700 (PDT)
+Message-Id: <20080925.130619.193699562.davem@davemloft.net>
+To: jkosina@suse.cz
+Cc: elendil@planet.nl, airlied@gmail.com, jeff@garzik.org,
+       akpm@linux-foundation.org, jeffrey.t.kirsher@intel.com,
+       david.vrabel@csr.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, chrisl@vmware.com, mingo@elte.hu,
+       jbarnes@virtuousgeek.org, jesse.brandeburg@gmail.com
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0809251921340.18801@twin.jikos.cz>
+References: <alpine.LNX.1.10.0809250310190.4671@pegasus.suse.cz>
+	<200809250401.54818.elendil@planet.nl>
+	<Pine.LNX.4.64.0809251921340.18801@twin.jikos.cz>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20.08.08 18:40:32, Andi Kleen wrote:
-> From: Andi Kleen <ak@linux.intel.com>
-> 
-> This essentially reverts Linus' earlier 4b9f12a3779c548b68bc9af7d94030868ad3aa1b
-> commit. Nehalem is not core_2, so it shouldn't be reported as such.
-> However with the earlier arch perfmon patch it will fall back to
-> arch perfmon mode now, so there is no need to fake it as core_2.
-> The only drawback is that Linus will need to patch the arch perfmon
-> support into his oprofile binary now, but I think he can do that.
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+From: Jiri Kosina <jkosina@suse.cz>
+Date: Thu, 25 Sep 2008 19:24:57 +0200 (CEST)
 
-I will send this patch upstream together with the architectural
-perfmon implementation and when the userland part is upstream.
+> If being set to 0 (it's so easy to call memset(0) on a bogus pointer, 
+> there are usually lots of them in the code) or to random garbage, it would 
+> seem to be much more understandable, than 0xff.
 
--Robert
-
-> ---
->  arch/x86/oprofile/nmi_int.c |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-> index 6438c32..669a713 100644
-> --- a/arch/x86/oprofile/nmi_int.c
-> +++ b/arch/x86/oprofile/nmi_int.c
-> @@ -418,9 +418,6 @@ static int __init ppro_init(char **cpu_type)
->  	case 15: case 23:
->  		*cpu_type = "i386/core_2";
->  		break;
-> -	case 26:
-> -		*cpu_type = "i386/core_2";
-> -		break;
->  	default:
->  		/* Unknown */
->  		return 0;
-> -- 
-> 1.5.6
-> 
-> 
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+Setting framebuffer bytes to 0xff is pretty common, for example
+for color keys and anti-aliasing pixel values.
