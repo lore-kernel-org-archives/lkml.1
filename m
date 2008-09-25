@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbYIYHmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbYIYHuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753364AbYIYHmt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 03:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYIYHml
+	id S1753178AbYIYHuG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 03:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYIYHtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 03:42:41 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:57992 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbYIYHmk (ORCPT
+	Thu, 25 Sep 2008 03:49:55 -0400
+Received: from ptb-relay03.plus.net ([212.159.14.147]:45878 "EHLO
+	ptb-relay03.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751672AbYIYHty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 03:42:40 -0400
-Date: Thu, 25 Sep 2008 09:42:31 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: benh@kernel.crashing.org
-Cc: Milton Miller <miltonm@bga.com>, Jan-Bernd Themann <ossthema@de.ibm.com>,
-       Christoph Raisch <RAISCH@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
- hardirq preemption
-Message-ID: <20080925094231.442a4c75@bull.net>
-In-Reply-To: <1222327361.8277.179.camel@pasglop>
-References: <200809231743.23828.ossthema@de.ibm.com>
-	<20080915100406.342e027a@bull.net>
-	<200809240958.m8O9wM7k010996@sullivan.realtime.net>
-	<1222251467.8277.73.camel@pasglop>
-	<20080924143552.29a14f10@bull.net>
-	<1222290917.8277.83.camel@pasglop>
-	<20080925091827.29b5087c@bull.net>
-	<1222327361.8277.179.camel@pasglop>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Sep 2008 03:49:54 -0400
+Message-ID: <48DB429C.4050904@yahoo.com>
+Date: Thu, 25 Sep 2008 08:49:48 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+MIME-Version: 1.0
+To: =?UTF-8?B?UGF3ZcWCIFNpa29yYQ==?= <pluto@agmk.net>
+CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [kernel-abi] symbol versioning vs. out-of-tree modules.
+References: <Y165ES5i.1222268879.9618400.pluto@agmk.net> <20080925024840.GA14575@kroah.com> <200809250829.22294.pluto@agmk.net>
+In-Reply-To: <200809250829.22294.pluto@agmk.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Plusnet-Relay: 5cd476a50e94034bcc11c3d035e8df0e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008 17:22:41 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Thu, 2008-09-25 at 09:18 +0200, Sebastien Dugue wrote:
-> > 
-> > > Ok, that's the right approach then. It should work. I don't know
-> > what
-> > > the specific problems with HEA are at this stage.
-> > 
-> >   Yep, except as it behaves in way that the current -rt fasteoi flow
-> > cannot handle.
+Paweł Sikora wrote:
+> On Thursday 25 of September 2008 04:48:40 Greg KH wrote:
+>> What kernel modules do you currently use/rely on that are not in the
+>> main kernel tree?  Do you have links to them?  I'd be glad to add them.
 > 
-> We probably need to make a special xics flow handler for -rt that does
-> what Milton suggested, ie, bring down the CPU priority right away
-
-  Do you mean creating a custom fasteoi handler into xics.c? Also, it's
-not clear to me from looking at the code how you go about changing the
-cpu priority.
-
-> and
-> only EOI later or something like that, instead of masking/unmasking.
+> here's a quick list:
 > 
-> I don't know what are the other potential issues with the HEA though.
+> - http://www.lirc.org
 
-  Don't know either, but that I can test.
+^^^^ People are taking steps to adapt this to be included in kernel. See 
+  http://lwn.net/Articles/297770/ . I could have sworn I saw someone 
+posting an input layer patch for lirc the other day too... Aha - 
+http://lkml.org/lkml/2008/9/24/328 .
 
-  Thanks,
+> - http://rt2x00.serialmonkey.com
 
-  Sebastien.
+Isn't this one already in the wireless tree? I believe it was merged in 
+2.6.24 - 
+http://kernelnewbies.org/Linux_2_6_24#head-62e9ebf067c978bbf70898986c0aa3904d1a3543 
+.
+
+> - http://aufs.sourceforge.net
+
+I've read rumblings about one of the stacking FSes being merged but thus 
+far nothing seems to have happened - http://lwn.net/Articles/265240/ .
+
+> - http://linux-uvc.berlios.de
+
+USB video has already been merged into mainline in 2.6.25 - 
+http://kernelnewbies.org/Linux_2_6_26#head-6d4ee1ddea983f5c8ac491b8685a94ea6fa4132b 
+! I'm using it on my eeepc...
+
+Those are the ones I recognise off the top of my head. I'll have to 
+search with regard to the other ones you mentioned...
+
+-- 
+Sitsofe | http://sucs.org/~sits/
