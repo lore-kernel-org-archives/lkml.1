@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbYIYQUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbYIYQXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbYIYQUv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 12:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbYIYQUm
+	id S1754505AbYIYQXc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 12:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYIYQXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 12:20:42 -0400
-Received: from outbound-mail-23.bluehost.com ([69.89.21.18]:52240 "HELO
-	outbound-mail-23.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752286AbYIYQUl (ORCPT
+	Thu, 25 Sep 2008 12:23:23 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:46729 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752593AbYIYQXW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 12:20:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=lox6hAfQ/e7pBnRhA09Pd7h37TlSQb6uB7Riaj2KSBPrrTtS4+wO4sUbN2J/Y6Epds7d5PWkzLfNIfHNn1XUI4MxxsLn/6Hk3LYG6EmZxSySALcVCTLkr3Um5KMx8xh9;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH 3/7] pci: using %pF in quirks.c
-Date: Thu, 25 Sep 2008 09:20:06 -0700
-User-Agent: KMail/1.9.9
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <1222308277-10984-1-git-send-email-yhlu.kernel@gmail.com> <1222308277-10984-3-git-send-email-yhlu.kernel@gmail.com> <200809250856.57716.bjorn.helgaas@hp.com>
-In-Reply-To: <200809250856.57716.bjorn.helgaas@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 25 Sep 2008 12:23:22 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAPJU20hMQWq+/2dsb2JhbACBXrksgWU
+Date: Thu, 25 Sep 2008 12:23:15 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Bligh <mbligh@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+Message-ID: <20080925162315.GA649@Krystal>
+References: <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com> <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com> <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org> <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809250920.07653.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20080925153635.GA12840@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:17:09 up 112 days, 20:57, 11 users,  load average: 1.85, 1.90,
+	1.90
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, September 25, 2008 7:56 am Bjorn Helgaas wrote:
-> On Wednesday 24 September 2008 08:04:33 pm Yinghai Lu wrote:
-> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> > ---
-> >  drivers/pci/quirks.c |    3 +--
-> >  1 files changed, 1 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> > index 1f26712..addf2db 100644
-> > --- a/drivers/pci/quirks.c
-> > +++ b/drivers/pci/quirks.c
-> > @@ -1689,8 +1689,7 @@ static void pci_do_fixups(struct pci_dev *dev,
-> > struct pci_fixup *f, struct pci_f if ((f->vendor == dev->vendor ||
-> > f->vendor == (u16) PCI_ANY_ID) && (f->device == dev->device || f->device
-> > == (u16) PCI_ANY_ID)) { #ifdef DEBUG
-> > -			dev_dbg(&dev->dev, "calling ");
-> > -			print_fn_descriptor_symbol("%s\n", f->hook);
-> > +			dev_dbg(&dev->dev, "calling %pF\n", f->hook);
-> >  #endif
-> >  			f->hook(dev);
-> >  		}
->
-> I posted a similar patch already:
->   http://lkml.org/lkml/2008/8/22/178
->
-> Maybe mine was too complicated because it touched more files at once.
-> Regardless, we need to remove the #ifdef DEBUG because it's no longer
-> necessary.
+* Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Martin Bligh <mbligh@google.com> wrote:
+> 
+> > > And I don't think normalizing later is in any way more fundamentally 
+> > > hard. It just means that you do part of the expensive things after 
+> > > you have gathered the trace, rather than during.
+> > 
+> > Agree with you on doing the expensive stuff later. If we wanted to get 
+> > something that'd pack down to a couple fewer bits, and approximate ns, 
+> > we could always >> 1 if you were > 2GHz, and >> 2 if you where > 4GHz, 
+> > etc. which is at least cheap.
+> 
+> ... which is exactly what sched_clock() does, combined with a 
+> multiplication. (which is about as expensive as normal linear 
+> arithmetics on most CPUs - i.e. in the 1 cycle range)
+> 
+> Normalizing has the advantage that we dont have to worry about it ever 
+> again. Not about a changing scale due to cpufreq, slowing down or 
+> speeding up TSCs due to C2/C3. We have so much TSC breakage all across 
+> the spectrum that post-processing it is a nightmare in practice. Plus we 
+> want sched_clock() to be fast anyway.
+> 
+> in the distant future we not only will have constant-TSC but it wont 
+> stop in C2/C3 either at a whim (which they do right now, messing up 
+> timestamps). At that stage fast time readout it will be so sane that CPU 
+> makers should really provide a nanosec readout - it's easy to do a 
+> simple multiplicator and hide the few cycles multiplicator latency to 
+> RDTSC (this is continuous time after all so it's easy for the hw).
+> 
+> Hm?
+> 
+> 	Ingo
+> 
 
-Yeah you sent it to Andrew and it touched several files; maybe I shouldn't 
-have ignored it. :)
+Hi Ingo,
 
-Anyway I'll fix up the #ifdefs in my linux-next branch.
+The problem with sched_clock is that it gives a 1 HZ timestamp accuracy
+for events happening across different CPUs. Within this 1 HZ range, it
+uses the TSC and clip when it reaches a max. Good enough for scheduler
+or for tracing events on a single CPU, but I think it is not exactly
+what we need to reorder events happening across CPUs.
 
-Thanks,
-Jesse
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
