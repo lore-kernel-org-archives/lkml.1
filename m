@@ -1,70 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbYIYMGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbYIYMGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757104AbYIYMGE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 08:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbYIYL4Y
+	id S1756499AbYIYMGm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 08:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755069AbYIYL42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 07:56:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48608 "EHLO mx2.redhat.com"
+	Thu, 25 Sep 2008 07:56:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48597 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755020AbYIYL4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 07:56:16 -0400
+	id S1754603AbYIYL4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 07:56:07 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Mohammed Gamal <m.gamal005@gmail.com>
-Subject: [PATCH 31/39] KVM: x86 emulator: Add mov r, imm instructions (opcodes 0xb0-0xbf)
-Date: Thu, 25 Sep 2008 14:55:03 +0300
-Message-Id: <1222343711-12508-32-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Avi Kivity <avi@qumranet.com>
+Subject: [PATCH 27/39] KVM: MMU: Convert direct maps to use the generic shadow walker
+Date: Thu, 25 Sep 2008 14:54:59 +0300
+Message-Id: <1222343711-12508-28-git-send-email-avi@redhat.com>
 In-Reply-To: <1222343711-12508-1-git-send-email-avi@redhat.com>
 References: <1222343711-12508-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mohammed Gamal <m.gamal005@gmail.com>
+From: Avi Kivity <avi@qumranet.com>
 
-The emulator only supported one instance of mov r, imm instruction
-(opcode 0xb8), this adds the rest of these instructions.
-
-Signed-off-by: Mohammed Gamal <m.gamal005@gmail.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/x86_emulate.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+ arch/x86/kvm/mmu.c |   93 ++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 55 insertions(+), 38 deletions(-)
 
-diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
-index ae30435..66e0bd6 100644
---- a/arch/x86/kvm/x86_emulate.c
-+++ b/arch/x86/kvm/x86_emulate.c
-@@ -154,9 +154,16 @@ static u16 opcode_table[256] = {
- 	0, 0, ByteOp | ImplicitOps | Mov | String, ImplicitOps | Mov | String,
- 	ByteOp | ImplicitOps | Mov | String, ImplicitOps | Mov | String,
- 	ByteOp | ImplicitOps | String, ImplicitOps | String,
--	/* 0xB0 - 0xBF */
--	0, 0, 0, 0, 0, 0, 0, 0,
--	DstReg | SrcImm | Mov, 0, 0, 0, 0, 0, 0, 0,
-+	/* 0xB0 - 0xB7 */
-+	ByteOp | DstReg | SrcImm | Mov, ByteOp | DstReg | SrcImm | Mov,
-+	ByteOp | DstReg | SrcImm | Mov, ByteOp | DstReg | SrcImm | Mov,
-+	ByteOp | DstReg | SrcImm | Mov, ByteOp | DstReg | SrcImm | Mov,
-+	ByteOp | DstReg | SrcImm | Mov, ByteOp | DstReg | SrcImm | Mov,
-+	/* 0xB8 - 0xBF */
-+	DstReg | SrcImm | Mov, DstReg | SrcImm | Mov,
-+	DstReg | SrcImm | Mov, DstReg | SrcImm | Mov,
-+	DstReg | SrcImm | Mov, DstReg | SrcImm | Mov,
-+	DstReg | SrcImm | Mov, DstReg | SrcImm | Mov,
- 	/* 0xC0 - 0xC7 */
- 	ByteOp | DstMem | SrcImm | ModRM, DstMem | SrcImmByte | ModRM,
- 	0, ImplicitOps | Stack, 0, 0,
-@@ -1660,7 +1667,7 @@ special_insn:
- 	case 0xae ... 0xaf:	/* scas */
- 		DPRINTF("Urk! I don't handle SCAS.\n");
- 		goto cannot_emulate;
--	case 0xb8: /* mov r, imm */
-+	case 0xb0 ... 0xbf: /* mov r, imm */
- 		goto mov;
- 	case 0xc0 ... 0xc1:
- 		emulate_grp2(ctxt);
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 8b95cf7..a1ca4ff 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -1260,49 +1260,66 @@ static void nonpaging_new_cr3(struct kvm_vcpu *vcpu)
+ {
+ }
+ 
+-static int __direct_map(struct kvm_vcpu *vcpu, gpa_t v, int write,
+-			int largepage, gfn_t gfn, pfn_t pfn)
+-{
+-	hpa_t table_addr = vcpu->arch.mmu.root_hpa;
+-	int pt_write = 0;
+-	int level = vcpu->arch.mmu.shadow_root_level;
+-
+-	for (; ; level--) {
+-		u32 index = PT64_INDEX(v, level);
+-		u64 *table;
++struct direct_shadow_walk {
++	struct kvm_shadow_walk walker;
++	pfn_t pfn;
++	int write;
++	int largepage;
++	int pt_write;
++};
+ 
+-		ASSERT(VALID_PAGE(table_addr));
+-		table = __va(table_addr);
++static int direct_map_entry(struct kvm_shadow_walk *_walk,
++			    struct kvm_vcpu *vcpu,
++			    gva_t addr, u64 *sptep, int level)
++{
++	struct direct_shadow_walk *walk =
++		container_of(_walk, struct direct_shadow_walk, walker);
++	struct kvm_mmu_page *sp;
++	gfn_t pseudo_gfn;
++	gfn_t gfn = addr >> PAGE_SHIFT;
++
++	if (level == PT_PAGE_TABLE_LEVEL
++	    || (walk->largepage && level == PT_DIRECTORY_LEVEL)) {
++		mmu_set_spte(vcpu, sptep, ACC_ALL, ACC_ALL,
++			     0, walk->write, 1, &walk->pt_write,
++			     walk->largepage, gfn, walk->pfn, false);
++		return 1;
++	}
+ 
+-		if (level == 1 || (largepage && level == 2)) {
+-			mmu_set_spte(vcpu, &table[index], ACC_ALL, ACC_ALL,
+-				     0, write, 1, &pt_write, largepage,
+-				     gfn, pfn, false);
+-			return pt_write;
++	if (*sptep == shadow_trap_nonpresent_pte) {
++		pseudo_gfn = (addr & PT64_DIR_BASE_ADDR_MASK) >> PAGE_SHIFT;
++		sp = kvm_mmu_get_page(vcpu, pseudo_gfn, addr, level - 1,
++				      1, ACC_ALL, sptep);
++		if (!sp) {
++			pgprintk("nonpaging_map: ENOMEM\n");
++			kvm_release_pfn_clean(walk->pfn);
++			return -ENOMEM;
+ 		}
+ 
+-		if (table[index] == shadow_trap_nonpresent_pte) {
+-			struct kvm_mmu_page *new_table;
+-			gfn_t pseudo_gfn;
+-
+-			pseudo_gfn = (v & PT64_DIR_BASE_ADDR_MASK)
+-				>> PAGE_SHIFT;
+-			new_table = kvm_mmu_get_page(vcpu, pseudo_gfn,
+-						     v, level - 1,
+-						     1, ACC_ALL, &table[index]);
+-			if (!new_table) {
+-				pgprintk("nonpaging_map: ENOMEM\n");
+-				kvm_release_pfn_clean(pfn);
+-				return -ENOMEM;
+-			}
+-
+-			set_shadow_pte(&table[index],
+-				       __pa(new_table->spt)
+-				       | PT_PRESENT_MASK | PT_WRITABLE_MASK
+-				       | shadow_user_mask | shadow_x_mask);
+-		}
+-		table_addr = table[index] & PT64_BASE_ADDR_MASK;
++		set_shadow_pte(sptep,
++			       __pa(sp->spt)
++			       | PT_PRESENT_MASK | PT_WRITABLE_MASK
++			       | shadow_user_mask | shadow_x_mask);
+ 	}
++	return 0;
++}
++
++static int __direct_map(struct kvm_vcpu *vcpu, gpa_t v, int write,
++			int largepage, gfn_t gfn, pfn_t pfn)
++{
++	int r;
++	struct direct_shadow_walk walker = {
++		.walker = { .entry = direct_map_entry, },
++		.pfn = pfn,
++		.largepage = largepage,
++		.write = write,
++		.pt_write = 0,
++	};
++
++	r = walk_shadow(&walker.walker, vcpu, (gva_t)gfn << PAGE_SHIFT);
++	if (r < 0)
++		return r;
++	return walker.pt_write;
+ }
+ 
+ static int nonpaging_map(struct kvm_vcpu *vcpu, gva_t v, int write, gfn_t gfn)
 -- 
 1.6.0.1
 
