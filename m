@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbYIYQaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbYIYQdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198AbYIYQaZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 12:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYIYQaN
+	id S1753962AbYIYQdL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 12:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbYIYQc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 12:30:13 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:35823 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752593AbYIYQaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 12:30:12 -0400
-Date: Thu, 25 Sep 2008 18:30:24 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.27-rc7 no init found on the root partition?
-Message-ID: <20080925163024.GP31582@ics.muni.cz>
-References: <20080924192227.GC31582@ics.muni.cz> <20080924230326.GM5448@disturbed> <20080925111239.GF31582@ics.muni.cz> <48DB96B8.6050503@sandeen.net>
+	Thu, 25 Sep 2008 12:32:57 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51380 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752658AbYIYQc4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 12:32:56 -0400
+Date: Thu, 25 Sep 2008 12:32:54 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: Ingo Molnar <mingo@elte.hu>, Martin Bligh <mbligh@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <20080925162315.GA649@Krystal>
+Message-ID: <alpine.DEB.1.10.0809251232020.27920@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com> <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
+ <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org>
+ <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <20080925162315.GA649@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48DB96B8.6050503@sandeen.net>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 25 Sep 2008 18:30:04 +0200 (CEST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 08:48:40AM -0500, Eric Sandeen wrote:
-> Is it possible that device ordering has changed?  what if you do:
 
-no, using printk's I found that search_binary_handler is the one that fails.
-Dunno why.
+On Thu, 25 Sep 2008, Mathieu Desnoyers wrote:
+> The problem with sched_clock is that it gives a 1 HZ timestamp accuracy
+> for events happening across different CPUs. Within this 1 HZ range, it
+> uses the TSC and clip when it reaches a max. Good enough for scheduler
+> or for tracing events on a single CPU, but I think it is not exactly
+> what we need to reorder events happening across CPUs.
+> 
 
--- 
-Luká¹ Hejtmánek
+
+Hmm,
+
+sched_clock gives ns accuracy unless the tsc is disabled. And in that 
+case, we don't have any CPU clock :-/
+
+
+-- Steve
+
