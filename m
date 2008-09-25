@@ -1,105 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbYIYGMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYIYGO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbYIYGMR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 02:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbYIYGL4
+	id S1754684AbYIYGO3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 02:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYIYGOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 02:11:56 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38117 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754771AbYIYGLz (ORCPT
+	Thu, 25 Sep 2008 02:14:19 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:25155 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751784AbYIYGOS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 02:11:55 -0400
-Date: Thu, 25 Sep 2008 15:18:23 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: [PATCH 6/12] memcg optimize percpu stat
-Message-Id: <20080925151823.62bf6bd6.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Sep 2008 02:14:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=xiTxif8xwILRpHbPIKwflZzwjUoBVaCJKM42vjbAgs+SEWhDO7144aVGbn3Dqnjl7n
+         l8xmDLqyxWfGW3OMzKiu0QSxBKaAS8q/1ZFNcqQZ+5ev+SSCgymZYNuMLxBTWVOPxvaV
+         CKi+m+HYhmn8ilgqi58qNE81YQIN+oeEw56GM=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH 7/7] x86: print out irq nr for msi/ht -v2
+Date: Wed, 24 Sep 2008 23:13:43 -0700
+Message-Id: <1222323223-23529-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some obvious optimization to memcg.
+v2: fix hpet compiling
 
-I found mem_cgroup_charge_statistics() is a little big (in object) and
-does unnecessary address calclation.
-This patch is for optimization to reduce the size of this function.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+---
+ arch/x86/kernel/hpet.c    |    3 +++
+ arch/x86/kernel/io_apic.c |    7 +++++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
 
-And res_counter_charge() is 'likely' to success.
-
-Changelog v3->v4:
- - merged with an other leaf patch.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
- mm/memcontrol.c |   18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
-
-Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
-+++ mmotm-2.6.27-rc7+/mm/memcontrol.c
-@@ -66,11 +66,10 @@ struct mem_cgroup_stat {
- /*
-  * For accounting under irq disable, no need for increment preempt count.
-  */
--static void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat *stat,
-+static inline void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat_cpu *stat,
- 		enum mem_cgroup_stat_index idx, int val)
- {
--	int cpu = smp_processor_id();
--	stat->cpustat[cpu].count[idx] += val;
-+	stat->count[idx] += val;
- }
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 422c577..686505a 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -467,6 +467,9 @@ static int hpet_setup_irq(struct hpet_dev *dev)
+ 	irq_set_affinity(dev->irq, cpumask_of_cpu(dev->cpu));
+ 	enable_irq(dev->irq);
  
- static s64 mem_cgroup_read_stat(struct mem_cgroup_stat *stat,
-@@ -237,18 +236,21 @@ static void mem_cgroup_charge_statistics
- {
- 	int val = (charge)? 1 : -1;
- 	struct mem_cgroup_stat *stat = &mem->stat;
-+	struct mem_cgroup_stat_cpu *cpustat;
- 
- 	VM_BUG_ON(!irqs_disabled());
++	printk(KERN_DEBUG "hpet: %s is using irq %#x aka %d for MSI\n",
++			 dev->name, dev->irq, dev->irq);
 +
-+	cpustat = &stat->cpustat[smp_processor_id()];
- 	if (PageCgroupCache(pc))
--		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
-+		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_CACHE, val);
- 	else
--		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
-+		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_RSS, val);
- 
- 	if (charge)
--		__mem_cgroup_stat_add_safe(stat,
-+		__mem_cgroup_stat_add_safe(cpustat,
- 				MEM_CGROUP_STAT_PGPGIN_COUNT, 1);
- 	else
--		__mem_cgroup_stat_add_safe(stat,
-+		__mem_cgroup_stat_add_safe(cpustat,
- 				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
+ 	return 0;
  }
  
-@@ -609,7 +611,7 @@ static int mem_cgroup_charge_common(stru
- 		css_get(&memcg->css);
+diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+index 4cc9cb6..dc82397 100644
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -3355,6 +3355,9 @@ static int setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc, int irq)
+ #endif
+ 		set_irq_chip_and_handler_name(irq, &msi_chip, handle_edge_irq, "edge");
+ 
++	printk(KERN_DEBUG "PCI: %s is using irq %#x aka %d for MSI/MSI-X\n",
++			 pci_name(dev), irq, irq);
++
+ 	return 0;
+ }
+ 
+@@ -3587,6 +3590,7 @@ int arch_setup_hpet_msi(unsigned int irq)
+ 	hpet_msi_write(irq, &msg);
+ 	set_irq_chip_and_handler_name(irq, &hpet_msi_type, handle_edge_irq,
+ 		"edge");
++
+ 	return 0;
+ }
+ #endif
+@@ -3683,6 +3687,9 @@ int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev)
+ 
+ 		set_irq_chip_and_handler_name(irq, &ht_irq_chip,
+ 					      handle_edge_irq, "edge");
++
++		printk(KERN_DEBUG "PCI: %s is using irq %#x aka %d for HT\n",
++				 pci_name(dev), irq, irq);
  	}
- 
--	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
-+	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
- 		if (!(gfp_mask & __GFP_WAIT))
- 			goto out;
- 
+ 	return err;
+ }
+-- 
+1.5.6
 
