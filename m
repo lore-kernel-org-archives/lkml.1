@@ -1,90 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbYIYVIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbYIYVNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756686AbYIYVIU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbYIYVIB
+	id S1755690AbYIYVNA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbYIYVMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:08:01 -0400
-Received: from rayleigh.systella.fr ([213.41.184.253]:60142 "EHLO
-	rayleigh.systella.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754570AbYIYVIA (ORCPT
+	Thu, 25 Sep 2008 17:12:52 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:52662 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbYIYVMv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:08:00 -0400
-X-Greylist: delayed 353 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Sep 2008 17:07:59 EDT
-Message-ID: <48DBFC49.80005@systella.fr>
-Date: Thu, 25 Sep 2008 23:02:01 +0200
-From: BERTRAND Joel <joel.bertrand@systella.fr>
-Reply-To: mt1@systella.fr
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; fr-FR; rv:1.8.1.16) Gecko/20080702 Iceape/1.1.11 (Debian-1.1.11-1)
-MIME-Version: 1.0
+	Thu, 25 Sep 2008 17:12:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=oR0FbRBHHSeLdIYMtSvRSk6BvJTVuNQddYSmOWTHkEpTRsFz/rUC+psYKLuVnLwSnL
+         y4bnbKcjvhXhPpQjz6j8h3+jaFBL4tV3GFM+kxLSQ6iAWNVWlM+4YpD/dQ1EDujoGAux
+         KCWZtym+Ey6PHzdtnR6OE0D1kNYcuYQy4leK4=
+Message-ID: <3baf3d760809251412l28423a22lba5b1b57c411c87e@mail.gmail.com>
+Date: Thu, 25 Sep 2008 14:12:50 -0700
+From: "Singaravelan Nallasellan" <singaravelann@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: 2.6.26.x hangs on amd64/smp
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-3.1.8 (rayleigh.systella.fr [192.168.254.1]); Thu, 25 Sep 2008 23:02:03 +0200 (CEST)
+Subject: Acceptable Interrupt Latency in Linux kernel
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hello,
+What is the tolerable interrupt latency for the Linux interrupt handler?
 
-System : debian/testing, tested kernels 2.6.26, 2.6.26.3, 2.6.26.5.
-Hardware : core2duo, 4 GB, raid1 software, CFQ scheduler.
+I need to write a driver which will require to invoke a function from
+other driver
+to read the hardware register. That function will send a message to
+the firmware in the some other hardware.
 
-	I have written a program that work on cartographic data. This program 
-is started as a daemon and does some fork() (and pthread_create()). I 
-have seen that it requires 6 GB to work, each process takes 1,5 GB. The 
-same program works fine under FreeBSD or Solaris (on of course the same 
-hardware).
+The firmware will go into a bus to read the register and return the
+value. This firmware generates an interrupt of the completion of the
+register read.
 
-	When it starts, I can see disk activity (swap), and after 2 or 3 
-minutes, kernel crashes without any trace (no more disk activity, sysrq 
-does nothing...). I have reproduced this bug when I was logged on 
-console. There was no messsage.
+So the whole process of register read will take time to know the
+interrupt source.
 
-	If I introduce some nanosleep() syscalls in my code, crash is more 
-difficult to reproduce.
+Currently I dont have the exact duration to read a single register. I
+am also planning to push the register read to work queue and return
+with IRQ handled from the ISR without knowing the hardware
+status.There is a potential to mis handle the interrupt.
 
-cauchy:[~] > cat /proc/mdstat
-Personalities : [raid1]
-md1 : active raid1 sdb2[1] sda2[0]
-       5855616 blocks [2/2] [UU]
+If I know the acceptable interrupt latency, It will simplify the ISR handling.
 
-md2 : active raid1 sdb3[1] sda3[0]
-       48829440 blocks [2/2] [UU]
-
-md3 : active raid1 sdb4[1] sda4[0]
-       101474496 blocks [2/2] [UU]
-
-md0 : active raid1 sdb1[1] sda1[0]
-       128384 blocks [2/2] [UU]
-
-unused devices: <none>
-
-	swap in on /dev/md1.
-
-cauchy:[~] > df -h
-Sys. de fich.         Tail. Occ. Disp. %Occ. Monté sur
-/dev/md2               46G   28G   16G  64% /
-tmpfs                 2,0G     0  2,0G   0% /lib/init/rw
-udev                   10M  124K  9,9M   2% /dev
-tmpfs                 2,0G     0  2,0G   0% /dev/shm
-/dev/md0              122M   60M   56M  52% /boot
-/dev/md3               96G   56G   35G  62% /home
-cauchy:[~] >
-
-dmesg :
-Linux version 2.6.26.5 (root@cauchy) (gcc version 4.3.1 (Debian 4.3.1-9) 
-) #16 SMP PREEMPT Tue Sep 23 15:54:59 CEST 2008
-...
-ACPI: BIOS bug: multiple APIC/MADT found, using 0
-ACPI: If "acpi_apic_instance=2" works better, notify 
-linux-acpi@vger.kernel.org
-ACPI: DMI detected: Toshiba
-...
-
-.config: see http://www.systella.fr/~bertrand/config.2.6.26.5
-
-	Regards,
-
-	JKB
+Thanks
