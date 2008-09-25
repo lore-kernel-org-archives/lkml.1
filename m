@@ -1,130 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYIYAac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbYIYAc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753521AbYIYAac (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 20:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYIYAaZ
+	id S1753635AbYIYAc3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 20:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYIYAcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 20:30:25 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60681 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751927AbYIYAaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 20:30:24 -0400
-Date: Thu, 25 Sep 2008 02:30:21 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Keith Packard <keithp@keithp.com>
-Cc: eric@anholt.net, hugh@veritas.com, hch@infradead.org, airlied@linux.ie,
-       jbarnes@virtuousgeek.org, thomas@tungstengraphics.com,
-       dri-devel@lists.sourceforge.net,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] mm: pageable memory allocator (for DRM-GEM?)
-Message-ID: <20080925003021.GC23494@wotan.suse.de>
-References: <20080923091017.GB29718@wotan.suse.de> <1222185029.4873.157.camel@koto.keithp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222185029.4873.157.camel@koto.keithp.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 24 Sep 2008 20:32:20 -0400
+Received: from styx.suse.cz ([82.119.242.94]:44818 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752206AbYIYAcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 20:32:20 -0400
+Date: Thu, 25 Sep 2008 02:33:21 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: David Miller <davem@davemloft.net>, jeffrey.t.kirsher@intel.com,
+       airlied@gmail.com, david.vrabel@csr.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       chrisl@vmware.com, Ingo Molnar <mingo@elte.hu>,
+       jesse.brandeburg@intel.com, Karsten Keil <kkeil@suse.de>
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+In-Reply-To: <200809241726.58628.jbarnes@virtuousgeek.org>
+Message-ID: <alpine.LNX.1.10.0809250230000.4671@pegasus.suse.cz>
+References: <20080923.150722.141587696.davem@davemloft.net> <20080923.211215.193696086.davem@davemloft.net> <alpine.LNX.1.10.0809250110070.4671@pegasus.suse.cz> <200809241726.58628.jbarnes@virtuousgeek.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 08:50:29AM -0700, Keith Packard wrote:
-> On Tue, 2008-09-23 at 11:10 +0200, Nick Piggin wrote:
-> > I particularly don't like the idea of exposing these vfs objects to random
-> > drivers because they're likely to get things wrong or become out of synch
-> > or unreviewed if things change. I suggested a simple pageable object allocator
-> > that could live in mm and hide the exact details of how shmem / pagecache
-> > works. So I've coded that up quickly.
-> 
-> Thanks for trying another direction; let's see if that will work for us.
+On Wed, 24 Sep 2008, Jesse Barnes wrote:
 
-Great!
+> That said, adding a check to the x86 code would be a good thing to do; 
+> I'll hack up a patch tomorrow unless someone beats me to it.
 
- 
-> > Upon actually looking at how "GEM" makes use of its shmem_file_setup filp, I
-> > see something strange... it seems that userspace actually gets some kind of
-> > descriptor, a descriptor to an object backed by this shmem file (let's call it
-> > a "file descriptor"). Anyway, it turns out that userspace sometimes needs to
-> > pread, pwrite, and mmap these objects, but unfortunately it has no direct way
-> > to do that, due to not having open(2)ed the files directly. So what GEM does
-> > is to add some ioctls which take the "file descriptor" things, and derives
-> > the shmem file from them, and then calls into the vfs to perform the operation.
-> 
-> Sure, we've looked at using regular file descriptors for these objects
-> and it almost works, except for a few things:
-> 
->  1) We create a lot of these objects. The X server itself may have tens
->     of thousands of objects in use at any one time (my current session
->     with gitk and firefox running is using 1565 objects). Right now, the
->     maximum number of fds supported by 'normal' kernel configurations
->     is somewhat smaller than this. Even when the kernel is fixed to
->     support lifting this limit, we'll be at the mercy of existing user
->     space configurations for normal applications.
-> 
->  2) More annoyingly, applications which use these objects also use
->     select(2) and depend on being able to represent the 'real' file
->     descriptors in a compact space near zero. Sticking a few thousand
->     of these new objects into the system would require some ability to
->     relocate the descriptors up higher in fd space. This could also
->     be done in user space using dup2, but that would require managing
->     file descriptor allocation in user space.
-> 
->  3) The pread/pwrite/mmap functions that we use need additional flags
->     to indicate some level of application 'intent'. In particular, we
->     need to know whether the data is being delivered only to the GPU
->     or whether the CPU will need to look at it in the future. This
->     drives the kind of memory access used within the kernel and has
->     a significant performance impact.
+The problem here is that what we desperately need first is a method to 
+restore the original EEPROM contents after it gets corrupted (David Airlie 
+has, sadly, apparently bricked his notebook while trying to do so). 
+Without this, we can put a lot of debugging/protecting patches into the 
+kernel, but we won't be able to succesfully verify anything, because 
+testing wouldn't be possible.
 
-Pity. Anyway, I accept that, let's move on.
+Added Jesse and Karsten to CC, as they are working on such a tool right 
+now, as far as I know.
 
-[...]
-
-> Hiding the precise semantics of the object storage behind our
-> ioctl-based API means that we can completely replace in the future
-> without affecting user space.
-
-I guess so. A big problem of ioctls is just that they had been easier to
-add so they got less thought and review ;) If your ioctls are stable,
-correct, cross platform etc. then I guess that's the best you can do.
-
- 
-> > BTW. without knowing much of either the GEM or the SPU subsystems, the
-> > GEM problem seems similar to SPU. Did anyone look at that code? Was it ever
-> > considered to make the object allocator be a filesystem? That way you could
-> > control the backing store to the objects yourself, those that want pageable
-> > memory could use the following allocator, the ioctls could go away,
-> > you could create your own objects if needed before userspace is up...
-> 
-> Yes, we've considered doing a separate file system, but as we'd start by
-> copying shmem directly, we're unsure how that would be received. It
-> seems like sharing the shmem code in some sensible way is a better plan.
-
-Well, no not a seperate filesystem to do the pageable backing store, but
-a filesystem to do your object management. If there was a need for pageable
-RAM backing store, then you would still go back to the pageable allocator. 
-
- 
-> We just need anonymous pages that we can read/write/map to kernel and
-> user space. Right now, shmem provides that functionality and is used by
-> two kernel subsystems (sysv IPC and tmpfs). It seems like any new API
-> should support all three uses rather than being specific to GEM.
-> 
-> > The API allows creation and deletion of memory objects, pinning and
-> > unpinning of address ranges within an object, mapping ranges of an object
-> > in KVA, dirtying ranges of an object, and operating on pages within the
-> > object.
-> 
-> The only question I have is whether we can map these objects to user
-> space; the other operations we need are fairly easily managed by just
-> looking at objects one page at a time. Of course, getting to the 'fast'
-> memcpy variants that the current vfs_write path finds may be a trick,
-> but we should be able to figure that out.
-
-You can map them to userspace if you just take a page at a time and insert
-them into the page tables at fault time (or mmap time if you prefer).
-Currently, this will mean that mmapped pages would not be swappable; is
-that a problem?
-
-
+-- 
+Jiri Kosina
+SUSE Labs
