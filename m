@@ -1,112 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbYIYHGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbYIYHH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753181AbYIYHGT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 03:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYIYHGH
+	id S1752782AbYIYHH5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 03:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYIYHHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 03:06:07 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:34108 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751648AbYIYHGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 03:06:06 -0400
-Date: Thu, 25 Sep 2008 09:05:56 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] atmel-mci: support multiple mmc slots
-Message-ID: <20080925090556.44940c89@mjolnir.drzeus.cx>
-In-Reply-To: <20080924163527.30cfc223@hskinnemo-gx745.norway.atmel.com>
-References: <1222101497-21183-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1222101497-21183-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<1222101497-21183-3-git-send-email-haavard.skinnemoen@atmel.com>
-	<1222101497-21183-4-git-send-email-haavard.skinnemoen@atmel.com>
-	<20080923195342.52b1164d@mjolnir.drzeus.cx>
-	<20080923201650.4525b883@hskinnemo-gx745.norway.atmel.com>
-	<20080923211222.551389ab@mjolnir.drzeus.cx>
-	<20080924163527.30cfc223@hskinnemo-gx745.norway.atmel.com>
-X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-8018-1222326363-0001-2"
+	Thu, 25 Sep 2008 03:07:46 -0400
+Received: from brak.cowlabs.com ([208.96.51.45]:43473 "EHLO brak.cowlabs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753634AbYIYHHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 03:07:45 -0400
+Date: Thu, 25 Sep 2008 00:07:41 -0700
+From: carbonated beverage <ramune@net-ronin.org>
+To: linux-kernel@vger.kernel.org
+Subject: CONFIG_ACPI_VIDEO on Thinkpad blanks display.
+Message-ID: <20080925070741.GA22376@net-ronin.org>
+References: <20080925060244.GA18945@net-ronin.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080925060244.GA18945@net-ronin.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Wed, Sep 24, 2008 at 11:02:44PM -0700, carbonated beverage wrote:
+> I just upgraded from 2.6.25.17 to 2.6.26.5 on my Thinkpad Z61t, and found
+> the brightness keys will cause the X server to die.  When using the
+> brightness up/down keys, the screen will go blank -- Control+Alt+F# will
+> still switch to a different virtual console, but switching back will not
+> restore the video state.
 
---=_freyr.drzeus.cx-8018-1222326363-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+(Subject changed to match the observed cause)
 
-On Wed, 24 Sep 2008 16:35:27 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+Figured out what the change was -- in 2.6.25.x, the brightness keys worked
+without setting CONFIG_ACPI_VIDEO.  However, in 2.6.26.x, the brightness keys
+do not work on the console without that enabled.
 
->=20
-> On AP7000, the clock line is shared. Do I have to run the clock at the
-> minimum of the two slots' maximum rates, or does it only matter when
-> the card is being accessed?
->=20
+If 2.6.25.x has that config option enabled, I still get the same blank screen
+symptoms -- with the following in the X logs:
 
-I'd say always. I'd never dare overclock something that's powered, even
-if we're not currently communicating with it.
+(II) PM Event received: Capability Changed
+I830PMEvent: Capability change
+(II) I810(0): Next ACPI _DGS [0] 0x80000100
+(II) I810(0): ACPI Toggle devices 0x1
+(II) I810(0): ACPI Toggle to 0x1
+(II) I810(0): Hotkey switch to 0x800.
+(II) I810(0): Attachable device 0x80000100.
+(II) I810(0): Attachable device 0x80000240.
+(II) I810(0): Attachable device 0x80000410.
+(II) I810(0): Requested display devices 0x800.
+(II) I810(0): Toggle (1) 0x1
+(II) I810(0): Detected duplicate devices. Toggling (0x1)
+(II) I810(0): Detected display change operation (0x0, 0x800, 0x1).
+(II) I810(0): Clearing Clone mode
+(II) I810(0): Primary pipe is now A.
+(--) I810(0): A non-CRT device is attached to pipe A.
+        No refresh rate overrides will be attempted.
+(II) I810(0): Display plane A is enabled and connected to Pipe A.
+(II) I810(0): Display plane B is disabled and connected to Pipe B.
+(II) I810(0): Enabling plane A.
+(II) I810(0): Display plane A is now enabled and connected to Pipe A.
+(II) I810(0): Display plane B is now disabled and connected to Pipe B.
+(II) I810(0): PIPEACONF is 0x80000000
+(II) I810(0): PIPEBCONF is 0x00000000
+(II) I810(0): Mode bandwidth is 58 Mpixel/s
+(II) I810(0): maxBandwidth is 1152 Mbyte/s, pipe bandwidths are 48 Mbyte/s, 0 Mb
+yte/s
+(WW) I810(0): Changing XVideo pipe (1 to 0).
 
-Remember to deal with the case of a powered but unclocked card. This
-will primarily happen during card init, but it could should up later as
-well if we start implementing aggressive power management.
+Without CONFIG_ACPI_VIDEO, the above message don't appear.  From this point,
+any pointers on figuring out why the ACPI features makes the screen go blank?
 
-> > > > (This will also get a bit more painful when/if the core starts
-> > > > disabling the clock when a card is idle)
-> > >=20
-> > > The atmel-mci driver already stops the clock between requests.
-> >=20
-> > Then I expect a patch to remove that. Fiddling with the clock is
-> > dangerous and I've seen everything from hung cards to silently broken
-> > writes when you disable the clock too early after a request.
->=20
-> Ok. I'll see if I can fix that -- I take it you want a patch for
-> 2.6.27, then?
->=20
-
-.28 should be fine. It's a pretty uncommon bug.
-
-> > > >=20
-> > > > Fall back to polling?
-> > >=20
-> > > Probably, yes. Can I fall back to polling after the host has been
-> > > registered?
-> > >=20
-> >=20
-> > Hmm... no. Not sure how to handle this...
->=20
-> I'll see if I can figure out a way to do it. I'm not giving it high
-> priority since it's a fairly obscure error case which shouldn't happen
-> with properly implemented board code.
->=20
-
-Agreed.
-
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-8018-1222326363-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkjbOFkACgkQ7b8eESbyJLjaRQCg0p9cwc8uTOeoUMYk7zpHak+S
-+3UAniq/acLWCT6JzknkKN74wnbnz4fT
-=q2Zy
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-8018-1222326363-0001-2--
+-- DN
+Daniel
