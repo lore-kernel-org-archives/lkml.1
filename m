@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYIYRHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYIYRIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756547AbYIYRHa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 13:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbYIYRHU
+	id S1757215AbYIYRIT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 13:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbYIYRIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 13:07:20 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:24916 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752499AbYIYRHS (ORCPT
+	Thu, 25 Sep 2008 13:08:01 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:36273 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754000AbYIYRIA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 13:07:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=VkfUvCBITuW1NKh5spLYQ5ItvA76gtg6m5BG26xbx0tPIw2UrAzg3/jNKSnpDjU1N3
-         8xJQhPIc4CE+PFi8JBkiVxfZyOSOmq00aHbf0X6brX9H9SODXskb4CQvqRg16O04bUk5
-         PpIHIvWtpRp2OfWxBusdS/HWcmoCOLvvJEuyw=
-Message-ID: <86802c440809251007n71738552n88b8ebfc7ecd017f@mail.gmail.com>
-Date: Thu, 25 Sep 2008 10:07:17 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH 7/7] x86: print out irq nr for msi/ht -v2
-Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Len Brown" <lenb@kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <200809250900.24736.bjorn.helgaas@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Sep 2008 13:08:00 -0400
+Subject: Re: pull request: wireless-2.6 2008-09-24
+From: Marcel Holtmann <holtmann@linux.intel.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Zhu Yi <yi.zhu@intel.com>, "davem@davemloft.net" <davem@davemloft.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080925114133.GA5044@tuxdriver.com>
+References: <20080924231720.GD3639@tuxdriver.com>
+	 <1222321622.2510.455.camel@debian.sh.intel.com>
+	 <20080925114133.GA5044@tuxdriver.com>
+Content-Type: text/plain
+Date: Thu, 25 Sep 2008 21:09:01 +0200
+Message-Id: <1222369742.6442.0.camel@californication>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1222323223-23529-1-git-send-email-yhlu.kernel@gmail.com>
-	 <200809250900.24736.bjorn.helgaas@hp.com>
-X-Google-Sender-Auth: b10142263ac56c70
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 8:00 AM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> On Thursday 25 September 2008 12:13:43 am Yinghai Lu wrote:
->> v2: fix hpet compiling
->>
->> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->> ---
->>  arch/x86/kernel/hpet.c    |    3 +++
->>  arch/x86/kernel/io_apic.c |    7 +++++++
->>  2 files changed, 10 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
->> index 422c577..686505a 100644
->> --- a/arch/x86/kernel/hpet.c
->> +++ b/arch/x86/kernel/hpet.c
->> @@ -467,6 +467,9 @@ static int hpet_setup_irq(struct hpet_dev *dev)
->>       irq_set_affinity(dev->irq, cpumask_of_cpu(dev->cpu));
->>       enable_irq(dev->irq);
->>
->> +     printk(KERN_DEBUG "hpet: %s is using irq %#x aka %d for MSI\n",
->> +                      dev->name, dev->irq, dev->irq);
->> +
->
-> Why do we want to print the irq as hex?  Do we do that anywhere else?
-> I think we should pick one format and stick with it, and I think
-> decimal is the logical choice because it's the most common.
+Hi John,
 
-when sparseirq is enabled, irq for msi will be bus_nr/dev/func + 12bits.
-so show it as hex is more straight. but we can not use hex in
-/proc/interrupts --ABI want decimal.
+> > > One more for 2.6.27 -- a fix for a possible interrupt storm.  There is
+> > > even a link in the commit log to a youtube video of the storm in
+> > > progress. :-)
+> > > 
+> > > Let me know if there are problems!
+> > 
+> > Can you also add this one? It doesn't panic the kernel when a frame from
+> > firmware is invalid.
+> > 
+> > http://marc.info/?l=linux-wireless&m=122219037706528&w=2
+> 
+> Is there an open bug report for that anywhere?  Is this something
+> that real users (no offense to Johannes) are likely to hit?
 
-just try to print out...in log, so user could get some idea that who
-is using it...
+I was hitting this one a frequent basis on a 64-bit Linux running on an
+off-the-shelf X61.
 
-YH
+Regards
+
+Marcel
+
+
