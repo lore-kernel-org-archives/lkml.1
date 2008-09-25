@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbYIYM7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbYIYNAC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbYIYM7A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 08:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbYIYM6w
+	id S1755028AbYIYNAC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 09:00:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbYIYM7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 08:58:52 -0400
-Received: from iona.labri.fr ([147.210.8.143]:53803 "EHLO iona.labri.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752965AbYIYM6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 08:58:51 -0400
-Message-ID: <48DB8B54.4050502@inria.fr>
-Date: Thu, 25 Sep 2008 15:00:04 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 25 Sep 2008 08:59:53 -0400
+Received: from [198.145.64.141] ([198.145.64.141]:47686 "EHLO coco.kroah.org"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752286AbYIYM7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 08:59:53 -0400
+Date: Thu, 25 Sep 2008 05:54:23 -0700
+From: Greg KH <greg@kroah.com>
+To: =?utf-8?B?UGF3ZcWC?= Sikora <pluto@agmk.net>
+Cc: linux-kernel@vger.kernel.org, Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [kernel-abi] symbol versioning vs. out-of-tree modules.
+Message-ID: <20080925125423.GB6750@kroah.com>
+References: <Y165ES5i.1222268879.9618400.pluto@agmk.net> <20080925024840.GA14575@kroah.com> <200809250829.22294.pluto@agmk.net>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
-       Nathalie Furmento <nathalie.furmento@labri.fr>
-Subject: [RESEND][PATCH] mm: make do_move_pages() complexity linear
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200809250829.22294.pluto@agmk.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Page migration is currently very slow because its overhead is quadratic
-with the number of pages. This is caused by each single page migration
-doing a linear lookup in the page array in new_page_node().
+On Thu, Sep 25, 2008 at 08:29:22AM +0200, Paweł Sikora wrote:
+> On Thursday 25 of September 2008 04:48:40 Greg KH wrote:
+> > On Wed, Sep 24, 2008 at 05:07:59PM +0200, Paweł Sikora wrote:
+> > > Hi All,
+> > >
+> > > with out-of-tree kernel modules we (users and linux distributions)
+> > > have a problem - with every frequent kernel release we need
+> > > to rebuild them all due to vermagic and possible abi changes.
+> > > this leads to lot of useless work (bumping rpm specs releases,
+> > > preparing rpm packages and so on).
+> >
+> > "we" are working hard to remove any and all barriers for modules to be
+> > out-of-tree.  See the recent drivers/staging/ announcement, I can now
+> > take pretty much any code that at least builds and works for someone,
+> > and get it into the kernel tree where it can be properly cleaned up and
+> > cared for over time before it moves to the "correct" location within the
+> > kernel.
+> >
+> > What kernel modules do you currently use/rely on that are not in the
+> > main kernel tree?  Do you have links to them?  I'd be glad to add them.
+> 
+> here's a quick list:
+> 
+> - http://www.lirc.org
+> - http://sourceforge.net/projects/bluetooth-alsa
+> - http://rt2x00.serialmonkey.com
+> - http://www.unav-micro.com/Drivers.aspx -> AR81Family-linux-v1.0.1.0.tar.gz
+>   (e.g. asus-p5q-pro m/b has such ethernet port, pciid=1969:1026)
+> - http://aufs.sourceforge.net
+> - http://linux-uvc.berlios.de
+> - http://www.misdn.org
+> - toshiba bluetooth module [http://0bits.com/toshbt/toshbt-1.0.tar.gz]
+> - zaptel telephony driver [http://www.asterisk.org]
+>   with firmware [http://downloads.digium.com/pub/telephony/firmware/releases]
 
-Since pages are stored in the array order in the pagelist and do_move_pages
-process this list in order, new_page_node() can cache the last "pm" pointer
-to the page array. This way, the next iteration will find the next page in
-usually 1 while loop (or 0 if called multiple times on the same page, or
-more if some pages are missing in the list).
+I think Sitsofe has answered all of these links as to if they are
+already merged, working on being merged, or refuse to be merged (like
+zaptel.)
 
-Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
-Signed-off-by: Nathalie Furmento <Nathalie.Furmento@labri.fr>
----
- mm/migrate.c |   25 +++++++++++++++++++++----
- 1 files changed, 21 insertions(+), 4 deletions(-)
+Are there any other out-of-tree modules that I need to be aware of to
+help integrate?
 
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 2a80136..349b205 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -837,14 +837,29 @@ struct page_to_node {
- 	int status;
- };
- 
-+/*
-+ * Allocate a page on the node given as a page_to_node in private.
-+ *
-+ * Cache the _last used_ pm in private so that the next call may find the
-+ * target pm in very few while loops (usually 1) instead of scanning the
-+ * whole pm array.
-+ * We cannot cache the _next_ pm in private (to get 0 while loop in the
-+ * regular case) because it would break the case where new_page_node()
-+ * is called multiple times on the same page (when migrate_pages() tries
-+ * unmap_and_move() multiple times).
-+ */
- static struct page *new_page_node(struct page *p, unsigned long private,
- 		int **result)
- {
--	struct page_to_node *pm = (struct page_to_node *)private;
-+	struct page_to_node **pmptr = (struct page_to_node **)private;
-+	struct page_to_node *pm = *pmptr;
- 
- 	while (pm->node != MAX_NUMNODES && pm->page != p)
- 		pm++;
- 
-+	/* save the current pm to reduce the while loop in the next call */
-+	*pmptr = pm;
-+
- 	if (pm->node == MAX_NUMNODES)
- 		return NULL;
- 
-@@ -926,10 +941,12 @@ set_status:
- 		pp->status = err;
- 	}
- 
--	if (!list_empty(&pagelist))
-+	if (!list_empty(&pagelist)) {
-+		/* new_page_node() will modify tmp */
-+		struct page_to_node *tmp = pm;
- 		err = migrate_pages(&pagelist, new_page_node,
--				(unsigned long)pm);
--	else
-+				    (unsigned long)&tmp);
-+	} else
- 		err = -ENOENT;
- 
- 	up_read(&mm->mmap_sem);
--- 
-1.5.6.5
+If not, then there really isn't an issue here, right?  :)
 
+thanks,
 
-
+greg k-h
