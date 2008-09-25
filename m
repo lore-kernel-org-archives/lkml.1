@@ -1,127 +1,694 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYIYU5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbYIYU71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbYIYU5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 16:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754509AbYIYU5K
+	id S1756001AbYIYU71 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 16:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbYIYU7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 16:57:10 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:37437 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754510AbYIYU5I convert rfc822-to-8bit (ORCPT
+	Thu, 25 Sep 2008 16:59:18 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54020 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752077AbYIYU7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 16:57:08 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Date: Thu, 25 Sep 2008 20:56:20 +0000
-Subject: RE: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Topic: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Index: AckfTuhfsK+xDVIkTBmulzud9rs8nAAAjMUw
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77884BFF5D1F76@GVW0547EXC.americas.hpqcorp.net>
-References: <20080821091514.8f56e2d5.randy.dunlap@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
-	<20080821172653.3e3e855c.randy.dunlap@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>
-	<1219420487.3339.22.camel@localhost.localdomain>
-	<48AEEE0A.1010900@oracle.com>
-	<1219424538.3339.51.camel@localhost.localdomain>
-	<0F5B06BAB751E047AB5C87D1F77A77883511810894@GVW0547EXC.americas.hpqcorp.net>
-	<48C013D9.7060309@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A7788413663D229@GVW0547EXC.americas.hpqcorp.net>
-	<20080905092838.GS20055@kernel.dk>	<48DBF583.3050307@oracle.com>
- <20080925134000.9b133f8c.randy.dunlap@oracle.com>
-In-Reply-To: <20080925134000.9b133f8c.randy.dunlap@oracle.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 25 Sep 2008 16:59:16 -0400
+Message-ID: <48DBFBA6.8010809@sgi.com>
+Date: Thu, 25 Sep 2008 13:59:19 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Alan.Brunelle@hp.com, tglx@linutronix.de, rjw@sisk.pl,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kernel-testers@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, arjan@linux.intel.com,
+       Jack Steiner <steiner@sgi.com>
+Subject: Subject: [RFC 1/1] cpumask: Provide new cpumask API
+References: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <86802c440808260136t3a33a9c8if53b6f70ab9df9e2@mail.gmail.com> <alpine.LFD.1.10.0808260939070.3363@nehalem.linux-foundation.org> <200809251150.26760.rusty@rustcorp.com.au> <alpine.LFD.1.10.0809250836270.3265@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809250836270.3265@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> 
+> On Thu, 25 Sep 2008, Rusty Russell wrote:
+>>     This turns out to be awful in practice, mainly due to const.  Consider:
+>>
+>> 	#ifdef CONFIG_CPUMASK_OFFSTACK
+>> 	typedef unsigned long *cpumask_t;
+>> 	#else
+>> 	typedef unsigned long cpumask_t[1];
+>> 	#endif
+>>
+>> 	cpumask_t returns_cpumask(void);
+> 
+> No. That's already broken. You cannot return a cpumask_t, regardless of 
+> interface. We must not do it regardless of how we pass those things 
+> around, since it generates _yet_ another temporary on the stack for the 
+> return slot for any kind of structure.
+> 
+> So all cpumask functions should always return pointers and/or take 
+> pointers to be filled in. That's true *regardless* of how we actually are 
+> to then allocate them.
+> 
+> So forget returning cpumasks. It's irrelevant.
+> 
+> What _is_ relevant is how we allocate them when we need temporary CPU 
+> masks. And _that_ is where my suggestion comes in. For small NR_CPUS, we 
+> really do want to allocate them on the stack, because calling kmalloc for 
+> a 4- or 8-byte allocation is just _stupid_.
+> 
+> So all your arguments are invalid, because you're looking at the wrong 
+> thing. The thing that I was talking about is converting current code that 
+> has
+> 
+>    random_function(..)
+>    {
+> 	cpumask_t mask;
+> 
+> 	.. do something with mask ...
+>    }
+> 
+> which has to be converted some way. And I think it needs to be converted 
+> in a way that does *not* force us to call kmalloc() for idiotically small 
+> values.
+> 
+> 			Linus
 
 
-> -----Original Message-----
-> From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
-> Sent: Thursday, September 25, 2008 3:40 PM
-> To: scsi
-> Cc: Jens Axboe; Miller, Mike (OS Dev); James Bottomley; lkml; akpm
-> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
->
-> On Thu, 25 Sep 2008 13:33:07 -0700 Randy Dunlap wrote:
->
-> > Jens Axboe wrote:
-> > > On Thu, Sep 04 2008, Miller, Mike (OS Dev) wrote:
-> > >>>>>> 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
-> > >>>>>> 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
-> > >>>>>> 0x3bba <do_cciss_intr+1657>:    je     0x3f0e
-> <do_cciss_intr+2509>
-> > >>>>>>
-> > >>>>>>
-> > >>>>>> $ addr2line -e cciss.o -f  do_cciss_intr+0x627 SA5_fifo_full
-> > >>>>>>
-> > >>>
-> /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:2
-> > >>> 06
-> > >>>>> OK ...that's confusing.  It seems to be saying that
-> ctrlr_info_t
-> > >>>>> * was NULL.  However, I can't see a way of getting into the
-> > >>> fifo_full
-> > >>>>> callback from do_cciss_intr ..
-> > >>>>> especially not with an NULL host.
-> > >>>>>
-> > >>>>> James
-> > >>>> That is weird. Even if we could get there fifo_full doesn't
-> > >>> do anything but wait for a bit.
-> > >>>
-> > >>> Hi,
-> > >>>
-> > >>> This just happened again.  This time it's on 2.6.27-rc5-git3.
-> > >>>
-> > >>> ~Randy
-> > >> Thanks Randy. I think. :)
-> > >>
-> > >> I'll try to recreate in my lab.
-> > >
-> > > This looks somewhat strange, mostly like 'c' is NULL and it's
-> > > oopsing in in removeQ (I don't think Randy's analysis is
-> correct in
-> > > assuming it's 'h' and it's in fifo_full). Given that 'c'
-> cannot be
-> > > NULL, it's c->prev or c->next that are NULL.
-> >
-> > Yes, correct IMO.  I checked my daily test logs and I have had this
-> > problem in do_cciss_intr() 3 times, all at the same location, which
-> > appears to be in removeQ(), as Jens says.
->
-> Mike, also notice this:  it's always during driver init, as
-> indicated by the (+) in the dump ('+' means that the module
-> is in the process of being loaded, but module load has not completed):
->
-> calling  cciss_init+0x0/0x2e [cciss]
-> HP CISS Driver (v 3.6.20)
-> ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54 cciss
-> 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high)
-> -> IRQ 54
-> cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 503 using DAC
-> BUG: unable to handle kernel NULL pointer dereference at
-> 0000000000000248
-> IP: [<ffffffffa001bb68>] do_cciss_intr+0x627/0xa6c [cciss]
-> PGD 17e422067 PUD 17e423067 PMD 0
-> Oops: 0002 [1] SMP
-> CPU 2
-> Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
-> Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
-> RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
-> do_cciss_intr+0x627/0xa6c [cciss]
+Subject: [RFC 1/1] cpumask: Provide new cpumask API
 
-Thanks, Randy
->
+Provide new cpumask interface API.  The relevant change is basically
+cpumask becomes an opaque object.  I believe this results in the
+minimum amount of editing while still allowing the inline cpumask
+functions, and the ability to declare static cpumask objects.
+
+
+    /* raw declaration */
+    struct __cpumask_data_s { DECLARE_BITMAP(bits, NR_CPUS); };
+
+    /* cpumask_map_t used for declaring static cpumask maps */
+    typedef struct __cpumask_data_s cpumask_map_t[1];
+
+    /* cpumask_t used for function args and return pointers */
+    typedef struct __cpumask_data_s *cpumask_t;
+
+    /* cpumask_var_t used for local variable */
+    typedef struct __cpumask_data_s	cpumask_var_t[1]; /* SMALL NR_CPUS */
+    typedef struct __cpumask_data_s	*cpumask_var_t;	  /* LARGE NR_CPUS */
+
+    /* replaces cpumask_t dst = (cpumask_t)src */
+    void cpus_copy(cpumask_t dst, const cpumask_t src);
+
+Remove the '*' indirection in all references to cpumask_t objects.  You can
+change the reference to the cpumask object but not the cpumask object itself
+without using the functions that operate on cpumask objects (f.e. the cpu_*
+operators).  Functions can return a cpumask_t (which is a pointer to the
+cpumask object) and only be passed a cpumask_t.
+
+All uses of cpumask_t on the stack are changed to be cpumask_var_t. 
+Allocation of local cpumask objects will follow...
+
+All cpumask operators now operate using nr_cpu_ids instead of NR_CPUS.  All
+variants of the cpumask operators which used nr_cpu_ids instead of NR_CPUS
+are deleted.
+
+All variants of functions which use the (old cpumask_t *) pointer are deleted
+(f.e. set_cpus_allowed_ptr()).
+
+Based on code from Rusty Russell <rusty@rustcorp.com.au> (THANKS!!)
+
+Signed-of-by: Mike Travis <travis@sgi.com>
+
+---
+ include/linux/cpumask.h |  340 ++++++++++++++++++++++++------------------------
+ 1 file changed, 174 insertions(+), 166 deletions(-)
+
+--- struct-cpumasks.orig/include/linux/cpumask.h
++++ struct-cpumasks/include/linux/cpumask.h
+@@ -3,7 +3,8 @@
+ 
+ /*
+  * Cpumasks provide a bitmap suitable for representing the
+- * set of CPU's in a system, one bit position per CPU number.
++ * set of CPU's in a system, one bit position per CPU number up to
++ * nr_cpu_ids (<= NR_CPUS).
+  *
+  * See detailed comments in the file linux/bitmap.h describing the
+  * data type on which these cpumasks are based.
+@@ -18,18 +19,6 @@
+  * For details of cpus_fold(), see bitmap_fold in lib/bitmap.c.
+  *
+  * . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+- * Note: The alternate operations with the suffix "_nr" are used
+- *       to limit the range of the loop to nr_cpu_ids instead of
+- *       NR_CPUS when NR_CPUS > 64 for performance reasons.
+- *       If NR_CPUS is <= 64 then most assembler bitmask
+- *       operators execute faster with a constant range, so
+- *       the operator will continue to use NR_CPUS.
+- *
+- *       Another consideration is that nr_cpu_ids is initialized
+- *       to NR_CPUS and isn't lowered until the possible cpus are
+- *       discovered (including any disabled cpus).  So early uses
+- *       will span the entire range of NR_CPUS.
+- * . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  *
+  * The available cpumask operations are:
+  *
+@@ -37,6 +26,7 @@
+  * void cpu_clear(cpu, mask)		turn off bit 'cpu' in mask
+  * void cpus_setall(mask)		set all bits
+  * void cpus_clear(mask)		clear all bits
++ * void cpus_copy(dst, src)		copies cpumask bits from src to dst
+  * int cpu_isset(cpu, mask)		true iff bit 'cpu' set in mask
+  * int cpu_test_and_set(cpu, mask)	test and set bit 'cpu' in mask
+  *
+@@ -52,17 +42,17 @@
+  * int cpus_empty(mask)			Is mask empty (no bits sets)?
+  * int cpus_full(mask)			Is mask full (all bits sets)?
+  * int cpus_weight(mask)		Hamming weigh - number of set bits
+- * int cpus_weight_nr(mask)		Same using nr_cpu_ids instead of NR_CPUS
+  *
+  * void cpus_shift_right(dst, src, n)	Shift right
+  * void cpus_shift_left(dst, src, n)	Shift left
+  *
+- * int first_cpu(mask)			Number lowest set bit, or NR_CPUS
+- * int next_cpu(cpu, mask)		Next cpu past 'cpu', or NR_CPUS
+- * int next_cpu_nr(cpu, mask)		Next cpu past 'cpu', or nr_cpu_ids
++ * int first_cpu(mask)			Number lowest set bit, or nr_cpu_ids
++ * int next_cpu(cpu, mask)		Next cpu past 'cpu', or nr_cpu_ids
++ *
++ * cpumask_t cpumask_of_cpu(cpu)	Return pointer to cpumask with bit
++ *					'cpu' set
+  *
+- * cpumask_t cpumask_of_cpu(cpu)	Return cpumask with bit 'cpu' set
+- *					(can be used as an lvalue)
++ * cpu_mask_all				cpumask_map_t of all bits set
+  * CPU_MASK_ALL				Initializer - all bits set
+  * CPU_MASK_NONE			Initializer - no bits set
+  * unsigned long *cpus_addr(mask)	Array of unsigned long's in mask
+@@ -76,8 +66,7 @@
+  * void cpus_onto(dst, orig, relmap)	*dst = orig relative to relmap
+  * void cpus_fold(dst, orig, sz)	dst bits = orig bits mod sz
+  *
+- * for_each_cpu_mask(cpu, mask)		for-loop cpu over mask using NR_CPUS
+- * for_each_cpu_mask_nr(cpu, mask)	for-loop cpu over mask using nr_cpu_ids
++ * for_each_cpu_mask(cpu, mask)		for-loop cpu over mask
+  *
+  * int num_online_cpus()		Number of online CPUs
+  * int num_possible_cpus()		Number of all possible CPUs
+@@ -107,129 +96,209 @@
+ #include <linux/threads.h>
+ #include <linux/bitmap.h>
+ 
+-typedef struct { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
+-extern cpumask_t _unused_cpumask_arg_;
++/* raw declaration */
++struct __cpumask_data_s { DECLARE_BITMAP(bits, NR_CPUS); };
++
++/* cpumask_map_t used for declaring static cpumask maps */
++typedef struct __cpumask_data_s cpumask_map_t[1];
++
++/* cpumask_t used for function args and return pointers */
++typedef struct __cpumask_data_s *cpumask_t;
++
++/* cpumask_var_t used for local variable, definition follows */
++
++#if NR_CPUS == 1
++
++/* cpumask_var_t used for local variable */
++typedef struct __cpumask_data_s	cpumask_var_t[1];
++
++#define nr_cpu_ids		1
++#define first_cpu(src)		({ (void)(src); 0; })
++#define next_cpu(n, src)	({ (void)(src); 1; })
++#define any_online_cpu(mask)	0
++#define for_each_cpu_mask(cpu, mask)	\
++	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
++
++#define num_online_cpus()	1
++#define num_possible_cpus()	1
++#define num_present_cpus()	1
++#define cpu_online(cpu)		((cpu) == 0)
++#define cpu_possible(cpu)	((cpu) == 0)
++#define cpu_present(cpu)	((cpu) == 0)
++#define cpu_active(cpu)		((cpu) == 0)
++
++#else /* ... NR_CPUS > 1 */
++
++#ifdef CONFIG_CPUMASKS_ONSTACK
++
++/* Constant is usually more efficient than a variable for small NR_CPUS */
++#define nr_cpu_ids		NR_CPUS
++typedef struct __cpumask_data_s	cpumask_var_t[1];
++static inline int cpumask_size(void)
++{
++	return sizeof(struct __cpumask_data_s);
++}
++
++#else
++
++/* Starts at NR_CPUS until acpi code discovers actual number. */
++extern int nr_cpu_ids;
++typedef struct __cpumask_data_s	*cpumask_var_t;
++static inline int cpumask_size(void)
++{
++	return sizeof BITS_TO_LONGS(nr_cpu_ids) * sizeof(long);
++}
++
++#endif /* NR_CPUS > BITS_PER_LONG */
++
++int __first_cpu(const cpumask_t srcp);
++int __next_cpu(int n, const cpumask_t srcp);
++int __any_online_cpu(const cpumask_t mask);
++
++#define first_cpu(src)		__first_cpu((src))
++#define next_cpu(n, src)	__next_cpu((n), (src))
++#define any_online_cpu(mask) __any_online_cpu((mask))
++
++#define for_each_cpu_mask(cpu, mask)			\
++	for ((cpu) = -1;				\
++		(cpu) = next_cpu((cpu), (mask)),	\
++		(cpu) < nr_cpu_ids; )
++
++#define num_online_cpus()	cpus_weight(cpu_online_map)
++#define num_possible_cpus()	cpus_weight(cpu_possible_map)
++#define num_present_cpus()	cpus_weight(cpu_present_map)
++#define cpu_online(cpu)		cpu_isset((cpu), cpu_online_map)
++#define cpu_possible(cpu)	cpu_isset((cpu), cpu_possible_map)
++#define cpu_present(cpu)	cpu_isset((cpu), cpu_present_map)
++#define cpu_active(cpu)		cpu_isset((cpu), cpu_active_map)
++#endif /* NR_CPUS > 1 */
+ 
+-#define cpu_set(cpu, dst) __cpu_set((cpu), &(dst))
+-static inline void __cpu_set(int cpu, volatile cpumask_t *dstp)
++#define cpu_set(cpu, dst) __cpu_set((cpu), (dst))
++static inline void __cpu_set(int cpu, volatile cpumask_t dstp)
+ {
+ 	set_bit(cpu, dstp->bits);
+ }
+ 
+-#define cpu_clear(cpu, dst) __cpu_clear((cpu), &(dst))
+-static inline void __cpu_clear(int cpu, volatile cpumask_t *dstp)
++#define cpu_clear(cpu, dst) __cpu_clear((cpu), (dst))
++static inline void __cpu_clear(int cpu, volatile cpumask_t dstp)
+ {
+ 	clear_bit(cpu, dstp->bits);
+ }
+ 
+-#define cpus_setall(dst) __cpus_setall(&(dst), NR_CPUS)
+-static inline void __cpus_setall(cpumask_t *dstp, int nbits)
++#define cpus_setall(dst) __cpus_setall((dst), nr_cpu_ids)
++static inline void __cpus_setall(cpumask_t dstp, int nbits)
+ {
+ 	bitmap_fill(dstp->bits, nbits);
+ }
+ 
+-#define cpus_clear(dst) __cpus_clear(&(dst), NR_CPUS)
+-static inline void __cpus_clear(cpumask_t *dstp, int nbits)
++#define cpus_clear(dst) __cpus_clear((dst), nr_cpu_ids)
++static inline void __cpus_clear(cpumask_t dstp, int nbits)
+ {
+ 	bitmap_zero(dstp->bits, nbits);
+ }
+ 
++#define cpus_copy(dst, src) __cpus_copy((dst), (src), nr_cpu_ids)
++static inline void __cpus_copy(cpumask_t dstp, const cpumask_t srcp, int nbits)
++{
++	bitmap_copy(dstp->bits, srcp->bits, nbits);
++}
++
+ /* No static inline type checking - see Subtlety (1) above. */
+-#define cpu_isset(cpu, cpumask) test_bit((cpu), (cpumask).bits)
++#define cpu_isset(cpu, cpumask) test_bit((cpu), (cpumask)->bits)
+ 
+-#define cpu_test_and_set(cpu, cpumask) __cpu_test_and_set((cpu), &(cpumask))
+-static inline int __cpu_test_and_set(int cpu, cpumask_t *addr)
++#define cpu_test_and_set(cpu, cpumask) __cpu_test_and_set((cpu), (cpumask))
++static inline int __cpu_test_and_set(int cpu, cpumask_t addr)
+ {
+ 	return test_and_set_bit(cpu, addr->bits);
+ }
+ 
+-#define cpus_and(dst, src1, src2) __cpus_and(&(dst), &(src1), &(src2), NR_CPUS)
+-static inline void __cpus_and(cpumask_t *dstp, const cpumask_t *src1p,
+-					const cpumask_t *src2p, int nbits)
++#define cpus_and(dst, src1, src2) __cpus_and((dst), (src1), (src2), nr_cpu_ids)
++static inline void __cpus_and(cpumask_t dstp, const cpumask_t src1p,
++					const cpumask_t src2p, int nbits)
+ {
+ 	bitmap_and(dstp->bits, src1p->bits, src2p->bits, nbits);
+ }
+ 
+-#define cpus_or(dst, src1, src2) __cpus_or(&(dst), &(src1), &(src2), NR_CPUS)
+-static inline void __cpus_or(cpumask_t *dstp, const cpumask_t *src1p,
+-					const cpumask_t *src2p, int nbits)
++#define cpus_or(dst, src1, src2) __cpus_or((dst), (src1), (src2), nr_cpu_ids)
++static inline void __cpus_or(cpumask_t dstp, const cpumask_t src1p,
++					const cpumask_t src2p, int nbits)
+ {
+ 	bitmap_or(dstp->bits, src1p->bits, src2p->bits, nbits);
+ }
+ 
+-#define cpus_xor(dst, src1, src2) __cpus_xor(&(dst), &(src1), &(src2), NR_CPUS)
+-static inline void __cpus_xor(cpumask_t *dstp, const cpumask_t *src1p,
+-					const cpumask_t *src2p, int nbits)
++#define cpus_xor(dst, src1, src2) __cpus_xor((dst), (src1), (src2), nr_cpu_ids)
++static inline void __cpus_xor(cpumask_t dstp, const cpumask_t src1p,
++					const cpumask_t src2p, int nbits)
+ {
+ 	bitmap_xor(dstp->bits, src1p->bits, src2p->bits, nbits);
+ }
+ 
+ #define cpus_andnot(dst, src1, src2) \
+-				__cpus_andnot(&(dst), &(src1), &(src2), NR_CPUS)
+-static inline void __cpus_andnot(cpumask_t *dstp, const cpumask_t *src1p,
+-					const cpumask_t *src2p, int nbits)
++				__cpus_andnot((dst), (src1), (src2), nr_cpu_ids)
++static inline void __cpus_andnot(cpumask_t dstp, const cpumask_t src1p,
++					const cpumask_t src2p, int nbits)
+ {
+ 	bitmap_andnot(dstp->bits, src1p->bits, src2p->bits, nbits);
+ }
+ 
+-#define cpus_complement(dst, src) __cpus_complement(&(dst), &(src), NR_CPUS)
+-static inline void __cpus_complement(cpumask_t *dstp,
+-					const cpumask_t *srcp, int nbits)
++#define cpus_complement(dst, src) __cpus_complement((dst), (src), nr_cpu_ids)
++static inline void __cpus_complement(cpumask_t dstp,
++					const cpumask_t srcp, int nbits)
+ {
+ 	bitmap_complement(dstp->bits, srcp->bits, nbits);
+ }
+ 
+-#define cpus_equal(src1, src2) __cpus_equal(&(src1), &(src2), NR_CPUS)
+-static inline int __cpus_equal(const cpumask_t *src1p,
+-					const cpumask_t *src2p, int nbits)
++#define cpus_equal(src1, src2) __cpus_equal((src1), (src2), nr_cpu_ids)
++static inline int __cpus_equal(const cpumask_t src1p,
++					const cpumask_t src2p, int nbits)
+ {
+ 	return bitmap_equal(src1p->bits, src2p->bits, nbits);
+ }
+ 
+-#define cpus_intersects(src1, src2) __cpus_intersects(&(src1), &(src2), NR_CPUS)
+-static inline int __cpus_intersects(const cpumask_t *src1p,
+-					const cpumask_t *src2p, int nbits)
++#define cpus_intersects(src1, src2) __cpus_intersects((src1), (src2), nr_cpu_ids)
++static inline int __cpus_intersects(const cpumask_t src1p,
++					const cpumask_t src2p, int nbits)
+ {
+ 	return bitmap_intersects(src1p->bits, src2p->bits, nbits);
+ }
+ 
+-#define cpus_subset(src1, src2) __cpus_subset(&(src1), &(src2), NR_CPUS)
+-static inline int __cpus_subset(const cpumask_t *src1p,
+-					const cpumask_t *src2p, int nbits)
++#define cpus_subset(src1, src2) __cpus_subset((src1), (src2), nr_cpu_ids)
++static inline int __cpus_subset(const cpumask_t src1p,
++					const cpumask_t src2p, int nbits)
+ {
+ 	return bitmap_subset(src1p->bits, src2p->bits, nbits);
+ }
+ 
+-#define cpus_empty(src) __cpus_empty(&(src), NR_CPUS)
+-static inline int __cpus_empty(const cpumask_t *srcp, int nbits)
++#define cpus_empty(src) __cpus_empty((src), nr_cpu_ids)
++static inline int __cpus_empty(const cpumask_t srcp, int nbits)
+ {
+ 	return bitmap_empty(srcp->bits, nbits);
+ }
+ 
+-#define cpus_full(cpumask) __cpus_full(&(cpumask), NR_CPUS)
+-static inline int __cpus_full(const cpumask_t *srcp, int nbits)
++#define cpus_full(cpumask) __cpus_full((cpumask), nr_cpu_ids)
++static inline int __cpus_full(const cpumask_t srcp, int nbits)
+ {
+ 	return bitmap_full(srcp->bits, nbits);
+ }
+ 
+-#define cpus_weight(cpumask) __cpus_weight(&(cpumask), NR_CPUS)
+-static inline int __cpus_weight(const cpumask_t *srcp, int nbits)
++#define cpus_weight(cpumask) __cpus_weight((cpumask), nr_cpu_ids)
++static inline int __cpus_weight(const cpumask_t srcp, int nbits)
+ {
+ 	return bitmap_weight(srcp->bits, nbits);
+ }
+ 
+ #define cpus_shift_right(dst, src, n) \
+-			__cpus_shift_right(&(dst), &(src), (n), NR_CPUS)
+-static inline void __cpus_shift_right(cpumask_t *dstp,
+-					const cpumask_t *srcp, int n, int nbits)
++			__cpus_shift_right((dst), (src), (n), nr_cpu_ids)
++static inline void __cpus_shift_right(cpumask_t dstp,
++					const cpumask_t srcp, int n, int nbits)
+ {
+ 	bitmap_shift_right(dstp->bits, srcp->bits, n, nbits);
+ }
+ 
+ #define cpus_shift_left(dst, src, n) \
+-			__cpus_shift_left(&(dst), &(src), (n), NR_CPUS)
+-static inline void __cpus_shift_left(cpumask_t *dstp,
+-					const cpumask_t *srcp, int n, int nbits)
++			__cpus_shift_left((dst), (src), (n), nr_cpu_ids)
++static inline void __cpus_shift_left(cpumask_t dstp,
++					const cpumask_t srcp, int n, int nbits)
+ {
+ 	bitmap_shift_left(dstp->bits, srcp->bits, n, nbits);
+ }
+@@ -244,11 +313,11 @@ static inline void __cpus_shift_left(cpu
+ extern const unsigned long
+ 	cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)];
+ 
+-static inline const cpumask_t *get_cpu_mask(unsigned int cpu)
++static inline const cpumask_t get_cpu_mask(unsigned int cpu)
+ {
+ 	const unsigned long *p = cpu_bit_bitmap[1 + cpu % BITS_PER_LONG];
+ 	p -= cpu / BITS_PER_LONG;
+-	return (const cpumask_t *)p;
++	return (const cpumask_t)p;
+ }
+ 
+ /*
+@@ -256,7 +325,7 @@ static inline const cpumask_t *get_cpu_m
+  * gcc optimizes it out (it's a constant) and there's no huge stack
+  * variable created:
+  */
+-#define cpumask_of_cpu(cpu) (*get_cpu_mask(cpu))
++#define cpumask_of_cpu(cpu) (get_cpu_mask(cpu))
+ 
+ 
+ #define CPU_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(NR_CPUS)
+@@ -264,143 +333,100 @@ static inline const cpumask_t *get_cpu_m
+ #if NR_CPUS <= BITS_PER_LONG
+ 
+ #define CPU_MASK_ALL							\
+-(cpumask_t) { {								\
++(cpumask_map_t) { {							\
+ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD			\
+ } }
+ 
+-#define CPU_MASK_ALL_PTR	(&CPU_MASK_ALL)
++#define CPU_MASK_ALL_PTR	((cpumask_t)CPU_MASK_ALL)
+ 
+ #else
+ 
+ #define CPU_MASK_ALL							\
+-(cpumask_t) { {								\
++(cpumask_map_t) { {							\
+ 	[0 ... BITS_TO_LONGS(NR_CPUS)-2] = ~0UL,			\
+ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD			\
+ } }
+ 
+ /* cpu_mask_all is in init/main.c */
+-extern cpumask_t cpu_mask_all;
+-#define CPU_MASK_ALL_PTR	(&cpu_mask_all)
++extern cpumask_map_t cpu_mask_all;
++#define CPU_MASK_ALL_PTR	(cpu_mask_all)
+ 
+ #endif
+ 
+ #define CPU_MASK_NONE							\
+-(cpumask_t) { {								\
++(cpumask_map_t) { {							\
+ 	[0 ... BITS_TO_LONGS(NR_CPUS)-1] =  0UL				\
+ } }
+ 
+ #define CPU_MASK_CPU0							\
+-(cpumask_t) { {								\
++(cpumask_map_t) { {							\
+ 	[0] =  1UL							\
+ } }
+ 
+ #define cpus_addr(src) ((src).bits)
+ 
+ #define cpumask_scnprintf(buf, len, src) \
+-			__cpumask_scnprintf((buf), (len), &(src), NR_CPUS)
++			__cpumask_scnprintf((buf), (len), (src), nr_cpu_ids)
+ static inline int __cpumask_scnprintf(char *buf, int len,
+-					const cpumask_t *srcp, int nbits)
++					const cpumask_t srcp, int nbits)
+ {
+ 	return bitmap_scnprintf(buf, len, srcp->bits, nbits);
+ }
+ 
+ #define cpumask_parse_user(ubuf, ulen, dst) \
+-			__cpumask_parse_user((ubuf), (ulen), &(dst), NR_CPUS)
++			__cpumask_parse_user((ubuf), (ulen), (dst), nr_cpu_ids)
+ static inline int __cpumask_parse_user(const char __user *buf, int len,
+-					cpumask_t *dstp, int nbits)
++					cpumask_t dstp, int nbits)
+ {
+ 	return bitmap_parse_user(buf, len, dstp->bits, nbits);
+ }
+ 
+ #define cpulist_scnprintf(buf, len, src) \
+-			__cpulist_scnprintf((buf), (len), &(src), NR_CPUS)
++			__cpulist_scnprintf((buf), (len), (src), nr_cpu_ids)
+ static inline int __cpulist_scnprintf(char *buf, int len,
+-					const cpumask_t *srcp, int nbits)
++					const cpumask_t srcp, int nbits)
+ {
+ 	return bitmap_scnlistprintf(buf, len, srcp->bits, nbits);
+ }
+ 
+-#define cpulist_parse(buf, dst) __cpulist_parse((buf), &(dst), NR_CPUS)
+-static inline int __cpulist_parse(const char *buf, cpumask_t *dstp, int nbits)
++#define cpulist_parse(buf, dst) __cpulist_parse((buf), (dst), nr_cpu_ids)
++static inline int __cpulist_parse(const char *buf, cpumask_t dstp, int nbits)
+ {
+ 	return bitmap_parselist(buf, dstp->bits, nbits);
+ }
+ 
+ #define cpu_remap(oldbit, old, new) \
+-		__cpu_remap((oldbit), &(old), &(new), NR_CPUS)
++		__cpu_remap((oldbit), (old), (new), nr_cpu_ids)
+ static inline int __cpu_remap(int oldbit,
+-		const cpumask_t *oldp, const cpumask_t *newp, int nbits)
++		const cpumask_t oldp, const cpumask_t newp, int nbits)
+ {
+ 	return bitmap_bitremap(oldbit, oldp->bits, newp->bits, nbits);
+ }
+ 
+ #define cpus_remap(dst, src, old, new) \
+-		__cpus_remap(&(dst), &(src), &(old), &(new), NR_CPUS)
+-static inline void __cpus_remap(cpumask_t *dstp, const cpumask_t *srcp,
+-		const cpumask_t *oldp, const cpumask_t *newp, int nbits)
++		__cpus_remap((dst), (src), (old), (new), nr_cpu_ids)
++static inline void __cpus_remap(cpumask_t dstp, const cpumask_t srcp,
++		const cpumask_t oldp, const cpumask_t newp, int nbits)
+ {
+ 	bitmap_remap(dstp->bits, srcp->bits, oldp->bits, newp->bits, nbits);
+ }
+ 
+ #define cpus_onto(dst, orig, relmap) \
+-		__cpus_onto(&(dst), &(orig), &(relmap), NR_CPUS)
+-static inline void __cpus_onto(cpumask_t *dstp, const cpumask_t *origp,
+-		const cpumask_t *relmapp, int nbits)
++		__cpus_onto((dst), (orig), (relmap), nr_cpu_ids)
++static inline void __cpus_onto(cpumask_t dstp, const cpumask_t origp,
++		const cpumask_t relmapp, int nbits)
+ {
+ 	bitmap_onto(dstp->bits, origp->bits, relmapp->bits, nbits);
+ }
+ 
+ #define cpus_fold(dst, orig, sz) \
+-		__cpus_fold(&(dst), &(orig), sz, NR_CPUS)
+-static inline void __cpus_fold(cpumask_t *dstp, const cpumask_t *origp,
++		__cpus_fold((dst), (orig), sz, nr_cpu_ids)
++static inline void __cpus_fold(cpumask_t dstp, const cpumask_t origp,
+ 		int sz, int nbits)
+ {
+ 	bitmap_fold(dstp->bits, origp->bits, sz, nbits);
+ }
+ 
+-#if NR_CPUS == 1
+-
+-#define nr_cpu_ids		1
+-#define first_cpu(src)		({ (void)(src); 0; })
+-#define next_cpu(n, src)	({ (void)(src); 1; })
+-#define any_online_cpu(mask)	0
+-#define for_each_cpu_mask(cpu, mask)	\
+-	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
+-
+-#else /* NR_CPUS > 1 */
+-
+-extern int nr_cpu_ids;
+-int __first_cpu(const cpumask_t *srcp);
+-int __next_cpu(int n, const cpumask_t *srcp);
+-int __any_online_cpu(const cpumask_t *mask);
+-
+-#define first_cpu(src)		__first_cpu(&(src))
+-#define next_cpu(n, src)	__next_cpu((n), &(src))
+-#define any_online_cpu(mask) __any_online_cpu(&(mask))
+-#define for_each_cpu_mask(cpu, mask)			\
+-	for ((cpu) = -1;				\
+-		(cpu) = next_cpu((cpu), (mask)),	\
+-		(cpu) < NR_CPUS; )
+-#endif
+-
+-#if NR_CPUS <= 64
+-
+-#define next_cpu_nr(n, src)		next_cpu(n, src)
+-#define cpus_weight_nr(cpumask)		cpus_weight(cpumask)
+-#define for_each_cpu_mask_nr(cpu, mask)	for_each_cpu_mask(cpu, mask)
+-
+-#else /* NR_CPUS > 64 */
+-
+-int __next_cpu_nr(int n, const cpumask_t *srcp);
+-#define next_cpu_nr(n, src)	__next_cpu_nr((n), &(src))
+-#define cpus_weight_nr(cpumask)	__cpus_weight(&(cpumask), nr_cpu_ids)
+-#define for_each_cpu_mask_nr(cpu, mask)			\
+-	for ((cpu) = -1;				\
+-		(cpu) = next_cpu_nr((cpu), (mask)),	\
+-		(cpu) < nr_cpu_ids; )
+-
+-#endif /* NR_CPUS > 64 */
+-
+ /*
+  * The following particular system cpumasks and operations manage
+  * possible, present, active and online cpus.  Each of them is a fixed size
+@@ -458,33 +484,15 @@ int __next_cpu_nr(int n, const cpumask_t
+  *        main(){ set1(3); set2(5); }
+  */
+ 
+-extern cpumask_t cpu_possible_map;
+-extern cpumask_t cpu_online_map;
+-extern cpumask_t cpu_present_map;
+-extern cpumask_t cpu_active_map;
+-
+-#if NR_CPUS > 1
+-#define num_online_cpus()	cpus_weight_nr(cpu_online_map)
+-#define num_possible_cpus()	cpus_weight_nr(cpu_possible_map)
+-#define num_present_cpus()	cpus_weight_nr(cpu_present_map)
+-#define cpu_online(cpu)		cpu_isset((cpu), cpu_online_map)
+-#define cpu_possible(cpu)	cpu_isset((cpu), cpu_possible_map)
+-#define cpu_present(cpu)	cpu_isset((cpu), cpu_present_map)
+-#define cpu_active(cpu)		cpu_isset((cpu), cpu_active_map)
+-#else
+-#define num_online_cpus()	1
+-#define num_possible_cpus()	1
+-#define num_present_cpus()	1
+-#define cpu_online(cpu)		((cpu) == 0)
+-#define cpu_possible(cpu)	((cpu) == 0)
+-#define cpu_present(cpu)	((cpu) == 0)
+-#define cpu_active(cpu)		((cpu) == 0)
+-#endif
++extern cpumask_map_t cpu_possible_map;
++extern cpumask_map_t cpu_online_map;
++extern cpumask_map_t cpu_present_map;
++extern cpumask_map_t cpu_active_map;
+ 
+ #define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
+ 
+-#define for_each_possible_cpu(cpu) for_each_cpu_mask_nr((cpu), cpu_possible_map)
+-#define for_each_online_cpu(cpu)   for_each_cpu_mask_nr((cpu), cpu_online_map)
+-#define for_each_present_cpu(cpu)  for_each_cpu_mask_nr((cpu), cpu_present_map)
++#define for_each_possible_cpu(cpu) for_each_cpu_mask((cpu), cpu_possible_map)
++#define for_each_online_cpu(cpu)   for_each_cpu_mask((cpu), cpu_online_map)
++#define for_each_present_cpu(cpu)  for_each_cpu_mask((cpu), cpu_present_map)
+ 
+ #endif /* __LINUX_CPUMASK_H */
