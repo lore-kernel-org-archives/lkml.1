@@ -1,88 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbYIYV3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbYIYVki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbYIYV3g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbYIYV32
+	id S1754985AbYIYVki (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYIYVka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:29:28 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:40952 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752823AbYIYV31 (ORCPT
+	Thu, 25 Sep 2008 17:40:30 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:5246 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752908AbYIYVk3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:29:27 -0400
+	Thu, 25 Sep 2008 17:40:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=JrFzkgYq+UL7DTfrU9DjHKb6f0+j1SjKtfZWZS4xC0BSa5UYHWI8fSAMJRzuBuJkx/
-         uSk0DOQFIa+etxZJcYyGC0aYT0P/4Qi98xgYY3AOWg3J577FV48eHtZJR+ii43OCsgA1
-         y/cWEbmdrpxa7phU70Ziu4/Do5WpnpkfVjOY4=
-Message-ID: <9f8af95f0809251429n289229beo80cf6ef3c5ef600c@mail.gmail.com>
-Date: Thu, 25 Sep 2008 17:29:25 -0400
-From: "james toy" <unk.nown@unix.net>
-To: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: 20080923-mmotm arch/x86/kvm/built-in.o: In function `kvm_dev_ioctl_check_extension':
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Updh2GRVgDasCGsGvhrkSw2L2rbL8IOi2xkcH2iaXd/A3GOBhvDG9Smg1/nPmQzWjN
+         GLxEfeAmALBWelVEWeKUEkkLWQVN5pMcPjW7Oksr1L0T07Dg181yVyAJZ+RdXqiRUi3g
+         /sF/cMWNZqgv2aFPG02OHErXgirhkfxNBo6IY=
+Message-ID: <f7848160809251440jfcd60f9lb962a75ff01798c8@mail.gmail.com>
+Date: Thu, 25 Sep 2008 17:40:28 -0400
+From: "Parag Warudkar" <parag.lkml@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Andreas Gruenbacher" <agruen@suse.de>,
+       "Jeff Mahoney" <jeffm@suse.de>
+In-Reply-To: <20080925205328.GB11225@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Google-Sender-Auth: 34644f7251994b0d
+References: <20080924230054.GA27730@suse.de>
+	 <f7848160809241639hbe716c9q76b0e1b83d853721@mail.gmail.com>
+	 <20080925020608.GA13869@suse.de>
+	 <f7848160809241959s3f3092b2nf05d2245a08bed03@mail.gmail.com>
+	 <20080925042108.GA3931@suse.de>
+	 <f7848160809250402l163bb177oeed30f2daa18fafd@mail.gmail.com>
+	 <20080925205328.GB11225@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed this break with virtualization enabled on the latest mmotm.
+On Thu, Sep 25, 2008 at 4:53 PM, Greg KH <gregkh@suse.de> wrote:
+>
+> Heh, ok, so the basic premise of getting code that is not currently in
+> mergable shape into the tree earlier to get wider usage and testing is
+> something that you agree with?
 
- CC      net/wireless/util.o
- CC [M]  net/sunrpc/auth_gss/gss_krb5_unseal.o
- CC [M]  drivers/usb/storage/freecom.o
- CC [M]  net/sunrpc/auth_gss/gss_krb5_seqnum.o
- CC [M]  drivers/usb/storage/dpcm.o
- CC      net/wireless/reg.o
- CC [M]  net/sunrpc/auth_gss/gss_krb5_wrap.o
- CC [M]  drivers/usb/storage/isd200.o
- CC [M]  net/sunrpc/auth_gss/gss_krb5_crypto.o
- CC      net/wireless/nl80211.o
- CC [M]  drivers/usb/storage/datafab.o
- LD [M]  net/sunrpc/auth_gss/auth_rpcgss.o
- LD [M]  net/sunrpc/auth_gss/rpcsec_gss_krb5.o
- LD [M]  net/sunrpc/sunrpc.o
- CC [M]  drivers/usb/storage/jumpshot.o
- CC      net/xfrm/xfrm_policy.o
- LD      net/wireless/cfg80211.o
- LD      net/wireless/built-in.o
- CC [M]  drivers/usb/storage/alauda.o
- CC      net/compat.o
- CC [M]  drivers/usb/storage/karma.o
- CC [M]  drivers/usb/storage/libusual.o
- CC      net/sysctl_net.o
- CC      net/xfrm/xfrm_state.o
- LD [M]  drivers/usb/storage/usb-storage.o
- LD      drivers/usb/built-in.o
- CC      net/xfrm/xfrm_hash.o
- LD      drivers/built-in.o
- CC      net/xfrm/xfrm_input.o
- CC      net/xfrm/xfrm_output.o
- CC      net/xfrm/xfrm_algo.o
- CC      net/xfrm/xfrm_user.o
- CC      net/xfrm/xfrm_ipcomp.o
- LD      net/xfrm/built-in.o
- LD      net/built-in.o
- LD      vmlinux.o
- MODPOST vmlinux.o
-WARNING: modpost: Found 17 section mismatch(es).
-To see full details build your kernel with:
-'make CONFIG_DEBUG_SECTION_MISMATCH=y'
- GEN     .version
- CHK     include/linux/compile.h
- UPD     include/linux/compile.h
- CC      init/version.o
- LD      init/built-in.o
- LD      vmlinux
-arch/x86/kvm/built-in.o: In function `kvm_dev_ioctl_check_extension':
-(.text+0x6a71): undefined reference to `intel_iommu_found'
-make: *** [vmlinux] Error 1
-[bbs@raider zenmm]$
+I don't think I got my point across - let me try again.
 
-/jT
+My disagreement was with getting crap code in mainline, re-classifying
+it as something other than experimental when it is not, expecting
+users to use it, printing warning when it is used, tainting the kernel
+for even more harassment and then having developers not support it  as
+a bonus - all cumulative. The naming part was also something that I
+did not like but that like I said was just my preference and does not
+matter because I disagree there is no need to TAINT  in first place.
+
+I can imagine that getting crap code in mainline is helpful for some
+class of users and developers - no problem we can have it in on that
+basis - I give up my objection there.
+
+But my objections to the other parts remain -  i.e. we should
+definitely avoid the useless re-classification and TAINT, we should
+change little or no other kernel code in the process of integrating
+this crap, give enough deterrent for people to really think before
+loading the crap code, and do not make it an official statement that
+you will get no support on LKML if you load this driver. Because
+certainly not all developers agree and we by definition of this
+staging effort have an interest in fixing the code.
+
+The below approach I referred few times earlier will allow us to do
+exactly that - it would be good if you can tell me if this is
+workable.
+
+1) Give a staging directory for all such low quality crap
+2) Give a KConfig group "Staging Drivers (Low Quality/High Risk)" and
+if that is selected allow users to individually select the crappy
+drivers they want to actually use - default all entries to N
+3) Name all modules under staging  with a _stg suffix or something unique
+4) By default do NOT load anything with a _stg suffix - deal with this
+in insmod code, not the kernel
+5) Require that -f be specified to load _stg modules - which will
+auto-taint the kernel and developers can decide on their judgment /
+situation whether or not to pursue it
+ 6) OOPS reports with force loaded taint and _stg in module list will
+allow developers to decide whether or not to go after it
+
+The above approach avoids re-classification/TAINTING, touches no
+kernel code and does not load the crap code automatically and still
+allows you to do what you intended.
+
+Hopefully this doesn't sound like another "let us arm wrestle on what
+to name it" - because it is clearly more than that!
+
+Parag
