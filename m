@@ -1,119 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbYIYKmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbYIYKnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753148AbYIYKmp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 06:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYIYKmf
+	id S1753615AbYIYKnb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 06:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbYIYKnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 06:42:35 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:10144 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754422AbYIYKme (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 06:42:34 -0400
-X-BigFish: VPS-29(zz1432R98dR1805M936fOzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0K7QZ2C-04-AY5-01
-Date: Thu, 25 Sep 2008 12:42:12 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 3/3] x86/iommu: use __GFP_ZERO instead of memset for GART
-Message-ID: <20080925104212.GA27928@amd.com>
-References: <1222337635-28285-1-git-send-email-joerg.roedel@amd.com> <1222337635-28285-4-git-send-email-joerg.roedel@amd.com> <20080925102012.GA13631@elte.hu>
+	Thu, 25 Sep 2008 06:43:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55032 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753031AbYIYKnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 06:43:22 -0400
+Date: Thu, 25 Sep 2008 12:38:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Tom Zanussi <zanussi@comcast.net>, Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+Message-ID: <20080925103821.GA15720@elte.hu>
+References: <20080924051056.650388887@goodmis.org> <20080924051400.195780424@goodmis.org> <1222268595.16700.149.camel@lappy.programming.kicks-ass.net> <alpine.DEB.1.10.0809241106210.1860@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080925102012.GA13631@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 25 Sep 2008 10:42:13.0009 (UTC) FILETIME=[5EA25010:01C91EFB]
+In-Reply-To: <alpine.DEB.1.10.0809241106210.1860@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 12:20:12PM +0200, Ingo Molnar wrote:
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> > > Or if we already have the data together:
+> > > 
+> > > ring_buffer_write(buffer, event_id, length, data);
+> > 
+> > Don't like the event_id, just stick to plain binary data, and leave 
+> > interpretation open to whoemever uses it.
 > 
-> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> This is up to debate. I know you don't like this extra event layer, 
+> but seriously, all my uses with ring buffers has had some kind of 
+> event. But then I'm sure you can argue that if you are using a single 
+> type you can can the event.
 > 
-> >  #ifdef CONFIG_IOMMU_LEAK
-> >  	if (leak_trace) {
-> > -		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL,
-> > +		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL|__GFP_ZERO,
-> >  				  get_order(iommu_pages*sizeof(void *)));
-> > -		if (iommu_leak_tab)
-> > -			memset(iommu_leak_tab, 0, iommu_pages * 8);
-> >  		else
-> >  			printk(KERN_DEBUG
-> >  			       "PCI-DMA: Cannot allocate leak trace area\n");
+> I'm open to doing this, but I would like a consensus on this.
 > 
-> hm, that looks broken.
+> Martin, Thomas, Ingo, Linus?
 
-Argh, yes. Please try this one:
+i'd prefer Peter's simplification and not pass event_id along. Since 
+static types are lost anyway (which is the biggest cost and risk of any 
+such abstraction), we have to convert between types early on. Whether 
+event_id is visible in the API is no big difference.
 
-=
->From c402fd7f5fe930d45a02ef863bf3fb61851e6ad0 Mon Sep 17 00:00:00 2001
-From: Joerg Roedel <joerg.roedel@amd.com>
-Date: Thu, 25 Sep 2008 12:39:06 +0200
-Subject: [PATCH] x86/iommu: use __GFP_ZERO instead of memset for GART
+(It might be cheaper to not pass it along even if everyone ends up using 
+it - as it has no semantic meaning anyway.)
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/pci-gart_64.c |   13 +++++--------
- 1 files changed, 5 insertions(+), 8 deletions(-)
+pretty much the only generic tracing information is time and payload 
+size. ( but even a time key is debatable - there are various resolutions 
+needed by different usecases. Some usecases are even fine without any 
+timestamps at all - they just want to know the ordering of events and 
+that's it.)
 
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index aecea06..d077116 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -674,13 +674,13 @@ static __init int init_k8_gatt(struct agp_kern_info *info)
- 	info->aper_size = aper_size >> 20;
- 
- 	gatt_size = (aper_size >> PAGE_SHIFT) * sizeof(u32);
--	gatt = (void *)__get_free_pages(GFP_KERNEL, get_order(gatt_size));
-+	gatt = (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
-+					get_order(gatt_size));
- 	if (!gatt)
- 		panic("Cannot allocate GATT table");
- 	if (set_memory_uc((unsigned long)gatt, gatt_size >> PAGE_SHIFT))
- 		panic("Could not set GART PTEs to uncacheable pages");
- 
--	memset(gatt, 0, gatt_size);
- 	agp_gatt_table = gatt;
- 
- 	enable_gart_translations();
-@@ -788,19 +788,16 @@ void __init gart_iommu_init(void)
- 	iommu_size = check_iommu_size(info.aper_base, aper_size);
- 	iommu_pages = iommu_size >> PAGE_SHIFT;
- 
--	iommu_gart_bitmap = (void *) __get_free_pages(GFP_KERNEL,
-+	iommu_gart_bitmap = (void *) __get_free_pages(GFP_KERNEL | __GFP_ZERO,
- 						      get_order(iommu_pages/8));
- 	if (!iommu_gart_bitmap)
- 		panic("Cannot allocate iommu bitmap\n");
--	memset(iommu_gart_bitmap, 0, iommu_pages/8);
- 
- #ifdef CONFIG_IOMMU_LEAK
- 	if (leak_trace) {
--		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL,
-+		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL|__GFP_ZERO,
- 				  get_order(iommu_pages*sizeof(void *)));
--		if (iommu_leak_tab)
--			memset(iommu_leak_tab, 0, iommu_pages * 8);
--		else
-+		if (!iommu_leak_tab)
- 			printk(KERN_DEBUG
- 			       "PCI-DMA: Cannot allocate leak trace area\n");
- 	}
--- 
-1.5.6.4
+i'd like to see some automatic type protection though, as an 
+off-by-default debug option: encode the record type on storing and 
+double-check it on extraction. So it should be possible to reliably 
+store/restore a typed trace buffer and notice corruption early in 
+testing.
 
+because there's one thing that is far more important tracer feature than 
+sheer performance: robustness.
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+Automated type checking in debug mode would also mean we could go for 
+RLE encoding much more agressively. Most of the risks of a more complex, 
+more compressed and pointer-laden data format come from type mismatches 
+and the loss of compiler protection against human errors/stupidity. 
+(running off the end of the page, misinterpreting a pointer, a record, 
+etc.)
 
+	Ingo
