@@ -1,87 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbYIYN62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbYIYOAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754885AbYIYN62 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 09:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYIYN6V
+	id S1755194AbYIYOAP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 10:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYIYOAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 09:58:21 -0400
-Received: from oslproxyp1.tandberg.com ([194.0.215.2]:41187 "EHLO
-	oslproxyp1.tandberg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751330AbYIYN6U convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 09:58:20 -0400
-Content-class: urn:content-classes:message
+	Thu, 25 Sep 2008 10:00:00 -0400
+Received: from [198.145.64.141] ([198.145.64.141]:35866 "EHLO coco.kroah.org"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752363AbYIYN77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 09:59:59 -0400
+Date: Thu, 25 Sep 2008 06:54:03 -0700
+From: Greg KH <greg@kroah.com>
+To: =?utf-8?B?UGF3ZcWC?= Sikora <pluto@agmk.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [kernel-abi] symbol versioning vs. out-of-tree modules.
+Message-ID: <20080925135403.GA7491@kroah.com>
+References: <20080925125423.GB6750@kroah.com> <4SWEQQNy.1222350499.8369530.pluto@agmk.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Re: D945GCLF  intel atom board & r8169 ethernet broken in linux-2.6.27-rc5??
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Date: Thu, 25 Sep 2008 15:58:17 +0200
-Message-ID: <9F6ACAE02B6DD040A1E259977622CFDB03F5C24B@oslexcp1.eu.tandberg.int>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Re: D945GCLF  intel atom board & r8169 ethernet broken in linux-2.6.27-rc5??
-Thread-Index: AckeOFvaMeK2OhXFQcWGhCCuFr63ngA3YPwg
-From: "John Gumb" <john.gumb@tandberg.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 25 Sep 2008 13:58:18.0274 (UTC) FILETIME=[C3474820:01C91F16]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4SWEQQNy.1222350499.8369530.pluto@agmk.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My fault
+On Thu, Sep 25, 2008 at 03:48:19PM +0200, Paweł Sikora wrote:
+> 25/9/2008, "Greg KH" <greg@kroah.com> napisał/a:
+> 
+> >Are there any other out-of-tree modules that I need to be aware of to
+> >help integrate?
+> 
+> could you look at these:
+> - http://www.tahoe.pl/eng/patch.php
 
-linux-2.6.27-rc7 fixes this. I should have tested this.
+This looks almost sane, I'll suck it in and contact the author.  It does
+look like they are suggesting that a core network change is also needed,
+I'll find out what is going on there.
 
-Thanks to all who responded with fixes.
+> - ftp://distfiles.pld-linux.org/distfiles/by-md5/8/e/8e4764f6c438427b00fb9aa93abb3cd7/toshbt-1.0.tar.gz
 
-John
+This is a bit odder, but might just be needed for one brand of laptop.
+I'll ask to find out, at the least it needs to be changed to not use
+/proc/ anymore, which is easily done.
 
------Original Message-----
-From: John Gumb 
-Sent: 24 September 2008 12:26
-To: linux-kernel@vger.kernel.org
-Cc: 'netdev@vger.kernel.org'
-Subject: D945GCLF intel atom board & r8169 ethernet broken in
-linux-2.6.27-rc5??
+thanks for the pointers, if anyone has any others, please let me know.
 
-Hi
-
-I have an Intel Atom D945GCLF based system. It has a realtek RTL8101E
-PCI network interface.
-
-With linux-2.6.27-rc4 - everything seems fine. I think we've been
-working OK since 2.6.26ish.
-
-With linux-2.6.27-rc5, "ifconfig eth0" just hangs. lspci -vvx reports,
-after loading the driver,
-
-> 01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E
-PCI Express Fast Ethernet controller (rev ff) (prog-if ff)
->       !!! Unknown header type 7f
-00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-
-10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-
-20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-
-30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff  
-
-Before I load the driver lspci -vvx looks OK.
-
-I do not have (much) time to look into this any further but hopefully
-this might help someone.
-
-I know there are problems with this device on the atom board
-particularly around warm start but thus far I seem to have avoided this
-issue.
-
-A cold start in this case does not help.
-
-Lspci.bad comes from -rc5 with the r8169 driver loaded.
-Lspci.good comes from -rc4 with the r8169 driver loaded
-
-Cheers
-
-John
+greg k-h
