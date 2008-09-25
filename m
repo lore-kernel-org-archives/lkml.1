@@ -1,108 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYIYUka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbYIYUpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbYIYUka (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 16:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYIYUkV
+	id S1755307AbYIYUpY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 16:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbYIYUpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 16:40:21 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:53058 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752503AbYIYUkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 16:40:20 -0400
-Date: Thu, 25 Sep 2008 13:40:00 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: scsi <linux-scsi@vger.kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
-Message-Id: <20080925134000.9b133f8c.randy.dunlap@oracle.com>
-In-Reply-To: <48DBF583.3050307@oracle.com>
-References: <20080821091514.8f56e2d5.randy.dunlap@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>
-	<20080821172653.3e3e855c.randy.dunlap@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>
-	<1219420487.3339.22.camel@localhost.localdomain>
-	<48AEEE0A.1010900@oracle.com>
-	<1219424538.3339.51.camel@localhost.localdomain>
-	<0F5B06BAB751E047AB5C87D1F77A77883511810894@GVW0547EXC.americas.hpqcorp.net>
-	<48C013D9.7060309@oracle.com>
-	<0F5B06BAB751E047AB5C87D1F77A7788413663D229@GVW0547EXC.americas.hpqcorp.net>
-	<20080905092838.GS20055@kernel.dk>
-	<48DBF583.3050307@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Sep 2008 16:45:09 -0400
+Received: from mga11.intel.com ([192.55.52.93]:22128 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753736AbYIYUpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 16:45:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,309,1220252400"; 
+   d="scan'208";a="620367734"
+Message-ID: <48DBF84D.6020905@intel.com>
+Date: Thu, 25 Sep 2008 13:45:01 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080626)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Kyle McMartin <kyle@mcmartin.ca>, David Miller <davem@davemloft.net>,
+       airlied@gmail.com, jeffrey.t.kirsher@intel.com, david.vrabel@csr.com,
+       rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, chrisl@vmware.com
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+References: <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz> <20080923.211215.193696086.davem@davemloft.net> <21d7e9970809232245x6a91c6e2l552ff039d07e2017@mail.gmail.com> <20080924.003638.71148740.davem@davemloft.net> <20080924191022.GC2591@phobos.i.cabal.ca> <alpine.LNX.1.10.0809250036090.4671@pegasus.suse.cz>
+In-Reply-To: <alpine.LNX.1.10.0809250036090.4671@pegasus.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-OriginalArrivalTime: 25 Sep 2008 20:45:02.0917 (UTC) FILETIME=[95944750:01C91F4F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008 13:33:07 -0700 Randy Dunlap wrote:
-
-> Jens Axboe wrote:
-> > On Thu, Sep 04 2008, Miller, Mike (OS Dev) wrote:
-> >>>>>> 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
-> >>>>>> 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
-> >>>>>> 0x3bba <do_cciss_intr+1657>:    je     0x3f0e <do_cciss_intr+2509>
-> >>>>>>
-> >>>>>>
-> >>>>>> $ addr2line -e cciss.o -f  do_cciss_intr+0x627 SA5_fifo_full
-> >>>>>>
-> >>> /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:206
-> >>>>> OK ...that's confusing.  It seems to be saying that ctrlr_info_t *
-> >>>>> was NULL.  However, I can't see a way of getting into the
-> >>> fifo_full
-> >>>>> callback from do_cciss_intr ..
-> >>>>> especially not with an NULL host.
-> >>>>>
-> >>>>> James
-> >>>> That is weird. Even if we could get there fifo_full doesn't
-> >>> do anything but wait for a bit.
-> >>>
-> >>> Hi,
-> >>>
-> >>> This just happened again.  This time it's on 2.6.27-rc5-git3.
-> >>>
-> >>> ~Randy
-> >> Thanks Randy. I think. :)
-> >>
-> >> I'll try to recreate in my lab.
-> > 
-> > This looks somewhat strange, mostly like 'c' is NULL and it's oopsing in
-> > in removeQ (I don't think Randy's analysis is correct in assuming it's
-> > 'h' and it's in fifo_full). Given that 'c' cannot be NULL, it's c->prev
-> > or c->next that are NULL.
+Jiri Kosina wrote:
+> On Wed, 24 Sep 2008, Kyle McMartin wrote:
 > 
-> Yes, correct IMO.  I checked my daily test logs and I have had this problem
-> in do_cciss_intr() 3 times, all at the same location, which appears to be
-> in removeQ(), as Jens says.
+>> I've been working on a patch to detect (using a timer and checking at
+>>  up/down) whether or not the flash has been corrupted, and, if it is
+>> rewrite it with the saved good copy (which obviously only helps if
+>> it's the same boot.)
+> 
+> Thanks, looks interesting e1000e hack that might possibly be of some help.
+> 
+> BUT! please have a look at
+> 
+> 	http://lkml.org/lkml/2008/9/24/133
+> 
+> Looks like this device got a lot of 0xff written somewhere in its config 
+> space, right? But it isn't Intel card at all.
 
-Mike, also notice this:  it's always during driver init, as indicated by
-the (+) in the dump ('+' means that the module is in the process of being
-loaded, but module load has not completed):
+I asked that person and he said reverting to an older kernel made it work again,
+also there is a fix out as romieu pointed out as well, so this seems to be a
+different bug for now.
 
-calling  cciss_init+0x0/0x2e [cciss]
-HP CISS Driver (v 3.6.20)
-ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54
-cciss 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high) -> IRQ 54
-cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 503 using DAC
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000248
-IP: [<ffffffffa001bb68>] do_cciss_intr+0x627/0xa6c [cciss]
-PGD 17e422067 PUD 17e423067 PMD 0
-Oops: 0002 [1] SMP
-CPU 2
-Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
-Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
-RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>] do_cciss_intr+0x627/0xa6c [cciss]
-
-
----
-~Randy
+Auke
