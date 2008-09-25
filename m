@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbYIYOde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbYIYOeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbYIYOde (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 10:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYIYOd0
+	id S1753830AbYIYOeG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 10:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYIYOdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 10:33:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:7195 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbYIYOdZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 10:33:25 -0400
-Message-ID: <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com>
-Date: Thu, 25 Sep 2008 07:33:24 -0700
-From: "Martin Bligh" <mbligh@mbligh.org>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-Cc: "Martin Bligh" <mbligh@google.com>, "Steven Rostedt" <rostedt@goodmis.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       "David Wilder" <dwilder@us.ibm.com>, hch@lst.de,
-       "Tom Zanussi" <zanussi@comcast.net>,
-       "Steven Rostedt" <srostedt@redhat.com>
-In-Reply-To: <1222339303.16700.197.camel@lappy.programming.kicks-ass.net>
+	Thu, 25 Sep 2008 10:33:54 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:51056 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753371AbYIYOdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 10:33:53 -0400
+Date: Thu, 25 Sep 2008 07:33:12 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Rajiv Andrade <srajiv@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, serue@linux.vnet.ibm.com,
+       zohar@linux.vnet.ibm.com, safford@watson.ibm.com,
+       debora@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/4] TPM: rcu locking
+Message-ID: <20080925143312.GE6725@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <cover.1222136544.git.srajiv@linux.vnet.ibm.com> <1222190371-23814-3-git-send-email-srajiv@linux.vnet.ibm.com> <20080923181922.GE6637@linux.vnet.ibm.com> <1222201097.24276.12.camel@blackbox> <20080923202701.GF6637@linux.vnet.ibm.com> <20080925133645.GB13414@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080924051056.650388887@goodmis.org>
-	 <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>
-	 <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
-	 <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com>
-	 <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>
-	 <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>
-	 <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>
-	 <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com>
-	 <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
-	 <1222339303.16700.197.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <20080925133645.GB13414@us.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I rather like this idea, as it gives small entries (the common case) the
-> least overhead but does allow for larger ones.
->
-> By also putting the time in there you can do the merge sort iterator,
-> Linus was right that everybody wants this anyway.
->
-> As for delta encoding the time, we could make the tick log the absolute
-> time packet, that's at least 100Hz and it already has to compute the
-> full gtod thing anyway.
->
-> I don't much like Linus' idea of bringing type information back into the
-> primitive header (sorry Linus ;-)). I'd much rather keep that
-> abstraction in the next layer.
+On Thu, Sep 25, 2008 at 08:36:45AM -0500, Serge E. Hallyn wrote:
+> Quoting Paul E. McKenney (paulmck@linux.vnet.ibm.com):
+> > On Tue, Sep 23, 2008 at 05:18:17PM -0300, Rajiv Andrade wrote:
+> > > Paul,
+> > > 
+> > > On Tue, 2008-09-23 at 11:19 -0700, Paul E. McKenney wrote:
+> > > > 
+> > > > But here we are deleting from what appears to be some other list.
+> > > > And I don't see any insertiong into either list.
+> > > > 
+> > > > What am I missing here?
+> > > > 
+> > > >                                                         Thanx, Paul
+> > > 
+> > > Sorry, forgot to change list_add() to list_add_rcu() in the code section
+> > > below:
+> > > 
+> > > > > +     /* Make chip available */
+> > > > > +     spin_lock(&driver_lock);
+> > > > > +     list_add(&chip->list, &tpm_chip_list);
+> > > > > +     spin_unlock(&driver_lock);
+> > > 
+> > > I'll resubmit.
+> > 
+> > Cool!
+> > 
+> > So tpm_chip_list and the not-obviously-identical list manipulated
+> > in tpm_remove_hardware() really are the same list?
+> > 
+> > 							Thanx, Paul
+> 
+> Hey Paul,
+> 
+> curious, why do they not look like the same list?
 
-There is part of the type stuff that belongs in the lower layer, it seems -
-the padding events for the up-to-end-of-page buffering, and the timestamp
-extensions. It seems wrong to split those across two layers.
+Because one of them is named &tpm_chip_list, a global variable, and the
+other seemed to be returned from a function taking a struct device as an
+argument.  This is indeed consistent with an element in this list being
+hung off of the struct device, so perhaps I was just being insufficiently
+persistent in tracking things down.
 
-But perhaps we can keep a couple of bits for this, and three of the bits
-to represent the length of the data payload (maybe in 4 byte multiples
-rather than bytes?) That'd let up to 28 bytes as a payload in a short event.
+							Thanx, Paul
