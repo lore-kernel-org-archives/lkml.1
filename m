@@ -1,72 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYIYPBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbYIYPCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbYIYPBj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 11:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYIYPBa
+	id S1756290AbYIYPCL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 11:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYIYPB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 11:01:30 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:47338 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753612AbYIYPB2 (ORCPT
+	Thu, 25 Sep 2008 11:01:56 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44264 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753685AbYIYPBy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 11:01:28 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH 2/7] acpi: remove have_arch_parse_srat in acpi.h
-Date: Thu, 25 Sep 2008 09:01:08 -0600
-User-Agent: KMail/1.9.9
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <1222308277-10984-1-git-send-email-yhlu.kernel@gmail.com> <1222308277-10984-2-git-send-email-yhlu.kernel@gmail.com>
-In-Reply-To: <1222308277-10984-2-git-send-email-yhlu.kernel@gmail.com>
+	Thu, 25 Sep 2008 11:01:54 -0400
+Date: Thu, 25 Sep 2008 17:03:19 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, tytso@mit.edu, jack@suse.cz,
+       sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com
+Cc: linux-ext4@vger.kernel.org
+Subject: ext3 read only handling
+Message-ID: <20080925150319.GA4344@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809250901.09212.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 September 2008 08:04:32 pm Yinghai Lu wrote:
-> 32bit don't need that anymore
 
-I don't understand the connection between this commit log and
-the patch below.
+Inserting read-only ext3 SD card into a machine and trying to mount
+ext3 volume on it is very unnice :-(.
 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> ---
->  include/linux/acpi.h |    8 --------
->  1 files changed, 0 insertions(+), 8 deletions(-)
-> 
-> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-> index 4d5ec43..8eefaa9 100644
-> --- a/include/linux/acpi.h
-> +++ b/include/linux/acpi.h
-> @@ -95,18 +95,10 @@ int acpi_parse_mcfg (struct acpi_table_header *header);
->  void acpi_table_print_madt_entry (struct acpi_subtable_header *madt);
->  
->  /* the following four functions are architecture-dependent */
-> -#ifdef CONFIG_HAVE_ARCH_PARSE_SRAT
-> -#define NR_NODE_MEMBLKS MAX_NUMNODES
-> -#define acpi_numa_slit_init(slit) do {} while (0)
-> -#define acpi_numa_processor_affinity_init(pa) do {} while (0)
-> -#define acpi_numa_memory_affinity_init(ma) do {} while (0)
-> -#define acpi_numa_arch_fixup() do {} while (0)
-> -#else
->  void acpi_numa_slit_init (struct acpi_table_slit *slit);
->  void acpi_numa_processor_affinity_init (struct acpi_srat_cpu_affinity *pa);
->  void acpi_numa_memory_affinity_init (struct acpi_srat_mem_affinity *ma);
->  void acpi_numa_arch_fixup(void);
-> -#endif
->  
->  #ifdef CONFIG_ACPI_HOTPLUG_CPU
->  /* Arch dependent functions for cpu hotplug support */
+Is there easy way to "fix" -oro so that it does not write to the
+media?
 
+(Machine died after I played with that SD card a bit more, but I can't
+easily reproduce that...)
 
+								Pavel
+
+Sep 25 11:51:38 amd kernel: mmcblk0: mmc0:0002 SD1GB 975872KiB (ro)
+Sep 25 11:51:38 amd kernel:  mmcblk0: p1
+Sep 25 11:51:47 amd kernel: JBD: Clearing recovery information on
+journal
+Sep 25 11:51:47 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:47 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 4017
+Sep 25 11:51:47 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 486
+Sep 25 11:51:47 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:48 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:48 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 129
+Sep 25 11:51:48 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 0
+Sep 25 11:51:48 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:48 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 137
+Sep 25 11:51:48 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 1
+Sep 25 11:51:48 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:48 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:48 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 161
+Sep 25 11:51:48 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 4
+Sep 25 11:51:48 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:49 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:49 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 3977
+Sep 25 11:51:49 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 481
+Sep 25 11:51:49 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:49 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:49 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 262305
+Sep 25 11:51:49 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 32772
+Sep 25 11:51:49 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:50 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 524417
+Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 65536
+Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 524425
+Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 65537
+Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 524433
+Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 65538
+Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:50 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 528249
+Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 66015
+Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:51 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 1048705
+Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 1048713
+Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 1048721
+Sep 25 11:51:51 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 1052537
+Sep 25 11:51:52 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:52 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 4017
+Sep 25 11:51:52 amd kernel: kjournald starting.  Commit interval 5
+seconds
+Sep 25 11:51:52 amd kernel: ------------[ cut here ]------------
+Sep 25 11:51:52 amd kernel: WARNING: at /data/l/linux/fs/buffer.c:1186
+mark_buffer_dirty+0x57/0x70()
+Sep 25 11:51:52 amd kernel: Modules linked in:
+Sep 25 11:51:52 amd kernel: Pid: 16292, comm: mount Not tainted
+2.6.27-rc6 #379
+Sep 25 11:51:52 amd kernel:  [<c022ae8f>] warn_on_slowpath+0x5f/0x90
+Sep 25 11:51:52 amd kernel:  [<c02a36c2>] __find_get_block+0x82/0x190
+Sep 25 11:51:52 amd kernel:  [<c024a611>] __lock_acquire+0x181/0x930
+Sep 25 11:51:52 amd kernel:  [<c024a611>] __lock_acquire+0x181/0x930
+Sep 25 11:51:52 amd kernel:  [<c03006b7>]
+journal_update_superblock+0x67/0xd0
+Sep 25 11:51:52 amd kernel:  [<c02a3c97>] mark_buffer_dirty+0x57/0x70
+Sep 25 11:51:52 amd kernel:  [<c03006bf>]
+journal_update_superblock+0x6f/0xd0
+Sep 25 11:51:52 amd kernel:  [<c0300b31>] journal_flush+0xa1/0x120
+Sep 25 11:51:52 amd kernel:  [<c02f4a6c>]
+ext3_mark_recovery_complete+0x2c/0x80
+Sep 25 11:51:52 amd kernel:  [<c02f747e>]
+ext3_fill_super+0x125e/0x1800
+Sep 25 11:51:52 amd kernel:  [<c039089f>] snprintf+0x1f/0x30
+Sep 25 11:51:52 amd kernel:  [<c02c0d00>] disk_name+0xb0/0xc0
+Sep 25 11:51:52 amd kernel:  [<c0284304>] get_sb_bdev+0x104/0x130
+Sep 25 11:51:52 amd kernel:  [<c026a299>] kstrdup+0x39/0x70
+Sep 25 11:51:52 amd kernel:  [<c02f4810>] ext3_get_sb+0x20/0x30
+Sep 25 11:51:52 amd kernel:  [<c02f6220>] ext3_fill_super+0x0/0x1800
+Sep 25 11:51:52 amd kernel:  [<c0283e33>] vfs_kern_mount+0x43/0x90
+Sep 25 11:51:52 amd kernel:  [<c0283edd>] do_kern_mount+0x3d/0xe0
+Sep 25 11:51:52 amd kernel:  [<c0299f71>] do_new_mount+0x81/0xc0
+Sep 25 11:51:52 amd kernel:  [<c029a127>] do_mount+0x177/0x1d0
+Sep 25 11:51:52 amd kernel:  [<c0297de0>]
+copy_mount_options+0x40/0x150
+Sep 25 11:51:52 amd kernel:  [<c029a1f7>] sys_mount+0x77/0xc0
+Sep 25 11:51:52 amd kernel:  [<c0203c3a>] syscall_call+0x7/0xb
+Sep 25 11:51:52 amd kernel:  =======================
+Sep 25 11:51:52 amd kernel: ---[ end trace c1e48b3b4f28cda2 ]---
+Sep 25 11:51:52 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:52 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 4017
+Sep 25 11:51:53 amd kernel: mmcblk0: error -110 transferring data
+Sep 25 11:51:53 amd kernel: end_request: I/O error, dev mmcblk0,
+sector 129
+Sep 25 11:51:53 amd kernel: __ratelimit: 6 callbacks suppressed
+Sep 25 11:51:53 amd kernel: Buffer I/O error on device mmcblk0p1,
+logical block 0
+Sep 25 11:51:53 amd kernel: lost page write due to I/O error on
+mmcblk0p1
+Sep 25 11:51:53 amd kernel: EXT3-fs: mounted filesystem with ordered
+data mode.
+Sep 25 11:52:04 amd kernel: mmc0: card 0002 removed
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
