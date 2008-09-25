@@ -1,77 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbYIYGRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbYIYGT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbYIYGRd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 02:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbYIYGRP
+	id S1754410AbYIYGT4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 02:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbYIYGTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 02:17:15 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:46112 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754109AbYIYGRO (ORCPT
+	Thu, 25 Sep 2008 02:19:47 -0400
+Received: from mx10.brocade.com ([208.185.105.18]:58195 "EHLO mx10.brocade.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750955AbYIYGTq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 02:17:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=28K4NobIjT4p/5ACZK1qgOfhYLogQ9H+frAH09cGlEzUbSrCksfwkwDt4kWNHZQBSH8TmU8WR4Qbrb3hGe28XP0D6RM3Ml2W96V+kMvGLdtP0/l/wUHbTResaTTBhegmuupY+Fl7KEtyTe8KSO2JuKlpSCLGkPEiZpClAphjdv0=  ;
-X-YMail-OSG: hzsnGrIVM1mXWjdnk.Kh2LNAzwpgBrabY592f5.7izVcjIx4gbrgpXdr4m6gZn7OMu2f6gMUcWWQQ2X4VYRAr1sxgjKklkqcP0XRcLsRsr9iLKNcUX79LXHav.RpfhkZRyI-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Christian Pellegrin <chripell@gmail.com>
-Subject: Re: [spi-devel-general] [PATCH RESEND] max3100 driver
-Date: Wed, 24 Sep 2008 21:56:29 -0700
-User-Agent: KMail/1.9.9
-Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Christian Pellegrin <chripell@fsfe.org>,
-       alan@lxorguk.ukuu.org.uk, linux-serial@vger.kernel.org
-References: <12219154581088-git-send-email-chripell@gmail.com>
-In-Reply-To: <12219154581088-git-send-email-chripell@gmail.com>
+	Thu, 25 Sep 2008 02:19:46 -0400
+X-Greylist: delayed 572 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Sep 2008 02:19:45 EDT
+X-IronPort-AV: E=Sophos;i="4.33,306,1220252400"; 
+   d="scan'208";a="126917787"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200809242156.29505.david-b@pacbell.net>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/6] bfa: Brocade BFA FC SCSI Driver submission
+Date: Wed, 24 Sep 2008 23:09:54 -0700
+Message-ID: <4C94DE2070B172459E4F1EE14BD2364E01F27D54@HQ-EXCH-5.corp.brocade.com>
+In-Reply-To: <20080925055725.GC66712@sgi.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/6] bfa: Brocade BFA FC SCSI Driver submission
+Thread-Index: Acke05cekC7R5tnRQ4GO+x/93yESZwAAGKfA
+References: <4C94DE2070B172459E4F1EE14BD2364E01F27D19@HQ-EXCH-5.corp.brocade.com> <20080925044923.GA4310@kroah.com> <1222319644.3602.1.camel@localhost.localdomain> <4C94DE2070B172459E4F1EE14BD2364E01F27D49@HQ-EXCH-5.corp.brocade.com> <20080925055725.GC66712@sgi.com>
+From: "Jing Huang" <huangj@Brocade.COM>
+To: "Jeremy Higdon" <jeremy@sgi.com>
+Cc: "James Bottomley" <James.Bottomley@HansenPartnership.com>,
+       "Greg KH" <greg@kroah.com>, <linux-scsi@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>,
+       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
+       "Vinodh Ravindran" <vravindr@Brocade.COM>,
+       "Srikanth Rayas (CW)" <srayas@Brocade.COM>
+X-OriginalArrivalTime: 25 Sep 2008 06:10:13.0226 (UTC) FILETIME=[5F490CA0:01C91ED5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You got this working ... congrats!  :)
+Hi James,
 
-Small suggestion:  next time you resend this, make sure
-that $SUBJECT mentions it's a UART driver.  Maybe even that
-it's a SPI UART driver.  That should help get more comments.
+I looked at Documentation/email-clients.txt. There is no info about
+outlook. So I believe Jeremy is right. 
 
+Is attachment acceptable for my first submission? Meanwhile I will find
+out if I can use other email client in my company.
 
-On Saturday 20 September 2008, Christian Pellegrin wrote:
-> +struct plat_max3100 {
-> +/* force MAX3100 in loopback */
-> +       int loopback;
-> +/* 0 for 3.6864 Mhz, 1 for 1.8432  */
-> +       int crystal;
-> +/* for archs like PXA with only edge irqs */
-> +       int only_edge_irq;
-> +/* MAX3100 has a shutdown pin. This is a hook
-> +   called on suspend and resume to activate it.*/
-> +       void (*max3100_hw_suspend) (int suspend);
-> +/* poll time for ctr signals in ms, 0 disables (so no hw flow
-> + * ctrl is possible)  */
-> +       int poll_time;
-> +};
+Jing
 
-This is a bit picky, but it's the first thing I noticed when
-scanning the patch ... wierd comment layout!  Either indent
-those all, or (better) convert to kerneldoc style.
+-----Original Message-----
+From: Jeremy Higdon [mailto:jeremy@sgi.com] 
+Sent: Wednesday, September 24, 2008 10:57 PM
+To: Jing Huang
+Cc: James Bottomley; Greg KH; linux-scsi@vger.kernel.org;
+linux-kernel@vger.kernel.org; Ramkumar Vadivelu; Vinodh Ravindran;
+Srikanth Rayas (CW)
+Subject: Re: [PATCH 1/6] bfa: Brocade BFA FC SCSI Driver submission
 
-Potentially less picky:  probe() doesn't lock max3100s[],
-neither does remove(), and in fact there seems to be no
-lock for that table.  Which suggests trouble in cases like
-concurrent I/O (including open) and driver remove().  You
-should probably just allocate a mutex to help control that
-table, like most other drivers.
-
-And is that workqueue single threaded?
+On Wed, Sep 24, 2008 at 10:33:26PM -0700, Jing Huang wrote:
+> Thanks James and Greg for the quick check on the patches.
+> 
+> I check the original patch, it is correct. I need to check the outlook
+> setting to see how to prevent this issue.
+> 
+> This is my first time sending a patch, is there any trick to prevent
+> line-wrap? I did send it using plain text and I tried to send to
+myself
+> before sending to lkml, and I did't see this problem.
 
 
-I just skimmed the rest of the driver.  Seems to be
-fairly straightforward -- at least the non-TTY bits.
+The fix is not to use Outlook -- I've never known anyone to be able
+to get it not to mangle email.  If you're stuck with that, try attaching
+the patch as a text document, if that's acceptable to James.
+
+I know someone that uses mutt on Windows, and it seems to work fine.
+
+jeremy
