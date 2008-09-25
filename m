@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYIYVBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYIYVDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbYIYVBX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYIYVBP
+	id S1756148AbYIYVDI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbYIYVC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:01:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59403 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753342AbYIYVBO (ORCPT
+	Thu, 25 Sep 2008 17:02:56 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:64130 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753392AbYIYVCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:01:14 -0400
-Date: Thu, 25 Sep 2008 17:01:11 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <alpine.LFD.1.10.0809251325450.3265@nehalem.linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0809251658210.32742@gandalf.stny.rr.com>
-References: <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org>
- <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809251247010.27920@gandalf.stny.rr.com> <alpine.LFD.1.10.0809251002290.3265@nehalem.linux-foundation.org>
- <20080925195522.GA22248@elte.hu> <20080925201211.GA1878@elte.hu> <alpine.LFD.1.10.0809251318270.3265@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809251325450.3265@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 25 Sep 2008 17:02:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=LVXG6XMXoiTvVRMGW1yOhhflog3DxHkmjMyFvthgzJcO4yj420TLnJ+Q8YvuQw2eyp
+         9Mu3nUgYFBI1fbo6x7bD1F/p5kOYFx3ENwXs3i3epIGVaGPdXI5ZYl/Em00YHQA44rq+
+         XgW9NVk37pel1uz7OWj5obQxobmPslTsKGoJA=
+Message-ID: <19f34abd0809251402v13b926a1o2236ddb9e7517a65@mail.gmail.com>
+Date: Thu, 25 Sep 2008 23:02:54 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: v2.6.27-rc7: x86: #GP on panic?
+Cc: "Ingo Molnar" <mingo@elte.hu>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <48DBF964.7070106@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0809241209l3a69d607v153549ee43e085e9@mail.gmail.com>
+	 <20080925080417.GB27048@elte.hu> <48DB5186.8060502@zytor.com>
+	 <19f34abd0809250707i18ded94aib177c884d4d6a3bd@mail.gmail.com>
+	 <19f34abd0809250820q2df15e93u43374b7317e2f7be@mail.gmail.com>
+	 <19f34abd0809251346r62cff1ck4730260f17e643b3@mail.gmail.com>
+	 <48DBF964.7070106@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 25, 2008 at 10:49 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+>> Seems like an external interrupt happened and was delivered after the sti?
+>>
+>> Hm. I guess it smells like a qemu bug since it's rather easily
+>> reproducible here and sounds strange that nobody else saw it. Is qemu
+>> 0.9.1.
+>>
+>
+> Yes, but there shouldn't be any external interrupts that could turn into  a
+> divide error.  It really smells like a Qemu problem -- possibly even a Qemu
+> miscompile -- to me.
+>
+> Does it reproduce in KVM?
 
-On Thu, 25 Sep 2008, Linus Torvalds wrote:
-> 
-> CFLAGS_REMOVE_lockdep.o = -pg
-> CFLAGS_REMOVE_lockdep_proc.o = -pg
-> CFLAGS_REMOVE_mutex-debug.o = -pg
-> CFLAGS_REMOVE_rtmutex-debug.o = -pg
-> CFLAGS_REMOVE_cgroup-debug.o = -pg
-> CFLAGS_REMOVE_sched_clock.o = -pg
-> CFLAGS_REMOVE_sched.o = -mno-spe -pg
-> 
+I have no computer that can do KVM, sorry :-(
 
-You'll also find in the lib Makefile:
+Stack trace contains IO_APIC functions, so it seems that maybe the
+emulated IOAPIC is trying to (erroneously) deliver an int 0 (for some
+reason)? But I don't know, that's just speculation which can be done
+better by others, so I will stop now :-)
 
-ifdef CONFIG_FTRACE
-ORIG_CFLAGS := $(KBUILD_CFLAGS)
-KBUILD_CFLAGS = $(subst -pg,,$(ORIG_CFLAGS))
-endif
 
-Which removes all -pg flags from all in the lib directory. The reason is 
-that a lot of archs (well, I know PPC for sure) use these functions on 
-early boot up, where simply calling mcount will produce a page fault.
+Vegard
 
--- Steve
-
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
