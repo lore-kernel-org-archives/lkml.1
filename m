@@ -1,158 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbYIYQmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYIYQmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbYIYQmc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 12:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbYIYQmY
+	id S1755561AbYIYQmr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 12:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbYIYQm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 12:42:24 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:11083 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753970AbYIYQmX (ORCPT
+	Thu, 25 Sep 2008 12:42:28 -0400
+Received: from bc.sympatico.ca ([209.226.175.184]:50568 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755202AbYIYQm1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 12:42:23 -0400
-Message-ID: <48DBBF6C.5070703@mvista.com>
-Date: Thu, 25 Sep 2008 09:42:20 -0700
-From: Drew Moseley <dmoseley@mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: ambx1@neo.rr.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Create PNP device attributes via dev_attrs field of struct
- device
-References: <48D95EA2.9040804@mvista.com>	 <3ae72650809232159k20f19f2ele5acbc7ee77dfb65@mail.gmail.com>	 <48DA774A.9010206@mvista.com>	 <3ae72650809241203o41b62a10m31377887d44fd05e@mail.gmail.com>	 <48DA9702.4020106@mvista.com> <3ae72650809250313h66b35a73u8c73ffce5b74921e@mail.gmail.com>
-In-Reply-To: <3ae72650809250313h66b35a73u8c73ffce5b74921e@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Thu, 25 Sep 2008 12:42:27 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAFda20hMQWq+/2dsb2JhbACBXrktgWU
+Date: Thu, 25 Sep 2008 12:37:23 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+Message-ID: <20080925163722.GA29392@Krystal>
+References: <20080924051056.650388887@goodmis.org> <20080924051400.195780424@goodmis.org> <1222268595.16700.149.camel@lappy.programming.kicks-ass.net> <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com> <1222272686.16700.162.camel@lappy.programming.kicks-ass.net> <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com> <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <33307c790809241054n47addd27hef90930f109599fd@mail.gmail.com> <alpine.LFD.1.10.0809241323590.3265@nehalem.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0809241323590.3265@nehalem.linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:20:46 up 112 days, 20:01, 10 users,  load average: 0.81, 0.85,
+	0.83
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> This seems not to apply. Oh, you are patching a 1.5 years old kernel?
-> :) Care to redo this for a recent one?
+* Linus Torvalds (torvalds@linux-foundation.org) wrote:
+> 
+> 
+> On Wed, 24 Sep 2008, Martin Bligh wrote:
+> > 
+> > If we just record the TSC unshifted, in 27 bits, at 4GHz, that gives us
+> > about 1/30 of a second? So we either shift, use > 27 bits, or record
+> > at least 30 events a second, none of which I like much ...
+> 
+> No, we don't shift (we don't want to lose precision), and we don't use 
+> more than 27 bits by default.
+> 
+> the TSC at each entry should be a _delta_. It's the difference from the 
+> last one. And if you get less than 30 events per second, and you need a 
+> bigger difference, you insert an extra "sync" tracepoint that has a 59-bit 
+> thing (27 bits _plus_ the extra 'data').
+> 
+> Yes, it adds 8 bytes (assuming that minimal format), but it does so only 
+> for any trace event that is more than 1/30th of a second from its previous 
+> one. IOW, think of this not in bytes, but in bytes-per-second. It adds at 
+> most 8*30=240 bytes per second, but what it _saves_ is that when you have 
+> tens of thousands of events, it shaves 4 bytes FOR EACH EVENT.
+> 
+> See?
+> 
+> Also, quite often, the clock won't be running at 4GHz even if the CPU 
+> might. Intel already doesn't make the TSC be the nominal frequency, and 
+> other architectures with TSC's have long had the TSC be something like a 
+> "divide-by-16" clock rather than every single cycle because it's more 
+> power-efficient.
+> 
+> So there is often a built-in shift, and I doubt we'll see 10GHz TSC's even 
+> if we see 10GHz CPU's (which many people consider unlikely anyway, but 
+> I'm not going to bet against technology).
+> 
+> 			Linus
+> 
 
-Ack.  Sorry about that.  Wrong tree.  Here's the right one. ;-)
+I remembered other concerns about 27 vs 32 bits TSC decision, which are
+rather important. First, if we have a 27 bits TSC, with overflow every
+33ms at 4GHz, we assume the kernel will _never_ have an interrupt
+latency longer than this for correct heartbeat behavior. The sad thing
+is that it is not uncommon to see such interrupt latencies once in a
+while. It's especially bad if the correctness of the timestamps gathered
+by the one tool that would be helpful to debug such interrupt latency
+problem is broken by the thing it try to instrument.
 
-Signed-off-by: Drew Moseley <dmoseley@mvista.com>
-diff --git a/drivers/pnp/base.h b/drivers/pnp/base.h
-index 9fd7bb9..3532984 100644
---- a/drivers/pnp/base.h
-+++ b/drivers/pnp/base.h
-@@ -4,6 +4,7 @@
-  */
+Given that heartbeat events have this particular downside, we may think
+writing an extended TSC value in the event header will solve the
+problem, but it actually creates a new kind of problem when we try to
+relax buffer locking. The basic idea is that it's easy to compute the
+delta from the previous timestamp taken on the same CPU when disabling
+interrupts because we are serializing all operations for this specific
+core. However, a more lightweight locking (without interrupt disabling)
+involves using a loop such as:
 
- extern spinlock_t pnp_lock;
-+extern struct device_attribute pnp_interface_attrs[];
- void *pnp_alloc(long size);
+reserve space (preempt is disabled) :
+unsigned long old, new;
 
- int pnp_register_protocol(struct pnp_protocol *protocol);
-@@ -16,7 +17,6 @@ struct pnp_card *pnp_alloc_card(struct pnp_protocol *,
-int id, char *pnpid);
+do {
+  old = read_offset();
+  timestamp = get_cycles();
+  new = old + header_size() + event_size();
+} while ((local_cmpxchg(&buf->offset, old, new) != old);
+write event header
+write event payload
+commit
 
- int pnp_add_device(struct pnp_dev *dev);
- struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
--int pnp_interface_attach_device(struct pnp_dev *dev);
+So we can make sure the timestamps will never go backward in a given
+buffer (this is insured by the fact that this cmpxchg ties together
+timestamp read and buffer space reservation).
 
- int pnp_add_card(struct pnp_card *card);
- void pnp_remove_card(struct pnp_card *card);
-diff --git a/drivers/pnp/core.c b/drivers/pnp/core.c
-index a411582..7d65da8 100644
---- a/drivers/pnp/core.c
-+++ b/drivers/pnp/core.c
-@@ -159,21 +159,13 @@ struct pnp_dev *pnp_alloc_dev(struct pnp_protocol
-*protocol, int id, char *pnpid
+If we want to implement detection of TSC rollover at the tracing site,
+we would have to remember the last TSC value read, and this is where it
+becomes racy. We cannot read the previous event slot, because we have no
+guarantee it's been written to (only reserve operation is ordered. write
+and commit are unordered). We would therefore have to keep a copy of the
+previous TSC value, but given we don't do any locking, it would only be
+safe to only keep data that can be read/writte to atomically, namely
+only 32 bits on x86_32. Also note that the cmpxchg loop may fail, so we
+cannot update the "last_tsc_msb" data structure inside the loop. It
+could cause a nested IRQ to think the previous event written had a
+higher timestamp than what is actually in the trace.
 
- int __pnp_add_device(struct pnp_dev *dev)
- {
--	int ret;
--
- 	pnp_fixup_device(dev);
- 	dev->status = PNP_READY;
- 	spin_lock(&pnp_lock);
- 	list_add_tail(&dev->global_list, &pnp_global);
- 	list_add_tail(&dev->protocol_list, &dev->protocol->devices);
- 	spin_unlock(&pnp_lock);
--
--	ret = device_register(&dev->dev);
--	if (ret)
--		return ret;
--
--	pnp_interface_attach_device(dev);
--	return 0;
-+	return device_register(&dev->dev);
- }
+So we could do :
 
- /*
-diff --git a/drivers/pnp/driver.c b/drivers/pnp/driver.c
-index d3f869e..e3f7e89 100644
---- a/drivers/pnp/driver.c
-+++ b/drivers/pnp/driver.c
-@@ -206,6 +206,7 @@ struct bus_type pnp_bus_type = {
- 	.remove  = pnp_device_remove,
- 	.suspend = pnp_bus_suspend,
- 	.resume  = pnp_bus_resume,
-+	.dev_attrs = pnp_interface_attrs,
- };
+per buffer, per cpu : u32 last_tsc_msb;
 
- int pnp_register_driver(struct pnp_driver *drv)
-diff --git a/drivers/pnp/interface.c b/drivers/pnp/interface.c
-index a876ecf..478a4a7 100644
---- a/drivers/pnp/interface.c
-+++ b/drivers/pnp/interface.c
-@@ -243,8 +243,6 @@ static ssize_t pnp_show_options(struct device *dmdev,
- 	return ret;
- }
+reserve space (preempt is disabled) :
+unsigned long old, new;
+u64 timestamp;
+int full_tsc = 0;
 
--static DEVICE_ATTR(options, S_IRUGO, pnp_show_options, NULL);
--
- static ssize_t pnp_show_current_resources(struct device *dmdev,
- 					  struct device_attribute *attr,
- 					  char *buf)
-@@ -420,9 +418,6 @@ done:
- 	return count;
- }
+do {
+  old = read_offset();
+  timestamp = get_cycles();
+  new = old + event_size();
+  if ((u32)(timestamp >> (64 - 27)) - buf->last_tsc_msb) {
+    full_tsc = 1;
+    new += header_size_full_tsc();
+  } else
+    new += header_size();
+} while ((local_cmpxchg(&buf->offset, old, new) != old);
 
--static DEVICE_ATTR(resources, S_IRUGO | S_IWUSR,
--		   pnp_show_current_resources, pnp_set_current_resources);
--
- static ssize_t pnp_show_current_ids(struct device *dmdev,
- 				    struct device_attribute *attr, char *buf)
- {
-@@ -437,27 +432,11 @@ static ssize_t pnp_show_current_ids(struct device
-*dmdev,
- 	return (str - buf);
- }
+buf->last_tsc_msb = (u32)(timestamp >> (64 - 27));
 
--static DEVICE_ATTR(id, S_IRUGO, pnp_show_current_ids, NULL);
--
--int pnp_interface_attach_device(struct pnp_dev *dev)
--{
--	int rc = device_create_file(&dev->dev, &dev_attr_options);
--
--	if (rc)
--		goto err;
--	rc = device_create_file(&dev->dev, &dev_attr_resources);
--	if (rc)
--		goto err_opt;
--	rc = device_create_file(&dev->dev, &dev_attr_id);
--	if (rc)
--		goto err_res;
--
--	return 0;
--
--err_res:
--	device_remove_file(&dev->dev, &dev_attr_resources);
--err_opt:
--	device_remove_file(&dev->dev, &dev_attr_options);
--err:
--	return rc;
--}
-+struct device_attribute pnp_interface_attrs[] = {
-+	__ATTR(resources, S_IRUGO | S_IWUSR,
-+		   pnp_show_current_resources,
-+		   pnp_set_current_resources),
-+	__ATTR(options, S_IRUGO, pnp_show_options, NULL),
-+	__ATTR(id, S_IRUGO, pnp_show_current_ids, NULL),
-+	__ATTR_NULL,
-+};
+if (full_tsc)
+  write full tsc event header
+else
+  write event header
+write event payload
+commit()
+
+The incorrect race would be not to write a full tsc when needed (an
+overflow would go undetected). A correct race would be to write a full
+TSC even if unneeded. This would just consume a little more space, but
+given the unlikeliness of the race, we don't care.
+
+The worse case scenario is to have an interrupt coming right between a
+successful cmpxchg reserving the space to write a full tsc and the
+last_tsc_msb write. This interrupt would think it has to write a full
+tsc when it in fact the previous slot already does contain the full tsc.
+Duplicated full TSCs, that's the "correct race".
+
+Then, the IRQ will update the last_tsc_msb value before the actual
+thread that has been interrupted. This will cause the last_tsc_msb value
+to go slightly backward when updated by the thread. But it's not a
+problem, because letting the last_tsc_msb decrement slightly could only
+result in the "correct race", which is to cause following events to
+write a full TSC event if not strictly needed.
+
+So I think we could manage to completely remove the heartbeat, which
+would make life much easier in dynticks system and would make the time
+source much more robust wrt long interrupt latencies.
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
