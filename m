@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYIYXs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbYIYX7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755548AbYIYXs6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 19:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbYIYXst
+	id S1754270AbYIYX7N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 19:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbYIYX6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 19:48:49 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:58365 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752921AbYIYXss (ORCPT
+	Thu, 25 Sep 2008 19:58:55 -0400
+Received: from fmailhost02.isp.att.net ([207.115.11.52]:39920 "EHLO
+	fmailhost02.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752921AbYIYX6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 19:48:48 -0400
-From: Trent Piepho <tpiepho@freescale.com>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Trent Piepho <tpiepho@freescale.com>,
-       NeilBrown <neilb@suse.de>
-Subject: [PATCH] sysfs: Make dir and name args to sysfs_notify() const
-Date: Thu, 25 Sep 2008 16:45:13 -0700
-Message-Id: <1222386313-18401-1-git-send-email-tpiepho@freescale.com>
-X-Mailer: git-send-email 1.5.4.1
+	Thu, 25 Sep 2008 19:58:54 -0400
+X-Originating-IP: [74.251.44.253]
+Date: Thu, 25 Sep 2008 18:58:49 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Chris Snook <csnook@redhat.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Kevin Hao <kexin.hao@windriver.com>,
+       Jeff Garzik <jgarzik@redhat.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: remove LLTX in atl2 driver
+Message-ID: <20080925185849.0df482e2@osprey.hogchain.net>
+In-Reply-To: <48DC11F5.20900@redhat.com>
+References: <1222302922-13200-1-git-send-email-kexin.hao@windriver.com>
+	<48DBF4DD.8060908@redhat.com>
+	<48DBFAB5.2010709@garzik.org>
+	<48DC11F5.20900@redhat.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEV2dXOAgYNxSD+aemaal42A
+ gIBqYV2UU07Ik5GXfoFMRTdbKiVwAAACbUlEQVQ4jXXTzWvbMBQAcG3EZsmt0Owc3pgNPo1oxNFt
+ pQnEN3Wrs3UnkdXq5tOwIdq9Pci3gUqJexo55KC/cs9O/dHBRIiMfpb03rNE4v800jxIQRzsXPEP
+ jDwndhNelo9/ngE/SFdKmZQnfOT0YSSlQBKLiJBDH6w9SPwlp5evpduDr9biQqkV8Rh7p4NRNSO1
+ 4BHhpjLpIK2gWksIgl0LPLCHoBIcX6dp2kGKMYnfGJnjIFungZeuHA6dhSvqLXrA1zJmVKayCu1w
+ DKuGAU+WZRRCsLdBFXgLl2Sw3N2ZEJDAn3VwEV9FK12YUGW+yqlIWiD30U5rbSi2efGuhRfxEXRB
+ 8e+uJE/AL5z78xrqVg6aBHlMTj9V7x/RJOMGHHI11ItVUW+B0JakkGPcUsJNHuY7/ZA04X4xwQ/D
+ 3I0FGgaT8iFponoJ26F+sNbu51O7l7QHHtNTbxMc5o/W+kw0S31Ub5i+pQBq/hjYPVPbJ/ic/aoC
+ pbTQtxlAvvnZgNod89Y4D2sFXpMHZWU1yHb6Ft+g2aTJY84iY2iY4ySGmWdvmxlDprHkCgd1yDRV
+ bXVfFQiZjyuyaU5p1pZkTbXBbxRagAyU2rZfcH2tTQ7+FpNQ4Ofb7lxdFzTHDGqAvHdEv0cIezi2
+ be+0vzdUqawaDSATHfB7itGiIfrQu2p8UQOOooHTh5lUPn6lva/qQrWwQpCUTv08hGe3dkU9KWmJ
+ Z2EGpAeDFc3kN8oMNbNJ/AzMFERUhjmehB7ws6XBTTnfeOXT9T/C9dn4HEshpPWIjDvgi5Px2U0G
+ Hl7dzaQHg8U4Xn6oa4g3vVnqLz3ribDLdyFmAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because they can be, and because code like this produces a warning if
-they're not:
+On Thu, 25 Sep 2008 18:34:29 -0400
+Chris Snook <csnook@redhat.com> wrote:
 
-struct device_attribute dev_attr;
+> 
+> I'm all in favor of removing legacy cruft.  I want to know a little
+> more about it so we can remove it from the atl1 code as well.
+> Ultimately most of this will be shared code.
 
-sysfs_notify(&kobj, NULL, dev_attr.attr.name);
+Yes, LLTX can (and should) be removed from the atl1 code.  I had an
+exchange with Herbert Xu and David Miller on LKML a few weeks ago, and
+they gave me a few tips on how to do it, but I haven't yet had the
+time.  What takes an experienced netdev warrior about a half hour to
+implement unfortunately takes me days of after-dayjob time as I track
+through all the calls that that are affected and test the modified
+driver.
 
-Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-CC: NeilBrown <neilb@suse.de>
----
- fs/sysfs/file.c       |    2 +-
- include/linux/sysfs.h |    5 +++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
+Now back to atl2...  I'd like to hear from Kevin also whether he tested
+the LLTX removal.  I'm building the driver with his patch as we speak,
+and I'll test it myself this weekend, but Kevin I'd still like to know
+if you tested the patch.
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index c9e4e50..cabfd0f 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -440,7 +440,7 @@ static unsigned int sysfs_poll(struct file *filp, poll_table *wait)
- 	return POLLERR|POLLPRI;
- }
- 
--void sysfs_notify(struct kobject *k, char *dir, char *attr)
-+void sysfs_notify(struct kobject *k, const char *dir, const char *attr)
- {
- 	struct sysfs_dirent *sd = k->sd;
- 
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 37fa241..94e835f 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -117,7 +117,7 @@ int sysfs_add_file_to_group(struct kobject *kobj,
- void sysfs_remove_file_from_group(struct kobject *kobj,
- 			const struct attribute *attr, const char *group);
- 
--void sysfs_notify(struct kobject *kobj, char *dir, char *attr);
-+void sysfs_notify(struct kobject *kobj, const char *dir, const char *attr);
- 
- extern int __must_check sysfs_init(void);
- 
-@@ -222,7 +222,8 @@ static inline void sysfs_remove_file_from_group(struct kobject *kobj,
- {
- }
- 
--static inline void sysfs_notify(struct kobject *kobj, char *dir, char *attr)
-+static inline void sysfs_notify(struct kobject *kobj, const char *dir,
-+				const char *attr)
- {
- }
- 
--- 
-1.5.4.1
-
+Thanks,
+Jay
