@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYIYPtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbYIYPwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbYIYPtl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 11:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYIYPtb
+	id S1754025AbYIYPwy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 11:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbYIYPwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 11:49:31 -0400
-Received: from qb-out-0506.google.com ([72.14.204.238]:24069 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752979AbYIYPta (ORCPT
+	Thu, 25 Sep 2008 11:52:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:62638 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752732AbYIYPwl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 11:49:30 -0400
+	Thu, 25 Sep 2008 11:52:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding:sender;
-        b=TbrmzRhKC1duWa5bfMLvbTtUO9HhQG4enjvp2KntD5cPNAQdFpUa3Z4i+BSYH6wzOL
-         v0m0Cs7nd1F2pLKmvceRWpnZ2gLAoxxhU3sWSu/oR/6vY1nUqGgPscTacUSmmyOr1LAm
-         uDFPRde6U/UZpCLIsQvWaTKRXT6lqBvDIMghQ=
-Date: Thu, 25 Sep 2008 18:49:19 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: "=?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker" <fweisbec@gmail.com>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [Patch -tip 1/3] Tracing/ftrace: Relay unhandled entry output
-Message-ID: <20080925184919.016d8957@daedalus.pq.iki.fi>
-In-Reply-To: <c62985530809250833x2468f07an547a82eaa1329d9@mail.gmail.com>
-References: <48DB81BA.2050204@gmail.com>
-	<20080925123802.GA6900@elte.hu>
-	<48DBA683.8000708@gmail.com>
-	<20080925180916.75d3c9ec@daedalus.pq.iki.fi>
-	<c62985530809250833x2468f07an547a82eaa1329d9@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=R8iECfnKjQqyD1WsOGLZQ4CjqwveBI4nAIEvH1s+D45Qe1gRKMA6qr//5HktSBeQ0g
+         OEGhwUN+B0B3MWcybnzdyByc8ISuBuoUSbWvn8Dg0hNM1RMe/WVJ8Ahh0wq4NKZ0dGV1
+         cUKF8XkR95Iy1on9c6aMACaBNzB0c4ZMumdFs=
+Message-ID: <1ba2fa240809250852k62266473o7a8ac858c587213d@mail.gmail.com>
+Date: Thu, 25 Sep 2008 18:52:39 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: pull request: wireless-2.6 2008-09-24
+Cc: "Zhu Yi" <yi.zhu@intel.com>, "davem@davemloft.net" <davem@davemloft.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080925154753.GA3277@tuxdriver.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080924231720.GD3639@tuxdriver.com>
+	 <1222321622.2510.455.camel@debian.sh.intel.com>
+	 <20080925114133.GA5044@tuxdriver.com>
+	 <1ba2fa240809250757x32aa450k523d71e555c221e4@mail.gmail.com>
+	 <20080925154753.GA3277@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008 17:33:02 +0200
-"Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
+On Thu, Sep 25, 2008 at 6:47 PM, John W. Linville
+<linville@tuxdriver.com> wrote:
+> On Thu, Sep 25, 2008 at 05:57:33PM +0300, Tomas Winkler wrote:
+>> On Thu, Sep 25, 2008 at 2:41 PM, John W. Linville
+>> <linville@tuxdriver.com> wrote:
+>> > On Thu, Sep 25, 2008 at 01:47:02PM +0800, Zhu Yi wrote:
+>> >> On Wed, 2008-09-24 at 17:17 -0600, John W. Linville wrote:
+>> >> > Dave,
+>> >> >
+>> >> > One more for 2.6.27 -- a fix for a possible interrupt storm.  There is
+>> >> > even a link in the commit log to a youtube video of the storm in
+>> >> > progress. :-)
+>> >> >
+>> >> > Let me know if there are problems!
+>> >>
+>> >> Can you also add this one? It doesn't panic the kernel when a frame from
+>> >> firmware is invalid.
+>> >>
+>> >> http://marc.info/?l=linux-wireless&m=122219037706528&w=2
+>> >
+>> > Is there an open bug report for that anywhere?  Is this something
+>> > that real users (no offense to Johannes) are likely to hit?
+>>
+>> I'm just exporting the major bugs from our internal database to
+>> buzilla, 5000 is new so
+>> we are hitting the problems during testing  before users report them.
+>>
+>> Now I don't know if it was good idea to push the driver upstream same
+>> time as it hits the market.
+>
+> You're right -- pushing it sooner rather than sitting on it internally
+> probably would have helped to give it more visibility sooner.
 
-> 2008/9/25 Pekka Paalanen <pq@iki.fi>:
-> > IMHO this breaks the trace_seq handling. trace_seq may contain
-> > the output of several entries, as far as they fit in it as a whole.
-> > E.g. trace_seq_printf() does not print partial lines but returns 0,
-> > so that the entry is not consumed right now. The user space reader
-> > must consume trace_seq content, before trace_seq_printf()
-> > is attempted again, hopefully with enough space in trace_seq to
-> > succeed. See tracing_read_pipe().
-> > print_line() callback works the same way. Returning 0 means "could
-> > not print it this time, call me back later". You can't use that to
-> > say "use the default output function instead". Note, that possibly
-> > the default output function will fail, too, so it could actually
-> > try many of the default output functions and still fail, eventually
-> > leading by luck to the correct behaviour in most cases.
-> > Note, that mmiotrace follows this convention: it deliberatly
-> > returns 1 without processing when it wants the entry discarded, and
-> > it returns 0 when there was not enough space to process the entry.
-> > This is explained in my other email.
-> 
-> Hmm you're right. I didn't thought about the partial line which must
-> not be printed.
-> The problem is that with this convention, 0 means two things: "I will
-> handle this entry
-> later" or "I can't handle it".
-> But if you return 0 because you can't handle it, and if the current
-> len of the seq is 0, the
-> pipe will be broken.
-
-My understanding is that the pipe will be broken only, if the trace
-framework believes tracing is disabled. Recall the discussion about
-tracer_enabled = 0. Which is a bug, and I hoped Steven would have
-commented on how to fix that properly.
-
-Or was it fixed already, and this is a different issue?
-I didn't notice.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+ I think it was pushed on time it would not bring the fixes sooner.
+But we are getting again to the same arguments
+Tomas
