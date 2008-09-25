@@ -1,52 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbYIYPek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbYIYPey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753682AbYIYPek (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 11:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbYIYPe3
+	id S1755312AbYIYPey (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 11:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbYIYPef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 11:34:29 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:52161 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752967AbYIYPe2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 11:34:28 -0400
-Date: Thu, 25 Sep 2008 11:20:24 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Martin Bligh <mbligh@mbligh.org>, Martin Bligh <mbligh@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <1222354409.16700.215.camel@lappy.programming.kicks-ass.net>
-Message-ID: <alpine.DEB.1.10.0809251118350.27300@gandalf.stny.rr.com>
-References: <20080924051056.650388887@goodmis.org>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>  <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com> 
- <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>  <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> 
- <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>  <1222339303.16700.197.camel@lappy.programming.kicks-ass.net>  <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 25 Sep 2008 11:34:35 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:33882 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753809AbYIYPed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 11:34:33 -0400
+Date: Thu, 25 Sep 2008 08:34:31 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Corey Minyard <minyard@acm.org>
+Cc: paulmck@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/1] Use RCU for the UDP hash lock
+Message-ID: <20080925083431.3fa0f9c3@extreme>
+In-Reply-To: <20080925152936.GF6725@linux.vnet.ibm.com>
+References: <20080924172827.GA1573@minyard.local>
+	<20080924124006.6bb41b49@extreme>
+	<48DAA71C.5030000@acm.org>
+	<20080925152936.GF6725@linux.vnet.ibm.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 25 Sep 2008 08:29:36 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-On Thu, 25 Sep 2008, Peter Zijlstra wrote:
+> On Wed, Sep 24, 2008 at 03:46:20PM -0500, Corey Minyard wrote:
+> > Stephen Hemminger wrote:
+> >>   
+> >>>   static inline void udp_lib_unhash(struct sock *sk)
+> >>>  {
+> >>> -	write_lock_bh(&udp_hash_lock);
+> >>> -	if (sk_del_node_init(sk)) {
+> >>> +	spin_lock_bh(&udp_hash_wlock);
+> >>> +	if (sk_del_node_rcu(sk)) {
+> >>>  		inet_sk(sk)->num = 0;
+> >>>  		sock_prot_inuse_add(sock_net(sk), sk->sk_prot, -1);
+> >>>  	}
+> >>> -	write_unlock_bh(&udp_hash_lock);
+> >>> +	spin_unlock_bh(&udp_hash_wlock);
+> >>> +	synchronize_sched();
+> >>>     
+> >>
+> >> Could this be synchronize_rcu? You are using rcu_read_lock() protected 
+> >> sections.
+> >>   
+> > I meant to comment on that.  I wasn't sure which to use, so I chose the 
+> > more conservative approach.  synchronize_rcu() might be appropriate.
 > 
-> Also, I agree on the 4byte alignment, rather than the 8byte Steve seems
-> to favour.
+> You do indeed need to match the update-side and read-side primitives:
+> 
+> 	Update-side				Read-side
+> 
+> 	synchronize_rcu()			rcu_read_lock()
+> 	call_rcu()				rcu_read_unlock()
+> 
+> 	call_rcu_bh()				rcu_read_lock_bh()
+> 						rcu_read_unlock_bh()
+> 
+> 	synchronize_sched()			preempt_disable()
+> 						preempt_enable()
+> 						[and anything else
+> 						 that disables either
+> 						 preemption or irqs]
+> 
+> 	synchronize_srcu()			srcu_read_lock()
+> 						srcu_read_unlock()
+> 
+> 
+> Mixing RCU or RCU-SCHED with RCU-BH will fail in Classic RCU systems,
+> while mixing RCU or RCU-BH with RCU-SCHED will fail in preemptable RCU
+> systems.  Mixing SRCU with any of the other flavors of RCU will fail
+> on any system.
+> 
+> So please match them up correctly!
+> 
 
-Pretty much all CPUs word align on a 8 byte bounder (until we get those 
-128bit boxes running), but not all can word align on 4 bytes. I was hoping 
-to make the buffer output somewhat the same across archs.
-
-Otherwise, this is going to be quite a complex mess IMHO.
-
--- Steve
+Also, for consistency with other parts of networking code, don't introduce
+the synchronize_sched() or synchronize_srcu() pattern to network protocols
+unless there is a no other way to achieve the desired result.
 
