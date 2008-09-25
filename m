@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYIYHak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754268AbYIYHbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023AbYIYHak (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 03:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbYIYHac
+	id S1754268AbYIYHbj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 03:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYIYHba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 03:30:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39785 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751097AbYIYHac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 03:30:32 -0400
-Date: Thu, 25 Sep 2008 09:29:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org,
-       akpm@linux-foundation.org, manfred@colorfullife.com,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
-       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org, tglx@linutronix.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH, RFC] v6 scalable classic RCU implementation
-Message-ID: <20080925072915.GB20249@elte.hu>
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <20080915160221.GA9660@linux.vnet.ibm.com> <20080923235340.GA12166@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080923235340.GA12166@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 25 Sep 2008 03:31:30 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:53122 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751097AbYIYHb3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 03:31:29 -0400
+Date: Thu, 25 Sep 2008 09:31:19 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: benh@kernel.crashing.org
+Cc: Milton Miller <miltonm@bga.com>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org, Christoph Raisch <RAISCH@de.ibm.com>,
+       linuxppc-dev@ozlabs.org, Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+ hardirq preemption
+Message-ID: <20080925093119.5dd4df4c@bull.net>
+In-Reply-To: <1222290847.8277.81.camel@pasglop>
+References: <200809231743.23828.ossthema@de.ibm.com>
+	<20080915100406.342e027a@bull.net>
+	<200809240958.m8O9wM7k010996@sullivan.realtime.net>
+	<1222251467.8277.73.camel@pasglop>
+	<f30d1d832fd4ad096afccf198c14a7bb@bga.com>
+	<1222290847.8277.81.camel@pasglop>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 25 Sep 2008 07:14:07 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > There may be some implicit assumption in that we expect the cpu 
+> > priority to be returned to normal by the EOI, but there is nothing in 
+> > the hardware that requires the EOI to come from the same cpu as 
+> > accepted the interrupt for processing, with the exception of the IPI 
+> > which is per-cpu (and the only interrupt that is per-cpu).
+> 
+> Well, there is one fundamental one: The XIRR register we access is
+> per-CPU, so if we are to return the right processor priority, we must
+> make sure we write the right XIRR.
 
-> Attached is an updated patch to Classic RCU that applies a hierarchy, 
-> greatly reducing the contention on the top-level lock for large 
-> machines.  This passes 10-hour concurrent rcutorture and 
-> online-offline testing on 128-CPU ppc64 without dynticks enabled, and 
-> exposes some timekeeping bugs in presence of dynticks (exciting 
-> working on a system where "sleep 1" hangs until interrupted...).
+  That's already the case as the irq fetch (xx_xirr_info_get()) and
+eoi (xx_xirr_info_set()) are both done in interrupt context, therefore on
+the same cpu.
 
-i'm wondering about those timekeeping bugs. Do you have an idea what's 
-it about and does it affect mainline?
+> 
+> Same with Cell, MPIC, actually and a few others. In general I'd say most
+> fast_eoi type PICs have this requirement.
+> 
+> > It would probably mean adding the concept of the current cpu priority 
+> > vs interrupts and making sure we write it to hardware at irq_exit() 
+> > time when deferring the actual irq handlers.
+> 
+> I think we need something like a special -rt variant of the fast_eoi
+> handler that masks & eoi's in ack() before the thread is spun off, and
+> unmasks instead of eoi() when the irq processing is complete.
 
-	Ingo
+  This is what is already done in the threaded case:
+
+    - fetch + mask + eoi  in interrupt context
+
+    - unmask in the thread when processing is complete.
+
+
+  Sebastien.
+
