@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbYIYNzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYIYNzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754726AbYIYNzX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 09:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYIYNzK
+	id S1755403AbYIYNzq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 09:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbYIYNzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 09:55:10 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:63917 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752286AbYIYNzJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 09:55:09 -0400
-Message-ID: <48DB9816.4020603@freescale.com>
-Date: Thu, 25 Sep 2008 08:54:30 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Thu, 25 Sep 2008 09:55:35 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:45100 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752863AbYIYNze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 09:55:34 -0400
+Date: Thu, 25 Sep 2008 15:55:26 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH] BUG: ll_merge_requests_fn() updates req->nr_phys_segments wrongly
+Message-ID: <20080925135526.GO2677@kernel.dk>
+References: <200809232358.02810.knikanth@suse.de>
 MIME-Version: 1.0
-To: Li Yang <leoli@freescale.com>
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       dan.j.williams@intel.com
-Subject: Re: [PATCH v2] fsl-dma: allow Freescale Elo DMA driver to be compiled
- as a module
-References: <1222293567-17694-1-git-send-email-timur@freescale.com> <2a27d3730809242354u4cc24b96yda3973bfc3ddac92@mail.gmail.com>
-In-Reply-To: <2a27d3730809242354u4cc24b96yda3973bfc3ddac92@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809232358.02810.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Yang wrote:
-
->> -subsys_initcall(of_fsl_dma_chan_init);
->>  subsys_initcall(of_fsl_dma_init);
+On Tue, Sep 23 2008, Nikanth Karthikesan wrote:
 > 
-> Not a critical problem.  But module_init() are preferred for modules.
+> From: Nikanth Karthikesan <knikanth@suse.de>
+> 
+> ll_merge_requests_fn() decreases the req->nr_phys_segments if 
+> blk_phys_contig_segment() returns true, but it is perfectly possible that 
+> blk_hw_contig_segment() is false. A new hw_segment implies a new phys_segment. 
+> So decrementing nr_phys_segments wrongly here triggers the BUG_ON() in 
+> scsi_init_sgtable(), as blk_rq_map_sg() would map 1 phys_segment more than  
+> req->nr_phys_segment. This is easily reproducible. Other callers of 
+> blk_rq_map_sg() should also be affected by this bug.
+> 
+> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> ---
+> 
+>  block/blk-merge.c |   10 ++++------
+>  1 files changed, 4 insertions(+), 6 deletions(-)
+> 
+> diff --git a/block/blk-merge.c b/block/blk-merge.c
+> index 5efc9e7..6e6d04b 100644
+> --- a/block/blk-merge.c
+> +++ b/block/blk-merge.c
+> @@ -392,11 +392,6 @@ static int ll_merge_requests_fn(struct request_queue *q, 
+> struct request *req,
+>  		return 0;
+>  
+>  	total_phys_segments = req->nr_phys_segments + next->nr_phys_segments;
+> -	if (blk_phys_contig_segment(q, req->biotail, next->bio))
+> -		total_phys_segments--;
 
-This was intentional.  When compiled as a module, subsys_initcall becomes
-module_init().  When compiled in-kernel, this code is initialized before most
-drivers, so it's ready when the drivers are loaded.
+This is totally broken, I gather you are thinking the bug is fixed since
+the counts always match up. Well that's mainly because you know don't do
+ANY merging.
 
-> Acked-by: Li Yang <leoli@freescale.com>
+> -	if (total_phys_segments > q->max_phys_segments)
+> -		return 0;
 
-Thanks.
+Hmm?
+
+I think you should try and describe the problem you are seeing instead,
+then we can perhaps find the real issue.
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Jens Axboe
+
