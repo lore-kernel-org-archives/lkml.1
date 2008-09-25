@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYIYRcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbYIYRc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbYIYRcH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 13:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYIYRbz
+	id S1756880AbYIYRc0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 13:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbYIYRcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 13:31:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41436 "EHLO
+	Thu, 25 Sep 2008 13:32:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59572 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752407AbYIYRby (ORCPT
+	by vger.kernel.org with ESMTP id S1752892AbYIYRcO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 13:31:54 -0400
-Date: Thu, 25 Sep 2008 10:29:57 -0700 (PDT)
+	Thu, 25 Sep 2008 13:32:14 -0400
+Date: Thu, 25 Sep 2008 10:25:00 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
        "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <20080925171559.GB29392@Krystal>
-Message-ID: <alpine.LFD.1.10.0809251025170.3265@nehalem.linux-foundation.org>
-References: <20080924051400.195780424@goodmis.org> <1222268595.16700.149.camel@lappy.programming.kicks-ass.net> <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com> <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
- <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com> <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <33307c790809241054n47addd27hef90930f109599fd@mail.gmail.com> <alpine.LFD.1.10.0809241323590.3265@nehalem.linux-foundation.org>
- <20080924205334.GB12248@Krystal> <alpine.LFD.1.10.0809241458270.3265@nehalem.linux-foundation.org> <20080925171559.GB29392@Krystal>
+Subject: Re: [RFC PATCH 1/2 v2] Unified trace buffer
+In-Reply-To: <alpine.DEB.1.10.0809251312010.27920@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.1.10.0809251023090.3265@nehalem.linux-foundation.org>
+References: <20080925155807.158539649@goodmis.org> <20080925160048.641420646@goodmis.org> <alpine.LFD.1.10.0809250952460.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809251312010.27920@gandalf.stny.rr.com>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -35,27 +35,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Thu, 25 Sep 2008, Mathieu Desnoyers wrote:
+On Thu, 25 Sep 2008, Steven Rostedt wrote:
 > 
-> We could use a page header instead to contain the "unused_size"
-> information.
+> The problem with this is overwrite mode, which is the only mode ftace 
+> currently offers. What happens when your writer starts overwriting the 
+> ring buffer and there is no reader?
 
-Absolutely. There's no one way to do this.
+Overwrite things on page at a time. Don't you already do that? (I didn't 
+check that closely, I just assumed you would do the _much_ simpler "move 
+the head to the next page" thing rather than trying to mix head and tail 
+on the same page.
 
-> I would prefer to put the extended timestamp within the event header
-> instead of creating a separate entry for this for atomicity concerns
-> (what happens if a long interrupt executes between the TSCExtend marker
-> event and the event expecting to be written right next to it ?).
+> What happens is that the start value is gone. You do not have a way to use 
+> all the deltas to catch up to the remaining events.
 
-The log entries should be reserved with interrupts disabled anyway, and 
-they are per-CPU, so there are no atomicity issues.
-
-For NMI's, things get more exciting. I'd really prefer NMI's to go to a 
-separate ring buffer entirely, because otherwise consistency gets really 
-hard. Using lockless algorithms for a variable-sized pool of pages is a 
-disaster waiting to happen.
-
-I don't think we can currently necessarily reasonably trace NMI's, but 
-it's something to keep in mind as required support eventually.
+Use the page start date for the first event in a page. But within pages, 
+make everything depend on previous event.
 
 		Linus
