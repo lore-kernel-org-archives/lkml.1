@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbYIYOoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbYIYOo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbYIYOoR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 10:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbYIYOoD
+	id S1755159AbYIYOo3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 10:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbYIYOoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 10:44:03 -0400
-Received: from outbound-mail-121.bluehost.com ([67.222.38.21]:44795 "HELO
-	outbound-mail-121.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752192AbYIYOoB (ORCPT
+	Thu, 25 Sep 2008 10:44:12 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:39305 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752875AbYIYOoK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 10:44:01 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=r5bsmv2WKG7s+fqeh/y5UuMNAOAOSyAlelZR9ZVCEpsVOOv0vaqsXxxXPtb+PjFsVUsEbckaEJRltz9HZTdxM4Y4NoEZCZDjC43dX1Enod9RMTE3H9XeGrumejEYwjeQ;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86/pci: fix dmar_tbl early_ioremap leak v2
-Date: Thu, 25 Sep 2008 07:43:34 -0700
-User-Agent: KMail/1.9.9
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       mark gross <mgross@linux.intel.com>
-References: <1222327705-22048-1-git-send-email-yhlu.kernel@gmail.com> <20080925081158.GA30349@elte.hu>
-In-Reply-To: <20080925081158.GA30349@elte.hu>
+	Thu, 25 Sep 2008 10:44:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=hsuM3CEZG7oL684AFFSMZoAT8iyjEnvk27R9dxeLFW++trgitEi1sVyP+08ev3a6Vv
+         jA0WeKZSsgAhPVEl2MAN+RByQSnM2bgjaJaBpDPAvjkhy8lppeQxrBbFaYN31fj2xxXa
+         xe2kvdvfCmnW+xUhLCoy+iuzeMNY2EyrOXtgw=
+Message-ID: <c62985530809250744t3ce0011ajebd8343eb748cf24@mail.gmail.com>
+Date: Thu, 25 Sep 2008 16:44:08 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Pekka Paalanen" <pq@iki.fi>
+Subject: Re: [Patch -tip 3/3] Tracing/ftrace: Don't consume entries unhandled by mmiotrace
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080925173435.5f525557@daedalus.pq.iki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809250743.35271.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+References: <48DB8408.7080408@gmail.com>
+	 <20080925173435.5f525557@daedalus.pq.iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, September 25, 2008 1:11 am Ingo Molnar wrote:
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > use early_acpi_os_unmap_memory
-> >
-> > v2: move unmap_memory early...
-> >
-> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> >
-> > ---
-> >  drivers/pci/dmar.c |    9 +++++++--
-> >  1 file changed, 7 insertions(+), 2 deletions(-)
+2008/9/25 Pekka Paalanen <pq@iki.fi>:
+> NACK.
 >
-> since this depends on other x2apic/sparseirq changes in -tip i've
-> applied it to tip/irq/sparseirq.
+> mmiotrace's log output is stricly specified, the standard/default
+> printing functions may NOT be used. The output is supposed to be
+> machine readable in addition to human readable.
 >
-> Jesse, any objections?
+> The ftrace infrastructure assumes there is only one active tracer
+> at a time, therefore destroying unhandled entries is not a problem.
+>
+> --
+> Pekka Paalanen
+> http://www.iki.fi/pq/
+>
 
-Nope, but it would be good to get Dave or Mark's ack (Dave owns this code 
-now).
+Hi Pekka.
 
-Jesse
+It's up to you.
+I just guessed that one would trace IO and stack for example.
+Or why not IO and functions: This sounds to me very useful (who
+performed this io..?)
+
+As you want....
+
+Regards...
