@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbYIYGJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbYIYGJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbYIYGJY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 02:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYIYGH4
+	id S1755042AbYIYGJn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 02:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbYIYGII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 02:07:56 -0400
-Received: from qmta06.westchester.pa.mail.comcast.net ([76.96.62.56]:46180
-	"EHLO QMTA06.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753178AbYIYGHz (ORCPT
+	Thu, 25 Sep 2008 02:08:08 -0400
+Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:36147 "EHLO
+	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754321AbYIYGIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 02:07:55 -0400
-X-Authority-Analysis: v=1.0 c=1 a=5flvUuxTl7kA:10 a=51vvcaeiPR0A:10
- a=hkalZczCN4h1uf0MMtwA:9 a=HdP9JgRuaW8DvsuFixUA:7
- a=HiY3BvUN2J4Emi-uVNxkRXDM3eEA:4 a=i92e0Ub4el8A:10 a=d_-3mwAUsuEA:10
- a=eZLSmJVMEtUA:10
-Subject: [RFC PATCH 6/8] relay - Replace relay_reserve/relay_write with
-	non-padded versions.
+	Thu, 25 Sep 2008 02:08:06 -0400
+X-Authority-Analysis: v=1.0 c=1 a=SbUXHhBrzMYA:10 a=sDv5-TTEXxYA:10
+ a=e9xhmM40zqqwFlG3hwAA:9 a=nQ0vRzC8zil8t1hcVc8A:7
+ a=VCb2D9vS5JHHNJKuH0SIg0MUzSAA:4 a=wZiCkNY6m2YA:10 a=eZLSmJVMEtUA:10
+Subject: [RFC PATCH 7/8] relay - Remove padding-related code from
+	relay_read()/relay_splice_read() et al.
 From: Tom Zanussi <zanussi@comcast.net>
 To: Martin Bligh <mbligh@google.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
@@ -36,8 +35,8 @@ References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
 	 <33307c790809230700o4bf0d22fg8ab2dcb904f7d66c@mail.gmail.com>
 	 <1222228215.7761.0.camel@charm-linux>
 Content-Type: text/plain
-Date: Thu, 25 Sep 2008 01:07:53 -0500
-Message-Id: <1222322873.6435.61.camel@charm-linux>
+Date: Thu, 25 Sep 2008 01:07:59 -0500
+Message-Id: <1222322879.6435.62.camel@charm-linux>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
@@ -45,231 +44,287 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace relay_reserve/relay_write with non-padded versions.
+Remove padding-related code from relay_read()/relay_splice_read() et al.
 
-The old versions of relay_reserve/relay_write would write/reserve an
-event only if the whole thing could fit in the remaining space of the
-current sub-buffer; if it couldn't it would add padding to the current
-sub-buffer and reserve in the next.  The new versions don't add
-padding but use up all the space in a sub-buffer and write the
-remainder in the next sub-buffer.  They won't however write a partial
-event - if there's not enough space for the event in the current
-sub-buffer and the next sub-buffer isn't free, the whole reserve/write
-will fail.
+Because we no longer write padding, we no longer have to read it or
+account for it anywhere else, greatly simplifying the related code.
 ---
- include/linux/relay.h |   41 +++++++++++++++++++----------
- kernel/relay.c        |   69 +++++++++++++++++++++++++++----------------------
- 2 files changed, 65 insertions(+), 45 deletions(-)
+ kernel/relay.c |  149 ++++++++------------------------------------------------
+ 1 files changed, 20 insertions(+), 129 deletions(-)
 
-diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 13163b0..c42b2d3 100644
---- a/include/linux/relay.h
-+++ b/include/linux/relay.h
-@@ -207,9 +207,9 @@ extern void relay_subbufs_consumed(struct rchan *chan,
- extern void relay_reset(struct rchan *chan);
- extern int relay_buf_full(struct rchan_buf *buf);
- 
--extern size_t switch_subbuf_default_callback(struct rchan_buf *buf,
--					     size_t length,
--					     void **reserved);
-+extern size_t relay_switch_subbuf_default_callback(struct rchan_buf *buf,
-+						   size_t length,
-+						   void **reserved);
- 
- /**
-  *	relay_event_toobig - is event too big to fit in a sub-buffer?
-@@ -270,17 +270,23 @@ static inline void relay_write(struct rchan *chan,
- 			       const void *data,
- 			       size_t length)
- {
--	unsigned long flags;
-+	size_t remainder = length;
- 	struct rchan_buf *buf;
-+	unsigned long flags;
- 	void *reserved;
- 
- 	local_irq_save(flags);
- 	buf = chan->buf[smp_processor_id()];
- 	reserved = buf->data + buf->offset;
--	if (unlikely(buf->offset + length > chan->subbuf_size))
--		length = chan->cb->switch_subbuf(buf, length, &reserved);
-+	if (unlikely(buf->offset + length > buf->chan->subbuf_size)) {
-+		remainder = chan->cb->switch_subbuf(buf, length, &reserved);
-+		if (unlikely(!reserved)) {
-+			local_irq_restore(flags);
-+			return;
-+		}
-+	}
- 	memcpy(reserved, data, length);
--	buf->offset += length;
-+	buf->offset += remainder;
- 	local_irq_restore(flags);
- }
- 
-@@ -300,15 +306,22 @@ static inline void __relay_write(struct rchan *chan,
- 				 const void *data,
- 				 size_t length)
- {
-+	size_t remainder = length;
- 	struct rchan_buf *buf;
-+	unsigned long flags;
- 	void *reserved;
- 
- 	buf = chan->buf[get_cpu()];
- 	reserved = buf->data + buf->offset;
--	if (unlikely(buf->offset + length > buf->chan->subbuf_size))
--		length = chan->cb->switch_subbuf(buf, length, &reserved);
-+	if (unlikely(buf->offset + length > buf->chan->subbuf_size)) {
-+		remainder = chan->cb->switch_subbuf(buf, length, &reserved);
-+		if (unlikely(!reserved)) {
-+			local_irq_restore(flags);
-+			return;
-+		}
-+	}
- 	memcpy(reserved, data, length);
--	buf->offset += length;
-+	buf->offset += remainder;
- 	put_cpu();
- }
- 
-@@ -323,15 +336,15 @@ static inline void __relay_write(struct rchan *chan,
-  *	Does not protect the buffer at all - caller must provide
-  *	appropriate synchronization.
-  */
--static inline void *relay_reserve(struct rchan *chan, size_t length)
-+static inline void *relay_reserve(struct rchan *chan,
-+				  size_t length)
- {
--	void *reserved;
- 	struct rchan_buf *buf = chan->buf[smp_processor_id()];
-+	void *reserved = buf->data + buf->offset;
- 
--	reserved = buf->data + buf->offset;
- 	if (unlikely(buf->offset + length > buf->chan->subbuf_size)) {
- 		length = chan->cb->switch_subbuf(buf, length, &reserved);
--		if (!length)
-+		if (unlikely(!reserved))
- 			return NULL;
- 	}
- 	buf->offset += length;
 diff --git a/kernel/relay.c b/kernel/relay.c
-index 9a08fec..15e4de2 100644
+index 15e4de2..21b3e19 100644
 --- a/kernel/relay.c
 +++ b/kernel/relay.c
-@@ -350,7 +350,7 @@ static struct rchan_callbacks default_channel_callbacks = {
- 	.create_buf_file = create_buf_file_default_callback,
- 	.remove_buf_file = remove_buf_file_default_callback,
- 	.wakeup_readers = wakeup_readers_default_callback,
--	.switch_subbuf = switch_subbuf_default_callback,
-+	.switch_subbuf = relay_switch_subbuf_default_callback,
- };
- 
- /**
-@@ -530,7 +530,7 @@ static void setup_callbacks(struct rchan *chan,
- 	if (!cb->wakeup_readers)
- 		cb->wakeup_readers = wakeup_readers_default_callback;
- 	if (!cb->switch_subbuf)
--		cb->switch_subbuf = switch_subbuf_default_callback;
-+		cb->switch_subbuf = relay_switch_subbuf_default_callback;
- 	chan->cb = cb;
- }
- 
-@@ -736,8 +736,20 @@ int relay_late_setup_files(struct rchan *chan,
- 	return err;
- }
- 
-+static inline int next_subbuf_free(struct rchan_buf *buf)
-+{
-+	size_t full_subbufs;
-+
-+	if (buf->chan->flags & RCHAN_MODE_OVERWRITE)
-+		return 1;
-+
-+	full_subbufs = buf->subbufs_produced - buf->subbufs_consumed;
-+
-+	return (full_subbufs < buf->chan->n_subbufs - 1);
-+}
-+
- /**
-- *	switch_subbuf_default_callback - switch to a new sub-buffer
-+ *	relay_switch_subbuf_default_callback - switch to a new sub-buffer
-  *	@buf: channel buffer
-  *	@length: size of current event
-  *	@reserved: a pointer to the space reserved
-@@ -747,50 +759,45 @@ int relay_late_setup_files(struct rchan *chan,
-  *	Performs sub-buffer-switch tasks such as invoking callbacks,
-  *	updating padding counts, waking up readers, etc.
-  */
--size_t switch_subbuf_default_callback(struct rchan_buf *buf,
--				      size_t length,
--				      void **reserved)
-+size_t relay_switch_subbuf_default_callback(struct rchan_buf *buf,
-+					    size_t length,
-+					    void **reserved)
+@@ -966,72 +966,13 @@ static void relay_file_read_consume(struct rchan_buf *buf,
+ 				    size_t bytes_consumed)
  {
--	void *old, *new;
--	size_t old_subbuf, new_subbuf;
-+	size_t remainder, new_subbuf;
-+	void *new_data;
+ 	size_t subbuf_size = buf->chan->subbuf_size;
+-	size_t n_subbufs = buf->chan->n_subbufs;
+-	size_t read_subbuf;
+-
+-	if (buf->subbufs_produced == buf->subbufs_consumed &&
+-	    buf->offset == buf->bytes_consumed)
+-		return;
+-
+-	if (buf->bytes_consumed + bytes_consumed > subbuf_size) {
+-		relay_subbufs_consumed(buf->chan, buf->cpu, 1);
+-		buf->bytes_consumed = 0;
+-	}
  
- 	if (unlikely(relay_event_toobig(buf, length)))
- 		goto toobig;
+ 	buf->bytes_consumed += bytes_consumed;
+-	if (!read_pos)
+-		read_subbuf = buf->subbufs_consumed % n_subbufs;
+-	else
+-		read_subbuf = read_pos / buf->chan->subbuf_size;
+-	if (buf->bytes_consumed + buf->padding[read_subbuf] == subbuf_size) {
+-		if ((read_subbuf == buf->subbufs_produced % n_subbufs) &&
+-		    (buf->offset == subbuf_size))
+-			return;
+-		relay_subbufs_consumed(buf->chan, buf->cpu, 1);
+-		buf->bytes_consumed = 0;
+-	}
+-}
  
--	if (buf->offset != buf->chan->subbuf_size + 1) {
--		buf->prev_padding = buf->chan->subbuf_size - buf->offset;
--		old_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
--		buf->padding[old_subbuf] = buf->prev_padding;
--		relay_inc_produced(buf);
--		relay_update_filesize(buf, buf->chan->subbuf_size -
--				      buf->padding[old_subbuf]);
--		buf->chan->cb->wakeup_readers(buf);
-+	/* don't write anything unless we can write it all. */
-+	if (!next_subbuf_free(buf)) {
-+		*reserved = NULL;
-+		return 0;
+-/*
+- *	relay_file_read_avail - boolean, are there unconsumed bytes available?
+- */
+-static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
+-{
+-	size_t subbuf_size = buf->chan->subbuf_size;
+-	size_t n_subbufs = buf->chan->n_subbufs;
+-	size_t produced = buf->subbufs_produced;
+-	size_t consumed = buf->subbufs_consumed;
+-
+-	relay_file_read_consume(buf, read_pos, 0);
+-
+-	consumed = buf->subbufs_consumed;
+-
+-	if (unlikely(buf->offset > subbuf_size)) {
+-		if (produced == consumed)
+-			return 0;
+-		return 1;
+-	}
+-
+-	if (unlikely(produced - consumed >= n_subbufs)) {
+-		consumed = produced - n_subbufs + 1;
+-		buf->subbufs_consumed = consumed;
++	if (buf->bytes_consumed == subbuf_size) {
++		relay_subbufs_consumed(buf->chan, buf->cpu, 1);
+ 		buf->bytes_consumed = 0;
  	}
- 
--	old = buf->data;
-+	if (reserved)
-+		*reserved = buf->data + buf->offset;
-+
-+	remainder = length - (buf->chan->subbuf_size - buf->offset);
-+	relay_inc_produced(buf);
-+	relay_update_filesize(buf, buf->chan->subbuf_size + remainder);
-+	buf->chan->cb->wakeup_readers(buf);
-+
- 	new_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
--	new = buf->start + new_subbuf * buf->chan->subbuf_size;
--	buf->offset = 0;
--	if (!buf->chan->cb->subbuf_start(buf, new, old, buf->prev_padding)) {
--		buf->offset = buf->chan->subbuf_size + 1;
+-
+-	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
+-	consumed = (consumed % n_subbufs) * subbuf_size + buf->bytes_consumed;
+-
+-	if (consumed > produced)
+-		produced += n_subbufs * subbuf_size;
+-
+-	if (consumed == produced) {
+-		if (buf->offset == subbuf_size &&
+-		    buf->subbufs_produced > buf->subbufs_consumed)
+-			return 1;
 -		return 0;
 -	}
--	buf->data = new;
--	buf->padding[new_subbuf] = 0;
-+	new_data = buf->start + new_subbuf * buf->chan->subbuf_size;
-+
-+	buf->data = new_data;
-+	buf->offset = 0; /* remainder will be added by caller */
- 
- 	if (unlikely(relay_event_toobig(buf, length + buf->offset)))
- 		goto toobig;
- 
--	if (reserved)
--		*reserved = buf->data;
 -
--	return length;
--
-+	return remainder;
- toobig:
- 	buf->chan->last_toobig = length;
- 	return 0;
+-	return 1;
  }
--EXPORT_SYMBOL_GPL(switch_subbuf_default_callback);
-+EXPORT_SYMBOL_GPL(relay_switch_subbuf_default_callback);
  
  /**
-  *	relay_subbufs_consumed - update the buffer's sub-buffers-consumed count
+@@ -1042,21 +983,19 @@ static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
+ static size_t relay_file_read_subbuf_avail(size_t read_pos,
+ 					   struct rchan_buf *buf)
+ {
+-	size_t padding, avail = 0;
++	size_t avail;
+ 	size_t read_subbuf, read_offset, write_subbuf, write_offset;
+ 	size_t subbuf_size = buf->chan->subbuf_size;
+ 
+ 	write_subbuf = (buf->data - buf->start) / subbuf_size;
+-	write_offset = buf->offset > subbuf_size ? subbuf_size : buf->offset;
++	write_offset = buf->offset;
+ 	read_subbuf = read_pos / subbuf_size;
+ 	read_offset = read_pos % subbuf_size;
+-	padding = buf->padding[read_subbuf];
+ 
+-	if (read_subbuf == write_subbuf) {
+-		if (read_offset + padding < write_offset)
+-			avail = write_offset - (read_offset + padding);
+-	} else
+-		avail = (subbuf_size - padding) - read_offset;
++	avail = subbuf_size - read_offset;
++
++	if (read_subbuf == write_subbuf && read_offset < write_offset)
++		avail = write_offset - read_offset;
+ 
+ 	return avail;
+ }
+@@ -1066,28 +1005,17 @@ static size_t relay_file_read_subbuf_avail(size_t read_pos,
+  *	@read_pos: file read position
+  *	@buf: relay channel buffer
+  *
+- *	If the @read_pos is in the middle of padding, return the
+- *	position of the first actually available byte, otherwise
+- *	return the original value.
++ *	If the @read_pos is 0, return the position of the first
++ *	unconsumed byte, otherwise return the original value.
+  */
+ static size_t relay_file_read_start_pos(size_t read_pos,
+ 					struct rchan_buf *buf)
+ {
+-	size_t read_subbuf, padding, padding_start, padding_end;
+ 	size_t subbuf_size = buf->chan->subbuf_size;
+-	size_t n_subbufs = buf->chan->n_subbufs;
+-	size_t consumed = buf->subbufs_consumed % n_subbufs;
++	size_t consumed = buf->subbufs_consumed % buf->chan->n_subbufs;
+ 
+ 	if (!read_pos)
+ 		read_pos = consumed * subbuf_size + buf->bytes_consumed;
+-	read_subbuf = read_pos / subbuf_size;
+-	padding = buf->padding[read_subbuf];
+-	padding_start = (read_subbuf + 1) * subbuf_size - padding;
+-	padding_end = (read_subbuf + 1) * subbuf_size;
+-	if (read_pos >= padding_start && read_pos < padding_end) {
+-		read_subbuf = (read_subbuf + 1) % n_subbufs;
+-		read_pos = read_subbuf * subbuf_size;
+-	}
+ 
+ 	return read_pos;
+ }
+@@ -1102,17 +1030,9 @@ static size_t relay_file_read_end_pos(struct rchan_buf *buf,
+ 				      size_t read_pos,
+ 				      size_t count)
+ {
+-	size_t read_subbuf, padding, end_pos;
+-	size_t subbuf_size = buf->chan->subbuf_size;
+-	size_t n_subbufs = buf->chan->n_subbufs;
++	size_t end_pos = read_pos + count;
+ 
+-	read_subbuf = read_pos / subbuf_size;
+-	padding = buf->padding[read_subbuf];
+-	if (read_pos % subbuf_size + count + padding == subbuf_size)
+-		end_pos = (read_subbuf + 1) * subbuf_size;
+-	else
+-		end_pos = read_pos + count;
+-	if (end_pos >= subbuf_size * n_subbufs)
++	if (end_pos >= buf->chan->subbuf_size * buf->chan->n_subbufs)
+ 		end_pos = 0;
+ 
+ 	return end_pos;
+@@ -1166,9 +1086,6 @@ static ssize_t relay_file_read_subbufs(struct file *filp, loff_t *ppos,
+ 
+ 	mutex_lock(&filp->f_path.dentry->d_inode->i_mutex);
+ 	do {
+-		if (!relay_file_read_avail(buf, *ppos))
+-			break;
+-
+ 		read_start = relay_file_read_start_pos(*ppos, buf);
+ 		avail = relay_file_read_subbuf_avail(read_start, buf);
+ 		if (!avail)
+@@ -1243,8 +1160,7 @@ static int subbuf_splice_actor(struct file *in,
+ 			       loff_t *ppos,
+ 			       struct pipe_inode_info *pipe,
+ 			       size_t len,
+-			       unsigned int flags,
+-			       int *nonpad_ret)
++			       unsigned int flags)
+ {
+ 	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
+ 	struct rchan_buf *rbuf = in->private_data;
+@@ -1252,9 +1168,6 @@ static int subbuf_splice_actor(struct file *in,
+ 	uint64_t pos = (uint64_t) *ppos;
+ 	uint32_t alloc_size = (uint32_t) rbuf->chan->alloc_size;
+ 	size_t read_start = (size_t) do_div(pos, alloc_size);
+-	size_t read_subbuf = read_start / subbuf_size;
+-	size_t padding = rbuf->padding[read_subbuf];
+-	size_t nonpad_end = read_subbuf * subbuf_size + subbuf_size - padding;
+ 	struct page *pages[PIPE_BUFFERS];
+ 	struct partial_page partial[PIPE_BUFFERS];
+ 	struct splice_pipe_desc spd = {
+@@ -1266,7 +1179,8 @@ static int subbuf_splice_actor(struct file *in,
+ 		.spd_release = relay_page_release,
+ 	};
+ 
+-	if (rbuf->subbufs_produced == rbuf->subbufs_consumed)
++	if (rbuf->subbufs_produced == rbuf->subbufs_consumed &&
++	    rbuf->offset == rbuf->bytes_consumed)
+ 		return 0;
+ 
+ 	/*
+@@ -1281,46 +1195,25 @@ static int subbuf_splice_actor(struct file *in,
+ 	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
+ 
+ 	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
+-		unsigned int this_len, this_end, private;
+-		unsigned int cur_pos = read_start + total_len;
++		unsigned int this_len;
+ 
+ 		if (!len)
+ 			break;
+ 
+ 		this_len = min_t(unsigned long, len, PAGE_SIZE - poff);
+-		private = this_len;
+ 
+ 		spd.pages[spd.nr_pages] = rbuf->page_array[pidx];
+ 		spd.partial[spd.nr_pages].offset = poff;
+ 
+-		this_end = cur_pos + this_len;
+-		if (this_end >= nonpad_end) {
+-			this_len = nonpad_end - cur_pos;
+-			private = this_len + padding;
+-		}
+ 		spd.partial[spd.nr_pages].len = this_len;
+-		spd.partial[spd.nr_pages].private = private;
+ 
+ 		len -= this_len;
+ 		total_len += this_len;
+ 		poff = 0;
+ 		pidx = (pidx + 1) % subbuf_pages;
+-
+-		if (this_end >= nonpad_end) {
+-			spd.nr_pages++;
+-			break;
+-		}
+ 	}
+ 
+-	if (!spd.nr_pages)
+-		return 0;
+-
+-	ret = *nonpad_ret = splice_to_pipe(pipe, &spd);
+-	if (ret < 0 || ret < total_len)
+-		return ret;
+-
+-        if (read_start + ret == nonpad_end)
+-                ret += padding;
++	ret = splice_to_pipe(pipe, &spd);
+ 
+         return ret;
+ }
+@@ -1333,13 +1226,12 @@ static ssize_t relay_file_splice_read(struct file *in,
+ {
+ 	ssize_t spliced;
+ 	int ret;
+-	int nonpad_ret = 0;
+ 
+ 	ret = 0;
+ 	spliced = 0;
+ 
+ 	while (len && !spliced) {
+-		ret = subbuf_splice_actor(in, ppos, pipe, len, flags, &nonpad_ret);
++		ret = subbuf_splice_actor(in, ppos, pipe, len, flags);
+ 		if (ret < 0)
+ 			break;
+ 		else if (!ret) {
+@@ -1356,8 +1248,7 @@ static ssize_t relay_file_splice_read(struct file *in,
+ 			len = 0;
+ 		else
+ 			len -= ret;
+-		spliced += nonpad_ret;
+-		nonpad_ret = 0;
++		spliced += ret;
+ 	}
+ 
+ 	if (spliced)
 -- 
 1.5.3.5
 
