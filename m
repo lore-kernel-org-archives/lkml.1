@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbYIYCNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbYIYCNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbYIYCNZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 22:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYIYCNN
+	id S1754335AbYIYCNp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 22:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbYIYCNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 22:13:13 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:28434 "EHLO
+	Wed, 24 Sep 2008 22:13:32 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:28567 "EHLO
 	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbYIYCNM (ORCPT
+	with ESMTP id S1753743AbYIYCNa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 22:13:12 -0400
-Message-ID: <48DAF3B7.9030000@ct.jp.nec.com>
-Date: Wed, 24 Sep 2008 19:13:11 -0700
+	Wed, 24 Sep 2008 22:13:30 -0400
+Message-ID: <48DAF3C9.6080007@ct.jp.nec.com>
+Date: Wed, 24 Sep 2008 19:13:29 -0700
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] x86: signal: introduce helper macro is_ia32
+Subject: [PATCH 4/4] x86: signal_32.c: introduce macro ia32_setup_frame and
+ ia32_setup_rt_frame
 References: <48DAF315.7070700@ct.jp.nec.com>
 In-Reply-To: <48DAF315.7070700@ct.jp.nec.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -29,82 +30,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Introduce new macro is_ia32 for unification of setup_rt_frame().
-No affect in binary, compiler will optimize.
+Make 32-bit setup_rt_frame() look like 64-bit version for unification.
 
 Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
- arch/x86/kernel/signal_32.c |   13 +++++++++----
- arch/x86/kernel/signal_64.c |   13 +++++++++----
- 2 files changed, 18 insertions(+), 8 deletions(-)
+ arch/x86/kernel/signal_32.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index b1bc90f..cf62f70 100644
+index cf62f70..4337cd5 100644
 --- a/arch/x86/kernel/signal_32.c
 +++ b/arch/x86/kernel/signal_32.c
-@@ -491,6 +491,8 @@ static int signr_convert(int sig)
- 	return sig;
+@@ -492,6 +492,8 @@ static int signr_convert(int sig)
  }
  
-+#define is_ia32	1
-+
+ #define is_ia32	1
++#define ia32_setup_frame	__setup_frame
++#define ia32_setup_rt_frame	__setup_rt_frame
+ 
  static int
  setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	       sigset_t *set, struct pt_regs *regs)
-@@ -499,10 +501,13 @@ setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	int ret;
- 
+@@ -503,9 +505,9 @@ setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
  	/* Set up the stack frame */
--	if (ka->sa.sa_flags & SA_SIGINFO)
--		ret = __setup_rt_frame(usig, ka, info, set, regs);
--	else
--		ret = __setup_frame(usig, ka, set, regs);
-+	if (is_ia32) {
-+		if (ka->sa.sa_flags & SA_SIGINFO)
-+			ret = __setup_rt_frame(usig, ka, info, set, regs);
-+		else
-+			ret = __setup_frame(usig, ka, set, regs);
-+	} else
-+		ret = __setup_rt_frame(sig, ka, info, set, regs);
- 
- 	if (ret) {
- 		force_sigsegv(sig, current);
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index c5d8002..53f86d9 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -286,6 +286,12 @@ static int signr_convert(int sig)
- 	return sig;
- }
- 
-+#ifdef CONFIG_IA32_EMULATION
-+#define is_ia32	test_thread_flag(TIF_IA32)
-+#else
-+#define is_ia32	0
-+#endif
-+
- static int
- setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	       sigset_t *set, struct pt_regs *regs)
-@@ -293,15 +299,14 @@ setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	int usig = signr_convert(sig);
- 	int ret;
- 
--#ifdef CONFIG_IA32_EMULATION
--	if (test_thread_flag(TIF_IA32)) {
-+	/* Set up the stack frame */
-+	if (is_ia32) {
+ 	if (is_ia32) {
  		if (ka->sa.sa_flags & SA_SIGINFO)
- 			ret = ia32_setup_rt_frame(usig, ka, info, set, regs);
+-			ret = __setup_rt_frame(usig, ka, info, set, regs);
++			ret = ia32_setup_rt_frame(usig, ka, info, set, regs);
  		else
- 			ret = ia32_setup_frame(usig, ka, set, regs);
+-			ret = __setup_frame(usig, ka, set, regs);
++			ret = ia32_setup_frame(usig, ka, set, regs);
  	} else
--#endif
--	ret = __setup_rt_frame(sig, ka, info, set, regs);
-+		ret = __setup_rt_frame(sig, ka, info, set, regs);
+ 		ret = __setup_rt_frame(sig, ka, info, set, regs);
  
- 	if (ret) {
- 		force_sigsegv(sig, current);
 -- 
 1.5.6
 
