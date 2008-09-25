@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbYIYAsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbYIYAvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753202AbYIYAsK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 20:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYIYAr4
+	id S1753801AbYIYAvn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 20:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYIYAva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 20:47:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44108 "EHLO mx1.redhat.com"
+	Wed, 24 Sep 2008 20:51:30 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47060 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751734AbYIYArz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 20:47:55 -0400
-Date: Wed, 24 Sep 2008 20:46:55 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "John Daiker" <daikerjohn@gmail.com>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [Bug #11608] 2.6.27-rc6 BUG: unable to handle kernel paging
- request
-Message-ID: <20080924204655.481478c6@redhat.com>
-In-Reply-To: <7lIhZC4hCxE.A.zMG.D0q1IB@albercik>
-References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik>
-	<7lIhZC4hCxE.A.zMG.D0q1IB@albercik>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752079AbYIYAv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 20:51:29 -0400
+Message-ID: <48DAE089.20307@garzik.org>
+Date: Wed, 24 Sep 2008 20:51:21 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: mingo@elte.hu, davem@davemloft.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
+       john.ronciak@intel.com, Bruce Allan <bruce.w.allan@intel.com>
+Subject: Re: [PATCH 3/3] e1000e: remove failed request for sw/fw/hw flag
+References: <20080923224630.6927.28967.stgit@jtkirshe-mobile.jf.intel.com>
+In-Reply-To: <20080923224630.6927.28967.stgit@jtkirshe-mobile.jf.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Sep 2008 20:54:23 +0200 (CEST)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Jeff Kirsher wrote:
+> From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
+> When the driver fails to acquire the control flag used to serialize
+> NVM and PHY accesses between the driver, firmware and hardware, remove the
+> request for the flag otherwise the hardware might grant the flag when it
+> becomes available but the driver will not release the flag.  This could
+> cause the firmware to prevent the driver getting the flag for all future
+> attempts.
 > 
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> ---
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11608
-> Subject		: 2.6.27-rc6 BUG: unable to handle kernel paging request
-> Submitter	: John Daiker <daikerjohn@gmail.com>
-> Date		: 2008-09-16 23:00 (6 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122160611517267&w=4
-> 
-> 
+>  drivers/net/e1000e/ich8lan.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 
-As I said in the bugzilla entry:
+applied
 
-  Oops: 000b
 
-  Bit 3 is set -- the processor detected 1's in reserved bits of the page directory.
-
-That can't be good...
