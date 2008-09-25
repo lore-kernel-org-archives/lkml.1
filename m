@@ -1,77 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYIYMXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbYIYMXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbYIYMXT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 08:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYIYMXJ
+	id S1754836AbYIYMXh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 08:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbYIYMXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 08:23:09 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56122 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752750AbYIYMXH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 08:23:07 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 1/2] Report the pagesize backing a VMA in /proc/pid/smaps
-Cc: kosaki.motohiro@jp.fujitsu.com, Dave Hansen <dave@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
-In-Reply-To: <20080924154120.GA10837@csn.ul.ie>
-References: <20080924210309.8C3B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080924154120.GA10837@csn.ul.ie>
-Message-Id: <20080925212025.58A3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 25 Sep 2008 08:23:25 -0400
+Received: from styx.suse.cz ([82.119.242.94]:38325 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752999AbYIYMXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 08:23:24 -0400
+Date: Thu, 25 Sep 2008 14:24:29 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Dave Airlie <airlied@gmail.com>
+cc: David Miller <davem@davemloft.net>, david.vrabel@csr.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       chrisl@vmware.com
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+In-Reply-To: <21d7e9970809231409r3fdd640h53a72a808266d220@mail.gmail.com>
+Message-ID: <alpine.LNX.1.10.0809251423290.4671@pegasus.suse.cz>
+References: <21d7e9970809221826i76081719pdd749237580fc68e@mail.gmail.com>  <20080922.185902.80812984.davem@davemloft.net>  <alpine.LNX.1.10.0809231229460.4671@pegasus.suse.cz>  <20080923.140519.268233735.davem@davemloft.net>
+ <21d7e9970809231409r3fdd640h53a72a808266d220@mail.gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu, 25 Sep 2008 21:23:04 +0900 (JST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 24 Sep 2008, Dave Airlie wrote:
 
-> > 1) in normal page, show PAZE_SIZE
-> > 
-> > because, any userland application woks as pagesize==PAZE_SIZE 
-> > on current powerpc architecture.
-> > 
-> > because
-> > 
-> > fs/binfmt_elf.c
-> > ------------------------------
-> > static int
-> > create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
-> >                 unsigned long load_addr, unsigned long interp_load_addr)
-> > {
-> > (snip)
-> >         NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
-> >         NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE); /* pass ELF_EXEC_PAGESIZE to libc */
-> > 
-> > include/asm-powerpc/elf.h
-> > -----------------------------
-> > #define ELF_EXEC_PAGESIZE       PAGE_SIZE 
-> > 
-> 
-> I'm ok with this option and dropping the MMUPageSize patch as the user
-> should already be able to identify that the hardware does not support 64K
-> base pagesizes. I will leave the name as KernelPageSize so that it is still
-> difficult to confuse it with MMU page size.
-> 
-> > 
-> > 2) in normal page, no display any page size.
-> >    only hugepage case, display page size.
-> > 
-> > because, An administrator want to hugepage size only. (AFAICS)
-> > 
-> 
-> I prefer option 1 as it's easier to parse the presense of information
-> than infer from the absense of it.
+> > My current suspicion in all of this is either the GEM kernel patches
+> > or recent X server.
+> I don't think OpenSUSE was shipping any of the GEM bits.
 
-OK.
+Actually there is no way of not shipping GEM when shipping xorg 7.4, isn't 
+it?
 
-I'll review and test your latest patch without MMUPageSize part.
-(maybe today's midnight or tommorow)
+So definitely GEM could be potential cause here, I think.
 
-Thanks!
-
-
-
+-- 
+Jiri Kosina
+SUSE Labs
