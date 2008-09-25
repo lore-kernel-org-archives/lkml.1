@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbYIYTXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbYIYT0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbYIYTXX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 15:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbYIYTXO
+	id S1754174AbYIYT0U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 15:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbYIYT0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 15:23:14 -0400
-Received: from khc.piap.pl ([195.187.100.11]:49134 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752926AbYIYTXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 15:23:13 -0400
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Frans Pop <elendil@planet.nl>, airlied@gmail.com,
+	Thu, 25 Sep 2008 15:26:11 -0400
+Received: from styx.suse.cz ([82.119.242.94]:55761 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753197AbYIYT0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 15:26:11 -0400
+Date: Thu, 25 Sep 2008 22:22:39 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Frans Pop <elendil@planet.nl>, airlied@gmail.com,
        Jeff Garzik <jeff@garzik.org>, davem@davemloft.net,
-       Andrew Morton <akpm@linux-foundation.org>, jeffrey.t.kirsher@intel.com,
-       david.vrabel@csr.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, chrisl@vmware.com,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org,
+       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       chrisl@vmware.com, Ingo Molnar <mingo@elte.hu>,
        jesse.brandeburg@gmail.com
 Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-References: <20080923.150722.141587696.davem@davemloft.net>
-	<9929d2390809231512w160d221axa2923a6b293a041@mail.gmail.com>
-	<alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz>
-	<20080923.211215.193696086.davem@davemloft.net>
-	<alpine.LNX.1.10.0809250110070.4671@pegasus.suse.cz>
-	<21d7e9970809241722w7c3bb6a5w1af5801b7380169d@mail.gmail.com>
-	<21d7e9970809241722w7c3bb6a5w1af5801b7380169d@mail.gmail.com>
-	<alpine.LNX.1.10.0809250310190.4671@pegasus.suse.cz>
-	<200809250401.54818.elendil@planet.nl>
-	<Pine.LNX.4.64.0809251921340.18801@twin.jikos.cz>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 25 Sep 2008 21:23:11 +0200
-In-Reply-To: <Pine.LNX.4.64.0809251921340.18801@twin.jikos.cz> (Jiri Kosina's message of "Thu\, 25 Sep 2008 19\:24\:57 +0200 \(CEST\)")
-Message-ID: <m33ajovxls.fsf@maximus.localdomain>
+In-Reply-To: <200809251156.10648.jbarnes@virtuousgeek.org>
+Message-ID: <alpine.LNX.1.10.0809252218470.3389@pegasus.suse.cz>
+References: <20080923.150722.141587696.davem@davemloft.net> <200809250401.54818.elendil@planet.nl> <Pine.LNX.4.64.0809251921340.18801@twin.jikos.cz> <200809251156.10648.jbarnes@virtuousgeek.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina <jkosina@suse.cz> writes:
+On Thu, 25 Sep 2008, Jesse Barnes wrote:
 
-> Still, what confuses me a little bit -- the EEPROM of the card is set to 
-> all 0xff, once the corruption happens. Isn't that a quite a coincidence, 
-> that bytes representing "nothing" in this context are used?
+> > Yes, I think that xorg/xorg i915 driver/libdrm/GEM/whatever are the 
+> > biggest suspect currently, according to the data that has been 
+> > gathered so far.
+> We have confirmation that this isn't GEM related; according to the 
+> Novell bug at https://bugzilla.novell.com/show_bug.cgi?id=425480 people 
+> have hit the problem with kernels w/o GEM.
 
-Perhaps the entire chip has been erased with the "ERAL" (erase all)
-command. Requires previously issued EWEN (erase/write enable).
-Each command seems to require several writes to the EEPROM control
-register.
+But the xorg intel driver shipped with xorg 7.4 already has support for 
+GEM, right? So there could still be some bug in the GEM-aware driver 
+running on non-GEM kernel, can't it?
+
+> That doesn't rule out i915 (though I don't think any changes have gone 
+> in since 2.6.26 that would have caused this) or xf86-video-intel.  It's 
+> possible that X is getting confused about BAR mappings somehow, 
+> resulting in a clobbered e1000e NVRAM, but why would the kernel version 
+> matter in that case?  The only thing that comes to mind would be PAT...
+
+Yes, booting with 'nopat' is on my list to try immediately after we are 
+able to recover the corrupted EEPROM.
+
+> Recent versions of the X drivers (using recent libpciaccess code) will 
+> try to map the resourceN_wc file in sysfs.  It's possible that the map 
+> size we end up using is wrong, leading to the situation Dave described 
+> earlier where we map too much MMIO space.
+
+This we could catch easily even with strace, right?
+
 -- 
-Krzysztof Halasa
+Jiri Kosina
+SUSE Labs
