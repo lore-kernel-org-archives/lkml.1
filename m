@@ -1,108 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYIYKma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbYIYKmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263AbYIYKma (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 06:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbYIYKmV
+	id S1753148AbYIYKmp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 06:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYIYKmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 06:42:21 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41666 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752910AbYIYKmU (ORCPT
+	Thu, 25 Sep 2008 06:42:35 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:10144 "EHLO
+	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754422AbYIYKme (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 06:42:20 -0400
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-From: Peter Zijlstra <peterz@infradead.org>
-To: Martin Bligh <mbligh@google.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
-References: <20080924051056.650388887@goodmis.org>
-	 <20080924051400.195780424@goodmis.org>
-	 <1222268595.16700.149.camel@lappy.programming.kicks-ass.net>
-	 <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>
-	 <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
-	 <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com>
-	 <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>
-	 <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>
-	 <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>
-	 <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com>
-	 <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 25 Sep 2008 12:41:43 +0200
-Message-Id: <1222339303.16700.197.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Sep 2008 06:42:34 -0400
+X-BigFish: VPS-29(zz1432R98dR1805M936fOzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0K7QZ2C-04-AY5-01
+Date: Thu, 25 Sep 2008 12:42:12 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 3/3] x86/iommu: use __GFP_ZERO instead of memset for GART
+Message-ID: <20080925104212.GA27928@amd.com>
+References: <1222337635-28285-1-git-send-email-joerg.roedel@amd.com> <1222337635-28285-4-git-send-email-joerg.roedel@amd.com> <20080925102012.GA13631@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080925102012.GA13631@elte.hu>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 25 Sep 2008 10:42:13.0009 (UTC) FILETIME=[5EA25010:01C91EFB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-24 at 14:03 -0700, Martin Bligh wrote:
-> > OK, then how about this?
-> >
-> > Each page will start with a time stamp (I'm still aligning everything by 8
-> > bytes, just because it simplifies things). Then we can have a 3 byte
-> > (24 bit) counter offset? Then we can have a header that looks like:
-> >
-> > struct {
-> >        unsigned char time[3];
-> >        unsigned char length;
-> >        unsigned char buff[];
-> > };
-> >
-> > This still allows me to have the 2048 byte size buffer.
-> >
-> > Or is 24 bits for time too small? The offest will be from the previous
-> > entry, and not the beginning of the page.
-> >
-> > If one defines a fixed size entry, we could just use the full 32 bits for
-> > the timestamp, since the length will be ignored in that case, and will
-> > become part of the buffer.
-> >
-> > Hence,
-> >
-> > struct {
-> >        unsigned int time;
-> >        unsigned char length;
-> >        unsigend char buff[];
-> > };
+On Thu, Sep 25, 2008 at 12:20:12PM +0200, Ingo Molnar wrote:
 > 
-> How about we just steal 5 bits from the timestamp to indicate event
-> lengths up to 32 bytes, and if it's 0, that means there's a length
-> field following? Also that'd mean you could use a longer length field
-> and get beyond 256 bytes to 4096, without impacting most events.
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
-> struct {
->         u32 length:5, time_delta:27;
->         u16 length;
->         u8 buf[];
-> };
+> >  #ifdef CONFIG_IOMMU_LEAK
+> >  	if (leak_trace) {
+> > -		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL,
+> > +		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL|__GFP_ZERO,
+> >  				  get_order(iommu_pages*sizeof(void *)));
+> > -		if (iommu_leak_tab)
+> > -			memset(iommu_leak_tab, 0, iommu_pages * 8);
+> >  		else
+> >  			printk(KERN_DEBUG
+> >  			       "PCI-DMA: Cannot allocate leak trace area\n");
 > 
-> struct {
->         u32 length:5, time_delta:27;        /* where length == 0 */
->         u8 buf[];
-> };
-> 
-> Obviously we could less than 5 bits, even just 1 for a flag ...
+> hm, that looks broken.
 
-I rather like this idea, as it gives small entries (the common case) the
-least overhead but does allow for larger ones.
+Argh, yes. Please try this one:
 
-By also putting the time in there you can do the merge sort iterator,
-Linus was right that everybody wants this anyway.
+=
+>From c402fd7f5fe930d45a02ef863bf3fb61851e6ad0 Mon Sep 17 00:00:00 2001
+From: Joerg Roedel <joerg.roedel@amd.com>
+Date: Thu, 25 Sep 2008 12:39:06 +0200
+Subject: [PATCH] x86/iommu: use __GFP_ZERO instead of memset for GART
 
-As for delta encoding the time, we could make the tick log the absolute
-time packet, that's at least 100Hz and it already has to compute the
-full gtod thing anyway.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/pci-gart_64.c |   13 +++++--------
+ 1 files changed, 5 insertions(+), 8 deletions(-)
 
-I don't much like Linus' idea of bringing type information back into the
-primitive header (sorry Linus ;-)). I'd much rather keep that
-abstraction in the next layer.
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index aecea06..d077116 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -674,13 +674,13 @@ static __init int init_k8_gatt(struct agp_kern_info *info)
+ 	info->aper_size = aper_size >> 20;
+ 
+ 	gatt_size = (aper_size >> PAGE_SHIFT) * sizeof(u32);
+-	gatt = (void *)__get_free_pages(GFP_KERNEL, get_order(gatt_size));
++	gatt = (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
++					get_order(gatt_size));
+ 	if (!gatt)
+ 		panic("Cannot allocate GATT table");
+ 	if (set_memory_uc((unsigned long)gatt, gatt_size >> PAGE_SHIFT))
+ 		panic("Could not set GART PTEs to uncacheable pages");
+ 
+-	memset(gatt, 0, gatt_size);
+ 	agp_gatt_table = gatt;
+ 
+ 	enable_gart_translations();
+@@ -788,19 +788,16 @@ void __init gart_iommu_init(void)
+ 	iommu_size = check_iommu_size(info.aper_base, aper_size);
+ 	iommu_pages = iommu_size >> PAGE_SHIFT;
+ 
+-	iommu_gart_bitmap = (void *) __get_free_pages(GFP_KERNEL,
++	iommu_gart_bitmap = (void *) __get_free_pages(GFP_KERNEL | __GFP_ZERO,
+ 						      get_order(iommu_pages/8));
+ 	if (!iommu_gart_bitmap)
+ 		panic("Cannot allocate iommu bitmap\n");
+-	memset(iommu_gart_bitmap, 0, iommu_pages/8);
+ 
+ #ifdef CONFIG_IOMMU_LEAK
+ 	if (leak_trace) {
+-		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL,
++		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL|__GFP_ZERO,
+ 				  get_order(iommu_pages*sizeof(void *)));
+-		if (iommu_leak_tab)
+-			memset(iommu_leak_tab, 0, iommu_pages * 8);
+-		else
++		if (!iommu_leak_tab)
+ 			printk(KERN_DEBUG
+ 			       "PCI-DMA: Cannot allocate leak trace area\n");
+ 	}
+-- 
+1.5.6.4
+
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
