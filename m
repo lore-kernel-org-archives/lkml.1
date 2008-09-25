@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbYIYPyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbYIYP4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754505AbYIYPyH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 11:54:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYIYPxz
+	id S1754186AbYIYP4n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 11:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbYIYP4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 11:53:55 -0400
-Received: from colo.lackof.org ([198.49.126.79]:40682 "EHLO colo.lackof.org"
+	Thu, 25 Sep 2008 11:56:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49262 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752829AbYIYPxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 11:53:54 -0400
-Date: Thu, 25 Sep 2008 09:53:43 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: David Miller <davem@davemloft.net>
-Cc: grundler@parisc-linux.org, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Notes from LPC PCI/MSI BoF session
-Message-ID: <20080925155343.GC2997@colo.lackof.org>
-References: <200809221229.18501.jbarnes@virtuousgeek.org> <20080924055116.GA3101@colo.lackof.org> <20080923.234705.261909334.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080923.234705.261909334.davem@davemloft.net>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	id S1750875AbYIYP4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 11:56:31 -0400
+Date: Thu, 25 Sep 2008 11:53:55 -0400 (EDT)
+Message-Id: <20080925.115355.71085765.k-ueda@ct.jp.nec.com>
+To: akpm@linux-foundation.org, jens.axboe@oracle.com,
+       James.Bottomley@HansenPartnership.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: [RFC PATCH 0/2] Export lld busy state for request stacking drivers
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 23, 2008 at 11:47:05PM -0700, David Miller wrote:
-> From: Grant Grundler <grundler@parisc-linux.org>
-> Date: Tue, 23 Sep 2008 23:51:16 -0600
-> 
-> > Dave Miller (and others) have clearly stated they don't want to see
-> > CPU affinity handled in the device drivers and want irqbalanced
-> > to handle interrupt distribution. The problem with this is irqbalanced
-> > needs to know how each device driver is binding multiple MSI to it's queues.
-> > Some devices could prefer several MSI go to the same processor and
-> > others want each MSI bound to a different "node" (NUMA).
-> > 
-> > Without any additional API, this means the device driver has to
-> > update irqbalanced for each device it supports. We thought pci_ids.h
-> > was a PITA...that would be trivial compared to maintaining this.
-> 
-> We just need a consistent naming scheme for the IRQs to disseminate
-> this information to irqbalanced, then there is one change to irqbalanced
-> rather than one for each and every driver as you seem to suggest.
+Hi Andrew, Jens, James,
 
-That's sort of what I proposed at the end of my email:
-| A second solution I thought of later might be for the device driver to
-| export (sysfs?) to irqbalanced which MSIs the driver instance owns and
-| how many "domains" those MSIs can serve.  irqbalanced can then write
-| back into the same (sysfs?) the mapping of MSI to domains and update
-| the smp_affinity mask for each of those MSI.
+The following patches are the revised version to use lld's private data
+instead of backing_dev_info.state for exporting lld busy state.
 
-> Anything that's complicated and takes more than a paragraph or two
-> to describe is not what we want.
+Please review and give me your opinion.
+If all of you have no problem, I'll re-send the patches separately
+to each maintainer, Jens and James.
 
-I agree. The discussion will need more though.
+The patches are created on the following commit of for-2.6.28
+in linux-2.6-block, but the scsi part can be also applied to
+scsi-post-merge-2.6.
+---------------------------------------------------------------
+commit c5062758edbe59286d7d8e718a59e4d4347ef541
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Wed Sep 24 13:05:10 2008 +0200
 
-thanks,
-grant
+    libata: set queue SSD flag for SSD devices
+---------------------------------------------------------------
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+Previous post and discussions about the interface:
+    http://lkml.org/lkml/2008/9/19/138
+
+
+Summary of the patches:
+    1/2: block: add lld busy state exporting interface
+    2/2: scsi: export busy state via q->lld_busy_fn()
+
+Thanks,
+Kiyoshi Ueda
