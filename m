@@ -1,97 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYIYSaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbYIYScx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbYIYSaj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 14:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbYIYSa1
+	id S1754218AbYIYScx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 14:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYIYScp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 14:30:27 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:35851 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752841AbYIYSaZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 14:30:25 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAFtx20hMQWq+/2dsb2JhbACBXrokgWU
-Date: Thu, 25 Sep 2008 14:25:17 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/2 v2] Unified trace buffer
-Message-ID: <20080925182517.GA6263@Krystal>
-References: <20080925155807.158539649@goodmis.org> <20080925160048.641420646@goodmis.org> <alpine.LFD.1.10.0809250952460.3265@nehalem.linux-foundation.org> <20080925173505.GD29392@Krystal> <alpine.DEB.1.10.0809251347000.29802@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 25 Sep 2008 14:32:45 -0400
+Received: from gw.goop.org ([64.81.55.164]:35135 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750962AbYIYScp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 14:32:45 -0400
+Message-ID: <48DBD94A.50905@goop.org>
+Date: Thu, 25 Sep 2008 11:32:42 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickens <hugh@veritas.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: Populating multiple ptes at fault time
+References: <48D142B2.3040607@goop.org> <48D17E75.80807@redhat.com> <48D1851B.70703@goop.org> <48D18919.9060808@redhat.com> <48D18C6B.5010407@goop.org> <48D2B970.7040903@redhat.com> <48D2D3B2.10503@goop.org> <48D2E65A.6020004@redhat.com> <48D2EBBB.205@goop.org> <48D2F05C.4040000@redhat.com> <48D2F571.4010504@goop.org> <48DA333C.2050900@redhat.com>
+In-Reply-To: <48DA333C.2050900@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0809251347000.29802@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:09:31 up 112 days, 22:49,  9 users,  load average: 0.17, 0.88,
-	1.18
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Thu, 25 Sep 2008, Mathieu Desnoyers wrote:
-> > 
-> > Is there a reason to use delta between events rather than simply write
-> > the 27 LSBs that I would have missed ?
-> 
-> One answer is that your counter wrap problem is extended.
-> 
-> That is, you have 27 bits of time between each event to not worry about
-> wraps. But if you go against the page itself, the last event on that page
-> is more likely to suffer.
-> 
+Avi Kivity wrote:
+> Jeremy Fitzhardinge wrote:
+>> Avi Kivity wrote:
+>>  
+>>>> The only direct use of pte_young() is in zap_pte_range, within a
+>>>> mmu_lazy region.  So syncing the A bit state on entering lazy mmu mode
+>>>> would work fine there.
+>>>>
+>>>>         
+>>> Ugh, leaving lazy pte.a mode when entering lazy mmu mode?
+>>>     
+>>
+>> Well, sort of but not quite.  The kernel's announcing its about to start
+>> processing a batch of ptes, so the hypervisor can take the opportunity
+>> to update their state before processing.  "Lazy-mode" is from the
+>> perspective of the kernel lazily updating some state the hypervisor
+>> might care about, and the sync happens when leaving mode.
+>>
+>> The flip-side is when the hypervisor is lazily updating some state the
+>> kernel cares about, so it makes sense that the sync when the kernel
+>> enters its lazy mode.  But the analogy isn't very good because we don't
+>> really have an explicit notion of "hypervisor lazy mode", or a formal
+>> handoff of shared state between the kernel and hypervisor.  But in this
+>> case the behaviour isn't too bad.
+>>
+>>   
+>
+> Handwavy.  I think the two notions are separate <insert handwavy
+> counter-arguments>.
 
-You can do the exact same thing and manage to keep the absolute time.
-You just have to adapt the reader like this : (this would be for
-per-event cycle count in the 32 LSBs, slight bitmask adaptation needed
-for 27 bits only).
+Perhaps this helps:
 
-keep a 64 bits TSC value in a per-buffer variable. The previous value is
-always re-used for the next read.
+Context switches between guest<->hypervisor are relatively expensive. 
+The more work we can make each context switch perform the better,
+because we can amortize the cost.  Rather than synchronously switching
+between the two every time one wants to express a state change to the
+other, we batch those changes up and only sync when its important. 
+While there are batched outstanding changes in one, the other will have
+a somewhat out of date view of the state.  At this level, the idea of
+batching is completely symmetrical.
 
-let's call it :
-tf->buffer.tsc  (u64)
+One of the ways we amortize the cost of guest->hypervisor transitions is
+by batching multiple pagetable updates together.  This works at two
+levels: within explicit arch_enter/leave_lazy_mmu lazy regions, and also
+because it is analogous to the architectural requirement that you must
+flush the tlb before updates "really" happen.
 
-read_event() would look like :
+KVM - and other shadow pagetable implementations - have the additional
+problem of transmitting A/D state updates from the shadow pagetable into
+the guest pagetable.  Doing this synchronously has the costs we've been
+discussing in this thread (namely, extra faults we would like to
+avoid).  Doing this in a deferred or batched way is awkward because
+there's no analogous architectural asynchrony in updating these pte
+flags, and we don't have any existing mechanisms or hooks to support
+this kind of deferred update.
 
-u32 timetamp = read_event_timetamp();
+However, given that we're talking about cleaning up the pagetable api
+anyway, there's no reason we couldn't incorporate this kind of deferred
+update in a more formal way.  It definitely makes sense when you have
+shadow pagetables, and it probably makes sense on other architectures too.
 
-if(timestamp < (0xFFFFFFFFULL & tf->buffer.tsc)) {
-    /* overflow */
-    tf->buffer.tsc = ((tf->buffer.tsc & 0xFFFFFFFF00000000ULL)
-                     + 0x100000000ULL) | (u64)timestamp;
-} else {
-    /* no overflow */
-    tf->buffer.tsc = (tf->buffer.tsc & 0xFFFFFFFF00000000ULL)
-                     | (u64)timestamp;
-}
+Very few places actually care about the state of the A/D bits; would it
+be expensive to make those places explicitly ask for synchronization
+before testing the bits (or alternatively, have an explicit query
+operation rather than just poking about in the ptes).  Martin, does this
+help with s390's per-page (vs per-pte) A/D state?
 
-This will detect 32 bits overflow and keep the tf->buffer.tsc in sync
-with the TSC representation on the traced machine as long as events are
-less then 27 bits apart. A "full tsc" header can also be easily managed
-with this by updating the tf->buffer.tsc value completely when such
-event is met.
-
-Mathieu
-
-> -- Steve
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+    J
