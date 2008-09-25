@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYIYQ0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbYIYQaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754590AbYIYQ0j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 12:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYIYQ0b
+	id S1754198AbYIYQaZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 12:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYIYQaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 12:26:31 -0400
-Received: from khc.piap.pl ([195.187.100.11]:57021 "EHLO khc.piap.pl"
+	Thu, 25 Sep 2008 12:30:13 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:35823 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752804AbYIYQ0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 12:26:30 -0400
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-Cc: Dave Airlie <airlied@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-       David Miller <davem@davemloft.net>, jeffrey.t.kirsher@intel.com,
-       david.vrabel@csr.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, chrisl@vmware.com,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-References: <20080923.150722.141587696.davem@davemloft.net>
-	<9929d2390809231512w160d221axa2923a6b293a041@mail.gmail.com>
-	<alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz>
-	<20080923.211215.193696086.davem@davemloft.net>
-	<alpine.LNX.1.10.0809250110070.4671@pegasus.suse.cz>
-	<21d7e9970809241722w7c3bb6a5w1af5801b7380169d@mail.gmail.com>
-	<48DB12C9.5080104@gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 25 Sep 2008 18:26:27 +0200
-In-Reply-To: <48DB12C9.5080104@gmail.com> (Jesse Brandeburg's message of "Wed\, 24 Sep 2008 21\:25\:45 -0700")
-Message-ID: <m38wtgw5sc.fsf@maximus.localdomain>
+	id S1752593AbYIYQaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 12:30:12 -0400
+Date: Thu, 25 Sep 2008 18:30:24 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: 2.6.27-rc7 no init found on the root partition?
+Message-ID: <20080925163024.GP31582@ics.muni.cz>
+References: <20080924192227.GC31582@ics.muni.cz> <20080924230326.GM5448@disturbed> <20080925111239.GF31582@ics.muni.cz> <48DB96B8.6050503@sandeen.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48DB96B8.6050503@sandeen.net>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 25 Sep 2008 18:30:04 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Brandeburg <jesse.brandeburg@gmail.com> writes:
+On Thu, Sep 25, 2008 at 08:48:40AM -0500, Eric Sandeen wrote:
+> Is it possible that device ordering has changed?  what if you do:
 
-> I'm really sorry to hear that, I wonder if the laptop has an
-> "emergency bios update" mode like many PCs used to through a jumper.
-> Dave A., let us know if you make any recovery progress.
+no, using printk's I found that search_binary_handler is the one that fails.
+Dunno why.
 
-I guess it's more about the E1000's serial configuration EEPROM, the
-registers seem to live in BAR0 (EECD and for reading perhaps EERD).
-Corrupted EEPROM (and thus PCI config registers) can easily result in
-a dead machine.
-
-I will be writing a tool for writing 82541PI EEPROMs on a custom
-board soon (unless there is one available, for Linux, of course),
-I only have to fight non-working JTAG first :-)
-
-> I plan to try some random writes tomorrow to my BAR1 space and see if
-> my flash gets erased.
-
-I'm not sure it's the flash that is corrupted. Anyway booting the
-laptop should be quite easy (physically disabling the EEPROM on boot
-should do the trick), though it would require taking the machine
-apart.
 -- 
-Krzysztof Halasa
+Luká¹ Hejtmánek
