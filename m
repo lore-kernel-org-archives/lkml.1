@@ -1,87 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYIYPAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYIYPBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbYIYPAS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 11:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbYIYO7t
+	id S1756164AbYIYPBj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 11:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYIYPBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 10:59:49 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:47646 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755170AbYIYO7t (ORCPT
+	Thu, 25 Sep 2008 11:01:30 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:47338 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753612AbYIYPB2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 10:59:49 -0400
-Date: Thu, 25 Sep 2008 09:59:30 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Rajiv Andrade <srajiv@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, serue@linux.vnet.ibm.com,
-       zohar@linux.vnet.ibm.com, safford@watson.ibm.com,
-       debora@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/4] TPM: rcu locking
-Message-ID: <20080925145930.GA20055@us.ibm.com>
-References: <cover.1222136544.git.srajiv@linux.vnet.ibm.com> <1222190371-23814-3-git-send-email-srajiv@linux.vnet.ibm.com> <20080923181922.GE6637@linux.vnet.ibm.com> <1222201097.24276.12.camel@blackbox> <20080923202701.GF6637@linux.vnet.ibm.com> <20080925133645.GB13414@us.ibm.com> <20080925143312.GE6725@linux.vnet.ibm.com>
+	Thu, 25 Sep 2008 11:01:28 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 2/7] acpi: remove have_arch_parse_srat in acpi.h
+Date: Thu, 25 Sep 2008 09:01:08 -0600
+User-Agent: KMail/1.9.9
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <1222308277-10984-1-git-send-email-yhlu.kernel@gmail.com> <1222308277-10984-2-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1222308277-10984-2-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080925143312.GE6725@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200809250901.09212.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul E. McKenney (paulmck@linux.vnet.ibm.com):
-> On Thu, Sep 25, 2008 at 08:36:45AM -0500, Serge E. Hallyn wrote:
-> > Quoting Paul E. McKenney (paulmck@linux.vnet.ibm.com):
-> > > On Tue, Sep 23, 2008 at 05:18:17PM -0300, Rajiv Andrade wrote:
-> > > > Paul,
-> > > > 
-> > > > On Tue, 2008-09-23 at 11:19 -0700, Paul E. McKenney wrote:
-> > > > > 
-> > > > > But here we are deleting from what appears to be some other list.
-> > > > > And I don't see any insertiong into either list.
-> > > > > 
-> > > > > What am I missing here?
-> > > > > 
-> > > > >                                                         Thanx, Paul
-> > > > 
-> > > > Sorry, forgot to change list_add() to list_add_rcu() in the code section
-> > > > below:
-> > > > 
-> > > > > > +     /* Make chip available */
-> > > > > > +     spin_lock(&driver_lock);
-> > > > > > +     list_add(&chip->list, &tpm_chip_list);
-> > > > > > +     spin_unlock(&driver_lock);
-> > > > 
-> > > > I'll resubmit.
-> > > 
-> > > Cool!
-> > > 
-> > > So tpm_chip_list and the not-obviously-identical list manipulated
-> > > in tpm_remove_hardware() really are the same list?
-> > > 
-> > > 							Thanx, Paul
-> > 
-> > Hey Paul,
-> > 
-> > curious, why do they not look like the same list?
+On Wednesday 24 September 2008 08:04:32 pm Yinghai Lu wrote:
+> 32bit don't need that anymore
+
+I don't understand the connection between this commit log and
+the patch below.
+
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> ---
+>  include/linux/acpi.h |    8 --------
+>  1 files changed, 0 insertions(+), 8 deletions(-)
 > 
-> Because one of them is named &tpm_chip_list, a global variable, and the
-> other seemed to be returned from a function taking a struct device as an
-> argument.  This is indeed consistent with an element in this list being
-> hung off of the struct device, so perhaps I was just being insufficiently
-> persistent in tracking things down.
-> 
-> 							Thanx, Paul
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index 4d5ec43..8eefaa9 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -95,18 +95,10 @@ int acpi_parse_mcfg (struct acpi_table_header *header);
+>  void acpi_table_print_madt_entry (struct acpi_subtable_header *madt);
+>  
+>  /* the following four functions are architecture-dependent */
+> -#ifdef CONFIG_HAVE_ARCH_PARSE_SRAT
+> -#define NR_NODE_MEMBLKS MAX_NUMNODES
+> -#define acpi_numa_slit_init(slit) do {} while (0)
+> -#define acpi_numa_processor_affinity_init(pa) do {} while (0)
+> -#define acpi_numa_memory_affinity_init(ma) do {} while (0)
+> -#define acpi_numa_arch_fixup() do {} while (0)
+> -#else
+>  void acpi_numa_slit_init (struct acpi_table_slit *slit);
+>  void acpi_numa_processor_affinity_init (struct acpi_srat_cpu_affinity *pa);
+>  void acpi_numa_memory_affinity_init (struct acpi_srat_mem_affinity *ma);
+>  void acpi_numa_arch_fixup(void);
+> -#endif
+>  
+>  #ifdef CONFIG_ACPI_HOTPLUG_CPU
+>  /* Arch dependent functions for cpu hotplug support */
 
-Right, tpm_register_hardware both does
-	dev_set_drvdata(dev, chip)
-to set dev->driver_data = chip, and list_add(chip->list, &tpm_chip_list).
-The tpm_remove_hardware(), then, gets the device, gets the chip from
-dev->driver_data,  and removes it from the tpm_chip_list.
 
-It does look kosher.
-
-Though once this is all applied to some public git tree, I want to take
-some time to look at the full result.
-
--serge
