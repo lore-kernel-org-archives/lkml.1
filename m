@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755129AbYIYWWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbYIYWXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755129AbYIYWWu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 18:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbYIYWWm
+	id S1754157AbYIYWXJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 18:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbYIYWWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 18:22:42 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:60526 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752986AbYIYWWl (ORCPT
+	Thu, 25 Sep 2008 18:22:52 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:7426 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755513AbYIYWWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 18:22:41 -0400
-Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
-From: Zachary Amsden <zach@vmware.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alok Kataria <akataria@vmware.com>, Alok kataria <alokkataria1@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Yan Li <elliot.li.tech@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
-       "rjmaomao@gmail.com" <rjmaomao@gmail.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Daniel Hecht <dhecht@vmware.com>
-In-Reply-To: <48DC09D9.7040204@zytor.com>
-References: <20080221115452.GB13948@elte.hu>
-	 <20080907234510.GA24133@yantp.cn.ibm.com>	 <20080908140423.GG11993@elte.hu>
-	 <35f686220809241928k3669e30bi8a98b440443c4bff@mail.gmail.com>
-	 <48DB15DB.8040501@zytor.com> <1222317978.23524.117.camel@alok-dev1>
-	 <48DB1984.8020704@zytor.com> <1222318928.23524.121.camel@alok-dev1>
-	 <48DB1BCE.2070106@zytor.com>  <1222320201.23524.135.camel@alok-dev1>
-	 <1222375694.27056.179.camel@bodhitayantram.eng.vmware.com>
-	 <48DC09D9.7040204@zytor.com>
-Content-Type: text/plain
-Date: Thu, 25 Sep 2008 15:20:54 -0700
-Message-Id: <1222381254.27056.194.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Thu, 25 Sep 2008 18:22:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=gYP3UZoCyhUyhQdIQpaQnTeROM6vSBOX84XUWk+NHWFeEU65jNwsFf03Rql1nHhpAs
+         R1L9N31wP/5vnS9Ws/RRLEJ72bb9K2s9psfb4SswVhUdX29egK77rq4IVoMaQNqr2wlR
+         sv6JNew/3jKeqaN4PQ4HMa28RSP0H3MqDEFnM=
+Message-ID: <f7848160809251522s4e589b9eu7a4fc9566d2b25e9@mail.gmail.com>
+Date: Thu, 25 Sep 2008 18:22:50 -0400
+From: "Parag Warudkar" <parag.lkml@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Andreas Gruenbacher" <agruen@suse.de>,
+       "Jeff Mahoney" <jeffm@suse.de>
+In-Reply-To: <20080925220454.GA12116@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080924230054.GA27730@suse.de>
+	 <f7848160809241639hbe716c9q76b0e1b83d853721@mail.gmail.com>
+	 <20080925020608.GA13869@suse.de>
+	 <f7848160809241959s3f3092b2nf05d2245a08bed03@mail.gmail.com>
+	 <20080925042108.GA3931@suse.de>
+	 <f7848160809250402l163bb177oeed30f2daa18fafd@mail.gmail.com>
+	 <20080925205328.GB11225@suse.de>
+	 <f7848160809251440jfcd60f9lb962a75ff01798c8@mail.gmail.com>
+	 <20080925220454.GA12116@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-25 at 14:59 -0700, H. Peter Anvin wrote:
+On Thu, Sep 25, 2008 at 6:04 PM, Greg KH <gregkh@suse.de> wrote:
+>
+> What's the objection for the 9 extra lines in module.c, 2 lines in
+> panic.c, and 9 lines on scripts/mod/modpost.c?  Is this some huge
+> overhead that is unmaintainable?
 
-> However, it is the particular use of this for detection use that is
-> utterly damning.  Using random I/O port probes for hardware detect
-> should have disappeared in the early 1990's, and it's really disturbing
-> that virtualization vendors -- not just VMWare -- are, in effect,
-> re-making all the mistakes hardware vendors did in the 1980's.
+You don't tell me why you want to do something as absurd and
+incoherent as wanting users to load the modules easily and
+automatically, then printing a warning about it even when user may not
+have loaded it on his/her own, then taint the kernel when there is no
+need to - I have repeatedly said it is very easy to see from the
+module list for people to decide - not rocket science, definitely not
+for developers. The whole TAINT drama is unnecessary.
 
-It's not disturbing, it's expected.  Re-using old broken solutions happens all the time, they can be perfectly valid in some contexts.  The problem is that they tend to live on and evolve into a larger context where they break again.  Surely we can do better, but how to do that isn't always clear-cut.  DMI is a pretty good standard for this, but it still doesn't solve the problem in all contexts (userspace apps).
+Why would people run with even 24 more lines for something as absurd
+as this when there is no need for the same?
 
-Zach
+Sure if you want to autoload modules on users back - do not complain
+about it, do not make it official that it won't be supported since if
+you do all your staging drivers are even more likely to stay there
+like EXPERIMENTAL. (i.e. take out the printk , take out the TAINT) -
+then it sounds less absurd.
 
+Parag
