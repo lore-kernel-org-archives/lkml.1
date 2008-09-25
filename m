@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYIYTji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbYIYTkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbYIYTji (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 15:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYIYTja
+	id S1755346AbYIYTkR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 15:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYIYTkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 15:39:30 -0400
-Received: from styx.suse.cz ([82.119.242.94]:56254 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753371AbYIYTj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 15:39:29 -0400
-Date: Thu, 25 Sep 2008 22:35:58 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Frans Pop <elendil@planet.nl>, airlied@gmail.com,
-       Jeff Garzik <jeff@garzik.org>, davem@davemloft.net,
-       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       chrisl@vmware.com, Ingo Molnar <mingo@elte.hu>,
-       jesse.brandeburg@gmail.com
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-In-Reply-To: <200809251236.12287.jbarnes@virtuousgeek.org>
-Message-ID: <alpine.LNX.1.10.0809252234400.3389@pegasus.suse.cz>
-References: <20080923.150722.141587696.davem@davemloft.net> <200809251156.10648.jbarnes@virtuousgeek.org> <alpine.LNX.1.10.0809252218470.3389@pegasus.suse.cz> <200809251236.12287.jbarnes@virtuousgeek.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Thu, 25 Sep 2008 15:40:04 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:62756 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753473AbYIYTkB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 15:40:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Vj+lRiUDWwuCzzR3c6K5bVcqfp3vWJv6wcw+h+QpGjVOCsdUlIaOK4vyVhSXrYjW3v
+         RyxuXY7q1Hm12Si4tpzUegUw72z9d0qXd8EORoGNdMVXg/FwV2nitXE7/K5dykfiHjtw
+         FDk5F3XbdV/vUDRH2s1CWi/cfCQ/2K6DBl/rU=
+Date: Thu, 25 Sep 2008 23:39:56 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Tej <bewith.tej@gmail.com>
+Cc: Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel PANIC with 2.6.27-rc6
+Message-ID: <20080925193956.GF7259@localhost>
+References: <f1c9d250809110841s5c3d08b9ha93f0ef1da58642a@mail.gmail.com> <48C94F65.3050405@windriver.com> <f1c9d250809250735i4b98201ft753d6ec2959097e6@mail.gmail.com> <20080925145635.GA7277@localhost> <20080925154724.GB7277@localhost> <f1c9d250809251134j6fac8bfu43f08cbf2b330f0a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f1c9d250809251134j6fac8bfu43f08cbf2b330f0a@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008, Jesse Barnes wrote:
+[Tej - Fri, Sep 26, 2008 at 12:04:30AM +0530]
+...
 
-> However, the "Factory" log at #425480 *does* indicate that a GEM aware 
-> 2D driver was loaded (the "[drm:i915_getparam] *ERROR* Unknown parameter 
-> 5" message indicates as much), but the kernel was definitely not GEM 
-> aware otherwise the call would have succeeded.  So that rules out GEM 
-> proper, but it could still be a bug in one of the non-GEM paths in the 
-> experimental xf86-video-intel bits the various distros seem to be 
-> picking up.
+Btw Tej, could you please apply this patch
+and check if it help.
 
-That was exactly the point I was trying to make, that these error paths 
-will probably also need auditing, once we rule out the possibility of 
-NVRAM being overwritten from kernelspace.
+	http://lkml.org/lkml/2008/9/22/250
 
-Thanks,
+Aristeu Rozanski fixed one race window which take
+place on unpredicted nmi's.
 
--- 
-Jiri Kosina
-SUSE Labs
+		- Cyrill -
