@@ -1,197 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbYIYO5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYIYO5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755808AbYIYO5h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 10:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYIYO51
+	id S1755929AbYIYO5w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 10:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbYIYO5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 10:57:27 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59861 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbYIYO50 (ORCPT
+	Thu, 25 Sep 2008 10:57:38 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:44320 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755768AbYIYO5g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 10:57:26 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 3/3] Report the pagesize backing a VMA in /proc/pid/maps
-Cc: kosaki.motohiro@jp.fujitsu.com, Linux-MM <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-In-Reply-To: <1222202736-13311-4-git-send-email-mel@csn.ul.ie>
-References: <1222202736-13311-1-git-send-email-mel@csn.ul.ie> <1222202736-13311-4-git-send-email-mel@csn.ul.ie>
-Message-Id: <20080925235131.58B1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 25 Sep 2008 10:57:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=X3eTDAd2NGFdYLKVbG1GieA3zgF+9cu80PfCmmfcOwrW++UlNrfjhFhZnVLbV91RJA
+         5F2Gg7PM/HD6kclW8prXpGEaBkA+19jg8AvsXbvqfg+hVOCuge/1ot7MrjuZ3OrRHIxc
+         Ybha08OeGsAYchqMNDJl11RrUTRfOdtVdzhE4=
+Message-ID: <1ba2fa240809250757x32aa450k523d71e555c221e4@mail.gmail.com>
+Date: Thu, 25 Sep 2008 17:57:33 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: pull request: wireless-2.6 2008-09-24
+Cc: "Zhu Yi" <yi.zhu@intel.com>, "davem@davemloft.net" <davem@davemloft.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080925114133.GA5044@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu, 25 Sep 2008 23:57:20 +0900 (JST)
+Content-Disposition: inline
+References: <20080924231720.GD3639@tuxdriver.com>
+	 <1222321622.2510.455.camel@debian.sh.intel.com>
+	 <20080925114133.GA5044@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This patch adds a new field for hugepage-backed memory regions to show the
-> pagesize in /proc/pid/maps.  While the information is available in smaps,
-> maps is more human-readable and does not incur the cost of calculating Pss. An
-> example of a /proc/self/maps output for an application using hugepages with
-> this patch applied is;
-> 
-> 08048000-0804c000 r-xp 00000000 03:01 49135      /bin/cat
-> 0804c000-0804d000 rw-p 00003000 03:01 49135      /bin/cat
-> 08400000-08800000 rw-p 00000000 00:10 4055       /mnt/libhugetlbfs.tmp.QzPPTJ (deleted) (hpagesize=4096kB)
-> b7daa000-b7dab000 rw-p b7daa000 00:00 0
-> b7dab000-b7ed2000 r-xp 00000000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-> b7ed2000-b7ed7000 r--p 00127000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-> b7ed7000-b7ed9000 rw-p 0012c000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-> b7ed9000-b7edd000 rw-p b7ed9000 00:00 0
-> b7ee1000-b7ee8000 r-xp 00000000 03:01 49262      /root/libhugetlbfs-git/obj32/libhugetlbfs.so
-> b7ee8000-b7ee9000 rw-p 00006000 03:01 49262      /root/libhugetlbfs-git/obj32/libhugetlbfs.so
-> b7ee9000-b7eed000 rw-p b7ee9000 00:00 0
-> b7eed000-b7f02000 r-xp 00000000 03:01 119345     /lib/ld-2.3.6.so
-> b7f02000-b7f04000 rw-p 00014000 03:01 119345     /lib/ld-2.3.6.so
-> bf8ef000-bf903000 rwxp bffeb000 00:00 0          [stack]
-> bf903000-bf904000 rw-p bffff000 00:00 0
-> ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
-> 
-> To be predictable for parsers, the patch adds the notion of reporting on VMA
-> attributes by appending one or more fields that look like "(attribute)". This
-> already happens when a file is deleted and the user sees (deleted) after the
-> filename. The expectation is that existing parsers will not break as those
-> that read the filename should be reading forward after the inode number
-> and stopping when it sees something that is not part of the filename.
-> Parsers that assume everything after / is a filename will get confused by
-> (hpagesize=XkB) but are already broken due to (deleted).
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+On Thu, Sep 25, 2008 at 2:41 PM, John W. Linville
+<linville@tuxdriver.com> wrote:
+> On Thu, Sep 25, 2008 at 01:47:02PM +0800, Zhu Yi wrote:
+>> On Wed, 2008-09-24 at 17:17 -0600, John W. Linville wrote:
+>> > Dave,
+>> >
+>> > One more for 2.6.27 -- a fix for a possible interrupt storm.  There is
+>> > even a link in the commit log to a youtube video of the storm in
+>> > progress. :-)
+>> >
+>> > Let me know if there are problems!
+>>
+>> Can you also add this one? It doesn't panic the kernel when a frame from
+>> firmware is invalid.
+>>
+>> http://marc.info/?l=linux-wireless&m=122219037706528&w=2
+>
+> Is there an open bug report for that anywhere?  Is this something
+> that real users (no offense to Johannes) are likely to hit?
 
-looks good to me.
+I'm just exporting the major bugs from our internal database to
+buzilla, 5000 is new so
+we are hitting the problems during testing  before users report them.
 
-However, this patch can't build on x86_64 mmotm 0923 because it conflict
-against fix-vma-display-mismatch-between-proc-pid-mapssmaps.patch
-(by Joe Korty <joe.korty@ccur.com>).
-
-instead, I tested following rebased version and I confirmed it works well.
-
-
-
-===============================================================
-From: Mel Gorman <mel@csn.ul.ie>
-
-This patch adds a new field for hugepage-backed memory regions to show the
-pagesize in /proc/pid/maps.  While the information is available in smaps,
-maps is more human-readable and does not incur the cost of calculating Pss. An
-example of a /proc/self/maps output for an application using hugepages with
-this patch applied is;
-
-08048000-0804c000 r-xp 00000000 03:01 49135      /bin/cat
-0804c000-0804d000 rw-p 00003000 03:01 49135      /bin/cat
-08400000-08800000 rw-p 00000000 00:10 4055       /mnt/libhugetlbfs.tmp.QzPPTJ (deleted) (hpagesize=4096kB)
-b7daa000-b7dab000 rw-p b7daa000 00:00 0
-b7dab000-b7ed2000 r-xp 00000000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-b7ed2000-b7ed7000 r--p 00127000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-b7ed7000-b7ed9000 rw-p 0012c000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-b7ed9000-b7edd000 rw-p b7ed9000 00:00 0
-b7ee1000-b7ee8000 r-xp 00000000 03:01 49262      /root/libhugetlbfs-git/obj32/libhugetlbfs.so
-b7ee8000-b7ee9000 rw-p 00006000 03:01 49262      /root/libhugetlbfs-git/obj32/libhugetlbfs.so
-b7ee9000-b7eed000 rw-p b7ee9000 00:00 0
-b7eed000-b7f02000 r-xp 00000000 03:01 119345     /lib/ld-2.3.6.so
-b7f02000-b7f04000 rw-p 00014000 03:01 119345     /lib/ld-2.3.6.so
-bf8ef000-bf903000 rwxp bffeb000 00:00 0          [stack]
-bf903000-bf904000 rw-p bffff000 00:00 0
-ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
-
-To be predictable for parsers, the patch adds the notion of reporting on VMA
-attributes by appending one or more fields that look like "(attribute)". This
-already happens when a file is deleted and the user sees (deleted) after the
-filename. The expectation is that existing parsers will not break as those
-that read the filename should be reading forward after the inode number
-and stopping when it sees something that is not part of the filename.
-Parsers that assume everything after / is a filename will get confused by
-(hpagesize=XkB) but are already broken due to (deleted).
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- fs/proc/task_mmu.c |   29 +++++++++++++++++++++--------
- 1 file changed, 21 insertions(+), 8 deletions(-)
-
-Index: b/fs/proc/task_mmu.c
-===================================================================
---- a/fs/proc/task_mmu.c	2008-09-25 21:51:39.000000000 +0900
-+++ b/fs/proc/task_mmu.c	2008-09-25 22:30:48.000000000 +0900
-@@ -198,7 +198,8 @@ static int do_maps_open(struct inode *in
- 	return ret;
- }
- 
--static void show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
-+static void show_map_vma(struct seq_file *m, struct vm_area_struct *vma,
-+			 int showattributes)
- {
- 	struct mm_struct *mm = vma->vm_mm;
- 	struct file *file = vma->vm_file;
-@@ -227,8 +228,8 @@ static void show_map_vma(struct seq_file
- 	 * Print the dentry name for named mappings, and a
- 	 * special [heap] marker for the heap:
- 	 */
-+	pad_len_spaces(m, len);
- 	if (file) {
--		pad_len_spaces(m, len);
- 		seq_path(m, &file->f_path, "\n");
- 	} else {
- 		const char *name = arch_vma_name(vma);
-@@ -245,15 +246,22 @@ static void show_map_vma(struct seq_file
- 				name = "[vdso]";
- 			}
- 		}
--		if (name) {
--			pad_len_spaces(m, len);
-+		if (name)
- 			seq_puts(m, name);
--		}
- 	}
-+
-+	/*
-+	 * Print additional attributes of the VMA of interest
-+	 * - hugepage size if hugepage-backed
-+	 */
-+	if (showattributes && vma->vm_flags & VM_HUGETLB)
-+		seq_printf(m, " (hpagesize=%lukB)",
-+			vma_kernel_pagesize(vma) >> 10);
-+
- 	seq_putc(m, '\n');
- }
- 
--static int show_map(struct seq_file *m, void *v)
-+static int __show_map(struct seq_file *m, void *v, int showattributes)
- {
- 	struct vm_area_struct *vma = v;
- 	struct proc_maps_private *priv = m->private;
-@@ -262,13 +270,18 @@ static int show_map(struct seq_file *m, 
- 	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
- 		return -EACCES;
- 
--	show_map_vma(m, vma);
-+	show_map_vma(m, vma, showattributes);
- 
- 	if (m->count < m->size)  /* vma is copied successfully */
- 		m->version = (vma != get_gate_vma(task)) ? vma->vm_start : 0;
- 	return 0;
- }
- 
-+static int show_map(struct seq_file *m, void *v)
-+{
-+	return __show_map(m, v, 1);
-+}
-+
- static const struct seq_operations proc_pid_maps_op = {
- 	.start	= m_start,
- 	.next	= m_next,
-@@ -391,7 +404,7 @@ static int show_smap(struct seq_file *m,
- 	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
- 		return -EACCES;
- 
--	show_map_vma(m, vma);
-+	show_map_vma(m, vma, 0);
- 
- 	seq_printf(m,
- 		   "Size:           %8lu kB\n"
-
-
+Now I don't know if it was good idea to push the driver upstream same
+time as it hits the market.
+Tomas
