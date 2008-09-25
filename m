@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbYIYRnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYIYRqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbYIYRnU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 13:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYIYRnL
+	id S1755723AbYIYRqq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 13:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYIYRqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 13:43:11 -0400
-Received: from elasmtp-masked.atl.sa.earthlink.net ([209.86.89.68]:59868 "EHLO
-	elasmtp-masked.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751672AbYIYRnK (ORCPT
+	Thu, 25 Sep 2008 13:46:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44462 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752892AbYIYRqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 13:43:10 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=kPQ3Rq6gQwSk4ZDJ/2aMZfjB5CoVQfQc8zyT0U0AClvsAcXrNDAjzQ9qZsGmUA2a;
-  h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <48DBCDAC.4010003@earthlink.net>
-Date: Thu, 25 Sep 2008 13:43:08 -0400
-From: Stephen Clark <sclark46@earthlink.net>
-Reply-To: sclark46@earthlink.net
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 25 Sep 2008 13:46:38 -0400
+Date: Thu, 25 Sep 2008 13:46:32 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/2 v2] Unified trace buffer
+In-Reply-To: <alpine.LFD.1.10.0809251023090.3265@nehalem.linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0809251342330.29802@gandalf.stny.rr.com>
+References: <20080925155807.158539649@goodmis.org> <20080925160048.641420646@goodmis.org> <alpine.LFD.1.10.0809250952460.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809251312010.27920@gandalf.stny.rr.com>
+ <alpine.LFD.1.10.0809251023090.3265@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: sclark46@earthlink.net
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.26.5 hangs on boot
-References: <48DBAD73.3000202@earthlink.net>
-In-Reply-To: <48DBAD73.3000202@earthlink.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: a437fbc6971e80f61aa676d7e74259b7b3291a7d08dfec79097f32a9fa0c7f41e5591e25cf2cf467350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 208.118.36.229
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Clark wrote:
-> Hello,
-> 
-> Vanilla kernel 2.6.26.5 hangs on boot right after displaying
-> isapnp: Scanning For PnP cards ...
-> isapnp: No Plug & Play device found
-> 
-> I have to power off my laptop to get out of this state. I never had this 
-> problem with previous kernels.
-> 
-> Redhat Bugzilla has other people with this problem. I had it too so I 
-> compiled
-> a vanilla kernel to make sure it wasn't vendor specific.
-> https://bugzilla.redhat.com/show_bug.cgi?id=462156
-> 
-> If I append clocksource=hpet then the kernel will boot - but I shouldn't 
-> have to do this.
-> 
-> My laptop is an asus z96f with a core 2 duo processor.
-> 
-> Steve
-> 
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-This seems to be fixed in 2.6.27-rc7
 
-Steve
 
--- 
+On Thu, 25 Sep 2008, Linus Torvalds wrote:
+> On Thu, 25 Sep 2008, Steven Rostedt wrote:
+> > 
+> > The problem with this is overwrite mode, which is the only mode ftace 
+> > currently offers. What happens when your writer starts overwriting the 
+> > ring buffer and there is no reader?
+> 
+> Overwrite things on page at a time. Don't you already do that? (I didn't 
+> check that closely, I just assumed you would do the _much_ simpler "move 
+> the head to the next page" thing rather than trying to mix head and tail 
+> on the same page.
 
-"They that give up essential liberty to obtain temporary safety,
-deserve neither liberty nor safety."  (Ben Franklin)
+Yeah, I decided to do the blast the page instead of just blast the entry.
+This keeps complexity a hell of a lot simpler.
 
-"The course of history shows that as a government grows, liberty
-decreases."  (Thomas Jefferson)
+> 
+> > What happens is that the start value is gone. You do not have a way to use 
+> > all the deltas to catch up to the remaining events.
+> 
+> Use the page start date for the first event in a page. But within pages, 
+> make everything depend on previous event.
 
+Hmm, I'm confused. I do this already. I put the page start time on each 
+page already. The events on the page are based on the page start time
+itself.  The iterator, or writer, keeps track of the last event. When it 
+reaches a new page, it reads the new time stamp of the page and starts 
+incrementing against that.
+
+-- Steve
 
