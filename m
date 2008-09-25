@@ -1,221 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbYIYQq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYIYQw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbYIYQq4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 12:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbYIYQpk
+	id S1754745AbYIYQw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 12:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbYIYQwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 12:45:40 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:51518 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756014AbYIYQpf (ORCPT
+	Thu, 25 Sep 2008 12:52:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43118 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750938AbYIYQwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 12:45:35 -0400
-Message-Id: <20080925163020.344040426@de.ibm.com>
-References: <20080925162827.818261893@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 25 Sep 2008 18:28:31 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>, Greg KH <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@vrfy.org>, Joe Perches <joe@perches.com>,
-       Tim Hockin <thockin@hockin.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       =?ISO-8859-15?q?Jochen=20Vo=DF?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>, Jan Blunck <jblunck@suse.de>,
-       Rick Troth <rmt@casita.net>, Utz Bacher <utz.bacher@de.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 4/6] kmsg: convert xpram messages to kmsg api.
-Content-Disposition: inline; filename=803-kmsg-xpram.diff
+	Thu, 25 Sep 2008 12:52:50 -0400
+Date: Thu, 25 Sep 2008 09:49:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <20080925163722.GA29392@Krystal>
+Message-ID: <alpine.LFD.1.10.0809250941490.3265@nehalem.linux-foundation.org>
+References: <20080924051056.650388887@goodmis.org> <20080924051400.195780424@goodmis.org> <1222268595.16700.149.camel@lappy.programming.kicks-ass.net> <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com> <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>
+ <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com> <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <33307c790809241054n47addd27hef90930f109599fd@mail.gmail.com> <alpine.LFD.1.10.0809241323590.3265@nehalem.linux-foundation.org>
+ <20080925163722.GA29392@Krystal>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
 
- Documentation/kmsg/s390/xpram |   61 ++++++++++++++++++++++++++++++++++++++++++
- drivers/s390/block/xpram.c    |   41 +++++++++++++---------------
- 2 files changed, 80 insertions(+), 22 deletions(-)
+On Thu, 25 Sep 2008, Mathieu Desnoyers wrote:
+> 
+> I remembered other concerns about 27 vs 32 bits TSC decision, which are
+> rather important. First, if we have a 27 bits TSC, with overflow every
+> 33ms at 4GHz, we assume the kernel will _never_ have an interrupt
+> latency longer than this for correct heartbeat behavior.
 
-Index: kmsg-2.6/Documentation/kmsg/s390/xpram
-===================================================================
---- /dev/null
-+++ kmsg-2.6/Documentation/kmsg/s390/xpram
-@@ -0,0 +1,61 @@
-+/*?
-+ * Tag: xpram.ab9aa4
-+ * Text: "%d is not a valid number of XPRAM devices\n"
-+ * Severity: Error
-+ * Parameter:
-+ *   @1: number of partitions
-+ * Description:
-+ * The number of XPRAM partitions specified for the 'devs' module parameter
-+ * or with the 'xpram.parts' kernel parameter must be an integer in the
-+ * range 1 to 32. The XPRAM device driver created a maximum of 32 partitions
-+ * that are probably not configured as intended.
-+ * User action:
-+ * If the XPRAM device driver has been compiled as a separate module,
-+ * unload the module and load it again with a correct value for the
-+ * 'devs' module parameter. If the XPRAM device driver has been compiled
-+ * into the kernel, correct the 'xpram.parts' parameter in the kernel
-+ * command line and restart Linux.
-+ */
-+
-+/*?
-+ * Tag: xpram.f004d1
-+ * Text: "Not enough expanded memory available\n"
-+ * Severity: Error
-+ * Description:
-+ * The amount of expanded memory required to set up your XPRAM partitions
-+ * depends on the 'sizes' parameter specified for the xpram module or on
-+ * the specifications for the 'xpram.parts' parameter if the XPRAM device
-+ * driver has been compiled into the kernel. Your
-+ * current specification exceed the amount of available expanded memory.
-+ * Your XPRAM partitions are probably not configured as intended.
-+ * User action:
-+ * If the XPRAM device driver has been compiled as a separate module,
-+ * unload the xpram module and load it again with an appropriate value
-+ * for the 'sizes' module parameter. If the XPRAM device driver has been
-+ * compiled into the kernel, adjust the 'xpram.parts' parameter in the
-+ * kernel command line and restart Linux. If you need more than the
-+ * available expanded memory, increase the expanded memory allocation for
-+ * your virtual hardware or LPAR.
-+ */
-+
-+/*?
-+ * Tag: xpram.f6ae78
-+ * Text: "No expanded memory available\n"
-+ * Severity: Error
-+ * Description:
-+ * The XPRAM device driver has been loaded in a Linux instance that runs
-+ * in an LPAR or virtual hardware without expanded memory.
-+ * are created.
-+ * User action:
-+ * Allocate expanded memory for your LPAR or virtual hardware or do not
-+ * load the xpram module. You can ignore this message, if you do not want
-+ * to create XPRAM partitions.
-+ */
-+
-+/*? Tag: xpram.fc5e30 Text: "  number of devices (partitions): %d \n" */
-+/*? Tag: xpram.9a3d44 Text: "  size of partition %d: %u kB\n" */
-+/*? Tag: xpram.d1b9da Text: "  size of partition %d to be set automatically\n" */
-+/*? Tag: xpram.758fd6 Text: "  memory needed (for sized partitions): %lu kB\n" */
-+/*? Tag: xpram.3fc92b Text: "  partitions to be sized automatically: %d\n" */
-+/*? Tag: xpram.6cdcc1 Text: "  automatically determined partition size: %lu kB\n" */
-+/*? Tag: xpram.546055 Text: "  %u pages expanded memory found (%lu KB).\n" */
-Index: kmsg-2.6/drivers/s390/block/xpram.c
-===================================================================
---- kmsg-2.6.orig/drivers/s390/block/xpram.c
-+++ kmsg-2.6/drivers/s390/block/xpram.c
-@@ -25,6 +25,8 @@
-  *   generic hard disk support to replace ad-hoc partitioning
-  */
- 
-+#define KMSG_COMPONENT "xpram"
-+
- #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/ctype.h>  /* isdigit, isxdigit */
-@@ -36,18 +38,13 @@
- #include <linux/hdreg.h>  /* HDIO_GETGEO */
- #include <linux/sysdev.h>
- #include <linux/bio.h>
-+#include <linux/kmsg.h>
- #include <asm/uaccess.h>
- 
- #define XPRAM_NAME	"xpram"
- #define XPRAM_DEVS	1	/* one partition */
- #define XPRAM_MAX_DEVS	32	/* maximal number of devices (partitions) */
- 
--#define PRINT_DEBUG(x...)	printk(KERN_DEBUG XPRAM_NAME " debug:" x)
--#define PRINT_INFO(x...)	printk(KERN_INFO XPRAM_NAME " info:" x)
--#define PRINT_WARN(x...)	printk(KERN_WARNING XPRAM_NAME " warning:" x)
--#define PRINT_ERR(x...)		printk(KERN_ERR XPRAM_NAME " error:" x)
--
--
- typedef struct {
- 	unsigned int	size;		/* size of xpram segment in pages */
- 	unsigned int	offset;		/* start page of xpram segment */
-@@ -263,7 +260,7 @@ static int __init xpram_setup_sizes(unsi
- 
- 	/* Check number of devices. */
- 	if (devs <= 0 || devs > XPRAM_MAX_DEVS) {
--		PRINT_ERR("invalid number %d of devices\n",devs);
-+		kmsg_err("%d is not a valid number of XPRAM devices\n",devs);
- 		return -EINVAL;
- 	}
- 	xpram_devs = devs;
-@@ -294,22 +291,22 @@ static int __init xpram_setup_sizes(unsi
- 			mem_auto_no++;
- 	}
- 	
--	PRINT_INFO("  number of devices (partitions): %d \n", xpram_devs);
-+	kmsg_info("  number of devices (partitions): %d \n", xpram_devs);
- 	for (i = 0; i < xpram_devs; i++) {
- 		if (xpram_sizes[i])
--			PRINT_INFO("  size of partition %d: %u kB\n",
--				   i, xpram_sizes[i]);
-+			kmsg_info("  size of partition %d: %u kB\n",
-+				  i, xpram_sizes[i]);
- 		else
--			PRINT_INFO("  size of partition %d to be set "
--				   "automatically\n",i);
-+			kmsg_info("  size of partition %d to be set "
-+				  "automatically\n",i);
- 	}
--	PRINT_DEBUG("  memory needed (for sized partitions): %lu kB\n",
--		    mem_needed);
--	PRINT_DEBUG("  partitions to be sized automatically: %d\n",
--		    mem_auto_no);
-+	kmsg_info("  memory needed (for sized partitions): %lu kB\n",
-+		  mem_needed);
-+	kmsg_info("  partitions to be sized automatically: %d\n",
-+		  mem_auto_no);
- 
- 	if (mem_needed > pages * 4) {
--		PRINT_ERR("Not enough expanded memory available\n");
-+		kmsg_err("Not enough expanded memory available\n");
- 		return -EINVAL;
- 	}
- 
-@@ -321,8 +318,8 @@ static int __init xpram_setup_sizes(unsi
- 	 */
- 	if (mem_auto_no) {
- 		mem_auto = ((pages - mem_needed / 4) / mem_auto_no) * 4;
--		PRINT_INFO("  automatically determined "
--			   "partition size: %lu kB\n", mem_auto);
-+		kmsg_info("  automatically determined "
-+			  "partition size: %lu kB\n", mem_auto);
- 		for (i = 0; i < xpram_devs; i++)
- 			if (xpram_sizes[i] == 0)
- 				xpram_sizes[i] = mem_auto;
-@@ -412,12 +409,12 @@ static int __init xpram_init(void)
- 
- 	/* Find out size of expanded memory. */
- 	if (xpram_present() != 0) {
--		PRINT_WARN("No expanded memory available\n");
-+		kmsg_err("No expanded memory available\n");
- 		return -ENODEV;
- 	}
- 	xpram_pages = xpram_highest_page_index() + 1;
--	PRINT_INFO("  %u pages expanded memory found (%lu KB).\n",
--		   xpram_pages, (unsigned long) xpram_pages*4);
-+	kmsg_info("  %u pages expanded memory found (%lu KB).\n",
-+		  xpram_pages, (unsigned long) xpram_pages*4);
- 	rc = xpram_setup_sizes(xpram_pages);
- 	if (rc)
- 		return rc;
+We do no such thing.
 
--- 
-blue skies,
-   Martin.
+Guys, the heartbeat is a _separate_ thing from overflow handling.
 
-"Reality continues to ruin my life." - Calvin.
+You don't handle overflow by having a heartbeat that beats fifty times a 
+second just to insert events, just so that the TSC delta would always fit 
+in 27 bits. That would work, but be stupid. It would mean that you fill up 
+your event buffer with uninteresting crud just because nothing happens.
 
+Yes, many people want to have a heartbeat (a "Mark" event) every once in a 
+while, but what I suggest is independent of heartbeats, even if it _could_ 
+be implemented that way. What I suggest is simply that when you insert an 
+event, you always read the full 64 bits of TSC (on x86 - others will do 
+other things), and then you insert the delta against the last one.
+
+After all, you cannot read just 27 bits of the TSC anyway. You _have_ to 
+read the whole 64 bits, and then you subtract the pervious trace event TSC 
+(that you have in the per-CPU trace buffer header) from that. You now have 
+a delta value.
+
+And if the delta doesn't fit in 27 bits, you generate a 59-bit TSC event!
+
+None of this has _anything_ to do with interrupt latency. There is no 
+dependency on a heartbeat, or any dependency on always inserting a trace 
+event at least 30 times a second. There's no worry about conversions, and 
+these are all trivial single assembly instructions to do (or a couple, on 
+a 32-bit architecture that needs to do a sub/sbb pair and test two 
+different registers to see if the result fits in 27 bits).
+
+The only issue is that if you insert trace events more seldom, you'll 
+always get the extra TSC event as well, inserted automatically in front of 
+the event you explicitly inserted. The tracer doesn't need to know.
+
+			Linus
