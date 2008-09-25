@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbYIYTkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYIYTnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbYIYTkR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 15:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYIYTkE
+	id S1754818AbYIYTnP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 15:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYIYTm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 15:40:04 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:62756 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753473AbYIYTkB (ORCPT
+	Thu, 25 Sep 2008 15:42:56 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:44000 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbYIYTm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 15:40:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Vj+lRiUDWwuCzzR3c6K5bVcqfp3vWJv6wcw+h+QpGjVOCsdUlIaOK4vyVhSXrYjW3v
-         RyxuXY7q1Hm12Si4tpzUegUw72z9d0qXd8EORoGNdMVXg/FwV2nitXE7/K5dykfiHjtw
-         FDk5F3XbdV/vUDRH2s1CWi/cfCQ/2K6DBl/rU=
-Date: Thu, 25 Sep 2008 23:39:56 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Tej <bewith.tej@gmail.com>
-Cc: Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel PANIC with 2.6.27-rc6
-Message-ID: <20080925193956.GF7259@localhost>
-References: <f1c9d250809110841s5c3d08b9ha93f0ef1da58642a@mail.gmail.com> <48C94F65.3050405@windriver.com> <f1c9d250809250735i4b98201ft753d6ec2959097e6@mail.gmail.com> <20080925145635.GA7277@localhost> <20080925154724.GB7277@localhost> <f1c9d250809251134j6fac8bfu43f08cbf2b330f0a@mail.gmail.com>
+	Thu, 25 Sep 2008 15:42:56 -0400
+Date: Thu, 25 Sep 2008 21:42:53 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Regression in 2.6.27-rc7: Wake On LAN with sky2 broken
+Message-ID: <20080925194253.GA2783@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20080924080546.GA21108@x61> <200809242113.52256.rjw@sisk.pl> <20080924194906.GA25874@x61> <200809242310.23477.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <f1c9d250809251134j6fac8bfu43f08cbf2b330f0a@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200809242310.23477.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Tej - Fri, Sep 26, 2008 at 12:04:30AM +0530]
-...
+On Wed, Sep 24, 2008 at 23:10:22 +0200, Rafael J. Wysocki wrote:
 
-Btw Tej, could you please apply this patch
-and check if it help.
+[...]
 
-	http://lkml.org/lkml/2008/9/22/250
+> Can you try:
+> 
+> # ethtool -s eth0 wol g
+> # echo devices > /sys/power/pm_test
+> # echo mem > /sys/power/state
+> (this should wait for 5 seconds and return to the command line)
+> 
+> and see if the machine hangs during this operation?
 
-Aristeu Rozanski fixed one race window which take
-place on unpredicted nmi's.
+It didn't hang. The dmesg output from the suspend attempt is here:
 
-		- Cyrill -
+http://tikei.de/dmesg_suspend
+
+> 
+> Please also attach the boot log from your system.
+
+dmesg output after boot:
+
+http://tikei.de/dmesg
+
+Regards,
+Tino
