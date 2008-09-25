@@ -1,97 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbYIYW27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbYIYW3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756815AbYIYW27 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 18:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbYIYW2O
+	id S1756785AbYIYW3j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 18:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYIYW33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 18:28:14 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:60404 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756019AbYIYW2L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 18:28:11 -0400
-X-IronPort-AV: E=Sophos;i="4.33,309,1220227200"; 
-   d="scan'208";a="82934608"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] IPoIB: Fix crash when path record fails after path flush
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 25 Sep 2008 15:28:08 -0700
-Message-ID: <adaprmrzwqv.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 25 Sep 2008 18:29:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56911 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753667AbYIYW32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 18:29:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: Wakeup from suspend via keyboard and mouse doesn't work anymore with 2.6.27-rc
+Date: Fri, 26 Sep 2008 00:35:08 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <20080922202911.GA9832@dose.home.local> <200809222309.34413.rjw@sisk.pl> <20080922211844.GA7049@dose.home.local>
+In-Reply-To: <20080922211844.GA7049@dose.home.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Sep 2008 22:28:08.0724 (UTC) FILETIME=[FC9B8540:01C91F5D]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809260035.09052.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland Dreier <rolandd@cisco.com>
+On Monday, 22 of September 2008, Tino Keitel wrote:
+> On Mon, Sep 22, 2008 at 23:09:34 +0200, Rafael J. Wysocki wrote:
+> > On Monday, 22 of September 2008, Tino Keitel wrote:
+> > > Hi,
+> > 
+> > Hi,
+> > 
+> > > my Mac mini core duo used to wake up from suspend to RAM when a key or
+> > > mouse button is pressed. This doesn't work anymore with 2.6.27-rc, the
+> > > current version that I tried is 2.6.27-rc7. I checked /proc/acpi/wakeup
+> > > for differences, with 2.6.26 and 2.6.27-rc, but both were identical:
+> > 
+> > Did you test that with any 2.6.27-rc before -rc7?
+> 
+> Only -rc6 IIRC.
+> 
+> > > Any hints if there are some commits that I should try to revert, before
+> > > I start bisecting?
+> > 
+> > I don't think you need to revert anything. :-)
+> > 
+> > Please check if the /sys/devices/.../power/wakeup file contains 'enabled' for
+> > the USB controller pci:0000:00:1d.7 (I assume this is the one the keyboard &
+> > mouse are attached to).  If it doesn't, please try to write 'enabled' to this
+> > file and retest.
+> 
+> Yes, this works. Thanks.
 
-Commit ee1e2c82 ("IPoIB: Refresh paths instead of flushing them on SM
-change events") changed how paths are flushed on an SM event.  This
-change introduces a problem if the path record query triggered by
-fails, causing path->ah to become NULL.  A later successful path query
-will then trigger WARN_ON() in path_rec_completion(), and crash
-because path->ah has already been freed, so the ipoib_put_ah() inside
-the lock in path_rec_completion() may actually drop the last reference
-(contrary to the comment that claims this is safe).
+This actually is a regression for which I'm sorry.
 
-Fix this by updating path->ah and freeing old_ah only when the path
-record query is successful.  This prevents the neighbour AH and that
-path AH from getting out of sync.
-
-This fixes <https://bugs.openfabrics.org/show_bug.cgi?id=1194>
-
-Reported-by: Rabah Salem <ravah@mellanox.com>
-Debugged-by: Eli Cohen <eli@mellanox.co.il>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
-Hi Linus,
-
-One more patch for 2.6.27.  This fixes a regression from 2.6.26 that
-causes a panic with IP-over-InfiniBand on some network events.
-
-Please apply.
+Can you please check if the appended patch restores the previous behavior?
 
 Thanks,
-  Roland
+Rafael
 
- drivers/infiniband/ulp/ipoib/ipoib_main.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-index 1b1df5c..e9ca3cb 100644
---- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
-+++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-@@ -404,7 +404,7 @@ static void path_rec_completion(int status,
- 	struct net_device *dev = path->dev;
- 	struct ipoib_dev_priv *priv = netdev_priv(dev);
- 	struct ipoib_ah *ah = NULL;
--	struct ipoib_ah *old_ah;
-+	struct ipoib_ah *old_ah = NULL;
- 	struct ipoib_neigh *neigh, *tn;
- 	struct sk_buff_head skqueue;
- 	struct sk_buff *skb;
-@@ -428,12 +428,12 @@ static void path_rec_completion(int status,
+ACPI: Make /proc/acpi/wakeup interface handle PCI devices
+
+Make the ACPI /proc/acpi/wakeup interface set the appropriate
+wake-up bits of physical devices corresponding to the ACPI
+devices and make those bits be set initially for devices that are
+enabled to wake up by default.  This is needed to restore the
+previous behavior for the PCI devices that were previously handled
+correctly with the help of the /proc/acpi/wakeup interface.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/glue.c       |    5 ++++-
+ drivers/acpi/sleep/proc.c |   10 ++++++++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/acpi/sleep/proc.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/proc.c
++++ linux-2.6/drivers/acpi/sleep/proc.c
+@@ -377,6 +377,14 @@ acpi_system_wakeup_device_seq_show(struc
+ 	return 0;
+ }
  
- 	spin_lock_irqsave(&priv->lock, flags);
- 
--	old_ah   = path->ah;
--	path->ah = ah;
--
- 	if (ah) {
- 		path->pathrec = *pathrec;
- 
-+		old_ah   = path->ah;
-+		path->ah = ah;
++static void physical_device_enable_wakeup(struct acpi_device *adev)
++{
++	struct device *dev = acpi_get_physical_device(adev->handle);
 +
- 		ipoib_dbg(priv, "created address handle %p for LID 0x%04x, SL %d\n",
- 			  ah, be16_to_cpu(pathrec->dlid), pathrec->sl);
++	if (dev && device_can_wakeup(dev))
++		device_set_wakeup_enable(dev, adev->wakeup.state.enabled);
++}
++
+ static ssize_t
+ acpi_system_write_wakeup_device(struct file *file,
+ 				const char __user * buffer,
+@@ -411,6 +419,7 @@ acpi_system_write_wakeup_device(struct f
+ 		}
+ 	}
+ 	if (found_dev) {
++		physical_device_enable_wakeup(found_dev);
+ 		list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+ 			struct acpi_device *dev = container_of(node,
+ 							       struct
+@@ -428,6 +437,7 @@ acpi_system_write_wakeup_device(struct f
+ 				       dev->pnp.bus_id, found_dev->pnp.bus_id);
+ 				dev->wakeup.state.enabled =
+ 				    found_dev->wakeup.state.enabled;
++				physical_device_enable_wakeup(dev);
+ 			}
+ 		}
+ 	}
+Index: linux-2.6/drivers/acpi/glue.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/glue.c
++++ linux-2.6/drivers/acpi/glue.c
+@@ -165,8 +165,11 @@ static int acpi_bind_one(struct device *
+ 				"firmware_node");
+ 		ret = sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj,
+ 				"physical_node");
+-		if (acpi_dev->wakeup.flags.valid)
++		if (acpi_dev->wakeup.flags.valid) {
+ 			device_set_wakeup_capable(dev, true);
++			device_set_wakeup_enable(dev,
++						acpi_dev->wakeup.state.enabled);
++		}
+ 	}
  
--- 
-1.6.0.1
-
+ 	return 0;
