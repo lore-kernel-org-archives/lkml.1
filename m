@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYIYEzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYIYFCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbYIYEzI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 00:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYIYEyy
+	id S1754029AbYIYFCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 01:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYIYFCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 00:54:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45393 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753951AbYIYEyx (ORCPT
+	Thu, 25 Sep 2008 01:02:09 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:38546 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751369AbYIYFCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 00:54:53 -0400
-Message-ID: <48DB198C.1090207@zytor.com>
-Date: Wed, 24 Sep 2008 21:54:36 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Yan Li <elliot.li.tech@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, joerg.roedel@amd.com, rjmaomao@gmail.com,
+	Thu, 25 Sep 2008 01:02:08 -0400
+Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alok kataria <alokkataria1@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Yan Li <elliot.li.tech@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
+       "rjmaomao@gmail.com" <rjmaomao@gmail.com>,
        Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
-Subject: Re: [PATCH 1/2] VMware guest detection for x86 and x86-64
-References: <48D12490.5010003@zytor.com> <48da36b9.160d6e0a.22a5.ffffec9d@mx.google.com> <20080925022325.GA14390@kroah.com> <20080925024748.GG21049@yantp.cn.ibm.com> <20080925025550.GA15249@kroah.com>
-In-Reply-To: <20080925025550.GA15249@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Thomas Gleixner <tglx@linutronix.de>, Daniel Hecht <dhecht@vmware.com>,
+       Zach Amsden <zach@vmware.com>
+In-Reply-To: <48DB1984.8020704@zytor.com>
+References: <20080221115452.GB13948@elte.hu>
+	 <20080907234510.GA24133@yantp.cn.ibm.com>	 <20080908140423.GG11993@elte.hu>
+	 <35f686220809241928k3669e30bi8a98b440443c4bff@mail.gmail.com>
+	 <48DB15DB.8040501@zytor.com> <1222317978.23524.117.camel@alok-dev1>
+	 <48DB1984.8020704@zytor.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Wed, 24 Sep 2008 22:02:08 -0700
+Message-Id: <1222318928.23524.121.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
+On Wed, 2008-09-24 at 21:54 -0700, H. Peter Anvin wrote:
+> Alok Kataria wrote:
+> > On Wed, 2008-09-24 at 21:38 -0700, H. Peter Anvin wrote:
+> >> Alok kataria wrote:
+> >>> Even if there is anything on that port on native hardware it would
+> >>> work perfectly well and is _safe_.
+> >>> First let me post the code to access this backdoor port (the way it
+> >>> should really be done )
+> >>>
+> >>> So whenever we query port  0x5658 , with the GETVERSION command (which
+> >>> is the first thing we do with this port), we expect that  eax !=
+> >>> 0xFFFFFFFF   and ebx has a  VMWARE specific MAGIC value.  Please note
+> >>> that ebx has been initialized to zero in the code above.
+> >>>
+> >> You have no idea what you just did to a real piece of hardware.
+> > Why ? what do you mean ?
+> > ebx is a local variable in the code above that i posted.
+> > Only when on hypervisor will we write the magic value over there.
+> > How can this affect native hardware, i fail to understand.
+> > Please explain.
+> >
 > 
-> Well, having a config option like this isn't the way to go as it will be
-> forced on for all distros and users anyway.
+> You accessed a bloody I/O port!
 > 
-> A simple cpuid test is the easier way to do this, that's what the
-> userspace tools do, if it's really needed in the kernel.  But hopefully,
-> such things shouldn't be needed within the kernel as it's not Linux's
-> fault that the hypervisor has bugs in it :)
+> If you think it's harmless because it was an IN, you're sorely mistaken.
+
+Hi Peter, 
+
+It would be really helpful if you could explain me when can this go
+wrong or what kinds of problems can this cause on native hardware.
+
+Thanks,
+Alok
 > 
-> We wouldn't be wanting to work around bugs in Microsoft's hypervisor,
-> would we?
+>         -hpa
 > 
 
-We pretty much have to, just as we have to work around bugs in, say, 
-AMD's microcode.  We have avoided it so far, but it's gotten to a 
-breaking point, and rather than having ad hoc hacks scattered all over 
-the place I want a centralized test site setting a single global variable.
-
-Unfortunately, hypervisor vendors haven't adopted a uniform detection 
-scheme (CPUID level 0x40000000 is sometimes mentioned as a 
-pseudo-standard, but it's not universal, and not all virtualization 
-solutions even can override CPUID.)
-
-	-hpa
