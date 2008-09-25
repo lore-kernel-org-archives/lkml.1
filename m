@@ -1,59 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYIYW71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751395AbYIYXAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbYIYW71 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 18:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbYIYW7S
+	id S1751395AbYIYXAR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 19:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYIYXAC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 18:59:18 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54881 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751395AbYIYW7R (ORCPT
+	Thu, 25 Sep 2008 19:00:02 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34763 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752794AbYIYXAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 18:59:17 -0400
-Message-ID: <48DC176E.6020807@zytor.com>
-Date: Thu, 25 Sep 2008 15:57:50 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 25 Sep 2008 19:00:01 -0400
+Date: Thu, 25 Sep 2008 18:59:59 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <48DC1338.6050107@goop.org>
+Message-ID: <alpine.DEB.1.10.0809251848170.32742@gandalf.stny.rr.com>
+References: <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com> <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com>
+ <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com> <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net>
+ <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org> <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org> <48DBFC7D.4050208@goop.org>
+ <alpine.LFD.1.10.0809251448340.3265@nehalem.linux-foundation.org> <48DC1338.6050107@goop.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
-       airlied@gmail.com, Jeff Garzik <jeff@garzik.org>, davem@davemloft.net,
-       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       chrisl@vmware.com, Ingo Molnar <mingo@elte.hu>,
-       jesse.brandeburg@gmail.com
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-References: <20080923.150722.141587696.davem@davemloft.net> <200809251156.10648.jbarnes@virtuousgeek.org> <alpine.LNX.1.10.0809252218470.3389@pegasus.suse.cz> <200809251236.12287.jbarnes@virtuousgeek.org> <alpine.LNX.1.10.0809252234400.3389@pegasus.suse.cz>
-In-Reply-To: <alpine.LNX.1.10.0809252234400.3389@pegasus.suse.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Thu, 25 Sep 2008, Jesse Barnes wrote:
+
+On Thu, 25 Sep 2008, Jeremy Fitzhardinge wrote:
+
+> Linus Torvalds wrote:
+> > The reason I say "and no" is that it's not technically really possible to 
+> > atomically give the exact TSC at which the frequency change took place. We 
+> > just don't have the information, and I doubt we will ever have it.
+> >   
 > 
->> However, the "Factory" log at #425480 *does* indicate that a GEM aware 
->> 2D driver was loaded (the "[drm:i915_getparam] *ERROR* Unknown parameter 
->> 5" message indicates as much), but the kernel was definitely not GEM 
->> aware otherwise the call would have succeeded.  So that rules out GEM 
->> proper, but it could still be a bug in one of the non-GEM paths in the 
->> experimental xf86-video-intel bits the various distros seem to be 
->> picking up.
-> 
-> That was exactly the point I was trying to make, that these error paths 
-> will probably also need auditing, once we rule out the possibility of 
-> NVRAM being overwritten from kernelspace.
-> 
+> Well, you don't need the tsc at the precise moment of the frequency
+> change.  You just need to emit the current tsc+frequency+wallclock time
+> before you emit any more delta records after the frequency change.  You
+> can't fetch all those values instantaneously, but you can get close.
 
-Okay, I just had a scary and hopefully stupid thought.
+Even in my last version I added a "TIME_STAMP" type that can be used in 
+the future to add some kind of synchronization into the trace, that reads
+GTOD or whatnot.
 
-Especially Intel often has backchannels between the chipset and the 
-Ethernet controller for management functions -- anything from WoL to 
-IPMI -- generally over some kind of low-speed serial bus.
+But as you can see, I've been trying to implement these various ideas, 
+since the devil is in the details and the code is the details.
 
-We're not in a situation where the EEPROM can be touched from the 
-chipset via the SMBus or some other non-CPU channel?
+How do you get this GTOD read in the ring buffer? If the ring buffer does
+it without any knowledge from the tracer, it may be doing it a 
+inappropriate times. This would also imply that the GTOD infrastructure 
+itself is reentrent safe.  Imagine tracing the GTOD code when the buffer 
+decides it is about time to add the GTOD timestamp into the buffer. Can 
+the GTOD handle this recursion. If the GTOD has spinlocks, probably not.
 
-	-hpa
+Perhaps we can add a ring_buffer_write_safe() method that would prevent 
+the trace from doing these. Or we can add a way for the tracer to trigger 
+a time event (ring_buffer_tick());
+
+
+> asm/x86/kernel/pvclock.c does the tsc to ns conversion with just adds
+> and multiplies, but unfortunately it can't be expressed in C because it
+> uses the extra precision the x86 gives for multiplies.
+
+If we do end up making a new clock API, I imagine that each arch will 
+define their own.
+
+-- Steve
+
