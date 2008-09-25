@@ -1,84 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYIYD3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbYIYDvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358AbYIYD3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 23:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYIYD3g
+	id S1753339AbYIYDvg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 23:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYIYDv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 23:29:36 -0400
-Received: from ti-out-0910.google.com ([209.85.142.187]:19403 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752733AbYIYD3f (ORCPT
+	Wed, 24 Sep 2008 23:51:26 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:41832 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752733AbYIYDvY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 23:29:35 -0400
+	Wed, 24 Sep 2008 23:51:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=wWI5FLiy47lEjtXef2LFHkGqEj2wruieegZ6OKV2QsMG9qHBgzSHQQFSK7ctJBT693
-         nlLemaljREmJ3T9gG+A5JoS5La8G3pibJNYZQ9ADE7zgphSXrilH3XuHrfV1GG0f1uKQ
-         lkL98OhduhhKi9JE6ObmPwbk35sHhQxuoVpNw=
-Date: Thu, 25 Sep 2008 11:29:27 +0800
-From: Yan Li <elliot.li.tech@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Yan Li <elliot.li.tech@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       joerg.roedel@amd.com, rjmaomao@gmail.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
-Subject: Re: [PATCH 1/2] VMware guest detection for x86 and x86-64
-Message-ID: <20080925032927.GK21049@yantp.cn.ibm.com>
-References: <48D12490.5010003@zytor.com> <48da36b9.160d6e0a.22a5.ffffec9d@mx.google.com> <20080925022325.GA14390@kroah.com> <20080925024748.GG21049@yantp.cn.ibm.com> <20080925025550.GA15249@kroah.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QqOE9YGQwYZydraA8RcvzWy5LUblbPev30yejbavg/yAmwZ2lEsY9lgTBjBVpUshUd
+         mhB/oHvymf/6ydx4uIiUrTrFLfilds7kOoSOFQsLAak7xfvDoN8fP3o8OkS+D4XQ924T
+         rlL97jxP6FYVx0bA6CCbtD0u3872da3z4D1Bs=
+Message-ID: <21d7e9970809242051x17785159ya7510d92f705f3cf@mail.gmail.com>
+Date: Thu, 25 Sep 2008 13:51:23 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+Cc: "Jiri Kosina" <jkosina@suse.cz>, "David Miller" <davem@davemloft.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       chrisl@vmware.com, "Ingo Molnar" <mingo@elte.hu>,
+       jbarnes@virtuousgeek.org, jesse.brandeburg@gmail.com
+In-Reply-To: <48DAF75D.4050908@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080925025550.GA15249@kroah.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20080923.150722.141587696.davem@davemloft.net>
+	 <9929d2390809231512w160d221axa2923a6b293a041@mail.gmail.com>
+	 <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz>
+	 <20080923.211215.193696086.davem@davemloft.net>
+	 <alpine.LNX.1.10.0809250110070.4671@pegasus.suse.cz>
+	 <21d7e9970809241722w7c3bb6a5w1af5801b7380169d@mail.gmail.com>
+	 <alpine.LNX.1.10.0809250310190.4671@pegasus.suse.cz>
+	 <48DAF75D.4050908@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 07:55:50PM -0700, Greg KH wrote:
-> > Hi Greg,
-> > 
-> > For me this is used in the next patch (for mtrr/main.c) to suppress an
-> > unnecessary warning when running as a VMware guest:
-> > http://lkml.org/lkml/2008/9/24/144
-> 
-> But that has been stated it's a vmware bug, not a kernel bug :)
+On Thu, Sep 25, 2008 at 12:28 PM, Jeff Garzik <jeff@garzik.org> wrote:
+> Jiri Kosina wrote:
+>>
+>> On Thu, 25 Sep 2008, Dave Airlie wrote:
+>>
+>>> Well I'm out of the race, my attempts to re-write my eeprom using an
+>>> eeprom from an equivalent laptop have totally failed and my BIOS won't boot
+>>> anymore - so my laptop is == a brick.
+>>
+>> Uh oh. Shouldn't we put something like the patch below in Linus' tree
+>> unless we get this sorted out? Otherwise more and more people who use -rc
+>> kernels will run into this, and will get their hardware [hopefully
+>> temporarily, but not all users are able to re-flash their network card
+>> EEPROMs, right] bricked.
+>>
+>> I know that it is quite aggressive and is going to disable wired
+>> networking on a lot of systems that have been functioning properly,
+>> therefore RFC ...
+>>
+>>
+>>
+>> From: Jiri Kosina <jkosina@suse.cz>
+>> Subject: [PATCH] [RFC] E1000E: temporarily disable e1000e driver
+>>
+>> E1000E: temporarily disable e1000e driver
+>
+> That seems a bit drastic, particularly when the debugging was beginning to
+> point to another culprit.
+>
+> We have equal case at this point to disable r8169 and i915_drm, no?
+>
 
-I think it's a common practice for VM to blank the MTRRs rather than a
-bug. Many hypervisors (KVM, VMware, Virtual PC) are doing this since
-long before. Therefore I think issuing a warning here complaining
-about blank MTRRs are no use to VMware's users.
+No we actually are more likely unable to do anything from the kernel,
+if its happening from userspace
 
-> > We already have code to suppress warning under KVM so the above patch
-> > suppress warnings for VMware guest also.
-> > 
-> > H. Peter Anvin and Alok kataria are also proposing we may need a more
-> > general approach for detecting hypervisors that can be used for some
-> > other quirks.
-> 
-> Well, having a config option like this isn't the way to go as it will be
-> forced on for all distros and users anyway.
+firstly we need a reflash utility that is safe, otherwise people who
+have the issue can't reproduce it,
+and people who don't have the issue don't want to play with it.
 
-My idea is that this should be included in all general purpose kernels
-or the vendors may have to cope with flood questions about boot time
-warnings when using under VMware/KVM/Virtual PC.  It's configurable so
-good for vendors who wish to provide different kernels for using with
-real-machines and VMs.
+I think e1000e may enable a BAR or something that causes the issue to
+break this hw., I haven't seen it broken on any
+machine where e1000e wasn't loaded yet. Again the r8169 might be the
+same issue, but it maybe because the bar was enabled.
 
-> A simple cpuid test is the easier way to do this, that's what the
-> userspace tools do, if it's really needed in the kernel.  But hopefully,
-> such things shouldn't be needed within the kernel as it's not Linux's
-> fault that the hypervisor has bugs in it :)
-
-A simple CPUID test is good but can't be used for VMware guest since
-they just use underlying CPUID, so nothing special here can be
-checked. That's why I'm using DMI.
-
-> We wouldn't be wanting to work around bugs in Microsoft's hypervisor,
-> would we?
-
-
--- 
-Li, Yan
+Dave.
