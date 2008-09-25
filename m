@@ -1,59 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757107AbYIYRDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbYIYREW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757107AbYIYRDW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 13:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbYIYRDM
+	id S1757181AbYIYREW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 13:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbYIYREN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 13:03:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:27586 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754273AbYIYRDK (ORCPT
+	Thu, 25 Sep 2008 13:04:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53123 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753551AbYIYREL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 13:03:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Z+ywknQyBYQvKo9fTonoafTgkoEYRrL6o/ua7wQRRfIgQ99cFOtybWTtnSX0kVKjqO
-         xKXHJmu9hBFLUNQEvly5n1/v4pOOqhMp7mlkktXeDCz7E/rCxeFx23Nc9z3PEvWvuS45
-         ZhVlHdjuApAdP9MxuA3MTRoOnYDmn06pI1G1M=
-Message-ID: <86802c440809251003hb71a6c4vcf51ff018f27f56c@mail.gmail.com>
-Date: Thu, 25 Sep 2008 10:03:09 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 7/7] x86: print out irq nr for msi/ht -v2
-Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Len Brown" <lenb@kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <20080925091211.GA4922@elte.hu>
+	Thu, 25 Sep 2008 13:04:11 -0400
+Date: Thu, 25 Sep 2008 10:02:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/2 v2] Unified trace buffer
+In-Reply-To: <20080925160048.641420646@goodmis.org>
+Message-ID: <alpine.LFD.1.10.0809250952460.3265@nehalem.linux-foundation.org>
+References: <20080925155807.158539649@goodmis.org> <20080925160048.641420646@goodmis.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1222323223-23529-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080925084212.GE4519@elte.hu> <20080925091211.GA4922@elte.hu>
-X-Google-Sender-Auth: 1290cebb09a64ef5
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 2:12 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
->> > v2: fix hpet compiling
->
-> still bad:
->
-> arch/x86/kernel/hpet.c: In function 'hpet_late_init':
-> arch/x86/kernel/hpet.c:828: error: 'dev' undeclared (first use in this function)
-> arch/x86/kernel/hpet.c:828: error: (Each undeclared identifier is reported only once
-> arch/x86/kernel/hpet.c:828: error: for each function it appears in.)
->
-> we've got some changes in this area (per cpu hpet).
 
-will check it.
 
-YH
+On Thu, 25 Sep 2008, Steven Rostedt wrote:
+> +
+> +/**
+> + * ring_buffer_event_length - return the length of the event
+> + * @event: the event to get the length of
+> + *
+> + * Note, if the event is bigger than 256 bytes, the length
+> + * can not be held in the shifted 5 bits. The length is then
+> + * added as a short (unshifted) in the body.
+
+The comment seems stale ;)
+
+> +
+> +/**
+> + * ring_buffer_peek - peek at the next event to be read
+> + * @iter: The ring buffer iterator
+> + * @iter_next_cpu: The CPU that the next event belongs on
+> + *
+> + * This will return the event that will be read next, but does
+> + * not increment the iterator.
+> + */
+> +struct ring_buffer_event *
+> +ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+> +{
+> +	struct ring_buffer_per_cpu *cpu_buffer;
+> +	struct ring_buffer_event *event;
+> +	u64 delta;
+> +
+> +	cpu_buffer = buffer->buffers[cpu];
+> +
+> + again:
+> +	if (ring_buffer_per_cpu_empty(cpu_buffer))
+> +		return NULL;
+> +
+> +	event = ring_buffer_head_event(cpu_buffer);
+> +
+> +	switch (event->type) {
+> +	case RB_TYPE_PADDING:
+> +		ring_buffer_inc_page(buffer, &cpu_buffer->head_page);
+> +		rb_reset_read_page(cpu_buffer);
+> +		goto again;
+> +
+> +	case RB_TYPE_TIME_EXTENT:
+> +		delta = event->data;
+> +		delta <<= TS_SHIFT;
+> +		delta += event->time_delta;
+> +		cpu_buffer->read_stamp += delta;
+> +		goto again;
+> +
+> +	case RB_TYPE_TIME_STAMP:
+> +		/* FIXME: not implemented */
+> +		goto again;
+> +
+> +	case RB_TYPE_SMALL_DATA:
+> +	case RB_TYPE_LARGE_DATA:
+> +	case RB_TYPE_STRING:
+> +		if (ts)
+> +			*ts = cpu_buffer->read_stamp + event->time_delta;
+> +		return event;
+
+Your timestamp handling seems odd. You do it per-event, but I think it 
+should happen for all events, ie just do
+
+	*ts += event->time_delta;
+
+_outside_ the case statement, and then in RB_TYPE_TIME_EXTENT you'd do 
+either
+
+ - relative:
+	*ts += event->data << TS_SHIFT;
+
+ - absolute timestamp events:
+	*ts = (event->data << TS_SHIFT) + event->time_delta;
+
+but the bigger issue is that I think the timestamp should be relative to 
+the _previous_ event, not relative to the page start. IOW, you really 
+should accumulate them. 
+
+IOW, the base timestamp cannot be in the cpu_buffer, it needs to be in the 
+iterator data structure, since it updates as you walk over it.
+
+Otherwise the extended TSC format will be _horrible_. You don't want to 
+add it in front of every event in the page just because you had a pause at 
+the beginning of the page. You want to have a running update, so that you 
+only need to add it after there was a pause.
+
+		Linus
