@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYIYFqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbYIYFry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753521AbYIYFqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 01:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYIYFqI
+	id S1754182AbYIYFry (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 01:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbYIYFrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 01:46:08 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:55526 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbYIYFqH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 01:46:07 -0400
-Date: Thu, 25 Sep 2008 07:47:09 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org
-Subject: Re: Differend udev names with different kernels
-Message-ID: <20080925054708.GA18645@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	linux-hotplug@vger.kernel.org
-References: <20080924200127.GA2452@dose.home.local> <3ae72650809242012r7d144a64l35777f2a7bacbaa0@mail.gmail.com> <48DB1CC4.2040004@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48DB1CC4.2040004@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 25 Sep 2008 01:47:42 -0400
+Received: from mga03.intel.com ([143.182.124.21]:26195 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750841AbYIYFrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 01:47:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,306,1220252400"; 
+   d="scan'208";a="51150526"
+Subject: Re: pull request: wireless-2.6 2008-09-24
+From: Zhu Yi <yi.zhu@intel.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: "davem@davemloft.net" <davem@davemloft.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080924231720.GD3639@tuxdriver.com>
+References: <20080924231720.GD3639@tuxdriver.com>
+Content-Type: text/plain
+Organization: Intel Corp.
+Date: Thu, 25 Sep 2008 13:47:02 +0800
+Message-Id: <1222321622.2510.455.camel@debian.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 07:08:20 +0200, Stefan Richter wrote:
-> Kay Sievers wrote:
->> On Wed, Sep 24, 2008 at 13:01, Tino Keitel <tino.keitel@gmx.de> wrote:
->>> what's the intention of /dev/disk/by-id/?
->>>
->>> My firewire hard disk seems to have different names with different
->>> kernels.
->>>
->>> With 2.6.26.3, it's name is
->>> /dev/disk/by-id/ieee1394-0030e001e0006585:00043c:0000.
->>>
->>> With someting after 2.6.27-rc7, merged with Arjan's fastboot branch,
->>> the disk has the same name.
->
-> Then this is a regression of the fastboot patch or whatever.
+On Wed, 2008-09-24 at 17:17 -0600, John W. Linville wrote:
+> Dave,
+> 
+> One more for 2.6.27 -- a fix for a possible interrupt storm.  There is
+> even a link in the commit log to a youtube video of the storm in
+> progress. :-)
+> 
+> Let me know if there are problems!
 
-It has the same name with 2.6.26.3 and with 2.6.27-rc7-something with
-fastboot merged. So why would this be a regression? The different name
-(scsi-...) happended with a vanilla 2.6.27-rc7.
+Can you also add this one? It doesn't panic the kernel when a frame from
+firmware is invalid.
 
-Initially, my intention was to find a unique name for the hard disk,
-that stays even if the disk is changed from Firewire to USB. However,
-this doesn't seem to be possible with a default udev.
+http://marc.info/?l=linux-wireless&m=122219037706528&w=2
 
-Regards,
-Tino
+Thanks,
+-yi
+
