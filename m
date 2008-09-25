@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbYIYKUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbYIYKXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754284AbYIYKUn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 06:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYIYKUf
+	id S1754444AbYIYKXV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 06:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYIYKXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 06:20:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39994 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751705AbYIYKUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 06:20:34 -0400
-Date: Thu, 25 Sep 2008 12:20:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 3/3] x86/iommu: use __GFP_ZERO instead of memset for
-	GART
-Message-ID: <20080925102012.GA13631@elte.hu>
-References: <1222337635-28285-1-git-send-email-joerg.roedel@amd.com> <1222337635-28285-4-git-send-email-joerg.roedel@amd.com>
+	Thu, 25 Sep 2008 06:23:13 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:32102 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752929AbYIYKXM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 06:23:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=W8d3hr9e+3ZpwHTuj0jIXVoW/vpME9wgQB+nRPdtVmsitKPIQxXSTYbjhMC/oGBlz1
+         Vu9v47Yk5UQGjDH6QYs2nd3TKuTI3RX+IL5+01uSKh4kALpdNyICrZaXikaMBcU14DqA
+         jGpEdy2GD8pxOgyYSbytVzFv9DFnrTu34qduo=
+Date: Thu, 25 Sep 2008 18:23:04 +0800
+From: Yan Li <elliot.li.tech@gmail.com>
+To: David Sanders <linux@sandersweb.net>
+Cc: linux-kernel@vger.kernel.org, Yan Li <elliot.li.tech@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       joerg.roedel@amd.com, rjmaomao@gmail.com,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
+Subject: Re: [PATCH 1/2] VMware guest detection for x86 and x86-64
+Message-ID: <20080925102304.GA15948@yantp.cn.ibm.com>
+References: <48D12490.5010003@zytor.com> <48DA6887.1060709@zytor.com> <20080925003220.GE21049@yantp.cn.ibm.com> <200809250556.49887.linux@sandersweb.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1222337635-28285-4-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200809250556.49887.linux@sandersweb.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 25, 2008 at 05:56:48AM -0400, David Sanders wrote:
+> On Wednesday 24 September 2008 20:32, Yan Li wrote:
+> > If you can tell me what manufacture vendor string is in Virtual PC I
+> > can make another similar patch using dmi_name_in_vendors().
+> From: i8042-x86ia64io.h
+> 
+> 	{
+> 		.ident = "Microsoft Virtual Machine",
+> 		.matches = {
+> 			DMI_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+> 			DMI_MATCH(DMI_PRODUCT_NAME, "Virtual Machine"),
+> 			DMI_MATCH(DMI_PRODUCT_VERSION, "VS2005R2"),
+> 		},
+> 	},
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
+Oh, cool, thanks!
 
->  #ifdef CONFIG_IOMMU_LEAK
->  	if (leak_trace) {
-> -		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL,
-> +		iommu_leak_tab = (void *)__get_free_pages(GFP_KERNEL|__GFP_ZERO,
->  				  get_order(iommu_pages*sizeof(void *)));
-> -		if (iommu_leak_tab)
-> -			memset(iommu_leak_tab, 0, iommu_pages * 8);
->  		else
->  			printk(KERN_DEBUG
->  			       "PCI-DMA: Cannot allocate leak trace area\n");
-
-hm, that looks broken.
-
-	Ingo
+-- 
+Li, Yan
