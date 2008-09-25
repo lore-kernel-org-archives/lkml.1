@@ -1,141 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYIYUbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYIYUcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbYIYUbV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 16:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbYIYUbI
+	id S1755862AbYIYUcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 16:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYIYUcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 16:31:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56865 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752760AbYIYUbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 16:31:05 -0400
-Message-ID: <48DBF4DD.8060908@redhat.com>
-Date: Thu, 25 Sep 2008 16:30:21 -0400
-From: Chris Snook <csnook@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 25 Sep 2008 16:32:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52300 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753421AbYIYUcE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 16:32:04 -0400
+Date: Thu, 25 Sep 2008 13:24:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <20080925201211.GA1878@elte.hu>
+Message-ID: <alpine.LFD.1.10.0809251318270.3265@nehalem.linux-foundation.org>
+References: <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org>
+ <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809251247010.27920@gandalf.stny.rr.com> <alpine.LFD.1.10.0809251002290.3265@nehalem.linux-foundation.org>
+ <20080925195522.GA22248@elte.hu> <20080925201211.GA1878@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Kevin Hao <kexin.hao@windriver.com>
-CC: Jeff Garzik <jgarzik@redhat.com>, Jay Cliburn <jacliburn@bellsouth.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: remove LLTX in atl2 driver
-References: <1222302922-13200-1-git-send-email-kexin.hao@windriver.com>
-In-Reply-To: <1222302922-13200-1-git-send-email-kexin.hao@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kevin Hao wrote:
-> When NETIF_F_LLTX is set, the atlx driver will use a private lock.
-> But in recent kernels this implementation seems redundant and
-> can cause problems where AF_PACKET sees things twice. Since
-> NETIF_F_LLTX is marked as deprecated and shouldn't be used in
-> new driver, this patch removes NETIF_F_LLTX and adds a mmiowb
-> before sending packet.
+
+
+On Thu, 25 Sep 2008, Ingo Molnar wrote:
 > 
-> Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
+> You seem to dismiss that angle by calling my arguments bullshit, but i 
+> dont know on what basis you dismiss it. Sure, a feature and extra 
+> complexity _always_ has a robustness cost. If your argument is that we 
+> should move cpu_clock() to assembly to make it more dependable - i'm all 
+> for it.
 
-Can you explain a bit more concretely the problem this solves, and your testing? 
-  Ultimately we'll want to merge this code with the atl1 code, so we need to be 
-confident that we can and should make the same change there.
+Umm. cpu_clock() isn't even cross-cpu synchronized, and has actually 
+thrown away all the information that can make it so, afaik. At least the 
+comments say "never more than 2 jiffies difference"). You do realize that 
+if you want to order events across CPU's, we're not talking about 
+"jiffies" here, we're talking about 50-100 CPU _cycles_.
 
--- Chris
+You also ignore the early trace issues, and have apparently not used it 
+for FTRACE. You also ignore the fact that without TSC, it goes into the 
+same "crap mode" that is appropriate for the scheduler, but totally 
+useless for tracing.
 
-> ---
->  drivers/net/atlx/atl2.c |   24 +-----------------------
->  drivers/net/atlx/atl2.h |    1 -
->  2 files changed, 1 insertions(+), 24 deletions(-)
-> 
-> diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
-> index b2995ac..3df4ee1 100644
-> --- a/drivers/net/atlx/atl2.c
-> +++ b/drivers/net/atlx/atl2.c
-> @@ -116,7 +116,6 @@ static int __devinit atl2_sw_init(struct atl2_adapter *adapter)
->  	hw->max_frame_size = adapter->netdev->mtu;
->  
->  	spin_lock_init(&adapter->stats_lock);
-> -	spin_lock_init(&adapter->tx_lock);
->  
->  	set_bit(__ATL2_DOWN, &adapter->flags);
->  
-> @@ -749,11 +748,7 @@ static void atl2_down(struct atl2_adapter *adapter)
->  	 * reschedule our watchdog timer */
->  	set_bit(__ATL2_DOWN, &adapter->flags);
->  
-> -#ifdef NETIF_F_LLTX
-> -	netif_stop_queue(netdev);
-> -#else
->  	netif_tx_disable(netdev);
-> -#endif
->  
->  	/* reset MAC to disable all RX/TX */
->  	atl2_reset_hw(&adapter->hw);
-> @@ -829,7 +824,6 @@ static inline int TxdFreeBytes(struct atl2_adapter *adapter)
->  static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
->  {
->  	struct atl2_adapter *adapter = netdev_priv(netdev);
-> -	unsigned long flags;
->  	struct tx_pkt_header *txph;
->  	u32 offset, copy_len;
->  	int txs_unused;
-> @@ -845,16 +839,6 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
->  		return NETDEV_TX_OK;
->  	}
->  
-> -#ifdef NETIF_F_LLTX
-> -	local_irq_save(flags);
-> -	if (!spin_trylock(&adapter->tx_lock)) {
-> -		/* Collision - tell upper layer to requeue */
-> -		local_irq_restore(flags);
-> -		return NETDEV_TX_LOCKED;
-> -	}
-> -#else
-> -	spin_lock_irqsave(&adapter->tx_lock, flags);
-> -#endif
->  	txs_unused = TxsFreeUnit(adapter);
->  	txbuf_unused = TxdFreeBytes(adapter);
->  
-> @@ -862,7 +846,6 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
->  		txs_unused < 1) {
->  		/* not enough resources */
->  		netif_stop_queue(netdev);
-> -		spin_unlock_irqrestore(&adapter->tx_lock, flags);
->  		return NETDEV_TX_BUSY;
->  	}
->  
-> @@ -908,8 +891,7 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
->  	ATL2_WRITE_REGW(&adapter->hw, REG_MB_TXD_WR_IDX,
->  		(adapter->txd_write_ptr >> 2));
->  
-> -	spin_unlock_irqrestore(&adapter->tx_lock, flags);
-> -
-> +	mmiowb();
->  	netdev->trans_start = jiffies;
->  	dev_kfree_skb_any(skb);
->  	return NETDEV_TX_OK;
-> @@ -1447,10 +1429,6 @@ static int __devinit atl2_probe(struct pci_dev *pdev,
->  	netdev->features |= (NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX);
->  #endif
->  
-> -#ifdef NETIF_F_LLTX
-> -	netdev->features |= NETIF_F_LLTX;
-> -#endif
-> -
->  	/* Init PHY as early as possible due to power saving issue  */
->  	atl2_phy_init(&adapter->hw);
->  
-> diff --git a/drivers/net/atlx/atl2.h b/drivers/net/atlx/atl2.h
-> index 6e1f28f..09974df 100644
-> --- a/drivers/net/atlx/atl2.h
-> +++ b/drivers/net/atlx/atl2.h
-> @@ -462,7 +462,6 @@ struct atl2_adapter {
->  	u16 link_duplex;
->  
->  	spinlock_t stats_lock;
-> -	spinlock_t tx_lock;
->  
->  	struct work_struct reset_task;
->  	struct work_struct link_chg_task;
+IOW, you say that I call your arguments BS without telling you why, but 
+that's just because you apparently cut out all the things I _did_ tell you 
+why about!
 
+The fact is, people who do tracing will want better clocks - and have 
+gotten with other infrastructure - than you have apparently cared about. 
+You've worried about scheduler tracing, and you seem to want to just have 
+everybody use a simple but known-bad approach that was good enough for 
+you.
+
+			Linus
