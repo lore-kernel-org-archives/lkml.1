@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbYIYNdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbYIYNhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbYIYNdS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 09:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbYIYNdE
+	id S1755313AbYIYNhI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 09:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYIYNg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 09:33:04 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:47801 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753665AbYIYNdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 09:33:03 -0400
-Date: Thu, 25 Sep 2008 16:31:59 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Greg Ungerer <gerg@snapgear.com>, jbarnes@virtuousgeek.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [2.6 patch] m68k: remove the dead PCI code
-Message-ID: <20080925133159.GC9566@cs181140183.pp.htv.fi>
-References: <20080819134718.GH8852@cs181140183.pp.htv.fi> <48B24E2C.9060703@snapgear.com> <20080825204333.GA13027@cs181140183.pp.htv.fi> <48B77764.6060607@snapgear.com> <20080829070103.GD16462@cs181140183.pp.htv.fi> <Pine.LNX.4.64.0808290929280.22326@anakin> <20080831161016.GE3695@cs181140183.pp.htv.fi> <Pine.LNX.4.64.0809061422510.4138@anakin>
+	Thu, 25 Sep 2008 09:36:58 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:54997 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753099AbYIYNg5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 09:36:57 -0400
+Date: Thu, 25 Sep 2008 08:36:45 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Rajiv Andrade <srajiv@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, serue@linux.vnet.ibm.com,
+       zohar@linux.vnet.ibm.com, safford@watson.ibm.com,
+       debora@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/4] TPM: rcu locking
+Message-ID: <20080925133645.GB13414@us.ibm.com>
+References: <cover.1222136544.git.srajiv@linux.vnet.ibm.com> <1222190371-23814-3-git-send-email-srajiv@linux.vnet.ibm.com> <20080923181922.GE6637@linux.vnet.ibm.com> <1222201097.24276.12.camel@blackbox> <20080923202701.GF6637@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0809061422510.4138@anakin>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080923202701.GF6637@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 06, 2008 at 02:23:50PM +0200, Geert Uytterhoeven wrote:
-> On Sun, 31 Aug 2008, Adrian Bunk wrote:
-> > This patch removes the no longer used m68k PCI code.
+Quoting Paul E. McKenney (paulmck@linux.vnet.ibm.com):
+> On Tue, Sep 23, 2008 at 05:18:17PM -0300, Rajiv Andrade wrote:
+> > Paul,
 > > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > On Tue, 2008-09-23 at 11:19 -0700, Paul E. McKenney wrote:
+> > > 
+> > > But here we are deleting from what appears to be some other list.
+> > > And I don't see any insertiong into either list.
+> > > 
+> > > What am I missing here?
+> > > 
+> > >                                                         Thanx, Paul
 > > 
-> > --- a/include/asm-m68k/pci.h
-> > +++ b/include/asm-m68k/pci.h
+> > Sorry, forgot to change list_add() to list_add_rcu() in the code section
+> > below:
+> > 
+> > > > +     /* Make chip available */
+> > > > +     spin_lock(&driver_lock);
+> > > > +     list_add(&chip->list, &tpm_chip_list);
+> > > > +     spin_unlock(&driver_lock);
+> > 
+> > I'll resubmit.
 > 
-> > -/* The PCI address space does equal the physical memory
-> > - * address space.  The networking and block device layers use
-> > - * this boolean for bounce buffer decisions.
-> > - */
+> Cool!
 > 
-> I'd like to keep this comment, as the #define is still there.
-> Is that OK for you?
-
-Sorry for the late answer.
-
-That's fine for me.
-
-> >  #define PCI_DMA_BUS_IS_PHYS	(1)
+> So tpm_chip_list and the not-obviously-identical list manipulated
+> in tpm_remove_hardware() really are the same list?
 > 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
+> 							Thanx, Paul
 
-cu
-Adrian
+Hey Paul,
 
--- 
+curious, why do they not look like the same list?
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-serge
