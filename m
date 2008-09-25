@@ -1,453 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756947AbYIYROh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbYIYRQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756947AbYIYROh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 13:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbYIYRO2
+	id S1756915AbYIYRQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 13:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbYIYRQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 13:14:28 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:42259 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752503AbYIYRO1 (ORCPT
+	Thu, 25 Sep 2008 13:16:50 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34665 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752380AbYIYRQt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 13:14:27 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TBHkQb952BIi002nRGRuiBFD3Z10VAi9Sr2x6+5jc/YUjNZm5Rhz3bVuWb01Df60osLdS9/E81BufomyJLMkN9EQEgUUAMWHGCCkfIXTzD2RRYBWyOAclYri63vlxveOvhl6kF0Lfo3fIjaQwvHweUkHuz19e9D2MZ8HK+OiYcE=  ;
-X-YMail-OSG: vb481HQVM1m7nL2D0L7DALUbjEeeIEtmJvKPRV6QbVtm1saG2JsntcEYsdjO_XrRlQqC0C65XRMcdAzQsg016Fyg2VN6_t_MNR28siJdqO4DR8mcIpm3DGVdu9PAUWTwWlHN8IUVDZfbvTU9AtmObOHyxjOoxQsGDQCw37IYrtmrn9gVxA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.27-rc7] omap drivers switch to standard GPIO calls
-Date: Thu, 25 Sep 2008 10:14:23 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>,
-       Dmitry Torokhov <dtor@mail.ru>, Antonino Daplas <adaplas@gmail.com>,
-       dwmw2@infradead.org
+	Thu, 25 Sep 2008 13:16:49 -0400
+Date: Thu, 25 Sep 2008 13:16:42 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/2 v2] Unified trace buffer
+In-Reply-To: <alpine.LFD.1.10.0809250952460.3265@nehalem.linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0809251312010.27920@gandalf.stny.rr.com>
+References: <20080925155807.158539649@goodmis.org> <20080925160048.641420646@goodmis.org> <alpine.LFD.1.10.0809250952460.3265@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809251014.23802.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
 
-This updates most of the OMAP drivers which are in mainline to
-switch to using the cross-platform GPIO calls instead of the
-older OMAP-specific ones.
+On Thu, 25 Sep 2008, Linus Torvalds wrote:
+> On Thu, 25 Sep 2008, Steven Rostedt wrote:
+> > +
+> > +/**
+> > + * ring_buffer_event_length - return the length of the event
+> > + * @event: the event to get the length of
+> > + *
+> > + * Note, if the event is bigger than 256 bytes, the length
+> > + * can not be held in the shifted 5 bits. The length is then
+> > + * added as a short (unshifted) in the body.
+> 
+> The comment seems stale ;)
 
-This is all fairly brainless/obvious stuff.  Probably the
-most interesting bit is to observe that the omap-keypad
-code seems to now have a portable core that could work with
-non-OMAP matrix keypads.  (That would improve with hardware
-IRQ debouncing enabled, of course...)
+hehe, this code is in so much flux, that I gave up on keeping the
+comments up to date.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
----
-By "most", I mean it omits three drivers I know have patches
-pending for the initial 2.6.28 merge window; their turn will
-come later.  (And then there's arch/arm/*omap*/*c ... )
+> 
+> > +
+> > +/**
+> > + * ring_buffer_peek - peek at the next event to be read
+> > + * @iter: The ring buffer iterator
+> > + * @iter_next_cpu: The CPU that the next event belongs on
+> > + *
+> > + * This will return the event that will be read next, but does
+> > + * not increment the iterator.
+> > + */
+> > +struct ring_buffer_event *
+> > +ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+> > +{
+> > +	struct ring_buffer_per_cpu *cpu_buffer;
+> > +	struct ring_buffer_event *event;
+> > +	u64 delta;
+> > +
+> > +	cpu_buffer = buffer->buffers[cpu];
+> > +
+> > + again:
+> > +	if (ring_buffer_per_cpu_empty(cpu_buffer))
+> > +		return NULL;
+> > +
+> > +	event = ring_buffer_head_event(cpu_buffer);
+> > +
+> > +	switch (event->type) {
+> > +	case RB_TYPE_PADDING:
+> > +		ring_buffer_inc_page(buffer, &cpu_buffer->head_page);
+> > +		rb_reset_read_page(cpu_buffer);
+> > +		goto again;
+> > +
+> > +	case RB_TYPE_TIME_EXTENT:
+> > +		delta = event->data;
+> > +		delta <<= TS_SHIFT;
+> > +		delta += event->time_delta;
+> > +		cpu_buffer->read_stamp += delta;
+> > +		goto again;
+> > +
+> > +	case RB_TYPE_TIME_STAMP:
+> > +		/* FIXME: not implemented */
+> > +		goto again;
+> > +
+> > +	case RB_TYPE_SMALL_DATA:
+> > +	case RB_TYPE_LARGE_DATA:
+> > +	case RB_TYPE_STRING:
+> > +		if (ts)
+> > +			*ts = cpu_buffer->read_stamp + event->time_delta;
+> > +		return event;
+> 
+> Your timestamp handling seems odd. You do it per-event, but I think it 
+> should happen for all events, ie just do
+> 
+> 	*ts += event->time_delta;
+> 
+> _outside_ the case statement, and then in RB_TYPE_TIME_EXTENT you'd do 
+> either
+> 
+>  - relative:
+> 	*ts += event->data << TS_SHIFT;
+> 
+>  - absolute timestamp events:
+> 	*ts = (event->data << TS_SHIFT) + event->time_delta;
+> 
+> but the bigger issue is that I think the timestamp should be relative to 
+> the _previous_ event, not relative to the page start. IOW, you really 
+> should accumulate them. 
+> 
+> IOW, the base timestamp cannot be in the cpu_buffer, it needs to be in the 
+> iterator data structure, since it updates as you walk over it.
+> 
+> Otherwise the extended TSC format will be _horrible_. You don't want to 
+> add it in front of every event in the page just because you had a pause at 
+> the beginning of the page. You want to have a running update, so that you 
+> only need to add it after there was a pause.
 
- drivers/input/keyboard/omap-keypad.c |   27 ++++-----
- drivers/mtd/nand/ams-delta.c         |    4 -
- drivers/video/omap/lcd_inn1610.c     |   22 +++----
- drivers/video/omap/lcd_osk.c         |   10 +--
- drivers/video/omap/lcd_sx1.c         |   97 +++++++++++++++------------------
- 5 files changed, 74 insertions(+), 86 deletions(-)
+The problem with this is overwrite mode, which is the only mode ftace 
+currently offers. What happens when your writer starts overwriting the 
+ring buffer and there is no reader?
 
---- a/drivers/input/keyboard/omap-keypad.c
-+++ b/drivers/input/keyboard/omap-keypad.c
-@@ -72,12 +72,9 @@ static unsigned int *col_gpios;
- static void set_col_gpio_val(struct omap_kp *omap_kp, u8 value)
- {
- 	int col;
--	for (col = 0; col < omap_kp->cols; col++) {
--		if (value & (1 << col))
--			omap_set_gpio_dataout(col_gpios[col], 1);
--		else
--			omap_set_gpio_dataout(col_gpios[col], 0);
--	}
-+
-+	for (col = 0; col < omap_kp->cols; col++)
-+		gpio_set_value(col_gpios[col], value & (1 << col));
- }
- 
- static u8 get_row_gpio_val(struct omap_kp *omap_kp)
-@@ -86,7 +83,7 @@ static u8 get_row_gpio_val(struct omap_k
- 	u8 value = 0;
- 
- 	for (row = 0; row < omap_kp->rows; row++) {
--		if (omap_get_gpio_datain(row_gpios[row]))
-+		if (gpio_get_value(row_gpios[row]))
- 			value |= (1 << row);
- 	}
- 	return value;
-@@ -333,23 +330,23 @@ static int __init omap_kp_probe(struct p
- 	if (cpu_is_omap24xx()) {
- 		/* Cols: outputs */
- 		for (col_idx = 0; col_idx < omap_kp->cols; col_idx++) {
--			if (omap_request_gpio(col_gpios[col_idx]) < 0) {
-+			if (gpio_request(col_gpios[col_idx], "omap_kp_col") < 0) {
- 				printk(KERN_ERR "Failed to request"
- 				       "GPIO%d for keypad\n",
- 				       col_gpios[col_idx]);
- 				goto err1;
- 			}
--			omap_set_gpio_direction(col_gpios[col_idx], 0);
-+			gpio_direction_output(col_gpios[col_idx], 0);
- 		}
- 		/* Rows: inputs */
- 		for (row_idx = 0; row_idx < omap_kp->rows; row_idx++) {
--			if (omap_request_gpio(row_gpios[row_idx]) < 0) {
-+			if (gpio_request(row_gpios[row_idx], "omap_kp_row") < 0) {
- 				printk(KERN_ERR "Failed to request"
- 				       "GPIO%d for keypad\n",
- 				       row_gpios[row_idx]);
- 				goto err2;
- 			}
--			omap_set_gpio_direction(row_gpios[row_idx], 1);
-+			gpio_direction_input(row_gpios[row_idx]);
- 		}
- 	} else {
- 		col_idx = 0;
-@@ -418,10 +415,10 @@ err3:
- 	device_remove_file(&pdev->dev, &dev_attr_enable);
- err2:
- 	for (i = row_idx - 1; i >=0; i--)
--		omap_free_gpio(row_gpios[i]);
-+		gpio_free(row_gpios[i]);
- err1:
- 	for (i = col_idx - 1; i >=0; i--)
--		omap_free_gpio(col_gpios[i]);
-+		gpio_free(col_gpios[i]);
- 
- 	kfree(omap_kp);
- 	input_free_device(input_dev);
-@@ -438,9 +435,9 @@ static int omap_kp_remove(struct platfor
- 	if (cpu_is_omap24xx()) {
- 		int i;
- 		for (i = 0; i < omap_kp->cols; i++)
--			omap_free_gpio(col_gpios[i]);
-+			gpio_free(col_gpios[i]);
- 		for (i = 0; i < omap_kp->rows; i++) {
--			omap_free_gpio(row_gpios[i]);
-+			gpio_free(row_gpios[i]);
- 			free_irq(OMAP_GPIO_IRQ(row_gpios[i]), 0);
- 		}
- 	} else {
---- a/drivers/mtd/nand/ams-delta.c
-+++ b/drivers/mtd/nand/ams-delta.c
-@@ -145,7 +145,7 @@ static void ams_delta_hwcontrol(struct m
- 
- static int ams_delta_nand_ready(struct mtd_info *mtd)
- {
--	return omap_get_gpio_datain(AMS_DELTA_GPIO_PIN_NAND_RB);
-+	return gpio_get_value(AMS_DELTA_GPIO_PIN_NAND_RB);
- }
- 
- /*
-@@ -185,7 +185,7 @@ static int __init ams_delta_init(void)
- 	this->read_buf = ams_delta_read_buf;
- 	this->verify_buf = ams_delta_verify_buf;
- 	this->cmd_ctrl = ams_delta_hwcontrol;
--	if (!omap_request_gpio(AMS_DELTA_GPIO_PIN_NAND_RB)) {
-+	if (gpio_request(AMS_DELTA_GPIO_PIN_NAND_RB, "nand_rdy") == 0) {
- 		this->dev_ready = ams_delta_nand_ready;
- 	} else {
- 		this->dev_ready = NULL;
---- a/drivers/video/omap/lcd_inn1610.c
-+++ b/drivers/video/omap/lcd_inn1610.c
-@@ -32,43 +32,43 @@ static int innovator1610_panel_init(stru
- {
- 	int r = 0;
- 
--	if (omap_request_gpio(14)) {
-+	if (gpio_request(14, "lcd_en0")) {
- 		pr_err(MODULE_NAME ": can't request GPIO 14\n");
- 		r = -1;
- 		goto exit;
- 	}
--	if (omap_request_gpio(15)) {
-+	if (gpio_request(15, "lcd_en1")) {
- 		pr_err(MODULE_NAME ": can't request GPIO 15\n");
--		omap_free_gpio(14);
-+		gpio_free(14);
- 		r = -1;
- 		goto exit;
- 	}
- 	/* configure GPIO(14, 15) as outputs */
--	omap_set_gpio_direction(14, 0);
--	omap_set_gpio_direction(15, 0);
-+	gpio_direction_output(14, 0);
-+	gpio_direction_output(15, 0);
- exit:
- 	return r;
- }
- 
- static void innovator1610_panel_cleanup(struct lcd_panel *panel)
- {
--	omap_free_gpio(15);
--	omap_free_gpio(14);
-+	gpio_free(15);
-+	gpio_free(14);
- }
- 
- static int innovator1610_panel_enable(struct lcd_panel *panel)
- {
- 	/* set GPIO14 and GPIO15 high */
--	omap_set_gpio_dataout(14, 1);
--	omap_set_gpio_dataout(15, 1);
-+	gpio_set_value(14, 1);
-+	gpio_set_value(15, 1);
- 	return 0;
- }
- 
- static void innovator1610_panel_disable(struct lcd_panel *panel)
- {
- 	/* set GPIO13, GPIO14 and GPIO15 low */
--	omap_set_gpio_dataout(14, 0);
--	omap_set_gpio_dataout(15, 0);
-+	gpio_set_value(14, 0);
-+	gpio_set_value(15, 0);
- }
- 
- static unsigned long innovator1610_panel_get_caps(struct lcd_panel *panel)
---- a/drivers/video/omap/lcd_osk.c
-+++ b/drivers/video/omap/lcd_osk.c
-@@ -29,6 +29,7 @@
- 
- static int osk_panel_init(struct lcd_panel *panel, struct omapfb_device *fbdev)
- {
-+	/* gpio2 was allocated in board init */
- 	return 0;
- }
- 
-@@ -47,11 +48,8 @@ static int osk_panel_enable(struct lcd_p
- 	/* Set PWL level */
- 	omap_writeb(0xFF, OMAP_PWL_ENABLE);
- 
--	/* configure GPIO2 as output */
--	omap_set_gpio_direction(2, 0);
--
--	/* set GPIO2 high */
--	omap_set_gpio_dataout(2, 1);
-+	/* set GPIO2 high (lcd power enabled) */
-+	gpio_set_value(2, 1);
- 
- 	return 0;
- }
-@@ -65,7 +63,7 @@ static void osk_panel_disable(struct lcd
- 	omap_writeb(0x00, OMAP_PWL_CLK_ENABLE);
- 
- 	/* set GPIO2 low */
--	omap_set_gpio_dataout(2, 0);
-+	gpio_set_value(2, 0);
- }
- 
- static unsigned long osk_panel_get_caps(struct lcd_panel *panel)
---- a/drivers/video/omap/lcd_sx1.c
-+++ b/drivers/video/omap/lcd_sx1.c
-@@ -81,21 +81,21 @@ static void epson_sendbyte(int flag, uns
- 	int i, shifter = 0x80;
- 
- 	if (!flag)
--		omap_set_gpio_dataout(_A_LCD_SSC_A0, 0);
-+		gpio_set_value(_A_LCD_SSC_A0, 0);
- 	mdelay(2);
--	omap_set_gpio_dataout(A_LCD_SSC_RD, 1);
-+	gpio_set_value(A_LCD_SSC_RD, 1);
- 
--	omap_set_gpio_dataout(A_LCD_SSC_SD, flag);
-+	gpio_set_value(A_LCD_SSC_SD, flag);
- 
- 	OMAP_MCBSP_WRITE(OMAP1510_MCBSP3_BASE, PCR0, 0x2200);
- 	OMAP_MCBSP_WRITE(OMAP1510_MCBSP3_BASE, PCR0, 0x2202);
- 	for (i = 0; i < 8; i++) {
- 		OMAP_MCBSP_WRITE(OMAP1510_MCBSP3_BASE, PCR0, 0x2200);
--		omap_set_gpio_dataout(A_LCD_SSC_SD, shifter & byte);
-+		gpio_set_value(A_LCD_SSC_SD, shifter & byte);
- 		OMAP_MCBSP_WRITE(OMAP1510_MCBSP3_BASE, PCR0, 0x2202);
- 		shifter >>= 1;
- 	}
--	omap_set_gpio_dataout(_A_LCD_SSC_A0, 1);
-+	gpio_set_value(_A_LCD_SSC_A0, 1);
- }
- 
- static void init_system(void)
-@@ -107,25 +107,18 @@ static void init_system(void)
- static void setup_GPIO(void)
- {
- 	/* new wave */
--	omap_request_gpio(A_LCD_SSC_RD);
--	omap_request_gpio(A_LCD_SSC_SD);
--	omap_request_gpio(_A_LCD_RESET);
--	omap_request_gpio(_A_LCD_SSC_CS);
--	omap_request_gpio(_A_LCD_SSC_A0);
--
--	/* set all GPIOs to output */
--	omap_set_gpio_direction(A_LCD_SSC_RD, 0);
--	omap_set_gpio_direction(A_LCD_SSC_SD, 0);
--	omap_set_gpio_direction(_A_LCD_RESET, 0);
--	omap_set_gpio_direction(_A_LCD_SSC_CS, 0);
--	omap_set_gpio_direction(_A_LCD_SSC_A0, 0);
-+	gpio_request(A_LCD_SSC_RD, "lcd_ssc_rd");
-+	gpio_request(A_LCD_SSC_SD, "lcd_ssc_sd");
-+	gpio_request(_A_LCD_RESET, "lcd_reset");
-+	gpio_request(_A_LCD_SSC_CS, "lcd_ssc_cs");
-+	gpio_request(_A_LCD_SSC_A0, "lcd_ssc_a0");
- 
--	/* set GPIO data */
--	omap_set_gpio_dataout(A_LCD_SSC_RD, 1);
--	omap_set_gpio_dataout(A_LCD_SSC_SD, 0);
--	omap_set_gpio_dataout(_A_LCD_RESET, 0);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
--	omap_set_gpio_dataout(_A_LCD_SSC_A0, 1);
-+	/* set GPIOs to output, with initial data */
-+	gpio_direction_output(A_LCD_SSC_RD, 1);
-+	gpio_direction_output(A_LCD_SSC_SD, 0);
-+	gpio_direction_output(_A_LCD_RESET, 0);
-+	gpio_direction_output(_A_LCD_SSC_CS, 1);
-+	gpio_direction_output(_A_LCD_SSC_A0, 1);
- }
- 
- static void display_init(void)
-@@ -139,61 +132,61 @@ static void display_init(void)
- 	mdelay(2);
- 
- 	/* reset LCD */
--	omap_set_gpio_dataout(A_LCD_SSC_SD, 1);
-+	gpio_set_value(A_LCD_SSC_SD, 1);
- 	epson_sendbyte(0, 0x25);
- 
--	omap_set_gpio_dataout(_A_LCD_RESET, 0);
-+	gpio_set_value(_A_LCD_RESET, 0);
- 	mdelay(10);
--	omap_set_gpio_dataout(_A_LCD_RESET, 1);
-+	gpio_set_value(_A_LCD_RESET, 1);
- 
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
- 	mdelay(2);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	/* init LCD, phase 1 */
- 	epson_sendbyte(0, 0xCA);
- 	for (i = 0; i < 10; i++)
- 		epson_sendbyte(1, INIT_1[i]);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	/* init LCD phase 2 */
- 	epson_sendbyte(0, 0xCB);
- 	for (i = 0; i < 125; i++)
- 		epson_sendbyte(1, INIT_2[i]);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	/* init LCD phase 2a */
- 	epson_sendbyte(0, 0xCC);
- 	for (i = 0; i < 14; i++)
- 		epson_sendbyte(1, INIT_3[i]);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	/* init LCD phase 3 */
- 	epson_sendbyte(0, 0xBC);
- 	epson_sendbyte(1, 0x08);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	/* init LCD phase 4 */
- 	epson_sendbyte(0, 0x07);
- 	epson_sendbyte(1, 0x05);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	/* init LCD phase 5 */
- 	epson_sendbyte(0, 0x94);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	/* init LCD phase 6 */
- 	epson_sendbyte(0, 0xC6);
- 	epson_sendbyte(1, 0x80);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
- 	mdelay(100); /* used to be 1000 */
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	/* init LCD phase 7 */
- 	epson_sendbyte(0, 0x16);
-@@ -201,8 +194,8 @@ static void display_init(void)
- 	epson_sendbyte(1, 0x00);
- 	epson_sendbyte(1, 0xB1);
- 	epson_sendbyte(1, 0x00);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	/* init LCD phase 8 */
- 	epson_sendbyte(0, 0x76);
-@@ -210,12 +203,12 @@ static void display_init(void)
- 	epson_sendbyte(1, 0x00);
- 	epson_sendbyte(1, 0xDB);
- 	epson_sendbyte(1, 0x00);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	/* init LCD phase 9 */
- 	epson_sendbyte(0, 0xAF);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
- }
- 
- static int sx1_panel_init(struct lcd_panel *panel, struct omapfb_device *fbdev)
-@@ -231,18 +224,18 @@ static void sx1_panel_disable(struct lcd
- {
- 	printk(KERN_INFO "SX1: LCD panel disable\n");
- 	sx1_setmmipower(0);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
- 
- 	epson_sendbyte(0, 0x25);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	epson_sendbyte(0, 0xAE);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
- 	mdelay(100);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 0);
-+	gpio_set_value(_A_LCD_SSC_CS, 0);
- 
- 	epson_sendbyte(0, 0x95);
--	omap_set_gpio_dataout(_A_LCD_SSC_CS, 1);
-+	gpio_set_value(_A_LCD_SSC_CS, 1);
- }
- 
- static int sx1_panel_enable(struct lcd_panel *panel)
+What happens is that the start value is gone. You do not have a way to use 
+all the deltas to catch up to the remaining events.
+
+-- Steve
