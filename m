@@ -1,56 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbYIYVY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbYIYV3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbYIYVY0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbYIYVYR
+	id S1755195AbYIYV3g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbYIYV32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:24:17 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:60170 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753529AbYIYVYQ (ORCPT
+	Thu, 25 Sep 2008 17:29:28 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:40952 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752823AbYIYV31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:24:16 -0400
-Date: Thu, 25 Sep 2008 23:23:50 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: Differend udev names with different kernels
-Message-ID: <20080925212350.GA30425@x61>
-Mail-Followup-To: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org,
-	Kay Sievers <kay.sievers@vrfy.org>
-References: <20080924200127.GA2452@dose.home.local> <3ae72650809242012r7d144a64l35777f2a7bacbaa0@mail.gmail.com> <48DB1CC4.2040004@s5r6.in-berlin.de> <20080925054708.GA18645@dose.home.local> <48DBFEEF.8090109@s5r6.in-berlin.de>
+	Thu, 25 Sep 2008 17:29:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=JrFzkgYq+UL7DTfrU9DjHKb6f0+j1SjKtfZWZS4xC0BSa5UYHWI8fSAMJRzuBuJkx/
+         uSk0DOQFIa+etxZJcYyGC0aYT0P/4Qi98xgYY3AOWg3J577FV48eHtZJR+ii43OCsgA1
+         y/cWEbmdrpxa7phU70Ziu4/Do5WpnpkfVjOY4=
+Message-ID: <9f8af95f0809251429n289229beo80cf6ef3c5ef600c@mail.gmail.com>
+Date: Thu, 25 Sep 2008 17:29:25 -0400
+From: "james toy" <unk.nown@unix.net>
+To: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: 20080923-mmotm arch/x86/kvm/built-in.o: In function `kvm_dev_ioctl_check_extension':
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48DBFEEF.8090109@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Google-Sender-Auth: 34644f7251994b0d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 23:13:19 +0200, Stefan Richter wrote:
+Noticed this break with virtualization enabled on the latest mmotm.
 
-[...]
+ CC      net/wireless/util.o
+ CC [M]  net/sunrpc/auth_gss/gss_krb5_unseal.o
+ CC [M]  drivers/usb/storage/freecom.o
+ CC [M]  net/sunrpc/auth_gss/gss_krb5_seqnum.o
+ CC [M]  drivers/usb/storage/dpcm.o
+ CC      net/wireless/reg.o
+ CC [M]  net/sunrpc/auth_gss/gss_krb5_wrap.o
+ CC [M]  drivers/usb/storage/isd200.o
+ CC [M]  net/sunrpc/auth_gss/gss_krb5_crypto.o
+ CC      net/wireless/nl80211.o
+ CC [M]  drivers/usb/storage/datafab.o
+ LD [M]  net/sunrpc/auth_gss/auth_rpcgss.o
+ LD [M]  net/sunrpc/auth_gss/rpcsec_gss_krb5.o
+ LD [M]  net/sunrpc/sunrpc.o
+ CC [M]  drivers/usb/storage/jumpshot.o
+ CC      net/xfrm/xfrm_policy.o
+ LD      net/wireless/cfg80211.o
+ LD      net/wireless/built-in.o
+ CC [M]  drivers/usb/storage/alauda.o
+ CC      net/compat.o
+ CC [M]  drivers/usb/storage/karma.o
+ CC [M]  drivers/usb/storage/libusual.o
+ CC      net/sysctl_net.o
+ CC      net/xfrm/xfrm_state.o
+ LD [M]  drivers/usb/storage/usb-storage.o
+ LD      drivers/usb/built-in.o
+ CC      net/xfrm/xfrm_hash.o
+ LD      drivers/built-in.o
+ CC      net/xfrm/xfrm_input.o
+ CC      net/xfrm/xfrm_output.o
+ CC      net/xfrm/xfrm_algo.o
+ CC      net/xfrm/xfrm_user.o
+ CC      net/xfrm/xfrm_ipcomp.o
+ LD      net/xfrm/built-in.o
+ LD      net/built-in.o
+ LD      vmlinux.o
+ MODPOST vmlinux.o
+WARNING: modpost: Found 17 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+ GEN     .version
+ CHK     include/linux/compile.h
+ UPD     include/linux/compile.h
+ CC      init/version.o
+ LD      init/built-in.o
+ LD      vmlinux
+arch/x86/kvm/built-in.o: In function `kvm_dev_ioctl_check_extension':
+(.text+0x6a71): undefined reference to `intel_iommu_found'
+make: *** [vmlinux] Error 1
+[bbs@raider zenmm]$
 
->> Initially, my intention was to find a unique name for the hard disk,
->> that stays even if the disk is changed from Firewire to USB. However,
->> this doesn't seem to be possible with a default udev.
-
-[...]
-
-> An alternative though would be filesystem labels or filesystem UUIDs, if  
-> unique and persistent identifiers at the filesystem level rather than at  
-> the block device level are sufficient for your needs.
-
-Not really. My initial problem was that a volume sometimes came up very
-late, so that the lvm2 initscript didn't activate that volume group. So
-I wanted to wait for this specific disk during boot. Meanwhile, I
-created an udev rule that uses the vendor and device name, which also
-has the advantage of being the same when the disk is connected via
-Firewire and USB (or, should be the same at least, I didn't test USB
-yet).
-
-Regards,
-Tino
+/jT
