@@ -1,88 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYIYSyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbYIYS4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbYIYSyL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 14:54:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbYIYSxx
+	id S1755111AbYIYS4T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 14:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYIYS4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 14:53:53 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:51228 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753389AbYIYSxv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 14:53:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=c8Ub843dC7SD2XAptTOYRzNBk67s7Ru2rEDbMmnU2b9+U0bP8ZrVXQmUqHn/KQa8SM
-         5NXyifh67W+1gQkMI3muLTf/m2NrAWh4MgIFnaNyL8z39jUo2ZVRgeEH8+W2DyAcjMEE
-         DHb7TW2472g6t1aq5Nms79dsr5BdS/UHENaEI=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
+	Thu, 25 Sep 2008 14:56:09 -0400
+Received: from mga14.intel.com ([143.182.124.37]:7127 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750962AbYIYS4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 14:56:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,309,1220252400"; 
+   d="scan'208";a="51426794"
+Date: Thu, 25 Sep 2008 11:56:04 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
        Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86:  print out irq nr for msi/ht v3
-Date: Thu, 25 Sep 2008 11:53:11 -0700
-Message-Id: <1222368791-16522-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.6
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       dwmw2@infradead.org
+Subject: Re: [PATCH] x86/pci: fix dmar_tbl early_ioremap leak v2
+Message-ID: <20080925185601.GE15609@linux-os.sc.intel.com>
+References: <1222327705-22048-1-git-send-email-yhlu.kernel@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222327705-22048-1-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v2: fix hpet compiling error
-v3: Bjorn want to use dev_printk instead
+On Thu, Sep 25, 2008 at 12:28:25AM -0700, Yinghai Lu wrote:
+> use early_acpi_os_unmap_memory
+> 
+> v2: move unmap_memory early...
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
----
- arch/x86/kernel/hpet.c    |    3 +++
- arch/x86/kernel/io_apic.c |    5 +++++
- 2 files changed, 8 insertions(+)
-
-Index: linux-2.6/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic.c
-+++ linux-2.6/arch/x86/kernel/io_apic.c
-@@ -3348,6 +3348,8 @@ static int setup_msi_irq(struct pci_dev
- #endif
- 		set_irq_chip_and_handler_name(irq, &msi_chip, handle_edge_irq, "edge");
- 
-+	dev_printk(KERN_DEBUG, &dev->dev, "irq %d for MSI/MSI-X\n", irq);
-+
- 	return 0;
- }
- 
-@@ -3580,6 +3582,7 @@ int arch_setup_hpet_msi(unsigned int irq
- 	hpet_msi_write(irq, &msg);
- 	set_irq_chip_and_handler_name(irq, &hpet_msi_type, handle_edge_irq,
- 		"edge");
-+
- 	return 0;
- }
- #endif
-@@ -3676,6 +3679,8 @@ int arch_setup_ht_irq(unsigned int irq,
- 
- 		set_irq_chip_and_handler_name(irq, &ht_irq_chip,
- 					      handle_edge_irq, "edge");
-+
-+		dev_printk(KERN_DEBUG, &dev->dev, "irq %d for HT\n", irq);
- 	}
- 	return err;
- }
-Index: linux-2.6/arch/x86/kernel/hpet.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/hpet.c
-+++ linux-2.6/arch/x86/kernel/hpet.c
-@@ -467,6 +467,9 @@ static int hpet_setup_irq(struct hpet_de
- 	irq_set_affinity(dev->irq, cpumask_of_cpu(dev->cpu));
- 	enable_irq(dev->irq);
- 
-+	printk(KERN_DEBUG "hpet: %s irq %d for MSI\n",
-+			 dev->name, dev->irq);
-+
- 	return 0;
- }
- 
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
