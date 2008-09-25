@@ -1,68 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYIYUcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbYIYUcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbYIYUcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 16:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYIYUcH
+	id S1756123AbYIYUcz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 16:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbYIYUcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 16:32:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52300 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753421AbYIYUcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 16:32:04 -0400
-Date: Thu, 25 Sep 2008 13:24:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <20080925201211.GA1878@elte.hu>
-Message-ID: <alpine.LFD.1.10.0809251318270.3265@nehalem.linux-foundation.org>
-References: <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org>
- <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809251247010.27920@gandalf.stny.rr.com> <alpine.LFD.1.10.0809251002290.3265@nehalem.linux-foundation.org>
- <20080925195522.GA22248@elte.hu> <20080925201211.GA1878@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 25 Sep 2008 16:32:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56314 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755947AbYIYUc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 16:32:29 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: Regression in 2.6.27-rc7: Wake On LAN with sky2 broken
+Date: Thu, 25 Sep 2008 22:38:01 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20080924080546.GA21108@x61> <20080925194253.GA2783@dose.home.local> <20080925200311.GA4582@dose.home.local>
+In-Reply-To: <20080925200311.GA4582@dose.home.local>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809252238.01656.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 25 Sep 2008, Ingo Molnar wrote:
+On Thursday, 25 of September 2008, Tino Keitel wrote:
+> Hi,
 > 
-> You seem to dismiss that angle by calling my arguments bullshit, but i 
-> dont know on what basis you dismiss it. Sure, a feature and extra 
-> complexity _always_ has a robustness cost. If your argument is that we 
-> should move cpu_clock() to assembly to make it more dependable - i'm all 
-> for it.
+> I just found a method how I can enable WOL again:
+> 
+> echo enabled >
+> /sys/devices/pci0000:00/0000:00:1c.0/0000:01:00.0/power/wakeup
+> 
+> This device is the NIC device, of cause.
 
-Umm. cpu_clock() isn't even cross-cpu synchronized, and has actually 
-thrown away all the information that can make it so, afaik. At least the 
-comments say "never more than 2 jiffies difference"). You do realize that 
-if you want to order events across CPU's, we're not talking about 
-"jiffies" here, we're talking about 50-100 CPU _cycles_.
+I guess the box didn't hang during suspend with this setting?
 
-You also ignore the early trace issues, and have apparently not used it 
-for FTRACE. You also ignore the fact that without TSC, it goes into the 
-same "crap mode" that is appropriate for the scheduler, but totally 
-useless for tracing.
+If that's correct, please test the patch below.
 
-IOW, you say that I call your arguments BS without telling you why, but 
-that's just because you apparently cut out all the things I _did_ tell you 
-why about!
+> I already had another case (EHCI) where I needed to do this to be able
+> to wake the computer up with the USB keyboard. It seems like 2.6.27
+> behaves different here compared to 2.6.26, and things that worked with
+> 2.6.26 need manual fixing to work again. Or did I make something wrong?
 
-The fact is, people who do tracing will want better clocks - and have 
-gotten with other infrastructure - than you have apparently cared about. 
-You've worried about scheduler tracing, and you seem to want to just have 
-everybody use a simple but known-bad approach that was good enough for 
-you.
+No, you didn't.
 
-			Linus
+The behavior was changed by the PCI wake-up patches that fixed a couple of
+problems and I'd like to fix all of the cases when the new behavior causes
+issues like this to happen.
+
+I'll send you a patch for the EHCI case later today.
+
+Thanks,
+Rafael
+
+---
+sky2: Fix WOL regression
+
+Since dev->power.should_wakeup bit is used by the PCI core to
+decide whether the device should wake up the system from sleep
+states, set/unset this bit whenever WOL is enabled/disabled using
+sky2_set_wol().
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+
+ drivers/net/sky2.c |   34 ++++++++++------------------------
+ 1 file changed, 10 insertions(+), 24 deletions(-)
+
+diff -puN drivers/net/sky2.c~skty2-adapt-to-the-reworked-pci-pm drivers/net/sky2.c
+--- a/drivers/net/sky2.c~skty2-adapt-to-the-reworked-pci-pm
++++ a/drivers/net/sky2.c
+@@ -3034,7 +3034,8 @@ static int sky2_set_wol(struct net_devic
+ 	struct sky2_port *sky2 = netdev_priv(dev);
+ 	struct sky2_hw *hw = sky2->hw;
+ 
+-	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
++	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
++	    || !device_can_wakeup(&hw->pdev->dev))
+ 		return -EOPNOTSUPP;
+ 
+ 	sky2->wol = wol->wolopts;
+@@ -3045,6 +3046,8 @@ static int sky2_set_wol(struct net_devic
+ 		sky2_write32(hw, B0_CTST, sky2->wol
+ 			     ? Y2_HW_WOL_ON : Y2_HW_WOL_OFF);
+ 
++	device_set_wakeup_enable(&hw->pdev->dev, sky2->wol);
++
+ 	if (!netif_running(dev))
+ 		sky2_wol_init(sky2);
+ 	return 0;
+@@ -4314,7 +4305,7 @@ static int __devinit sky2_probe(struct p
+ 		}
+ 	}
+ 
+-	wol_default = pci_wake_enabled(pdev) ? WAKE_MAGIC : 0;
++	wol_default = device_may_wakeup(&pdev->dev) ? WAKE_MAGIC : 0;
+ 
+ 	err = -ENOMEM;
+ 	hw = kzalloc(sizeof(*hw), GFP_KERNEL);
+
