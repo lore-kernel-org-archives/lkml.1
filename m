@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbYIYAvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYIYBCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753801AbYIYAvn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 20:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYIYAva
+	id S1753371AbYIYBCu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 21:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYIYBCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 20:51:30 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:47060 "EHLO mail.dvmed.net"
+	Wed, 24 Sep 2008 21:02:38 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:40175 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752079AbYIYAv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 20:51:29 -0400
-Message-ID: <48DAE089.20307@garzik.org>
-Date: Wed, 24 Sep 2008 20:51:21 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-CC: mingo@elte.hu, davem@davemloft.net, netdev@vger.kernel.org,
+	id S1752547AbYIYBCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 21:02:37 -0400
+Date: Thu, 25 Sep 2008 03:00:14 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Jeff Garzik <jeff@garzik.org>
+cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       davem@davemloft.net, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
        john.ronciak@intel.com, Bruce Allan <bruce.w.allan@intel.com>
 Subject: Re: [PATCH 3/3] e1000e: remove failed request for sw/fw/hw flag
+In-Reply-To: <48DAE089.20307@garzik.org>
+Message-ID: <Pine.LNX.4.64.0809250257070.27884@twin.jikos.cz>
 References: <20080923224630.6927.28967.stgit@jtkirshe-mobile.jf.intel.com>
-In-Reply-To: <20080923224630.6927.28967.stgit@jtkirshe-mobile.jf.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+ <48DAE089.20307@garzik.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Kirsher wrote:
-> From: Bruce Allan <bruce.w.allan@intel.com>
-> 
-> When the driver fails to acquire the control flag used to serialize
-> NVM and PHY accesses between the driver, firmware and hardware, remove the
-> request for the flag otherwise the hardware might grant the flag when it
-> becomes available but the driver will not release the flag.  This could
-> cause the firmware to prevent the driver getting the flag for all future
-> attempts.
-> 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> ---
-> 
->  drivers/net/e1000e/ich8lan.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+On Wed, 24 Sep 2008, Jeff Garzik wrote:
 
-applied
+> > When the driver fails to acquire the control flag used to serialize
+> > NVM and PHY accesses between the driver, firmware and hardware, remove the
+> > request for the flag otherwise the hardware might grant the flag when it
+> > becomes available but the driver will not release the flag.  This could
+> > cause the firmware to prevent the driver getting the flag for all future
+> > attempts.
+> applied
 
+BTW are you going to take the whole series, or just this fix?
+
+I don't think that the other patches should be really applied to upstream 
+(they could be very handy for debugging this horrible issue, once we could 
+do any debugging of it, thoug), as they don't protect against anyone 
+creating a new rw mapping, which can then be freely used to still 
+overwrite the mmio area without any problems.
+
+-- 
+Jiri Kosina
+SUSE Labs
 
