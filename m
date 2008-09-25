@@ -1,105 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYIYEYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbYIYE0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbYIYEYT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 00:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYIYEYK
+	id S1753941AbYIYE0e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 00:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYIYE0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 00:24:10 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:53193 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750858AbYIYEYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 00:24:09 -0400
-Date: Thu, 25 Sep 2008 09:53:54 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: sched: Maintain only task entities in cfs_rq->tasks list.
-Message-ID: <20080925042354.GB3663@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20080925042108.GA3663@in.ibm.com>
+	Thu, 25 Sep 2008 00:26:25 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:12658 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750841AbYIYE0Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 00:26:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=nG7pnZOZnhw/kfeaAMzEiLddZIi6XCMXlZOYeCKi0fJ3GmYMy16TTMfktmYkwxWaaf
+         DIoplcpuW1hf4XmGlrHs5q92VwDNpU6YGJb8NxOrS6fR1pph1m0lmjyf5uX5wyDcrDf5
+         N2AteiXZZ6AL2ofHQcov636oo8RIRVXNPQu8Q=
+Message-ID: <48DB12C9.5080104@gmail.com>
+Date: Wed, 24 Sep 2008 21:25:45 -0700
+From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080925042108.GA3663@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Dave Airlie <airlied@gmail.com>
+CC: Jiri Kosina <jkosina@suse.cz>, David Miller <davem@davemloft.net>,
+       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       chrisl@vmware.com, Ingo Molnar <mingo@elte.hu>,
+       jbarnes@virtuousgeek.org
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+References: <20080923.150722.141587696.davem@davemloft.net>	 <9929d2390809231512w160d221axa2923a6b293a041@mail.gmail.com>	 <alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz>	 <20080923.211215.193696086.davem@davemloft.net>	 <alpine.LNX.1.10.0809250110070.4671@pegasus.suse.cz> <21d7e9970809241722w7c3bb6a5w1af5801b7380169d@mail.gmail.com>
+In-Reply-To: <21d7e9970809241722w7c3bb6a5w1af5801b7380169d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops, missed the subject line in the last post :(
+Dave Airlie wrote:
+>>> If the MMIO space regions of the video cards sit right before the
+>>> E1000E ones on the effected systems, that would pretty much
+>>> convince me that this is the kind of problem we are having here.
+>> Unfortunately, looking at the lspci outputs that are in
+>> https://bugzilla.novell.com/show_bug.cgi?id=425480 it seems to me that the
+>> MMIO regions are quite far away from each other.
 
-[repost]
+on my ich9 based system the e1000e BAR1 regions are back to back with 
+both the vga memory map and the audio mem, either of which could be the 
+mangler, but more likely vga device (say X maybe) since it is mapped 
+directly in front of the e1000e BAR1 space.
 
-sched: Maintain only task entities in cfs_rq->tasks list.
+> Yup on my laptop these were far away and I wondered what could mangle
+> things that badly.
+> 
+> Well I'm out of the race, my attempts to re-write my eeprom using an
+> eeprom from an equivalent laptop
+> have totally failed and my BIOS won't boot anymore - so my laptop is == a brick.
 
-cfs_rq->tasks list is used by the load balancer to iterate
-over all the tasks. Currently it holds all the entities
-(both task and group entities) because of which there is
-a need to check for group entities explicitly during load
-balancing. This patch changes the cfs_rq->tasks list to
-hold only task entities.
+I'm really sorry to hear that, I wonder if the laptop has an "emergency 
+bios update" mode like many PCs used to through a jumper.  Dave A., let 
+us know if you make any recovery progress.
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched_fair.c |   26 +++++++++-----------------
- 1 file changed, 9 insertions(+), 17 deletions(-)
+I plan to try some random writes tomorrow to my BAR1 space and see if my 
+flash gets erased.
 
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -586,11 +586,12 @@ account_entity_enqueue(struct cfs_rq *cf
- 	update_load_add(&cfs_rq->load, se->load.weight);
- 	if (!parent_entity(se))
- 		inc_cpu_load(rq_of(cfs_rq), se->load.weight);
--	if (entity_is_task(se))
-+	if (entity_is_task(se)) {
- 		add_cfs_task_weight(cfs_rq, se->load.weight);
-+		list_add(&se->group_node, &cfs_rq->tasks);
-+	}
- 	cfs_rq->nr_running++;
- 	se->on_rq = 1;
--	list_add(&se->group_node, &cfs_rq->tasks);
- }
- 
- static void
-@@ -599,11 +600,12 @@ account_entity_dequeue(struct cfs_rq *cf
- 	update_load_sub(&cfs_rq->load, se->load.weight);
- 	if (!parent_entity(se))
- 		dec_cpu_load(rq_of(cfs_rq), se->load.weight);
--	if (entity_is_task(se))
-+	if (entity_is_task(se)) {
- 		add_cfs_task_weight(cfs_rq, -se->load.weight);
-+		list_del_init(&se->group_node);
-+	}
- 	cfs_rq->nr_running--;
- 	se->on_rq = 0;
--	list_del_init(&se->group_node);
- }
- 
- static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
-@@ -1445,19 +1447,9 @@ __load_balance_iterator(struct cfs_rq *c
- 	if (next == &cfs_rq->tasks)
- 		return NULL;
- 
--	/* Skip over entities that are not tasks */
--	do {
--		se = list_entry(next, struct sched_entity, group_node);
--		next = next->next;
--	} while (next != &cfs_rq->tasks && !entity_is_task(se));
--
--	if (next == &cfs_rq->tasks)
--		return NULL;
--
--	cfs_rq->balance_iterator = next;
--
--	if (entity_is_task(se))
--		p = task_of(se);
-+	se = list_entry(next, struct sched_entity, group_node);
-+	p = task_of(se);
-+	cfs_rq->balance_iterator = next->next;
- 
- 	return p;
- }
+Jesse
