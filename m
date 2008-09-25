@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYIYGI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbYIYGJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYIYGI5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 02:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbYIYGHw
+	id S1754687AbYIYGJY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 02:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYIYGH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 02:07:52 -0400
-Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:36147 "EHLO
-	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754459AbYIYGHv (ORCPT
+	Thu, 25 Sep 2008 02:07:56 -0400
+Received: from qmta06.westchester.pa.mail.comcast.net ([76.96.62.56]:46180
+	"EHLO QMTA06.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753178AbYIYGHz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 02:07:51 -0400
-X-Authority-Analysis: v=1.0 c=1 a=Q1sM0grNWwQA:10 a=BMAZSXhMjTQA:10
- a=l-ZSAgIrRNUgVz6KjyUA:9 a=fmuDoAoWXAGQAq8ObDEA:7
- a=yR2lRQ-QR2_OkMvxr7M7zIpHOrYA:4 a=vNGxQsTWjH8A:10
-Subject: [RFC PATCH 5/8] relay - Map the first sub-buffer at the end of the
-	buffer, for temporary convenience.
+	Thu, 25 Sep 2008 02:07:55 -0400
+X-Authority-Analysis: v=1.0 c=1 a=5flvUuxTl7kA:10 a=51vvcaeiPR0A:10
+ a=hkalZczCN4h1uf0MMtwA:9 a=HdP9JgRuaW8DvsuFixUA:7
+ a=HiY3BvUN2J4Emi-uVNxkRXDM3eEA:4 a=i92e0Ub4el8A:10 a=d_-3mwAUsuEA:10
+ a=eZLSmJVMEtUA:10
+Subject: [RFC PATCH 6/8] relay - Replace relay_reserve/relay_write with
+	non-padded versions.
 From: Tom Zanussi <zanussi@comcast.net>
 To: Martin Bligh <mbligh@google.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
@@ -35,8 +36,8 @@ References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com>
 	 <33307c790809230700o4bf0d22fg8ab2dcb904f7d66c@mail.gmail.com>
 	 <1222228215.7761.0.camel@charm-linux>
 Content-Type: text/plain
-Date: Thu, 25 Sep 2008 01:07:47 -0500
-Message-Id: <1222322867.6435.60.camel@charm-linux>
+Date: Thu, 25 Sep 2008 01:07:53 -0500
+Message-Id: <1222322873.6435.61.camel@charm-linux>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
@@ -44,82 +45,231 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Map the first sub-buffer at the end of the buffer, for temporary convenience.
+Replace relay_reserve/relay_write with non-padded versions.
 
-Make relay buffers 'circular' for writing by mapping the first subbuf
-at end of last subbuf.  This is so we can do writes across last subbuf
-boundary without adding special write logic.  This is a temporary
-state of affairs and it all goes away in a future patch, but it's here
-now so things will still work.
+The old versions of relay_reserve/relay_write would write/reserve an
+event only if the whole thing could fit in the remaining space of the
+current sub-buffer; if it couldn't it would add padding to the current
+sub-buffer and reserve in the next.  The new versions don't add
+padding but use up all the space in a sub-buffer and write the
+remainder in the next sub-buffer.  They won't however write a partial
+event - if there's not enough space for the event in the current
+sub-buffer and the next sub-buffer isn't free, the whole reserve/write
+will fail.
 ---
- kernel/relay.c |   26 +++++++++++++++-----------
- 1 files changed, 15 insertions(+), 11 deletions(-)
+ include/linux/relay.h |   41 +++++++++++++++++++----------
+ kernel/relay.c        |   69 +++++++++++++++++++++++++++----------------------
+ 2 files changed, 65 insertions(+), 45 deletions(-)
 
+diff --git a/include/linux/relay.h b/include/linux/relay.h
+index 13163b0..c42b2d3 100644
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
+@@ -207,9 +207,9 @@ extern void relay_subbufs_consumed(struct rchan *chan,
+ extern void relay_reset(struct rchan *chan);
+ extern int relay_buf_full(struct rchan_buf *buf);
+ 
+-extern size_t switch_subbuf_default_callback(struct rchan_buf *buf,
+-					     size_t length,
+-					     void **reserved);
++extern size_t relay_switch_subbuf_default_callback(struct rchan_buf *buf,
++						   size_t length,
++						   void **reserved);
+ 
+ /**
+  *	relay_event_toobig - is event too big to fit in a sub-buffer?
+@@ -270,17 +270,23 @@ static inline void relay_write(struct rchan *chan,
+ 			       const void *data,
+ 			       size_t length)
+ {
+-	unsigned long flags;
++	size_t remainder = length;
+ 	struct rchan_buf *buf;
++	unsigned long flags;
+ 	void *reserved;
+ 
+ 	local_irq_save(flags);
+ 	buf = chan->buf[smp_processor_id()];
+ 	reserved = buf->data + buf->offset;
+-	if (unlikely(buf->offset + length > chan->subbuf_size))
+-		length = chan->cb->switch_subbuf(buf, length, &reserved);
++	if (unlikely(buf->offset + length > buf->chan->subbuf_size)) {
++		remainder = chan->cb->switch_subbuf(buf, length, &reserved);
++		if (unlikely(!reserved)) {
++			local_irq_restore(flags);
++			return;
++		}
++	}
+ 	memcpy(reserved, data, length);
+-	buf->offset += length;
++	buf->offset += remainder;
+ 	local_irq_restore(flags);
+ }
+ 
+@@ -300,15 +306,22 @@ static inline void __relay_write(struct rchan *chan,
+ 				 const void *data,
+ 				 size_t length)
+ {
++	size_t remainder = length;
+ 	struct rchan_buf *buf;
++	unsigned long flags;
+ 	void *reserved;
+ 
+ 	buf = chan->buf[get_cpu()];
+ 	reserved = buf->data + buf->offset;
+-	if (unlikely(buf->offset + length > buf->chan->subbuf_size))
+-		length = chan->cb->switch_subbuf(buf, length, &reserved);
++	if (unlikely(buf->offset + length > buf->chan->subbuf_size)) {
++		remainder = chan->cb->switch_subbuf(buf, length, &reserved);
++		if (unlikely(!reserved)) {
++			local_irq_restore(flags);
++			return;
++		}
++	}
+ 	memcpy(reserved, data, length);
+-	buf->offset += length;
++	buf->offset += remainder;
+ 	put_cpu();
+ }
+ 
+@@ -323,15 +336,15 @@ static inline void __relay_write(struct rchan *chan,
+  *	Does not protect the buffer at all - caller must provide
+  *	appropriate synchronization.
+  */
+-static inline void *relay_reserve(struct rchan *chan, size_t length)
++static inline void *relay_reserve(struct rchan *chan,
++				  size_t length)
+ {
+-	void *reserved;
+ 	struct rchan_buf *buf = chan->buf[smp_processor_id()];
++	void *reserved = buf->data + buf->offset;
+ 
+-	reserved = buf->data + buf->offset;
+ 	if (unlikely(buf->offset + length > buf->chan->subbuf_size)) {
+ 		length = chan->cb->switch_subbuf(buf, length, &reserved);
+-		if (!length)
++		if (unlikely(!reserved))
+ 			return NULL;
+ 	}
+ 	buf->offset += length;
 diff --git a/kernel/relay.c b/kernel/relay.c
-index 9ea9240..9a08fec 100644
+index 9a08fec..15e4de2 100644
 --- a/kernel/relay.c
 +++ b/kernel/relay.c
-@@ -125,20 +125,20 @@ static int relay_mmap_buf(struct rchan_buf *buf, struct vm_area_struct *vma)
+@@ -350,7 +350,7 @@ static struct rchan_callbacks default_channel_callbacks = {
+ 	.create_buf_file = create_buf_file_default_callback,
+ 	.remove_buf_file = remove_buf_file_default_callback,
+ 	.wakeup_readers = wakeup_readers_default_callback,
+-	.switch_subbuf = switch_subbuf_default_callback,
++	.switch_subbuf = relay_switch_subbuf_default_callback,
+ };
+ 
  /**
-  *	relay_alloc_buf - allocate a channel buffer
-  *	@buf: the buffer struct
-- *	@size: total size of the buffer
-  *
-  *	Returns a pointer to the resulting buffer, %NULL if unsuccessful. The
-  *	passed in size will get page aligned, if it isn't already.
-  */
--static void *relay_alloc_buf(struct rchan_buf *buf, size_t *size)
-+static void *relay_alloc_buf(struct rchan_buf *buf)
- {
- 	void *mem;
--	unsigned int i, j, n_pages;
-+	unsigned int i, j, n_pages, n_subbuf_pages;
+@@ -530,7 +530,7 @@ static void setup_callbacks(struct rchan *chan,
+ 	if (!cb->wakeup_readers)
+ 		cb->wakeup_readers = wakeup_readers_default_callback;
+ 	if (!cb->switch_subbuf)
+-		cb->switch_subbuf = switch_subbuf_default_callback;
++		cb->switch_subbuf = relay_switch_subbuf_default_callback;
+ 	chan->cb = cb;
+ }
  
--	*size = PAGE_ALIGN(*size);
--	n_pages = *size >> PAGE_SHIFT;
-+	buf->chan->alloc_size = PAGE_ALIGN(buf->chan->alloc_size);
-+	n_pages = buf->chan->alloc_size >> PAGE_SHIFT;
-+	n_subbuf_pages = PAGE_ALIGN(buf->chan->subbuf_size) >> PAGE_SHIFT;
+@@ -736,8 +736,20 @@ int relay_late_setup_files(struct rchan *chan,
+ 	return err;
+ }
  
--	buf->page_array = relay_alloc_page_array(n_pages);
-+	buf->page_array = relay_alloc_page_array(n_pages + n_subbuf_pages);
- 	if (!buf->page_array)
- 		return NULL;
- 
-@@ -148,11 +148,14 @@ static void *relay_alloc_buf(struct rchan_buf *buf, size_t *size)
- 			goto depopulate;
- 		set_page_private(buf->page_array[i], (unsigned long)buf);
- 	}
--	mem = vmap(buf->page_array, n_pages, VM_MAP, PAGE_KERNEL);
-+	for (i = 0; i < n_subbuf_pages; i++)
-+		buf->page_array[n_pages + i] = buf->page_array[i];
-+	mem = vmap(buf->page_array, n_pages + n_subbuf_pages, VM_MAP,
-+		   PAGE_KERNEL);
- 	if (!mem)
- 		goto depopulate;
- 
--	memset(mem, 0, *size);
-+	memset(mem, 0, buf->chan->alloc_size);
- 	buf->page_count = n_pages;
- 	return mem;
- 
-@@ -179,12 +182,13 @@ static struct rchan_buf *relay_create_buf(struct rchan *chan)
- 	if (!buf->padding)
- 		goto free_buf;
- 
--	buf->start = relay_alloc_buf(buf, &chan->alloc_size);
-+	buf->chan = chan;
-+	kref_get(&buf->chan->kref);
++static inline int next_subbuf_free(struct rchan_buf *buf)
++{
++	size_t full_subbufs;
 +
-+	buf->start = relay_alloc_buf(buf);
- 	if (!buf->start)
- 		goto free_buf;
++	if (buf->chan->flags & RCHAN_MODE_OVERWRITE)
++		return 1;
++
++	full_subbufs = buf->subbufs_produced - buf->subbufs_consumed;
++
++	return (full_subbufs < buf->chan->n_subbufs - 1);
++}
++
+ /**
+- *	switch_subbuf_default_callback - switch to a new sub-buffer
++ *	relay_switch_subbuf_default_callback - switch to a new sub-buffer
+  *	@buf: channel buffer
+  *	@length: size of current event
+  *	@reserved: a pointer to the space reserved
+@@ -747,50 +759,45 @@ int relay_late_setup_files(struct rchan *chan,
+  *	Performs sub-buffer-switch tasks such as invoking callbacks,
+  *	updating padding counts, waking up readers, etc.
+  */
+-size_t switch_subbuf_default_callback(struct rchan_buf *buf,
+-				      size_t length,
+-				      void **reserved)
++size_t relay_switch_subbuf_default_callback(struct rchan_buf *buf,
++					    size_t length,
++					    void **reserved)
+ {
+-	void *old, *new;
+-	size_t old_subbuf, new_subbuf;
++	size_t remainder, new_subbuf;
++	void *new_data;
  
--	buf->chan = chan;
--	kref_get(&buf->chan->kref);
- 	return buf;
+ 	if (unlikely(relay_event_toobig(buf, length)))
+ 		goto toobig;
  
- free_buf:
+-	if (buf->offset != buf->chan->subbuf_size + 1) {
+-		buf->prev_padding = buf->chan->subbuf_size - buf->offset;
+-		old_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
+-		buf->padding[old_subbuf] = buf->prev_padding;
+-		relay_inc_produced(buf);
+-		relay_update_filesize(buf, buf->chan->subbuf_size -
+-				      buf->padding[old_subbuf]);
+-		buf->chan->cb->wakeup_readers(buf);
++	/* don't write anything unless we can write it all. */
++	if (!next_subbuf_free(buf)) {
++		*reserved = NULL;
++		return 0;
+ 	}
+ 
+-	old = buf->data;
++	if (reserved)
++		*reserved = buf->data + buf->offset;
++
++	remainder = length - (buf->chan->subbuf_size - buf->offset);
++	relay_inc_produced(buf);
++	relay_update_filesize(buf, buf->chan->subbuf_size + remainder);
++	buf->chan->cb->wakeup_readers(buf);
++
+ 	new_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
+-	new = buf->start + new_subbuf * buf->chan->subbuf_size;
+-	buf->offset = 0;
+-	if (!buf->chan->cb->subbuf_start(buf, new, old, buf->prev_padding)) {
+-		buf->offset = buf->chan->subbuf_size + 1;
+-		return 0;
+-	}
+-	buf->data = new;
+-	buf->padding[new_subbuf] = 0;
++	new_data = buf->start + new_subbuf * buf->chan->subbuf_size;
++
++	buf->data = new_data;
++	buf->offset = 0; /* remainder will be added by caller */
+ 
+ 	if (unlikely(relay_event_toobig(buf, length + buf->offset)))
+ 		goto toobig;
+ 
+-	if (reserved)
+-		*reserved = buf->data;
+-
+-	return length;
+-
++	return remainder;
+ toobig:
+ 	buf->chan->last_toobig = length;
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(switch_subbuf_default_callback);
++EXPORT_SYMBOL_GPL(relay_switch_subbuf_default_callback);
+ 
+ /**
+  *	relay_subbufs_consumed - update the buffer's sub-buffers-consumed count
 -- 
 1.5.3.5
 
