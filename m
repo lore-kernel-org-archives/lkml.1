@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbYIYVD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbYIYVEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754546AbYIYVD0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbYIYVC4
+	id S1756301AbYIYVEY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbYIYVEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:02:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:46343 "EHLO mail.goop.org"
+	Thu, 25 Sep 2008 17:04:16 -0400
+Received: from mga01.intel.com ([192.55.52.88]:13668 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753822AbYIYVCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:02:55 -0400
-Message-ID: <48DBFC7D.4050208@goop.org>
-Date: Thu, 25 Sep 2008 14:02:53 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1753556AbYIYVEP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 17:04:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,309,1220252400"; 
+   d="scan'208";a="620372631"
+From: "Ma, Chinang" <chinang.ma@intel.com>
+To: "Ma, Chinang" <chinang.ma@intel.com>, Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Mike Galbraith <efault@gmx.de>, Gregory Haskins <ghaskins@novell.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Thu, 25 Sep 2008 14:04:01 -0700
+Subject: RE: 2.6.27-rc5 OLTP performance regression
+Thread-Topic: 2.6.27-rc5 OLTP performance regression
+Thread-Index: AckTbJNRtFcyH+QFRlCY2aaqKI5uqAANOdUgAuvKpXA=
+Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E8002FEC1730D@azsmsx501.amr.corp.intel.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE60F751@azsmsx501.amr.corp.intel.com>
+ <1220896833.18239.141.camel@twins.programming.kicks-ass.net>
+ <1220897052.18239.147.camel@twins.programming.kicks-ass.net>
+ <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E71C7@azsmsx501.amr.corp.intel.com>
+ <20080910122622.GG14757@elte.hu>
+ <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E7B62@azsmsx501.amr.corp.intel.com>
+ <20080910173442.GB31942@elte.hu> 
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-References: <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com> <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com> <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org> <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> As for C2/C3 - that's just an argument for *not* doing anything at trace 
-> time. What do you think happens when you try to trace through those 
-> things? You're much better off trying to sort out the problems later, when 
-> you don't hold critical locks and are possibly deep down in some buggy 
-> ACPI code, and you're trying to trace it exactly _because_ it is buggy.
->   
+We also tested sched_shares_ratelimit = 100 ms and reduce the OLTP regression to 0.2%. (very small return in performance with 10x the value). Can we count on this sched_shares_ratelimit tunable be always accessible for workload that does not depend on group fairness?
 
-That suggests that frequency changes should be recorded at a lower layer
-as well, along with full timestamps and deltas, so that a log parser can
-correctly generate the timestamps without having to parse higher-level
-trace records.  Maybe the simplest thing to do is make the full
-timestamp records also include frequency and offset information (to deal
-with discontinuities caused by things like a vcpu switching between
-physical cpus with unsynced tscs).
+Chinang
 
-    J
+-----Original Message-----
+From: Ma, Chinang
+Sent: Wednesday, September 10, 2008 5:08 PM
+To: Ingo Molnar
+Cc: Peter Zijlstra; Srivatsa Vaddagiri; Mike Galbraith; Gregory Haskins; Steven Rostedt; Nick Piggin; Siddha, Suresh B; Wilcox, Matthew R; Tripathi, Sharad C; Chilukuri, Harita; linux-kernel@vger.kernel.org
+Subject: RE: 2.6.27-rc5 OLTP performance regression
+
+When set to 10 ms the regression is about 0.4%. We get most of the 2%.
+
+Chinang
+-----Original Message-----
+From: Ingo Molnar [mailto:mingo@elte.hu]
+Sent: Wednesday, September 10, 2008 10:35 AM
+To: Ma, Chinang
+Cc: Peter Zijlstra; Srivatsa Vaddagiri; Mike Galbraith; Gregory Haskins; Steven Rostedt; Nick Piggin; Siddha, Suresh B; Wilcox, Matthew R; Tripathi, Sharad C; Chilukuri, Harita; linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc5 OLTP performance regression
+
+
+* Ma, Chinang <chinang.ma@intel.com> wrote:
+
+> I increased the /proc/sys/kernel/sched_shares_ratelimit from 1
+> millisecond to one second to reduce the frequency of shares update.
+> That was okay for OLTP workload. As Peter mentioned, a larger value
+> will reduce the accuracy of SMP fairness for group scheduler and the
+> ratelimit and using a larger default value may not be good for general
+> case.
+
+does 10 msecs already get you most of the 2%? 1000 millisecond sounds
+very (and probably unacceptable) coarse.
+
+        Ingo
