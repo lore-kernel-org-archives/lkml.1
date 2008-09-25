@@ -1,203 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYIYPQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbYIYPRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754509AbYIYPQP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 11:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYIYPP6
+	id S1755184AbYIYPRx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 11:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYIYPRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 11:15:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37986 "EHLO mx2.redhat.com"
+	Thu, 25 Sep 2008 11:17:42 -0400
+Received: from mail.tmr.com ([64.65.253.246]:51711 "EHLO partygirl.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752583AbYIYPP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 11:15:57 -0400
-Message-ID: <48DBAB0E.3090608@redhat.com>
-Date: Thu, 25 Sep 2008 10:15:26 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1752675AbYIYPRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 11:17:41 -0400
+Message-ID: <48DBAB81.8050900@tmr.com>
+Date: Thu, 25 Sep 2008 11:17:21 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080716 Fedora/1.1.11-1.fc9 SeaMonkey/1.1.11
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>, tytso@mit.edu, jack@suse.cz,
-       sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com,
-       linux-ext4@vger.kernel.org
-Subject: Re: ext3 read only handling
-References: <20080925150319.GA4344@elf.ucw.cz>
-In-Reply-To: <20080925150319.GA4344@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Gwendal Grignou <gwendal@google.com>
+CC: Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Brian Rademacher <rad@radfiles.net>, linux-ide@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
+References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA>	 <alpine.DEB.1.10.0809220404400.18908@p34.internal.lan>	 <5A4A9A3B0AAA4A20A33BC2D578F5F75F@909927SOSLA>	 <alpine.DEB.1.10.0809220828490.23159@p34.internal.lan>	 <5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>	 <alpine.DEB.1.10.0809220903400.23159@p34.internal.lan>	 <4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA>	 <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>	 <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan> <e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com>
+In-Reply-To: <e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Inserting read-only ext3 SD card into a machine and trying to mount
-> ext3 volume on it is very unnice :-(.
-> 
-> Is there easy way to "fix" -oro so that it does not write to the
-> media?
-> 
-> (Machine died after I played with that SD card a bit more, but I can't
-> easily reproduce that...)
+Gwendal Grignou wrote:
+> About ata1:0 problem, as reported in the bugzilla bug: I would try to
+> disable NCQ to see if it helps. Your disks firmware might not fully
+> support it.
+>
+> You can either add the parameter "libata.force=noncq" when loading
+> your kernel, or set queue_depth to 1 for all the Seagate drives behind
+> the Marvell MV88SX6081 controller.
+>
+> About ata5:0 , someone - in user space probably - is trying to do a
+> SMART ENABLE operation, but the device ignores it. I don't know which
+> device you are using, but I assume it does not support ATA SMART
+> feature set. Timeout is an acceptable but not a nice way to answer, a
+> cancel would have been better; check if there is a firmware upgrade
+> for your device.
+>   
 
-Is the block device recognized as readonly?
+You certainly called the SMART issue, I was wondering why a new 
+distribution install on some older hardware was getting all the errors, 
+clearly the Fedora "smartd" doesn't check SMART capability before trying 
+to enable the feature. Oddly the drive on which I see this does reply to 
+SMART requests, so the firmware must be "semi-functional." Not a 
+problem, in my case the drive is just used for testing handling of hot 
+swap, and has no data of any value.
 
-ext3_load_journal() does things like:
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
 
-        really_read_only = bdev_read_only(sb->s_bdev);
-...
-                        printk(KERN_INFO "EXT3-fs: INFO: recovery "
-                                        "required on readonly
-filesystem.\n");
-                        if (really_read_only) {
-                                printk(KERN_ERR "EXT3-fs: write access "
-                                        "unavailable, cannot proceed.\n");
-                                return -EROFS;
-                        }
-
-so it shouldn't have tried to replay the log ...
-
-(replaying the log & writing to the device on a read-only mount is
-another issue, but the behavior today is *supposed* to be such that if
-you cannot write to the device, then even a read-only mount with a dirty
-journal should fail gracefully, not explode ....)
-
--Eric
-
-> 								Pavel
-> 
-> Sep 25 11:51:38 amd kernel: mmcblk0: mmc0:0002 SD1GB 975872KiB (ro)
-> Sep 25 11:51:38 amd kernel:  mmcblk0: p1
-> Sep 25 11:51:47 amd kernel: JBD: Clearing recovery information on
-> journal
-> Sep 25 11:51:47 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:47 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 4017
-> Sep 25 11:51:47 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 486
-> Sep 25 11:51:47 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:48 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:48 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 129
-> Sep 25 11:51:48 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 0
-> Sep 25 11:51:48 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:48 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 137
-> Sep 25 11:51:48 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 1
-> Sep 25 11:51:48 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:48 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:48 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 161
-> Sep 25 11:51:48 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 4
-> Sep 25 11:51:48 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:49 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:49 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 3977
-> Sep 25 11:51:49 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 481
-> Sep 25 11:51:49 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:49 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:49 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 262305
-> Sep 25 11:51:49 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 32772
-> Sep 25 11:51:49 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:50 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 524417
-> Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 65536
-> Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 524425
-> Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 65537
-> Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 524433
-> Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 65538
-> Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:50 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 528249
-> Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 66015
-> Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:51 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 1048705
-> Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 1048713
-> Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 1048721
-> Sep 25 11:51:51 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 1052537
-> Sep 25 11:51:52 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:52 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 4017
-> Sep 25 11:51:52 amd kernel: kjournald starting.  Commit interval 5
-> seconds
-> Sep 25 11:51:52 amd kernel: ------------[ cut here ]------------
-> Sep 25 11:51:52 amd kernel: WARNING: at /data/l/linux/fs/buffer.c:1186
-> mark_buffer_dirty+0x57/0x70()
-> Sep 25 11:51:52 amd kernel: Modules linked in:
-> Sep 25 11:51:52 amd kernel: Pid: 16292, comm: mount Not tainted
-> 2.6.27-rc6 #379
-> Sep 25 11:51:52 amd kernel:  [<c022ae8f>] warn_on_slowpath+0x5f/0x90
-> Sep 25 11:51:52 amd kernel:  [<c02a36c2>] __find_get_block+0x82/0x190
-> Sep 25 11:51:52 amd kernel:  [<c024a611>] __lock_acquire+0x181/0x930
-> Sep 25 11:51:52 amd kernel:  [<c024a611>] __lock_acquire+0x181/0x930
-> Sep 25 11:51:52 amd kernel:  [<c03006b7>]
-> journal_update_superblock+0x67/0xd0
-> Sep 25 11:51:52 amd kernel:  [<c02a3c97>] mark_buffer_dirty+0x57/0x70
-> Sep 25 11:51:52 amd kernel:  [<c03006bf>]
-> journal_update_superblock+0x6f/0xd0
-> Sep 25 11:51:52 amd kernel:  [<c0300b31>] journal_flush+0xa1/0x120
-> Sep 25 11:51:52 amd kernel:  [<c02f4a6c>]
-> ext3_mark_recovery_complete+0x2c/0x80
-> Sep 25 11:51:52 amd kernel:  [<c02f747e>]
-> ext3_fill_super+0x125e/0x1800
-> Sep 25 11:51:52 amd kernel:  [<c039089f>] snprintf+0x1f/0x30
-> Sep 25 11:51:52 amd kernel:  [<c02c0d00>] disk_name+0xb0/0xc0
-> Sep 25 11:51:52 amd kernel:  [<c0284304>] get_sb_bdev+0x104/0x130
-> Sep 25 11:51:52 amd kernel:  [<c026a299>] kstrdup+0x39/0x70
-> Sep 25 11:51:52 amd kernel:  [<c02f4810>] ext3_get_sb+0x20/0x30
-> Sep 25 11:51:52 amd kernel:  [<c02f6220>] ext3_fill_super+0x0/0x1800
-> Sep 25 11:51:52 amd kernel:  [<c0283e33>] vfs_kern_mount+0x43/0x90
-> Sep 25 11:51:52 amd kernel:  [<c0283edd>] do_kern_mount+0x3d/0xe0
-> Sep 25 11:51:52 amd kernel:  [<c0299f71>] do_new_mount+0x81/0xc0
-> Sep 25 11:51:52 amd kernel:  [<c029a127>] do_mount+0x177/0x1d0
-> Sep 25 11:51:52 amd kernel:  [<c0297de0>]
-> copy_mount_options+0x40/0x150
-> Sep 25 11:51:52 amd kernel:  [<c029a1f7>] sys_mount+0x77/0xc0
-> Sep 25 11:51:52 amd kernel:  [<c0203c3a>] syscall_call+0x7/0xb
-> Sep 25 11:51:52 amd kernel:  =======================
-> Sep 25 11:51:52 amd kernel: ---[ end trace c1e48b3b4f28cda2 ]---
-> Sep 25 11:51:52 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:52 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 4017
-> Sep 25 11:51:53 amd kernel: mmcblk0: error -110 transferring data
-> Sep 25 11:51:53 amd kernel: end_request: I/O error, dev mmcblk0,
-> sector 129
-> Sep 25 11:51:53 amd kernel: __ratelimit: 6 callbacks suppressed
-> Sep 25 11:51:53 amd kernel: Buffer I/O error on device mmcblk0p1,
-> logical block 0
-> Sep 25 11:51:53 amd kernel: lost page write due to I/O error on
-> mmcblk0p1
-> Sep 25 11:51:53 amd kernel: EXT3-fs: mounted filesystem with ordered
-> data mode.
-> Sep 25 11:52:04 amd kernel: mmc0: card 0002 removed
-> 
 
