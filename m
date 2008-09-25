@@ -1,65 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbYIYRNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYIYROF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbYIYRNv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 13:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbYIYRNm
+	id S1756577AbYIYROF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 13:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbYIYRNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 13:13:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38435 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751651AbYIYRNl (ORCPT
+	Thu, 25 Sep 2008 13:13:47 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:23640 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754339AbYIYRNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 13:13:41 -0400
-Date: Thu, 25 Sep 2008 10:07:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: Ingo Molnar <mingo@elte.hu>, Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <alpine.DEB.1.10.0809251247010.27920@gandalf.stny.rr.com>
-Message-ID: <alpine.LFD.1.10.0809251002290.3265@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com> <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com>
- <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com> <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net>
- <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org> <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org>
- <alpine.DEB.1.10.0809251247010.27920@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 25 Sep 2008 13:13:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=xzWeULYLxWDp0Mdg5eJwIXVTvt/9mPobD/JX8NrsZYLemefBUfIiThuLgluM1wFk0A
+         q1HSCje7bHyciOjWBeGzp0eKpRsLFN4smqEyB/l5s4F+6oB6py2ufyX5CS3D35QTvW/l
+         ROwBEnWAOi8i8vPZtNinNhj54H5l1PoesL5+g=
+Message-ID: <86802c440809251013u84ac6cocf2741b485202b44@mail.gmail.com>
+Date: Thu, 25 Sep 2008 10:13:45 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Yan Li" <elliot.li.tech@gmail.com>
+Subject: Re: [PATCH 2/2] Suppress false "mtrr all empty" warning message when running as VMware guest
+Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, joerg.roedel@amd.com,
+       rjmaomao@gmail.com, "Thomas Gleixner" <tglx@linutronix.de>,
+       nancydreaming@gmail.com
+In-Reply-To: <20080925141828.GB15948@yantp.cn.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a120cfa37281607d8dc361deda1a35419accd193.1222258080.git.elliot.li.tech@gmail.com>
+	 <48da36b3.0e0d6e0a.1c8e.fffff980@mx.google.com>
+	 <86802c440809240939h63b14efdm1382ffe4c44c6660@mail.gmail.com>
+	 <20080925141828.GB15948@yantp.cn.ibm.com>
+X-Google-Sender-Auth: cfa455b2fcd21e08
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 25, 2008 at 7:18 AM, Yan Li <elliot.li.tech@gmail.com> wrote:
+> On Wed, Sep 24, 2008 at 09:39:20AM -0700, Yinghai Lu wrote:
+>> On Wed, Sep 24, 2008 at 5:24 AM, Yan Li <elliot.li.tech@gmail.com> wrote:
+>> > Since the mtrr empty was detected very early before we can use DMI or
+>> > PCI to check whether we are running as a VMware guest or not, we now
+>> > only print an info there. Warning will only be issued later when we
+>> > are sure that we are not running as a VMware guest.
+>> >
+>> > mtrr_trim_uncached_memory() is modified to return meaningful codes for
+>> > later warning decision.
+>>
+>> we have moved dmi_scan_machine() much early...
+>>
+>> so please check with latest tip/master to use
+>> dmi_check_system with that.
+>
+> I checked your patch 1c6e5503 that moved dmi_scan_machine() earlier,
+> but it's still behind mtrr_trim_uncached_memory(), so we still can't
+> use DMI to check for VMware there.
+>
 
+you must be kidding!
 
-On Thu, 25 Sep 2008, Steven Rostedt wrote:
-> 
-> Slight correction. You can annotate the function with "notrace" and 
-> that function will not be traced. So the "only be disabled on a per-file
-> basis" statement is false.
+...
 
-Ok. It's still true that we absolutely don't want to add random notrace 
-markers to code just because it's shared with the scheduler. And 
-"sched_clock()" is not a single function with just a few well-defined 
-places, nor are all versions of it at all appropriate for tracing (the 
-non-TSC ones are a total joke - it works for scheduling, but not tracing. 
-Same goes for the virtualized versions).
+        dmi_scan_machine();
 
-> Currently my code calls "ring_buffer_time_stamp" to get the time stamp, 
-> whatever it will be.  Currently it is using sched_clock, but since I have 
-> it as a wrapper, it shouldn't be too hard to modify later.
+        dmi_check_system(bad_bios_dmi_table);
 
-Yes. The code looked fine, and had a FIXME. I have no objection to using 
-it as a known buggy approximation for TSC in order to not force every 
-architecture to immediately write one when the patch is discussed. But I 
-literally would expect that on x86, we'd basically just have a function 
-that does "rdtsc" for the common case, along with possibly a generic 
-fallback that does "xadd" in the absense of any other reasonable 
-alternative.
+#ifdef CONFIG_X86_32
+        probe_roms();
+#endif
 
-				Linus
+        /* after parse_early_param, so could debug it */
+        insert_resource(&iomem_resource, &code_resource);
+        insert_resource(&iomem_resource, &data_resource);
+        insert_resource(&iomem_resource, &bss_resource);
+
+        if (efi_enabled)
+                efi_init();
+
+#ifdef CONFIG_X86_32
+        if (ppro_with_ram_bug()) {
+                e820_update_range(0x70000000ULL, 0x40000ULL, E820_RAM,
+                                  E820_RESERVED);
+                sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
+                printk(KERN_INFO "fixed physical RAM map:\n");
+                e820_print_map("bad_ppro");
+        }
+#else
+        early_gart_iommu_check();
+#endif
+
+        /*
+         * partially used pages are not usable - thus
+         * we are rounding upwards:
+         */
+        max_pfn = e820_end_of_ram_pfn();
+
+        /* preallocate 4k for mptable mpc */
+        early_reserve_e820_mpc_new();
+        /* update e820 for memory not covered by WB MTRRs */
+        mtrr_bp_init();
+        if (mtrr_trim_uncached_memory(max_pfn))
+                max_pfn = e820_end_of_ram_pfn();
