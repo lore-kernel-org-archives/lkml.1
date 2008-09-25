@@ -1,114 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbYIYVVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbYIYVWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755608AbYIYVVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYIYVVb
+	id S1756012AbYIYVWu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbYIYVWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:21:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56597 "EHLO ogre.sisk.pl"
+	Thu, 25 Sep 2008 17:22:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59054 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbYIYVVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:21:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: use pm_op methods for device types
-Date: Thu, 25 Sep 2008 23:27:02 +0200
-User-Agent: KMail/1.9.9
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       USB list <linux-usb@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0809251704580.2181-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0809251704580.2181-100000@iolanthe.rowland.org>
+	id S1752906AbYIYVWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 17:22:37 -0400
+Message-ID: <48DC0109.7070608@sandeen.net>
+Date: Thu, 25 Sep 2008 16:22:17 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Takashi Sato <t-sato@yk.jp.nec.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "axboe@kernel.dk" <axboe@kernel.dk>,
+       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/10] xfs: Fix error handling in	write_super_lockfs/unlockfs
+References: <20080922195637t-sato@mail.jp.nec.com> <20080922234120.GV5811@disturbed>
+In-Reply-To: <20080922234120.GV5811@disturbed>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809252327.03305.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 25 of September 2008, Alan Stern wrote:
-> This patch (as1141) adds code to use the device type's pm_op methods,
-> if they are defined.  It fixes a regression in the USB PM code; the
-> various suspend and resume methods are defined in the device type
-> rather than in the bus, because USB devices have to be handled
-> differently from USB interfaces.  Without the patch, those methods
-> never get called.
-> 
-> The patch also fixes a couple of spelling errors.
+Dave Chinner wrote:
 
-Hm, these changes are not needed in the current mainline, so there's a patch
-in -next that removes the code added by this patch.
+> xfs_fs_log_dummy() currently is void because it had nowhere to
+> return errors to. It silently throws away errors because of this.
+> Hence the correct thing to do here is to fix xfs_fs_log_dummy()
+> to return the errors it currently ignores. i.e. catch the errors
+> from xfs_trans_reserve() and xfs_trans_commit() calls in
+> xfs_fs_log_dummy().
+>
+> Cheers,
+>
+> Dave.
+>   
+Here's that part in case it's helpful :)  Feel free to roll it into
+your patch.
 
-It might be better to find that patch and drop it instead, IMO.
+-Eric
 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> Tested-by: Jiri Slaby <jirislaby@gmail.com>
-> 
-> ---
-> 
-> This should be merged before 2.6.27 is released, if possible.  
-> Otherwise people will find their systems refuse to suspend when any USB
-> devices are attached.
-> 
-> 
-> 
-> Index: usb-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/base/power/main.c
-> +++ usb-2.6/drivers/base/power/main.c
-> @@ -107,7 +107,7 @@ void device_pm_remove(struct device *dev
->  }
->  
->  /**
-> - *	pm_op - execute the PM operation appropiate for given PM event
-> + *	pm_op - execute the PM operation appropriate for given PM event
->   *	@dev:	Device.
->   *	@ops:	PM operations to choose from.
->   *	@state:	PM transition of the system being carried out.
-> @@ -166,7 +166,7 @@ static int pm_op(struct device *dev, str
->  }
->  
->  /**
-> - *	pm_noirq_op - execute the PM operation appropiate for given PM event
-> + *	pm_noirq_op - execute the PM operation appropriate for given PM event
->   *	@dev:	Device.
->   *	@ops:	PM operations to choose from.
->   *	@state: PM transition of the system being carried out.
-> @@ -363,6 +363,13 @@ static int resume_device(struct device *
->  			goto End;
->  	}
->  
-> +	if (dev->type && dev->type->pm) {
-> +		pm_dev_dbg(dev, state, "type ");
-> +		error = pm_op(dev, dev->type->pm, state);
-> +		if (error)
-> +			goto End;
-> +	}
-> +
->  	if (dev->class) {
->  		if (dev->class->pm) {
->  			pm_dev_dbg(dev, state, "class ");
-> @@ -596,6 +603,13 @@ static int suspend_device(struct device 
->  			goto End;
->  	}
->  
-> +	if (dev->type && dev->type->pm) {
-> +		pm_dev_dbg(dev, state, "type ");
-> +		error = pm_op(dev, dev->type->pm, state);
-> +		if (error)
-> +			goto End;
-> +	}
-> +
->  	if (dev->bus) {
->  		if (dev->bus->pm) {
->  			pm_dev_dbg(dev, state, "");
-> 
-> 
-> 
+Make xfs_fs_log_dummy() return errors which can then be returned by
+xfs_fs_lockfs(), once it is capable of doing so.
+
+Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+
+---
+
+Index: linux-2.6/fs/xfs/xfs_fsops.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/xfs_fsops.c	2008-08-04 15:30:31.000000000 -0500
++++ linux-2.6/fs/xfs/xfs_fsops.c	2008-09-25 16:16:46.916001110 -0500
+@@ -589,17 +589,19 @@ out:
+ 	return 0;
+ }
+ 
+-void
++int
+ xfs_fs_log_dummy(
+ 	xfs_mount_t	*mp)
+ {
+ 	xfs_trans_t	*tp;
+ 	xfs_inode_t	*ip;
++	int		error = 0;
+ 
+ 	tp = _xfs_trans_alloc(mp, XFS_TRANS_DUMMY1);
+-	if (xfs_trans_reserve(tp, 0, XFS_ICHANGE_LOG_RES(mp), 0, 0, 0)) {
++	error = xfs_trans_reserve(tp, 0, XFS_ICHANGE_LOG_RES(mp), 0, 0, 0);
++	if (error) {
+ 		xfs_trans_cancel(tp, 0);
+-		return;
++		return error;
+ 	}
+ 
+ 	ip = mp->m_rootip;
+@@ -609,9 +611,10 @@ xfs_fs_log_dummy(
+ 	xfs_trans_ihold(tp, ip);
+ 	xfs_trans_log_inode(tp, ip, XFS_ILOG_CORE);
+ 	xfs_trans_set_sync(tp);
+-	xfs_trans_commit(tp, 0);
++	error = xfs_trans_commit(tp, 0);
+ 
+ 	xfs_iunlock(ip, XFS_ILOCK_EXCL);
++	return error;
+ }
+ 
+ int
+Index: linux-2.6/fs/xfs/xfs_fsops.h
+===================================================================
+--- linux-2.6.orig/fs/xfs/xfs_fsops.h	2008-06-05 13:44:24.000000000 -0500
++++ linux-2.6/fs/xfs/xfs_fsops.h	2008-09-25 16:16:58.303000603 -0500
+@@ -25,6 +25,6 @@ extern int xfs_fs_counts(xfs_mount_t *mp
+ extern int xfs_reserve_blocks(xfs_mount_t *mp, __uint64_t *inval,
+ 				xfs_fsop_resblks_t *outval);
+ extern int xfs_fs_goingdown(xfs_mount_t *mp, __uint32_t inflags);
+-extern void xfs_fs_log_dummy(xfs_mount_t *mp);
++extern int xfs_fs_log_dummy(xfs_mount_t *mp);
+ 
+ #endif	/* __XFS_FSOPS_H__ */
 
 
