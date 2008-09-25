@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbYIYRUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbYIYRVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240AbYIYRUd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 13:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572AbYIYRUY
+	id S1757328AbYIYRVM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 13:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYIYRU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 13:20:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:25115 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754377AbYIYRUX (ORCPT
+	Thu, 25 Sep 2008 13:20:57 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:56863 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752380AbYIYRU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 13:20:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=P/oF1N8DU0M2dykm0wMzXHPvRiunmB7TH1K0nWBvZQo4/k2LR4LrtXwX/T/3dxyym9
-         KAEQdoUMp0775yCNB4fvRnBHGEsDOPOksqQ9G6lvpU6CwtO1voNpAkos7W0Zy03F1T8P
-         Z4LhdRLN8P29RAT3jqfy398ctbald+Usu4kTY=
-Message-ID: <86802c440809251020h54d1e42ck67b542f17e928bd7@mail.gmail.com>
-Date: Thu, 25 Sep 2008 10:20:21 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 7/7] x86: print out irq nr for msi/ht -v2
-Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Len Brown" <lenb@kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <20080925091211.GA4922@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Sep 2008 13:20:56 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEABNi20hMQWq+/2dsb2JhbACBXrk4gWU
+Date: Thu, 25 Sep 2008 13:20:54 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Martin Bligh <mbligh@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+Message-ID: <20080925172054.GC29392@Krystal>
+References: <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com> <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org> <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <20080925162315.GA649@Krystal> <alpine.DEB.1.10.0809251232020.27920@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1222323223-23529-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080925084212.GE4519@elte.hu> <20080925091211.GA4922@elte.hu>
-X-Google-Sender-Auth: 02af2957d62b8623
+In-Reply-To: <alpine.DEB.1.10.0809251232020.27920@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:20:36 up 112 days, 22:01, 10 users,  load average: 1.42, 1.85,
+	1.93
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 2:12 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
->> > v2: fix hpet compiling
->
-> still bad:
->
-> arch/x86/kernel/hpet.c: In function 'hpet_late_init':
-> arch/x86/kernel/hpet.c:828: error: 'dev' undeclared (first use in this function)
-> arch/x86/kernel/hpet.c:828: error: (Each undeclared identifier is reported only once
-> arch/x86/kernel/hpet.c:828: error: for each function it appears in.)
->
-> we've got some changes in this area (per cpu hpet).
->
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Thu, 25 Sep 2008, Mathieu Desnoyers wrote:
+> > The problem with sched_clock is that it gives a 1 HZ timestamp accuracy
+> > for events happening across different CPUs. Within this 1 HZ range, it
+> > uses the TSC and clip when it reaches a max. Good enough for scheduler
+> > or for tracing events on a single CPU, but I think it is not exactly
+> > what we need to reorder events happening across CPUs.
+> > 
+> 
+> 
+> Hmm,
+> 
+> sched_clock gives ns accuracy unless the tsc is disabled. And in that 
+> case, we don't have any CPU clock :-/
+> 
 
-looks there is some merge problem.
+Even on architectures with non-synchronized TSCs ?
 
-Index: linux-2.6/arch/x86/kernel/hpet.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/hpet.c
-+++ linux-2.6/arch/x86/kernel/hpet.c
-@@ -467,6 +467,9 @@ static int hpet_setup_irq(struct hpet_de
-        irq_set_affinity(dev->irq, cpumask_of_cpu(dev->cpu));
-        enable_irq(dev->irq);
+Mathieu
 
-+       printk(KERN_DEBUG "hpet: %s is using irq %#x aka %d for MSI\n",
-+                        dev->name, dev->irq, dev->irq);
-+
-        return 0;
- }
+> 
+> -- Steve
+> 
 
-the change should be in hpet_setup_irq instead of hpet_late_init
-
-the patch can be applied to tip/master cleanly.
-
-YH
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
