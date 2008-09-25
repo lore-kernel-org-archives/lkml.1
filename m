@@ -1,104 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbYIYRkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbYIYRnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753251AbYIYRkM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 13:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYIYRj7
+	id S1754826AbYIYRnU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 13:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYIYRnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 13:39:59 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:60340 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752863AbYIYRj7 (ORCPT
+	Thu, 25 Sep 2008 13:43:11 -0400
+Received: from elasmtp-masked.atl.sa.earthlink.net ([209.86.89.68]:59868 "EHLO
+	elasmtp-masked.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751672AbYIYRnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 13:39:59 -0400
-Date: Thu, 25 Sep 2008 13:39:55 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
-       Martin Bligh <mbligh@google.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-In-Reply-To: <alpine.LFD.1.10.0809251010291.3265@nehalem.linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0809251332540.29802@gandalf.stny.rr.com>
-References: <20080924051056.650388887@goodmis.org>  <33307c790809240847r31c8b683na15ff5488b60d25b@mail.gmail.com>  <1222272686.16700.162.camel@lappy.programming.kicks-ass.net>  <33307c790809240949i3026170i8f9ac1d67a0fcf00@mail.gmail.com> 
- <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com>  <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> 
- <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>  <1222339303.16700.197.camel@lappy.programming.kicks-ass.net>  <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net>
- <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809251120420.27300@gandalf.stny.rr.com> <alpine.LFD.1.10.0809251010291.3265@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 25 Sep 2008 13:43:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=kPQ3Rq6gQwSk4ZDJ/2aMZfjB5CoVQfQc8zyT0U0AClvsAcXrNDAjzQ9qZsGmUA2a;
+  h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <48DBCDAC.4010003@earthlink.net>
+Date: Thu, 25 Sep 2008 13:43:08 -0400
+From: Stephen Clark <sclark46@earthlink.net>
+Reply-To: sclark46@earthlink.net
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: sclark46@earthlink.net
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26.5 hangs on boot
+References: <48DBAD73.3000202@earthlink.net>
+In-Reply-To: <48DBAD73.3000202@earthlink.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: a437fbc6971e80f61aa676d7e74259b7b3291a7d08dfec79097f32a9fa0c7f41e5591e25cf2cf467350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 208.118.36.229
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 25 Sep 2008, Linus Torvalds wrote:
-
+Stephen Clark wrote:
+> Hello,
 > 
+> Vanilla kernel 2.6.26.5 hangs on boot right after displaying
+> isapnp: Scanning For PnP cards ...
+> isapnp: No Plug & Play device found
 > 
-> On Thu, 25 Sep 2008, Steven Rostedt wrote:
-> > 
-> > If we do not normalize, then we must come up yet another generic way to read 
-> > the CPU clock for all archs. And then we also need to come up with another 
-> > generic way to normalize it later for output.
+> I have to power off my laptop to get out of this state. I never had this 
+> problem with previous kernels.
 > 
-> Why would any of this be "generic"?
-
-generic as in, could be implement in architecture dependent ways but with
-a "generic" interface. IOW, I don't want the trace to be dependent on
-any arch. ftrace already runs on x86, ppc, sparc64, mips, arm, sh, and 
-more.
-
+> Redhat Bugzilla has other people with this problem. I had it too so I 
+> compiled
+> a vanilla kernel to make sure it wasn't vendor specific.
+> https://bugzilla.redhat.com/show_bug.cgi?id=462156
 > 
-> Quite the reverse. It should be as trace-buffer specific as possible, so 
-> that we do *not* share any code or any constraints with other people.
+> If I append clocksource=hpet then the kernel will boot - but I shouldn't 
+> have to do this.
 > 
-> Just do rdtsc at first, and make it depend on x86. If the thing is made 
-> simple enough, it will be a couple of lines of code for architectures to 
-> read their own timestamp counters.
-
-I could do a HAVE_RING_BUFFER_TIMESTAMP config option for archs that 
-implement it, and just use something dumb for those that don't. For now
-I'll keep to sched_clock, just because it makes it easy for me. But with
-the wrappers, it should be easy to change later.
-
+> My laptop is an asus z96f with a core 2 duo processor.
 > 
-> And since the normalization is then no longer in the critical part, _that_ 
-> can be architecture-independent, but obviously still trace-specific. You 
-> need to know the frequency, and that involves having frequency events in 
-> the trace if it changes, but if you don't see any frequency events you 
-> just take "current frequency".
-
-The one thing that seemed to me most apparent from talking to people
-at LPC, is that they want a simple ring buffer API. If every tracer that
-uses this must come up with its own time keeping management, I don't think
-this will be used at all (except by those that are maintaining tracers
-now).
-
+> Steve
 > 
-> And doing it at trace parse time, we can some day enable a boot trace that 
-> actually WORKS. Have you looked at the timestamp events we get from 
-> "sched_clock()" in early bootup? They show up in the kernel logs when you 
-> have CONFIG_PRINTK_TIME. And they are totally and utterly broken and 
-> _useless_ for the early stages right now. And they shouldn't have to be 
-> that way.
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> Yeah, we'll never be able to trace stuff that happens really early 
-> (tracing will obviously always need kernel page tables and some really 
-> basic stuf working), but we should be able to trace through things like 
-> TSC calibration for boot time analysis. It wasn't that long ago that we 
-> had the whole discussion about TSC calibration taking 200ms. Or the early 
-> ACPI code. And get meaningful data.
+This seems to be fixed in 2.6.27-rc7
 
-My logdev code has a define option to use bootmem for its buffers, and it 
-also uses an atomic counter to try to keep things in order. Heck, at early 
-boot, the events happen in order anyway, since it is still a single CPU 
-system.
+Steve
 
--- Steve
+-- 
+
+"They that give up essential liberty to obtain temporary safety,
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty
+decreases."  (Thomas Jefferson)
+
 
