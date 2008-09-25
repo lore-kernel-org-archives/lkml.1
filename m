@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbYIYCOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbYIYCPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbYIYCOR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Sep 2008 22:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYIYCN5
+	id S1754425AbYIYCPA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Sep 2008 22:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYIYCOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Sep 2008 22:13:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40769 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752984AbYIYCN5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Sep 2008 22:13:57 -0400
-Date: Wed, 24 Sep 2008 19:10:01 -0700
-From: Greg KH <greg@kroah.com>
-To: Franko Fang <huananhu@huawei.com>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, zihan@huawei.com,
-       Lin.Lei@huawei.com, zhangqianchun@huawei.com
-Subject: Re: PATCH 10/4]linux-usb: To support more Huawei data card
-	productIDs, fix kernel 2.6.27-rc7
-Message-ID: <20080925021001.GA14163@kroah.com>
-References: <faf7c9cb3c6f0.3c6f0faf7c9cb@huawei.com> <f9fd97f63cf97.3cf97f9fd97f6@huawei.com> <20080924150304.GC26466@kroah.com> <025201c91eaf$224001e0$f9100b0a@china.huawei.com>
+	Wed, 24 Sep 2008 22:14:46 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56506 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752407AbYIYCOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Sep 2008 22:14:45 -0400
+Message-ID: <48DAF40D.3040005@garzik.org>
+Date: Wed, 24 Sep 2008 22:14:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <025201c91eaf$224001e0$f9100b0a@china.huawei.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>, mingo@elte.hu,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, akpm@linux-foundation.org
+Subject: Re: [NET-NEXT PATCH] e1000: remove unused Kconfig option for disabling
+ packet split
+References: <20080827081956.11114.152.stgit@jtkirshe-mobile.jf.intel.com> <48BE982C.20705@garzik.org> <Pine.WNT.4.63.0809161258170.3244@jbrandeb-desk.amr.corp.intel.com>
+In-Reply-To: <Pine.WNT.4.63.0809161258170.3244@jbrandeb-desk.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 09:36:29AM +0800, Franko Fang wrote:
-> 1. In this patch, we want to do one thing: add more Huawei product IDs into the USB driver. Then it can support  more Huawei data card devices. 
->     So I make them in one patch.
+Brandeburg, Jesse wrote:
+> On Wed, 3 Sep 2008, Jeff Garzik wrote:
+>>> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+>>>
+>>> Since the e1000/e1000e split, no hardware supported by e1000
+>>> supports packet split, just remove the Kconfig option and associated
+>>> code from arch/* and the driver.
+>>>
+>>> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+>>> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+>>> ---
+>>>
+>>>  arch/arm/configs/iop13xx_defconfig              |    1
+>>> arch/arm/configs/iop32x_defconfig               |    1
+>> ACK, except for the defconfig changes.  arch maintainers usually prefer to do
+>> that themselves.
+>>
+>> We'd be continually patch defconfig files, if we did so every time it was
+>> likely one would be updated by a Kconfig patch.
 > 
-> 2. To change usb_stor_huawei_e220_init function as follows, that's because in the USB standard, while sending SET_FETURE_D to the device, it requires the corresponding data to be zero, and its sending length also must be zero.
->     In our old solution, it can be compatible with our WCDMA data card devices, but can not support our CDMA data card devices. 
->     But in this new solution, it can be compatible with all of our data card devices.
+> Here is an updated patch without the defconfig changes
 > 
->     Hope that my interpreting can satify you.
+> == cut here ==
+> 
+> e1000: remove Kconfig option for packet split and e1000 related code
+> 
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> Since the e1000/e1000e split, no hardware supported by e1000
+> supports packet split, just remove the Kconfig option and associated
+> code from the driver.
+> 
+> reposted without the defconfig changes, should apply to net-next
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> ---
+>  drivers/net/Kconfig            |    9 -
+>  drivers/net/e1000/e1000.h      |   17 --
+>  drivers/net/e1000/e1000_main.c |  416 +---------------------------------------
+>  3 files changed, 9 insertions(+), 433 deletions(-)
 
-Ok, that sounds reasonable.  How about resending the patch, and adding
-this information to the changelog area so that others also understand
-what is going on here.
+applied
 
-thanks,
 
-greg k-h
