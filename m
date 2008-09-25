@@ -1,101 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756623AbYIYVHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbYIYVIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756623AbYIYVHu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbYIYVHl
+	id S1756686AbYIYVIU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbYIYVIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:07:41 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54188 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752985AbYIYVHk (ORCPT
+	Thu, 25 Sep 2008 17:08:01 -0400
+Received: from rayleigh.systella.fr ([213.41.184.253]:60142 "EHLO
+	rayleigh.systella.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754570AbYIYVIA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:07:40 -0400
-Date: Thu, 25 Sep 2008 17:07:39 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: [PATCH] PM: use pm_op methods for device types
-In-Reply-To: <48DBF9C5.3030001@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0809251704580.2181-100000@iolanthe.rowland.org>
+	Thu, 25 Sep 2008 17:08:00 -0400
+X-Greylist: delayed 353 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Sep 2008 17:07:59 EDT
+Message-ID: <48DBFC49.80005@systella.fr>
+Date: Thu, 25 Sep 2008 23:02:01 +0200
+From: BERTRAND Joel <joel.bertrand@systella.fr>
+Reply-To: mt1@systella.fr
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; fr-FR; rv:1.8.1.16) Gecko/20080702 Iceape/1.1.11 (Debian-1.1.11-1)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.26.x hangs on amd64/smp
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-3.1.8 (rayleigh.systella.fr [192.168.254.1]); Thu, 25 Sep 2008 23:02:03 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch (as1141) adds code to use the device type's pm_op methods,
-if they are defined.  It fixes a regression in the USB PM code; the
-various suspend and resume methods are defined in the device type
-rather than in the bus, because USB devices have to be handled
-differently from USB interfaces.  Without the patch, those methods
-never get called.
+	Hello,
 
-The patch also fixes a couple of spelling errors.
+System : debian/testing, tested kernels 2.6.26, 2.6.26.3, 2.6.26.5.
+Hardware : core2duo, 4 GB, raid1 software, CFQ scheduler.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Tested-by: Jiri Slaby <jirislaby@gmail.com>
+	I have written a program that work on cartographic data. This program 
+is started as a daemon and does some fork() (and pthread_create()). I 
+have seen that it requires 6 GB to work, each process takes 1,5 GB. The 
+same program works fine under FreeBSD or Solaris (on of course the same 
+hardware).
 
----
+	When it starts, I can see disk activity (swap), and after 2 or 3 
+minutes, kernel crashes without any trace (no more disk activity, sysrq 
+does nothing...). I have reproduced this bug when I was logged on 
+console. There was no messsage.
 
-This should be merged before 2.6.27 is released, if possible.  
-Otherwise people will find their systems refuse to suspend when any USB
-devices are attached.
+	If I introduce some nanosleep() syscalls in my code, crash is more 
+difficult to reproduce.
 
+cauchy:[~] > cat /proc/mdstat
+Personalities : [raid1]
+md1 : active raid1 sdb2[1] sda2[0]
+       5855616 blocks [2/2] [UU]
 
+md2 : active raid1 sdb3[1] sda3[0]
+       48829440 blocks [2/2] [UU]
 
-Index: usb-2.6/drivers/base/power/main.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/main.c
-+++ usb-2.6/drivers/base/power/main.c
-@@ -107,7 +107,7 @@ void device_pm_remove(struct device *dev
- }
- 
- /**
-- *	pm_op - execute the PM operation appropiate for given PM event
-+ *	pm_op - execute the PM operation appropriate for given PM event
-  *	@dev:	Device.
-  *	@ops:	PM operations to choose from.
-  *	@state:	PM transition of the system being carried out.
-@@ -166,7 +166,7 @@ static int pm_op(struct device *dev, str
- }
- 
- /**
-- *	pm_noirq_op - execute the PM operation appropiate for given PM event
-+ *	pm_noirq_op - execute the PM operation appropriate for given PM event
-  *	@dev:	Device.
-  *	@ops:	PM operations to choose from.
-  *	@state: PM transition of the system being carried out.
-@@ -363,6 +363,13 @@ static int resume_device(struct device *
- 			goto End;
- 	}
- 
-+	if (dev->type && dev->type->pm) {
-+		pm_dev_dbg(dev, state, "type ");
-+		error = pm_op(dev, dev->type->pm, state);
-+		if (error)
-+			goto End;
-+	}
-+
- 	if (dev->class) {
- 		if (dev->class->pm) {
- 			pm_dev_dbg(dev, state, "class ");
-@@ -596,6 +603,13 @@ static int suspend_device(struct device 
- 			goto End;
- 	}
- 
-+	if (dev->type && dev->type->pm) {
-+		pm_dev_dbg(dev, state, "type ");
-+		error = pm_op(dev, dev->type->pm, state);
-+		if (error)
-+			goto End;
-+	}
-+
- 	if (dev->bus) {
- 		if (dev->bus->pm) {
- 			pm_dev_dbg(dev, state, "");
+md3 : active raid1 sdb4[1] sda4[0]
+       101474496 blocks [2/2] [UU]
 
+md0 : active raid1 sdb1[1] sda1[0]
+       128384 blocks [2/2] [UU]
+
+unused devices: <none>
+
+	swap in on /dev/md1.
+
+cauchy:[~] > df -h
+Sys. de fich.         Tail. Occ. Disp. %Occ. Monté sur
+/dev/md2               46G   28G   16G  64% /
+tmpfs                 2,0G     0  2,0G   0% /lib/init/rw
+udev                   10M  124K  9,9M   2% /dev
+tmpfs                 2,0G     0  2,0G   0% /dev/shm
+/dev/md0              122M   60M   56M  52% /boot
+/dev/md3               96G   56G   35G  62% /home
+cauchy:[~] >
+
+dmesg :
+Linux version 2.6.26.5 (root@cauchy) (gcc version 4.3.1 (Debian 4.3.1-9) 
+) #16 SMP PREEMPT Tue Sep 23 15:54:59 CEST 2008
+...
+ACPI: BIOS bug: multiple APIC/MADT found, using 0
+ACPI: If "acpi_apic_instance=2" works better, notify 
+linux-acpi@vger.kernel.org
+ACPI: DMI detected: Toshiba
+...
+
+.config: see http://www.systella.fr/~bertrand/config.2.6.26.5
+
+	Regards,
+
+	JKB
