@@ -1,166 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbYIYM0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbYIYM2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754878AbYIYM0U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 08:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYIYM0M
+	id S1754798AbYIYM2l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 08:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbYIYM23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 08:26:12 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:33561 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753029AbYIYM0L (ORCPT
+	Thu, 25 Sep 2008 08:28:29 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:36399 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752986AbYIYM22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 08:26:11 -0400
-Date: Thu, 25 Sep 2008 17:54:20 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>
-Subject: Re: [RFC PATCH v1 3/5] Collect statistics required for powersave
-	balance
-Message-ID: <20080925122420.GA4403@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20080924161228.31581.57651.stgit@drishya.in.ibm.com> <20080924161809.31581.11013.stgit@drishya.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080924161809.31581.11013.stgit@drishya.in.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 25 Sep 2008 08:28:28 -0400
+Subject: Re: pull request: wireless-2.6 2008-09-24
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Zhu Yi <yi.zhu@intel.com>, "davem@davemloft.net" <davem@davemloft.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080925114133.GA5044@tuxdriver.com> (sfid-20080925_134212_618549_FDAECEF8)
+References: <20080924231720.GD3639@tuxdriver.com>
+	 <1222321622.2510.455.camel@debian.sh.intel.com>
+	 <20080925114133.GA5044@tuxdriver.com>
+	 (sfid-20080925_134212_618549_FDAECEF8)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-7h1p5FZDt26W575v1jGm"
+Date: Thu, 25 Sep 2008 14:27:45 +0200
+Message-Id: <1222345665.10563.75.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 09:48:09PM +0530, Vaidyanathan Srinivasan wrote:
-> Update sched domain level statistics with the minimum load and
-> group leader who can pull more tasks. Also suggest a powersave
-> movement if the domain is otherwise balanced.
-> 
-> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> ---
-> 
->  kernel/sched.c |   97 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 97 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 8c394a4..dd87061 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -3219,6 +3219,103 @@ void update_sd_loads(struct sd_loads *sdl, struct group_loads *gl)
-> 
->  }
-> 
-> +#if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
-> +void update_powersavings_group_loads(struct sd_loads *sdl,
-> +				     struct group_loads *gl,
-> +				     enum cpu_idle_type idle)
-> +{
-> +	int group_capacity = gl->group->__cpu_power / SCHED_LOAD_SCALE;
-> +
-> +	/*
-> +	 * Busy processors will not participate in power savings
-> +	 * balance.
-> +	 */
-> +	if (idle == CPU_NOT_IDLE ||
-> +			!(sdl->sd->flags & SD_POWERSAVINGS_BALANCE))
-> +		return;
-> +
-> +	/*
-> +	 * If the local group is idle or completely loaded
-> +	 * no need to do power savings balance at this domain
-> +	 * Same case of non-local groups as well
-> +	 */
-	Are there groups other than local and non-local ?
-	If not, this comment can be condensed so that it can be applied
-	to all groups :-)
 
-> +	if (gl->nr_running >= group_capacity || gl->nr_running == 0)
-> +		return;
-> +
-> +	/*
-> +	 * Calculate the group which has the least non-idle load.
-> +	 * This is the group from where we need to pick up the load
-> +	 * for saving power
-> +	 */
-> +	if (!sdl->min_load_group.group)
-> +		sdl->min_load_group = *gl;
-> +	else {
-> +		if (gl->nr_running < sdl->min_load_group.nr_running)
-> +			sdl->min_load_group = *gl;
-> +		/* If the loads are equal, then prefer the cpu with
-> +		 * less logical number
-> +		 */
-> +		else if (gl->nr_running == sdl->min_load_group.nr_running &&
-> +			 first_cpu(gl->group->cpumask) <
-> +			 first_cpu(sdl->min_load_group.group->cpumask))
-> +			sdl->min_load_group = *gl;
-> +	}
-> +
-> +	/*
-> +	 * Calculate the group which is almost near its
-> +	 * capacity but still has some space to pick up some load
-> +	 * from other group and save more power
-> +	 */
-> +
-> +	if (gl->nr_running > 0 && gl->nr_running <= group_capacity - 1) {
-> +		if (!sdl->power_save_leader_group.group)
-> +			sdl->power_save_leader_group = *gl;
-> +		else {
-> +			if (gl->nr_running >
-> +			    sdl->power_save_leader_group.nr_running)
-> +				sdl->power_save_leader_group = *gl;
-> +			else if (gl->nr_running ==
-> +				 sdl->power_save_leader_group.nr_running &&
-> +				 first_cpu(gl->group->cpumask) <
-> +				 first_cpu(sdl->min_load_group.group->cpumask))
-> +				sdl->power_save_leader_group = *gl;
-> +		}
-> +	}
-> +}
-> +
-> +static struct sched_group *powersavings_balance_group(struct sd_loads *sdl,
-> +	struct group_loads *gl, enum cpu_idle_type idle,
-> +	unsigned long *imbalance)
-> +{
-> +	*imbalance = 0;
-> +	if (idle == CPU_NOT_IDLE || !(sdl->sd->flags & SD_POWERSAVINGS_BALANCE))
-> +		return NULL;
-> +
-> +	if (sdl->local.group == sdl->power_save_leader_group.group &&
-> +		sdl->power_save_leader_group.group !=
-> +		sdl->min_load_group.group) {
-> +		*imbalance = sdl->min_load_group.avg_load_per_task;
-> +		return sdl->min_load_group.group;
-> +	}
-> +
-> +	return NULL;
-> +}
-> +#else
-> +void update_powersavings_group_loads(struct sd_loads *sdl,
-> +			struct group_loads *gl, enum cpu_idle_type idle)
-> +{
-> +	return;
-> +}
-> +
-> +static struct sched_group *powersavings_balance_group(struct sd_loads *sdl,
-> +	struct group_loads *gl, enum cpu_idle_type idle,
-> +	unsigned long *imbalance)
-> +{
-> +	*imbalance = 0;
-> +	return NULL;
-> +}
-> +#endif
-> +
->  /*
->   * find_busiest_group finds and returns the busiest CPU group within the
->   * domain. It calculates and returns the amount of weighted load which
+--=-7h1p5FZDt26W575v1jGm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Thanks and Regards
-gautham
+On Thu, 2008-09-25 at 07:41 -0400, John W. Linville wrote:
+
+> > http://marc.info/?l=3Dlinux-wireless&m=3D122219037706528&w=3D2
+>=20
+> Is there an open bug report for that anywhere?  Is this something
+> that real users (no offense to Johannes) are likely to hit?
+
+Actually, I now think that we don't want the patch. It appears that when
+this situation happens, the hardware has scribbled over memory elsewhere
+(most likely because of wrong DMA programming) and in that case I
+suppose we'd rather fail than corrupt disk buffers et. al.
+
+johannes
+
+--=-7h1p5FZDt26W575v1jGm
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJI24O9AAoJEKVg1VMiehFYm28P/16DzAPudMZvGFyLzmSXGWk7
+TCihtPBvGHC/2st4jLP2CycXy35zkJ+zyuoWuAdriWGS9YSlY3oOkKh/dTXmNMe1
+f2RNIpWjd+5uPld3fasVWdlorABwtGs4aZPqyeM/XswxfY3GraA+oR8ztELgt1Rr
+se4Uet9Zx3ljfj+n0pXZgZN0jbQHz344z4czJWc7B7mC/ArvTxma9Y/vAfq2Ve0w
+B+cEYsFQzGwYTKB800bS5yiAWYf9CZlOMlI4OhrUAmzNZzDMaM/w7+dh3xGzBGnw
+tP5bOWENr6gff+hc8CzX/nele1pGLHtfdvIfcDWYhrMfwfdARpmGpqdzO2J4FDo8
+JQEiJr6JyOEiPxNQUEQvCYzmwO3OsIIVzoftXNerPn/B6UcmxDrcaVGjSXdd+hvn
+6bVob2+BWNEIKEVBcCVfdgsUZXRMPi+dW0G1x5eVgbPtk5+HkSG1OyDk+5WaZbYc
+6SvvDhk2A8W617903lDicr8WQc3aJhrYFB572coVkAMRtAADYQQIbVmXQmMBFgWX
+Vk/KxFw3R0webXfJ6WEEbWiCNuzSexX/JMpmas68QArQ9jKYc+4D4Zaw5ao0L6aH
+W7agBxka4dLokvXWy/Y1tP2g3Oj/H2irOe7vhwVUDOjPLVTxHtCeo4oi8lANgjiz
+/6KV+NJNEUOLB9dhRuxm
+=OxFX
+-----END PGP SIGNATURE-----
+
+--=-7h1p5FZDt26W575v1jGm--
+
