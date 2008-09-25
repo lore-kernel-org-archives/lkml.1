@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbYIYVEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbYIYVFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbYIYVEY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbYIYVEQ
+	id S1756021AbYIYVFI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbYIYVEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:04:16 -0400
-Received: from mga01.intel.com ([192.55.52.88]:13668 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753556AbYIYVEP convert rfc822-to-8bit (ORCPT
+	Thu, 25 Sep 2008 17:04:55 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:64503 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753853AbYIYVEy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:04:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,309,1220252400"; 
-   d="scan'208";a="620372631"
-From: "Ma, Chinang" <chinang.ma@intel.com>
-To: "Ma, Chinang" <chinang.ma@intel.com>, Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>, Gregory Haskins <ghaskins@novell.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Thu, 25 Sep 2008 14:04:01 -0700
-Subject: RE: 2.6.27-rc5 OLTP performance regression
-Thread-Topic: 2.6.27-rc5 OLTP performance regression
-Thread-Index: AckTbJNRtFcyH+QFRlCY2aaqKI5uqAANOdUgAuvKpXA=
-Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E8002FEC1730D@azsmsx501.amr.corp.intel.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE60F751@azsmsx501.amr.corp.intel.com>
- <1220896833.18239.141.camel@twins.programming.kicks-ass.net>
- <1220897052.18239.147.camel@twins.programming.kicks-ass.net>
- <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E71C7@azsmsx501.amr.corp.intel.com>
- <20080910122622.GG14757@elte.hu>
- <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E7B62@azsmsx501.amr.corp.intel.com>
- <20080910173442.GB31942@elte.hu> 
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 25 Sep 2008 17:04:54 -0400
+Message-ID: <48DBFCDD.5090908@oracle.com>
+Date: Thu, 25 Sep 2008 14:04:29 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: Paul Mundt <lethal@linux-sh.org>, Parag Warudkar <parag.lkml@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andreas Gruenbacher <agruen@suse.de>, Jeff Mahoney <jeffm@suse.de>
+Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
+References: <20080924230054.GA27730@suse.de> <f7848160809241639hbe716c9q76b0e1b83d853721@mail.gmail.com> <20080925020608.GA13869@suse.de> <f7848160809241959s3f3092b2nf05d2245a08bed03@mail.gmail.com> <20080925052725.GA5739@linux-sh.org> <20080925074923.4845005b.randy.dunlap@oracle.com> <20080925105320.ef70065b.randy.dunlap@oracle.com> <20080925204800.GA11225@suse.de>
+In-Reply-To: <20080925204800.GA11225@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We also tested sched_shares_ratelimit = 100 ms and reduce the OLTP regression to 0.2%. (very small return in performance with 10x the value). Can we count on this sched_shares_ratelimit tunable be always accessible for workload that does not depend on group fairness?
+>> ISTM that the real problems are (a) it's easier to introduce new staging/crap
+>> than it is to fix EXPERIMENTAL and (b) no one wants to try to fix EXPERIMENTAL.
+> 
+> The whole EXPERIMENTAL issue hasn't come up in years, I'm supprised that
+> people even consider it a valid option these days.
+> 
+> I'm all for fixing it up, but as Paul so well described, the code I'm
+> talking about is WAY worse than a mere "experimental" marking, it needs
+> to be explicitly pointed out that this is not even up to that level at
+> all.
+> 
+> And as was also pointed out, the EXPERIMENTAL marking cleanup is totally
+> orthogonal to the main goal here, and that is getting code into the tree
+> that is not up to our "normal" merge quality levels, in order to get a
+> wider audience of users and developers working on it, and using it.
+> 
+> Hey, if people want me to name it TAINT_GREGKH, I can do that, I thought
+> I was being nice by picking TAINT_CRAP...
 
-Chinang
+I don't disagree with the CRAP name... fwiw.
+I think that we have enough quality problems without adding crap.
 
------Original Message-----
-From: Ma, Chinang
-Sent: Wednesday, September 10, 2008 5:08 PM
-To: Ingo Molnar
-Cc: Peter Zijlstra; Srivatsa Vaddagiri; Mike Galbraith; Gregory Haskins; Steven Rostedt; Nick Piggin; Siddha, Suresh B; Wilcox, Matthew R; Tripathi, Sharad C; Chilukuri, Harita; linux-kernel@vger.kernel.org
-Subject: RE: 2.6.27-rc5 OLTP performance regression
-
-When set to 10 ms the regression is about 0.4%. We get most of the 2%.
-
-Chinang
------Original Message-----
-From: Ingo Molnar [mailto:mingo@elte.hu]
-Sent: Wednesday, September 10, 2008 10:35 AM
-To: Ma, Chinang
-Cc: Peter Zijlstra; Srivatsa Vaddagiri; Mike Galbraith; Gregory Haskins; Steven Rostedt; Nick Piggin; Siddha, Suresh B; Wilcox, Matthew R; Tripathi, Sharad C; Chilukuri, Harita; linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc5 OLTP performance regression
-
-
-* Ma, Chinang <chinang.ma@intel.com> wrote:
-
-> I increased the /proc/sys/kernel/sched_shares_ratelimit from 1
-> millisecond to one second to reduce the frequency of shares update.
-> That was okay for OLTP workload. As Peter mentioned, a larger value
-> will reduce the accuracy of SMP fairness for group scheduler and the
-> ratelimit and using a larger default value may not be good for general
-> case.
-
-does 10 msecs already get you most of the 2%? 1000 millisecond sounds
-very (and probably unacceptable) coarse.
-
-        Ingo
+-- 
+~Randy
