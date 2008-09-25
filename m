@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbYIYL6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbYIYL7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754593AbYIYL6m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 07:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbYIYLzm
+	id S1755102AbYIYL7A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 07:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbYIYLzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 07:55:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48538 "EHLO mx2.redhat.com"
+	Thu, 25 Sep 2008 07:55:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48541 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754777AbYIYLzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 07:55:35 -0400
+	id S1754789AbYIYLzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 07:55:37 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, Mohammed Gamal <m.gamal005@gmail.com>
-Subject: [PATCH 09/39] KVM: VMX: Add Guest State Validity Checks
-Date: Thu, 25 Sep 2008 14:54:41 +0300
-Message-Id: <1222343711-12508-10-git-send-email-avi@redhat.com>
+Subject: [PATCH 10/39] KVM: VMX: Add module parameter and emulation flag.
+Date: Thu, 25 Sep 2008 14:54:42 +0300
+Message-Id: <1222343711-12508-11-git-send-email-avi@redhat.com>
 In-Reply-To: <1222343711-12508-1-git-send-email-avi@redhat.com>
 References: <1222343711-12508-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,205 +23,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Mohammed Gamal <m.gamal005@gmail.com>
 
-This patch adds functions to check whether guest state is VMX compliant.
+The patch adds the module parameter required to enable emulating invalid
+guest state, as well as the emulation_required flag used to drive
+emulation whenever needed.
 
 Signed-off-by: Mohammed Gamal <m.gamal005@gmail.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/vmx.c |  180 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 180 insertions(+), 0 deletions(-)
+ arch/x86/kvm/vmx.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 81db7d4..e889b76 100644
+index e889b76..7c5f611 100644
 --- a/arch/x86/kvm/vmx.c
 +++ b/arch/x86/kvm/vmx.c
-@@ -1721,6 +1721,186 @@ static void vmx_set_gdt(struct kvm_vcpu *vcpu, struct descriptor_table *dt)
- 	vmcs_writel(GUEST_GDTR_BASE, dt->base);
- }
+@@ -49,6 +49,9 @@ module_param(flexpriority_enabled, bool, 0);
+ static int enable_ept = 1;
+ module_param(enable_ept, bool, 0);
  
-+static bool rmode_segment_valid(struct kvm_vcpu *vcpu, int seg)
-+{
-+	struct kvm_segment var;
-+	u32 ar;
++static int emulate_invalid_guest_state = 0;
++module_param(emulate_invalid_guest_state, bool, 0);
 +
-+	vmx_get_segment(vcpu, &var, seg);
-+	ar = vmx_segment_access_rights(&var);
-+
-+	if (var.base != (var.selector << 4))
-+		return false;
-+	if (var.limit != 0xffff)
-+		return false;
-+	if (ar != 0xf3)
-+		return false;
-+
-+	return true;
-+}
-+
-+static bool code_segment_valid(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_segment cs;
-+	unsigned int cs_rpl;
-+
-+	vmx_get_segment(vcpu, &cs, VCPU_SREG_CS);
-+	cs_rpl = cs.selector & SELECTOR_RPL_MASK;
-+
-+	if (~cs.type & (AR_TYPE_CODE_MASK|AR_TYPE_ACCESSES_MASK))
-+		return false;
-+	if (!cs.s)
-+		return false;
-+	if (!(~cs.type & (AR_TYPE_CODE_MASK|AR_TYPE_WRITEABLE_MASK))) {
-+		if (cs.dpl > cs_rpl)
-+			return false;
-+	} else if (cs.type & AR_TYPE_CODE_MASK) {
-+		if (cs.dpl != cs_rpl)
-+			return false;
-+	}
-+	if (!cs.present)
-+		return false;
-+
-+	/* TODO: Add Reserved field check, this'll require a new member in the kvm_segment_field structure */
-+	return true;
-+}
-+
-+static bool stack_segment_valid(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_segment ss;
-+	unsigned int ss_rpl;
-+
-+	vmx_get_segment(vcpu, &ss, VCPU_SREG_SS);
-+	ss_rpl = ss.selector & SELECTOR_RPL_MASK;
-+
-+	if ((ss.type != 3) || (ss.type != 7))
-+		return false;
-+	if (!ss.s)
-+		return false;
-+	if (ss.dpl != ss_rpl) /* DPL != RPL */
-+		return false;
-+	if (!ss.present)
-+		return false;
-+
-+	return true;
-+}
-+
-+static bool data_segment_valid(struct kvm_vcpu *vcpu, int seg)
-+{
-+	struct kvm_segment var;
-+	unsigned int rpl;
-+
-+	vmx_get_segment(vcpu, &var, seg);
-+	rpl = var.selector & SELECTOR_RPL_MASK;
-+
-+	if (!var.s)
-+		return false;
-+	if (!var.present)
-+		return false;
-+	if (~var.type & (AR_TYPE_CODE_MASK|AR_TYPE_WRITEABLE_MASK)) {
-+		if (var.dpl < rpl) /* DPL < RPL */
-+			return false;
-+	}
-+
-+	/* TODO: Add other members to kvm_segment_field to allow checking for other access
-+	 * rights flags
-+	 */
-+	return true;
-+}
-+
-+static bool tr_valid(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_segment tr;
-+
-+	vmx_get_segment(vcpu, &tr, VCPU_SREG_TR);
-+
-+	if (tr.selector & SELECTOR_TI_MASK)	/* TI = 1 */
-+		return false;
-+	if ((tr.type != 3) || (tr.type != 11)) /* TODO: Check if guest is in IA32e mode */
-+		return false;
-+	if (!tr.present)
-+		return false;
-+
-+	return true;
-+}
-+
-+static bool ldtr_valid(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_segment ldtr;
-+
-+	vmx_get_segment(vcpu, &ldtr, VCPU_SREG_LDTR);
-+
-+	if (ldtr.selector & SELECTOR_TI_MASK)	/* TI = 1 */
-+		return false;
-+	if (ldtr.type != 2)
-+		return false;
-+	if (!ldtr.present)
-+		return false;
-+
-+	return true;
-+}
-+
-+static bool cs_ss_rpl_check(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_segment cs, ss;
-+
-+	vmx_get_segment(vcpu, &cs, VCPU_SREG_CS);
-+	vmx_get_segment(vcpu, &ss, VCPU_SREG_SS);
-+
-+	return ((cs.selector & SELECTOR_RPL_MASK) ==
-+		 (ss.selector & SELECTOR_RPL_MASK));
-+}
-+
-+/*
-+ * Check if guest state is valid. Returns true if valid, false if
-+ * not.
-+ * We assume that registers are always usable
-+ */
-+static bool guest_state_valid(struct kvm_vcpu *vcpu)
-+{
-+	/* real mode guest state checks */
-+	if (!(vcpu->arch.cr0 & X86_CR0_PE)) {
-+		if (!rmode_segment_valid(vcpu, VCPU_SREG_CS))
-+			return false;
-+		if (!rmode_segment_valid(vcpu, VCPU_SREG_SS))
-+			return false;
-+		if (!rmode_segment_valid(vcpu, VCPU_SREG_DS))
-+			return false;
-+		if (!rmode_segment_valid(vcpu, VCPU_SREG_ES))
-+			return false;
-+		if (!rmode_segment_valid(vcpu, VCPU_SREG_FS))
-+			return false;
-+		if (!rmode_segment_valid(vcpu, VCPU_SREG_GS))
-+			return false;
-+	} else {
-+	/* protected mode guest state checks */
-+		if (!cs_ss_rpl_check(vcpu))
-+			return false;
-+		if (!code_segment_valid(vcpu))
-+			return false;
-+		if (!stack_segment_valid(vcpu))
-+			return false;
-+		if (!data_segment_valid(vcpu, VCPU_SREG_DS))
-+			return false;
-+		if (!data_segment_valid(vcpu, VCPU_SREG_ES))
-+			return false;
-+		if (!data_segment_valid(vcpu, VCPU_SREG_FS))
-+			return false;
-+		if (!data_segment_valid(vcpu, VCPU_SREG_GS))
-+			return false;
-+		if (!tr_valid(vcpu))
-+			return false;
-+		if (!ldtr_valid(vcpu))
-+			return false;
-+	}
-+	/* TODO:
-+	 * - Add checks on RIP
-+	 * - Add checks on RFLAGS
-+	 */
-+
-+	return true;
-+}
-+
- static int init_rmode_tss(struct kvm *kvm)
- {
- 	gfn_t fn = rmode_tss_base(kvm) >> PAGE_SHIFT;
+ struct vmcs {
+ 	u32 revision_id;
+ 	u32 abort;
+@@ -86,6 +89,7 @@ struct vcpu_vmx {
+ 		} irq;
+ 	} rmode;
+ 	int vpid;
++	bool emulation_required;
+ };
+ 
+ static inline struct vcpu_vmx *to_vmx(struct kvm_vcpu *vcpu)
 -- 
 1.6.0.1
 
