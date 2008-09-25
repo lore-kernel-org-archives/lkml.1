@@ -1,180 +1,295 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbYIYPCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbYIYPC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756290AbYIYPCL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 11:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYIYPB4
+	id S1756472AbYIYPC1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 11:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbYIYPCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 11:01:56 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44264 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753685AbYIYPBy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 11:01:54 -0400
-Date: Thu, 25 Sep 2008 17:03:19 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, tytso@mit.edu, jack@suse.cz,
-       sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com
-Cc: linux-ext4@vger.kernel.org
-Subject: ext3 read only handling
-Message-ID: <20080925150319.GA4344@elf.ucw.cz>
+	Thu, 25 Sep 2008 11:02:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43771 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756164AbYIYPCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 11:02:04 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] AFS: Convert to new write aops
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+       David Howells <dhowells@redhat.com>
+Date: Thu, 25 Sep 2008 16:01:08 +0100
+Message-ID: <20080925150108.29968.90222.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Nick Piggin <npiggin@suse.de>
 
-Inserting read-only ext3 SD card into a machine and trying to mount
-ext3 volume on it is very unnice :-(.
+Convert AFS to the new write address space operations.
 
-Is there easy way to "fix" -oro so that it does not write to the
-media?
+This cannot assume that writes will fully complete, so this conversion goes the
+easy way and always brings the page uptodate before the write.
 
-(Machine died after I played with that SD card a bit more, but I can't
-easily reproduce that...)
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-								Pavel
+ fs/afs/file.c     |    4 +-
+ fs/afs/internal.h |    8 ++-
+ fs/afs/write.c    |  131 +++++++++++++++++------------------------------------
+ 3 files changed, 51 insertions(+), 92 deletions(-)
 
-Sep 25 11:51:38 amd kernel: mmcblk0: mmc0:0002 SD1GB 975872KiB (ro)
-Sep 25 11:51:38 amd kernel:  mmcblk0: p1
-Sep 25 11:51:47 amd kernel: JBD: Clearing recovery information on
-journal
-Sep 25 11:51:47 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:47 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 4017
-Sep 25 11:51:47 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 486
-Sep 25 11:51:47 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:48 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:48 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 129
-Sep 25 11:51:48 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 0
-Sep 25 11:51:48 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:48 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 137
-Sep 25 11:51:48 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 1
-Sep 25 11:51:48 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:48 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:48 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 161
-Sep 25 11:51:48 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 4
-Sep 25 11:51:48 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:49 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:49 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 3977
-Sep 25 11:51:49 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 481
-Sep 25 11:51:49 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:49 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:49 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 262305
-Sep 25 11:51:49 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 32772
-Sep 25 11:51:49 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:50 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 524417
-Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 65536
-Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 524425
-Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 65537
-Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 524433
-Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 65538
-Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:50 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:50 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 528249
-Sep 25 11:51:50 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 66015
-Sep 25 11:51:50 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:51 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 1048705
-Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 1048713
-Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 1048721
-Sep 25 11:51:51 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:51 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 1052537
-Sep 25 11:51:52 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:52 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 4017
-Sep 25 11:51:52 amd kernel: kjournald starting.  Commit interval 5
-seconds
-Sep 25 11:51:52 amd kernel: ------------[ cut here ]------------
-Sep 25 11:51:52 amd kernel: WARNING: at /data/l/linux/fs/buffer.c:1186
-mark_buffer_dirty+0x57/0x70()
-Sep 25 11:51:52 amd kernel: Modules linked in:
-Sep 25 11:51:52 amd kernel: Pid: 16292, comm: mount Not tainted
-2.6.27-rc6 #379
-Sep 25 11:51:52 amd kernel:  [<c022ae8f>] warn_on_slowpath+0x5f/0x90
-Sep 25 11:51:52 amd kernel:  [<c02a36c2>] __find_get_block+0x82/0x190
-Sep 25 11:51:52 amd kernel:  [<c024a611>] __lock_acquire+0x181/0x930
-Sep 25 11:51:52 amd kernel:  [<c024a611>] __lock_acquire+0x181/0x930
-Sep 25 11:51:52 amd kernel:  [<c03006b7>]
-journal_update_superblock+0x67/0xd0
-Sep 25 11:51:52 amd kernel:  [<c02a3c97>] mark_buffer_dirty+0x57/0x70
-Sep 25 11:51:52 amd kernel:  [<c03006bf>]
-journal_update_superblock+0x6f/0xd0
-Sep 25 11:51:52 amd kernel:  [<c0300b31>] journal_flush+0xa1/0x120
-Sep 25 11:51:52 amd kernel:  [<c02f4a6c>]
-ext3_mark_recovery_complete+0x2c/0x80
-Sep 25 11:51:52 amd kernel:  [<c02f747e>]
-ext3_fill_super+0x125e/0x1800
-Sep 25 11:51:52 amd kernel:  [<c039089f>] snprintf+0x1f/0x30
-Sep 25 11:51:52 amd kernel:  [<c02c0d00>] disk_name+0xb0/0xc0
-Sep 25 11:51:52 amd kernel:  [<c0284304>] get_sb_bdev+0x104/0x130
-Sep 25 11:51:52 amd kernel:  [<c026a299>] kstrdup+0x39/0x70
-Sep 25 11:51:52 amd kernel:  [<c02f4810>] ext3_get_sb+0x20/0x30
-Sep 25 11:51:52 amd kernel:  [<c02f6220>] ext3_fill_super+0x0/0x1800
-Sep 25 11:51:52 amd kernel:  [<c0283e33>] vfs_kern_mount+0x43/0x90
-Sep 25 11:51:52 amd kernel:  [<c0283edd>] do_kern_mount+0x3d/0xe0
-Sep 25 11:51:52 amd kernel:  [<c0299f71>] do_new_mount+0x81/0xc0
-Sep 25 11:51:52 amd kernel:  [<c029a127>] do_mount+0x177/0x1d0
-Sep 25 11:51:52 amd kernel:  [<c0297de0>]
-copy_mount_options+0x40/0x150
-Sep 25 11:51:52 amd kernel:  [<c029a1f7>] sys_mount+0x77/0xc0
-Sep 25 11:51:52 amd kernel:  [<c0203c3a>] syscall_call+0x7/0xb
-Sep 25 11:51:52 amd kernel:  =======================
-Sep 25 11:51:52 amd kernel: ---[ end trace c1e48b3b4f28cda2 ]---
-Sep 25 11:51:52 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:52 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 4017
-Sep 25 11:51:53 amd kernel: mmcblk0: error -110 transferring data
-Sep 25 11:51:53 amd kernel: end_request: I/O error, dev mmcblk0,
-sector 129
-Sep 25 11:51:53 amd kernel: __ratelimit: 6 callbacks suppressed
-Sep 25 11:51:53 amd kernel: Buffer I/O error on device mmcblk0p1,
-logical block 0
-Sep 25 11:51:53 amd kernel: lost page write due to I/O error on
-mmcblk0p1
-Sep 25 11:51:53 amd kernel: EXT3-fs: mounted filesystem with ordered
-data mode.
-Sep 25 11:52:04 amd kernel: mmc0: card 0002 removed
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/fs/afs/file.c b/fs/afs/file.c
+index 8e24e96..909083d 100644
+--- a/fs/afs/file.c
++++ b/fs/afs/file.c
+@@ -55,8 +55,8 @@ const struct address_space_operations afs_fs_aops = {
+ 	.launder_page	= afs_launder_page,
+ 	.releasepage	= afs_releasepage,
+ 	.invalidatepage	= afs_invalidatepage,
+-	.prepare_write	= afs_prepare_write,
+-	.commit_write	= afs_commit_write,
++	.write_begin	= afs_write_begin,
++	.write_end	= afs_write_end,
+ 	.writepage	= afs_writepage,
+ 	.writepages	= afs_writepages,
+ };
+diff --git a/fs/afs/internal.h b/fs/afs/internal.h
+index 979eb1d..a7f81cc 100644
+--- a/fs/afs/internal.h
++++ b/fs/afs/internal.h
+@@ -722,8 +722,12 @@ extern int afs_volume_release_fileserver(struct afs_vnode *,
+  */
+ extern int afs_set_page_dirty(struct page *);
+ extern void afs_put_writeback(struct afs_writeback *);
+-extern int afs_prepare_write(struct file *, struct page *, unsigned, unsigned);
+-extern int afs_commit_write(struct file *, struct page *, unsigned, unsigned);
++extern int afs_write_begin(struct file *file, struct address_space *mapping,
++			loff_t pos, unsigned len, unsigned flags,
++			struct page **pagep, void **fsdata);
++extern int afs_write_end(struct file *file, struct address_space *mapping,
++			loff_t pos, unsigned len, unsigned copied,
++			struct page *page, void *fsdata);
+ extern int afs_writepage(struct page *, struct writeback_control *);
+ extern int afs_writepages(struct address_space *, struct writeback_control *);
+ extern int afs_write_inode(struct inode *, int);
+diff --git a/fs/afs/write.c b/fs/afs/write.c
+index cabc466..4f5295a 100644
+--- a/fs/afs/write.c
++++ b/fs/afs/write.c
+@@ -84,15 +84,23 @@ void afs_put_writeback(struct afs_writeback *wb)
+  * partly or wholly fill a page that's under preparation for writing
+  */
+ static int afs_fill_page(struct afs_vnode *vnode, struct key *key,
+-			 unsigned start, unsigned len, struct page *page)
++			 loff_t pos, unsigned len, struct page *page)
+ {
++	loff_t i_size;
++	unsigned eof;
+ 	int ret;
+ 
+-	_enter(",,%u,%u", start, len);
++	_enter(",,%llu,%u", (unsigned long long)pos, len);
+ 
+-	ASSERTCMP(start + len, <=, PAGE_SIZE);
++	ASSERTCMP(len, <=, PAGE_CACHE_SIZE);
+ 
+-	ret = afs_vnode_fetch_data(vnode, key, start, len, page);
++	i_size = i_size_read(&vnode->vfs_inode);
++	if (pos + len > i_size)
++		eof = i_size;
++	else
++		eof = PAGE_CACHE_SIZE;
++
++	ret = afs_vnode_fetch_data(vnode, key, 0, eof, page);
+ 	if (ret < 0) {
+ 		if (ret == -ENOENT) {
+ 			_debug("got NOENT from server"
+@@ -107,109 +115,55 @@ static int afs_fill_page(struct afs_vnode *vnode, struct key *key,
+ }
+ 
+ /*
+- * prepare a page for being written to
+- */
+-static int afs_prepare_page(struct afs_vnode *vnode, struct page *page,
+-			    struct key *key, unsigned offset, unsigned to)
+-{
+-	unsigned eof, tail, start, stop, len;
+-	loff_t i_size, pos;
+-	void *p;
+-	int ret;
+-
+-	_enter("");
+-
+-	if (offset == 0 && to == PAGE_SIZE)
+-		return 0;
+-
+-	p = kmap_atomic(page, KM_USER0);
+-
+-	i_size = i_size_read(&vnode->vfs_inode);
+-	pos = (loff_t) page->index << PAGE_SHIFT;
+-	if (pos >= i_size) {
+-		/* partial write, page beyond EOF */
+-		_debug("beyond");
+-		if (offset > 0)
+-			memset(p, 0, offset);
+-		if (to < PAGE_SIZE)
+-			memset(p + to, 0, PAGE_SIZE - to);
+-		kunmap_atomic(p, KM_USER0);
+-		return 0;
+-	}
+-
+-	if (i_size - pos >= PAGE_SIZE) {
+-		/* partial write, page entirely before EOF */
+-		_debug("before");
+-		tail = eof = PAGE_SIZE;
+-	} else {
+-		/* partial write, page overlaps EOF */
+-		eof = i_size - pos;
+-		_debug("overlap %u", eof);
+-		tail = max(eof, to);
+-		if (tail < PAGE_SIZE)
+-			memset(p + tail, 0, PAGE_SIZE - tail);
+-		if (offset > eof)
+-			memset(p + eof, 0, PAGE_SIZE - eof);
+-	}
+-
+-	kunmap_atomic(p, KM_USER0);
+-
+-	ret = 0;
+-	if (offset > 0 || eof > to) {
+-		/* need to fill one or two bits that aren't going to be written
+-		 * (cover both fillers in one read if there are two) */
+-		start = (offset > 0) ? 0 : to;
+-		stop = (eof > to) ? eof : offset;
+-		len = stop - start;
+-		_debug("wr=%u-%u av=0-%u rd=%u@%u",
+-		       offset, to, eof, start, len);
+-		ret = afs_fill_page(vnode, key, start, len, page);
+-	}
+-
+-	_leave(" = %d", ret);
+-	return ret;
+-}
+-
+-/*
+  * prepare to perform part of a write to a page
+- * - the caller holds the page locked, preventing it from being written out or
+- *   modified by anyone else
+  */
+-int afs_prepare_write(struct file *file, struct page *page,
+-		      unsigned offset, unsigned to)
++int afs_write_begin(struct file *file, struct address_space *mapping,
++		    loff_t pos, unsigned len, unsigned flags,
++		    struct page **pagep, void **fsdata)
+ {
+ 	struct afs_writeback *candidate, *wb;
+ 	struct afs_vnode *vnode = AFS_FS_I(file->f_dentry->d_inode);
++	struct page *page;
+ 	struct key *key = file->private_data;
+-	pgoff_t index;
++	unsigned from = pos & (PAGE_CACHE_SIZE - 1);
++	unsigned to = from + len;
++	pgoff_t index = pos >> PAGE_CACHE_SHIFT;
+ 	int ret;
+ 
+ 	_enter("{%x:%u},{%lx},%u,%u",
+-	       vnode->fid.vid, vnode->fid.vnode, page->index, offset, to);
++	       vnode->fid.vid, vnode->fid.vnode, index, from, to);
+ 
+ 	candidate = kzalloc(sizeof(*candidate), GFP_KERNEL);
+ 	if (!candidate)
+ 		return -ENOMEM;
+ 	candidate->vnode = vnode;
+-	candidate->first = candidate->last = page->index;
+-	candidate->offset_first = offset;
++	candidate->first = candidate->last = index;
++	candidate->offset_first = from;
+ 	candidate->to_last = to;
+ 	candidate->usage = 1;
+ 	candidate->state = AFS_WBACK_PENDING;
+ 	init_waitqueue_head(&candidate->waitq);
+ 
++	page = __grab_cache_page(mapping, index);
++	if (!page) {
++		kfree(candidate);
++		return -ENOMEM;
++	}
++	*pagep = page;
++	/* page won't leak in error case: it eventually gets cleaned off LRU */
++
+ 	if (!PageUptodate(page)) {
+ 		_debug("not up to date");
+-		ret = afs_prepare_page(vnode, page, key, offset, to);
++		ret = afs_fill_page(vnode, key, pos, len, page);
+ 		if (ret < 0) {
+ 			kfree(candidate);
+ 			_leave(" = %d [prep]", ret);
+ 			return ret;
+ 		}
++		SetPageUptodate(page);
+ 	}
+ 
+ try_again:
+-	index = page->index;
+ 	spin_lock(&vnode->writeback_lock);
+ 
+ 	/* see if this page is already pending a writeback under a suitable key
+@@ -242,8 +196,8 @@ try_again:
+ subsume_in_current_wb:
+ 	_debug("subsume");
+ 	ASSERTRANGE(wb->first, <=, index, <=, wb->last);
+-	if (index == wb->first && offset < wb->offset_first)
+-		wb->offset_first = offset;
++	if (index == wb->first && from < wb->offset_first)
++		wb->offset_first = from;
+ 	if (index == wb->last && to > wb->to_last)
+ 		wb->to_last = to;
+ 	spin_unlock(&vnode->writeback_lock);
+@@ -289,17 +243,17 @@ flush_conflicting_wb:
+ /*
+  * finalise part of a write to a page
+  */
+-int afs_commit_write(struct file *file, struct page *page,
+-		     unsigned offset, unsigned to)
++int afs_write_end(struct file *file, struct address_space *mapping,
++		  loff_t pos, unsigned len, unsigned copied,
++		  struct page *page, void *fsdata)
+ {
+ 	struct afs_vnode *vnode = AFS_FS_I(file->f_dentry->d_inode);
+ 	loff_t i_size, maybe_i_size;
+ 
+-	_enter("{%x:%u},{%lx},%u,%u",
+-	       vnode->fid.vid, vnode->fid.vnode, page->index, offset, to);
++	_enter("{%x:%u},{%lx}",
++	       vnode->fid.vid, vnode->fid.vnode, page->index);
+ 
+-	maybe_i_size = (loff_t) page->index << PAGE_SHIFT;
+-	maybe_i_size += to;
++	maybe_i_size = pos + copied;
+ 
+ 	i_size = i_size_read(&vnode->vfs_inode);
+ 	if (maybe_i_size > i_size) {
+@@ -310,12 +264,13 @@ int afs_commit_write(struct file *file, struct page *page,
+ 		spin_unlock(&vnode->writeback_lock);
+ 	}
+ 
+-	SetPageUptodate(page);
+ 	set_page_dirty(page);
+ 	if (PageDirty(page))
+ 		_debug("dirtied");
++	unlock_page(page);
++	page_cache_release(page);
+ 
+-	return 0;
++	return copied;
+ }
+ 
+ /*
+
