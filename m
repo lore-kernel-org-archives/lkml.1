@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754268AbYIYHbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYIYHgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754268AbYIYHbj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 03:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYIYHba
+	id S1753342AbYIYHgo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 03:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbYIYHgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 03:31:30 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:53122 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751097AbYIYHb3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 03:31:29 -0400
-Date: Thu, 25 Sep 2008 09:31:19 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: benh@kernel.crashing.org
-Cc: Milton Miller <miltonm@bga.com>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org, Christoph Raisch <RAISCH@de.ibm.com>,
-       linuxppc-dev@ozlabs.org, Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
- hardirq preemption
-Message-ID: <20080925093119.5dd4df4c@bull.net>
-In-Reply-To: <1222290847.8277.81.camel@pasglop>
-References: <200809231743.23828.ossthema@de.ibm.com>
-	<20080915100406.342e027a@bull.net>
-	<200809240958.m8O9wM7k010996@sullivan.realtime.net>
-	<1222251467.8277.73.camel@pasglop>
-	<f30d1d832fd4ad096afccf198c14a7bb@bga.com>
-	<1222290847.8277.81.camel@pasglop>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+	Thu, 25 Sep 2008 03:36:35 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:44041 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752511AbYIYHge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 03:36:34 -0400
+Date: Thu, 25 Sep 2008 16:35:31 +0900
+To: knikanth@suse.de
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH] BUG: ll_merge_requests_fn() updates
+ req->nr_phys_segments wrongly
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200809232358.02810.knikanth@suse.de>
+References: <200809232358.02810.knikanth@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080925163351G.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008 07:14:07 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Tue, 23 Sep 2008 23:58:02 +0530
+Nikanth Karthikesan <knikanth@suse.de> wrote:
 
 > 
-> > There may be some implicit assumption in that we expect the cpu 
-> > priority to be returned to normal by the EOI, but there is nothing in 
-> > the hardware that requires the EOI to come from the same cpu as 
-> > accepted the interrupt for processing, with the exception of the IPI 
-> > which is per-cpu (and the only interrupt that is per-cpu).
+> From: Nikanth Karthikesan <knikanth@suse.de>
 > 
-> Well, there is one fundamental one: The XIRR register we access is
-> per-CPU, so if we are to return the right processor priority, we must
-> make sure we write the right XIRR.
+> ll_merge_requests_fn() decreases the req->nr_phys_segments if 
+> blk_phys_contig_segment() returns true, but it is perfectly possible that 
+> blk_hw_contig_segment() is false.
 
-  That's already the case as the irq fetch (xx_xirr_info_get()) and
-eoi (xx_xirr_info_set()) are both done in interrupt context, therefore on
-the same cpu.
+Yeah, in fact, blk_hw_contig_segment() is always false on the majority
+of architectures (on only PARISC and Alpha, it could be true).
 
-> 
-> Same with Cell, MPIC, actually and a few others. In general I'd say most
-> fast_eoi type PICs have this requirement.
-> 
-> > It would probably mean adding the concept of the current cpu priority 
-> > vs interrupts and making sure we write it to hardware at irq_exit() 
-> > time when deferring the actual irq handlers.
-> 
-> I think we need something like a special -rt variant of the fast_eoi
-> handler that masks & eoi's in ack() before the thread is spun off, and
-> unmasks instead of eoi() when the irq processing is complete.
-
-  This is what is already done in the threaded case:
-
-    - fetch + mask + eoi  in interrupt context
-
-    - unmask in the thread when processing is complete.
+Your patch doesn't look correct. Virtually, the patch always disables
+physical merging.
 
 
-  Sebastien.
+> A new hw_segment implies a new phys_segment. 
+> So decrementing nr_phys_segments wrongly here triggers the BUG_ON() in 
+> scsi_init_sgtable(), as blk_rq_map_sg() would map 1 phys_segment more than  
+> req->nr_phys_segment. This is easily reproducible. Other callers of 
+> blk_rq_map_sg() should also be affected by this bug.
 
+I have no idea how BUG_ON() in scsi_init_sgtable() is triggered.
+
+Can you give more information, HBA, IOMMU (if you use), and the values
+of req->nr_phys_segment, req->nr_hw_segment, count, etc in in
+scsi_init_sgtable() when you hit the bug?
+
+
+BTW, blk_hw_contig_segment() will be removed for 2.6.28 (virtual
+merging account in the block layer will be removed).
