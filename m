@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbYIYTWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbYIYTXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbYIYTWd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 15:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYIYTWW
+	id S1754484AbYIYTXX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 15:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbYIYTXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 15:22:22 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:64851 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752819AbYIYTWV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 15:22:21 -0400
-Date: Thu, 25 Sep 2008 14:14:47 -0500
-From: Corey Minyard <minyard@acm.org>
-Subject: Re: [PATCH 1/1] Use RCU for the UDP hash lock
-In-reply-to: <20080925084509.GA5090@ff.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Message-id: <48DBE327.8010709@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <48DB2925.2070908@poczta.onet.pl>
- <20080925084509.GA5090@ff.dom.local>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 25 Sep 2008 15:23:14 -0400
+Received: from khc.piap.pl ([195.187.100.11]:49134 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752926AbYIYTXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 15:23:13 -0400
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Frans Pop <elendil@planet.nl>, airlied@gmail.com,
+       Jeff Garzik <jeff@garzik.org>, davem@davemloft.net,
+       Andrew Morton <akpm@linux-foundation.org>, jeffrey.t.kirsher@intel.com,
+       david.vrabel@csr.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, chrisl@vmware.com,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org,
+       jesse.brandeburg@gmail.com
+Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+References: <20080923.150722.141587696.davem@davemloft.net>
+	<9929d2390809231512w160d221axa2923a6b293a041@mail.gmail.com>
+	<alpine.LNX.1.10.0809240014390.4671@pegasus.suse.cz>
+	<20080923.211215.193696086.davem@davemloft.net>
+	<alpine.LNX.1.10.0809250110070.4671@pegasus.suse.cz>
+	<21d7e9970809241722w7c3bb6a5w1af5801b7380169d@mail.gmail.com>
+	<21d7e9970809241722w7c3bb6a5w1af5801b7380169d@mail.gmail.com>
+	<alpine.LNX.1.10.0809250310190.4671@pegasus.suse.cz>
+	<200809250401.54818.elendil@planet.nl>
+	<Pine.LNX.4.64.0809251921340.18801@twin.jikos.cz>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 25 Sep 2008 21:23:11 +0200
+In-Reply-To: <Pine.LNX.4.64.0809251921340.18801@twin.jikos.cz> (Jiri Kosina's message of "Thu\, 25 Sep 2008 19\:24\:57 +0200 \(CEST\)")
+Message-ID: <m33ajovxls.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
->
-> ...
->   
->> @@ -1094,7 +1103,7 @@ static int __udp4_lib_mcast_deliver(struct net *net, struct sk_buff *skb,
->>  	struct sock *sk;
->>  	int dif;
->>  
->> -	read_lock(&udp_hash_lock);
->> +	rcu_read_lock();
->>  	sk = sk_head(&udptable[udp_hashfn(net, ntohs(uh->dest))]);
->>     
->
-> Probably sk_head_rcu() is needed too.
->   
-Yes, it is.
->   
->>  	dif = skb->dev->ifindex;
->>  	sk = udp_v4_mcast_next(sk, uh->dest, daddr, uh->source, saddr, dif);
->> @@ -1120,7 +1129,7 @@ static int __udp4_lib_mcast_deliver(struct net *net, struct sk_buff *skb,
->>  		} while (sknext);
->>  	} else
->>  		kfree_skb(skb);
->> -	read_unlock(&udp_hash_lock);
->> +	rcu_read_unlock();
->>  	return 0;
->>  }
->>     
-> ...
->
-> Aren't other functions like sk_next() or sk_unhashed() used on the
-> read side and need _rcu versions?
->   
-It also needs sk_next_rcu().  sk_unhashed() is only used on the update 
-side, so an rcu version is not needed there.
+Jiri Kosina <jkosina@suse.cz> writes:
 
-Thanks for pointing this out.
+> Still, what confuses me a little bit -- the EEPROM of the card is set to 
+> all 0xff, once the corruption happens. Isn't that a quite a coincidence, 
+> that bytes representing "nothing" in this context are used?
 
--corey
-
+Perhaps the entire chip has been erased with the "ERAL" (erase all)
+command. Requires previously issued EWEN (erase/write enable).
+Each command seems to require several writes to the EEPROM control
+register.
+-- 
+Krzysztof Halasa
