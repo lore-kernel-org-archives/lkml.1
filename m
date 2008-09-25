@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbYIYVps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbYIYVsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755602AbYIYVps (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 17:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYIYVpj
+	id S1755589AbYIYVsX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 17:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYIYVsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 17:45:39 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:39897 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753773AbYIYVpi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 17:45:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QIJcg4myr/jzyt7YM9M4nTzbxHV7vCw2HkAf3qzx6whsxvOBfI+F0OVX8E6oTHIKs4
-         0cEltAG44R7W0xqWGPh6MVxc4A8X0STjBnEb7+MCBhEEHLuJd+O1dyTSF3iX3GyJf3l/
-         MVzvpFDl+hfU3pATfCCIot2arhSp2sS/94q3c=
-Message-ID: <21d7e9970809251445s216efcc3kaba639d5e29c51aa@mail.gmail.com>
-Date: Fri, 26 Sep 2008 07:45:37 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-Cc: "Jiri Kosina" <jkosina@suse.cz>, "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Frans Pop" <elendil@planet.nl>, "Jeff Garzik" <jeff@garzik.org>,
-       davem@davemloft.net, jeffrey.t.kirsher@intel.com, david.vrabel@csr.com,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, chrisl@vmware.com,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <4807377b0809251442x67e4e9eia706b70ae1c177ca@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Sep 2008 17:48:14 -0400
+Received: from gate.crashing.org ([63.228.1.57]:38784 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752593AbYIYVsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 17:48:14 -0400
+Subject: Re: PTE access rules & abstraction
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+In-Reply-To: <48DBD532.80607@goop.org>
+References: <1221846139.8077.25.camel@pasglop>  <48D739B2.1050202@goop.org>
+	 <1222117551.12085.39.camel@pasglop>
+	 <Pine.LNX.4.64.0809241919520.575@blonde.site>
+	 <1222291248.8277.90.camel@pasglop>
+	 <Pine.LNX.4.64.0809250049270.21674@blonde.site>
+	 <1222304686.8277.136.camel@pasglop>  <48DBD532.80607@goop.org>
+Content-Type: text/plain
+Date: Fri, 26 Sep 2008 07:44:23 +1000
+Message-Id: <1222379063.8277.202.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080923.150722.141587696.davem@davemloft.net>
-	 <200809251156.10648.jbarnes@virtuousgeek.org>
-	 <alpine.LNX.1.10.0809252218470.3389@pegasus.suse.cz>
-	 <200809251236.12287.jbarnes@virtuousgeek.org>
-	 <alpine.LNX.1.10.0809252234400.3389@pegasus.suse.cz>
-	 <21d7e9970809251406gb2bdacbuf9ff1bde3d118cdb@mail.gmail.com>
-	 <4807377b0809251442x67e4e9eia706b70ae1c177ca@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 7:42 AM, Jesse Brandeburg
-<jesse.brandeburg@gmail.com> wrote:
-> On Thu, Sep 25, 2008 at 2:06 PM, Dave Airlie <airlied@gmail.com> wrote:
->> I'd target three areas PAT, pciaccess and e1000e itself.
->
-> ubuntu has CONFIG_X86_PAT disabled for at least i386 arch, maybe that
-> is relevant.
->
+On Thu, 2008-09-25 at 11:15 -0700, Jeremy Fitzhardinge wrote:
+> The ptep_modify_prot_start/commit pair specifies a single pte update in
+> such a way to allow more implementation flexibility - ie, there's no
+> naked requirement for an atomic fetch-and-clear operation.  I chose the
+> transaction-like terminology to emphasize that the start/commit
+> functions must be strictly paired; there's no way to fail or abort the
+> "transaction".  A whole group of those start/commit pairs can be batched
+> together without affecting their semantics.
 
-It rules out PAT I suppose, they have seen the issue as well.
+I still can't see the point of having now 3 functions instead of just
+one such as ptep_modify_protection(). I don't see what it buys you other
+than adding gratuituous new interfaces.
 
-Dave.
+Ben;.
+
+
