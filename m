@@ -1,129 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbYIYIj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbYIYIkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbYIYIj7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 04:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbYIYIju
+	id S1753095AbYIYIkY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 04:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbYIYIj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 04:39:50 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45694 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752444AbYIYIjs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 04:39:48 -0400
-Date: Thu, 25 Sep 2008 17:45:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: keith.packard@intel.com, eric@anholt.net, hugh@veritas.com,
-       hch@infradead.org, airlied@linux.ie, jbarnes@virtuousgeek.org,
-       thomas@tungstengraphics.com, dri-devel@lists.sourceforge.net,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] mm: pageable memory allocator (for DRM-GEM?)
-Message-Id: <20080925174513.fd44bc08.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080923091017.GB29718@wotan.suse.de>
-References: <20080923091017.GB29718@wotan.suse.de>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Sep 2008 04:39:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34539 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754174AbYIYIj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 04:39:56 -0400
+Date: Thu, 25 Sep 2008 10:39:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 6/7] x86: irq no should not use hex in /proc/interrupts
+Message-ID: <20080925083936.GD4519@elte.hu>
+References: <1222308277-10984-1-git-send-email-yhlu.kernel@gmail.com> <1222308277-10984-6-git-send-email-yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222308277-10984-6-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Sep 2008 11:10:17 +0200
-Nick Piggin <npiggin@suse.de> wrote:
 
-> +void *pageable_vmap_object(pgobj_t *object, unsigned long start, unsigned long end)
-> +{
-> +	struct file *filp = (struct file *)object;
-> +	struct address_space *mapping = filp->f_dentry->d_inode->i_mapping;
-> +	unsigned int offset = start & ~PAGE_CACHE_MASK;
-> +	pgoff_t first, last, i;
-> +	struct page **pages;
-> +	int nr;
-> +	void *ret;
-> +
-> +	BUG_ON(start >= end);
-> +
-> +	first = start / PAGE_SIZE;
-> +	last = DIV_ROUND_UP(end, PAGE_SIZE);
-> +	nr = last - first;
-> +
-> +#ifndef CONFIG_HIGHMEM
-> +	if (nr == 1) {
-> +		struct page *page;
-> +
-> +		rcu_read_lock();
-> +		page = radix_tree_lookup(&mapping->page_tree, first);
-> +		rcu_read_unlock();
-> +		BUG_ON(!page);
-> +		BUG_ON(page_count(page) < 2);
-> +
-> +		ret = page_address(page);
-> +
-> +		goto out;
-> +	}
-> +#endif
-> +
-> +	pages = kmalloc(sizeof(struct page *) * nr, GFP_KERNEL);
-> +	if (!pages)
-> +		return NULL;
-> +
-> +	for (i = first; i < last; i++) {
-> +		struct page *page;
-> +
-> +		rcu_read_lock();
-> +		page = radix_tree_lookup(&mapping->page_tree, i);
-> +		rcu_read_unlock();
-> +		BUG_ON(!page);
-> +		BUG_ON(page_count(page) < 2);
-> +
-> +		pages[i] = page;
-> +	}
-> +
-> +	ret = vmap(pages, nr, VM_MAP, PAGE_KERNEL);
-> +	kfree(pages);
-> +	if (!ret)
-> +		return NULL;
-> +
-> +out:
-> +	return ret + offset;
-> +}
-> +
-> +void pageable_vunmap_object(pgobj_t *object, void *ptr, unsigned long start, unsigned long end)
-> +{
-> +#ifndef CONFIG_HIGHMEM
-> +	pgoff_t first, last;
-> +	int nr;
-> +
-> +	BUG_ON(start >= end);
-> +
-> +	first = start / PAGE_SIZE;
-> +	last = DIV_ROUND_UP(end, PAGE_SIZE);
-> +	nr = last - first;
-> +	if (nr == 1)
-> +		return;
-> +#endif
-> +
-> +	vunmap((void *)((unsigned long)ptr & PAGE_CACHE_MASK));
-> +}
-> +
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-Some questions..
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> ---
+>  arch/x86/kernel/irq_32.c |    2 +-
+>  arch/x86/kernel/irq_64.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
- - could you use GFP_HIGHUSER rather than GFP_HIGHUSER_MOVABLE ?
-   I think setting mapping_gfp_mask() (address_space->flags) to appropriate
-   value is enough.
+applied to tip/irq/sparseirq, thanks Yinghai!
 
- - Can we mlock pages while it's vmapped ? (or Reserve and remove from LRU)
-   Then, new split-lru can ignore these pages while there are mapped. over-killing ?
-
- - Doesn't we need to increase page->mapcount ?
-
- - memory resource contorller should account these pages ?
-   (Maybe this is question to myself....)
-
-Thanks,
--Kame
-
+	Ingo
