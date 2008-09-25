@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYIYOjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbYIYOoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbYIYOjd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 10:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYIYOjZ
+	id S1753975AbYIYOoR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 10:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbYIYOoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 10:39:25 -0400
-Received: from ag-out-0708.google.com ([72.14.246.241]:26008 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752192AbYIYOjY (ORCPT
+	Thu, 25 Sep 2008 10:44:03 -0400
+Received: from outbound-mail-121.bluehost.com ([67.222.38.21]:44795 "HELO
+	outbound-mail-121.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752192AbYIYOoB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 10:39:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TwTiRqFSuMnI1rjVLhTjYWjC3c4+6C7QIw+aDSB8BbIq9BYnZ6yQQ/yrZlJJkhfEuK
-         Fysym4Z4brxd7WgRoHGTMIbJBI4SC3HHUm1SsXEErsJfQF9mS37DvTEwXrT/izkWeElk
-         tjfsklu4VCHs9ILhRZMHvdbxTO0BgZm7PWEmo=
-Date: Thu, 25 Sep 2008 22:38:25 +0800
-From: Yan Li <elliot.li.tech@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Greg KH <greg@kroah.com>, Yan Li <elliot.li.tech@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       joerg.roedel@amd.com, rjmaomao@gmail.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
-Subject: Re: [PATCH 1/2] VMware guest detection for x86 and x86-64
-Message-ID: <20080925143824.GA31760@yantp.cn.ibm.com>
-References: <48D12490.5010003@zytor.com> <48da36b9.160d6e0a.22a5.ffffec9d@mx.google.com> <20080925022325.GA14390@kroah.com> <20080925024748.GG21049@yantp.cn.ibm.com> <20080925025550.GA15249@kroah.com> <48DB198C.1090207@zytor.com>
+	Thu, 25 Sep 2008 10:44:01 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=r5bsmv2WKG7s+fqeh/y5UuMNAOAOSyAlelZR9ZVCEpsVOOv0vaqsXxxXPtb+PjFsVUsEbckaEJRltz9HZTdxM4Y4NoEZCZDjC43dX1Enod9RMTE3H9XeGrumejEYwjeQ;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86/pci: fix dmar_tbl early_ioremap leak v2
+Date: Thu, 25 Sep 2008 07:43:34 -0700
+User-Agent: KMail/1.9.9
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       mark gross <mgross@linux.intel.com>
+References: <1222327705-22048-1-git-send-email-yhlu.kernel@gmail.com> <20080925081158.GA30349@elte.hu>
+In-Reply-To: <20080925081158.GA30349@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48DB198C.1090207@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200809250743.35271.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 09:54:36PM -0700, H. Peter Anvin wrote:
-> We pretty much have to, just as we have to work around bugs in, say,  
-> AMD's microcode.  We have avoided it so far, but it's gotten to a  
-> breaking point, and rather than having ad hoc hacks scattered all over  
-> the place I want a centralized test site setting a single global 
-> variable.
+On Thursday, September 25, 2008 1:11 am Ingo Molnar wrote:
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > use early_acpi_os_unmap_memory
+> >
+> > v2: move unmap_memory early...
+> >
+> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> >
+> > ---
+> >  drivers/pci/dmar.c |    9 +++++++--
+> >  1 file changed, 7 insertions(+), 2 deletions(-)
+>
+> since this depends on other x2apic/sparseirq changes in -tip i've
+> applied it to tip/irq/sparseirq.
+>
+> Jesse, any objections?
 
-That sounds great but technically this centralized test can only be
-done after dmi_scan_machine(), so it can't help the detection code in
-mtrr_trim_uncached_memory() which is ran very early before
-dmi_scan_machine(). So I think my patch is still necessary unless we
-want to live with the warning message in all VMware guest.
+Nope, but it would be good to get Dave or Mark's ack (Dave owns this code 
+now).
 
--- 
-Li, Yan
+Jesse
