@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbYIYGLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbYIYGLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbYIYGLE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 02:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbYIYGJh
+	id S1755154AbYIYGLd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 02:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbYIYGKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 02:09:37 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38004 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754952AbYIYGJf (ORCPT
+	Thu, 25 Sep 2008 02:10:00 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40025 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753031AbYIYGJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 02:09:35 -0400
-Date: Thu, 25 Sep 2008 15:15:43 +0900
+	Thu, 25 Sep 2008 02:09:59 -0400
+Date: Thu, 25 Sep 2008 15:16:39 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
@@ -20,8 +20,8 @@ Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
        ryov@valinux.co.jp
-Subject: [PATCH 3/12] memcg make root cgroup unlimited.
-Message-Id: <20080925151543.ba307898.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH 4/12] memcg make page->mapping NULL before calling uncharge
+Message-Id: <20080925151639.5e2ddea4.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: Fujitsu
@@ -33,66 +33,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make root cgroup of memory resource controller to have no limit.
+This patch tries to make page->mapping to be NULL before
+mem_cgroup_uncharge_cache_page() is called.
 
-By this, users cannot set limit to root group. This is for making root cgroup
-as a kind of trash-can.
+"page->mapping == NULL" is a good check for "whether the page is still
+radix-tree or not".
+This patch also adds BUG_ON() to mem_cgroup_uncharge_cache_page();
 
-For accounting pages which has no owner, which are created by force_empty,
-we need some cgroup with no_limit. A patch for rewriting force_empty will
-will follow this one.
 
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
- Documentation/controllers/memory.txt |    4 ++++
- mm/memcontrol.c                      |    7 +++++++
- 2 files changed, 11 insertions(+)
+ mm/filemap.c    |    2 +-
+ mm/memcontrol.c |    1 +
+ mm/migrate.c    |   12 +++++++++---
+ 3 files changed, 11 insertions(+), 4 deletions(-)
 
+Index: mmotm-2.6.27-rc7+/mm/filemap.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/filemap.c
++++ mmotm-2.6.27-rc7+/mm/filemap.c
+@@ -116,12 +116,12 @@ void __remove_from_page_cache(struct pag
+ {
+ 	struct address_space *mapping = page->mapping;
+ 
+-	mem_cgroup_uncharge_cache_page(page);
+ 	radix_tree_delete(&mapping->page_tree, page->index);
+ 	page->mapping = NULL;
+ 	mapping->nrpages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	BUG_ON(page_mapped(page));
++	mem_cgroup_uncharge_cache_page(page);
+ 
+ 	/*
+ 	 * Some filesystems seem to re-dirty the page even after
 Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
 ===================================================================
 --- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
 +++ mmotm-2.6.27-rc7+/mm/memcontrol.c
-@@ -136,6 +136,9 @@ struct mem_cgroup {
- };
- static struct mem_cgroup init_mem_cgroup;
+@@ -737,6 +737,7 @@ void mem_cgroup_uncharge_page(struct pag
+ void mem_cgroup_uncharge_cache_page(struct page *page)
+ {
+ 	VM_BUG_ON(page_mapped(page));
++	VM_BUG_ON(page->mapping);
+ 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+ }
  
-+#define is_root_cgroup(cgrp)	((cgrp) == &init_mem_cgroup)
-+
-+
- /*
-  * We use the lower bit of the page->page_cgroup pointer as a bit spin
-  * lock.  We need to ensure that page->page_cgroup is at least two
-@@ -945,6 +948,10 @@ static int mem_cgroup_write(struct cgrou
- 
- 	switch (cft->private) {
- 	case RES_LIMIT:
-+		if (is_root_cgroup(memcg)) {
-+			ret = -EINVAL;
-+			break;
-+		}
- 		/* This function does all necessary parse...reuse it */
- 		ret = res_counter_memparse_write_strategy(buffer, &val);
- 		if (!ret)
-Index: mmotm-2.6.27-rc7+/Documentation/controllers/memory.txt
+Index: mmotm-2.6.27-rc7+/mm/migrate.c
 ===================================================================
---- mmotm-2.6.27-rc7+.orig/Documentation/controllers/memory.txt
-+++ mmotm-2.6.27-rc7+/Documentation/controllers/memory.txt
-@@ -121,6 +121,9 @@ The corresponding routines that remove a
- a page from Page Cache is used to decrement the accounting counters of the
- cgroup.
+--- mmotm-2.6.27-rc7+.orig/mm/migrate.c
++++ mmotm-2.6.27-rc7+/mm/migrate.c
+@@ -330,8 +330,6 @@ static int migrate_page_move_mapping(str
+ 	__inc_zone_page_state(newpage, NR_FILE_PAGES);
  
-+The root cgroup is not allowed to be set limit but usage is accounted.
-+For controlling usage of memory, you need to create a cgroup.
-+
- 2.3 Shared Page Accounting
+ 	spin_unlock_irq(&mapping->tree_lock);
+-	if (!PageSwapCache(newpage))
+-		mem_cgroup_uncharge_cache_page(page);
  
- Shared pages are accounted on the basis of the first touch approach. The
-@@ -172,6 +175,7 @@ We can alter the memory limit:
+ 	return 0;
+ }
+@@ -378,7 +376,15 @@ static void migrate_page_copy(struct pag
+ #endif
+ 	ClearPagePrivate(page);
+ 	set_page_private(page, 0);
+-	page->mapping = NULL;
++	/* page->mapping contains a flag for PageAnon() */
++	if (PageAnon(page)) {
++		/* This page is uncharged at try_to_unmap(). */
++		page->mapping = NULL;
++	} else {
++		/* Obsolete file cache should be uncharged */
++		page->mapping = NULL;
++		mem_cgroup_uncharge_cache_page(page);
++	}
  
- NOTE: We can use a suffix (k, K, m, M, g or G) to indicate values in kilo,
- mega or gigabytes.
-+Note: root cgroup is not able to be set limit.
- 
- # cat /cgroups/0/memory.limit_in_bytes
- 4194304
+ 	/*
+ 	 * If any waiters have accumulated on the new page then
 
