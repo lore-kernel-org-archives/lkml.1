@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbYIYIMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbYIYIOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753367AbYIYIMj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 04:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYIYIMV
+	id S1753268AbYIYIOt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 04:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbYIYIOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 04:12:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42826 "EHLO mx3.mail.elte.hu"
+	Thu, 25 Sep 2008 04:14:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33031 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750812AbYIYIMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 04:12:20 -0400
-Date: Thu, 25 Sep 2008 10:11:58 +0200
+	id S1752147AbYIYIOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 04:14:32 -0400
+Date: Thu, 25 Sep 2008 10:14:20 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] x86/pci: fix dmar_tbl early_ioremap leak v2
-Message-ID: <20080925081158.GA30349@elte.hu>
-References: <1222327705-22048-1-git-send-email-yhlu.kernel@gmail.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 1/4] x86: signal_32.c: introduce signr_convert()
+Message-ID: <20080925081420.GB30349@elte.hu>
+References: <48DAF315.7070700@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1222327705-22048-1-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <48DAF315.7070700@ct.jp.nec.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,21 +35,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+applied your patches to tip/x86/signal:
 
-> use early_acpi_os_unmap_memory
-> 
-> v2: move unmap_memory early...
-> 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> 
-> ---
->  drivers/pci/dmar.c |    9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
+4694d23: x86: signal_32.c: introduce macro ia32_setup_frame and ia32_setup_rt_frame
+455edbc: x86: signal: introduce helper macro is_ia32
+b94fd69: x86: signal_64.c: introduce helper function signr_convert()
+8d8c13b: x86: signal_32.c: introduce signr_convert()
 
-since this depends on other x2apic/sparseirq changes in -tip i've 
-applied it to tip/irq/sparseirq.
-
-Jesse, any objections?
+thanks! FYI, your other 13 x86 signal code unification commits and other 
+x86-signals enhancements passed testing just fine so far.
 
 	Ingo
