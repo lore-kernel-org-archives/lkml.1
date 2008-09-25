@@ -1,98 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbYIYMi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbYIYMjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbYIYMi3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 08:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYIYMiV
+	id S1755028AbYIYMjp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 08:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbYIYMjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 08:38:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48432 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752965AbYIYMiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 08:38:21 -0400
-Date: Thu, 25 Sep 2008 14:38:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Pekka Paalanen <pq@iki.fi>
-Subject: Re: [Patch -tip 1/3] Tracing/ftrace: Relay unhandled entry output
-Message-ID: <20080925123802.GA6900@elte.hu>
-References: <48DB81BA.2050204@gmail.com>
+	Thu, 25 Sep 2008 08:39:35 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:46413 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752286AbYIYMje (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 08:39:34 -0400
+Date: Thu, 25 Sep 2008 18:02:35 +0530
+From: Chirag Jog <chirag@linux.vnet.ibm.com>
+To: ghaskins@novell.com
+Cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [BUG][PPC64] BUG in 2.6.26.5-rt9 causing Hang
+Message-ID: <20080925123235.GA27916@linux.vnet.ibm.com>
+Reply-To: Chirag Jog <chirag@linux.vnet.ibm.com>
+Mail-Followup-To: ghaskins@novell.com,
+	linux-rt-users <linux-rt-users@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48DB81BA.2050204@gmail.com>
+Organization: IBM LTC
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Gregory,
+We see the following BUG followed by a hang on the latest kernel 2.6.26.5-rt9 on a Power6 blade (PPC64)
+It is easily recreated by running the async_handler or sbrk_mutex (realtime tests from ltp) tests.
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+login: cpu 0x2: Vector: 700 (Program Check) at [c0000000e8e875d0]
+    pc: c00000000005110c: .pick_next_pushable_task+0x54/0x9c
+    lr: c000000000059f50: .push_rt_task+0x44/0x2b4
+    sp: c0000000e8e87850
+   msr: 8000000000021032
+  current = 0xc0000000ea5bb2e0
+  paca    = 0xc000000000608700
+    pid   = 2811, comm = async_handler
+kernel BUG at kernel/sched_rt.c:1041! <---------------------
+enter ? for help
+[link register   ] c000000000059f50 .push_rt_task+0x44/0x2b4
+[c0000000e8e87850] c0000000e8e878f0 (unreliable)
+[c0000000e8e87900] c00000000005a1dc .push_rt_tasks+0x1c/0x38
+[c0000000e8e87980] c00000000005a21c .post_schedule_rt+0x24/0x44
+[c0000000e8e87a10] c000000000057cbc .finish_task_switch+0xd0/0x180
+[c0000000e8e87ab0] c0000000003b6e88 .__schedule+0x6e0/0x798
+[c0000000e8e87b90] c0000000003b7148 .schedule+0xec/0x11c
+[c0000000e8e87c10] c0000000003b7a40 .do_nanosleep+0x6c/0xcc
+[c0000000e8e87c90] c000000000080738 .hrtimer_nanosleep+0x7c/0x100
+[c0000000e8e87d90] c000000000080830 .sys_nanosleep+0x74/0x94
+[c0000000e8e87e30] c0000000000086ac syscall_exit+0x0/0x40
+--- Exception: c00 (System Call) at 0000008026449844
+SP (400014185f0) is in userspace
 
-> Hi!
-> 
-> I tried to figure out the origin of the bug reported by Pekka Paalanen
-> about the broken pipe:
-> http://kerneltrap.org/mailarchive/linux-kernel/2008/9/15/3305224
-> 
-> When I add a trace_mark with the boot tracer, I had this same problem
-> but this time it was easy to reproduce.
-> 
-> When it calls a tracer's print_line callback, the print_trace_line function 
-> in trace.c returns whithout verifying if it could handle the entry properly.
-> And actually the seq could be empty.
-> 
-> For example the boot_tracer don't handle TRACE_PRINT. Nevertheless it
-> wants them to be printed as a default way.
-> 
-> So print_trace_line function should relay on the other functions which could handle
-> an output if one of them fail.
-> 
-> Reported-by: Pekka Paalanen <pq@iki.fi>
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-ah, nice! Applied to tip/tracing/ftrace.
+This is generated by the BUG_ON lines in the pick_next_pushable function
+introduced by the sched-only-push-once-per-queue.patch .
 
-Small nit: could you please send another patch on top of this patch that 
-cleans up the checkpatch failures below?
+The -rt kernel prior to this patch didnot give such BUGes.
 
-checkpatch usage: you can run it like this:
+All this was tried with
+CONFIG_GROUP_SCHED=N
+CONFIG_RT_GROUP_SCHED=N
 
-  scripts/checkpatch.pl --file kernel/trace/*.c
 
-and/or you can run it over patches as well before you submit them.
+Setting the options
+CONFIG_GROUP_SCHED=y
+CONFIG_RT_GROUP_SCHED=Y,
+seems to solve the problem.
 
-	Ingo
 
-------------->
-ERROR: do not use assignment in if condition
-#43: FILE: kernel/trace/trace.c:1910:
-+		if ((ret = iter->trace->print_line(iter)))
 
-ERROR: do not use assignment in if condition
-#48: FILE: kernel/trace/trace.c:1914:
-+		if ((ret = print_bin_fmt(iter)))
-
-ERROR: do not use assignment in if condition
-#53: FILE: kernel/trace/trace.c:1918:
-+		if ((ret = print_hex_fmt(iter)))
-
-ERROR: do not use assignment in if condition
-#58: FILE: kernel/trace/trace.c:1922:
-+		if ((ret = print_raw_fmt(iter)))
-
-ERROR: do not use assignment in if condition
-#63: FILE: kernel/trace/trace.c:1926:
-+		if ((ret = print_lat_fmt(iter, iter->idx, iter->cpu)))
-
-total: 5 errors, 0 warnings, 0 checks, 32 lines checked
-
+-- 
+-Thanks,Chirag
