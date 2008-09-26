@@ -1,124 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbYIZSYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753607AbYIZSZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753231AbYIZSYi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 14:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbYIZSYa
+	id S1753607AbYIZSZT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 14:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbYIZSZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 14:24:30 -0400
-Received: from outbound-mail-135.bluehost.com ([67.222.39.25]:34766 "HELO
-	outbound-mail-135.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751922AbYIZSY3 (ORCPT
+	Fri, 26 Sep 2008 14:25:06 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:15498 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752594AbYIZSZD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 14:24:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id:X-Identified-User;
-	b=Nzmd/o5Xg94Vmo1FQJFd3dVCnpu9qkXmgHZwmRSLUC5HzeURu1SYZ/52+2jjEFvx6XIpBskMiu+fwUdjz1W5BLZBWOW3rsRuF1j/apskdBgT1/66XYMuNFeiMA6anXRd;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: e1000e NVM corruption issue status
-Date: Fri, 26 Sep 2008 11:23:49 -0700
+	Fri, 26 Sep 2008 14:25:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=cakj/4KbW/Qfc/qD+Q/njUs/+SLPyNxEiO5D66U7xcYQ69n8zS1myy5JrEN4gMSTNg
+         vF5CzfSTy2ecxaz9UZBmwkLRWmxohZfpLXzgzmW+1Vgmwd+/5xbZ7DPz1D7R3k76rWBH
+         UV1krs75rAzEl+g7fYU9b7KuDMmvihPLmcr+o=
+To: rt2400-devel@lists.sourceforge.net
+Subject: Re: [Rt2400-devel] Bug in rt2x00 rt73usb driver in latest git kernel
+Date: Fri, 26 Sep 2008 20:24:57 +0200
 User-Agent: KMail/1.9.9
-Cc: Jiri Kosina <jkosina@suse.cz>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, agospoda@redhat.com,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
-       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com
-References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com> <48DCCC5F.8040609@linux.intel.com> <200809261052.38966.jbarnes@virtuousgeek.org>
-In-Reply-To: <200809261052.38966.jbarnes@virtuousgeek.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Iwo Mergler <iwo@call-direct.com.au>,
+       Paul Eddington <eddingtonpaul@googlemail.com>,
+       linux-kernel@vger.kernel.org
+References: <762793250809241102n61ea8f00kca8138bc3c8df2e6@mail.gmail.com> <48DC734B.8070805@call-direct.com.au> <200809261452.28482.rjw@sisk.pl>
+In-Reply-To: <200809261452.28482.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_4iS3I6Q9Zt0E4sD"
-Message-Id: <200809261123.52198.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <linux-kernel.vger.kernel.org>
-X-Mailing-List: linux-kernel@vger.kernel.org
-
---Boundary-00=_4iS3I6Q9Zt0E4sD
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200809262024.57874.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, September 26, 2008 10:52 am Jesse Barnes wrote:
-> On Friday, September 26, 2008 4:49 am Arjan van de Ven wrote:
-> > Jiri Kosina wrote:
-> > > On Thu, 25 Sep 2008, Brandeburg, Jesse wrote:
-> > >> this is the current set of patches that I have to help us debug
-> > >> and/or fix e1000e issues found during this debug effort for
-> > >> the corrupt NVM.  the "drop stats lock" - "reset swflag" patches allow
-> > >> Thomas' patch for a mutex in the SWFLAG acquire function to run
-> > >> without any errors.
-> > >
-> > > Thanks. Also Jesse Barnes' patch shouldn't be forgotten, could you
-> > > please add it to that lineup?
-> > >
-> > > 	http://marc.info/?l=linux-kernel&m=122237193628087&w=2
-> >
-> > can we (for now) also stick a WARN_ON() into that failure path? that way
-> > we can at least catch if/when this happens more visibly..... if it
-> > happens consistently in say the new distros we can be more confident that
-> > we're down the right path in diagnosing the issue.
->
-> I'm spinning a new one now with some debug output, stay tuned (just gotta
-> boot my test box).
+On Friday 26 September 2008, Rafael J. Wysocki wrote:
+> On Friday, 26 of September 2008, Iwo Mergler wrote:
+> > Paul Eddington wrote:
+> > > Hi,
+> > > 
+> > > While running the latest git kernel (linus' tree) and using a usb wifi
+> > > card, I got this error in dmesg:;
+> > > 
+> > > phy2 -> rt2x00queue_write_tx_frame: Error - Arrived at non-free entry
+> > > in the non-full queue 2.
+> > > Please file bug report to http://rt2x00.serialmonkey.com.
+> > > 
+> > > This is not reproducible easily, but it has occurred on two occasions
+> > > both while connected to a WEP encrypted AP with a 40-bit key and
+> > > performing many file samba transfers at full speed 54mbits.
+> > > 
+> > > I tried to report the bug there but was unable to register and edit
+> > > the bug reports wiki page.
+> > > If there is any more information or help required to debug this,
+> > > please let me know.
+> > > 
+> > > Regards,
+> > > Paul
+> > > --
+> > 
+> > Hi Paul,
+> > 
+> > the rt2x00 drivers are currently a very fast moving target. You may want
+> > to experiment with the rt2x00 kernel tree instead - it gets the patches
+> > (and the bugs) earlier. ;-)
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/ivd/rt2x00.git;a=summary
+> > 
+> > I added the rt2x00 mailing list to CC.
+> 
+> Well, according to the information I've received from Paul this particular
+> problem is a regression from 2.6.26, so it's been added to the list of recent
+> regressions.
 
-Ok here's an updated one.  Jesse (Br) can you add it to your list?  If the X 
-driver really is mapping too much this should catch it, as long as it goes 
-through sysfs.
+Seriously, this error message is the most annoying rt2x00 error message _ever_.
+It should have been fixed 3 kernels ago, but it keeps popping up again and again.
 
-Thanks,
-Jesse
+Paul, what is the git commit id with which you encountered this bug?
 
---Boundary-00=_4iS3I6Q9Zt0E4sD
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="pci-sysfs-mmap-range-check-2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="pci-sysfs-mmap-range-check-2.patch"
-
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 9c71858..11523a3 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -16,6 +16,7 @@
- 
- 
- #include <linux/kernel.h>
-+#include <linux/sched.h>
- #include <linux/pci.h>
- #include <linux/stat.h>
- #include <linux/topology.h>
-@@ -502,6 +503,8 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
- 	struct resource *res = (struct resource *)attr->private;
- 	enum pci_mmap_state mmap_type;
- 	resource_size_t start, end;
-+	unsigned long map_len = vma->vm_end - vma->vm_start;
-+	unsigned long map_offset = vma->vm_pgoff << PAGE_SHIFT;
- 	int i;
- 
- 	for (i = 0; i < PCI_ROM_RESOURCE; i++)
-@@ -510,6 +513,18 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
- 	if (i >= PCI_ROM_RESOURCE)
- 		return -ENODEV;
- 
-+	/*
-+	 * Make sure the range the user is trying to map falls within
-+	 * the resource
-+	 */
-+	if (map_offset + map_len > pci_resource_len(pdev, i)) {
-+		printk(KERN_ERR "process \"%s\" tried to map 0x%08lx-0x%08lx on BAR %d (size 0x%08lx)\n",
-+		       current->comm, map_offset, map_offset + map_len, i,
-+		       (unsigned long)pci_resource_len(pdev, i));
-+		WARN_ON(1);
-+		return -EINVAL;
-+	}
-+
- 	/* pci_mmap_page_range() expects the same kind of entry as coming
- 	 * from /proc/bus/pci/ which is a "user visible" value. If this is
- 	 * different from the resource itself, arch will do necessary fixup.
-
---Boundary-00=_4iS3I6Q9Zt0E4sD--
+Ivo
