@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYIZIlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbYIZIoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbYIZIlS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 04:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbYIZIlH
+	id S1754757AbYIZIoY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 04:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYIZIoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 04:41:07 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:40669 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751843AbYIZIlE (ORCPT
+	Fri, 26 Sep 2008 04:44:16 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:38973 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751818AbYIZIoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 04:41:04 -0400
-Message-ID: <48DCA01C.9020701@linux.vnet.ibm.com>
-Date: Fri, 26 Sep 2008 14:11:00 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
+	Fri, 26 Sep 2008 04:44:14 -0400
+Subject: Re: [patch 1/6] kmsg: tagged kernel messages.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org, Greg KH <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>, Joe Perches <joe@perches.com>,
+       Tim Hockin <thockin@hockin.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH 3/12] memcg make root cgroup unlimited.
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com> <20080925151543.ba307898.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080925151543.ba307898.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>, Jan Blunck <jblunck@suse.de>,
+       Rick Troth <rmt@casita.net>, Utz Bacher <utz.bacher@de.ibm.com>
+In-Reply-To: <200809261448.05391.rusty@rustcorp.com.au>
+References: <20080925162827.818261893@de.ibm.com>
+	 <20080925163019.210654702@de.ibm.com>
+	 <200809261448.05391.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Fri, 26 Sep 2008 10:29:34 +0200
+Message-Id: <1222417774.22679.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Make root cgroup of memory resource controller to have no limit.
+On Fri, 2008-09-26 at 14:48 +1000, Rusty Russell wrote:
+> On Friday 26 September 2008 02:28:28 Martin Schwidefsky wrote:
+> > +#define kmsg_emerg(fmt, ...) \
+> > +	kmsg_printk_hash(KERN_EMERG, fmt, ##__VA_ARGS__)
+> > +#define kmsg_alert(fmt, ...) \
+> > +	kmsg_printk_hash(KERN_ALERT, fmt, ##__VA_ARGS__)
+> > +#define kmsg_crit(fmt, ...) \
+> > +	kmsg_printk_hash(KERN_CRIT, fmt, ##__VA_ARGS__)
+> > +#define kmsg_err(fmt, ...) \
+> > +	kmsg_printk_hash(KERN_ERR, fmt, ##__VA_ARGS__)
+> > +#define kmsg_warn(fmt, ...) \
+> > +	kmsg_printk_hash(KERN_WARNING, fmt, ##__VA_ARGS__)
+> > +#define kmsg_notice(fmt, ...) \
+> > +	kmsg_printk_hash(KERN_NOTICE, fmt, ##__VA_ARGS__)
+> > +#define kmsg_info(fmt, ...) \
+> > +	kmsg_printk_hash(KERN_INFO, fmt, ##__VA_ARGS__)
 > 
-> By this, users cannot set limit to root group. This is for making root cgroup
-> as a kind of trash-can.
-> 
-> For accounting pages which has no owner, which are created by force_empty,
-> we need some cgroup with no_limit. A patch for rewriting force_empty will
-> will follow this one.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Now I'm going to be an asshole and ask you to define when each of these levels 
+> should be used.  Do we need all of them?
 
-This is an ABI change (although not too many people might be using it, I wonder
-if we should add memory.features (a set of flags and let users enable them and
-provide good defaults), like sched features.
+These are just the regular printk levels. If your old printk used a
+particular level, have the kmsg_xxx printk use the same level. The
+question about message severity and message documenation are
+independent, aren't they?
 
 -- 
-	Balbir
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
