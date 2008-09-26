@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbYIZWJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbYIZWP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754106AbYIZWJv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 18:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbYIZWJn
+	id S1753733AbYIZWP0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 18:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYIZWPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 18:09:43 -0400
-Received: from bu3sch.de ([62.75.166.246]:40734 "EHLO vs166246.vserver.de"
+	Fri, 26 Sep 2008 18:15:15 -0400
+Received: from lirone.symas.net ([64.71.152.235]:43077 "EHLO lirone.symas.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbYIZWJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 18:09:42 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: Release of Atheros 802.11abg HAL under the ISC
-Date: Sat, 27 Sep 2008 00:09:18 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       ath5k-devel@venema.h4ckr.net, linux-kernel@vger.kernel.org
-References: <20080926215701.GC5972@tesla>
-In-Reply-To: <20080926215701.GC5972@tesla>
+	id S1750912AbYIZWPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 18:15:14 -0400
+X-Greylist: delayed 2053 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Sep 2008 18:15:14 EDT
+Message-ID: <48DD56E5.2080705@symas.com>
+Date: Fri, 26 Sep 2008 14:40:53 -0700
+From: Howard Chu <hyc@symas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; rv:1.9.1b1pre) Gecko/20080917130338 SeaMonkey/2.0a1pre
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200809270009.19059.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: mjg@redhat.com, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: hp-wmi on HP dv5z
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 September 2008 23:57:01 Luis R. Rodriguez wrote:
-> As part of our commitment to help support all of our Atheros devices
-> under Linux we'd like to announce the release of our Atheros HAL for
-> our 802.11abg chipsets under the ISC license.
-> 
-> You can find it here:
-> 
-> http://www.kernel.org/pub/linux/kernel/people/mcgrof/legacy-hal.tar.bz2
-> 
-> This can be used as a source of documentation to help ath5k move
-> forward to support our 802.11abg chipsets as best as possible in
-> the Linux kernel. We look forward to keep working strongly with the
-> community on advancing support of all our Atheros chipsets under Linux.
+Hi, just got a new HP dv5z laptop and trying to make sense of how everything 
+fits together. The wifi button on this laptop doesn't appear to generate any 
+keyboard event. I loaded the hp-wmi module, and that allows me to toggle the 
+wlan and bluetooth in software, by writing to 
+/sys/class/rfkill/rfkill[01]/state. But pressing the button still does 
+nothing. What am I missing?
 
-Great news. Thanks a lot for your amazing work at atheros, Luis!
+Also, disabling the wifi the first time turns the wifi LED from blue (active) 
+to orange (inactive) which is what I'd expect, but re-enabling it leaves the 
+LED orange. Again, what am I missing?
 
-I hope that other companies *cough* reconsider moving towards this
-direction, too.
-
+Without the hp-wmi module loaded, FN+F7 and FN+F8 would control the display 
+backlight brightness. With it loaded, these keys do nothing. Seems there's 
+some conflict between hp-wmi and ACPI. Any suggestions?
 -- 
-Greetings Michael.
+   -- Howard Chu
+   CTO, Symas Corp.           http://www.symas.com
+   Director, Highland Sun     http://highlandsun.com/hyc/
+   Chief Architect, OpenLDAP  http://www.openldap.org/project/
