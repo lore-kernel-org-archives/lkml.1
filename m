@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYIZMfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbYIZMjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYIZMfz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 08:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYIZMfn
+	id S1753088AbYIZMjU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 08:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYIZMjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 08:35:43 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:36150 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751890AbYIZMfm (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 08:35:42 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: Ric Wheeler <rwheeler@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-fsdevel@vger.kernel.org,
-       dm-devel@redhat.com, viro@ZenIV.linux.org.uk,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, axboe@kernel.dk,
-       mtk.manpages@googlemail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] Add timeout feature
-In-Reply-To: Your message of "Fri, 26 Sep 2008 17:52:35 +0900."
-             <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp>
-From: Valdis.Kletnieks@vt.edu
-References: <20080908205337t-sato@mail.jp.nec.com> <20080908171119.GB22521@infradead.org> <48DBFD42.6030307@redhat.com>
-            <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1222432525_7097P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Fri, 26 Sep 2008 08:39:12 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35876 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750894AbYIZMjM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 08:39:12 -0400
+Message-Id: <1222432751.13247.1276111293@webmail.messagingengine.com>
+X-Sasl-Enc: mVeGCTnFHIRK5mHaGyM/dJWa6Q99I5MIwu6LYK2JfWbq 1222432751
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Ingo Molnar" <mingo@elte.hu>, "lkml" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Sep 2008 08:35:25 -0400
-Message-ID: <35472.1222432525@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <1222430588-29072-1-git-send-email-heukelum@fastmail.fm>
+ <1222430588-29072-2-git-send-email-heukelum@fastmail.fm>
+Subject: Re: [PATCH 1/7] traps: x86_64: add TRACE_IRQS_OFF in error_entry
+In-Reply-To: <1222430588-29072-2-git-send-email-heukelum@fastmail.fm>
+Date: Fri, 26 Sep 2008 14:39:11 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1222432525_7097P
-Content-Type: text/plain; charset=us-ascii
 
-On Fri, 26 Sep 2008 17:52:35 +0900, Takashi Sato said:
+On Fri, 26 Sep 2008 14:03:02 +0200, "Alexander van Heukelum"
+<heukelum@fastmail.fm> said:
+> Add TRACE_IRQS_OFF just before entering the C code.
+> 
+> All exceptions are taken via interrupt gates. If irq tracing is
+> enabled, it should be notified as soon as possible. Interrupts
+> are only (conditionally) re-enabled in C code.
+> 
+> Signed-off-by: Alexander van Heukelum <fastmail.fm>
 
-(Sorry, am reading the threads out of temporal sequence....)
+That should be: <heukelum@fastmail.fm> ---^^^
+Same for patch 2/7. How did that happen?
 
-> I think that your concern is that the freezer cannot recognize the occurrence
-> of a timeout and it continues the backup process and the backup data is
-> corrupted finally.
-> If the freezer can recognize it by the unfreeze ioctl's errono, will your concern
->  be solved?
-> If so, I will implement it.
+> ---
+>  arch/x86/kernel/entry_64.S |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+> index 89434d4..78fa552 100644
+> --- a/arch/x86/kernel/entry_64.S
+> +++ b/arch/x86/kernel/entry_64.S
+> @@ -1058,7 +1058,8 @@ KPROBE_ENTRY(error_entry)
+>  	je  error_kernelspace
+>  error_swapgs:	
+>  	SWAPGS
+> -error_sti:	
+> +error_sti:
+> +	TRACE_IRQS_OFF
+>  	movq %rdi,RDI(%rsp) 	
+>  	CFI_REL_OFFSET	rdi,RDI
+>  	movq %rsp,%rdi
+> -- 
+> 1.5.4.3
+> 
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
-That would also address my concerns about merging patches 8 and 10 of the
-other patch series (because patch 10 wouldn't be needed then)...
+-- 
+http://www.fastmail.fm - Or how I learned to stop worrying and
+                          love email again
 
-
---==_Exmh_1222432525_7097P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFI3NcNcC3lWbTT17ARAlfSAJ9koC6IkAWpTwgQQzzxs0CHDfWf6ACgzm8C
-gDUF+0x2+mjqNZBumGOhqOA=
-=x5uP
------END PGP SIGNATURE-----
-
---==_Exmh_1222432525_7097P--
