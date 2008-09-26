@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbYIZUCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbYIZUCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753894AbYIZUCU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 16:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYIZUCI
+	id S1754227AbYIZUCo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 16:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYIZUCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 16:02:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35185 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752332AbYIZUCH (ORCPT
+	Fri, 26 Sep 2008 16:02:34 -0400
+Received: from emh01.mail.saunalahti.fi ([62.142.5.107]:44229 "EHLO
+	emh01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753084AbYIZUCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 16:02:07 -0400
-Date: Fri, 26 Sep 2008 15:02:06 -0500
-From: Russ Anderson <rja@sgi.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Huang Ying <ying.huang@intel.com>,
-       Jack Steiner <steiner@sgi.com>, Russ Anderson <rja@sgi.com>
-Subject: [PATCH 1/4] x86: Add UV EFI table entry v2
-Message-ID: <20080926200206.GB138671@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Fri, 26 Sep 2008 16:02:33 -0400
+X-Greylist: delayed 422 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Sep 2008 16:02:32 EDT
+Date: Fri, 26 Sep 2008 22:55:24 +0300 (EEST)
+From: Kai Makisara <Kai.Makisara@kolumbus.fi>
+X-X-Sender: makisara@kai.makisara.local
+To: Lin Tan <tammy000@gmail.com>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH git latest] drivers/scsi: fixing wrong comment before
+ new_buffer_tape()
+In-Reply-To: <20080926170624.GA19223@carmen.cs.uiuc.edu>
+Message-ID: <alpine.LNX.1.10.0809262234520.25887@kai.makisara.local>
+References: <20080925174948.GA14180@carmen.cs.uiuc.edu> <20080926111300.1dd34009@lxorguk.ukuu.org.uk> <7fcc02550809260905oa17880fi80c94eaacb33dba3@mail.gmail.com> <20080926170937.2983fc29@lxorguk.ukuu.org.uk> <1222446056.3971.19.camel@localhost.localdomain>
+ <20080926170624.GA19223@carmen.cs.uiuc.edu>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Antivirus: VAMS
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 1/4] Add UV EFI table entry
+I am talking only about st.c but most of this probably applies also to 
+osst.c.
 
-Look for a UV entry in the EFI tables.
+On Fri, 26 Sep 2008, Lin Tan wrote:
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
-Signed-off-by: Paul Jackson <pj@sgi.com>
+> > > > > Looks true to me for the current versions of the code. In fact it is only
+> > > > > ever called from the initialisation function that I can see so chunks of
+> > > > > the code could simply go away as well as bits of the comment. Ditto the
 
----
- arch/x86/kernel/efi.c |    4 ++++
- include/linux/efi.h   |    4 ++++
- 2 files changed, 8 insertions(+)
+It is true that the function is currently called only from initialisation. 
+It was called from other contexts earlier and the extra code is leftover 
+from that time.
 
-Index: linux/arch/x86/kernel/efi.c
-===================================================================
---- linux.orig/arch/x86/kernel/efi.c	2008-09-26 13:54:11.000000000 -0500
-+++ linux/arch/x86/kernel/efi.c	2008-09-26 13:54:18.000000000 -0500
-@@ -367,6 +367,10 @@ void __init efi_init(void)
- 			efi.smbios = config_tables[i].table;
- 			printk(" SMBIOS=0x%lx ", config_tables[i].table);
- 		} else if (!efi_guidcmp(config_tables[i].guid,
-+					UV_SYSTEM_TABLE_GUID)) {
-+			efi.uv_systab = config_tables[i].table;
-+			printk(" UVsystab=0x%lx ", config_tables[i].table);
-+		} else if (!efi_guidcmp(config_tables[i].guid,
- 					HCDP_TABLE_GUID)) {
- 			efi.hcdp = config_tables[i].table;
- 			printk(" HCDP=0x%lx ", config_tables[i].table);
-Index: linux/include/linux/efi.h
-===================================================================
---- linux.orig/include/linux/efi.h	2008-09-26 13:54:11.000000000 -0500
-+++ linux/include/linux/efi.h	2008-09-26 13:54:18.000000000 -0500
-@@ -208,6 +208,9 @@ typedef efi_status_t efi_set_virtual_add
- #define EFI_GLOBAL_VARIABLE_GUID \
-     EFI_GUID(  0x8be4df61, 0x93ca, 0x11d2, 0xaa, 0x0d, 0x00, 0xe0, 0x98, 0x03, 0x2b, 0x8c )
- 
-+#define UV_SYSTEM_TABLE_GUID \
-+    EFI_GUID(  0x3b13a7d4, 0x633e, 0x11dd, 0x93, 0xec, 0xda, 0x25, 0x56, 0xd8, 0x95, 0x93 )
-+
- typedef struct {
- 	efi_guid_t guid;
- 	unsigned long table;
-@@ -255,6 +258,7 @@ extern struct efi {
- 	unsigned long boot_info;	/* boot info table */
- 	unsigned long hcdp;		/* HCDP table */
- 	unsigned long uga;		/* UGA table */
-+	unsigned long uv_systab;	/* UV system table */
- 	efi_get_time_t *get_time;
- 	efi_set_time_t *set_time;
- 	efi_get_wakeup_time_t *get_wakeup_time;
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+> > > > > one in drivers/scsi/st.c
+> > > > >
+> > > > > Acked-by: Alan Cox <alan@redhat.com>
+> > > > >
+> > > > 
+> > > > I am sorry I didn't quite understand. You mean it is true that caller
+> > > > must hold os_scsi_tapes_lock?
+> > > 
+> > > Sorry - I mean what you claim is true - that the comment is incorrect.
+> > 
+> > So, I think I'm missing a piece of this:  There's no patch in this
+> > thread (I presume it's lurking somewhere on lkml).  Could someone repost
+> > the proposed patch and copy the tape maintainer: Kai Makisara
+> > <Kai.Makisara@kolumbus.fi> to get his input?
+> > 
+I saw the patch but my mail client does not include attachments as text in 
+reply ;-(
+
+Anyway, the comment is there because new_tape_buffer() may sleep and 
+st_dev_arr_lock is a spinlock. I have been under the impression that code 
+inside a spinlock must not sleep.
+
+When called from initialisation, new_tape_buffer() _currently_ used 
+GFP_ATOMIC. I am not sure that this is necessary but as long as I don't 
+know, I don't want to change it. The comment protects callers even if 
+someone knows that it is safe to use GFP_KERNEL from initialisation.
+
+I don't see why new_tape_buffer() needs to be inside the lock. It just 
+allocates an initialises a structure.
+
+If someone wants to remove the comment from st.c, I don't mind. But please 
+make sure that what you write to the commit is correct.
+
+Kai
+
