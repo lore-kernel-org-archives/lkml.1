@@ -1,102 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbYIZCMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbYIZCMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755069AbYIZCMK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYIZCLm
+	id S1755059AbYIZCMc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYIZCLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:11:42 -0400
-Received: from mga02.intel.com ([134.134.136.20]:20386 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755256AbYIZCLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:11:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,310,1220252400"; 
-   d="scan'208";a="340664111"
-Date: Thu, 25 Sep 2008 19:11:40 -0700 (Pacific Daylight Time)
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
-       agospoda@redhat.com, "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
-       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com
-Subject: Re: e1000e NVM corruption issue status
-In-Reply-To: <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com>
-Message-ID: <Pine.WNT.4.63.0809251911140.1736@jbrandeb-desk.amr.corp.intel.com>
-References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com>
- <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com>
- <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com>
-ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-X-X-Sender: jesse.brandeburg@intel.com@imap.glb.intel.com
+	Thu, 25 Sep 2008 22:11:45 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63788 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755279AbYIZCLo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 22:11:44 -0400
+Date: Thu, 25 Sep 2008 22:11:39 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Masami Hiramatsu <mhiramat@redhat.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH v4] Unified trace buffer
+In-Reply-To: <48DC406D.1050508@redhat.com>
+Message-ID: <alpine.DEB.1.10.0809252206260.8454@gandalf.stny.rr.com>
+References: <20080925185154.230259579@goodmis.org> <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com> <48DC406D.1050508@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-e1000e: debug contention on NVM SWFLAG
 
-From: Thomas Gleixner <tglx@linutronix.de>
+On Thu, 25 Sep 2008, Masami Hiramatsu wrote:
 
-This patch adds a mutex to the e1000e driver that would help
-catch any collisions of two e1000e threads accessing hardware
-at the same time.
+> Hi Steven,
+> 
+> Steven Rostedt wrote:
+> > This version has been cleaned up a bit. I've been running it as
+> > a back end to ftrace, and it has been handling pretty well.
+> 
+> Thank you for your great work.
+> It seems good to me(especially, encapsulating events :)).
 
-description and patch updated by Jesse
+Thanks!
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
+> 
+> I have one request of enhancement.
+> 
+> > +static struct ring_buffer_per_cpu *
+> > +ring_buffer_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
+> > +{
+> [...]
+> > +	cpu_buffer->pages = kzalloc_node(ALIGN(sizeof(void *) * pages,
+> > +					       cache_line_size()), GFP_KERNEL,
+> > +					 cpu_to_node(cpu));
+> 
+> Here, you are using a slab object for page managing array,
+> the largest object size is 128KB(x86-64), so it can contain
+> 16K pages = 64MB.
+> 
+> As I had improved relayfs, in some rare case(on 64bit arch),
+> we'd like to use larger buffer than 64MB.
+> 
+> http://sourceware.org/ml/systemtap/2008-q2/msg00103.html
+> 
+> So, I think similar hack can be applicable.
+> 
+> Would it be acceptable for the next version?
 
- drivers/net/e1000e/ich8lan.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
+I would like to avoid using vmalloc as much as possible, but I do see the 
+limitation here. Here's my compromise.
 
-diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
-index f1a6e55..2b1aa2a 100644
---- a/drivers/net/e1000e/ich8lan.c
-+++ b/drivers/net/e1000e/ich8lan.c
-@@ -382,6 +382,9 @@ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
- 	return 0;
- }
- 
-+static DEFINE_MUTEX(nvm_mutex);
-+static pid_t nvm_owner = -1;
-+
- /**
-  *  e1000_acquire_swflag_ich8lan - Acquire software control flag
-  *  @hw: pointer to the HW structure
-@@ -395,6 +398,15 @@ static s32 e1000_acquire_swflag_ich8lan(struct e1000_hw *hw)
- 	u32 extcnf_ctrl;
- 	u32 timeout = PHY_CFG_TIMEOUT;
- 
-+	WARN_ON(preempt_count());
-+
-+	if (!mutex_trylock(&nvm_mutex)) {
-+		WARN(1, KERN_ERR "e1000e mutex contention. Owned by pid %d\n",
-+		     nvm_owner);
-+		mutex_lock(&nvm_mutex);
-+	}
-+	nvm_owner = current->pid;
-+
- 	while (timeout) {
- 		extcnf_ctrl = er32(EXTCNF_CTRL);
- 		extcnf_ctrl |= E1000_EXTCNF_CTRL_SWFLAG;
-@@ -409,6 +421,8 @@ static s32 e1000_acquire_swflag_ich8lan(struct e1000_hw *hw)
- 
- 	if (!timeout) {
- 		hw_dbg(hw, "FW or HW has locked the resource for too long.\n");
-+		nvm_owner = -1;
-+		mutex_unlock(&nvm_mutex);
- 		return -E1000_ERR_CONFIG;
- 	}
- 
-@@ -430,6 +444,9 @@ static void e1000_release_swflag_ich8lan(struct e1000_hw *hw)
- 	extcnf_ctrl = er32(EXTCNF_CTRL);
- 	extcnf_ctrl &= ~E1000_EXTCNF_CTRL_SWFLAG;
- 	ew32(EXTCNF_CTRL, extcnf_ctrl);
-+
-+	nvm_owner = -1;
-+	mutex_unlock(&nvm_mutex);
- }
- 
- /**
+Instead of using vmalloc if the page array is greater than one page, 
+how about using vmalloc if the page array is greater than 
+KMALLOC_MAX_SIZE?
+
+This would let us keep the vmap area free unless we have no choice.
+
+-- Steve
+
