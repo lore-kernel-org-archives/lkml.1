@@ -1,114 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbYIZBRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYIZBS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbYIZBRm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 21:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYIZBRe
+	id S1754224AbYIZBS2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 21:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYIZBSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 21:17:34 -0400
-Received: from gw.goop.org ([64.81.55.164]:56089 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbYIZBRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 21:17:33 -0400
-Message-ID: <48DC382A.8000407@goop.org>
-Date: Thu, 25 Sep 2008 18:17:30 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Bligh <mbligh@google.com>, Peter Zijlstra <peterz@infradead.org>,
-       Martin Bligh <mbligh@mbligh.org>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-References: <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org> <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org> <48DBFC7D.4050208@goop.org> <alpine.LFD.1.10.0809251448340.3265@nehalem.linux-foundation.org> <48DC1338.6050107@goop.org> <20080925225558.GA5768@elte.hu>
-In-Reply-To: <20080925225558.GA5768@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Sep 2008 21:18:20 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:47329 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbYIZBST (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 21:18:19 -0400
+Date: Fri, 26 Sep 2008 10:00:22 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 9/12] memcg allocate all page_cgroup at boot
+Message-Id: <20080926100022.8bfb8d4d.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> hm, i'm not sure you've thought through this delta record idea.
->
-> Take a system that goes idle thousands of times a second. (it's easy - 
-> just some networking workload)
->
-> Now take a tracer that just wants to emit a trace entry every now and 
-> then. Once or twice a second or so.
->
-> Note that suddenly you have thousands of totally artificial 'delta' time 
-> records between two real events, and have to post-process all your way 
-> up between these events to get to the real timeline.
->
-> ... it is totally impractical and costly.
->   
+On Thu, 25 Sep 2008 15:32:06 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> Allocate all page_cgroup at boot and remove page_cgroup poitner
+> from struct page. This patch adds an interface as
+> 
+>  struct page_cgroup *lookup_page_cgroup(struct page*)
+> 
+> All FLATMEM/DISCONTIGMEM/SPARSEMEM  and MEMORY_HOTPLUG is supported.
+> 
+> Remove page_cgroup pointer reduces the amount of memory by
+>  - 4 bytes per PAGE_SIZE.
+>  - 8 bytes per PAGE_SIZE
+> if memory controller is disabled. (even if configured.)
+> meta data usage of this is no problem in FLATMEM/DISCONTIGMEM.
+> On SPARSEMEM, this makes mem_section[] size twice.
+> 
+> On usual 8GB x86-32 server, this saves 8MB of NORMAL_ZONE memory.
+> On my x86-64 server with 48GB of memory, this saves 96MB of memory.
+> (and uses xx kbytes for mem_section.)
+> I think this reduction makes sense.
+> 
+> By pre-allocation, kmalloc/kfree in charge/uncharge are removed. 
+> This means
+>   - we're not necessary to be afraid of kmalloc faiulre.
+>     (this can happen because of gfp_mask type.)
+>   - we can avoid calling kmalloc/kfree.
+>   - we can avoid allocating tons of small objects which can be fragmented.
+>   - we can know what amount of memory will be used for this extra-lru handling.
+> 
+> I added printk message as
+> 
+> 	"allocated %ld bytes of page_cgroup"
+>         "please try cgroup_disable=memory option if you don't want"
+> 
+> maybe enough informative for users.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+>  include/linux/memcontrol.h  |   11 -
+>  include/linux/mm_types.h    |    4 
+>  include/linux/mmzone.h      |    9 +
+>  include/linux/page_cgroup.h |   90 +++++++++++++++
+>  mm/Makefile                 |    2 
+>  mm/memcontrol.c             |  258 ++++++++++++--------------------------------
+>  mm/page_alloc.c             |   12 --
+>  mm/page_cgroup.c            |  253 +++++++++++++++++++++++++++++++++++++++++++
+>  8 files changed, 431 insertions(+), 208 deletions(-)
+> 
+> Index: mmotm-2.6.27-rc7+/mm/page_cgroup.c
+> ===================================================================
+> --- /dev/null
+> +++ mmotm-2.6.27-rc7+/mm/page_cgroup.c
+> @@ -0,0 +1,253 @@
+> +#include <linux/mm.h>
+> +#include <linux/mmzone.h>
+> +#include <linux/bootmem.h>
+> +#include <linux/bit_spinlock.h>
+> +#include <linux/page_cgroup.h>
+> +#include <linux/hash.h>
+> +#include <linux/memory.h>
+> +
+> +static void __meminit
+> +__init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
+> +{
+> +	pc->flags = 0;
+> +	pc->mem_cgroup = NULL;
+> +	pc->page = pfn_to_page(pfn);
+> +}
+> +static unsigned long total_usage = 0;
+> +
+> +#ifdef CONFIG_FLAT_NODE_MEM_MAP
+> +
+> +
+> +void __init pgdat_page_cgroup_init(struct pglist_data *pgdat)
+> +{
+> +	pgdat->node_page_cgroup = NULL;
+> +}
+> +
+> +struct page_cgroup *lookup_page_cgroup(struct page *page)
+> +{
+> +	unsigned long pfn = page_to_pfn(page);
+> +	unsigned long offset;
+> +	struct page_cgroup *base;
+> +
+> +	base = NODE_DATA(page_to_nid(nid))->node_page_cgroup;
+page_to_nid(page) :)
 
-No, as I said:  "You just need to emit the current
-tsc+frequency+wallclock time before you emit any more delta records
-after the frequency change."
+> +	if (unlikely(!base))
+> +		return NULL;
+> +
+> +	offset = pfn - NODE_DATA(page_to_nid(page))->node_start_pfn;
+> +	return base + offset;
+> +}
+> +
+> +static int __init alloc_node_page_cgroup(int nid)
+> +{
+> +	struct page_cgroup *base, *pc;
+> +	unsigned long table_size;
+> +	unsigned long start_pfn, nr_pages, index;
+> +
+> +	start_pfn = NODE_DATA(nid)->node_start_pfn;
+> +	nr_pages = NODE_DATA(nid)->node_spanned_pages;
+> +
+> +	table_size = sizeof(struct page_cgroup) * nr_pages;
+> +
+> +	base = __alloc_bootmem_node_nopanic(NODE_DATA(nid),
+> +			table_size, PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
+> +	if (!base)
+> +		return -ENOMEM;
+> +	for (index = 0; index < nr_pages; index++) {
+> +		pc = base + index;
+> +		__init_page_cgroup(pc, start_pfn + index);
+> +	}
+> +	NODE_DATA(nid)->node_page_cgroup = base;
+> +	total_usage += table_size;
+> +	return 0;
+> +}
+> +
+> +void __init free_node_page_cgroup(int nid)
+> +{
+> +	unsigned long table_size;
+> +	unsigned long nr_pages;
+> +	struct page_cgroup *base;
+> +
+> +	base = NODE_DATA(nid)->node_page_cgroup;
+> +	if (!base)
+> +		return;
+> +	nr_pages = NODE_DATA(nid)->node_spanned_pages;
+> +
+> +	table_size = sizeof(struct page_cgroup) * nr_pages;
+> +
+> +	free_bootmem_node(NODE_DATA(nid),
+> +			(unsigned long)base, table_size);
+> +	NODE_DATA(nid)->node_page_cgroup = NULL;
+> +}
+> +
+Hmm, who uses this function?
 
-When an event which affects the tsc occurs, like a frequency change or
-pause, set a flag.  When you're next about to emit a delta, check the
-flag and emit new timing parameters (or instead).
+(snip)
 
-> and then i havent even mentioned some other big complications:
->
->  - the numeric errors that mount up over thousands of delta events
->  - the memory overhead over thousands of entries
->   
-No, you only need to emit records as needed.
+> @@ -812,49 +708,41 @@ __mem_cgroup_uncharge_common(struct page
+>  
+>  	if (mem_cgroup_subsys.disabled)
+>  		return;
+> +	/* check the condition we can know from page */
+>  
+> -	/*
+> -	 * Check if our page_cgroup is valid
+> -	 */
+> -	lock_page_cgroup(page);
+> -	pc = page_get_page_cgroup(page);
+> -	if (unlikely(!pc))
+> -		goto unlock;
+> -
+> -	VM_BUG_ON(pc->page != page);
+> +	pc = lookup_page_cgroup(page);
+> +	if (unlikely(!pc || !PageCgroupUsed(pc)))
+> +		return;
+> +	preempt_disable();
+> +	lock_page_cgroup(pc);
+> +	if (unlikely(page_mapped(page))) {
+> +		unlock_page_cgroup(pc);
+> +		preempt_enable();
+> +		return;
+> +	}
+Just for clarification, in what sequence will the page be mapped here?
+mem_cgroup_uncharge_page checks whether the page is mapped.
 
->  - the fact that cpufreq and PLL changes are rarely atomic and that the
->    TSC can flip-flop between two frequencies.
->   
+> +	ClearPageCgroupUsed(pc);
+> +	unlock_page_cgroup(pc);
+>  
+> -	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+> -	    && ((PageCgroupCache(pc) || page_mapped(page))))
+> -		goto unlock;
+> -retry:
+>  	mem = pc->mem_cgroup;
+>  	mz = page_cgroup_zoneinfo(pc);
+> +
+>  	spin_lock_irqsave(&mz->lru_lock, flags);
+> -	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED &&
+> -	    unlikely(mem != pc->mem_cgroup)) {
+> -		/* MAPPED account can be done without lock_page().
+> -		   Check race with mem_cgroup_move_account() */
+> -		spin_unlock_irqrestore(&mz->lru_lock, flags);
+> -		goto retry;
+> -	}
+By these changes, ctype becomes unnecessary so it can be removed.
 
-You need to know the frequency at the time you sample the tsc, and you
-need to know when the frequency changes.  If you don't, you can't use
-the tsc for time, regardless of whether you process it immediately or
-post-process it.
+>  	__mem_cgroup_remove_list(mz, pc);
+>  	spin_unlock_irqrestore(&mz->lru_lock, flags);
+> -
+> -	page_assign_page_cgroup(page, NULL);
+> -	unlock_page_cgroup(page);
+> -
+> -
+> -	res_counter_uncharge(&mem->res, PAGE_SIZE);
+> +	pc->mem_cgroup = NULL;
+>  	css_put(&mem->css);
+> +	preempt_enable();
+> +	res_counter_uncharge(&mem->res, PAGE_SIZE);
+>  
+> -	kmem_cache_free(page_cgroup_cache, pc);
+>  	return;
+> -unlock:
+> -	unlock_page_cgroup(page);
+>  }
+>  
 
-> ... and the moment you accept the fact that the GTOD _has_ to be mixed 
-> into it, all the rest follows pretty much automatically: either you 
-> store the (GTOD,freq,TSC) triple and post-process that absolute 
-> timestamp, and you accept the in-memory cost of that and do 
-> post-processing, or you compress that triple in situ and store the 
-> result only.
->   
 
-Right.  You store (GTOD,freq,tsc) every time you need that information,
-and then interpolate with the tsc while you know its monotonic.
-
-Unless your tsc is completely screwed, the (GTOD,freq,tsc) triple is
-going to be stored at a fairly low frequency, and won't fill your event
-buffer very much (though it might be a large proportion of your recorded
-events if you're only recording stuff at a low frequency).
-
-> [ You will then also want some fall-back implementation for CPUs that 
->   have no TSCs, and for architectures that have no default 
->   implementation - something jiffies based
-
-Well, whatever the best timer the platform has.  And maybe its already
-processed into real time, in which case you just emit raw deltas and
-never worry about updating the timing parameters.
-
-> . And you want some special hooks for paravirt, as always. ]
->   
-Yeah.  The scheme relies on a cpu's tsc remaining the cpu's tsc.
-
-> I.e. you will end up having something quite close to 
-> cpu_clock()/sched_clock().
->
-> _Or_ if you manage to get any better than that for tracing then please 
-> tell us about it because we want to apply those concepts to 
-> cpu_clock()/sched_clock() too :-)
-
-Well, its what Xen does already for time.  It works well.
-
-    J
+Thanks,
+Daisuke Nishimura.
