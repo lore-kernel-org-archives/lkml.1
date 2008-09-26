@@ -1,87 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbYIZCLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbYIZCMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbYIZCLt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbYIZCLh
+	id S1755069AbYIZCMK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYIZCLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:11:37 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35764 "EHLO mail.dvmed.net"
+	Thu, 25 Sep 2008 22:11:42 -0400
+Received: from mga02.intel.com ([134.134.136.20]:20386 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753462AbYIZCLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:11:36 -0400
-Message-ID: <48DC44D4.8000103@garzik.org>
-Date: Thu, 25 Sep 2008 22:11:32 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1755256AbYIZCLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 22:11:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,310,1220252400"; 
+   d="scan'208";a="340664111"
+Date: Thu, 25 Sep 2008 19:11:40 -0700 (Pacific Daylight Time)
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
+       agospoda@redhat.com, "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
+       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com
+Subject: Re: e1000e NVM corruption issue status
+In-Reply-To: <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com>
+Message-ID: <Pine.WNT.4.63.0809251911140.1736@jbrandeb-desk.amr.corp.intel.com>
+References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com>
+ <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com>
+ <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com>
+ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+X-X-Sender: jesse.brandeburg@intel.com@imap.glb.intel.com
 MIME-Version: 1.0
-To: Andres Freund <andres@anarazel.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: bad DMAR interaction with iwlagn and SATA
-References: <200809251511.20132.andres@anarazel.de>
-In-Reply-To: <200809251511.20132.andres@anarazel.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andres Freund wrote:
-> Hi,	
-> 
-> in some accident caused by wanting to create the .config/compile the kernel 
-> for my new laptop (thinkpad t500) before the desperately needed sleeping I 
-> activated DMAR...
-> 
-> I don't know if this is relevant, but I though i better report it.
-> 
-> 
-> This was on fb478da5ba69ecf40729ae8ab37ca406b1e5be48 - sometime after 2.6.27-
-> rc7
-> 
-> I stumbled over two buglets:
-> First:
-> [ 4184.617392] DMAR:[DMA Read] Request device [03:00.0] fault addr fa946000 
-> [ 4184.617393] DMAR:[fault reason 06] PTE Read access is not set
-> [ 4184.644081] iwlagn: Microcode HW error detected.  Restarting.
-> [ 4186.646000] psmouse.c: TouchPad at isa0060/serio1/input0 lost 
-> synchronization, throwing 1 bytes away.
-> [ 4186.683034] Registered led device: iwl-phy0:radio
-> [ 4186.683478] Registered led device: iwl-phy0:assoc
-> [ 4186.683793] Registered led device: iwl-phy0:RX
-> [ 4186.684094] Registered led device: iwl-phy0:TX
-> [ 4186.689749] wlan0: authenticate with AP 00:1d:7e:42:fe:42
-> [ 4186.691691] wlan0: authenticated
-> [ 4186.691705] wlan0: associate with AP 00:1d:7e:42:fe:42
-> [ 4186.696380] wlan0: RX ReassocResp from 00:1d:7e:42:fe:42 (capab=0x411 
-> status=0 aid=2)
-> [ 4186.696392] wlan0: associated
-> 
-> Most of the time when this happened, the machine wasnt reacting for 1-3 
-> seconds and had audio buffer underruns, but I also had a hard lockup which I 
-> couldnt diagnose so far.
-> 
-> Second:
-> [ 2937.484251] DMAR:[DMA Read] Request device [00:1f.2] fault addr fffbf000 
-> [ 2937.484255] DMAR:[fault reason 06] PTE Read access is not set
-> [ 2937.484297] ata1.00: exception Emask 0x60 SAct 0x1 SErr 0x800 action 0x6 
-> frozen
-> [ 2937.484303] ata1.00: irq_stat 0x20000000, host bus error
-> [ 2937.484309] ata1: SError: { HostInt }
-> [ 2937.484319] ata1.00: cmd 61/08:00:c0:1d:6b/00:00:07:00:00/40 tag 0 ncq 4096 
-> out
-> [ 2937.484321]          res 40/00:00:c0:1d:6b/00:00:07:00:00/40 Emask 0x60 
-> (host bus error)
+e1000e: debug contention on NVM SWFLAG
 
-Ouch, a host bus error is serious nastiness...
+From: Thomas Gleixner <tglx@linutronix.de>
 
-http://ata.wiki.kernel.org/index.php/Libata_error_messages#Error_classes
+This patch adds a mutex to the e1000e driver that would help
+catch any collisions of two e1000e threads accessing hardware
+at the same time.
 
-That's the ATA controller falling over after some serious machine hiccups.
+description and patch updated by Jesse
 
-	Jeff
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
 
+ drivers/net/e1000e/ich8lan.c |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
-
+diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
+index f1a6e55..2b1aa2a 100644
+--- a/drivers/net/e1000e/ich8lan.c
++++ b/drivers/net/e1000e/ich8lan.c
+@@ -382,6 +382,9 @@ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
+ 	return 0;
+ }
+ 
++static DEFINE_MUTEX(nvm_mutex);
++static pid_t nvm_owner = -1;
++
+ /**
+  *  e1000_acquire_swflag_ich8lan - Acquire software control flag
+  *  @hw: pointer to the HW structure
+@@ -395,6 +398,15 @@ static s32 e1000_acquire_swflag_ich8lan(struct e1000_hw *hw)
+ 	u32 extcnf_ctrl;
+ 	u32 timeout = PHY_CFG_TIMEOUT;
+ 
++	WARN_ON(preempt_count());
++
++	if (!mutex_trylock(&nvm_mutex)) {
++		WARN(1, KERN_ERR "e1000e mutex contention. Owned by pid %d\n",
++		     nvm_owner);
++		mutex_lock(&nvm_mutex);
++	}
++	nvm_owner = current->pid;
++
+ 	while (timeout) {
+ 		extcnf_ctrl = er32(EXTCNF_CTRL);
+ 		extcnf_ctrl |= E1000_EXTCNF_CTRL_SWFLAG;
+@@ -409,6 +421,8 @@ static s32 e1000_acquire_swflag_ich8lan(struct e1000_hw *hw)
+ 
+ 	if (!timeout) {
+ 		hw_dbg(hw, "FW or HW has locked the resource for too long.\n");
++		nvm_owner = -1;
++		mutex_unlock(&nvm_mutex);
+ 		return -E1000_ERR_CONFIG;
+ 	}
+ 
+@@ -430,6 +444,9 @@ static void e1000_release_swflag_ich8lan(struct e1000_hw *hw)
+ 	extcnf_ctrl = er32(EXTCNF_CTRL);
+ 	extcnf_ctrl &= ~E1000_EXTCNF_CTRL_SWFLAG;
+ 	ew32(EXTCNF_CTRL, extcnf_ctrl);
++
++	nvm_owner = -1;
++	mutex_unlock(&nvm_mutex);
+ }
+ 
+ /**
