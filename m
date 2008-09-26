@@ -1,67 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYIZV1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbYIZVh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754099AbYIZV1v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 17:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYIZV1m
+	id S1753478AbYIZVh2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 17:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYIZVhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 17:27:42 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:48277 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752595AbYIZV1k (ORCPT
+	Fri, 26 Sep 2008 17:37:17 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51891 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751983AbYIZVhP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 17:27:40 -0400
-Subject: Re: [PATCH 0/10] freeze feature ver 1.13
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Takashi Sato <t-sato@yk.jp.nec.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <30536.1222426096@turing-police.cc.vt.edu>
-References: <20080926175652t-sato@mail.jp.nec.com>
-	 <30536.1222426096@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Fri, 26 Sep 2008 16:26:58 -0500
-Message-Id: <1222464418.27833.7.camel@norville.austin.ibm.com>
+	Fri, 26 Sep 2008 17:37:15 -0400
+Date: Fri, 26 Sep 2008 22:34:04 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       arjan@infradead.org, bunk@kernel.org, tytso@mit.edu,
+       tvrtko.ursulin@sophos.com, david@lang.hm, hch@infradead.org,
+       andi@firstfloor.org, viro@ZenIV.linux.org.uk, peterz@infradead.org,
+       Jonathan.Press@ca.com, riel@redhat.com
+Subject: Re: [RFC] 0/11 fanotify: fscking all notifiction and file access
+ system (intended for antivirus scanning and file indexers)
+Message-ID: <20080926223404.7c4894df@lxorguk.ukuu.org.uk>
+In-Reply-To: <1222463220.2872.193.camel@localhost.localdomain>
+References: <1222463220.2872.193.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-26 at 06:48 -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Fri, 26 Sep 2008 17:56:52 +0900, Takashi Sato said:
+> It all starts when 'something' registers a group.  Registering a group
+> is as simple as 'echo "open_grp 50 0x10" > /security/fanotify/register.
 
-> Would it be a good idea to merge patch 10 into patch 8?   Otherwise, there's
-> two issues I can see:
-> 
-> 1) A mostly theoretical problem if a bisect lands exactly on patch 9 it can
-> hit the deadlock.
+I thought the operation was usually called "mkdir" which also nicely
+deals with races and exclusion.
 
-Really, there's no deadlock until someone uses the new function, so
-that's not really an issue, is it?  However, this patchset breaks
-bisection anyway.
+> open_grp is just the name of the group, 50 is the priority (only
+> interesting for blocking/access events, will describe later) and 0x10 is
+> FAN_OPEN. If one wanted open and close you would use 0x1c = (FAN_OPEN |
+> FAN_CLOSE).  Inside the kernel this creates the new directory called
 
-A bisect anywhere between patch 1 and 7 will cause some number of
-filesystems to fail to compile.  Patches 1-7 either need to be combined
-into one, or patch 1 needs to add freeze_fs and unfreeze_fs while
-leaving write_super_lockfs and unlockfs, then a patch between 7 and 8
-could remove write_super_lockfs and unlockfs.
+How do you change group on the fly in this model ?
 
-> 2) The API at patch 8 and patch 10 differs, that's going to make testing through
-> a bisection of this patch series a pain.
+> The listener process will get a string that looks like "fd=10 cookie=0
+> mask=10."  This is telling the listener process that a new fd has been
+> created, #10.  The cookie (if this notification required an access
+> decision) was 0 and the mask of the event was 0x10 (FAN_OPEN.)
 
-There's no need to test the new interface during a bisection.  Bisection
-is important in testing regressions, but not new function.
--- 
-David Kleikamp
-IBM Linux Technology Center
+Ok that is foul as an interface, utterly gross. I guess it would be
+useful to also be able to not want fds
+
+> event is added to the group->access_list AND to the group->event_list.
+> The original process is then blocked for a (now fixed 5 second) timeout
+> waiting for the event to get a non-zero event->response on the
+> group->access_waitq.
+
+That raises security and correctness questions with things like "make it
+swap hard" attacks. Given that any timeout can be configured its not a
+big deal. Do need to handle process death or close of the notification
+descriptors.
+
+I think the mechanism is pretty sound. There are some "how do I" cases to
+do with open and watching for events when I want to rescan something as
+it has been dirty for a while. I'm not sure mmap dirty properly updates
+the file mtime - that wants doing anyway for backups tho so is the real
+fix.
+
+The userspace API you propoe should however be taken out and shot, then
+buried with a stake through its heart, holy water in its mouth and its
+head cut off, at midnight in a pentacle at a crossroads in the presence
+of a priest.
+
+The two discussions are fortunately orthogonal. Is there any reason you
+can't use the socket based notification model - that gives you a much
+more natural way to express the thing
+
+
+		socket
+		bind(AF_FAN, group=foo+flags etc, PF_FAN);
+
+		fd = accept(old_fd, &addr[returned info])
+
+		close(fd);
+
+as well as fairly natural and importantly standards defined semantics for
+poll including polling for a new file handles, for reconfiguration of
+stuff via get/setsockopt (which do pass stuff like object sizes unlike
+ioctls) and for reading/writing data.
+
+Its not quite the same as a normal socket given you accept and get a non
+socket fd with the info you need in the return address area but its much
+closer than the rather mad file system proposal.
+
+It would certainly be sane enough to, for example, start righting
+scanners in stuff like python-twisted or ruby on rails (not that this is
+neccessarily a good thing!)
+
+Alan
 
