@@ -1,162 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbYIZI63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbYIZI6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbYIZI63 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 04:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYIZI5x
+	id S1755265AbYIZI6r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 04:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbYIZI55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 04:57:53 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:60444 "EHLO
+	Fri, 26 Sep 2008 04:57:57 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:60451 "EHLO
 	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbYIZI5t (ORCPT
+	with ESMTP id S1752371AbYIZI5v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 04:57:49 -0400
+	Fri, 26 Sep 2008 04:57:51 -0400
 To: Andrew Morton <akpm@linux-foundation.org>,
        Christoph Hellwig <hch@infradead.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
        "dm-devel@redhat.com" <dm-devel@redhat.com>,
        "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "axboe@kernel.dk" <axboe@kernel.dk>,
+       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/10] ext3: Fix error handling in write_super_lockfs/unlockfs
-Message-Id: <20080926175732t-sato@mail.jp.nec.com>
+Subject: [PATCH 1/10] VFS: Fix error handling of write_super_lockfs/unlockfs
+Message-Id: <20080926175712t-sato@mail.jp.nec.com>
 Mime-Version: 1.0
 X-Mailer: WeMail32[2.51] ID:1K0086
 From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Fri, 26 Sep 2008 17:57:31 +0900
+Date: Fri, 26 Sep 2008 17:57:12 +0900
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changed write_super_lockfs so that it returns an error in case of an failure.
-unlockfs always returns 0.
+I've changed the type of write_super_lockfs and unlockfs from "void" to
+"int" so that they can return an error 
+and renamed write_super_lockfs/unlockfs of the super block operation
+freeze_fs/unfreeze_fs to avoid a confusion.
+
 
 Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
 Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
 ---
- super.c |   44 +++++++++++++++++++++++++++++---------------
- 1 file changed, 29 insertions(+), 15 deletions(-)
+ Documentation/filesystems/Locking |    8 ++++----
+ Documentation/filesystems/vfs.txt |    8 ++++----
+ fs/buffer.c                       |    8 ++++----
+ include/linux/fs.h                |    4 ++--
+ 4 files changed, 14 insertions(+), 14 deletions(-)
 
-diff -uprN -X linux-2.6.27-rc7-lockfs/Documentation/dontdiff linux-2.6.27-rc7-lockfs/fs/ext3/super.c linux-2.6.27-rc7-lo
-ckfs-ext3/fs/ext3/super.c
---- linux-2.6.27-rc7-lockfs/fs/ext3/super.c	2008-09-22 07:29:55.000000000 +0900
-+++ linux-2.6.27-rc7-lockfs-ext3/fs/ext3/super.c	2008-09-26 16:54:41.000000000 +0900
-@@ -48,8 +48,8 @@ static int ext3_load_journal(struct supe
- 			     unsigned long journal_devnum);
- static int ext3_create_journal(struct super_block *, struct ext3_super_block *,
- 			       unsigned int);
--static void ext3_commit_super (struct super_block * sb,
--			       struct ext3_super_block * es,
-+static int ext3_commit_super(struct super_block *sb,
-+			       struct ext3_super_block *es,
- 			       int sync);
- static void ext3_mark_recovery_complete(struct super_block * sb,
- 					struct ext3_super_block * es);
-@@ -60,9 +60,9 @@ static const char *ext3_decode_error(str
- 				     char nbuf[16]);
- static int ext3_remount (struct super_block * sb, int * flags, char * data);
- static int ext3_statfs (struct dentry * dentry, struct kstatfs * buf);
--static void ext3_unlockfs(struct super_block *sb);
-+static int ext3_unfreeze(struct super_block *sb);
- static void ext3_write_super (struct super_block * sb);
--static void ext3_write_super_lockfs(struct super_block *sb);
-+static int ext3_freeze(struct super_block *sb);
+diff -uprN -X linux-2.6.27-rc7/Documentation/dontdiff linux-2.6.27-rc7/Documentation/filesystems/Locking linux-2.6.27-rc
+7-lockfs/Documentation/filesystems/Locking
+--- linux-2.6.27-rc7/Documentation/filesystems/Locking	2008-09-22 07:29:55.000000000 +0900
++++ linux-2.6.27-rc7-lockfs/Documentation/filesystems/Locking	2008-09-26 18:47:47.000000000 +0900
+@@ -97,8 +97,8 @@ prototypes:
+ 	void (*put_super) (struct super_block *);
+ 	void (*write_super) (struct super_block *);
+ 	int (*sync_fs)(struct super_block *sb, int wait);
+-	void (*write_super_lockfs) (struct super_block *);
+-	void (*unlockfs) (struct super_block *);
++	int (*freeze_fs) (struct super_block *);
++	int (*unfreeze_fs) (struct super_block *);
+ 	int (*statfs) (struct dentry *, struct kstatfs *);
+ 	int (*remount_fs) (struct super_block *, int *, char *);
+ 	void (*clear_inode) (struct inode *);
+@@ -119,8 +119,8 @@ delete_inode:		no
+ put_super:		yes	yes	no
+ write_super:		no	yes	read
+ sync_fs:		no	no	read
+-write_super_lockfs:	?
+-unlockfs:		?
++freeze_fs:		?
++unfreeze_fs:		?
+ statfs:			no	no	no
+ remount_fs:		yes	yes	maybe		(see below)
+ clear_inode:		no
+diff -uprN -X linux-2.6.27-rc7/Documentation/dontdiff linux-2.6.27-rc7/Documentation/filesystems/vfs.txt linux-2.6.27-rc
+7-lockfs/Documentation/filesystems/vfs.txt
+--- linux-2.6.27-rc7/Documentation/filesystems/vfs.txt	2008-09-22 07:29:55.000000000 +0900
++++ linux-2.6.27-rc7-lockfs/Documentation/filesystems/vfs.txt	2008-09-26 18:43:49.000000000 +0900
+@@ -210,8 +210,8 @@ struct super_operations {
+         void (*put_super) (struct super_block *);
+         void (*write_super) (struct super_block *);
+         int (*sync_fs)(struct super_block *sb, int wait);
+-        void (*write_super_lockfs) (struct super_block *);
+-        void (*unlockfs) (struct super_block *);
++        int (*freeze_fs) (struct super_block *);
++        int (*unfreeze_fs) (struct super_block *);
+         int (*statfs) (struct dentry *, struct kstatfs *);
+         int (*remount_fs) (struct super_block *, int *, char *);
+         void (*clear_inode) (struct inode *);
+@@ -270,11 +270,11 @@ or bottom half).
+   	a superblock. The second parameter indicates whether the method
+ 	should wait until the write out has been completed. Optional.
  
- /*
-  * Wrappers for journal_start/end.
-@@ -728,8 +728,8 @@ static const struct super_operations ext
- 	.put_super	= ext3_put_super,
- 	.write_super	= ext3_write_super,
- 	.sync_fs	= ext3_sync_fs,
--	.write_super_lockfs = ext3_write_super_lockfs,
--	.unlockfs	= ext3_unlockfs,
-+	.freeze_fs	= ext3_freeze,
-+	.unfreeze_fs	= ext3_unfreeze,
- 	.statfs		= ext3_statfs,
- 	.remount_fs	= ext3_remount,
- 	.clear_inode	= ext3_clear_inode,
-@@ -2251,21 +2251,23 @@ static int ext3_create_journal(struct su
- 	return 0;
- }
+-  write_super_lockfs: called when VFS is locking a filesystem and
++  freeze_fs: called when VFS is locking a filesystem and
+   	forcing it into a consistent state.  This method is currently
+   	used by the Logical Volume Manager (LVM).
  
--static void ext3_commit_super (struct super_block * sb,
--			       struct ext3_super_block * es,
-+static int ext3_commit_super(struct super_block *sb,
-+			       struct ext3_super_block *es,
- 			       int sync)
- {
- 	struct buffer_head *sbh = EXT3_SB(sb)->s_sbh;
-+	int error = 0;
+-  unlockfs: called when VFS is unlocking a filesystem and making it writable
++  unfreeze_fs: called when VFS is unlocking a filesystem and making it writable
+   	again.
  
- 	if (!sbh)
--		return;
-+		return error;
- 	es->s_wtime = cpu_to_le32(get_seconds());
- 	es->s_free_blocks_count = cpu_to_le32(ext3_count_free_blocks(sb));
- 	es->s_free_inodes_count = cpu_to_le32(ext3_count_free_inodes(sb));
- 	BUFFER_TRACE(sbh, "marking dirty");
- 	mark_buffer_dirty(sbh);
- 	if (sync)
--		sync_dirty_buffer(sbh);
-+		error = sync_dirty_buffer(sbh);
-+	return error;
- }
+   statfs: called when the VFS needs to get filesystem statistics. This
+diff -uprN -X linux-2.6.27-rc7/Documentation/dontdiff linux-2.6.27-rc7/fs/buffer.c linux-2.6.27-rc7-lockfs/fs/buffer.c
+--- linux-2.6.27-rc7/fs/buffer.c	2008-09-22 07:29:55.000000000 +0900
++++ linux-2.6.27-rc7-lockfs/fs/buffer.c	2008-09-26 18:41:12.000000000 +0900
+@@ -214,8 +214,8 @@ struct super_block *freeze_bdev(struct b
  
+ 		sync_blockdev(sb->s_bdev);
  
-@@ -2379,28 +2381,39 @@ static int ext3_sync_fs(struct super_blo
-  * LVM calls this function before a (read-only) snapshot is created.  This
-  * gives us a chance to flush the journal completely and mark the fs clean.
-  */
--static void ext3_write_super_lockfs(struct super_block *sb)
-+static int ext3_freeze(struct super_block *sb)
- {
-+	int error = 0;
-+	journal_t *journal;
- 	sb->s_dirt = 0;
- 
- 	if (!(sb->s_flags & MS_RDONLY)) {
--		journal_t *journal = EXT3_SB(sb)->s_journal;
-+		journal = EXT3_SB(sb)->s_journal;
- 
- 		/* Now we set up the journal barrier. */
- 		journal_lock_updates(journal);
--		journal_flush(journal);
-+		error = journal_flush(journal);
-+		if (error)
-+			goto out;
- 
- 		/* Journal blocked and flushed, clear needs_recovery flag. */
- 		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
--		ext3_commit_super(sb, EXT3_SB(sb)->s_es, 1);
-+		error = ext3_commit_super(sb, EXT3_SB(sb)->s_es, 1);
-+		if (error)
-+			goto out;
+-		if (sb->s_op->write_super_lockfs)
+-			sb->s_op->write_super_lockfs(sb);
++		if (sb->s_op->freeze_fs)
++			sb->s_op->freeze_fs(sb);
  	}
-+	return 0;
-+
-+out:
-+	journal_unlock_updates(journal);
-+	return error;
- }
  
- /*
-  * Called by LVM after the snapshot is done.  We need to reset the RECOVER
-  * flag here, even though the filesystem is not technically dirty yet.
-  */
--static void ext3_unlockfs(struct super_block *sb)
-+static int ext3_unfreeze(struct super_block *sb)
- {
- 	if (!(sb->s_flags & MS_RDONLY)) {
- 		lock_super(sb);
-@@ -2410,6 +2423,7 @@ static void ext3_unlockfs(struct super_b
- 		unlock_super(sb);
- 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
- 	}
-+	return 0;
- }
+ 	sync_blockdev(bdev);
+@@ -235,8 +235,8 @@ void thaw_bdev(struct block_device *bdev
+ 	if (sb) {
+ 		BUG_ON(sb->s_bdev != bdev);
  
- static int ext3_remount (struct super_block * sb, int * flags, char * data)
+-		if (sb->s_op->unlockfs)
+-			sb->s_op->unlockfs(sb);
++		if (sb->s_op->unfreeze_fs)
++			sb->s_op->unfreeze_fs(sb);
+ 		sb->s_frozen = SB_UNFROZEN;
+ 		smp_wmb();
+ 		wake_up(&sb->s_wait_unfrozen);
+diff -uprN -X linux-2.6.27-rc7/Documentation/dontdiff linux-2.6.27-rc7/include/linux/fs.h linux-2.6.27-rc7-lockfs/includ
+e/linux/fs.h
+--- linux-2.6.27-rc7/include/linux/fs.h	2008-09-22 07:29:55.000000000 +0900
++++ linux-2.6.27-rc7-lockfs/include/linux/fs.h	2008-09-26 18:44:27.000000000 +0900
+@@ -1314,8 +1314,8 @@ struct super_operations {
+ 	void (*put_super) (struct super_block *);
+ 	void (*write_super) (struct super_block *);
+ 	int (*sync_fs)(struct super_block *sb, int wait);
+-	void (*write_super_lockfs) (struct super_block *);
+-	void (*unlockfs) (struct super_block *);
++	int (*freeze_fs) (struct super_block *);
++	int (*unfreeze_fs) (struct super_block *);
+ 	int (*statfs) (struct dentry *, struct kstatfs *);
+ 	int (*remount_fs) (struct super_block *, int *, char *);
+ 	void (*clear_inode) (struct inode *);
