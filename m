@@ -1,152 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbYIZM6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYIZM6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753283AbYIZM6s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 08:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbYIZM4V
+	id S1756117AbYIZM6e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 08:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYIZMyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 08:56:21 -0400
-Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:4780 "EHLO
-	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755553AbYIZM4U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 08:56:20 -0400
-X-Greylist: delayed 834 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Sep 2008 08:56:19 EDT
-Date: Fri, 26 Sep 2008 14:42:22 +0200
-From: Joris van Rantwijk <jorispubl@xs4all.nl>
-To: linux-kernel@vger.kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Inflation of vmlinux by linker on x86_64
-Message-ID: <20080926124222.GA49837@xs4all.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Fri, 26 Sep 2008 08:54:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60049 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753582AbYIZMyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 08:54:32 -0400
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 12/12] GFS2: Support for I/O barriers
+Date: Fri, 26 Sep 2008 13:00:55 +0100
+Message-Id: <1222430455-4632-13-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1222430455-4632-12-git-send-email-swhiteho@redhat.com>
+References: <1222430455-4632-1-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-2-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-3-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-4-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-5-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-6-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-7-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-8-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-9-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-10-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-11-git-send-email-swhiteho@redhat.com>
+ <1222430455-4632-12-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch adds barrier support to GFS2. There is not a lot of change
+really... we just add the barrier flag when we write journal header
+blocks. If the underlying device refuses to support them, we fall back
+to the previous way of doing things (wait for the I/O and hope) since
+there is nothing else we can do. There is no user configuration,
+barriers will always be on unless the device refuses to support them.
+This seems a reasonable solution to me since this is a correctness
+issue.
 
-I noticed that a lot of space in the uncompressed vmlinux image is
-taken up by alignment issues, at least on x86_64. For example, the
-linker decides to align the first section on a 2 MB file offset,
-thereby inserting almost 2 MB of zeroes at the beginning of vmlinux.
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-Idx Name   Size      VMA               LMA               File off  Algn
-  0 .text  001d9203  ffffffff80200000  0000000000200000  00200000  2**12
-           CONTENTS, ALLOC, LOAD, READONLY, CODE
-
-It seems this has gotten worse with recent versions of binutils;
-ld 2.18 makes my vmlinux 2 MB larger than ld 2.17.
-
-This inflation of vmlinux causes problems with certain boot loader
-configurations, where decompression of the huge vmlinux may overwrite
-part of an initramfs image.
-See http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=479101
-
-Although alignment of memory addresses is required, alignment of
-file offsets in vmlinux seems completely unnecessary. After all,
-vmlinux is not a demand paged binary. I tried to avoid the alignment
-by adding "-n" to the linker command line. This resulted in a 4 MB
-reduction of vmlinux, and an immediate crash on boot.
-
-The crash is caused by the ELF loader in x86/boot/compressed/misc.c:
-parts of the kernel are memcpy-ed over themselves. This was previously
-not an issue because the inflation of vmlinux provided so much slack
-that all memcpy-s would turn out in the right direction.
-
-After fixing the ELF loader, it now seems to work quite well.
-vmlinux is 4 MB smaller, bzImage is 10 kB smaller and my problems
-with LILO are solved.
-
-Would it be appropriate to put this in the kernel?
-Note that I am not at all sure that "ld -n" works on all architectures;
-I only tested this on i386 and x86_64.
-
-Greetings, Joris.
-
-diff -urN linux-2.6.27-rc7/Makefile linux-2.6.27-rc7j/Makefile
---- linux-2.6.27-rc7/Makefile	2008-09-22 00:29:55.000000000 +0200
-+++ linux-2.6.27-rc7j/Makefile	2008-09-26 12:21:34.000000000 +0200
-@@ -577,7 +577,7 @@
- LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
- 			      $(call ld-option, -Wl$(comma)--build-id,))
- LDFLAGS_MODULE += $(LDFLAGS_BUILD_ID)
--LDFLAGS_vmlinux += $(LDFLAGS_BUILD_ID)
-+LDFLAGS_vmlinux += $(LDFLAGS_BUILD_ID) -n
+diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
+index f1ed3a1..f566ec1 100644
+--- a/fs/gfs2/incore.h
++++ b/fs/gfs2/incore.h
+@@ -432,6 +432,7 @@ enum {
+ 	SDF_JOURNAL_CHECKED	= 0,
+ 	SDF_JOURNAL_LIVE	= 1,
+ 	SDF_SHUTDOWN		= 2,
++	SDF_NOBARRIERS		= 3,
+ };
  
- # Default kernel image to build when no specific target is given.
- # KBUILD_IMAGE may be overruled on the command line or
-diff -urN linux-2.6.27-rc7/arch/x86/boot/compressed/misc.c linux-2.6.27-rc7j/arch/x86/boot/compressed/misc.c
---- linux-2.6.27-rc7/arch/x86/boot/compressed/misc.c	2008-09-22 00:29:55.000000000 +0200
-+++ linux-2.6.27-rc7j/arch/x86/boot/compressed/misc.c	2008-09-26 13:20:35.000000000 +0200
-@@ -281,13 +281,18 @@
- 	return s;
- }
+ #define GFS2_FSNAME_LEN		256
+diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
+index 6c6af9f..ad30585 100644
+--- a/fs/gfs2/log.c
++++ b/fs/gfs2/log.c
+@@ -18,6 +18,7 @@
+ #include <linux/delay.h>
+ #include <linux/kthread.h>
+ #include <linux/freezer.h>
++#include <linux/bio.h>
  
-+/* This memcpy can handle overlapping dest and src, like memmove. */
- static void *memcpy(void *dest, const void *src, unsigned n)
- {
- 	int i;
- 	const char *s = src;
- 	char *d = dest;
+ #include "gfs2.h"
+ #include "incore.h"
+@@ -584,7 +585,6 @@ static void log_write_header(struct gfs2_sbd *sdp, u32 flags, int pull)
+ 	memset(bh->b_data, 0, bh->b_size);
+ 	set_buffer_uptodate(bh);
+ 	clear_buffer_dirty(bh);
+-	unlock_buffer(bh);
  
--	for (i = 0; i < n; i++) d[i] = s[i];
-+	if (dest <= src) {
-+		for (i = 0; i < n; i++) d[i] = s[i];
-+	} else {
-+		for (i = n - 1; i >= 0; i--) d[i] = s[i];
+ 	gfs2_ail1_empty(sdp, 0);
+ 	tail = current_tail(sdp);
+@@ -601,8 +601,23 @@ static void log_write_header(struct gfs2_sbd *sdp, u32 flags, int pull)
+ 	hash = gfs2_disk_hash(bh->b_data, sizeof(struct gfs2_log_header));
+ 	lh->lh_hash = cpu_to_be32(hash);
+ 
+-	set_buffer_dirty(bh);
+-	if (sync_dirty_buffer(bh))
++	bh->b_end_io = end_buffer_write_sync;
++	if (test_bit(SDF_NOBARRIERS, &sdp->sd_flags))
++		goto skip_barrier;
++	get_bh(bh);
++	submit_bh(WRITE_BARRIER | (1 << BIO_RW_META), bh);
++	wait_on_buffer(bh);
++	if (buffer_eopnotsupp(bh)) {
++		clear_buffer_eopnotsupp(bh);
++		set_buffer_uptodate(bh);
++		set_bit(SDF_NOBARRIERS, &sdp->sd_flags);
++		lock_buffer(bh);
++skip_barrier:
++		get_bh(bh);
++		submit_bh(WRITE_SYNC | (1 << BIO_RW_META), bh);
++		wait_on_buffer(bh);
 +	}
- 	return dest;
- }
++	if (!buffer_uptodate(bh))
+ 		gfs2_io_error_bh(sdp, bh);
+ 	brelse(bh);
  
-@@ -343,8 +348,8 @@
- 	Elf32_Ehdr ehdr;
- 	Elf32_Phdr *phdrs, *phdr;
- #endif
--	void *dest;
--	int i;
-+	void *dest, *src;
-+	int i, direction;
- 
- 	memcpy(&ehdr, output, sizeof(ehdr));
- 	if (ehdr.e_ident[EI_MAG0] != ELFMAG0 ||
-@@ -364,7 +369,17 @@
- 
- 	memcpy(phdrs, output + ehdr.e_phoff, sizeof(*phdrs) * ehdr.e_phnum);
- 
--	for (i = 0; i < ehdr.e_phnum; i++) {
-+	/* Go two times through the list of program headers;
-+	 * first forward, then backward.
-+	 */
-+	for (i = 0, direction = 1; i >= 0; i += direction) {
-+
-+		if (i >= ehdr.e_phnum) {
-+			/* reached the end; turn back */
-+			direction = -1;
-+			continue;
-+		}
-+
- 		phdr = &phdrs[i];
- 
- 		switch (phdr->p_type) {
-@@ -375,9 +390,17 @@
- #else
- 			dest = (void *)(phdr->p_paddr);
- #endif
--			memcpy(dest,
--			       output + phdr->p_offset,
--			       phdr->p_filesz);
-+			src = output + phdr->p_offset;
-+
-+			/* order the copying to avoid overwriting */
-+			if ((direction == 1  && dest <= src) ||
-+			    (direction == -1 && dest > src)) {
-+				/* note: unlike standard memcpy, this one
-+				 * is safe to use when dest and src overlap.
-+				 */
-+				memcpy(dest, src, phdr->p_filesz);
-+			}
-+
- 			break;
- 		default: /* Ignore other PT_* */ break;
- 		}
+-- 
+1.5.5.1
+
