@@ -1,88 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbYIZKBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYIZKFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655AbYIZKBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 06:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbYIZKBH
+	id S1754709AbYIZKFW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 06:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYIZKFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 06:01:07 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36250 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751138AbYIZKBF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 06:01:05 -0400
-Date: Fri, 26 Sep 2008 19:07:53 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH 4/12] memcg make page->mapping NULL before calling
- uncharge
-Message-Id: <20080926190753.bd0e7ebc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48DCAFC4.40009@linux.vnet.ibm.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080925151639.5e2ddea4.kamezawa.hiroyu@jp.fujitsu.com>
-	<48DCAFC4.40009@linux.vnet.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Sep 2008 06:05:09 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:40880 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751199AbYIZKFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 06:05:08 -0400
+Date: Fri, 26 Sep 2008 12:05:07 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_SECURITY_ROOTPLUG [was: Re: 2.6.27-rc7 no init found on
+	the root partition?]
+Message-ID: <20080926100507.GR31582@ics.muni.cz>
+References: <20080925165400.GQ31582@ics.muni.cz> <20080926024927.GA13816@hallyn.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080926024927.GA13816@hallyn.com>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Fri, 26 Sep 2008 12:04:47 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Sep 2008 15:17:48 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> KAMEZAWA Hiroyuki wrote:
-> > This patch tries to make page->mapping to be NULL before
-> > mem_cgroup_uncharge_cache_page() is called.
-> > 
-> > "page->mapping == NULL" is a good check for "whether the page is still
-> > radix-tree or not".
-> > This patch also adds BUG_ON() to mem_cgroup_uncharge_cache_page();
-> > 
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Thu, Sep 25, 2008 at 09:49:27PM -0500, Serge E. Hallyn wrote:
+> Hmm, is there a difference in the device drivers such that root_plug simply
+> isn't able to find the usb 'key' in 2.6.27-rc7?
 > 
-> Looks good, small nit-pick below
-> 
-> >  #endif
-> >  	ClearPagePrivate(page);
-> >  	set_page_private(page, 0);
-> > -	page->mapping = NULL;
-> > +	/* page->mapping contains a flag for PageAnon() */
-> > +	if (PageAnon(page)) {
-> > +		/* This page is uncharged at try_to_unmap(). */
-> > +		page->mapping = NULL;
-> > +	} else {
-> > +		/* Obsolete file cache should be uncharged */
-> > +		page->mapping = NULL;
-> > +		mem_cgroup_uncharge_cache_page(page);
-> > +	}
-> > 
-> 
-> Isn't it better and correct coding style to do
-> 
-> 	/*
-> 	 * Uncharge obsolete file cache
-> 	 */
-> 	if (!PageAnon(page))
-> 		mem_cgroup_uncharge_cache_page(page);
-> 	/* else - uncharged at try_to_unmap() */
-> 	page->mapping = NULL;
-> 
-yea, maybe.
-I always wonder what I should do when I want to add comment to if-then-else...
+> When you boot with CONFIG_SECURITY_ROOTPLUG=n, can you read the usb key?
 
-But ok, will remove {}.
+I do not have USB key at all. So maybe there is a security bug in 2.6.26.3?
 
-Thanks,
--Kame
-
-
-
+-- 
+Luká¹ Hejtmánek
