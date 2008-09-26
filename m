@@ -1,95 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYIZGbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbYIZGl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbYIZGbL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 02:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYIZGa4
+	id S1754409AbYIZGl6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 02:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbYIZGls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 02:30:56 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:52687 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754770AbYIZGay (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 02:30:54 -0400
-Date: Fri, 26 Sep 2008 14:54:22 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH 9/12] memcg allocate all page_cgroup at boot
-Message-Id: <20080926145422.327fb53f.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080926110550.2292287b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926100022.8bfb8d4d.nishimura@mxp.nes.nec.co.jp>
-	<20080926104336.d96ab5bd.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926110550.2292287b.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Sep 2008 02:41:48 -0400
+Received: from mail.sf-mail.de ([62.27.20.61]:53767 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752933AbYIZGlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 02:41:47 -0400
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Jing Huang <huangj@brocade.com>
+Subject: Re: [PATCH 1/6] bfa: Brocade BFA FC SCSI driver submission (2nd try)
+Date: Fri, 26 Sep 2008 08:41:31 +0200
+User-Agent: KMail/1.9.10
+Cc: James.Bottomley@hansenpartnership.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rvadivel@brocade.com, srayas@brocade.com,
+       vravindr@brocade.com
+References: <200809260054.m8Q0slEL027478@swe37.brocade.com>
+In-Reply-To: <200809260054.m8Q0slEL027478@swe37.brocade.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart7597654.u251fTYhS1";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200809260841.39433.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Sep 2008 11:05:50 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Fri, 26 Sep 2008 10:43:36 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > > -	/*
-> > > > -	 * Check if our page_cgroup is valid
-> > > > -	 */
-> > > > -	lock_page_cgroup(page);
-> > > > -	pc = page_get_page_cgroup(page);
-> > > > -	if (unlikely(!pc))
-> > > > -		goto unlock;
-> > > > -
-> > > > -	VM_BUG_ON(pc->page != page);
-> > > > +	pc = lookup_page_cgroup(page);
-> > > > +	if (unlikely(!pc || !PageCgroupUsed(pc)))
-> > > > +		return;
-> > > > +	preempt_disable();
-> > > > +	lock_page_cgroup(pc);
-> > > > +	if (unlikely(page_mapped(page))) {
-> > > > +		unlock_page_cgroup(pc);
-> > > > +		preempt_enable();
-> > > > +		return;
-> > > > +	}
-> > > Just for clarification, in what sequence will the page be mapped here?
-> > > mem_cgroup_uncharge_page checks whether the page is mapped.
-> > > 
-> > Please think about folloing situation.
-> > 
-> >    There is a SwapCache which is referred from 2 process, A, B.
-> >    A maps it.
-> >    B doesn't maps it.
-> > 
-> >    And now, process A exits.
-> > 
-> > 	CPU0(process A)				CPU1 (process B)
-> >  
-> >     zap_pte_range()
-> >     => page remove from rmap			=> charge() (do_swap_page)
-> > 	=> set page->mapcount->0          	
-> > 		=> uncharge()			=> set page->mapcount=1
-> > 
-> > This race is what patch 12/12 is fixed.
-> > This only happens on cursed SwapCache.
-> > 
-> Sorry, my brain seems to be sleeping.. above page_mapped() check doesn't
-> help this situation. Maybe this page_mapped() check is not necessary
-> because it's of no use.
-> 
-> I think this kind of problem will not be fixed until we handle SwapCache.
-> 
-I've not fully understood yet what [12/12] does, but if we handle
-swapcache properly, [12/12] would become unnecessary?
+--nextPart7597654.u251fTYhS1
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-If so, how about handling swapcache instead of adding new interface?
-I think it can be done independent of mem+swap.
+Jing Huang wrote:
+> From: Jing Huang <huangj@brocade.com>
+>
+> This patch contains code that interfaces to upper layer linux kernel,
+> such as PCI, SCSI mid-layer and sysfs etc. It is created using 2.6.27-rc7
+> kernel.
+>
+> Signed-off-by: Jing Huang <huangj@brocade.com>
 
+> +int
+> +bfad_pci_init(struct pci_dev *pdev, struct bfad_s *bfad)
+> +{
+> +	unsigned long   bar0_len;
+> +	int             rc =3D -ENODEV;
+> +
+> +	if (pci_enable_device(pdev)) {
+> +		BFA_PRINTF(BFA_ERR, "pci_enable_device fail %p\n", pdev);
+> +		goto out;
+> +	}
 
-Thanks,
-Daisuke Nishimura.
+You should use pcim_enable_device(). This would help you by simplifying you=
+r=20
+error and release code as it keeps track of freeing a bunch of resources. S=
+ee=20
+Documentation/driver-model/devres.txt.
+
+> +
+> +	if (pci_request_regions(pdev, BFAD_DRIVER_NAME))
+> +		goto out_disable_device;
+> +
+> +	pci_set_master(pdev);
+> +
+> +
+> +	if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) !=3D 0)
+> +		if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) !=3D 0) {
+> +			BFA_PRINTF(BFA_ERR, "pci_set_dma_mask fail %p\n", pdev);
+> +			goto out_release_region;
+> +		}
+> +#ifdef SUPPORT_PCI_AER
+> +	/*
+> +	 * Enable PCIE Advanced Error Recovery (AER) if the kernel version
+> +	 * supports.
+> +	 */
+> +	BFAD_ENABLE_PCIE_AER(pdev);
+> +#endif
+> +
+> +	bfad->pci_bar0_map =3D pci_resource_start(pdev, 0);
+> +	bar0_len =3D pci_resource_len(pdev, 0);
+> +	bfad->pci_bar0_kva =3D ioremap(bfad->pci_bar0_map, bar0_len);
+
+bfad->pci_bar0_kva =3D pcim_iomap(pdev, 0, 0);
+
+> +
+> +	if (bfad->pci_bar0_kva =3D=3D NULL) {
+> +		BFA_DEV_PRINTF(bfad, BFA_ERR, "Fail to map bar0\n");
+> +		goto out_release_region;
+> +	}
+> +
+> +	bfad->hal_pcidev.pci_slot =3D PCI_SLOT(pdev->devfn);
+> +	bfad->hal_pcidev.pci_func =3D PCI_FUNC(pdev->devfn);
+> +	bfad->hal_pcidev.pci_bar_kva =3D bfad->pci_bar0_kva;
+> +	bfad->hal_pcidev.device_id =3D pdev->device;
+> +	bfad->pci_name =3D pci_name(pdev);
+> +
+> +	bfad->pci_attr.vendor_id =3D pdev->vendor;
+> +	bfad->pci_attr.device_id =3D pdev->device;
+> +	bfad->pci_attr.ssid =3D pdev->subsystem_device;
+> +	bfad->pci_attr.ssvid =3D pdev->subsystem_vendor;
+> +	bfad->pci_attr.pcifn =3D PCI_FUNC(pdev->devfn);
+
+Why duplicate all this information?
+
+Greetings,
+
+Eike
+
+--nextPart7597654.u251fTYhS1
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkjchCMACgkQXKSJPmm5/E46QwCfY1VV+yPJjmL5p/15IxcyN5tH
+PfMAnRocaSPFgBp4tVd1NX3BcYUlMA8Q
+=SusH
+-----END PGP SIGNATURE-----
+
+--nextPart7597654.u251fTYhS1--
