@@ -1,113 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYIZJx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYIZJxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403AbYIZJx1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 05:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYIZJxT
+	id S1755555AbYIZJxy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 05:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYIZJxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 05:53:19 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:49020 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752933AbYIZJxS (ORCPT
+	Fri, 26 Sep 2008 05:53:44 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36020 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753376AbYIZJxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 05:53:18 -0400
-Message-ID: <48DCB107.1020307@linux.vnet.ibm.com>
-Date: Fri, 26 Sep 2008 15:23:11 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+	Fri, 26 Sep 2008 05:53:44 -0400
+Date: Fri, 26 Sep 2008 18:59:44 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
        "xemul@openvz.org" <xemul@openvz.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
        ryov@valinux.co.jp
-Subject: Re: [PATCH 6/12] memcg optimize percpu stat
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com> <20080925151823.62bf6bd6.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080925151823.62bf6bd6.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [PATCH 3/12] memcg make root cgroup unlimited.
+Message-Id: <20080926185944.c2e7055a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48DCAB8C.5030405@linux.vnet.ibm.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080925151543.ba307898.kamezawa.hiroyu@jp.fujitsu.com>
+	<48DCA01C.9020701@linux.vnet.ibm.com>
+	<20080926182122.c7c88a65.kamezawa.hiroyu@jp.fujitsu.com>
+	<48DCAB8C.5030405@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Some obvious optimization to memcg.
-> 
-> I found mem_cgroup_charge_statistics() is a little big (in object) and
-> does unnecessary address calclation.
-> This patch is for optimization to reduce the size of this function.
-> 
-> And res_counter_charge() is 'likely' to success.
-> 
-> Changelog v3->v4:
->  - merged with an other leaf patch.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
->  mm/memcontrol.c |   18 ++++++++++--------
->  1 file changed, 10 insertions(+), 8 deletions(-)
-> 
-> Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
-> +++ mmotm-2.6.27-rc7+/mm/memcontrol.c
-> @@ -66,11 +66,10 @@ struct mem_cgroup_stat {
->  /*
->   * For accounting under irq disable, no need for increment preempt count.
->   */
-> -static void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat *stat,
-> +static inline void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat_cpu *stat,
->  		enum mem_cgroup_stat_index idx, int val)
->  {
-> -	int cpu = smp_processor_id();
-> -	stat->cpustat[cpu].count[idx] += val;
-> +	stat->count[idx] += val;
->  }
-> 
->  static s64 mem_cgroup_read_stat(struct mem_cgroup_stat *stat,
-> @@ -237,18 +236,21 @@ static void mem_cgroup_charge_statistics
->  {
->  	int val = (charge)? 1 : -1;
->  	struct mem_cgroup_stat *stat = &mem->stat;
-> +	struct mem_cgroup_stat_cpu *cpustat;
-> 
->  	VM_BUG_ON(!irqs_disabled());
-> +
-> +	cpustat = &stat->cpustat[smp_processor_id()];
->  	if (PageCgroupCache(pc))
-> -		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
-> +		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_CACHE, val);
->  	else
-> -		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
-> +		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_RSS, val);
-> 
->  	if (charge)
-> -		__mem_cgroup_stat_add_safe(stat,
-> +		__mem_cgroup_stat_add_safe(cpustat,
->  				MEM_CGROUP_STAT_PGPGIN_COUNT, 1);
->  	else
-> -		__mem_cgroup_stat_add_safe(stat,
-> +		__mem_cgroup_stat_add_safe(cpustat,
->  				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
->  }
-> 
-> @@ -609,7 +611,7 @@ static int mem_cgroup_charge_common(stru
->  		css_get(&memcg->css);
->  	}
-> 
-> -	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
-> +	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
->  		if (!(gfp_mask & __GFP_WAIT))
->  			goto out;
-> 
-> 
+On Fri, 26 Sep 2008 14:59:48 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Looks good to me
+> > I think "feature" flag is complicated, at this stage.
+> > We'll add more features and not settled yet.
+> > 
+> 
+> I know.. but breaking ABI is a bad bad thing. We'll have to keep the feature
+> flags extensible (add new things). If we all feel we don't have enough users
+> affected by this change, I might agree with you and make that change.
+> 
+Hmm...I'll drop this and add force_empty_may_fail logic in changes in force_empty.
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > Hmm, if you don't like this,
+> > calling try_to_free_page() at force_empty() instead of move_account() ?
+> > 
+> 
+> Not sure I understand this.
+> 
+In following series, force_empty() uses move_account() rather than forget all.
+By this, accounted file caches are kept as accounted and the whole accounting
+will be sane.
 
--- 
-	Balbir
+Another choice is calling try_to_free_pages() at force_empty rather than forget all
+and makes memory usage to be Zero. This will also makes the whole accounting sange.
+
+Thanks,
+-Kame
+
