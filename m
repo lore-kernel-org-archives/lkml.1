@@ -1,244 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYIZBS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbYIZBVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbYIZBS2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 21:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYIZBSU
+	id S1754061AbYIZBVZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 21:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbYIZBVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 21:18:20 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:47329 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbYIZBST (ORCPT
+	Thu, 25 Sep 2008 21:21:11 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:60392 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752522AbYIZBVK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 21:18:19 -0400
-Date: Fri, 26 Sep 2008 10:00:22 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH 9/12] memcg allocate all page_cgroup at boot
-Message-Id: <20080926100022.8bfb8d4d.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Sep 2008 21:21:10 -0400
+Message-ID: <48DC3903.5060207@canonical.com>
+Date: Fri, 26 Sep 2008 02:21:07 +0100
+From: Chris Jones <chris.jones@canonical.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
+MIME-Version: 1.0
+To: jkosina@suse.cz, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.gardner@canonical.com,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Subject: e1000e corruption timeline and logs - ubuntu
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008 15:32:06 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Allocate all page_cgroup at boot and remove page_cgroup poitner
-> from struct page. This patch adds an interface as
-> 
->  struct page_cgroup *lookup_page_cgroup(struct page*)
-> 
-> All FLATMEM/DISCONTIGMEM/SPARSEMEM  and MEMORY_HOTPLUG is supported.
-> 
-> Remove page_cgroup pointer reduces the amount of memory by
->  - 4 bytes per PAGE_SIZE.
->  - 8 bytes per PAGE_SIZE
-> if memory controller is disabled. (even if configured.)
-> meta data usage of this is no problem in FLATMEM/DISCONTIGMEM.
-> On SPARSEMEM, this makes mem_section[] size twice.
-> 
-> On usual 8GB x86-32 server, this saves 8MB of NORMAL_ZONE memory.
-> On my x86-64 server with 48GB of memory, this saves 96MB of memory.
-> (and uses xx kbytes for mem_section.)
-> I think this reduction makes sense.
-> 
-> By pre-allocation, kmalloc/kfree in charge/uncharge are removed. 
-> This means
->   - we're not necessary to be afraid of kmalloc faiulre.
->     (this can happen because of gfp_mask type.)
->   - we can avoid calling kmalloc/kfree.
->   - we can avoid allocating tons of small objects which can be fragmented.
->   - we can know what amount of memory will be used for this extra-lru handling.
-> 
-> I added printk message as
-> 
-> 	"allocated %ld bytes of page_cgroup"
->         "please try cgroup_disable=memory option if you don't want"
-> 
-> maybe enough informative for users.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
->  include/linux/memcontrol.h  |   11 -
->  include/linux/mm_types.h    |    4 
->  include/linux/mmzone.h      |    9 +
->  include/linux/page_cgroup.h |   90 +++++++++++++++
->  mm/Makefile                 |    2 
->  mm/memcontrol.c             |  258 ++++++++++++--------------------------------
->  mm/page_alloc.c             |   12 --
->  mm/page_cgroup.c            |  253 +++++++++++++++++++++++++++++++++++++++++++
->  8 files changed, 431 insertions(+), 208 deletions(-)
-> 
-> Index: mmotm-2.6.27-rc7+/mm/page_cgroup.c
-> ===================================================================
-> --- /dev/null
-> +++ mmotm-2.6.27-rc7+/mm/page_cgroup.c
-> @@ -0,0 +1,253 @@
-> +#include <linux/mm.h>
-> +#include <linux/mmzone.h>
-> +#include <linux/bootmem.h>
-> +#include <linux/bit_spinlock.h>
-> +#include <linux/page_cgroup.h>
-> +#include <linux/hash.h>
-> +#include <linux/memory.h>
-> +
-> +static void __meminit
-> +__init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
-> +{
-> +	pc->flags = 0;
-> +	pc->mem_cgroup = NULL;
-> +	pc->page = pfn_to_page(pfn);
-> +}
-> +static unsigned long total_usage = 0;
-> +
-> +#ifdef CONFIG_FLAT_NODE_MEM_MAP
-> +
-> +
-> +void __init pgdat_page_cgroup_init(struct pglist_data *pgdat)
-> +{
-> +	pgdat->node_page_cgroup = NULL;
-> +}
-> +
-> +struct page_cgroup *lookup_page_cgroup(struct page *page)
-> +{
-> +	unsigned long pfn = page_to_pfn(page);
-> +	unsigned long offset;
-> +	struct page_cgroup *base;
-> +
-> +	base = NODE_DATA(page_to_nid(nid))->node_page_cgroup;
-page_to_nid(page) :)
+Hi
 
-> +	if (unlikely(!base))
-> +		return NULL;
-> +
-> +	offset = pfn - NODE_DATA(page_to_nid(page))->node_start_pfn;
-> +	return base + offset;
-> +}
-> +
-> +static int __init alloc_node_page_cgroup(int nid)
-> +{
-> +	struct page_cgroup *base, *pc;
-> +	unsigned long table_size;
-> +	unsigned long start_pfn, nr_pages, index;
-> +
-> +	start_pfn = NODE_DATA(nid)->node_start_pfn;
-> +	nr_pages = NODE_DATA(nid)->node_spanned_pages;
-> +
-> +	table_size = sizeof(struct page_cgroup) * nr_pages;
-> +
-> +	base = __alloc_bootmem_node_nopanic(NODE_DATA(nid),
-> +			table_size, PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
-> +	if (!base)
-> +		return -ENOMEM;
-> +	for (index = 0; index < nr_pages; index++) {
-> +		pc = base + index;
-> +		__init_page_cgroup(pc, start_pfn + index);
-> +	}
-> +	NODE_DATA(nid)->node_page_cgroup = base;
-> +	total_usage += table_size;
-> +	return 0;
-> +}
-> +
-> +void __init free_node_page_cgroup(int nid)
-> +{
-> +	unsigned long table_size;
-> +	unsigned long nr_pages;
-> +	struct page_cgroup *base;
-> +
-> +	base = NODE_DATA(nid)->node_page_cgroup;
-> +	if (!base)
-> +		return;
-> +	nr_pages = NODE_DATA(nid)->node_spanned_pages;
-> +
-> +	table_size = sizeof(struct page_cgroup) * nr_pages;
-> +
-> +	free_bootmem_node(NODE_DATA(nid),
-> +			(unsigned long)base, table_size);
-> +	NODE_DATA(nid)->node_page_cgroup = NULL;
-> +}
-> +
-Hmm, who uses this function?
+(Apologies for replying in a new thread and crossposting, I'm not
+subscribed to these lists and maybe this will make for useful reading.
+Also please CC me in replies)
 
-(snip)
+wrt Jiri Kosina's post: alpine.LNX.1.10.0809260042380.3389 () pegasus !
+suse ! cz - I hit this bug at the end of August after upgrading to
+Ubuntu Intrepid (which was alpha at the time).
 
-> @@ -812,49 +708,41 @@ __mem_cgroup_uncharge_common(struct page
->  
->  	if (mem_cgroup_subsys.disabled)
->  		return;
-> +	/* check the condition we can know from page */
->  
-> -	/*
-> -	 * Check if our page_cgroup is valid
-> -	 */
-> -	lock_page_cgroup(page);
-> -	pc = page_get_page_cgroup(page);
-> -	if (unlikely(!pc))
-> -		goto unlock;
-> -
-> -	VM_BUG_ON(pc->page != page);
-> +	pc = lookup_page_cgroup(page);
-> +	if (unlikely(!pc || !PageCgroupUsed(pc)))
-> +		return;
-> +	preempt_disable();
-> +	lock_page_cgroup(pc);
-> +	if (unlikely(page_mapped(page))) {
-> +		unlock_page_cgroup(pc);
-> +		preempt_enable();
-> +		return;
-> +	}
-Just for clarification, in what sequence will the page be mapped here?
-mem_cgroup_uncharge_page checks whether the page is mapped.
+Perhaps my timeline[0] would help provide some information to rule
+potential culprits out or in by way of Ubuntu's code at the time.
+Also I have some logs[2-5] that cover the period surrounding the
+corruption happening.
 
-> +	ClearPageCgroupUsed(pc);
-> +	unlock_page_cgroup(pc);
->  
-> -	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
-> -	    && ((PageCgroupCache(pc) || page_mapped(page))))
-> -		goto unlock;
-> -retry:
->  	mem = pc->mem_cgroup;
->  	mz = page_cgroup_zoneinfo(pc);
-> +
->  	spin_lock_irqsave(&mz->lru_lock, flags);
-> -	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED &&
-> -	    unlikely(mem != pc->mem_cgroup)) {
-> -		/* MAPPED account can be done without lock_page().
-> -		   Check race with mem_cgroup_move_account() */
-> -		spin_unlock_irqrestore(&mz->lru_lock, flags);
-> -		goto retry;
-> -	}
-By these changes, ctype becomes unnecessary so it can be removed.
+The timeline shows a <24 hour window from my upgrading to Ubuntu
+Intrepid (and thus getting a 2.6.27 kernel), and the damage actually
+happening.
 
->  	__mem_cgroup_remove_list(mz, pc);
->  	spin_unlock_irqrestore(&mz->lru_lock, flags);
-> -
-> -	page_assign_page_cgroup(page, NULL);
-> -	unlock_page_cgroup(page);
-> -
-> -
-> -	res_counter_uncharge(&mem->res, PAGE_SIZE);
-> +	pc->mem_cgroup = NULL;
->  	css_put(&mem->css);
-> +	preempt_enable();
-> +	res_counter_uncharge(&mem->res, PAGE_SIZE);
->  
-> -	kmem_cache_free(page_cgroup_cache, pc);
->  	return;
-> -unlock:
-> -	unlock_page_cgroup(page);
->  }
->  
+In conjunction with pages like
+https://launchpad.net/ubuntu/+source/linux and
+https://launchpad.net/ubuntu/+source/xserver-xorg-video-intel it should
+be possible to figure out exactly what source I had in use.
 
+My reading of those pages suggests I had this .config[1]
+(which makes sense, it's the oldest 2.6.27 one I have installed and
+there doesn't seem to have been a subsequent publishing of an Ubuntu
+kernel within the failure window). It also suggests I had
+xserver-xorg-video-intel version2:2.4.1-1ubuntu1 (I would not
+necessarily trust the version number cf the vanilla intel driver -
+tracking down the source package in Launchpad or via #ubuntu-x on
+freenode would show exactly which patches were applied). Similarly,
+libgl1-mesa-dri 7.1-1ubuntu1.
 
-Thanks,
-Daisuke Nishimura.
+Apart from (obviously) any occurances where they failed to be written to
+disk, I have kern.log[2] and messages[3] for the period (although not
+syslog itself, that gets rotated out too quickly, unfortunately, but I
+expect kern.log will have any interesting stuff there is to be found).
+The mail in [0] references a kernel WARNING bug on Launchpad which ought
+to be in kern.log, but just in case it isn't, that bug has it attached.
+
+I also have logs[4][5] which show all package activity before and after
+the point of failure, should you be curious about any other versions.
+
+Finally I have some lspci info[6] for the chip from before the error.
+
+Please let me know if there is anything else I can try and pull off my
+(now post-RMA) laptop (Thinkpad X300) which may help.
+
+[0] http://mairukipa.tenshu.net/e1000e/timeline.txt
+[1] http://mairukipa.tenshu.net/e1000e/config-2.6.27-1-generic
+[2] http://mairukipa.tenshu.net/e1000e/kern.log.2.gz
+[3] http://mairukipa.tenshu.net/e1000e/messages.2.gz
+[4] http://mairukipa.tenshu.net/e1000e/dpkg.log-2008-08-28
+[5] http://mairukipa.tenshu.net/e1000e/dpkg.log-2008-08-29
+[6] http://mairukipa.tenshu.net/e1000e/lspci.txt
+
+Cheers,
+-- 
+Chris Jones
+  cmsj@canonical.com
+   www.canonical.com
