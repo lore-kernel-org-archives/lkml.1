@@ -1,113 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbYIZQL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbYIZQML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754147AbYIZQL2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 12:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYIZQLU
+	id S1753643AbYIZQML (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 12:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYIZQLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 12:11:20 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:59148 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752103AbYIZQLT (ORCPT
+	Fri, 26 Sep 2008 12:11:55 -0400
+Received: from mx40.brocade.com ([144.49.195.4]:50087 "EHLO mx40.brocade.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752763AbYIZQLy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 12:11:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=G1u52zDw+EycjonGfGxHBskFrAJt6KTma1MKfHL3oiJ0jdEUw+MzCGiyuyGmgQuOLw
-         UlC+vjtvjRruomaAcWQbzQPmQ+KFAgLLO9pBEeqwAEg1wH13nsZygNrzgQQDN4Yn4Y9I
-         QtynpLr2OeXKdKVh+V30//KXKUjU7wmGEFXZ0=
-Message-ID: <48DD09AD.2010200@gmail.com>
-Date: Fri, 26 Sep 2008 18:11:25 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 26 Sep 2008 12:11:54 -0400
+X-IronPort-AV: E=Sophos;i="4.33,315,1220252400"; 
+   d="scan'208";a="39857169"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Hirokazu Takahashi <taka@valinux.co.jp>, ryov@valinux.co.jp,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
-       jens.axboe@oracle.com
-Subject: Re: dm-ioband + bio-cgroup benchmarks
-References: <20080919131019.GA3606@redhat.com> <20080922.183651.62951479.taka@valinux.co.jp> <20080922143042.GA19222@redhat.com> <20080924.172937.72827863.taka@valinux.co.jp> <20080924140355.GB547@redhat.com>
-In-Reply-To: <20080924140355.GB547@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 5/6] bfa: Brocade BFA FC SCSI driver submission (2ndtry)
+Date: Fri, 26 Sep 2008 09:11:51 -0700
+Message-ID: <4C94DE2070B172459E4F1EE14BD2364E01F280E8@HQ-EXCH-5.corp.brocade.com>
+In-Reply-To: <48DCC284.3040408@emulex.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 5/6] bfa: Brocade BFA FC SCSI driver submission (2ndtry)
+Thread-Index: AckfyCIQkk0AtwHnSsOGWSPeRlEPcgAKVVIg
+References: <200809260106.m8Q160kj028501@swe37.brocade.com> <20080926025514.GD9480@kroah.com> <4C94DE2070B172459E4F1EE14BD2364E01F28079@HQ-EXCH-5.corp.brocade.com> <1222408937.3265.17.camel@localhost.localdomain> <4C94DE2070B172459E4F1EE14BD2364E01F280A3@HQ-EXCH-5.corp.brocade.com> <48DCC284.3040408@emulex.com>
+From: "Jing Huang" <huangj@Brocade.COM>
+To: "James Smart" <James.Smart@Emulex.Com>
+Cc: "James Bottomley" <James.Bottomley@HansenPartnership.com>,
+       "Greg KH" <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>,
+       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
+       "Srikanth Rayas (CW)" <srayas@Brocade.COM>,
+       "Vinodh Ravindran" <vravindr@Brocade.COM>
+X-OriginalArrivalTime: 26 Sep 2008 16:11:53.0280 (UTC) FILETIME=[9701E400:01C91FF2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-[snip]
-> Ok, I will give more details of the thought process.
-> 
-> I was thinking of maintaing an rb-tree per request queue and not an
-> rb-tree per cgroup. This tree can contain all the bios submitted to that
-> request queue through __make_request(). Every node in the tree will represent
-> one cgroup and will contain a list of bios issued from the tasks from that
-> cgroup.
-> 
-> Every bio entering the request queue through __make_request() function
-> first will be queued in one of the nodes in this rb-tree, depending on which
-> cgroup that bio belongs to.
-> 
-> Once the bios are buffered in rb-tree, we release these to underlying
-> elevator depending on the proportionate weight of the nodes/cgroups.
-> 
-> Some more details which I was trying to implement yesterday.
-> 
-> There will be one bio_cgroup object per cgroup. This object will contain
-> many bio_group objects. Each bio_group object will be created for each
-> request queue where a bio from bio_cgroup is queued. Essentially the idea
-> is that bios belonging to a cgroup can be on various request queues in the
-> system. So a single object can not serve the purpose as it can not be on
-> many rb-trees at the same time.  Hence create one sub object which will keep
-> track of bios belonging to one cgroup on a particular request queue.
-> 
-> Each bio_group will contain a list of bios and this bio_group object will
-> be a node in the rb-tree of request queue. For example. Lets say there are
-> two request queues in the system q1 and q2 (lets say they belong to /dev/sda
-> and /dev/sdb). Let say a task t1 in /cgroup/io/test1 is issueing io both
-> for /dev/sda and /dev/sdb.
-> 
-> bio_cgroup belonging to /cgroup/io/test1 will have two sub bio_group
-> objects, say bio_group1 and bio_group2. bio_group1 will be in q1's rb-tree
-> and bio_group2 will be in q2's rb-tree. bio_group1 will contain a list of
-> bios issued by task t1 for /dev/sda and bio_group2 will contain a list of
-> bios issued by task t1 for /dev/sdb. I thought the same can be extended
-> for stacked devices also.
->   
-> I am still trying to implementing it and hopefully this is doable idea.
-> I think at the end of the day it will be something very close to dm-ioband
-> algorithm just that there will be no lvm driver and no notion of separate
-> dm-ioband device. 
+Thanks James. I guess I need to follow up all the updates on this front,
+and will change our management tools accordingly.
 
-Vivek, thanks for the detailed explanation. Only a comment. I guess, if
-we don't change also the per-process optimizations/improvements made by
-some IO scheduler, I think we can have undesirable behaviours.
+Jing
 
-For example: CFQ uses the per-process iocontext to improve fairness
-between *all* the processes in a system. But it doesn't have the concept
-that there's a cgroup context on-top-of the processes.
+-----Original Message-----
+From: James Smart [mailto:James.Smart@Emulex.Com] 
+Sent: Friday, September 26, 2008 4:08 AM
+To: Jing Huang
+Cc: James Bottomley; Greg KH; linux-kernel@vger.kernel.org;
+linux-scsi@vger.kernel.org; Ramkumar Vadivelu; Srikanth Rayas (CW);
+Vinodh Ravindran
+Subject: Re: [PATCH 5/6] bfa: Brocade BFA FC SCSI driver submission
+(2ndtry)
 
-So, some optimizations made to guarantee fairness among processes could
-conflict with algorithms implemented at the cgroup layer. And
-potentially lead to undesirable behaviours.
+We are finally finishing up CT/ELS passthru in the FC transport; SCSI 
+passthru exists, but via the scsi_generic driver (so it's not part of 
+the transport or LLDD); and async event notification is already present 
+in the fc transport.
 
-For example an issue I'm experiencing with my cgroup-io-throttle
-patchset is that a cgroup can consistently increase the IO rate (always
-respecting the max limits), simply increasing the number of IO worker
-tasks respect to another cgroup with a lower number of IO workers. This
-is probably due to the fact the CFQ tries to give the same amount of
-"IO time" to all the tasks, without considering that they're organized
-in cgroup.
+-- james s
 
-I don't see this behaviour with noop or deadline, because they don't
-have the concept of iocontext.
-
--Andrea
+Jing Huang wrote:
+> Hi James,
+> 
+> It is encouraging to know that we can discuss and add new feature into
+> existing fc transport. I guess this is opensource all about. I didn't
+> have linux opensource experience before, so I was not quite sure how
+> easy to request new features in fc transport such as mechanism to
+create
+> multiple subdirectories for different level of statistics info in
+> addition to the snia fc statitistics we already have, and other
+features
+> such as CT/SCSI passthru and asynchronous event notification etc.
+> 
+> Thanks
+> 
+> Jing
