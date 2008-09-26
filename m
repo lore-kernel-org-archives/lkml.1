@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbYIZXNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbYIZXRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbYIZXNg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 19:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYIZXN2
+	id S1754039AbYIZXRB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 19:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbYIZXQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 19:13:28 -0400
-Received: from ebb.errno.com ([69.12.149.25]:1962 "EHLO ebb.errno.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752332AbYIZXN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 19:13:27 -0400
-X-Greylist: delayed 554 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Sep 2008 19:13:27 EDT
-Message-ID: <48DD6A65.1060209@errno.com>
-Date: Fri, 26 Sep 2008 16:04:05 -0700
-From: Sam Leffler <sam@errno.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
-MIME-Version: 1.0
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-CC: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Release of Atheros 802.11abg HAL under the ISC
-References: <20080926215701.GC5972@tesla> <48DD687E.5060703@gmail.com> <20080926230149.GE5972@tesla>
-In-Reply-To: <20080926230149.GE5972@tesla>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 26 Sep 2008 19:16:53 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42765 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752179AbYIZXQw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 19:16:52 -0400
+Date: Fri, 26 Sep 2008 16:16:54 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH v6] Unified trace buffer
+Message-ID: <20080926161654.4ce08913@infradead.org>
+In-Reply-To: <1222456633.16700.292.camel@lappy.programming.kicks-ass.net>
+References: <20080925185154.230259579@goodmis.org>
+	<20080925185236.244343232@goodmis.org>
+	<alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>
+	<48DC406D.1050508@redhat.com>
+	<alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>
+	<alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>
+	<1222456633.16700.292.camel@lappy.programming.kicks-ass.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-DCC-Rhyolite-Metrics: ebb.errno.com; whitelist
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luis R. Rodriguez wrote:
-> On Fri, Sep 26, 2008 at 03:55:58PM -0700, Maxim Levitsky wrote:
->   
->> If I understand this correctly, madwifi is no longer a non-free driver?
->>     
->
-> MadWifi is based on a proprietary HAL which is slightly different
-> than this one, so no, its still non-free. The "free" drivers where
-> I think focus should be put in is ath5k and ath9k as they are now both
-> merged as part of the Linux kernel.
->   
+On Fri, 26 Sep 2008 21:17:13 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-The hal is not proprietary; Atheros just won't allow me to release it.  
-And there are significant differences between the two code bases.
+> On Fri, 2008-09-26 at 14:05 -0400, Steven Rostedt wrote:
+> > +#define CHECK_COND(buffer, cond)                       \
+> > +       if (unlikely(cond)) {                           \
+> > +               atomic_inc(&buffer->record_disabled);   \
+> > +               WARN_ON(1);                             \
+> > +               return -1;                              \
+> > +       }
+> 
+> Arjan, any preferences wrt kerneloops.org?
 
-    Sam
+this works; if you also want to print something use WARN() instead
+
+> 
 
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
