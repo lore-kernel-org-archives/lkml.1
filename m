@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYIZTqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbYIZTsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbYIZTqw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 15:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYIZTqk
+	id S1753966AbYIZTsW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 15:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbYIZTsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 15:46:40 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:54687 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752927AbYIZTqj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 15:46:39 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=NBcUiXZrNtyDZHUsRxZrfxeAOs8zUVnLEIwcY4UC8ZFGs5VGhS398k1UqVC40Kb2p
-	q97hwVpXE8+Y9CBWefPrg==
-Message-ID: <33307c790809261246o47148443j49fee9197d18a3f1@mail.gmail.com>
-Date: Fri, 26 Sep 2008 12:46:23 -0700
-From: "Martin Bligh" <mbligh@google.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [PATCH v6] Unified trace buffer
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       "David Wilder" <dwilder@us.ibm.com>, hch@lst.de,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Masami Hiramatsu" <mhiramat@redhat.com>,
-       "Steven Rostedt" <srostedt@redhat.com>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>
-In-Reply-To: <1222455557.16700.285.camel@lappy.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080925185154.230259579@goodmis.org>
-	 <20080925185236.244343232@goodmis.org>
-	 <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>
-	 <48DC406D.1050508@redhat.com>
-	 <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>
-	 <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>
-	 <1222455557.16700.285.camel@lappy.programming.kicks-ass.net>
+	Fri, 26 Sep 2008 15:48:14 -0400
+Received: from mail.windriver.com ([147.11.1.11]:35220 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751762AbYIZTsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 15:48:14 -0400
+From: Jason Wessel <jason.wessel@windriver.com>
+To: alan@lxorguk.ukuu.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] tty: tty_io.c shadows sparse fix
+Date: Fri, 26 Sep 2008 14:48:01 -0500
+Message-Id: <1222458481-17466-1-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.0.90.g436ed.dirty
+X-OriginalArrivalTime: 26 Sep 2008 19:48:02.0355 (UTC) FILETIME=[C92DB030:01C92010]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 11:59 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Fri, 2008-09-26 at 14:05 -0400, Steven Rostedt wrote:
->
->> +struct buffer_page {
->> +     u64             time_stamp;
->> +     unsigned char   body[];
->> +};
->> +
->> +#define BUF_PAGE_SIZE (PAGE_SIZE - sizeof(u64))
->
-> Since you're already using the page frame, you can stick this per page
-> timestamp in there as well, and get the full page for data.
->
-> You can either use a struct page overlay like slob does, or add a u64 in
-> the union that contains struct {private, mapping}.
+Fix the problem reported by sparse:
 
-What did you guys think of Mathieu's idea of sticking the buffer length
-in the header here, rather than using padding events? Seemed cleaner
-to me.
+drivers/char/tty_io.c:1413:17: warning: symbol 'buf' shadows an earlier one
+drivers/char/tty_io.c:1379:20: originally declared here
+
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+---
+ drivers/char/tty_io.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index daeb8f7..a155002 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -1410,19 +1410,19 @@ static inline ssize_t do_tty_write(
+ 
+ 	/* write_buf/write_cnt is protected by the atomic_write_lock mutex */
+ 	if (tty->write_cnt < chunk) {
+-		unsigned char *buf;
++		unsigned char *buf_chunk;
+ 
+ 		if (chunk < 1024)
+ 			chunk = 1024;
+ 
+-		buf = kmalloc(chunk, GFP_KERNEL);
+-		if (!buf) {
++		buf_chunk = kmalloc(chunk, GFP_KERNEL);
++		if (!buf_chunk) {
+ 			ret = -ENOMEM;
+ 			goto out;
+ 		}
+ 		kfree(tty->write_buf);
+ 		tty->write_cnt = chunk;
+-		tty->write_buf = buf;
++		tty->write_buf = buf_chunk;
+ 	}
+ 
+ 	/* Do the write .. */
+-- 
+1.6.0.90.g436ed.dirty
+
