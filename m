@@ -1,61 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbYIZFio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbYIZFpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbYIZFio (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 01:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbYIZFic
+	id S1754147AbYIZFpA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 01:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYIZFos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 01:38:32 -0400
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:52789 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656AbYIZFia (ORCPT
+	Fri, 26 Sep 2008 01:44:48 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:34048 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752322AbYIZFoq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 01:38:30 -0400
-Message-ID: <48DC7553.8040708@nttdata.co.jp>
-Date: Fri, 26 Sep 2008 14:38:27 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.17) Gecko/20080914 Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
+	Fri, 26 Sep 2008 01:44:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Yml39K7cGtyAI+5NPzxutC4AdJlgmf2Wq83lYIZ1OFVrRPtDfhXb7q1gJnBKXjgkcH
+         uzWapQFI2x/HRHmVcbKWJ3yaK36/FK4b/6AuxTCzWDZxL73UY1BNfBeRUECrL0daWeTD
+         /ufYTtZbtXfIgLkuWId5/dQ6LV3JyA0eBeqGA=
+Message-ID: <4807377b0809252244j73b241e9nebd3d34cf138b214@mail.gmail.com>
+Date: Thu, 25 Sep 2008 22:44:45 -0700
+From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Subject: Re: e1000e NVM corruption issue status
+Cc: LKML <linux-kernel@vger.kernel.org>, "Jiri Kosina" <jkosina@suse.cz>,
+       agospoda@redhat.com, "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
+       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com,
+       "NetDEV list" <netdev@vger.kernel.org>
+In-Reply-To: <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       haradats@nttdata.co.jp,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: Re: [TOMOYO #9 (2.6.27-rc7-mm1) 1/6] LSM adapter functions.
-References: <20080924090317.359685535@nttdata.co.jp> <20080924090338.407746083@nttdata.co.jp> <20080925165954.GA25587@us.ibm.com>
-In-Reply-To: <20080925165954.GA25587@us.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Sep 2008 05:38:28.0125 (UTC) FILETIME=[1A2B74D0:01C91F9A]
+Content-Disposition: inline
+References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com>
+	 <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> > So IMO there is some major badness here in the form of copying all of
-> > those functions out of fs/namei.c.  I think we need to discuss
-> > case-by-case whether using the functions is appropriate (and hence
-> > they should be made non-static in fs/namei.c), or whether the intended
-> > goal should be met some other way.  For instance:
-Indeed.
+I'm apparently in too much of a hurry, including netdev...
 
-To perform DAC before MAC, cloning DAC code (like this patch) or some
-modifications against existing kernel code (such as non-static
-may_open()) are needed.
-
-This posting is the result of our intention that all changes should
-be within security/* . We are now aiming TOMOYO Linux to be merged
-without messing up the existing kernel code. (Also we put the code of
-singly linked list TOMOYO Linux uses not in include/linux/list.h but
-in security/tomoyo/common.h to avoid recomplilation.)
-
-We are ready to remove DAC code in TOMOYO Linux LSM module for now.
-(But DAC should be performed before MAC, it's our future work.) Since
-DAC is performed after security_path_*() hooks, this approach has no
-impact to the semantics of TOMOYO Linux. Is it preferable?
-
-> > likewise...  (except in the case of fifo/sock, devcgroup should not be
-> > consulted as I'm not sure it'll handle that properly - have you tested
-> > tis with the device cgroup enabled?)
-Not tested yet... But I don't think problem occurs.
-
-Regards,
-
+On Thu, Sep 25, 2008 at 6:50 PM, Brandeburg, Jesse
+<jesse.brandeburg@intel.com> wrote:
+> A quick summary of the issue, if you think you have more data, please
+> reply.  If you have had this issue, please reply with results of "cat
+> /proc/iomem" and "lspci".  It will help us correlate data.
+>
+> Problem: some users report that with many of the latest beta distros,
+> during a reboot when e1000e loads it says "NVM checksum is not valid" and
+> the driver fails to load.
+>
+> Result: At this point it appears that most users can load the e1000e
+> driver if they skip the nvm validation error exit.  LAN traffic may or may
+> not work at this point.  Some users report they can dump their eeprom
+> using ethtool -e and see some varying data, most report the eeprom read
+> returns all ff ff ff
+>
+> NOTE: if you have not had this problem, but wish to continue using e1000e
+> I strongly suggest you do a "ethtool -e eth0 > savemyeep.txt"
+>
+> Many of the reports seem to be related in time to a graphics crash, no one
+> has been able to give us more detail about how to reproduce.  We NEED HELP
+> reproducing this.  Steps, hints, anything.  We are trying rebooting,
+> suspending, opensuse, fedora, ubuntu, and several hardware platforms, etc.
+>
+> This seems to effect both 32 and 64 bit kernels, but we haven't heard much
+> either way.
+>
+> hardware affected:
+> laptops and desktops with 82566 or 82567 based LAN parts, which are
+> machines with the ICH8 and ICH9 chipsets and a variety of processors.
+> The machines I know of that have reported the issue include
+> Lenovo X300
+> HP 2510p
+> Intel DP35JO
+> Lenovo T61 (possibly)
+> Lenovo X61 (possibly)
+>
+> Next steps:
+> We are still trying to reproduce the issue locally, we should have a
+> machine here tomorrow that reportedly had the issue with ubuntu.
+>
+> We have a series of kernel patches that I will reply to this mail with
+> that may help users willing to test.
+>
+> We should have ready (hopefully tomorrow) an app that should be able to
+> restore eeproms as long as the driver can still load.
+>
+> We also have a band-aid patch that should allow "locking" of the NVM area
+> to prevent an errant write, we are looking to post that tomorrow.  This
+> should prevent the damage but not really find the culprit.
+>
+> Jesse
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
