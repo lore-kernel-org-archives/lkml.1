@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYIZGtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYIZHCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbYIZGtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 02:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYIZGtK
+	id S1754009AbYIZHCl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 03:02:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYIZHCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 02:49:10 -0400
-Received: from po-out-1718.google.com ([72.14.252.158]:53160 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753582AbYIZGtJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 02:49:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:mime-version
-         :content-type:content-transfer-encoding:content-disposition;
-        b=dbSE78WevweAEkcmhhtIolZJaTS7jMZytfH1qizJxaxAcLm/rmcCAoTbe/uv6uEGHK
-         7UwFmTqX+hF/pn8eGttDOSFQnUj9Pc/7vjm/84jPUsf3HQTRK9Pv46z6zgde3VutUKrr
-         5dGSj9b8MsZx8N/9JXtKrZPauHCDZB8dnYAMI=
-Message-ID: <cfd18e0f0809252349k76604dfy8f0980739194b3ce@mail.gmail.com>
-Date: Fri, 26 Sep 2008 08:49:08 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [PATCH] MAINTAINERS: add mailing list for man-pages
-Cc: lkml <linux-kernel@vger.kernel.org>
+	Fri, 26 Sep 2008 03:02:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43746 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751535AbYIZHCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 03:02:32 -0400
+Date: Fri, 26 Sep 2008 09:02:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Davidson <md@google.com>
+Cc: linux-kernel@vger.kernel.org, mbligh@google.com, tglx@linutronix.de,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: TSC resync
+Message-ID: <20080926070217.GA26081@elte.hu>
+References: <20080925220212.45B0029683@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080925220212.45B0029683@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nowadays, man-pages has an associated mailing list.  Mention that list
-in MAINTAINERS.
 
-Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
+* Michael Davidson <md@google.com> wrote:
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3596d17..8d16c12 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2706,6 +2706,7 @@ MAN-PAGES: MANUAL PAGES FOR LINUX -- Sections 2,
-3, 4, 5, and 7
- P:     Michael Kerrisk
- M:     mtk.manpages@gmail.com
- W:     http://www.kernel.org/doc/man-pages
-+L:     linux-man@vger.kernel.org
- S:     Supported
+> This patch is a slightly cleaned up version of one which has been in 
+> use at for some time now at Google.
+> 
+> It uses an HPET based time source to resynchronize the TSC on systems 
+> where it would otherwise be unsynchronized - eg early AMD Opteron 
+> based systems where the TSC rate drifts when going in and out of the 
+> C1E halt state.
+> 
+> While the approach is quite crude it has been effective for systems 
+> where user space code relies on the TSC advancing at a constant rate 
+> and being reasonably well synchronized between CPUs. The skew between 
+> TSC's on different processors as seen from user space is typically 
+> less than +/- 1000 clock cycles which has proved to be sufficient for 
+> the applications that we care about.
 
- MARVELL LIBERTAS WIRELESS DRIVER
+hm, this patch syncs the TSCs every 20 seconds. That is enough to sync 
+up AMD CPUs where the TSC slows down _slightly_ (at 10 ppm per second or 
+so) when it's in HLT.
+
+How does it behave in face of 'TSC stops' systems - systems with C2/C3 
+sleeps? Basically all modern CPUs that save power are affected by that: 
+the TSC get brutally cut when idle - almost all modern power saving 
+laptop, desktop and server CPUs.
+
+Also, what does it do in face of cpufreq-affected TSCs? That too is a 
+large category of systems. (but most currently shipping CPUs fortunately 
+have a cpufreq-invariant TSC already.)
+
+> I don't expect this patch to be of much general interest, but if you 
+> happen to be unlucky enough to have a system where the TSC is not 
+> synchronized across CPUs and user space code which relies on the 
+> assumption that it is, then this patch may be useful.
+> 
+> Signed-off-by: Michael Davidson <md@google.com>
+
+This actually looks pretty interesting IMO, and the code looks simple, 
+clean and straightforward enough - but it might not be enough to be a 
+generic solution.
+
+	Ingo
