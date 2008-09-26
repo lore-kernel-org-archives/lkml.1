@@ -1,358 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbYIZCWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYIZC0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbYIZCWT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYIZCWJ
+	id S1754566AbYIZC0K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYIZCZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:22:09 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50066 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753031AbYIZCWG (ORCPT
+	Thu, 25 Sep 2008 22:25:56 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37855 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752844AbYIZCZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:22:06 -0400
-Date: Fri, 26 Sep 2008 11:28:41 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH(fixed) 11/12] free page cgroup from LRU in add
-Message-Id: <20080926112841.04be3579.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080926112544.26312246.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926112156.991c5dc4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926112544.26312246.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Sep 2008 22:25:55 -0400
+Date: Thu, 25 Sep 2008 22:25:53 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <48DC43D7.5010008@goop.org>
+Message-ID: <alpine.DEB.1.10.0809252212480.8454@gandalf.stny.rr.com>
+References: <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com>
+ <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org>
+ <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org> <48DBFC7D.4050208@goop.org> <alpine.LFD.1.10.0809251448340.3265@nehalem.linux-foundation.org>
+ <48DC1338.6050107@goop.org> <alpine.DEB.1.10.0809251848170.32742@gandalf.stny.rr.com> <48DC3A89.9020407@goop.org> <alpine.DEB.1.10.0809252132410.8454@gandalf.stny.rr .com> <48DC43D7.5010008@goop.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed HUNK with 9/12(fixed)
-==
-Delaying add_to_lru() and do it in batched manner like page_vec.
-For doing that 2 flags PCG_USED and PCG_LRU.
 
-If PCG_LRU is set, page is on LRU. It safe to access LRU via page_cgroup.
-(under some lock.)
+[
+  "When people ask me what language my mother tongue is,
+   I simply reply 'C'" - Steven Rostedt
+]
 
-For avoiding race, this patch uses TestSetPageCgroupUsed().
-and checking PCG_USED bit and PCG_LRU bit in add/free vector.
-By this, lock_page_cgroup() in mem_cgroup_charge() is removed.
-
-(I don't want to call lock_page_cgroup() under mz->lru_lock when 
- add/free vector core logic. So, TestSetPageCgroupUsed() logic is added.
- TestSet is an easy way to avoid unneccesary nest of locks.)
+This is exactly why I have that saying ;-)
 
 
-Changelog: v3 -> v5.
- - removed css_get/put per page_cgroup struct.
-   Now, *new* force_empty checks there is page_cgroup on the memcg.
-   We don't need to be afraid of leak.
+On Thu, 25 Sep 2008, Jeremy Fitzhardinge wrote:
 
-Changelog: v2 -> v3
- - added TRANSIT flag and removed lock from core logic.
-Changelog: v1 -> v2:
- - renamed function name from use_page_cgroup to set_page_cgroup_lru().
+> Steven Rostedt wrote:
+> > OK, let me rephrase my question.
+> >
+> > How and where do we record this?  Do we keep this information in some 
+> > global variable that we must compare to every time we add a new item in 
+> > the trace?
+> >
+> > Do we have the buffer register a call back to record this information?
+> >   
+> 
+> Something like (total pseudocode):
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Good enough.
 
- include/linux/page_cgroup.h |   10 +++
- mm/memcontrol.c             |  121 +++++++++++++++++++++++++++++++-------------
- 2 files changed, 96 insertions(+), 35 deletions(-)
+> 
+> struct tsc_time_parameters {
+> 	int version;		/* even - values OK; odd - values being updated */
+> 	u64 tsc;
+> 	u32 tsc_freq;
+> 	u64 gtod;
+> };
+> 
+> DEFINE_PERCPU(struct tsc_time_parameters, tsc_params);
 
-Index: mmotm-2.6.27-rc7+/include/linux/page_cgroup.h
-===================================================================
---- mmotm-2.6.27-rc7+.orig/include/linux/page_cgroup.h
-+++ mmotm-2.6.27-rc7+/include/linux/page_cgroup.h
-@@ -24,6 +24,7 @@ enum {
- 	PCG_LOCK,  /* page cgroup is locked */
- 	PCG_CACHE, /* charged as cache */
- 	PCG_USED, /* this object is in use. */
-+	PCG_LRU, /* this is on LRU */
- 	/* flags for LRU placement */
- 	PCG_ACTIVE, /* page is active in this cgroup */
- 	PCG_FILE, /* page is file system backed */
-@@ -42,11 +43,20 @@ static inline void SetPageCgroup##uname(
- static inline void ClearPageCgroup##uname(struct page_cgroup *pc)	\
- 	{ clear_bit(PCG_##lname, &pc->flags);  }
- 
-+#define TESTSETPCGFLAG(uname, lname)\
-+static inline int TestSetPageCgroup##uname(struct page_cgroup *pc)	\
-+	{ return test_and_set_bit(PCG_##lname, &pc->flags);  }
-+
- /* Cache flag is set only once (at allocation) */
- TESTPCGFLAG(Cache, CACHE)
- 
- TESTPCGFLAG(Used, USED)
- CLEARPCGFLAG(Used, USED)
-+TESTSETPCGFLAG(Used, USED)
-+
-+TESTPCGFLAG(LRU, LRU)
-+SETPCGFLAG(LRU, LRU)
-+CLEARPCGFLAG(LRU, LRU)
- 
- /* LRU management flags (from global-lru definition) */
- TESTPCGFLAG(File, FILE)
-Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
-+++ mmotm-2.6.27-rc7+/mm/memcontrol.c
-@@ -149,9 +149,9 @@ enum charge_type {
- 
- static const unsigned long
- pcg_default_flags[NR_CHARGE_TYPE] = {
--	(1 << PCG_CACHE) | (1 << PCG_FILE) | (1 << PCG_USED) | (1 << PCG_LOCK),
--	(1 << PCG_ACTIVE) | (1 << PCG_LOCK) | (1 << PCG_USED),
--	(1 << PCG_ACTIVE) | (1 << PCG_CACHE) | (1 << PCG_USED)|  (1 << PCG_LOCK),
-+	(1 << PCG_CACHE) | (1 << PCG_FILE) | (1 << PCG_USED),
-+	(1 << PCG_ACTIVE) | (1 << PCG_USED),
-+	(1 << PCG_ACTIVE) | (1 << PCG_CACHE) | (1 << PCG_USED),
- };
- 
- /*
-@@ -193,7 +193,6 @@ page_cgroup_zoneinfo(struct page_cgroup 
- 	struct mem_cgroup *mem = pc->mem_cgroup;
- 	int nid = page_cgroup_nid(pc);
- 	int zid = page_cgroup_zid(pc);
--
- 	return mem_cgroup_zoneinfo(mem, nid, zid);
- }
- 
-@@ -341,7 +340,7 @@ void mem_cgroup_move_lists(struct page *
- 	if (!trylock_page_cgroup(pc))
- 		return;
- 
--	if (PageCgroupUsed(pc)) {
-+	if (PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
- 		mem = pc->mem_cgroup;
- 		mz = page_cgroup_zoneinfo(pc);
- 		spin_lock_irqsave(&mz->lru_lock, flags);
-@@ -500,6 +499,9 @@ int mem_cgroup_move_account(struct page 
- 	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
- 	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
- 
-+	if (!PageCgroupLRU(pc))
-+		return ret;
-+
- 	if (res_counter_charge(&to->res, PAGE_SIZE)) {
- 		/* Now, we assume no_limit...no failure here. */
- 		return ret;
-@@ -516,10 +518,8 @@ int mem_cgroup_move_account(struct page 
- 
- 	if (spin_trylock(&to_mz->lru_lock)) {
- 		__mem_cgroup_remove_list(from_mz, pc);
--		css_put(&from->css);
- 		res_counter_uncharge(&from->res, PAGE_SIZE);
- 		pc->mem_cgroup = to;
--		css_get(&to->css);
- 		__mem_cgroup_add_list(to_mz, pc);
- 		ret = 0;
- 		spin_unlock(&to_mz->lru_lock);
-@@ -540,6 +540,7 @@ struct memcg_percpu_vec {
- 	struct page_cgroup *vec[MEMCG_PCPVEC_SIZE];
- };
- static DEFINE_PER_CPU(struct memcg_percpu_vec, memcg_free_vec);
-+static DEFINE_PER_CPU(struct memcg_percpu_vec, memcg_add_vec);
- 
- static void
- __release_page_cgroup(struct memcg_percpu_vec *mpv)
-@@ -555,7 +556,6 @@ __release_page_cgroup(struct memcg_percp
- 	prev_mz = NULL;
- 	for (i = nr - 1; i >= 0; i--) {
- 		pc = mpv->vec[i];
--		VM_BUG_ON(PageCgroupUsed(pc));
- 		mz = page_cgroup_zoneinfo(pc);
- 		if (prev_mz != mz) {
- 			if (prev_mz)
-@@ -563,9 +563,10 @@ __release_page_cgroup(struct memcg_percp
- 			prev_mz = mz;
- 			spin_lock(&mz->lru_lock);
- 		}
--		__mem_cgroup_remove_list(mz, pc);
--		css_put(&pc->mem_cgroup->css);
--		pc->mem_cgroup = NULL;
-+		if (!PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
-+			__mem_cgroup_remove_list(mz, pc);
-+			ClearPageCgroupLRU(pc);
-+		}
- 	}
- 	if (prev_mz)
- 		spin_unlock(&prev_mz->lru_lock);
-@@ -574,10 +575,43 @@ __release_page_cgroup(struct memcg_percp
- }
- 
- static void
-+__set_page_cgroup_lru(struct memcg_percpu_vec *mpv)
-+{
-+	unsigned long flags;
-+	struct mem_cgroup_per_zone *mz, *prev_mz;
-+	struct page_cgroup *pc;
-+	int i, nr;
-+
-+	local_irq_save(flags);
-+	nr = mpv->nr;
-+	mpv->nr = 0;
-+	prev_mz = NULL;
-+
-+	for (i = nr - 1; i >= 0; i--) {
-+		pc = mpv->vec[i];
-+		mz = page_cgroup_zoneinfo(pc);
-+		if (prev_mz != mz) {
-+			if (prev_mz)
-+				spin_unlock(&prev_mz->lru_lock);
-+			prev_mz = mz;
-+			spin_lock(&mz->lru_lock);
-+		}
-+		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
-+			SetPageCgroupLRU(pc);
-+			__mem_cgroup_add_list(mz, pc);
-+		}
-+	}
-+
-+	if (prev_mz)
-+		spin_unlock(&prev_mz->lru_lock);
-+	local_irq_restore(flags);
-+
-+}
-+
-+static void
- release_page_cgroup(struct page_cgroup *pc)
- {
- 	struct memcg_percpu_vec *mpv;
--
- 	mpv = &get_cpu_var(memcg_free_vec);
- 	mpv->vec[mpv->nr++] = pc;
- 	if (mpv->nr >= mpv->limit)
-@@ -585,11 +619,25 @@ release_page_cgroup(struct page_cgroup *
- 	put_cpu_var(memcg_free_vec);
- }
- 
-+static void
-+set_page_cgroup_lru(struct page_cgroup *pc)
-+{
-+	struct memcg_percpu_vec *mpv;
-+
-+	mpv = &get_cpu_var(memcg_add_vec);
-+	mpv->vec[mpv->nr++] = pc;
-+	if (mpv->nr >= mpv->limit)
-+		__set_page_cgroup_lru(mpv);
-+	put_cpu_var(memcg_add_vec);
-+}
-+
- static void page_cgroup_start_cache_cpu(int cpu)
- {
- 	struct memcg_percpu_vec *mpv;
- 	mpv = &per_cpu(memcg_free_vec, cpu);
- 	mpv->limit = MEMCG_PCPVEC_SIZE;
-+	mpv = &per_cpu(memcg_add_vec, cpu);
-+	mpv->limit = MEMCG_PCPVEC_SIZE;
- }
- 
- #ifdef CONFIG_HOTPLUG_CPU
-@@ -598,6 +646,8 @@ static void page_cgroup_stop_cache_cpu(i
- 	struct memcg_percpu_vec *mpv;
- 	mpv = &per_cpu(memcg_free_vec, cpu);
- 	mpv->limit = 0;
-+	mpv = &per_cpu(memcg_add_vec, cpu);
-+	mpv->limit = 0;
- }
- #endif
- 
-@@ -611,6 +661,9 @@ static DEFINE_MUTEX(memcg_force_drain_mu
- static void drain_page_cgroup_local(struct work_struct *work)
- {
- 	struct memcg_percpu_vec *mpv;
-+	mpv = &get_cpu_var(memcg_add_vec);
-+	__set_page_cgroup_lru(mpv);
-+	put_cpu_var(mpv);
- 	mpv = &get_cpu_var(memcg_free_vec);
- 	__release_page_cgroup(mpv);
- 	put_cpu_var(mpv);
-@@ -677,14 +730,9 @@ static int mem_cgroup_charge_common(stru
- 			rcu_read_unlock();
- 			return 0;
- 		}
--		/*
--		 * For every charge from the cgroup, increment reference count
--		 */
--		css_get(&mem->css);
- 		rcu_read_unlock();
- 	} else {
- 		mem = memcg;
--		css_get(&memcg->css);
- 	}
- 
- 	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
-@@ -711,33 +759,36 @@ static int mem_cgroup_charge_common(stru
- 	}
- 
- 	preempt_disable();
--	lock_page_cgroup(pc);
--	if (unlikely(PageCgroupUsed(pc))) {
--		unlock_page_cgroup(pc);
-+	if (TestSetPageCgroupUsed(pc)) {
- 		res_counter_uncharge(&mem->res, PAGE_SIZE);
--		css_put(&mem->css);
- 		preempt_enable();
- 		goto done;
- 	}
--	pc->mem_cgroup = mem;
- 	/*
--	 * If a page is accounted as a page cache, insert to inactive list.
--	 * If anon, insert to active list.
--	 */
--	pc->flags = pcg_default_flags[ctype];
--
--	mz = page_cgroup_zoneinfo(pc);
-+ 	 *  page cgroup is *unused* now....but....
-+ 	 *  We can assume old mem_cgroup's metadata is still available
-+ 	 *  because pc is not on stale LRU after force_empty() is called.
-+ 	 */
-+	if (likely(!PageCgroupLRU(pc)))
-+		pc->flags = pcg_default_flags[ctype];
-+	else {
-+		mz = page_cgroup_zoneinfo(pc);
-+		spin_lock_irqsave(&mz->lru_lock, flags);
-+		if (PageCgroupLRU(pc)) {
-+			__mem_cgroup_remove_list(mz, pc);
-+			ClearPageCgroupLRU(pc);
-+		}
-+		pc->flags = pcg_default_flags[ctype];
-+		spin_unlock_irqrestore(&mz->lru_lock, flags);
-+	}
- 
--	spin_lock_irqsave(&mz->lru_lock, flags);
--	__mem_cgroup_add_list(mz, pc);
--	spin_unlock_irqrestore(&mz->lru_lock, flags);
--	unlock_page_cgroup(pc);
-+	pc->mem_cgroup = mem;
-+	set_page_cgroup_lru(pc);
- 	preempt_enable();
- 
- done:
- 	return 0;
- out:
--	css_put(&mem->css);
- 	return -ENOMEM;
- }
- 
-@@ -823,12 +874,12 @@ __mem_cgroup_uncharge_common(struct page
- 	preempt_disable();
- 	lock_page_cgroup(pc);
- 	ClearPageCgroupUsed(pc);
-+	mem = pc->mem_cgroup;
- 	unlock_page_cgroup(pc);
- 	preempt_enable();
-+	res_counter_uncharge(&mem->res, PAGE_SIZE);
- 
--	mem = pc->mem_cgroup;
- 	release_page_cgroup(pc);
--	res_counter_uncharge(&mem->res, PAGE_SIZE);
- 
- 	return;
- }
+These are all global I presume (No "static" in front)
+
+> 
+> /* To be called after a tsc frequency change, before any new
+>    trace records are being emitted, in a context where we can call get_GTOD() */
+> void update_tsc_params(void)
+
+So this needs to be called by the cpu freq code?
+
+> {
+> 	struct tsc_time_parameters *p = __get_percpu_var(tsc_params);
+> 
+> 	p->version |= 1;
+> 	wmb();
+> 
+> 	p->tsc = get_tsc();
+> 	p->tsc_freq = get_tsc_freq();
+> 	p->gtod = get_GTOD();
+> 
+> 	wmb();
+> 	p->version++;
+> 	wmb();
+> }
+> 
+> DEFINE_PERCPU(unsigned, current_tsc_version);
+> DEFINE_PERCPU(u64, prev_tsc);
+> 
+> /* may be called in any context */
+> u64 get_trace_timestamp_delta(void)
+> {
+> 	const struct tsc_time_parameters *p = &__get_percpu_var(tsc_params);
+> 	unsigned *current_version = &__get_cpu_var(current_tsc_version);
+> 	u64 prev = __get_cpu_var(prev_tsc);
+> 	u64 now, ret;
+> 
+> 	/* check the current tsc_params version against the last one we emitted;
+> 		if the version is odd, then we interrupted the parameters as they were
+> 		being updated, so just emit a new delta with the old parameters */
+> 	if (unlikely(*current_version != p->version && !(p->version & 1))) {
+> 		/* XXX probably need a loop to deal with p->version changing under our feet */
+> 		emit_tsc_freq_record(p);
+
+I take it the above is your record to the tracer?
+
+> 		prev = p->tsc;
+> 		__get_cpu_var(current_tsc_version) = p->version;
+> 	}
+> 
+> 	now = read_tsc();
+
+We probably wont to check here that p didn't change again.
+and try again if it did.
+
+> 	ret = now - prev;
+> 	__get_cpu_var(prev_tsc) = now;
+> 
+> 	return ret;
+> }
+
+
+Hmm, the beginning of each patch will need to record the global tsc, as 
+well as this information. Simply because in overwrite mode, we do not want 
+to lose it if the producer is faster than te consumer.
+
+-- Steve
 
