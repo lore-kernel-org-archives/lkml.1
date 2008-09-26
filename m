@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYIZMsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYIZMsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752723AbYIZMsJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 08:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbYIZMry
+	id S1754760AbYIZMsY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 08:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYIZMrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 26 Sep 2008 08:47:55 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34042 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751786AbYIZMry (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 26 Sep 2008 08:47:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42742 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751841AbYIZMry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 08:47:54 -0400
-Message-ID: <48DCD9D9.9080008@redhat.com>
-Date: Fri, 26 Sep 2008 14:47:21 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Zachary Amsden <zach@vmware.com>, Alok Kataria <akataria@vmware.com>,
-       Alok kataria <alokkataria1@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Yan Li <elliot.li.tech@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
-       "rjmaomao@gmail.com" <rjmaomao@gmail.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
-References: <20080221115452.GB13948@elte.hu>	 <20080907234510.GA24133@yantp.cn.ibm.com>	 <20080908140423.GG11993@elte.hu>	 <35f686220809241928k3669e30bi8a98b440443c4bff@mail.gmail.com>	 <48DB15DB.8040501@zytor.com> <1222317978.23524.117.camel@alok-dev1>	 <48DB1984.8020704@zytor.com> <1222318928.23524.121.camel@alok-dev1>	 <48DB1BCE.2070106@zytor.com>  <1222320201.23524.135.camel@alok-dev1>	 <1222375694.27056.179.camel@bodhitayantram.eng.vmware.com>	 <48DC09D9.7040204@zytor.com> <1222381254.27056.194.camel@bodhitayantram.eng.vmware.com> <48DC105D.9050803@zytor.com>
-In-Reply-To: <48DC105D.9050803@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+Date: Fri, 26 Sep 2008 13:45:34 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Rolf Eike Beer <eike-kernel@sf-tec.de>, Jing Huang <huangj@brocade.com>,
+       James.Bottomley@hansenpartnership.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rvadivel@brocade.com, srayas@brocade.com,
+       vravindr@brocade.com
+Subject: Re: [PATCH 1/6] bfa: Brocade BFA FC SCSI driver submission (2nd
+ try)
+Message-ID: <20080926134534.5a7d4897@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080926122219.GV27204@parisc-linux.org>
+References: <200809260054.m8Q0slEL027478@swe37.brocade.com>
+	<200809260841.39433.eike-kernel@sf-tec.de>
+	<20080926122219.GV27204@parisc-linux.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+On Fri, 26 Sep 2008 06:22:19 -0600
+Matthew Wilcox <matthew@wil.cx> wrote:
 
-> This, of course, is what CPUID is for.
+> On Fri, Sep 26, 2008 at 08:41:31AM +0200, Rolf Eike Beer wrote:
+> > You should use pcim_enable_device(). This would help you by simplifying your 
+> > error and release code as it keeps track of freeing a bunch of resources. See 
+> > Documentation/driver-model/devres.txt.
+> 
+> I hate the devres stuff.  It takes care of most things behind your back,
+> but is terribly complex code and makes bugs next to impossible to track
+> down.  Don't add more users for it unless you really, really have to.
 
-... except that it doesn't always work.  It requires vmx/svm, otherwise
-cpuid doesn't trap and thus can't be filled by the hypervisor ...
+Each to his own. I find the devres code very useful, but then I spend an
+inordinate amount of time trying to sort out messes caused by developers
+forgetting to free resources.
 
-cheers,
-  Gerd
+Using devres is a very good way to avoid having strange half tested paths
+and leaks in your code, and if Matthew doesn't like the complexity of
+devres (its not that complex IMHO) then he can tidy up the
+implementation ;)
 
+Alan
