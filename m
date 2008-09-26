@@ -1,156 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYIZUXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbYIZUdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbYIZUXI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 16:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYIZUW4
+	id S1753173AbYIZUdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 16:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYIZUdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 16:22:56 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52570 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752335AbYIZUW4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 16:22:56 -0400
-Date: Fri, 26 Sep 2008 16:22:53 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mike Travis <travis@sgi.com>
-cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: num_possible_cpus() giving more than possible.
-Message-ID: <alpine.DEB.1.10.0809261613070.21618@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 26 Sep 2008 16:33:04 -0400
+Received: from ns2.suse.de ([195.135.220.15]:37587 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750885AbYIZUdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 16:33:01 -0400
+Date: Fri, 26 Sep 2008 13:19:17 -0700
+From: Greg KH <gregkh@suse.de>
+To: Parag Warudkar <parag.lkml@gmail.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andreas Gruenbacher <agruen@suse.de>, Jeff Mahoney <jeffm@suse.de>
+Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
+Message-ID: <20080926201917.GA2591@suse.de>
+References: <20080925020608.GA13869@suse.de> <f7848160809241959s3f3092b2nf05d2245a08bed03@mail.gmail.com> <20080925042108.GA3931@suse.de> <f7848160809250402l163bb177oeed30f2daa18fafd@mail.gmail.com> <20080925205328.GB11225@suse.de> <f7848160809251440jfcd60f9lb962a75ff01798c8@mail.gmail.com> <20080925220454.GA12116@suse.de> <f7848160809251522s4e589b9eu7a4fc9566d2b25e9@mail.gmail.com> <48DD2BA3.7050808@s5r6.in-berlin.de> <f7848160809261311q487493d1pea4e953dd98f881@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f7848160809261311q487493d1pea4e953dd98f881@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Sep 26, 2008 at 04:11:49PM -0400, Parag Warudkar wrote:
+> On Fri, Sep 26, 2008 at 2:36 PM, Stefan Richter
+> <stefanr@s5r6.in-berlin.de> wrote:
+> > It _is_ necessary.  I for one don't want to have to remember that driver
+> > foobar was in "staging" state in kernel 2.6.31-rc5, but not anymore in
+> > 2.6.32-rc1.
+> 
+> Just name the staging modules with _stg prefix like I said - easier to
+> spot _stg in the module list than decoding the taint.
 
-Hi Mike,
+Um, it's the same, the taint is decoded automatically for you, no need
+to strain any brain cells trying to figure it out :)
 
-Peter told me that I should report this to you. I have two socket
-single core hyper threaded box (must be hell). Peter told me that the 
-num_possible_cpus() should return the number possible on this box. The 
-explanation of my box tells us it should be 4. But it in fact returns 8.
+If people really want a prefix, sure, I have no objection, that's simple
+to add.
 
-nr_cpu_ids also returns 8.
+> Whenever (doubtful tone here) it graduates, remove the suffix.
 
-here's the /proc/cpuinfo:
+5 drivers "graduated" last release cycle, so it will happen.
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 4
-model name	:                   Intel(R) Xeon(TM) CPU 2.80GHz
-stepping	: 1
-cpu MHz		: 2793.151
-cache size	: 1024 KB
-physical id	: 0
-siblings	: 2
-core id		: 0
-cpu cores	: 1
-apicid		: 0
-initial apicid	: 0
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 3
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx 
-lm constant_tsc pebs bts nopl pni monitor ds_cpl cid cx16 xtpr
-bogomips	: 5586.30
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
+> Driver modules load automatically any way so the name change is not
+> going to make a difference.
 
-processor	: 1
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 4
-model name	:                   Intel(R) Xeon(TM) CPU 2.80GHz
-stepping	: 1
-cpu MHz		: 2793.151
-cache size	: 1024 KB
-physical id	: 3
-siblings	: 2
-core id		: 0
-cpu cores	: 1
-apicid		: 6
-initial apicid	: 6
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 3
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx 
-lm constant_tsc pebs bts nopl pni monitor ds_cpl cid cx16 xtpr
-bogomips	: 5586.20
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
+Agreed.
 
-processor	: 2
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 4
-model name	:                   Intel(R) Xeon(TM) CPU 2.80GHz
-stepping	: 1
-cpu MHz		: 2793.151
-cache size	: 1024 KB
-physical id	: 0
-siblings	: 2
-core id		: 0
-cpu cores	: 1
-apicid		: 1
-initial apicid	: 1
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 3
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx 
-lm constant_tsc pebs bts nopl pni monitor ds_cpl cid cx16 xtpr
-bogomips	: 5586.23
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
+> It is nice to not have to change core kernel code and annoy users with
+> warnings for the staging crap even if it is just 24 lines or whatever
+> - if we can - and I don't see why we cannot. Staging, just like
+> crapping, has to be a totally isolated, zero side effect, zero
+> annoyance (to others) type thing :) So let's please get rid of that
+> taint and warning already :)
 
-processor	: 3
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 4
-model name	:                   Intel(R) Xeon(TM) CPU 2.80GHz
-stepping	: 1
-cpu MHz		: 2793.151
-cache size	: 1024 KB
-physical id	: 3
-siblings	: 2
-core id		: 0
-cpu cores	: 1
-apicid		: 7
-initial apicid	: 7
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 3
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx 
-lm constant_tsc pebs bts nopl pni monitor ds_cpl cid cx16 xtpr
-bogomips	: 5586.27
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
+No, that was one of the requirements that came out of the discussions at
+the kernel summit, I'm going to leave both the warning and the modalias
+and taint flag there, sorry.
 
+If you really don't like it, just never enable any of these modules,
+you'll never be bothered by it.
 
-Perhaps since my physical ids show 0 and 3, it thinks it can also have 
-a 1 and 2?
+thanks,
 
-Thanks,
-
--- Steve
-
-
-
+greg k-h
