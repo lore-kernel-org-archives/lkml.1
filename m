@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbYIZWq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYIZW4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbYIZWq1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 18:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbYIZWqT
+	id S1753457AbYIZW4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 18:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYIZW4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 18:46:19 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:32946 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752437AbYIZWqS (ORCPT
+	Fri, 26 Sep 2008 18:56:08 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:41515 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752335AbYIZW4F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 18:46:18 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <48DD662F.7080803@s5r6.in-berlin.de>
-Date: Sat, 27 Sep 2008 00:46:07 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
+	Fri, 26 Sep 2008 18:56:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=HCpaSb5Xo7NE7cW8Iq1QiRvSg4DczcjZsIhfo3oiR0+JMu4x2OAe//C5GjXHxh8utG
+         pePSV4Q3zkbIlHcLjHjYA+DW4SI9M02lsqk0n1x43NJqz1jb9djz0TqfSrnHSL/TaUnP
+         fJhDmQQY5IoLK+bgNxD3bY/w1qNQ9USybnTAQ=
+Message-ID: <48DD687E.5060703@gmail.com>
+Date: Sat, 27 Sep 2008 01:55:58 +0300
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Parag Warudkar <parag.lkml@gmail.com>
-CC: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>, Jeff Mahoney <jeffm@suse.de>
-Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
-References: <20080924230054.GA27730@suse.de> <20080925042108.GA3931@suse.de>	 <f7848160809250402l163bb177oeed30f2daa18fafd@mail.gmail.com>	 <20080925205328.GB11225@suse.de>	 <f7848160809251440jfcd60f9lb962a75ff01798c8@mail.gmail.com>	 <20080925220454.GA12116@suse.de>	 <f7848160809251522s4e589b9eu7a4fc9566d2b25e9@mail.gmail.com>	 <48DD2BA3.7050808@s5r6.in-berlin.de>	 <f7848160809261311q487493d1pea4e953dd98f881@mail.gmail.com>	 <48DD4867.4060009@s5r6.in-berlin.de> <f7848160809261347i3d96487do398ac9af3d952712@mail.gmail.com>
-In-Reply-To: <f7848160809261347i3d96487do398ac9af3d952712@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+CC: linux-wireless <linux-wireless@vger.kernel.org>,
+       ath5k-devel@venema.h4ckr.net, linux-kernel@vger.kernel.org
+Subject: Re: Release of Atheros 802.11abg HAL under the ISC
+References: <20080926215701.GC5972@tesla>
+In-Reply-To: <20080926215701.GC5972@tesla>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parag Warudkar wrote:
-> On Fri, Sep 26, 2008 at 4:39 PM, Stefan Richter
-> <stefanr@s5r6.in-berlin.de> wrote:
->> Parag Warudkar wrote:
->>> Just name the staging modules with _stg prefix like I said - easier to
->>> spot _stg in the module list than decoding the taint.
->> ...
->>> It is nice to not have to change core kernel code and annoy users with
->>> warnings
->> Yes, let's annoy them with weird name changes instead.
+Luis R. Rodriguez wrote:
+> As part of our commitment to help support all of our Atheros devices
+> under Linux we'd like to announce the release of our Atheros HAL for
+> our 802.11abg chipsets under the ISC license.
 > 
-> So people now a days crave for documenting staging modules and also
-> get confused by the mixed use of driver_stg or driver? Come on.
+> You can find it here:
 > 
-> The name changes hardly matter for auto loading staging modules
+> http://www.kernel.org/pub/linux/kernel/people/mcgrof/legacy-hal.tar.bz2
+> 
+> This can be used as a source of documentation to help ath5k move
+> forward to support our 802.11abg chipsets as best as possible in
+> the Linux kernel. We look forward to keep working strongly with the
+> community on advancing support of all our Atheros chipsets under Linux.
 
-I continue to believe that you don't work with users.
+If I understand this correctly, madwifi is no longer a non-free driver?
 
-> and I would be surprised if people document crap modules especially since
-> the stable ones are documented later if at all they end up being
-> documented.
-
-Many of the staging drivers are already in active use; one or another 
-even for years.  Since they are not as easy to use as mainline drivers, 
-people discuss and document them.
--- 
-Stefan Richter
--=====-==--- =--= ==-==
-http://arcgraph.de/sr/
+Regards,
+	Maxim Levitsky
