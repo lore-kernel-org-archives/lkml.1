@@ -1,94 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbYIZC5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbYIZC5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755020AbYIZC5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYIZC5b
+	id S1753481AbYIZC5z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbYIZC5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:57:31 -0400
-Received: from ag-out-0708.google.com ([72.14.246.245]:62582 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753096AbYIZC5a (ORCPT
+	Thu, 25 Sep 2008 22:57:34 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45075 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753515AbYIZC5d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:57:30 -0400
-Message-Id: <A1326102-87D8-44AE-856F-A7E49D9E5538@anirban.org>
-From: Anirban Sinha <kernel@anirban.org>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Oleg Nesterov <oleg@tv-sign.ru>, torvalds@linux-foundation.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Thu, 25 Sep 2008 22:57:33 -0400
+Date: Fri, 26 Sep 2008 12:04:08 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 0/12] memcg updates v5
+Message-Id: <20080926120408.39187294.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080926115810.b5fbae51.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926113228.ee377330.nishimura@mxp.nes.nec.co.jp>
+	<20080926115810.b5fbae51.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: [PATCH]: add a new wait_event_interruptible_timeout_modify helper
-Date: Thu, 25 Sep 2008 19:57:25 -0700
-Cc: kernel@anirban.org
-X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Index: 2.6-git/include/linux/wait.h
-===================================================================
---- 2.6-git.orig/include/linux/wait.h	2008-06-20 21:21:11.000000000  
--0700
-+++ 2.6-git/include/linux/wait.h	2008-09-25 19:41:37.000000000 -0700
-@@ -335,6 +335,55 @@
-  	__ret;								\
-  })
+On Fri, 26 Sep 2008 11:58:10 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-+#define __wait_event_interruptible_timeout_modify(wq, condition, ret,  
-timeout) \
-+do {									\
-+	DEFINE_WAIT(__wait);						\
-+									\
-+	for (;;) {							\
-+		prepare_to_wait(&wq, &__wait, TASK_INTERRUPTIBLE);	\
-+		if (condition)						\
-+			break;						\
-+		if (!signal_pending(current)) {				\
-+			ret = schedule_timeout(ret);			\
-+			*(&timeout) = ret;				\
-+			if (!ret)					\
-+				break;					\
-+			continue;					\
-+		}							\
-+		ret = -ERESTARTSYS;					\
-+		break;							\
-+	}								\
-+	finish_wait(&wq, &__wait);					\
-+} while (0)
-+
-+/**
-+ * wait_event_interruptible_timeout_modify - sleep until a condition  
-gets true or a timeout elapses.
-+ * @wq: the waitqueue to wait on
-+ * @condition: a C expression for the event to wait for
-+ * @timeout: timeout, in jiffies
-+ *
-+ * The process is put to sleep (TASK_INTERRUPTIBLE) until the
-+ * @condition evaluates to true or a signal is received.
-+ * The @condition is checked each time the waitqueue @wq is woken up.
-+ *
-+ * wake_up() has to be called after changing any variable that could
-+ * change the result of the wait condition.
-+ *
-+ * The function returns 0 if the @timeout elapsed, -ERESTARTSYS if it
-+ * was interrupted by a signal, and the remaining jiffies otherwise
-+ * if the condition evaluated to true before the timeout elapsed.
-+ * It also modifies the @timeout value so that if the sleep is  
-interrupted
-+ * by a signal, the caller can call this helper again with the updated
-+ * timeout.
-+ */
-+#define wait_event_interruptible_timeout_modify(wq, condition,  
-timeout)	\
-+({									\
-+	long __ret = timeout;						\
-+	if (!(condition))						\
-+	  __wait_event_interruptible_timeout_modify(wq, condition, __ret,  
-timeout); \
-+	__ret;								\
-+})
-+
-  #define __wait_event_interruptible_exclusive(wq, condition, ret)	\
-  do {									\
-  	DEFINE_WAIT(__wait);						\
+> Thank you.
+> 
+> How about following ?
+> -Kame
+> ==
+> Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
+> +++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+> @@ -597,8 +597,8 @@ __set_page_cgroup_lru(struct memcg_percp
+>  			spin_lock(&mz->lru_lock);
+>  		}
+>  		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
+> -			SetPageCgroupLRU(pc);
+>  			__mem_cgroup_add_list(mz, pc);
+> +			SetPageCgroupLRU(pc);
+>  		}
+>  	}
+>  
+Of course, remove side should be..
+-Kame
+==
+Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+@@ -564,8 +564,8 @@ __release_page_cgroup(struct memcg_percp
+ 			spin_lock(&mz->lru_lock);
+ 		}
+ 		if (!PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
+-			__mem_cgroup_remove_list(mz, pc);
+ 			ClearPageCgroupLRU(pc);
++			__mem_cgroup_remove_list(mz, pc);
+ 		}
+ 	}
+ 	if (prev_mz)
+@@ -597,8 +597,8 @@ __set_page_cgroup_lru(struct memcg_percp
+ 			spin_lock(&mz->lru_lock);
+ 		}
+ 		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
+-			SetPageCgroupLRU(pc);
+ 			__mem_cgroup_add_list(mz, pc);
++			SetPageCgroupLRU(pc);
+ 		}
+ 	}
+ 
 
