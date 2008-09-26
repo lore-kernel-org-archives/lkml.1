@@ -1,85 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754375AbYIZHjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbYIZHo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754375AbYIZHjb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 03:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYIZHjX
+	id S1754282AbYIZHo6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 03:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbYIZHou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 03:39:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37709 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753655AbYIZHjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 03:39:22 -0400
-Date: Fri, 26 Sep 2008 09:39:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: jbarnes@virtuousgeek.org, tglx@linutronix.de, hpa@zytor.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       arjan@linux.intel.com, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [patch] ioremap sanity check to catch mapping requests
-	exceeding the BAR sizes
-Message-ID: <20080926073902.GA30041@elte.hu>
-References: <20080926014334.GF15609@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080926014334.GF15609@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 26 Sep 2008 03:44:50 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:63211 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753164AbYIZHot (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 03:44:49 -0400
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Date: Fri, 26 Sep 2008 12:21:45 +0300
+Message-Id: <20080926092145.3290.59352.sendpatchset@gollum>
+Subject: [GIT PULL] UBIFS updates for 2.6.27-rc8
+X-OriginalArrivalTime: 26 Sep 2008 07:44:02.0263 (UTC) FILETIME=[A4DDAE70:01C91FAB]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+please pull from
 
-> [patch] ioremap sanity check to catch mapping requests exceeding the BAR sizes
-> 
-> Go through the iomem resource tree to check if any of the ioremap() requests
-> span more than any slot in the iomem resource tree and do a WARN_ON() if we hit
-> this check.
-> 
-> This will raise a red-flag, if some driver is mapping more than what
-> is needed. And hopefully identify possible corruptions much earlier.
-> 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+git://git.infradead.org/~dedekind/ubifs-2.6.git linux-next
 
-applied to tip/core/resources, thanks Suresh.
+The following changes since commit adee14b2e1557d0a8559f29681732d05a89dfc35:
+  Linus Torvalds (1):
+        Linux 2.6.27-rc6
 
-one question:
+are available:
 
-> +	for (p = p->child; p ; p = r_next(NULL, p, &l)) {
-> +		/*
-> +		 * We can probably skip the resources with out
-> +		 * IORESOURCE_IO attribute?
-> +		 */
-> +		if (p->start >= addr + size)
-> +			continue;
-> +		if (p->end < addr)
-> +			continue;
-> +		if (p->start <= addr && (p->end >= addr + size - 1))
-> +			continue;
-> +		printk(KERN_WARNING "resource map sanity check conflict "
-> +		       " 0x%llx 0x%llx 0x%llx 0x%llx %s\n",
-> +		       addr, addr + size - 1, p->start, p->end, p->name);
-> +		err = -1;
-> +		break;
+Adrian Hunter (2):
+      UBIFS: TNC / GC race fixes
+      UBIFS: remove incorrect assert
 
-i think all the checks you added are precise to the byte and you allow 
-all the sensible ioremaps: which nest fully inside a single resource - 
-and you reject all the other partial overlap or multiple overlap 
-scenarios.
+Alexander Beregalov (1):
+      UBIFS: fix printk format warnings
 
-One potential thing to check for would be whether addr+size overlaps a 
-4GB boundary? That would almost always be a bug, and it could also cause 
-problems with the checks above if resource_t is 32 bits. The ioremap 
-code should already prevent it though.
+Sebastian Siewior (1):
+      UBIFS: create the name of the background thread in every case
 
-	Ingo
+ fs/ubifs/debug.c |    2 +-
+ fs/ubifs/dir.c   |    2 +-
+ fs/ubifs/find.c  |    1 -
+ fs/ubifs/gc.c    |   14 +++++++++++---
+ fs/ubifs/super.c |    3 +--
+ fs/ubifs/tnc.c   |    2 +-
+ 6 files changed, 15 insertions(+), 9 deletions(-)
+
+These all are fix-only patches of course.
+
+The most important one is
+UBIFS: create the name of the background thread in every case
+reported here:
+http://lists.infradead.org/pipermail/linux-mtd/2008-September/022964.html
+
+The
+UBIFS: TNC / GC race fixes
+problem was not publically reported, but was found and fixed by us
+in Nokia.
+
+These:
+UBIFS: remove incorrect assert
+UBIFS: fix printk format warnings
+are just tiny fixes, which affect only UBIFS debugging mode,
+but it would be nice to have them in 2.6.27 as well.
+
+Thanks.
