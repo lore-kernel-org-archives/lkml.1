@@ -1,134 +1,358 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYIZCVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbYIZCWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754748AbYIZCVU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYIZCVE
+	id S1754128AbYIZCWT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYIZCWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:21:04 -0400
-Received: from mail.windriver.com ([147.11.1.11]:35917 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752919AbYIZCVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:21:01 -0400
-From: Kevin Hao <kexin.hao@windriver.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: Jay Cliburn <jacliburn@bellsouth.net>, Jeff Garzik <jeff@garzik.org>,
-       Jeff Garzik <jgarzik@redhat.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] net: remove LLTX in atl2 driver
-Date: Fri, 26 Sep 2008 10:20:11 +0800
-Message-Id: <1222395611-3400-1-git-send-email-kexin.hao@windriver.com>
-X-Mailer: git-send-email 1.5.6.2.220.g44701
-In-Reply-To: <48DC39D3.3090400@redhat.com>
-References: <48DC39D3.3090400@redhat.com>
+	Thu, 25 Sep 2008 22:22:09 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50066 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753031AbYIZCWG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 22:22:06 -0400
+Date: Fri, 26 Sep 2008 11:28:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH(fixed) 11/12] free page cgroup from LRU in add
+Message-Id: <20080926112841.04be3579.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080926112544.26312246.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926112156.991c5dc4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926112544.26312246.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When NETIF_F_LLTX is set, the atlx driver will use a private lock.
-But in recent kernels this implementation seems redundant and
-can cause problems where AF_PACKET sees things twice. Since
-NETIF_F_LLTX is marked as deprecated and shouldn't be used in
-new driver, this patch removes NETIF_F_LLTX and adds a mmiowb
-before sending packet. I have tested this driver on a Eee PC.
-It works well.
+Fixed HUNK with 9/12(fixed)
+==
+Delaying add_to_lru() and do it in batched manner like page_vec.
+For doing that 2 flags PCG_USED and PCG_LRU.
 
-Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
-Acked-by: Jay Cliburn <jacliburn@bellsouth.net>
----
- drivers/net/atlx/atl2.c |   24 +-----------------------
- drivers/net/atlx/atl2.h |    1 -
- 2 files changed, 1 insertions(+), 24 deletions(-)
+If PCG_LRU is set, page is on LRU. It safe to access LRU via page_cgroup.
+(under some lock.)
 
-diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
-index b2995ac..3df4ee1 100644
---- a/drivers/net/atlx/atl2.c
-+++ b/drivers/net/atlx/atl2.c
-@@ -116,7 +116,6 @@ static int __devinit atl2_sw_init(struct atl2_adapter *adapter)
- 	hw->max_frame_size = adapter->netdev->mtu;
+For avoiding race, this patch uses TestSetPageCgroupUsed().
+and checking PCG_USED bit and PCG_LRU bit in add/free vector.
+By this, lock_page_cgroup() in mem_cgroup_charge() is removed.
+
+(I don't want to call lock_page_cgroup() under mz->lru_lock when 
+ add/free vector core logic. So, TestSetPageCgroupUsed() logic is added.
+ TestSet is an easy way to avoid unneccesary nest of locks.)
+
+
+Changelog: v3 -> v5.
+ - removed css_get/put per page_cgroup struct.
+   Now, *new* force_empty checks there is page_cgroup on the memcg.
+   We don't need to be afraid of leak.
+
+Changelog: v2 -> v3
+ - added TRANSIT flag and removed lock from core logic.
+Changelog: v1 -> v2:
+ - renamed function name from use_page_cgroup to set_page_cgroup_lru().
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ include/linux/page_cgroup.h |   10 +++
+ mm/memcontrol.c             |  121 +++++++++++++++++++++++++++++++-------------
+ 2 files changed, 96 insertions(+), 35 deletions(-)
+
+Index: mmotm-2.6.27-rc7+/include/linux/page_cgroup.h
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/include/linux/page_cgroup.h
++++ mmotm-2.6.27-rc7+/include/linux/page_cgroup.h
+@@ -24,6 +24,7 @@ enum {
+ 	PCG_LOCK,  /* page cgroup is locked */
+ 	PCG_CACHE, /* charged as cache */
+ 	PCG_USED, /* this object is in use. */
++	PCG_LRU, /* this is on LRU */
+ 	/* flags for LRU placement */
+ 	PCG_ACTIVE, /* page is active in this cgroup */
+ 	PCG_FILE, /* page is file system backed */
+@@ -42,11 +43,20 @@ static inline void SetPageCgroup##uname(
+ static inline void ClearPageCgroup##uname(struct page_cgroup *pc)	\
+ 	{ clear_bit(PCG_##lname, &pc->flags);  }
  
- 	spin_lock_init(&adapter->stats_lock);
--	spin_lock_init(&adapter->tx_lock);
++#define TESTSETPCGFLAG(uname, lname)\
++static inline int TestSetPageCgroup##uname(struct page_cgroup *pc)	\
++	{ return test_and_set_bit(PCG_##lname, &pc->flags);  }
++
+ /* Cache flag is set only once (at allocation) */
+ TESTPCGFLAG(Cache, CACHE)
  
- 	set_bit(__ATL2_DOWN, &adapter->flags);
+ TESTPCGFLAG(Used, USED)
+ CLEARPCGFLAG(Used, USED)
++TESTSETPCGFLAG(Used, USED)
++
++TESTPCGFLAG(LRU, LRU)
++SETPCGFLAG(LRU, LRU)
++CLEARPCGFLAG(LRU, LRU)
  
-@@ -749,11 +748,7 @@ static void atl2_down(struct atl2_adapter *adapter)
- 	 * reschedule our watchdog timer */
- 	set_bit(__ATL2_DOWN, &adapter->flags);
+ /* LRU management flags (from global-lru definition) */
+ TESTPCGFLAG(File, FILE)
+Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+@@ -149,9 +149,9 @@ enum charge_type {
  
--#ifdef NETIF_F_LLTX
--	netif_stop_queue(netdev);
--#else
- 	netif_tx_disable(netdev);
--#endif
+ static const unsigned long
+ pcg_default_flags[NR_CHARGE_TYPE] = {
+-	(1 << PCG_CACHE) | (1 << PCG_FILE) | (1 << PCG_USED) | (1 << PCG_LOCK),
+-	(1 << PCG_ACTIVE) | (1 << PCG_LOCK) | (1 << PCG_USED),
+-	(1 << PCG_ACTIVE) | (1 << PCG_CACHE) | (1 << PCG_USED)|  (1 << PCG_LOCK),
++	(1 << PCG_CACHE) | (1 << PCG_FILE) | (1 << PCG_USED),
++	(1 << PCG_ACTIVE) | (1 << PCG_USED),
++	(1 << PCG_ACTIVE) | (1 << PCG_CACHE) | (1 << PCG_USED),
+ };
  
- 	/* reset MAC to disable all RX/TX */
- 	atl2_reset_hw(&adapter->hw);
-@@ -829,7 +824,6 @@ static inline int TxdFreeBytes(struct atl2_adapter *adapter)
- static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
- {
- 	struct atl2_adapter *adapter = netdev_priv(netdev);
--	unsigned long flags;
- 	struct tx_pkt_header *txph;
- 	u32 offset, copy_len;
- 	int txs_unused;
-@@ -845,16 +839,6 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
- 		return NETDEV_TX_OK;
- 	}
- 
--#ifdef NETIF_F_LLTX
--	local_irq_save(flags);
--	if (!spin_trylock(&adapter->tx_lock)) {
--		/* Collision - tell upper layer to requeue */
--		local_irq_restore(flags);
--		return NETDEV_TX_LOCKED;
--	}
--#else
--	spin_lock_irqsave(&adapter->tx_lock, flags);
--#endif
- 	txs_unused = TxsFreeUnit(adapter);
- 	txbuf_unused = TxdFreeBytes(adapter);
- 
-@@ -862,7 +846,6 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
- 		txs_unused < 1) {
- 		/* not enough resources */
- 		netif_stop_queue(netdev);
--		spin_unlock_irqrestore(&adapter->tx_lock, flags);
- 		return NETDEV_TX_BUSY;
- 	}
- 
-@@ -908,8 +891,7 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
- 	ATL2_WRITE_REGW(&adapter->hw, REG_MB_TXD_WR_IDX,
- 		(adapter->txd_write_ptr >> 2));
- 
--	spin_unlock_irqrestore(&adapter->tx_lock, flags);
+ /*
+@@ -193,7 +193,6 @@ page_cgroup_zoneinfo(struct page_cgroup 
+ 	struct mem_cgroup *mem = pc->mem_cgroup;
+ 	int nid = page_cgroup_nid(pc);
+ 	int zid = page_cgroup_zid(pc);
 -
-+	mmiowb();
- 	netdev->trans_start = jiffies;
- 	dev_kfree_skb_any(skb);
- 	return NETDEV_TX_OK;
-@@ -1447,10 +1429,6 @@ static int __devinit atl2_probe(struct pci_dev *pdev,
- 	netdev->features |= (NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX);
+ 	return mem_cgroup_zoneinfo(mem, nid, zid);
+ }
+ 
+@@ -341,7 +340,7 @@ void mem_cgroup_move_lists(struct page *
+ 	if (!trylock_page_cgroup(pc))
+ 		return;
+ 
+-	if (PageCgroupUsed(pc)) {
++	if (PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
+ 		mem = pc->mem_cgroup;
+ 		mz = page_cgroup_zoneinfo(pc);
+ 		spin_lock_irqsave(&mz->lru_lock, flags);
+@@ -500,6 +499,9 @@ int mem_cgroup_move_account(struct page 
+ 	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
+ 	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
+ 
++	if (!PageCgroupLRU(pc))
++		return ret;
++
+ 	if (res_counter_charge(&to->res, PAGE_SIZE)) {
+ 		/* Now, we assume no_limit...no failure here. */
+ 		return ret;
+@@ -516,10 +518,8 @@ int mem_cgroup_move_account(struct page 
+ 
+ 	if (spin_trylock(&to_mz->lru_lock)) {
+ 		__mem_cgroup_remove_list(from_mz, pc);
+-		css_put(&from->css);
+ 		res_counter_uncharge(&from->res, PAGE_SIZE);
+ 		pc->mem_cgroup = to;
+-		css_get(&to->css);
+ 		__mem_cgroup_add_list(to_mz, pc);
+ 		ret = 0;
+ 		spin_unlock(&to_mz->lru_lock);
+@@ -540,6 +540,7 @@ struct memcg_percpu_vec {
+ 	struct page_cgroup *vec[MEMCG_PCPVEC_SIZE];
+ };
+ static DEFINE_PER_CPU(struct memcg_percpu_vec, memcg_free_vec);
++static DEFINE_PER_CPU(struct memcg_percpu_vec, memcg_add_vec);
+ 
+ static void
+ __release_page_cgroup(struct memcg_percpu_vec *mpv)
+@@ -555,7 +556,6 @@ __release_page_cgroup(struct memcg_percp
+ 	prev_mz = NULL;
+ 	for (i = nr - 1; i >= 0; i--) {
+ 		pc = mpv->vec[i];
+-		VM_BUG_ON(PageCgroupUsed(pc));
+ 		mz = page_cgroup_zoneinfo(pc);
+ 		if (prev_mz != mz) {
+ 			if (prev_mz)
+@@ -563,9 +563,10 @@ __release_page_cgroup(struct memcg_percp
+ 			prev_mz = mz;
+ 			spin_lock(&mz->lru_lock);
+ 		}
+-		__mem_cgroup_remove_list(mz, pc);
+-		css_put(&pc->mem_cgroup->css);
+-		pc->mem_cgroup = NULL;
++		if (!PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
++			__mem_cgroup_remove_list(mz, pc);
++			ClearPageCgroupLRU(pc);
++		}
+ 	}
+ 	if (prev_mz)
+ 		spin_unlock(&prev_mz->lru_lock);
+@@ -574,10 +575,43 @@ __release_page_cgroup(struct memcg_percp
+ }
+ 
+ static void
++__set_page_cgroup_lru(struct memcg_percpu_vec *mpv)
++{
++	unsigned long flags;
++	struct mem_cgroup_per_zone *mz, *prev_mz;
++	struct page_cgroup *pc;
++	int i, nr;
++
++	local_irq_save(flags);
++	nr = mpv->nr;
++	mpv->nr = 0;
++	prev_mz = NULL;
++
++	for (i = nr - 1; i >= 0; i--) {
++		pc = mpv->vec[i];
++		mz = page_cgroup_zoneinfo(pc);
++		if (prev_mz != mz) {
++			if (prev_mz)
++				spin_unlock(&prev_mz->lru_lock);
++			prev_mz = mz;
++			spin_lock(&mz->lru_lock);
++		}
++		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
++			SetPageCgroupLRU(pc);
++			__mem_cgroup_add_list(mz, pc);
++		}
++	}
++
++	if (prev_mz)
++		spin_unlock(&prev_mz->lru_lock);
++	local_irq_restore(flags);
++
++}
++
++static void
+ release_page_cgroup(struct page_cgroup *pc)
+ {
+ 	struct memcg_percpu_vec *mpv;
+-
+ 	mpv = &get_cpu_var(memcg_free_vec);
+ 	mpv->vec[mpv->nr++] = pc;
+ 	if (mpv->nr >= mpv->limit)
+@@ -585,11 +619,25 @@ release_page_cgroup(struct page_cgroup *
+ 	put_cpu_var(memcg_free_vec);
+ }
+ 
++static void
++set_page_cgroup_lru(struct page_cgroup *pc)
++{
++	struct memcg_percpu_vec *mpv;
++
++	mpv = &get_cpu_var(memcg_add_vec);
++	mpv->vec[mpv->nr++] = pc;
++	if (mpv->nr >= mpv->limit)
++		__set_page_cgroup_lru(mpv);
++	put_cpu_var(memcg_add_vec);
++}
++
+ static void page_cgroup_start_cache_cpu(int cpu)
+ {
+ 	struct memcg_percpu_vec *mpv;
+ 	mpv = &per_cpu(memcg_free_vec, cpu);
+ 	mpv->limit = MEMCG_PCPVEC_SIZE;
++	mpv = &per_cpu(memcg_add_vec, cpu);
++	mpv->limit = MEMCG_PCPVEC_SIZE;
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -598,6 +646,8 @@ static void page_cgroup_stop_cache_cpu(i
+ 	struct memcg_percpu_vec *mpv;
+ 	mpv = &per_cpu(memcg_free_vec, cpu);
+ 	mpv->limit = 0;
++	mpv = &per_cpu(memcg_add_vec, cpu);
++	mpv->limit = 0;
+ }
  #endif
  
--#ifdef NETIF_F_LLTX
--	netdev->features |= NETIF_F_LLTX;
--#endif
+@@ -611,6 +661,9 @@ static DEFINE_MUTEX(memcg_force_drain_mu
+ static void drain_page_cgroup_local(struct work_struct *work)
+ {
+ 	struct memcg_percpu_vec *mpv;
++	mpv = &get_cpu_var(memcg_add_vec);
++	__set_page_cgroup_lru(mpv);
++	put_cpu_var(mpv);
+ 	mpv = &get_cpu_var(memcg_free_vec);
+ 	__release_page_cgroup(mpv);
+ 	put_cpu_var(mpv);
+@@ -677,14 +730,9 @@ static int mem_cgroup_charge_common(stru
+ 			rcu_read_unlock();
+ 			return 0;
+ 		}
+-		/*
+-		 * For every charge from the cgroup, increment reference count
+-		 */
+-		css_get(&mem->css);
+ 		rcu_read_unlock();
+ 	} else {
+ 		mem = memcg;
+-		css_get(&memcg->css);
+ 	}
+ 
+ 	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
+@@ -711,33 +759,36 @@ static int mem_cgroup_charge_common(stru
+ 	}
+ 
+ 	preempt_disable();
+-	lock_page_cgroup(pc);
+-	if (unlikely(PageCgroupUsed(pc))) {
+-		unlock_page_cgroup(pc);
++	if (TestSetPageCgroupUsed(pc)) {
+ 		res_counter_uncharge(&mem->res, PAGE_SIZE);
+-		css_put(&mem->css);
+ 		preempt_enable();
+ 		goto done;
+ 	}
+-	pc->mem_cgroup = mem;
+ 	/*
+-	 * If a page is accounted as a page cache, insert to inactive list.
+-	 * If anon, insert to active list.
+-	 */
+-	pc->flags = pcg_default_flags[ctype];
 -
- 	/* Init PHY as early as possible due to power saving issue  */
- 	atl2_phy_init(&adapter->hw);
+-	mz = page_cgroup_zoneinfo(pc);
++ 	 *  page cgroup is *unused* now....but....
++ 	 *  We can assume old mem_cgroup's metadata is still available
++ 	 *  because pc is not on stale LRU after force_empty() is called.
++ 	 */
++	if (likely(!PageCgroupLRU(pc)))
++		pc->flags = pcg_default_flags[ctype];
++	else {
++		mz = page_cgroup_zoneinfo(pc);
++		spin_lock_irqsave(&mz->lru_lock, flags);
++		if (PageCgroupLRU(pc)) {
++			__mem_cgroup_remove_list(mz, pc);
++			ClearPageCgroupLRU(pc);
++		}
++		pc->flags = pcg_default_flags[ctype];
++		spin_unlock_irqrestore(&mz->lru_lock, flags);
++	}
  
-diff --git a/drivers/net/atlx/atl2.h b/drivers/net/atlx/atl2.h
-index 6e1f28f..09974df 100644
---- a/drivers/net/atlx/atl2.h
-+++ b/drivers/net/atlx/atl2.h
-@@ -462,7 +462,6 @@ struct atl2_adapter {
- 	u16 link_duplex;
+-	spin_lock_irqsave(&mz->lru_lock, flags);
+-	__mem_cgroup_add_list(mz, pc);
+-	spin_unlock_irqrestore(&mz->lru_lock, flags);
+-	unlock_page_cgroup(pc);
++	pc->mem_cgroup = mem;
++	set_page_cgroup_lru(pc);
+ 	preempt_enable();
  
- 	spinlock_t stats_lock;
--	spinlock_t tx_lock;
+ done:
+ 	return 0;
+ out:
+-	css_put(&mem->css);
+ 	return -ENOMEM;
+ }
  
- 	struct work_struct reset_task;
- 	struct work_struct link_chg_task;
--- 
-1.5.6.2.220.g44701
+@@ -823,12 +874,12 @@ __mem_cgroup_uncharge_common(struct page
+ 	preempt_disable();
+ 	lock_page_cgroup(pc);
+ 	ClearPageCgroupUsed(pc);
++	mem = pc->mem_cgroup;
+ 	unlock_page_cgroup(pc);
+ 	preempt_enable();
++	res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 
+-	mem = pc->mem_cgroup;
+ 	release_page_cgroup(pc);
+-	res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 
+ 	return;
+ }
 
