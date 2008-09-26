@@ -1,55 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbYIZF6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbYIZGAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754210AbYIZF6x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 01:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYIZF6m
+	id S1754626AbYIZGAa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 02:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbYIZGAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 01:58:42 -0400
-Received: from mga06.intel.com ([134.134.136.21]:20888 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752242AbYIZF6m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 01:58:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,310,1220252400"; 
-   d="scan'208";a="443870147"
-Date: Fri, 26 Sep 2008 13:54:33 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: arjan@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, qi.wang@intel.com
-Subject: [PATCH] fastboot: Enter the initcall loop only once for all async
-	initcalls
-Message-ID: <20080926055433.GB11353@ywang-moblin2.bj.intel.com>
-MIME-Version: 1.0
+	Fri, 26 Sep 2008 02:00:17 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:40130 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752532AbYIZGAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 02:00:16 -0400
+Date: Fri, 26 Sep 2008 09:56:52 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Arjan van de Ven <arjan@infradead.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
+       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
+       reinette.chatre@intel.com, jgarzik@pobox.com, linville@tuxdriver.com,
+       davem@davemloft.net, holtmann@linux.intel.com, mjg59@srcf.ucam.org
+Subject: Re: Mark IPW2100 as BROKEN: Fatal interrupt. Scheduling firmware restart.
+Message-ID: <20080926055651.GA19560@2ka.mipt.ru>
+References: <20080921172316.GA6306@2ka.mipt.ru> <20080921110422.1d010b96@infradead.org> <20080921182835.GA11473@2ka.mipt.ru> <20080921113513.16677c4e@infradead.org> <20080921190050.GA20484@2ka.mipt.ru> <20080921205744.2d78f1fa@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080921205744.2d78f1fa@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Sep 21, 2008 at 08:57:44PM +0100, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> > Getting the fact, that rmmod/insmod does not always fix the problem (but
+> > most of the time for a short period of time), I again want to point,
+> > that it looks like a firmware problem related to some inner timings. You
+> > ask me to fix the driver and do not even listen to what I said
+> > previously and do not get that into account and analyze.
+> 
+> Try putting it into D3 counting to 10 and powering it back up. Thats
+> about as close as you can get to pulling the plug when it hangs.
 
-fastboot: Enter the initcall loop only once for all async initcalls
+I made several experimetns with power states in reset handler,
+like put to d3 (hot), disable device, save/resetore states.
+Fatal interrupts continue to fire with essentially the same rate.
 
-Only need to enter the initcall loop once for all async initcalls since
-they have been submitted to async work queue all together when the loop
-is entered for the first async initcall.
+The same error address does not always contain the same error value, but
+frequently it is finit small set.
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Signed-off-by: Qi Wang <qi.wang@intel.com>
----
- init/main.c |    1 +
- 1 file changed, 1 insertion(+)
+Here are some data:
+[41773.200686] ipw2100: Fatal interrupt. Scheduling firmware restart.
+[41773.200707] eth1: Fatal error value: 0x500185B8, address: 0x08004501,
+	inta: 0x40000000
+[41773.200810] ipw2100 0000:02:04.0: PCI INT A disabled
+[41773.203110] ipw2100: IRQ INTA == 0xFFFFFFFF
+[41773.224446] ipw2100: IRQ INTA == 0xFFFFFFFF
+[41773.245781] ipw2100: IRQ INTA == 0xFFFFFFFF
+[41773.249360] ipw2100 0000:02:04.0: enabling device (0000 -> 0002)
+[41773.249384] ipw2100 0000:02:04.0: PCI INT A -> Link[C0C8] -> GSI 11
+	(level, low) -> IRQ 11
+[41773.249426] ipw2100 0000:02:04.0: restoring config space at
+	offset 0x1 (was 0x2900002, writing 0x2900006)
 
-diff --git a/init/main.c b/init/main.c
-index 8967835..672dabf 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -788,6 +788,7 @@ static void __init do_initcalls(void)
- #else
- 			do_async_initcalls(NULL);
- #endif
-+			call = __async_initcall_end - 1;
- 		}
- 		if (phase == 1 && call >= __async_initcall_end)
- 			phase = 2;
+That is quite harmless, since interrupt handler just sees that device is
+dissapearing. This brought me to think more about interrupt processing
+(irq handler and related tasklet), and I found races between interrupt
+tasklet, ipw2100_wx_event_work() handler, reset task and probably
+others. Register access in some cases are proteceted by lock (interrupt
+handler), and in some cases is not (all others). Although every user
+first disables interrupts, but it can be handled right now and scheduled
+tasklet already. Also priv->status field is frequently accessed and
+modified with and without locks. This may be harmless, but still a red
+flag.
+
+Another data about the same failed address:
+eth1: Fatal error value: 0x50018584, address: 0x61C00000, inta:
+0x40000000
+eth1: Fatal error value: 0x50018584, address: 0x61C00000, inta:
+0x40000000
+eth1: Fatal error value: 0x5000CEE4, address: 0x61C00000, inta:
+0x40000000
+eth1: Fatal error value: 0x50018584, address: 0x61C00000, inta:
+0x40000000
+eth1: Fatal error value: 0x5000CEE4, address: 0x61C00000, inta:
+0x40000000
+eth1: Fatal error value: 0x50018584, address: 0x61C00000, inta:
+0x40000000
+eth1: Fatal error value: 0x50018584, address: 0x61C00000, inta:
+0x40000000
+eth1: Fatal error value: 0x5000CEE4, address: 0x61C00000, inta:
+0x40000000
+eth1: Fatal error value: 0x50018584, address: 0x61C00000, inta:
+0x40000000
+eth1: Fatal error value: 0x50018584, address: 0x61C00000, inta:
+0x40000000
+
+values are quite limited, but I saw at different address wider set of
+different data, but still limited. Addresses and values of the fatal
+interrupt do not follow some immediately obvious law, so this looks more
+like firmware losts its mind. The reason for this actually may be a
+register access races described above. I will continue experiments with
+this.
+
+-- 
+	Evgeniy Polyakov
