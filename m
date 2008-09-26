@@ -1,394 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbYIZPZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbYIZPhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754562AbYIZPZi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 11:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYIZPZ1
+	id S1753236AbYIZPhe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 11:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYIZPhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 11:25:27 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:49937 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbYIZPZZ (ORCPT
+	Fri, 26 Sep 2008 11:37:25 -0400
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:31434 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751611AbYIZPhY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 11:25:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=TxnUY0/bvYlXhBTyFwD8kV+N76+RJ4t4o4/iK/AwrTMSLndvcvuMkLcn39hmQv/6N4
-         kqGSsF1ajx/HU8hRN+7g7sPbkpgz/fLQjUsOAdnQ50gN/OhW7RjhHQiOGh8MN2Swqklm
-         POw26x93sUSfsBWouGfX4jjVhpBiufpmxwlPA=
-Message-ID: <48DCFEE1.4010102@gmail.com>
-Date: Fri, 26 Sep 2008 17:25:21 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: mingo@elte.hu
-CC: rostedt@goodmis.org, linux-kernel@vger.kernel.org, pq@iki.fi
-Subject: [Path -tip 1/3] Tracing/ftrace: Change the type of the print_line
- callback
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Sep 2008 11:37:24 -0400
+From: Ian Campbell <ijc@hellion.org.uk>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Tom Tucker <tom@opengridcomputing.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
+       neilb@suse.de, linux-nfs@vger.kernel.org
+In-Reply-To: <20080923170344.GC2700@fieldses.org>
+References: <20080912224323.GN22126@fieldses.org>
+	 <48CAF80A.4010109@opengridcomputing.com>
+	 <1221296243.2534.7.camel@localhost.localdomain>
+	 <1221544139.2534.18.camel@localhost.localdomain>
+	 <48CF9AC3.6060801@opengridcomputing.com>
+	 <1221577412.28572.60.camel@zakaz.uk.xensource.com>
+	 <48CFD7C3.5080207@opengridcomputing.com>
+	 <1221582285.28572.67.camel@zakaz.uk.xensource.com>
+	 <1222156770.6869.13.camel@localhost.localdomain>
+	 <1222169589.6869.20.camel@localhost.localdomain>
+	 <20080923170344.GC2700@fieldses.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WKsm0TWQEwHV+eO4cfBL"
+Date: Fri, 26 Sep 2008 16:37:06 +0100
+Message-Id: <1222443426.3949.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-SA-Exim-Connect-IP: 192.168.1.5
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.0 c=1 a=unbeb6qN2T0A:10 a=497XeZ5pv4kA:10 a=VBWmamPvmWA5gKh9pDAA:9 a=tCMsjMcSr9jI7iwp_lWLHf_fyVoA:4 a=LY0hPdMaydYA:10 a=2Gqrtl2hxvu63f_1LU4A:9 a=f1x-yzlD9YdmzDGO7VspwMneiPoA:4 a=rPt6xJ-oxjAA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need a kind of disambiguation when a print_line callback returns 0.
-This value can significate both: 
 
-_ There is not enough space to print all of the entry. Please flush the current seq and retry
-_ I can't handle this type of entry.
+--=-WKsm0TWQEwHV+eO4cfBL
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Such a confusion can break the pipe.
+On Tue, 2008-09-23 at 13:03 -0400, J. Bruce Fields wrote:
+> On Tue, Sep 23, 2008 at 12:33:09PM +0100, Ian Campbell wrote:
+> > On Tue, 2008-09-23 at 08:59 +0100, Ian Campbell wrote:
+> > > I've found that the problem was backported into the stable stream sin=
+ce
+> > > I cannot reproduce the issue with 2.6.26 but I can with 2.6.26.5. Thi=
+s
+> > > is quite useful since there are only 3 relevant looking changesets in
+> > > that range. I will bisect between these before confirming the culprit=
+ on
+> > > mainline.
+>=20
+> Could you double-check that this is reproduceable with this commit
+> applied, and not reproduceable when it's not?
 
-This patch changes the type of this callback for a better information.
+I've reproduced with exactly commit
+f41f741838480aeaa3a189cff6e210503cf9c42d on trunk and am now running
+2e96d2867245668dbdb973729288cf69b9fafa66 which is the changeset
+immediately before.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index b28bf88..73cd7c5 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -180,6 +180,14 @@ struct trace_array {
- 	struct trace_array_cpu	*data[NR_CPUS];
- };
- 
-+
-+/* Return values for print_line callback */
-+enum print_line_t {
-+	TRACE_TYPE_PARTIAL_LINE	= 0,	/* Retry after flushing the seq */
-+	TRACE_TYPE_HANDLED	= 1,
-+	TRACE_TYPE_UNHANDLED	= 2	/* Relay to other output functions */
-+};
-+
- /*
-  * A specific tracer, represented by methods that operate on a trace array:
-  */
-@@ -200,7 +208,7 @@ struct tracer {
- 	int			(*selftest)(struct tracer *trace,
- 					    struct trace_array *tr);
- #endif
--	int			(*print_line)(struct trace_iterator *iter);
-+	enum print_line_t	(*print_line)(struct trace_iterator *iter);
- 	struct tracer		*next;
- 	int			print_max;
- };
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 50ac334..ca95ec3 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1510,7 +1510,7 @@ void trace_seq_print_cont(struct trace_seq *s, struct trace_iterator *iter)
- 		trace_seq_putc(s, '\n');
- }
- 
--static int
-+static enum print_line_t
- print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
- {
- 	struct trace_seq *s = &iter->seq;
-@@ -1530,7 +1530,7 @@ print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
- 		next_entry = entry;
- 
- 	if (entry->type == TRACE_CONT)
--		return 1;
-+		return TRACE_TYPE_HANDLED;
- 
- 	rel_usecs = ns2usecs(next_entry->field.t - entry->field.t);
- 	abs_usecs = ns2usecs(entry->field.t - iter->tr->time_start);
-@@ -1601,10 +1601,10 @@ print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
- 	default:
- 		trace_seq_printf(s, "Unknown type %d\n", entry->type);
- 	}
--	return 1;
-+	return TRACE_TYPE_HANDLED;
- }
- 
--static int print_trace_fmt(struct trace_iterator *iter)
-+static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
- {
- 	struct trace_seq *s = &iter->seq;
- 	unsigned long sym_flags = (trace_flags & TRACE_ITER_SYM_MASK);
-@@ -1621,7 +1621,7 @@ static int print_trace_fmt(struct trace_iterator *iter)
- 	entry = iter->ent;
- 
- 	if (entry->type == TRACE_CONT)
--		return 1;
-+		return TRACE_TYPE_HANDLED;
- 
- 	field = &entry->field;
- 
-@@ -1633,24 +1633,24 @@ static int print_trace_fmt(struct trace_iterator *iter)
- 
- 	ret = trace_seq_printf(s, "%16s-%-5d ", comm, field->pid);
- 	if (!ret)
--		return 0;
-+		return TRACE_TYPE_PARTIAL_LINE;
- 	ret = trace_seq_printf(s, "[%03d] ", iter->cpu);
- 	if (!ret)
--		return 0;
-+		return TRACE_TYPE_PARTIAL_LINE;
- 	ret = trace_seq_printf(s, "%5lu.%06lu: ", secs, usec_rem);
- 	if (!ret)
--		return 0;
-+		return TRACE_TYPE_PARTIAL_LINE;
- 
- 	switch (entry->type) {
- 	case TRACE_FN:
- 		ret = seq_print_ip_sym(s, field->fn.ip, sym_flags);
- 		if (!ret)
--			return 0;
-+			return TRACE_TYPE_PARTIAL_LINE;
- 		if ((sym_flags & TRACE_ITER_PRINT_PARENT) &&
- 						field->fn.parent_ip) {
- 			ret = trace_seq_printf(s, " <-");
- 			if (!ret)
--				return 0;
-+				return TRACE_TYPE_PARTIAL_LINE;
- 			if (kretprobed(field->fn.parent_ip))
- 				ret = trace_seq_puts(s, KRETPROBE_MSG);
- 			else
-@@ -1658,11 +1658,11 @@ static int print_trace_fmt(struct trace_iterator *iter)
- 						       field->fn.parent_ip,
- 						       sym_flags);
- 			if (!ret)
--				return 0;
-+				return TRACE_TYPE_PARTIAL_LINE;
- 		}
- 		ret = trace_seq_printf(s, "\n");
- 		if (!ret)
--			return 0;
-+			return TRACE_TYPE_PARTIAL_LINE;
- 		break;
- 	case TRACE_CTX:
- 	case TRACE_WAKE:
-@@ -1680,7 +1680,7 @@ static int print_trace_fmt(struct trace_iterator *iter)
- 				       field->ctx.next_prio,
- 				       T);
- 		if (!ret)
--			return 0;
-+			return TRACE_TYPE_PARTIAL_LINE;
- 		break;
- 	case TRACE_SPECIAL:
- 		ret = trace_seq_printf(s, "# %ld %ld %ld\n",
-@@ -1688,23 +1688,23 @@ static int print_trace_fmt(struct trace_iterator *iter)
- 				 field->special.arg2,
- 				 field->special.arg3);
- 		if (!ret)
--			return 0;
-+			return TRACE_TYPE_PARTIAL_LINE;
- 		break;
- 	case TRACE_STACK:
- 		for (i = 0; i < FTRACE_STACK_ENTRIES; i++) {
- 			if (i) {
- 				ret = trace_seq_puts(s, " <= ");
- 				if (!ret)
--					return 0;
-+					return TRACE_TYPE_PARTIAL_LINE;
- 			}
- 			ret = seq_print_ip_sym(s, field->stack.caller[i],
- 					       sym_flags);
- 			if (!ret)
--				return 0;
-+				return TRACE_TYPE_PARTIAL_LINE;
- 		}
- 		ret = trace_seq_puts(s, "\n");
- 		if (!ret)
--			return 0;
-+			return TRACE_TYPE_PARTIAL_LINE;
- 		break;
- 	case TRACE_PRINT:
- 		seq_print_ip_sym(s, field->print.ip, sym_flags);
-@@ -1713,10 +1713,10 @@ static int print_trace_fmt(struct trace_iterator *iter)
- 			trace_seq_print_cont(s, iter);
- 		break;
- 	}
--	return 1;
-+	return TRACE_TYPE_HANDLED;
- }
- 
--static int print_raw_fmt(struct trace_iterator *iter)
-+static enum print_line_t print_raw_fmt(struct trace_iterator *iter)
- {
- 	struct trace_seq *s = &iter->seq;
- 	struct trace_entry *entry;
-@@ -1727,14 +1727,14 @@ static int print_raw_fmt(struct trace_iterator *iter)
- 	entry = iter->ent;
- 
- 	if (entry->type == TRACE_CONT)
--		return 1;
-+		return TRACE_TYPE_HANDLED;
- 
- 	field = &entry->field;
- 
- 	ret = trace_seq_printf(s, "%d %d %llu ",
- 		field->pid, iter->cpu, field->t);
- 	if (!ret)
--		return 0;
-+		return TRACE_TYPE_PARTIAL_LINE;
- 
- 	switch (entry->type) {
- 	case TRACE_FN:
-@@ -1742,7 +1742,7 @@ static int print_raw_fmt(struct trace_iterator *iter)
- 					field->fn.ip,
- 					field->fn.parent_ip);
- 		if (!ret)
--			return 0;
-+			return TRACE_TYPE_PARTIAL_LINE;
- 		break;
- 	case TRACE_CTX:
- 	case TRACE_WAKE:
-@@ -1761,7 +1761,7 @@ static int print_raw_fmt(struct trace_iterator *iter)
- 				       field->ctx.next_prio,
- 				       T);
- 		if (!ret)
--			return 0;
-+			return TRACE_TYPE_PARTIAL_LINE;
- 		break;
- 	case TRACE_SPECIAL:
- 	case TRACE_STACK:
-@@ -1770,7 +1770,7 @@ static int print_raw_fmt(struct trace_iterator *iter)
- 				 field->special.arg2,
- 				 field->special.arg3);
- 		if (!ret)
--			return 0;
-+			return TRACE_TYPE_PARTIAL_LINE;
- 		break;
- 	case TRACE_PRINT:
- 		trace_seq_printf(s, "# %lx %s",
-@@ -1779,7 +1779,7 @@ static int print_raw_fmt(struct trace_iterator *iter)
- 			trace_seq_print_cont(s, iter);
- 		break;
- 	}
--	return 1;
-+	return TRACE_TYPE_HANDLED;
- }
- 
- #define SEQ_PUT_FIELD_RET(s, x)				\
-@@ -1794,7 +1794,7 @@ do {							\
- 		return 0;				\
- } while (0)
- 
--static int print_hex_fmt(struct trace_iterator *iter)
-+static enum print_line_t print_hex_fmt(struct trace_iterator *iter)
- {
- 	struct trace_seq *s = &iter->seq;
- 	unsigned char newline = '\n';
-@@ -1805,7 +1805,7 @@ static int print_hex_fmt(struct trace_iterator *iter)
- 	entry = iter->ent;
- 
- 	if (entry->type == TRACE_CONT)
--		return 1;
-+		return TRACE_TYPE_HANDLED;
- 
- 	field = &entry->field;
- 
-@@ -1843,10 +1843,10 @@ static int print_hex_fmt(struct trace_iterator *iter)
- 	}
- 	SEQ_PUT_FIELD_RET(s, newline);
- 
--	return 1;
-+	return TRACE_TYPE_HANDLED;
- }
- 
--static int print_bin_fmt(struct trace_iterator *iter)
-+static enum print_line_t print_bin_fmt(struct trace_iterator *iter)
- {
- 	struct trace_seq *s = &iter->seq;
- 	struct trace_entry *entry;
-@@ -1855,7 +1855,7 @@ static int print_bin_fmt(struct trace_iterator *iter)
- 	entry = iter->ent;
- 
- 	if (entry->type == TRACE_CONT)
--		return 1;
-+		return TRACE_TYPE_HANDLED;
- 
- 	field = &entry->field;
- 
-@@ -1883,7 +1883,7 @@ static int print_bin_fmt(struct trace_iterator *iter)
- 		SEQ_PUT_FIELD_RET(s, field->special.arg3);
- 		break;
- 	}
--	return 1;
-+	return TRACE_TYPE_HANDLED;
- }
- 
- static int trace_empty(struct trace_iterator *iter)
-@@ -1904,27 +1904,42 @@ static int trace_empty(struct trace_iterator *iter)
- 
- static int print_trace_line(struct trace_iterator *iter)
- {
--	int ret;
-+	enum print_line_t ret;
- 
--	if (iter->trace && iter->trace->print_line)
--		if ((ret = iter->trace->print_line(iter)))
-+	if (iter->trace && iter->trace->print_line) {
-+		ret = iter->trace->print_line(iter);
-+		if (ret == TRACE_TYPE_HANDLED ||
-+		    ret == TRACE_TYPE_PARTIAL_LINE)
- 			return ret;
-+	}
- 
--	if (trace_flags & TRACE_ITER_BIN)
--		if ((ret = print_bin_fmt(iter)))
-+	if (trace_flags & TRACE_ITER_BIN) {
-+		ret = print_bin_fmt(iter);
-+		if (ret == TRACE_TYPE_HANDLED ||
-+		    ret == TRACE_TYPE_PARTIAL_LINE)
- 			return ret;
-+	}
- 
--	if (trace_flags & TRACE_ITER_HEX)
--		if ((ret = print_hex_fmt(iter)))
-+	if (trace_flags & TRACE_ITER_HEX) {
-+		ret = print_hex_fmt(iter);
-+		if (ret == TRACE_TYPE_HANDLED ||
-+		    ret == TRACE_TYPE_PARTIAL_LINE)
- 			return ret;
-+	}
- 
--	if (trace_flags & TRACE_ITER_RAW)
--		if ((ret = print_raw_fmt(iter)))
-+	if (trace_flags & TRACE_ITER_RAW) {
-+		ret = print_raw_fmt(iter);
-+		if (ret == TRACE_TYPE_HANDLED ||
-+		    ret == TRACE_TYPE_PARTIAL_LINE)
- 			return ret;
-+	}
- 
--	if (iter->iter_flags & TRACE_FILE_LAT_FMT)
--		if ((ret = print_lat_fmt(iter, iter->idx, iter->cpu)))
-+	if (iter->iter_flags & TRACE_FILE_LAT_FMT) {
-+		ret = print_lat_fmt(iter, iter->idx, iter->cpu);
-+		if (ret == TRACE_TYPE_HANDLED ||
-+		    ret == TRACE_TYPE_PARTIAL_LINE)
- 			return ret;
-+	}
- 
- 	return print_trace_fmt(iter);
- }
-@@ -2722,11 +2737,11 @@ tracing_read_pipe(struct file *filp, char __user *ubuf,
- 	}
- 
- 	while (find_next_entry_inc(iter) != NULL) {
--		int ret;
-+		enum print_line_t ret;
- 		int len = iter->seq.len;
- 
- 		ret = print_trace_line(iter);
--		if (!ret) {
-+		if (ret == TRACE_TYPE_PARTIAL_LINE) {
- 			/* don't print partial lines */
- 			iter->seq.len = len;
- 			break;
-@@ -2738,6 +2753,10 @@ tracing_read_pipe(struct file *filp, char __user *ubuf,
- 			break;
- 	}
- 
-+	if (!iter->seq.len)
-+		/* Don't break the pipe */
-+		trace_seq_puts(&iter->seq, "Warning: empty seq\n");
-+
- 	for_each_cpu_mask(cpu, mask) {
- 		data = iter->tr->data[cpu];
- 		__raw_spin_unlock(&data->lock);
+> I suppose it's not impossible that this could be triggering the problem
+> in some very roundabout way, but it seems a bit out of left field--so I
+> wonder whether one of the bisection points could have gotten marked good
+> when it should have been bad, or vice-versa.
+
+It's possible, the good case is naturally quite hard to establish with
+100% certainty. I declared v2.6.26 OK after an uptime of 4 days and 19
+hours, compared with failure normally within 1-2 days. It's possible I
+was premature in doing so. I'll run 2e96d2867 for at least a full week
+before reporting back.
+
+Ian.
+--=20
+Ian Campbell
+
+Unix is mature OS, windows is still in diapers and they smell badly.
+		-- Rafael Skodlar=20
+
+--=-WKsm0TWQEwHV+eO4cfBL
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkjdAaIACgkQM0+0qS9rzVlnhwCghXf5JG5La4zjqAI59GFAu8nX
+1A4An0i4FpPd/3R4mGWQrDZNobtD/kBB
+=VM2U
+-----END PGP SIGNATURE-----
+
+--=-WKsm0TWQEwHV+eO4cfBL--
 
