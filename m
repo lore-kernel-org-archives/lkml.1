@@ -1,44 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbYIZMWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbYIZM2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbYIZMWr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 08:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbYIZMWX
+	id S1753741AbYIZM2D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 08:28:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYIZM1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 08:22:23 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:37091 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753864AbYIZMWV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 08:22:21 -0400
-Date: Fri, 26 Sep 2008 06:22:19 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Cc: Jing Huang <huangj@brocade.com>, James.Bottomley@hansenpartnership.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       rvadivel@brocade.com, srayas@brocade.com, vravindr@brocade.com
-Subject: Re: [PATCH 1/6] bfa: Brocade BFA FC SCSI driver submission (2nd try)
-Message-ID: <20080926122219.GV27204@parisc-linux.org>
-References: <200809260054.m8Q0slEL027478@swe37.brocade.com> <200809260841.39433.eike-kernel@sf-tec.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809260841.39433.eike-kernel@sf-tec.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 26 Sep 2008 08:27:53 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:59782 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbYIZM1x (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 08:27:53 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Zachary Amsden <zach@vmware.com>, Alok Kataria <akataria@vmware.com>,
+       Alok kataria <alokkataria1@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Yan Li <elliot.li.tech@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
+       "rjmaomao@gmail.com" <rjmaomao@gmail.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Daniel Hecht <dhecht@vmware.com>
+Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
+In-Reply-To: Your message of "Thu, 25 Sep 2008 15:27:41 PDT."
+             <48DC105D.9050803@zytor.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20080221115452.GB13948@elte.hu> <20080907234510.GA24133@yantp.cn.ibm.com> <20080908140423.GG11993@elte.hu> <35f686220809241928k3669e30bi8a98b440443c4bff@mail.gmail.com> <48DB15DB.8040501@zytor.com> <1222317978.23524.117.camel@alok-dev1> <48DB1984.8020704@zytor.com> <1222318928.23524.121.camel@alok-dev1> <48DB1BCE.2070106@zytor.com> <1222320201.23524.135.camel@alok-dev1> <1222375694.27056.179.camel@bodhitayantram.eng.vmware.com> <48DC09D9.7040204@zytor.com> <1222381254.27056.194.camel@bodhitayantram.eng.vmware.com>
+            <48DC105D.9050803@zytor.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1222432051_7097P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 26 Sep 2008 08:27:31 -0400
+Message-ID: <34947.1222432051@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 08:41:31AM +0200, Rolf Eike Beer wrote:
-> You should use pcim_enable_device(). This would help you by simplifying your 
-> error and release code as it keeps track of freeing a bunch of resources. See 
-> Documentation/driver-model/devres.txt.
+--==_Exmh_1222432051_7097P
+Content-Type: text/plain; charset=us-ascii
 
-I hate the devres stuff.  It takes care of most things behind your back,
-but is terribly complex code and makes bugs next to impossible to track
-down.  Don't add more users for it unless you really, really have to.
+On Thu, 25 Sep 2008 15:27:41 PDT, "H. Peter Anvin" said:
+> Zachary Amsden wrote:
+> > On Thu, 2008-09-25 at 14:59 -0700, H. Peter Anvin wrote:
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> >> should have disappeared in the early 1990's, and it's really disturbing
+> >> that virtualization vendors -- not just VMWare -- are, in effect,
+> >> re-making all the mistakes hardware vendors did in the 1980's.
+...
+> This, of course, is what CPUID is for.
+
+I remember from my old mainframe days that IBM actually got this right all the
+way back in 1967 for the *first* product called VM - the 'Store CPUID'
+instruction would give a specified result when executed on bare iron, but if
+you did it inside a virtual machine running under CP-67 it would give a
+documented different value that couldn't happen on bare iron.
+
+So this mistake goes back a lot further than the 80s... :)
+
+
+
+--==_Exmh_1222432051_7097P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFI3NUzcC3lWbTT17ARAiEmAJ40gQgzjEDUxbEjh0gvjQM2id0DFwCgtAyt
+c2BFxmVEVWAzOQYKyI5+1wU=
+=/9jf
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1222432051_7097P--
