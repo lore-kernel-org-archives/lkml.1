@@ -1,124 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbYIZMdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYIZMf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753255AbYIZMdK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 08:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbYIZMc4
+	id S1753906AbYIZMf2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 08:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYIZMfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 08:32:56 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:37228 "EHLO
-	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbYIZMcz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 08:32:55 -0400
-X-BigFish: VPS-31(zz1432R98dR168aJ1805M936fOzzzzz32i6bh43j65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 5,
-X-WSS-ID: 0K7SYUI-04-T2D-01
-Date: Fri, 26 Sep 2008 14:32:43 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Amit Shah <amit.shah@redhat.com>
-CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       iommu@lists.linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
-Message-ID: <20080926123243.GE27928@amd.com>
-References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <200809261326.19261.amit.shah@redhat.com> <20080926085924.GC27928@amd.com> <200809261619.51637.amit.shah@redhat.com>
+	Fri, 26 Sep 2008 08:35:16 -0400
+Received: from mail.collax.com ([82.194.105.242]:59537 "EHLO mail.collax.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751719AbYIZMfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 08:35:15 -0400
+Message-ID: <48DCD700.7030706@collax.com>
+Date: Fri, 26 Sep 2008 14:35:12 +0200
+From: Tilman Baumann <tilman.baumann@collax.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <200809261619.51637.amit.shah@redhat.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 26 Sep 2008 12:32:43.0745 (UTC) FILETIME=[F9461510:01C91FD3]
+To: Paul Moore <paul.moore@hp.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       linux-security-module@vger.kernel.org
+Subject: Re: SMACK netfilter smacklabel socket match
+References: <48DBC9A1.20900@collax.com> <200809251426.58179.paul.moore@hp.com>
+In-Reply-To: <200809251426.58179.paul.moore@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Filtered: By ProxSMTP
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.33/RELEASE, bases: 26092008 #1128314, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 04:19:51PM +0530, Amit Shah wrote:
-> * On Friday 26 Sep 2008 14:29:24 Joerg Roedel wrote:
-> > On Fri, Sep 26, 2008 at 01:26:19PM +0530, Amit Shah wrote:
-> > > * On Monday 22 Sep 2008 23:51:21 Joerg Roedel wrote:
-> > > > This patch enables stackable dma_ops on x86. To do this, it also
-> > > > enables the per-device dma_ops on i386.
-> > > >
-> > > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > > > ---
-> > > >  arch/x86/kernel/pci-dma.c     |   26 ++++++++++++++++++++++++++
-> > > >  include/asm-x86/device.h      |    6 +++---
-> > > >  include/asm-x86/dma-mapping.h |   14 +++++++-------
-> > > >  3 files changed, 36 insertions(+), 10 deletions(-)
-> > > >
-> > > > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> > > > index b990fb6..2e517c2 100644
-> > > > --- a/arch/x86/kernel/pci-dma.c
-> > > > +++ b/arch/x86/kernel/pci-dma.c
-> > > > @@ -82,6 +82,32 @@ void x86_register_dma_ops(struct dma_mapping_ops
-> > > > *ops, write_unlock_irqrestore(&dma_ops_list_lock, flags);
-> > > >  }
-> > > >
-> > > > +struct dma_mapping_ops *find_dma_ops_for_device(struct device *dev)
-> > > > +{
-> > > > +	int i;
-> > > > +	unsigned long flags;
-> > > > +	struct dma_mapping_ops *entry, *ops = NULL;
-> > > > +
-> > > > +	read_lock_irqsave(&dma_ops_list_lock, flags);
-> > > > +
-> > > > +	for (i = 0; i < DMA_OPS_TYPE_MAX; ++i)
-> > > > +		list_for_each_entry(entry, &dma_ops_list[i], list) {
-> > > > +			if (!entry->device_supported)
-> > > > +				continue;
-> > > > +			if (entry->device_supported(dev)) {
-> > > > +				ops = entry;
-> > > > +				goto out;
-> > > > +			}
-> > > > +		}
-> > > > +out:
-> > > > +	read_unlock_irqrestore(&dma_ops_list_lock, flags);
-> > >
-> > > For PVDMA, we want the "native" dma_ops to succeed first, eg, nommu, and
-> > > then do our "PV DMA", which is just translating gpa  to hpa and then
-> > > program the hardware. This isn't being done here. This can be done by
-> > > extending the return type:
-> > >
-> > > DMA_DEV_NOT_SUPPORTED
-> > > DMA_DEV_HANDLED
-> > > DMA_DEV_PASS
-> > >
-> > > Where NOT_SUPPORTED means we should look for the next one in the chain
-> > > (current return value 0), DEV_HANDLED means the dma operation has been
-> > > handled successfully (current return value 1) and DEV_PASS means fall
-> > > back to the next layer and then return back.
-> >
-> > I am not sure I fully understand what you mean? Why do we need to call
-> > nommu handlers first for PVDMA devices?
-> 
-> For the usual dma_alloc_coherent, dma_map_single, etc. routines. They return 
-> the gpa to the driver. We want to intercept this gpa and convert it to the 
-> hpa before passing on the value to the driver. So our dma_alloc_coherent will 
-> assume the real underlying alloc_coherent has succeeded and then make a 
-> hypercall.
-> 
-> The PV dma_ops routines won't do the usual allocation, etc. that's already 
-> done elsewhere.
+Paul Moore wrote:
 
-Ok, the allocation only matters for dma_alloc_coherent. Fujita
-introduced a generic software-based dma_alloc_coherent recently which
-you can use for that. I think implementing PVDMA into an own dma_ops
-backend and multiplex it using my patches introduces less overhead than
-an additional layer over the current dma_ops implementation.
+> [NOTE: you may notice the above code changing slightly in future 
+> kernels, it turns out that skb->sk == NULL is not a true indicator of a 
+> non-local sender, see my labeled networking patches for 2.6.28 or 
+> linux-next for the revised approach]
 
-Another two questions to your approach: What happens if a
-dma_alloc_coherent allocation crosses page boundarys and the gpa's are
-not contiguous in host memory? How will dma masks be handled?
+Can you give me a pointer where to look?
 
-Joerg
+Will this mean that skb->sk may be invalid or that it will point to a a 
+context based on the network label the packet has?
+In the later case, being able to match remote labels in my match would 
+just give added benefit. (Though a netlabel (CIPSO) match would probably 
+be more sane than a smack specific match.)
+One would just have more choices where to put a rule like this. Like in 
+the FORWARD chain.
+If non local packets are of no interest, one could put the rule in the 
+right chain.
 
+But i think i just misunderstood you here. Since having a socket for non 
+local packets is probably not what you meant.
+
+Regards
+  Tilman
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+Tilman Baumann
+Software Developer
+Collax GmbH . Boetzinger Strasse 60 . 79111 Freiburg . Germany
 
+p: +49 (0) 89-990157-0
+f: +49 (0) 89-990157-11
+
+Geschaeftsfuehrer: William K. Hite / Boris Nalbach
+AG Muenchen HRB 158898, Ust.-IdNr: DE 814464942
