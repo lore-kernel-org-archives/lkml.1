@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYIZNyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYIZN5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbYIZNyA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 09:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYIZNxv
+	id S1753958AbYIZN5N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 09:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYIZN44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 09:53:51 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:55487 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751506AbYIZNxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 09:53:51 -0400
-From: Julien Brunel <brunel@diku.dk>
-To: nicolas.ferre@atmel.com, adaplas@gmail.com,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/video: Bad error test before a dereference
-Date: Fri, 26 Sep 2008 15:53:44 +0200
-User-Agent: KMail/1.9.9
+	Fri, 26 Sep 2008 09:56:56 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:48362 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751999AbYIZN44 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 09:56:56 -0400
+Date: Fri, 26 Sep 2008 09:56:55 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] PM: use pm_op methods for device types
+In-Reply-To: <20080925220635.GA12175@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0809260948580.2395-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809261553.45301.brunel@diku.dk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The error test that follows the call to backlight_device_register
-semms not to concern the right variable.
+On Thu, 25 Sep 2008, Greg KH wrote:
 
-A simplified version of the semantic match that finds this problem is
-as follows: 
-(http://www.emn.fr/x-info/coccinelle/)
-// <smpl>
-@def0@
-expression x;
-position p0;
-@@
-x@p0 = backlight_device_register(...)
+> On Thu, Sep 25, 2008 at 11:27:02PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 25 of September 2008, Alan Stern wrote:
+> > > This patch (as1141) adds code to use the device type's pm_op methods,
+> > > if they are defined.  It fixes a regression in the USB PM code; the
+> > > various suspend and resume methods are defined in the device type
+> > > rather than in the bus, because USB devices have to be handled
+> > > differently from USB interfaces.  Without the patch, those methods
+> > > never get called.
+> > > 
+> > > The patch also fixes a couple of spelling errors.
+> > 
+> > Hm, these changes are not needed in the current mainline, so there's a patch
+> > in -next that removes the code added by this patch.
+> > 
+> > It might be better to find that patch and drop it instead, IMO.
+> 
+> I agree, I think we would have seen more bugs if mainline can't suspend
+> with a USB device attached, right?
+> 
+> confused,
 
-@protected@
-expression def0.x,E;
-position def0.p0;
-position p;
-statement S;
-@@
-x@p0
-... when != x = E
-if (!IS_ERR(x) && ...) {<... x@p ...>} else S
+Okay, I was confused too.  Looking more closely, it's apparent that 
+mainline is okay and the problem was introduced by Hannes Reinecke's 
 
-@unprotected@
-expression def0.x;
-identifier fld;
-position def0.p0;
-position p != protected.p;
-@@
-x@p0
-... when != x = E
-* x@p->fld
-// </smpl>
+driver-core-remove-suspend-resume-callbacks-for-device-type.patch
 
-Signed-off-by: Julien Brunel <brunel@diku.dk>
-Signed-off-by: Julia Lawall <julia@diku.dk>
+which states that the suspend/resume callbacks in struct device_type
+are unused.  It may be true that the legacy suspend/resume methods are
+unused, but the new pm_ops methods definitely are used.
 
----
- drivers/video/atmel_lcdfb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Therefore part or all of Hannes patch should be reverted.  And the 
+mainline is okay as it stands.
 
-diff -u -p a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -132,7 +132,7 @@ static void init_backlight(struct atmel_
- 
- 	bl = backlight_device_register("backlight", &sinfo->pdev->dev,
- 			sinfo, &atmel_lcdc_bl_ops);
--	if (IS_ERR(sinfo->backlight)) {
-+	if (IS_ERR(bl)) {
- 		dev_err(&sinfo->pdev->dev, "error %ld on backlight register\n",
- 				PTR_ERR(bl));
- 		return;
+Alan Stern
+
