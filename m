@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbYIZSxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbYIZSxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753706AbYIZSxV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 14:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYIZSxM
+	id S1753967AbYIZSxe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 14:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYIZSxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 14:53:12 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:61531 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbYIZSxK (ORCPT
+	Fri, 26 Sep 2008 14:53:17 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:57865 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753328AbYIZSxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 14:53:10 -0400
+	Fri, 26 Sep 2008 14:53:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bUkSwcMXD3A8Scy3tSuJa2g2OaXYVMjpv2FndFAi6sirTo46ukNSSwa4lS2I2Ts+i7
-         FP2VyRLifdlZ5h5wO52F5TwFnHf8L7PTCAapCcXDzjvRhXhFfalTsjY6DhGf5sCo8De2
-         DlNlH2WuiZ+JBoUU2C5Licj6QPo4whhHOFeWY=
-Message-ID: <c384c5ea0809261153t2c3a73c2sb46979962e8d1f8c@mail.gmail.com>
-Date: Fri, 26 Sep 2008 20:53:09 +0200
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Steven Noonan" <steven@uplinklabs.net>
-Subject: Re: [PATCH] init: bzip2 or lzma -compressed kernels and initrds
-Cc: "Bill Davidsen" <davidsen@tmr.com>,
-       "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>,
-       "Rob Landley" <rob@landley.net>, "Willy Tarreau" <w@1wt.eu>,
-       "Alain Knaff" <alain@knaff.lu>, torvalds@linux-foundation.org,
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=k+qBOrE7xtEK3cJ2qaLYxwqFj6gE7pmkd3sEsotJMqibL2kpeWMtifIzgoDqmsZoZ3
+         fZL/h1MvVQXCshynDgQFnMgGrmpkQVZYpkA5tziAFbsnuUVPC0TYleNuGeIGWOZHLbrk
+         N1agtdX3HyzurYUK2SHfvlGoDQv/LhPaFx2l8=
+From: Denis ChengRq <crquan@gmail.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <f488382f0809151028w4b5b8a2bs86025e9286cfffe7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200809062119.m86LJ5Of026101@hitchhiker.org.lu>
-	 <20080907054831.GA2244@1wt.eu> <200809142037.48204.rob@landley.net>
-	 <ac9c93b10809150546w7644316bk53122b0ce5021ff4@mail.gmail.com>
-	 <48CE97BA.1060901@tmr.com>
-	 <f488382f0809151028w4b5b8a2bs86025e9286cfffe7@mail.gmail.com>
+Subject: [PATCH] fs/block_dev.c: __read_mostly improvement and sb_is_blkdev_sb utilization
+Date: Sat, 27 Sep 2008 02:52:59 +0800
+Message-Id: <1222455179-29953-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+This simple patch includes serveral improvements:
+1. iget5_locked in bdget really needs blockdev_superblock, instead of bd_mnt,
+  so bd_mnt could be just a local variable;
+2. blockdev_superblock really needs __read_mostly, while local var bd_mnt not;
+3. make use of sb_is_blkdev_sb in bd_forget, instead of direct reference to
+  blockdev_superblock.
 
-On Mon, Sep 15, 2008 at 7:28 PM, Steven Noonan <steven@uplinklabs.net> wrote:
-> On Mon, Sep 15, 2008 at 10:13 AM, Bill Davidsen <davidsen@tmr.com> wrote:
->> Frans Meulenbroeks wrote:
->>>
->>> For kernel/ramfsimage etc the best choice is the one that has the
->>> fastest decompression (info on tukaani.org says gzip).
->>> Rationale: as it uncompresses faster the system will boot faster.
->>> ...
->
-> It all really depends on what you're prioritizing.
+Signed-off-by: Denis ChengRq <crquan@gmail.com>
+---
+ fs/block_dev.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-Exactly.
-
-Whenever LZMA comes up people start discussing the differences and
-then discuss what is THE best.
-So far, IMHO there is NONE. Selecting the best filesystem is about
-making trade-offs depending on what you need.
-
-For example, the systems I use squashfs for, are intended to be booted
-only *once* (or incidently after a firmware upgrade). I do not care
-about the memory it takes, or if takes twice as long. Also, I need the
-rootfs to be read-only. Distributing over any media and uploading
-Linux/FPGA firmware over very slow device backplanes is my main
-concern.
-Squashfs w/ LZMA works best for me, because smallest. Kudos.
-
-Linux, THE best if you need choice.
-
-Regards,
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index aff5421..6d8a3ca 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -326,12 +326,13 @@ static struct file_system_type bd_type = {
+ 	.kill_sb	= kill_anon_super,
+ };
+ 
+-static struct vfsmount *bd_mnt __read_mostly;
+-struct super_block *blockdev_superblock;
++struct super_block *blockdev_superblock __read_mostly;
+ 
+ void __init bdev_cache_init(void)
+ {
+ 	int err;
++	struct vfsmount *bd_mnt;
++
+ 	bdev_cachep = kmem_cache_create("bdev_cache", sizeof(struct bdev_inode),
+ 			0, (SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT|
+ 				SLAB_MEM_SPREAD|SLAB_PANIC),
+@@ -373,7 +374,7 @@ struct block_device *bdget(dev_t dev)
+ 	struct block_device *bdev;
+ 	struct inode *inode;
+ 
+-	inode = iget5_locked(bd_mnt->mnt_sb, hash(dev),
++	inode = iget5_locked(blockdev_superblock, hash(dev),
+ 			bdev_test, bdev_set, &dev);
+ 
+ 	if (!inode)
+@@ -463,7 +464,7 @@ void bd_forget(struct inode *inode)
+ 
+ 	spin_lock(&bdev_lock);
+ 	if (inode->i_bdev) {
+-		if (inode->i_sb != blockdev_superblock)
++		if (!sb_is_blkdev_sb(inode->i_sb))
+ 			bdev = inode->i_bdev;
+ 		__bd_forget(inode);
+ 	}
 -- 
-Leon
+1.5.6.3
+
