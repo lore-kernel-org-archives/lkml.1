@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbYIZWYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbYIZW2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754500AbYIZWYu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 18:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbYIZWYm
+	id S1753721AbYIZW2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 18:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYIZW2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 18:24:42 -0400
-Received: from [198.145.64.141] ([198.145.64.141]:44965 "EHLO coco.kroah.org"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752069AbYIZWYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 18:24:41 -0400
-Date: Fri, 26 Sep 2008 15:21:47 -0700
-From: Greg KH <greg@kroah.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
-Subject: Re: [malware-list] [RFC 3/11] fanotify: fscking all notify, system
-	wide file access notification
-Message-ID: <20080926222147.GC10141@kroah.com>
-References: <1222463904.2872.212.camel@localhost.localdomain>
+	Fri, 26 Sep 2008 18:28:07 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39902 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750885AbYIZW2G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 18:28:06 -0400
+Message-ID: <48DD61F4.3000704@sgi.com>
+Date: Fri, 26 Sep 2008 15:28:04 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222463904.2872.212.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH v6] Unified trace buffer
+References: <20080925185154.230259579@goodmis.org>	 <20080925185236.244343232@goodmis.org>	 <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>	 <48DC406D.1050508@redhat.com>	 <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>	 <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com> <1222456474.16700.289.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1222456474.16700.289.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 05:18:24PM -0400, Eric Paris wrote:
-> diff --git a/fs/notify/fanotify.h b/fs/notify/fanotify.h
-> new file mode 100644
-> index 0000000..d6bc0c0
-> --- /dev/null
-> +++ b/fs/notify/fanotify.h
-> @@ -0,0 +1,87 @@
-> +#ifndef _LINUX_FANOTIFY_PRIVATE_H
-> +#define _LINUX_FANOTIFY_PRIVATE_H
-> +
-> +#include <linux/fanotify.h>
-> +
-> +
-> +#include <asm/atomic.h>
-> +#include <linux/dcache.h>
-> +#include <linux/list.h>
-> +#include <linux/mutex.h>
-> +#include <linux/path.h>
-> +#include <linux/types.h>
-> +#include <linux/wait.h>
+Peter Zijlstra wrote:
+> On Fri, 2008-09-26 at 14:05 -0400, Steven Rostedt wrote:
+>> +struct ring_buffer {
+>> +       unsigned long           size;
+>> +       unsigned                pages;
+>> +       unsigned                flags;
+>> +       int                     cpus;
+>> +       atomic_t                record_disabled;
+>> +
+>> +       struct mutex            mutex;
+>> +
+>> +       /* FIXME: this should be online CPUS */
+>> +       struct ring_buffer_per_cpu *buffers[NR_CPUS];
+> 
+> actually nr_possible makes sense, and you might consider always
+> allocating buffers (and keeping them for offlined cpus) to avoid massive
+> allocations/frees cpu-hotplug events.
+> 
+> Mike Travis has been going over the kernel removing constructs like
+> this, and replacing them with dynamically allocated arrays of
+> nr_possible.
+> 
+>> +};
 
-<asm/> includes after <linux/> please.
+The other thing to consider is using a percpu variable.
 
-> +
-> +extern int check_notification_queue(struct fanotify_group *group);
-> +extern void get_event(struct fanotify_event *event);
-> +extern void put_event(struct fanotify_event *event);
-> +extern int add_event_to_group_notification(struct fanotify_group *group, struct fanotify_event *event);
-> +extern struct fanotify_event *remove_event_from_group_notification(struct fanotify_group *group);
-> +extern struct fanotify_event *create_event(struct file *file, unsigned int mask);
-> +extern struct fanotify_event_holder *alloc_event_holder(void);
-> +extern void destroy_event_holder(struct fanotify_event_holder *holder);
-
-Those are some pretty generic global function names (get_event?).
-Please add a fanotify_ to the front of them to help developers
-understand them and to not polute the global name space.
-
-> +extern __init int fanotify_notification_init(void);
-> +extern __init int fanotify_notification_uninit(void);
-> +
-> +extern void fanotify_get_group(struct fanotify_group *group);
-> +extern void fanotify_put_group(struct fanotify_group *group);
-> +extern int fanotify_register_group(char *name, unsigned int mask);
-> +extern int fanotify_unregister_group(char *name, unsigned int mask);
-
-Like you did here nicely :)
-
-> +DEFINE_MUTEX(groups_mutex);
-> +struct srcu_struct groups_srcu_struct;
-> +LIST_HEAD(groups);
-
-Again with the generic global symbol names.
-
-thanks,
-
-greg k-h
+Cheers,
+Mike
