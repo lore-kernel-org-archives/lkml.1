@@ -1,77 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbYIZNYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbYIZN07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753437AbYIZNYI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 09:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYIZNXz
+	id S1753686AbYIZN07 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 09:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbYIZN0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 09:23:55 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:60668 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751374AbYIZNXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 09:23:54 -0400
-From: Julien Brunel <brunel@diku.dk>
-To: tiwai@suse.de, liam.girdwood@wolfsonmicro.com,
-       broonie@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] sound/soc/at32: Useless NULL test
-Date: Fri, 26 Sep 2008 15:23:46 +0200
-User-Agent: KMail/1.9.9
+	Fri, 26 Sep 2008 09:26:51 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:29866 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506AbYIZN0u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 09:26:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=GHzkePhxk4sJRpcYmCwgnJsFtxSe3SB4JPLFqXMJYDcW9uUc234gqqcIFA3qcM9gvG
+         PNy+OOZ1Y1q/l3nt98EAZU/8nRA6drTR4TpdJkohVX7941tU6WWOHUOgCplPL1JrpzcW
+         b5ogHPDJEboMDYprrofr/PRXi7Zdi1EodQPkw=
+Message-ID: <e8ca35370809260626j5e55e0d8n4d33fb6542a48d48@mail.gmail.com>
+Date: Fri, 26 Sep 2008 15:26:50 +0200
+From: "Pascal Terjan" <pterjan@gmail.com>
+To: "Sitsofe Wheeler" <sitsofe@yahoo.com>
+Subject: Re: Turning off camera also kills card reader on EeePC 900
+Cc: "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Corentin Chary" <corentincj@iksaif.net>,
+       acpi4asus-user@lists.sourceforge.net
+In-Reply-To: <e8ca35370809260356l569f248dya77c8a3d9586c21c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809261523.46747.brunel@diku.dk>
+References: <579556.5870.qm@web38203.mail.mud.yahoo.com>
+	 <e8ca35370809260356l569f248dya77c8a3d9586c21c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The test (ssc != NULL) can only be reached if the call to the function
-ssc_request, the result of which ssc is assigned, succeeds. Moreover,
-two statements assign NULL to ssc just before a return, which is useless
-since it is a local variable. So, we suggest to delete the test and
-the two assignments.
+On Fri, Sep 26, 2008 at 12:56 PM, Pascal Terjan <pterjan@gmail.com> wrote:
+> I have just tried with latest git and it seems to work fine !
 
-A simplified version of the semantic match that finds this problem is
-as follows: 
-(http://www.emn.fr/x-info/coccinelle/)
-
-// <smpl>
-@bad_null_test@
-expression x,E;
-@@
-x = ssc_request(...)
-... when != x = E
-* x != NULL
-// </smpl>
-
-Signed-off-by:  Julien Brunel <brunel@diku.dk>
-Signed-off-by:  Julia Lawall <julia@diku.dk>
-
----
- sound/soc/at32/playpaq_wm8510.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
-diff -u -p a/sound/soc/at32/playpaq_wm8510.c b/sound/soc/at32/playpaq_wm8510.c
---- a/sound/soc/at32/playpaq_wm8510.c
-+++ b/sound/soc/at32/playpaq_wm8510.c
-@@ -405,7 +405,6 @@ static int __init playpaq_asoc_init(void
- 	ssc = ssc_request(0);
- 	if (IS_ERR(ssc)) {
- 		ret = PTR_ERR(ssc);
--		ssc = NULL;
- 		goto err_ssc;
- 	}
- 	ssc_p->ssc = ssc;
-@@ -476,10 +475,7 @@ err_pll0:
- 		_gclk0 = NULL;
- 	}
- err_gclk0:
--	if (ssc != NULL) {
--		ssc_free(ssc);
--		ssc = NULL;
--	}
-+	ssc_free(ssc);
- err_ssc:
- 	return ret;
- }
+just for information, rc7 + 5257d97a219e17abf8188f136e1189da3b3af33c is OK too
