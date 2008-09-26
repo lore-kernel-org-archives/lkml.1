@@ -1,797 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbYIZXh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbYIZXrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754487AbYIZXh3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 19:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYIZXhU
+	id S1754163AbYIZXrL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 19:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbYIZXq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 19:37:20 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39864 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbYIZXhQ convert rfc822-to-8bit (ORCPT
+	Fri, 26 Sep 2008 19:46:57 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:38068 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752332AbYIZXq4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 19:37:16 -0400
-Date: Fri, 26 Sep 2008 16:37:18 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: [PATCH] pci: introduce users of ioremap_pcibar()
-Message-ID: <20080926163718.32f0867e@infradead.org>
-In-Reply-To: <20080926163641.288bf868@infradead.org>
-References: <20080926163641.288bf868@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Fri, 26 Sep 2008 19:46:56 -0400
+Subject: Use CPUID to communicate with the hypervisor.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, avi@redhat.com,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
+       Dan Hecht <dhecht@vmware.com>, Jun.Nakajima@Intel.Com
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Fri, 26 Sep 2008 16:46:55 -0700
+Message-Id: <1222472815.29886.43.camel@alok-dev1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From b94333809306543604f8bf23da6dddca3efac451 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Fri, 26 Sep 2008 16:36:00 -0700
-Subject: [PATCH] pci: introduce users of ioremap_pcibar()
+From: Alok N Kataria <akataria@vmware.com>
 
-one big patch for now; I'll split this up after the first review round to avoid
-to have to redo that many times
+This patch proposes to use a cpuid interface to detect if we are running on an
+hypervisor.
+The discovery of a hypervisor is determined by bit 31 of CPUID#1_ECX, which is
+defined to be "hypervisor present bit". For a VM, the bit is 1, otherwise it is
+set to 0. This bit is not officially documented by either Intel/AMD yet, but
+they plan to do so some time soon, in the meanwhile they have promised to keep
+it reserved for virtualization.
+
+Also, Intel & AMD have reserved the cpuid levels 0x40000000 - 0x400000FF for
+software use. Hypervisors can use these levels to provide an interface to pass
+information from the hypervisor to the guest. This is similar to how we extract
+information about a physical cpu by using cpuid.
+XEN/KVM are already using the info leaf to get the hypervisor signature.
+
+VMware hardware version 7 defines some of these cpuid levels, below is a brief
+description about those. These levels can be implemented by other hypervisors
+too so that Linux has a standard way of communicating to any hypervisor.
+
+Leaf 0x40000000, Hypervisor CPUID information
+# EAX: The maximum input value for hypervisor CPUID info (0x40000010).
+# EBX, ECX, EDX: Hypervisor vendor ID signature. E.g. "VMwareVMware"
+
+Leaf 0x40000010,  Timing information.
+# EAX: (Virtual) TSC frequency in kHz.
+# EBX: (Virtual) Bus (local apic timer) frequency in kHz.
+# ECX, EDX: RESERVED
+
+This patch uses the timing leaf to get the tsc_frequency from the hypervisor.
+Since the calibration algorithm can have errors in a virtualized environment,
+the best way to calibrate TSC frequency would be to ask the hypervisor about it.
+
+Along with it we also use the hypervisor information leaf to print info messages
+at kernel bootup.
+
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Cc: Jun Nakajima <Jun.Nakajima@Intel.Com>
 ---
- drivers/block/sx8.c                        |    3 +--
- drivers/edac/i82875p_edac.c                |    4 +---
- drivers/i2c/busses/i2c-hydra.c             |    2 +-
- drivers/ide/pci/sgiioc4.c                  |    2 +-
- drivers/media/common/saa7146_core.c        |    3 +--
- drivers/media/video/cx23885/cx23885-core.c |    3 +--
- drivers/media/video/cx88/cx88-cards.c      |    3 +--
- drivers/mfd/sm501.c                        |    3 +--
- drivers/misc/ibmasm/module.c               |    3 +--
- drivers/misc/tifm_7xx1.c                   |    3 +--
- drivers/mmc/host/sdhci-pci.c               |    2 +-
- drivers/mtd/maps/pci.c                     |    3 +--
- drivers/net/bnx2x_main.c                   |    3 +--
- drivers/net/e1000/e1000_main.c             |    7 ++-----
- drivers/net/epic100.c                      |    2 +-
- drivers/net/ixgb/ixgb_main.c               |    3 +--
- drivers/net/qla3xxx.c                      |    4 +---
- drivers/net/s2io.c                         |    6 ++----
- drivers/net/wan/dscc4.c                    |    3 +--
- drivers/net/wan/pc300too.c                 |    2 +-
- drivers/net/wan/pci200syn.c                |    2 +-
- drivers/net/wireless/hostap/hostap_pci.c   |    2 +-
- drivers/net/wireless/ipw2200.c             |    2 +-
- drivers/net/wireless/rt2x00/rt2x00pci.c    |    3 +--
- drivers/pci/hotplug/cpcihp_zt5550.c        |    3 +--
- drivers/pci/hotplug/cpqphp_core.c          |    3 +--
- drivers/scsi/advansys.c                    |    3 +--
- drivers/scsi/arcmsr/arcmsr_hba.c           |    8 +++-----
- drivers/scsi/ipr.c                         |    2 +-
- drivers/scsi/nsp32.c                       |    3 +--
- drivers/scsi/qla1280.c                     |    3 +--
- drivers/scsi/stex.c                        |    3 +--
- drivers/serial/8250_pci.c                  |    6 ++----
- drivers/serial/icom.c                      |    3 +--
- drivers/uio/uio_cif.c                      |    3 +--
- drivers/usb/host/pci-quirks.c              |   13 +++++++------
- drivers/video/aty/aty128fb.c               |    2 +-
- drivers/video/cyber2000fb.c                |    3 +--
- drivers/video/geode/gx1fb_core.c           |    3 +--
- drivers/video/geode/gxfb_core.c            |    8 +++-----
- drivers/video/geode/lxfb_core.c            |    9 +++------
- drivers/video/gxt4500.c                    |    4 ++--
- drivers/watchdog/i6300esb.c                |    3 +--
- 43 files changed, 59 insertions(+), 99 deletions(-)
 
-diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
-index a18e1ca..81a1fe7 100644
---- a/drivers/block/sx8.c
-+++ b/drivers/block/sx8.c
-@@ -1625,8 +1625,7 @@ static int carm_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
- 	for (i = 0; i < ARRAY_SIZE(host->req); i++)
- 		host->req[i].tag = i;
+ arch/x86/kernel/setup.c      |   17 +++++++++++++++++
+ arch/x86/kernel/tsc.c        |   24 +++++++++++++++++++++++-
+ include/asm-x86/cpufeature.h |    2 ++
+ include/asm-x86/processor.h  |   21 +++++++++++++++++++++
+ 4 files changed, 63 insertions(+), 1 deletions(-)
+
+
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 6133530..14a4f64 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -765,6 +765,21 @@ static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
+ 	{}
+ };
  
--	host->mmio = ioremap(pci_resource_start(pdev, 0),
--			     pci_resource_len(pdev, 0));
-+	host->mmio = ioremap_pcibar(pdev, 0);
- 	if (!host->mmio) {
- 		printk(KERN_ERR DRV_NAME "(%s): MMIO alloc failure\n",
- 		       pci_name(pdev));
-diff --git a/drivers/edac/i82875p_edac.c b/drivers/edac/i82875p_edac.c
-index e43bdc4..d1e77af 100644
---- a/drivers/edac/i82875p_edac.c
-+++ b/drivers/edac/i82875p_edac.c
-@@ -312,9 +312,7 @@ static int i82875p_setup_overfl_dev(struct pci_dev *pdev,
- 	}
++static void __init detect_hypervisor(void)
++{
++	if (cpu_has_hypervisor) {
++		unsigned int eax, ebx, ecx, edx;
++		char hyper_vendor_id[13];
++
++		cpuid(HYPERVISOR_INFO_LEAF, &eax, &ebx, &ecx, &edx);
++		memcpy(hyper_vendor_id + 0, &ebx, 4);
++		memcpy(hyper_vendor_id + 4, &ecx, 4);
++		memcpy(hyper_vendor_id + 8, &edx, 4);
++		hyper_vendor_id[12] = '\0';
++		printk(KERN_INFO "Hypervisor vendor id %s\n", hyper_vendor_id);
++	}
++}
++
+ /*
+  * Determine if we were loaded by an EFI loader.  If so, then we have also been
+  * passed the efi memmap, systab, etc., so we should use these data structures
+@@ -915,6 +930,8 @@ void __init setup_arch(char **cmdline_p)
+ 	if (efi_enabled)
+ 		efi_init();
  
- 	/* cache is irrelevant for PCI bus reads/writes */
--	window = ioremap_nocache(pci_resource_start(dev, 0),
--				 pci_resource_len(dev, 0));
--
-+	window = ioremap_pcibar(dev, 0);
- 	if (window == NULL) {
- 		i82875p_printk(KERN_ERR, "%s(): Failed to ioremap bar6\n",
- 			__func__);
-diff --git a/drivers/i2c/busses/i2c-hydra.c b/drivers/i2c/busses/i2c-hydra.c
-index 1098f21..9f15d78 100644
---- a/drivers/i2c/busses/i2c-hydra.c
-+++ b/drivers/i2c/busses/i2c-hydra.c
-@@ -123,7 +123,7 @@ static int __devinit hydra_probe(struct pci_dev *dev,
- 				hydra_adap.name))
- 		return -EBUSY;
++	detect_hypervisor();
++
+ #ifdef CONFIG_X86_32
+ 	if (ppro_with_ram_bug()) {
+ 		e820_update_range(0x70000000ULL, 0x40000ULL, E820_RAM,
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 161bb85..605cf84 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -345,16 +345,38 @@ failed:
+ 	return 0;
+ }
  
--	hydra_bit_data.data = ioremap(base, pci_resource_len(dev, 0));
-+	hydra_bit_data.data = ioremap_pcibar(dev, 0);
- 	if (hydra_bit_data.data == NULL) {
- 		release_mem_region(base+offsetof(struct Hydra, CachePD), 4);
- 		return -ENODEV;
-diff --git a/drivers/ide/pci/sgiioc4.c b/drivers/ide/pci/sgiioc4.c
-index 681306c..4e1eed7 100644
---- a/drivers/ide/pci/sgiioc4.c
-+++ b/drivers/ide/pci/sgiioc4.c
-@@ -607,7 +607,7 @@ sgiioc4_ide_setup_pci_device(struct pci_dev *dev)
- 
- 	/*  Get the CmdBlk and CtrlBlk Base Registers */
- 	bar0 = pci_resource_start(dev, 0);
--	virt_base = ioremap(bar0, pci_resource_len(dev, 0));
-+	virt_base = ioremap_pcibar(dev, 0);
- 	if (virt_base == NULL) {
- 		printk(KERN_ERR "%s: Unable to remap BAR 0 address: 0x%lx\n",
- 				DRV_NAME, bar0);
-diff --git a/drivers/media/common/saa7146_core.c b/drivers/media/common/saa7146_core.c
-index d01965e..23b6d17 100644
---- a/drivers/media/common/saa7146_core.c
-+++ b/drivers/media/common/saa7146_core.c
-@@ -391,8 +391,7 @@ static int saa7146_init_one(struct pci_dev *pci, const struct pci_device_id *ent
- 	if (err < 0)
- 		goto err_disable;
- 
--	dev->mem = ioremap(pci_resource_start(pci, 0),
--			   pci_resource_len(pci, 0));
-+	dev->mem = ioremap_pcibar(pci, 0);
- 	if (!dev->mem) {
- 		ERR(("ioremap() failed.\n"));
- 		err = -ENODEV;
-diff --git a/drivers/media/video/cx23885/cx23885-core.c b/drivers/media/video/cx23885/cx23885-core.c
-index 25fb099..d55da7d 100644
---- a/drivers/media/video/cx23885/cx23885-core.c
-+++ b/drivers/media/video/cx23885/cx23885-core.c
-@@ -831,8 +831,7 @@ static int cx23885_dev_setup(struct cx23885_dev *dev)
- 	}
- 
- 	/* PCIe stuff */
--	dev->lmmio = ioremap(pci_resource_start(dev->pci,0),
--			     pci_resource_len(dev->pci,0));
-+	dev->lmmio = ioremap_pcibar(dev->pci, 0);
- 
- 	dev->bmmio = (u8 __iomem *)dev->lmmio;
- 
-diff --git a/drivers/media/video/cx88/cx88-cards.c b/drivers/media/video/cx88/cx88-cards.c
-index de199a2..3875c55 100644
---- a/drivers/media/video/cx88/cx88-cards.c
-+++ b/drivers/media/video/cx88/cx88-cards.c
-@@ -2715,8 +2715,7 @@ struct cx88_core *cx88_core_create(struct pci_dev *pci, int nr)
- 
- 	/* PCI stuff */
- 	cx88_pci_quirks(core->name, pci);
--	core->lmmio = ioremap(pci_resource_start(pci, 0),
--			      pci_resource_len(pci, 0));
-+	core->lmmio = ioremap_pcibar(pci, 0);
- 	core->bmmio = (u8 __iomem *)core->lmmio;
- 
- 	/* board config */
-diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
-index 7aebad4..d562f41 100644
---- a/drivers/mfd/sm501.c
-+++ b/drivers/mfd/sm501.c
-@@ -1625,8 +1625,7 @@ static int sm501_pci_probe(struct pci_dev *dev,
- 		goto err3;
- 	}
- 
--	sm->regs = ioremap(pci_resource_start(dev, 1),
--			   pci_resource_len(dev, 1));
-+	sm->regs = ioremap_pcibar(dev, 1);
- 
- 	if (sm->regs == NULL) {
- 		dev_err(&dev->dev, "cannot remap registers\n");
-diff --git a/drivers/misc/ibmasm/module.c b/drivers/misc/ibmasm/module.c
-index b5f6add..a5aca05 100644
---- a/drivers/misc/ibmasm/module.c
-+++ b/drivers/misc/ibmasm/module.c
-@@ -104,8 +104,7 @@ static int __devinit ibmasm_init_one(struct pci_dev *pdev, const struct pci_devi
- 	}
- 
- 	sp->irq = pdev->irq;
--	sp->base_address = ioremap(pci_resource_start(pdev, 0),
--					pci_resource_len(pdev, 0));
-+	sp->base_address = ioremap_pcibar(pdev, 0);
- 	if (!sp->base_address) {
- 		dev_err(sp->dev, "Failed to ioremap pci memory\n");
- 		result =  -ENODEV;
-diff --git a/drivers/misc/tifm_7xx1.c b/drivers/misc/tifm_7xx1.c
-index 67503ea..e2f177e 100644
---- a/drivers/misc/tifm_7xx1.c
-+++ b/drivers/misc/tifm_7xx1.c
-@@ -354,8 +354,7 @@ static int tifm_7xx1_probe(struct pci_dev *dev,
- 	fm->has_ms_pif = tifm_7xx1_has_ms_pif;
- 	pci_set_drvdata(dev, fm);
- 
--	fm->addr = ioremap(pci_resource_start(dev, 0),
--			   pci_resource_len(dev, 0));
-+	fm->addr = ioremap_pcibar(dev, 0);
- 	if (!fm->addr)
- 		goto err_out_free;
- 
-diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
-index fcb14c2..b8be3f1 100644
---- a/drivers/mmc/host/sdhci-pci.c
-+++ b/drivers/mmc/host/sdhci-pci.c
-@@ -544,7 +544,7 @@ static struct sdhci_pci_slot * __devinit sdhci_pci_probe_slot(
- 	}
- 
- 	addr = pci_resource_start(pdev, bar);
--	host->ioaddr = ioremap_nocache(addr, pci_resource_len(pdev, bar));
-+	host->ioaddr = ioremap_pcibar(pdev, bar);
- 	if (!host->ioaddr) {
- 		dev_err(&pdev->dev, "failed to remap registers\n");
- 		goto release;
-diff --git a/drivers/mtd/maps/pci.c b/drivers/mtd/maps/pci.c
-index 5c6a25c..e53612a 100644
---- a/drivers/mtd/maps/pci.c
-+++ b/drivers/mtd/maps/pci.c
-@@ -120,8 +120,7 @@ intel_iq80310_init(struct pci_dev *dev, struct map_pci_info *map)
- 	map->map.write = mtd_pci_write8,
- 
- 	map->map.size     = 0x00800000;
--	map->base         = ioremap_nocache(pci_resource_start(dev, 0),
--					    pci_resource_len(dev, 0));
-+	map->base         = ioremap_pcibar(dev, 0);
- 
- 	if (!map->base)
- 		return -ENOMEM;
-diff --git a/drivers/net/bnx2x_main.c b/drivers/net/bnx2x_main.c
-index a8eb3c4..2f4dd50 100644
---- a/drivers/net/bnx2x_main.c
-+++ b/drivers/net/bnx2x_main.c
-@@ -10089,8 +10089,7 @@ static int __devinit bnx2x_init_dev(struct pci_dev *pdev,
- 
- 	dev->irq = pdev->irq;
- 
--	bp->regview = ioremap_nocache(dev->base_addr,
--				      pci_resource_len(pdev, 0));
-+	bp->regview = ioremap_pcibar(pdev, 0);
- 	if (!bp->regview) {
- 		printk(KERN_ERR PFX "Cannot map register space, aborting\n");
- 		rc = -ENOMEM;
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index ad6da7b..617761c 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -973,8 +973,7 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
- 	hw->back = adapter;
- 
- 	err = -EIO;
--	hw->hw_addr = ioremap(pci_resource_start(pdev, BAR_0),
--			      pci_resource_len(pdev, BAR_0));
-+	hw->hw_addr = ioremap_pcibar(pdev, BAR_0);
- 	if (!hw->hw_addr)
- 		goto err_ioremap;
- 
-@@ -1022,9 +1021,7 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
- 	 * because it depends on mac_type */
- 	if ((hw->mac_type == e1000_ich8lan) &&
- 	   (pci_resource_flags(pdev, 1) & IORESOURCE_MEM)) {
--		hw->flash_address =
--			ioremap(pci_resource_start(pdev, 1),
--				pci_resource_len(pdev, 1));
-+		hw->flash_address = ioremap_pcibar(pdev, 1);
- 		if (!hw->flash_address)
- 			goto err_flashmap;
- 	}
-diff --git a/drivers/net/epic100.c b/drivers/net/epic100.c
-index 76118dd..71e9e84 100644
---- a/drivers/net/epic100.c
-+++ b/drivers/net/epic100.c
-@@ -364,7 +364,7 @@ static int __devinit epic_init_one (struct pci_dev *pdev,
- 	ioaddr = pci_resource_start (pdev, 0);
- #else
- 	ioaddr = pci_resource_start (pdev, 1);
--	ioaddr = (long) ioremap (ioaddr, pci_resource_len (pdev, 1));
-+	ioaddr = (long) ioremap_pcibar(pdev, 1);
- 	if (!ioaddr) {
- 		dev_err(&pdev->dev, "ioremap failed\n");
- 		goto err_out_free_netdev;
-diff --git a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
-index aa75385..bf7553d 100644
---- a/drivers/net/ixgb/ixgb_main.c
-+++ b/drivers/net/ixgb/ixgb_main.c
-@@ -381,8 +381,7 @@ ixgb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	adapter->hw.back = adapter;
- 	adapter->msg_enable = netif_msg_init(debug, DEFAULT_DEBUG_LEVEL_SHIFT);
- 
--	adapter->hw.hw_addr = ioremap(pci_resource_start(pdev, BAR_0),
--	                              pci_resource_len(pdev, BAR_0));
-+	adapter->hw.hw_addr = ioremap_pcibar(pdev, BAR_0);
- 	if (!adapter->hw.hw_addr) {
- 		err = -EIO;
- 		goto err_ioremap;
-diff --git a/drivers/net/qla3xxx.c b/drivers/net/qla3xxx.c
-index 3cdd07c..0a97470 100644
---- a/drivers/net/qla3xxx.c
-+++ b/drivers/net/qla3xxx.c
-@@ -3978,9 +3978,7 @@ static int __devinit ql3xxx_probe(struct pci_dev *pdev,
- 	if (qdev->device_id == QL3032_DEVICE_ID)
- 		ndev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
- 
--	qdev->mem_map_registers =
--	    ioremap_nocache(pci_resource_start(pdev, 1),
--			    pci_resource_len(qdev->pdev, 1));
-+	qdev->mem_map_registers = ioremap_pcibar(pdev, 1);
- 	if (!qdev->mem_map_registers) {
- 		printk(KERN_ERR PFX "%s: cannot map device registers\n",
- 		       pci_name(pdev));
-diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
-index a2b0730..a7f7c45 100644
---- a/drivers/net/s2io.c
-+++ b/drivers/net/s2io.c
-@@ -7921,8 +7921,7 @@ s2io_init_nic(struct pci_dev *pdev, const struct pci_device_id *pre)
- 		goto mem_alloc_failed;
- 	}
- 
--	sp->bar0 = ioremap(pci_resource_start(pdev, 0),
--				     pci_resource_len(pdev, 0));
-+	sp->bar0 = ioremap_pcibar(pdev, 0);
- 	if (!sp->bar0) {
- 		DBG_PRINT(ERR_DBG, "%s: Neterion: cannot remap io mem1\n",
- 			  dev->name);
-@@ -7930,8 +7929,7 @@ s2io_init_nic(struct pci_dev *pdev, const struct pci_device_id *pre)
- 		goto bar0_remap_failed;
- 	}
- 
--	sp->bar1 = ioremap(pci_resource_start(pdev, 2),
--				     pci_resource_len(pdev, 2));
-+	sp->bar1 = ioremap_pcibar(pdev, 2);
- 	if (!sp->bar1) {
- 		DBG_PRINT(ERR_DBG, "%s: Neterion: cannot remap io mem2\n",
- 			  dev->name);
-diff --git a/drivers/net/wan/dscc4.c b/drivers/net/wan/dscc4.c
-index f5d55ad..a2984aa 100644
---- a/drivers/net/wan/dscc4.c
-+++ b/drivers/net/wan/dscc4.c
-@@ -730,8 +730,7 @@ static int __devinit dscc4_init_one(struct pci_dev *pdev,
- 	        goto err_free_mmio_region_1;
- 	}
- 
--	ioaddr = ioremap(pci_resource_start(pdev, 0),
--					pci_resource_len(pdev, 0));
-+	ioaddr = ioremap_pcibar(pdev, 0);
- 	if (!ioaddr) {
- 		printk(KERN_ERR "%s: cannot remap MMIO region %llx @ %llx\n",
- 			DRV_NAME, (unsigned long long)pci_resource_len(pdev, 0),
-diff --git a/drivers/net/wan/pc300too.c b/drivers/net/wan/pc300too.c
-index bf1b015..a6a3234 100644
---- a/drivers/net/wan/pc300too.c
-+++ b/drivers/net/wan/pc300too.c
-@@ -379,7 +379,7 @@ static int __devinit pc300_pci_init_one(struct pci_dev *pdev,
- 	card->scabase = ioremap(scaphys, PC300_SCA_SIZE);
- 
- 	ramphys = pci_resource_start(pdev,3) & PCI_BASE_ADDRESS_MEM_MASK;
--	card->rambase = ioremap(ramphys, pci_resource_len(pdev,3));
-+	card->rambase = ioremap_pcibar(pdev, 3);
- 
- 	if (card->plxbase == NULL ||
- 	    card->scabase == NULL ||
-diff --git a/drivers/net/wan/pci200syn.c b/drivers/net/wan/pci200syn.c
-index b595b64..bb21980 100644
---- a/drivers/net/wan/pci200syn.c
-+++ b/drivers/net/wan/pci200syn.c
-@@ -343,7 +343,7 @@ static int __devinit pci200_pci_init_one(struct pci_dev *pdev,
- 	card->scabase = ioremap(scaphys, PCI200SYN_SCA_SIZE);
- 
- 	ramphys = pci_resource_start(pdev,3) & PCI_BASE_ADDRESS_MEM_MASK;
--	card->rambase = ioremap(ramphys, pci_resource_len(pdev,3));
-+	card->rambase = ioremap_pcibar(pdev, 3);
- 
- 	if (card->plxbase == NULL ||
- 	    card->scabase == NULL ||
-diff --git a/drivers/net/wireless/hostap/hostap_pci.c b/drivers/net/wireless/hostap/hostap_pci.c
-index 3a874fc..adb4c10 100644
---- a/drivers/net/wireless/hostap/hostap_pci.c
-+++ b/drivers/net/wireless/hostap/hostap_pci.c
-@@ -312,7 +312,7 @@ static int prism2_pci_probe(struct pci_dev *pdev,
- 		goto err_out_disable;
- 	}
- 
--	mem = ioremap(phymem, pci_resource_len(pdev, 0));
-+	mem = ioremap_pcibar(pdev, 0);
- 	if (mem == NULL) {
- 		printk(KERN_ERR "prism2: Cannot remap PCI memory region\n") ;
- 		goto fail;
-diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
-index dcce354..22bfe83 100644
---- a/drivers/net/wireless/ipw2200.c
-+++ b/drivers/net/wireless/ipw2200.c
-@@ -11648,7 +11648,7 @@ static int __devinit ipw_pci_probe(struct pci_dev *pdev,
- 	length = pci_resource_len(pdev, 0);
- 	priv->hw_len = length;
- 
--	base = ioremap_nocache(pci_resource_start(pdev, 0), length);
-+	base = ioremap_pcibar(pdev, 0);
- 	if (!base) {
- 		err = -ENODEV;
- 		goto out_pci_release_regions;
-diff --git a/drivers/net/wireless/rt2x00/rt2x00pci.c b/drivers/net/wireless/rt2x00/rt2x00pci.c
-index adf2876..7ce1abb 100644
---- a/drivers/net/wireless/rt2x00/rt2x00pci.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00pci.c
-@@ -222,8 +222,7 @@ static int rt2x00pci_alloc_reg(struct rt2x00_dev *rt2x00dev)
++unsigned long hypervisor_tsc_freq(void)
++{
++	unsigned long tsc_khz;
++	unsigned int max_cpuid_leaf;
++
++	if (cpu_has_hypervisor) {
++		max_cpuid_leaf = cpuid_eax(HYPERVISOR_INFO_LEAF);
++		if (max_cpuid_leaf >= HYPERVISOR_TIMING_LEAF) {
++			tsc_khz = cpuid_eax(HYPERVISOR_TIMING_LEAF);
++			printk(KERN_INFO
++				"TSC frequency read from hypervisor\n");
++			return tsc_khz;
++		}
++	}
++	return 0;
++}
++
+ /**
+  * native_calibrate_tsc - calibrate the tsc on boot
++ * return value is the tsc frequency in khz.
+  */
+ unsigned long native_calibrate_tsc(void)
  {
- 	struct pci_dev *pci_dev = to_pci_dev(rt2x00dev->dev);
+ 	u64 tsc1, tsc2, delta, ref1, ref2;
+ 	unsigned long tsc_pit_min = ULONG_MAX, tsc_ref_min = ULONG_MAX;
+-	unsigned long flags, latch, ms, fast_calibrate;
++	unsigned long flags, latch, ms, fast_calibrate, tsc_khz;
+ 	int hpet = is_hpet_enabled(), i, loopmin;
  
--	rt2x00dev->csr.base = ioremap(pci_resource_start(pci_dev, 0),
--				      pci_resource_len(pci_dev, 0));
-+	rt2x00dev->csr.base = ioremap_pcibar(pci_dev, 0);
- 	if (!rt2x00dev->csr.base)
- 		goto exit;
++	tsc_khz = hypervisor_tsc_freq();
++	if (tsc_khz)
++		return tsc_khz;
++
+ 	local_irq_save(flags);
+ 	fast_calibrate = quick_pit_calibrate();
+ 	local_irq_restore(flags);
+diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
+index 800ec03..d3aaff0 100644
+--- a/include/asm-x86/cpufeature.h
++++ b/include/asm-x86/cpufeature.h
+@@ -116,6 +116,7 @@
+ #define X86_FEATURE_XSAVE	(4*32+26) /* XSAVE/XRSTOR/XSETBV/XGETBV */
+ #define X86_FEATURE_OSXSAVE	(4*32+27) /* "" XSAVE enabled in the OS */
+ #define X86_FEATURE_AVX		(4*32+28) /* Advanced Vector Extensions */
++#define X86_FEATURE_HYPERVISOR	(4*32+31) /* Running on a hypervisor */
  
-diff --git a/drivers/pci/hotplug/cpcihp_zt5550.c b/drivers/pci/hotplug/cpcihp_zt5550.c
-index 41f6a8d..f7bc30a 100644
---- a/drivers/pci/hotplug/cpcihp_zt5550.c
-+++ b/drivers/pci/hotplug/cpcihp_zt5550.c
-@@ -105,8 +105,7 @@ static int zt5550_hc_config(struct pci_dev *pdev)
- 		goto exit_disable_device;
- 	}
+ /* VIA/Cyrix/Centaur-defined CPU features, CPUID level 0xC0000001, word 5 */
+ #define X86_FEATURE_XSTORE	(5*32+ 2) /* "rng" RNG present (xstore) */
+@@ -236,6 +237,7 @@ extern const char * const x86_power_flags[32];
+ #define cpu_has_xmm4_2		boot_cpu_has(X86_FEATURE_XMM4_2)
+ #define cpu_has_x2apic		boot_cpu_has(X86_FEATURE_X2APIC)
+ #define cpu_has_xsave		boot_cpu_has(X86_FEATURE_XSAVE)
++#define cpu_has_hypervisor	boot_cpu_has(X86_FEATURE_HYPERVISOR)
  
--	hc_registers =
--	    ioremap(pci_resource_start(hc_dev, 1), pci_resource_len(hc_dev, 1));
-+	hc_registers = ioremap_pcibar(hc_dev, 1);
- 	if(!hc_registers) {
- 		err("cannot remap MMIO region %llx @ %llx",
- 			(unsigned long long)pci_resource_len(hc_dev, 1),
-diff --git a/drivers/pci/hotplug/cpqphp_core.c b/drivers/pci/hotplug/cpqphp_core.c
-index 54defec..342382b 100644
---- a/drivers/pci/hotplug/cpqphp_core.c
-+++ b/drivers/pci/hotplug/cpqphp_core.c
-@@ -1102,8 +1102,7 @@ static int cpqhpc_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		goto err_free_bus;
- 	}
+ #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
+ # define cpu_has_invlpg		1
+diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
+index ee7cbb3..70ca49b 100644
+--- a/include/asm-x86/processor.h
++++ b/include/asm-x86/processor.h
+@@ -124,6 +124,27 @@ struct cpuinfo_x86 {
+ #define X86_VENDOR_UNKNOWN	0xff
  
--	ctrl->hpc_reg = ioremap(pci_resource_start(pdev, 0),
--					pci_resource_len(pdev, 0));
-+	ctrl->hpc_reg = ioremap_pcibar(pdev, 0);
- 	if (!ctrl->hpc_reg) {
- 		err("cannot remap MMIO region %llx @ %llx\n",
- 		    (unsigned long long)pci_resource_len(pdev, 0),
-diff --git a/drivers/scsi/advansys.c b/drivers/scsi/advansys.c
-index 218777b..00c4e27 100644
---- a/drivers/scsi/advansys.c
-+++ b/drivers/scsi/advansys.c
-@@ -13425,8 +13425,7 @@ static int __devinit advansys_board_found(struct Scsi_Host *shost,
- 		}
- 
- 		boardp->asc_n_io_port = pci_resource_len(pdev, 1);
--		boardp->ioremap_addr = ioremap(pci_resource_start(pdev, 1),
--					       boardp->asc_n_io_port);
-+		boardp->ioremap_addr = ioremap_pcibar(pdev, 1);
- 		if (!boardp->ioremap_addr) {
- 			shost_printk(KERN_ERR, shost, "ioremap(%lx, %d) "
- 					"returned NULL\n",
-diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c b/drivers/scsi/arcmsr/arcmsr_hba.c
-index f91f79c..e522cf6 100644
---- a/drivers/scsi/arcmsr/arcmsr_hba.c
-+++ b/drivers/scsi/arcmsr/arcmsr_hba.c
-@@ -235,7 +235,7 @@ static int arcmsr_alloc_ccb_pool(struct AdapterControlBlock *acb)
- 		uint32_t intmask_org;
- 		int i, j;
- 
--		acb->pmuA = ioremap(pci_resource_start(pdev, 0), pci_resource_len(pdev, 0));
-+		acb->pmuA = ioremap_pcibar(pdev, 0);
- 		if (!acb->pmuA) {
- 			printk(KERN_NOTICE "arcmsr%d: memory mapping region fail \n",
- 							acb->host->host_no);
-@@ -329,13 +329,11 @@ static int arcmsr_alloc_ccb_pool(struct AdapterControlBlock *acb)
- 		reg = (struct MessageUnit_B *)(dma_coherent +
- 		ARCMSR_MAX_FREECCB_NUM * sizeof(struct CommandControlBlock));
- 		acb->pmuB = reg;
--		mem_base0 = ioremap(pci_resource_start(pdev, 0),
--					pci_resource_len(pdev, 0));
-+		mem_base0 = ioremap_pcibar(pdev, 0);
- 		if (!mem_base0)
- 			goto out;
- 
--		mem_base1 = ioremap(pci_resource_start(pdev, 2),
--					pci_resource_len(pdev, 2));
-+		mem_base1 = ioremap_pcibar(pdev, 2);
- 		if (!mem_base1) {
- 			iounmap(mem_base0);
- 			goto out;
-diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
-index e7a3a65..5fc4eab 100644
---- a/drivers/scsi/ipr.c
-+++ b/drivers/scsi/ipr.c
-@@ -7478,7 +7478,7 @@ static int __devinit ipr_probe_ioa(struct pci_dev *pdev,
- 		goto out_scsi_host_put;
- 	}
- 
--	ipr_regs = ioremap(ipr_regs_pci, pci_resource_len(pdev, 0));
-+	ipr_regs = ioremap_pcibar(pdev, 0);
- 
- 	if (!ipr_regs) {
- 		dev_err(&pdev->dev,
-diff --git a/drivers/scsi/nsp32.c b/drivers/scsi/nsp32.c
-index 22052bb..520f9e0 100644
---- a/drivers/scsi/nsp32.c
-+++ b/drivers/scsi/nsp32.c
-@@ -3401,8 +3401,7 @@ static int __devinit nsp32_probe(struct pci_dev *pdev, const struct pci_device_i
- 	data->IrqNumber   = pdev->irq;
- 	data->BaseAddress = pci_resource_start(pdev, 0);
- 	data->NumAddress  = pci_resource_len  (pdev, 0);
--	data->MmioAddress = ioremap_nocache(pci_resource_start(pdev, 1),
--					       pci_resource_len  (pdev, 1));
-+	data->MmioAddress = ioremap_pcibar(pdev, 1);
- 	data->MmioLength  = pci_resource_len  (pdev, 1);
- 
- 	pci_set_master(pdev);
-diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
-index 37f9ba0..219ad65 100644
---- a/drivers/scsi/qla1280.c
-+++ b/drivers/scsi/qla1280.c
-@@ -4294,8 +4294,7 @@ qla1280_probe_one(struct pci_dev *pdev, const struct pci_device_id *id)
- 	error = -ENODEV;
- 
- #if MEMORY_MAPPED_IO
--	ha->mmpbase = ioremap(pci_resource_start(ha->pdev, 1),
--			      pci_resource_len(ha->pdev, 1));
-+	ha->mmpbase = ioremap_pcibar(ha->pdev, 1);
- 	if (!ha->mmpbase) {
- 		printk(KERN_INFO "qla1280: Unable to map I/O memory\n");
- 		goto error_free_response_ring;
-diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
-index 3790906..0c0fed9 100644
---- a/drivers/scsi/stex.c
-+++ b/drivers/scsi/stex.c
-@@ -1108,8 +1108,7 @@ stex_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 		goto out_scsi_host_put;
- 	}
- 
--	hba->mmio_base = ioremap_nocache(pci_resource_start(pdev, 0),
--		pci_resource_len(pdev, 0));
-+	hba->mmio_base = ioremap_pcibar(pdev, 0);
- 	if ( !hba->mmio_base) {
- 		printk(KERN_ERR DRV_NAME "(%s): memory map failed\n",
- 			pci_name(pdev));
-diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index c2f2393..dbcebd4 100644
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -339,8 +339,7 @@ static int sbs_init(struct pci_dev *dev)
- {
- 	u8 __iomem *p;
- 
--	p = ioremap_nocache(pci_resource_start(dev, 0),
--						pci_resource_len(dev, 0));
-+	p = ioremap_pcibar(dev, 0);
- 
- 	if (p == NULL)
- 		return -ENOMEM;
-@@ -364,8 +363,7 @@ static void __devexit sbs_exit(struct pci_dev *dev)
- {
- 	u8 __iomem *p;
- 
--	p = ioremap_nocache(pci_resource_start(dev, 0),
--					pci_resource_len(dev, 0));
-+	p = ioremap_pcibar(dev, 0);
- 	/* FIXME: What if resource_len < OCT_REG_CR_OFF */
- 	if (p != NULL)
- 		writeb(0, p + OCT_REG_CR_OFF);
-diff --git a/drivers/serial/icom.c b/drivers/serial/icom.c
-index 2b7531d..da19874 100644
---- a/drivers/serial/icom.c
-+++ b/drivers/serial/icom.c
-@@ -1553,8 +1553,7 @@ static int __devinit icom_probe(struct pci_dev *dev,
- 		goto probe_exit1;
- 	}
- 
--	 icom_adapter->base_addr = ioremap(icom_adapter->base_addr_pci,
--						pci_resource_len(dev, 0));
-+	 icom_adapter->base_addr = ioremap_pcibar(dev, 0);
- 
- 	if (!icom_adapter->base_addr)
- 		goto probe_exit1;
-diff --git a/drivers/uio/uio_cif.c b/drivers/uio/uio_cif.c
-index 5737606..bc907b1 100644
---- a/drivers/uio/uio_cif.c
-+++ b/drivers/uio/uio_cif.c
-@@ -57,8 +57,7 @@ static int __devinit hilscher_pci_probe(struct pci_dev *dev,
- 	info->mem[0].addr = pci_resource_start(dev, 0);
- 	if (!info->mem[0].addr)
- 		goto out_release;
--	info->mem[0].internal_addr = ioremap(pci_resource_start(dev, 0),
--					     pci_resource_len(dev, 0));
-+	info->mem[0].internal_addr = ioremap_pcibar(dev, 0);
- 	if (!info->mem[0].internal_addr)
- 		goto out_release;
- 
-diff --git a/drivers/usb/host/pci-quirks.c b/drivers/usb/host/pci-quirks.c
-index ae6e70e..b342669 100644
---- a/drivers/usb/host/pci-quirks.c
-+++ b/drivers/usb/host/pci-quirks.c
-@@ -14,6 +14,7 @@
- #include <linux/init.h>
- #include <linux/delay.h>
- #include <linux/acpi.h>
-+#include <linux/io.h>
- #include "pci-quirks.h"
- 
- 
-@@ -172,9 +173,9 @@ static void __devinit quirk_usb_handoff_ohci(struct pci_dev *pdev)
- 	if (!mmio_resource_enabled(pdev, 0))
- 		return;
- 
--	base = ioremap_nocache(pci_resource_start(pdev, 0),
--				     pci_resource_len(pdev, 0));
--	if (base == NULL) return;
-+	base = ioremap_pcibar(pdev, 0);
-+	if (base == NULL)
-+		return;
- 
- /* On PA-RISC, PDC can leave IR set incorrectly; ignore it there. */
- #ifndef __hppa__
-@@ -221,9 +222,9 @@ static void __devinit quirk_usb_disable_ehci(struct pci_dev *pdev)
- 	if (!mmio_resource_enabled(pdev, 0))
- 		return;
- 
--	base = ioremap_nocache(pci_resource_start(pdev, 0),
--				pci_resource_len(pdev, 0));
--	if (base == NULL) return;
-+	base = ioremap_pcibar(pdev, 0);
-+	if (base == NULL)
-+		return;
- 
- 	cap_length = readb(base);
- 	op_reg_base = base + cap_length;
-diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
-index 243ea4a..0a8cafe 100644
---- a/drivers/video/aty/aty128fb.c
-+++ b/drivers/video/aty/aty128fb.c
-@@ -2051,7 +2051,7 @@ static int __devinit aty128_probe(struct pci_dev *pdev, const struct pci_device_
- 
- 	/* Virtualize mmio region */
- 	info->fix.mmio_start = reg_addr;
--	par->regbase = ioremap(reg_addr, pci_resource_len(pdev, 2));
-+	par->regbase = ioremap_pcibar(pdev, 2);
- 	if (!par->regbase)
- 		goto err_free_info;
- 
-diff --git a/drivers/video/cyber2000fb.c b/drivers/video/cyber2000fb.c
-index 41d6263..887ec8b 100644
---- a/drivers/video/cyber2000fb.c
-+++ b/drivers/video/cyber2000fb.c
-@@ -1583,8 +1583,7 @@ cyberpro_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 		goto failed_release;
- 
- 	cfb->dev = dev;
--	cfb->region = ioremap(pci_resource_start(dev, 0),
--			      pci_resource_len(dev, 0));
-+	cfb->region = ioremap_pcibar(dev, 0);
- 	if (!cfb->region)
- 		goto failed_ioremap;
- 
-diff --git a/drivers/video/geode/gx1fb_core.c b/drivers/video/geode/gx1fb_core.c
-index bb20a22..32cd9d7 100644
---- a/drivers/video/geode/gx1fb_core.c
-+++ b/drivers/video/geode/gx1fb_core.c
-@@ -217,8 +217,7 @@ static int __init gx1fb_map_video_memory(struct fb_info *info, struct pci_dev *d
- 	ret = pci_request_region(dev, 0, "gx1fb (video)");
- 	if (ret < 0)
- 		return ret;
--	par->vid_regs = ioremap(pci_resource_start(dev, 0),
--				pci_resource_len(dev, 0));
-+	par->vid_regs = ioremap_pcibar(dev, 0);
- 	if (!par->vid_regs)
- 		return -ENOMEM;
- 
-diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
-index de2b8f9..bab8c8f 100644
---- a/drivers/video/geode/gxfb_core.c
-+++ b/drivers/video/geode/gxfb_core.c
-@@ -242,23 +242,21 @@ static int __init gxfb_map_video_memory(struct fb_info *info, struct pci_dev *de
- 	ret = pci_request_region(dev, 3, "gxfb (video processor)");
- 	if (ret < 0)
- 		return ret;
--	par->vid_regs = ioremap(pci_resource_start(dev, 3),
--				pci_resource_len(dev, 3));
-+	par->vid_regs = ioremap_pcibar(dev, 3);
- 	if (!par->vid_regs)
- 		return -ENOMEM;
- 
- 	ret = pci_request_region(dev, 2, "gxfb (display controller)");
- 	if (ret < 0)
- 		return ret;
--	par->dc_regs = ioremap(pci_resource_start(dev, 2), pci_resource_len(dev, 2));
-+	par->dc_regs = ioremap_pcibar(dev, 2);
- 	if (!par->dc_regs)
- 		return -ENOMEM;
- 
- 	ret = pci_request_region(dev, 1, "gxfb (graphics processor)");
- 	if (ret < 0)
- 		return ret;
--	par->gp_regs = ioremap(pci_resource_start(dev, 1),
--	pci_resource_len(dev, 1));
-+	par->gp_regs = ioremap_pcibar(dev, 1);
- 
- 	if (!par->gp_regs)
- 		return -ENOMEM;
-diff --git a/drivers/video/geode/lxfb_core.c b/drivers/video/geode/lxfb_core.c
-index 2cd9b74..9027542 100644
---- a/drivers/video/geode/lxfb_core.c
-+++ b/drivers/video/geode/lxfb_core.c
-@@ -379,20 +379,17 @@ static int __init lxfb_map_video_memory(struct fb_info *info,
- 	if (info->screen_base == NULL)
- 		return ret;
- 
--	par->gp_regs = ioremap(pci_resource_start(dev, 1),
--				pci_resource_len(dev, 1));
-+	par->gp_regs = ioremap_pcibar(dev, 1);
- 
- 	if (par->gp_regs == NULL)
- 		return ret;
- 
--	par->dc_regs = ioremap(pci_resource_start(dev, 2),
--			       pci_resource_len(dev, 2));
-+	par->dc_regs = ioremap_pcibar(dev, 2);
- 
- 	if (par->dc_regs == NULL)
- 		return ret;
- 
--	par->vp_regs = ioremap(pci_resource_start(dev, 3),
--			       pci_resource_len(dev, 3));
-+	par->vp_regs = ioremap_pcibar(dev, 3);
- 
- 	if (par->vp_regs == NULL)
- 		return ret;
-diff --git a/drivers/video/gxt4500.c b/drivers/video/gxt4500.c
-index 5645577..78ca660 100644
---- a/drivers/video/gxt4500.c
-+++ b/drivers/video/gxt4500.c
-@@ -648,7 +648,7 @@ static int __devinit gxt4500_probe(struct pci_dev *pdev,
- 	info->pseudo_palette = par->pseudo_palette;
- 
- 	info->fix.mmio_start = reg_phys;
--	par->regs = ioremap(reg_phys, pci_resource_len(pdev, 0));
-+	par->regs = ioremap_pcibar(pdev, 0);
- 	if (!par->regs) {
- 		dev_err(&pdev->dev, "gxt4500: cannot map registers\n");
- 		goto err_free_all;
-@@ -656,7 +656,7 @@ static int __devinit gxt4500_probe(struct pci_dev *pdev,
- 
- 	info->fix.smem_start = fb_phys;
- 	info->fix.smem_len = pci_resource_len(pdev, 1);
--	info->screen_base = ioremap(fb_phys, pci_resource_len(pdev, 1));
-+	info->screen_base = ioremap_pcibar(pdev, 1);
- 	if (!info->screen_base) {
- 		dev_err(&pdev->dev, "gxt4500: cannot map framebuffer\n");
- 		goto err_unmap_regs;
-diff --git a/drivers/watchdog/i6300esb.c b/drivers/watchdog/i6300esb.c
-index c13383f..680e982 100644
---- a/drivers/watchdog/i6300esb.c
-+++ b/drivers/watchdog/i6300esb.c
-@@ -394,8 +394,7 @@ static unsigned char __init esb_getdevice(void)
- 			goto err_disable;
- 		}
- 
--		BASEADDR = ioremap(pci_resource_start(esb_pci, 0),
--				   pci_resource_len(esb_pci, 0));
-+		BASEADDR = ioremap_pcibar(esb_pci, 0);
- 		if (BASEADDR == NULL) {
- 			/* Something's wrong here, BASEADDR has to be set */
- 			printk(KERN_ERR PFX "failed to get BASEADDR\n");
--- 
-1.5.5.1
+ /*
++ * Intel & AMD have reserved the cpuid levels 0x40000000 - 0x400000FF for
++ * software use. Hypervisors can use these levels to provide an interface
++ * to pass information from the hypervisor to the guest. This is similar
++ * to how we extract information about a physical cpu by using cpuid.
++ */
++
++/*
++ * This CPUID leaf returns the information about the hypervisor.
++ * EAX : maximum input value for CPUID supported by the hypervisor.
++ * EBX, ECX, EDX : Hypervisor vendor ID signature. E.g. VMwareVMware.
++ */
++#define HYPERVISOR_INFO_LEAF   0x40000000
++/*
++ * This leaf gets timing information from the hypervisor.
++ * EAX: (Virtual) TSC frequency in kHz.
++ * EBX: (Virtual) Bus (local apic timer) frequency in kHz.
++ * ECX, EDX: RESERVED
++ */
++#define HYPERVISOR_TIMING_LEAF 0x40000010
++
++/*
+  * capabilities of CPUs
+  */
+ extern struct cpuinfo_x86	boot_cpu_data;
 
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
