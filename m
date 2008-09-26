@@ -1,112 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbYIZPSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbYIZPXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754532AbYIZPSV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 11:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbYIZPSO
+	id S1753556AbYIZPXe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 11:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYIZPX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 11:18:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:55740 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752171AbYIZPSM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 11:18:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=i7h1M6h9JRLF9iErhoHnCK/gevYFPENlCPIWL4sLwnCEcm0PX3ZNI14hTzFKPPXpqM
-         kc9wiyZGxU9VIxaJ61Ek++RA1aK/TVFFhYf/16eXVaQAgqEOTX2uV8zzZaymU3oeaaY8
-         P5duzG1yJogpSZtb44S1QoF12DkIHdNMAXs+c=
-Date: Fri, 26 Sep 2008 19:20:31 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: viro@zeniv.linux.org.uk, ebiederm@xmission.com
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org
-Subject: 2.6.27-rc7-sha1: EIP at proc_sys_compare+0x36/0x50
-Message-ID: <20080926152031.GA30831@x200.localdomain>
+	Fri, 26 Sep 2008 11:23:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49430 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752099AbYIZPX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 11:23:26 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] ARM: Delete ARM's own cnt32_to_63.h
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, a.p.zijlstra@chello.nl, nico@cam.org,
+       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
+Date: Fri, 26 Sep 2008 16:22:58 +0100
+Message-ID: <20080926152258.29055.94270.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gentlemen, this happened while script was slowly rebuilding 300+ configs
-sequentially. Very little recompling activity itself, much seeking.
+Delete ARM's own cnt32_to_63.h as the copy in include/linux/ should now be
+used instead.
 
-This is first time I see this. No debugging was on, no preemption.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Version: 2.6.27-rc7-c0f4d6d4b14a75a341d972ff73fb9740e1ceb634 +
-	atl1 fixlet + "notes" kobject fixlet, but they don't matter.
-
-
-ffffffff802bc690 <proc_sys_compare>:
-ffffffff802bc690:	48 83 ec 08          	sub    $0x8,%rsp
-ffffffff802bc694:	8b 46 04             	mov    0x4(%rsi),%eax
-ffffffff802bc697:	3b 42 04             	cmp    0x4(%rdx),%eax
-ffffffff802bc69a:	49 89 f0             	mov    %rsi,%r8
-ffffffff802bc69d:	74 11                	je     ffffffff802bc6b0 <proc_sys_compare+0x20>
-ffffffff802bc69f:	b8 01 00 00 00       	mov    $0x1,%eax
-ffffffff802bc6a4:	48 83 c4 08          	add    $0x8,%rsp
-ffffffff802bc6a8:	c3                   	retq   
-ffffffff802bc6a9:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
-ffffffff802bc6b0:	48 8b 76 08          	mov    0x8(%rsi),%rsi
-ffffffff802bc6b4:	48 8b 7a 08          	mov    0x8(%rdx),%rdi
-ffffffff802bc6b8:	89 c1                	mov    %eax,%ecx
-ffffffff802bc6ba:	fc                   	cld    
-ffffffff802bc6bb:	48 39 c9             	cmp    %rcx,%rcx
-ffffffff802bc6be:	f3 a6                	repz cmpsb %es:(%rdi),%ds:(%rsi)
-ffffffff802bc6c0:	75 dd                	jne    ffffffff802bc69f <proc_sys_compare+0xf>
-ffffffff802bc6c2:	49 8b 40 e0          	mov    -0x20(%r8),%rax
-ffffffff802bc6c6: ===>	48 8b 78 f0          	mov    -0x10(%rax),%rdi		<===
-ffffffff802bc6ca:	e8 71 96 f7 ff       	callq  ffffffff80235d40 <sysctl_is_seen>
-ffffffff802bc6cf:	85 c0                	test   %eax,%eax
-ffffffff802bc6d1:	0f 94 c0             	sete   %al
-ffffffff802bc6d4:	48 83 c4 08          	add    $0x8,%rsp
-ffffffff802bc6d8:	0f b6 c0             	movzbl %al,%eax
-ffffffff802bc6db:	c3                   	retq   
-ffffffff802bc6dc:	0f 1f 40 00          	nopl   0x0(%rax)
+ arch/arm/include/asm/cnt32_to_63.h |   78 ------------------------------------
+ 1 files changed, 0 insertions(+), 78 deletions(-)
+ delete mode 100644 arch/arm/include/asm/cnt32_to_63.h
 
 
-[16526.029537] BUG: unable to handle kernel paging request at fffffffffffffff0
-[16526.029643] IP: [<ffffffff802bc6c6>] proc_sys_compare+0x36/0x50
-[16526.029709] PGD 203067 PUD 204067 PMD 0 
-[16526.029769] Oops: 0000 [1] SMP 
-[16526.029824] CPU 1 
-[16526.029872] Modules linked in: af_packet iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack xt_tcpudp iptable_filter ip_tables x_tables ext2 nls_utf8 ntfs fuse sr_mod cdrom
-[16526.030079] Pid: 20385, comm: sh Not tainted 2.6.27-rc7 #1
-[16526.030140] RIP: 0010:[<ffffffff802bc6c6>]  [<ffffffff802bc6c6>] proc_sys_compare+0x36/0x50
-[16526.030246] RSP: 0018:ffff880108929c58  EFLAGS: 00010246
-[16526.030306] RAX: 0000000000000000 RBX: ffff88005246e000 RCX: 0000000000000000
-[16526.030374] RDX: ffff880108929d28 RSI: ffff88005246e0af RDI: ffff88017b4fb01c
-[16526.030442] RBP: ffff88005246e018 R08: ffff88005246e030 R09: ffff88017b4fb011
-[16526.030509] R10: 0000000000000000 R11: 0000000000000005 R12: 0000000032fdb346
-[16526.030577] R13: ffff88005246e0c8 R14: ffff880108929d28 R15: 000000000000000b
-[16526.030645] FS:  00002b014ad9af40(0000) GS:ffff88017f809680(0000) knlGS:0000000000000000
-[16526.030748] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[16526.030811] CR2: fffffffffffffff0 CR3: 000000006a2d6000 CR4: 00000000000006e0
-[16526.030879] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[16526.030946] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[16526.031014] Process sh (pid: 20385, threadinfo ffff880108928000, task ffff88017f8bab80)
-[16526.031118] Stack:  0000000000000000 ffffffff80293242 0000000080555ec0 0000000b7f429320
-[16526.031233]  ffff88017b4fb011 ffff880108929d28 ffff88017b4fb01c ffff880108929e68
-[16526.031345]  ffff880108929d28 ffff880108929d38 ffff88017b4fb000 ffffffff8028900c
-[16526.031419] Call Trace:
-[16526.031506]  [<ffffffff80293242>] ? __d_lookup+0xe2/0x120
-[16526.031568]  [<ffffffff8028900c>] ? do_lookup+0x3c/0x220
-[16526.031629]  [<ffffffff8028a895>] ? __link_path_walk+0x815/0xd90
-[16526.031693]  [<ffffffff80266ce7>] ? __do_fault+0x1b7/0x400
-[16526.031755]  [<ffffffff8028ae64>] ? path_walk+0x54/0xb0
-[16526.033334]  [<ffffffff8028af8a>] ? do_path_lookup+0x7a/0x150
-[16526.033397]  [<ffffffff8028bdca>] ? __path_lookup_intent_open+0x6a/0xd0
-[16526.033464]  [<ffffffff8028c082>] ? do_filp_open+0xc2/0x820
-[16526.033526]  [<ffffffff80296bbf>] ? alloc_fd+0x3f/0x130
-[16526.033587]  [<ffffffff8027ed88>] ? do_sys_open+0x58/0xb0
-[16526.033648]  [<ffffffff8020b65b>] ? system_call_fastpath+0x16/0x1b
-[16526.033711] 
-[16526.033754] 
-[16526.033797] Code: 89 f0 74 11 b8 01 00 00 00 48 83 c4 08 c3 0f 1f 80 00 00 00 00 48 8b 76 08 48 8b 7a 08 89 c1 fc 48 39 c9 f3 a6 75 dd 49 8b 40 e0 <48> 8b 78 f0 e8 71 96 f7 ff 85 c0 0f 94 c0 48 83 c4 08 0f b6 c0 
-[16526.034186] RIP  [<ffffffff802bc6c6>] proc_sys_compare+0x36/0x50
-[16526.034251]  RSP <ffff880108929c58>
-[16526.034301] CR2: fffffffffffffff0
-[16526.034622] ---[ end trace ca38d5cc981185f5 ]---
+diff --git a/arch/arm/include/asm/cnt32_to_63.h b/arch/arm/include/asm/cnt32_to_63.h
+deleted file mode 100644
+index 480c873..0000000
+--- a/arch/arm/include/asm/cnt32_to_63.h
++++ /dev/null
+@@ -1,78 +0,0 @@
+-/*
+- *  include/asm/cnt32_to_63.h -- extend a 32-bit counter to 63 bits
+- *
+- *  Author:	Nicolas Pitre
+- *  Created:	December 3, 2006
+- *  Copyright:	MontaVista Software, Inc.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2
+- * as published by the Free Software Foundation.
+- */
+-
+-#ifndef __INCLUDE_CNT32_TO_63_H__
+-#define __INCLUDE_CNT32_TO_63_H__
+-
+-#include <linux/compiler.h>
+-#include <asm/types.h>
+-#include <asm/byteorder.h>
+-
+-/*
+- * Prototype: u64 cnt32_to_63(u32 cnt)
+- * Many hardware clock counters are only 32 bits wide and therefore have
+- * a relatively short period making wrap-arounds rather frequent.  This
+- * is a problem when implementing sched_clock() for example, where a 64-bit
+- * non-wrapping monotonic value is expected to be returned.
+- *
+- * To overcome that limitation, let's extend a 32-bit counter to 63 bits
+- * in a completely lock free fashion. Bits 0 to 31 of the clock are provided
+- * by the hardware while bits 32 to 62 are stored in memory.  The top bit in
+- * memory is used to synchronize with the hardware clock half-period.  When
+- * the top bit of both counters (hardware and in memory) differ then the
+- * memory is updated with a new value, incrementing it when the hardware
+- * counter wraps around.
+- *
+- * Because a word store in memory is atomic then the incremented value will
+- * always be in synch with the top bit indicating to any potential concurrent
+- * reader if the value in memory is up to date or not with regards to the
+- * needed increment.  And any race in updating the value in memory is harmless
+- * as the same value would simply be stored more than once.
+- *
+- * The only restriction for the algorithm to work properly is that this
+- * code must be executed at least once per each half period of the 32-bit
+- * counter to properly update the state bit in memory. This is usually not a
+- * problem in practice, but if it is then a kernel timer could be scheduled
+- * to manage for this code to be executed often enough.
+- *
+- * Note that the top bit (bit 63) in the returned value should be considered
+- * as garbage.  It is not cleared here because callers are likely to use a
+- * multiplier on the returned value which can get rid of the top bit
+- * implicitly by making the multiplier even, therefore saving on a runtime
+- * clear-bit instruction. Otherwise caller must remember to clear the top
+- * bit explicitly.
+- */
+-
+-/* this is used only to give gcc a clue about good code generation */
+-typedef union {
+-	struct {
+-#if defined(__LITTLE_ENDIAN)
+-		u32 lo, hi;
+-#elif defined(__BIG_ENDIAN)
+-		u32 hi, lo;
+-#endif
+-	};
+-	u64 val;
+-} cnt32_to_63_t;
+-
+-#define cnt32_to_63(cnt_lo) \
+-({ \
+-	static volatile u32 __m_cnt_hi = 0; \
+-	cnt32_to_63_t __x; \
+-	__x.hi = __m_cnt_hi; \
+-	__x.lo = (cnt_lo); \
+- 	if (unlikely((s32)(__x.hi ^ __x.lo) < 0)) \
+-		__m_cnt_hi = __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31); \
+-	__x.val; \
+-})
+-
+-#endif
+
