@@ -1,126 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbYIZPoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYIZPsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753360AbYIZPoT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 11:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYIZPoM
+	id S1753551AbYIZPsL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 11:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYIZPr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 11:44:12 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:54579 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751783AbYIZPoL (ORCPT
+	Fri, 26 Sep 2008 11:47:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60973 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752411AbYIZPr5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 11:44:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=BvnvD9AwrqnTBaFmoIhD9nNQ4Pg9w42iQkkgG0sxmJ6mgrLQEeMkG2dV8pcSFh3F3M
-         at5ZUy28xgOjkGCHMLBZVF5nXQWjgDHj4ZEeYUKVPzOKI1G0mYP6zAA6KMJ+HfsToAt7
-         xLcZdIcA1Z+X0UD9OPXNQ3xykenRxEe85HVYY=
-Message-ID: <48DD0347.5070008@gmail.com>
-Date: Fri, 26 Sep 2008 17:44:07 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 26 Sep 2008 11:47:57 -0400
+Date: Fri, 26 Sep 2008 08:47:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: viro@zeniv.linux.org.uk, ebiederm@xmission.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc7-sha1: EIP at proc_sys_compare+0x36/0x50
+In-Reply-To: <20080926152031.GA30831@x200.localdomain>
+Message-ID: <alpine.LFD.1.10.0809260838120.3265@nehalem.linux-foundation.org>
+References: <20080926152031.GA30831@x200.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: mingo@elte.hu
-CC: rostedt@goodmis.org, linux-kernel@vger.kernel.org, pq@iki.fi
-Subject: [PATCH -tip 2/3] Tracing/ftrace: Adapt mmiotrace to the new type
- of print_line
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adapt mmiotrace to the new print_line type.
-By default, it refuses types it doesn't support.
-But a tracer needs to print something to the seq anyway. 
-That's why it needs to warn about unsupported types.
 
-Pekka if you disagree with it, please don't hesitate to tell me.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+On Fri, 26 Sep 2008, Alexey Dobriyan wrote:
+>
+> Gentlemen, this happened while script was slowly rebuilding 300+ configs
+> sequentially. Very little recompling activity itself, much seeking.
+> 
+> This is first time I see this. No debugging was on, no preemption.
+> 
+> Version: 2.6.27-rc7-c0f4d6d4b14a75a341d972ff73fb9740e1ceb634 +
+> 	atl1 fixlet + "notes" kobject fixlet, but they don't matter.
+> 
+> ffffffff802bc690 <proc_sys_compare>:
+....
+> ffffffff802bc6c0:	75 dd                	jne    ffffffff802bc69f <proc_sys_compare+0xf>
+> ffffffff802bc6c2:	49 8b 40 e0          	mov    -0x20(%r8),%rax
+> ffffffff802bc6c6: ===>	48 8b 78 f0          	mov    -0x10(%rax),%rdi		<===
+> ffffffff802bc6ca:	e8 71 96 f7 ff       	callq  ffffffff80235d40 <sysctl_is_seen>
+
+That would be the
+
+	sysctl_is_seen(PROC_I(dentry->d_inode)->sysctl)
+
+call, and it really looks like 'dentry->d_inode' is NULL:
+
+> [16526.029537] BUG: unable to handle kernel paging request at fffffffffffffff0
+
+The whole PROC_I() thing just offsets from the inode:
+
+	container_of(inode, struct proc_inode, vfs_inode);
+
+and 'sysctl' is indeed 16 bytes below the vfs inode on x86-64:
+
+	struct proc_inode {
+		...
+	        struct ctl_table_header *sysctl;
+	        struct ctl_table *sysctl_entry;
+	        struct inode vfs_inode;
+	};
+
+and as far as I can tell, there is nothing to say that a /proc inode 
+cannot be a negative dentry. Sure, we try to get rid of them, but during a 
+parallel lookup, we will have added the dentry with a NULL inode in the 
+other lookup.
+
+So assuming that you have an inode at that point seems to be utter crap.
+
+Now, the whole _function_ is utter crap and should probably be dropped, 
+but whatever. That's just another sysctl insanity. In the meantime, 
+something like this does look appropriate, no?
+
+Al, did I miss something?
+
+		Linus
 ---
-diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
-index 2bbb7dd..69480a5 100644
---- a/kernel/trace/trace_mmiotrace.c
-+++ b/kernel/trace/trace_mmiotrace.c
-@@ -171,7 +171,7 @@ print_out:
- 	return (ret == -EBUSY) ? 0 : ret;
- }
- 
--static int mmio_print_rw(struct trace_iterator *iter)
-+static enum print_line_t mmio_print_rw(struct trace_iterator *iter)
- {
- 	struct trace_entry *entry = iter->ent;
- 	struct mmiotrace_rw *rw	= &entry->field.mmiorw;
-@@ -209,11 +209,11 @@ static int mmio_print_rw(struct trace_iterator *iter)
- 		break;
- 	}
- 	if (ret)
--		return 1;
--	return 0;
-+		return TRACE_TYPE_HANDLED;
-+	return TRACE_TYPE_PARTIAL_LINE;
- }
- 
--static int mmio_print_map(struct trace_iterator *iter)
-+static enum print_line_t mmio_print_map(struct trace_iterator *iter)
- {
- 	struct trace_entry *entry = iter->ent;
- 	struct mmiotrace_map *m	= &entry->field.mmiomap;
-@@ -221,7 +221,7 @@ static int mmio_print_map(struct trace_iterator *iter)
- 	unsigned long long t	= ns2usecs(entry->field.t);
- 	unsigned long usec_rem	= do_div(t, 1000000ULL);
- 	unsigned secs		= (unsigned long)t;
--	int ret = 1;
-+	int ret;
- 
- 	switch (entry->field.mmiorw.opcode) {
- 	case MMIO_PROBE:
-@@ -241,11 +241,11 @@ static int mmio_print_map(struct trace_iterator *iter)
- 		break;
- 	}
- 	if (ret)
--		return 1;
--	return 0;
-+		return TRACE_TYPE_HANDLED;
-+	return TRACE_TYPE_PARTIAL_LINE;
- }
- 
--static int mmio_print_mark(struct trace_iterator *iter)
-+static enum print_line_t mmio_print_mark(struct trace_iterator *iter)
- {
- 	struct trace_entry *entry = iter->ent;
- 	const char *msg		= entry->field.print.buf;
-@@ -258,16 +258,16 @@ static int mmio_print_mark(struct trace_iterator *iter)
- 	/* The trailing newline must be in the message. */
- 	ret = trace_seq_printf(s, "MARK %lu.%06lu %s", secs, usec_rem, msg);
- 	if (!ret)
--		return 0;
-+		return TRACE_TYPE_PARTIAL_LINE;
- 
- 	if (entry->field.flags & TRACE_FLAG_CONT)
- 		trace_seq_print_cont(s, iter);
- 
--	return 1;
-+	return TRACE_TYPE_HANDLED;
- }
- 
- /* return 0 to abort printing without consuming current entry in pipe mode */
--static int mmio_print_line(struct trace_iterator *iter)
-+static enum print_line_t mmio_print_line(struct trace_iterator *iter)
- {
- 	switch (iter->ent->type) {
- 	case TRACE_MMIO_RW:
-@@ -277,7 +277,9 @@ static int mmio_print_line(struct trace_iterator *iter)
- 	case TRACE_PRINT:
- 		return mmio_print_mark(iter);
- 	default:
--		return 0; /* ignore unknown entries whithout consuming */
-+		/* ignore unknown entries */
-+		trace_seq_printf(&iter->seq, "Unknown trace type\n");
-+		return TRACE_TYPE_HANDLED;
- 	}
+ fs/proc/proc_sysctl.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
+index f9a8b89..9435fd0 100644
+--- a/fs/proc/proc_sysctl.c
++++ b/fs/proc/proc_sysctl.c
+@@ -386,6 +386,8 @@ static int proc_sys_compare(struct dentry *dir, struct qstr *qstr,
+ 		return 1;
+ 	if (memcmp(qstr->name, name->name, name->len))
+ 		return 1;
++	if (!dentry->d_inode)
++		return 1;
+ 	return !sysctl_is_seen(PROC_I(dentry->d_inode)->sysctl);
  }
  
