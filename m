@@ -1,100 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYIZHLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYIZHMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbYIZHLz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 03:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYIZHLr
+	id S1754531AbYIZHMa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 03:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYIZHMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 03:11:47 -0400
-Received: from qb-out-0506.google.com ([72.14.204.237]:47335 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751684AbYIZHLq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 03:11:46 -0400
-Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Anirban Sinha <kernel@anirban.org>
-Message-Id: <248103A6-04E3-4F60-BFE4-2D4D42A91F6E@anirban.org>
-From: Anirban Sinha <kernel@anirban.org>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <816CA40C-41C0-4CCF-A75B-F67F1A2B0510@anirban.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH]: correction: add a new wait_event_interruptible_timeout_modify helper
-Date: Fri, 26 Sep 2008 00:11:42 -0700
-References: <A1326102-87D8-44AE-856F-A7E49D9E5538@anirban.org> <816CA40C-41C0-4CCF-A75B-F67F1A2B0510@anirban.org>
-X-Mailer: Apple Mail (2.929.2)
+	Fri, 26 Sep 2008 03:12:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34015 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751890AbYIZHMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 03:12:21 -0400
+Date: Fri, 26 Sep 2008 09:12:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
+       agospoda@redhat.com, "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
+       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: e1000e NVM corruption issue status
+Message-ID: <20080926071205.GA27956@elte.hu>
+References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com> <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com> <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com> <Pine.WNT.4.63.0809251907250.1736@jbrandeb-desk.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.WNT.4.63.0809251907250.1736@jbrandeb-desk.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arrghh!!! my bad. corrected patch is pasted below:
 
+* Brandeburg, Jesse <jesse.brandeburg@intel.com> wrote:
 
+> From: Bruce Allan <bruce.w.allan@intel.com>
+> 
+> Export set_memory_ro() and set_memory_rw() calls. Soon to be used
+> by e1000e.
+> 
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> ---
+> 
+>  arch/x86/mm/pageattr.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+> index 43e2f84..0991e15 100644
+> --- a/arch/x86/mm/pageattr.c
+> +++ b/arch/x86/mm/pageattr.c
+> @@ -906,11 +906,13 @@ int set_memory_ro(unsigned long addr, int numpages)
+>  {
+>  	return change_page_attr_clear(addr, numpages, __pgprot(_PAGE_RW));
+>  }
+> +EXPORT_SYMBOL(set_memory_ro);
+>  
+>  int set_memory_rw(unsigned long addr, int numpages)
+>  {
+>  	return change_page_attr_set(addr, numpages, __pgprot(_PAGE_RW));
+>  }
+> +EXPORT_SYMBOL(set_memory_rw);
 
-Index: 2.6-git/include/linux/wait.h
-===================================================================
---- 2.6-git.orig/include/linux/wait.h	2008-06-20 21:21:11.000000000  
--0700
-+++ 2.6-git/include/linux/wait.h	2008-09-25 19:41:37.000000000 -0700
-@@ -335,6 +335,55 @@
-	__ret;								\
-})
+that's fine, as long as you make it kernel-internal EXPORT_SYMBOL_GPL():
 
-+#define __wait_event_interruptible_timeout_modify(wq, condition, ret,  
-timeout) \
-+do {									\
-+	DEFINE_WAIT(__wait);						\
-+									\
-+	for (;;) {							\
-+		prepare_to_wait(&wq, &__wait, TASK_INTERRUPTIBLE);	\
-+		if (condition)						\
-+			break;						\
-+		if (!signal_pending(current)) {				\
-+			ret = schedule_timeout(ret);			\
-+			timeout = ret;					\
-+			if (!ret)					\
-+				break;					\
-+			continue;					\
-+		}							\
-+		ret = -ERESTARTSYS;					\
-+		break;							\
-+	}								\
-+	finish_wait(&wq, &__wait);					\
-+} while (0)
-+
-+/**
-+ * wait_event_interruptible_timeout_modify - sleep until a condition  
-gets true or a timeout elapses.
-+ * @wq: the waitqueue to wait on
-+ * @condition: a C expression for the event to wait for
-+ * @timeout: timeout, in jiffies
-+ *
-+ * The process is put to sleep (TASK_INTERRUPTIBLE) until the
-+ * @condition evaluates to true or a signal is received.
-+ * The @condition is checked each time the waitqueue @wq is woken up.
-+ *
-+ * wake_up() has to be called after changing any variable that could
-+ * change the result of the wait condition.
-+ *
-+ * The function returns 0 if the @timeout elapsed, -ERESTARTSYS if it
-+ * was interrupted by a signal, and the remaining jiffies otherwise
-+ * if the condition evaluated to true before the timeout elapsed.
-+ * It also modifies the @timeout value so that if the sleep is  
-interrupted
-+ * by a signal, the caller can call this helper again with the updated
-+ * timeout.
-+ */
-+#define wait_event_interruptible_timeout_modify(wq, condition,  
-timeout)	\
-+({									\
-+	long __ret = timeout;						\
-+	if (!(condition))						\
-+	  __wait_event_interruptible_timeout_modify(wq, condition, __ret,  
-timeout); \
-+	__ret;								\
-+})
-+
-#define __wait_event_interruptible_exclusive(wq, condition, ret)	\
-do {									\
-	DEFINE_WAIT(__wait);						\
+  Acked-by: Ingo Molnar <mingo@elte.hu>
+
+feel free to push that bit via the networking tree(s) whenever you think 
+you'd like to push it. We can queue it up in the x86 tree too - it's a 
+useful debug facility for critical resources.
+
+one other possible angle beyond these current theories of user-space PCI 
+BAR corruption (perhaps) and racy in-kernel corruption (less likely) is 
+PAT and conflicting caching attributes.
+
+But that too is in the race category IMO (while this corruption seems to 
+trigger straight away on the affected boxes) and the CPUs that saw these 
+corruptions should triple fault if the OS creates conflicting cache 
+attributes.
+
+	Ingo
