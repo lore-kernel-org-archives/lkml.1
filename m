@@ -1,32 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbYIZNwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYIZNyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753661AbYIZNwT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 09:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYIZNwJ
+	id S1753937AbYIZNyA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 09:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYIZNxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 09:52:09 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:37818 "EHLO mgw1.diku.dk"
+	Fri, 26 Sep 2008 09:53:51 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:55487 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751900AbYIZNwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 09:52:07 -0400
+	id S1751506AbYIZNxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 09:53:51 -0400
 From: Julien Brunel <brunel@diku.dk>
-To: rui.zhang@intel.com, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/acpi: dereference without an error test
-Date: Fri, 26 Sep 2008 15:51:57 +0200
+To: nicolas.ferre@atmel.com, adaplas@gmail.com,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/video: Bad error test before a dereference
+Date: Fri, 26 Sep 2008 15:53:44 +0200
 User-Agent: KMail/1.9.9
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809261551.58262.brunel@diku.dk>
+Message-Id: <200809261553.45301.brunel@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After a variable is assigned the result of backlight_device_register, an error
-test should be performed before a dereference. 
+The error test that follows the call to backlight_device_register
+semms not to concern the right variable.
 
 A simplified version of the semantic match that finds this problem is
 as follows: 
@@ -36,7 +37,6 @@ as follows:
 expression x;
 position p0;
 @@
-
 x@p0 = backlight_device_register(...)
 
 @protected@
@@ -50,7 +50,7 @@ x@p0
 if (!IS_ERR(x) && ...) {<... x@p ...>} else S
 
 @unprotected@
-expression def0.x,E;
+expression def0.x;
 identifier fld;
 position def0.p0;
 position p != protected.p;
@@ -64,18 +64,18 @@ Signed-off-by: Julien Brunel <brunel@diku.dk>
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/acpi/video.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/atmel_lcdfb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/drivers/acpi/video.c b/drivers/acpi/video.c
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -752,6 +752,8 @@ static void acpi_video_device_find_cap(s
- 		sprintf(name, "acpi_video%d", count++);
- 		device->backlight = backlight_device_register(name,
- 			NULL, device, &acpi_backlight_ops);
-+		if (IS_ERR(device->backlight))
-+			return;
- 		device->backlight->props.max_brightness = device->brightness->count-3;
- 		/*
- 		 * If there exists the _BQC object, the _BQC object will be
+diff -u -p a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -132,7 +132,7 @@ static void init_backlight(struct atmel_
+ 
+ 	bl = backlight_device_register("backlight", &sinfo->pdev->dev,
+ 			sinfo, &atmel_lcdc_bl_ops);
+-	if (IS_ERR(sinfo->backlight)) {
++	if (IS_ERR(bl)) {
+ 		dev_err(&sinfo->pdev->dev, "error %ld on backlight register\n",
+ 				PTR_ERR(bl));
+ 		return;
