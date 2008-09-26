@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYIZCE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbYIZCHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbYIZCE4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYIZCEs
+	id S1754481AbYIZCHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYIZCHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:04:48 -0400
-Received: from mga11.intel.com ([192.55.52.93]:50249 "EHLO mga11.intel.com"
+	Thu, 25 Sep 2008 22:07:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:34208 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751506AbYIZCEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:04:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,310,1220252400"; 
-   d="scan'208";a="620449699"
-Date: Thu, 25 Sep 2008 19:04:46 -0700 (Pacific Daylight Time)
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: Chris Snook <csnook@redhat.com>
-cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
-       agospoda@redhat.com, "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
-       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com
-Subject: Re: e1000e NVM corruption issue status
-In-Reply-To: <48DC41D2.4090806@redhat.com>
-Message-ID: <Pine.WNT.4.63.0809251903450.1736@jbrandeb-desk.amr.corp.intel.com>
-References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com>
- <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com>
- <48DC41D2.4090806@redhat.com>
-ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-X-X-Sender: jesse.brandeburg@intel.com@imap.glb.intel.com
+	id S1751506AbYIZCHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 22:07:21 -0400
+Message-ID: <48DC43D7.5010008@goop.org>
+Date: Thu, 25 Sep 2008 19:07:19 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+References: <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241340500.6759@gandalf.stny.rr.com> <alpine.LFD.1.10.0809241313000.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com> <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org> <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org> <48DBFC7D.4050208@goop.org> <alpine.LFD.1.10.0809251448340.3265@nehalem.linux-foundation.org> <48DC1338.6050107@goop.org> <alpine.DEB.1.10.0809251848170.32742@gandalf.stny.rr.com> <48DC3A89.9020407@goop.org> <alpine.DEB.1.10.0809252132410.8454@gandalf.stny.rr
+ .com>
+In-Reply-To: <alpine.DEB.1.10.0809252132410.8454@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008, Chris Snook wrote:
+Steven Rostedt wrote:
+> OK, let me rephrase my question.
+>
+> How and where do we record this?  Do we keep this information in some 
+> global variable that we must compare to every time we add a new item in 
+> the trace?
+>
+> Do we have the buffer register a call back to record this information?
+>   
 
-> Brandeburg, Jesse wrote:
-> > hardware affected:
-> > laptops and desktops with 82566 or 82567 based LAN parts, which are machines
-> > with the ICH8 and ICH9 chipsets and a variety of processors.
-> > The machines I know of that have reported the issue include
-> > Lenovo X300
-> > HP 2510p
-> > Intel DP35JO
-> > Lenovo T61 (possibly)
-> > Lenovo X61 (possibly)
-> 
-> My Intel DG45ID board has an ICH10R chipset, and it also has an 82567LM, just
-> as some of the affected systems.  Is there some reason why ICH10 is not
-> susceptible, or have we simply not seen it?
+Something like (total pseudocode):
 
-ICH10R with 82567 is also susceptible, as far as I know at this point.
+struct tsc_time_parameters {
+	int version;		/* even - values OK; odd - values being updated */
+	u64 tsc;
+	u32 tsc_freq;
+	u64 gtod;
+};
+
+DEFINE_PERCPU(struct tsc_time_parameters, tsc_params);
+
+/* To be called after a tsc frequency change, before any new
+   trace records are being emitted, in a context where we can call get_GTOD() */
+void update_tsc_params(void)
+{
+	struct tsc_time_parameters *p = __get_percpu_var(tsc_params);
+
+	p->version |= 1;
+	wmb();
+
+	p->tsc = get_tsc();
+	p->tsc_freq = get_tsc_freq();
+	p->gtod = get_GTOD();
+
+	wmb();
+	p->version++;
+	wmb();
+}
+
+DEFINE_PERCPU(unsigned, current_tsc_version);
+DEFINE_PERCPU(u64, prev_tsc);
+
+/* may be called in any context */
+u64 get_trace_timestamp_delta(void)
+{
+	const struct tsc_time_parameters *p = &__get_percpu_var(tsc_params);
+	unsigned *current_version = &__get_cpu_var(current_tsc_version);
+	u64 prev = __get_cpu_var(prev_tsc);
+	u64 now, ret;
+
+	/* check the current tsc_params version against the last one we emitted;
+		if the version is odd, then we interrupted the parameters as they were
+		being updated, so just emit a new delta with the old parameters */
+	if (unlikely(*current_version != p->version && !(p->version & 1))) {
+		/* XXX probably need a loop to deal with p->version changing under our feet */
+		emit_tsc_freq_record(p);
+		prev = p->tsc;
+		__get_cpu_var(current_tsc_version) = p->version;
+	}
+
+	now = read_tsc();
+	ret = now - prev;
+	__get_cpu_var(prev_tsc) = now;
+
+	return ret;
+}
+
+
+    J
