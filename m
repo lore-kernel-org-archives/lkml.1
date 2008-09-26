@@ -1,69 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbYIZIx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbYIZI6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754502AbYIZIx4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 04:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYIZIxp
+	id S1754885AbYIZI6L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 04:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYIZI5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 04:53:45 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:58944 "EHLO
+	Fri, 26 Sep 2008 04:57:49 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:60437 "EHLO
 	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbYIZIxo (ORCPT
+	with ESMTP id S1751134AbYIZI5s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 04:53:44 -0400
-Message-ID: <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp>
-From: "Takashi Sato" <t-sato@yk.jp.nec.com>
-To: "Ric Wheeler" <rwheeler@redhat.com>,
-       "Christoph Hellwig" <hch@infradead.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, <linux-fsdevel@vger.kernel.org>,
-       <dm-devel@redhat.com>, <viro@ZenIV.linux.org.uk>,
-       <linux-ext4@vger.kernel.org>, <xfs@oss.sgi.com>, <axboe@kernel.dk>,
-       <mtk.manpages@googlemail.com>, <linux-kernel@vger.kernel.org>
-References: <20080908205337t-sato@mail.jp.nec.com> <20080908171119.GB22521@infradead.org> <48DBFD42.6030307@redhat.com>
-In-Reply-To: <48DBFD42.6030307@redhat.com>
-Subject: Re: [PATCH 3/3] Add timeout feature
-Date: Fri, 26 Sep 2008 17:52:35 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=response
+	Fri, 26 Sep 2008 04:57:48 -0400
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
+       "axboe@kernel.dk" <axboe@kernel.dk>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/10] freeze feature ver 1.13
+Message-Id: <20080926175652t-sato@mail.jp.nec.com>
+Mime-Version: 1.0
+X-Mailer: WeMail32[2.51] ID:1K0086
+From: Takashi Sato <t-sato@yk.jp.nec.com>
+Date: Fri, 26 Sep 2008 17:56:52 +0900
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Windows Mail 6.0.6000.16480
-X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi, 
 
-Ric Wheeler wrote:
-> Christoph Hellwig wrote:
->> On Mon, Sep 08, 2008 at 08:53:37PM +0900, Takashi Sato wrote:
->>
->>> The timeout feature is added to "freeze ioctl" to solve a deadlock
->>> when the freezer accesses a frozen filesystem. And new ioctl
->>> to reset the timeout period is added to extend the timeout period.
->>> For example, the freezer resets the timeout period to 10 seconds every 5
->>> seconds.  In this approach, even if the freezer causes a deadlock by
->>> accessing the frozen filesystem, it will be solved by the timeout
->>> in 10 seconds and the freezer will be able to recognize that
->>> at the next reset of timeout period.
->>>
->>
->> And as with all previous posting I still fundamentally disagree about
->> the need of this functionality.  We don't need a timeout for freezing.
->
-> I agree with Christoph here, I think that the timeout is unneeded.
+I've addressed the comments from Christoph, Steve, Dave, Shaggy and Eric.
+The points are followings.
 
-I think that your concern is that the freezer cannot recognize the occurrence
-of a timeout and it continues the backup process and the backup data is
-corrupted finally.
-If the freezer can recognize it by the unfreeze ioctl's errono, will your concern
- be solved?
-If so, I will implement it.
+- Fixed unlockfs method in ext3/4, xfs, gfs2, jfs and reiserfs
+  so that they always return 0 (success).
+  Because the caller (thaw_bdev()) should unfreeze a filesystem
+  successfully even in case of unlockfs's failure.
+
+- Fixed xfs's write_super_lockfs so that it returns an error
+  of xfs_trans_reserve() and xfs_trans_commit().
+
+- Fixed gfs2's write_super_lockfs so that it returns -EINVAL
+  in the following case.
+>      if (test_bit(SDF_SHUTDOWN, &sdp->sd_flags))
+> -        return;
+> +        return -EINVAL;
+
+- Rename write_super_lockfs/unlockfs of the super block operation
+  freeze_fs/unfreeze_fs to avoid a confusion.
+
+Currently, ext3 in mainline Linux doesn't have the freeze feature which
+suspends write requests.  So, we cannot take a backup which keeps
+the filesystem's consistency with the storage device's features
+(snapshot and replication) while it is mounted.
+In many case, a commercial filesystem (e.g. VxFS) has
+the freeze feature and it would be used to get the consistent backup.
+If Linux's standard filesystem ext3 has the freeze feature, we can do it
+without a commercial filesystem.
+
+So I have implemented the ioctls of the freeze feature.
+I think we can take the consistent backup with the following steps.
+1. Freeze the filesystem with the freeze ioctl.
+2. Separate the replication volume or create the snapshot
+   with the storage device's feature.
+3. Unfreeze the filesystem with the unfreeze ioctl.
+4. Take the backup from the separated replication volume
+   or the snapshot.
+
+[PATCH 1/10] VFS: Fix error handling of write_super_lockfs/unlockfs
+  Changed the type of write_super_lockfs and unlockfs from "void"
+  to "int" so that they can return an error. 
+  Rename write_super_lockfs/unlockfs of the super block operation
+  freeze_fs/unfreeze_fs to avoid a confusion.
+
+[PATCH 2/10]-[PATCH 6/10] Fix error handling in write_super_lockfs/unlockfs
+                          (ext3, ext4, xfs, gfs2, jfs)
+  Changed write_super_lockfs so that it returns an error if needed.
+  unlockfs always returns 0.
+
+[PATCH 7/10] reiserfs: Fix error handling in write_super_lockfs/unlockfs
+  Changed write_super_lockfs/unlockfs so that they always return
+  0 (success) to keep a current behavior.
+
+[PATCH 8/10] Implement generic freeze feature
+  The ioctls for the generic freeze feature are below.
+  o Freeze the filesystem
+    int ioctl(int fd, int FIFREEZE, arg)
+      fd: The file descriptor of the mountpoint
+      FIFREEZE: request code for the freeze
+      arg: Ignored
+      Return value: 0 if the operation succeeds. Otherwise, -1
+
+  o Unfreeze the filesystem
+    int ioctl(int fd, int FITHAW, arg)
+      fd: The file descriptor of the mountpoint
+      FITHAW: request code for unfreeze
+      arg: Ignored
+      Return value: 0 if the operation succeeds. Otherwise, -1
+
+[PATCH 9/10] Remove XFS specific ioctl interfaces for freeze feature
+  It removes XFS specific ioctl interfaces and request codes
+  for freeze feature.
+  This patch has been supplied by David Chinner.
+
+[PATCH 10/10] Add timeout feature
+  The timeout feature is added to "freeze ioctl" to solve a deadlock
+  when the freezer accesses a frozen filesystem. And new ioctl
+  to reset the timeout period is added to extend the timeout period.
+  For example, the freezer resets the timeout period to 10 seconds every 5
+  seconds.  In this approach, even if the freezer causes a deadlock by
+  accessing the frozen filesystem, it will be solved by the timeout
+  in 10 seconds and the freezer will be able to recognize that
+  at the next reset of timeout period.
+  o Freeze the filesystem
+    int ioctl(int fd, int FIFREEZE, long *timeout_sec)
+      fd: The file descriptor of the mountpoint
+      FIFREEZE: request code for the freeze
+      timeout_sec: the timeout period in seconds
+               If it's 0 or 1, the timeout isn't set.
+               This special case of "1" is implemented to keep
+               the compatibility with XFS applications.
+      Return value: 0 if the operation succeeds. Otherwise, -1
+
+  o Reset the timeout period
+    This is useful for the application to set the timeout_sec more accurately.
+    For example, the freezer resets the timeout_sec to 10 seconds every 5
+    seconds.  In this approach, even if the freezer causes a deadlock
+    by accessing the frozen filesystem, it will be solved by the timeout
+    in 10 seconds and the freezer can recognize that at the next reset
+    of timeout_sec.
+    int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeout_sec)
+      fd:file descriptor of mountpoint
+      FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
+      timeout_sec: new timeout period in seconds
+      Return value: 0 if the operation succeeds. Otherwise, -1
+      Error number: If the filesystem has already been unfrozen,
+                    errno is set to EINVAL.
+
+Any comments are very welcome.
 
 Cheers, Takashi
-
