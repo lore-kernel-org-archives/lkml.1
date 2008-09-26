@@ -1,37 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbYIZWUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbYIZWWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754461AbYIZWUl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 18:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbYIZWUM
+	id S1753845AbYIZWWG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 18:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYIZWVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 18:20:12 -0400
-Received: from [198.145.64.141] ([198.145.64.141]:44961 "EHLO coco.kroah.org"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752061AbYIZWUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 18:20:11 -0400
-Date: Fri, 26 Sep 2008 15:17:16 -0700
-From: Greg KH <greg@kroah.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
-Subject: Re: [malware-list] [RFC 3/11] fanotify: fscking all notify, system
-	wide file access notification
-Message-ID: <20080926221716.GB10141@kroah.com>
-References: <1222463904.2872.212.camel@localhost.localdomain>
+	Fri, 26 Sep 2008 18:21:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35322 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751983AbYIZWVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 18:21:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: D945GCLF  intel atom board & r8169 ethernet broken in linux-2.6.27-rc5??
+Date: Sat, 27 Sep 2008 00:27:30 +0200
+User-Agent: KMail/1.9.9
+Cc: John Gumb <john.gumb@tandberg.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Kok, Auke" <auke-jan.h.kok@intel.com>
+References: <9F6ACAE02B6DD040A1E259977622CFDB03F5BCCB@oslexcp1.eu.tandberg.int> <200809262345.47373.rjw@sisk.pl> <20080926215211.GA26065@electric-eye.fr.zoreil.com>
+In-Reply-To: <20080926215211.GA26065@electric-eye.fr.zoreil.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1222463904.2872.212.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200809270027.31037.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 05:18:24PM -0400, Eric Paris wrote:
-> fanotify: fscking all notify, system wide file access notification
+On Friday, 26 of September 2008, Francois Romieu wrote:
+> Rafael J. Wysocki <rjw@sisk.pl> :
+> > On Wednesday, 24 of September 2008, Francois Romieu wrote:
+> [...]
+> > > Can you try patches #0001 .. #0008 at
+> > > http://userweb.kernel.org/~romieu/r8169/2.6.27-rc6/20080913/ ?
+> > 
+> > FWIW, these patches make the Ethernet card in the MSI Wind I've been recently
+> > testing work much much more reliably. :-)
+> 
+> The whole series or a part of it ?
 
-Userspace api changes/additions need to also cc: the
-linux-api@vger.kernel.org list now.
-
-thanks,
-
-greg k-h
+I've only tried all of them at once.
