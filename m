@@ -1,107 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbYIZXJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbYIZXNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbYIZXJu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 19:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYIZXJn
+	id S1753957AbYIZXNg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 19:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYIZXN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 19:09:43 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41045 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752533AbYIZXJm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 19:09:42 -0400
-Message-ID: <48DD6BBC.4000402@sgi.com>
-Date: Fri, 26 Sep 2008 16:09:48 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 26 Sep 2008 19:13:28 -0400
+Received: from ebb.errno.com ([69.12.149.25]:1962 "EHLO ebb.errno.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752332AbYIZXN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 19:13:27 -0400
+X-Greylist: delayed 554 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Sep 2008 19:13:27 EDT
+Message-ID: <48DD6A65.1060209@errno.com>
+Date: Fri, 26 Sep 2008 16:04:05 -0700
+From: Sam Leffler <sam@errno.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: num_possible_cpus() giving more than possible.
-References: <alpine.DEB.1.10.0809261613070.21618@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0809261613070.21618@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+CC: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Release of Atheros 802.11abg HAL under the ISC
+References: <20080926215701.GC5972@tesla> <48DD687E.5060703@gmail.com> <20080926230149.GE5972@tesla>
+In-Reply-To: <20080926230149.GE5972@tesla>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-DCC-Rhyolite-Metrics: ebb.errno.com; whitelist
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> Hi Mike,
-> 
-> Peter told me that I should report this to you. I have two socket
-> single core hyper threaded box (must be hell). Peter told me that the 
-> num_possible_cpus() should return the number possible on this box. The 
-> explanation of my box tells us it should be 4. But it in fact returns 8.
+Luis R. Rodriguez wrote:
+> On Fri, Sep 26, 2008 at 03:55:58PM -0700, Maxim Levitsky wrote:
+>   
+>> If I understand this correctly, madwifi is no longer a non-free driver?
+>>     
+>
+> MadWifi is based on a proprietary HAL which is slightly different
+> than this one, so no, its still non-free. The "free" drivers where
+> I think focus should be put in is ath5k and ath9k as they are now both
+> merged as part of the Linux kernel.
+>   
 
-It looks like the APIC discovery code is finding 2 dual cores w/HT.  I'm
-no expert in how all this works but it's assigning
+The hal is not proprietary; Atheros just won't allow me to release it.  
+And there are significant differences between the two code bases.
 
-	proc 0/2 --> phys id 0 w/2 HT
-	proc 1/3 --> phys id 3 w/2 HT
+    Sam
 
-Either the BIOS on your machine is confusing the APIC code, the APIC code
-has a bug, or you've found an Easter egg... ;-)
-
-> 
-> nr_cpu_ids also returns 8.
-
-Yes, this reflects the number of possible cpus if all were enabled.  On
-our systems, we can designate a number of cores to be "present" but
-"disabled".  Perhaps a "low bin" cpu is basically a dual core with the
-non-working core disabled, but still accounted for in the BIOS APIC
-tables?
-
-Cheers,
-Mike
-> 
-> here's the /proc/cpuinfo:
-> 
-> processor	: 0
-.
-> physical id	: 0
-> siblings	: 2
-> core id		: 0
-> cpu cores	: 1
-> apicid		: 0
-> initial apicid	: 0
-.
-> 
-> processor	: 1
-.
-> physical id	: 3
-> siblings	: 2
-> core id		: 0
-> cpu cores	: 1
-> apicid		: 6
-> initial apicid	: 6
-.
-> 
-> processor	: 2
-.
-> physical id	: 0
-> siblings	: 2
-> core id		: 0
-> cpu cores	: 1
-> apicid		: 1
-> initial apicid	: 1
-.
-> 
-> processor	: 3
-.
-> physical id	: 3
-> siblings	: 2
-> core id		: 0
-> cpu cores	: 1
-> apicid		: 7
-> initial apicid	: 7
-.
-> Perhaps since my physical ids show 0 and 3, it thinks it can also have 
-> a 1 and 2?
-> 
-> Thanks,
-> 
-> -- Steve
-> 
-> 
 
