@@ -1,79 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYIZByb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbYIZB7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbYIZByb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 21:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYIZByW
+	id S1754027AbYIZB7T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 21:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYIZB7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 21:54:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34070 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751506AbYIZByV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 21:54:21 -0400
-Message-ID: <48DC406D.1050508@redhat.com>
-Date: Thu, 25 Sep 2008 21:52:45 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH v4] Unified trace buffer
-References: <20080925185154.230259579@goodmis.org> <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 25 Sep 2008 21:59:07 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49384 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506AbYIZB7E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 21:59:04 -0400
+Date: Fri, 26 Sep 2008 11:05:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 9/12] memcg allocate all page_cgroup at boot
+Message-Id: <20080926110550.2292287b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080926104336.d96ab5bd.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926100022.8bfb8d4d.nishimura@mxp.nes.nec.co.jp>
+	<20080926104336.d96ab5bd.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steven,
+On Fri, 26 Sep 2008 10:43:36 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > -	/*
+> > > -	 * Check if our page_cgroup is valid
+> > > -	 */
+> > > -	lock_page_cgroup(page);
+> > > -	pc = page_get_page_cgroup(page);
+> > > -	if (unlikely(!pc))
+> > > -		goto unlock;
+> > > -
+> > > -	VM_BUG_ON(pc->page != page);
+> > > +	pc = lookup_page_cgroup(page);
+> > > +	if (unlikely(!pc || !PageCgroupUsed(pc)))
+> > > +		return;
+> > > +	preempt_disable();
+> > > +	lock_page_cgroup(pc);
+> > > +	if (unlikely(page_mapped(page))) {
+> > > +		unlock_page_cgroup(pc);
+> > > +		preempt_enable();
+> > > +		return;
+> > > +	}
+> > Just for clarification, in what sequence will the page be mapped here?
+> > mem_cgroup_uncharge_page checks whether the page is mapped.
+> > 
+> Please think about folloing situation.
+> 
+>    There is a SwapCache which is referred from 2 process, A, B.
+>    A maps it.
+>    B doesn't maps it.
+> 
+>    And now, process A exits.
+> 
+> 	CPU0(process A)				CPU1 (process B)
+>  
+>     zap_pte_range()
+>     => page remove from rmap			=> charge() (do_swap_page)
+> 	=> set page->mapcount->0          	
+> 		=> uncharge()			=> set page->mapcount=1
+> 
+> This race is what patch 12/12 is fixed.
+> This only happens on cursed SwapCache.
+> 
+Sorry, my brain seems to be sleeping.. above page_mapped() check doesn't
+help this situation. Maybe this page_mapped() check is not necessary
+because it's of no use.
 
-Steven Rostedt wrote:
-> This version has been cleaned up a bit. I've been running it as
-> a back end to ftrace, and it has been handling pretty well.
+I think this kind of problem will not be fixed until we handle SwapCache.
 
-Thank you for your great work.
-It seems good to me(especially, encapsulating events :)).
 
-I have one request of enhancement.
+Thanks,
+-Kame
 
- > +static struct ring_buffer_per_cpu *
- > +ring_buffer_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
- > +{
-[...]
- > +	cpu_buffer->pages = kzalloc_node(ALIGN(sizeof(void *) * pages,
- > +					       cache_line_size()), GFP_KERNEL,
- > +					 cpu_to_node(cpu));
 
-Here, you are using a slab object for page managing array,
-the largest object size is 128KB(x86-64), so it can contain
-16K pages = 64MB.
 
-As I had improved relayfs, in some rare case(on 64bit arch),
-we'd like to use larger buffer than 64MB.
 
-http://sourceware.org/ml/systemtap/2008-q2/msg00103.html
 
-So, I think similar hack can be applicable.
 
-Would it be acceptable for the next version?
 
-Thank you,
 
--- 
-Masami Hiramatsu
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
 
-e-mail: mhiramat@redhat.com
+
 
