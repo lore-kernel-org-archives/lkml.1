@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbYIZQOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbYIZQVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754619AbYIZQOU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 12:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbYIZQOG
+	id S1753643AbYIZQVb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 12:21:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYIZQVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 12:14:06 -0400
-Received: from wvmler2.mail.xerox.com ([13.8.138.217]:55066 "EHLO
-	wvmler2.mail.xerox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752650AbYIZQOF convert rfc822-to-8bit (ORCPT
+	Fri, 26 Sep 2008 12:21:22 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52713 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752103AbYIZQVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 12:14:05 -0400
-X-Greylist: delayed 1195 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Sep 2008 12:14:05 EDT
-X-Xerox-Source-Ip: 13.135.210.15
-X-Xerox-Source-Name: usa0300gw002.na.xerox.net
-X-Xerox-Reported-Name: USA0300GW002.na.xerox.net
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: disk IO directly from PCI memory to block device sectors
-Date: Fri, 26 Sep 2008 11:51:34 -0400
-Message-ID: <556445368AFA1C438794ABDA8901891C0999203A@USA0300MS03.na.xerox.net>
-In-Reply-To: <20080926091135.GV2677@kernel.dk>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: disk IO directly from PCI memory to block device sectors
-Thread-Index: Ackft/EbO2XwIXgbTUmiuIadbnxwzgANi5DQ
-References: <247018.46515.qm@web50603.mail.re2.yahoo.com> <20080926094653.1e0a9260@lxorguk.ukuu.org.uk> <20080926091135.GV2677@kernel.dk>
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: "marty" <martyleisner@yahoo.com>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 26 Sep 2008 15:52:33.0292 (UTC) FILETIME=[E399C4C0:01C91FEF]
+	Fri, 26 Sep 2008 12:21:21 -0400
+Subject: Re: [PATCH git latest] drivers/scsi: fixing wrong comment before
+	new_buffer_tape()
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Kai Makisara <Kai.Makisara@kolumbus.fi>
+In-Reply-To: <20080926170937.2983fc29@lxorguk.ukuu.org.uk>
+References: <20080925174948.GA14180@carmen.cs.uiuc.edu>
+	 <20080926111300.1dd34009@lxorguk.ukuu.org.uk>
+	 <7fcc02550809260905oa17880fi80c94eaacb33dba3@mail.gmail.com>
+	 <20080926170937.2983fc29@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Fri, 26 Sep 2008 09:20:56 -0700
+Message-Id: <1222446056.3971.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-09-26 at 17:09 +0100, Alan Cox wrote:
+> > > Looks true to me for the current versions of the code. In fact it is only
+> > > ever called from the initialisation function that I can see so chunks of
+> > > the code could simply go away as well as bits of the comment. Ditto the
+> > > one in drivers/scsi/st.c
+> > >
+> > > Acked-by: Alan Cox <alan@redhat.com>
+> > >
+> > 
+> > I am sorry I didn't quite understand. You mean it is true that caller
+> > must hold os_scsi_tapes_lock?
+> 
+> Sorry - I mean what you claim is true - that the comment is incorrect.
+
+So, I think I'm missing a piece of this:  There's no patch in this
+thread (I presume it's lurking somewhere on lkml).  Could someone repost
+the proposed patch and copy the tape maintainer: Kai Makisara
+<Kai.Makisara@kolumbus.fi> to get his input?
+
+Thanks,
+
+James
 
 
->   -----Original Message-----
->   From: Jens Axboe [mailto:jens.axboe@oracle.com]
->   Sent: Friday, September 26, 2008 5:12 AM
->   To: Alan Cox
->   Cc: marty; linux-kernel@vger.kernel.org; Leisner, Martin
->   Subject: Re: disk IO directly from PCI memory to block device
-sectors
->   
->   On Fri, Sep 26 2008, Alan Cox wrote:
->   > > What I'm looking is for a more generic/driver independent way of
->   sticking
->   > > contents of PCI ram onto a disk.
->   >
->   > Ermm seriously why not have a userspace task with the PCI RAM
-mmapped
->   > and just use write() like normal sane people do ?
->   
->   To avoid the fault and copy, I would assume.
->   
->   --
->   Jens Axboe
-
-Also:
-   a) to deal with interrupts from the hardware
-   b) using legacy code/design/architecture
-   
-The splice approaches look very interesting...thanks...
-
-marty
