@@ -1,115 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbYIZINF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbYIZIP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbYIZINF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 04:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYIZIMs
+	id S1754673AbYIZIP2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 04:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbYIZIPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 04:12:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52695 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752749AbYIZIMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 04:12:47 -0400
-Date: Fri, 26 Sep 2008 10:12:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: jbarnes@virtuousgeek.org, tglx@linutronix.de, hpa@zytor.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       arjan@linux.intel.com, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [patch] ioremap sanity check to catch mapping requests
-	exceeding the BAR sizes
-Message-ID: <20080926081226.GA8556@elte.hu>
-References: <20080926014334.GF15609@linux-os.sc.intel.com> <20080926073902.GA30041@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080926073902.GA30041@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 26 Sep 2008 04:15:11 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58327 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751496AbYIZIPJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 04:15:09 -0400
+Date: Fri, 26 Sep 2008 16:30:50 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 7/12] memcg add function to move account
+Message-Id: <20080926163050.b510d4ad.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20080925152722.7a678ea1.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080925152722.7a678ea1.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> @@ -444,9 +445,14 @@ void mem_cgroup_move_lists(struct page *
+>  
+>  	pc = page_get_page_cgroup(page);
+>  	if (pc) {
+> +		mem = pc->mem_cgroup;
+>  		mz = page_cgroup_zoneinfo(pc);
+>  		spin_lock_irqsave(&mz->lru_lock, flags);
+> -		__mem_cgroup_move_lists(pc, lru);
+> +		/*
+> +		 * check against the race with move_account.
+> +		 */
+> +		if (likely(mem == pc->mem_cgroup))
+> +			__mem_cgroup_move_lists(pc, lru);
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+(snip)
 
-> > +		printk(KERN_WARNING "resource map sanity check conflict "
-> > +		       " 0x%llx 0x%llx 0x%llx 0x%llx %s\n",
-> > +		       addr, addr + size - 1, p->start, p->end, p->name);
+> @@ -754,16 +824,24 @@ __mem_cgroup_uncharge_common(struct page
+>  	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+>  	    && ((PageCgroupCache(pc) || page_mapped(page))))
+>  		goto unlock;
+> -
+> +retry:
+> +	mem = pc->mem_cgroup;
+>  	mz = page_cgroup_zoneinfo(pc);
+>  	spin_lock_irqsave(&mz->lru_lock, flags);
+> +	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED &&
+> +	    unlikely(mem != pc->mem_cgroup)) {
+> +		/* MAPPED account can be done without lock_page().
+> +		   Check race with mem_cgroup_move_account() */
+> +		spin_unlock_irqrestore(&mz->lru_lock, flags);
+> +		goto retry;
+> +	}
 
-needed two build fixes (and the printk type checking annoyances keep 
-littering the tree):
+I'm sorry, but I've not been convinced yet why these checks are needed here.
+(Those checks are removed by [9/12] anyway.)
 
->From 13eb83754b40bf01dc84e52a08d4196d1b719a0e Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 26 Sep 2008 10:10:12 +0200
-Subject: [PATCH] IO resources, x86: ioremap sanity check to catch mapping requests exceeding, fix
+IIUC, pc->mem_cgroup is moved to another group only by mem_cgroup_move_account
+under lock_page_cgroup( and mz->lru_lock).
+And those two above(mem_cgroup_move_lists and __mem_cgroup_uncharge_common) sets
+mem = pc->mem_cgroup under lock_page_cgroup, so I don't think those checks
+(mem != pc->mem_cgroup) is needed.
 
-fix this build error:
 
- kernel/resource.c: In function 'iomem_map_sanity_check':
- kernel/resource.c:842: error: implicit declaration of function 'r_next'
- kernel/resource.c:842: warning: assignment makes pointer from integer without a cast
+Thanks,
+Daisuke Nishimura.
 
-r_next() was only available if CONFIG_PROCFS was enabled.
-
-and fix this build warning:
-
- kernel/resource.c:855: warning: format '%llx' expects type 'long long unsigned int', but argument 2 has type 'resource_size_t'
- kernel/resource.c:855: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'long unsigned int'
- kernel/resource.c:855: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
- kernel/resource.c:855: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'resource_size_t'
-
-resource_t can be 32 bits.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/resource.c |   14 +++++++++-----
- 1 files changed, 9 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 1d003a5..7797dae 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -38,10 +38,6 @@ EXPORT_SYMBOL(iomem_resource);
- 
- static DEFINE_RWLOCK(resource_lock);
- 
--#ifdef CONFIG_PROC_FS
--
--enum { MAX_IORES_LEVEL = 5 };
--
- static void *r_next(struct seq_file *m, void *v, loff_t *pos)
- {
- 	struct resource *p = v;
-@@ -53,6 +49,10 @@ static void *r_next(struct seq_file *m, void *v, loff_t *pos)
- 	return p->sibling;
- }
- 
-+#ifdef CONFIG_PROC_FS
-+
-+enum { MAX_IORES_LEVEL = 5 };
-+
- static void *r_start(struct seq_file *m, loff_t *pos)
- 	__acquires(resource_lock)
- {
-@@ -852,7 +852,11 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
- 			continue;
- 		printk(KERN_WARNING "resource map sanity check conflict: "
- 		       "0x%llx 0x%llx 0x%llx 0x%llx %s\n",
--		       addr, addr + size - 1, p->start, p->end, p->name);
-+		       (unsigned long long)addr,
-+		       (unsigned long long)(addr + size - 1),
-+		       (unsigned long long)p->start,
-+		       (unsigned long long)p->end,
-+		       p->name);
- 		err = -1;
- 		break;
- 	}
+> +/**
+> + * mem_cgroup_move_account - move account of the page
+> + * @page ... the target page of being moved.
+> + * @pc   ... page_cgroup of the page.
+> + * @from ... mem_cgroup which the page is moved from.
+> + * @to   ... mem_cgroup which the page is moved to.
+> + *
+> + * The caller must confirm following.
+> + * 1. disable irq.
+> + * 2. lru_lock of old mem_cgroup should be held.
+> + * 3. pc is guaranteed to be valid and on mem_cgroup's LRU.
+> + *
+> + * Because we cannot call try_to_free_page() here, the caller must guarantee
+> + * this moving of charge never fails. (if charge fails, this call fails.)
+> + * Currently this is called only against root cgroup.
+> + * which has no limitation of resource.
+> + * Returns 0 at success, returns 1 at failure.
+> + */
+> +int mem_cgroup_move_account(struct page *page, struct page_cgroup *pc,
+> +	struct mem_cgroup *from, struct mem_cgroup *to)
+> +{
+> +	struct mem_cgroup_per_zone *from_mz, *to_mz;
+> +	int nid, zid;
+> +	int ret = 1;
+> +
+> +	VM_BUG_ON(!irqs_disabled());
+> +
+> +	nid = page_to_nid(page);
+> +	zid = page_zonenum(page);
+> +	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
+> +	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
+> +
+> +	if (res_counter_charge(&to->res, PAGE_SIZE)) {
+> +		/* Now, we assume no_limit...no failure here. */
+> +		return ret;
+> +	}
+> +	if (!try_lock_page_cgroup(page)) {
+> +		res_counter_uncharge(&to->res, PAGE_SIZE);
+> +		return ret;
+> +	}
+> +
+> +	if (page_get_page_cgroup(page) != pc) {
+> +		res_counter_uncharge(&to->res, PAGE_SIZE);
+> +		goto out;
+> +	}
+> +
+> +	if (spin_trylock(&to_mz->lru_lock)) {
+> +		__mem_cgroup_remove_list(from_mz, pc);
+> +		css_put(&from->css);
+> +		res_counter_uncharge(&from->res, PAGE_SIZE);
+> +		pc->mem_cgroup = to;
+> +		css_get(&to->css);
+> +		__mem_cgroup_add_list(to_mz, pc);
+> +		ret = 0;
+> +		spin_unlock(&to_mz->lru_lock);
+> +	} else {
+> +		res_counter_uncharge(&to->res, PAGE_SIZE);
+> +	}
+> +out:
+> +	unlock_page_cgroup(page);
+> +
+> +	return ret;
+> +}
+> +
+>  /*
+>   * Charge the memory controller for page usage.
+>   * Return
+>  	__mem_cgroup_remove_list(mz, pc);
+>  	spin_unlock_irqrestore(&mz->lru_lock, flags);
+>  
+>  	page_assign_page_cgroup(page, NULL);
+>  	unlock_page_cgroup(page);
+>  
+> -	mem = pc->mem_cgroup;
+> +
+>  	res_counter_uncharge(&mem->res, PAGE_SIZE);
+>  	css_put(&mem->css);
+>  
+> 
