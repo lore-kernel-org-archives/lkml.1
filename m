@@ -1,79 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYIZSax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbYIZSgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbYIZSax (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 14:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYIZSap
+	id S1753084AbYIZSgh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 14:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYIZSg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 14:30:45 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:21251 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752311AbYIZSao (ORCPT
+	Fri, 26 Sep 2008 14:36:29 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57617 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbYIZSg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 14:30:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=user-agent:date:subject:from:to:cc:message-id:thread-topic
-         :thread-index:in-reply-to:mime-version:content-type
-         :content-transfer-encoding;
-        b=ecmWVxjQdVm0R/1ewcg9CDbliTwZtmL6uNNkZUmtxSAelZlIci+/Ceab663NuLEn0v
-         /2bQy1JTiLnTWQQPKLCmjzxWU+wFZml0C3xOz0/7FbaEOPEAI774BK3D/QXmEU9T9p9a
-         ElDImbMF3b5Qp0pFWzCrEZZ/+GZv/VcR7EI6k=
-User-Agent: Microsoft-Entourage/12.1.0.080305
-Date: Fri, 26 Sep 2008 12:30:34 -0600
-Subject: Re: [PATCH v6] Unified trace buffer
-From: Richard Holden <aciddeath@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, <prasad@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       <hch@lst.de>, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Message-ID: <C502866A.12064%aciddeath@gmail.com>
-Thread-Topic: [PATCH v6] Unified trace buffer
-Thread-Index: AckgBfaLaDATlWmLiE6MZav0+5zaNA==
-In-Reply-To: <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Fri, 26 Sep 2008 14:36:29 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48DD2BA3.7050808@s5r6.in-berlin.de>
+Date: Fri, 26 Sep 2008 20:36:19 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: Parag Warudkar <parag.lkml@gmail.com>
+CC: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andreas Gruenbacher <agruen@suse.de>, Jeff Mahoney <jeffm@suse.de>
+Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
+References: <20080924230054.GA27730@suse.de>	 <f7848160809241639hbe716c9q76b0e1b83d853721@mail.gmail.com>	 <20080925020608.GA13869@suse.de>	 <f7848160809241959s3f3092b2nf05d2245a08bed03@mail.gmail.com>	 <20080925042108.GA3931@suse.de>	 <f7848160809250402l163bb177oeed30f2daa18fafd@mail.gmail.com>	 <20080925205328.GB11225@suse.de>	 <f7848160809251440jfcd60f9lb962a75ff01798c8@mail.gmail.com>	 <20080925220454.GA12116@suse.de> <f7848160809251522s4e589b9eu7a4fc9566d2b25e9@mail.gmail.com>
+In-Reply-To: <f7848160809251522s4e589b9eu7a4fc9566d2b25e9@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/26/08 12:05 PM, "Steven Rostedt" <rostedt@goodmis.org> wrote:
+Parag Warudkar wrote:
+> I have repeatedly said it is very easy to see from the
+> module list for people to decide - not rocket science, definitely not
+> for developers. The whole TAINT drama is unnecessary.
 
-> ring_buffer_alloc: create a new ring buffer. Can choose between
-> overwrite or consumer/producer mode. Overwrite will
-> overwrite old data, where as consumer producer will
-> throw away new data if the consumer catches up with the
-> producer.  The consumer/producer is the default.
-
-Forgive me if I've gotten this wrong but the terminology seems backwards
-Here, I would think we only throw away new data if the producer catches up
-with the consumer, if the consumer catches up with the producer we're
-reading data as fast as it's being written.
-
-> 
-> ring_buffer_write: writes some data into the ring buffer.
-> 
-> ring_buffer_peek: Look at a next item in the cpu buffer.
-> ring_buffer_consume: get the next item in the cpu buffer and
-> consume it. That is, this function increments the head
-> pointer.
-
-Here too, I would think that consuming data would modify the tail pointer.
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
-Just trying to understand the terminology before I look at the code so I'm
-sorry if I have just completely misunderstood.
-
--Richard Holden
-
-
+It _is_ necessary.  I for one don't want to have to remember that driver 
+foobar was in "staging" state in kernel 2.6.31-rc5, but not anymore in 
+2.6.32-rc1.
+-- 
+Stefan Richter
+-=====-==--- =--= ==-=-
+http://arcgraph.de/sr/
