@@ -1,46 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbYIZCtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYIZCv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754264AbYIZCtr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbYIZCtj
+	id S1754633AbYIZCv4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbYIZCvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:49:39 -0400
-Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:42593
-	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753031AbYIZCtj (ORCPT
+	Thu, 25 Sep 2008 22:51:48 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44823 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbYIZCvr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:49:39 -0400
-X-Authority-Analysis: v=1.0 c=1 a=x17pv2GxPoAA:10 a=db7HBzCpc8oA:10
- a=ZKCgBMgPiHFEo6gdk6kA:9 a=7_stDjvB73Tb_fJR_jgeEngBQwYA:4 a=nbrB6oW77rQA:10
-Date: Thu, 25 Sep 2008 21:49:27 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_SECURITY_ROOTPLUG [was: Re: 2.6.27-rc7 no init found on the root partition?]
-Message-ID: <20080926024927.GA13816@hallyn.com>
-References: <20080925165400.GQ31582@ics.muni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080925165400.GQ31582@ics.muni.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 25 Sep 2008 22:51:47 -0400
+Date: Fri, 26 Sep 2008 11:58:10 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 0/12] memcg updates v5
+Message-Id: <20080926115810.b5fbae51.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080926113228.ee377330.nishimura@mxp.nes.nec.co.jp>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926113228.ee377330.nishimura@mxp.nes.nec.co.jp>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Lukas Hejtmanek (xhejtman@ics.muni.cz):
-> Hello,
-> 
-> I finally found my problems with no init found.
-> 
-> It was caused by the CONFIG_SECURITY_ROOTPLUG option.
-> 
-> I wonder why this option in 2.6.26.3 kernel allows the kernel boot up, while
-> with 2.6.27-rc7, the kernel is unable to run even init.
+On Fri, 26 Sep 2008 11:32:28 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-Hmm, is there a difference in the device drivers such that root_plug simply
-isn't able to find the usb 'key' in 2.6.27-rc7?
+> I got general protection fault.
+> 
+> (log from dump)
+> general protection fault: 0000 [1] SMP
+> last sysfs file: /sys/devices/system/cpu/cpu15/cache/index1/shared_cpu_map
 
-When you boot with CONFIG_SECURITY_ROOTPLUG=n, can you read the usb key?
+> Pid: 8001, comm: shmem_test_02 Tainted: G        W 2.6.27-rc7-mm1-7eacf5c9 #1
+> RIP: 0010:[<ffffffff802a0ebb>]  [<ffffffff802a0ebb>] __mem_cgroup_move_lists+0x8b/0xa2
+> RSP: 0018:ffff8800bb4ad888  EFLAGS: 00010046
+> RAX: ffff88010b253080 RBX: ffff88010c67d618 RCX: dead000000100100
+> RDX: dead000000200200 RSI: ffff88010b253088 RDI: ffff88010c67d630
+> RBP: 0000000000000000 R08: ffff88010fc020a3 R09: 000000000000000f
+> R10: ffffffff802a204a R11: 00000000fffffffa R12: ffff88010b253080
+> R13: 0000000000000000 R14: ffff8800bb4ad9c8 R15: 0000000000000000
+> FS:  00007f4600faa6f0(0000) GS:ffffffff80638900(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 00000033af86c027 CR3: 00000000c1549000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process shmem_test_02 (pid: 8001, threadinfo ffff8800bb4ac000, task ffff880107d21470)
+> Stack:  ffffe200028ef8b0 0000000000000082 ffff88010c67d618 ffffffff802a1cb9
+>  ffff880000016f80 0000000000000000 ffff880000016f80 ffffe200028ef888
+>  ffff8800bb4adb38 ffffffff8027dd09 ffffc20001859000 0000000000000000
+> Call Trace:
+>  [<ffffffff802a1cb9>] mem_cgroup_move_lists+0x50/0x74
+>  [<ffffffff8027dd09>] shrink_list+0x443/0x4ff
+>  [<ffffffff8027e04e>] shrink_zone+0x289/0x315
+>  [<ffffffff802805d2>] congestion_wait+0x74/0x80
+>  [<ffffffff8024c006>] autoremove_wake_function+0x0/0x2e
+>  [<ffffffff8027e52a>] do_try_to_free_pages+0x259/0x3e3
+>  [<ffffffff8027e734>] try_to_free_mem_cgroup_pages+0x80/0x85
+>  [<ffffffff802a204a>] mem_cgroup_isolate_pages+0x0/0x1d2
 
--serge
+> Code: 0b 10 eb 04 f0 80 23 ef f0 80 23 bf 89 e8 48 8d 7b 18 48 ff 44 c6 58 48 c1 e0 04 48
+> 8b 4b 18 48 8b 57 08 48 8d 04 06 48 8d 70 08 <48> 89 51 08 48 89 0a 48 8b 50 08 59 5b 5d e
+> 9 75 f4 09 00 58 5b
+> RIP  [<ffffffff802a0ebb>] __mem_cgroup_move_lists+0x8b/0xa2
+>  RSP <ffff8800bb4ad888>
+> ---[ end trace 4eaa2a86a8e2da22 ]---
+> 
+> I've not investigated deeply yet, but it seems that it is trying to
+> handle an entry which has been already removed from list.
+> (I can see some "dead" pointer in registers.)
+> 
+> I was running some ltp tests (4 "page01" tests(8MB for each)
+> and 1 "shmem_test02" test(16MB)) in a group with limit=32M.
+> 
+> 
+> Anyway, I'll dig it more later.
+> 
+Thank you.
+
+How about following ?
+-Kame
+==
+Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+@@ -597,8 +597,8 @@ __set_page_cgroup_lru(struct memcg_percp
+ 			spin_lock(&mz->lru_lock);
+ 		}
+ 		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
+-			SetPageCgroupLRU(pc);
+ 			__mem_cgroup_add_list(mz, pc);
++			SetPageCgroupLRU(pc);
+ 		}
+ 	}
+ 
+
+
+
+
+
+
