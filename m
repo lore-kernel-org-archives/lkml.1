@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYIZSHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbYIZSLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbYIZSHb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 14:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYIZSGJ
+	id S1753424AbYIZSLY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 14:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYIZSLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 14:06:09 -0400
-Received: from mail.windriver.com ([147.11.1.11]:37213 "EHLO mail.wrs.com"
+	Fri, 26 Sep 2008 14:11:17 -0400
+Received: from ns.netcenter.hu ([195.228.254.57]:57343 "EHLO netcenter.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753319AbYIZSGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 14:06:08 -0400
-From: Jason Wessel <jason.wessel@windriver.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net
-Subject: [PATCH 1/5] kgdb: could not write to the last of valid memory with kgdb
-Date: Fri, 26 Sep 2008 13:05:16 -0500
-Message-Id: <1222452320-16281-2-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.0.90.g436ed.dirty
-In-Reply-To: <1222452320-16281-1-git-send-email-jason.wessel@windriver.com>
-References: <1222452320-16281-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 26 Sep 2008 18:05:35.0456 (UTC) FILETIME=[79575600:01C92002]
+	id S1752069AbYIZSLQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 14:11:16 -0400
+Message-ID: <30ad01c92002$cc70fcb0$0400a8c0@dcccs>
+From: "Janos Haar" <djani22@netcenter.hu>
+To: "Chris Friesen" <cfriesen@nortel.com>
+Cc: <linux-kernel@vger.kernel.org>
+References: <2e8201c91fba$1befac80$0400a8c0@dcccs> <48DCF604.60502@nortel.com>
+Subject: Re: Whats going on? (somebody can say something?)
+Date: Fri, 26 Sep 2008 20:07:50 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=response
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Atsuo Igarashi <atsuo_igarashi@tripeaks.co.jp>
+Thank you Chris!
 
-On the ARM architecture, kgdb will crash the kernel if the last byte
-of valid memory is written due to a flush_icache_range flushing
-beyond the memory boundary.
+Next time i will do that. :-)
 
-Signed-off-by: Atsuo Igarashi <atsuo_igarashi@tripeaks.co.jp>
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- kernel/kgdb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Additionally, sorry for the list as well.
 
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index eaa21fc..949806a 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -488,7 +488,7 @@ static int write_mem_msg(int binary)
- 		if (err)
- 			return err;
- 		if (CACHE_FLUSH_IS_SAFE)
--			flush_icache_range(addr, addr + length + 1);
-+			flush_icache_range(addr, addr + length);
- 		return 0;
- 	}
- 
--- 
-1.6.0.90.g436ed.dirty
+Thanks,
+Janos Haar
 
+----- Original Message ----- 
+From: "Chris Friesen" <cfriesen@nortel.com>
+To: "Janos Haar" <djani22@netcenter.hu>
+Cc: <linux-kernel@vger.kernel.org>
+Sent: Friday, September 26, 2008 4:47 PM
+Subject: Re: Whats going on? (somebody can say something?)
+
+
+> Janos Haar wrote:
+>> Hello list,
+>> 
+>> Good day for everibody.
+>> 
+>> I have one problem with my new linux box. (again)
+>> The hw is tested. (memtest86, 4 days)
+> 
+> I don't have any suggestions for your specific problem, but I can give 
+> some suggestions that might make it easier to get help.
+> 
+> In the future, please include a more meaningful subject line.  This 
+> mailing list has a lot of traffic, and people often skip messages that 
+> aren't obviously related to what they're working on.
+> 
+> It is usually useful to specify which exact kernel version you're using.
+> 
+> Chris
