@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbYIZSzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYIZTBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753535AbYIZSzs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 14:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYIZSzk
+	id S1753374AbYIZTBY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 15:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYIZTBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 14:55:40 -0400
-Received: from khc.piap.pl ([195.187.100.11]:60528 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbYIZSzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 14:55:39 -0400
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Frans Pop <elendil@planet.nl>, airlied@gmail.com,
-       Jeff Garzik <jeff@garzik.org>, davem@davemloft.net,
-       jeffrey.t.kirsher@intel.com, david.vrabel@csr.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       chrisl@vmware.com, Ingo Molnar <mingo@elte.hu>,
-       jesse.brandeburg@gmail.com
-Subject: Re: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-References: <20080923.150722.141587696.davem@davemloft.net>
-	<200809251156.10648.jbarnes@virtuousgeek.org>
-	<alpine.LNX.1.10.0809252218470.3389@pegasus.suse.cz>
-	<200809251236.12287.jbarnes@virtuousgeek.org>
-	<alpine.LNX.1.10.0809252234400.3389@pegasus.suse.cz>
-	<48DC176E.6020807@zytor.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 26 Sep 2008 20:55:36 +0200
-In-Reply-To: <48DC176E.6020807@zytor.com> (H. Peter Anvin's message of "Thu\, 25 Sep 2008 15\:57\:50 -0700")
-Message-ID: <m38wten3dj.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 26 Sep 2008 15:01:17 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36951 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbYIZTBQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 15:01:16 -0400
+Subject: Re: [PATCH v6] Unified trace buffer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+In-Reply-To: <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>
+References: <20080925185154.230259579@goodmis.org>
+	 <20080925185236.244343232@goodmis.org>
+	 <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>
+	 <48DC406D.1050508@redhat.com>
+	 <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>
+	 <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Fri, 26 Sep 2008 20:59:17 +0200
+Message-Id: <1222455557.16700.285.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+On Fri, 2008-09-26 at 14:05 -0400, Steven Rostedt wrote:
 
-> Okay, I just had a scary and hopefully stupid thought.
->
-> Especially Intel often has backchannels between the chipset and the
-> Ethernet controller for management functions -- anything from WoL to
-> IPMI -- generally over some kind of low-speed serial bus.
->
-> We're not in a situation where the EEPROM can be touched from the
-> chipset via the SMBus or some other non-CPU channel?
+> +struct buffer_page {
+> +	u64		time_stamp;
+> +	unsigned char	body[];
+> +};
+> +
+> +#define BUF_PAGE_SIZE (PAGE_SIZE - sizeof(u64))
 
-I know next to nothing about SMBus and especially those other
-backchannels, but the 82566 product brief :-) lists support for:
-- Intel Active Management Technology (AMT) with "System Defence"
-  (whatever that means)
-- ASF 2.0
-I think ASF (Alert Standard Format) is somehow related to IPMI and
-uses I^2C or something similar (SMBus).
+Since you're already using the page frame, you can stick this per page
+timestamp in there as well, and get the full page for data.
 
-8254x manual says that the EEPROM is divided into 4 parts: one for
-E1000 hw initialization, one for ASF (Ethernet in ASF mode?), one for
-external BMC (TCO) (loaded by external BMC from the SMBus) and one for
-software only (not used by hardware). Some chips only support #1 (and
-#4 of course).
+You can either use a struct page overlay like slob does, or add a u64 in
+the union that contains struct {private, mapping}.
 
-I understand the driver reads the EEPROM using EERD register (which,
-according to the manual, requires no additional locking) or drives the
-EEPROM directly, with a lock/unlock protocol (using EECD register).
-Now some devices lack the lock/unlock bits, but they lack ASF/BMC as
-well.
 
-I imagine chips other than 8254x may be different here.
 
-Do we have some "master" bugzilla entry or something like that for
-these problems?
--- 
-Krzysztof Halasa
