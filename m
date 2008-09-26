@@ -1,138 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbYIZNt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbYIZNwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753527AbYIZNt4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 09:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYIZNtq
+	id S1753661AbYIZNwT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 09:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYIZNwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 09:49:46 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:42611 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbYIZNtp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 09:49:45 -0400
-Date: Fri, 26 Sep 2008 08:49:40 -0500
-From: Corey Minyard <minyard@acm.org>
-Subject: Re: [PATCH 1/1] Use RCU for the UDP hash lock
-In-reply-to: <20080926040917.GB7209@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       jarkao2@gmail.com, shemminger@vyatta.com
-Message-id: <48DCE874.8070704@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <20080926031832.GA27289@minyard.local>
- <20080926040917.GB7209@linux.vnet.ibm.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 26 Sep 2008 09:52:09 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:37818 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751900AbYIZNwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 09:52:07 -0400
+From: Julien Brunel <brunel@diku.dk>
+To: rui.zhang@intel.com, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/acpi: dereference without an error test
+Date: Fri, 26 Sep 2008 15:51:57 +0200
+User-Agent: KMail/1.9.9
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809261551.58262.brunel@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Thu, Sep 25, 2008 at 10:18:33PM -0500, Corey Minyard wrote:
->   
->> From: Corey Minyard <cminyard@mvista.com>
->>
->> Convert access to the udp_hash table to use RCU.
->>     
->
-> Looks much better!
->
-> Some rcu_dereference() fixes, a comment fix, and a question below.
->
-> 							Thanx, Paul
->
->   
->> Signed-off-by: Corey Minyard <cminyard@mvista.com>
->> ---
->>  include/linux/rculist.h |   19 +++++++++++++++++
->>  include/net/sock.h      |   51 +++++++++++++++++++++++++++++++++++++++++++++++
->>  include/net/udp.h       |    9 ++++---
->>  net/ipv4/udp.c          |   47 ++++++++++++++++++++++++------------------
->>  net/ipv6/udp.c          |   17 ++++++++-------
->>  5 files changed, 111 insertions(+), 32 deletions(-)
->>
->> This patch is the second try; I believe I fixed all issues that people
->> raised.  Thanks to everyone who commented on this.
->>
->> I beat on this for a few hours with my test program, too.
->>
->> diff --git a/include/linux/rculist.h b/include/linux/rculist.h
->> index eb4443c..4d3cc58 100644
->> --- a/include/linux/rculist.h
->> +++ b/include/linux/rculist.h
->> @@ -397,5 +397,24 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
->>  		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
->>  		pos = rcu_dereference(pos->next))
->>
->> +
->> +/**
->> + * hlist_for_each_entry_from_rcu - iterate over rcu list starting from pos
->> + * @tpos:      the type * to use as a loop cursor.
->> + * @pos:       the &struct hlist_node to use as a loop cursor.
->> + * @head:      the head for your list.
->> + * @member:    the name of the hlist_node within the struct.
->> + *
->> + * This list-traversal primitive may safely run concurrently with
->> + * the _rcu list-mutation primitives such as hlist_add_head_rcu()
->> + * as long as the traversal is guarded by rcu_read_lock().
->> + */
->> +#define hlist_for_each_entry_from_rcu(tpos, pos, member)                \
->> +	for (;                                                          \
->> +	     rcu_dereference(pos) && ({ prefetch(pos->next); 1; }) &&    \
->> +	       ({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
->> +	     pos = pos->next)
->>     
->
-> Always apply rcu_dereference() to whatever it was that you
-> rcu_assign_pointer()ed to.  You don't need the first rcu_dereference()
-> because you (hopefully) used rcu_dereference() either directly or 
-> indirectly when picking up the pointer in the first place.  You -do-
-> need one on the ->next, however.
->
-> So something like this:
->
-> +#define hlist_for_each_entry_from_rcu(tpos, pos, member)                \
-> +	for (;                                                          \
-> +	     (pos) && ({ prefetch(pos->next); 1; }) &&    \
-> +	       ({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
-> +	     pos = rcu_dereference((pos)->next))
->   
-Yes, of course, I've changed it.
+After a variable is assigned the result of backlight_device_register, an error
+test should be performed before a dereference. 
 
-> Interesting, though -- you repeat whatever one you stopped on
-> previously, unlike the _continue_ variants.
->   
-Yes, it is interesting, but it preserves the semantics of 
-hlist_for_each_entry_from().  It's the semantics you want in this case, 
-and I think the "from" name implies the semantics.
+A simplified version of the semantic match that finds this problem is
+as follows: 
+(http://www.emn.fr/x-info/coccinelle/)
+// <smpl>
+@def0@
+expression x;
+position p0;
+@@
 
->   
->> +	/*
->> +	 * Note that this is safe, even with an RCU lock.
->> +	 * udp_lib_unhash() is the removal function, it calls
->> +	 * synchronize_sched() and the socket counter cannot go to
->>     
->
-> synchronize_rcu(), right?
->   
-Yes, thanks.
->   
->> +	 * zero until it returns.  So if we increment it inside the
->> +	 * RCU read lock, it should never go to zero and then be
->> +	 * incremented again.
->>     
->
-> So the caller of udp_lib_unhash() does the decrement?  Looks like this
-> might be sk_common_release(), but too many pointers to functions.  One
-> could also argue for udp_disconnect()...
->   
-I don't believe udp_disconnect() releases the socket.  
-sk_common_release() seems to be the place where the refcount is 
-decremented.  But wherever it is done, it would have to be after the unhash.
+x@p0 = backlight_device_register(...)
 
-/me fires up the test harness again.
+@protected@
+expression def0.x,E;
+position def0.p0;
+position p;
+statement S;
+@@
+x@p0
+... when != x = E
+if (!IS_ERR(x) && ...) {<... x@p ...>} else S
 
-Thanks,
+@unprotected@
+expression def0.x,E;
+identifier fld;
+position def0.p0;
+position p != protected.p;
+@@
+x@p0
+... when != x = E
+* x@p->fld
+// </smpl>
 
--corey
+Signed-off-by: Julien Brunel <brunel@diku.dk>
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/acpi/video.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff -u -p a/drivers/acpi/video.c b/drivers/acpi/video.c
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -752,6 +752,8 @@ static void acpi_video_device_find_cap(s
+ 		sprintf(name, "acpi_video%d", count++);
+ 		device->backlight = backlight_device_register(name,
+ 			NULL, device, &acpi_backlight_ops);
++		if (IS_ERR(device->backlight))
++			return;
+ 		device->backlight->props.max_brightness = device->brightness->count-3;
+ 		/*
+ 		 * If there exists the _BQC object, the _BQC object will be
