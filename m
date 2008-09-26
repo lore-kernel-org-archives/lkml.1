@@ -1,113 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbYIZQKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbYIZQL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406AbYIZQKP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 12:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbYIZQJ7
+	id S1754147AbYIZQL2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 12:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYIZQLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 12:09:59 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:41176 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752144AbYIZQJ6 (ORCPT
+	Fri, 26 Sep 2008 12:11:20 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:59148 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752103AbYIZQLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 12:09:58 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAKef3EhMQWq+/2dsb2JhbACBXrtogWQ
-Date: Fri, 26 Sep 2008 12:04:56 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH v4] Unified trace buffer
-Message-ID: <20080926160456.GB27381@Krystal>
-References: <20080925185154.230259579@goodmis.org> <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com> <48DC406D.1050508@redhat.com> <alpine.DEB.1.10.0809252206260.8454@gandalf.stny.rr.com> <20080926032045.GA28771@Krystal> <1222413507.16700.235.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
+	Fri, 26 Sep 2008 12:11:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=G1u52zDw+EycjonGfGxHBskFrAJt6KTma1MKfHL3oiJ0jdEUw+MzCGiyuyGmgQuOLw
+         UlC+vjtvjRruomaAcWQbzQPmQ+KFAgLLO9pBEeqwAEg1wH13nsZygNrzgQQDN4Yn4Y9I
+         QtynpLr2OeXKdKVh+V30//KXKUjU7wmGEFXZ0=
+Message-ID: <48DD09AD.2010200@gmail.com>
+Date: Fri, 26 Sep 2008 18:11:25 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Hirokazu Takahashi <taka@valinux.co.jp>, ryov@valinux.co.jp,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+References: <20080919131019.GA3606@redhat.com> <20080922.183651.62951479.taka@valinux.co.jp> <20080922143042.GA19222@redhat.com> <20080924.172937.72827863.taka@valinux.co.jp> <20080924140355.GB547@redhat.com>
+In-Reply-To: <20080924140355.GB547@redhat.com>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1222413507.16700.235.camel@lappy.programming.kicks-ass.net>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:04:30 up 113 days, 20:44,  8 users,  load average: 0.15, 0.26,
-	0.28
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Thu, 2008-09-25 at 23:20 -0400, Mathieu Desnoyers wrote:
-> > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > > 
-> > > On Thu, 25 Sep 2008, Masami Hiramatsu wrote:
-> > > 
-> > > > Hi Steven,
-> > > > 
-> > > > Steven Rostedt wrote:
-> > > > > This version has been cleaned up a bit. I've been running it as
-> > > > > a back end to ftrace, and it has been handling pretty well.
-> > > > 
-> > > > Thank you for your great work.
-> > > > It seems good to me(especially, encapsulating events :)).
-> > > 
-> > > Thanks!
-> > > 
-> > > > 
-> > > > I have one request of enhancement.
-> > > > 
-> > > > > +static struct ring_buffer_per_cpu *
-> > > > > +ring_buffer_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
-> > > > > +{
-> > > > [...]
-> > > > > +	cpu_buffer->pages = kzalloc_node(ALIGN(sizeof(void *) * pages,
-> > > > > +					       cache_line_size()), GFP_KERNEL,
-> > > > > +					 cpu_to_node(cpu));
-> > > > 
-> > > > Here, you are using a slab object for page managing array,
-> > > > the largest object size is 128KB(x86-64), so it can contain
-> > > > 16K pages = 64MB.
-> > > > 
-> > > > As I had improved relayfs, in some rare case(on 64bit arch),
-> > > > we'd like to use larger buffer than 64MB.
-> > > > 
-> > > > http://sourceware.org/ml/systemtap/2008-q2/msg00103.html
-> > > > 
-> > > > So, I think similar hack can be applicable.
-> > > > 
-> > > > Would it be acceptable for the next version?
-> > > 
-> > > I would like to avoid using vmalloc as much as possible, but I do see the 
-> > > limitation here. Here's my compromise.
-> > > 
-> > > Instead of using vmalloc if the page array is greater than one page, 
-> > > how about using vmalloc if the page array is greater than 
-> > > KMALLOC_MAX_SIZE?
-> > > 
-> > > This would let us keep the vmap area free unless we have no choice.
-> > > 
-> > > -- Steve
-> > > 
-> > 
-> > You could also fallback on a 2-level page array when buffer size is >
-> > 64MB. The cost is mainly a supplementary pointer dereference, but one
-> > more should not make sure a big difference overall.
+Vivek Goyal wrote:
+[snip]
+> Ok, I will give more details of the thought process.
 > 
-> I'm still not sure why we don't just link the pages using the page
-> frames, we don't need the random access, do we?
+> I was thinking of maintaing an rb-tree per request queue and not an
+> rb-tree per cgroup. This tree can contain all the bios submitted to that
+> request queue through __make_request(). Every node in the tree will represent
+> one cgroup and will contain a list of bios issued from the tasks from that
+> cgroup.
 > 
+> Every bio entering the request queue through __make_request() function
+> first will be queued in one of the nodes in this rb-tree, depending on which
+> cgroup that bio belongs to.
+> 
+> Once the bios are buffered in rb-tree, we release these to underlying
+> elevator depending on the proportionate weight of the nodes/cgroups.
+> 
+> Some more details which I was trying to implement yesterday.
+> 
+> There will be one bio_cgroup object per cgroup. This object will contain
+> many bio_group objects. Each bio_group object will be created for each
+> request queue where a bio from bio_cgroup is queued. Essentially the idea
+> is that bios belonging to a cgroup can be on various request queues in the
+> system. So a single object can not serve the purpose as it can not be on
+> many rb-trees at the same time.  Hence create one sub object which will keep
+> track of bios belonging to one cgroup on a particular request queue.
+> 
+> Each bio_group will contain a list of bios and this bio_group object will
+> be a node in the rb-tree of request queue. For example. Lets say there are
+> two request queues in the system q1 and q2 (lets say they belong to /dev/sda
+> and /dev/sdb). Let say a task t1 in /cgroup/io/test1 is issueing io both
+> for /dev/sda and /dev/sdb.
+> 
+> bio_cgroup belonging to /cgroup/io/test1 will have two sub bio_group
+> objects, say bio_group1 and bio_group2. bio_group1 will be in q1's rb-tree
+> and bio_group2 will be in q2's rb-tree. bio_group1 will contain a list of
+> bios issued by task t1 for /dev/sda and bio_group2 will contain a list of
+> bios issued by task t1 for /dev/sdb. I thought the same can be extended
+> for stacked devices also.
+>   
+> I am still trying to implementing it and hopefully this is doable idea.
+> I think at the end of the day it will be something very close to dm-ioband
+> algorithm just that there will be no lvm driver and no notion of separate
+> dm-ioband device. 
 
-Yes, that's a brilliant idea :)
+Vivek, thanks for the detailed explanation. Only a comment. I guess, if
+we don't change also the per-process optimizations/improvements made by
+some IO scheduler, I think we can have undesirable behaviours.
 
-Mathieu
+For example: CFQ uses the per-process iocontext to improve fairness
+between *all* the processes in a system. But it doesn't have the concept
+that there's a cgroup context on-top-of the processes.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+So, some optimizations made to guarantee fairness among processes could
+conflict with algorithms implemented at the cgroup layer. And
+potentially lead to undesirable behaviours.
+
+For example an issue I'm experiencing with my cgroup-io-throttle
+patchset is that a cgroup can consistently increase the IO rate (always
+respecting the max limits), simply increasing the number of IO worker
+tasks respect to another cgroup with a lower number of IO workers. This
+is probably due to the fact the CFQ tries to give the same amount of
+"IO time" to all the tasks, without considering that they're organized
+in cgroup.
+
+I don't see this behaviour with noop or deadline, because they don't
+have the concept of iocontext.
+
+-Andrea
