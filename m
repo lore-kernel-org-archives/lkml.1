@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYIZTpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbYIZTpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbYIZTpV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 15:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbYIZTpG
+	id S1754128AbYIZTpw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 15:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbYIZTpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 15:45:06 -0400
-Received: from ns2.suse.de ([195.135.220.15]:34274 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752999AbYIZTpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 15:45:03 -0400
-Date: Fri, 26 Sep 2008 10:57:45 -0700
-From: Greg KH <gregkh@suse.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Kay Sievers <kay.sievers@vrfy.org>, Joe Perches <joe@perches.com>,
-       Tim Hockin <thockin@hockin.org>,
+	Fri, 26 Sep 2008 15:45:42 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55626 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753075AbYIZTpl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 15:45:41 -0400
+Date: Fri, 26 Sep 2008 10:59:22 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>, Hannes Reinecke <hare@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Hannes Reinecke <hare@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>, Jan Blunck <jblunck@suse.de>,
-       Rick Troth <rmt@casita.net>, Utz Bacher <utz.bacher@de.ibm.com>
-Subject: Re: [patch 2/6] kmsg: tagged device messages.
-Message-ID: <20080926175745.GD700@suse.de>
-References: <20080925162827.818261893@de.ibm.com> <20080925163019.750494793@de.ibm.com>
+       Jiri Slaby <jirislaby@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] PM: use pm_op methods for device types
+Message-ID: <20080926175922.GA767@kroah.com>
+References: <20080925220635.GA12175@kroah.com> <Pine.LNX.4.44L0.0809260948580.2395-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080925163019.750494793@de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0809260948580.2395-100000@iolanthe.rowland.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 06:28:29PM +0200, Martin Schwidefsky wrote:
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> From: Michael Holzheu <holzheu@de.ibm.com>
+On Fri, Sep 26, 2008 at 09:56:55AM -0400, Alan Stern wrote:
+> On Thu, 25 Sep 2008, Greg KH wrote:
 > 
-> Add CONFIG_MSG_IDS support to the dev_xxx printk family. The message
-> tag for a device printk consists of the driver name and the 24 bit
-> hash over the message text. The hash is included in the printed line
-> if the KMSG_COMPONENT macro is defined and CONFIG_MSG_IDS=y. For
-> source files that do not define KMSG_COMPONENT or CONFIG_MSG_IDS=n
-> the dev_xxx printks use the old-style format. 
+> > On Thu, Sep 25, 2008 at 11:27:02PM +0200, Rafael J. Wysocki wrote:
+> > > On Thursday, 25 of September 2008, Alan Stern wrote:
+> > > > This patch (as1141) adds code to use the device type's pm_op methods,
+> > > > if they are defined.  It fixes a regression in the USB PM code; the
+> > > > various suspend and resume methods are defined in the device type
+> > > > rather than in the bus, because USB devices have to be handled
+> > > > differently from USB interfaces.  Without the patch, those methods
+> > > > never get called.
+> > > > 
+> > > > The patch also fixes a couple of spelling errors.
+> > > 
+> > > Hm, these changes are not needed in the current mainline, so there's a patch
+> > > in -next that removes the code added by this patch.
+> > > 
+> > > It might be better to find that patch and drop it instead, IMO.
+> > 
+> > I agree, I think we would have seen more bugs if mainline can't suspend
+> > with a USB device attached, right?
+> > 
+> > confused,
 > 
-> To make it possible for a script to extract the correct message tag
-> for the dev_xxx printks the KMSG_COMPONENT and the driver name need to
-> be identical for all dev_xxx printks in a source file. If a source file
-> is supposed to be converted to use message tags and there are dev_xxx
-> printks with driver names different to KMSG_COMPONENT these dev_xxx
-> printks need to be replaced with kmsg_xxx printks. In praxis this
-> should not be a problem since there are very few dev_xxx printks outside
-> of driver code.
+> Okay, I was confused too.  Looking more closely, it's apparent that 
+> mainline is okay and the problem was introduced by Hannes Reinecke's 
 > 
-> In addition to the KMSG_COMPONENT changes in include/linux/device.h the
-> dev_xxx macros with variable arguments are converted from the gcc specific
-> '## arg' to the C99 variant '##__VA_ARGS__'.
+> driver-core-remove-suspend-resume-callbacks-for-device-type.patch
 > 
-> Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> which states that the suspend/resume callbacks in struct device_type
+> are unused.  It may be true that the legacy suspend/resume methods are
+> unused, but the new pm_ops methods definitely are used.
+> 
+> Therefore part or all of Hannes patch should be reverted.  And the 
+> mainline is okay as it stands.
 
-Nice, thanks for reworking this.  Feel free to add:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-here.
+Ah, ick.
 
-Note that you will get some merge errors with -next in device.h due to
-the dynamic debug printk work that is in my tree and in -next as well.
-But it should be simple to resolve.
+Hannes, care to respin this patch based on this information?
 
 thanks,
 
