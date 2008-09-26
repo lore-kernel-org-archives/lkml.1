@@ -1,105 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYIZDU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbYIZDVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbYIZDU4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 23:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYIZDUs
+	id S1754821AbYIZDVX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 23:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbYIZDVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 23:20:48 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:41925 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753100AbYIZDUr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 23:20:47 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAHTu20hMQWq+/2dsb2JhbACBXrlDgWU
-Date: Thu, 25 Sep 2008 23:20:45 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH v4] Unified trace buffer
-Message-ID: <20080926032045.GA28771@Krystal>
-References: <20080925185154.230259579@goodmis.org> <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com> <48DC406D.1050508@redhat.com> <alpine.DEB.1.10.0809252206260.8454@gandalf.stny.rr.com>
-Mime-Version: 1.0
+	Thu, 25 Sep 2008 23:21:05 -0400
+Received: from cantor.suse.de ([195.135.220.2]:32882 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754603AbYIZDVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 23:21:04 -0400
+Date: Thu, 25 Sep 2008 20:19:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       phil@hannent.co.uk, mwilder@cs.nmsu.edu
+Subject: Re: [PATCH] Input: add mmio xi driver
+Message-ID: <20080926031918.GA10083@suse.de>
+References: <20080925232237.GA22938@suse.de> <20080925182055.f12f5d0b.randy.dunlap@oracle.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0809252206260.8454@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:18:34 up 113 days,  7:58,  8 users,  load average: 1.12, 1.14,
-	0.65
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20080925182055.f12f5d0b.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Thu, 25 Sep 2008, Masami Hiramatsu wrote:
-> 
-> > Hi Steven,
-> > 
-> > Steven Rostedt wrote:
-> > > This version has been cleaned up a bit. I've been running it as
-> > > a back end to ftrace, and it has been handling pretty well.
-> > 
-> > Thank you for your great work.
-> > It seems good to me(especially, encapsulating events :)).
-> 
-> Thanks!
+On Thu, Sep 25, 2008 at 06:20:55PM -0700, Randy Dunlap wrote:
+> On Thu, 25 Sep 2008 16:22:37 -0700 Greg KH wrote:
 > 
 > > 
-> > I have one request of enhancement.
+> > From: Greg Kroah-Hartman <gregkh@suse.de>
 > > 
-> > > +static struct ring_buffer_per_cpu *
-> > > +ring_buffer_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
-> > > +{
-> > [...]
-> > > +	cpu_buffer->pages = kzalloc_node(ALIGN(sizeof(void *) * pages,
-> > > +					       cache_line_size()), GFP_KERNEL,
-> > > +					 cpu_to_node(cpu));
+> > This patch adds the Mimio Xi interactive whiteboard driver to the tree.
 > > 
-> > Here, you are using a slab object for page managing array,
-> > the largest object size is 128KB(x86-64), so it can contain
-> > 16K pages = 64MB.
+> > It was originally written by mwilder@cs.nmsu.edu, but cleaned up and
+> > forward ported by me to the latest kernel version.
 > > 
-> > As I had improved relayfs, in some rare case(on 64bit arch),
-> > we'd like to use larger buffer than 64MB.
 > > 
-> > http://sourceware.org/ml/systemtap/2008-q2/msg00103.html
+> > Cc: Phil Hannent <phil@hannent.co.uk>
+> > Cc: <mwilder@cs.nmsu.edu>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 > > 
-> > So, I think similar hack can be applicable.
+> > ---
+> >  drivers/input/misc/Kconfig  |   11 
+> >  drivers/input/misc/Makefile |    1 
+> >  drivers/input/misc/mimio.c  |  913 ++++++++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 925 insertions(+)
 > > 
-> > Would it be acceptable for the next version?
+> > --- a/drivers/input/misc/Kconfig
+> > +++ b/drivers/input/misc/Kconfig
+> > @@ -164,6 +164,17 @@ config INPUT_POWERMATE
+> >  	  To compile this driver as a module, choose M here: the
+> >  	  module will be called powermate.
+> >  
+> > +config INPUT_MIMIO
+> > +	tristate "Mimio Xi interactive whiteboard support"
+> > +	depends on USB_ARCH_HAS_HCD
+> > +	select USB
 > 
-> I would like to avoid using vmalloc as much as possible, but I do see the 
-> limitation here. Here's my compromise.
-> 
-> Instead of using vmalloc if the page array is greater than one page, 
-> how about using vmalloc if the page array is greater than 
-> KMALLOC_MAX_SIZE?
-> 
-> This would let us keep the vmap area free unless we have no choice.
-> 
-> -- Steve
-> 
+> Prefer not to select entire subsystems, but to depend on them.
+> However, lots of drivers in drivers/input/ select USB...  :(
 
-You could also fallback on a 2-level page array when buffer size is >
-64MB. The cost is mainly a supplementary pointer dereference, but one
-more should not make sure a big difference overall.
+When in Rome... :)
 
-Mathieu
+> > +static void mimio_irq_out(struct urb *urb)
+> > +{
+> > +	unsigned long flags;
+> > +	struct mimio *mimio;
+> > +
+> > +	mimio = urb->context;
+> > +
+> > +	if (urb->status)
+> > +		dev_dbg(&mimio->idev->dev, "urb-status: %d.\n", urb->status);
+> > +
+> > +	spin_lock_irqsave(&mimio->txlock, flags);
+> > +	mimio->txflags |= MIMIO_TXDONE;
+> > +	spin_unlock_irqrestore(&mimio->txlock, flags);
+> > +	wmb();
+> 
+> We want comments/explanation on all barriers or just "barrier();" ??
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Ick, good catch, that shouldn't be needed, I'll go delete it.
+
+> > +	/*
+> > +	 * Build input device info
+> > +	 */
+> > +	usb_make_path(udev, path, 64);
+> 
+> s/64/sizeof(path)/
+
+Thanks, will fix.
+
+Thanks for the review, I appreciate it.
+
+greg k-h
