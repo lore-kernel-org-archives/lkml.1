@@ -1,46 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbYIZXI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbYIZXJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753620AbYIZXI7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 19:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbYIZXIv
+	id S1754085AbYIZXJu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 19:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYIZXJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 19:08:51 -0400
-Received: from mga05.intel.com ([192.55.52.89]:29816 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752105AbYIZXIv (ORCPT
+	Fri, 26 Sep 2008 19:09:43 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41045 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752533AbYIZXJm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 19:08:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,316,1220252400"; 
-   d="scan'208";a="620793656"
-Message-ID: <48DD6B8E.5050106@linux.intel.com>
-Date: Fri, 26 Sep 2008 16:09:02 -0700
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 26 Sep 2008 19:09:42 -0400
+Message-ID: <48DD6BBC.4000402@sgi.com>
+Date: Fri, 26 Sep 2008 16:09:48 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Robert Richter <robert.richter@amd.com>
-CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       oprofile-list@lists.sourceforge.net
-Subject: Re: [PATCH] oprofile: Implement Intel architectural perfmon support
-References: <1219250433-25516-1-git-send-email-andi@firstfloor.org> <1219250433-25516-2-git-send-email-andi@firstfloor.org> <1219250433-25516-3-git-send-email-andi@firstfloor.org> <20080925200048.GI23557@erda.amd.com> <48DC3077.1080905@linux.intel.com> <20080926032328.GN23557@erda.amd.com>
-In-Reply-To: <20080926032328.GN23557@erda.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: num_possible_cpus() giving more than possible.
+References: <alpine.DEB.1.10.0809261613070.21618@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0809261613070.21618@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Richter wrote:
-
-> I think this would be the best solution, providing a parameter
+Steven Rostedt wrote:
+> Hi Mike,
 > 
->  oprofile.force_pmu=<oprofile arch string>
+> Peter told me that I should report this to you. I have two socket
+> single core hyper threaded box (must be hell). Peter told me that the 
+> num_possible_cpus() should return the number possible on this box. The 
+> explanation of my box tells us it should be 4. But it in fact returns 8.
+
+It looks like the APIC discovery code is finding 2 dual cores w/HT.  I'm
+no expert in how all this works but it's assigning
+
+	proc 0/2 --> phys id 0 w/2 HT
+	proc 1/3 --> phys id 3 w/2 HT
+
+Either the BIOS on your machine is confusing the APIC code, the APIC code
+has a bug, or you've found an Easter egg... ;-)
+
 > 
-> This can easily be implemented and also reused by others. I would be
-> fine with this solution. No separate patch needed then.
+> nr_cpu_ids also returns 8.
 
-Ok I can implement that, but it'll be a separate patch. Might be until
-next week that I can work on it though.
+Yes, this reflects the number of possible cpus if all were enabled.  On
+our systems, we can designate a number of cores to be "present" but
+"disabled".  Perhaps a "low bin" cpu is basically a dual core with the
+non-working core disabled, but still accounted for in the BIOS APIC
+tables?
 
--Andi
+Cheers,
+Mike
+> 
+> here's the /proc/cpuinfo:
+> 
+> processor	: 0
+.
+> physical id	: 0
+> siblings	: 2
+> core id		: 0
+> cpu cores	: 1
+> apicid		: 0
+> initial apicid	: 0
+.
+> 
+> processor	: 1
+.
+> physical id	: 3
+> siblings	: 2
+> core id		: 0
+> cpu cores	: 1
+> apicid		: 6
+> initial apicid	: 6
+.
+> 
+> processor	: 2
+.
+> physical id	: 0
+> siblings	: 2
+> core id		: 0
+> cpu cores	: 1
+> apicid		: 1
+> initial apicid	: 1
+.
+> 
+> processor	: 3
+.
+> physical id	: 3
+> siblings	: 2
+> core id		: 0
+> cpu cores	: 1
+> apicid		: 7
+> initial apicid	: 7
+.
+> Perhaps since my physical ids show 0 and 3, it thinks it can also have 
+> a 1 and 2?
+> 
+> Thanks,
+> 
+> -- Steve
+> 
+> 
 
