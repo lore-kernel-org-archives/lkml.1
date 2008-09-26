@@ -1,89 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbYIZVR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbYIZVSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753544AbYIZVR7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 17:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYIZVRv
+	id S1753944AbYIZVSd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 17:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYIZVSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 17:17:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57463 "EHLO mx1.redhat.com"
+	Fri, 26 Sep 2008 17:18:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48377 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752335AbYIZVRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 17:17:51 -0400
-Message-ID: <48DD50AB.10208@redhat.com>
-Date: Fri, 26 Sep 2008 17:14:19 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH v6] Unified trace buffer
-References: <20080925185154.230259579@goodmis.org>	 <20080925185236.244343232@goodmis.org>	 <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>	 <48DC406D.1050508@redhat.com>	 <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>	 <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com> <1222459730.16700.295.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1222459730.16700.295.camel@lappy.programming.kicks-ass.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-2022-JP
+	id S1752449AbYIZVSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 17:18:25 -0400
+Subject: [RFC 2/11] fsnotify: pass a file instead of an inode to open
+	modify and read
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
+Content-Type: text/plain
+Date: Fri, 26 Sep 2008 17:18:20 -0400
+Message-Id: <1222463900.2872.211.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Fri, 2008-09-26 at 14:05 -0400, Steven Rostedt wrote:
->> +static void
->> +rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned
->> nr_pages)
->> +{
->> +       struct page *page;
->> +       struct list_head *p;
->> +       unsigned i;
->> +
->> +       atomic_inc(&cpu_buffer->record_disabled);
-> 
-> You probably want synchronize_sched() here (and similar other places) to
-> ensure any active writer on the corresponding cpu is actually stopped.
+pass a file instead of an inode to open, modify, close
 
-Would it really be done in the buffer layer?
-I think it should be done by each tracer, because buffer layer
-can't ensure truly active writers have stopped.
+From: Eric Paris <eparis@redhat.com>
 
-Thank you,
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
-> 
-> Which suggests you want to use something like ring_buffer_lock_cpu() and
-> implement that as above.
-> 
->> +       for (i = 0; i < nr_pages; i++) {
->> +               BUG_ON(list_empty(&cpu_buffer->pages));
->> +               p = cpu_buffer->pages.next;
->> +               page = list_entry(p, struct page, lru);
->> +               list_del_init(&page->lru);
->> +               __free_page(page);
->> +       }
->> +       BUG_ON(list_empty(&cpu_buffer->pages));
->> +
->> +       __ring_buffer_reset_cpu(cpu_buffer);
->> +
->> +       check_pages(cpu_buffer);
->> +
->> +       atomic_dec(&cpu_buffer->record_disabled);
->> +
->> +}
-> 
+ fs/compat.c              |    5 ++---
+ fs/nfsd/vfs.c            |    4 ++--
+ fs/open.c                |    2 +-
+ fs/read_write.c          |    8 ++++----
+ include/linux/fsnotify.h |    9 ++++++---
+ 5 files changed, 15 insertions(+), 13 deletions(-)
 
--- 
-Masami Hiramatsu
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+diff --git a/fs/compat.c b/fs/compat.c
+index 075d050..f59c796 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1125,11 +1125,10 @@ out:
+ 	if (iov != iovstack)
+ 		kfree(iov);
+ 	if ((ret + (type == READ)) > 0) {
+-		struct dentry *dentry = file->f_path.dentry;
+ 		if (type == READ)
+-			fsnotify_access(dentry);
++			fsnotify_access(file);
+ 		else
+-			fsnotify_modify(dentry);
++			fsnotify_modify(file);
+ 	}
+ 	return ret;
+ }
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 18060be..b576e38 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -937,7 +937,7 @@ nfsd_vfs_read(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
+ 		nfsdstats.io_read += host_err;
+ 		*count = host_err;
+ 		err = 0;
+-		fsnotify_access(file->f_path.dentry);
++		fsnotify_access(file);
+ 	} else 
+ 		err = nfserrno(host_err);
+ out:
+@@ -1004,7 +1004,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
+ 	set_fs(oldfs);
+ 	if (host_err >= 0) {
+ 		nfsdstats.io_write += cnt;
+-		fsnotify_modify(file->f_path.dentry);
++		fsnotify_modify(file);
+ 	}
+ 
+ 	/* clear setuid/setgid flag after write */
+diff --git a/fs/open.c b/fs/open.c
+index 07da935..1057c34 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -1020,7 +1020,7 @@ long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
+ 				put_unused_fd(fd);
+ 				fd = PTR_ERR(f);
+ 			} else {
+-				fsnotify_open(f->f_path.dentry);
++				fsnotify_open(f);
+ 				fd_install(fd, f);
+ 			}
+ 		}
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 9ba495d..39f1fce 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -258,7 +258,7 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
+ 		else
+ 			ret = do_sync_read(file, buf, count, pos);
+ 		if (ret > 0) {
+-			fsnotify_access(file->f_path.dentry);
++			fsnotify_access(file);
+ 			add_rchar(current, ret);
+ 		}
+ 		inc_syscr(current);
+@@ -313,7 +313,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
+ 		else
+ 			ret = do_sync_write(file, buf, count, pos);
+ 		if (ret > 0) {
+-			fsnotify_modify(file->f_path.dentry);
++			fsnotify_modify(file);
+ 			add_wchar(current, ret);
+ 		}
+ 		inc_syscw(current);
+@@ -604,9 +604,9 @@ out:
+ 		kfree(iov);
+ 	if ((ret + (type == READ)) > 0) {
+ 		if (type == READ)
+-			fsnotify_access(file->f_path.dentry);
++			fsnotify_access(file);
+ 		else
+-			fsnotify_modify(file->f_path.dentry);
++			fsnotify_modify(file);
+ 	}
+ 	return ret;
+ }
+diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+index a895131..dd76948 100644
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@ -136,8 +136,9 @@ static inline void fsnotify_mkdir(struct inode *inode, struct dentry *dentry)
+ /*
+  * fsnotify_access - file was read
+  */
+-static inline void fsnotify_access(struct dentry *dentry)
++static inline void fsnotify_access(struct file *file)
+ {
++	struct dentry *dentry = file->f_path.dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	u32 mask = IN_ACCESS;
+ 
+@@ -152,8 +153,9 @@ static inline void fsnotify_access(struct dentry *dentry)
+ /*
+  * fsnotify_modify - file was modified
+  */
+-static inline void fsnotify_modify(struct dentry *dentry)
++static inline void fsnotify_modify(struct file *file)
+ {
++	struct dentry *dentry = file->f_path.dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	u32 mask = IN_MODIFY;
+ 
+@@ -168,8 +170,9 @@ static inline void fsnotify_modify(struct dentry *dentry)
+ /*
+  * fsnotify_open - file was opened
+  */
+-static inline void fsnotify_open(struct dentry *dentry)
++static inline void fsnotify_open(struct file *file)
+ {
++	struct dentry *dentry = file->f_path.dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	u32 mask = IN_OPEN;
+ 
 
-e-mail: mhiramat@redhat.com
 
