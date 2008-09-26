@@ -1,71 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbYIZNEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbYIZNMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbYIZNEu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 09:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbYIZNEj
+	id S1753546AbYIZNMb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 09:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYIZNMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 09:04:39 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:51243 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751786AbYIZNEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 09:04:38 -0400
-Date: Fri, 26 Sep 2008 08:04:09 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Kentaro Takeda <takedakn@nttdata.co.jp>
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       haradats@nttdata.co.jp,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: Re: [TOMOYO #9 (2.6.27-rc7-mm1) 1/6] LSM adapter functions.
-Message-ID: <20080926130409.GA14055@us.ibm.com>
-References: <20080924090317.359685535@nttdata.co.jp> <20080924090338.407746083@nttdata.co.jp> <20080925165954.GA25587@us.ibm.com> <48DC7553.8040708@nttdata.co.jp>
+	Fri, 26 Sep 2008 09:12:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:50755 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbYIZNMU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 09:12:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jirT0DBBt6dt7E6qSAlbARv3gKngVJNO23t0gk0eYm03eYyVobyLj3JvT6eaFiYy10
+         cc5kLdymhT2O8qVKj3yEmbyJlSm9heKm7Ks9i9bg5quCZwbb5tQNQfPOYpMUQbTUPCQP
+         yqFHNHEQj/SJd0dY5gkz/AmWVJF1ySIqMRNBk=
+Message-ID: <6101e8c40809260612o3ff3d814x3727e0f7ec2f7e27@mail.gmail.com>
+Date: Fri, 26 Sep 2008 15:12:18 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: wilhelm-siegfried.knatschke-koenigsberg@chezmoi.com
+Subject: Re: 2.6.26.x hangs on amd64/smp
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200809260859.m8Q8xp0r008656@rayleigh.systella.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48DC7553.8040708@nttdata.co.jp>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <200809260859.m8Q8xp0r008656@rayleigh.systella.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Kentaro Takeda (takedakn@nttdata.co.jp):
-> Serge E. Hallyn wrote:
-> > > So IMO there is some major badness here in the form of copying all of
-> > > those functions out of fs/namei.c.  I think we need to discuss
-> > > case-by-case whether using the functions is appropriate (and hence
-> > > they should be made non-static in fs/namei.c), or whether the intended
-> > > goal should be met some other way.  For instance:
-> Indeed.
-> 
-> To perform DAC before MAC, cloning DAC code (like this patch) or some
-> modifications against existing kernel code (such as non-static
-> may_open()) are needed.
-> 
-> This posting is the result of our intention that all changes should
-> be within security/* . We are now aiming TOMOYO Linux to be merged
-> without messing up the existing kernel code. (Also we put the code of
-> singly linked list TOMOYO Linux uses not in include/linux/list.h but
-> in security/tomoyo/common.h to avoid recomplilation.)
-> 
-> We are ready to remove DAC code in TOMOYO Linux LSM module for now.
-> (But DAC should be performed before MAC, it's our future work.) Since
-> DAC is performed after security_path_*() hooks, this approach has no
-> impact to the semantics of TOMOYO Linux. Is it preferable?
+Hi!
 
-I see.  Good point.
+I have similar problem, but the hw is asus p5q-e, c2q q9300, 4gb ram + rhd3450.
 
-Unfortunately I think that is a shortcoming in the security_path_*
-patchset.  Unfortunate bc that is going to be a pain to work out.
+The X started very slowly ~1-2min, and randomly crashed the system,
+with Freebsd all ok, but with linux not.
+The other problem is, when I cp-ed 4gb<= file, this caused to file
+corruption, when I booted with mem=512M kernel parameter, then this
+file corrouption get off. I have memtest some hour long run, and with
+freebsd i have ~1< uptime, then i turned off the pc. ...
 
-But I do think it needs to be worked out in the core code, not in
-Tomoyo (and each lsm using security_path_*).  So for starters,
-both vfs_mknod and vfs_create do may_create, so just pull that
-into the callers.  Now Al or Christoph may yell NO due to the
-intended layering (which i'm not clear on), in which case the
-solution will be tougher.
-
-> > > likewise...  (except in the case of fifo/sock, devcgroup should not be
-> > > consulted as I'm not sure it'll handle that properly - have you tested
-> > > tis with the device cgroup enabled?)
-> Not tested yet... But I don't think problem occurs.
-> 
-> Regards,
+On 9/26/08, BERTRAND Joel <bertrand@rayleigh.systella.fr> wrote:
+> From: BERTRAND Joel <joel.bertrand@systella.fr>
+> Newsgroups: linux.kernel
+> Subject: 2.6.26.x hangs on amd64/smp
+> Reply-To: mt1@systella.fr
+>
+> 	Some news.
+>
+> 	I have done some tests with the _same_ configuration, but without
+> 	resident X (and console on a serial line). I'm not able to reproduce
+> 	this bug anymore even with a load average
+> 	greater than 30 (memory usage : 4GB + 6GB swap). Thus, this trouble
+> 	seems to be X related.
+>
+> 	Graphic card is :
+> 01:00.0 VGA compatible controller: ATI Technologies Inc M76 [Radeon
+> Mobility HD 2600 Series]
+>
+> 	Xorg configuration :
+> Section "Device"
+>     Identifier  "ATI Technologies Inc ATI Default Card"
+> 	Driver      "radeonhd"
+> #   Driver      "fglrx"
+> 	BusID       "PCI:1:0:0"
+> EndSection
+>
+> cauchy:[~] > dpkg-query -l | grep xorg
+> ii  xorg                                                    1:7.3+16
+> ...
+> ii  xserver-xorg-video-radeonhd                             1.2.1-2
+>
+>
+> 	I'm writing a bug report on Xorg website.
+>
+> 	Regards,
+>
+> 	JKB
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
