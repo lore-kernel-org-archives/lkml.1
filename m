@@ -1,134 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbYIZDX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbYIZDne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754756AbYIZDX7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 23:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYIZDXv
+	id S1753985AbYIZDne (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 23:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYIZDnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 23:23:51 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:7180 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753100AbYIZDXu (ORCPT
+	Thu, 25 Sep 2008 23:43:25 -0400
+Received: from smtp101.prem.mail.sp1.yahoo.com ([98.136.44.56]:48447 "HELO
+	smtp101.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753041AbYIZDnY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 23:23:50 -0400
-X-BigFish: VPS-35(zz1432R98dR936eQ62a3L1805Mzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K7S9EZ-02-APR-01
-Date: Fri, 26 Sep 2008 05:23:28 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Andi Kleen <ak@linux.intel.com>
-CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       oprofile-list@lists.sourceforge.net
-Subject: Re: [PATCH] oprofile: Implement Intel architectural perfmon support
-Message-ID: <20080926032328.GN23557@erda.amd.com>
-References: <1219250433-25516-1-git-send-email-andi@firstfloor.org> <1219250433-25516-2-git-send-email-andi@firstfloor.org> <1219250433-25516-3-git-send-email-andi@firstfloor.org> <20080925200048.GI23557@erda.amd.com> <48DC3077.1080905@linux.intel.com>
+	Thu, 25 Sep 2008 23:43:24 -0400
+X-YMail-OSG: oslkn5MVM1lDp4xfygwvmtqtzYkgXjLEVa5PA4oTHGzcTETdNuNpjrwoZGijaFEZWSKqiv.DkYwJ1e2np88WQJ124bqnYn51Sdui2fNKUXxwG4_et85wGT53qOiclV.jYrjYiVbgXMnW7Jq9KjdzKagb2McIaaAAyKoIb59mWKOiMRXsKw--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <48DC5A45.8020801@schaufler-ca.com>
+Date: Thu, 25 Sep 2008 20:43:01 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <48DC3077.1080905@linux.intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 26 Sep 2008 03:23:33.0733 (UTC) FILETIME=[41894150:01C91F87]
+To: Tilman Baumann <tilman.baumann@collax.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+Subject: Re: SMACK netfilter smacklabel socket match
+References: <48DBC9A1.20900@collax.com>
+In-Reply-To: <48DBC9A1.20900@collax.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25.09.08 17:44:39, Andi Kleen wrote:
-> Robert Richter wrote:
->> On 20.08.08 18:40:31, Andi Kleen wrote:
->>> From: Andi Kleen <ak@linux.intel.com>
->>>
->>> Newer Intel CPUs (Core1+) have support for architectural
->>> events described in CPUID 0xA. See the IA32 SDM Vol3b.18 for details.
->>>
->>> The advantage of this is that it can be done without knowing about
->>> the specific CPU, because the CPU describes by itself what
->>> performance events are supported. This is only a fallback
->>> because only a limited set of 6 events are supported.
->>> This allows to do profiling on Nehalem and on Atom systems
->>> (later not tested)
->>>
->>> This patch implements support for that in oprofile's Intel
->>> Family 6 profiling module. It also has the advantage of supporting
->>> an arbitary number of events now as reported by the CPU.
->>> Also allow arbitary counter widths >32bit while we're at it.
->>>
->>> Requires a patched oprofile userland to support the new
->>> architecture.
->>>
->>> Signed-off-by: Andi Kleen <ak@linux.intel.com>
->>> ---
->>>  Documentation/kernel-parameters.txt |    5 ++
->>>  arch/x86/oprofile/nmi_int.c         |   32 +++++++++--
->>>  arch/x86/oprofile/op_model_ppro.c   |  104 
->>> +++++++++++++++++++++++++++-------
->>>  arch/x86/oprofile/op_x86_model.h    |    3 +
->>>  4 files changed, 116 insertions(+), 28 deletions(-)
->>>
->>> diff --git a/Documentation/kernel-parameters.txt 
->>> b/Documentation/kernel-parameters.txt
->>> index 056742c..10c8b1b 100644
->>> --- a/Documentation/kernel-parameters.txt
->>> +++ b/Documentation/kernel-parameters.txt
->>> @@ -1486,6 +1486,11 @@ and is between 256 and 4096 characters. It is 
->>> defined in the file
->>>  	oprofile.timer=	[HW]
->>>  			Use timer interrupt instead of performance counters
->>>  +	oprofile.force_arch_perfmon=1 [X86]
->>> +			Force use of architectural perfmon performance counters
->>> +			in oprofile on Intel CPUs.  The kernel selects the
->>> +			correct default on its own.
->>> +
->> Could you create a separate patch that introduces this new kernel
->> parameter? 
+Tilman Baumann wrote:
+> Hi all,
 >
-> The parameter only makes sense together with something which uses it.
-> So an additional one liner patch ( + docs) would be a patch depending on
-> the earlier arch perfmon patch. If you want that really I can do it, but
-> frankly it doesn't make sense to me.
->
-> It's only really a debugging feature, I can also just take it out
-> if it's a problem.
->
->> This would make it easier to send all other changes
->> upstream. We already discussed the need of this parameter.
->
-> I thought the result of the discussion was that it was not useful
-> because there's no equivalent on arch perfmon on any other x86 CPUs?
-> IBS is still not architectural, but family/model specific.
->
->> Maybe it
->> would fit better to have a more generalized paramater for this that
->> could be reused then by other archs/models as well. Something like
->> force_pmu_detection that could be used for all new CPUs (also other
->> models) that do not yet have a specific kernel implementation.
->
-> You mean something like pmu=<oprofile arch string> to force
-> use of that?
+> i made some SMACK related patches. I hope this list is the right place 
+> to post them.
 
-I think this would be the best solution, providing a parameter
+Here and, probably more importantly 
+linux-security-module@vger.kernel.org as that's
+my primary hang out.
 
- oprofile.force_pmu=<oprofile arch string>
-
-This can easily be implemented and also reused by others. I would be
-fine with this solution. No separate patch needed then.
-
+> The intention behind this patch is that i needed a way to (firewall) 
+> match for packets originating from specific processes.
+> The existing owner match did not work well enough, especially since 
+> the cmd-owner part is removed.
+> Then i thought about a way to tag processes and somehow match this tag 
+> in the firewall.
+> I recalled that SELinux can do this (SECMARK) but SELinux would have 
+> been way to complex for what i want. But the idea was born, i just 
+> needed something more simple.
 >
->> Even better would a sysfs entry instead with that we can specify which
->> cpu type to use:
+> SMACK seemed to be the right way. So i made a little primitive 
+> netfilter match to match against the security context of sockets.
+> SMACK does CIPSO labels, but this was not what i wanted, i wanted to 
+> label the socket not the packet (on the wire).
+> This of course only works for packets with a local socket, but this 
+> was my intention anyway.
 >
-> module param is already in sysfs.
+> This way i can label a process and all it's sockets carry the same 
+> label which i then can use to match against in the firewall.
 >
->>  echo "i386/arch_perfmon" > /sys/module/oprofile/parameters/cpu_type
->> That would allow us to switch the pmu at runtime and also from the
->> userland.
+
+Hmm. It looks as if your code will do what you're asking it to do.
+Are you going to be happy with the access restrictions that will be
+imposed by Smack?
+
+> The code is pretty much based on cargo cult coding from other 
+> netfilter matches, especially the owner match (which turned out to be 
+> a bad reference since it is crapped with tons of compat interfaces).
 >
-> Switching at runtime would be complicated changes I think
-
-Right, this is overhead nobody will use.
-
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+> I have no kernel coding experience whatsoever and little C coding 
+> history. So i would really like you guys to look over it a bit.
+>
+> Originally i intended to put this mask in the xtables_match structure.
+> .hooks = (1 << NF_INET_LOCAL_OUT) | (1 << NF_INET_LOCAL_IN)
+> But it turned out that i then could not longer put the rule in a chain 
+> which is called by the OUTPUT chain but only in OUTPUT directly.
+> I did not investigate much more since i did not really understand this 
+> part. Allowing the user to add this match wherever he wants to does 
+> not hurt, if there is no local socket there is no matching.
+> But maybe this is something that should be changed.
+>
+> About the Files:
+> SMACK-netfilter-socket-label-match.patch
+> is a git patch for the current kernel.
+>
+> iptables-smacklabel.patch
+> contains the iptables userspace part (applies to iptables-1.4.1.1)
+>
+>
+> Regards
+>  Tilman Baumann
 
