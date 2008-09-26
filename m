@@ -1,75 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbYIZIoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbYIZIrK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbYIZIoY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 04:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYIZIoQ
+	id S1754626AbYIZIrK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 04:47:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYIZIq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 04:44:16 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:38973 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbYIZIoO (ORCPT
+	Fri, 26 Sep 2008 04:46:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57572 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751790AbYIZIqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 04:44:14 -0400
-Subject: Re: [patch 1/6] kmsg: tagged kernel messages.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       lf_kernel_messages@lists.linux-foundation.org, Greg KH <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@vrfy.org>, Joe Perches <joe@perches.com>,
-       Tim Hockin <thockin@hockin.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-       Jochen =?ISO-8859-1?Q?Vo=DF?= <jochen.voss@googlemail.com>,
-       Kunai Takashi <kunai@linux-foundation.jp>,
-       Tim Bird <tim.bird@am.sony.com>, Jan Blunck <jblunck@suse.de>,
-       Rick Troth <rmt@casita.net>, Utz Bacher <utz.bacher@de.ibm.com>
-In-Reply-To: <200809261448.05391.rusty@rustcorp.com.au>
-References: <20080925162827.818261893@de.ibm.com>
-	 <20080925163019.210654702@de.ibm.com>
-	 <200809261448.05391.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 26 Sep 2008 10:29:34 +0200
-Message-Id: <1222417774.22679.2.camel@localhost>
+	Fri, 26 Sep 2008 04:46:55 -0400
+Date: Fri, 26 Sep 2008 09:46:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: marty <martyleisner@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, martin.leisner@xerox.com
+Subject: Re: disk IO directly from PCI memory to block device sectors
+Message-ID: <20080926094653.1e0a9260@lxorguk.ukuu.org.uk>
+In-Reply-To: <247018.46515.qm@web50603.mail.re2.yahoo.com>
+References: <247018.46515.qm@web50603.mail.re2.yahoo.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-26 at 14:48 +1000, Rusty Russell wrote:
-> On Friday 26 September 2008 02:28:28 Martin Schwidefsky wrote:
-> > +#define kmsg_emerg(fmt, ...) \
-> > +	kmsg_printk_hash(KERN_EMERG, fmt, ##__VA_ARGS__)
-> > +#define kmsg_alert(fmt, ...) \
-> > +	kmsg_printk_hash(KERN_ALERT, fmt, ##__VA_ARGS__)
-> > +#define kmsg_crit(fmt, ...) \
-> > +	kmsg_printk_hash(KERN_CRIT, fmt, ##__VA_ARGS__)
-> > +#define kmsg_err(fmt, ...) \
-> > +	kmsg_printk_hash(KERN_ERR, fmt, ##__VA_ARGS__)
-> > +#define kmsg_warn(fmt, ...) \
-> > +	kmsg_printk_hash(KERN_WARNING, fmt, ##__VA_ARGS__)
-> > +#define kmsg_notice(fmt, ...) \
-> > +	kmsg_printk_hash(KERN_NOTICE, fmt, ##__VA_ARGS__)
-> > +#define kmsg_info(fmt, ...) \
-> > +	kmsg_printk_hash(KERN_INFO, fmt, ##__VA_ARGS__)
-> 
-> Now I'm going to be an asshole and ask you to define when each of these levels 
-> should be used.  Do we need all of them?
+> What I'm looking is for a more generic/driver independent way of sticking
+> contents of PCI ram onto a disk.
 
-These are just the regular printk levels. If your old printk used a
-particular level, have the kmsg_xxx printk use the same level. The
-question about message severity and message documenation are
-independent, aren't they?
+Ermm seriously why not have a userspace task with the PCI RAM mmapped
+and just use write() like normal sane people do ?
 
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+Alan
