@@ -1,107 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbYIZJBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbYIZJBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbYIZJBd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 05:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbYIZI7u
+	id S1755123AbYIZJBt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 05:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbYIZI7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 04:59:50 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:53744 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754895AbYIZI7r (ORCPT
+	Fri, 26 Sep 2008 04:59:52 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:61213 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755469AbYIZI7t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 04:59:47 -0400
-X-BigFish: VPS-36(zz1418M1432R98dR168aJ1805M936fOzzzzz32i6bh43j63h)
-X-Spam-TCS-SCL: 2:0
-X-WSS-ID: 0K7SOZ0-04-JHP-01
-Date: Fri, 26 Sep 2008 10:59:24 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Amit Shah <amit.shah@redhat.com>
-CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       iommu@lists.linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
-Message-ID: <20080926085924.GC27928@amd.com>
-References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <1222107681-8185-10-git-send-email-joerg.roedel@amd.com> <200809261326.19261.amit.shah@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <200809261326.19261.amit.shah@redhat.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 26 Sep 2008 08:59:24.0512 (UTC) FILETIME=[2C561E00:01C91FB6]
+	Fri, 26 Sep 2008 04:59:49 -0400
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "axboe@kernel.dk" <axboe@kernel.dk>,
+       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 9/10] Remove XFS specific ioctl interfaces for freeze feature
+Message-Id: <20080926175924t-sato@mail.jp.nec.com>
+Mime-Version: 1.0
+X-Mailer: WeMail32[2.51] ID:1K0086
+From: Takashi Sato <t-sato@yk.jp.nec.com>
+Date: Fri, 26 Sep 2008 17:59:24 +0900
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 01:26:19PM +0530, Amit Shah wrote:
-> * On Monday 22 Sep 2008 23:51:21 Joerg Roedel wrote:
-> > This patch enables stackable dma_ops on x86. To do this, it also enables
-> > the per-device dma_ops on i386.
-> >
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  arch/x86/kernel/pci-dma.c     |   26 ++++++++++++++++++++++++++
-> >  include/asm-x86/device.h      |    6 +++---
-> >  include/asm-x86/dma-mapping.h |   14 +++++++-------
-> >  3 files changed, 36 insertions(+), 10 deletions(-)
-> >
-> > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> > index b990fb6..2e517c2 100644
-> > --- a/arch/x86/kernel/pci-dma.c
-> > +++ b/arch/x86/kernel/pci-dma.c
-> > @@ -82,6 +82,32 @@ void x86_register_dma_ops(struct dma_mapping_ops *ops,
-> >  	write_unlock_irqrestore(&dma_ops_list_lock, flags);
-> >  }
-> >
-> > +struct dma_mapping_ops *find_dma_ops_for_device(struct device *dev)
-> > +{
-> > +	int i;
-> > +	unsigned long flags;
-> > +	struct dma_mapping_ops *entry, *ops = NULL;
-> > +
-> > +	read_lock_irqsave(&dma_ops_list_lock, flags);
-> > +
-> > +	for (i = 0; i < DMA_OPS_TYPE_MAX; ++i)
-> > +		list_for_each_entry(entry, &dma_ops_list[i], list) {
-> > +			if (!entry->device_supported)
-> > +				continue;
-> > +			if (entry->device_supported(dev)) {
-> > +				ops = entry;
-> > +				goto out;
-> > +			}
-> > +		}
-> > +out:
-> > +	read_unlock_irqrestore(&dma_ops_list_lock, flags);
-> 
-> For PVDMA, we want the "native" dma_ops to succeed first, eg, nommu, and then 
-> do our "PV DMA", which is just translating gpa  to hpa and then program the 
-> hardware. This isn't being done here. This can be done by extending the 
-> return type:
-> 
-> DMA_DEV_NOT_SUPPORTED
-> DMA_DEV_HANDLED
-> DMA_DEV_PASS
-> 
-> Where NOT_SUPPORTED means we should look for the next one in the chain 
-> (current return value 0), DEV_HANDLED means the dma operation has been 
-> handled successfully (current return value 1) and DEV_PASS means fall back to 
-> the next layer and then return back.
+It removes XFS specific ioctl interfaces and request codes
+for freeze feature.
+This patch has been supplied by David Chinner.
 
-I am not sure I fully understand what you mean? Why do we need to call
-nommu handlers first for PVDMA devices?
-I think that PVDMA devices must always be handled by a pv-dma_ops
-implementation. So it makes more sense for me to assign the the dma_ops
-of this implementation to the per-device dma_ops structure when we do
-the first call to the dma api. So we pay this overhead of finding out
-who is responsible only once and not at every call to the dma api.
+Signed-off-by: Dave Chinner <dgc@sgi.com>
+Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
+---
+ linux-2.6/xfs_ioctl.c   |   15 ---------------
+ linux-2.6/xfs_ioctl32.c |    2 --
+ xfs_fs.h                |    4 ++--
+ 3 files changed, 2 insertions(+), 19 deletions(-)
 
-Joerg
-
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+diff -uprN -X linux-2.6.27-rc7-freeze/Documentation/dontdiff linux-2.6.27-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl.c linux-
+2.6.27-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl.c
+--- linux-2.6.27-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl.c	2008-09-22 07:29:55.000000000 +0900
++++ linux-2.6.27-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl.c	2008-09-22 14:19:19.000000000 +0900
+@@ -1529,21 +1529,6 @@ xfs_ioctl(
+ 		return -error;
+ 	}
+ 
+-	case XFS_IOC_FREEZE:
+-		if (!capable(CAP_SYS_ADMIN))
+-			return -EPERM;
+-
+-		if (inode->i_sb->s_frozen == SB_UNFROZEN)
+-			freeze_bdev(inode->i_sb->s_bdev);
+-		return 0;
+-
+-	case XFS_IOC_THAW:
+-		if (!capable(CAP_SYS_ADMIN))
+-			return -EPERM;
+-		if (inode->i_sb->s_frozen != SB_UNFROZEN)
+-			thaw_bdev(inode->i_sb->s_bdev, inode->i_sb);
+-		return 0;
+-
+ 	case XFS_IOC_GOINGDOWN: {
+ 		__uint32_t in;
+ 
+diff -uprN -X linux-2.6.27-rc7-freeze/Documentation/dontdiff linux-2.6.27-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl32.c linu
+x-2.6.27-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl32.c
+--- linux-2.6.27-rc7-freeze/fs/xfs/linux-2.6/xfs_ioctl32.c	2008-09-22 07:29:55.000000000 +0900
++++ linux-2.6.27-rc7-xfs/fs/xfs/linux-2.6/xfs_ioctl32.c	2008-09-22 14:19:19.000000000 +0900
+@@ -398,8 +398,6 @@ xfs_compat_ioctl(
+ 	case XFS_IOC_FSGROWFSDATA:
+ 	case XFS_IOC_FSGROWFSLOG:
+ 	case XFS_IOC_FSGROWFSRT:
+-	case XFS_IOC_FREEZE:
+-	case XFS_IOC_THAW:
+ 	case XFS_IOC_GOINGDOWN:
+ 	case XFS_IOC_ERROR_INJECTION:
+ 	case XFS_IOC_ERROR_CLEARALL:
+diff -uprN -X linux-2.6.27-rc7-freeze/Documentation/dontdiff linux-2.6.27-rc7-freeze/fs/xfs/xfs_fs.h linux-2.6.27-rc7-xf
+s/fs/xfs/xfs_fs.h
+--- linux-2.6.27-rc7-freeze/fs/xfs/xfs_fs.h	2008-09-22 07:29:55.000000000 +0900
++++ linux-2.6.27-rc7-xfs/fs/xfs/xfs_fs.h	2008-09-22 14:19:19.000000000 +0900
+@@ -477,8 +477,8 @@ typedef struct xfs_handle {
+ #define XFS_IOC_ERROR_INJECTION	     _IOW ('X', 116, struct xfs_error_injection)
+ #define XFS_IOC_ERROR_CLEARALL	     _IOW ('X', 117, struct xfs_error_injection)
+ /*	XFS_IOC_ATTRCTL_BY_HANDLE -- deprecated 118	 */
+-#define XFS_IOC_FREEZE		     _IOWR('X', 119, int)
+-#define XFS_IOC_THAW		     _IOWR('X', 120, int)
++/*	XFS_IOC_FREEZE		  -- FIFREEZE   119	 */
++/*	XFS_IOC_THAW		  -- FITHAW     120	 */
+ #define XFS_IOC_FSSETDM_BY_HANDLE    _IOW ('X', 121, struct xfs_fsop_setdm_handlereq)
+ #define XFS_IOC_ATTRLIST_BY_HANDLE   _IOW ('X', 122, struct xfs_fsop_attrlist_handlereq)
+ #define XFS_IOC_ATTRMULTI_BY_HANDLE  _IOW ('X', 123, struct xfs_fsop_attrmulti_handlereq)
