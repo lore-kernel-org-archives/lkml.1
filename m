@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbYIZFZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbYIZFaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbYIZFZj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 01:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYIZFZa
+	id S1753826AbYIZFaE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 01:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbYIZF3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 01:25:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:52540 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbYIZFZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 01:25:30 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
-Date: Fri, 26 Sep 2008 15:25:29 +1000
-User-Agent: KMail/1.9.9
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>, Alan.Brunelle@hp.com,
-       travis@sgi.com, tglx@linutronix.de, rjw@sisk.pl,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kernel-testers@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, arjan@linux.intel.com,
-       Jack Steiner <steiner@sgi.com>
-References: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <200809251150.26760.rusty@rustcorp.com.au> <alpine.LFD.1.10.0809250836270.3265@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0809250836270.3265@nehalem.linux-foundation.org>
+	Fri, 26 Sep 2008 01:29:53 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:59322 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751818AbYIZF3x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 01:29:53 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAJQO3Eg7p+/x/2dsb2JhbACBXrkygWQ
+X-IronPort-AV: E=Sophos;i="4.33,310,1220193000"; 
+   d="scan'208";a="200142209"
+Message-ID: <48DC734B.8070805@call-direct.com.au>
+Date: Fri, 26 Sep 2008 15:29:47 +1000
+From: Iwo Mergler <iwo@call-direct.com.au>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Paul Eddington <eddingtonpaul@googlemail.com>
+CC: linux-kernel@vger.kernel.org, rt2400-devel@lists.sourceforge.net
+Subject: Re: Bug in rt2x00 rt73usb driver in latest git kernel
+References: <762793250809241102n61ea8f00kca8138bc3c8df2e6@mail.gmail.com>
+In-Reply-To: <762793250809241102n61ea8f00kca8138bc3c8df2e6@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809261525.30258.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 September 2008 01:42:13 Linus Torvalds wrote:
-> On Thu, 25 Sep 2008, Rusty Russell wrote:
-> >     This turns out to be awful in practice, mainly due to const. 
-> > Consider:
-> >
-> > 	#ifdef CONFIG_CPUMASK_OFFSTACK
-> > 	typedef unsigned long *cpumask_t;
-> > 	#else
-> > 	typedef unsigned long cpumask_t[1];
-> > 	#endif
-> >
-> > 	cpumask_t returns_cpumask(void);
->
-> No. That's already broken. You cannot return a cpumask_t, regardless of
-> interface. We must not do it regardless of how we pass those things
-> around, since it generates _yet_ another temporary on the stack for the
-> return slot for any kind of structure.
+Paul Eddington wrote:
+> Hi,
+> 
+> While running the latest git kernel (linus' tree) and using a usb wifi
+> card, I got this error in dmesg:;
+> 
+> phy2 -> rt2x00queue_write_tx_frame: Error - Arrived at non-free entry
+> in the non-full queue 2.
+> Please file bug report to http://rt2x00.serialmonkey.com.
+> 
+> This is not reproducible easily, but it has occurred on two occasions
+> both while connected to a WEP encrypted AP with a 40-bit key and
+> performing many file samba transfers at full speed 54mbits.
+> 
+> I tried to report the bug there but was unable to register and edit
+> the bug reports wiki page.
+> If there is any more information or help required to debug this,
+> please let me know.
+> 
+> Regards,
+> Paul
+> --
 
-No, for large NR_CPUS, cpumask_t is a pointer as shown.  And we have numerous 
-basic functions which return a cpumask_t.  Yes, this is part of the problem.
+Hi Paul,
 
-> What _is_ relevant is how we allocate them when we need temporary CPU
-> masks. And _that_ is where my suggestion comes in. For small NR_CPUS, we
-> really do want to allocate them on the stack, because calling kmalloc for
-> a 4- or 8-byte allocation is just _stupid_.
+the rt2x00 drivers are currently a very fast moving target. You may want
+to experiment with the rt2x00 kernel tree instead - it gets the patches
+(and the bugs) earlier. ;-)
 
-Right, but cpumask_t is used for far more than stack decls, thus the problems.
+http://git.kernel.org/?p=linux/kernel/git/ivd/rt2x00.git;a=summary
 
-I can make a separate "cpumask_stack_t" and use your method tho.  I think that 
-might even reduce churn and allow us to do this in parts.
+I added the rt2x00 mailing list to CC.
 
-> which has to be converted some way. And I think it needs to be converted
-> in a way that does *not* force us to call kmalloc() for idiotically small
-> values.
+Kind regards,
 
-Yeah, got that.  But your suggestion to change cpumask_t turned out horribly 
-ugly.
+Iwo
 
-Cheers,
-Rusty.
