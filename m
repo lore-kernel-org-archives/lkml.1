@@ -1,302 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYIZBVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbYIZBWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753139AbYIZBVi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 21:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYIZBVU
+	id S1754372AbYIZBWl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 21:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYIZBW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 21:21:20 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:42558 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753328AbYIZBVS (ORCPT
+	Thu, 25 Sep 2008 21:22:29 -0400
+Received: from email1.etri.re.kr ([129.254.16.131]:26143 "EHLO
+	email1.etri.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbYIZBW2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 21:21:18 -0400
-Date: Thu, 25 Sep 2008 18:20:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       phil@hannent.co.uk, mwilder@cs.nmsu.edu
-Subject: Re: [PATCH] Input: add mmio xi driver
-Message-Id: <20080925182055.f12f5d0b.randy.dunlap@oracle.com>
-In-Reply-To: <20080925232237.GA22938@suse.de>
-References: <20080925232237.GA22938@suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 25 Sep 2008 21:22:28 -0400
+X-Greylist: delayed 913 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Sep 2008 21:22:28 EDT
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: Re: [PATCH 0/2] Traffic control cgroups subsystem
+Date: Fri, 26 Sep 2008 10:07:13 +0900
+Message-ID: <4C86297B4AC6554B8BA018F0806590CE017D5B25@email1>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: [PATCH 0/2] Traffic control cgroups subsystem
+thread-index: AckfdDXwTEeYQr20REGcGOkNKiT2mw==
+From: =?ks_c_5601-1987?B?sejA57+t?= <gauri@etri.re.kr>
+To: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Cc: "Ranjit Manomohan" <ranjitm@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008 16:22:37 -0700 Greg KH wrote:
+>Incorporated fixes suggested by Li Zefan.
+>
+>Please consider for net-next-2.6.
+>
+>This patch provides a simple resource controller (cgroup_tc) based on the
+>cgroups infrastructure to manage network traffic. The cgroup_tc resource
+>controller can be used to schedule and shape traffic belonging to the task(s)
+>in a particular cgroup.
+>
+>The implementation consists of two parts:
+>
+>1) A resource controller (cgroup_tc) that is used to associate packets from
+>   a particular task belonging to a cgroup with a traffic control class id (
+>   tc_classid). This tc_classid is propagated to all sockets created by tasks
+>   in the cgroup and will be used for classifying packets at the link layer.
+>
+>2) A new traffic control classifier (cls_cgroup) that can classify packets
+>   based on the tc_classid field in the socket to specific destination classes.
+>
+>An example of the use of this resource controller would be to limit
+>the traffic from all tasks from a file_server cgroup to 100Mbps. We could
+>achieve this by doing:
+>
+># make a cgroup of file transfer processes and assign it a arbitrary unique
+># classid of 0x1234 - this will be used later to direct packets.
+>mkdir -p /dev/cgroup
+>mount -t cgroup tc -otc /dev/cgroup
+>mkdir /dev/cgroup/file_transfer
+>echo 0x1234 > /dev/cgroup/file_transfer/tc.classid
+>echo $PID_OF_FILE_XFER_PROCESS > /dev/cgroup/file_transfer/tasks
+>
+># Now create a HTB class that rate limits traffic to 100mbits and attach
+># a filter to direct all traffic from cgroup file_transfer to this new class.
+>tc qdisc add dev eth0 root handle 1: htb
+>tc class add dev eth0 parent 1: classid 1:10 htb rate 100mbit ceil 100mbit
+>tc filter add dev eth0 parent 1: handle 800 protocol ip prio 1 cgroup value 0x1234 classid 1:10
+>
+>Signed-off-by: Ranjit Manomohan <ranjitm <at> google.com>
+>
 
-> 
-> From: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> This patch adds the Mimio Xi interactive whiteboard driver to the tree.
-> 
-> It was originally written by mwilder@cs.nmsu.edu, but cleaned up and
-> forward ported by me to the latest kernel version.
-> 
-> 
-> Cc: Phil Hannent <phil@hannent.co.uk>
-> Cc: <mwilder@cs.nmsu.edu>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  drivers/input/misc/Kconfig  |   11 
->  drivers/input/misc/Makefile |    1 
->  drivers/input/misc/mimio.c  |  913 ++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 925 insertions(+)
-> 
-> --- a/drivers/input/misc/Kconfig
-> +++ b/drivers/input/misc/Kconfig
-> @@ -164,6 +164,17 @@ config INPUT_POWERMATE
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called powermate.
->  
-> +config INPUT_MIMIO
-> +	tristate "Mimio Xi interactive whiteboard support"
-> +	depends on USB_ARCH_HAS_HCD
-> +	select USB
+I installed your patch to kernel-2.6.27-rc7 with some hunkles but without failes.
+After compiling the kernel, I run the command which you wrote above. Most of all commands successfully are run except the last command " tc filter add dev eth0 parent 1: handle 800 protocol ip prio 1 cgroup value 0x1234 classid 1:10"
 
-Prefer not to select entire subsystems, but to depend on them.
-However, lots of drivers in drivers/input/ select USB...  :(
+After that, I received this messages
+"Unknown filter "cgroup", hence option "value" is unparsable"
+
+So I operated this command with "strace", then below messages returned.
+...
+socket(PF_NETLINK, SOCK_RAW, 0)         = 3
+setsockopt(3, SOL_SOCKET, SO_SNDBUF, [32768], 4) = 0
+setsockopt(3, SOL_SOCKET, SO_RCVBUF, [32768], 4) = 0
+bind(3, {sa_family=AF_NETLINK, pid=0, groups=00000000}, 12) = 0
+getsockname(3, {sa_family=AF_NETLINK, pid=5452, groups=00000000}, [12]) = 0
+time(NULL)                              = 1222389948
+open("/usr/lib/tc/f_cgroup.so", O_RDONLY) = -1 ENOENT (No such file or directory)
+write(2, "Unknown filter \"cgroup\", hence o"..., 60Unknown filter "cgroup", hence option "value" is unparsable
+) = 60
+close(3)                                = 0
+exit_group(1)                           = ?
+
+This messages told me tc couldn¡¯t find "f_cgroup.so" library in my system.
+With this message, I thought that we need a modified "tc" command file to recognize the new filter, cgroup.
+
+And I saw the line in your patch below
+">Please consider for net-next-2.6."
+What's the meaning of the line?
+I wonder if I have to adopt another patch for net-netxt-2.6 before adopting this patch?
+
+You didn't mentioned base kernel for this patch.
+I am willing to know the base kernel version and why you didn't mention.
+
+I've worked couple of days for resolving this problem. But I couldn't find the proper answer yet.
+
+I'd really thank you if you help me.
 
 
-> +	help
-> +	  Say Y here if you want to use a Mimio Xi interactive
-> +	  whiteboard device.
-> +
-> +	  To compile this driver as a module, choose M here: the
-> +	  module will be called mimio.
-> +
->  config INPUT_YEALINK
->  	tristate "Yealink usb-p1k voip phone"
->  	depends on EXPERIMENTAL
-
-> --- /dev/null
-> +++ b/drivers/input/misc/mimio.c
-> @@ -0,0 +1,913 @@
-
-> +static void mimio_irq_out(struct urb *urb)
-> +{
-> +	unsigned long flags;
-> +	struct mimio *mimio;
-> +
-> +	mimio = urb->context;
-> +
-> +	if (urb->status)
-> +		dev_dbg(&mimio->idev->dev, "urb-status: %d.\n", urb->status);
-> +
-> +	spin_lock_irqsave(&mimio->txlock, flags);
-> +	mimio->txflags |= MIMIO_TXDONE;
-> +	spin_unlock_irqrestore(&mimio->txlock, flags);
-> +	wmb();
-
-We want comments/explanation on all barriers or just "barrier();" ??
-
-> +	wake_up(&mimio->waitq);
-> +}
-
-> +static int mimio_probe(struct usb_interface *ifc,
-> +		       const struct usb_device_id *id)
-> +{
-> +	char path[64];
-> +	int pipe, maxp;
-> +	struct mimio *mimio;
-> +	struct usb_device *udev;
-> +	struct usb_host_interface *hostifc;
-> +	struct input_dev *input_dev;
-> +	int res = 0;
-> +	int i;
-> +
-> +	udev = interface_to_usbdev(ifc);
-> +
-> +	mimio = kzalloc(sizeof(struct mimio), GFP_KERNEL);
-> +	if (!mimio)
-> +		return -ENOMEM;
-> +
-> +	input_dev = input_allocate_device();
-> +	if (!input_dev) {
-> +		mimio_dealloc(mimio);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	mimio->uifc = ifc;
-> +	mimio->udev = udev;
-> +	mimio->pktbuf.p = mimio->pktbuf.buf;
-> +	mimio->pktbuf.q = mimio->pktbuf.buf;
-> +	/* init_input_dev(mimio->idev); */
-> +	mimio->idev = input_dev;
-> +	init_waitqueue_head(&mimio->waitq);
-> +	spin_lock_init(&mimio->txlock);
-> +	hostifc = ifc->cur_altsetting;
-> +
-> +	if (hostifc->desc.bNumEndpoints != 2) {
-> +		dev_err(&udev->dev, "Unexpected endpoint count: %d.\n",
-> +			hostifc->desc.bNumEndpoints);
-> +		mimio_dealloc(mimio);
-> +		return -ENODEV;
-> +	}
-> +
-> +	mimio->in.desc = &(hostifc->endpoint[0].desc);
-> +	mimio->out.desc = &(hostifc->endpoint[1].desc);
-> +
-> +	mimio->in.buf = usb_buffer_alloc(udev, MIMIO_MAXPAYLOAD, GFP_KERNEL,
-> +					 &mimio->in.dma);
-> +	mimio->out.buf = usb_buffer_alloc(udev, MIMIO_MAXPAYLOAD, GFP_KERNEL,
-> +					  &mimio->out.dma);
-> +
-> +	if (mimio->in.buf == NULL || mimio->out.buf == NULL) {
-> +		dev_err(&udev->dev, "usb_buffer_alloc failure.\n");
-> +		mimio_dealloc(mimio);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	mimio->in.urb = usb_alloc_urb(0, GFP_KERNEL);
-> +	mimio->out.urb = usb_alloc_urb(0, GFP_KERNEL);
-> +
-> +	if (mimio->in.urb == NULL || mimio->out.urb == NULL) {
-> +		dev_err(&udev->dev, "usb_alloc_urb failure.\n");
-> +		mimio_dealloc(mimio);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	/*
-> +	 * Build the input urb.
-> +	 */
-> +	pipe = usb_rcvintpipe(udev, mimio->in.desc->bEndpointAddress);
-> +	maxp = usb_maxpacket(udev, pipe, usb_pipeout(pipe));
-> +	if (maxp > MIMIO_MAXPAYLOAD)
-> +		maxp = MIMIO_MAXPAYLOAD;
-> +	usb_fill_int_urb(mimio->in.urb, udev, pipe, mimio->in.buf, maxp,
-> +			 mimio_irq_in, mimio, mimio->in.desc->bInterval);
-> +	mimio->in.urb->transfer_dma = mimio->in.dma;
-> +	mimio->in.urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
-> +
-> +	/*
-> +	 * Build the output urb.
-> +	 */
-> +	pipe = usb_sndintpipe(udev, mimio->out.desc->bEndpointAddress);
-> +	maxp = usb_maxpacket(udev, pipe, usb_pipeout(pipe));
-> +	if (maxp > MIMIO_MAXPAYLOAD)
-> +		maxp = MIMIO_MAXPAYLOAD;
-> +	usb_fill_int_urb(mimio->out.urb, udev, pipe, mimio->out.buf, maxp,
-> +			 mimio_irq_out, mimio, mimio->out.desc->bInterval);
-> +	mimio->out.urb->transfer_dma = mimio->out.dma;
-> +	mimio->out.urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
-> +
-> +	/*
-> +	 * Build input device info
-> +	 */
-> +	usb_make_path(udev, path, 64);
-
-s/64/sizeof(path)/
-
-> +	snprintf(mimio->phys, MIMIO_MAXNAMELEN, "%s/input0", path);
-> +	input_set_drvdata(input_dev, mimio);
-> +	/* input_dev->dev = &ifc->dev; */
-> +	input_dev->open = mimio_open;
-> +	input_dev->close = mimio_close;
-> +	input_dev->name = mimio_name;
-> +	input_dev->phys = mimio->phys;
-> +	input_dev->dev.parent = &ifc->dev;
-> +
-> +	input_dev->id.bustype = BUS_USB;
-> +	input_dev->id.vendor = le16_to_cpu(udev->descriptor.idVendor);
-> +	input_dev->id.product = le16_to_cpu(udev->descriptor.idProduct);
-> +	input_dev->id.version = le16_to_cpu(udev->descriptor.bcdDevice);
-> +
-> +	input_dev->evbit[0] |= BIT(EV_KEY) | BIT(EV_ABS);
-> +	for (i = BTN_TOOL_PEN; i <= LOCALBTN_TOOL_EXTRA2; ++i)
-> +		set_bit(i, input_dev->keybit);
-> +
-> +	input_dev->keybit[BIT_WORD(BTN_MISC)] |= BIT_MASK(BTN_0) |
-> +						 BIT_MASK(BTN_1) |
-> +						 BIT_MASK(BTN_2) |
-> +						 BIT_MASK(BTN_3) |
-> +						 BIT_MASK(BTN_4) |
-> +						 BIT_MASK(BTN_5);
-> +	/*   input_dev->keybit[BTN_MOUSE] |= BIT(BTN_LEFT); */
-> +	input_dev->absbit[0] |= BIT_MASK(ABS_X) | BIT_MASK(ABS_Y);
-> +	input_set_abs_params(input_dev, ABS_X, 0, MIMIO_XRANGE_MAX, 0, 0);
-> +	input_set_abs_params(input_dev, ABS_Y, 0, MIMIO_YRANGE_MAX, 0, 0);
-> +	input_dev->absbit[BIT_WORD(ABS_MISC)] |= BIT_MASK(ABS_MISC);
-> +
-> +#if 0
-> +	input_dev->absmin[ABS_X] = 0;
-> +	input_dev->absmin[ABS_Y] = 0;
-> +	input_dev->absmax[ABS_X] = 9600;
-> +	input_dev->absmax[ABS_Y] = 4800;
-> +	input_dev->absfuzz[ABS_X] = 0;
-> +	input_dev->absfuzz[ABS_Y] = 0;
-> +	input_dev->absflat[ABS_X] = 0;
-> +	input_dev->absflat[ABS_Y] = 0;
-> +#endif
-> +
-> +#if 0
-> +	/* this will just reduce the precision */
-> +	input_dev->absfuzz[ABS_X] = 8; /* experimental; may need to change */
-> +	input_dev->absfuzz[ABS_Y] = 8; /* experimental; may need to change */
-> +#endif
-> +
-> +	/*
-> +	 * Register the input device.
-> +	 */
-> +	res = input_register_device(mimio->idev);
-> +	if (res) {
-> +		dev_err(&udev->dev, "input_register_device failure (%d)\n",
-> +			res);
-> +		mimio_dealloc(mimio);
-> +		return -EIO;
-> +	}
-> +	dev_dbg(&mimio->idev->dev, "input: %s on %s (res = %d).\n",
-> +		input_dev->name, input_dev->phys, res);
-> +
-> +	usb_set_intfdata(ifc, mimio);
-> +	mimio->present = 1;
-> +
-> +	/*
-> +	 * Submit the input urb to the usb subsystem.
-> +	 */
-> +	mimio->in.urb->dev = mimio->udev;
-> +	res = usb_submit_urb(mimio->in.urb, GFP_KERNEL);
-> +	if (res) {
-> +		dev_err(&mimio->idev->dev, "usb_submit_urb failure (%d)\n",
-> +			res);
-> +		mimio_dealloc(mimio);
-> +		return -EIO;
-> +	}
-> +
-> +	/*
-> +	 * Attempt to greet the mimio after giving
-> +	 * it some post-init settling time.
-> +	 *
-> +	 * note: sometimes this sleep interval isn't
-> +	 * long enough to permit the device to re-init
-> +	 * after a hot-swap; maybe need to bump it up.
-> +	 *
-> +	 * As it is, this probably breaks module unloading support!
-> +	 */
-> +	msleep(1024);
-> +
-> +	res = mimio_greet(mimio);
-> +	if (res == 0) {
-> +		dev_dbg(&mimio->idev->dev, "Mimio greeted OK.\n");
-> +		mimio->greeted = 1;
-> +		mimio->rxhandler = mimio_rx_handler;
-> +	} else {
-> +		dev_dbg(&mimio->idev->dev, "Mimio greet Failure (%d)\n", res);
-> +	}
-> +
-> +	return 0;
-> +}
-
----
-~Randy
+To unsubscribe from this list: send the line "unsubscribe netdev" in
+the body of a message to majordomo <at> vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
