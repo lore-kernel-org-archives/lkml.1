@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbYIZUdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYIZUho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbYIZUdS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 16:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYIZUdE
+	id S1753291AbYIZUho (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 16:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYIZUhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 16:33:04 -0400
-Received: from ns2.suse.de ([195.135.220.15]:37587 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbYIZUdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 16:33:01 -0400
-Date: Fri, 26 Sep 2008 13:19:17 -0700
-From: Greg KH <gregkh@suse.de>
-To: Parag Warudkar <parag.lkml@gmail.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>, Jeff Mahoney <jeffm@suse.de>
-Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
-Message-ID: <20080926201917.GA2591@suse.de>
-References: <20080925020608.GA13869@suse.de> <f7848160809241959s3f3092b2nf05d2245a08bed03@mail.gmail.com> <20080925042108.GA3931@suse.de> <f7848160809250402l163bb177oeed30f2daa18fafd@mail.gmail.com> <20080925205328.GB11225@suse.de> <f7848160809251440jfcd60f9lb962a75ff01798c8@mail.gmail.com> <20080925220454.GA12116@suse.de> <f7848160809251522s4e589b9eu7a4fc9566d2b25e9@mail.gmail.com> <48DD2BA3.7050808@s5r6.in-berlin.de> <f7848160809261311q487493d1pea4e953dd98f881@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f7848160809261311q487493d1pea4e953dd98f881@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 26 Sep 2008 16:37:36 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:47040 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750885AbYIZUhg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 16:37:36 -0400
+Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
+From: Zachary Amsden <zach@vmware.com>
+To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alok Kataria <akataria@vmware.com>,
+       Alok kataria <alokkataria1@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Yan Li <elliot.li.tech@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
+       "rjmaomao@gmail.com" <rjmaomao@gmail.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <40178.1222435332@turing-police.cc.vt.edu>
+References: <20080221115452.GB13948@elte.hu>
+	 <20080907234510.GA24133@yantp.cn.ibm.com> <20080908140423.GG11993@elte.hu>
+	 <35f686220809241928k3669e30bi8a98b440443c4bff@mail.gmail.com>
+	 <48DB15DB.8040501@zytor.com> <1222317978.23524.117.camel@alok-dev1>
+	 <48DB1984.8020704@zytor.com> <1222318928.23524.121.camel@alok-dev1>
+	 <48DB1BCE.2070106@zytor.com> <1222320201.23524.135.camel@alok-dev1>
+	 <1222375694.27056.179.camel@bodhitayantram.eng.vmware.com>
+	 <48DC09D9.7040204@zytor.com>
+	 <1222381254.27056.194.camel@bodhitayantram.eng.vmware.com>
+	 <48DC105D.9050803@zytor.com>            <48DCD9D9.9080008@redhat.com>
+	 <40178.1222435332@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Fri, 26 Sep 2008 13:35:48 -0700
+Message-Id: <1222461348.27056.201.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 04:11:49PM -0400, Parag Warudkar wrote:
-> On Fri, Sep 26, 2008 at 2:36 PM, Stefan Richter
-> <stefanr@s5r6.in-berlin.de> wrote:
-> > It _is_ necessary.  I for one don't want to have to remember that driver
-> > foobar was in "staging" state in kernel 2.6.31-rc5, but not anymore in
-> > 2.6.32-rc1.
+On Fri, 2008-09-26 at 06:22 -0700, Valdis.Kletnieks@vt.edu wrote:
+> On Fri, 26 Sep 2008 14:47:21 +0200, Gerd Hoffmann said:
+> >   Hi,
+> > 
+> > > This, of course, is what CPUID is for.
+> > 
+> > ... except that it doesn't always work.  It requires vmx/svm, otherwise
+> > cpuid doesn't trap and thus can't be filled by the hypervisor ...
 > 
-> Just name the staging modules with _stg prefix like I said - easier to
-> spot _stg in the module list than decoding the taint.
+> Which would be hardware implementers in the '80s getting wrong the first few
+> times what IBM did right the first time.  Doesn't *anybody* do literature
+> searches before doing stuff anymore? ;)
 
-Um, it's the same, the taint is decoded automatically for you, no need
-to strain any brain cells trying to figure it out :)
+>From your description, IBM also did it wrong the first time.  Having an
+instruction which operates differently when running on bare metal vs. in
+a hypervisor is never acceptible unless the instruction is trappable.
 
-If people really want a prefix, sure, I have no objection, that's simple
-to add.
+There will always be a guest which refuses to operate propely in a
+hypervisor, either by defect or by design, so 'sensitive' instructions
+should always be trappable.  Do it right and you can nest recursively ;)
 
-> Whenever (doubtful tone here) it graduates, remove the suffix.
+Zach
 
-5 drivers "graduated" last release cycle, so it will happen.
-
-> Driver modules load automatically any way so the name change is not
-> going to make a difference.
-
-Agreed.
-
-> It is nice to not have to change core kernel code and annoy users with
-> warnings for the staging crap even if it is just 24 lines or whatever
-> - if we can - and I don't see why we cannot. Staging, just like
-> crapping, has to be a totally isolated, zero side effect, zero
-> annoyance (to others) type thing :) So let's please get rid of that
-> taint and warning already :)
-
-No, that was one of the requirements that came out of the discussions at
-the kernel summit, I'm going to leave both the warning and the modalias
-and taint flag there, sorry.
-
-If you really don't like it, just never enable any of these modules,
-you'll never be bothered by it.
-
-thanks,
-
-greg k-h
