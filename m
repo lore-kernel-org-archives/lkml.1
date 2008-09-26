@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYIZIUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbYIZIUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbYIZIUR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 04:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYIZIT4
+	id S1753223AbYIZIUn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 04:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYIZIUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 04:19:56 -0400
-Received: from mail.collax.com ([82.194.105.242]:45951 "EHLO
-	collgate4.collax.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751496AbYIZITy (ORCPT
+	Fri, 26 Sep 2008 04:20:00 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:21127 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752830AbYIZIT6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 04:19:54 -0400
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Message-Id: <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com>
-From: Tilman Baumann <tilman.baumann@collax.com>
-To: Casey Schaufler <casey@schaufler-ca.com>
-In-Reply-To: <48DC5A45.8020801@schaufler-ca.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: SMACK netfilter smacklabel socket match
-Date: Fri, 26 Sep 2008 10:19:40 +0200
-References: <48DBC9A1.20900@collax.com> <48DC5A45.8020801@schaufler-ca.com>
-X-Mailer: Apple Mail (2.929.2)
-X-Filtered: By ProxSMTP
-X-AV-Checked: ClamAV using ClamSMTP
+	Fri, 26 Sep 2008 04:19:58 -0400
+Subject: Re: [ANNOUNCE] [PATCH] [MTD] Flex-OneNAND MTD Driver available.
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Amit Kumar Sharma <amitsharma.9@samsung.com>
+Cc: Kyungmin Park <kmpark@infradead.org>, apgmoorthy <moorthy.apg@samsung.com>,
+       linux-mtd@lists.infradead.org,
+       Kyungmin Park <kyungmin.park@samsung.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <A09E9029F2344F78959A3E36179C468E@sisodomain.com>
+References: <19198934.52871221827459790.JavaMail.weblogic@epml16>
+	 <9c9fda240809220011w49c0875q804f836550ff3476@mail.gmail.com>
+	 <000001c91e42$1aa86c50$3dd66c6b@sisodomain.com>
+	 <9c9fda240809251731y48272a63j988e0001dc50d78@mail.gmail.com>
+	 <1222404711.5012.5.camel@sauron>
+	 <A09E9029F2344F78959A3E36179C468E@sisodomain.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 26 Sep 2008 11:19:36 +0300
+Message-Id: <1222417176.5012.17.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 26 Sep 2008 08:19:40.0128 (UTC) FILETIME=[9F21FE00:01C91FB0]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 26.09.2008 um 05:43 schrieb Casey Schaufler:
 
-> Tilman Baumann wrote:
->> Hi all,
->>
->> i made some SMACK related patches. I hope this list is the right  
->> place to post them.
->
-> Here and, probably more importantly linux-security-module@vger.kernel.org 
->  as that's
-> my primary hang out.
->
->> The intention behind this patch is that i needed a way to  
->> (firewall) match for packets originating from specific processes.
->> The existing owner match did not work well enough, especially since  
->> the cmd-owner part is removed.
->> Then i thought about a way to tag processes and somehow match this  
->> tag in the firewall.
->> I recalled that SELinux can do this (SECMARK) but SELinux would  
->> have been way to complex for what i want. But the idea was born, i  
->> just needed something more simple.
->>
->> SMACK seemed to be the right way. So i made a little primitive  
->> netfilter match to match against the security context of sockets.
->> SMACK does CIPSO labels, but this was not what i wanted, i wanted  
->> to label the socket not the packet (on the wire).
->> This of course only works for packets with a local socket, but this  
->> was my intention anyway.
->>
->> This way i can label a process and all it's sockets carry the same  
->> label which i then can use to match against in the firewall.
->>
->
-> Hmm. It looks as if your code will do what you're asking it to do.
-> Are you going to be happy with the access restrictions that will be
-> imposed by Smack?
+On Fri, 2008-09-26 at 13:31 +0530, Amit Kumar Sharma wrote:
+> Hi Artem
+> 
+> we have following erro message  if we maintain 64 bytes 
+> eccpos.
+> 
+> /flash_eraseall -j /dev/mtd4
+> ./flash_eraseall: /dev/mtd4: unable to get NAND oobinfo
+> 
+> ./nandwrite -j /dev/mtd2 /jffs2.img
+> MEMSETOOBSEL: Inappropriate ioctl for device
+> 
+> but i think as OneNAND has hw ecc controller so Jffs2 will 
+> not face any problem
+> still i think mtd should consider for 128 bytes eccpos for 
+> 4K page size.
 
-I helped myself with rules like this.
-_ foo rwx
-But i wanted to add some security stuff like selinux for years,
-and SMACK seems to be just great.
-So i will spend some time making security rules after i got this routing
-stuff to work. :)
+Well, anyway, in Linux ABI is a holy cow, you cannot change it.
+That is a tough rule. Old user-space binaries have to always
+works.
 
-Regards
-  Tilman
+Thus you may do one of:
+1. Invent a new ioctl for 4KiB page NANDs
+2. Add sysfs support
+3. Just do not expose whole OOB as Kyungmin suggested
+
+But I think assume dwmw2 would need to comment on this and
+tell which approach would agree on.
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
