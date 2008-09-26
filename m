@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYIZMmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbYIZMrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbYIZMmu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 08:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYIZMmW
+	id S1753577AbYIZMrJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 08:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYIZMq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 08:42:22 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:48292 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752768AbYIZMmV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 08:42:21 -0400
-Date: Fri, 26 Sep 2008 21:42:15 +0900 (JST)
-Message-Id: <20080926.214215.45417575.taka@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: ryov@valinux.co.jp, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
-       righi.andrea@gmail.com, jens.axboe@oracle.com
-Subject: Re: dm-ioband + bio-cgroup benchmarks
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <20080924145202.GC547@redhat.com>
-References: <20080922143042.GA19222@redhat.com>
-	<20080924.191803.100102323.taka@valinux.co.jp>
-	<20080924145202.GC547@redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 26 Sep 2008 08:46:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60656 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751672AbYIZMqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 08:46:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Iwo Mergler <iwo@call-direct.com.au>
+Subject: Re: Bug in rt2x00 rt73usb driver in latest git kernel
+Date: Fri, 26 Sep 2008 14:52:27 +0200
+User-Agent: KMail/1.9.9
+Cc: Paul Eddington <eddingtonpaul@googlemail.com>,
+       linux-kernel@vger.kernel.org, rt2400-devel@lists.sourceforge.net
+References: <762793250809241102n61ea8f00kca8138bc3c8df2e6@mail.gmail.com> <48DC734B.8070805@call-direct.com.au>
+In-Reply-To: <48DC734B.8070805@call-direct.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809261452.28482.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> > > One additional issue with my scheme I just noticed is that I am putting
-> > > bio-cgroup in rb-tree. If there are stacked devices then bio/requests from
-> > > same cgroup can be at multiple levels of processing at same time. That
-> > > would mean that a single cgroup needs to be in multiple rb-trees at the
-> > > same time in various layers. So I might have to create a temporary object
-> > > which can associate with cgroup and get rid of that object once I don't
-> > > have the requests any more...
+On Friday, 26 of September 2008, Iwo Mergler wrote:
+> Paul Eddington wrote:
+> > Hi,
 > > 
-> > You mean each layer should have its rb-tree? Is it per device?
-> > One lvm logical volume may probably consist from several physical
-> > volumes, which will be shared with other logical volumes.
-> > And some layers may split one bio into several bios.
-> > I hardly can imagine how these structures will be.
+> > While running the latest git kernel (linus' tree) and using a usb wifi
+> > card, I got this error in dmesg:;
 > > 
+> > phy2 -> rt2x00queue_write_tx_frame: Error - Arrived at non-free entry
+> > in the non-full queue 2.
+> > Please file bug report to http://rt2x00.serialmonkey.com.
+> > 
+> > This is not reproducible easily, but it has occurred on two occasions
+> > both while connected to a WEP encrypted AP with a 40-bit key and
+> > performing many file samba transfers at full speed 54mbits.
+> > 
+> > I tried to report the bug there but was unable to register and edit
+> > the bug reports wiki page.
+> > If there is any more information or help required to debug this,
+> > please let me know.
+> > 
+> > Regards,
+> > Paul
+> > --
 > 
-> Yes, one rb-tree per device, be it physical device or logical device
-> (because there is one request queue associated per physical/logical block
-> device).
+> Hi Paul,
+> 
+> the rt2x00 drivers are currently a very fast moving target. You may want
+> to experiment with the rt2x00 kernel tree instead - it gets the patches
+> (and the bugs) earlier. ;-)
+> 
+> http://git.kernel.org/?p=linux/kernel/git/ivd/rt2x00.git;a=summary
+> 
+> I added the rt2x00 mailing list to CC.
 
-No, logical block devices doesn't have any request queues and
-they essentially won't block any bios unless it is impossible to
-handle them at the moment. Device-mappers never touch any request queues.
-
-> I was thinking of getting hold/hijack the bios as soon as they are
-> submitted to the device using associated request function. So if there
-> is a logical device built on top of two physical device, the associated
-> bio copy or other logic should not even see the bio the moment it is 
-> submitted to the deivce. It will see the bio only when it is released
-> from associated rb-tree to them. Do you think this will not work? To me
-> this is what dm-ioband is doing logically. The only difference is that it
-> does this with the help of a separate request queue. 
-
-I think it's easy to just make all logical device --- device mapper
-device  --- and all physical device have their own bandwidth control
-mechanism.
-But I'm not clear how your algorithm works to control the bandwidth.
-At which level are you going to guarantee the bandwidth, at the logical
-volumes layer such as lvm or at the physical device layer?
+Well, according to the information I've received from Paul this particular
+problem is a regression from 2.6.26, so it's been added to the list of recent
+regressions.
 
 Thanks,
-Hirokazu Takahashi.
-
+Rafael
