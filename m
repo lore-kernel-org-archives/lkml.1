@@ -1,64 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYIZKvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYIZKyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbYIZKvS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 06:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYIZKvH
+	id S1754215AbYIZKyn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 06:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYIZKyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 06:51:07 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:38543 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750985AbYIZKvG (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 06:51:06 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_SECURITY_ROOTPLUG [was: Re: 2.6.27-rc7 no init found on the root partition?]
-In-Reply-To: Your message of "Fri, 26 Sep 2008 12:05:07 +0200."
-             <20080926100507.GR31582@ics.muni.cz>
-From: Valdis.Kletnieks@vt.edu
-References: <20080925165400.GQ31582@ics.muni.cz> <20080926024927.GA13816@hallyn.com>
-            <20080926100507.GR31582@ics.muni.cz>
+	Fri, 26 Sep 2008 06:54:35 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:60898 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751579AbYIZKye (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 06:54:34 -0400
+Date: Fri, 26 Sep 2008 19:54:29 +0900 (JST)
+Message-Id: <20080926.195429.46150284.taka@valinux.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: righi.andrea@gmail.com, dm-devel@redhat.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, agk@sourceware.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       vgoyal@redhat.com, xemul@openvz.org
+Subject: Re: [Xen-devel] Re: [dm-devel] Re: dm-ioband + bio-cgroup
+ benchmarks
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <661de9470809240407m7f50b6dav897fef3b37295bb2@mail.gmail.com>
+References: <20080919.123405.91829935.taka@valinux.co.jp>
+	<661de9470809240404i62300942o15337ecec335fe22@mail.gmail.com>
+	<661de9470809240407m7f50b6dav897fef3b37295bb2@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1222426244_7097P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Sep 2008 06:50:44 -0400
-Message-ID: <30625.1222426244@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1222426244_7097P
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Fri, 26 Sep 2008 12:05:07 +0200, Lukas Hejtmanek said:
-> On Thu, Sep 25, 2008 at 09:49:27PM -0500, Serge E. Hallyn wrote:
-> > Hmm, is there a difference in the device drivers such that root_plug =
-simply
-> > isn't able to find the usb 'key' in 2.6.27-rc7?
-> >=20
-> > When you boot with CONFIG_SECURITY_ROOTPLUG=3Dn, can you read the usb=
- key?
->=20
-> I do not have USB key at all. So maybe there is a security bug in 2.6.2=
-6.3?
+> >> > > Currently I have taken code from bio-cgroup to implement cgroups and
+> >> > > to
+> >> > > provide functionality to associate a bio to a cgroup. I need this to
+> >> > > be
+> >> > > able to queue the bio's at right node in the rb-tree and then also to
+> >> > > be
+> >> > > able to take a decision when is the right time to release few
+> >> > > requests.
+> >> > >
+> >> > > Right now in crude implementation, I am working on making system boot.
+> >> > > Once patches are at least in little bit working shape, I will send it
+> >> > > to you
+> >> > > to have a look.
+> >> > >
+> >> > > Thanks
+> >> > > Vivek
+> >> >
+> >> > I wonder... wouldn't be simpler to just use the memory controller
+> >> > to retrieve this information starting from struct page?
+> >> >
+> >> > I mean, following this path (in short, obviously using the appropriate
+> >> > interfaces for locking and referencing the different objects):
+> >> >
+> >> > cgrp = page->page_cgroup->mem_cgroup->css.cgroup
+> >> >
+> >> > Once you get the cgrp it's very easy to use the corresponding controller
+> >> > structure.
+> >> >
+> >> > Actually, this is how I'm doing in cgroup-io-throttle to associate a bio
+> >> > to a cgroup. What other functionalities/advantages bio-cgroup provide in
+> >> > addition to that?
+> >>
+> >> I've decided to get Ryo to post the accurate dirty-page tracking patch
+> >> for bio-cgroup, which isn't perfect yet though. The memory controller
+> >> never wants to support this tracking because migrating a page between
+> >> memory cgroups is really heavy.
+> 
+> It depends on the migration. The cost is proportional to the number of
+> pages moved. The cost can be brought down (I do have a  design on
+> paper  -- from long long ago), where moving mm's will reduce the cost
+> of migration, but it adds an additional dereference in the common
+> path.
 
-It must be a bug in 26.3 - if you don't have the proper USB dongle/key/wh=
-atever
-inserted, it shouldn't have come up.
+Okay, this will help to track anonymous pages even after processes are
+migrated between memory-cgroups.
+The rest of my concern is pages in the pagecache, which might be
+potentially dirtied by processes in other cgroups. I think bio-cgroups
+should also care this case.
 
---==_Exmh_1222426244_7097P
-Content-Type: application/pgp-signature
+> >> I also thought enhancing the memory controller would be good enough,
+> >> but a lot of people said they wanted to control memory resource and
+> >> block I/O resource separately.
+> >
+> > Yes, ideally we do want that.
+> >
+> >>
+> >> So you can create several bio-cgroup in one memory-cgroup,
+> >> or you can use bio-cgroup without memory-cgroup.
+> >>
+> >> I also have a plan to implement more acurate tracking mechanism
+> >> on bio-cgroup after the memory cgroup team re-implement the
+> >> infrastructure,
+> >> which won't be supported by memory-cgroup.
+> >> When a process are moved into another memory cgroup,
+> >> the pages belonging to the process don't move to the new cgroup
+> >> because migrating pages is so heavy. It's hard to find the pages
+> >> from the process and migrating pages may cause some memory pressure.
+> >> I'll implement this feature only on bio-cgroup with minimum overhead
+> >
+> 
+> Kamezawa has also wanted the page migration feature and we've agreed
+> to provide a per-cgroup flag to decide to turn migration on/off. I
+> would not mind refactoring memcontrol.c if that can help the IO
+> controller and if you want migration, force the migration flag to on
+> and warn the user if they try to turn it off.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Good news! But I've been wondering whether the IO controller should
+have the same feature.
+Once Kamezawa-san finished to implement the new page_cgroup
+infrastructure which pre-allocates all the memory it needs,
+I think I can minimize the cost migrating pages between bio-cgroup
+since this migration won't cause any page reclaim unlike that of
+memory-cgroup.
 
-iD8DBQFI3L6EcC3lWbTT17ARAmRSAJ4p7tObAI7evbX/thiCIbp+EwVaUwCaAtGf
-Y8AeXblAFQB1C56XAtca9mo=
-=MYDG
------END PGP SIGNATURE-----
+In this case I might design it only moves pages between bio-cgroups
+while it won't move them between memory-cgroups.
 
---==_Exmh_1222426244_7097P--
+Thanks,
+Hirokazu Takahashi.
+
