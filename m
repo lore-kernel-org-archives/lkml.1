@@ -1,74 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbYIZM2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbYIZMdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753741AbYIZM2D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 08:28:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYIZM1x
+	id S1753255AbYIZMdK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 08:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbYIZMc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 08:27:53 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:59782 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751374AbYIZM1x (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 08:27:53 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Zachary Amsden <zach@vmware.com>, Alok Kataria <akataria@vmware.com>,
-       Alok kataria <alokkataria1@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Yan Li <elliot.li.tech@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
-       "rjmaomao@gmail.com" <rjmaomao@gmail.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
-In-Reply-To: Your message of "Thu, 25 Sep 2008 15:27:41 PDT."
-             <48DC105D.9050803@zytor.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20080221115452.GB13948@elte.hu> <20080907234510.GA24133@yantp.cn.ibm.com> <20080908140423.GG11993@elte.hu> <35f686220809241928k3669e30bi8a98b440443c4bff@mail.gmail.com> <48DB15DB.8040501@zytor.com> <1222317978.23524.117.camel@alok-dev1> <48DB1984.8020704@zytor.com> <1222318928.23524.121.camel@alok-dev1> <48DB1BCE.2070106@zytor.com> <1222320201.23524.135.camel@alok-dev1> <1222375694.27056.179.camel@bodhitayantram.eng.vmware.com> <48DC09D9.7040204@zytor.com> <1222381254.27056.194.camel@bodhitayantram.eng.vmware.com>
-            <48DC105D.9050803@zytor.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1222432051_7097P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Sep 2008 08:27:31 -0400
-Message-ID: <34947.1222432051@turing-police.cc.vt.edu>
+	Fri, 26 Sep 2008 08:32:56 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:37228 "EHLO
+	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbYIZMcz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 08:32:55 -0400
+X-BigFish: VPS-31(zz1432R98dR168aJ1805M936fOzzzzz32i6bh43j65h)
+X-Spam-TCS-SCL: 4:0
+X-FB-SS: 5,
+X-WSS-ID: 0K7SYUI-04-T2D-01
+Date: Fri, 26 Sep 2008 14:32:43 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Amit Shah <amit.shah@redhat.com>
+CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       iommu@lists.linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
+Message-ID: <20080926123243.GE27928@amd.com>
+References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <200809261326.19261.amit.shah@redhat.com> <20080926085924.GC27928@amd.com> <200809261619.51637.amit.shah@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <200809261619.51637.amit.shah@redhat.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 26 Sep 2008 12:32:43.0745 (UTC) FILETIME=[F9461510:01C91FD3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1222432051_7097P
-Content-Type: text/plain; charset=us-ascii
+On Fri, Sep 26, 2008 at 04:19:51PM +0530, Amit Shah wrote:
+> * On Friday 26 Sep 2008 14:29:24 Joerg Roedel wrote:
+> > On Fri, Sep 26, 2008 at 01:26:19PM +0530, Amit Shah wrote:
+> > > * On Monday 22 Sep 2008 23:51:21 Joerg Roedel wrote:
+> > > > This patch enables stackable dma_ops on x86. To do this, it also
+> > > > enables the per-device dma_ops on i386.
+> > > >
+> > > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > > > ---
+> > > >  arch/x86/kernel/pci-dma.c     |   26 ++++++++++++++++++++++++++
+> > > >  include/asm-x86/device.h      |    6 +++---
+> > > >  include/asm-x86/dma-mapping.h |   14 +++++++-------
+> > > >  3 files changed, 36 insertions(+), 10 deletions(-)
+> > > >
+> > > > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> > > > index b990fb6..2e517c2 100644
+> > > > --- a/arch/x86/kernel/pci-dma.c
+> > > > +++ b/arch/x86/kernel/pci-dma.c
+> > > > @@ -82,6 +82,32 @@ void x86_register_dma_ops(struct dma_mapping_ops
+> > > > *ops, write_unlock_irqrestore(&dma_ops_list_lock, flags);
+> > > >  }
+> > > >
+> > > > +struct dma_mapping_ops *find_dma_ops_for_device(struct device *dev)
+> > > > +{
+> > > > +	int i;
+> > > > +	unsigned long flags;
+> > > > +	struct dma_mapping_ops *entry, *ops = NULL;
+> > > > +
+> > > > +	read_lock_irqsave(&dma_ops_list_lock, flags);
+> > > > +
+> > > > +	for (i = 0; i < DMA_OPS_TYPE_MAX; ++i)
+> > > > +		list_for_each_entry(entry, &dma_ops_list[i], list) {
+> > > > +			if (!entry->device_supported)
+> > > > +				continue;
+> > > > +			if (entry->device_supported(dev)) {
+> > > > +				ops = entry;
+> > > > +				goto out;
+> > > > +			}
+> > > > +		}
+> > > > +out:
+> > > > +	read_unlock_irqrestore(&dma_ops_list_lock, flags);
+> > >
+> > > For PVDMA, we want the "native" dma_ops to succeed first, eg, nommu, and
+> > > then do our "PV DMA", which is just translating gpa  to hpa and then
+> > > program the hardware. This isn't being done here. This can be done by
+> > > extending the return type:
+> > >
+> > > DMA_DEV_NOT_SUPPORTED
+> > > DMA_DEV_HANDLED
+> > > DMA_DEV_PASS
+> > >
+> > > Where NOT_SUPPORTED means we should look for the next one in the chain
+> > > (current return value 0), DEV_HANDLED means the dma operation has been
+> > > handled successfully (current return value 1) and DEV_PASS means fall
+> > > back to the next layer and then return back.
+> >
+> > I am not sure I fully understand what you mean? Why do we need to call
+> > nommu handlers first for PVDMA devices?
+> 
+> For the usual dma_alloc_coherent, dma_map_single, etc. routines. They return 
+> the gpa to the driver. We want to intercept this gpa and convert it to the 
+> hpa before passing on the value to the driver. So our dma_alloc_coherent will 
+> assume the real underlying alloc_coherent has succeeded and then make a 
+> hypercall.
+> 
+> The PV dma_ops routines won't do the usual allocation, etc. that's already 
+> done elsewhere.
 
-On Thu, 25 Sep 2008 15:27:41 PDT, "H. Peter Anvin" said:
-> Zachary Amsden wrote:
-> > On Thu, 2008-09-25 at 14:59 -0700, H. Peter Anvin wrote:
+Ok, the allocation only matters for dma_alloc_coherent. Fujita
+introduced a generic software-based dma_alloc_coherent recently which
+you can use for that. I think implementing PVDMA into an own dma_ops
+backend and multiplex it using my patches introduces less overhead than
+an additional layer over the current dma_ops implementation.
 
-> >> should have disappeared in the early 1990's, and it's really disturbing
-> >> that virtualization vendors -- not just VMWare -- are, in effect,
-> >> re-making all the mistakes hardware vendors did in the 1980's.
-...
-> This, of course, is what CPUID is for.
+Another two questions to your approach: What happens if a
+dma_alloc_coherent allocation crosses page boundarys and the gpa's are
+not contiguous in host memory? How will dma masks be handled?
 
-I remember from my old mainframe days that IBM actually got this right all the
-way back in 1967 for the *first* product called VM - the 'Store CPUID'
-instruction would give a specified result when executed on bare iron, but if
-you did it inside a virtual machine running under CP-67 it would give a
-documented different value that couldn't happen on bare iron.
+Joerg
 
-So this mistake goes back a lot further than the 80s... :)
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-
-
---==_Exmh_1222432051_7097P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFI3NUzcC3lWbTT17ARAiEmAJ40gQgzjEDUxbEjh0gvjQM2id0DFwCgtAyt
-c2BFxmVEVWAzOQYKyI5+1wU=
-=/9jf
------END PGP SIGNATURE-----
-
---==_Exmh_1222432051_7097P--
