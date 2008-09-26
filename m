@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYIZKFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbYIZKGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbYIZKFW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 06:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYIZKFJ
+	id S1754978AbYIZKGb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 06:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYIZKGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 06:05:09 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:40880 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751199AbYIZKFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 06:05:08 -0400
-Date: Fri, 26 Sep 2008 12:05:07 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_SECURITY_ROOTPLUG [was: Re: 2.6.27-rc7 no init found on
-	the root partition?]
-Message-ID: <20080926100507.GR31582@ics.muni.cz>
-References: <20080925165400.GQ31582@ics.muni.cz> <20080926024927.GA13816@hallyn.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080926024927.GA13816@hallyn.com>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Fri, 26 Sep 2008 12:04:47 +0200 (CEST)
+	Fri, 26 Sep 2008 06:06:23 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60590 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752316AbYIZKGW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 06:06:22 -0400
+Date: Fri, 26 Sep 2008 11:06:10 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: marty <martyleisner@yahoo.com>, linux-kernel@vger.kernel.org,
+       martin.leisner@xerox.com
+Subject: Re: disk IO directly from PCI memory to block device sectors
+Message-ID: <20080926110610.17603d30@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080926091135.GV2677@kernel.dk>
+References: <247018.46515.qm@web50603.mail.re2.yahoo.com>
+	<20080926094653.1e0a9260@lxorguk.ukuu.org.uk>
+	<20080926091135.GV2677@kernel.dk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 09:49:27PM -0500, Serge E. Hallyn wrote:
-> Hmm, is there a difference in the device drivers such that root_plug simply
-> isn't able to find the usb 'key' in 2.6.27-rc7?
+On Fri, 26 Sep 2008 11:11:35 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Fri, Sep 26 2008, Alan Cox wrote:
+> > > What I'm looking is for a more generic/driver independent way of sticking
+> > > contents of PCI ram onto a disk.
+> > 
+> > Ermm seriously why not have a userspace task with the PCI RAM mmapped
+> > and just use write() like normal sane people do ?
 > 
-> When you boot with CONFIG_SECURITY_ROOTPLUG=n, can you read the usb key?
+> To avoid the fault and copy, I would assume.
 
-I do not have USB key at all. So maybe there is a security bug in 2.6.26.3?
+It's a write to a raw partition so with O_DIRECT you won't have to copy
+and MAP_POPULATE will premap the object if even the first write wants to
+occur without faulting overhead.
 
--- 
-Luká¹ Hejtmánek
+Alan
