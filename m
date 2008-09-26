@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbYIZVVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbYIZV00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbYIZVVr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 17:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYIZVTa
+	id S1753874AbYIZV00 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 17:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYIZV0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 17:19:30 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48420 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753123AbYIZVT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 17:19:29 -0400
-Subject: [RFC 11/11] fanotify: send file f_flags along with notifications
-From: Eric Paris <eparis@redhat.com>
-To: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
-Content-Type: text/plain
-Date: Fri, 26 Sep 2008 17:19:22 -0400
-Message-Id: <1222463962.2872.227.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Sep 2008 17:26:18 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:61265 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751762AbYIZV0R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 17:26:17 -0400
+Date: Fri, 26 Sep 2008 17:26:15 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Masami Hiramatsu <mhiramat@redhat.com>
+cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH v6] Unified trace buffer
+In-Reply-To: <48DD50AB.10208@redhat.com>
+Message-ID: <alpine.DEB.1.10.0809261724000.21618@gandalf.stny.rr.com>
+References: <20080925185154.230259579@goodmis.org>  <20080925185236.244343232@goodmis.org>  <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>  <48DC406D.1050508@redhat.com>  <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com> 
+ <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com> <1222459730.16700.295.camel@lappy.programming.kicks-ass.net> <48DD50AB.10208@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fanotify: send file f_flags along with notifications
 
-From: Eric Paris <eparis@redhat.com>
+On Fri, 26 Sep 2008, Masami Hiramatsu wrote:
 
-fanotify listeners may be interested in what flags the file associated with
-a particular event were set.  This sends f_flags along with the event
-metadata.
+> Peter Zijlstra wrote:
+> > On Fri, 2008-09-26 at 14:05 -0400, Steven Rostedt wrote:
+> >> +static void
+> >> +rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned
+> >> nr_pages)
+> >> +{
+> >> +       struct page *page;
+> >> +       struct list_head *p;
+> >> +       unsigned i;
+> >> +
+> >> +       atomic_inc(&cpu_buffer->record_disabled);
+> > 
+> > You probably want synchronize_sched() here (and similar other places) to
+> > ensure any active writer on the corresponding cpu is actually stopped.
+> 
+> Would it really be done in the buffer layer?
+> I think it should be done by each tracer, because buffer layer
+> can't ensure truly active writers have stopped.
+> 
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
+Actually it can ;-)
 
- fs/notify/fanotify.h          |    1 +
- fs/notify/notification.c      |    1 +
- fs/notify/notification_user.c |   11 +++++++----
- 3 files changed, 9 insertions(+), 4 deletions(-)
+Since all writes to the buffer at least disable preemption, by issuing a 
+synchronize_sched, we can guarantee that after disabling the record, all 
+activity will be done.
 
-
-diff --git a/fs/notify/fanotify.h b/fs/notify/fanotify.h
-index c2581ec..5b9b327 100644
---- a/fs/notify/fanotify.h
-+++ b/fs/notify/fanotify.h
-@@ -77,6 +77,7 @@ struct fanotify_event {
- 	unsigned long cookie;
- 	pid_t pid;		/* pid of the original process */
- 	pid_t tgid;		/* tgid of the original process */
-+	unsigned int f_flags;	/* f_flags from the original file */
- 	spinlock_t response_lock; /* protects response */
- 	unsigned int response;	/* userspace answer to question */
- };
-diff --git a/fs/notify/notification.c b/fs/notify/notification.c
-index 4a34be1..4828561 100644
---- a/fs/notify/notification.c
-+++ b/fs/notify/notification.c
-@@ -147,6 +147,7 @@ struct fanotify_event *create_event(struct file *file, unsigned int mask)
- 
- 	event->pid = current->pid;
- 	event->tgid = current->tgid;
-+	event->f_flags = file->f_flags;
- 
- 	WARN_ON(!event->path.dentry);
- 	WARN_ON(!event->path.mnt);
-diff --git a/fs/notify/notification_user.c b/fs/notify/notification_user.c
-index 4f87986..15afb45 100644
---- a/fs/notify/notification_user.c
-+++ b/fs/notify/notification_user.c
-@@ -49,12 +49,13 @@
-  * "cookie=%lu "= 27 characters
-  * "pid=%d "	= 16 characters
-  * "tgid=%d "	= 17 characters
-+ * "flags=%x "	= 15 characters
-  * "\n "	=  2 characters
-  * NULL		=  1 character
-  * 
-- * MAX_MESG_LEN = 92
-+ * MAX_MESG_LEN = 107
-  */
--#define MAX_MESG_LEN 92
-+#define MAX_MESG_LEN 107
- 
- static ssize_t fanotify_notification_read(struct file *file, char __user *buf, size_t lenp, loff_t *offset)
- {
-@@ -135,8 +136,10 @@ static ssize_t fanotify_notification_read(struct file *file, char __user *buf, s
- 	 * Build metadata string to send to the listener
- 	 * IF YOU CHANGE THIS STRING UPDATE MAX_MSG_LEN!!!!!!11111!!!!
- 	 */
--	rc = snprintf(output, lenp-1, "fd=%d mask=%x cookie=%lu pid=%d tgid=%d\n",
--		      client_fd, event->mask, event->cookie, event->pid, event->tgid);
-+	rc = snprintf(output, lenp-1, "fd=%d mask=%x cookie=%lu pid=%d tgid=%d "
-+		      "flags=%x\n",
-+		      client_fd, event->mask, event->cookie, event->pid, event->tgid,
-+		      event->f_flags);
- 	if (rc < 0)
- 		goto out;
- 	output[rc] = '\0';
-
+-- Steve
 
