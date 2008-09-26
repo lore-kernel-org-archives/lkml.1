@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbYIZTtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbYIZTuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbYIZTtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 15:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYIZTtJ
+	id S1753316AbYIZTuP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 15:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbYIZTt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 15:49:09 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33364 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbYIZTtI (ORCPT
+	Fri, 26 Sep 2008 15:49:59 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:4772 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbYIZTt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 15:49:08 -0400
-Message-ID: <48DD3CAE.9050809@zytor.com>
-Date: Fri, 26 Sep 2008 12:49:02 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 26 Sep 2008 15:49:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=rudYGyyryALVuoNSwxYPI67q+GOhVcPDmjkFx45xhWJe61YuMj3HWjU8VZXoHuEXwY
+         XmJt01By8u5lti5Lt+aBJDHf/qVQCsekIrQ8E0f7/+zwwP08WK5p7loY6hQVFLrzjdYS
+         95LpeJrE/1gQ2iYuIs78JjgjB5UluLTz5OfXY=
+Date: Fri, 26 Sep 2008 21:50:24 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Corey Minyard <minyard@acm.org>
+Cc: paulmck@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, shemminger@vyatta.com
+Subject: Re: [PATCH 1/1] Use RCU for the UDP hash lock
+Message-ID: <20080926195024.GA2548@ami.dom.local>
+References: <20080926031832.GA27289@minyard.local> <20080926040917.GB7209@linux.vnet.ibm.com> <48DCE874.8070704@acm.org>
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Rafal <newsgroup@limcore.com>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel unable to adjust timeofday
-References: <gbio4j$aqq$1@ger.gmane.org> <47571.1222440706@turing-police.cc.vt.edu>
-In-Reply-To: <47571.1222440706@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48DCE874.8070704@acm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Fri, 26 Sep 2008 15:29:53 +0200, Rafal said:
->> Hello, my system (64bit Ubuntu amd64 box) drifts about 10 seconds per hour
->> (i.e. time visible in the system).
-> 
-> First thing to do is figure out why your box has *such* a dreadfully poor
-> clock. You're drifting at around 3,000 parts-per-million.  NTP is only able
-> to deal with drifts up to 500 ppm, and most systems clocks are *much* more
-> stable than that (for instance, my laptop is drifting at 2 ppm at the moment).
-> The fact you're way outside the sane range leads to trouble...
-> 
+On Fri, Sep 26, 2008 at 08:49:40AM -0500, Corey Minyard wrote:
+...
+> I don't believe udp_disconnect() releases the socket.   
+> sk_common_release() seems to be the place where the refcount is  
+> decremented.  But wherever it is done, it would have to be after the 
+> unhash.
 
-There are two possibilities:
+...Which, BTW, could be repeated then, so hlist_del_init() matters
+yet. (Another sign of such possibility should be this "if ()" in
+udp_lib_unhash().)
 
-Either, his system uses a ceramic oscillator instead of a crystal.  In 
-that case, you're screwed.  Those can be ±10,000 ppm or more.  The other 
-is that he is on a system which has a wrong frequency crystal installed 
-for what the time base expects (usually 14.31818 MHz on PCs) -- say 15 
-MHz.  In that case the clock is still stable, it's just *inaccurate*.
-
-In the latter case, the adjtimex(8) command can be used to tell the 
-kernel the approximate rate the clock is ticking, and then let NTP do 
-the fine-tuning.
-
-If you have manually determined that you are gaining 244 seconds in 24 
-hours of free-running operation, you would use the following formula to 
-calculate the tick interval:
-
-            S
-tick =  -------- * 10000
-          G + S
-
-... where S is the real sample interval (24 hours = 86400 seconds) and G 
-is the amount of time gained in that time (244 seconds in this case); if 
-you are *losing* time then G would be negative.
-
-In this case:
-            86400
-tick = ------------- * 10000 = 9971.8 ~ 9972
-         244 + 86400
-
-So you would set:
-
-adjtimex --tick 9972
-
-... in your startup scripts, before ntpd is started.
-
-If NTP still goes off the rails, then adjust the tick value in steps of 
-about 5 until you can get it to converge.
-
-	-hpa
+Jarek P.
