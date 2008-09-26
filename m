@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbYIZQVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbYIZRGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643AbYIZQVb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 12:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYIZQVW
+	id S1753264AbYIZRGi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 13:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYIZRGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 12:21:22 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:52713 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752103AbYIZQVV (ORCPT
+	Fri, 26 Sep 2008 13:06:30 -0400
+Received: from dcs-mx1.cs.uiuc.edu ([128.174.252.81]:38771 "EHLO
+	dcs-mx1.cs.uiuc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbYIZRG3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 12:21:21 -0400
-Subject: Re: [PATCH git latest] drivers/scsi: fixing wrong comment before
-	new_buffer_tape()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Kai Makisara <Kai.Makisara@kolumbus.fi>
-In-Reply-To: <20080926170937.2983fc29@lxorguk.ukuu.org.uk>
-References: <20080925174948.GA14180@carmen.cs.uiuc.edu>
-	 <20080926111300.1dd34009@lxorguk.ukuu.org.uk>
-	 <7fcc02550809260905oa17880fi80c94eaacb33dba3@mail.gmail.com>
-	 <20080926170937.2983fc29@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Fri, 26 Sep 2008 09:20:56 -0700
-Message-Id: <1222446056.3971.19.camel@localhost.localdomain>
+	Fri, 26 Sep 2008 13:06:29 -0400
+Date: Fri, 26 Sep 2008 12:06:24 -0500
+From: Lin Tan <tammy000@gmail.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Kai.Makisara@kolumbus.fi, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH git latest] drivers/scsi: fixing wrong comment before new_buffer_tape()
+Message-ID: <20080926170624.GA19223@carmen.cs.uiuc.edu>
+References: <20080925174948.GA14180@carmen.cs.uiuc.edu> <20080926111300.1dd34009@lxorguk.ukuu.org.uk> <7fcc02550809260905oa17880fi80c94eaacb33dba3@mail.gmail.com> <20080926170937.2983fc29@lxorguk.ukuu.org.uk> <1222446056.3971.19.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="gKMricLos+KVdGMg"
+Content-Disposition: inline
+In-Reply-To: <1222446056.3971.19.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-26 at 17:09 +0100, Alan Cox wrote:
-> > > Looks true to me for the current versions of the code. In fact it is only
-> > > ever called from the initialisation function that I can see so chunks of
-> > > the code could simply go away as well as bits of the comment. Ditto the
-> > > one in drivers/scsi/st.c
-> > >
-> > > Acked-by: Alan Cox <alan@redhat.com>
-> > >
+
+--gKMricLos+KVdGMg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+> > > > Looks true to me for the current versions of the code. In fact it is only
+> > > > ever called from the initialisation function that I can see so chunks of
+> > > > the code could simply go away as well as bits of the comment. Ditto the
+> > > > one in drivers/scsi/st.c
+> > > >
+> > > > Acked-by: Alan Cox <alan@redhat.com>
+> > > >
+> > > 
+> > > I am sorry I didn't quite understand. You mean it is true that caller
+> > > must hold os_scsi_tapes_lock?
 > > 
-> > I am sorry I didn't quite understand. You mean it is true that caller
-> > must hold os_scsi_tapes_lock?
+> > Sorry - I mean what you claim is true - that the comment is incorrect.
 > 
-> Sorry - I mean what you claim is true - that the comment is incorrect.
+> So, I think I'm missing a piece of this:  There's no patch in this
+> thread (I presume it's lurking somewhere on lkml).  Could someone repost
+> the proposed patch and copy the tape maintainer: Kai Makisara
+> <Kai.Makisara@kolumbus.fi> to get his input?
+> 
+> Thanks,
+> 
+> James
+> 
+>
 
-So, I think I'm missing a piece of this:  There's no patch in this
-thread (I presume it's lurking somewhere on lkml).  Could someone repost
-the proposed patch and copy the tape maintainer: Kai Makisara
-<Kai.Makisara@kolumbus.fi> to get his input?
+The patch was in the orginal message. I am resending it now with Makisara CC-ed.
 
-Thanks,
+Lin 
 
-James
+--gKMricLos+KVdGMg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="new_tape_buffer.readytosend"
 
+Removing the wrong comment.
+The lock is needed before calling new_tape_buffer(), at least in some cases.
+So the comment above new_tape_buffer() is inconsistent with the code and
+may mislead developers.
 
+I simply removed the wrong comment, as I am not sure if the lock is required
+in all situations. If so, we should add "Caller must hold os_scsi_tapes_lock".
+
+Signed-off-by: Lin Tan <tammy000@gmail.com>
+
+---
+
+--- a/drivers/scsi/osst.c	2008-09-25 11:53:09.000000000 -0500
++++ b/drivers/scsi/osst.c	2008-09-25 11:59:46.000000000 -0500
+@@ -5209,7 +5209,7 @@
+ 
+ /* Memory handling routines */
+ 
+-/* Try to allocate a new tape buffer skeleton. Caller must not hold os_scsi_tapes_lock */
++/* Try to allocate a new tape buffer skeleton. */
+ static struct osst_buffer * new_tape_buffer( int from_initialization, int need_dma, int max_sg )
+ {
+ 	int i;
+
+--gKMricLos+KVdGMg--
