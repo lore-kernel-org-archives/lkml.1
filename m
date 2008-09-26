@@ -1,51 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbYIZNkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbYIZNt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbYIZNkN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 09:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYIZNkB
+	id S1753527AbYIZNt4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 09:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYIZNtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 09:40:01 -0400
-Received: from defg500.nifty.com ([202.248.238.127]:41647 "EHLO
-	defg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751506AbYIZNkA (ORCPT
+	Fri, 26 Sep 2008 09:49:46 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:42611 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751878AbYIZNtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 09:40:00 -0400
-X-Greylist: delayed 342 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Sep 2008 09:40:00 EDT
-DomainKey-Signature: a=rsa-sha1; s=userg500; d=nifty.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:in-reply-to:references:
-	x-mailer:mime-version:content-type:content-transfer-encoding;
-	b=q8H41l17VGhVCf2Sy89xpr6uYMT1Kq5cQL1t3hMvMQ8c9BMigVsIgkjofotUTI9m9
-	B16qsKQqmBDWpPFGj4x9w==
-X-Nifty-SrcIP: [219.116.16.57]
-Date: Fri, 26 Sep 2008 22:29:20 +0900
-From: Komuro <komurojun-mbn@nifty.com>
-To: linux-kernel@vger.kernel.org
-Cc: tammy000@gmail.com
-Subject: Re: [PATCH git latest] drivers/net: fixing a datarace related to
- update_stats()
-Message-Id: <20080926222920.f251696e.komurojun-mbn@nifty.com>
-In-Reply-To: <20080923001534.13031535@lxorguk.ukuu.org.uk>
-References: <20080922155814.2bdad40f@lxorguk.ukuu.org.uk>
-	<20080922215617.GA13057@comet.dominikbrodowski.net>
-	<20080922231227.2625dd09@lxorguk.ukuu.org.uk>
-	<20080922222655.GA3792@isilmar.linta.de>
-	<20080923001534.13031535@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Sep 2008 09:49:45 -0400
+Date: Fri, 26 Sep 2008 08:49:40 -0500
+From: Corey Minyard <minyard@acm.org>
+Subject: Re: [PATCH 1/1] Use RCU for the UDP hash lock
+In-reply-to: <20080926040917.GB7209@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       jarkao2@gmail.com, shemminger@vyatta.com
+Message-id: <48DCE874.8070704@acm.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <20080926031832.GA27289@minyard.local>
+ <20080926040917.GB7209@linux.vnet.ibm.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Paul E. McKenney wrote:
+> On Thu, Sep 25, 2008 at 10:18:33PM -0500, Corey Minyard wrote:
+>   
+>> From: Corey Minyard <cminyard@mvista.com>
+>>
+>> Convert access to the udp_hash table to use RCU.
+>>     
+>
+> Looks much better!
+>
+> Some rcu_dereference() fixes, a comment fix, and a question below.
+>
+> 							Thanx, Paul
+>
+>   
+>> Signed-off-by: Corey Minyard <cminyard@mvista.com>
+>> ---
+>>  include/linux/rculist.h |   19 +++++++++++++++++
+>>  include/net/sock.h      |   51 +++++++++++++++++++++++++++++++++++++++++++++++
+>>  include/net/udp.h       |    9 ++++---
+>>  net/ipv4/udp.c          |   47 ++++++++++++++++++++++++------------------
+>>  net/ipv6/udp.c          |   17 ++++++++-------
+>>  5 files changed, 111 insertions(+), 32 deletions(-)
+>>
+>> This patch is the second try; I believe I fixed all issues that people
+>> raised.  Thanks to everyone who commented on this.
+>>
+>> I beat on this for a few hours with my test program, too.
+>>
+>> diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+>> index eb4443c..4d3cc58 100644
+>> --- a/include/linux/rculist.h
+>> +++ b/include/linux/rculist.h
+>> @@ -397,5 +397,24 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+>>  		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+>>  		pos = rcu_dereference(pos->next))
+>>
+>> +
+>> +/**
+>> + * hlist_for_each_entry_from_rcu - iterate over rcu list starting from pos
+>> + * @tpos:      the type * to use as a loop cursor.
+>> + * @pos:       the &struct hlist_node to use as a loop cursor.
+>> + * @head:      the head for your list.
+>> + * @member:    the name of the hlist_node within the struct.
+>> + *
+>> + * This list-traversal primitive may safely run concurrently with
+>> + * the _rcu list-mutation primitives such as hlist_add_head_rcu()
+>> + * as long as the traversal is guarded by rcu_read_lock().
+>> + */
+>> +#define hlist_for_each_entry_from_rcu(tpos, pos, member)                \
+>> +	for (;                                                          \
+>> +	     rcu_dereference(pos) && ({ prefetch(pos->next); 1; }) &&    \
+>> +	       ({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+>> +	     pos = pos->next)
+>>     
+>
+> Always apply rcu_dereference() to whatever it was that you
+> rcu_assign_pointer()ed to.  You don't need the first rcu_dereference()
+> because you (hopefully) used rcu_dereference() either directly or 
+> indirectly when picking up the pointer in the first place.  You -do-
+> need one on the ->next, however.
+>
+> So something like this:
+>
+> +#define hlist_for_each_entry_from_rcu(tpos, pos, member)                \
+> +	for (;                                                          \
+> +	     (pos) && ({ prefetch(pos->next); 1; }) &&    \
+> +	       ({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+> +	     pos = rcu_dereference((pos)->next))
+>   
+Yes, of course, I've changed it.
 
-You need two braces...
+> Interesting, though -- you repeat whatever one you stopped on
+> previously, unlike the _continue_ variants.
+>   
+Yes, it is interesting, but it preserves the semantics of 
+hlist_for_each_entry_from().  It's the semantics you want in this case, 
+and I think the "from" name implies the semantics.
 
-- 	if ((inw(ioaddr+EL3_STATUS) & 0xe000) == 0x2000)
-+ 	if ((inw(ioaddr+EL3_STATUS) & 0xe000) == 0x2000) {
-+    	    spin_lock_irqsave(&lp->lock, flags);
- 	    update_stats(dev);
-+    	    spin_unlock_irqrestore(&lp->lock, flags);
-+	}
-     }
+>   
+>> +	/*
+>> +	 * Note that this is safe, even with an RCU lock.
+>> +	 * udp_lib_unhash() is the removal function, it calls
+>> +	 * synchronize_sched() and the socket counter cannot go to
+>>     
+>
+> synchronize_rcu(), right?
+>   
+Yes, thanks.
+>   
+>> +	 * zero until it returns.  So if we increment it inside the
+>> +	 * RCU read lock, it should never go to zero and then be
+>> +	 * incremented again.
+>>     
+>
+> So the caller of udp_lib_unhash() does the decrement?  Looks like this
+> might be sk_common_release(), but too many pointers to functions.  One
+> could also argue for udp_disconnect()...
+>   
+I don't believe udp_disconnect() releases the socket.  
+sk_common_release() seems to be the place where the refcount is 
+decremented.  But wherever it is done, it would have to be after the unhash.
+
+/me fires up the test harness again.
+
+Thanks,
+
+-corey
