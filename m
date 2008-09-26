@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbYIZBvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYIZByb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbYIZBvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 21:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbYIZBvF
+	id S1754129AbYIZByb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 21:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYIZByW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 21:51:05 -0400
-Received: from mga01.intel.com ([192.55.52.88]:48406 "EHLO mga01.intel.com"
+	Thu, 25 Sep 2008 21:54:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34070 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752147AbYIZBvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 21:51:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,310,1220252400"; 
-   d="scan'208";a="384523987"
-Date: Thu, 25 Sep 2008 18:50:57 -0700 (Pacific Daylight Time)
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Jiri Kosina <jkosina@suse.cz>, agospoda@redhat.com,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
-       jesse.brandeburg@intel.com, tglx@linutronix.de,
-       chris.jones@canonical.com, arjan@linux.jf.intel.com
-Subject: e1000e NVM corruption issue status
-In-Reply-To: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com>
-Message-ID: <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com>
-References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com>
-ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-X-X-Sender: jesse.brandeburg@intel.com@imap.glb.intel.com
+	id S1751506AbYIZByV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 21:54:21 -0400
+Message-ID: <48DC406D.1050508@redhat.com>
+Date: Thu, 25 Sep 2008 21:52:45 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH v4] Unified trace buffer
+References: <20080925185154.230259579@goodmis.org> <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A quick summary of the issue, if you think you have more data, please 
-reply.  If you have had this issue, please reply with results of "cat 
-/proc/iomem" and "lspci".  It will help us correlate data.
+Hi Steven,
 
-Problem: some users report that with many of the latest beta distros, 
-during a reboot when e1000e loads it says "NVM checksum is not valid" and 
-the driver fails to load.
+Steven Rostedt wrote:
+> This version has been cleaned up a bit. I've been running it as
+> a back end to ftrace, and it has been handling pretty well.
 
-Result: At this point it appears that most users can load the e1000e 
-driver if they skip the nvm validation error exit.  LAN traffic may or may 
-not work at this point.  Some users report they can dump their eeprom 
-using ethtool -e and see some varying data, most report the eeprom read 
-returns all ff ff ff
+Thank you for your great work.
+It seems good to me(especially, encapsulating events :)).
 
-NOTE: if you have not had this problem, but wish to continue using e1000e 
-I strongly suggest you do a "ethtool -e eth0 > savemyeep.txt"
+I have one request of enhancement.
 
-Many of the reports seem to be related in time to a graphics crash, no one 
-has been able to give us more detail about how to reproduce.  We NEED HELP 
-reproducing this.  Steps, hints, anything.  We are trying rebooting, 
-suspending, opensuse, fedora, ubuntu, and several hardware platforms, etc.
+ > +static struct ring_buffer_per_cpu *
+ > +ring_buffer_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
+ > +{
+[...]
+ > +	cpu_buffer->pages = kzalloc_node(ALIGN(sizeof(void *) * pages,
+ > +					       cache_line_size()), GFP_KERNEL,
+ > +					 cpu_to_node(cpu));
 
-This seems to effect both 32 and 64 bit kernels, but we haven't heard much 
-either way.
+Here, you are using a slab object for page managing array,
+the largest object size is 128KB(x86-64), so it can contain
+16K pages = 64MB.
 
-hardware affected:
-laptops and desktops with 82566 or 82567 based LAN parts, which are 
-machines with the ICH8 and ICH9 chipsets and a variety of processors.
-The machines I know of that have reported the issue include
-Lenovo X300
-HP 2510p
-Intel DP35JO
-Lenovo T61 (possibly)
-Lenovo X61 (possibly)
+As I had improved relayfs, in some rare case(on 64bit arch),
+we'd like to use larger buffer than 64MB.
 
-Next steps:
-We are still trying to reproduce the issue locally, we should have a 
-machine here tomorrow that reportedly had the issue with ubuntu.
+http://sourceware.org/ml/systemtap/2008-q2/msg00103.html
 
-We have a series of kernel patches that I will reply to this mail with 
-that may help users willing to test.
+So, I think similar hack can be applicable.
 
-We should have ready (hopefully tomorrow) an app that should be able to 
-restore eeproms as long as the driver can still load.
+Would it be acceptable for the next version?
 
-We also have a band-aid patch that should allow "locking" of the NVM area 
-to prevent an errant write, we are looking to post that tomorrow.  This 
-should prevent the damage but not really find the culprit.
+Thank you,
 
-Jesse
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
