@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbYIZXal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbYIZXgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbYIZXal (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 19:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYIZXac
+	id S1754055AbYIZXgm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 19:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbYIZXge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 19:30:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:43672 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752651AbYIZXab (ORCPT
+	Fri, 26 Sep 2008 19:36:34 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39859 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752332AbYIZXgd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 19:30:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=TbsRScPwXDR3ZPXqxlKEvNUH6JYdnI4i3luLpOpANRPab4uNv/Qd5ZOywWIslNrH6R
-         SF+cZQo8mDOF+E+lr1P0t8h6TSQmx7ddNWcm/KmQpq6Iewi9ZTKZ7dk5qTtNlJk7OdAI
-         lizRtAB/iY30liFvxlw1d6usNDrdQBEAtIFSU=
-Message-ID: <1ba2fa240809261630y7a8e5f20g75ab47ff98a1e614@mail.gmail.com>
-Date: Sat, 27 Sep 2008 02:30:29 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Subject: Re: bad DMAR interaction with iwlagn and SATA
-Cc: "Muli Ben-Yehuda" <muli@il.ibm.com>, "Jeff Garzik" <jeff@garzik.org>,
-       "Andres Freund" <andres@anarazel.de>, linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <1222441955.3798.13.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200809251511.20132.andres@anarazel.de>
-	 <48DC44D4.8000103@garzik.org> <200809260419.07713.andres@anarazel.de>
-	 <48DC4BC0.7090203@garzik.org> <20080926144708.GD9118@il.ibm.com>
-	 <1222441955.3798.13.camel@johannes.berg>
+	Fri, 26 Sep 2008 19:36:33 -0400
+Date: Fri, 26 Sep 2008 16:36:41 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pci@vger.kernel.org
+Subject: [PATCH] pci: introduce an ioremap_pcibar(pdev, barnr) function
+Message-ID: <20080926163641.288bf868@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 6:12 PM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
-> On Fri, 2008-09-26 at 17:47 +0300, Muli Ben-Yehuda wrote:
->
->> The way to debug this is to figure out why device 00:1f.2 is trying to
->> read from DMA address fffbf000 and does not have permission to do
->> so. This could be indicative of a driver bug where it is programming
->> the device to read from some buffer that has not been allocated
->> through the DMA API and thus does not have a valid IOMMU mapping, or a
->> hardware quirk where the device tries to read from memory without host
->> involvement. The former is much more likely.
->
-> The same is probably true for the iwlagn case which was
->
->> [ 4184.617392] DMAR:[DMA Read] Request device [03:00.0] fault addr fa946000
->> [ 4184.617393] DMAR:[fault reason 06] PTE Read access is not set
->> [ 4184.644081] iwlagn: Microcode HW error detected.  Restarting.
->
-> and indeed matches experience from myself and Marcel that DMA bugs seem
-> to lurk.
+>From abb4ec6b5b7f22904668fb5de5fe0d7a3a7fd2d5 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Fri, 26 Sep 2008 16:34:52 -0700
+Subject: [PATCH] pci: introduce an ioremap_pcibar(pdev, barnr) function
 
-Meanwhile it all reported bugs in this case points to 64 bit
-installations, I'll give it more testing
-Thnaks.
-Tomas
+A common thing in many PCI drivers is to ioremap() an entire bar.
+This is a slightly fragile thing right now, needing both an address and a size,
+and many driver writers do.. various things there.
+
+This patch introduces an ioremap_pcibar() function taking just a PCI device struct
+and the bar number as arguments, and figures this all out itself, in one place.
+In addition, we can add various sanity checks to this function (the patch already
+checks to make sure that the bar in question really is a MEM bar; few to no drivers
+do that sort of thing).
+
+Hopefully with this type of API we get less chance of mistakes in drivers with
+ioremap() operations.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ include/linux/pci.h |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index e48614b..65c1dbc 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1122,5 +1122,18 @@ static inline void pci_mmcfg_early_init(void) { }
+ static inline void pci_mmcfg_late_init(void) { }
+ #endif
+ 
++static inline void * ioremap_pcibar(struct pci_dev *pdev, int bar)
++{
++	/*
++	 * Make sure the BAR is actually a memory resource, not an IO resource
++	 */
++	if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM)) {
++		WARN_ON(1);
++		return NULL;
++	}
++	return ioremap_nocache(pci_resource_start(pdev, bar),
++				     pci_resource_len(pdev, bar));
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* LINUX_PCI_H */
+-- 
+1.5.5.1
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
