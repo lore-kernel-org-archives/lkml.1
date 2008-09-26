@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYIZMf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYIZMfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYIZMf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 08:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYIZMfQ
+	id S1754648AbYIZMfz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 08:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYIZMfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 08:35:16 -0400
-Received: from mail.collax.com ([82.194.105.242]:59537 "EHLO mail.collax.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751719AbYIZMfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 08:35:15 -0400
-Message-ID: <48DCD700.7030706@collax.com>
-Date: Fri, 26 Sep 2008 14:35:12 +0200
-From: Tilman Baumann <tilman.baumann@collax.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
-MIME-Version: 1.0
-To: Paul Moore <paul.moore@hp.com>
-CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       linux-security-module@vger.kernel.org
-Subject: Re: SMACK netfilter smacklabel socket match
-References: <48DBC9A1.20900@collax.com> <200809251426.58179.paul.moore@hp.com>
-In-Reply-To: <200809251426.58179.paul.moore@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 26 Sep 2008 08:35:43 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:36150 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751890AbYIZMfm (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 08:35:42 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+Cc: Ric Wheeler <rwheeler@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-fsdevel@vger.kernel.org,
+       dm-devel@redhat.com, viro@ZenIV.linux.org.uk,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, axboe@kernel.dk,
+       mtk.manpages@googlemail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] Add timeout feature
+In-Reply-To: Your message of "Fri, 26 Sep 2008 17:52:35 +0900."
+             <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp>
+From: Valdis.Kletnieks@vt.edu
+References: <20080908205337t-sato@mail.jp.nec.com> <20080908171119.GB22521@infradead.org> <48DBFD42.6030307@redhat.com>
+            <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1222432525_7097P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-Filtered: By ProxSMTP
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.33/RELEASE, bases: 26092008 #1128314, status: clean
+Date: Fri, 26 Sep 2008 08:35:25 -0400
+Message-ID: <35472.1222432525@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Moore wrote:
+--==_Exmh_1222432525_7097P
+Content-Type: text/plain; charset=us-ascii
 
-> [NOTE: you may notice the above code changing slightly in future 
-> kernels, it turns out that skb->sk == NULL is not a true indicator of a 
-> non-local sender, see my labeled networking patches for 2.6.28 or 
-> linux-next for the revised approach]
+On Fri, 26 Sep 2008 17:52:35 +0900, Takashi Sato said:
 
-Can you give me a pointer where to look?
+(Sorry, am reading the threads out of temporal sequence....)
 
-Will this mean that skb->sk may be invalid or that it will point to a a 
-context based on the network label the packet has?
-In the later case, being able to match remote labels in my match would 
-just give added benefit. (Though a netlabel (CIPSO) match would probably 
-be more sane than a smack specific match.)
-One would just have more choices where to put a rule like this. Like in 
-the FORWARD chain.
-If non local packets are of no interest, one could put the rule in the 
-right chain.
+> I think that your concern is that the freezer cannot recognize the occurrence
+> of a timeout and it continues the backup process and the backup data is
+> corrupted finally.
+> If the freezer can recognize it by the unfreeze ioctl's errono, will your concern
+>  be solved?
+> If so, I will implement it.
 
-But i think i just misunderstood you here. Since having a socket for non 
-local packets is probably not what you meant.
+That would also address my concerns about merging patches 8 and 10 of the
+other patch series (because patch 10 wouldn't be needed then)...
 
-Regards
-  Tilman
--- 
-Tilman Baumann
-Software Developer
-Collax GmbH . Boetzinger Strasse 60 . 79111 Freiburg . Germany
 
-p: +49 (0) 89-990157-0
-f: +49 (0) 89-990157-11
+--==_Exmh_1222432525_7097P
+Content-Type: application/pgp-signature
 
-Geschaeftsfuehrer: William K. Hite / Boris Nalbach
-AG Muenchen HRB 158898, Ust.-IdNr: DE 814464942
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFI3NcNcC3lWbTT17ARAlfSAJ9koC6IkAWpTwgQQzzxs0CHDfWf6ACgzm8C
+gDUF+0x2+mjqNZBumGOhqOA=
+=x5uP
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1222432525_7097P--
