@@ -1,215 +1,695 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbYIZVUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYIZVTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbYIZVUI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 17:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbYIZVTM
+	id S1754625AbYIZVTr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 17:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbYIZVTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 17:19:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48400 "EHLO mx2.redhat.com"
+	Fri, 26 Sep 2008 17:19:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48397 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754318AbYIZVTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 17:19:10 -0400
-Subject: [RFC 6/11] fanotify: add group priorities
+	id S1753084AbYIZVTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 17:19:05 -0400
+Subject: [RFC 5/11] fanotify: fastpath to ignore certain in core inodes
 From: Eric Paris <eparis@redhat.com>
 To: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
 Content-Type: text/plain
-Date: Fri, 26 Sep 2008 17:19:04 -0400
-Message-Id: <1222463944.2872.217.camel@localhost.localdomain>
+Date: Fri, 26 Sep 2008 17:18:58 -0400
+Message-Id: <1222463938.2872.215.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fanotify: add group priorities
+fanotify: fastpath to ignore certain in core inodes
 
 From: Eric Paris <eparis@redhat.com>
 
-In preperation for blocking fanotify calls group priorities must be added.
-async events will be sent as quickly as possible without waiting for a
-response.
+Allows a process to ignore certain events for the given in core inodes.
+This does not preclude the need to keep a userspace or xattr based
+cache if a fanotifier listener wants something with a different lifetime
+than in core inode.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- fs/notify/fanotify.h   |    5 +++--
- fs/notify/group.c      |   36 +++++++++++++++++++++++++++++++-----
- fs/notify/group_user.c |   14 ++++++++------
- fs/notify/info_user.c  |    2 +-
- 4 files changed, 43 insertions(+), 14 deletions(-)
+ fs/inode.c                |    6 +
+ fs/notify/Makefile        |    2 
+ fs/notify/fanotify.c      |   22 +++++
+ fs/notify/fanotify.h      |   43 +++++++++
+ fs/notify/fastpath.c      |  204 +++++++++++++++++++++++++++++++++++++++++++++
+ fs/notify/fastpath_user.c |  159 +++++++++++++++++++++++++++++++++++
+ fs/notify/group.c         |    9 ++
+ include/linux/fanotify.h  |    5 +
+ include/linux/fs.h        |    5 +
+ include/linux/fsnotify.h  |    8 ++
+ 10 files changed, 462 insertions(+), 1 deletions(-)
+ create mode 100644 fs/notify/fastpath.c
+ create mode 100644 fs/notify/fastpath_user.c
 
 
+diff --git a/fs/inode.c b/fs/inode.c
+index 0487ddb..cc802ae 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -21,6 +21,7 @@
+ #include <linux/cdev.h>
+ #include <linux/bootmem.h>
+ #include <linux/inotify.h>
++#include <linux/fsnotify.h>
+ #include <linux/mount.h>
+ 
+ /*
+@@ -183,6 +184,10 @@ static struct inode *alloc_inode(struct super_block *sb)
+ 		}
+ 		inode->i_private = NULL;
+ 		inode->i_mapping = mapping;
++#ifdef CONFIG_FANOTIFY
++		INIT_LIST_HEAD(&inode->fastpath_entries);
++		rwlock_init(&inode->fastpath_rwlock);
++#endif
+ 	}
+ 	return inode;
+ }
+@@ -191,6 +196,7 @@ void destroy_inode(struct inode *inode)
+ {
+ 	BUG_ON(inode_has_buffers(inode));
+ 	security_inode_free(inode);
++	fsnotify_inode_delete(inode);
+ 	if (inode->i_sb->s_op->destroy_inode)
+ 		inode->i_sb->s_op->destroy_inode(inode);
+ 	else
+diff --git a/fs/notify/Makefile b/fs/notify/Makefile
+index 01915f7..8fac822 100644
+--- a/fs/notify/Makefile
++++ b/fs/notify/Makefile
+@@ -3,4 +3,4 @@ obj-$(CONFIG_INOTIFY_USER)	+= inotify_user.o
+ 
+ obj-$(CONFIG_DNOTIFY)		+= dnotify.o
+ 
+-obj-$(CONFIG_FANOTIFY)		+= fanotify.o notification.o notification_user.o group.o group_user.o info_user.o
++obj-$(CONFIG_FANOTIFY)		+= fanotify.o notification.o notification_user.o group.o group_user.o info_user.o fastpath.o fastpath_user.o
+diff --git a/fs/notify/fanotify.c b/fs/notify/fanotify.c
+index d3ee8d1..c7aa1ad 100644
+--- a/fs/notify/fanotify.c
++++ b/fs/notify/fanotify.c
+@@ -35,6 +35,15 @@
+ 
+ struct dentry *fanotify_fs_root;
+ 
++void fanotify_inode_delete(struct inode *inode)
++{
++	if (likely(list_empty(&groups)))
++		return;
++
++	fanotify_fastpath_clear(inode);
++}
++EXPORT_SYMBOL_GPL(fanotify_inode_delete);
++
+ void fanotify(struct file *file, unsigned int mask)
+ {
+ 	struct fanotify_group *group;
+@@ -52,6 +61,8 @@ void fanotify(struct file *file, unsigned int mask)
+ 	if (!S_ISREG(inode->i_mode))
+ 		return;
+ 
++	if (mask & FAN_MODIFY)
++		fanotify_fastpath_clear(inode);
+ 	/*
+ 	 * SRCU!!  the groups list is very very much read only and the path is
+ 	 * very hot (assuming something is using fanotify)  Not blocking while
+@@ -67,6 +78,8 @@ void fanotify(struct file *file, unsigned int mask)
+ 	idx = srcu_read_lock(&groups_srcu_struct);
+ 	list_for_each_entry_rcu(group, &groups, group_list) {
+ 		if (mask & group->mask) {
++			if (is_fastpath(file, mask, group))
++				continue;
+ 			if (!event) {
+ 				event = create_event(file, mask);
+ 				/* shit, we OOM'd and now we can't tell, lets hope something else blows up */
+@@ -112,6 +125,15 @@ static __init int fanotify_init(void)
+ 		return rc;
+ 	}
+ 
++	rc = fastpath_init();
++	if (rc) {
++		fanotify_notification_uninit();
++		fanotify_register_uninit();
++		securityfs_remove(fanotify_fs_root);
++		fanotify_fs_root = NULL;
++		return rc;
++	}
++
+ 	return 0;
+ }
+ __initcall(fanotify_init);
 diff --git a/fs/notify/fanotify.h b/fs/notify/fanotify.h
-index 2a00668..12fb8d3 100644
+index 78d8be0..2a00668 100644
 --- a/fs/notify/fanotify.h
 +++ b/fs/notify/fanotify.h
-@@ -25,6 +25,7 @@ struct fanotify_group {
- 	struct mutex fastpath_mutex;	/* protect fastpath_entries list */
- 	struct list_head fastpath_entries; /* all fastpath entries for this group */
+@@ -21,10 +21,15 @@ struct fanotify_group {
+ 	struct list_head notification_list; /* list of event_holder this group needs to send to userspace */
+ 	wait_queue_head_t notification_waitq; /* read() on the notification file blocks on this waitq */
  
-+	unsigned int priority;		/* order this group should receive msgs.  low first */
++	/* stores all fastapth entries assoc with this group so they can be cleaned on unregister */
++	struct mutex fastpath_mutex;	/* protect fastpath_entries list */
++	struct list_head fastpath_entries; /* all fastpath entries for this group */
++
  	char *name;			/* group name used for register/unregister matching */
  	struct dentry *subdir;		/* pointer to fanotify/name dentry */
  	struct dentry *notification;	/* pointer to fanotify/name/notification dentry */
-@@ -129,6 +130,6 @@ extern __init int fastpath_uninit(void);
+ 	struct dentry *info;		/* pointer to fanotify/name/info dentry */
++	struct dentry *fastpath;	/* pointer to fanotify/name/fastpath dentry */
+ };
  
+ /*
+@@ -59,6 +64,33 @@ struct fanotify_event {
+ 	atomic_t refcnt;	/* how many groups still are using/need to send this event */
+ };
+ 
++
++
++/*
++ * a fastpath is simply an entry attached to an in core inode which allows an
++ * fanotify listener to indicate they are no longer interested in events of
++ * a type matching mask.
++ *
++ * these are flushed when an inode is evicted from core or when the inode is
++ * modified (as seen by fsnotify_access)
++ */
++struct fanotify_fastpath_entry {
++	struct fanotify_group *group;	/* group this fastpath entry is for */
++	unsigned int mask;		/* mask this fastpath entry is for */
++	struct inode *inode;		/* inode this entry is associated with */
++	/*
++	 * killcnt starts at 0 and is incremented when this entry will be killed
++	 * since multiple processes my try to kill it at the same time.
++	 * One might try to kill it from walking the i_list when an inode is being
++	 * kicked out of cache and one might try to kill it when an fanotify group
++	 * is being unregistered.  The last one to finish cleaning everything up
++	 * and decrement it to 0 will do the actual killing
++	 */
++	atomic_t killcnt;
++	struct list_head i_list;	/* list of fastpath_entries by inode->fastpath_entries */
++	struct list_head g_list;	/* list of fastpath_entries by group->fastpath_entries */
++};
++
+ extern struct dentry *fanotify_fs_root;
+ extern struct mutex groups_mutex;
+ extern struct srcu_struct groups_srcu_struct;
+@@ -84,6 +116,17 @@ extern void destroy_event_holder(struct fanotify_event_holder *holder);
+ extern __init int fanotify_notification_init(void);
+ extern __init int fanotify_notification_uninit(void);
+ 
++extern int fanotify_fastpath_user_create(struct fanotify_group *group);
++extern int fanotify_fastpath_user_destroy(struct fanotify_group *group);
++
++extern void fanotify_fastpath_get(struct fanotify_fastpath_entry *entry);
++extern void fanotify_fastpath_put(struct fanotify_fastpath_entry *entry);
++extern int is_fastpath(struct file *file, unsigned int mask, struct fanotify_group *group);
++extern int fanotify_fastpath_clear(struct inode *inode);
++extern int fanotify_fastpath_add(struct fanotify_group *group, int fd, unsigned int mask);
++extern __init int fastpath_init(void);
++extern __init int fastpath_uninit(void);
++
  extern void fanotify_get_group(struct fanotify_group *group);
  extern void fanotify_put_group(struct fanotify_group *group);
--extern int fanotify_register_group(char *name, unsigned int mask);
--extern int fanotify_unregister_group(char *name, unsigned int mask);
-+extern int fanotify_register_group(char *name, unsigned int priority, unsigned int mask);
-+extern int fanotify_unregister_group(char *name, unsigned int priority, unsigned int mask);
- #endif	/* _LINUX_FANOTIFY_PRIVATE_H */
+ extern int fanotify_register_group(char *name, unsigned int mask);
+diff --git a/fs/notify/fastpath.c b/fs/notify/fastpath.c
+new file mode 100644
+index 0000000..c134426
+--- /dev/null
++++ b/fs/notify/fastpath.c
+@@ -0,0 +1,204 @@
++/*
++ *  Copyright (C) 2008 Red Hat, Inc., Eric Paris <eparis@redhat.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2, or (at your option)
++ *  any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; see the file COPYING.  If not, write to
++ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/file.h>
++#include <linux/fs.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/namei.h>
++#include <linux/poll.h>
++#include <linux/rculist.h>
++#include <linux/rcupdate.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/security.h>
++#include <linux/uaccess.h>
++#include <linux/writeback.h>
++
++#include <linux/fanotify.h>
++#include "fanotify.h"
++
++static struct kmem_cache *fastpath_kmem_cache;
++
++static void fanotify_fastpath_kill(struct fanotify_fastpath_entry *entry)
++{
++	entry->group = NULL;
++	entry->inode = NULL;
++	entry->mask = 0;
++	entry->i_list.next = NULL;
++	entry->g_list.next = NULL;
++	kmem_cache_free(fastpath_kmem_cache, entry);
++}
++
++static struct fanotify_fastpath_entry *fanotify_fastpath_alloc(void)
++{
++	struct fanotify_fastpath_entry *entry;
++
++	entry = kmem_cache_alloc(fastpath_kmem_cache, GFP_KERNEL);
++
++	return entry;
++}
++
++void fanotify_fastpath_get(struct fanotify_fastpath_entry *entry)
++{
++	atomic_inc(&entry->killcnt);
++}
++
++void fanotify_fastpath_put(struct fanotify_fastpath_entry *entry)
++{
++	if (atomic_dec_and_test(&entry->killcnt))
++		fanotify_fastpath_kill(entry);
++}
++
++int is_fastpath(struct file *file, unsigned int mask, struct fanotify_group *group)
++{
++	struct inode *inode = file->f_path.dentry->d_inode;
++	struct fanotify_fastpath_entry *entry;
++	int found = 0;
++
++	/* if noone is listening, might as well fastpath this group huh? */
++	if (!atomic_read(&group->num_clients))
++		return 1;
++
++	read_lock(&inode->fastpath_rwlock);
++	list_for_each_entry(entry, &inode->fastpath_entries, i_list) {
++		/* is the entry for this group and is the entry->mask a superset of this event mask? */
++		if ((entry->group == group) && ((entry->mask & mask) == mask)) {
++			found = 1;
++			break;
++		}
++	}
++	read_unlock(&inode->fastpath_rwlock);
++
++	return found;
++}
++
++int fanotify_fastpath_clear(struct inode *inode)
++{
++	struct fanotify_fastpath_entry *entry;
++	struct fanotify_group *group;
++
++	write_lock(&inode->fastpath_rwlock);
++	while (!list_empty(&inode->fastpath_entries)) {
++		entry = list_first_entry(&inode->fastpath_entries, struct fanotify_fastpath_entry, i_list);
++
++		/* make sure the entry survives until off both lists */
++		fanotify_fastpath_get(entry);
++		list_del_init(&entry->i_list);
++
++		group = entry->group;
++
++		write_unlock(&inode->fastpath_rwlock);
++
++		mutex_lock(&group->fastpath_mutex);
++		if (!list_empty(&entry->g_list))
++			list_del_init(&entry->g_list);
++		mutex_unlock(&group->fastpath_mutex);
++
++		/* off both lists, may kill now */
++		fanotify_fastpath_put(entry);
++
++		write_lock(&inode->fastpath_rwlock);
++	}
++	write_unlock(&inode->fastpath_rwlock);
++
++	return 0;
++}
++
++/*
++ * add the fastpath entry to the in core inode referenced by fd
++ */
++int fanotify_fastpath_add(struct fanotify_group *group, int fd, unsigned int mask)
++{
++	struct file *file;
++	int fput_needed;
++	int ret = 0;
++	/* we initialize entry to shut up the compiler in case we just to out... */
++	struct fanotify_fastpath_entry *entry = NULL, *lentry;
++	struct inode *inode;
++	bool used = true;
++
++	file = fget_light(fd, &fput_needed);
++	if (!file)
++		return -EBADF;
++
++	inode = file->f_path.dentry->d_inode;
++
++	if (!S_ISREG(inode->i_mode)) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	/* pre allocate an entry so we can hold the writelock */
++	entry = fanotify_fastpath_alloc();
++	if (!entry) {
++		ret = -ENOMEM;
++		/* be sure that used==TRUE here so it doens't try to free */
++		goto out;
++	}
++
++	/*
++	 * this is the only place we hold both the group and the inode lock
++	 * we could take them in either order, but we take the mutex first
++	 * so we don't sleep holding the rwlock
++	 */
++	mutex_lock(&group->fastpath_mutex);
++	write_lock(&inode->fastpath_rwlock);
++	list_for_each_entry(lentry, &inode->fastpath_entries, i_list) {
++		if (lentry->group == group) {
++			lentry->mask |= mask;
++			used = false;
++			goto out_unlock;
++		}
++	}
++
++	atomic_set(&entry->killcnt, 0);
++	entry->group = group;
++	entry->mask = mask;
++	entry->inode = inode;
++
++	list_add(&entry->i_list, &inode->fastpath_entries);
++	list_add(&entry->g_list, &group->fastpath_entries);
++
++out_unlock:
++	write_unlock(&inode->fastpath_rwlock);
++	mutex_unlock(&group->fastpath_mutex);
++out:
++	fput_light(file, fput_needed);
++	if (!used)
++		fanotify_fastpath_kill(entry);
++	return ret;
++}
++
++
++__init int fastpath_uninit(void)
++{
++	kmem_cache_destroy(fastpath_kmem_cache);
++	fastpath_kmem_cache = NULL;
++
++	return 0;
++}
++
++__init int fastpath_init(void)
++{
++	fastpath_kmem_cache = kmem_cache_create("fanotify_fastpath_entry", sizeof(struct fanotify_fastpath_entry), 0, SLAB_PANIC, NULL);
++
++	return 0;
++}
+diff --git a/fs/notify/fastpath_user.c b/fs/notify/fastpath_user.c
+new file mode 100644
+index 0000000..5d28aa3
+--- /dev/null
++++ b/fs/notify/fastpath_user.c
+@@ -0,0 +1,159 @@
++/*
++ *  Copyright (C) 2008 Red Hat, Inc., Eric Paris <eparis@redhat.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2, or (at your option)
++ *  any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; see the file COPYING.  If not, write to
++ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/dcache.h>
++#include <linux/file.h>
++#include <linux/fs.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/list.h>
++#include <linux/module.h>
++#include <linux/mount.h>
++#include <linux/mutex.h>
++#include <linux/namei.h>
++#include <linux/poll.h>
++#include <linux/rculist.h>
++#include <linux/rcupdate.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/security.h>
++#include <linux/types.h>
++#include <linux/uaccess.h>
++#include <linux/wait.h>
++
++#include <linux/fanotify.h>
++#include "fanotify.h"
++
++static int fastpath_open(struct inode *inode, struct file *file)
++{
++	struct fanotify_group *group = inode->i_private;
++
++	fanotify_get_group(group);
++	return 0;
++}
++
++static int fastpath_release(struct inode *inode, struct file *file)
++{
++	struct fanotify_group *group = inode->i_private;
++
++	fanotify_put_group(group);
++	return 0;
++}
++
++static ssize_t fastpath_write(struct file *file, const char __user *buf, size_t lenp, loff_t *offset)
++{
++	char *p;
++	int fd;
++	unsigned int mask;
++	int rc = 0;
++	struct fanotify_group *group = file->f_path.dentry->d_inode->i_private;
++
++	if (!group)
++		return -EBADF;
++
++	if (!lenp)
++		return 0;
++
++	if (*offset)
++		return -EINVAL;
++
++	if (lenp > PAGE_SIZE)
++		return -ENOMEM;
++
++	p = (char *)get_zeroed_page(GFP_KERNEL);
++
++	rc = copy_from_user(p, buf, lenp);
++	if (rc)
++		goto out;
++	rc = sscanf(p, "%d %x\n", &fd, &mask);
++	if (rc != 2) {
++		rc = -EPROTO;
++		goto out;
++	}
++
++	rc = fanotify_fastpath_add(group, fd, mask);
++	if (rc)
++		goto out;
++
++	rc = lenp;
++out:
++	free_page((unsigned long)p);
++	return rc;
++}
++
++static struct file_operations fanotify_fastpath_fops = {
++	.open =		fastpath_open,
++	.release =	fastpath_release,
++	.write =	fastpath_write,
++};
++
++
++int fanotify_fastpath_user_destroy(struct fanotify_group *group)
++{
++	struct fanotify_fastpath_entry *entry;
++	struct inode *inode;
++
++	mutex_lock(&group->fastpath_mutex);
++	while (!list_empty(&group->fastpath_entries)) {
++		entry = list_first_entry(&group->fastpath_entries, struct fanotify_fastpath_entry, g_list);
++
++		/* make sure the entry survives until it is off both lists */
++		fanotify_fastpath_get(entry);
++
++		/* remove from g_list */
++		list_del_init(&entry->g_list);
++		mutex_unlock(&group->fastpath_mutex);
++
++		inode = entry->inode;
++
++		/* remove from i_list */
++		write_lock(&inode->fastpath_rwlock);
++		if (!list_empty(&entry->i_list))
++			list_del_init(&entry->i_list);
++		write_unlock(&inode->fastpath_rwlock);
++
++		/* off both lists, may free now */
++		fanotify_fastpath_put(entry);
++
++		mutex_lock(&group->fastpath_mutex);
++	}
++	mutex_unlock(&group->fastpath_mutex);
++
++	securityfs_remove(group->fastpath);
++	group->fastpath = NULL;
++	return 0;
++}
++
++int fanotify_fastpath_user_create(struct fanotify_group *group)
++{
++	struct dentry *parent = group->subdir;
++	struct dentry *d_fastpath;
++
++	d_fastpath = securityfs_create_file("fastpath", S_IRUSR|S_IWUSR, parent, group, &fanotify_fastpath_fops);
++	if (IS_ERR(d_fastpath)) {
++		printk(KERN_ERR "fanotify: failed to create fastpath file: %ld\n", PTR_ERR(d_fastpath));
++		group->fastpath = NULL;
++		return PTR_ERR(d_fastpath);
++	}
++	group->fastpath = d_fastpath;
++
++	mutex_init(&group->fastpath_mutex);
++	INIT_LIST_HEAD(&group->fastpath_entries);
++
++	return 0;
++}
 diff --git a/fs/notify/group.c b/fs/notify/group.c
-index dc23127..81563ad 100644
+index 926d0a4..dc23127 100644
 --- a/fs/notify/group.c
 +++ b/fs/notify/group.c
-@@ -71,7 +71,7 @@ void fanotify_put_group(struct fanotify_group *group)
- 	return;
- }
+@@ -47,6 +47,8 @@ void fanotify_kill_group(struct fanotify_group *group)
+ 	fanotify_notification_user_destroy(group);
+ 	fanotify_info_user_destroy(group);
  
--int fanotify_register_group(char *name, unsigned int mask)
-+int fanotify_register_group(char *name, unsigned int priority, unsigned int mask)
- {
- 	struct dentry *subdir;
- 	struct fanotify_group *group, *group_iter;
-@@ -82,6 +82,10 @@ int fanotify_register_group(char *name, unsigned int mask)
- 		if (!strcmp(name, group_iter->name)) {
- 			mutex_unlock(&groups_mutex);
- 			return -EEXIST;
-+		} else if (group_iter->priority == priority) {
-+			/* don't allow 2 groups with same priority */
-+			mutex_unlock(&groups_mutex);
-+			return -EINVAL;
- 		}
- 	}
++	fanotify_fastpath_user_destroy(group);
++
+ 	securityfs_remove(group->subdir);
+ 	group->subdir = NULL;
  
-@@ -96,6 +100,7 @@ int fanotify_register_group(char *name, unsigned int mask)
- 	atomic_set(&group->num_clients, 0);
- 
- 	group->mask = mask;
-+	group->priority = priority;
- 
- 	/* create sub-directory for this group. */
- 	subdir = securityfs_create_dir(name, fanotify_fs_root);
-@@ -118,8 +123,27 @@ int fanotify_register_group(char *name, unsigned int mask)
+@@ -112,12 +114,18 @@ int fanotify_register_group(char *name, unsigned int mask)
  	if (rc)
- 		goto out_clean_info;
+ 		goto out_clean_notification;
  
--	/* add it */
--	list_add_rcu(&group->group_list, &groups);
-+	/* Do we need to be the first entry? */
-+	if (list_empty(&groups)) {
-+		list_add_rcu(&group->group_list, &groups);
-+		mutex_unlock(&groups_mutex);
-+		return 0;
-+	}
++	rc = fanotify_fastpath_user_create(group);
++	if (rc)
++		goto out_clean_info;
 +
-+	list_for_each_entry(group_iter, &groups, group_list) {
-+		/* insert in front of this one? */
-+		if (priority < group_iter->priority) {
-+			/* I used list_add_tail() to insert in front of group_iter...  */
-+			list_add_tail_rcu(&group->group_list, &group_iter->group_list);
-+			break;
-+		}
-+
-+		/* are we at the end?  if so insert at end */
-+		if (list_is_last(&group_iter->group_list, &groups)) {
-+			list_add_tail_rcu(&group->group_list, &groups);
-+			break;
-+		}
-+	}
+ 	/* add it */
+ 	list_add_rcu(&group->group_list, &groups);
  	mutex_unlock(&groups_mutex);
  
  	return 0;
-@@ -138,14 +162,16 @@ out:
+ 
++out_clean_info:
++	fanotify_info_user_destroy(group);
+ out_clean_notification:
+ 	fanotify_notification_user_destroy(group);
+ out_clean_subdir:
+@@ -126,6 +134,7 @@ out_free_name:
+ 	kfree(group->name);
+ out:
+ 	kfree(group);
++	mutex_unlock(&groups_mutex);
  	return rc;
  }
  
--int fanotify_unregister_group(char *name, unsigned int mask)
-+int fanotify_unregister_group(char *name, unsigned int priority, unsigned int mask)
- {
- 	int found = 0;
- 	struct fanotify_group *group;
+diff --git a/include/linux/fanotify.h b/include/linux/fanotify.h
+index 16ff769..a23ab97 100644
+--- a/include/linux/fanotify.h
++++ b/include/linux/fanotify.h
+@@ -36,16 +36,21 @@
+ #ifdef __KERNEL__
  
- 	mutex_lock(&groups_mutex);
- 	list_for_each_entry_rcu(group, &groups, group_list) {
--		if (!strcmp(group->name, name) && (group->mask == mask)) {
-+		if (!strcmp(group->name, name) &&
-+		    (group->mask == mask) &&
-+		    (group->priority == priority)) {
- 			found = 1;
- 			break;
- 		}
-diff --git a/fs/notify/group_user.c b/fs/notify/group_user.c
-index 49ba712..a8663c1 100644
---- a/fs/notify/group_user.c
-+++ b/fs/notify/group_user.c
-@@ -45,6 +45,7 @@ static ssize_t fanotify_register_write(struct file *file, const char __user *buf
- 	char *p;
- 	char *group_name;
- 	unsigned int mask;
-+	unsigned int priority;
- 	int rc = 0;
+ #include <linux/fs.h>
++#include <linux/list.h>
  
- 	p = simple_transaction_get(file, buf, lenp);
-@@ -57,15 +58,15 @@ static ssize_t fanotify_register_write(struct file *file, const char __user *buf
- 		goto out;
- 	}
+ #ifdef CONFIG_FANOTIFY
  
--	rc = sscanf(p, "%s %x\n", group_name, &mask);
--	if (rc != 2) {
-+	rc = sscanf(p, "%s %u %x\n", group_name, &priority, &mask);
-+	if (rc != 3) {
- 		if (rc >= 0)
- 			rc = -EPROTO;
- 		goto out;
- 	}
+ extern void fanotify(struct file *file, unsigned int mask);
++extern void fanotify_inode_delete(struct inode *inode);
  
- 	// FIXME do mask validation
--	rc = fanotify_register_group(group_name, mask);
-+	rc = fanotify_register_group(group_name, priority, mask);
- 	if (rc)
- 		goto out;
+ #else
  
-@@ -81,6 +82,7 @@ static ssize_t fanotify_unregister_write(struct file *file, const char __user *b
- 	char *p;
- 	char *group_name;
- 	unsigned int mask;
-+	unsigned int priority;
- 	int rc = 0;
+ static inline void fanotify(struct file *file, unsigned int mask)
+ {}
  
- 	group_name = kzalloc(lenp, GFP_KERNEL);
-@@ -93,14 +95,14 @@ static ssize_t fanotify_unregister_write(struct file *file, const char __user *b
- 		goto out;
- 	}
++static inline void fanotify_inode_delete(struct inode *inode)
++{}
++
+ #endif	/* CONFIG_FANOTIFY */
  
--	rc = sscanf(p, "%s %x\n", group_name, &mask);
--	if (rc != 2) {
-+	rc = sscanf(p, "%s %u %x\n", group_name, &priority, &mask);
-+	if (rc != 3) {
- 		if (rc >= 0)
- 			rc = -EPROTO;
- 		goto out;
- 	}
+ #endif	/* __KERNEL __ */
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 580b513..2d630fc 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -671,6 +671,11 @@ struct inode {
+ 	struct mutex		inotify_mutex;	/* protects the watches list */
+ #endif
  
--	rc = fanotify_unregister_group(group_name, mask);
-+	rc = fanotify_unregister_group(group_name, priority, mask);
- 	if (rc)
- 		goto out;
++#ifdef CONFIG_FANOTIFY
++	struct list_head	fastpath_entries; /* fanotify fastpath entries protected by group */
++	rwlock_t		fastpath_rwlock; /* protect the fastpath entries list */
++#endif
++
+ 	unsigned long		i_state;
+ 	unsigned long		dirtied_when;	/* jiffies of first dirtying */
  
-diff --git a/fs/notify/info_user.c b/fs/notify/info_user.c
-index 21a4465..6402e2d 100644
---- a/fs/notify/info_user.c
-+++ b/fs/notify/info_user.c
-@@ -48,7 +48,7 @@ static ssize_t fanotify_info_read(struct file *file, char __user *buf, size_t le
- 		return -ENOMEM;
+diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+index 50d8d8b..0b03d8a 100644
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@ -82,6 +82,14 @@ static inline void fsnotify_nameremove(struct dentry *dentry, int isdir)
+ }
  
- 	/* Build metadata string to send to the listener */
--	len = snprintf(output, PAGE_SIZE, "%s %x\n", group->name, group->mask);
-+	len = snprintf(output, PAGE_SIZE, "%s %u %x\n", group->name, group->priority, group->mask);
- 	if (len < 0)
- 		goto out;
- 	len = simple_read_from_buffer(buf, lenp, offset, output, len);
+ /*
++ * fsnotify_inode_delete - and inode is being evicted from cache, clean up is needed
++ */
++static inline void fsnotify_inode_delete(struct inode *inode)
++{
++	fanotify_inode_delete(inode);
++}
++
++/*
+  * fsnotify_inoderemove - an inode is going away
+  */
+ static inline void fsnotify_inoderemove(struct inode *inode)
 
 
