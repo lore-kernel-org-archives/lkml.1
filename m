@@ -1,95 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbYIZVVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbYIZVWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbYIZVVb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 17:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbYIZVT3
+	id S1753362AbYIZVWH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 17:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbYIZVV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 17:19:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48418 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754424AbYIZVT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 17:19:27 -0400
-Subject: [RFC 10/11] fanotify: send tgid with notification messages
-From: Eric Paris <eparis@redhat.com>
-To: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
-Content-Type: text/plain
-Date: Fri, 26 Sep 2008 17:19:18 -0400
-Message-Id: <1222463958.2872.225.camel@localhost.localdomain>
+	Fri, 26 Sep 2008 17:21:29 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:26152 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755089AbYIZVV1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 17:21:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding:sender;
+        b=X0d58gk2OxQGWk69GJn8JmPL1U7vIWRh1U2jA05XgMnGR3ZENJAsNYqshDUDjcKBTd
+         +To7it1b5H+/wS2khT7+u/sJbMqvpgnkas3YYeDTiInH9hqYu7YjJhIrNJYdBQUS8nrC
+         osv9ASq8QSLs9yT+3vq5HbJeBE9n2ls9JWXfc=
+Date: Sat, 27 Sep 2008 00:21:21 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip 2/3] Tracing/ftrace: Adapt mmiotrace to the new
+ type of print_line
+Message-ID: <20080927002121.0038cdfe@daedalus.pq.iki.fi>
+In-Reply-To: <48DD0347.5070008@gmail.com>
+References: <48DD0347.5070008@gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fanotify: send tgid with notification messages
+On Fri, 26 Sep 2008 17:44:07 +0200
+Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-From: Eric Paris <eparis@redhat.com>
+> Adapt mmiotrace to the new print_line type.
+> By default, it refuses types it doesn't support.
+> But a tracer needs to print something to the seq anyway. 
+> That's why it needs to warn about unsupported types.
+> 
+> Pekka if you disagree with it, please don't hesitate to tell me.
 
-Send tgid of original process to fanotify listeners
+Yes, I do disagree about printing stuff that doesn't belong there.
+First, I doubt printing bogus text is a right way to fix the
+early pipe EOF problem. Second, if you really have to do that,
+do it so that it obeys the mmiotrace log format specification.
+(I'd recommend a MARK entry.) The spec is in
+Documentation/tracers/mmiotrace.txt.
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
+This is just a very quick comment, and I should look at your two
+patches better. I hope to do that during the weekend.
 
- fs/notify/fanotify.h          |    1 +
- fs/notify/notification.c      |    1 +
- fs/notify/notification_user.c |    9 +++++----
- 3 files changed, 7 insertions(+), 4 deletions(-)
+Was there supposed to be a third patch, as the subject suggests?
 
-
-diff --git a/fs/notify/fanotify.h b/fs/notify/fanotify.h
-index 0394406..c2581ec 100644
---- a/fs/notify/fanotify.h
-+++ b/fs/notify/fanotify.h
-@@ -76,6 +76,7 @@ struct fanotify_event {
- 	/* if waiting for a userspace access answer this is the cookie they will send back */
- 	unsigned long cookie;
- 	pid_t pid;		/* pid of the original process */
-+	pid_t tgid;		/* tgid of the original process */
- 	spinlock_t response_lock; /* protects response */
- 	unsigned int response;	/* userspace answer to question */
- };
-diff --git a/fs/notify/notification.c b/fs/notify/notification.c
-index d51411f..4a34be1 100644
---- a/fs/notify/notification.c
-+++ b/fs/notify/notification.c
-@@ -146,6 +146,7 @@ struct fanotify_event *create_event(struct file *file, unsigned int mask)
- 	event->mask = mask;
- 
- 	event->pid = current->pid;
-+	event->tgid = current->tgid;
- 
- 	WARN_ON(!event->path.dentry);
- 	WARN_ON(!event->path.mnt);
-diff --git a/fs/notify/notification_user.c b/fs/notify/notification_user.c
-index 484260f..4f87986 100644
---- a/fs/notify/notification_user.c
-+++ b/fs/notify/notification_user.c
-@@ -48,12 +48,13 @@
-  * "mask=%x "	= 14 characters
-  * "cookie=%lu "= 27 characters
-  * "pid=%d "	= 16 characters
-+ * "tgid=%d "	= 17 characters
-  * "\n "	=  2 characters
-  * NULL		=  1 character
-  * 
-- * MAX_MESG_LEN = 75
-+ * MAX_MESG_LEN = 92
-  */
--#define MAX_MESG_LEN 75
-+#define MAX_MESG_LEN 92
- 
- static ssize_t fanotify_notification_read(struct file *file, char __user *buf, size_t lenp, loff_t *offset)
- {
-@@ -134,8 +135,8 @@ static ssize_t fanotify_notification_read(struct file *file, char __user *buf, s
- 	 * Build metadata string to send to the listener
- 	 * IF YOU CHANGE THIS STRING UPDATE MAX_MSG_LEN!!!!!!11111!!!!
- 	 */
--	rc = snprintf(output, lenp-1, "fd=%d mask=%x cookie=%lu pid=%d\n",
--		      client_fd, event->mask, event->cookie, event->pid);
-+	rc = snprintf(output, lenp-1, "fd=%d mask=%x cookie=%lu pid=%d tgid=%d\n",
-+		      client_fd, event->mask, event->cookie, event->pid, event->tgid);
- 	if (rc < 0)
- 		goto out;
- 	output[rc] = '\0';
+Thanks.
 
 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+> diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
+> index 2bbb7dd..69480a5 100644
+> --- a/kernel/trace/trace_mmiotrace.c
+> +++ b/kernel/trace/trace_mmiotrace.c
+> @@ -171,7 +171,7 @@ print_out:
+>  	return (ret == -EBUSY) ? 0 : ret;
+>  }
+>  
+> -static int mmio_print_rw(struct trace_iterator *iter)
+> +static enum print_line_t mmio_print_rw(struct trace_iterator *iter)
+>  {
+>  	struct trace_entry *entry = iter->ent;
+>  	struct mmiotrace_rw *rw	= &entry->field.mmiorw;
+> @@ -209,11 +209,11 @@ static int mmio_print_rw(struct trace_iterator *iter)
+>  		break;
+>  	}
+>  	if (ret)
+> -		return 1;
+> -	return 0;
+> +		return TRACE_TYPE_HANDLED;
+> +	return TRACE_TYPE_PARTIAL_LINE;
+>  }
+>  
+> -static int mmio_print_map(struct trace_iterator *iter)
+> +static enum print_line_t mmio_print_map(struct trace_iterator *iter)
+>  {
+>  	struct trace_entry *entry = iter->ent;
+>  	struct mmiotrace_map *m	= &entry->field.mmiomap;
+> @@ -221,7 +221,7 @@ static int mmio_print_map(struct trace_iterator *iter)
+>  	unsigned long long t	= ns2usecs(entry->field.t);
+>  	unsigned long usec_rem	= do_div(t, 1000000ULL);
+>  	unsigned secs		= (unsigned long)t;
+> -	int ret = 1;
+> +	int ret;
+>  
+>  	switch (entry->field.mmiorw.opcode) {
+>  	case MMIO_PROBE:
+> @@ -241,11 +241,11 @@ static int mmio_print_map(struct trace_iterator *iter)
+>  		break;
+>  	}
+>  	if (ret)
+> -		return 1;
+> -	return 0;
+> +		return TRACE_TYPE_HANDLED;
+> +	return TRACE_TYPE_PARTIAL_LINE;
+>  }
+>  
+> -static int mmio_print_mark(struct trace_iterator *iter)
+> +static enum print_line_t mmio_print_mark(struct trace_iterator *iter)
+>  {
+>  	struct trace_entry *entry = iter->ent;
+>  	const char *msg		= entry->field.print.buf;
+> @@ -258,16 +258,16 @@ static int mmio_print_mark(struct trace_iterator *iter)
+>  	/* The trailing newline must be in the message. */
+>  	ret = trace_seq_printf(s, "MARK %lu.%06lu %s", secs, usec_rem, msg);
+>  	if (!ret)
+> -		return 0;
+> +		return TRACE_TYPE_PARTIAL_LINE;
+>  
+>  	if (entry->field.flags & TRACE_FLAG_CONT)
+>  		trace_seq_print_cont(s, iter);
+>  
+> -	return 1;
+> +	return TRACE_TYPE_HANDLED;
+>  }
+>  
+>  /* return 0 to abort printing without consuming current entry in pipe mode */
+> -static int mmio_print_line(struct trace_iterator *iter)
+> +static enum print_line_t mmio_print_line(struct trace_iterator *iter)
+>  {
+>  	switch (iter->ent->type) {
+>  	case TRACE_MMIO_RW:
+> @@ -277,7 +277,9 @@ static int mmio_print_line(struct trace_iterator *iter)
+>  	case TRACE_PRINT:
+>  		return mmio_print_mark(iter);
+>  	default:
+> -		return 0; /* ignore unknown entries whithout consuming */
+> +		/* ignore unknown entries */
+> +		trace_seq_printf(&iter->seq, "Unknown trace type\n");
+> +		return TRACE_TYPE_HANDLED;
+>  	}
+>  }
+>  
+> 
+
+
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
