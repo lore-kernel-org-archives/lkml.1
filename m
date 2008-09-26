@@ -1,148 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbYIZK64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYIZLAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752768AbYIZK64 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 06:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbYIZK6o
+	id S1755202AbYIZLAa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 07:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYIZLAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 06:58:44 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39467 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754948AbYIZK6n (ORCPT
+	Fri, 26 Sep 2008 07:00:19 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:40923 "EHLO
+	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbYIZLAR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 06:58:43 -0400
-Subject: Re: [PATCH 2/2] MN10300: Make sched_clock() report time since boot
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, nico@cam.org,
-       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080924164831.14867.11054.stgit@warthog.procyon.org.uk>
-References: <20080924164826.14867.63020.stgit@warthog.procyon.org.uk>
-	 <20080924164831.14867.11054.stgit@warthog.procyon.org.uk>
-Content-Type: text/plain
-Date: Fri, 26 Sep 2008 12:58:39 +0200
-Message-Id: <1222426720.16700.262.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Sep 2008 07:00:17 -0400
+X-BigFish: VPS-29(zz1432R98dR1805M936fOzzzzz32i6bh43j65h)
+X-Spam-TCS-SCL: 4:0
+X-FB-SS: 5,
+X-WSS-ID: 0K7SUK4-04-OSK-01
+Date: Fri, 26 Sep 2008 13:00:04 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Amit Shah <amit.shah@redhat.com>
+CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       iommu@lists.linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
+Message-ID: <20080926110004.GD27928@amd.com>
+References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <1222107681-8185-10-git-send-email-joerg.roedel@amd.com> <200809261326.19261.amit.shah@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <200809261326.19261.amit.shah@redhat.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 26 Sep 2008 11:00:04.0833 (UTC) FILETIME=[07E76D10:01C91FC7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-24 at 17:48 +0100, David Howells wrote:
-> Make sched_clock() report time since boot rather than time since last timer
-> interrupt.
+On Fri, Sep 26, 2008 at 01:26:19PM +0530, Amit Shah wrote:
+> * On Monday 22 Sep 2008 23:51:21 Joerg Roedel wrote:
+> > This patch enables stackable dma_ops on x86. To do this, it also enables
+> > the per-device dma_ops on i386.
+> >
+> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > ---
+> >  arch/x86/kernel/pci-dma.c     |   26 ++++++++++++++++++++++++++
+> >  include/asm-x86/device.h      |    6 +++---
+> >  include/asm-x86/dma-mapping.h |   14 +++++++-------
+> >  3 files changed, 36 insertions(+), 10 deletions(-)
+> >
+> > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> > index b990fb6..2e517c2 100644
+> > --- a/arch/x86/kernel/pci-dma.c
+> > +++ b/arch/x86/kernel/pci-dma.c
+> > @@ -82,6 +82,32 @@ void x86_register_dma_ops(struct dma_mapping_ops *ops,
+> >  	write_unlock_irqrestore(&dma_ops_list_lock, flags);
+> >  }
+> >
+> > +struct dma_mapping_ops *find_dma_ops_for_device(struct device *dev)
+> > +{
+> > +	int i;
+> > +	unsigned long flags;
+> > +	struct dma_mapping_ops *entry, *ops = NULL;
+> > +
+> > +	read_lock_irqsave(&dma_ops_list_lock, flags);
+> > +
+> > +	for (i = 0; i < DMA_OPS_TYPE_MAX; ++i)
+> > +		list_for_each_entry(entry, &dma_ops_list[i], list) {
+> > +			if (!entry->device_supported)
+> > +				continue;
+> > +			if (entry->device_supported(dev)) {
+> > +				ops = entry;
+> > +				goto out;
+> > +			}
+> > +		}
+> > +out:
+> > +	read_unlock_irqrestore(&dma_ops_list_lock, flags);
 > 
-> Make sched_clock() expand and scale the 32-bit TSC value running at IOCLK
-> speed (~33MHz) to a 64-bit nanosecond counter, using cnt32_to_63() acquired
-> from the ARM arch and without using slow DIVU instructions every call.
+> For PVDMA, we want the "native" dma_ops to succeed first, eg, nommu, and then 
+> do our "PV DMA", which is just translating gpa  to hpa and then program the 
 
-Right, so since you have to up-scale the 63 bit counter obtained using
-the smarty pants cnt32_to_63 code, you actually end up with a genuine
-64bit counter.. sweet.
+Btw, how will dma_masks be handled when PV DMA just translates gpa to
+hpa?
 
-I'm not going to pretend to understand the NM10300 details, but the
-generic idea makes sense.
+Joerg
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
-> 
->  arch/mn10300/kernel/time.c |   52 +++++++++++++++++++++++++++++++++++---------
->  1 files changed, 41 insertions(+), 11 deletions(-)
-> 
-> 
-> diff --git a/arch/mn10300/kernel/time.c b/arch/mn10300/kernel/time.c
-> index babb7c2..e460658 100644
-> --- a/arch/mn10300/kernel/time.c
-> +++ b/arch/mn10300/kernel/time.c
-> @@ -1,6 +1,6 @@
->  /* MN10300 Low level time management
->   *
-> - * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-> + * Copyright (C) 2007-2008 Red Hat, Inc. All Rights Reserved.
->   * Written by David Howells (dhowells@redhat.com)
->   * - Derived from arch/i386/kernel/time.c
->   *
-> @@ -16,6 +16,7 @@
->  #include <linux/init.h>
->  #include <linux/smp.h>
->  #include <linux/profile.h>
-> +#include <linux/cnt32_to_63.h>
->  #include <asm/irq.h>
->  #include <asm/div64.h>
->  #include <asm/processor.h>
-> @@ -40,27 +41,54 @@ static struct irqaction timer_irq = {
->  	.name		= "timer",
->  };
->  
-> +static unsigned long sched_clock_multiplier;
-> +
->  /*
->   * scheduler clock - returns current time in nanosec units.
->   */
->  unsigned long long sched_clock(void)
->  {
->  	union {
-> -		unsigned long long l;
-> -		u32 w[2];
-> -	} quot;
-> +		unsigned long long ll;
-> +		unsigned l[2];
-> +	} tsc64, result;
-> +	unsigned long tsc, tmp;
-> +	unsigned product[3]; /* 96-bit intermediate value */
-> +
-> +	/* read the TSC value
-> +	 */
-> +	tsc = 0 - get_cycles(); /* get_cycles() counts down */
->  
-> -	quot.w[0] = mn10300_last_tsc - get_cycles();
-> -	quot.w[1] = 1000000000;
-> +	/* expand to 64-bits.
-> +	 * - sched_clock() must be called once a minute or better or the
-> +	 *   following will go horribly wrong - see cnt32_to_63()
-> +	 */
-> +	tsc64.ll = cnt32_to_63(tsc) & 0x7fffffffffffffffULL;
->  
-> -	asm("mulu %2,%3,%0,%1"
-> -	    : "=r"(quot.w[1]), "=r"(quot.w[0])
-> -	    : "0"(quot.w[1]), "1"(quot.w[0])
-> +	/* scale the 64-bit TSC value to a nanosecond value via a 96-bit
-> +	 * intermediate
-> +	 */
-> +	asm("mulu	%2,%0,%3,%0	\n"	/* LSW * mult ->  0:%3:%0 */
-> +	    "mulu	%2,%1,%2,%1	\n"	/* MSW * mult -> %2:%1:0 */
-> +	    "add	%3,%1		\n"
-> +	    "addc	0,%2		\n"	/* result in %2:%1:%0 */
-> +	    : "=r"(product[0]), "=r"(product[1]), "=r"(product[2]), "=r"(tmp)
-> +	    :  "0"(tsc64.l[0]),  "1"(tsc64.l[1]),  "2"(sched_clock_multiplier)
->  	    : "cc");
->  
-> -	do_div(quot.l, MN10300_TSCCLK);
-> +	result.l[0] = product[1] << 16 | product[0] >> 16;
-> +	result.l[1] = product[2] << 16 | product[1] >> 16;
->  
-> -	return quot.l;
-> +	return result.ll;
-> +}
-> +
-> +/*
-> + * initialise the scheduler clock
-> + */
-> +static void __init mn10300_sched_clock_init(void)
-> +{
-> +	sched_clock_multiplier =
-> +		__muldiv64u(NSEC_PER_SEC, 1 << 16, MN10300_TSCCLK);
->  }
->  
->  /*
-> @@ -128,4 +156,6 @@ void __init time_init(void)
->  	/* start the watchdog timer */
->  	watchdog_go();
->  #endif
-> +
-> +	mn10300_sched_clock_init();
->  }
-> 
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
