@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbYIZI76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYIZJA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755310AbYIZI76 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 04:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbYIZI6r
+	id S1755554AbYIZJA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 05:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYIZI66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 04:58:47 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:60757 "EHLO
+	Fri, 26 Sep 2008 04:58:58 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:60825 "EHLO
 	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755259AbYIZI6p (ORCPT
+	with ESMTP id S1755297AbYIZI64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 04:58:45 -0400
+	Fri, 26 Sep 2008 04:58:56 -0400
 To: Andrew Morton <akpm@linux-foundation.org>,
        Christoph Hellwig <hch@infradead.org>,
        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
@@ -20,83 +20,68 @@ To: Andrew Morton <akpm@linux-foundation.org>,
        "axboe@kernel.dk" <axboe@kernel.dk>,
        "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/10] gfs2: Fix error handling in write_super_lockfs/unlockfs
-Message-Id: <20080926175821t-sato@mail.jp.nec.com>
+Subject: [PATCH 6/10] jfs: Fix error handling in write_super_lockfs/unlockfs
+Message-Id: <20080926175837t-sato@mail.jp.nec.com>
 Mime-Version: 1.0
 X-Mailer: WeMail32[2.51] ID:1K0086
 From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Fri, 26 Sep 2008 17:58:21 +0900
+Date: Fri, 26 Sep 2008 17:58:37 +0900
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changed write_super_lockfs so that it returns an error in case of an failure.
-unlockfs always returns 0.
+Changed write_super_lockfs so that it returns 0 because there is no
+case of an error.  unlockfs always returns 0.
 
 Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
 Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
 ---
- ops_super.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ super.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff -uprN -X linux-2.6.27-rc7-lockfs-reiserfs/Documentation/dontdiff linux-2.6.27-rc7-lockfs-reiserfs/fs/gfs2/ops_super
-.c linux-2.6.27-rc7-lockfs-gfs2/fs/gfs2/ops_super.c
---- linux-2.6.27-rc7-lockfs-reiserfs/fs/gfs2/ops_super.c	2008-09-26 12:24:01.000000000 +0900
-+++ linux-2.6.27-rc7-lockfs-gfs2/fs/gfs2/ops_super.c	2008-09-26 17:02:06.000000000 +0900
-@@ -161,18 +161,18 @@ static int gfs2_sync_fs(struct super_blo
+diff -uprN -X linux-2.6.27-rc7-lockfs-gfs2/Documentation/dontdiff linux-2.6.27-rc7-lockfs-gfs2/fs/jfs/super.c linux-2.6.
+27-rc7-lockfs-jfs/fs/jfs/super.c
+--- linux-2.6.27-rc7-lockfs-gfs2/fs/jfs/super.c	2008-09-26 14:30:30.000000000 +0900
++++ linux-2.6.27-rc7-lockfs-jfs/fs/jfs/super.c	2008-09-26 17:05:59.000000000 +0900
+@@ -543,7 +543,7 @@ out_kfree:
+ 	return ret;
  }
  
- /**
-- * gfs2_write_super_lockfs - prevent further writes to the filesystem
-+ * gfs2_freeze - prevent further writes to the filesystem
-  * @sb: the VFS structure for the filesystem
-  *
-  */
- 
--static void gfs2_write_super_lockfs(struct super_block *sb)
-+static int gfs2_freeze(struct super_block *sb)
+-static void jfs_write_super_lockfs(struct super_block *sb)
++static int jfs_freeze(struct super_block *sb)
  {
- 	struct gfs2_sbd *sdp = sb->s_fs_info;
- 	int error;
- 
- 	if (test_bit(SDF_SHUTDOWN, &sdp->sd_flags))
--		return;
-+		return -EINVAL;
- 
- 	for (;;) {
- 		error = gfs2_freeze_fs(sdp);
-@@ -192,17 +192,19 @@ static void gfs2_write_super_lockfs(stru
- 		fs_err(sdp, "retrying...\n");
- 		msleep(1000);
+ 	struct jfs_sb_info *sbi = JFS_SBI(sb);
+ 	struct jfs_log *log = sbi->log;
+@@ -553,9 +553,10 @@ static void jfs_write_super_lockfs(struc
+ 		lmLogShutdown(log);
+ 		updateSuper(sb, FM_CLEAN);
  	}
 +	return 0;
  }
  
- /**
-- * gfs2_unlockfs - reallow writes to the filesystem
-+ * gfs2_unfreeze - reallow writes to the filesystem
-  * @sb: the VFS structure for the filesystem
-  *
-  */
- 
--static void gfs2_unlockfs(struct super_block *sb)
-+static int gfs2_unfreeze(struct super_block *sb)
+-static void jfs_unlockfs(struct super_block *sb)
++static int jfs_unfreeze(struct super_block *sb)
  {
- 	gfs2_unfreeze_fs(sb->s_fs_info);
+ 	struct jfs_sb_info *sbi = JFS_SBI(sb);
+ 	struct jfs_log *log = sbi->log;
+@@ -568,6 +569,7 @@ static void jfs_unlockfs(struct super_bl
+ 		else
+ 			txResume(sb);
+ 	}
 +	return 0;
  }
  
- /**
-@@ -505,8 +507,8 @@ const struct super_operations gfs2_super
- 	.put_super		= gfs2_put_super,
- 	.write_super		= gfs2_write_super,
- 	.sync_fs		= gfs2_sync_fs,
--	.write_super_lockfs 	= gfs2_write_super_lockfs,
--	.unlockfs		= gfs2_unlockfs,
-+	.freeze_fs 		= gfs2_freeze,
-+	.unfreeze_fs		= gfs2_unfreeze,
- 	.statfs			= gfs2_statfs,
- 	.remount_fs		= gfs2_remount_fs,
- 	.clear_inode		= gfs2_clear_inode,
+ static int jfs_get_sb(struct file_system_type *fs_type,
+@@ -735,8 +737,8 @@ static const struct super_operations jfs
+ 	.delete_inode	= jfs_delete_inode,
+ 	.put_super	= jfs_put_super,
+ 	.sync_fs	= jfs_sync_fs,
+-	.write_super_lockfs = jfs_write_super_lockfs,
+-	.unlockfs       = jfs_unlockfs,
++	.freeze_fs	= jfs_freeze,
++	.unfreeze_fs	= jfs_unfreeze,
+ 	.statfs		= jfs_statfs,
+ 	.remount_fs	= jfs_remount,
+ 	.show_options	= jfs_show_options,
