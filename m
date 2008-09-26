@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbYIZTOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbYIZTP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753297AbYIZTOR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 15:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbYIZTOH
+	id S1753720AbYIZTP1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 15:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbYIZTPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 15:14:07 -0400
-Received: from mail.tpi.com ([198.107.51.143]:2577 "EHLO mail.tpi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752316AbYIZTOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 15:14:06 -0400
-X-Greylist: delayed 1327 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Sep 2008 15:14:06 EDT
-Message-ID: <48DD2F98.8070509@tpi.com>
-Date: Fri, 26 Sep 2008 12:53:12 -0600
-From: Tim Gardner <timg@tpi.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Arjan van de Ven <arjan@linux.intel.com>, Jiri Kosina <jkosina@suse.cz>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, agospoda@redhat.com,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
-       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com
-Subject: Re: e1000e NVM corruption issue status
-References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com> <48DCCC5F.8040609@linux.intel.com> <200809261052.38966.jbarnes@virtuousgeek.org> <200809261123.52198.jbarnes@virtuousgeek.org>
-In-Reply-To: <200809261123.52198.jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 26 Sep 2008 15:15:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45132 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbYIZTPT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 15:15:19 -0400
+Subject: Re: [PATCH v6] Unified trace buffer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Mike Travis <travis@sgi.com>
+In-Reply-To: <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>
+References: <20080925185154.230259579@goodmis.org>
+	 <20080925185236.244343232@goodmis.org>
+	 <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>
+	 <48DC406D.1050508@redhat.com>
+	 <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>
+	 <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Fri, 26 Sep 2008 21:14:33 +0200
+Message-Id: <1222456474.16700.289.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Friday, September 26, 2008 10:52 am Jesse Barnes wrote:
->> On Friday, September 26, 2008 4:49 am Arjan van de Ven wrote:
->>> Jiri Kosina wrote:
->>>> On Thu, 25 Sep 2008, Brandeburg, Jesse wrote:
->>>>> this is the current set of patches that I have to help us debug
->>>>> and/or fix e1000e issues found during this debug effort for
->>>>> the corrupt NVM.  the "drop stats lock" - "reset swflag" patches allow
->>>>> Thomas' patch for a mutex in the SWFLAG acquire function to run
->>>>> without any errors.
->>>> Thanks. Also Jesse Barnes' patch shouldn't be forgotten, could you
->>>> please add it to that lineup?
->>>>
->>>> 	http://marc.info/?l=linux-kernel&m=122237193628087&w=2
->>> can we (for now) also stick a WARN_ON() into that failure path? that way
->>> we can at least catch if/when this happens more visibly..... if it
->>> happens consistently in say the new distros we can be more confident that
->>> we're down the right path in diagnosing the issue.
->> I'm spinning a new one now with some debug output, stay tuned (just gotta
->> boot my test box).
-> 
-> Ok here's an updated one.  Jesse (Br) can you add it to your list?  If the X 
-> driver really is mapping too much this should catch it, as long as it goes 
-> through sysfs.
-> 
-> Thanks,
-> Jesse
-> 
+On Fri, 2008-09-26 at 14:05 -0400, Steven Rostedt wrote:
+> +struct ring_buffer {
+> +       unsigned long           size;
+> +       unsigned                pages;
+> +       unsigned                flags;
+> +       int                     cpus;
+> +       atomic_t                record_disabled;
+> +
+> +       struct mutex            mutex;
+> +
+> +       /* FIXME: this should be online CPUS */
+> +       struct ring_buffer_per_cpu *buffers[NR_CPUS];
 
-I've been experimenting with unmapping flash space until its actually
-needed, e.g., in the functions that use the E1000_READ_FLASH and
-E1000_WRITE_FLASH macros. Along the way I looked at how flash write
-cycles are initiated because I was having a hard time believing that
-having flash space mapped was part of the root cause. However, it looks
-like its pretty simple to initiate a write or erase cycle. All of the
-required action bits in ICH_FLASH_HSFSTS and ICH_FLASH_HSFCTL must be 1,
-and these 2 register are in the correct order if X was writing 0xff in
-ascending order.
+actually nr_possible makes sense, and you might consider always
+allocating buffers (and keeping them for offlined cpus) to avoid massive
+allocations/frees cpu-hotplug events.
 
-Just a thought.
+Mike Travis has been going over the kernel removing constructs like
+this, and replacing them with dynamically allocated arrays of
+nr_possible.
 
-rtg
--- 
-Tim Gardner timg@tpi.com www.tpi.com
-OR 503-601-0234 x102 MT 406-443-5357
+> +};
+
