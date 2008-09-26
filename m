@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbYIZFqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYIZFrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754367AbYIZFqW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 01:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYIZFqK
+	id S1754543AbYIZFrU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 01:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYIZFrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 01:46:10 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:19945 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbYIZFqI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 01:46:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nfjvOmkhFBrIhylhLX50gkA0Hi4SBkoN2k8J2nV3ihy8WEzwz3gHdBK/KXqC3Pks1q
-         XFNnMt4kbNyVQEM5vS16K438h0gs8ZKJXLc6IDkGUNn5kb0aMFNgu2I/r9cPeJAnJtZT
-         OA8Q3OSQ1eVGpjuElOWg2OlRLQTwHv5mniSwE=
-Date: Fri, 26 Sep 2008 05:46:00 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Corey Minyard <minyard@acm.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com, shemminger@vyatta.com
-Subject: Re: [PATCH 1/1] Use RCU for the UDP hash lock
-Message-ID: <20080926054600.GA4141@ff.dom.local>
-References: <20080926031832.GA27289@minyard.local>
+	Fri, 26 Sep 2008 01:47:09 -0400
+Received: from blaine.gmane.org ([80.91.229.8]:37947 "EHLO hugh.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752782AbYIZFrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 01:47:08 -0400
+Message-ID: <48DC774C.3070800@yahoo.com>
+Date: Fri, 26 Sep 2008 06:46:52 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080926031832.GA27289@minyard.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Jenkins 
+	<public-alan-jenkins-cCz0Lq7MMjm9FHfhHBbuYA@hugh.gmane.org>
+CC: Pascal Terjan 
+	<public-pterjan-Re5JQEeQqe8AvxtiuMwx3w@hugh.gmane.org>,
+       public-acpi4asus-user-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@hugh.gmane.org,
+       Sitsofe Wheeler 
+	<public-sitsofe-/E1597aS9LQAvxtiuMwx3w@hugh.gmane.org>,
+       linux-kernel 
+	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>
+Subject: Re: Turning off camera also kills card reader on  EeePC 900 (USB
+ regression?)
+References: <48CE217A.1080409@tuffmail.co.uk> <48CE52EC.9060505@yahoo.com>		<48CE650B.6000708@tuffmail.co.uk>	<e8ca35370809251327x19dd4731n18aafc6ca4f40d70@mail.gmail.com> <48DC00C9.9070106@tuffmail.co.uk>
+In-Reply-To: <48DC00C9.9070106@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Plusnet-Relay: 43d5474fe52f993f1d98170b32b30797
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 10:18:33PM -0500, Corey Minyard wrote:
-...
-> This patch is the second try; I believe I fixed all issues that people
-> raised.
 
-Actually, you've skipped my first question, so I still don't know, why
-you don't use an _init version of sk_del_node (even if it's safe in the
-current implementation), while the non-rcu code uses only this?
 
-...
-> diff --git a/include/net/sock.h b/include/net/sock.h
-> index 06c5259..65110a6 100644
-> --- a/include/net/sock.h
-> +++ b/include/net/sock.h
-...
->  static inline int sk_unhashed(const struct sock *sk)
->  {
->  	return hlist_unhashed(&sk->sk_node);
-> @@ -361,6 +374,27 @@ static __inline__ int sk_del_node_init(struct sock *sk)
->  	return rc;
->  }
->  
-> +static inline int __sk_del_node_rcu(struct sock *sk)
-> +{
-> +	if (sk_hashed(sk)) {
-> +		hlist_del_rcu(&sk->sk_node);
-> +		return 1;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static inline int sk_del_node_rcu(struct sock *sk)
-> +{
-> +	int rc = __sk_del_node_rcu(sk);
-> +
-> +	if (rc) {
-> +		/* paranoid for a while -acme */
-> +		WARN_ON(atomic_read(&sk->sk_refcnt) == 1);
-> +		__sock_put(sk);
-> +	}
-> +	return rc;
-> +}
-...
+Alan Jenkins wrote:
+> Pascal Terjan wrote:
+>> On Mon, Sep 15, 2008 at 3:37 PM, Alan Jenkins
+>> <alan-jenkins-cCz0Lq7MMjm9FHfhHBbuYA@public.gmane.org> wrote:
+>>   
+>>> Sitsofe Wheeler wrote:
+>>> The "HC died" message is interesting.  Sounds like the controller for
+>>> these two USB devices stops working.  Maybe try unloading and reloading
+>>> the ehci module?  I don't think I can help any more though.
+>>>     
+>> The issue also exist on 701 on 2.6.27-rc7 so the regression is in the
+>> kernel not in the hardware
+>>   
+> On the bright side, that means more people should have the hardware to 
+> test it on (including me :-).
+> 
+> I've certainly used the camera enable/disable at some point.  But I 
+> could have missed the error message, and frankly I don't use the camera 
+> or cardreader very often.  I'll have a bash at it tomorrow.
+> 
+> Sitsofe says it reproduced on kernel.org 2.6.21 (presumably with an 
+> out-of-tree eeepc module).  So I guess this isn't a simple git-bisect 
+> job - more thinking required...
 
-Jarek P.
+Er turns out I might be mistaken wrt to 2.6.21. I do have a 2.6.21 
+kernel but it turned out I don't have an eeepc/asus-acpi module. As I'm 
+going away for the next few days I won't have an opportunity to test 
+this soon.
+
+The problem also seems to have vanished in Ingo's linux-tip ...
+
+-- 
+Sitsofe | http://sucs.org/~sits/
+
