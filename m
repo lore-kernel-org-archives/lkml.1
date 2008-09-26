@@ -1,80 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbYIZEtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbYIZEwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753868AbYIZEtm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 00:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYIZEtd
+	id S1753759AbYIZEwW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 00:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYIZEwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 00:49:33 -0400
-Received: from mx30.brocade.com ([144.49.194.4]:14754 "EHLO mx30.brocade.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750894AbYIZEtc convert rfc822-to-8bit (ORCPT
+	Fri, 26 Sep 2008 00:52:14 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:39802 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751504AbYIZEwO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 00:49:32 -0400
-X-IronPort-AV: E=Sophos;i="4.33,310,1220252400"; 
-   d="scan'208";a="48206938"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Fri, 26 Sep 2008 00:52:14 -0400
+Subject: Re: [ANNOUNCE] [PATCH] [MTD] Flex-OneNAND MTD Driver available.
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: apgmoorthy <moorthy.apg@samsung.com>,
+       Kyungmin Park <kyungmin.park@samsung.com>,
+       linux-mtd@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <9c9fda240809251731y48272a63j988e0001dc50d78@mail.gmail.com>
+References: <19198934.52871221827459790.JavaMail.weblogic@epml16>
+	 <9c9fda240809220011w49c0875q804f836550ff3476@mail.gmail.com>
+	 <000001c91e42$1aa86c50$3dd66c6b@sisodomain.com>
+	 <9c9fda240809251731y48272a63j988e0001dc50d78@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 26 Sep 2008 07:51:51 +0300
+Message-Id: <1222404711.5012.5.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 5/6] bfa: Brocade BFA FC SCSI driver submission (2ndtry)
-Date: Thu, 25 Sep 2008 21:49:27 -0700
-Message-ID: <4C94DE2070B172459E4F1EE14BD2364E01F28079@HQ-EXCH-5.corp.brocade.com>
-In-Reply-To: <20080926025514.GD9480@kroah.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 5/6] bfa: Brocade BFA FC SCSI driver submission (2ndtry)
-Thread-Index: Ackfg2pYz2FjD8baRWe0Stzobr8jjQADE+oA
-References: <200809260106.m8Q160kj028501@swe37.brocade.com> <20080926025514.GD9480@kroah.com>
-From: "Jing Huang" <huangj@Brocade.COM>
-To: "Greg KH" <greg@kroah.com>
-Cc: <James.Bottomley@HansenPartnership.com>, <linux-kernel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>,
-       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
-       "Srikanth Rayas (CW)" <srayas@Brocade.COM>,
-       "Vinodh Ravindran" <vravindr@Brocade.COM>
-X-OriginalArrivalTime: 26 Sep 2008 04:49:28.0135 (UTC) FILETIME=[41CC9570:01C91F93]
+X-OriginalArrivalTime: 26 Sep 2008 04:51:55.0200 (UTC) FILETIME=[9974EC00:01C91F93]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The reason we creating our own sysfs directory under /sys/devices path
-was we felt the fc transport and scsi host attributes are not enough for
-all the HBA management features we want to have. We have ioctl in our
-non opensource driver, and we want to have something to emulate all/most
-of the IOCTL functionality we have in the opensource driver. We provide
-multi-level of driver/fw statistics info to the user, and we want to put
-those info under a separate directory instead of throw them all under
-scsi_host. I just didn't know how to create a subdirectory under scsi/fc
-host. Currently, we only implement a small portion of all the IOCTL
-functionalities. We want to know if this is acceptable in the upstream
-kernel. 
 
-I agree that there are a lot of redundancy with the attributes we
-created under scsi_host. We will clean them up.
-
-Jing
-
------Original Message-----
-From: Greg KH [mailto:greg@kroah.com] 
-Sent: Thursday, September 25, 2008 7:55 PM
-To: Jing Huang
-Cc: James.Bottomley@HansenPartnership.com; linux-kernel@vger.kernel.org;
-linux-scsi@vger.kernel.org; Ramkumar Vadivelu; Srikanth Rayas (CW);
-Vinodh Ravindran
-Subject: Re: [PATCH 5/6] bfa: Brocade BFA FC SCSI driver submission
-(2ndtry)
-
-On Thu, Sep 25, 2008 at 06:06:00PM -0700, Jing Huang wrote:
-> From: Jing Huang <huangj@brocade.com>
+On Fri, 2008-09-26 at 09:31 +0900, Kyungmin Park wrote:
+> Hi,
 > 
-> This patch contains document of brocade specific sysfs interface.
-> It is created using 2.6.27-rc7 kernel.
+> A few comments
+> 
+> >
+> > Signed-off-by: Vishak G <vishak.g@samsung.com>
+> > Signed-off-by: Rohit Hagargundgi <h.rohit@samsung.com>
+> 
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> 
+> > ---
+> > diff -uprN a/drivers/mtd/onenand/onenand_base.c
+> > b/drivers/mtd/onenand/onenand_base.c
+> > --- a/drivers/mtd/onenand/onenand_base.c        2008-09-16
+> > 20:48:12.000000000 +0530
+> > +++ b/drivers/mtd/onenand/onenand_base.c        2008-09-24
+> > 17:51:34.000000000 +0530
+> > @@ -9,6 +9,10 @@
+> >  *     auto-placement support, read-while load support, various fixes
+> >  *     Copyright (C) Nokia Corporation, 2007
+> >  *
+> > + *     Vishak G <vishak.g@samsung.com>, Rohit Hagargundgi
+> > <h.rohit@samsung.com>
+> > + *     Flex-OneNAND support
+> > + *     Copyright (C) Samsung Electronics, 2008
+> > + *
+> >  * This program is free software; you can redistribute it and/or modify
+> >  * it under the terms of the GNU General Public License version 2 as
+> >  * published by the Free Software Foundation.
+> > @@ -27,6 +31,37 @@
+> >
+> >  #include <asm/io.h>
+> >
+> > +const static int boundary[] = {
+> > +       FLEXONENAND_DIE0_BOUNDARY,
+> > +       FLEXONENAND_DIE1_BOUNDARY,
+> > +};
+> > +
+> > +const static int lock[] = {
+> > +       FLEXONENAND_DIE0_ISLOCKED,
+> > +       FLEXONENAND_DIE1_ISLOCKED,
+> > +};
+> > +
+> 
+> static const as others.
+> 
+> 
+> > diff -uprN a/include/mtd/mtd-abi.h b/include/mtd/mtd-abi.h
+> > --- a/include/mtd/mtd-abi.h     2008-09-16 20:48:12.000000000 +0530
+> > +++ b/include/mtd/mtd-abi.h     2008-09-24 14:09:06.000000000 +0530
+> > @@ -102,7 +102,11 @@ struct nand_oobinfo {
+> >        uint32_t useecc;
+> >        uint32_t eccbytes;
+> >        uint32_t oobfree[8][2];
+> > +#ifdef CONFIG_MTD_ONENAND
+> > +       uint32_t eccpos[128];
+> > +#else
+> >        uint32_t eccpos[32];
+> > +#endif
+> >  };
+> >
+> >  struct nand_oobfree {
+> > @@ -117,7 +121,11 @@ struct nand_oobfree {
+> >  */
+> >  struct nand_ecclayout {
+> >        uint32_t eccbytes;
+> > +#ifdef CONFIG_MTD_ONENAND
+> > +       uint32_t eccpos[128];
+> > +#else
+> >        uint32_t eccpos[64];
+> > +#endif
+> >        uint32_t oobavail;
+> >        struct nand_oobfree oobfree[MTD_MAX_OOBFREE_ENTRIES];
+> >  };
 
-What about my question for the need for all of these files and using
-debugfs instead?
+I do not think stuff like this is going to be accepted because you
+change ABI. You should instead introduce new ioctls or add sysfs
+support and expose this information via sysfs. This is much bigger
+work, but it is needed.
 
-thanks,
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-greg k-h
