@@ -1,81 +1,316 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbYIZUCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbYIZUC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbYIZUCo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 16:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYIZUCe
+	id S1754502AbYIZUC4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 16:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbYIZUCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 16:02:34 -0400
-Received: from emh01.mail.saunalahti.fi ([62.142.5.107]:44229 "EHLO
-	emh01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753084AbYIZUCd (ORCPT
+	Fri, 26 Sep 2008 16:02:44 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35210 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754074AbYIZUCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 16:02:33 -0400
-X-Greylist: delayed 422 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Sep 2008 16:02:32 EDT
-Date: Fri, 26 Sep 2008 22:55:24 +0300 (EEST)
-From: Kai Makisara <Kai.Makisara@kolumbus.fi>
-X-X-Sender: makisara@kai.makisara.local
-To: Lin Tan <tammy000@gmail.com>
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH git latest] drivers/scsi: fixing wrong comment before
- new_buffer_tape()
-In-Reply-To: <20080926170624.GA19223@carmen.cs.uiuc.edu>
-Message-ID: <alpine.LNX.1.10.0809262234520.25887@kai.makisara.local>
-References: <20080925174948.GA14180@carmen.cs.uiuc.edu> <20080926111300.1dd34009@lxorguk.ukuu.org.uk> <7fcc02550809260905oa17880fi80c94eaacb33dba3@mail.gmail.com> <20080926170937.2983fc29@lxorguk.ukuu.org.uk> <1222446056.3971.19.camel@localhost.localdomain>
- <20080926170624.GA19223@carmen.cs.uiuc.edu>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Antivirus: VAMS
+	Fri, 26 Sep 2008 16:02:43 -0400
+Date: Fri, 26 Sep 2008 15:02:42 -0500
+From: Russ Anderson <rja@sgi.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Huang Ying <ying.huang@intel.com>,
+       Jack Steiner <steiner@sgi.com>, Russ Anderson <rja@sgi.com>
+Subject: [PATCH 2/4] x86: Add UV bios call infrastructure v2
+Message-ID: <20080926200242.GC138671@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am talking only about st.c but most of this probably applies also to 
-osst.c.
+[PATCH 2/4] Add UV bios call infrastructure
 
-On Fri, 26 Sep 2008, Lin Tan wrote:
+Add the EFI callback function and associated wrapper code.
+Initialize SAL system table entry info at boot time.
 
-> > > > > Looks true to me for the current versions of the code. In fact it is only
-> > > > > ever called from the initialisation function that I can see so chunks of
-> > > > > the code could simply go away as well as bits of the comment. Ditto the
+Signed-off-by: Russ Anderson <rja@sgi.com>
+Signed-off-by: Paul Jackson <pj@sgi.com>
 
-It is true that the function is currently called only from initialisation. 
-It was called from other contexts earlier and the extra code is leftover 
-from that time.
+---
+ arch/x86/kernel/bios_uv.c        |  101 ++++++++++++++++++++++++++++++---------
+ arch/x86/kernel/genx2apic_uv_x.c |    1 
+ include/asm-x86/efi.h            |   14 +++++
+ include/asm-x86/uv/bios.h        |   73 +++++++++++++++-------------
+ 4 files changed, 136 insertions(+), 53 deletions(-)
 
-> > > > > one in drivers/scsi/st.c
-> > > > >
-> > > > > Acked-by: Alan Cox <alan@redhat.com>
-> > > > >
-> > > > 
-> > > > I am sorry I didn't quite understand. You mean it is true that caller
-> > > > must hold os_scsi_tapes_lock?
-> > > 
-> > > Sorry - I mean what you claim is true - that the comment is incorrect.
-> > 
-> > So, I think I'm missing a piece of this:  There's no patch in this
-> > thread (I presume it's lurking somewhere on lkml).  Could someone repost
-> > the proposed patch and copy the tape maintainer: Kai Makisara
-> > <Kai.Makisara@kolumbus.fi> to get his input?
-> > 
-I saw the patch but my mail client does not include attachments as text in 
-reply ;-(
-
-Anyway, the comment is there because new_tape_buffer() may sleep and 
-st_dev_arr_lock is a spinlock. I have been under the impression that code 
-inside a spinlock must not sleep.
-
-When called from initialisation, new_tape_buffer() _currently_ used 
-GFP_ATOMIC. I am not sure that this is necessary but as long as I don't 
-know, I don't want to change it. The comment protects callers even if 
-someone knows that it is safe to use GFP_KERNEL from initialisation.
-
-I don't see why new_tape_buffer() needs to be inside the lock. It just 
-allocates an initialises a structure.
-
-If someone wants to remove the comment from st.c, I don't mind. But please 
-make sure that what you write to the commit is correct.
-
-Kai
-
+Index: linux/arch/x86/kernel/bios_uv.c
+===================================================================
+--- linux.orig/arch/x86/kernel/bios_uv.c	2008-09-26 14:13:24.000000000 -0500
++++ linux/arch/x86/kernel/bios_uv.c	2008-09-26 14:13:36.000000000 -0500
+@@ -1,8 +1,6 @@
+ /*
+  * BIOS run time interface routines.
+  *
+- *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
+- *
+  *  This program is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU General Public License as published by
+  *  the Free Software Foundation; either version 2 of the License, or
+@@ -16,33 +14,94 @@
+  *  You should have received a copy of the GNU General Public License
+  *  along with this program; if not, write to the Free Software
+  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ *
++ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
++ *  Copyright (c) Russ Anderson
+  */
+ 
++#include <linux/efi.h>
++#include <asm/efi.h>
++#include <linux/io.h>
+ #include <asm/uv/bios.h>
+ 
+-const char *
+-x86_bios_strerror(long status)
++struct uv_systab uv_systab;
++
++s64 uv_bios_call(enum uv_bios_cmd which, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5)
+ {
+-	const char *str;
+-	switch (status) {
+-	case  0: str = "Call completed without error";	break;
+-	case -1: str = "Not implemented";		break;
+-	case -2: str = "Invalid argument";		break;
+-	case -3: str = "Call completed with error";	break;
+-	default: str = "Unknown BIOS status code";	break;
+-	}
+-	return str;
++	struct uv_systab *tab = &uv_systab;
++
++	if (!tab->function)
++		/*
++		 * BIOS does not support UV systab
++		 */
++		return BIOS_STATUS_UNIMPLEMENTED;
++
++	return efi_call6((void *)__va(tab->function),
++					(u64)which, a1, a2, a3, a4, a5);
+ }
+ 
+-long
+-x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
+-		   unsigned long *drift_info)
++s64 uv_bios_call_irqsave(enum uv_bios_cmd which, u64 a1, u64 a2, u64 a3,
++					u64 a4, u64 a5)
+ {
+-	struct uv_bios_retval isrv;
++	unsigned long bios_flags;
++	s64 ret;
++
++	local_irq_save(bios_flags);
++	ret = uv_bios_call(which, a1, a2, a3, a4, a5);
++	local_irq_restore(bios_flags);
++
++	return ret;
++}
++
++s64 uv_bios_call_reentrant(enum uv_bios_cmd which, u64 a1, u64 a2, u64 a3,
++					u64 a4, u64 a5)
++{
++	s64 ret;
++
++	preempt_disable();
++	ret = uv_bios_call(which, a1, a2, a3, a4, a5);
++	preempt_enable();
+ 
+-	BIOS_CALL(isrv, BIOS_FREQ_BASE, which, 0, 0, 0, 0, 0, 0);
+-	*ticks_per_second = isrv.v0;
+-	*drift_info = isrv.v1;
+-	return isrv.status;
++	return ret;
++}
++
++long
++x86_bios_freq_base(unsigned long clock_type, unsigned long *ticks_per_second,
++					unsigned long *drift_info)
++{
++	return uv_bios_call(UV_BIOS_FREQ_BASE, clock_type,
++				(u64)ticks_per_second, 0, 0, 0);
+ }
+ EXPORT_SYMBOL_GPL(x86_bios_freq_base);
++
++
++#ifdef CONFIG_EFI
++void uv_bios_init(void)
++{
++	struct uv_systab *tab;
++
++	if ((efi.uv_systab == EFI_INVALID_TABLE_ADDR) ||
++	    (efi.uv_systab == (unsigned long)NULL)) {
++		printk(KERN_CRIT "No EFI UV System Table.\n");
++		uv_systab.function = (unsigned long)NULL;
++		return;
++	}
++
++	tab = (struct uv_systab *)ioremap(efi.uv_systab,
++					sizeof(struct uv_systab));
++	if (strncmp(tab->signature, "UVST", 4) != 0)
++		printk(KERN_ERR "bad signature in UV system table!");
++
++	/*
++	 * Copy table to permanent spot for later use.
++	 */
++	memcpy(&uv_systab, tab, sizeof(struct uv_systab));
++	iounmap(tab);
++
++	printk(KERN_INFO "EFI UV System Table Revision %d\n", tab->revision);
++}
++#else	/* !CONFIG_EFI */
++
++void uv_bios_init(void) { }
++#endif
++
+Index: linux/arch/x86/kernel/genx2apic_uv_x.c
+===================================================================
+--- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-09-26 14:13:24.000000000 -0500
++++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-09-26 14:13:36.000000000 -0500
+@@ -428,6 +428,7 @@ void __init uv_system_init(void)
+ 	gnode_upper = (((unsigned long)node_id.s.node_id) &
+ 		       ~((1 << n_val) - 1)) << m_val;
+ 
++	uv_bios_init();
+ 	uv_rtc_init();
+ 
+ 	for_each_present_cpu(cpu) {
+Index: linux/include/asm-x86/uv/bios.h
+===================================================================
+--- linux.orig/include/asm-x86/uv/bios.h	2008-09-26 14:13:24.000000000 -0500
++++ linux/include/asm-x86/uv/bios.h	2008-09-26 14:13:36.000000000 -0500
+@@ -2,9 +2,7 @@
+ #define ASM_X86__UV__BIOS_H
+ 
+ /*
+- * BIOS layer definitions.
+- *
+- *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
++ * UV BIOS layer definitions.
+  *
+  *  This program is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU General Public License as published by
+@@ -19,50 +17,61 @@
+  *  You should have received a copy of the GNU General Public License
+  *  along with this program; if not, write to the Free Software
+  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ *
++ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
++ *  Copyright (c) Russ Anderson
+  */
+ 
+ #include <linux/rtc.h>
+ 
+-#define BIOS_FREQ_BASE			0x01000001
++/*
++ * Values for the BIOS calls.  It is passed as the first * argument in the
++ * BIOS call.  Passing any other value in the first argument will result
++ * in a BIOS_STATUS_UNIMPLEMENTED return status.
++ */
++enum uv_bios_cmd {
++	UV_BIOS_COMMON,
++	UV_BIOS_GET_SN_INFO,
++	UV_BIOS_FREQ_BASE
++};
+ 
++/*
++ * Status values returned from a BIOS call.
++ */
+ enum {
+-	BIOS_FREQ_BASE_PLATFORM = 0,
+-	BIOS_FREQ_BASE_INTERVAL_TIMER = 1,
+-	BIOS_FREQ_BASE_REALTIME_CLOCK = 2
++	BIOS_STATUS_SUCCESS		=  0,
++	BIOS_STATUS_UNIMPLEMENTED	= -ENOSYS,
++	BIOS_STATUS_EINVAL		= -EINVAL,
++	BIOS_STATUS_UNAVAIL		= -EBUSY
+ };
+ 
+-# define BIOS_CALL(result, a0, a1, a2, a3, a4, a5, a6, a7)		\
+-	do {								\
+-		/* XXX - the real call goes here */			\
+-		result.status = BIOS_STATUS_UNIMPLEMENTED;		\
+-		isrv.v0 = 0;						\
+-		isrv.v1 = 0;						\
+-	} while (0)
++/*
++ * The UV system table describes specific firmware
++ * capabilities available to the Linux kernel at runtime.
++ */
++struct uv_systab {
++	char signature[4];	/* must be "UVST" */
++	u32 revision;		/* distinguish different firmware revs */
++	u64 function;		/* BIOS runtime callback function ptr */
++};
+ 
+ enum {
+-	BIOS_STATUS_SUCCESS		=  0,
+-	BIOS_STATUS_UNIMPLEMENTED	= -1,
+-	BIOS_STATUS_EINVAL		= -2,
+-	BIOS_STATUS_ERROR		= -3
++	BIOS_FREQ_BASE_PLATFORM = 0,
++	BIOS_FREQ_BASE_INTERVAL_TIMER = 1,
++	BIOS_FREQ_BASE_REALTIME_CLOCK = 2
+ };
+ 
+-struct uv_bios_retval {
+-	/*
+-	 * A zero status value indicates call completed without error.
+-	 * A negative status value indicates reason of call failure.
+-	 * A positive status value indicates success but an
+-	 * informational value should be printed (e.g., "reboot for
+-	 * change to take effect").
+-	 */
+-	s64 status;
+-	u64 v0;
+-	u64 v1;
+-	u64 v2;
+-};
++/*
++ * bios calls have 6 parameters
++ */
++extern s64 uv_bios_call(enum uv_bios_cmd, u64, u64, u64, u64, u64);
++extern s64 uv_bios_call_irqsave(enum uv_bios_cmd, u64, u64, u64, u64, u64);
++extern s64 uv_bios_call_reentrant(enum uv_bios_cmd, u64, u64, u64, u64, u64);
++
++extern void uv_bios_init(void);
+ 
+ extern long
+ x86_bios_freq_base(unsigned long which, unsigned long *ticks_per_second,
+ 		   unsigned long *drift_info);
+-extern const char *x86_bios_strerror(long status);
+ 
+ #endif /* ASM_X86__UV__BIOS_H */
+Index: linux/include/asm-x86/efi.h
+===================================================================
+--- linux.orig/include/asm-x86/efi.h	2008-09-26 14:13:24.000000000 -0500
++++ linux/include/asm-x86/efi.h	2008-09-26 14:13:36.000000000 -0500
+@@ -49,6 +49,20 @@ extern u64 efi_call5(void *fp, u64 arg1,
+ extern u64 efi_call6(void *fp, u64 arg1, u64 arg2, u64 arg3,
+ 		     u64 arg4, u64 arg5, u64 arg6);
+ 
++
++#ifndef CONFIG_EFI
++/*
++ * IF EFI is not configured, have the EFI calls return -ENOSYS.
++ */
++#define efi_call0(_f)					(-ENOSYS)
++#define efi_call1(_f, _a1)				(-ENOSYS)
++#define efi_call2(_f, _a1, _a2)				(-ENOSYS)
++#define efi_call3(_f, _a1, _a2, _a3)			(-ENOSYS)
++#define efi_call4(_f, _a1, _a2, _a3, _a4)		(-ENOSYS)
++#define efi_call5(_f, _a1, _a2, _a3, _a4, _a5)		(-ENOSYS)
++#define efi_call6(_f, _a1, _a2, _a3, _a4, _a5, _a6)	(-ENOSYS)
++#endif /* CONFIG_EFI */
++
+ #define efi_call_phys0(f)			\
+ 	efi_call0((void *)(f))
+ #define efi_call_phys1(f, a1)			\
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
