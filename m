@@ -1,182 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbYIZKhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYIZKmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059AbYIZKhD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 06:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbYIZKgx
+	id S1754889AbYIZKmK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 06:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbYIZKly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 06:36:53 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44202 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752999AbYIZKgw (ORCPT
+	Fri, 26 Sep 2008 06:41:54 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:43256 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506AbYIZKlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 06:36:52 -0400
-Date: Fri, 26 Sep 2008 19:43:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH 0/12] memcg updates v5
-Message-Id: <20080926194309.845d661b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080926142455.5b0e239e.nishimura@mxp.nes.nec.co.jp>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926113228.ee377330.nishimura@mxp.nes.nec.co.jp>
-	<20080926115810.b5fbae51.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926120408.39187294.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926120019.33d58ca4.nishimura@mxp.nes.nec.co.jp>
-	<20080926130534.e16c9317.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926142455.5b0e239e.nishimura@mxp.nes.nec.co.jp>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Sep 2008 06:41:53 -0400
+Date: Fri, 26 Sep 2008 06:41:49 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+In-Reply-To: <48DC73C2.5080309@goop.org>
+Message-ID: <alpine.DEB.1.10.0809260641010.17102@gandalf.stny.rr.com>
+References: <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com> <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com>
+ <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org> <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org>
+ <48DBFC7D.4050208@goop.org> <alpine.LFD.1.10.0809251448340.3265@nehalem.linux-foundation.org> <48DC1338.6050107@goop.org> <alpine.DEB.1.10.0809251848170.32742@gandalf.stny.rr.com> <48DC3A89.9020407@goop.org> <alpine.DEB.1.10.0809252132410.8454@gandalf.stny.rr
+ .com> <48DC43D7.5010008@goop.org> <alpine.DEB.1.10.0809252212480.8454@gandalf.stny.rr.com> <48DC73C2.5080309@goop.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Sep 2008 14:24:55 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> Unfortunately, there remains some bugs yet...
+
+On Thu, 25 Sep 2008, Jeremy Fitzhardinge wrote:
+> >
+> > Hmm, the beginning of each patch will need to record the global tsc, as 
+> > well as this information. Simply because in overwrite mode, we do not want 
+> > to lose it if the producer is faster than te consumer.
+> >   
 > 
+> Each patch?  Page?
 
-Thank you for your patient good test!
+Yep, s/patch/page/. I was already half asleep when I replied. ;)
 
-I'm now testing following (and will do over-night test.)
-In this an hour, this seems to work good. 
-(under your test which usually panics in 10-20min on my box.)
-
-==
-page_cgroup is not valid until pc->mem_cgroup is set to appropriate value.
-There is a small race between Set-Used-Bit and Set-Proper-pc->mem_cgroup.
-This patch tries to fix that by adding PCG_VALID bit
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
- include/linux/page_cgroup.h |    3 +++
- mm/memcontrol.c             |   22 ++++++++++++++--------
- 2 files changed, 17 insertions(+), 8 deletions(-)
-
-Index: mmotm-2.6.27-rc7+/include/linux/page_cgroup.h
-===================================================================
---- mmotm-2.6.27-rc7+.orig/include/linux/page_cgroup.h
-+++ mmotm-2.6.27-rc7+/include/linux/page_cgroup.h
-@@ -21,6 +21,7 @@ struct page_cgroup *lookup_page_cgroup(s
- 
- enum {
- 	/* flags for mem_cgroup */
-+	PCG_VALID, /* you can access this page cgroup */
- 	PCG_LOCK,  /* page cgroup is locked */
- 	PCG_CACHE, /* charged as cache */
- 	PCG_USED, /* this object is in use. */
-@@ -50,6 +51,10 @@ static inline int TestSetPageCgroup##una
- /* Cache flag is set only once (at allocation) */
- TESTPCGFLAG(Cache, CACHE)
- 
-+TESTPCGFLAG(Valid, VALID)
-+SETPCGFLAG(Valid, VALID)
-+CLEARPCGFLAG(Valid, VALID)
-+
- TESTPCGFLAG(Used, USED)
- CLEARPCGFLAG(Used, USED)
- TESTSETPCGFLAG(Used, USED)
-Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
-+++ mmotm-2.6.27-rc7+/mm/memcontrol.c
-@@ -340,7 +340,7 @@ void mem_cgroup_move_lists(struct page *
- 	if (!trylock_page_cgroup(pc))
- 		return;
- 
--	if (PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
-+	if (PageCgroupValid(pc) && PageCgroupLRU(pc)) {
- 		mem = pc->mem_cgroup;
- 		mz = page_cgroup_zoneinfo(pc);
- 		spin_lock_irqsave(&mz->lru_lock, flags);
-@@ -434,7 +434,7 @@ unsigned long mem_cgroup_isolate_pages(u
- 	list_for_each_entry_safe_reverse(pc, tmp, src, lru) {
- 		if (scan >= nr_to_scan)
- 			break;
--		if (unlikely(!PageCgroupUsed(pc)))
-+		if (unlikely(!PageCgroupValid(pc)))
- 			continue;
- 		page = pc->page;
- 
-@@ -511,7 +511,7 @@ int mem_cgroup_move_account(struct page 
- 		return ret;
- 	}
- 
--	if (!PageCgroupUsed(pc)) {
-+	if (!PageCgroupValid(pc)) {
- 		res_counter_uncharge(&to->res, PAGE_SIZE);
- 		goto out;
- 	}
-@@ -580,6 +580,7 @@ __set_page_cgroup_lru(struct memcg_percp
- 	unsigned long flags;
- 	struct mem_cgroup_per_zone *mz, *prev_mz;
- 	struct page_cgroup *pc;
-+	struct mem_cgroup *mem;
- 	int i, nr;
- 
- 	local_irq_save(flags);
-@@ -589,6 +590,7 @@ __set_page_cgroup_lru(struct memcg_percp
- 
- 	for (i = nr - 1; i >= 0; i--) {
- 		pc = mpv->vec[i];
-+		mem = pc->mem_cgroup;
- 		mz = page_cgroup_zoneinfo(pc);
- 		if (prev_mz != mz) {
- 			if (prev_mz)
-@@ -596,9 +598,11 @@ __set_page_cgroup_lru(struct memcg_percp
- 			prev_mz = mz;
- 			spin_lock(&mz->lru_lock);
- 		}
--		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
--			SetPageCgroupLRU(pc);
--			__mem_cgroup_add_list(mz, pc);
-+		if (PageCgroupValid(pc) && !PageCgroupLRU(pc)) {
-+			if (mem == pc->mem_cgroup) {
-+				SetPageCgroupLRU(pc);
-+				__mem_cgroup_add_list(mz, pc);
-+			}
- 		}
- 	}
- 
-@@ -790,6 +794,7 @@ void mem_cgroup_commit_charge(struct pag
- 	}
- 
- 	pc->mem_cgroup = mem;
-+	SetPageCgroupValid(pc);
- 	set_page_cgroup_lru(pc);
- 	css_put(&mem->css);
- 	preempt_enable();
-@@ -928,6 +933,7 @@ __mem_cgroup_uncharge_common(struct page
- 		return;
- 	preempt_disable();
- 	lock_page_cgroup(pc);
-+	ClearPageCgroupValid(pc);
- 	ClearPageCgroupUsed(pc);
- 	mem = pc->mem_cgroup;
- 	unlock_page_cgroup(pc);
-@@ -970,7 +976,7 @@ int mem_cgroup_prepare_migration(struct 
- 
- 	pc = lookup_page_cgroup(page);
- 	lock_page_cgroup(pc);
--	if (PageCgroupUsed(pc)) {
-+	if (PageCgroupValid(pc)) {
- 		mem = pc->mem_cgroup;
- 		css_get(&mem->css);
- 		if (PageCgroupCache(pc)) {
-@@ -1086,7 +1092,7 @@ static void mem_cgroup_force_empty_list(
- 	spin_lock_irqsave(&mz->lru_lock, flags);
- 	list_for_each_entry_safe(pc, tmp, list, lru) {
- 		page = pc->page;
--		if (!PageCgroupUsed(pc))
-+		if (!PageCgroupValid(pc))
- 			continue;
- 		/* For avoiding race with speculative page cache handling. */
- 		if (!PageLRU(page) || !get_page_unless_zero(page))
+-- Steve
 
