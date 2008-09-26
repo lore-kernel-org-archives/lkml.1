@@ -1,110 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751772AbYIZKto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYIZKvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751772AbYIZKto (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 06:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYIZKtd
+	id S1753932AbYIZKvS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 06:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYIZKvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 06:49:33 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:38536 "EHLO
+	Fri, 26 Sep 2008 06:51:07 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:38543 "EHLO
 	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbYIZKtc (ORCPT
+	with ESMTP id S1750985AbYIZKvG (ORCPT
 	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 06:49:32 -0400
+	Fri, 26 Sep 2008 06:51:06 -0400
 X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/10] freeze feature ver 1.13
-In-Reply-To: Your message of "Fri, 26 Sep 2008 17:56:52 +0900."
-             <20080926175652t-sato@mail.jp.nec.com>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_SECURITY_ROOTPLUG [was: Re: 2.6.27-rc7 no init found on the root partition?]
+In-Reply-To: Your message of "Fri, 26 Sep 2008 12:05:07 +0200."
+             <20080926100507.GR31582@ics.muni.cz>
 From: Valdis.Kletnieks@vt.edu
-References: <20080926175652t-sato@mail.jp.nec.com>
+References: <20080925165400.GQ31582@ics.muni.cz> <20080926024927.GA13816@hallyn.com>
+            <20080926100507.GR31582@ics.muni.cz>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1222426096_7097P";
+Content-Type: multipart/signed; boundary="==_Exmh_1222426244_7097P";
 	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Sep 2008 06:48:16 -0400
-Message-ID: <30536.1222426096@turing-police.cc.vt.edu>
+Date: Fri, 26 Sep 2008 06:50:44 -0400
+Message-ID: <30625.1222426244@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1222426096_7097P
-Content-Type: text/plain; charset=us-ascii
+--==_Exmh_1222426244_7097P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 26 Sep 2008 17:56:52 +0900, Takashi Sato said:
+On Fri, 26 Sep 2008 12:05:07 +0200, Lukas Hejtmanek said:
+> On Thu, Sep 25, 2008 at 09:49:27PM -0500, Serge E. Hallyn wrote:
+> > Hmm, is there a difference in the device drivers such that root_plug =
+simply
+> > isn't able to find the usb 'key' in 2.6.27-rc7?
+> >=20
+> > When you boot with CONFIG_SECURITY_ROOTPLUG=3Dn, can you read the usb=
+ key?
+>=20
+> I do not have USB key at all. So maybe there is a security bug in 2.6.2=
+6.3?
 
-> [PATCH 1/10] VFS: Fix error handling of write_super_lockfs/unlockfs
->   Changed the type of write_super_lockfs and unlockfs from "void"
->   to "int" so that they can return an error. 
->   Rename write_super_lockfs/unlockfs of the super block operation
->   freeze_fs/unfreeze_fs to avoid a confusion.
-> 
-> [PATCH 2/10]-[PATCH 6/10] Fix error handling in write_super_lockfs/unlockfs
->                           (ext3, ext4, xfs, gfs2, jfs)
->   Changed write_super_lockfs so that it returns an error if needed.
->   unlockfs always returns 0.
-> 
-> [PATCH 7/10] reiserfs: Fix error handling in write_super_lockfs/unlockfs
->   Changed write_super_lockfs/unlockfs so that they always return
->   0 (success) to keep a current behavior.
-> 
-> [PATCH 8/10] Implement generic freeze feature
->   The ioctls for the generic freeze feature are below.
->   o Freeze the filesystem
->     int ioctl(int fd, int FIFREEZE, arg)
->       fd: The file descriptor of the mountpoint
->       FIFREEZE: request code for the freeze
->       arg: Ignored
->       Return value: 0 if the operation succeeds. Otherwise, -1
-> 
->   o Unfreeze the filesystem
->     int ioctl(int fd, int FITHAW, arg)
->       fd: The file descriptor of the mountpoint
->       FITHAW: request code for unfreeze
->       arg: Ignored
->       Return value: 0 if the operation succeeds. Otherwise, -1
-> 
-> [PATCH 9/10] Remove XFS specific ioctl interfaces for freeze feature
->   It removes XFS specific ioctl interfaces and request codes
->   for freeze feature.
->   This patch has been supplied by David Chinner.
-> 
-> [PATCH 10/10] Add timeout feature
->   The timeout feature is added to "freeze ioctl" to solve a deadlock
->   when the freezer accesses a frozen filesystem. And new ioctl
->   to reset the timeout period is added to extend the timeout period.
->   For example, the freezer resets the timeout period to 10 seconds every 5
->   seconds.  In this approach, even if the freezer causes a deadlock by
->   accessing the frozen filesystem, it will be solved by the timeout
+It must be a bug in 26.3 - if you don't have the proper USB dongle/key/wh=
+atever
+inserted, it shouldn't have come up.
 
-Would it be a good idea to merge patch 10 into patch 8?   Otherwise, there's
-two issues I can see:
-
-1) A mostly theoretical problem if a bisect lands exactly on patch 9 it can
-hit the deadlock.
-
-2) The API at patch 8 and patch 10 differs, that's going to make testing through
-a bisection of this patch series a pain.
-
---==_Exmh_1222426096_7097P
+--==_Exmh_1222426244_7097P
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFI3L3wcC3lWbTT17ARAjrhAKC8UZHTiIM5FLH1rhQ70o1u4X66CQCfeopP
-jGYlmgzaSwfvHkgcswECSio=
-=HZAd
+iD8DBQFI3L6EcC3lWbTT17ARAmRSAJ4p7tObAI7evbX/thiCIbp+EwVaUwCaAtGf
+Y8AeXblAFQB1C56XAtca9mo=
+=MYDG
 -----END PGP SIGNATURE-----
 
---==_Exmh_1222426096_7097P--
+--==_Exmh_1222426244_7097P--
