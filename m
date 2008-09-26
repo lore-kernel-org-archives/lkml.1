@@ -1,96 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbYIZFbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbYIZFcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbYIZFbM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 01:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbYIZFa4
+	id S1754246AbYIZFcF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 01:32:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYIZFby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 01:30:56 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:59627 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752063AbYIZFaz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 01:30:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=wgKqInjdkTnZIvMpJgDYjSVii9fYU3T6o1F/E8Fu862bDSGKs5buv3xdoDXvbE0jK4
-         SDxW0PX50zuVLUpeETpMaPN1nHImeAm7w4SO+HaHVGWn4IwZ14Rqi2AEVdILo9eiPD8F
-         HODAve6Nz8QLyuolHEzLTYyilhVo7LQms+fTc=
-Message-ID: <9c9fda240809252230s6373acf8v4dd2b942eba360a7@mail.gmail.com>
-Date: Fri, 26 Sep 2008 14:30:54 +0900
-From: "Kyungmin Park" <kmpark@infradead.org>
-To: dedekind@infradead.org
-Subject: Re: [ANNOUNCE] [PATCH] [MTD] Flex-OneNAND MTD Driver available.
-Cc: apgmoorthy <moorthy.apg@samsung.com>,
-       "Kyungmin Park" <kyungmin.park@samsung.com>,
-       linux-mtd@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1222404711.5012.5.camel@sauron>
+	Fri, 26 Sep 2008 01:31:54 -0400
+Received: from gw.goop.org ([64.81.55.164]:55198 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752195AbYIZFbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 01:31:53 -0400
+Message-ID: <48DC73C2.5080309@goop.org>
+Date: Thu, 25 Sep 2008 22:31:46 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+References: <alpine.LFD.1.10.0809241027251.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809241637400.6759@gandalf.stny.rr.com> <33307c790809241403w236f2242y18ba44982d962287@mail.gmail.com> <1222339303.16700.197.camel@lappy.programming.kicks-ass.net> <8f3aa8d60809250733q70561e6agfa3b00da83773e9f@mail.gmail.com> <1222354409.16700.215.camel@lappy.programming.kicks-ass.net> <alpine.LFD.1.10.0809250758400.3265@nehalem.linux-foundation.org> <33307c790809250825u567d3680w682899c111e10ed6@mail.gmail.com> <20080925153635.GA12840@elte.hu> <alpine.LFD.1.10.0809250924460.3265@nehalem.linux-foundation.org> <48DBFC7D.4050208@goop.org> <alpine.LFD.1.10.0809251448340.3265@nehalem.linux-foundation.org> <48DC1338.6050107@goop.org> <alpine.DEB.1.10.0809251848170.32742@gandalf.stny.rr.com> <48DC3A89.9020407@goop.org> <alpine.DEB.1.10.0809252132410.8454@gandalf.stny.rr .com> <48DC43D7.5010008@goop.org> <alpine.DEB.1.10.0809252212480.8454@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0809252212480.8454@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19198934.52871221827459790.JavaMail.weblogic@epml16>
-	 <9c9fda240809220011w49c0875q804f836550ff3476@mail.gmail.com>
-	 <000001c91e42$1aa86c50$3dd66c6b@sisodomain.com>
-	 <9c9fda240809251731y48272a63j988e0001dc50d78@mail.gmail.com>
-	 <1222404711.5012.5.camel@sauron>
-X-Google-Sender-Auth: ea40c1d7ea5610ca
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
->>
->>
->> > diff -uprN a/include/mtd/mtd-abi.h b/include/mtd/mtd-abi.h
->> > --- a/include/mtd/mtd-abi.h     2008-09-16 20:48:12.000000000 +0530
->> > +++ b/include/mtd/mtd-abi.h     2008-09-24 14:09:06.000000000 +0530
->> > @@ -102,7 +102,11 @@ struct nand_oobinfo {
->> >        uint32_t useecc;
->> >        uint32_t eccbytes;
->> >        uint32_t oobfree[8][2];
->> > +#ifdef CONFIG_MTD_ONENAND
->> > +       uint32_t eccpos[128];
->> > +#else
->> >        uint32_t eccpos[32];
->> > +#endif
->> >  };
->> >
->> >  struct nand_oobfree {
->> > @@ -117,7 +121,11 @@ struct nand_oobfree {
->> >  */
->> >  struct nand_ecclayout {
->> >        uint32_t eccbytes;
->> > +#ifdef CONFIG_MTD_ONENAND
->> > +       uint32_t eccpos[128];
->> > +#else
->> >        uint32_t eccpos[64];
->> > +#endif
->> >        uint32_t oobavail;
->> >        struct nand_oobfree oobfree[MTD_MAX_OOBFREE_ENTRIES];
->> >  };
+Steven Rostedt wrote:
+> [
+>   "When people ask me what language my mother tongue is,
+>    I simply reply 'C'" - Steven Rostedt
+> ]
 >
-> I do not think stuff like this is going to be accepted because you
-> change ABI. You should instead introduce new ioctls or add sysfs
-> support and expose this information via sysfs. This is much bigger
-> work, but it is needed.
+> This is exactly why I have that saying ;-)
 >
+>
+> On Thu, 25 Sep 2008, Jeremy Fitzhardinge wrote:
+>
+>   
+>> Steven Rostedt wrote:
+>>     
+>>> OK, let me rephrase my question.
+>>>
+>>> How and where do we record this?  Do we keep this information in some 
+>>> global variable that we must compare to every time we add a new item in 
+>>> the trace?
+>>>
+>>> Do we have the buffer register a call back to record this information?
+>>>   
+>>>       
+>> Something like (total pseudocode):
+>>     
+>
+> Good enough.
+>
+>   
+>> struct tsc_time_parameters {
+>> 	int version;		/* even - values OK; odd - values being updated */
+>> 	u64 tsc;
+>> 	u32 tsc_freq;
+>> 	u64 gtod;
+>> };
+>>
+>> DEFINE_PERCPU(struct tsc_time_parameters, tsc_params);
+>>     
+>
+> These are all global I presume (No "static" in front)
+>   
 
-Thank you for your kind comments.
+No, they could probably be static, depending where everything ends up. 
+It would only need to get accessed from a couple of places.
 
-Yes that's I concerned it breaks the other NAND ABI. Actually In
-OneNAND it doesn't use eccpos since OneNAND controller handle all ECC
-functions. we don't need to concern it.
+>> /* To be called after a tsc frequency change, before any new
+>>    trace records are being emitted, in a context where we can call get_GTOD() */
+>> void update_tsc_params(void)
+>>     
+>
+> So this needs to be called by the cpu freq code?
+>   
 
-As pages are bigger, it requires more eccpos and other fields are
-similar. we need more flexible filed definitions.
+Yes, and any other place the tsc might get affected, like going into a
+C-state which stops the tsc, and things like suspend/resume.
 
-Well how do you think that at this time it only describes the 64 bytes
-only for temporarily and next time it adds remaining parts if it is
-really needed.
+>> {
+>> 	struct tsc_time_parameters *p = __get_percpu_var(tsc_params);
+>>
+>> 	p->version |= 1;
+>> 	wmb();
+>>
+>> 	p->tsc = get_tsc();
+>> 	p->tsc_freq = get_tsc_freq();
+>> 	p->gtod = get_GTOD();
+>>
+>> 	wmb();
+>> 	p->version++;
+>> 	wmb();
+>> }
+>>
+>> DEFINE_PERCPU(unsigned, current_tsc_version);
+>> DEFINE_PERCPU(u64, prev_tsc);
+>>
+>> /* may be called in any context */
+>> u64 get_trace_timestamp_delta(void)
+>> {
+>> 	const struct tsc_time_parameters *p = &__get_percpu_var(tsc_params);
+>> 	unsigned *current_version = &__get_cpu_var(current_tsc_version);
+>> 	u64 prev = __get_cpu_var(prev_tsc);
+>> 	u64 now, ret;
+>>
+>> 	/* check the current tsc_params version against the last one we emitted;
+>> 		if the version is odd, then we interrupted the parameters as they were
+>> 		being updated, so just emit a new delta with the old parameters */
+>> 	if (unlikely(*current_version != p->version && !(p->version & 1))) {
+>> 		/* XXX probably need a loop to deal with p->version changing under our feet */
+>> 		emit_tsc_freq_record(p);
+>>     
+>
+> I take it the above is your record to the tracer?
+>   
 
-Thank you,
-Kyungmin Park
+Yeah.  No doubt it needs a few more parameters.
+
+>> 		prev = p->tsc;
+>> 		__get_cpu_var(current_tsc_version) = p->version;
+>> 	}
+>>
+>> 	now = read_tsc();
+>>     
+>
+> We probably wont to check here that p didn't change again.
+> and try again if it did.
+>   
+
+Yeah, you may want to put the whole thing in a loop to make sure that
+the version is consistent.  You might end up emitting multiple redundant
+tsc parameters, but that should be very rare.
+
+>> 	ret = now - prev;
+>> 	__get_cpu_var(prev_tsc) = now;
+>>
+>> 	return ret;
+>> }
+>>     
+>
+>
+> Hmm, the beginning of each patch will need to record the global tsc, as 
+> well as this information. Simply because in overwrite mode, we do not want 
+> to lose it if the producer is faster than te consumer.
+>   
+
+Each patch?  Page?
+
+    J
