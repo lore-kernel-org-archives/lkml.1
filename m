@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbYIZVvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbYIZVw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753018AbYIZVvu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 17:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYIZVvm
+	id S1753426AbYIZVw4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 17:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYIZVwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 17:51:42 -0400
-Received: from [198.145.64.141] ([198.145.64.141]:40176 "EHLO coco.kroah.org"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750885AbYIZVvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 17:51:42 -0400
-Date: Fri, 26 Sep 2008 14:48:47 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Eric Paris <eparis@redhat.com>, david@lang.hm, bunk@kernel.org,
-       peterz@infradead.org, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, hch@infradead.org, andi@firstfloor.org,
-       viro@ZenIV.linux.org.uk, arjan@infradead.org
-Subject: Re: [malware-list] [RFC] 0/11 fanotify: fscking all notifiction
-	and file access system (intended for antivirus scanning and file
-	indexers)
-Message-ID: <20080926214847.GA9592@kroah.com>
-References: <1222463220.2872.193.camel@localhost.localdomain> <20080926223404.7c4894df@lxorguk.ukuu.org.uk>
+	Fri, 26 Sep 2008 17:52:46 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:34310 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751534AbYIZVwp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 17:52:45 -0400
+Date: Fri, 26 Sep 2008 23:52:12 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: John Gumb <john.gumb@tandberg.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: D945GCLF  intel atom board & r8169 ethernet broken in
+	linux-2.6.27-rc5??
+Message-ID: <20080926215211.GA26065@electric-eye.fr.zoreil.com>
+References: <9F6ACAE02B6DD040A1E259977622CFDB03F5BCCB@oslexcp1.eu.tandberg.int> <20080924201903.GA10546@electric-eye.fr.zoreil.com> <200809262345.47373.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080926223404.7c4894df@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200809262345.47373.rjw@sisk.pl>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 10:34:04PM +0100, Alan Cox wrote:
-> > It all starts when 'something' registers a group.  Registering a group
-> > is as simple as 'echo "open_grp 50 0x10" > /security/fanotify/register.
+Rafael J. Wysocki <rjw@sisk.pl> :
+> On Wednesday, 24 of September 2008, Francois Romieu wrote:
+[...]
+> > Can you try patches #0001 .. #0008 at
+> > http://userweb.kernel.org/~romieu/r8169/2.6.27-rc6/20080913/ ?
 > 
-> I thought the operation was usually called "mkdir" which also nicely
-> deals with races and exclusion.
+> FWIW, these patches make the Ethernet card in the MSI Wind I've been recently
+> testing work much much more reliably. :-)
 
-So does configfs.  Eric, why not use that instead, it sounds like it
-will work here nicely.
+The whole series or a part of it ?
 
-thanks,
-
-greg k-h
+-- 
+Ueimor
