@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbYIZIUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYIZIVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753223AbYIZIUn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 04:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYIZIUA
+	id S1754895AbYIZIVX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 04:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYIZIVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 04:20:00 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:21127 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752830AbYIZIT6 convert rfc822-to-8bit (ORCPT
+	Fri, 26 Sep 2008 04:21:10 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:43615 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752537AbYIZIVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 04:19:58 -0400
-Subject: Re: [ANNOUNCE] [PATCH] [MTD] Flex-OneNAND MTD Driver available.
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Amit Kumar Sharma <amitsharma.9@samsung.com>
-Cc: Kyungmin Park <kmpark@infradead.org>, apgmoorthy <moorthy.apg@samsung.com>,
-       linux-mtd@lists.infradead.org,
-       Kyungmin Park <kyungmin.park@samsung.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <A09E9029F2344F78959A3E36179C468E@sisodomain.com>
-References: <19198934.52871221827459790.JavaMail.weblogic@epml16>
-	 <9c9fda240809220011w49c0875q804f836550ff3476@mail.gmail.com>
-	 <000001c91e42$1aa86c50$3dd66c6b@sisodomain.com>
-	 <9c9fda240809251731y48272a63j988e0001dc50d78@mail.gmail.com>
-	 <1222404711.5012.5.camel@sauron>
-	 <A09E9029F2344F78959A3E36179C468E@sisodomain.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 26 Sep 2008 11:19:36 +0300
-Message-Id: <1222417176.5012.17.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 26 Sep 2008 08:19:40.0128 (UTC) FILETIME=[9F21FE00:01C91FB0]
-X-Nokia-AV: Clean
+	Fri, 26 Sep 2008 04:21:08 -0400
+Message-ID: <48DC9AF2.1050101@linux.vnet.ibm.com>
+Date: Fri, 26 Sep 2008 13:48:58 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 0/12] memcg updates v5
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-09-26 at 13:31 +0530, Amit Kumar Sharma wrote:
-> Hi Artem
+KAMEZAWA Hiroyuki wrote:
+> Hi, I updated the stack and reflected comments.
+> Against the latest mmotm. (rc7-mm1)
 > 
-> we have following erro message  if we maintain 64 bytes 
-> eccpos.
+> Major changes from previous one is 
+>   - page_cgroup allocation/lookup manner is changed.
+>     all FLATMEM/DISCONTIGMEM/SPARSEMEM and MEMORY_HOTPLUG is supported.
+>   - force_empty is totally rewritten. and a problem that "force_empty takes long time"
+>     in previous version is fixed (I think...)
+>   - reordered patches.
+>      - first half are easy ones.
+>      - second half are big ones.
 > 
-> /flash_eraseall -j /dev/mtd4
-> ./flash_eraseall: /dev/mtd4: unable to get NAND oobinfo
+> I'm still testing with full debug option. No problem found yet.
+> (I'm afraid of race condition which have not been caught yet.)
 > 
-> ./nandwrite -j /dev/mtd2 /jffs2.img
-> MEMSETOOBSEL: Inappropriate ioctl for device
+> [1/12]  avoid accounting special mappings not on LRU. (fix)
+> [2/12]  move charege() call to swapped-in page under lock_page() (clean up)
+> [3/12]  make root cgroup to be unlimited. (change semantics.)
+> [4/12]  make page->mapping NULL before calling uncharge (clean up)
+> [5/12]  make page->flags to use atomic ops. (changes in infrastructure)
+> [6/12]  optimize stat. (clean up)
+> [7/12]  add support function for moving account. (new function)
+> [8/12]  rewrite force_empty to use move_account. (change semantics.)
+> [9/12]  allocate all page_cgroup at boot. (changes in infrastructure)
+> [10/12] free page_cgroup from LRU in lazy way (optimize)
+> [11/12] add page_cgroup to LRU in lazy way (optimize)
+> [12/12] fix race at charging swap  (fix by new logic.)
 > 
-> but i think as OneNAND has hw ecc controller so Jffs2 will 
-> not face any problem
-> still i think mtd should consider for 128 bytes eccpos for 
-> 4K page size.
+> *Any* comment is welcome.
 
-Well, anyway, in Linux ABI is a holy cow, you cannot change it.
-That is a tough rule. Old user-space binaries have to always
-works.
+Kame,
 
-Thus you may do one of:
-1. Invent a new ioctl for 4KiB page NANDs
-2. Add sysfs support
-3. Just do not expose whole OOB as Kyungmin suggested
+I'm beginning to review test the patches now. It would be really nice to split
+the development patches from the maintenance ones. I think the full patchset has
+too many things and is confusing to look at.
 
-But I think assume dwmw2 would need to comment on this and
-tell which approach would agree on.
 
 -- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+	Balbir
