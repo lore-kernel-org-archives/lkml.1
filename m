@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbYIZU42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbYIZVA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753268AbYIZU42 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 16:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYIZU4V
+	id S1753449AbYIZVA2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 17:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYIZVAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 16:56:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:49868 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbYIZU4U (ORCPT
+	Fri, 26 Sep 2008 17:00:20 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:42051 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbYIZVAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 16:56:20 -0400
+	Fri, 26 Sep 2008 17:00:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=LOGwqJxwE/fhiWUEe98xLDFJqQa19GKdCQIsk55S35XGAdEWBRsxsyTpPBZHxUjVrb
-         /po8KQ1XeP5NDbkV45r9ZLsf1/zzZkhmjM3pDa8xSBW8DjtVQktX+s4OzXbnVXIDMuRr
-         E0RnGg15do6cwP1LeH22y9A0CQ/ZMliivYJ/I=
-Message-ID: <f7848160809261356p1268f251pfc5bc8477862723@mail.gmail.com>
-Date: Fri, 26 Sep 2008 16:56:19 -0400
-From: "Parag Warudkar" <parag.lkml@gmail.com>
+        b=cG8czulb4s3VfH9KluEOx1qZkqTLq9xDHfF1IrjqncTX7MLS7lpgMglK8UjjPHRaDu
+         6k7fUmUWlR16vUps4bcscmQyDhTfBdOBUtZu1dRXQv+jZQdXhPFnViGQHZJo1m/PTQyW
+         SPilypS1+VulnINRrlH567Mh9qHGf9lArhptU=
+Message-ID: <c384c5ea0809261400u43a3ee57y62083d20867f1cc6@mail.gmail.com>
+Date: Fri, 26 Sep 2008 23:00:17 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
 To: "Greg KH" <gregkh@suse.de>
 Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
-Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+Cc: "Parag Warudkar" <parag.lkml@gmail.com>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
        "Linus Torvalds" <torvalds@linux-foundation.org>,
        "Andrew Morton" <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org, "Andreas Gruenbacher" <agruen@suse.de>,
@@ -46,27 +47,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 4:19 PM, Greg KH <gregkh@suse.de> wrote:
+Hello,
 
+On Fri, Sep 26, 2008 at 10:19 PM, Greg KH <gregkh@suse.de> wrote:
+> On Fri, Sep 26, 2008 at 04:11:49PM -0400, Parag Warudkar wrote:
+>> On Fri, Sep 26, 2008 at 2:36 PM, Stefan Richter
+>> <stefanr@s5r6.in-berlin.de> wrote:
+>
 > If you really don't like it, just never enable any of these modules,
 > you'll never be bothered by it.
+>
+I would like new drivers for new devices to live into the wild.
 
-So you are saying if a distro ships allmodconfig kernels or ships the
-crap modules in the hope that people will find them useful and I have
-one of the devices in my machine that I don't care about - I should
-just let the crap module autoload and crash/taint my kernel or take
-the special step of blacklisting all of them or build my own kernel -
-as unreasonable as ever.
+Seriously, I think it's a good think to have new drivers lift along
+with the kernel source distribution to get *much* wider attention,
+testing, hacking and feedback.
 
-Or  are you saying distros should not build the crap modules - that
-doesn't make sense since it will drastically reduce the usage and
-delay the identification of problems until later.
+I propose GREG_GOES_WILD and I will happily commit my
+driver-in-progress to the kernel staging areas instead of to some
+two-people-know-about-it-location.
 
-If they weren't loaded automatically - it will simplify things a lot -
-people with those devices willing to use those modules can forcibly
-load the ones they require - that gives you your beloved TAINT and
-avoids any core kernel changes.
+Thanks for the effort, Greg,
 
-No offense but I don't think is helping Greg. So I will stop.
-
-Parag
+Regards,
+-- 
+Leon
