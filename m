@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYIZQGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbYIZQJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYIZQGe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 12:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbYIZQG1
+	id S1753657AbYIZQJr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 12:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYIZQJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 12:06:27 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:1865 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752596AbYIZQG0 (ORCPT
+	Fri, 26 Sep 2008 12:09:39 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45350 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751983AbYIZQJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 12:06:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hTP4nVrGdaPB0SpKuxBIcQye1Pw3jNa/GVHsLWxbqc2tixMNNaNdWBSLT0/6tJyXOu
-         eBIN6YUasga7zWoAYVeDlUjPQyixxzmu58L7KswP1ZbdCQQyYn9juTWp/kYH1llL9FM8
-         SHFTFaqtJlbhM2njsRbzsM5qjIEKb2VSAtfEs=
-Message-ID: <7fcc02550809260906o35861a95se54aa76261923300@mail.gmail.com>
-Date: Fri, 26 Sep 2008 11:06:24 -0500
-From: Tammy <tammy000@gmail.com>
-To: Komuro <komurojun-mbn@nifty.com>
-Subject: Re: [PATCH git latest] drivers/net: fixing a datarace related to update_stats()
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080926222920.f251696e.komurojun-mbn@nifty.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 26 Sep 2008 12:09:38 -0400
+Date: Fri, 26 Sep 2008 17:09:37 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH git latest] drivers/scsi: fixing wrong comment before
+ new_buffer_tape()
+Message-ID: <20080926170937.2983fc29@lxorguk.ukuu.org.uk>
+In-Reply-To: <7fcc02550809260905oa17880fi80c94eaacb33dba3@mail.gmail.com>
+References: <20080925174948.GA14180@carmen.cs.uiuc.edu>
+	<20080926111300.1dd34009@lxorguk.ukuu.org.uk>
+	<7fcc02550809260905oa17880fi80c94eaacb33dba3@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080922155814.2bdad40f@lxorguk.ukuu.org.uk>
-	 <20080922215617.GA13057@comet.dominikbrodowski.net>
-	 <20080922231227.2625dd09@lxorguk.ukuu.org.uk>
-	 <20080922222655.GA3792@isilmar.linta.de>
-	 <20080923001534.13031535@lxorguk.ukuu.org.uk>
-	 <20080926222920.f251696e.komurojun-mbn@nifty.com>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You need two braces...
->
-> -       if ((inw(ioaddr+EL3_STATUS) & 0xe000) == 0x2000)
-> +       if ((inw(ioaddr+EL3_STATUS) & 0xe000) == 0x2000) {
-> +           spin_lock_irqsave(&lp->lock, flags);
->            update_stats(dev);
-> +           spin_unlock_irqrestore(&lp->lock, flags);
-> +       }
->     }
->
+> > Looks true to me for the current versions of the code. In fact it is only
+> > ever called from the initialisation function that I can see so chunks of
+> > the code could simply go away as well as bits of the comment. Ditto the
+> > one in drivers/scsi/st.c
+> >
+> > Acked-by: Alan Cox <alan@redhat.com>
+> >
+> 
+> I am sorry I didn't quite understand. You mean it is true that caller
+> must hold os_scsi_tapes_lock?
 
-
-Thanks a lot. I will resubmit the patch then.
-
-Lin
+Sorry - I mean what you claim is true - that the comment is incorrect.
