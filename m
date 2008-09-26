@@ -1,101 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbYIZB7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYIZB7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbYIZB7T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 21:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYIZB7H
+	id S1754556AbYIZB7q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 21:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbYIZB7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 21:59:07 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49384 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751506AbYIZB7E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 21:59:04 -0400
-Date: Fri, 26 Sep 2008 11:05:50 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH 9/12] memcg allocate all page_cgroup at boot
-Message-Id: <20080926110550.2292287b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080926104336.d96ab5bd.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926100022.8bfb8d4d.nishimura@mxp.nes.nec.co.jp>
-	<20080926104336.d96ab5bd.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Sep 2008 21:59:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41243 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753075AbYIZB7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 21:59:37 -0400
+Message-ID: <48DC41D2.4090806@redhat.com>
+Date: Thu, 25 Sep 2008 21:58:42 -0400
+From: Chris Snook <csnook@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
+       agospoda@redhat.com, "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
+       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com
+Subject: Re: e1000e NVM corruption issue status
+References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com> <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com>
+In-Reply-To: <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Sep 2008 10:43:36 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > -	/*
-> > > -	 * Check if our page_cgroup is valid
-> > > -	 */
-> > > -	lock_page_cgroup(page);
-> > > -	pc = page_get_page_cgroup(page);
-> > > -	if (unlikely(!pc))
-> > > -		goto unlock;
-> > > -
-> > > -	VM_BUG_ON(pc->page != page);
-> > > +	pc = lookup_page_cgroup(page);
-> > > +	if (unlikely(!pc || !PageCgroupUsed(pc)))
-> > > +		return;
-> > > +	preempt_disable();
-> > > +	lock_page_cgroup(pc);
-> > > +	if (unlikely(page_mapped(page))) {
-> > > +		unlock_page_cgroup(pc);
-> > > +		preempt_enable();
-> > > +		return;
-> > > +	}
-> > Just for clarification, in what sequence will the page be mapped here?
-> > mem_cgroup_uncharge_page checks whether the page is mapped.
-> > 
-> Please think about folloing situation.
-> 
->    There is a SwapCache which is referred from 2 process, A, B.
->    A maps it.
->    B doesn't maps it.
-> 
->    And now, process A exits.
-> 
-> 	CPU0(process A)				CPU1 (process B)
->  
->     zap_pte_range()
->     => page remove from rmap			=> charge() (do_swap_page)
-> 	=> set page->mapcount->0          	
-> 		=> uncharge()			=> set page->mapcount=1
-> 
-> This race is what patch 12/12 is fixed.
-> This only happens on cursed SwapCache.
-> 
-Sorry, my brain seems to be sleeping.. above page_mapped() check doesn't
-help this situation. Maybe this page_mapped() check is not necessary
-because it's of no use.
+Brandeburg, Jesse wrote:
+> hardware affected:
+> laptops and desktops with 82566 or 82567 based LAN parts, which are 
+> machines with the ICH8 and ICH9 chipsets and a variety of processors.
+> The machines I know of that have reported the issue include
+> Lenovo X300
+> HP 2510p
+> Intel DP35JO
+> Lenovo T61 (possibly)
+> Lenovo X61 (possibly)
 
-I think this kind of problem will not be fixed until we handle SwapCache.
+My Intel DG45ID board has an ICH10R chipset, and it also has an 82567LM, just as 
+some of the affected systems.  Is there some reason why ICH10 is not 
+susceptible, or have we simply not seen it?
 
-
-Thanks,
--Kame
-
-
-
-
-
-
-
-
-
-
-
-
+-- Chris
