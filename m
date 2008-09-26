@@ -1,98 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbYIZDVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYIZDW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821AbYIZDVX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 23:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbYIZDVF
+	id S1754610AbYIZDW5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 23:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYIZDWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 23:21:05 -0400
-Received: from cantor.suse.de ([195.135.220.2]:32882 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754603AbYIZDVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 23:21:04 -0400
-Date: Thu, 25 Sep 2008 20:19:18 -0700
-From: Greg KH <gregkh@suse.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       phil@hannent.co.uk, mwilder@cs.nmsu.edu
-Subject: Re: [PATCH] Input: add mmio xi driver
-Message-ID: <20080926031918.GA10083@suse.de>
-References: <20080925232237.GA22938@suse.de> <20080925182055.f12f5d0b.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080925182055.f12f5d0b.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 25 Sep 2008 23:22:48 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:41905 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbYIZDWs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 23:22:48 -0400
+Date: Fri, 26 Sep 2008 12:00:19 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 0/12] memcg updates v5
+Message-Id: <20080926120019.33d58ca4.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20080926120408.39187294.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926113228.ee377330.nishimura@mxp.nes.nec.co.jp>
+	<20080926115810.b5fbae51.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926120408.39187294.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 06:20:55PM -0700, Randy Dunlap wrote:
-> On Thu, 25 Sep 2008 16:22:37 -0700 Greg KH wrote:
+On Fri, 26 Sep 2008 12:04:08 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Fri, 26 Sep 2008 11:58:10 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
+> > Thank you.
 > > 
-> > From: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > This patch adds the Mimio Xi interactive whiteboard driver to the tree.
-> > 
-> > It was originally written by mwilder@cs.nmsu.edu, but cleaned up and
-> > forward ported by me to the latest kernel version.
-> > 
-> > 
-> > Cc: Phil Hannent <phil@hannent.co.uk>
-> > Cc: <mwilder@cs.nmsu.edu>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > ---
-> >  drivers/input/misc/Kconfig  |   11 
-> >  drivers/input/misc/Makefile |    1 
-> >  drivers/input/misc/mimio.c  |  913 ++++++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 925 insertions(+)
-> > 
-> > --- a/drivers/input/misc/Kconfig
-> > +++ b/drivers/input/misc/Kconfig
-> > @@ -164,6 +164,17 @@ config INPUT_POWERMATE
-> >  	  To compile this driver as a module, choose M here: the
-> >  	  module will be called powermate.
+> > How about following ?
+> > -Kame
+> > ==
+> > Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+> > ===================================================================
+> > --- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
+> > +++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+> > @@ -597,8 +597,8 @@ __set_page_cgroup_lru(struct memcg_percp
+> >  			spin_lock(&mz->lru_lock);
+> >  		}
+> >  		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
+> > -			SetPageCgroupLRU(pc);
+> >  			__mem_cgroup_add_list(mz, pc);
+> > +			SetPageCgroupLRU(pc);
+> >  		}
+> >  	}
 > >  
-> > +config INPUT_MIMIO
-> > +	tristate "Mimio Xi interactive whiteboard support"
-> > +	depends on USB_ARCH_HAS_HCD
-> > +	select USB
+> Of course, remove side should be..
+> -Kame
+> ==
+> Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
+> +++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+> @@ -564,8 +564,8 @@ __release_page_cgroup(struct memcg_percp
+>  			spin_lock(&mz->lru_lock);
+>  		}
+>  		if (!PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
+> -			__mem_cgroup_remove_list(mz, pc);
+>  			ClearPageCgroupLRU(pc);
+> +			__mem_cgroup_remove_list(mz, pc);
+>  		}
+>  	}
+>  	if (prev_mz)
+> @@ -597,8 +597,8 @@ __set_page_cgroup_lru(struct memcg_percp
+>  			spin_lock(&mz->lru_lock);
+>  		}
+>  		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
+> -			SetPageCgroupLRU(pc);
+>  			__mem_cgroup_add_list(mz, pc);
+> +			SetPageCgroupLRU(pc);
+>  		}
+>  	}
+>  
 > 
-> Prefer not to select entire subsystems, but to depend on them.
-> However, lots of drivers in drivers/input/ select USB...  :(
 
-When in Rome... :)
+I'll test it with updated version of 9-11 and report you back.
 
-> > +static void mimio_irq_out(struct urb *urb)
-> > +{
-> > +	unsigned long flags;
-> > +	struct mimio *mimio;
-> > +
-> > +	mimio = urb->context;
-> > +
-> > +	if (urb->status)
-> > +		dev_dbg(&mimio->idev->dev, "urb-status: %d.\n", urb->status);
-> > +
-> > +	spin_lock_irqsave(&mimio->txlock, flags);
-> > +	mimio->txflags |= MIMIO_TXDONE;
-> > +	spin_unlock_irqrestore(&mimio->txlock, flags);
-> > +	wmb();
-> 
-> We want comments/explanation on all barriers or just "barrier();" ??
 
-Ick, good catch, that shouldn't be needed, I'll go delete it.
-
-> > +	/*
-> > +	 * Build input device info
-> > +	 */
-> > +	usb_make_path(udev, path, 64);
-> 
-> s/64/sizeof(path)/
-
-Thanks, will fix.
-
-Thanks for the review, I appreciate it.
-
-greg k-h
+Thanks,
+Daisuke Nishimura.
