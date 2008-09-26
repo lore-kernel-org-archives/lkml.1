@@ -1,96 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbYIZNMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbYIZNWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753546AbYIZNMb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 09:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYIZNMV
+	id S1753427AbYIZNWt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 09:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYIZNWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 09:12:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:50755 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751374AbYIZNMU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 09:12:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=jirT0DBBt6dt7E6qSAlbARv3gKngVJNO23t0gk0eYm03eYyVobyLj3JvT6eaFiYy10
-         cc5kLdymhT2O8qVKj3yEmbyJlSm9heKm7Ks9i9bg5quCZwbb5tQNQfPOYpMUQbTUPCQP
-         yqFHNHEQj/SJd0dY5gkz/AmWVJF1ySIqMRNBk=
-Message-ID: <6101e8c40809260612o3ff3d814x3727e0f7ec2f7e27@mail.gmail.com>
-Date: Fri, 26 Sep 2008 15:12:18 +0200
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: wilhelm-siegfried.knatschke-koenigsberg@chezmoi.com
-Subject: Re: 2.6.26.x hangs on amd64/smp
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200809260859.m8Q8xp0r008656@rayleigh.systella.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 26 Sep 2008 09:22:41 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:36313 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbYIZNWk (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 09:22:40 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Zachary Amsden <zach@vmware.com>,
+       Alok Kataria <akataria@vmware.com>,
+       Alok kataria <alokkataria1@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Yan Li <elliot.li.tech@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
+       "rjmaomao@gmail.com" <rjmaomao@gmail.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Daniel Hecht <dhecht@vmware.com>
+Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
+In-Reply-To: Your message of "Fri, 26 Sep 2008 14:47:21 +0200."
+             <48DCD9D9.9080008@redhat.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20080221115452.GB13948@elte.hu> <20080907234510.GA24133@yantp.cn.ibm.com> <20080908140423.GG11993@elte.hu> <35f686220809241928k3669e30bi8a98b440443c4bff@mail.gmail.com> <48DB15DB.8040501@zytor.com> <1222317978.23524.117.camel@alok-dev1> <48DB1984.8020704@zytor.com> <1222318928.23524.121.camel@alok-dev1> <48DB1BCE.2070106@zytor.com> <1222320201.23524.135.camel@alok-dev1> <1222375694.27056.179.camel@bodhitayantram.eng.vmware.com> <48DC09D9.7040204@zytor.com> <1222381254.27056.194.camel@bodhitayantram.eng.vmware.com> <48DC105D.9050803@zytor.com>
+            <48DCD9D9.9080008@redhat.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1222435332_7097P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200809260859.m8Q8xp0r008656@rayleigh.systella.fr>
+Date: Fri, 26 Sep 2008 09:22:12 -0400
+Message-ID: <40178.1222435332@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+--==_Exmh_1222435332_7097P
+Content-Type: text/plain; charset=us-ascii
 
-I have similar problem, but the hw is asus p5q-e, c2q q9300, 4gb ram + rhd3450.
+On Fri, 26 Sep 2008 14:47:21 +0200, Gerd Hoffmann said:
+>   Hi,
+> 
+> > This, of course, is what CPUID is for.
+> 
+> ... except that it doesn't always work.  It requires vmx/svm, otherwise
+> cpuid doesn't trap and thus can't be filled by the hypervisor ...
 
-The X started very slowly ~1-2min, and randomly crashed the system,
-with Freebsd all ok, but with linux not.
-The other problem is, when I cp-ed 4gb<= file, this caused to file
-corruption, when I booted with mem=512M kernel parameter, then this
-file corrouption get off. I have memtest some hour long run, and with
-freebsd i have ~1< uptime, then i turned off the pc. ...
+Which would be hardware implementers in the '80s getting wrong the first few
+times what IBM did right the first time.  Doesn't *anybody* do literature
+searches before doing stuff anymore? ;)
 
-On 9/26/08, BERTRAND Joel <bertrand@rayleigh.systella.fr> wrote:
-> From: BERTRAND Joel <joel.bertrand@systella.fr>
-> Newsgroups: linux.kernel
-> Subject: 2.6.26.x hangs on amd64/smp
-> Reply-To: mt1@systella.fr
->
-> 	Some news.
->
-> 	I have done some tests with the _same_ configuration, but without
-> 	resident X (and console on a serial line). I'm not able to reproduce
-> 	this bug anymore even with a load average
-> 	greater than 30 (memory usage : 4GB + 6GB swap). Thus, this trouble
-> 	seems to be X related.
->
-> 	Graphic card is :
-> 01:00.0 VGA compatible controller: ATI Technologies Inc M76 [Radeon
-> Mobility HD 2600 Series]
->
-> 	Xorg configuration :
-> Section "Device"
->     Identifier  "ATI Technologies Inc ATI Default Card"
-> 	Driver      "radeonhd"
-> #   Driver      "fglrx"
-> 	BusID       "PCI:1:0:0"
-> EndSection
->
-> cauchy:[~] > dpkg-query -l | grep xorg
-> ii  xorg                                                    1:7.3+16
-> ...
-> ii  xserver-xorg-video-radeonhd                             1.2.1-2
->
->
-> 	I'm writing a bug report on Xorg website.
->
-> 	Regards,
->
-> 	JKB
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+--==_Exmh_1222435332_7097P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFI3OIEcC3lWbTT17ARAi5VAJ9dijtbdh9op8BLH7Qc19o8h2YpTQCfdUXR
+pX2rnt43OxUuG8BeY/LDN+I=
+=U7ln
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1222435332_7097P--
