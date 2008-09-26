@@ -1,90 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbYIZNh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbYIZNkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbYIZNh5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 09:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYIZNhq
+	id S1753225AbYIZNkN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 09:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYIZNkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 09:37:46 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:60742 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbYIZNhp (ORCPT
+	Fri, 26 Sep 2008 09:40:01 -0400
+Received: from defg500.nifty.com ([202.248.238.127]:41647 "EHLO
+	defg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506AbYIZNkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 09:37:45 -0400
-Date: Fri, 26 Sep 2008 08:37:33 -0500
-From: Corey Minyard <minyard@acm.org>
-Subject: Re: [PATCH 1/1] Use RCU for the UDP hash lock
-In-reply-to: <20080926054600.GA4141@ff.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com, shemminger@vyatta.com
-Message-id: <48DCE59D.6060003@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <20080926031832.GA27289@minyard.local>
- <20080926054600.GA4141@ff.dom.local>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 26 Sep 2008 09:40:00 -0400
+X-Greylist: delayed 342 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Sep 2008 09:40:00 EDT
+DomainKey-Signature: a=rsa-sha1; s=userg500; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=q8H41l17VGhVCf2Sy89xpr6uYMT1Kq5cQL1t3hMvMQ8c9BMigVsIgkjofotUTI9m9
+	B16qsKQqmBDWpPFGj4x9w==
+X-Nifty-SrcIP: [219.116.16.57]
+Date: Fri, 26 Sep 2008 22:29:20 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: linux-kernel@vger.kernel.org
+Cc: tammy000@gmail.com
+Subject: Re: [PATCH git latest] drivers/net: fixing a datarace related to
+ update_stats()
+Message-Id: <20080926222920.f251696e.komurojun-mbn@nifty.com>
+In-Reply-To: <20080923001534.13031535@lxorguk.ukuu.org.uk>
+References: <20080922155814.2bdad40f@lxorguk.ukuu.org.uk>
+	<20080922215617.GA13057@comet.dominikbrodowski.net>
+	<20080922231227.2625dd09@lxorguk.ukuu.org.uk>
+	<20080922222655.GA3792@isilmar.linta.de>
+	<20080923001534.13031535@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
-> On Thu, Sep 25, 2008 at 10:18:33PM -0500, Corey Minyard wrote:
-> ...
->   
->> This patch is the second try; I believe I fixed all issues that people
->> raised.
->>     
->
-> Actually, you've skipped my first question, so I still don't know, why
-> you don't use an _init version of sk_del_node (even if it's safe in the
-> current implementation), while the non-rcu code uses only this?
->   
-I guess it didn't matter, but it doesn't matter and consistency is 
-important, so I've changed it.
+Hi,
 
--corey
+You need two braces...
 
-> ...
->   
->> diff --git a/include/net/sock.h b/include/net/sock.h
->> index 06c5259..65110a6 100644
->> --- a/include/net/sock.h
->> +++ b/include/net/sock.h
->>     
-> ...
->   
->>  static inline int sk_unhashed(const struct sock *sk)
->>  {
->>  	return hlist_unhashed(&sk->sk_node);
->> @@ -361,6 +374,27 @@ static __inline__ int sk_del_node_init(struct sock *sk)
->>  	return rc;
->>  }
->>  
->> +static inline int __sk_del_node_rcu(struct sock *sk)
->> +{
->> +	if (sk_hashed(sk)) {
->> +		hlist_del_rcu(&sk->sk_node);
->> +		return 1;
->> +	}
->> +	return 0;
->> +}
->> +
->> +static inline int sk_del_node_rcu(struct sock *sk)
->> +{
->> +	int rc = __sk_del_node_rcu(sk);
->> +
->> +	if (rc) {
->> +		/* paranoid for a while -acme */
->> +		WARN_ON(atomic_read(&sk->sk_refcnt) == 1);
->> +		__sock_put(sk);
->> +	}
->> +	return rc;
->> +}
->>     
-> ...
->
-> Jarek P.
->
->   
-
+- 	if ((inw(ioaddr+EL3_STATUS) & 0xe000) == 0x2000)
++ 	if ((inw(ioaddr+EL3_STATUS) & 0xe000) == 0x2000) {
++    	    spin_lock_irqsave(&lp->lock, flags);
+ 	    update_stats(dev);
++    	    spin_unlock_irqrestore(&lp->lock, flags);
++	}
+     }
