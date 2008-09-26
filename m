@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYIZLCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYIZLES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbYIZLCv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 07:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYIZLCn
+	id S1754636AbYIZLES (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 07:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYIZLEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 07:02:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47981 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751670AbYIZLCm (ORCPT
+	Fri, 26 Sep 2008 07:04:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:21157 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751670AbYIZLEG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 07:02:42 -0400
-Subject: Re: [RFC PATCH v4] Unified trace buffer
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <alpine.DEB.1.10.0809260641590.17102@gandalf.stny.rr.com>
-References: <20080925185154.230259579@goodmis.org>
-	 <20080925185236.244343232@goodmis.org>
-	 <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>
-	 <48DC406D.1050508@redhat.com>
-	 <alpine.DEB.1.10.0809252206260.8454@gandalf.stny.rr.com>
-	 <20080926032045.GA28771@Krystal>
-	 <1222413507.16700.235.camel@lappy.programming.kicks-ass.net>
-	 <alpine.DEB.1.10.0809260641590.17102@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Fri, 26 Sep 2008 13:00:54 +0200
-Message-Id: <1222426855.16700.264.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 26 Sep 2008 07:04:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=mC1D54aYAZaPwA+x62tALdxcgQ+bwLlqzwXOHgImfz++U3QK1NuNpLhJYgE31lrb+X
+         RkDXvlQ2XK5i/2FwPgFTAVY3PXTBFTWPi0zB6x13+f0lBN3PxIVqCsUYBPAuUA27UzK3
+         2RHJ63VYcUQNVEVFeFRM/2uSAWS2FRPiK2TTo=
+Message-ID: <48DCC18B.2060302@gmail.com>
+Date: Fri, 26 Sep 2008 13:03:39 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] HID: fix tty<->hid deadlock
+References: <48BFFAE0.5010001@gmail.com>            <1220541367-10984-1-git-send-email-jirislaby@gmail.com> <3717.1220573006@turing-police.cc.vt.edu>
+In-Reply-To: <3717.1220573006@turing-police.cc.vt.edu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-26 at 06:45 -0400, Steven Rostedt wrote:
-> On Fri, 26 Sep 2008, Peter Zijlstra wrote:
-> > On Thu, 2008-09-25 at 23:20 -0400, Mathieu Desnoyers wrote:
-> > > 
-> > > You could also fallback on a 2-level page array when buffer size is >
-> > > 64MB. The cost is mainly a supplementary pointer dereference, but one
-> > > more should not make sure a big difference overall.
-> > 
-> > I'm still not sure why we don't just link the pages using the page
-> > frames, we don't need the random access, do we?
+Valdis.Kletnieks@vt.edu napsal(a):
+> On Thu, 04 Sep 2008 17:16:07 +0200, Jiri Slaby said:
 > 
-> Yeah we can go back to that (as ftrace does).
+>> hid_compat_load() runs on the default workqueue, it request_module(), it
+>> execs modprobe, it exits, tty flushes default workqueue, it hangs, because
+>> we are still in it.
+>>
+>> I haven't run into it since there always was at least one opener of the tty,
+>> I guess. Could you try the patch below?
+>>
+>> --
+>>
+>> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+>> ---
+>>  drivers/hid/hid-core.c |   11 ++++++++++-
+>>  1 files changed, 10 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+>> index 92c16e1..18d952a 100644
+>> --- a/drivers/hid/hid-core.c
+>> +++ b/drivers/hid/hid-core.c
 > 
-> 1) It can be very error prone. I will need to encapsulate the logic more.
+> With this patch applied, the kernel behaves as expected for my config: it
+> requests a 'modprobe hid_dummy', which prints a nasty message about being
+> unable to find it on the initrd, and then we continue with the boot.
 
-Sure.
-
-> 2) I'm still not sure if crash can handle it.
-
-It ought to, and if it can't it should be fixed. Having easy access to
-the pageframes is vital to debugging VM issues. So I'd not bother about
-this issue too much.
-
-> I was going to reply to Masami with this answer, but it makes things more 
-> complex.  For v1 (non RFC v1) I wanted to start simple. v2 can have this 
-> enhancement.
-
-Right - I just object to having anything vmalloc.
-
+Thanks for testing, I can't think of any method which would solve this
+problem. As this compat module is a temporary solution for those who have
+(very) old module init tools (not supporting aliases), I wouldn't do
+anything else until somebody complains.
