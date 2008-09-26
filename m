@@ -1,100 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYIZK31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbYIZKdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbYIZK31 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 06:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYIZK3Q
+	id S1754653AbYIZKdX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 06:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbYIZKdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 06:29:16 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37458 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752884AbYIZK3P (ORCPT
+	Fri, 26 Sep 2008 06:33:15 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:56116 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751156AbYIZKdO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 06:29:15 -0400
-Date: Fri, 26 Sep 2008 19:36:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH 0/12] memcg updates v5
-Message-Id: <20080926193602.6b397910.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48DCAC02.5050108@linux.vnet.ibm.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<48DC9AF2.1050101@linux.vnet.ibm.com>
-	<20080926182253.a62cc2d0.kamezawa.hiroyu@jp.fujitsu.com>
-	<48DCAC02.5050108@linux.vnet.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Sep 2008 06:33:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:mime-version
+         :content-type:content-transfer-encoding:content-disposition;
+        b=M6UqE4sGLdPynwvm9HarVUq2l56nktPNEkT4zYAV/7TFNsjTYwtnPIhFyhV3hlaL5N
+         1XxpY6MJTfcGxHgUdxHGLN5IyTTvtFDdeEC+qzBuul864v28eL2y4DMWwNS82tFyq9DF
+         tcbu8p0x6acuqITEVJYFo6TODYeh0vcyr+lkA=
+Message-ID: <cfd18e0f0809260333l40bb2e32p2a0b5626b2823d25@mail.gmail.com>
+Date: Fri, 26 Sep 2008 12:33:13 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Documentation/HOWTO: info about interface changes should CC linux-api@vger
+Cc: lkml <linux-kernel@vger.kernel.org>, "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Greg KH" <gregkh@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Sep 2008 15:01:46 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+The "Documentation" section of this file mentions that when an
+interface change is made, I should be CCed with info about the change
+(so that man-pages can document it).  Additionally request that this
+info be CCed to the new linux-api@vger.kernel.org list.
 
-> KAMEZAWA Hiroyuki wrote:
-> > On Fri, 26 Sep 2008 13:48:58 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> >> KAMEZAWA Hiroyuki wrote:
-> >>> Hi, I updated the stack and reflected comments.
-> >>> Against the latest mmotm. (rc7-mm1)
-> >>>
-> >>> Major changes from previous one is 
-> >>>   - page_cgroup allocation/lookup manner is changed.
-> >>>     all FLATMEM/DISCONTIGMEM/SPARSEMEM and MEMORY_HOTPLUG is supported.
-> >>>   - force_empty is totally rewritten. and a problem that "force_empty takes long time"
-> >>>     in previous version is fixed (I think...)
-> >>>   - reordered patches.
-> >>>      - first half are easy ones.
-> >>>      - second half are big ones.
-> >>>
-> >>> I'm still testing with full debug option. No problem found yet.
-> >>> (I'm afraid of race condition which have not been caught yet.)
-> >>>
-> >>> [1/12]  avoid accounting special mappings not on LRU. (fix)
-> >>> [2/12]  move charege() call to swapped-in page under lock_page() (clean up)
-> >>> [3/12]  make root cgroup to be unlimited. (change semantics.)
-> >>> [4/12]  make page->mapping NULL before calling uncharge (clean up)
-> >>> [5/12]  make page->flags to use atomic ops. (changes in infrastructure)
-> >>> [6/12]  optimize stat. (clean up)
-> >>> [7/12]  add support function for moving account. (new function)
-> >>> [8/12]  rewrite force_empty to use move_account. (change semantics.)
-> >>> [9/12]  allocate all page_cgroup at boot. (changes in infrastructure)
-> >>> [10/12] free page_cgroup from LRU in lazy way (optimize)
-> >>> [11/12] add page_cgroup to LRU in lazy way (optimize)
-> >>> [12/12] fix race at charging swap  (fix by new logic.)
-> >>>
-> >>> *Any* comment is welcome.
-> >> Kame,
-> >>
-> >> I'm beginning to review test the patches now. It would be really nice to split
-> >> the development patches from the maintenance ones. I think the full patchset has
-> >> too many things and is confusing to look at.
-> >>
-> > I hope I can do....but maybe difficult.
-> > If you give me ack, 1,2,4,6, can be pushed at early stage.
-> 
-> I think (1) might be OK, except for the accounting issues pointed out (change in
-> behaviour visible to end user again, sigh! :( ).
-But it was just a BUG from my point of view...
+Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
 
-> Is (1) a serious issue? 
-considering force_empty(), it's serious.
+diff --git a/Documentation/HOWTO b/Documentation/HOWTO
+index c2371c5..48a3955 100644
+--- a/Documentation/HOWTO
++++ b/Documentation/HOWTO
+@@ -77,7 +77,8 @@ documentation files are also added which explain how
+to use the feature.
+ When a kernel change causes the interface that the kernel exposes to
+ userspace to change, it is recommended that you send the information or
+ a patch to the manual pages explaining the change to the manual pages
+-maintainer at mtk.manpages@gmail.com.
++maintainer at mtk.manpages@gmail.com, and CC the list
++linux-api@vger.kernel.org.
 
-> (2) seems OK, except for the locking change for mark_page_accessed. I am looking at
-> (4) and (6) currently.
-> 
-Thanks,
--Kmae
-
-> -- 
-> 	Balbir
-> 
-
+ Here is a list of files that are in the kernel source tree that are
+ required reading:
