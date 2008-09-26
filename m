@@ -1,83 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbYIZN1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYIZN2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753192AbYIZN1n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 09:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYIZN1d
+	id S1754512AbYIZN2O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 09:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYIZN16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 09:27:33 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:57568 "EHLO mgw1.diku.dk"
+	Fri, 26 Sep 2008 09:27:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57410 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751621AbYIZN1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 09:27:32 -0400
-From: Julien Brunel <brunel@diku.dk>
-To: haver@vnet.ibm.com, dedekind@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/mtd/ubi: Bad IS_ERR test
-Date: Fri, 26 Sep 2008 15:27:25 +0200
-User-Agent: KMail/1.9.9
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809261527.26007.brunel@diku.dk>
+	id S1751999AbYIZN15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 09:27:57 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1222426580.16700.258.camel@lappy.programming.kicks-ass.net>
+References: <1222426580.16700.258.camel@lappy.programming.kicks-ass.net> <20080924164826.14867.63020.stgit@warthog.procyon.org.uk>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
+       nico@cam.org, linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] MN10300: Move asm-arm/cnt32_to_63.h to include/linux/
+Date: Fri, 26 Sep 2008 14:27:33 +0100
+Message-ID: <10756.1222435653@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In case of error, the function add_volume returns an ERR pointer. The
-result of IS_ERR, which is supposed to be used in a test as it is, is
-here checked to be less than zero, which seems odd. We suggest to
-replace this test by a simple IS_ERR test.
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-A simplified version of the semantic match that finds this problem is
-as follows: 
-(http://www.emn.fr/x-info/coccinelle/)
+> Didn't you forget to remove the old one?
 
-// <smpl>
-@def0@
-expression x;
-position p0;
-@@
-x@p0 = add_volume(...)
+Ah...  I did remove the old one... it's just that someone also moved the old
+one to arch/arm/include and GIT's merge tool didn't notice.
 
-@protected@
-expression def0.x,E;
-position def0.p0;
-position p;
-statement S;
-@@
-x@p0
-... when != x = E
-if (!IS_ERR(x) && ...) {<... x@p ...>} else S
-
-@unprotected@
-expression def0.x,E;
-identifier fld;
-position def0.p0;
-position p != protected.p;
-@@
-x@p0
-... when != x = E
-* x@p->fld
-// </smpl>
-
-Signed-off-by:  Julien Brunel <brunel@diku.dk>
-Signed-off-by:  Julia Lawall <julia@diku.dk>
-
----
- drivers/mtd/ubi/scan.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -p -u a/drivers/mtd/ubi/scan.c b/drivers/mtd/ubi/scan.c
---- a/drivers/mtd/ubi/scan.c
-+++ b/drivers/mtd/ubi/scan.c
-@@ -387,7 +387,7 @@ int ubi_scan_add_used(struct ubi_device 
- 		pnum, vol_id, lnum, ec, sqnum, bitflips);
- 
- 	sv = add_volume(si, vol_id, pnum, vid_hdr);
--	if (IS_ERR(sv) < 0)
-+	if (IS_ERR(sv))
- 		return PTR_ERR(sv);
- 
- 	if (si->max_sqnum < sqnum)
+David
