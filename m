@@ -1,159 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbYIZIP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYIZIUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754673AbYIZIP2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 04:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbYIZIPL
+	id S1754172AbYIZIUR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 04:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYIZIT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 04:15:11 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58327 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751496AbYIZIPJ (ORCPT
+	Fri, 26 Sep 2008 04:19:56 -0400
+Received: from mail.collax.com ([82.194.105.242]:45951 "EHLO
+	collgate4.collax.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751496AbYIZITy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 04:15:09 -0400
-Date: Fri, 26 Sep 2008 16:30:50 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH 7/12] memcg add function to move account
-Message-Id: <20080926163050.b510d4ad.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080925152722.7a678ea1.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080925152722.7a678ea1.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Sep 2008 04:19:54 -0400
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+Message-Id: <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com>
+From: Tilman Baumann <tilman.baumann@collax.com>
+To: Casey Schaufler <casey@schaufler-ca.com>
+In-Reply-To: <48DC5A45.8020801@schaufler-ca.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: SMACK netfilter smacklabel socket match
+Date: Fri, 26 Sep 2008 10:19:40 +0200
+References: <48DBC9A1.20900@collax.com> <48DC5A45.8020801@schaufler-ca.com>
+X-Mailer: Apple Mail (2.929.2)
+X-Filtered: By ProxSMTP
+X-AV-Checked: ClamAV using ClamSMTP
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -444,9 +445,14 @@ void mem_cgroup_move_lists(struct page *
->  
->  	pc = page_get_page_cgroup(page);
->  	if (pc) {
-> +		mem = pc->mem_cgroup;
->  		mz = page_cgroup_zoneinfo(pc);
->  		spin_lock_irqsave(&mz->lru_lock, flags);
-> -		__mem_cgroup_move_lists(pc, lru);
-> +		/*
-> +		 * check against the race with move_account.
-> +		 */
-> +		if (likely(mem == pc->mem_cgroup))
-> +			__mem_cgroup_move_lists(pc, lru);
+Am 26.09.2008 um 05:43 schrieb Casey Schaufler:
 
-(snip)
+> Tilman Baumann wrote:
+>> Hi all,
+>>
+>> i made some SMACK related patches. I hope this list is the right  
+>> place to post them.
+>
+> Here and, probably more importantly linux-security-module@vger.kernel.org 
+>  as that's
+> my primary hang out.
+>
+>> The intention behind this patch is that i needed a way to  
+>> (firewall) match for packets originating from specific processes.
+>> The existing owner match did not work well enough, especially since  
+>> the cmd-owner part is removed.
+>> Then i thought about a way to tag processes and somehow match this  
+>> tag in the firewall.
+>> I recalled that SELinux can do this (SECMARK) but SELinux would  
+>> have been way to complex for what i want. But the idea was born, i  
+>> just needed something more simple.
+>>
+>> SMACK seemed to be the right way. So i made a little primitive  
+>> netfilter match to match against the security context of sockets.
+>> SMACK does CIPSO labels, but this was not what i wanted, i wanted  
+>> to label the socket not the packet (on the wire).
+>> This of course only works for packets with a local socket, but this  
+>> was my intention anyway.
+>>
+>> This way i can label a process and all it's sockets carry the same  
+>> label which i then can use to match against in the firewall.
+>>
+>
+> Hmm. It looks as if your code will do what you're asking it to do.
+> Are you going to be happy with the access restrictions that will be
+> imposed by Smack?
 
-> @@ -754,16 +824,24 @@ __mem_cgroup_uncharge_common(struct page
->  	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
->  	    && ((PageCgroupCache(pc) || page_mapped(page))))
->  		goto unlock;
-> -
-> +retry:
-> +	mem = pc->mem_cgroup;
->  	mz = page_cgroup_zoneinfo(pc);
->  	spin_lock_irqsave(&mz->lru_lock, flags);
-> +	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED &&
-> +	    unlikely(mem != pc->mem_cgroup)) {
-> +		/* MAPPED account can be done without lock_page().
-> +		   Check race with mem_cgroup_move_account() */
-> +		spin_unlock_irqrestore(&mz->lru_lock, flags);
-> +		goto retry;
-> +	}
+I helped myself with rules like this.
+_ foo rwx
+But i wanted to add some security stuff like selinux for years,
+and SMACK seems to be just great.
+So i will spend some time making security rules after i got this routing
+stuff to work. :)
 
-I'm sorry, but I've not been convinced yet why these checks are needed here.
-(Those checks are removed by [9/12] anyway.)
-
-IIUC, pc->mem_cgroup is moved to another group only by mem_cgroup_move_account
-under lock_page_cgroup( and mz->lru_lock).
-And those two above(mem_cgroup_move_lists and __mem_cgroup_uncharge_common) sets
-mem = pc->mem_cgroup under lock_page_cgroup, so I don't think those checks
-(mem != pc->mem_cgroup) is needed.
-
-
-Thanks,
-Daisuke Nishimura.
-
-> +/**
-> + * mem_cgroup_move_account - move account of the page
-> + * @page ... the target page of being moved.
-> + * @pc   ... page_cgroup of the page.
-> + * @from ... mem_cgroup which the page is moved from.
-> + * @to   ... mem_cgroup which the page is moved to.
-> + *
-> + * The caller must confirm following.
-> + * 1. disable irq.
-> + * 2. lru_lock of old mem_cgroup should be held.
-> + * 3. pc is guaranteed to be valid and on mem_cgroup's LRU.
-> + *
-> + * Because we cannot call try_to_free_page() here, the caller must guarantee
-> + * this moving of charge never fails. (if charge fails, this call fails.)
-> + * Currently this is called only against root cgroup.
-> + * which has no limitation of resource.
-> + * Returns 0 at success, returns 1 at failure.
-> + */
-> +int mem_cgroup_move_account(struct page *page, struct page_cgroup *pc,
-> +	struct mem_cgroup *from, struct mem_cgroup *to)
-> +{
-> +	struct mem_cgroup_per_zone *from_mz, *to_mz;
-> +	int nid, zid;
-> +	int ret = 1;
-> +
-> +	VM_BUG_ON(!irqs_disabled());
-> +
-> +	nid = page_to_nid(page);
-> +	zid = page_zonenum(page);
-> +	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
-> +	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
-> +
-> +	if (res_counter_charge(&to->res, PAGE_SIZE)) {
-> +		/* Now, we assume no_limit...no failure here. */
-> +		return ret;
-> +	}
-> +	if (!try_lock_page_cgroup(page)) {
-> +		res_counter_uncharge(&to->res, PAGE_SIZE);
-> +		return ret;
-> +	}
-> +
-> +	if (page_get_page_cgroup(page) != pc) {
-> +		res_counter_uncharge(&to->res, PAGE_SIZE);
-> +		goto out;
-> +	}
-> +
-> +	if (spin_trylock(&to_mz->lru_lock)) {
-> +		__mem_cgroup_remove_list(from_mz, pc);
-> +		css_put(&from->css);
-> +		res_counter_uncharge(&from->res, PAGE_SIZE);
-> +		pc->mem_cgroup = to;
-> +		css_get(&to->css);
-> +		__mem_cgroup_add_list(to_mz, pc);
-> +		ret = 0;
-> +		spin_unlock(&to_mz->lru_lock);
-> +	} else {
-> +		res_counter_uncharge(&to->res, PAGE_SIZE);
-> +	}
-> +out:
-> +	unlock_page_cgroup(page);
-> +
-> +	return ret;
-> +}
-> +
->  /*
->   * Charge the memory controller for page usage.
->   * Return
->  	__mem_cgroup_remove_list(mz, pc);
->  	spin_unlock_irqrestore(&mz->lru_lock, flags);
->  
->  	page_assign_page_cgroup(page, NULL);
->  	unlock_page_cgroup(page);
->  
-> -	mem = pc->mem_cgroup;
-> +
->  	res_counter_uncharge(&mem->res, PAGE_SIZE);
->  	css_put(&mem->css);
->  
-> 
+Regards
+  Tilman
