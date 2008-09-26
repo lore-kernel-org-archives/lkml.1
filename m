@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbYIZCMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbYIZCMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059AbYIZCMc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYIZCLp
+	id S1755618AbYIZCMs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbYIZCMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:11:45 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63788 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755279AbYIZCLo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:11:44 -0400
-Date: Thu, 25 Sep 2008 22:11:39 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Masami Hiramatsu <mhiramat@redhat.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH v4] Unified trace buffer
-In-Reply-To: <48DC406D.1050508@redhat.com>
-Message-ID: <alpine.DEB.1.10.0809252206260.8454@gandalf.stny.rr.com>
-References: <20080925185154.230259579@goodmis.org> <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com> <48DC406D.1050508@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 25 Sep 2008 22:12:05 -0400
+Received: from mga11.intel.com ([192.55.52.93]:12435 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755417AbYIZCMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 22:12:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,310,1220252400"; 
+   d="scan'208";a="384528258"
+Date: Thu, 25 Sep 2008 19:12:00 -0700 (Pacific Daylight Time)
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
+       agospoda@redhat.com, "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
+       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com
+Subject: Re: e1000e NVM corruption issue status
+In-Reply-To: <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com>
+Message-ID: <Pine.WNT.4.63.0809251911430.1736@jbrandeb-desk.amr.corp.intel.com>
+References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com>
+ <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com>
+ <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com>
+ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+X-X-Sender: jesse.brandeburg@intel.com@imap.glb.intel.com
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+update version
 
-On Thu, 25 Sep 2008, Masami Hiramatsu wrote:
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-> Hi Steven,
-> 
-> Steven Rostedt wrote:
-> > This version has been cleaned up a bit. I've been running it as
-> > a back end to ftrace, and it has been handling pretty well.
-> 
-> Thank you for your great work.
-> It seems good to me(especially, encapsulating events :)).
 
-Thanks!
+---
 
-> 
-> I have one request of enhancement.
-> 
-> > +static struct ring_buffer_per_cpu *
-> > +ring_buffer_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
-> > +{
-> [...]
-> > +	cpu_buffer->pages = kzalloc_node(ALIGN(sizeof(void *) * pages,
-> > +					       cache_line_size()), GFP_KERNEL,
-> > +					 cpu_to_node(cpu));
-> 
-> Here, you are using a slab object for page managing array,
-> the largest object size is 128KB(x86-64), so it can contain
-> 16K pages = 64MB.
-> 
-> As I had improved relayfs, in some rare case(on 64bit arch),
-> we'd like to use larger buffer than 64MB.
-> 
-> http://sourceware.org/ml/systemtap/2008-q2/msg00103.html
-> 
-> So, I think similar hack can be applicable.
-> 
-> Would it be acceptable for the next version?
+ drivers/net/e1000e/netdev.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I would like to avoid using vmalloc as much as possible, but I do see the 
-limitation here. Here's my compromise.
-
-Instead of using vmalloc if the page array is greater than one page, 
-how about using vmalloc if the page array is greater than 
-KMALLOC_MAX_SIZE?
-
-This would let us keep the vmap area free unless we have no choice.
-
--- Steve
-
+diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+index bd7fa13..89ca272 100644
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -47,7 +47,7 @@
+ 
+ #include "e1000.h"
+ 
+-#define DRV_VERSION "0.3.3.3-k2"
++#define DRV_VERSION "0.3.3.3-kt"
+ char e1000e_driver_name[] = "e1000e";
+ const char e1000e_driver_version[] = DRV_VERSION;
+ 
