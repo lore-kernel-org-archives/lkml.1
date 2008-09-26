@@ -1,276 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbYIZCTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYIZCVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbYIZCTe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYIZCTX
+	id S1754748AbYIZCVU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYIZCVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:19:23 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49935 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754590AbYIZCTV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:19:21 -0400
-Date: Fri, 26 Sep 2008 11:25:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH(fixed) 10/12] free page cgroup from LRU in lazy
-Message-Id: <20080926112544.26312246.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080926112156.991c5dc4.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926112156.991c5dc4.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Sep 2008 22:21:04 -0400
+Received: from mail.windriver.com ([147.11.1.11]:35917 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752919AbYIZCVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 22:21:01 -0400
+From: Kevin Hao <kexin.hao@windriver.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: Jay Cliburn <jacliburn@bellsouth.net>, Jeff Garzik <jeff@garzik.org>,
+       Jeff Garzik <jgarzik@redhat.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] net: remove LLTX in atl2 driver
+Date: Fri, 26 Sep 2008 10:20:11 +0800
+Message-Id: <1222395611-3400-1-git-send-email-kexin.hao@windriver.com>
+X-Mailer: git-send-email 1.5.6.2.220.g44701
+In-Reply-To: <48DC39D3.3090400@redhat.com>
+References: <48DC39D3.3090400@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-adjustment for changes in 9/12(fixed)
-==
-Free page_cgroup from its LRU in batched manner.
+When NETIF_F_LLTX is set, the atlx driver will use a private lock.
+But in recent kernels this implementation seems redundant and
+can cause problems where AF_PACKET sees things twice. Since
+NETIF_F_LLTX is marked as deprecated and shouldn't be used in
+new driver, this patch removes NETIF_F_LLTX and adds a mmiowb
+before sending packet. I have tested this driver on a Eee PC.
+It works well.
 
-When uncharge() is called, page is pushed onto per-cpu vector and
-removed from LRU, later.. This routine resembles to global LRU's pagevec.
-This patch is half of the whole patch and a set with following lazy LRU add
-patch.
+Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
+Acked-by: Jay Cliburn <jacliburn@bellsouth.net>
+---
+ drivers/net/atlx/atl2.c |   24 +-----------------------
+ drivers/net/atlx/atl2.h |    1 -
+ 2 files changed, 1 insertions(+), 24 deletions(-)
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
- mm/memcontrol.c |  164 +++++++++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 152 insertions(+), 12 deletions(-)
-
-Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
-+++ mmotm-2.6.27-rc7+/mm/memcontrol.c
-@@ -36,6 +36,7 @@
- #include <linux/mm_inline.h>
- #include <linux/writeback.h>
- #include <linux/page_cgroup.h>
-+#include <linux/cpu.h>
+diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
+index b2995ac..3df4ee1 100644
+--- a/drivers/net/atlx/atl2.c
++++ b/drivers/net/atlx/atl2.c
+@@ -116,7 +116,6 @@ static int __devinit atl2_sw_init(struct atl2_adapter *adapter)
+ 	hw->max_frame_size = adapter->netdev->mtu;
  
- #include <asm/uaccess.h>
+ 	spin_lock_init(&adapter->stats_lock);
+-	spin_lock_init(&adapter->tx_lock);
  
-@@ -531,6 +532,116 @@ out:
- 	return ret;
- }
+ 	set_bit(__ATL2_DOWN, &adapter->flags);
  
-+
-+#define MEMCG_PCPVEC_SIZE	(14)	/* size of pagevec */
-+struct memcg_percpu_vec {
-+	int nr;
-+	int limit;
-+	struct page_cgroup *vec[MEMCG_PCPVEC_SIZE];
-+};
-+static DEFINE_PER_CPU(struct memcg_percpu_vec, memcg_free_vec);
-+
-+static void
-+__release_page_cgroup(struct memcg_percpu_vec *mpv)
-+{
-+	unsigned long flags;
-+	struct mem_cgroup_per_zone *mz, *prev_mz;
-+	struct page_cgroup *pc;
-+	int i, nr;
-+
-+	local_irq_save(flags);
-+	nr = mpv->nr;
-+	mpv->nr = 0;
-+	prev_mz = NULL;
-+	for (i = nr - 1; i >= 0; i--) {
-+		pc = mpv->vec[i];
-+		VM_BUG_ON(PageCgroupUsed(pc));
-+		mz = page_cgroup_zoneinfo(pc);
-+		if (prev_mz != mz) {
-+			if (prev_mz)
-+				spin_unlock(&prev_mz->lru_lock);
-+			prev_mz = mz;
-+			spin_lock(&mz->lru_lock);
-+		}
-+		__mem_cgroup_remove_list(mz, pc);
-+		css_put(&pc->mem_cgroup->css);
-+		pc->mem_cgroup = NULL;
-+	}
-+	if (prev_mz)
-+		spin_unlock(&prev_mz->lru_lock);
-+	local_irq_restore(flags);
-+
-+}
-+
-+static void
-+release_page_cgroup(struct page_cgroup *pc)
-+{
-+	struct memcg_percpu_vec *mpv;
-+
-+	mpv = &get_cpu_var(memcg_free_vec);
-+	mpv->vec[mpv->nr++] = pc;
-+	if (mpv->nr >= mpv->limit)
-+		__release_page_cgroup(mpv);
-+	put_cpu_var(memcg_free_vec);
-+}
-+
-+static void page_cgroup_start_cache_cpu(int cpu)
-+{
-+	struct memcg_percpu_vec *mpv;
-+	mpv = &per_cpu(memcg_free_vec, cpu);
-+	mpv->limit = MEMCG_PCPVEC_SIZE;
-+}
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+static void page_cgroup_stop_cache_cpu(int cpu)
-+{
-+	struct memcg_percpu_vec *mpv;
-+	mpv = &per_cpu(memcg_free_vec, cpu);
-+	mpv->limit = 0;
-+}
-+#endif
-+
-+
-+/*
-+ * Used when freeing memory resource controller to remove all
-+ * page_cgroup (in obsolete list).
-+ */
-+static DEFINE_MUTEX(memcg_force_drain_mutex);
-+
-+static void drain_page_cgroup_local(struct work_struct *work)
-+{
-+	struct memcg_percpu_vec *mpv;
-+	mpv = &get_cpu_var(memcg_free_vec);
-+	__release_page_cgroup(mpv);
-+	put_cpu_var(mpv);
-+}
-+
-+static void drain_page_cgroup_cpu(int cpu)
-+{
-+	int local_cpu;
-+	struct work_struct work;
-+
-+	local_cpu = get_cpu();
-+	if (local_cpu == cpu) {
-+		drain_page_cgroup_local(NULL);
-+		put_cpu();
-+		return;
-+	}
-+	put_cpu();
-+
-+	INIT_WORK(&work, drain_page_cgroup_local);
-+	schedule_work_on(cpu, &work);
-+	flush_work(&work);
-+}
-+
-+static void drain_page_cgroup_all(void)
-+{
-+	mutex_lock(&memcg_force_drain_mutex);
-+	schedule_on_each_cpu(drain_page_cgroup_local);
-+	mutex_unlock(&memcg_force_drain_mutex);
-+}
-+
-+
- /*
-  * Charge the memory controller for page usage.
-  * Return
-@@ -701,8 +812,6 @@ __mem_cgroup_uncharge_common(struct page
+@@ -749,11 +748,7 @@ static void atl2_down(struct atl2_adapter *adapter)
+ 	 * reschedule our watchdog timer */
+ 	set_bit(__ATL2_DOWN, &adapter->flags);
+ 
+-#ifdef NETIF_F_LLTX
+-	netif_stop_queue(netdev);
+-#else
+ 	netif_tx_disable(netdev);
+-#endif
+ 
+ 	/* reset MAC to disable all RX/TX */
+ 	atl2_reset_hw(&adapter->hw);
+@@ -829,7 +824,6 @@ static inline int TxdFreeBytes(struct atl2_adapter *adapter)
+ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
  {
- 	struct page_cgroup *pc;
- 	struct mem_cgroup *mem;
--	struct mem_cgroup_per_zone *mz;
+ 	struct atl2_adapter *adapter = netdev_priv(netdev);
 -	unsigned long flags;
+ 	struct tx_pkt_header *txph;
+ 	u32 offset, copy_len;
+ 	int txs_unused;
+@@ -845,16 +839,6 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 		return NETDEV_TX_OK;
+ 	}
  
- 	if (mem_cgroup_subsys.disabled)
- 		return;
-@@ -715,16 +824,10 @@ __mem_cgroup_uncharge_common(struct page
- 	lock_page_cgroup(pc);
- 	ClearPageCgroupUsed(pc);
- 	unlock_page_cgroup(pc);
-+	preempt_enable();
+-#ifdef NETIF_F_LLTX
+-	local_irq_save(flags);
+-	if (!spin_trylock(&adapter->tx_lock)) {
+-		/* Collision - tell upper layer to requeue */
+-		local_irq_restore(flags);
+-		return NETDEV_TX_LOCKED;
+-	}
+-#else
+-	spin_lock_irqsave(&adapter->tx_lock, flags);
+-#endif
+ 	txs_unused = TxsFreeUnit(adapter);
+ 	txbuf_unused = TxdFreeBytes(adapter);
  
- 	mem = pc->mem_cgroup;
--	mz = page_cgroup_zoneinfo(pc);
+@@ -862,7 +846,6 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 		txs_unused < 1) {
+ 		/* not enough resources */
+ 		netif_stop_queue(netdev);
+-		spin_unlock_irqrestore(&adapter->tx_lock, flags);
+ 		return NETDEV_TX_BUSY;
+ 	}
+ 
+@@ -908,8 +891,7 @@ static int atl2_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 	ATL2_WRITE_REGW(&adapter->hw, REG_MB_TXD_WR_IDX,
+ 		(adapter->txd_write_ptr >> 2));
+ 
+-	spin_unlock_irqrestore(&adapter->tx_lock, flags);
 -
--	spin_lock_irqsave(&mz->lru_lock, flags);
--	__mem_cgroup_remove_list(mz, pc);
--	spin_unlock_irqrestore(&mz->lru_lock, flags);
--	pc->mem_cgroup = NULL;
--	css_put(&mem->css);
--	preempt_enable();
-+	release_page_cgroup(pc);
- 	res_counter_uncharge(&mem->res, PAGE_SIZE);
++	mmiowb();
+ 	netdev->trans_start = jiffies;
+ 	dev_kfree_skb_any(skb);
+ 	return NETDEV_TX_OK;
+@@ -1447,10 +1429,6 @@ static int __devinit atl2_probe(struct pci_dev *pdev,
+ 	netdev->features |= (NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX);
+ #endif
  
- 	return;
-@@ -880,9 +983,8 @@ static void mem_cgroup_force_empty_list(
- 		if (!PageCgroupUsed(pc))
- 			continue;
- 		/* For avoiding race with speculative page cache handling. */
--		if (!PageLRU(page) || !get_page_unless_zero(page)) {
-+		if (!PageLRU(page) || !get_page_unless_zero(page))
- 			continue;
--		}
- 		mem_cgroup_move_account(page, pc, mem, &init_mem_cgroup);
- 		put_page(page);
- 		if (atomic_read(&mem->css.cgroup->count) > 0)
-@@ -919,8 +1021,10 @@ static int mem_cgroup_force_empty(struct
- 		 * While walking our own LRU, we also checks LRU bit on page.
- 		 * If a page is on pagevec, it's not on LRU and we cannot
- 		 * grab it. Calling lru_add_drain_all() here.
-+		 * memory cgroup's its own vector shold be flushed, too.
- 		 */
- 		lru_add_drain_all();
-+		drain_page_cgroup_all();
- 		for_each_node_state(node, N_HIGH_MEMORY) {
- 			for (zid = 0; zid < MAX_NR_ZONES; zid++) {
- 				mz = mem_cgroup_zoneinfo(mem, node, zid);
-@@ -1144,6 +1248,38 @@ static void mem_cgroup_free(struct mem_c
- 		vfree(mem);
- }
+-#ifdef NETIF_F_LLTX
+-	netdev->features |= NETIF_F_LLTX;
+-#endif
+-
+ 	/* Init PHY as early as possible due to power saving issue  */
+ 	atl2_phy_init(&adapter->hw);
  
-+static void mem_cgroup_init_pcp(int cpu)
-+{
-+	page_cgroup_start_cache_cpu(cpu);
-+}
-+
-+static int cpu_memcgroup_callback(struct notifier_block *nb,
-+			unsigned long action, void *hcpu)
-+{
-+	int cpu = (long)hcpu;
-+
-+	switch(action) {
-+	case CPU_UP_PREPARE:
-+	case CPU_UP_PREPARE_FROZEN:
-+		mem_cgroup_init_pcp(cpu);
-+		break;
-+#ifdef CONFIG_HOTPLUG_CPU
-+	case CPU_DOWN_PREPARE:
-+	case CPU_DOWN_PREPARE_FROZEN:
-+		page_cgroup_stop_cache_cpu(cpu);
-+		drain_page_cgroup_cpu(cpu);
-+		break;
-+#endif
-+	default:
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block __refdata memcgroup_nb =
-+{
-+	.notifier_call = cpu_memcgroup_callback,
-+};
+diff --git a/drivers/net/atlx/atl2.h b/drivers/net/atlx/atl2.h
+index 6e1f28f..09974df 100644
+--- a/drivers/net/atlx/atl2.h
++++ b/drivers/net/atlx/atl2.h
+@@ -462,7 +462,6 @@ struct atl2_adapter {
+ 	u16 link_duplex;
  
- static struct cgroup_subsys_state *
- mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
-@@ -1154,6 +1290,10 @@ mem_cgroup_create(struct cgroup_subsys *
- 	if (unlikely((cont->parent) == NULL)) {
- 		page_cgroup_init();
- 		mem = &init_mem_cgroup;
-+		cpu_memcgroup_callback(&memcgroup_nb,
-+					(unsigned long)CPU_UP_PREPARE,
-+					(void *)(long)smp_processor_id());
-+		register_hotcpu_notifier(&memcgroup_nb);
- 	} else {
- 		mem = mem_cgroup_alloc();
- 		if (!mem)
+ 	spinlock_t stats_lock;
+-	spinlock_t tx_lock;
+ 
+ 	struct work_struct reset_task;
+ 	struct work_struct link_chg_task;
+-- 
+1.5.6.2.220.g44701
 
