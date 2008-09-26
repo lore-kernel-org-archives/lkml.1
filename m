@@ -1,76 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbYIZCTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbYIZCTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754343AbYIZCTU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYIZCTM
+	id S1753154AbYIZCTe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYIZCTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:19:12 -0400
-Received: from mail.anarazel.de ([217.115.131.40]:50435 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752844AbYIZCTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:19:11 -0400
-From: Andres Freund <andres@anarazel.de>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: bad DMAR interaction with iwlagn and SATA
-Date: Fri, 26 Sep 2008 04:18:50 +0200
-User-Agent: KMail/1.10.1 (Linux/2.6.27-rc7; KDE/4.1.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200809251511.20132.andres@anarazel.de> <48DC44D4.8000103@garzik.org>
-In-Reply-To: <48DC44D4.8000103@garzik.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2391497.0mNc8PqLAe";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Thu, 25 Sep 2008 22:19:23 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49935 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754590AbYIZCTV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 22:19:21 -0400
+Date: Fri, 26 Sep 2008 11:25:44 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH(fixed) 10/12] free page cgroup from LRU in lazy
+Message-Id: <20080926112544.26312246.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080926112156.991c5dc4.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926112156.991c5dc4.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200809260419.07713.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2391497.0mNc8PqLAe
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+adjustment for changes in 9/12(fixed)
+==
+Free page_cgroup from its LRU in batched manner.
 
-Hi Jeff,
+When uncharge() is called, page is pushed onto per-cpu vector and
+removed from LRU, later.. This routine resembles to global LRU's pagevec.
+This patch is half of the whole patch and a set with following lazy LRU add
+patch.
 
-On Friday 26 September 2008, you wrote in "Re: bad DMAR interaction with=20
-iwlagn and SATA":
-> Andres Freund wrote:
-> > sleeping I activated DMAR...
-> > ..
-> > Second:
-> > [ 2937.484251] DMAR:[DMA Read] Request device [00:1f.2] fault addr
-> > fffbf000 [ 2937.484255] DMAR:[fault reason 06] PTE Read access is not s=
-et
-> > [ 2937.484297] ata1.00: exception Emask 0x60 SAct 0x1 SErr 0x800 action
-> > 0x6 frozen
-> > [ 2937.484303] ata1.00: irq_stat 0x20000000, host bus error
-> > [ 2937.484309] ata1: SError: { HostInt }
-> > [ 2937.484319] ata1.00: cmd 61/08:00:c0:1d:6b/00:00:07:00:00/40 tag 0 n=
-cq
-> > 4096 out
-> > [ 2937.484321]          res 40/00:00:c0:1d:6b/00:00:07:00:00/40 Emask
-> > 0x60 (host bus error)
-> Ouch, a host bus error is serious nastiness...
-I only hit that with DMAR activated (hit it twice, different boots), so it=
-=20
-seems to be related to that. Is there anything I can help to debug that?
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Andres
+ mm/memcontrol.c |  164 +++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 152 insertions(+), 12 deletions(-)
 
---nextPart2391497.0mNc8PqLAe
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+@@ -36,6 +36,7 @@
+ #include <linux/mm_inline.h>
+ #include <linux/writeback.h>
+ #include <linux/page_cgroup.h>
++#include <linux/cpu.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -531,6 +532,116 @@ out:
+ 	return ret;
+ }
+ 
++
++#define MEMCG_PCPVEC_SIZE	(14)	/* size of pagevec */
++struct memcg_percpu_vec {
++	int nr;
++	int limit;
++	struct page_cgroup *vec[MEMCG_PCPVEC_SIZE];
++};
++static DEFINE_PER_CPU(struct memcg_percpu_vec, memcg_free_vec);
++
++static void
++__release_page_cgroup(struct memcg_percpu_vec *mpv)
++{
++	unsigned long flags;
++	struct mem_cgroup_per_zone *mz, *prev_mz;
++	struct page_cgroup *pc;
++	int i, nr;
++
++	local_irq_save(flags);
++	nr = mpv->nr;
++	mpv->nr = 0;
++	prev_mz = NULL;
++	for (i = nr - 1; i >= 0; i--) {
++		pc = mpv->vec[i];
++		VM_BUG_ON(PageCgroupUsed(pc));
++		mz = page_cgroup_zoneinfo(pc);
++		if (prev_mz != mz) {
++			if (prev_mz)
++				spin_unlock(&prev_mz->lru_lock);
++			prev_mz = mz;
++			spin_lock(&mz->lru_lock);
++		}
++		__mem_cgroup_remove_list(mz, pc);
++		css_put(&pc->mem_cgroup->css);
++		pc->mem_cgroup = NULL;
++	}
++	if (prev_mz)
++		spin_unlock(&prev_mz->lru_lock);
++	local_irq_restore(flags);
++
++}
++
++static void
++release_page_cgroup(struct page_cgroup *pc)
++{
++	struct memcg_percpu_vec *mpv;
++
++	mpv = &get_cpu_var(memcg_free_vec);
++	mpv->vec[mpv->nr++] = pc;
++	if (mpv->nr >= mpv->limit)
++		__release_page_cgroup(mpv);
++	put_cpu_var(memcg_free_vec);
++}
++
++static void page_cgroup_start_cache_cpu(int cpu)
++{
++	struct memcg_percpu_vec *mpv;
++	mpv = &per_cpu(memcg_free_vec, cpu);
++	mpv->limit = MEMCG_PCPVEC_SIZE;
++}
++
++#ifdef CONFIG_HOTPLUG_CPU
++static void page_cgroup_stop_cache_cpu(int cpu)
++{
++	struct memcg_percpu_vec *mpv;
++	mpv = &per_cpu(memcg_free_vec, cpu);
++	mpv->limit = 0;
++}
++#endif
++
++
++/*
++ * Used when freeing memory resource controller to remove all
++ * page_cgroup (in obsolete list).
++ */
++static DEFINE_MUTEX(memcg_force_drain_mutex);
++
++static void drain_page_cgroup_local(struct work_struct *work)
++{
++	struct memcg_percpu_vec *mpv;
++	mpv = &get_cpu_var(memcg_free_vec);
++	__release_page_cgroup(mpv);
++	put_cpu_var(mpv);
++}
++
++static void drain_page_cgroup_cpu(int cpu)
++{
++	int local_cpu;
++	struct work_struct work;
++
++	local_cpu = get_cpu();
++	if (local_cpu == cpu) {
++		drain_page_cgroup_local(NULL);
++		put_cpu();
++		return;
++	}
++	put_cpu();
++
++	INIT_WORK(&work, drain_page_cgroup_local);
++	schedule_work_on(cpu, &work);
++	flush_work(&work);
++}
++
++static void drain_page_cgroup_all(void)
++{
++	mutex_lock(&memcg_force_drain_mutex);
++	schedule_on_each_cpu(drain_page_cgroup_local);
++	mutex_unlock(&memcg_force_drain_mutex);
++}
++
++
+ /*
+  * Charge the memory controller for page usage.
+  * Return
+@@ -701,8 +812,6 @@ __mem_cgroup_uncharge_common(struct page
+ {
+ 	struct page_cgroup *pc;
+ 	struct mem_cgroup *mem;
+-	struct mem_cgroup_per_zone *mz;
+-	unsigned long flags;
+ 
+ 	if (mem_cgroup_subsys.disabled)
+ 		return;
+@@ -715,16 +824,10 @@ __mem_cgroup_uncharge_common(struct page
+ 	lock_page_cgroup(pc);
+ 	ClearPageCgroupUsed(pc);
+ 	unlock_page_cgroup(pc);
++	preempt_enable();
+ 
+ 	mem = pc->mem_cgroup;
+-	mz = page_cgroup_zoneinfo(pc);
+-
+-	spin_lock_irqsave(&mz->lru_lock, flags);
+-	__mem_cgroup_remove_list(mz, pc);
+-	spin_unlock_irqrestore(&mz->lru_lock, flags);
+-	pc->mem_cgroup = NULL;
+-	css_put(&mem->css);
+-	preempt_enable();
++	release_page_cgroup(pc);
+ 	res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 
+ 	return;
+@@ -880,9 +983,8 @@ static void mem_cgroup_force_empty_list(
+ 		if (!PageCgroupUsed(pc))
+ 			continue;
+ 		/* For avoiding race with speculative page cache handling. */
+-		if (!PageLRU(page) || !get_page_unless_zero(page)) {
++		if (!PageLRU(page) || !get_page_unless_zero(page))
+ 			continue;
+-		}
+ 		mem_cgroup_move_account(page, pc, mem, &init_mem_cgroup);
+ 		put_page(page);
+ 		if (atomic_read(&mem->css.cgroup->count) > 0)
+@@ -919,8 +1021,10 @@ static int mem_cgroup_force_empty(struct
+ 		 * While walking our own LRU, we also checks LRU bit on page.
+ 		 * If a page is on pagevec, it's not on LRU and we cannot
+ 		 * grab it. Calling lru_add_drain_all() here.
++		 * memory cgroup's its own vector shold be flushed, too.
+ 		 */
+ 		lru_add_drain_all();
++		drain_page_cgroup_all();
+ 		for_each_node_state(node, N_HIGH_MEMORY) {
+ 			for (zid = 0; zid < MAX_NR_ZONES; zid++) {
+ 				mz = mem_cgroup_zoneinfo(mem, node, zid);
+@@ -1144,6 +1248,38 @@ static void mem_cgroup_free(struct mem_c
+ 		vfree(mem);
+ }
+ 
++static void mem_cgroup_init_pcp(int cpu)
++{
++	page_cgroup_start_cache_cpu(cpu);
++}
++
++static int cpu_memcgroup_callback(struct notifier_block *nb,
++			unsigned long action, void *hcpu)
++{
++	int cpu = (long)hcpu;
++
++	switch(action) {
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
++		mem_cgroup_init_pcp(cpu);
++		break;
++#ifdef CONFIG_HOTPLUG_CPU
++	case CPU_DOWN_PREPARE:
++	case CPU_DOWN_PREPARE_FROZEN:
++		page_cgroup_stop_cache_cpu(cpu);
++		drain_page_cgroup_cpu(cpu);
++		break;
++#endif
++	default:
++		break;
++	}
++	return NOTIFY_OK;
++}
++
++static struct notifier_block __refdata memcgroup_nb =
++{
++	.notifier_call = cpu_memcgroup_callback,
++};
+ 
+ static struct cgroup_subsys_state *
+ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+@@ -1154,6 +1290,10 @@ mem_cgroup_create(struct cgroup_subsys *
+ 	if (unlikely((cont->parent) == NULL)) {
+ 		page_cgroup_init();
+ 		mem = &init_mem_cgroup;
++		cpu_memcgroup_callback(&memcgroup_nb,
++					(unsigned long)CPU_UP_PREPARE,
++					(void *)(long)smp_processor_id());
++		register_hotcpu_notifier(&memcgroup_nb);
+ 	} else {
+ 		mem = mem_cgroup_alloc();
+ 		if (!mem)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkjcRosACgkQporPraT14igTKwCfXFLNDkOftx7ddVEKoKIOnhpe
-WUMAnj6SpTxIjHRZSHGzzKsUB9KjE+S+
-=pX3H
------END PGP SIGNATURE-----
-
---nextPart2391497.0mNc8PqLAe--
