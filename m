@@ -1,130 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbYIZCLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbYIZCLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755213AbYIZCLb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Sep 2008 22:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbYIZCLI
+	id S1754847AbYIZCLt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Sep 2008 22:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbYIZCLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Sep 2008 22:11:08 -0400
-Received: from mga02.intel.com ([134.134.136.20]:15658 "EHLO mga02.intel.com"
+	Thu, 25 Sep 2008 22:11:37 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35764 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753738AbYIZCLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Sep 2008 22:11:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,310,1220252400"; 
-   d="scan'208";a="340663916"
-Date: Thu, 25 Sep 2008 19:11:04 -0700 (Pacific Daylight Time)
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
-       agospoda@redhat.com, "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
-       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com
-Subject: Re: e1000e NVM corruption issue status
-In-Reply-To: <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com>
-Message-ID: <Pine.WNT.4.63.0809251910530.1736@jbrandeb-desk.amr.corp.intel.com>
-References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com>
- <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com>
- <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com>
-ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-X-X-Sender: jesse.brandeburg@intel.com@imap.glb.intel.com
+	id S1753462AbYIZCLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Sep 2008 22:11:36 -0400
+Message-ID: <48DC44D4.8000103@garzik.org>
+Date: Thu, 25 Sep 2008 22:11:32 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andres Freund <andres@anarazel.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: bad DMAR interaction with iwlagn and SATA
+References: <200809251511.20132.andres@anarazel.de>
+In-Reply-To: <200809251511.20132.andres@anarazel.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-e1000e: drop stats lock
+Andres Freund wrote:
+> Hi,	
+> 
+> in some accident caused by wanting to create the .config/compile the kernel 
+> for my new laptop (thinkpad t500) before the desperately needed sleeping I 
+> activated DMAR...
+> 
+> I don't know if this is relevant, but I though i better report it.
+> 
+> 
+> This was on fb478da5ba69ecf40729ae8ab37ca406b1e5be48 - sometime after 2.6.27-
+> rc7
+> 
+> I stumbled over two buglets:
+> First:
+> [ 4184.617392] DMAR:[DMA Read] Request device [03:00.0] fault addr fa946000 
+> [ 4184.617393] DMAR:[fault reason 06] PTE Read access is not set
+> [ 4184.644081] iwlagn: Microcode HW error detected.  Restarting.
+> [ 4186.646000] psmouse.c: TouchPad at isa0060/serio1/input0 lost 
+> synchronization, throwing 1 bytes away.
+> [ 4186.683034] Registered led device: iwl-phy0:radio
+> [ 4186.683478] Registered led device: iwl-phy0:assoc
+> [ 4186.683793] Registered led device: iwl-phy0:RX
+> [ 4186.684094] Registered led device: iwl-phy0:TX
+> [ 4186.689749] wlan0: authenticate with AP 00:1d:7e:42:fe:42
+> [ 4186.691691] wlan0: authenticated
+> [ 4186.691705] wlan0: associate with AP 00:1d:7e:42:fe:42
+> [ 4186.696380] wlan0: RX ReassocResp from 00:1d:7e:42:fe:42 (capab=0x411 
+> status=0 aid=2)
+> [ 4186.696392] wlan0: associated
+> 
+> Most of the time when this happened, the machine wasnt reacting for 1-3 
+> seconds and had audio buffer underruns, but I also had a hard lockup which I 
+> couldnt diagnose so far.
+> 
+> Second:
+> [ 2937.484251] DMAR:[DMA Read] Request device [00:1f.2] fault addr fffbf000 
+> [ 2937.484255] DMAR:[fault reason 06] PTE Read access is not set
+> [ 2937.484297] ata1.00: exception Emask 0x60 SAct 0x1 SErr 0x800 action 0x6 
+> frozen
+> [ 2937.484303] ata1.00: irq_stat 0x20000000, host bus error
+> [ 2937.484309] ata1: SError: { HostInt }
+> [ 2937.484319] ata1.00: cmd 61/08:00:c0:1d:6b/00:00:07:00:00/40 tag 0 ncq 4096 
+> out
+> [ 2937.484321]          res 40/00:00:c0:1d:6b/00:00:07:00:00/40 Emask 0x60 
+> (host bus error)
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Ouch, a host bus error is serious nastiness...
 
-the stats lock is left over from e1000, e1000e no longer
-has the adjust tbi stats function that required the addition
-of the stats lock to begin with.
+http://ata.wiki.kernel.org/index.php/Libata_error_messages#Error_classes
 
-adding a mutex to acquire_swflag helped catch this one too.
+That's the ATA controller falling over after some serious machine hiccups.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-CC: Thomas Gleixner <tglx@linutronix.de>
----
+	Jeff
 
- drivers/net/e1000e/e1000.h  |    1 -
- drivers/net/e1000e/netdev.c |   18 ------------------
- 2 files changed, 0 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
-index 951080f..2a3a311 100644
---- a/drivers/net/e1000e/e1000.h
-+++ b/drivers/net/e1000e/e1000.h
-@@ -258,7 +258,6 @@ struct e1000_adapter {
- 	struct net_device *netdev;
- 	struct pci_dev *pdev;
- 	struct net_device_stats net_stats;
--	spinlock_t stats_lock;      /* prevent concurrent stats updates */
- 
- 	/* structs defined in e1000_hw.h */
- 	struct e1000_hw hw;
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index 235c014..bd7fa13 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -2600,8 +2600,6 @@ static int __devinit e1000_sw_init(struct e1000_adapter *adapter)
- 	/* Explicitly disable IRQ since the NIC can be in any state. */
- 	e1000_irq_disable(adapter);
- 
--	spin_lock_init(&adapter->stats_lock);
--
- 	set_bit(__E1000_DOWN, &adapter->state);
- 	return 0;
- 
-@@ -2953,7 +2951,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct pci_dev *pdev = adapter->pdev;
--	unsigned long irq_flags;
- 
- 	/*
- 	 * Prevent stats update while adapter is being reset, or if the pci
-@@ -2964,14 +2961,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
- 	if (pci_channel_offline(pdev))
- 		return;
- 
--	spin_lock_irqsave(&adapter->stats_lock, irq_flags);
--
--	/*
--	 * these counters are modified from e1000_adjust_tbi_stats,
--	 * called from the interrupt context, so they must only
--	 * be written while holding adapter->stats_lock
--	 */
--
- 	adapter->stats.crcerrs += er32(CRCERRS);
- 	adapter->stats.gprc += er32(GPRC);
- 	adapter->stats.gorc += er32(GORCL);
-@@ -3046,8 +3035,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
- 	adapter->stats.mgptc += er32(MGTPTC);
- 	adapter->stats.mgprc += er32(MGTPRC);
- 	adapter->stats.mgpdc += er32(MGTPDC);
--
--	spin_unlock_irqrestore(&adapter->stats_lock, irq_flags);
- }
- 
- /**
-@@ -3059,9 +3046,6 @@ static void e1000_phy_read_status(struct e1000_adapter *adapter)
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct e1000_phy_regs *phy = &adapter->phy_regs;
- 	int ret_val;
--	unsigned long irq_flags;
--
--	spin_lock_irqsave(&adapter->stats_lock, irq_flags);
- 
- 	if ((er32(STATUS) & E1000_STATUS_LU) &&
- 	    (adapter->hw.phy.media_type == e1000_media_type_copper)) {
-@@ -3092,8 +3076,6 @@ static void e1000_phy_read_status(struct e1000_adapter *adapter)
- 		phy->stat1000 = 0;
- 		phy->estatus = (ESTATUS_1000_TFULL | ESTATUS_1000_THALF);
- 	}
--
--	spin_unlock_irqrestore(&adapter->stats_lock, irq_flags);
- }
- 
- static void e1000_print_link_info(struct e1000_adapter *adapter)
+
