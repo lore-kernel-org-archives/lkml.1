@@ -1,65 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbYIZG0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYIZGal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbYIZG0p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 02:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbYIZG0h
+	id S1754736AbYIZGal (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 02:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYIZGac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 02:26:37 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:48097 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752885AbYIZG0g convert rfc822-to-8bit (ORCPT
+	Fri, 26 Sep 2008 02:30:32 -0400
+Received: from mx40.brocade.com ([144.49.195.4]:23406 "EHLO mx40.brocade.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752316AbYIZGab convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 02:26:36 -0400
-Subject: Re: [ANNOUNCE] [PATCH] [MTD] Flex-OneNAND MTD Driver available.
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: apgmoorthy <moorthy.apg@samsung.com>,
-       Kyungmin Park <kyungmin.park@samsung.com>,
-       linux-mtd@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <9c9fda240809252230s6373acf8v4dd2b942eba360a7@mail.gmail.com>
-References: <19198934.52871221827459790.JavaMail.weblogic@epml16>
-	 <9c9fda240809220011w49c0875q804f836550ff3476@mail.gmail.com>
-	 <000001c91e42$1aa86c50$3dd66c6b@sisodomain.com>
-	 <9c9fda240809251731y48272a63j988e0001dc50d78@mail.gmail.com>
-	 <1222404711.5012.5.camel@sauron>
-	 <9c9fda240809252230s6373acf8v4dd2b942eba360a7@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 26 Sep 2008 09:26:09 +0300
-Message-Id: <1222410369.5012.9.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+	Fri, 26 Sep 2008 02:30:31 -0400
+X-IronPort-AV: E=Sophos;i="4.33,310,1220252400"; 
+   d="scan'208";a="39846460"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 26 Sep 2008 06:26:13.0133 (UTC) FILETIME=[C5D8FBD0:01C91FA0]
-X-Nokia-AV: Clean
+Subject: RE: [PATCH 5/6] bfa: Brocade BFA FC SCSI driver submission (2ndtry)
+Date: Thu, 25 Sep 2008 23:30:27 -0700
+Message-ID: <4C94DE2070B172459E4F1EE14BD2364E01F280A3@HQ-EXCH-5.corp.brocade.com>
+In-Reply-To: <1222408937.3265.17.camel@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 5/6] bfa: Brocade BFA FC SCSI driver submission (2ndtry)
+Thread-Index: AckfnYnL4ABiPwqJTsOeZQJhpSyfgAAALPaQ
+References: <200809260106.m8Q160kj028501@swe37.brocade.com> <20080926025514.GD9480@kroah.com> <4C94DE2070B172459E4F1EE14BD2364E01F28079@HQ-EXCH-5.corp.brocade.com> <1222408937.3265.17.camel@localhost.localdomain>
+From: "Jing Huang" <huangj@Brocade.COM>
+To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: "Greg KH" <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>,
+       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
+       "Srikanth Rayas (CW)" <srayas@Brocade.COM>,
+       "Vinodh Ravindran" <vravindr@Brocade.COM>
+X-OriginalArrivalTime: 26 Sep 2008 06:30:30.0391 (UTC) FILETIME=[5F2F7070:01C91FA1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi James,
 
-On Fri, 2008-09-26 at 14:30 +0900, Kyungmin Park wrote:
-> Thank you for your kind comments.
+It is encouraging to know that we can discuss and add new feature into
+existing fc transport. I guess this is opensource all about. I didn't
+have linux opensource experience before, so I was not quite sure how
+easy to request new features in fc transport such as mechanism to create
+multiple subdirectories for different level of statistics info in
+addition to the snia fc statitistics we already have, and other features
+such as CT/SCSI passthru and asynchronous event notification etc.
+
+Thanks
+
+Jing 
+
+
+-----Original Message-----
+From: James Bottomley [mailto:James.Bottomley@HansenPartnership.com] 
+Sent: Thursday, September 25, 2008 11:02 PM
+To: Jing Huang
+Cc: Greg KH; linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org;
+Ramkumar Vadivelu; Srikanth Rayas (CW); Vinodh Ravindran
+Subject: RE: [PATCH 5/6] bfa: Brocade BFA FC SCSI driver submission
+(2ndtry)
+
+On Thu, 2008-09-25 at 21:49 -0700, Jing Huang wrote:
+> The reason we creating our own sysfs directory under /sys/devices path
+> was we felt the fc transport and scsi host attributes are not enough
+for
+> all the HBA management features we want to have.
+
+This isn't really a valid reason.  We use the fc transport class to
+share infrastructure and provide a common interface for users.  If you
+need more, we can discuss adding features to the fc transport class if
+they would be useful to fibre drivers in general.  If they're not useful
+to other drivers, then you can add pieces specific to your driver for
+them, but the functionality that's already in the fc transport shouldn't
+be duplicated by that.
+
+>  We have ioctl in our
+> non opensource driver, and we want to have something to emulate
+all/most
+> of the IOCTL functionality we have in the opensource driver. We
+provide
+> multi-level of driver/fw statistics info to the user, and we want to
+put
+> those info under a separate directory instead of throw them all under
+> scsi_host.
+
+That's how the fc transport class currently operates.  It's statistics
+all appear in a "statistics" directory under the host.  If you use it
+(and add the ones you need that are missing) everyone will be happy and
+you won't need to worry about creating the directories.
+
+>  I just didn't know how to create a subdirectory under scsi/fc
+> host. Currently, we only implement a small portion of all the IOCTL
+> functionalities. We want to know if this is acceptable in the upstream
+> kernel. 
 > 
-> Yes that's I concerned it breaks the other NAND ABI. Actually In
-> OneNAND it doesn't use eccpos since OneNAND controller handle all ECC
-> functions. we don't need to concern it.
+> I agree that there are a lot of redundancy with the attributes we
+> created under scsi_host. We will clean them up.
 
-Right.
+James
 
-> As pages are bigger, it requires more eccpos and other fields are
-> similar. we need more flexible filed definitions.
-
-Right.
-
-> Well how do you think that at this time it only describes the 64 bytes
-> only for temporarily and next time it adds remaining parts if it is
-> really needed.
-
-Well, it is not very nice, but I guess it should be OK for this case,
-because people are not supposed to look at OOB of MLC OneNAND anyway. So
-I would go this way, although I'm not sure dwmw2 would agree on this.
-
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
 
