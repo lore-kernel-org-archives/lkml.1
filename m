@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYI0AFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYI0AOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbYI0AFn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 20:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYI0AFX
+	id S1753439AbYI0AOI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 20:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYI0ANz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 20:05:23 -0400
-Received: from mga14.intel.com ([143.182.124.37]:15964 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752208AbYI0AFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 20:05:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,316,1220252400"; 
-   d="scan'208";a="52030810"
-Date: Fri, 26 Sep 2008 17:05:15 -0700 (Pacific Daylight Time)
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: Tim Gardner <timg@tpi.com>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Arjan van de Ven <arjan@linux.jf.intel.com>,
-       Jiri Kosina <jkosina@suse.cz>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, agospoda@redhat.com,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
-       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com
-Subject: Re: e1000e NVM corruption issue status
-In-Reply-To: <48DD2F98.8070509@tpi.com>
-Message-ID: <Pine.WNT.4.63.0809261316310.4052@jbrandeb-desk.amr.corp.intel.com>
-References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com>
- <48DCCC5F.8040609@linux.intel.com> <200809261052.38966.jbarnes@virtuousgeek.org>
- <200809261123.52198.jbarnes@virtuousgeek.org> <48DD2F98.8070509@tpi.com>
-ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-X-X-Sender: jesse.brandeburg@intel.com@imap.glb.intel.com
+	Fri, 26 Sep 2008 20:13:55 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:47094 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751465AbYI0ANy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 20:13:54 -0400
+Date: Sat, 27 Sep 2008 03:13:21 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Amit Shah <amit.shah@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, iommu@lists.linux-foundation.org,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
+Message-ID: <20080927001321.GI9118@il.ibm.com>
+References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <200809261326.19261.amit.shah@redhat.com> <20080926085924.GC27928@amd.com> <200809261619.51637.amit.shah@redhat.com> <20080926123243.GE27928@amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080926123243.GE27928@amd.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Sep 2008, Tim Gardner wrote:
-> > Ok here's an updated one.  Jesse (Br) can you add it to your list?  If the X 
-> > driver really is mapping too much this should catch it, as long as it goes 
-> > through sysfs.
+On Fri, Sep 26, 2008 at 02:32:43PM +0200, Joerg Roedel wrote:
 
-I have, am testing with it now.
+> Ok, the allocation only matters for dma_alloc_coherent. Fujita
+> introduced a generic software-based dma_alloc_coherent recently
+> which you can use for that. I think implementing PVDMA into an own
+> dma_ops backend and multiplex it using my patches introduces less
+> overhead than an additional layer over the current dma_ops
+> implementation.
 
-> I've been experimenting with unmapping flash space until its actually
-> needed, e.g., in the functions that use the E1000_READ_FLASH and
-> E1000_WRITE_FLASH macros. Along the way I looked at how flash write
+I'm not sure what you have in mind, but I agree with Amit that
+conceptually pvdma should be called after the guest's "native" dma_ops
+have done their thing. This is not just for nommu, consider a guest
+that is using an (emulated) hardware IOMMU, or that wants to use
+swiotlb. We can't replicate their functionality in the pv_dma_ops
+layer, we have to let them run first and then pass deal with whatever
+we get back.
 
-That sounds like a good patch set.  I had thought of trying that but 
-hadn't gotten to it yet, so if you have something to look at in diff 
-format just post it and we'll take a look.
+> Another two questions to your approach: What happens if a
+> dma_alloc_coherent allocation crosses page boundarys and the gpa's
+> are not contiguous in host memory? How will dma masks be handled?
 
-> cycles are initiated because I was having a hard time believing that
-> having flash space mapped was part of the root cause. However, it looks
-> like its pretty simple to initiate a write or erase cycle. All of the
-> required action bits in ICH_FLASH_HSFSTS and ICH_FLASH_HSFCTL must be 1,
-> and these 2 register are in the correct order if X was writing 0xff in
-> ascending order.
+That's a very good question. The host will need to be aware of a
+device's DMA capabilities in order to return I/O addresses (which
+could be hpa's if you don't have an IOMMU) that satisfy them. That's
+quite a pain.
 
-Seems simple but when I tried it for a couple of hours yesterday I 
-couldn't get anything to happen to my flash.  This included putting 
-ew16flash writes in the e1000e driver, and writing those magic bits.
+Cheers,
+Muli
+-- 
+The First Workshop on I/O Virtualization (WIOV '08)
+Dec 2008, San Diego, CA, http://www.usenix.org/wiov08/
+                      xxx
+SYSTOR 2009---The Israeli Experimental Systems Conference
+http://www.haifa.il.ibm.com/conferences/systor2009/
