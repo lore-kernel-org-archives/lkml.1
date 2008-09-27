@@ -1,134 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbYI0Un3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYI0Us6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbYI0Un3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 16:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYI0UnV
+	id S1754094AbYI0Us6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 16:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYI0Usu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 16:43:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:58089 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752144AbYI0UnU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 16:43:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type;
-        b=Ml298ArhwWJNk3akmme5zrK+0kunCOH/63G3ZmkM8IChVUHPj+SpSHpwNiyTO0TKz/
-         ZPgiJxp4PS74AVJssE0nIRjUMoKmR50J40Su69CMhk3A1ANfEzzY9Q+5Am2WTR1wy2aN
-         InALfR7jTCnpR8FpQ7tSK31gwIsxI4AwP3pEI=
-Message-ID: <7d553cf40809271343m57b8d64er99c979fdc8c35e61@mail.gmail.com>
-Date: Sat, 27 Sep 2008 16:43:18 -0400
-From: Paul <paul14075@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Working packet injection patch for ipw2200 - enables aireplay-ng and others to work
+	Sat, 27 Sep 2008 16:48:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36135 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750998AbYI0Usu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 16:48:50 -0400
+Date: Sat, 27 Sep 2008 22:48:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: How how latent should non-preemptive scheduling be?
+Message-ID: <20080927204834.GA31650@elte.hu>
+References: <fa.Jx/Ygtm46CVRawlA6OnfYNn6cN0@ifi.uio.no> <fa.iIHgL48F3T5VAqFw3mqaf9Pzrs4@ifi.uio.no> <fa.Td8xkKZKMSMghlJmEYefTRVF2kc@ifi.uio.no> <48D39312.9000400@yahoo.com> <20080922115749.GE14301@elte.hu> <48D88DB4.9020003@yahoo.com> <20080923115323.GA27240@elte.hu> <48D919A9.5000708@yahoo.com> <48D9460C.5040504@yahoo.com> <48D96725.1080909@yahoo.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_37418_21160261.1222548198484"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D96725.1080909@yahoo.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_37418_21160261.1222548198484
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-I made this patch using bits and pieces from various other "ipw2200
-injection patches".  I can not take credit for the content, as I
-basically just changed the line numbers in the .diff files.  However I
-applied this patch to the version of ipw2200 included in kernel
-2.6.27-rc6  (i believe it's ipw2200-1.2.2) and it worked like a charm.
+* Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
 
-Previously I was unable to inject wifi packets using aireplay-ng due
-to this error:
+> Logs with the filtering on can be seen here (15Mbytes decompressed each):
+> http://sucs.org/~sits/test/eeepc-debug/20080923/latency_trace.gz
+> http://sucs.org/~sits/test/eeepc-debug/20080923/trace.txt.gz
+>
+> It looks like lots of acpi state is created and deleted...
 
-"ARP linktype is set to 1 (Ethernet) - expected ARPHRD_IEEE80211 or
-ARPHRD_IEEE80211_PRISM instead.  Make sure RFMON is enabled: run
-'ifconfig wifi0 up; iwconfig wifi0 mode Monitor channel <#>' Sysfs
-injection support was not found either."
+yeah. The latency starts here:
 
-However, after switching to Monitor mode, even though aireplay would
-ACT AS IF it was working, it wasn't.
+     cat-5901    0dNh.    1us : default_wake_function (__wake_up_common)
+     cat-5901    0.Nh.    2us : kill_fasync (snd_pcm_period_elapsed)
+     [...]
 
-After applying this patch, everything worked great.
+and ends here:
 
-I don't see why this patch isnt already included in ipw2200.
+     [...]
+     cat-5901    0.N.. 270501us+: mutex_lock (acpi_ec_transaction)
+     cat-5901    0d... 270507us : __cond_resched (_cond_resched)
 
-Thanks,
-- Paul
+270 _milliseconds_ later. That's excessive.
 
-------=_Part_37418_21160261.1222548198484
-Content-Type: application/octet-stream;
- name=ipw2200-1.2.2-inject-patch.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_flmpduzq0
-Content-Disposition: attachment; filename=ipw2200-1.2.2-inject-patch.patch
+The main overhead is starting here:
 
-LS0tIGRyaXZlcnMvbmV0L3dpcmVsZXNzL2lwdzIyMDAuYwkyMDA4LTA5LTA5IDE5OjI3OjQ5LjAw
-MDAwMDAwMCAtMDQwMAorKysgZHJpdmVycy9uZXQvd2lyZWxlc3MvaXB3MjIwMC1uZXcuYwkyMDA4
-LTA5LTI3IDE1OjQ4OjAzLjAwMDAwMDAwMCAtMDQwMApAQCAtMTc5LDcgKzE3OSw3IEBAIHN0YXRp
-YyBpbnQgaXB3X3F1ZXVlX3Jlc2V0KHN0cnVjdCBpcHdfcHIKIAogc3RhdGljIGludCBpcHdfcXVl
-dWVfdHhfaGNtZChzdHJ1Y3QgaXB3X3ByaXYgKnByaXYsIGludCBoY21kLCB2b2lkICpidWYsCiAJ
-CQkgICAgIGludCBsZW4sIGludCBzeW5jKTsKLQorc3RhdGljIGludCBpcHdfdHhfc2tiKHN0cnVj
-dCBpcHdfcHJpdiAqcHJpdiwgc3RydWN0IGllZWU4MDIxMV90eGIgKnR4YiwgaW50IHByaSk7CiBz
-dGF0aWMgdm9pZCBpcHdfdHhfcXVldWVfZnJlZShzdHJ1Y3QgaXB3X3ByaXYgKik7CiAKIHN0YXRp
-YyBzdHJ1Y3QgaXB3X3J4X3F1ZXVlICppcHdfcnhfcXVldWVfYWxsb2Moc3RydWN0IGlwd19wcml2
-ICopOwpAQCAtMTg2Miw2ICsxODYyLDYyIEBAIHN0YXRpYyBzc2l6ZV90IHN0b3JlX25ldF9zdGF0
-cyhzdHJ1Y3QgZGUKIHN0YXRpYyBERVZJQ0VfQVRUUihuZXRfc3RhdHMsIFNfSVdVU1IgfCBTX0lS
-VUdPLAogCQkgICBzaG93X25ldF9zdGF0cywgc3RvcmVfbmV0X3N0YXRzKTsKIAorLyogU1lTRlMg
-SU5KRUNUICovCitzdGF0aWMgc3NpemVfdCBzdG9yZV9pbmplY3Qoc3RydWN0IGRldmljZSAqZCwK
-KyAgICAgICAgc3RydWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsCisgICAgICAgIGNvbnN0IGNo
-YXIgKmJ1Ziwgc2l6ZV90IGNvdW50KQoreworICAgICAgICBzdHJ1Y3QgaXB3X3ByaXYgKnByaXYg
-PSAoc3RydWN0IGlwd19wcml2ICopZC0+ZHJpdmVyX2RhdGE7CisgICAgICAgIHN0cnVjdCBpZWVl
-ODAyMTFfZGV2aWNlICppZWVlID0gcHJpdi0+aWVlZTsKKyAgICAgICAgc3RydWN0IGllZWU4MDIx
-MV90eGIgKiB0eGI7CisgICAgICAgIHN0cnVjdCBza19idWZmICpza2JfZnJhZzsKKyAgICAgICAg
-dW5zaWduZWQgY2hhciAqIG5ld2J1ZjsKKyAgICAgICAgdW5zaWduZWQgbG9uZyBmbGFnczsKKwor
-ICAgICAgICAvLyBzaG91bGQgdGVzdCAoaWVlZS0+aXNfcXVldWVfZnVsbCkKKworICAgICAgICAv
-LyBGdyBvbmx5IGFjY2VwdHMgZGF0YSwgc28gYXZvaWQgYWNjaWRlbnRhbCBmdyBlcnJvcnMuCisg
-ICAgICAgIGlmICggKGJ1ZlswXSYweDBjKSAhPSAnXHgwOCcpIHsKKyAgICAgICAgICAgICAgLy9w
-cmludGsoImlwdzIyMDA6IGluamVjdDogZGlzY2FyZGluZyBub24tZGF0YSBmcmFtZSAodHlwZT0l
-MDJYKVxuIiwoaW50KSh1bnNpZ25lZCBjaGFyKWJ1ZlswXSk7CisgICAgICAgICAgICAgIHJldHVy
-biBjb3VudDsKKyAgICAgICAgfQorCisgICAgICAgIGlmIChjb3VudD4xNTAwKSB7CisgICAgICAg
-ICAgICAgIGNvdW50PTE1MDA7CisgICAgICAgICAgICAgIHByaW50aygiaXB3MjIwMDogaW5qZWN0
-OiBjdXR0aW5nIGRvd24gZnJhbWUgdG8gMTUwMCBieXRlc1xuIik7CisgICAgICAgIH0KKworICAg
-ICAgICBzcGluX2xvY2tfaXJxc2F2ZSgmcHJpdi0+bG9jaywgZmxhZ3MpOworCisgICAgICAgIC8v
-IENyZWF0ZSBhIHR4YiB3aXRoIG9uZSBza2IKKyAgICAgICAgdHhiID0ga21hbGxvYyhzaXplb2Yo
-c3RydWN0IGllZWU4MDIxMV90eGIpICsgc2l6ZW9mKHU4ICopLCBHRlBfQVRPTUlDKTsKKyAgICAg
-ICAgaWYgKCF0eGIpCisgICAgICAgICAgICAgIGdvdG8gbm9zZXB1ZWRlOworICAgICAgICB0eGIt
-Pm5yX2ZyYWdzPTE7CisgICAgICAgIHR4Yi0+ZnJhZ19zaXplID0gaWVlZS0+dHhfaGVhZHJvb207
-CisgICAgICAgIHR4Yi0+ZnJhZ21lbnRzWzBdPV9fZGV2X2FsbG9jX3NrYihjb3VudCArIGllZWUt
-PnR4X2hlYWRyb29tLCBHRlBfQVRPTUlDKTsKKyAgICAgICAgaWYgKCF0eGItPmZyYWdtZW50c1sw
-XSkgeworICAgICAgICAgICAgICBrZnJlZSh0eGIpOworICAgICAgICAgICAgICBnb3RvIG5vc2Vw
-dWVkZTsKKyAgICAgICAgfQorICAgICAgICBza2JfcmVzZXJ2ZSh0eGItPmZyYWdtZW50c1swXSwg
-aWVlZS0+dHhfaGVhZHJvb20pOworICAgICAgICB0eGItPmVuY3J5cHRlZD0wOworICAgICAgICB0
-eGItPnBheWxvYWRfc2l6ZT1jb3VudDsKKyAgICAgICAgc2tiX2ZyYWcgPSB0eGItPmZyYWdtZW50
-c1swXTsKKyAgICAgICAgbmV3YnVmPXNrYl9wdXQoc2tiX2ZyYWcsIGNvdW50KTsKKworICAgICAg
-ICAvLyBjb3B5IGRhdGEgaW50byB0eGItPnNrYiBhbmQgc2VuZCBpdAorICAgICAgICBtZW1jcHko
-bmV3YnVmLCBidWYsIGNvdW50KTsKKworICAgICAgICBpcHdfdHhfc2tiKHByaXYsIHR4YiwgMCk7
-CisKK25vc2VwdWVkZToKKyAgICAgICAgc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmcHJpdi0+bG9j
-aywgZmxhZ3MpOworICAgICAgICByZXR1cm4gY291bnQ7Cit9CisKK3N0YXRpYyBERVZJQ0VfQVRU
-UihpbmplY3QsIFNfSVdVU1IsIE5VTEwsIHN0b3JlX2luamVjdCk7CisKIHN0YXRpYyBzc2l6ZV90
-IHNob3dfY2hhbm5lbHMoc3RydWN0IGRldmljZSAqZCwKIAkJCSAgICAgc3RydWN0IGRldmljZV9h
-dHRyaWJ1dGUgKmF0dHIsCiAJCQkgICAgIGNoYXIgKmJ1ZikKQEAgLTEwNTEyLDYgKzEwNTY4LDEw
-IEBAIHN0YXRpYyBpbnQgaXB3X25ldF9zZXRfbWFjX2FkZHJlc3Moc3RydWMKIAltdXRleF9sb2Nr
-KCZwcml2LT5tdXRleCk7CiAJcHJpdi0+Y29uZmlnIHw9IENGR19DVVNUT01fTUFDOwogCW1lbWNw
-eShwcml2LT5tYWNfYWRkciwgYWRkci0+c2FfZGF0YSwgRVRIX0FMRU4pOworCisgICAgICAgIGlm
-IChydGFwX2lmYWNlKQorICAgICAgICAgICAgICAgbWVtY3B5KHByaXYtPnByb21fbmV0X2Rldi0+
-ZGV2X2FkZHIsIGFkZHItPnNhX2RhdGEsIEVUSF9BTEVOKTsKKwogCXByaW50ayhLRVJOX0lORk8g
-IiVzOiBTZXR0aW5nIE1BQyB0byAlc1xuIiwKIAkgICAgICAgcHJpdi0+bmV0X2Rldi0+bmFtZSwg
-cHJpbnRfbWFjKG1hYywgcHJpdi0+bWFjX2FkZHIpKTsKIAlxdWV1ZV93b3JrKHByaXYtPndvcmtx
-dWV1ZSwgJnByaXYtPmFkYXB0ZXJfcmVzdGFydCk7CkBAIC0xMTQ3OCw2ICsxMTUzOCw3IEBAIHN0
-YXRpYyBzdHJ1Y3QgYXR0cmlidXRlICppcHdfc3lzZnNfZW50cmkKICNpZmRlZiBDT05GSUdfSVBX
-MjIwMF9QUk9NSVNDVU9VUwogCSZkZXZfYXR0cl9ydGFwX2lmYWNlLmF0dHIsCiAJJmRldl9hdHRy
-X3J0YXBfZmlsdGVyLmF0dHIsCisJJmRldl9hdHRyX2luamVjdC5hdHRyLAogI2VuZGlmCiAJTlVM
-TAogfTsKLS0tIGRyaXZlcnMvbmV0L3dpcmVsZXNzL2lwdzIyMDAuaAkyMDA4LTA5LTA5IDE5OjI3
-OjQ5LjAwMDAwMDAwMCAtMDQwMAorKysgZHJpdmVycy9uZXQvd2lyZWxlc3MvaXB3MjIwMC1uZXcu
-aAkyMDA4LTA5LTI3IDE1OjMyOjIzLjAwMDAwMDAwMCAtMDQwMApAQCAtMjAwNyw0ICsyMDA3LDEz
-IEBAIHN0cnVjdCBpcHdfY21kX2xvZyB7CiAKICNkZWZpbmUgSVBXX01BWF9DT05GSUdfUkVUUklF
-UyAxMAogCisvKgorICogSGhhY2sgdG8gZ2V0IGNvZGUgY29tcGlsaW5nIG9uIG5ldyBrZXJuZWxz
-LCB0aGUgZGVmaW5lIGJlbG93CisgKiBzZWVtIHRvIGJlIHJlbW92ZWQgZnJvbSB0aGUgbGludXgg
-aGVhZGVycy4KKyAqLworI2lmbmRlZiBNQUNfQVJHCisjZGVmaW5lIE1BQ19BUkcoeCkgKCh1OCop
-KHgpKVswXSwoKHU4KikoeCkpWzFdLCgodTgqKSh4KSlbMl0sKCh1OCopKHgpKVszXSwoKHU4Kiko
-eCkpWzRdLCgodTgqKSh4KSlbNV0KKyNlbmRpZgorCisKICNlbmRpZgkJCQkvKiBfX2lwdzIyMDBf
-aF9fICovCg==
-------=_Part_37418_21160261.1222548198484--
+     cat-5901    0.N..  167us : acpi_ds_result_push (acpi_ds_exec_end_op)
+
+lots of ACPI code executed ...
+
+does it get better if you have CONFIG_PREEMPT_VOLUNTARY=y enabled? That 
+_should_ break up this section neatly. If it doesnt then please add a 
+might_sleep() check to kernel/kernel/semaphore.c's down_timeout() 
+function - that is called a number of times in this trace.
+
+	Ingo
