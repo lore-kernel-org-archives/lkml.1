@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbYI0RRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbYI0RSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753881AbYI0RRz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 13:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYI0RRs
+	id S1753795AbYI0RSU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 13:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYI0RSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 13:17:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47854 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752783AbYI0RRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 13:17:47 -0400
-Date: Sat, 27 Sep 2008 19:16:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	Sat, 27 Sep 2008 13:18:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47146 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752822AbYI0RSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 13:18:05 -0400
+Date: Sat, 27 Sep 2008 13:18:01 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>,
        "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 1/3] Unified trace buffer
-Message-ID: <20080927171640.GA1990@elte.hu>
-References: <alpine.LFD.1.10.0809251002290.3265@nehalem.linux-foundation.org> <20080925195522.GA22248@elte.hu> <20080925201211.GA1878@elte.hu> <alpine.LFD.1.10.0809251318270.3265@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809251325450.3265@nehalem.linux-foundation.org> <20080925211017.GA12689@elte.hu> <20080925214134.GA23025@elte.hu> <alpine.LFD.1.10.0809251458020.3265@nehalem.linux-foundation.org> <20080925221441.GA29060@elte.hu> <alpine.LFD.1.10.0809251631460.3265@nehalem.linux-foundation.org>
+Subject: Re: [PATCH v5] Unified trace buffer
+In-Reply-To: <20080927170225.GJ4600@elte.hu>
+Message-ID: <alpine.DEB.1.10.0809271314160.10238@gandalf.stny.rr.com>
+References: <20080925185154.230259579@goodmis.org> <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com> <48DC406D.1050508@redhat.com> <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>
+ <20080926173130.GE15446@ghostprotocols.net> <alpine.LFD.1.10.0809261036420.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809261346040.21618@gandalf.stny.rr.com> <20080927170225.GJ4600@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809251631460.3265@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Fri, 26 Sep 2008, Ingo Molnar wrote:
-> > 
-> > i do not understand this argument of yours. (really)
-> > 
-> > 1) is your point that we might lock up?
+On Sat, 27 Sep 2008, Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> Have you at all followed the discussion about the people who asked for 
-> cross-CPU ordering? They wanted not timestamps at all, but global 
-> atomic counter updates. Which is very reasonable, if timestamps don't 
-> work (and jiffies certainly doesn't, especially in a NOHZ 
-> environment).
+> > Subject: [RFC PATCH 2/2 v3] ftrace: make work with new ring buffer
+> >
+> > Note: This patch is a proof of concept, and breaks a lot of 
+> > functionality of ftrace.
+> >
+> > This patch simply makes ftrace work with the developmental ring 
+> > buffer.
 > 
-> IOW, my whole argument is that what tracers want is _not_ the same 
-> thing as what "sched_clock()" wants.
+> ... to not have known bugs, so that we could try it in tip/ftrace and 
+> make sure it works well in practice?
+> 
+> it's a ton of changes already, it would be nice to get to some stable 
+> known-working state and do delta patches from that point on, and keep 
+> its 'works well' quality.
 
-ah, i see what you mean. I think that's an orthogonal property.
+OK, the patch that I was using was against Linus's tree. I'll port it over 
+to linux-tip on Monday and get it past the "proof of concept" stage. 
+Actually, the verison I have on my desk works pretty well. The main issues 
+to solve is that some other tracers and the self test stick their noses 
+into the buffering system, which would need to be fixed.
 
-Well, it's important in some cases, not that important in other cases.
+There's also some bugs in the status numbers printed in the latency_trace 
+header. But I have not hit any bugs with the buffering itself.
 
-Historically we've been flip-flopping on that issue in ftrace, whether 
-it should be coherent by default or not. We had at least three of four 
-variations of global synchronization. (one was an atomic generation 
-counter, another variant a global lock)
+I'll clean all this up and send out a patch on Monday. My wife is 
+mandating that I do not do anymore work over the weekend ;-)
 
-Eventually people noticed the overhead and asked for it to be faster.
+-- Steve
 
-If all you do is to trace high-freq events on all CPUs and you are _not_ 
-interested in the precise interactions, the overhead of global 
-synchronization can hurt a lot.
-
-In any case, SMP coherency of trace events is an independent property of 
-the tracer, and preferably something that can be turned on/off.
-
-	Ingo
