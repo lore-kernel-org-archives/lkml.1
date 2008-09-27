@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYI0ROh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbYI0RRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbYI0ROh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 13:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYI0RO3
+	id S1753881AbYI0RRz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 13:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYI0RRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 13:14:29 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38744 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752676AbYI0RO3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 13:14:29 -0400
-Subject: Re: [RFC PATCH] LTTng relay buffer allocation, read, write
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Martin Bligh <mbligh@google.com>,
-       prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
-       David Wilder <dwilder@us.ibm.com>
-In-Reply-To: <20080927134012.GA11930@Krystal>
-References: <20080927134012.GA11930@Krystal>
-Content-Type: text/plain
-Date: Sat, 27 Sep 2008 19:10:18 +0200
-Message-Id: <1222535419.16700.300.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Sep 2008 13:17:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47854 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752783AbYI0RRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 13:17:47 -0400
+Date: Sat, 27 Sep 2008 19:16:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <peterz@infradead.org>, Martin Bligh <mbligh@mbligh.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+Message-ID: <20080927171640.GA1990@elte.hu>
+References: <alpine.LFD.1.10.0809251002290.3265@nehalem.linux-foundation.org> <20080925195522.GA22248@elte.hu> <20080925201211.GA1878@elte.hu> <alpine.LFD.1.10.0809251318270.3265@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809251325450.3265@nehalem.linux-foundation.org> <20080925211017.GA12689@elte.hu> <20080925214134.GA23025@elte.hu> <alpine.LFD.1.10.0809251458020.3265@nehalem.linux-foundation.org> <20080925221441.GA29060@elte.hu> <alpine.LFD.1.10.0809251631460.3265@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0809251631460.3265@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-09-27 at 09:40 -0400, Mathieu Desnoyers wrote:
-> As I told Martin, I was thinking about taking an axe and moving stuff around in
-> relay. Which I just did.
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Fri, 26 Sep 2008, Ingo Molnar wrote:
+> > 
+> > i do not understand this argument of yours. (really)
+> > 
+> > 1) is your point that we might lock up?
 > 
-> This patch reimplements relay with a linked list of pages. Provides read/write
-> wrappers which should be used to read or write from the buffers. It's the core
-> of a layered approach to the design requirements expressed by Martin and
-> discussed earlier.
+> Have you at all followed the discussion about the people who asked for 
+> cross-CPU ordering? They wanted not timestamps at all, but global 
+> atomic counter updates. Which is very reasonable, if timestamps don't 
+> work (and jiffies certainly doesn't, especially in a NOHZ 
+> environment).
 > 
-> It does not provide _any_ sort of locking on buffer data. Locking should be done
-> by the caller. Given that we might think of very lightweight locking schemes, it
-> makes sense to me that the underlying buffering infrastructure supports event
-> records larger than 1 page.
-> 
-> A cache saving 3 pointers is used to keep track of current page used for the
-> buffer for write, read and current subbuffer header pointer lookup. The offset
-> of each page within the buffer is saved in the page frame structure to permit
-> cache lookup without extra locking.
-> 
-> TODO : Currently, no splice file operations are implemented. Should come soon.
-> The idea is to splice the buffers directly into files or to the network.
-> 
-> This patch is released as early RFC. It builds, that's about it. Testing will
-> come when I implement the splice ops.
+> IOW, my whole argument is that what tracers want is _not_ the same 
+> thing as what "sched_clock()" wants.
 
-Why? What aspects of Steve's ring-buffer interface will hinder us
-optimizing the implementation to be as light-weight as you like?
+ah, i see what you mean. I think that's an orthogonal property.
 
-The thing is, I'd like to see it that light as well ;-)
+Well, it's important in some cases, not that important in other cases.
 
-As for the page-spanning entries, I think we can do that with Steve's
-system just fine, its just that Linus said its a dumb idea and Steve
-dropped it, but there is nothing fundamental stopping us from recording
-a length that is > PAGE_SIZE and copying data into the pages one at a
-time.
+Historically we've been flip-flopping on that issue in ftrace, whether 
+it should be coherent by default or not. We had at least three of four 
+variations of global synchronization. (one was an atomic generation 
+counter, another variant a global lock)
 
-Nor do I see it impossible to implement splice on top of Steve's
-ring-buffer..
+Eventually people noticed the overhead and asked for it to be faster.
 
-So again, why?
+If all you do is to trace high-freq events on all CPUs and you are _not_ 
+interested in the precise interactions, the overhead of global 
+synchronization can hurt a lot.
 
+In any case, SMP coherency of trace events is an independent property of 
+the tracer, and preferably something that can be turned on/off.
+
+	Ingo
