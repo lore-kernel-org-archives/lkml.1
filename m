@@ -1,89 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbYI0DMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbYI0DNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbYI0DMR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 23:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYI0DMG
+	id S1752462AbYI0DNM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 23:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYI0DM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 23:12:06 -0400
-Received: from mga10.intel.com ([192.55.52.92]:23417 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751475AbYI0DMF (ORCPT
+	Fri, 26 Sep 2008 23:12:58 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52949 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751651AbYI0DM5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 23:12:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,317,1220252400"; 
-   d="scan'208";a="384951247"
-Subject: [PATCH] merge the define of PCI_CFG_SPACE_SIZE
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Greg KH <greg@kroah.com>, jbarnes@virtuousgeek.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 27 Sep 2008 11:08:53 +0800
-Message-Id: <1222484933.25574.35.camel@ymzhang>
+	Fri, 26 Sep 2008 23:12:57 -0400
+Date: Sat, 27 Sep 2008 12:19:17 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 0/12] memcg updates v5
+Message-Id: <20080927121917.9058a41e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080926193602.6b397910.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<48DC9AF2.1050101@linux.vnet.ibm.com>
+	<20080926182253.a62cc2d0.kamezawa.hiroyu@jp.fujitsu.com>
+	<48DCAC02.5050108@linux.vnet.ibm.com>
+	<20080926193602.6b397910.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: pci: merge define of PCI_CFG_SPACE_SIZE
-﻿From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+On Fri, 26 Sep 2008 19:36:02 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-3 files define PCI_CFG_SPACE_SIZE. Move the define to file
-pci_regs.h.
+> > I think (1) might be OK, except for the accounting issues pointed out (change in
+> > behaviour visible to end user again, sigh! :( ).
+> But it was just a BUG from my point of view...
+> 
+> > Is (1) a serious issue? 
+> considering force_empty(), it's serious.
+> 
+> > (2) seems OK, except for the locking change for mark_page_accessed. I am looking at
+> > (4) and (6) currently.
+> > 
 
-﻿Signed-off-by: Zhang Yanmin <yanmin_zhang@linux.intel.com>
+I'll do in following way in the next Monday.
+Divide patches into 2 set
 
----
+in early fix/optimize set.
+  - push (2)
+  - push (4)
+  - push (6)
+  - push (1)
 
-diff -Nraup linux-2.6.27-rc7/drivers/pci/pcie/aer/aerdrv_core.c linux-2.6.27-rc7_cleanup/drivers/pci/pcie/aer/aerdrv_core.c
---- linux-2.6.27-rc7/drivers/pci/pcie/aer/aerdrv_core.c	2008-09-27 09:35:32.000000000 +0800
-+++ linux-2.6.27-rc7_cleanup/drivers/pci/pcie/aer/aerdrv_core.c	2008-09-27 10:29:57.000000000 +0800
-@@ -28,7 +28,6 @@
- static int forceload;
- module_param(forceload, bool, 0);
- 
--#define PCI_CFG_SPACE_SIZE	(0x100)
- int pci_find_aer_capability(struct pci_dev *dev)
- {
- 	int pos;
-diff -Nraup linux-2.6.27-rc7/drivers/pci/pcie/portdrv.h linux-2.6.27-rc7_cleanup/drivers/pci/pcie/portdrv.h
---- linux-2.6.27-rc7/drivers/pci/pcie/portdrv.h	2008-07-14 05:51:29.000000000 +0800
-+++ linux-2.6.27-rc7_cleanup/drivers/pci/pcie/portdrv.h	2008-09-27 10:29:38.000000000 +0800
-@@ -25,7 +25,6 @@
- #define PCIE_CAPABILITIES_REG		0x2
- #define PCIE_SLOT_CAPABILITIES_REG	0x14
- #define PCIE_PORT_DEVICE_MAXSERVICES	4
--#define PCI_CFG_SPACE_SIZE		256
- 
- #define get_descriptor_id(type, service) (((type - 4) << 4) | service)
- 
-diff -Nraup linux-2.6.27-rc7/drivers/pci/probe.c linux-2.6.27-rc7_cleanup/drivers/pci/probe.c
---- linux-2.6.27-rc7/drivers/pci/probe.c	2008-09-27 09:35:32.000000000 +0800
-+++ linux-2.6.27-rc7_cleanup/drivers/pci/probe.c	2008-09-27 10:42:30.000000000 +0800
-@@ -14,8 +14,6 @@
- 
- #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
- #define CARDBUS_RESERVE_BUSNR	3
--#define PCI_CFG_SPACE_SIZE	256
--#define PCI_CFG_SPACE_EXP_SIZE	4096
- 
- /* Ugh.  Need to stop exporting this to modules. */
- LIST_HEAD(pci_root_buses);
-diff -Nraup linux-2.6.27-rc7/include/linux/pci_regs.h linux-2.6.27-rc7_cleanup/include/linux/pci_regs.h
---- linux-2.6.27-rc7/include/linux/pci_regs.h	2008-09-27 09:35:35.000000000 +0800
-+++ linux-2.6.27-rc7_cleanup/include/linux/pci_regs.h	2008-09-27 10:37:34.000000000 +0800
-@@ -421,6 +421,10 @@
- #define PCI_EXP_RTSTA		32	/* Root Status */
- 
- /* Extended Capabilities (PCI-X 2.0 and Express) */
-+/* pci space size & Ext cap start offset */
-+#define PCI_CFG_SPACE_SIZE		(256)
-+#define PCI_CFG_SPACE_EXP_SIZE		(4096) /* pci ext space size */
-+
- #define PCI_EXT_CAP_ID(header)		(header & 0x0000ffff)
- #define PCI_EXT_CAP_VER(header)		((header >> 16) & 0xf)
- #define PCI_EXT_CAP_NEXT(header)	((header >> 20) & 0xffc)
+drops (3).
+
+I don't want to remove all? pages-never-on-LRU before fixing force_empty.
+
+in updates
+  - introduce atomic flags. (5)
+  - add move_account() function (7)
+  - add memory.attribute to each memcg dir. (NEW)
+  - enhance force_empty (was (8))
+       - remove "forget all" logic. and add attribute to select following 2 behavior
+          - call try_to_free_page() until the usage goes down to 0.
+            This allows faiulre (if page is mlocked, we can't do.). (NEW)
+          - call move_account() to move all charges to its parent (as much as possible) (NEW)
+          In future, I'd liket to add trash-box cgroup for force_empty somewhere.
+  - allocate all page cgroup at boot (9)
+  - lazy lru free/add (10,11) with fixes.
+  - fix race at charging swap. (12)
+
+After (9), all page and page_cgroup has one-to-one releationship and we want to
+assume that "if page is alive and on LRU, it's accounted and has page_cgroup."
+(other team, bio cgroup want to use page_cgroup and I want to make it easy.)
+
+For this, fix to behavior of force_empty..."forget all" is necessary.
+SwapCache handling is also necessary but I'd like to postpone until next set
+because it's complicated.
+
+After above all.
+ - handle swap cache 
+ - Mem+Swap controller.
+ - add trashbox feature ?
+ - add memory.shrink_usage_to file.
+
+It's long way to what I really want to do....
+
+
+Thanks,
+-Kame
+
+
+
+
+
+
+
+
+  - 
+
+
 
 
