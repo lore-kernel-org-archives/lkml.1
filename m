@@ -1,374 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbYI0Ppt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbYI0P4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbYI0Ppt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 11:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbYI0Pom
+	id S1753533AbYI0P4R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 11:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbYI0P4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 11:44:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33193 "EHLO mx2.redhat.com"
+	Sat, 27 Sep 2008 11:56:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38616 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752595AbYI0Pok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 11:44:40 -0400
-From: Avi Kivity <avi@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] KVM: Convert x86 vcpu ioctls to use dispatch_ioctl_extensible()
-Date: Sat, 27 Sep 2008 18:44:02 +0300
-Message-Id: <1222530242-1272-4-git-send-email-avi@redhat.com>
-In-Reply-To: <1222530242-1272-1-git-send-email-avi@redhat.com>
-References: <1222530242-1272-1-git-send-email-avi@redhat.com>
+	id S1752559AbYI0P4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 11:56:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: I need some serious help to debug suspend to ram problem
+Date: Sat, 27 Sep 2008 18:01:37 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <48D4E685.8030801@gmail.com> <200809271515.50250.rjw@sisk.pl> <48DE4902.1080405@gmail.com>
+In-Reply-To: <48DE4902.1080405@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809271801.38449.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Avi Kivity <avi@redhat.com>
----
- arch/x86/kvm/x86.c |  241 +++++++++++++++++-----------------------------------
- 1 files changed, 77 insertions(+), 164 deletions(-)
+On Saturday, 27 of September 2008, Maxim Levitsky wrote:
+> Rafael J. Wysocki wrote:
+> > On Monday, 22 of September 2008, Maxim Levitsky wrote:
+> >> Rafael J. Wysocki wrote:
+> >>> On Sunday, 21 of September 2008, Maxim Levitsky wrote:
+> >>>> Maxim Levitsky wrote:
+> >>>>> Rafael J. Wysocki wrote:
+> >>>>>> On Saturday, 20 of September 2008, Maxim Levitsky wrote:
+> >>>>>>> Hi,
+> >>>>>>>
+> >>>>>>> I hit a dead end when trying to understand why my notebook can't 
+> >>>>>>> resume from suspend to ram
+> >>>>>>> if this is done two times a row.
+> >>>>>>>
+> >>>>>>> Single suspend/resume cycle works almost perfectly (beep that goes 
+> >>>>>>> through the sound card is muted... no morse code for me... :-(
+> >>>>>>>
+> >>>>>>> )
+> >>>>>>>
+> >>>>>>> I compiled a minimal kernel (absolutely nothing but disk drivers, all 
+> >>>>>>> experimental option like nohz
+> >>>>>>> turned off)
+> >>>>>>>
+> >>>>>>> But I had to turn SMP, since without it system won't resume first 
+> >>>>>>> time I suspend it.
+> >>>>>>> (How could this affect suspend?)
+> >>>>>> It could if the system is 64-bit.  In which case please have a look at
+> >>>>>> http://bugzilla.kernel.org/show_bug.cgi?id=11237
+> >>>>>>
+> >>>>>>> With SMP and minimal kernel (of course  no closed drivers), I get 
+> >>>>>>> same behavior,
+> >>>>>>> first resume works second hangs.
+> >>>>>>>
+> >>>>>>> I then added some debug code to real mode wakeup code, I put there in 
+> >>>>>>> first
+> >>>>>>> place instructions, that will save some magic value to rtc (to alarm
+> >>>>>>> registers that I know are preserved during boot cycle), and I 
+> >>>>>>> discovered   sad thing that first time bios does pass control to 
+> >>>>>>> linux, but second time
+> >>>>>>> (when it hangs), it doesn't.
+> >>>>>>>
+> >>>>>>> I tried to update bios, and I got same results.
+> >>>>>>>
+> >>>>>>> Of course it does work with that @#$%^& OS
+> >>>>>> So we're doing something wrong.  Please try the appended patch.
+> >>>>> Thanks a lot, but this didn't help.
+> >>>>>
+> >>>>> It still has same pattern, first suspend/resume works perfectly, second 
+> >>>>> suspend/resume hangs hard.
+> >>>>> It always happens like this, first resume always work (unless I turn off 
+> >>>>> smp in kernel (I test this again), or reserve all low memory)
+> >>>>>
+> >>>>> Also note that if I suspend the system to ram, resume, and then suspend 
+> >>>>> to disk, then I can suspend to ram and resume, it seems that
+> >>>>>
+> >>>>> on suspend to ram cycle somehow arms BIOS or something else, so second 
+> >>>>> resume in a row doesn't work.
+> >>>>>
+> >>>>> I run 32 bit kernel here, this is a long story (this bios doesn't turn 
+> >>>>> fan on when running 64-bit version, I could update it, and I know that 
+> >>>>> fan issue is fixed there, but new bios introduces bigger bug, namely it 
+> >>>>> makes fan to run almost always regardless of 32/64 type of os.
+> >>>>> And it doesn't fix this suspend/resume issue, I tested this. I could 
+> >>>>> start/stop fan manually with a script, but this could fail, and maybe I 
+> >>>>> will do so someday.)
+> >>>>>
+> >>>>> The bugzilla seems to be unrelated here, since bios does pass control 
+> >>>>> there, but corrupts memory.
+> >>>>> Here I also have seen that bios corrupts memory, but everything resumes 
+> >>>>> fine first time, and on second time,
+> >>>>> bios doesn't pass control (I put set of instructions in beginning of 
+> >>>>> wakeup real mode assembly file, no page tables, GDT/LDT are used there)
+> >>>> I did same test for kernel without SMP, yes it hangs on first resume, but bios
+> >>>> does pass control to linux, so while this is a minor bug, it is unrelated.
+> >>> Still, I'd be interested in debugging this one too, if possible.  That may be
+> >>> easier too. ;-)
+> >> I take a look at that.
+> >>
+> >>>> I also tested noapic, pci=nommconf. No luck.
+> >>>>
+> >>>> Pattern is always the same, first resume works always, second doesn't.
+> >>>> It is sad since first resume is almost perfect (when I have free time I need to look at sound codec datasheet
+> >>>> and fix few issues there, anyways here alsa has few issues, all this is trivial, I already fixed all issues with desktop
+> >>>> which has a sigmatel codec)
+> >>> If you have more than 2 GB of RAM, you can try iommu=soft .
+> >>>
+> >>> I guess that all of the /sys/power/pm_test tests are passed?
+> >> Well, I didn't run /sys/power/pm_test. 
+> >> But this system has rock solid suspend to disk, I use it always.
+> > 
+> > Please look at http://bugzilla.kernel.org/show_bug.cgi?id=11415 .
+> 
+> Hi,
+> 
+> 
+> I took a look there, but it doesn't seem to be similar to my issue,
+> my issue is much bigger :-(
+> 
+> They tell that 2.6.24 works, but here nothing works, I was never able to do
+> two suspends in row.
+> 
+> What I did find interesting was that they mention hardware locks of several kind there, so I am thinking
+> could that be related to EC code, could it be that EC code confuses it somehow, so next boot doesn't work?
+> Some hardware lock that kernel forgets to unlock, and that prevents bios from resume
+> 
+> Here ec switches to polled mode almost instantly, due to that bogus 'interrupt storm', I tried to increase interrupt threshold,
+> and no more polled mode, but nether working second resume :-(
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 4cfdd1b..aa9d228 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -1084,26 +1084,24 @@ static int __msr_io(struct kvm_vcpu *vcpu, struct kvm_msrs *msrs,
-  *
-  * @return number of msrs set successfully.
-  */
--static int msr_io(struct kvm_vcpu *vcpu, struct kvm_msrs __user *user_msrs,
-+static int msr_io(const struct ioctl_arg *iarg,
- 		  int (*do_msr)(struct kvm_vcpu *vcpu,
--				unsigned index, u64 *data),
--		  int writeback)
-+				unsigned index, u64 *data))
- {
--	struct kvm_msrs msrs;
-+	struct kvm_vcpu *vcpu = iarg->file->private_data;
-+	struct kvm_msrs *msrs = iarg->argp;
-+	struct kvm_msrs __user *user_msrs =
-+		(void __user *)iarg->argl + _IOC_SIZE(iarg->cmd);
- 	struct kvm_msr_entry *entries;
--	int r, n;
-+	int r;
- 	unsigned size;
- 
--	r = -EFAULT;
--	if (copy_from_user(&msrs, user_msrs, sizeof msrs))
--		goto out;
--
- 	r = -E2BIG;
--	if (msrs.nmsrs >= MAX_IO_MSRS)
-+	if (msrs->nmsrs >= MAX_IO_MSRS)
- 		goto out;
- 
- 	r = -ENOMEM;
--	size = sizeof(struct kvm_msr_entry) * msrs.nmsrs;
-+	size = sizeof(struct kvm_msr_entry) * msrs->nmsrs;
- 	entries = vmalloc(size);
- 	if (!entries)
- 		goto out;
-@@ -1112,22 +1110,26 @@ static int msr_io(struct kvm_vcpu *vcpu, struct kvm_msrs __user *user_msrs,
- 	if (copy_from_user(entries, user_msrs->entries, size))
- 		goto out_free;
- 
--	r = n = __msr_io(vcpu, &msrs, entries, do_msr);
-+	r = __msr_io(vcpu, msrs, entries, do_msr);
- 	if (r < 0)
- 		goto out_free;
- 
--	r = -EFAULT;
--	if (writeback && copy_to_user(user_msrs->entries, entries, size))
--		goto out_free;
--
--	r = n;
--
- out_free:
- 	vfree(entries);
- out:
- 	return r;
- }
- 
-+static long kvm_vcpu_ioctl_get_msrs(const struct ioctl_arg *iarg)
-+{
-+	return msr_io(iarg, kvm_get_msr);
-+}
-+
-+static long kvm_vcpu_ioctl_set_msrs(const struct ioctl_arg *iarg)
-+{
-+	return msr_io(iarg, do_set_msr);
-+}
-+
- int kvm_dev_ioctl_check_extension(long ext)
- {
- 	int r;
-@@ -1271,10 +1273,12 @@ static void cpuid_fix_nx_cap(struct kvm_vcpu *vcpu)
- }
- 
- /* when an old userspace process fills a new kernel module */
--static int kvm_vcpu_ioctl_set_cpuid(struct kvm_vcpu *vcpu,
--				    struct kvm_cpuid *cpuid,
--				    struct kvm_cpuid_entry __user *entries)
-+static long kvm_vcpu_ioctl_set_cpuid(const struct ioctl_arg *iarg)
- {
-+	struct kvm_vcpu *vcpu = iarg->file->private_data;
-+	struct kvm_cpuid *cpuid = iarg->argp;
-+	struct kvm_cpuid_entry __user *entries
-+		= (void __user *)iarg->argl + _IOC_SIZE(iarg->cmd);
- 	int r, i;
- 	struct kvm_cpuid_entry *cpuid_entries;
- 
-@@ -1311,10 +1315,12 @@ out:
- 	return r;
- }
- 
--static int kvm_vcpu_ioctl_set_cpuid2(struct kvm_vcpu *vcpu,
--				    struct kvm_cpuid2 *cpuid,
--				    struct kvm_cpuid_entry2 __user *entries)
-+static long kvm_vcpu_ioctl_set_cpuid2(const struct ioctl_arg *iarg)
- {
-+	struct kvm_vcpu *vcpu = iarg->file->private_data;
-+	struct kvm_cpuid2 *cpuid = iarg->argp;
-+	struct kvm_cpuid_entry2 __user *entries
-+		= (void __user *)iarg->argl + _IOC_SIZE(iarg->cmd);
- 	int r;
- 
- 	r = -E2BIG;
-@@ -1331,10 +1337,12 @@ out:
- 	return r;
- }
- 
--static int kvm_vcpu_ioctl_get_cpuid2(struct kvm_vcpu *vcpu,
--				    struct kvm_cpuid2 *cpuid,
--				    struct kvm_cpuid_entry2 __user *entries)
-+static long kvm_vcpu_ioctl_get_cpuid2(const struct ioctl_arg *iarg)
- {
-+	struct kvm_vcpu *vcpu = iarg->file->private_data;
-+	struct kvm_cpuid2 *cpuid = iarg->argp;
-+	struct kvm_cpuid_entry2 __user *entries
-+		= (void __user *)iarg->argl + _IOC_SIZE(iarg->cmd);
- 	int r;
- 
- 	r = -E2BIG;
-@@ -1513,19 +1521,22 @@ out:
- 	return r;
- }
- 
--static int kvm_vcpu_ioctl_get_lapic(struct kvm_vcpu *vcpu,
--				    struct kvm_lapic_state *s)
-+static long kvm_vcpu_ioctl_get_lapic(const struct ioctl_arg *iarg)
- {
-+	struct kvm_vcpu *vcpu = iarg->file->private_data;
-+	struct kvm_lapic_state *s = iarg->argp;
-+
- 	vcpu_load(vcpu);
- 	memcpy(s->regs, vcpu->arch.apic->regs, sizeof *s);
- 	vcpu_put(vcpu);
--
- 	return 0;
- }
- 
--static int kvm_vcpu_ioctl_set_lapic(struct kvm_vcpu *vcpu,
--				    struct kvm_lapic_state *s)
-+static long kvm_vcpu_ioctl_set_lapic(const struct ioctl_arg *iarg)
- {
-+	struct kvm_vcpu *vcpu = iarg->file->private_data;
-+	struct kvm_lapic_state *s = iarg->argp;
-+
- 	vcpu_load(vcpu);
- 	memcpy(vcpu->arch.apic->regs, s->regs, sizeof *s);
- 	kvm_apic_post_state_restore(vcpu);
-@@ -1534,9 +1545,11 @@ static int kvm_vcpu_ioctl_set_lapic(struct kvm_vcpu *vcpu,
- 	return 0;
- }
- 
--static int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu,
--				    struct kvm_interrupt *irq)
-+static long kvm_vcpu_ioctl_interrupt(const struct ioctl_arg *iarg)
- {
-+	struct kvm_vcpu *vcpu = iarg->file->private_data;
-+	struct kvm_interrupt *irq = iarg->argp;
-+
- 	if (irq->irq < 0 || irq->irq >= 256)
- 		return -EINVAL;
- 	if (irqchip_in_kernel(vcpu->kvm))
-@@ -1551,148 +1564,48 @@ static int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu,
- 	return 0;
- }
- 
--static int vcpu_ioctl_tpr_access_reporting(struct kvm_vcpu *vcpu,
--					   struct kvm_tpr_access_ctl *tac)
-+static long vcpu_ioctl_tpr_access_reporting(const struct ioctl_arg *iarg)
- {
-+	struct kvm_vcpu *vcpu = iarg->file->private_data;
-+	struct kvm_tpr_access_ctl *tac = iarg->argp;
-+
- 	if (tac->flags)
- 		return -EINVAL;
- 	vcpu->arch.tpr_access_reporting = !!tac->enabled;
- 	return 0;
- }
- 
--long kvm_arch_vcpu_ioctl(struct file *filp,
--			 unsigned int ioctl, unsigned long arg)
-+static long vcpu_ioctl_set_vapic_addr(const struct ioctl_arg *iarg)
- {
--	struct kvm_vcpu *vcpu = filp->private_data;
--	void __user *argp = (void __user *)arg;
--	int r;
--	struct kvm_lapic_state *lapic = NULL;
--
--	switch (ioctl) {
--	case KVM_GET_LAPIC: {
--		lapic = kzalloc(sizeof(struct kvm_lapic_state), GFP_KERNEL);
--
--		r = -ENOMEM;
--		if (!lapic)
--			goto out;
--		r = kvm_vcpu_ioctl_get_lapic(vcpu, lapic);
--		if (r)
--			goto out;
--		r = -EFAULT;
--		if (copy_to_user(argp, lapic, sizeof(struct kvm_lapic_state)))
--			goto out;
--		r = 0;
--		break;
--	}
--	case KVM_SET_LAPIC: {
--		lapic = kmalloc(sizeof(struct kvm_lapic_state), GFP_KERNEL);
--		r = -ENOMEM;
--		if (!lapic)
--			goto out;
--		r = -EFAULT;
--		if (copy_from_user(lapic, argp, sizeof(struct kvm_lapic_state)))
--			goto out;
--		r = kvm_vcpu_ioctl_set_lapic(vcpu, lapic);
--		if (r)
--			goto out;
--		r = 0;
--		break;
--	}
--	case KVM_INTERRUPT: {
--		struct kvm_interrupt irq;
--
--		r = -EFAULT;
--		if (copy_from_user(&irq, argp, sizeof irq))
--			goto out;
--		r = kvm_vcpu_ioctl_interrupt(vcpu, &irq);
--		if (r)
--			goto out;
--		r = 0;
--		break;
--	}
--	case KVM_SET_CPUID: {
--		struct kvm_cpuid __user *cpuid_arg = argp;
--		struct kvm_cpuid cpuid;
--
--		r = -EFAULT;
--		if (copy_from_user(&cpuid, cpuid_arg, sizeof cpuid))
--			goto out;
--		r = kvm_vcpu_ioctl_set_cpuid(vcpu, &cpuid, cpuid_arg->entries);
--		if (r)
--			goto out;
--		break;
--	}
--	case KVM_SET_CPUID2: {
--		struct kvm_cpuid2 __user *cpuid_arg = argp;
--		struct kvm_cpuid2 cpuid;
-+	struct kvm_vcpu *vcpu = iarg->file->private_data;
-+	struct kvm_vapic_addr *va = iarg->argp;
- 
--		r = -EFAULT;
--		if (copy_from_user(&cpuid, cpuid_arg, sizeof cpuid))
--			goto out;
--		r = kvm_vcpu_ioctl_set_cpuid2(vcpu, &cpuid,
--				cpuid_arg->entries);
--		if (r)
--			goto out;
--		break;
--	}
--	case KVM_GET_CPUID2: {
--		struct kvm_cpuid2 __user *cpuid_arg = argp;
--		struct kvm_cpuid2 cpuid;
-+	if (!irqchip_in_kernel(vcpu->kvm))
-+		return -EINVAL;
- 
--		r = -EFAULT;
--		if (copy_from_user(&cpuid, cpuid_arg, sizeof cpuid))
--			goto out;
--		r = kvm_vcpu_ioctl_get_cpuid2(vcpu, &cpuid,
--				cpuid_arg->entries);
--		if (r)
--			goto out;
--		r = -EFAULT;
--		if (copy_to_user(cpuid_arg, &cpuid, sizeof cpuid))
--			goto out;
--		r = 0;
--		break;
--	}
--	case KVM_GET_MSRS:
--		r = msr_io(vcpu, argp, kvm_get_msr, 1);
--		break;
--	case KVM_SET_MSRS:
--		r = msr_io(vcpu, argp, do_set_msr, 0);
--		break;
--	case KVM_TPR_ACCESS_REPORTING: {
--		struct kvm_tpr_access_ctl tac;
-+	kvm_lapic_set_vapic_addr(vcpu, va->vapic_addr);
-+	return 0;
-+}
- 
--		r = -EFAULT;
--		if (copy_from_user(&tac, argp, sizeof tac))
--			goto out;
--		r = vcpu_ioctl_tpr_access_reporting(vcpu, &tac);
--		if (r)
--			goto out;
--		r = -EFAULT;
--		if (copy_to_user(argp, &tac, sizeof tac))
--			goto out;
--		r = 0;
--		break;
--	};
--	case KVM_SET_VAPIC_ADDR: {
--		struct kvm_vapic_addr va;
-+static const struct ioctl_handler vcpu_ioctl_handlers[] = {
-+	{ KVM_GET_LAPIC, kvm_vcpu_ioctl_get_lapic },
-+	{ KVM_SET_LAPIC, kvm_vcpu_ioctl_set_lapic },
-+	{ KVM_INTERRUPT, kvm_vcpu_ioctl_interrupt },
-+	{ KVM_SET_CPUID, kvm_vcpu_ioctl_set_cpuid },
-+	{ KVM_SET_CPUID2, kvm_vcpu_ioctl_set_cpuid2 },
-+	{ KVM_GET_CPUID2, kvm_vcpu_ioctl_get_cpuid2 },
-+	{ KVM_GET_MSRS, kvm_vcpu_ioctl_get_msrs },
-+	{ KVM_SET_MSRS, kvm_vcpu_ioctl_set_msrs },
-+	{ KVM_TPR_ACCESS_REPORTING, vcpu_ioctl_tpr_access_reporting },
-+	{ KVM_SET_VAPIC_ADDR, vcpu_ioctl_set_vapic_addr },
-+	{ }
-+};
- 
--		r = -EINVAL;
--		if (!irqchip_in_kernel(vcpu->kvm))
--			goto out;
--		r = -EFAULT;
--		if (copy_from_user(&va, argp, sizeof va))
--			goto out;
--		r = 0;
--		kvm_lapic_set_vapic_addr(vcpu, va.vapic_addr);
--		break;
--	}
--	default:
--		r = -EINVAL;
--	}
--out:
--	if (lapic)
--		kfree(lapic);
--	return r;
-+long kvm_arch_vcpu_ioctl(struct file *filp,
-+			 unsigned int ioctl, unsigned long arg)
-+{
-+	return dispatch_ioctl_extensible(NULL, filp, ioctl, arg,
-+					 vcpu_ioctl_handlers, NULL);
- }
- 
- static int kvm_vm_ioctl_set_tss_addr(struct kvm *kvm, unsigned long addr)
--- 
-1.6.0.1
+Have you tried the patch from http://bugzilla.kernel.org/show_bug.cgi?id=10724#c142 ?
 
+Rafael
