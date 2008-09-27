@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYI0Rn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbYI0Rob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbYI0Rn7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 13:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYI0RkI
+	id S1755172AbYI0Rob (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 13:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbYI0RkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 13:40:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39033 "EHLO ogre.sisk.pl"
+	Sat, 27 Sep 2008 13:40:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39037 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754706AbYI0RkF convert rfc822-to-8bit (ORCPT
+	id S1754446AbYI0RkG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 13:40:05 -0400
+	Sat, 27 Sep 2008 13:40:06 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Oliver Neukum" <oliver@neukum.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+       "Pavel Machek" <pavel@suse.cz>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>
 References: <t_PcrlC6ypI.A.tGG.G7m3IB@albercik>
 In-Reply-To: <t_PcrlC6ypI.A.tGG.G7m3IB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +21,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <V8eU91268VO.A.fwH.u8m3IB@albercik>
-Subject: =?utf-8?q?[Bug=20#11442]=20btusb=20hibernation/suspend=20breakage=20in=20current=20-git?=
+Message-ID: <V8eU91268VO.A.84H.C9m3IB@albercik>
+Subject: =?utf-8?q?[Bug=20#11407]=20suspend:=20unable=20to=20handle=20kernel=20paging=20request?=
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 27 Sep 2008 17:56:45 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,13 +37,13 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11442
-Subject		: btusb hibernation/suspend breakage in current -git
-Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
-Date		: 2008-08-25 11:37 (34 days old)
-References	: http://marc.info/?l=linux-bluetooth&m=121966402012074&w=4
-Handled-By	: Oliver Neukum <oliver@neukum.org>
-Patch		: http://marc.info/?l=linux-bluetooth&m=121967226027323&w=4
-		  http://bugzilla.kernel.org/show_bug.cgi?id=11442#c1
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11407
+Subject		: suspend: unable to handle kernel paging request
+Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
+Date		: 2008-08-21 17:28 (38 days old)
+References	: http://marc.info/?l=linux-kernel&m=121933974928881&w=4
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+		  Pekka Enberg <penberg@cs.helsinki.fi>
+		  Pavel Machek <pavel@suse.cz>
 
 
