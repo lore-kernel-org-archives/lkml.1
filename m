@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbYI0Rji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbYI0Rjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbYI0Rji (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 13:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbYI0Riy
+	id S1752848AbYI0Rjz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 13:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbYI0Riz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 13:38:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38982 "EHLO ogre.sisk.pl"
+	Sat, 27 Sep 2008 13:38:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38985 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754248AbYI0Riw convert rfc822-to-8bit (ORCPT
+	id S1754257AbYI0Rix convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 13:38:52 -0400
+	Sat, 27 Sep 2008 13:38:53 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+       "Nico Schottelius" <nico@schottelius.org>
 References: <t_PcrlC6ypI.A.tGG.G7m3IB@albercik>
 In-Reply-To: <t_PcrlC6ypI.A.tGG.G7m3IB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <V8eU91268VO.A.1PB.h_m3IB@albercik>
-Subject: =?utf-8?q?[Bug=20#11215]=20INFO:=20possible=20recursive=20locking=20detected=20ps2_command?=
+Message-ID: <V8eU91268VO.A.oIB.a_m3IB@albercik>
+Subject: =?utf-8?q?[Bug=20#11220]=20Screen=20stays=20black=20after=20resume?=
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 27 Sep 2008 17:56:41 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,11 +35,10 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11215
-Subject		: INFO: possible recursive locking detected ps2_command
-Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Date		: 2008-07-31 9:41 (59 days old)
-References	: http://marc.info/?l=linux-kernel&m=121749737011637&w=4
-Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11220
+Subject		: Screen stays black after resume
+Submitter	: Nico Schottelius <nico@schottelius.org>
+Date		: 2008-07-31 21:05 (59 days old)
+References	: http://marc.info/?l=linux-kernel&m=121753882422899&w=4
 
 
