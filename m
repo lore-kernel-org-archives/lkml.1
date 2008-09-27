@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbYI0CDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbYI0CJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753401AbYI0CDk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 22:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbYI0CDc
+	id S1752985AbYI0CJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 22:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYI0CJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 22:03:32 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38029 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbYI0CDb (ORCPT
+	Fri, 26 Sep 2008 22:09:50 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:48488 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbYI0CJt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 22:03:31 -0400
-Message-ID: <48DD92AA.4050900@zytor.com>
-Date: Fri, 26 Sep 2008 18:55:54 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Nakajima, Jun" <jun.nakajima@intel.com>
-CC: "akataria@vmware.com" <akataria@vmware.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: Use CPUID to communicate with the hypervisor.
-References: <1222472815.29886.43.camel@alok-dev1>	 <48DD799C.3070706@zytor.com> <1222475403.29886.57.camel@alok-dev1> <48DD7F1A.4060703@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15718417A@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <0B53E02A2965CE4F9ADB38B34501A3A15718417A@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Sep 2008 22:09:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:sender;
+        b=bugg6w2FIn7JkxSgw+i/US0yD/2T62GiMZHtU3ha0jR7jdp5yLheW2AEvSn4xE1+nk
+         tvB1C6CWauABDbbywoFRrRl/+5HHpHKdk9mclHl06Z/4FKwpXK87nnRJ0e2zT4usROdU
+         bFnXpJCLTtuzTytb31AWG3nHYHc4uV9H1o0p4=
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       linux-kernel@vger.kernel.org
+Cc: Alberto Bertogli <albertito@blitiri.com.ar>
+Subject: [PATCH] bio.h: Remove unused conditional code
+Date: Fri, 26 Sep 2008 23:09:28 -0300
+Message-Id: <1222481368-15221-1-git-send-email-albertito@blitiri.com.ar>
+X-Mailer: git-send-email 1.6.0.87.g2858d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nakajima, Jun wrote:
->>>
->> Agreed.  However, that's obviously beyond our immediate control.
-> 
-> Well, actually it's under full control of the Linux community because the _kernel_ defines such virtual or semi-hardware features. I'm not sure if that particular value (0x40000010) is proper, but we should be able to pick reasonable ones/ranges.
-> 
+The whole bio_integrity() definition is inside an #ifdef
+CONFIG_BLK_DEV_INTEGRITY, there's no need for the conditional code.
 
-Uhm, no, they're defined by the _hypervisor_.
+Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
+---
+ include/linux/bio.h |    9 +--------
+ 1 files changed, 1 insertions(+), 8 deletions(-)
 
-	-hpa
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index 0933a14..57f9532 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -458,14 +458,7 @@ static inline char *__bio_kmap_irq(struct bio *bio, unsigned short idx,
+ #define bip_for_each_vec(bvl, bip, i)					\
+ 	__bip_for_each_vec(bvl, bip, i, (bip)->bip_idx)
+ 
+-static inline int bio_integrity(struct bio *bio)
+-{
+-#if defined(CONFIG_BLK_DEV_INTEGRITY)
+-	return bio->bi_integrity != NULL;
+-#else
+-	return 0;
+-#endif
+-}
++#define bio_integrity(bio) (bio->bi_integrity != NULL)
+ 
+ extern struct bio_integrity_payload *bio_integrity_alloc_bioset(struct bio *, gfp_t, unsigned int, struct bio_set *);
+ extern struct bio_integrity_payload *bio_integrity_alloc(struct bio *, gfp_t, unsigned int);
+-- 
+1.6.0.87.g2858d
+
