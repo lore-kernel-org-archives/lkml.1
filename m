@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYI0Q02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYI0Qa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528AbYI0Q02 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 12:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbYI0Q0U
+	id S1753551AbYI0Qa1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 12:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbYI0QaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 12:26:20 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41584 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752595AbYI0Q0U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 12:26:20 -0400
-Date: Sat, 27 Sep 2008 17:25:46 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, jbarnes@virtuousgeek.org,
-       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       arjan@linux.intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] ioremap sanity check to catch mapping requests
- exceeding the BAR sizes
-Message-ID: <20080927172546.6220ccbb@lxorguk.ukuu.org.uk>
-In-Reply-To: <48DE46AB.8070505@goop.org>
-References: <20080926014334.GF15609@linux-os.sc.intel.com>
-	<48DDDDDE.7060707@goop.org>
-	<20080927122145.49ad0cf4@lxorguk.ukuu.org.uk>
-	<48DE46AB.8070505@goop.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Sep 2008 12:30:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35388 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752069AbYI0QaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 12:30:16 -0400
+Date: Sat, 27 Sep 2008 18:30:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 0/7] traps: x86: irqtrace cleanup and some traps.c
+	unification
+Message-ID: <20080927163000.GB4600@elte.hu>
+References: <1222430588-29072-1-git-send-email-heukelum@fastmail.fm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222430588-29072-1-git-send-email-heukelum@fastmail.fm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Sep 2008 07:43:55 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Alan Cox wrote:
-> >> Any attempt to use ioremap on memory is a bug, so you should warn about
-> >> that too.
-> >>     
-> >
-> > We use it to ioremap things like the BIOS...
-> 
-> Yeah, that's fine.  I mean using ioremap on system memory is a bug.
+* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
 
-On system memory mapped by the kernel which I assume is what you mean -
-the BIOS is often shadowed system memory and we have platforms where
-memory pages not mapped into or managed the OS are ioremap() targets.
+> Aparantly the conversion of exceptions from traps to interrupts and 
+> the changes to the irq-tracer on i386 have not given any trouble, yet? 
+> (tip/x86/traps)
 
-That however is getting pedantic - I just didn't want anyone to overdo
-the sanity checks
+Correct.
 
-Alan
+Generally you'll hear from the -tip maintainers if there's any trouble 
+with a topic. If you see it integrated into tip/master and if you see no 
+comments then it means that they work just fine.
+
+> This is a small set of patches removing trace_hardirqs_fixup 
+> completely from the code. TRACE_IRQS_OFF is added to the assembly code 
+> instead, where needed.
+>
+> 7/7 is a small unification step between traps_32.c and traps_64.c
+
+cool! Any plans on finishing the unification? ;-)
+
+> Patches were generated against tip/x86/traps.
+
+applied to tip/x86/traps, thanks.
+
+	Ingo
