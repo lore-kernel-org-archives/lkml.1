@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYI0Rmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbYI0RnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbYI0Rmv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 13:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYI0Rjp
+	id S1755329AbYI0RnI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 13:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbYI0Rjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 13:39:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39015 "EHLO ogre.sisk.pl"
+	Sat, 27 Sep 2008 13:39:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39020 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754606AbYI0Rjk convert rfc822-to-8bit (ORCPT
+	id S1753254AbYI0Rjk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 27 Sep 2008 13:39:40 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+       "Christoph Lameter" <cl@linux-foundation.org>
 References: <t_PcrlC6ypI.A.tGG.G7m3IB@albercik>
 In-Reply-To: <t_PcrlC6ypI.A.tGG.G7m3IB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,15 +19,15 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <V8eU91268VO.A.09.L_m3IB@albercik>
-Subject: =?utf-8?q?[Bug=20#11230]=20Kconfig=20no=20longer=20outputs=20a=20.config=20with=20freshly=20updated=20defco=
-Date: Sat, 27 Sep 2008 17:56:42 +0200 (CEST)
+Message-ID: <V8eU91268VO.A.td.E-m3IB@albercik>
+Subject: =?utf-8?q?[Bug=20#11308]=20tbench=20regression=20on=20each=20kernel=20release=20from=20=202.6.22=20-&gt;=202.=
+Date: Sat, 27 Sep 2008 17:56:43 +0200 (CEST)
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nfigs?To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+6.28?To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 This message has been generated automatically as a part of a report
 of recent regressions.
@@ -37,10 +37,11 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11230
-Subject		: Kconfig no longer outputs a .config with freshly updated defconfigs
-Submitter	: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date		: 2008-08-02 16:03 (57 days old)
-References	: http://marc.info/?l=linux-kernel&m=121769306319391&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11308
+Subject		: tbench regression on each kernel release from 2.6.22 -&gt; 2.6.28
+Submitter	: Christoph Lameter <cl@linux-foundation.org>
+Date		: 2008-08-11 18:36 (48 days old)
+References	: http://marc.info/?l=linux-kernel&m=121847986119495&w=4
+		  http://marc.info/?l=linux-kernel&m=122125737421332&w=4
 
 
