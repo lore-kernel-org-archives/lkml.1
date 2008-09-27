@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751727AbYI0GS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYI0GSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751727AbYI0GS1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 02:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbYI0GRu
+	id S1753374AbYI0GSl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 02:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYI0GRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 02:17:50 -0400
-Received: from qmta02.emeryville.ca.mail.comcast.net ([76.96.30.24]:32935 "EHLO
-	QMTA02.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752933AbYI0GRt (ORCPT
+	Sat, 27 Sep 2008 02:17:54 -0400
+Received: from qmta08.emeryville.ca.mail.comcast.net ([76.96.30.80]:33632 "EHLO
+	QMTA08.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753140AbYI0GRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 02:17:49 -0400
-X-Authority-Analysis: v=1.0 c=1 a=EL4SVHJZKGMA:10 a=qWBTGFuzXRcA:10
- a=qbQrtpIn7OACpFAEgFoA:9 a=aHI419-XwkjZqFOCYe0A:7
- a=7uo0Y6S1I5_h7HcH7flwBes1akkA:4 a=i92e0Ub4el8A:10 a=d_-3mwAUsuEA:10
- a=vNGxQsTWjH8A:10
-Subject: [RFC PATCH 2/10] relay - Make the relay sub-buffer switch code
-	replaceable.
+	Sat, 27 Sep 2008 02:17:53 -0400
+X-Authority-Analysis: v=1.0 c=1 a=p7mu91FIu8UA:10 a=d77QCng6BXMA:10
+ a=rJv3afqXiQcjoyf599cA:9 a=QbhGxXt-SCBYFzQDWFAA:7
+ a=lyNeJ9nEY5NZHr0uZzFLplFczQIA:4 a=eqxxFxNu-gsA:10
+Subject: [RFC PATCH 3/10] relay - Add channel flags to relay, remove global
+	callback param.
 From: Tom Zanussi <zanussi@comcast.net>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -28,8 +27,8 @@ Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
        David Wilder <dwilder@us.ibm.com>
 Content-Type: text/plain
-Date: Sat, 27 Sep 2008 01:17:56 -0500
-Message-Id: <1222496276.6710.73.camel@charm-linux>
+Date: Sat, 27 Sep 2008 01:17:59 -0500
+Message-Id: <1222496279.6710.74.camel@charm-linux>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
@@ -37,145 +36,227 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the relay sub-buffer switch code replaceable.
+Add channel flags to relay, remove global callback param.
 
-With this patch, tracers now have complete control over the relay
-write (or reserve) path if they choose to do so, by implementing their
-own version of the sub-buffer switch function (switch_subbuf()), in
-addition to their own local write/reserve functions.  Tracers who
-choose not to do so automatically default to the normal behavior.
+relay should probably have had a flags param from the beginning; it
+wasn't originally added because it wasn't originally needed - it
+probably would have helped avoided some of the callback contortions
+that were added due to a lack of flags.  This adds them and does a
+small amount of low-hanging cleanup, and is also in preparation for
+some new flags in future patches.
 ---
- include/linux/relay.h |   23 ++++++++++++++++++-----
- kernel/relay.c        |   13 ++++++++-----
- 2 files changed, 26 insertions(+), 10 deletions(-)
+ block/blktrace.c      |    5 ++---
+ include/linux/relay.h |   21 +++++++++++----------
+ kernel/relay.c        |   20 ++++++++++----------
+ virt/kvm/kvm_trace.c  |    9 ++++-----
+ 4 files changed, 27 insertions(+), 28 deletions(-)
 
+diff --git a/block/blktrace.c b/block/blktrace.c
+index eb9651c..150c5f7 100644
+--- a/block/blktrace.c
++++ b/block/blktrace.c
+@@ -356,8 +356,7 @@ static int blk_remove_buf_file_callback(struct dentry *dentry)
+ static struct dentry *blk_create_buf_file_callback(const char *filename,
+ 						   struct dentry *parent,
+ 						   int mode,
+-						   struct rchan_buf *buf,
+-						   int *is_global)
++						   struct rchan_buf *buf)
+ {
+ 	return debugfs_create_file(filename, mode, parent, buf,
+ 					&relay_file_operations);
+@@ -424,7 +423,7 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ 		goto err;
+ 
+ 	bt->rchan = relay_open("trace", dir, buts->buf_size,
+-				buts->buf_nr, &blk_relay_callbacks, bt);
++			       buts->buf_nr, &blk_relay_callbacks, bt, 0UL);
+ 	if (!bt->rchan)
+ 		goto err;
+ 
 diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 17f0515..52e4d61 100644
+index 52e4d61..18fd269 100644
 --- a/include/linux/relay.h
 +++ b/include/linux/relay.h
-@@ -168,6 +168,18 @@ struct rchan_callbacks
- 	 * want to notify anyone should implement an empty version.
- 	 */
-         void (*notify_consumers)(struct rchan_buf *buf);
+@@ -25,7 +25,13 @@
+ /*
+  * Tracks changes to rchan/rchan_buf structs
+  */
+-#define RELAYFS_CHANNEL_VERSION		7
++#define RELAYFS_CHANNEL_VERSION		8
 +
-+	/*
-+	 * switch_subbuf - sub-buffer switch callback
-+	 * @buf: the channel buffer
-+	 * @length: size of current event
-+	 *
-+	 * Returns either the length passed in or 0 if full.
-+	 *
-+	 * Performs sub-buffer-switch tasks such as updating filesize,
-+	 * waking up readers, etc.
-+	 */
-+	size_t (*switch_subbuf)(struct rchan_buf *buf, size_t length);
++/*
++ * relay channel flags
++ */
++#define RCHAN_MODE_OVERWRITE		0x00000001	/* 'flight' mode */
++#define RCHAN_GLOBAL_BUFFER		0x00000002	/* not using per-cpu */
+ 
+ /*
+  * Per-cpu relay channel buffer
+@@ -66,11 +72,11 @@ struct rchan
+ 	void *private_data;		/* for user-defined data */
+ 	size_t last_toobig;		/* tried to log event > subbuf size */
+ 	struct rchan_buf *buf[NR_CPUS]; /* per-cpu channel buffers */
+-	int is_global;			/* One global buffer ? */
+ 	struct list_head list;		/* for channel list */
+ 	struct dentry *parent;		/* parent dentry passed to open */
+ 	int has_base_filename;		/* has a filename associated? */
+ 	char base_filename[NAME_MAX];	/* saved base filename */
++	unsigned long flags;		/* relay flags for this channel */
  };
  
  /*
-@@ -191,8 +203,9 @@ extern void relay_subbufs_consumed(struct rchan *chan,
- extern void relay_reset(struct rchan *chan);
- extern int relay_buf_full(struct rchan_buf *buf);
+@@ -125,7 +131,6 @@ struct rchan_callbacks
+ 	 * @parent: the parent of the file to create
+ 	 * @mode: the mode of the file to create
+ 	 * @buf: the channel buffer
+-	 * @is_global: outparam - set non-zero if the buffer should be global
+ 	 *
+ 	 * Called during relay_open(), once for each per-cpu buffer,
+ 	 * to allow the client to create a file to be used to
+@@ -136,17 +141,12 @@ struct rchan_callbacks
+ 	 * The callback should return the dentry of the file created
+ 	 * to represent the relay buffer.
+ 	 *
+-	 * Setting the is_global outparam to a non-zero value will
+-	 * cause relay_open() to create a single global buffer rather
+-	 * than the default set of per-cpu buffers.
+-	 *
+ 	 * See Documentation/filesystems/relayfs.txt for more info.
+ 	 */
+ 	struct dentry *(*create_buf_file)(const char *filename,
+ 					  struct dentry *parent,
+ 					  int mode,
+-					  struct rchan_buf *buf,
+-					  int *is_global);
++					  struct rchan_buf *buf);
  
--extern size_t relay_switch_subbuf(struct rchan_buf *buf,
--				  size_t length);
-+extern size_t switch_subbuf_default_callback(struct rchan_buf *buf,
-+					     size_t length);
-+
- 
- /**
-  *	relay_event_toobig - is event too big to fit in a sub-buffer?
-@@ -259,7 +272,7 @@ static inline void relay_write(struct rchan *chan,
- 	local_irq_save(flags);
- 	buf = chan->buf[smp_processor_id()];
- 	if (unlikely(buf->offset + length > chan->subbuf_size))
--		length = relay_switch_subbuf(buf, length);
-+		length = chan->cb->switch_subbuf(buf, length);
- 	memcpy(buf->data + buf->offset, data, length);
- 	buf->offset += length;
- 	local_irq_restore(flags);
-@@ -285,7 +298,7 @@ static inline void __relay_write(struct rchan *chan,
- 
- 	buf = chan->buf[get_cpu()];
- 	if (unlikely(buf->offset + length > buf->chan->subbuf_size))
--		length = relay_switch_subbuf(buf, length);
-+		length = chan->cb->switch_subbuf(buf, length);
- 	memcpy(buf->data + buf->offset, data, length);
- 	buf->offset += length;
- 	put_cpu();
-@@ -308,7 +321,7 @@ static inline void *relay_reserve(struct rchan *chan, size_t length)
- 	struct rchan_buf *buf = chan->buf[smp_processor_id()];
- 
- 	if (unlikely(buf->offset + length > buf->chan->subbuf_size)) {
--		length = relay_switch_subbuf(buf, length);
-+		length = chan->cb->switch_subbuf(buf, length);
- 		if (!length)
- 			return NULL;
- 	}
+ 	/*
+ 	 * remove_buf_file - remove file representing a relay channel buffer
+@@ -191,7 +191,8 @@ struct rchan *relay_open(const char *base_filename,
+ 			 size_t subbuf_size,
+ 			 size_t n_subbufs,
+ 			 struct rchan_callbacks *cb,
+-			 void *private_data);
++			 void *private_data,
++			 unsigned long rchan_flags);
+ extern int relay_late_setup_files(struct rchan *chan,
+ 				  const char *base_filename,
+ 				  struct dentry *parent);
 diff --git a/kernel/relay.c b/kernel/relay.c
-index 53652f1..e299f49 100644
+index e299f49..a2e06b0 100644
 --- a/kernel/relay.c
 +++ b/kernel/relay.c
-@@ -347,6 +347,7 @@ static struct rchan_callbacks default_channel_callbacks = {
- 	.create_buf_file = create_buf_file_default_callback,
- 	.remove_buf_file = remove_buf_file_default_callback,
- 	.notify_consumers = notify_consumers_default_callback,
-+	.switch_subbuf = switch_subbuf_default_callback,
- };
- 
- /**
-@@ -526,6 +527,8 @@ static void setup_callbacks(struct rchan *chan,
- 		cb->remove_buf_file = remove_buf_file_default_callback;
- 	if (!cb->notify_consumers)
- 		cb->notify_consumers = notify_consumers_default_callback;
-+	if (!cb->switch_subbuf)
-+		cb->switch_subbuf = switch_subbuf_default_callback;
- 	chan->cb = cb;
- }
- 
-@@ -730,7 +733,7 @@ int relay_late_setup_files(struct rchan *chan,
- }
- 
- /**
-- *	relay_switch_subbuf - switch to a new sub-buffer
-+ *	switch_subbuf_default_callback - switch to a new sub-buffer
-  *	@buf: channel buffer
-  *	@length: size of current event
-  *
-@@ -739,7 +742,7 @@ int relay_late_setup_files(struct rchan *chan,
-  *	Performs sub-buffer-switch tasks such as invoking callbacks,
-  *	updating padding counts, waking up readers, etc.
-  */
--size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
-+size_t switch_subbuf_default_callback(struct rchan_buf *buf, size_t length)
+@@ -310,8 +310,7 @@ static void buf_unmapped_default_callback(struct rchan_buf *buf,
+ static struct dentry *create_buf_file_default_callback(const char *filename,
+ 						       struct dentry *parent,
+ 						       int mode,
+-						       struct rchan_buf *buf,
+-						       int *is_global)
++						       struct rchan_buf *buf)
  {
- 	void *old, *new;
- 	size_t old_subbuf, new_subbuf;
-@@ -777,7 +780,7 @@ toobig:
- 	buf->chan->last_toobig = length;
- 	return 0;
+ 	return NULL;
  }
--EXPORT_SYMBOL_GPL(relay_switch_subbuf);
-+EXPORT_SYMBOL_GPL(switch_subbuf_default_callback);
- 
- /**
-  *	relay_subbufs_consumed - update the buffer's sub-buffers-consumed count
-@@ -857,14 +860,14 @@ void relay_flush(struct rchan *chan)
+@@ -411,7 +410,7 @@ void relay_reset(struct rchan *chan)
+ 	if (!chan)
  		return;
  
- 	if (chan->is_global && chan->buf[0]) {
--		relay_switch_subbuf(chan->buf[0], 0);
-+		chan->cb->switch_subbuf(chan->buf[0], 0);
+-	if (chan->is_global && chan->buf[0]) {
++	if (chan->flags & RCHAN_GLOBAL_BUFFER && chan->buf[0]) {
+ 		__relay_reset(chan->buf[0], 0);
  		return;
  	}
+@@ -445,8 +444,7 @@ static struct dentry *relay_create_buf_file(struct rchan *chan,
+ 
+ 	/* Create file in fs */
+ 	dentry = chan->cb->create_buf_file(tmpname, chan->parent,
+-					   S_IRUSR, buf,
+-					   &chan->is_global);
++					   S_IRUSR, buf);
+ 
+ 	kfree(tmpname);
+ 
+@@ -463,7 +461,7 @@ static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
+  	struct rchan_buf *buf = NULL;
+ 	struct dentry *dentry;
+ 
+- 	if (chan->is_global)
++	if (chan->flags & RCHAN_GLOBAL_BUFFER)
+ 		return chan->buf[0];
+ 
+ 	buf = relay_create_buf(chan);
+@@ -480,7 +478,7 @@ static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
+  	buf->cpu = cpu;
+  	__relay_reset(buf, 1);
+ 
+- 	if(chan->is_global) {
++	if(chan->flags & RCHAN_GLOBAL_BUFFER) {
+  		chan->buf[0] = buf;
+  		buf->cpu = 0;
+   	}
+@@ -595,7 +593,8 @@ struct rchan *relay_open(const char *base_filename,
+ 			 size_t subbuf_size,
+ 			 size_t n_subbufs,
+ 			 struct rchan_callbacks *cb,
+-			 void *private_data)
++			 void *private_data,
++			 unsigned long rchan_flags)
+ {
+ 	unsigned int i;
+ 	struct rchan *chan;
+@@ -612,6 +611,7 @@ struct rchan *relay_open(const char *base_filename,
+ 	chan->subbuf_size = subbuf_size;
+ 	chan->alloc_size = FIX_SIZE(subbuf_size * n_subbufs);
+ 	chan->parent = parent;
++	chan->flags = rchan_flags;
+ 	chan->private_data = private_data;
+ 	if (base_filename) {
+ 		chan->has_base_filename = 1;
+@@ -828,7 +828,7 @@ void relay_close(struct rchan *chan)
+ 		return;
  
  	mutex_lock(&relay_channels_mutex);
- 	for_each_possible_cpu(i)
- 		if (chan->buf[i])
--			relay_switch_subbuf(chan->buf[i], 0);
-+			chan->cb->switch_subbuf(chan->buf[i], 0);
- 	mutex_unlock(&relay_channels_mutex);
+-	if (chan->is_global && chan->buf[0])
++	if (chan->flags & RCHAN_GLOBAL_BUFFER && chan->buf[0])
+ 		relay_close_buf(chan->buf[0]);
+ 	else
+ 		for_each_possible_cpu(i)
+@@ -859,7 +859,7 @@ void relay_flush(struct rchan *chan)
+ 	if (!chan)
+ 		return;
+ 
+-	if (chan->is_global && chan->buf[0]) {
++	if (chan->flags & RCHAN_GLOBAL_BUFFER && chan->buf[0]) {
+ 		chan->cb->switch_subbuf(chan->buf[0], 0);
+ 		return;
+ 	}
+diff --git a/virt/kvm/kvm_trace.c b/virt/kvm/kvm_trace.c
+index 58141f3..d0a9e1c 100644
+--- a/virt/kvm/kvm_trace.c
++++ b/virt/kvm/kvm_trace.c
+@@ -130,10 +130,9 @@ static int kvm_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
  }
- EXPORT_SYMBOL_GPL(relay_flush);
+ 
+ static struct dentry *kvm_create_buf_file_callack(const char *filename,
+-						 struct dentry *parent,
+-						 int mode,
+-						 struct rchan_buf *buf,
+-						 int *is_global)
++						  struct dentry *parent,
++						  int mode,
++						  struct rchan_buf *buf)
+ {
+ 	return debugfs_create_file(filename, mode, parent, buf,
+ 				   &relay_file_operations);
+@@ -171,7 +170,7 @@ static int do_kvm_trace_enable(struct kvm_user_trace_setup *kuts)
+ 		goto err;
+ 
+ 	kt->rchan = relay_open("trace", kvm_debugfs_dir, kuts->buf_size,
+-				kuts->buf_nr, &kvm_relay_callbacks, kt);
++			       kuts->buf_nr, &kvm_relay_callbacks, kt, 0UL);
+ 	if (!kt->rchan)
+ 		goto err;
+ 
 -- 
 1.5.3.5
 
