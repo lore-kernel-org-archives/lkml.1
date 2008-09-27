@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbYI0PJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbYI0PQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbYI0PJY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 11:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYI0PJQ
+	id S1753376AbYI0PQx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 11:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbYI0PQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 11:09:16 -0400
-Received: from mga09.intel.com ([134.134.136.24]:52289 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752051AbYI0PJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 11:09:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,321,1220252400"; 
-   d="scan'208";a="444394171"
-Message-ID: <48DE4C92.3020806@linux.intel.com>
-Date: Sat, 27 Sep 2008 08:09:06 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Sat, 27 Sep 2008 11:16:45 -0400
+Received: from hpsmtp-eml11.kpnxchange.com ([213.75.38.111]:48316 "EHLO
+	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752051AbYI0PQo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 11:16:44 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [Bug #11550] pnp: Huge number of "io resource overlap" messages
+Date: Sat, 27 Sep 2008 17:16:37 +0200
+User-Agent: KMail/1.9.9
+Cc: Rene Herman <rene.herman@keyaccess.nl>, linux-kernel@vger.kernel.org,
+       Rene Herman <rene.herman@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, bugme-daemon@bugzilla.kernel.org
+References: <200809091250.08620.elendil@planet.nl> <200809201756.25157.bjorn.helgaas@hp.com> <200809261540.31443.bjorn.helgaas@hp.com>
+In-Reply-To: <200809261540.31443.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, jbarnes@virtuousgeek.org,
-       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] ioremap sanity check to catch mapping requests exceeding
- the BAR sizes
-References: <20080926014334.GF15609@linux-os.sc.intel.com>	<48DDDDDE.7060707@goop.org> <20080927122145.49ad0cf4@lxorguk.ukuu.org.uk> <48DE46AB.8070505@goop.org>
-In-Reply-To: <48DE46AB.8070505@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809271716.39119.elendil@planet.nl>
+X-OriginalArrivalTime: 27 Sep 2008 15:16:39.0817 (UTC) FILETIME=[0A714F90:01C920B4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Alan Cox wrote:
->>> Any attempt to use ioremap on memory is a bug, so you should warn about
->>> that too.
->>>     
->> We use it to ioremap things like the BIOS...
-> 
-> Yeah, that's fine.  I mean using ioremap on system memory is a bug.
-> 
+On Friday 26 September 2008, Bjorn Helgaas wrote:
+> Here's another approach based on section 3.5 of the PCI Firmware spec.
+> It says:
+>
+>   Since not all devices may be configured prior to the operating
+>   system handoff, the operating system needs to know whether a
+>   specific BAR register has been configured by firmware. The operating
+>   system makes the determination by checking the I/O Enable, and
+>   Memory Enable bits in the device's command register, and Expansion
+>   ROM BAR enable bits. If the enable bit is set, then the corresponding
+>   resource register has been configured.
+>
+> So instead of checking whether the BAR contains zero, the patch below
+> checks the I/O, Mem, and ROM BAR enable bits to determine whether a
+> BAR is enabled.
 
-ioremap() already warns on that in a separate check.
+That seems to nicely match what the BIOS setting does on my laptop.
 
->     J
+> Frans, I'm sorry to trouble you again, but could you test this and
+> make sure it takes care of the "resource overlap" messages you saw?
 
+No problem at all. Works correctly (applied on top of current git).
+I don't see any unexpected changes in the dmesg output, so:
+
+Tested-by: Frans Pop <elendil@planet.nl>
+
+Cheers,
+FJP
