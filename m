@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbYI0BVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbYI0BXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753104AbYI0BVr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 21:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYI0BVj
+	id S1753307AbYI0BXc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 21:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYI0BXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 21:21:39 -0400
-Received: from mga14.intel.com ([143.182.124.37]:65025 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750886AbYI0BVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 21:21:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,317,1220252400"; 
-   d="asc'?scan'208";a="52045994"
-Subject: Re: [PATCH 2/4] x86: Add UV bios call infrastructure v2
-From: Huang Ying <ying.huang@intel.com>
-To: Russ Anderson <rja@sgi.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>
-In-Reply-To: <20080926200242.GC138671@sgi.com>
-References: <20080926200242.GC138671@sgi.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-/CoewJOhqIe5kbqHZbFx"
-Date: Sat, 27 Sep 2008 09:21:35 +0800
-Message-Id: <1222478495.28661.19.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 26 Sep 2008 21:23:23 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:38283 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbYI0BXW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 21:23:22 -0400
+Date: Fri, 26 Sep 2008 21:23:20 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Steven Noonan <steven@uplinklabs.net>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5,
+ rc6, probably others)
+In-Reply-To: <20080919083208.GA15730@elte.hu>
+Message-ID: <alpine.DEB.1.10.0809262117590.29360@gandalf.stny.rr.com>
+References: <f488382f0809181449x7343aa7endff066cb5836a73c@mail.gmail.com> <20080918220102.GE7408@tesla> <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com> <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com>
+ <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com> <f488382f0809181952g628ab5a4nd86f396a08f4d6c8@mail.gmail.com> <20080919030125.GG7408@tesla> <f488382f0809190029n13b87ad1s153e5b983f301f31@mail.gmail.com> <20080919081733.GC19491@elte.hu>
+ <f488382f0809190122k1b30cd9q22fd076c1e3eaa18@mail.gmail.com> <20080919083208.GA15730@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-/CoewJOhqIe5kbqHZbFx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I hate trips where my email box becomes filled. I skip over a lot of 
+emails that I should not have.
 
-On Fri, 2008-09-26 at 15:02 -0500, Russ Anderson wrote:
-> Index: linux/include/asm-x86/efi.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux.orig/include/asm-x86/efi.h	2008-09-26 14:13:24.000000000 -0500
-> +++ linux/include/asm-x86/efi.h	2008-09-26 14:13:36.000000000 -0500
-> @@ -49,6 +49,20 @@ extern u64 efi_call5(void *fp, u64 arg1,
->  extern u64 efi_call6(void *fp, u64 arg1, u64 arg2, u64 arg3,
->  		     u64 arg4, u64 arg5, u64 arg6);
-> =20
-> +
-> +#ifndef CONFIG_EFI
-> +/*
-> + * IF EFI is not configured, have the EFI calls return -ENOSYS.
-> + */
-> +#define efi_call0(_f)					(-ENOSYS)
-> +#define efi_call1(_f, _a1)				(-ENOSYS)
-> +#define efi_call2(_f, _a1, _a2)				(-ENOSYS)
-> +#define efi_call3(_f, _a1, _a2, _a3)			(-ENOSYS)
-> +#define efi_call4(_f, _a1, _a2, _a3, _a4)		(-ENOSYS)
-> +#define efi_call5(_f, _a1, _a2, _a3, _a4, _a5)		(-ENOSYS)
-> +#define efi_call6(_f, _a1, _a2, _a3, _a4, _a5, _a6)	(-ENOSYS)
-> +#endif /* CONFIG_EFI */
-> +
->  #define efi_call_phys0(f)			\
->  	efi_call0((void *)(f))
->  #define efi_call_phys1(f, a1)			\
+On Fri, 19 Sep 2008, Ingo Molnar wrote:
+> 
+> What is needed is to set kernel/trace/trace.c's tracing_disabled 
+> variable to 0. I've Cc:-ed Steve Rostedt - Steve, why is there no easy 
+> ad-hoc way to trigger a stop-tracing event without elaborate changes?
 
-efi_call_virt<n> and efi_call_phys<n> is the API instead of efi_call<n>.
-And please put the implementation without CONFIG_EFI defined out of
+I think I added a way to do this. Hmm, I think it was in -rt that I added 
+it, and have not gotten around to sending you the updates.
 
-#ifdef CONFIG_X86_32
-<...>
-#else
-<...>
-#endif
+Yes, we need an easy way to disable the tracer. I think we have 
+ftrace_disable() function. Perhaps that only disables tracing that checks 
+the tracing_disabled variable.
 
-Best Regards,
-Huang Ying
+Anyway, I made sure the new ring_buffer code has an easy way to disable 
+it.
 
-
---=-/CoewJOhqIe5kbqHZbFx
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkjdipwACgkQKhFGF+eHlphRpgCglb6PRLPtRU5orbnZzCQU9QBX
-erkAoIdi+itqpjVG8bV9dUqZB8jL57zG
-=FNzl
------END PGP SIGNATURE-----
-
---=-/CoewJOhqIe5kbqHZbFx--
+-- Steve
 
