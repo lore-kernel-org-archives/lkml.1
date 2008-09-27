@@ -1,35 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYI0ASZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYI0AXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbYI0ASZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 20:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYI0ASR
+	id S1753900AbYI0AXi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 20:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYI0AXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 20:18:17 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42861 "EHLO
+	Fri, 26 Sep 2008 20:23:30 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33318 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752447AbYI0ASR (ORCPT
+	with ESMTP id S1752000AbYI0AX3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 20:18:17 -0400
-Date: Fri, 26 Sep 2008 20:18:14 -0400 (EDT)
+	Fri, 26 Sep 2008 20:23:29 -0400
+Date: Fri, 26 Sep 2008 20:23:27 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mike Travis <travis@sgi.com>
-cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>,
        "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
        hch@lst.de, Martin Bligh <mbligh@google.com>,
        Christoph Hellwig <hch@infradead.org>,
        Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+       Steven Rostedt <srostedt@redhat.com>
 Subject: Re: [PATCH v6] Unified trace buffer
-In-Reply-To: <48DD78C6.5030701@sgi.com>
-Message-ID: <alpine.DEB.1.10.0809262012160.21618@gandalf.stny.rr.com>
-References: <20080925185154.230259579@goodmis.org>  <20080925185236.244343232@goodmis.org>  <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>  <48DC406D.1050508@redhat.com>  <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com> 
- <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com> <1222456474.16700.289.camel@lappy.programming.kicks-ass.net> <48DD61F4.3000704@sgi.com> <alpine.DEB.1.10.0809261956000.21618@gandalf.stny.rr.com> <48DD78C6.5030701@sgi.com>
+In-Reply-To: <alpine.LFD.1.10.0809261707320.3265@nehalem.linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0809262022000.21618@gandalf.stny.rr.com>
+References: <20080925185154.230259579@goodmis.org> <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com> <48DC406D.1050508@redhat.com> <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>
+ <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com> <20080926223129.GF15446@ghostprotocols.net> <alpine.DEB.1.10.0809261957001.21618@gandalf.stny.rr.com> <alpine.LFD.1.10.0809261707320.3265@nehalem.linux-foundation.org>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -38,31 +38,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 26 Sep 2008, Mike Travis wrote:
-> Steven Rostedt wrote:
-> >> The other thing to consider is using a percpu variable.
-> > 
-> > This structure is allocated on request.
-> > 
-> > -- Steve
+On Fri, 26 Sep 2008, Linus Torvalds wrote:
+> > I started using the rb_ because I was constantly breaking the 80 character 
+> > line limit with ring_buffer ;-)   OK, for v8, I'll rename all static 
+> > internal functions to rb_ and keep the global ones ring_buffer_
 > 
-> 
-> Ahh, then it would need the yet to be added cpu_alloc() from Christoph.
+> It would probably be better to use something else than 'rb_', because that 
+> prefix is already used by the red-black trees, and exported as such (eg 
+> "rb_next()" etc).
 
-We can always change this later.
+Good point.
 
 > 
-> Your best bet then is to allocate based on nr_cpu_ids.
+> But at least as long as it's static, it's probably not _too_ noticeable if 
+> the rest of the names don't overlap. We _do_ include <linux/rbtree.h>  
+> almost everywhere, since we use those things in the VM, in timers etc, so 
+> it comes in through pretty much all headers.
 
-Actually in this case I chose num_possible_cpus(). Reason being is that 
-later I may add an interface to allow the user to select which CPUs they 
-want to trace, and this will only allocate a subset of CPU buffers. 
-(not going to implement that in the first release).
+Well, I just compiled it and it didn't have any name collisions, but that 
+doesn't mean that this wont change in the future.
 
-But to lay the ground work, I set a buffers->cpumask to be that of all the 
-cpus with buffers allocated. For now that mask is set to cpu_possible_map. 
-Since num_possible_cpus() is defined as cpus_weight_nr(cpu_possible_map) 
-I figured that was the better choice.
+What would you suggest?  buffer_ ? ringbuf_ ?
 
 -- Steve
 
