@@ -1,29 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbYI0StF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbYI0StY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754558AbYI0StF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 14:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYI0Ssy
+	id S1753685AbYI0StY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 14:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYI0StD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 14:48:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60267 "EHLO mx3.mail.elte.hu"
+	Sat, 27 Sep 2008 14:49:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60299 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753168AbYI0Ssx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 14:48:53 -0400
-Date: Sat, 27 Sep 2008 20:48:25 +0200
+	id S1754273AbYI0StB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 14:49:01 -0400
+Date: Sat, 27 Sep 2008 20:42:12 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: mgross@linux.intel.com, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] x86/pci: fix dmar_tbl early_ioremap leak v2
-Message-ID: <20080927184825.GA17867@elte.hu>
-References: <1222327705-22048-1-git-send-email-yhlu.kernel@gmail.com> <20080925081158.GA30349@elte.hu> <200809250743.35271.jbarnes@virtuousgeek.org> <20080925162434.GA30374@linux.intel.com> <86802c440809251001vc9aa170vb6656ca6f61b1971@mail.gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Martin Bligh <mbligh@google.com>, Peter Zijlstra <peterz@infradead.org>,
+       Martin Bligh <mbligh@mbligh.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Tom Zanussi <zanussi@comcast.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 1/3] Unified trace buffer
+Message-ID: <20080927184212.GB13685@elte.hu>
+References: <20080925201211.GA1878@elte.hu> <alpine.LFD.1.10.0809251318270.3265@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809251325450.3265@nehalem.linux-foundation.org> <20080925211017.GA12689@elte.hu> <20080925214134.GA23025@elte.hu> <alpine.LFD.1.10.0809251458020.3265@nehalem.linux-foundation.org> <20080925221441.GA29060@elte.hu> <alpine.LFD.1.10.0809251631460.3265@nehalem.linux-foundation.org> <20080927171640.GA1990@elte.hu> <alpine.DEB.1.10.0809271335001.10534@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440809251001vc9aa170vb6656ca6f61b1971@mail.gmail.com>
+In-Reply-To: <alpine.DEB.1.10.0809271335001.10534@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,38 +42,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Thu, Sep 25, 2008 at 9:24 AM, mark gross <mgross@linux.intel.com> wrote:
-> > On Thu, Sep 25, 2008 at 07:43:34AM -0700, Jesse Barnes wrote:
-> >> On Thursday, September 25, 2008 1:11 am Ingo Molnar wrote:
-> >> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >> > > use early_acpi_os_unmap_memory
-> >> > >
-> >> > > v2: move unmap_memory early...
-> >> > >
-> >> > > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> >> > >
-> >> > > ---
-> >> > >  drivers/pci/dmar.c |    9 +++++++--
-> >> > >  1 file changed, 7 insertions(+), 2 deletions(-)
-> >> >
-> >> > since this depends on other x2apic/sparseirq changes in -tip i've
-> >> > applied it to tip/irq/sparseirq.
-> >> >
-> >> > Jesse, any objections?
-> >>
-> >> Nope, but it would be good to get Dave or Mark's ack (Dave owns this code
-> >> now).
-> >>
-> > Sorry for the dumb question but where is acpi_get_table_with_size
-> > defined?  Its not in linus's git. /me goes and gets linux-next...
-> >
 > 
-> in tip/master
+> On Sat, 27 Sep 2008, Ingo Molnar wrote:
+> > 
+> > If all you do is to trace high-freq events on all CPUs and you are _not_ 
+> > interested in the precise interactions, the overhead of global 
+> > synchronization can hurt a lot.
+> > 
+> > In any case, SMP coherency of trace events is an independent property of 
+> > the tracer, and preferably something that can be turned on/off.
+> 
+> Just a note.  The current ring buffering system that I'm proposing 
+> keeps its own time stamp counter (currently sched_clock) that will 
+> most likely be updated later. I'm trying to keep this ring buffer 
+> system as dumb as possible. It does not even implement the merge sort. 
+> That's up to the tracer to handle. There's nothing stopping the trace 
+> from adding some atomic counter to each event to help it sort.
 
-access coordinates:
+correct. The price is all the notifier/callback overhead and the loss of 
+type checking of the record contents. But that's an unavoidable price of 
+abstraction, at least in C.
 
-  http://people.redhat.com/mingo/tip.git/README
+> So yes, the tracer can implement anything it wants on top of the ring 
+> buffer ;-)
+
+yes, very nice! :)
 
 	Ingo
