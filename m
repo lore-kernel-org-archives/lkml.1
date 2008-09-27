@@ -1,73 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbYI0RSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYI0R25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753795AbYI0RSU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 13:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYI0RSH
+	id S1753861AbYI0R25 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 13:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYI0R2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 13:18:07 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47146 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbYI0RSF (ORCPT
+	Sat, 27 Sep 2008 13:28:45 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:63134 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752834AbYI0R2o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 13:18:05 -0400
-Date: Sat, 27 Sep 2008 13:18:01 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH v5] Unified trace buffer
-In-Reply-To: <20080927170225.GJ4600@elte.hu>
-Message-ID: <alpine.DEB.1.10.0809271314160.10238@gandalf.stny.rr.com>
-References: <20080925185154.230259579@goodmis.org> <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com> <48DC406D.1050508@redhat.com> <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>
- <20080926173130.GE15446@ghostprotocols.net> <alpine.LFD.1.10.0809261036420.3265@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809261346040.21618@gandalf.stny.rr.com> <20080927170225.GJ4600@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 27 Sep 2008 13:28:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=Sg7avJGQ7RVGW6aut6lGhimDTx/e1g49aWfhIiTqKg4YNjW8GjkM97dw2w+kYc98xr
+         YZM87jzPMysMDYsFOjmamO6LsfDaoFhDhXmGOwHcJP+anPd/PRJAx4cCSv2xEFhBUDz5
+         EtI+wsXnqutjQDAwO4cXNCIoTUijZhAQFlK84=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH 08/18] ide-floppy: use drive->capacity64 for caching current capacity
+Date: Sat, 27 Sep 2008 17:34:55 +0200
+User-Agent: KMail/1.9.10
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080907221424.24285.81137.sendpatchset@localhost.localdomain> <20080907221519.24285.44318.sendpatchset@localhost.localdomain> <20080910112006.GA10263@gollum.tnic>
+In-Reply-To: <20080910112006.GA10263@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200809271734.55433.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sat, 27 Sep 2008, Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
+Hi,
+
+On Wednesday 10 September 2008, Borislav Petkov wrote:
+> Hi,
 > 
-> > Subject: [RFC PATCH 2/2 v3] ftrace: make work with new ring buffer
-> >
-> > Note: This patch is a proof of concept, and breaks a lot of 
-> > functionality of ftrace.
-> >
-> > This patch simply makes ftrace work with the developmental ring 
-> > buffer.
+> On Mon, Sep 08, 2008 at 12:15:19AM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > * Use drive->capacity64 for caching current capacity.
+> > 
+> > * Switch ide_floppy_capacity() to use drive->capacity64.
+> > 
+> > * Call set_capacity() in idefloppy_open() and ide_floppy_probe()
+> >   instead of ide_floppy_get_capacity().
+> > 
+> > There should be no functional changes caused by this patch.
+> > 
+> > Cc: Borislav Petkov <petkovbb@gmail.com>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> >  drivers/ide/ide-floppy.c |   23 +++++++++++++----------
+> >  1 file changed, 13 insertions(+), 10 deletions(-)
+> > 
+> > Index: b/drivers/ide/ide-floppy.c
+> > ===================================================================
+> > --- a/drivers/ide/ide-floppy.c
+> > +++ b/drivers/ide/ide-floppy.c
+> > @@ -445,7 +445,9 @@ static int ide_floppy_get_flexible_disk_
+> >  			drive->name, lba_capacity, capacity);
+> >  		floppy->blocks = floppy->block_size ?
+> >  			capacity / floppy->block_size : 0;
+> > +		drive->capacity64 = floppy->blocks * floppy->bs_factor;
 > 
-> ... to not have known bugs, so that we could try it in tip/ftrace and 
-> make sure it works well in practice?
+> why do we do the assignment only in the capacity < lba_capacity case?
+> drive->capacity64 is the total number of sectors, shouldn't we do
 > 
-> it's a ton of changes already, it would be nice to get to some stable 
-> known-working state and do delta patches from that point on, and keep 
-> its 'works well' quality.
+> drive->capacity64 = floppy->blocks;
+> 
+> in the floppy->bs_factor == 1 case? Otherwise you have the case of calling
 
-OK, the patch that I was using was against Linus's tree. I'll port it over 
-to linux-tip on Monday and get it past the "proof of concept" stage. 
-Actually, the verison I have on my desk works pretty well. The main issues 
-to solve is that some other tracers and the self test stick their noses 
-into the buffering system, which would need to be fixed.
+Probably we should...
 
-There's also some bugs in the status numbers printed in the latency_trace 
-header. But I have not hit any bugs with the buffering itself.
+> idefloppy_setup()
+> |-> ide_floppy_get_capacity()
+>     |-> ide_floppy_get_flexible_disk_page()
+> 
+> and having drive->capacity64 == 0 in the (capacity >= lba_capacity) case which
+> assigns a capacity of 0 to disk->capacity in the set_capacity() call later ...
+> 
+> or am I missing something?
 
-I'll clean all this up and send out a patch on Monday. My wife is 
-mandating that I do not do anymore work over the weekend ;-)
+...my patch just modified the code to also set ->capacity64 in places
+which previously were modifying ->blocks and/or ->bs_factor (since
+->capacity64 replaced open-coded ->blocks * ->bs_factor calculation),
+so I think that the above problem is as an orthogonal issue and it
+is the best to address it in separate pre- or post- patch (could you
+please take care of it?).
 
--- Steve
+[...]
 
+> > @@ -547,17 +551,12 @@ static int ide_floppy_get_capacity(ide_d
+> >  	if (!(drive->atapi_flags & IDE_AFLAG_CLIK_DRIVE))
+> >  		(void) ide_floppy_get_flexible_disk_page(drive);
+> >  
+> > -	set_capacity(disk, floppy->blocks * floppy->bs_factor);
+> > -
+> >  	return rc;
+> >  }
+> >  
+> >  sector_t ide_floppy_capacity(ide_drive_t *drive)
+> >  {
+> > -	idefloppy_floppy_t *floppy = drive->driver_data;
+> > -	unsigned long capacity = floppy->blocks * floppy->bs_factor;
+> > -
+> > -	return capacity;
+> > +	return drive->capacity64;
+> 
+> you can simplify this one even further by killing ide_floppy_capacity() and
+> doing
+> 
+> 	set_capacity(disk, floppy->drive->capacity64);
+
+I did it ide_floppy_capacity()-way to match ide_disk_capacity()
+and ease the merge (probably ide_gd_capacity() can be removed now).
+
+Thanks,
+Bart
