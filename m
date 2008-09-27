@@ -1,61 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbYI0CLD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbYI0C20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbYI0CLD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 22:11:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbYI0CKy
+	id S1753089AbYI0C20 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 22:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbYI0C2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 22:10:54 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:58249 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbYI0CKx (ORCPT
+	Fri, 26 Sep 2008 22:28:10 -0400
+Received: from igw2.watson.ibm.com ([129.34.20.6]:54591 "EHLO
+	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbYI0C2I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 22:10:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=FNyiGMGBaOmT/HgXhKZqMIkYALr2eybLmRnwM5ch/qzj78E+8r2HKAofLNp/KQZ6BT
-         ok9RsDlqe/QEt6tluO2rwQrr/wq9OhHNZE3VQsnUa2hrsALgzcfUuKwotp4UIGJPimB2
-         JAdQQ5w7lAQffd0YoF4WOf8RUI2cXFrZat/aM=
-From: Alberto Bertogli <albertito@blitiri.com.ar>
-To: Jens Axboe <jens.axboe@oracle.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       linux-kernel@vger.kernel.org
-Cc: Alberto Bertogli <albertito@blitiri.com.ar>
-Subject: [PATCH] Documentation/block/data-integrity.txt: Fix section numbers
-Date: Fri, 26 Sep 2008 23:10:31 -0300
-Message-Id: <1222481431-15476-1-git-send-email-albertito@blitiri.com.ar>
-X-Mailer: git-send-email 1.6.0.87.g2858d
+	Fri, 26 Sep 2008 22:28:08 -0400
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>
+Subject: [PATCH 1/6] file capabilities: add no_file_caps switch (v3)
+Date: Fri, 26 Sep 2008 22:27:45 -0400
+Message-Id: <7004aef68d149ffb4a11835f37469948496ffc18.1222451103.git.serue@us.ibm.com>
+X-Mailer: git-send-email 1.6.0.2.GIT
+In-Reply-To: <1222482472-12847-1-git-send-email-serue@us.ibm.com>
+References: <1222482472-12847-1-git-send-email-serue@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
----
- Documentation/block/data-integrity.txt |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+From: Serge Hallyn <serue@us.ibm.com>
 
-diff --git a/Documentation/block/data-integrity.txt b/Documentation/block/data-integrity.txt
-index e9dc8d8..e8ca040 100644
---- a/Documentation/block/data-integrity.txt
-+++ b/Documentation/block/data-integrity.txt
-@@ -246,7 +246,7 @@ will require extra work due to the application tag.
-       retrieve the tag buffer using bio_integrity_get_tag().
+Add a no_file_caps boot option when file capabilities are
+compiled into the kernel (CONFIG_SECURITY_FILE_CAPABILITIES=y).
+
+This allows distributions to ship a kernel with file capabilities
+compiled in, without forcing users to use (and understand and
+trust) them.
+
+When no_file_caps is specified at boot, then when a process executes
+a file, any file capabilities stored with that file will not be
+used in the calculation of the process' new capability sets.
+
+This means that booting with the no_file_caps boot option will
+not be the same as booting a kernel with file capabilities
+compiled out - in particular a task with  CAP_SETPCAP will not
+have any chance of passing capabilities to another task (which
+isn't "really" possible anyway, and which may soon by killed
+altogether by David Howells in any case), and it will instead
+be able to put new capabilities in its pI.  However since fI
+will always be empty and pI is masked with fI, it gains the
+task nothing.
+
+We also support the extra prctl options, setting securebits and
+dropping capabilities from the per-process bounding set.
+
+The other remaining difference is that killpriv, task_setscheduler,
+setioprio, and setnice will continue to be hooked.  That will
+be noticable in the case where a root task changed its uid
+while keeping some caps, and another task owned by the new uid
+tries to change settings for the more privileged task.
+
+Changelog:
+	Sep 23 2008: nixed file_caps_enabled when file caps are
+		not compiled in as it isn't used.
+		Document no_file_caps in kernel-parameters.txt.
+
+Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: Andrew G. Morgan <morgan@kernel.org>
+---
+ Documentation/kernel-parameters.txt |    4 ++++
+ include/linux/capability.h          |    3 +++
+ kernel/capability.c                 |   11 +++++++++++
+ security/commoncap.c                |    5 +++++
+ 4 files changed, 23 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 1150444..cbb04bf 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1393,6 +1393,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			instruction doesn't work correctly and not to
+ 			use it.
  
++	no_file_caps	Tells the kernel not to honor file capabilities.  The
++			only way then for a file to be executed with privilege
++			is to be setuid root or executed by root.
++
+ 	nohalt		[IA-64] Tells the kernel not to use the power saving
+ 			function PAL_HALT_LIGHT when idle. This increases
+ 			power-consumption. On the positive side, it reduces
+diff --git a/include/linux/capability.h b/include/linux/capability.h
+index 9d1fe30..5bc145b 100644
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -68,6 +68,9 @@ typedef struct __user_cap_data_struct {
+ #define VFS_CAP_U32             VFS_CAP_U32_2
+ #define VFS_CAP_REVISION	VFS_CAP_REVISION_2
  
--6.3 PASSING EXISTING INTEGRITY METADATA
-+5.3 PASSING EXISTING INTEGRITY METADATA
++#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
++extern int file_caps_enabled;
++#endif
  
-     Filesystems that either generate their own integrity metadata or
-     are capable of transferring IMD from user space can use the
-@@ -283,7 +283,7 @@ will require extra work due to the application tag.
-       integrity upon completion.
+ struct vfs_cap_data {
+ 	__le32 magic_etc;            /* Little endian */
+diff --git a/kernel/capability.c b/kernel/capability.c
+index 33e51e7..e13a685 100644
+--- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -33,6 +33,17 @@ EXPORT_SYMBOL(__cap_empty_set);
+ EXPORT_SYMBOL(__cap_full_set);
+ EXPORT_SYMBOL(__cap_init_eff_set);
  
++#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
++int file_caps_enabled = 1;
++
++static int __init file_caps_disable(char *str)
++{
++	file_caps_enabled = 0;
++	return 1;
++}
++__setup("no_file_caps", file_caps_disable);
++#endif
++
+ /*
+  * More recent versions of libcap are available from:
+  *
+diff --git a/security/commoncap.c b/security/commoncap.c
+index e4c4b3f..5f1fec0 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -279,6 +279,11 @@ static int get_file_caps(struct linux_binprm *bprm)
+ 	struct vfs_cap_data vcaps;
+ 	struct inode *inode;
  
--6.4 REGISTERING A BLOCK DEVICE AS CAPABLE OF EXCHANGING INTEGRITY
-+5.4 REGISTERING A BLOCK DEVICE AS CAPABLE OF EXCHANGING INTEGRITY
-     METADATA
- 
-     To enable integrity exchange on a block device the gendisk must be
++	if (!file_caps_enabled) {
++		bprm_clear_caps(bprm);
++		return 0;
++	}
++
+ 	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
+ 		bprm_clear_caps(bprm);
+ 		return 0;
 -- 
-1.6.0.87.g2858d
+1.5.1.1.GIT
 
