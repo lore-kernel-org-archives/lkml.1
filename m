@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753495AbYI0AFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYI0AFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753495AbYI0AFa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 20:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYI0AFW
+	id S1754498AbYI0AFn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 20:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYI0AFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 26 Sep 2008 20:05:23 -0400
+Received: from mga14.intel.com ([143.182.124.37]:15964 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752208AbYI0AFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 26 Sep 2008 20:05:22 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:59378 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752162AbYI0AFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 20:05:22 -0400
-Message-ID: <48DD78C6.5030701@sgi.com>
-Date: Fri, 26 Sep 2008 17:05:26 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,316,1220252400"; 
+   d="scan'208";a="52030810"
+Date: Fri, 26 Sep 2008 17:05:15 -0700 (Pacific Daylight Time)
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: Tim Gardner <timg@tpi.com>
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Arjan van de Ven <arjan@linux.jf.intel.com>,
+       Jiri Kosina <jkosina@suse.cz>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, agospoda@redhat.com,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
+       tglx@linutronix.de, chris.jones@canonical.com, arjan@linux.jf.intel.com
+Subject: Re: e1000e NVM corruption issue status
+In-Reply-To: <48DD2F98.8070509@tpi.com>
+Message-ID: <Pine.WNT.4.63.0809261316310.4052@jbrandeb-desk.amr.corp.intel.com>
+References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com>
+ <48DCCC5F.8040609@linux.intel.com> <200809261052.38966.jbarnes@virtuousgeek.org>
+ <200809261123.52198.jbarnes@virtuousgeek.org> <48DD2F98.8070509@tpi.com>
+ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+X-X-Sender: jesse.brandeburg@intel.com@imap.glb.intel.com
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH v6] Unified trace buffer
-References: <20080925185154.230259579@goodmis.org>  <20080925185236.244343232@goodmis.org>  <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com>  <48DC406D.1050508@redhat.com>  <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>  <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com> <1222456474.16700.289.camel@lappy.programming.kicks-ass.net> <48DD61F4.3000704@sgi.com> <alpine.DEB.1.10.0809261956000.21618@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0809261956000.21618@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Fri, 26 Sep 2008, Mike Travis wrote:
-> 
->> Peter Zijlstra wrote:
->>> On Fri, 2008-09-26 at 14:05 -0400, Steven Rostedt wrote:
->>>> +struct ring_buffer {
->>>> +       unsigned long           size;
->>>> +       unsigned                pages;
->>>> +       unsigned                flags;
->>>> +       int                     cpus;
->>>> +       atomic_t                record_disabled;
->>>> +
->>>> +       struct mutex            mutex;
->>>> +
->>>> +       /* FIXME: this should be online CPUS */
->>>> +       struct ring_buffer_per_cpu *buffers[NR_CPUS];
->>> actually nr_possible makes sense, and you might consider always
->>> allocating buffers (and keeping them for offlined cpus) to avoid massive
->>> allocations/frees cpu-hotplug events.
->>>
->>> Mike Travis has been going over the kernel removing constructs like
->>> this, and replacing them with dynamically allocated arrays of
->>> nr_possible.
->>>
->>>> +};
->> The other thing to consider is using a percpu variable.
-> 
-> This structure is allocated on request.
-> 
-> -- Steve
+On Fri, 26 Sep 2008, Tim Gardner wrote:
+> > Ok here's an updated one.  Jesse (Br) can you add it to your list?  If the X 
+> > driver really is mapping too much this should catch it, as long as it goes 
+> > through sysfs.
 
+I have, am testing with it now.
 
-Ahh, then it would need the yet to be added cpu_alloc() from Christoph.
+> I've been experimenting with unmapping flash space until its actually
+> needed, e.g., in the functions that use the E1000_READ_FLASH and
+> E1000_WRITE_FLASH macros. Along the way I looked at how flash write
 
-Your best bet then is to allocate based on nr_cpu_ids.
+That sounds like a good patch set.  I had thought of trying that but 
+hadn't gotten to it yet, so if you have something to look at in diff 
+format just post it and we'll take a look.
 
-Cheers,
-Mike
+> cycles are initiated because I was having a hard time believing that
+> having flash space mapped was part of the root cause. However, it looks
+> like its pretty simple to initiate a write or erase cycle. All of the
+> required action bits in ICH_FLASH_HSFSTS and ICH_FLASH_HSFCTL must be 1,
+> and these 2 register are in the correct order if X was writing 0xff in
+> ascending order.
+
+Seems simple but when I tried it for a couple of hours yesterday I 
+couldn't get anything to happen to my flash.  This included putting 
+ew16flash writes in the e1000e driver, and writing those magic bits.
