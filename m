@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYI0VDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYI0VYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbYI0VDS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 17:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYI0VDJ
+	id S1753931AbYI0VYI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 17:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYI0VX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 17:03:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60100 "EHLO mx2.mail.elte.hu"
+	Sat, 27 Sep 2008 17:23:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49228 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752339AbYI0VDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 17:03:08 -0400
-Date: Sat, 27 Sep 2008 23:02:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86 fixes
-Message-ID: <20080927210252.GA23006@elte.hu>
+	id S1753114AbYI0VXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 17:23:55 -0400
+Message-ID: <48DEA40D.40709@kernel.org>
+Date: Sun, 28 Sep 2008 06:22:21 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org, tj@kernel.org
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org> <20080924105943.GB2094@anita> <20080925081848.GB2305@anita>
+In-Reply-To: <20080925081848.GB2305@anita>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 27 Sep 2008 21:23:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Konstantin Kletschke wrote:
+> Tejun, sorry for misspelling your name as Tijo :-/
+> 
+> Do I hit your spamfilter with my KSYMOOPS enabled debug outputs or some
+> sort of that? If not, sorry for the inconvenience and take your time.
 
-Please pull the latest x86-fixes-for-linus git tree from:
+Sorry about lack of response.  I was on vacation after a series of
+conferences.  There's a bug entry for this problem and I just posted a
+patch.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+  http://bugzilla.kernel.org/show_bug.cgi?id=11615
 
- Thanks,
+Can you please try the patch attached there and post the result there?
 
-	Ingo
+Thanks.
 
------------------->
-Jeremy Katz (1):
-      x86: disable apm on the olpc
-
-
- arch/x86/kernel/apm_32.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index 9ee24e6..732d1f4 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -234,6 +234,7 @@
- #include <asm/uaccess.h>
- #include <asm/desc.h>
- #include <asm/i8253.h>
-+#include <asm/olpc.h>
- #include <asm/paravirt.h>
- #include <asm/reboot.h>
- 
-@@ -2217,7 +2218,7 @@ static int __init apm_init(void)
- 
- 	dmi_check_system(apm_dmi_table);
- 
--	if (apm_info.bios.version == 0 || paravirt_enabled()) {
-+	if (apm_info.bios.version == 0 || paravirt_enabled() || machine_is_olpc()) {
- 		printk(KERN_INFO "apm: BIOS not found.\n");
- 		return -ENODEV;
- 	}
+-- 
+tejun
