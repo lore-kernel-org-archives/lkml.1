@@ -1,183 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbYI0E7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbYI0FB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752676AbYI0E7R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 00:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYI0E7B
+	id S1752900AbYI0FB6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 01:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYI0FBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 00:59:01 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:47458 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160AbYI0E7A (ORCPT
+	Sat, 27 Sep 2008 01:01:49 -0400
+Received: from smtp110.prem.mail.sp1.yahoo.com ([98.136.44.55]:20984 "HELO
+	smtp110.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751130AbYI0FBs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 00:59:00 -0400
-Message-ID: <48DDBD6E.1070108@kernel.org>
-Date: Fri, 26 Sep 2008 21:58:22 -0700
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Sat, 27 Sep 2008 01:01:48 -0400
+X-YMail-OSG: IA3Ft0AVM1lnUhm0t7VFinn8I1G7_tvQglFgZvXolIgwSco_KRiekJqI4iXcT73HLL_sGJZK.C1Jcld_sFeGVbmFmxBMV8fbWTT.Ocg9PCkeZSkCHMC5UM3TJoao7yGDHooO7urhN_ExaHEXCN2SKmMWQm.i7.xsM1HRMEWR1iafmEF5hw--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <48DDBE2E.3010006@schaufler-ca.com>
+Date: Fri, 26 Sep 2008 22:01:34 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 4/6] file capabilities: clean up setcap code
-References: <1222482472-12847-1-git-send-email-serue@us.ibm.com> <7004aef68d149ffb4a11835f37469948496ffc18.1222451103.git.serue@us.ibm.com> <89d3843fc1aaf91ded89d741b2e6d425508e0146.1222451103.git.serue@us.ibm.com> <178a4b5984b7559cb5cdb93b242484386ec3e3ab.1222451103.git.serue@us.ibm.com> <c9c64bbdfd3f1c665f0d1b08b82f77622be701cc.1222451103.git.serue@us.ibm.com>
-In-Reply-To: <c9c64bbdfd3f1c665f0d1b08b82f77622be701cc.1222451103.git.serue@us.ibm.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Tilman Baumann <tilman.baumann@collax.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+Subject: Re: SMACK netfilter smacklabel socket match
+References: <48DBC9A1.20900@collax.com> <48DC5A45.8020801@schaufler-ca.com> <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com>
+In-Reply-To: <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Tilman Baumann wrote:
+> Am 26.09.2008 um 05:43 schrieb Casey Schaufler:
+>
+>> Tilman Baumann wrote:
+>>> Hi all,
+>>>
+>>> i made some SMACK related patches. I hope this list is the right 
+>>> place to post them.
+>>
+>> Here and, probably more importantly 
+>> linux-security-module@vger.kernel.org as that's
+>> my primary hang out.
+>>
+>>> The intention behind this patch is that i needed a way to (firewall) 
+>>> match for packets originating from specific processes.
+>>> The existing owner match did not work well enough, especially since 
+>>> the cmd-owner part is removed.
+>>> Then i thought about a way to tag processes and somehow match this 
+>>> tag in the firewall.
+>>> I recalled that SELinux can do this (SECMARK) but SELinux would have 
+>>> been way to complex for what i want. But the idea was born, i just 
+>>> needed something more simple.
+>>>
+>>> SMACK seemed to be the right way. So i made a little primitive 
+>>> netfilter match to match against the security context of sockets.
+>>> SMACK does CIPSO labels, but this was not what i wanted, i wanted to 
+>>> label the socket not the packet (on the wire).
+>>> This of course only works for packets with a local socket, but this 
+>>> was my intention anyway.
+>>>
+>>> This way i can label a process and all it's sockets carry the same 
+>>> label which i then can use to match against in the firewall.
+>>>
+>>
+>> Hmm. It looks as if your code will do what you're asking it to do.
+>> Are you going to be happy with the access restrictions that will be
+>> imposed by Smack?
+>
+> I helped myself with rules like this.
+> _ foo rwx
+> But i wanted to add some security stuff like selinux for years,
+> and SMACK seems to be just great.
+> So i will spend some time making security rules after i got this routing
+> stuff to work. :)
+>
+I confess that I'm still not completely sure what you're up too,
+but you might want to look at smackpolyport (it's in the smack-util
+tarball) and might make your life easier if you want to have a
+single server (running at foo) that deals with connections from
+processes with multiple labels.
 
-Serge,
 
-I have to say I'm a bit confused by this one. Specifically, the
-cap_get_target_pid() change. In your 5/6 patch, you say this change
-("the previous patch") makes the kernel bigger? Is this because of the
-cap_get_target_pid() changes? Since you are fighting to reduce space, if
-it bloats the code does the cap_get_target_pid() part of the change make
-sense?
-
-Cheers
-
-Andrew
-
-Serge E. Hallyn wrote:
-> Clean up the sys_capset codepath a bit to account for the fact
-> that you can now not ever, never, capset on another task.
-> 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> ---
->  kernel/capability.c |   83 +++++++++++++++++++-------------------------------
->  1 files changed, 32 insertions(+), 51 deletions(-)
-> 
-> diff --git a/kernel/capability.c b/kernel/capability.c
-> index d39c989..92dd85b 100644
-> --- a/kernel/capability.c
-> +++ b/kernel/capability.c
-> @@ -132,46 +132,31 @@ static int cap_validate_magic(cap_user_header_t header, unsigned *tocopy)
->   * process. The net result is that we can limit our use of locks to
->   * when we are reading the caps of another process.
->   */
-> -static inline int cap_get_target_pid(pid_t pid, kernel_cap_t *pEp,
-> +static int cap_get_target_pid(pid_t pid, kernel_cap_t *pEp,
->  				     kernel_cap_t *pIp, kernel_cap_t *pPp)
->  {
->  	int ret;
-> +	struct task_struct *target;
->  
-> -	if (pid && (pid != task_pid_vnr(current))) {
-> -		struct task_struct *target;
-> +	if (!pid || pid == task_pid_vnr(current))
-> +		return security_capget(current, pEp, pIp, pPp);
->  
-> -		spin_lock(&task_capability_lock);
-> -		read_lock(&tasklist_lock);
-> +	spin_lock(&task_capability_lock);
-> +	read_lock(&tasklist_lock);
->  
-> -		target = find_task_by_vpid(pid);
-> -		if (!target)
-> -			ret = -ESRCH;
-> -		else
-> -			ret = security_capget(target, pEp, pIp, pPp);
-> +	target = find_task_by_vpid(pid);
-> +	if (!target)
-> +		ret = -ESRCH;
-> +	else
-> +		ret = security_capget(target, pEp, pIp, pPp);
->  
-> -		read_unlock(&tasklist_lock);
-> -		spin_unlock(&task_capability_lock);
-> -	} else
-> -		ret = security_capget(current, pEp, pIp, pPp);
-> +	read_unlock(&tasklist_lock);
-> +	spin_unlock(&task_capability_lock);
->  
->  	return ret;
->  }
->  
->  /*
-> - * With filesystem capability support configured, the kernel does not
-> - * permit the changing of capabilities in one process by another
-> - * process. (CAP_SETPCAP has much less broad semantics when configured
-> - * this way.)
-> - */
-> -static inline int do_sys_capset_other_tasks(pid_t pid,
-> -					    kernel_cap_t *effective,
-> -					    kernel_cap_t *inheritable,
-> -					    kernel_cap_t *permitted)
-> -{
-> -	return -EPERM;
-> -}
-> -
-> -/*
->   * Atomically modify the effective capabilities returning the original
->   * value. No permission check is performed here - it is assumed that the
->   * caller is permitted to set the desired effective capabilities.
-> @@ -293,6 +278,9 @@ asmlinkage long sys_capset(cap_user_header_t header, const cap_user_data_t data)
->  	if (get_user(pid, &header->pid))
->  		return -EFAULT;
->  
-> +	if (pid && (pid != task_pid_vnr(current)))
-> +		return -EPERM;
-> +
->  	if (copy_from_user(&kdata, data, tocopy
->  			   * sizeof(struct __user_cap_data_struct))) {
->  		return -EFAULT;
-> @@ -310,30 +298,23 @@ asmlinkage long sys_capset(cap_user_header_t header, const cap_user_data_t data)
->  		i++;
->  	}
->  
-> -	if (pid && (pid != task_pid_vnr(current)))
-> -		ret = do_sys_capset_other_tasks(pid, &effective, &inheritable,
-> -						&permitted);
-> -	else {
-> -		/*
-> -		 * This lock is required even when filesystem
-> -		 * capability support is configured - it protects the
-> -		 * sys_capget() call from returning incorrect data in
-> -		 * the case that the targeted process is not the
-> -		 * current one.
-> -		 */
-> -		spin_lock(&task_capability_lock);
-> +	/*
-> +	 * This lock protects the sys_capget() call from
-> +	 * returning incorrect data in the case that the targeted
-> +	 * process is not the current one.
-> +	 */
-> +	spin_lock(&task_capability_lock);
->  
-> -		ret = security_capset_check(current, &effective, &inheritable,
-> -					    &permitted);
-> -		/*
-> -		 * Having verified that the proposed changes are
-> -		 * legal, we now put them into effect.
-> -		 */
-> -		if (!ret)
-> -			security_capset_set(current, &effective, &inheritable,
-> -					    &permitted);
-> -		spin_unlock(&task_capability_lock);
-> -	}
-> +	ret = security_capset_check(current, &effective, &inheritable,
-> +				    &permitted);
-> +	/*
-> +	 * Having verified that the proposed changes are
-> +	 * legal, we now put them into effect.
-> +	 */
-> +	if (!ret)
-> +		security_capset_set(current, &effective, &inheritable,
-> +				    &permitted);
-> +	spin_unlock(&task_capability_lock);
->  
->  
->  	return ret;
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFI3b1s+bHCR3gb8jsRAkWCAJ4j5Q5NQc2TD8B+WOYJ1JIqV1GdqQCg1qQU
-+qzZPOvwo/W/73BuA+HvuxQ=
-=fRje
------END PGP SIGNATURE-----
