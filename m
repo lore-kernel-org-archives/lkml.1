@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbYI0Nng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbYI0OHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753279AbYI0Nng (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 09:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYI0Nn3
+	id S1752834AbYI0OHr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 10:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYI0OHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 09:43:29 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:39188 "EHLO e6.ny.us.ibm.com"
+	Sat, 27 Sep 2008 10:07:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42452 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752466AbYI0Nn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 09:43:28 -0400
-Date: Sat, 27 Sep 2008 08:43:07 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 4/6] file capabilities: clean up setcap code
-Message-ID: <20080927134307.GA11943@us.ibm.com>
-References: <1222482472-12847-1-git-send-email-serue@us.ibm.com> <7004aef68d149ffb4a11835f37469948496ffc18.1222451103.git.serue@us.ibm.com> <89d3843fc1aaf91ded89d741b2e6d425508e0146.1222451103.git.serue@us.ibm.com> <178a4b5984b7559cb5cdb93b242484386ec3e3ab.1222451103.git.serue@us.ibm.com> <c9c64bbdfd3f1c665f0d1b08b82f77622be701cc.1222451103.git.serue@us.ibm.com> <48DDBD6E.1070108@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48DDBD6E.1070108@kernel.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1751598AbYI0OHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 10:07:39 -0400
+Subject: Re: [RFC] 0/11 fanotify: fscking all notifiction and file access
+	system (intended for antivirus scanning and file indexers)
+From: Eric Paris <eparis@redhat.com>
+To: david@lang.hm
+Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       arjan@infradead.org, bunk@kernel.org, tytso@mit.edu,
+       tvrtko.ursulin@sophos.com, alan@lxorguk.ukuu.org.uk, hch@infradead.org,
+       andi@firstfloor.org, viro@ZenIV.linux.org.uk, peterz@infradead.org,
+       Jonathan.Press@ca.com, riel@redhat.com
+In-Reply-To: <alpine.DEB.1.10.0809262259290.4229@asgard.lang.hm>
+References: <1222463220.2872.193.camel@localhost.localdomain>
+	 <alpine.DEB.1.10.0809262259290.4229@asgard.lang.hm>
+Content-Type: text/plain
+Date: Sat, 27 Sep 2008 10:04:54 -0400
+Message-Id: <1222524294.2872.252.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew G. Morgan (morgan@kernel.org):
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+On Fri, 2008-09-26 at 23:05 -0700, david@lang.hm wrote:
+> On Fri, 26 Sep 2008, Eric Paris wrote:
 > 
-> Serge,
+> > fanotify has 7 event types and only sends events for S_ISREG() files.
+> > The event types are OPEN, READ, WRITE, CLOSE_WRITE, CLOSE_NOWRITE,
+> > OPEN_ACCESS, and READ_ACCESS.  Events OPEN_ACCESS and READ_ACCESS
+> > require that the listener return some sort of allow/deny/more_time
+> > response as the original process blocks until it gets an event (or times
+> > out.)  listeners may register a group which will get notifications about
+> > any combination of these events.  Antivirus scanners will likely want
+> > OPEN_ACCESS and READ_ACCESS while file indexers would likely use the
+> > non-ACCESS form of these events.
 > 
-> I have to say I'm a bit confused by this one. Specifically, the
-> cap_get_target_pid() change. In your 5/6 patch, you say this change
-> ("the previous patch") makes the kernel bigger? Is this because of the
-> cap_get_target_pid() changes? Since you are fighting to reduce space, if
-> it bloats the code does the cap_get_target_pid() part of the change make
-> sense?
+> sending a message out for every READ/WRITE seems like it will generate a 
+> LOT of messages, and very few will be ones that anyone cares about.
+> 
+> one of the nice things about the TALPA approach was that there was an 
+> ability to notify only on a change of state (i.e. when a file that had 
+> been scanned was changed)
+> 
+> this could do a similar thing, but I think it would be a much more 
+> expensive process to do it all in userspace.
 
-Yes I think it does.  Yes my goal was to decrease the kernel size, but
-having cleaner code - and getting rid of dead codepaths - is more
-important.
+See the fastpath patch and explaination.  Doesn't help for writes...
 
-It may be hard to tell by looking at the patch, but I think the
-end-result is really far better.
-
-thanks,
--serge
