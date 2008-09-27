@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbYI0G6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbYI0HPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752728AbYI0G6i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 02:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYI0G6a
+	id S1752768AbYI0HPr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 03:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbYI0HPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 02:58:30 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:55803 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbYI0G6a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 02:58:30 -0400
-Message-ID: <48DDD98D.3050303@linux.vnet.ibm.com>
-Date: Sat, 27 Sep 2008 12:28:21 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
+	Sat, 27 Sep 2008 03:15:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:48137 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751124AbYI0HPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 03:15:37 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: schwidefsky@de.ibm.com
+Subject: Re: [patch 1/6] kmsg: tagged kernel messages.
+Date: Sat, 27 Sep 2008 17:15:32 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org, Greg KH <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>, Joe Perches <joe@perches.com>,
+       Tim Hockin <thockin@hockin.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH 5/12] memcg make page_cgroup->flags atomic
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com> <20080925151734.5b24d494.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080925151734.5b24d494.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Jochen =?utf-8?q?Vo=C3=9F?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>, Jan Blunck <jblunck@suse.de>,
+       Rick Troth <rmt@casita.net>, Utz Bacher <utz.bacher@de.ibm.com>
+References: <20080925162827.818261893@de.ibm.com> <200809261448.05391.rusty@rustcorp.com.au> <1222417774.22679.2.camel@localhost>
+In-Reply-To: <1222417774.22679.2.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809271715.33968.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> This patch makes page_cgroup->flags to be atomic_ops and define
-> functions (and macros) to access it.
-> 
-> This patch itself makes memcg slow but this patch's final purpose is 
-> to remove lock_page_cgroup() and allowing fast access to page_cgroup.
-> (And total performance will increase after all patches applied.)
-> 
+On Friday 26 September 2008 18:29:34 Martin Schwidefsky wrote:
+> On Fri, 2008-09-26 at 14:48 +1000, Rusty Russell wrote:
+> > On Friday 26 September 2008 02:28:28 Martin Schwidefsky wrote:
+> > > +#define kmsg_emerg(fmt, ...) \
+> > > +	kmsg_printk_hash(KERN_EMERG, fmt, ##__VA_ARGS__)
+> > > +#define kmsg_alert(fmt, ...) \
+> > > +	kmsg_printk_hash(KERN_ALERT, fmt, ##__VA_ARGS__)
+> > > +#define kmsg_crit(fmt, ...) \
+> > > +	kmsg_printk_hash(KERN_CRIT, fmt, ##__VA_ARGS__)
+> > > +#define kmsg_err(fmt, ...) \
+> > > +	kmsg_printk_hash(KERN_ERR, fmt, ##__VA_ARGS__)
+> > > +#define kmsg_warn(fmt, ...) \
+> > > +	kmsg_printk_hash(KERN_WARNING, fmt, ##__VA_ARGS__)
+> > > +#define kmsg_notice(fmt, ...) \
+> > > +	kmsg_printk_hash(KERN_NOTICE, fmt, ##__VA_ARGS__)
+> > > +#define kmsg_info(fmt, ...) \
+> > > +	kmsg_printk_hash(KERN_INFO, fmt, ##__VA_ARGS__)
+> >
+> > Now I'm going to be an asshole and ask you to define when each of these
+> > levels should be used.  Do we need all of them?
+>
+> These are just the regular printk levels. If your old printk used a
+> particular level, have the kmsg_xxx printk use the same level. The
+> question about message severity and message documenation are
+> independent, aren't they?
 
-Looks good to me
+Yes, but since it's a new message API, I thought you might have an idea.  It's 
+hard for authors (eg. me) to know which level to use.  As a result, levels 
+currently seem to be chosen randomly.
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-provided we push in the lockless ones too :)
+If you felt inspired to rationalize them, it would let us clean that up as 
+things moved to kmsg :)
 
--- 
-	Balbir
+Cheers,
+Rusty.
