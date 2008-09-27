@@ -1,56 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbYI0Suq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbYI0Su6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754788AbYI0Suq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 14:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYI0Sui
+	id S1755025AbYI0Su6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 14:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYI0Suo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 14:50:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60530 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753516AbYI0Sui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 14:50:38 -0400
-Date: Sat, 27 Sep 2008 20:50:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86_64: be less annoying on boot
-Message-ID: <20080927185027.GB17867@elte.hu>
-References: <20080924183517.GA24209@nostromo.devel.redhat.com> <20080925091558.GE16734@elte.hu> <20080925161300.GA17162@nostromo.devel.redhat.com>
+	Sat, 27 Sep 2008 14:50:44 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:33023 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754217AbYI0Sun (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 14:50:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JRolVhDpbY7bt7Z1UxvyyTV9q2HHshW2F+9ca/+5MhJzb1oCiohsY5Gk3pJtZ28HfE
+         NTza1dWsojYvh4p/rYwIWe0Dib9Lgl6YgSF2Hxkyqu0QYPKUOIW6v8S1VsOE6dwZR8+j
+         wGOGWL5ByNgokVhaR3n2lOsAjmDzxr78+ifss=
+Date: Sat, 27 Sep 2008 22:50:40 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Joshua Hoblitt <j_kernel@hoblitt.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug #11543] kernel panic: softlockup in tick periodic()
+Message-ID: <20080927185040.GC10186@localhost>
+References: <t_PcrlC6ypI.A.tGG.G7m3IB@albercik> <V8eU91268VO.A.nJH.A8m3IB@albercik>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080925161300.GA17162@nostromo.devel.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <V8eU91268VO.A.nJH.A8m3IB@albercik>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Rafael J. Wysocki - Sat, Sep 27, 2008 at 05:56:46PM +0200]
+| This message has been generated automatically as a part of a report
+| of recent regressions.
+| 
+| The following bug entry is on the current list of known regressions
+| from 2.6.26.  Please verify if it still should be listed and let me know
+| (either way).
+| 
+| 
+| Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11543
+| Subject		: kernel panic: softlockup in tick_periodic() ???
+| Submitter	: Joshua Hoblitt <j_kernel@hoblitt.com>
+| Date		: 2008-09-11 16:46 (17 days old)
+| References	: http://marc.info/?l=linux-kernel&m=122117786124326&w=4
+| Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+| 		  Cyrill Gorcunov <gorcunov@gmail.com>
+| 		  Ingo Molnar <mingo@elte.hu>
+| 
+| 
 
-* Bill Nottingham <notting@redhat.com> wrote:
+Hi Rafael!
 
-> Ingo Molnar (mingo@elte.hu) said: 
-> > > (Alternatively, just remove them, of course...)
-> > 
-> > LOL :) Applied the commit below to tip/x86/debug, thanks Bill!
-> 
-> Does the 'kernel alive' right before it serve any purpose either?
+Well, Thomas already explained
 
-that has some marginal use: it shows that we are past the really basic 
-system setup code, we decompressed the kernel and entered protected mode 
-with boot paging enabled.
+| The softlockup issue itself is fixed, but there are issues with
+| nmi_watchdog. I think we should remove the regression and keep the bug
+| alive to chase the other issues.
+|
+| Thanks,
+|
+|        tglx
 
-we had bugs in the past where we'd hang/crash after GRUB starts us and 
-before we reach this printk.
+so we either have to change the topic of this bug or better
+close it and post new one nmi_watchdog related. I may do so
+but since Joshua was opening bug it would be better if he
+make such an action. How do you think? (I've asked Joshua
+for additional info but it seems he is too busy now)
 
-OTOH ... forcing it upon all users is strong. Feel free to send another 
-patch that removes it.
-
-	Ingo
+		- Cyrill -
