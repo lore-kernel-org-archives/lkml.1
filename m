@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753683AbYI0PfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbYI0Pos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753683AbYI0PfA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 11:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYI0Pev
+	id S1753482AbYI0Pos (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 11:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYI0Poj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 11:34:51 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37705 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752391AbYI0Pev (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 11:34:51 -0400
-Date: Sat, 27 Sep 2008 08:35:00 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: introduce an ioremap_pcibar(pdev, barnr) function
-Message-ID: <20080927083500.26819bf1@infradead.org>
-In-Reply-To: <20080927025614.GK27204@parisc-linux.org>
-References: <20080926163641.288bf868@infradead.org>
-	<20080927025614.GK27204@parisc-linux.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 27 Sep 2008 11:44:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33186 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752466AbYI0Poi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 11:44:38 -0400
+From: Avi Kivity <avi@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3][RFC] ioctl dispatcher
+Date: Sat, 27 Sep 2008 18:43:59 +0300
+Message-Id: <1222530242-1272-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Sep 2008 20:56:14 -0600
-Matthew Wilcox <matthew@wil.cx> wrote:
+While ioctls are officially ugly, they are the best choice for some use
+cases, not to mention compatibility issues.  Currently ioctl writers face
+the following hurdles:
 
-> On Fri, Sep 26, 2008 at 04:36:41PM -0700, Arjan van de Ven wrote:
-> > A common thing in many PCI drivers is to ioremap() an entire bar.
-> > This is a slightly fragile thing right now, needing both an address
-> > and a size, and many driver writers do.. various things there.
-> > 
-> > This patch introduces an ioremap_pcibar() function taking just a
-> > PCI device struct and the bar number as arguments, and figures this
-> > all out itself, in one place. In addition, we can add various
-> > sanity checks to this function (the patch already checks to make
-> > sure that the bar in question really is a MEM bar; few to no
-> > drivers do that sort of thing).
-> 
-> So we already have a pci_iomap() which takes a 'max' argument.  If you
-> make 'max' -1, don't you get this same behaviour?
+- if the ioctl uses a data buffer, the ioctl handler must allocate
+  kernel memory for this buffer
+  - the memory may be allocated on the heap or on the stack, depending on the
+    buffer size
+- handle any errors from the operation
+- copy the data from userspace, if necessary
+- handle any errors from the operation
+- actually perform the operation
+- copy the data back to userspace, if necessary
+- handle any errors from the operation
+- free the buffer, if allocated from the heap
 
-there are many ways to map a bar... I'm just arguing for providing a
-really simple, hard-to-get-wrong, one which only takes a device and a
-bar number.
-The goal of my patch isn't to introduce new functionality per se
-(although having the ability to add checks is nice and welcome), it's
-mostly to provide a simple, hard-to-get-wrong interface.
-Less chance to get it wrong -> less hard to diagnose bugs.
+The first patch automates these operations, only requiring the caller to
+supply the ioctl number and a callback in a table.
 
+The second patch addresses another problem with ioctls: they are brittle.
+Once written, an ioctl cannot be extended, since the buffer sizes used for
+transferring data are encoded in the ioctl number.  This is addressed by
+allowing the user-supplied size and the kernel-visible size of the data
+buffer to be different; the kernel will zero fill or truncate appropriately.
+With the new mechanism, it is easy to write forward- and backward- compatible
+ioctl handlers.
 
+The third patch demonstrates the effectiveness of the first patch; it
+converts some of kvm's ioctl handlers to the new mechanism, removing
+around 90 lines in the process.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Comments welcome.
+
+Avi Kivity (3):
+  ioctl: generic ioctl dispatcher
+  ioctl: extensible ioctl dispatch
+  KVM: Convert x86 vcpu ioctls to use dispatch_ioctl_extensible()
+
+ arch/x86/kvm/x86.c    |  241 ++++++++++++++++---------------------------------
+ fs/ioctl.c            |  139 ++++++++++++++++++++++++++++
+ include/linux/ioctl.h |   37 ++++++++
+ 3 files changed, 253 insertions(+), 164 deletions(-)
+
