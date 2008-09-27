@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbYI0Svn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYI0Sxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754937AbYI0Svn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 14:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbYI0Svf
+	id S1754387AbYI0Sxc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 14:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYI0SxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 14:51:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39140 "EHLO mx2.mail.elte.hu"
+	Sat, 27 Sep 2008 14:53:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39349 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753550AbYI0Svf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 14:51:35 -0400
-Date: Sat, 27 Sep 2008 20:51:21 +0200
+	id S1753079AbYI0SxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 14:53:20 -0400
+Date: Sat, 27 Sep 2008 20:53:06 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Bill Nottingham <notting@redhat.com>
-Subject: Re: [PATCH] x86_64: be less annoying on boot
-Message-ID: <20080927185121.GA18359@elte.hu>
-References: <20080924183517.GA24209@nostromo.devel.redhat.com> <20080925091558.GE16734@elte.hu> <20080925161300.GA17162@nostromo.devel.redhat.com> <20080927185027.GB17867@elte.hu>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 7/7] x86: print out irq nr for msi/ht -v2
+Message-ID: <20080927185306.GA18619@elte.hu>
+References: <1222323223-23529-1-git-send-email-yhlu.kernel@gmail.com> <200809250900.24736.bjorn.helgaas@hp.com> <86802c440809251007n71738552n88b8ebfc7ecd017f@mail.gmail.com> <200809251152.23021.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080927185027.GB17867@elte.hu>
+In-Reply-To: <200809251152.23021.bjorn.helgaas@hp.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,28 +38,52 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-(Cc: added. Mail-Followup-To is evil.)
+* Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Bill Nottingham <notting@redhat.com> wrote:
-> 
-> > Ingo Molnar (mingo@elte.hu) said: 
-> > > > (Alternatively, just remove them, of course...)
-> > > 
-> > > LOL :) Applied the commit below to tip/x86/debug, thanks Bill!
+> On Thursday 25 September 2008 11:07:17 am Yinghai Lu wrote:
+> > On Thu, Sep 25, 2008 at 8:00 AM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > > On Thursday 25 September 2008 12:13:43 am Yinghai Lu wrote:
+> > >> v2: fix hpet compiling
+> > >>
+> > >> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> > >> ---
+> > >>  arch/x86/kernel/hpet.c    |    3 +++
+> > >>  arch/x86/kernel/io_apic.c |    7 +++++++
+> > >>  2 files changed, 10 insertions(+), 0 deletions(-)
+> > >>
+> > >> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+> > >> index 422c577..686505a 100644
+> > >> --- a/arch/x86/kernel/hpet.c
+> > >> +++ b/arch/x86/kernel/hpet.c
+> > >> @@ -467,6 +467,9 @@ static int hpet_setup_irq(struct hpet_dev *dev)
+> > >>       irq_set_affinity(dev->irq, cpumask_of_cpu(dev->cpu));
+> > >>       enable_irq(dev->irq);
+> > >>
+> > >> +     printk(KERN_DEBUG "hpet: %s is using irq %#x aka %d for MSI\n",
+> > >> +                      dev->name, dev->irq, dev->irq);
+> > >> +
+> > >
+> > > Why do we want to print the irq as hex?  Do we do that anywhere else?
+> > > I think we should pick one format and stick with it, and I think
+> > > decimal is the logical choice because it's the most common.
 > > 
-> > Does the 'kernel alive' right before it serve any purpose either?
+> > when sparseirq is enabled, irq for msi will be bus_nr/dev/func + 12bits.
+> > so show it as hex is more straight. but we can not use hex in
+> > /proc/interrupts --ABI want decimal.
+> > 
+> > just try to print out...in log, so user could get some idea that who
+> > is using it...
 > 
-> that has some marginal use: it shows that we are past the really basic 
-> system setup code, we decompressed the kernel and entered protected mode 
-> with boot paging enabled.
+> I think it'd be better to just print the MSI IRQ number in decimal
+> using a dev_printk().  Then the connection is obvious and we don't
+> need to make everything ugly by having IRQs in both decimal and hex.
 > 
-> we had bugs in the past where we'd hang/crash after GRUB starts us and 
-> before we reach this printk.
-> 
-> OTOH ... forcing it upon all users is strong. Feel free to send another 
-> patch that removes it.
-> 
-> 	Ingo
+> I know it's a nuisance to make hpet use dev_printk because it's
+> pretty muddled as far as getting a struct device.  But I'd rather
+> fix that than add confusion like this.
+
+incidentally, in tip/timers/hpet-percpu [ new feature tree: MSI HPETs 
+with per-CPU clockevents ] we have grown a struct device in that place, 
+so it was easy :)
+
+	Ingo
