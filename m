@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbYI0O1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbYI0OiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753249AbYI0O1a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 10:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYI0O1T
+	id S1753180AbYI0OiG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 10:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYI0Ohz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 10:27:19 -0400
-Received: from fmailhost02.isp.att.net ([204.127.217.102]:64424 "EHLO
-	fmailhost02.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751603AbYI0O1S (ORCPT
+	Sat, 27 Sep 2008 10:37:55 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:36327 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751603AbYI0Ohy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 10:27:18 -0400
-X-Originating-IP: [74.251.44.253]
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: jeff@garzik.org
-Cc: csnook@redhat.com, jie.yang@atheros.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jay Cliburn <jacliburn@bellsouth.net>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [PATCH 1/4] atl1: fix transmit timeout bug
-Date: Sat, 27 Sep 2008 09:17:20 -0500
-Message-Id: <1222525043-4648-2-git-send-email-jacliburn@bellsouth.net>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1222525043-4648-1-git-send-email-jacliburn@bellsouth.net>
-References: <1222525043-4648-1-git-send-email-jacliburn@bellsouth.net>
+	Sat, 27 Sep 2008 10:37:54 -0400
+Date: Sat, 27 Sep 2008 10:38:53 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       ath5k-devel@venema.h4ckr.net, linux-kernel@vger.kernel.org
+Subject: Re: Release of Atheros 802.11abg HAL under the ISC
+Message-ID: <20080927143852.GB3392@tuxdriver.com>
+References: <20080926215701.GC5972@tesla>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080926215701.GC5972@tesla>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-See http://marc.info/?l=linux-netdev&m=121931988219314&w=2
+On Fri, Sep 26, 2008 at 02:57:01PM -0700, Luis R. Rodriguez wrote:
+> As part of our commitment to help support all of our Atheros devices
+> under Linux we'd like to announce the release of our Atheros HAL for
+> our 802.11abg chipsets under the ISC license.
+> 
+> You can find it here:
+> 
+> http://www.kernel.org/pub/linux/kernel/people/mcgrof/legacy-hal.tar.bz2
+> 
+> This can be used as a source of documentation to help ath5k move
+> forward to support our 802.11abg chipsets as best as possible in
+> the Linux kernel. We look forward to keep working strongly with the
+> community on advancing support of all our Atheros chipsets under Linux.
 
-Stop the queue and turn off carrier to prevent transmit timeouts
-when the cable is unplugged/replugged.
+Awesome...simply, awesome!
 
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
----
- drivers/net/atlx/atl1.c |    4 +++-
- drivers/net/atlx/atlx.c |    1 -
- 2 files changed, 3 insertions(+), 2 deletions(-)
+I hereby nominate Atheros for this year's "Most Improved Open Source
+Corporate Citizen" award! :-)
 
-diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index e23ce77..e00a986 100644
---- a/drivers/net/atlx/atl1.c
-+++ b/drivers/net/atlx/atl1.c
-@@ -2642,6 +2642,7 @@ static void atl1_down(struct atl1_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
- 
-+	netif_stop_queue(netdev);
- 	del_timer_sync(&adapter->watchdog_timer);
- 	del_timer_sync(&adapter->phy_config_timer);
- 	adapter->phy_timer_pending = false;
-@@ -2655,7 +2656,6 @@ static void atl1_down(struct atl1_adapter *adapter)
- 	adapter->link_speed = SPEED_0;
- 	adapter->link_duplex = -1;
- 	netif_carrier_off(netdev);
--	netif_stop_queue(netdev);
- 
- 	atl1_clean_tx_ring(adapter);
- 	atl1_clean_rx_ring(adapter);
-@@ -2724,6 +2724,8 @@ static int atl1_open(struct net_device *netdev)
- 	struct atl1_adapter *adapter = netdev_priv(netdev);
- 	int err;
- 
-+	netif_carrier_off(netdev);
-+
- 	/* allocate transmit descriptors */
- 	err = atl1_setup_ring_resources(adapter);
- 	if (err)
-diff --git a/drivers/net/atlx/atlx.c b/drivers/net/atlx/atlx.c
-index b3e7fcf..3cc9d10 100644
---- a/drivers/net/atlx/atlx.c
-+++ b/drivers/net/atlx/atlx.c
-@@ -105,7 +105,6 @@ static void atlx_check_for_link(struct atlx_adapter *adapter)
- 				netdev->name);
- 			adapter->link_speed = SPEED_0;
- 			netif_carrier_off(netdev);
--			netif_stop_queue(netdev);
- 		}
- 	}
- 	schedule_work(&adapter->link_chg_task);
+Great job, Luis!
+
+John
 -- 
-1.5.5.1
-
+John W. Linville		Linux should be at the core
+linville@tuxdriver.com			of your literate lifestyle.
