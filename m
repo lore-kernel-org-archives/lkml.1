@@ -1,78 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbYI0Tos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbYI0TyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754053AbYI0Tos (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 15:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYI0Toj
+	id S1753706AbYI0TyU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 15:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYI0TyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 15:44:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44665 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752909AbYI0Toj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 15:44:39 -0400
-Date: Sat, 27 Sep 2008 21:44:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: Should irq_chip->mask disable percpu interrupts to all cpus,
-	or just to this cpu?
-Message-ID: <20080927194424.GG18619@elte.hu>
-References: <48D94B64.3070004@goop.org> <20080924084558.GD5576@elte.hu> <m18wthna2f.fsf@frodo.ebiederm.org> <48DA8806.4060405@goop.org> <m1d4itl4ni.fsf@frodo.ebiederm.org>
+	Sat, 27 Sep 2008 15:54:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35034 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753054AbYI0TyK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 15:54:10 -0400
+Date: Sat, 27 Sep 2008 15:54:07 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH v9] Unified trace buffer
+In-Reply-To: <20080927194105.GF18619@elte.hu>
+Message-ID: <alpine.DEB.1.10.0809271549160.16572@gandalf.stny.rr.com>
+References: <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com> <48DC406D.1050508@redhat.com> <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>
+ <alpine.DEB.1.10.0809261631420.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809262148070.30105@gandalf.stny.rr.com> <alpine.DEB.1.10.0809270203270.1628@gandalf.stny.rr.com> <20080927183912.GA13685@elte.hu> <alpine.DEB.1.10.0809271444460.11865@gandalf.stny.rr.com>
+ <20080927194105.GF18619@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1d4itl4ni.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
-
-> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+On Sat, 27 Sep 2008, Ingo Molnar wrote:
 > 
-> > I found handle_percpu_irq() which addresses my concerns.  It doesn't
-> > attempt to mask the interrupt, takes no locks, and doesn't set or test
-> > IRQ_INPROGRESS in desc->status, so it will scale perfectly across
-> > multiple cpus.  It makes no changes to the desc structure, so there
-> > isn't even any cacheline bouncing.
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> kstat_irqs.  Is arguably part of the irq structure.
-> And kstat_irqs is a major pain in my book.
+> that's even worse i think :-/ And this isnt bikeshed-painting really, 
+> the RNGBF_ name hurts my eyes and RB_ is definitely confusing to read. 
+> (as the rbtree constants are in capitals as well and similarly named)
 > 
-> And for a rare event you have a cacheline read.
-> I don't think we are quite there yet but we really want to allocate
-> irq_desc on the right NUMA node in a multi socket system, to reduce
-> the cache miss times.
-
-note that we already do _almost_ that in tip/irq/sparseirq. dyn_array[] 
-will extend itself in a NUMA-aware fashion. (normal device irq_desc 
-entries will be allocated via kmalloc)
-
-what would be needed is to deallocate/reallocate irq_desc when the IRQ 
-affinity is changed? (i.e. when a device is migrated to a specific NUMA 
-node)
-
-> Is it a big deal?  Probably not.  But I think it would be a bad idea 
-> to increasingly use infrastructure that will make it hard to optimize 
-> the code.
+>  RING_TYPE_PADDING
 > 
-> Especially since the common case in high performance drivers is going 
-> to be, individually routable irq sources.  Having one queue per cpu 
-> and one irq per queue.  Which sounds like the same case you have.
+> or:
+> 
+>  RINGBUF_TYPE_PADDING
+> 
+> yes, it's longer, but still, saner.
 
-agreed - the kstat_irqs cacheline bounce would show up in Xen benchmarks 
-i'm sure.
+I don't mind the extra typing, it is just a bit more difficult to keep in
+the 80 character line limit.
 
-	Ingo
+> 
+> > > too large, please uninline.
+> > 
+> > I calculated this on x86_64 to add 78 bytes. Is that still too big?
+> 
+> yes, way too big. Sometimes we make savings from a 10 bytes function 
+> already. (but it's always case dependent - if a function has a lot of 
+> parameters then uninlining can hurt)
+> 
+> the only exception would be if there's normally only a single 
+> instantiation per tracer, and if it's in the absolute tracing hotpath. 
+
+It is a hot path in the internals. Perhaps I'll make an inline function
+in the interal code "rb_event_length" and have the other users call.
+
+unsigned ring_buffer_event(struct ring_buffer_event *event)
+{
+	return rb_event_length(event);
+}
+
+> no, it is not readable. My point was that you should do:
+> > 
+> >    RB_ENUM_TYPE,	/*
+> > 			 * Comment
+> > 			 */
+> > 
+> > The comment is not at the same line as the enum, which also looks 
+> > unpleasing.
+> 
+> but you did:
+> 
+> >    RB_ENUM_TYPE,	/* Comment
+> > 			 */
+> 
+> So i suggested to fix it to:
+> 
+>  +	RB_TYPE_TIME_EXTENT,	/*
+>  +				 * Extent the time delta
+>  +				 * array[0] = time delta (28 .. 59)
+>  +				 * size = 8 bytes
+>  +				 */
+> 
+> ok? I.e. "comment" should have the same visual properties as other 
+> comments.
+> 
+> I fully agree with moving it next to the enum, i sometimes use that 
+> style too, it's a nice touch and more readable in this case than 
+> comment-ahead. (which we use for statements)
+
+But then we have:
+
+        RB_TYPE_PADDING,        /*
+				 * Left over page padding
+                                 * array is ignored
+                                 * size is variable depending on
+                                 * how much padding is needed
+                                 */
+        RB_TYPE_TIME_EXTENT,    /*
+				 * Extent the time delta
+                                 * array[0] = time delta (28 .. 59)
+                                 * size = 8 bytes
+                                 */
+
+Where it is not as easy to see which comment is with which enum. 
+Especially when you have many enums. That's why I like the method I used 
+with:
+
+        RB_TYPE_PADDING,        /* Left over page padding
+                                 * array is ignored
+                                 * size is variable depending on
+                                 * how much padding is needed
+                                 */
+        RB_TYPE_TIME_EXTENT,    /* Extent the time delta
+                                 * array[0] = time delta (28 .. 59)
+                                 * size = 8 bytes
+                                 */
+
+Where it is very easy to notice which comment goes with which enum.
+
+-- Steve
+
