@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYI0Rio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbYI0RjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151AbYI0Rio (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 13:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYI0Rif
+	id S1754369AbYI0RjA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 13:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbYI0Rik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 13:38:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39747 "EHLO mx3.mail.elte.hu"
+	Sat, 27 Sep 2008 13:38:40 -0400
+Received: from mail.tmr.com ([64.65.253.246]:37354 "EHLO partygirl.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752735AbYI0Rie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 13:38:34 -0400
-Date: Sat, 27 Sep 2008 19:38:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86: mtrr_cleanup optimization v2
-Message-ID: <20080927173825.GA26047@elte.hu>
-References: <1222500608-14855-1-git-send-email-yhlu.kernel@gmail.com> <1222500608-14855-3-git-send-email-yhlu.kernel@gmail.com> <20080927160936.GA29661@elte.hu> <86802c440809271030w7c96946aw8a38ac853daf8cfa@mail.gmail.com>
+	id S1754084AbYI0Rij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 13:38:39 -0400
+Message-ID: <48DE6F93.9030002@tmr.com>
+Date: Sat, 27 Sep 2008 13:38:27 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080716 Fedora/1.1.11-1.fc9 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440809271030w7c96946aw8a38ac853daf8cfa@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: David Newall <davidn@davidnewall.com>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Swap on loop device on tmpfs locks up machine
+References: <19f34abd0809261146j72a68765i964466336a3a34dc@mail.gmail.com> <48DE2BF7.3060905@davidnewall.com>
+In-Reply-To: <48DE2BF7.3060905@davidnewall.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yinghai@kernel.org> wrote:
-
-> On Sat, Sep 27, 2008 at 9:09 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> >> fix hpa's t61 with 4g ram
-> >>    change layout from
-> >>       (n - 1)*chunksize + chunk_size - NC
-> >>    to
-> >>       n*chunksize - NC
-> >
-> > applied the three patches to tip/x86/mtrr, thanks Yinghai!
-> >
-> > i'm wondering, arent 2/3 and 3/3 also for v2.6.27
+David Newall wrote:
+> Vegard Nossum wrote:
+>> It turns out that swap over loop device on tmpfs will lock up the
+>> machine.
 > 
-> let queue to 2.6.28, and later back port to 2.6.27 , 2.6.26 stable
+> Doesn't tmpfs use otherwise-free virtual memory?  I expect the machine
+> would lock up if you put swap (i.e. additional virtual memory) on such a
+> device.
 
-ok.
+To reinstate the paragraph from the O.P. you snipped:
+ >> I'm not sure it's really a very good idea to do this in the first
+ >> place, but should something give a warning or prevent a user from
+ >> doing it?
 
-	Ingo
+I think you are both right, it is a bad thing to do, it does seem to lock up, 
+and something should prevent a user from doing that. But it may be easier to fix 
+the lockup than get the "prevent" right, there appears to be a loop there.
+
+Just a simple questions to the O.P.: what were you thinking?!! Or was this a 
+test just to see what would happen?
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
