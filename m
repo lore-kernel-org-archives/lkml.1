@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754359AbYI0RaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbYI0Rax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754359AbYI0RaU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 13:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYI0R3G
+	id S1754421AbYI0Rax (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 13:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYI0Rao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 13:29:06 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:10955 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753925AbYI0R3B (ORCPT
+	Sat, 27 Sep 2008 13:30:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:8858 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984AbYI0Ran (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 13:29:01 -0400
+	Sat, 27 Sep 2008 13:30:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=HlfD8WWMz+ZAVxX7dSnAW3gQ5Fsw8vktMmWyjem7O7yd/STAcuCw7ejuDNj7Wypn3+
-         N/dzMUNaSxvD4aLg8elDiLUe6/MhEfHtMNEUCgoiqfRIRQkvNl/RJBMQSVomWqR3YZw+
-         fFQQKhhN6IU8ev93rblAFgtcoIBrRph1UR8qc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] IDE-TAPE NULL terminate strings.
-Date: Sat, 27 Sep 2008 19:04:37 +0200
-User-Agent: KMail/1.9.10
-Cc: petkovbb@gmail.com, Mark de Wever <koraq@xs4all.nl>,
-       Gadi Oxman <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Dd5vuAhDzGPsBFnSmWb4nrBzUADrKOxcRnNVpkGFtgA4y03hglgT/9phkHE5cPIOu5
+         EVnLXeTC5W2dYtrcspVkRXGYKt4cGm3oecJoU18RjUNk+2Fx6gYz1inJAa9dr0pUt/6E
+         MFvN3NALSAz1jwLc/buzp7AjBWR2gIwtufrqM=
+Message-ID: <86802c440809271030w7c96946aw8a38ac853daf8cfa@mail.gmail.com>
+Date: Sat, 27 Sep 2008 10:30:42 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] x86: mtrr_cleanup optimization v2
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-References: <20080921185138.GA16310@localhost> <20080924071055.GB16949@gollum.tnic> <48DA0A39.3070308@ru.mvista.com>
-In-Reply-To: <48DA0A39.3070308@ru.mvista.com>
+In-Reply-To: <20080927160936.GA29661@elte.hu>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200809271904.38023.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1222500608-14855-1-git-send-email-yhlu.kernel@gmail.com>
+	 <1222500608-14855-3-git-send-email-yhlu.kernel@gmail.com>
+	 <20080927160936.GA29661@elte.hu>
+X-Google-Sender-Auth: fada049e7e1b55b5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 September 2008, Sergei Shtylyov wrote:
+On Sat, Sep 27, 2008 at 9:09 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>> fix hpa's t61 with 4g ram
+>>    change layout from
+>>       (n - 1)*chunksize + chunk_size - NC
+>>    to
+>>       n*chunksize - NC
+>
+> applied the three patches to tip/x86/mtrr, thanks Yinghai!
+>
+> i'm wondering, arent 2/3 and 3/3 also for v2.6.27
 
-[...]
+let queue to 2.6.28, and later back port to 2.6.27 , 2.6.26 stable
 
-> > Subject: ide-tape: fix vendor strings
-> >
-> > Remove superfluous two bytes from each string buffer and add proper length
-> > format specifiers.
-> >
-> > There should be no functional change resulting from this patch.
-> > 
-> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> > Tested-by: Mark de Wever <koraq@xs4all.nl>
-> >   
-> 
-> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-applied
+YH
