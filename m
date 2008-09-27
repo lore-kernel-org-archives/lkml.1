@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbYI0Rax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbYI0RbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754421AbYI0Rax (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 13:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYI0Rao
+	id S1754483AbYI0RbV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 13:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYI0RbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 13:30:44 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:8858 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752984AbYI0Ran (ORCPT
+	Sat, 27 Sep 2008 13:31:10 -0400
+Received: from mail.daysofwonder.com ([87.98.213.69]:34381 "EHLO
+	mail.daysofwonder.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbYI0RbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 13:30:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Dd5vuAhDzGPsBFnSmWb4nrBzUADrKOxcRnNVpkGFtgA4y03hglgT/9phkHE5cPIOu5
-         EVnLXeTC5W2dYtrcspVkRXGYKt4cGm3oecJoU18RjUNk+2Fx6gYz1inJAa9dr0pUt/6E
-         MFvN3NALSAz1jwLc/buzp7AjBWR2gIwtufrqM=
-Message-ID: <86802c440809271030w7c96946aw8a38ac853daf8cfa@mail.gmail.com>
-Date: Sat, 27 Sep 2008 10:30:42 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] x86: mtrr_cleanup optimization v2
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080927160936.GA29661@elte.hu>
+	Sat, 27 Sep 2008 13:31:09 -0400
+X-Greylist: delayed 616 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Sep 2008 13:31:08 EDT
+Message-ID: <48DE6B6E.4050306@daysofwonder.com>
+Date: Sat, 27 Sep 2008 19:20:46 +0200
+From: Brice Figureau <brice+lkml@daysofwonder.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: Serial console not working after device detection.
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1222500608-14855-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1222500608-14855-3-git-send-email-yhlu.kernel@gmail.com>
-	 <20080927160936.GA29661@elte.hu>
-X-Google-Sender-Auth: fada049e7e1b55b5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 27, 2008 at 9:09 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> fix hpa's t61 with 4g ram
->>    change layout from
->>       (n - 1)*chunksize + chunk_size - NC
->>    to
->>       n*chunksize - NC
->
-> applied the three patches to tip/x86/mtrr, thanks Yinghai!
->
-> i'm wondering, arent 2/3 and 3/3 also for v2.6.27
+Hi,
 
-let queue to 2.6.28, and later back port to 2.6.27 , 2.6.26 stable
+On two of my servers (some Dell poweredge 1850 and 2850), booting a 
+2.6.26 debian kernel while at the same time looking at the serial 
+console, nothing is printed after the following snippet:
+...
+Linux agpgart interface v0.103
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
+serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a NS16550A
+????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 
-YH
+The serial port of these servers is configured as 115200n8 and connected 
+to an Opengear serial console server for remote administration through ssh.
+
+This is not an issue per-se, but for an unknown reason 2.6.25 and 2.6.26 
+debian kernels don't boot succesfully, and I'm trying to understand why, 
+which is a complex task when you don't see anything :-)
+The latest known debian kernel that boots fine is a 2.6.22 (I didn't try 
+2.6.23 or 2.6.24).
+
+On this kernel that boots, the first lines that the serial console 
+displays are those from the initrd.
+
+After the boot the dmesg contains the following lines which are just 
+after the last line displayed (ie the serial8250: ttyS0 is at... line):
+
+pnp: the driver 'serial' has been registered
+pnp: match found with the PnP device '00:06' and the driver 'serial'
+00:06: ttyS0 at I/O 0x3f8 (irq = 4) is a NS16550A
+pnp: the driver 'parport_pc' has been registered
+FDC 0 is a National Semiconductor PC87306
+RAMDISK driver initialized: 16 RAM disks of 65536K size 1024 blocksize
+...
+
+Is there anything I can do to display something after the device 
+detection, in order to understand why those kernels are not booting?
+
+Many thanks for any answer,
+Please CC: me on replies, as I'm not subscribed to the list.
+--
+Brice Figureau
