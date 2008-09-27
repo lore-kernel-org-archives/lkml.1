@@ -1,69 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYI0Uy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYI0U5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbYI0Uy4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 16:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYI0Uys
+	id S1754255AbYI0U5U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 16:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbYI0U5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 16:54:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48186 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752339AbYI0Uyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 16:54:47 -0400
-Date: Sat, 27 Sep 2008 22:53:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Frans Pop <elendil@planet.nl>, Rene Herman <rene.herman@keyaccess.nl>,
-       linux-kernel@vger.kernel.org, Rene Herman <rene.herman@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug #11550] pnp: Huge number of "io resource overlap" messages
-Message-ID: <20080927205357.GC31650@elte.hu>
-References: <200809091250.08620.elendil@planet.nl> <200809210149.07755.elendil@planet.nl> <200809201756.25157.bjorn.helgaas@hp.com> <200809261540.31443.bjorn.helgaas@hp.com>
+	Sat, 27 Sep 2008 16:57:09 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:2896 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752428AbYI0U5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 16:57:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=qlendSj7sqLvZxxM39cJh1FDTl68fvZ9En+KjII3Ug/3fWt846GRl2kEeYOraxrj0L
+         VRZHZp/EyuY3EZlBig3CLzJfdSce5Q3kvoz/gCP4dzP7hPGsNsAP4yvXTq+1S0HlUSPF
+         4fuGyZC7/S+hlUa4JUWrO1PQHg4NuKdzuATJ8=
+Message-ID: <7d553cf40809271357r54c2b717lae637a4393c286c6@mail.gmail.com>
+Date: Sat, 27 Sep 2008 16:57:05 -0400
+From: Paul <paul14075@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: [PATCH] Working packet injection patch for ipw2200 - enables aireplay-ng and others to work
+In-Reply-To: <7d553cf40809271343m57b8d64er99c979fdc8c35e61@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200809261540.31443.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <7d553cf40809271343m57b8d64er99c979fdc8c35e61@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here is the patch, in text form:
 
-* Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+--- drivers/net/wireless/ipw2200.c      2008-09-09 19:27:49.000000000
+-0400
++++ drivers/net/wireless/ipw2200-new.c  2008-09-27 15:48:03.000000000
+-0400
+@@ -179,7 +179,7 @@ static int ipw_queue_reset(struct ipw_pr
 
-> The problem seems to be that Frans has some PCI devices that are not 
-> configured by the BIOS, and their BARs contain zero.  A PNP quirk 
-> checks for overlaps of PCI devices and PNP devices, and those zero- 
-> valued BARs of course conflict with the PNP motherboard devices that 
-> describe legacy hardware.
-> 
-> Here's another approach based on section 3.5 of the PCI Firmware spec.
-> It says:
-> 
->   Since not all devices may be configured prior to the operating
->   system handoff, the operating system needs to know whether a
->   specific BAR register has been configured by firmware. The operating
->   system makes the determination by checking the I/O Enable, and
->   Memory Enable bits in the device's command register, and Expansion
->   ROM BAR enable bits. If the enable bit is set, then the corresponding
->   resource register has been configured.
-> 
-> So instead of checking whether the BAR contains zero, the patch below
-> checks the I/O, Mem, and ROM BAR enable bits to determine whether a
-> BAR is enabled.
+ static int ipw_queue_tx_hcmd(struct ipw_priv *priv, int hcmd, void
+*buf,
+                             int len, int sync);
+-
++static int ipw_tx_skb(struct ipw_priv *priv, struct ieee80211_txb
+*txb, int pri);
+ static void ipw_tx_queue_free(struct ipw_priv *);
 
-cool! Looks like a pretty significant fix, for all sorts of legacy 
-devices. Worth backporting?
+ static struct ipw_rx_queue *ipw_rx_queue_alloc(struct ipw_priv *);
+@@ -1862,6 +1862,62 @@ static ssize_t store_net_stats(struct de
+ static DEVICE_ATTR(net_stats, S_IWUSR | S_IRUGO,
+                   show_net_stats, store_net_stats);
 
-	Ingo
++/* SYSFS INJECT */
++static ssize_t store_inject(struct device *d,
++        struct device_attribute *attr,
++        const char *buf, size_t count)
++{
++        struct ipw_priv *priv = (struct ipw_priv *)d->driver_data;
++        struct ieee80211_device *ieee = priv->ieee;
++        struct ieee80211_txb * txb;
++        struct sk_buff *skb_frag;
++        unsigned char * newbuf;
++        unsigned long flags;
++
++        // should test (ieee->is_queue_full)
++
++        // Fw only accepts data, so avoid accidental fw errors.
++        if ( (buf[0]&0x0c) != '\x08') {
++              //printk("ipw2200: inject: discarding non-data frame
+(type=%02X)\n",(int)(unsigned char)buf[0]);
++              return count;
++        }
++
++        if (count>1500) {
++              count=1500;
++              printk("ipw2200: inject: cutting down frame to 1500
+bytes\n");
++        }
++
++        spin_lock_irqsave(&priv->lock, flags);
++
++        // Create a txb with one skb
++        txb = kmalloc(sizeof(struct ieee80211_txb) + sizeof(u8 *),
+GFP_ATOMIC);
++        if (!txb)
++              goto nosepuede;
++        txb->nr_frags=1;
++        txb->frag_size = ieee->tx_headroom;
++        txb->fragments[0]=__dev_alloc_skb(count + ieee->tx_headroom,
+GFP_ATOMIC);
++        if (!txb->fragments[0]) {
++              kfree(txb);
++              goto nosepuede;
++        }
++        skb_reserve(txb->fragments[0], ieee->tx_headroom);
++        txb->encrypted=0;
++        txb->payload_size=count;
++        skb_frag = txb->fragments[0];
++        newbuf=skb_put(skb_frag, count);
++
++        // copy data into txb->skb and send it
++        memcpy(newbuf, buf, count);
++
++        ipw_tx_skb(priv, txb, 0);
++
++nosepuede:
++        spin_unlock_irqrestore(&priv->lock, flags);
++        return count;
++}
++
++static DEVICE_ATTR(inject, S_IWUSR, NULL, store_inject);
++
+ static ssize_t show_channels(struct device *d,
+                             struct device_attribute *attr,
+                             char *buf)
+@@ -10512,6 +10568,10 @@ static int ipw_net_set_mac_address(struc
+        mutex_lock(&priv->mutex);
+        priv->config |= CFG_CUSTOM_MAC;
+        memcpy(priv->mac_addr, addr->sa_data, ETH_ALEN);
++
++        if (rtap_iface)
++               memcpy(priv->prom_net_dev->dev_addr, addr->sa_data,
+ETH_ALEN);
++
+        printk(KERN_INFO "%s: Setting MAC to %s\n",
+               priv->net_dev->name, print_mac(mac, priv->mac_addr));
+        queue_work(priv->workqueue, &priv->adapter_restart);
+@@ -11478,6 +11538,7 @@ static struct attribute *ipw_sysfs_entri
+ #ifdef CONFIG_IPW2200_PROMISCUOUS
+        &dev_attr_rtap_iface.attr,
+        &dev_attr_rtap_filter.attr,
++       &dev_attr_inject.attr,
+ #endif
+        NULL
+ };
+--- drivers/net/wireless/ipw2200.h      2008-09-09 19:27:49.000000000 -0400
++++ drivers/net/wireless/ipw2200-new.h  2008-09-27 15:32:23.000000000 -0400
+@@ -2007,4 +2007,13 @@ struct ipw_cmd_log {
+
+ #define IPW_MAX_CONFIG_RETRIES 10
+
++/*
++ * Hhack to get code compiling on new kernels, the define below
++ * seem to be removed from the linux headers.
++ */
++#ifndef MAC_ARG
++#define MAC_ARG(x)
+((u8*)(x))[0],((u8*)(x))[1],((u8*)(x))[2],((u8*)(x))[3],((u8*)(x))[4],((u8*)(x))[5]
++#endif
++
++
+ #endif                         /* __ipw2200_h__ */
+
+
+On Sat, Sep 27, 2008 at 4:43 PM, Paul <paul14075@gmail.com> wrote:
+> I made this patch using bits and pieces from various other "ipw2200
+> injection patches".  I can not take credit for the content, as I
+> basically just changed the line numbers in the .diff files.  However I
+> applied this patch to the version of ipw2200 included in kernel
+> 2.6.27-rc6  (i believe it's ipw2200-1.2.2) and it worked like a charm.
+>
+> Previously I was unable to inject wifi packets using aireplay-ng due
+> to this error:
+>
+> "ARP linktype is set to 1 (Ethernet) - expected ARPHRD_IEEE80211 or
+> ARPHRD_IEEE80211_PRISM instead.  Make sure RFMON is enabled: run
+> 'ifconfig wifi0 up; iwconfig wifi0 mode Monitor channel <#>' Sysfs
+> injection support was not found either."
+>
+> However, after switching to Monitor mode, even though aireplay would
+> ACT AS IF it was working, it wasn't.
+>
+> After applying this patch, everything worked great.
+>
+> I don't see why this patch isnt already included in ipw2200.
+>
+> Thanks,
+> - Paul
+>
