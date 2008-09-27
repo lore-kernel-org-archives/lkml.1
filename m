@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbYI0OiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbYI0OoL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753180AbYI0OiG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 10:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYI0Ohz
+	id S1753209AbYI0OoL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 10:44:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYI0On5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 10:37:55 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:36327 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751603AbYI0Ohy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 10:37:54 -0400
-Date: Sat, 27 Sep 2008 10:38:53 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       ath5k-devel@venema.h4ckr.net, linux-kernel@vger.kernel.org
-Subject: Re: Release of Atheros 802.11abg HAL under the ISC
-Message-ID: <20080927143852.GB3392@tuxdriver.com>
-References: <20080926215701.GC5972@tesla>
+	Sat, 27 Sep 2008 10:43:57 -0400
+Received: from gw.goop.org ([64.81.55.164]:32908 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751711AbYI0On5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 10:43:57 -0400
+Message-ID: <48DE46AB.8070505@goop.org>
+Date: Sat, 27 Sep 2008 07:43:55 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080926215701.GC5972@tesla>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Suresh Siddha <suresh.b.siddha@intel.com>, jbarnes@virtuousgeek.org,
+       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       arjan@linux.intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] ioremap sanity check to catch mapping requests exceeding
+ the BAR sizes
+References: <20080926014334.GF15609@linux-os.sc.intel.com>	<48DDDDDE.7060707@goop.org> <20080927122145.49ad0cf4@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080927122145.49ad0cf4@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 02:57:01PM -0700, Luis R. Rodriguez wrote:
-> As part of our commitment to help support all of our Atheros devices
-> under Linux we'd like to announce the release of our Atheros HAL for
-> our 802.11abg chipsets under the ISC license.
-> 
-> You can find it here:
-> 
-> http://www.kernel.org/pub/linux/kernel/people/mcgrof/legacy-hal.tar.bz2
-> 
-> This can be used as a source of documentation to help ath5k move
-> forward to support our 802.11abg chipsets as best as possible in
-> the Linux kernel. We look forward to keep working strongly with the
-> community on advancing support of all our Atheros chipsets under Linux.
+Alan Cox wrote:
+>> Any attempt to use ioremap on memory is a bug, so you should warn about
+>> that too.
+>>     
+>
+> We use it to ioremap things like the BIOS...
 
-Awesome...simply, awesome!
+Yeah, that's fine.  I mean using ioremap on system memory is a bug.
 
-I hereby nominate Atheros for this year's "Most Improved Open Source
-Corporate Citizen" award! :-)
-
-Great job, Luis!
-
-John
--- 
-John W. Linville		Linux should be at the core
-linville@tuxdriver.com			of your literate lifestyle.
+    J
