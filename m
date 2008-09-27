@@ -1,86 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYI0CbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbYI0Cqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbYI0CbX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 22:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbYI0Cad
+	id S1752872AbYI0Cqo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 22:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbYI0Cqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 22:30:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50465 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753749AbYI0Caa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 22:30:30 -0400
-Date: Fri, 26 Sep 2008 22:30:02 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: avi@qumranet.com
-Subject: inconsistent lock state. (kvm)
-Message-ID: <20080927023002.GA28250@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>, avi@qumranet.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 26 Sep 2008 22:46:36 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59210 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbYI0Cqg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 22:46:36 -0400
+Date: Sat, 27 Sep 2008 11:53:10 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 0/12] memcg updates v5
+Message-Id: <20080927115310.df4283b9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080926194309.845d661b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926113228.ee377330.nishimura@mxp.nes.nec.co.jp>
+	<20080926115810.b5fbae51.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926120408.39187294.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926120019.33d58ca4.nishimura@mxp.nes.nec.co.jp>
+	<20080926130534.e16c9317.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080926142455.5b0e239e.nishimura@mxp.nes.nec.co.jp>
+	<20080926194309.845d661b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just triggered this with just modprobe kvm_intel ; rmmod kvm kvm_intel
+On Fri, 26 Sep 2008 19:43:09 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-	Dave
+> On Fri, 26 Sep 2008 14:24:55 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > Unfortunately, there remains some bugs yet...
+> > 
+> 
+> Thank you for your patient good test!
+> 
+> I'm now testing following (and will do over-night test.)
+> In this an hour, this seems to work good. 
+> (under your test which usually panics in 10-20min on my box.)
+> 
+This helps some, but causes other troubles. (But I know what it is.)
+I'll add lock_page_cgroup() to charge side and see what happens.
 
-=================================
-[ INFO: inconsistent lock state ]
-2.6.26.3-29.fc9.x86_64.debug #1
----------------------------------
-inconsistent {hardirq-on-W} -> {in-hardirq-W} usage.
-Xorg/2680 [HC1[1]:SC0[0]:HE0:SE1] takes:
- (kvm_lock){+-..}, at: [<ffffffffa0463ad6>] decache_vcpus_on_cpu+0x20/0xbd [kvm]
-{hardirq-on-W} state was registered at:
-  [<ffffffff81058ead>] __lock_acquire+0x62f/0xd89
-  [<ffffffff8105969d>] lock_acquire+0x96/0xc3
-  [<ffffffff812bd7b3>] _spin_lock+0x26/0x53
-  [<ffffffffa046713d>] mmu_shrink+0x26/0x116 [kvm]
-  [<ffffffff810912ed>] shrink_slab+0x70/0x158
-  [<ffffffff810921d7>] try_to_free_pages+0x25c/0x365
-  [<ffffffff8108c7fc>] __alloc_pages_internal+0x2ef/0x49c
-  [<ffffffff8108c9b2>] __alloc_pages_nodemask+0x9/0xb
-  [<ffffffff810a8aa3>] alloc_pages_current+0xb9/0xc2
-  [<ffffffff8108bb47>] __get_free_pages+0xe/0x4d
-  [<ffffffff810f9630>] proc_pid_attr_write+0x65/0xe4
-  [<ffffffff810b6f89>] vfs_write+0xae/0x157
-  [<ffffffff810b70f6>] sys_write+0x47/0x6f
-  [<ffffffff8100c0fa>] system_call_after_swapgs+0x8a/0x8f
-  [<ffffffffffffffff>] 0xffffffffffffffff
-irq event stamp: 1251057442
-hardirqs last  enabled at (1251057441): [<ffffffff812bd23a>] trace_hardirqs_on_thunk+0x35/0x3a
-hardirqs last disabled at (1251057442): [<ffffffff812bd274>] trace_hardirqs_off_thunk+0x35/0x37
-softirqs last  enabled at (1251057438): [<ffffffff8103d25d>] __do_softirq+0xf2/0x101
-softirqs last disabled at (1251057433): [<ffffffff8100d64c>] call_softirq+0x1c/0x28
-
-other info that might help us debug this:
-no locks held by Xorg/2680.
-
-stack backtrace:
-Pid: 2680, comm: Xorg Not tainted 2.6.26.3-29.fc9.x86_64.debug #1
-
-Call Trace:
- <IRQ>  [<ffffffff81057828>] print_usage_bug+0x15e/0x16f
- [<ffffffff81057d00>] mark_lock+0x126/0x463
- [<ffffffff81058e2f>] __lock_acquire+0x5b1/0xd89
- [<ffffffff81056741>] ? lock_release_holdtime+0x1e/0x109
- [<ffffffff812bd637>] ? _spin_unlock_irq+0x2b/0x37
- [<ffffffff8105969d>] lock_acquire+0x96/0xc3
- [<ffffffffa0463ad6>] ? :kvm:decache_vcpus_on_cpu+0x20/0xbd
- [<ffffffff812bd7b3>] _spin_lock+0x26/0x53
- [<ffffffffa045e8a1>] ? :kvm:hardware_disable+0x0/0x2f
- [<ffffffffa0463ad6>] :kvm:decache_vcpus_on_cpu+0x20/0xbd
- [<ffffffffa045e8a1>] ? :kvm:hardware_disable+0x0/0x2f
- [<ffffffffa045e8c7>] :kvm:hardware_disable+0x26/0x2f
- [<ffffffff8101a836>] smp_call_function_interrupt+0x45/0x6e
- [<ffffffff8100cf47>] call_function_interrupt+0x77/0x80
- <EOI> 
+Thanks,
+-Kame
 
 
--- 
-http://www.codemonkey.org.uk
+
+> ==
+> page_cgroup is not valid until pc->mem_cgroup is set to appropriate value.
+> There is a small race between Set-Used-Bit and Set-Proper-pc->mem_cgroup.
+> This patch tries to fix that by adding PCG_VALID bit
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+>  include/linux/page_cgroup.h |    3 +++
+>  mm/memcontrol.c             |   22 ++++++++++++++--------
+>  2 files changed, 17 insertions(+), 8 deletions(-)
+> 
+> Index: mmotm-2.6.27-rc7+/include/linux/page_cgroup.h
+> ===================================================================
+> --- mmotm-2.6.27-rc7+.orig/include/linux/page_cgroup.h
+> +++ mmotm-2.6.27-rc7+/include/linux/page_cgroup.h
+> @@ -21,6 +21,7 @@ struct page_cgroup *lookup_page_cgroup(s
+>  
+>  enum {
+>  	/* flags for mem_cgroup */
+> +	PCG_VALID, /* you can access this page cgroup */
+>  	PCG_LOCK,  /* page cgroup is locked */
+>  	PCG_CACHE, /* charged as cache */
+>  	PCG_USED, /* this object is in use. */
+> @@ -50,6 +51,10 @@ static inline int TestSetPageCgroup##una
+>  /* Cache flag is set only once (at allocation) */
+>  TESTPCGFLAG(Cache, CACHE)
+>  
+> +TESTPCGFLAG(Valid, VALID)
+> +SETPCGFLAG(Valid, VALID)
+> +CLEARPCGFLAG(Valid, VALID)
+> +
+>  TESTPCGFLAG(Used, USED)
+>  CLEARPCGFLAG(Used, USED)
+>  TESTSETPCGFLAG(Used, USED)
+> Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
+> +++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+> @@ -340,7 +340,7 @@ void mem_cgroup_move_lists(struct page *
+>  	if (!trylock_page_cgroup(pc))
+>  		return;
+>  
+> -	if (PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
+> +	if (PageCgroupValid(pc) && PageCgroupLRU(pc)) {
+>  		mem = pc->mem_cgroup;
+>  		mz = page_cgroup_zoneinfo(pc);
+>  		spin_lock_irqsave(&mz->lru_lock, flags);
+> @@ -434,7 +434,7 @@ unsigned long mem_cgroup_isolate_pages(u
+>  	list_for_each_entry_safe_reverse(pc, tmp, src, lru) {
+>  		if (scan >= nr_to_scan)
+>  			break;
+> -		if (unlikely(!PageCgroupUsed(pc)))
+> +		if (unlikely(!PageCgroupValid(pc)))
+>  			continue;
+>  		page = pc->page;
+>  
+> @@ -511,7 +511,7 @@ int mem_cgroup_move_account(struct page 
+>  		return ret;
+>  	}
+>  
+> -	if (!PageCgroupUsed(pc)) {
+> +	if (!PageCgroupValid(pc)) {
+>  		res_counter_uncharge(&to->res, PAGE_SIZE);
+>  		goto out;
+>  	}
+> @@ -580,6 +580,7 @@ __set_page_cgroup_lru(struct memcg_percp
+>  	unsigned long flags;
+>  	struct mem_cgroup_per_zone *mz, *prev_mz;
+>  	struct page_cgroup *pc;
+> +	struct mem_cgroup *mem;
+>  	int i, nr;
+>  
+>  	local_irq_save(flags);
+> @@ -589,6 +590,7 @@ __set_page_cgroup_lru(struct memcg_percp
+>  
+>  	for (i = nr - 1; i >= 0; i--) {
+>  		pc = mpv->vec[i];
+> +		mem = pc->mem_cgroup;
+>  		mz = page_cgroup_zoneinfo(pc);
+>  		if (prev_mz != mz) {
+>  			if (prev_mz)
+> @@ -596,9 +598,11 @@ __set_page_cgroup_lru(struct memcg_percp
+>  			prev_mz = mz;
+>  			spin_lock(&mz->lru_lock);
+>  		}
+> -		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
+> -			SetPageCgroupLRU(pc);
+> -			__mem_cgroup_add_list(mz, pc);
+> +		if (PageCgroupValid(pc) && !PageCgroupLRU(pc)) {
+> +			if (mem == pc->mem_cgroup) {
+> +				SetPageCgroupLRU(pc);
+> +				__mem_cgroup_add_list(mz, pc);
+> +			}
+>  		}
+>  	}
+>  
+> @@ -790,6 +794,7 @@ void mem_cgroup_commit_charge(struct pag
+>  	}
+>  
+>  	pc->mem_cgroup = mem;
+> +	SetPageCgroupValid(pc);
+>  	set_page_cgroup_lru(pc);
+>  	css_put(&mem->css);
+>  	preempt_enable();
+> @@ -928,6 +933,7 @@ __mem_cgroup_uncharge_common(struct page
+>  		return;
+>  	preempt_disable();
+>  	lock_page_cgroup(pc);
+> +	ClearPageCgroupValid(pc);
+>  	ClearPageCgroupUsed(pc);
+>  	mem = pc->mem_cgroup;
+>  	unlock_page_cgroup(pc);
+> @@ -970,7 +976,7 @@ int mem_cgroup_prepare_migration(struct 
+>  
+>  	pc = lookup_page_cgroup(page);
+>  	lock_page_cgroup(pc);
+> -	if (PageCgroupUsed(pc)) {
+> +	if (PageCgroupValid(pc)) {
+>  		mem = pc->mem_cgroup;
+>  		css_get(&mem->css);
+>  		if (PageCgroupCache(pc)) {
+> @@ -1086,7 +1092,7 @@ static void mem_cgroup_force_empty_list(
+>  	spin_lock_irqsave(&mz->lru_lock, flags);
+>  	list_for_each_entry_safe(pc, tmp, list, lru) {
+>  		page = pc->page;
+> -		if (!PageCgroupUsed(pc))
+> +		if (!PageCgroupValid(pc))
+>  			continue;
+>  		/* For avoiding race with speculative page cache handling. */
+>  		if (!PageLRU(page) || !get_page_unless_zero(page))
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+
