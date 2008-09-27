@@ -1,150 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbYI0AOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbYI0AQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754357AbYI0AOd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 20:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYI0AOX
+	id S1754091AbYI0AQe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 20:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYI0AQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 20:14:23 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60909 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752000AbYI0AOW (ORCPT
+	Fri, 26 Sep 2008 20:16:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55466 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752332AbYI0AQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 20:14:22 -0400
-Message-ID: <48DD799C.3070706@zytor.com>
-Date: Fri, 26 Sep 2008 17:09:00 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 26 Sep 2008 20:16:24 -0400
+Date: Fri, 26 Sep 2008 17:13:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH v6] Unified trace buffer
+In-Reply-To: <alpine.DEB.1.10.0809261957001.21618@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.1.10.0809261707320.3265@nehalem.linux-foundation.org>
+References: <20080925185154.230259579@goodmis.org> <20080925185236.244343232@goodmis.org> <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com> <48DC406D.1050508@redhat.com> <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>
+ <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com> <20080926223129.GF15446@ghostprotocols.net> <alpine.DEB.1.10.0809261957001.21618@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, avi@redhat.com,
-       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
-       Dan Hecht <dhecht@vmware.com>, Jun.Nakajima@Intel.Com
-Subject: Re: Use CPUID to communicate with the hypervisor.
-References: <1222472815.29886.43.camel@alok-dev1>
-In-Reply-To: <1222472815.29886.43.camel@alok-dev1>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> From: Alok N Kataria <akataria@vmware.com>
+
+
+On Fri, 26 Sep 2008, Steven Rostedt wrote:
 > 
-> This patch proposes to use a cpuid interface to detect if we are running on an
-> hypervisor.
-> The discovery of a hypervisor is determined by bit 31 of CPUID#1_ECX, which is
-> defined to be "hypervisor present bit". For a VM, the bit is 1, otherwise it is
-> set to 0. This bit is not officially documented by either Intel/AMD yet, but
-> they plan to do so some time soon, in the meanwhile they have promised to keep
-> it reserved for virtualization.
-> 
-> Also, Intel & AMD have reserved the cpuid levels 0x40000000 - 0x400000FF for
-> software use. Hypervisors can use these levels to provide an interface to pass
-> information from the hypervisor to the guest. This is similar to how we extract
-> information about a physical cpu by using cpuid.
-> XEN/KVM are already using the info leaf to get the hypervisor signature.
-> 
-> VMware hardware version 7 defines some of these cpuid levels, below is a brief
-> description about those. These levels can be implemented by other hypervisors
-> too so that Linux has a standard way of communicating to any hypervisor.
-> 
-> Leaf 0x40000000, Hypervisor CPUID information
-> # EAX: The maximum input value for hypervisor CPUID info (0x40000010).
-> # EBX, ECX, EDX: Hypervisor vendor ID signature. E.g. "VMwareVMware"
-> 
+> I started using the rb_ because I was constantly breaking the 80 character 
+> line limit with ring_buffer ;-)   OK, for v8, I'll rename all static 
+> internal functions to rb_ and keep the global ones ring_buffer_
 
-This is great, obviously... although we'll have to deal with legacy 
-methods for a while if not indefinitely (just as we have to for 
-pre-CPUID processors).
+It would probably be better to use something else than 'rb_', because that 
+prefix is already used by the red-black trees, and exported as such (eg 
+"rb_next()" etc).
 
->  
-> +static void __init detect_hypervisor(void)
-> +{
-> +	if (cpu_has_hypervisor) {
-> +		unsigned int eax, ebx, ecx, edx;
-> +		char hyper_vendor_id[13];
-> +
-> +		cpuid(HYPERVISOR_INFO_LEAF, &eax, &ebx, &ecx, &edx);
-> +		memcpy(hyper_vendor_id + 0, &ebx, 4);
-> +		memcpy(hyper_vendor_id + 4, &ecx, 4);
-> +		memcpy(hyper_vendor_id + 8, &edx, 4);
-> +		hyper_vendor_id[12] = '\0';
-> +		printk(KERN_INFO "Hypervisor vendor id %s\n", hyper_vendor_id);
-> +	}
-> +}
-> +
+But at least as long as it's static, it's probably not _too_ noticeable if 
+the rest of the names don't overlap. We _do_ include <linux/rbtree.h>  
+almost everywhere, since we use those things in the VM, in timers etc, so 
+it comes in through pretty much all headers.
 
-This should be broken out into a separate file in cpu/*, because we 
-*will* need to detect hypervisors by other means.
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -345,16 +345,38 @@ failed:
->  	return 0;
->  }
->  
-> +unsigned long hypervisor_tsc_freq(void)
-> +{
-> +	unsigned long tsc_khz;
-> +	unsigned int max_cpuid_leaf;
-> +
-> +	if (cpu_has_hypervisor) {
-> +		max_cpuid_leaf = cpuid_eax(HYPERVISOR_INFO_LEAF);
-> +		if (max_cpuid_leaf >= HYPERVISOR_TIMING_LEAF) {
-> +			tsc_khz = cpuid_eax(HYPERVISOR_TIMING_LEAF);
-> +			printk(KERN_INFO
-> +				"TSC frequency read from hypervisor\n");
-> +			return tsc_khz;
-> +		}
-> +	}
-> +	return 0;
-> +}
-> +
-
-I would call this "vmware_tsc_freq()" because it is a VMWare-defined 
-interface... you can't just poke at 0x40000010 and assume it is using 
-the VMWare definition.
-
-In order for *that* to be safe, you'd have to have well-defined ranges 
-for different virtualization vendors where each of them can define their 
-own stuff.
-
-> diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
-> index ee7cbb3..70ca49b 100644
-> --- a/include/asm-x86/processor.h
-> +++ b/include/asm-x86/processor.h
-> @@ -124,6 +124,27 @@ struct cpuinfo_x86 {
->  #define X86_VENDOR_UNKNOWN	0xff
->  
->  /*
-> + * Intel & AMD have reserved the cpuid levels 0x40000000 - 0x400000FF for
-> + * software use. Hypervisors can use these levels to provide an interface
-> + * to pass information from the hypervisor to the guest. This is similar
-> + * to how we extract information about a physical cpu by using cpuid.
-> + */
-> +
-> +/*
-> + * This CPUID leaf returns the information about the hypervisor.
-> + * EAX : maximum input value for CPUID supported by the hypervisor.
-> + * EBX, ECX, EDX : Hypervisor vendor ID signature. E.g. VMwareVMware.
-> + */
-> +#define HYPERVISOR_INFO_LEAF   0x40000000
-> +/*
-> + * This leaf gets timing information from the hypervisor.
-> + * EAX: (Virtual) TSC frequency in kHz.
-> + * EBX: (Virtual) Bus (local apic timer) frequency in kHz.
-> + * ECX, EDX: RESERVED
-> + */
-> +#define HYPERVISOR_TIMING_LEAF 0x40000010
-> +
-
-<asm/processor.h> is the wrong place for this, and these constants 
-should have CPUID_ in them to tell what they fundamentally are.
-
-My preference would be for <asm/cpuid.h>, but otherwise 
-<asm/cpufeature.h> wouldn't be entirely wrong.
-
-	-hpa
+			Linus
