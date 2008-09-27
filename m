@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbYI0OHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbYI0OWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbYI0OHr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 10:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYI0OHj
+	id S1753070AbYI0OWo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 10:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbYI0OW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 10:07:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42452 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751598AbYI0OHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 10:07:39 -0400
-Subject: Re: [RFC] 0/11 fanotify: fscking all notifiction and file access
-	system (intended for antivirus scanning and file indexers)
-From: Eric Paris <eparis@redhat.com>
-To: david@lang.hm
-Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       arjan@infradead.org, bunk@kernel.org, tytso@mit.edu,
-       tvrtko.ursulin@sophos.com, alan@lxorguk.ukuu.org.uk, hch@infradead.org,
-       andi@firstfloor.org, viro@ZenIV.linux.org.uk, peterz@infradead.org,
-       Jonathan.Press@ca.com, riel@redhat.com
-In-Reply-To: <alpine.DEB.1.10.0809262259290.4229@asgard.lang.hm>
-References: <1222463220.2872.193.camel@localhost.localdomain>
-	 <alpine.DEB.1.10.0809262259290.4229@asgard.lang.hm>
-Content-Type: text/plain
-Date: Sat, 27 Sep 2008 10:04:54 -0400
-Message-Id: <1222524294.2872.252.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Sep 2008 10:22:27 -0400
+Received: from fmailhost05.isp.att.net ([207.115.11.55]:46811 "EHLO
+	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751603AbYI0OW0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 10:22:26 -0400
+X-Originating-IP: [74.251.44.253]
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: jeff@garzik.org
+Cc: csnook@redhat.com, jie.yang@atheros.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jay Cliburn <jacliburn@bellsouth.net>
+Subject: [PATCH 3/4] atl1: remove EXPERIMENTAL label
+Date: Sat, 27 Sep 2008 09:17:22 -0500
+Message-Id: <1222525043-4648-4-git-send-email-jacliburn@bellsouth.net>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <1222525043-4648-1-git-send-email-jacliburn@bellsouth.net>
+References: <1222525043-4648-1-git-send-email-jacliburn@bellsouth.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-26 at 23:05 -0700, david@lang.hm wrote:
-> On Fri, 26 Sep 2008, Eric Paris wrote:
-> 
-> > fanotify has 7 event types and only sends events for S_ISREG() files.
-> > The event types are OPEN, READ, WRITE, CLOSE_WRITE, CLOSE_NOWRITE,
-> > OPEN_ACCESS, and READ_ACCESS.  Events OPEN_ACCESS and READ_ACCESS
-> > require that the listener return some sort of allow/deny/more_time
-> > response as the original process blocks until it gets an event (or times
-> > out.)  listeners may register a group which will get notifications about
-> > any combination of these events.  Antivirus scanners will likely want
-> > OPEN_ACCESS and READ_ACCESS while file indexers would likely use the
-> > non-ACCESS form of these events.
-> 
-> sending a message out for every READ/WRITE seems like it will generate a 
-> LOT of messages, and very few will be ones that anyone cares about.
-> 
-> one of the nice things about the TALPA approach was that there was an 
-> ability to notify only on a change of state (i.e. when a file that had 
-> been scanned was changed)
-> 
-> this could do a similar thing, but I think it would be a much more 
-> expensive process to do it all in userspace.
+Remove the EXPERIMENTAL label from the atl1 driver and change the vendor
+name to include Attansic's successor, Atheros.  We'll leave Attansic in
+the name since Attansic's PCI ID (1969) is encoded in the PCI config and
+is what users encounter on their systems.
 
-See the fastpath patch and explaination.  Doesn't help for writes...
+Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
+---
+ drivers/net/Kconfig |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index 4a11296..1c8addf 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2281,12 +2281,13 @@ config QLA3XXX
+ 	  will be called qla3xxx.
+ 
+ config ATL1
+-	tristate "Attansic L1 Gigabit Ethernet support (EXPERIMENTAL)"
+-	depends on PCI && EXPERIMENTAL
++	tristate "Atheros/Attansic L1 Gigabit Ethernet support"
++	depends on PCI
+ 	select CRC32
+ 	select MII
+ 	help
+-	  This driver supports the Attansic L1 gigabit ethernet adapter.
++	  This driver supports the Atheros/Attansic L1 gigabit ethernet
++	  adapter.
+ 
+ 	  To compile this driver as a module, choose M here.  The module
+ 	  will be called atl1.
+-- 
+1.5.5.1
 
