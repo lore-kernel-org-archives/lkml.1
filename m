@@ -1,80 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYI0PWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbYI0P3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbYI0PWR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 11:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYI0PWE
+	id S1753489AbYI0P3b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 11:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYI0P3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 11:22:04 -0400
-Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:53326 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752051AbYI0PWD (ORCPT
+	Sat, 27 Sep 2008 11:29:22 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:38294 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752131AbYI0P3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 11:22:03 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Warning/Oops report of the week of September 16th, 2008
-Date: Sat, 27 Sep 2008 17:21:41 +0200
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       tglx@tglx.de, mingo@elte.hu
-References: <20080916092206.6342c498@infradead.org> <alpine.LFD.1.10.0809241541320.3265@nehalem.linux-foundation.org> <20080926112815.0f8e9de6@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080926112815.0f8e9de6@lxorguk.ukuu.org.uk>
+	Sat, 27 Sep 2008 11:29:21 -0400
+Message-ID: <48DE510C.3030203@euromail.se>
+Date: Sat, 27 Sep 2008 17:28:12 +0200
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: akpm@osdl.org, Nicolas Boichat <nicolas@boichat.ch>,
+       lm-sensors@lm-sensors.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] hwmon: applesmc: Lighter wait mechanism, drastic improvement
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809271721.43075.elendil@planet.nl>
-X-OriginalArrivalTime: 27 Sep 2008 15:21:43.0479 (UTC) FILETIME=[BF707470:01C920B4]
+X-Originating-IP: 83.248.35.94
+X-Scan-Result: No virus found in message 1KjbjP-0004Id-7u.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KjbjP-0004Id-7u 549ebd1f3d75a84249c5036acdecccd6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 September 2008, Alan Cox wrote:
-> parport: quickfix the proc registration bug
->
-> From: Alan Cox <alan@redhat.com>
->
-> Ideally we should have a directory of drivers and a link to the
-> 'active' driver. For now just show the first device which is
-> effectively the existing semantics without a warning.
->
-> Signed-off-by: Alan Cox <alan@redhat.com>
+The read fail ratio is sensitive to the delay between the first byte
+written and the first byte read; apparently the sensors cannot be
+rushed. Increasing the minimum wait time, without changing the total
+wait time, improves the fail ratio from a 8% chance that any of the
+sensors fails in one read, down to 0.4%, on a Macbook Air. On a
+Macbook Pro 3,1, the effect is even more apparent. By reducing the
+number of status polls, the ratio is further improved to below
+0.1%. Finally, increasing the total wait time brings the fail ratio
+down to virtually zero.
 
-Thanks Greg, but I'm afraid that still gives me the error:
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+Tested-by: Bob McElrath <bob@mcelrath.org>
+---
+ drivers/hwmon/applesmc.c |   22 ++++++++++++----------
+ 1 files changed, 12 insertions(+), 10 deletions(-)
 
-ppdev0: registered pardevice
-sysctl table check failed: /dev/parport/parport0/devices/ppdev0/timeslice  
-Sysctl already exists
-Pid: 7104, comm: hpijs Not tainted 2.6.27-rc7 #21
+diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
+index 321dc82..c6b9ecf 100644
+--- a/drivers/hwmon/applesmc.c
++++ b/drivers/hwmon/applesmc.c
+@@ -49,6 +49,9 @@
 
-Call Trace:
- [<ffffffff8024d2ac>] set_fail+0x48/0x53
- [<ffffffff8024d7a1>] sysctl_check_table+0x4ea/0x531
- [<ffffffff8024d7ba>] sysctl_check_table+0x503/0x531
- [<ffffffff8024d7ba>] sysctl_check_table+0x503/0x531
- [<ffffffff8024d7ba>] sysctl_check_table+0x503/0x531
- [<ffffffff8024d7ba>] sysctl_check_table+0x503/0x531
- [<ffffffff8024d7ba>] sysctl_check_table+0x503/0x531
- [<ffffffff8023b378>] ? sysctl_set_parent+0x24/0x39
- [<ffffffff8023c66e>] __register_sysctl_paths+0xee/0x29e
- [<ffffffff80314f05>] ? sprintf+0x68/0x6a
- [<ffffffff8023c847>] register_sysctl_paths+0x29/0x2b
- [<ffffffff8023c85c>] register_sysctl_table+0x13/0x15
- [<ffffffffa00f79d4>] parport_device_proc_register+0xcc/0xf0 [parport]
- [<ffffffffa00f5a07>] parport_register_device+0x25c/0x296 [parport]
- [<ffffffffa03c9a3b>] ? pp_irq+0x0/0x4b [ppdev]
- [<ffffffffa03c93e2>] pp_ioctl+0x16f/0x7c8 [ppdev]
- [<ffffffff80282894>] ? free_pages_and_swap_cache+0x57/0x72
- [<ffffffff8029abbe>] vfs_ioctl+0x2a/0x78
- [<ffffffff8029ae63>] do_vfs_ioctl+0x257/0x274
- [<ffffffff8029aed5>] sys_ioctl+0x55/0x78
- [<ffffffff8020c1eb>] system_call_fastpath+0x16/0x1b
+ #define APPLESMC_MAX_DATA_LENGTH 32
 
-ppdev0: registered pardevice
-ppdev0: unregistered pardevice
-ppdev0: unregistered pardevice
++#define APPLESMC_MIN_WAIT	0x0040
++#define APPLESMC_MAX_WAIT	0x8000
++
+ #define APPLESMC_STATUS_MASK	0x0f
+ #define APPLESMC_READ_CMD	0x10
+ #define APPLESMC_WRITE_CMD	0x11
+@@ -172,25 +175,25 @@ static unsigned int key_at_index;
+ static struct workqueue_struct *applesmc_led_wq;
 
-Cheers,
-FJP
+ /*
+- * __wait_status - Wait up to 10ms for the status port to get a certain value
++ * __wait_status - Wait up to 32ms for the status port to get a certain value
+  * (masked with 0x0f), returning zero if the value is obtained.  Callers must
+  * hold applesmc_lock.
+  */
+ static int __wait_status(u8 val)
+ {
+-	unsigned int i;
++	int us;
+
+ 	val = val & APPLESMC_STATUS_MASK;
+
+-	for (i = 0; i < 1000; i++) {
++	for (us = APPLESMC_MIN_WAIT; us < APPLESMC_MAX_WAIT; us <<= 1) {
++		udelay(us);
+ 		if ((inb(APPLESMC_CMD_PORT) & APPLESMC_STATUS_MASK) == val) {
+ 			if (debug)
+ 				printk(KERN_DEBUG
+-						"Waited %d us for status %x\n",
+-						i*10, val);
++					"Waited %d us for status %x\n",
++					2 * us - APPLESMC_MIN_WAIT, val);
+ 			return 0;
+ 		}
+-		udelay(10);
+ 	}
+
+ 	printk(KERN_WARNING "applesmc: wait status failed: %x != %x\n",
+@@ -206,13 +209,12 @@ static int __wait_status(u8 val)
+  */
+ static int send_command(u8 cmd)
+ {
+-	int i;
+-	for (i = 0; i < 1000; i++) {
++	int us;
++	for (us = APPLESMC_MIN_WAIT; us < APPLESMC_MAX_WAIT; us <<= 1) {
+ 		outb(cmd, APPLESMC_CMD_PORT);
+-		udelay(5);
++		udelay(us);
+ 		if ((inb(APPLESMC_CMD_PORT) & APPLESMC_STATUS_MASK) == 0x0c)
+ 			return 0;
+-		udelay(5);
+ 	}
+ 	printk(KERN_WARNING "applesmc: command failed: %x -> %x\n",
+ 		cmd, inb(APPLESMC_CMD_PORT));
+-- 
+1.5.6.3
+
