@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbYI0OWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbYI0OW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753070AbYI0OWo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 10:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbYI0OW1
+	id S1753386AbYI0OW6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 10:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYI0OWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 10:22:27 -0400
-Received: from fmailhost05.isp.att.net ([207.115.11.55]:46811 "EHLO
-	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751603AbYI0OW0 (ORCPT
+	Sat, 27 Sep 2008 10:22:33 -0400
+Received: from fmailhost01.isp.att.net ([204.127.217.101]:48401 "EHLO
+	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbYI0OWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 10:22:26 -0400
+	Sat, 27 Sep 2008 10:22:30 -0400
 X-Originating-IP: [74.251.44.253]
 From: Jay Cliburn <jacliburn@bellsouth.net>
 To: jeff@garzik.org
 Cc: csnook@redhat.com, jie.yang@atheros.com, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, Jay Cliburn <jacliburn@bellsouth.net>
-Subject: [PATCH 3/4] atl1: remove EXPERIMENTAL label
-Date: Sat, 27 Sep 2008 09:17:22 -0500
-Message-Id: <1222525043-4648-4-git-send-email-jacliburn@bellsouth.net>
+Subject: [PATCH 0/4] atl1: miscellaneous fixes and updates 
+Date: Sat, 27 Sep 2008 09:17:19 -0500
+Message-Id: <1222525043-4648-1-git-send-email-jacliburn@bellsouth.net>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1222525043-4648-1-git-send-email-jacliburn@bellsouth.net>
-References: <1222525043-4648-1-git-send-email-jacliburn@bellsouth.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the EXPERIMENTAL label from the atl1 driver and change the vendor
-name to include Attansic's successor, Atheros.  We'll leave Attansic in
-the name since Attansic's PCI ID (1969) is encoded in the PCI config and
-is what users encounter on their systems.
+Please accept this patchset for the atl1 driver. It includes a bugfix
+for transmit timeouts reported by Alexey Dobriyan, removal of LLTX
+(inspired by Kevin Hao's removal of same from atl2), removal of the
+EXPERIMENTAL tag (initially submitted in slightly different form by
+Chris Snook, but somehow lost), and an update to the driver's
+introductory comments.
 
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
----
- drivers/net/Kconfig |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+Jay Cliburn (4):
+  atl1: fix transmit timeout bug
+  atl1: remove LLTX
+  atl1: remove EXPERIMENTAL label
+  atl1: update introductory comments
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 4a11296..1c8addf 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2281,12 +2281,13 @@ config QLA3XXX
- 	  will be called qla3xxx.
- 
- config ATL1
--	tristate "Attansic L1 Gigabit Ethernet support (EXPERIMENTAL)"
--	depends on PCI && EXPERIMENTAL
-+	tristate "Atheros/Attansic L1 Gigabit Ethernet support"
-+	depends on PCI
- 	select CRC32
- 	select MII
- 	help
--	  This driver supports the Attansic L1 gigabit ethernet adapter.
-+	  This driver supports the Atheros/Attansic L1 gigabit ethernet
-+	  adapter.
- 
- 	  To compile this driver as a module, choose M here.  The module
- 	  will be called atl1.
--- 
-1.5.5.1
+ drivers/net/Kconfig     |    7 ++++---
+ drivers/net/atlx/atl1.c |   32 +++++++-------------------------
+ drivers/net/atlx/atlx.c |    1 -
+ 3 files changed, 11 insertions(+), 29 deletions(-)
 
