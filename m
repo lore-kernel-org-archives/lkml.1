@@ -1,155 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbYI0Hb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbYI0H4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753489AbYI0Hb2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 03:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYI0Hat
+	id S1752596AbYI0H4f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 03:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYI0H41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 03:30:49 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:60541 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752162AbYI0Has (ORCPT
+	Sat, 27 Sep 2008 03:56:27 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:50255 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbYI0H40 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 03:30:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=tg3c4znJ8YmvFaY3MyXbPiMqbnO6TrVWgRGMOLWk1va9MgiXXPNdnKmOKDU5j03iCX
-         r70OpEzgUlDaR+/+zXH/RLw4VJ8yAb0OsfufL153nN4DW1aVY5rfE5A1FRrLzdwn6qxI
-         UPu/QpzYphYw/aD49YbVoVctYdFAWdFbrA86s=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 3/3] x86: mtrr_cleanup optimization v2
-Date: Sat, 27 Sep 2008 00:30:08 -0700
-Message-Id: <1222500608-14855-3-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1222500608-14855-1-git-send-email-yhlu.kernel@gmail.com>
-References: <1222500608-14855-1-git-send-email-yhlu.kernel@gmail.com>
+	Sat, 27 Sep 2008 03:56:26 -0400
+Message-ID: <48DDE721.9060309@linux.vnet.ibm.com>
+Date: Sat, 27 Sep 2008 13:26:17 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 7/12] memcg add function to move account
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com> <20080925152722.7a678ea1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080925152722.7a678ea1.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix hpa's t61 with 4g ram
-   change layout from
-	(n - 1)*chunksize + chunk_size - NC
-   to
-	n*chunksize - NC
+KAMEZAWA Hiroyuki wrote:
+> This patch provides a function to move account information of a page between
+> mem_cgroups.
+> 
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+What is the interface for moving the accounting? Is it an explicit call like
+force_empty? The other concern I have is about merging two LRU lists, when we
+move LRU pages from one mem_cgroup to another, where do we add them? To the head
+or tail? I think we need to think about it and document it well.
 
----
- arch/x86/kernel/cpu/mtrr/main.c |   81 ++++++++++++++++++----------------------
- 1 file changed, 38 insertions(+), 43 deletions(-)
+The other thing is that once we have mult-hierarchy support (which we really
+need), we need to move the accounting to the parent instead of root.
 
-Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
-+++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
-@@ -977,6 +977,8 @@ range_to_mtrr_with_hole(struct var_mtrr_
- 	/* try to append some small hole */
- 	range0_basek = state->range_startk;
- 	range0_sizek = ALIGN(state->range_sizek, chunk_sizek);
-+
-+	/* no increase */
- 	if (range0_sizek == state->range_sizek) {
- 		if (debug_print)
- 			printk(KERN_DEBUG "rangeX: %016lx - %016lx\n",
-@@ -987,13 +989,13 @@ range_to_mtrr_with_hole(struct var_mtrr_
- 		return 0;
- 	}
- 
--	range0_sizek -= chunk_sizek;
--	if (range0_sizek && sizek) {
--	    while (range0_basek + range0_sizek > (basek + sizek)) {
--		range0_sizek -= chunk_sizek;
--		if (!range0_sizek)
--			break;
--	    }
-+	/* only cut back, when it is not the last */
-+	if (sizek) {
-+		while (range0_basek + range0_sizek > (basek + sizek)) {
-+			range0_sizek -= chunk_sizek;
-+			if (!range0_sizek)
-+				break;
-+		}
- 	}
- 
- 	if (range0_sizek) {
-@@ -1007,46 +1009,39 @@ range_to_mtrr_with_hole(struct var_mtrr_
- 	}
- 
- 	range_basek = range0_basek + range0_sizek;
--	range_sizek = chunk_sizek;
--
--	if (range_basek + range_sizek > basek &&
--	    range_basek + range_sizek <= (basek + sizek)) {
--		/* one hole */
--		second_basek = basek;
--		second_sizek = range_basek + range_sizek - basek;
--	}
- 
--	/* if last piece, only could one hole near end */
--	if ((second_basek || !basek) &&
--	    range_sizek - (state->range_sizek - range0_sizek) - second_sizek <
--	    (chunk_sizek >> 1)) {
--		/*
--		 * one hole in middle (second_sizek is 0) or at end
--		 * (second_sizek is 0 )
--		 */
--		hole_sizek = range_sizek - (state->range_sizek - range0_sizek)
--				 - second_sizek;
--		hole_basek = range_basek + range_sizek - hole_sizek
--				 - second_sizek;
--	} else {
--		/* fallback for big hole, or several holes */
-+	/* one hole in the middle */
-+	if (range_basek > basek && range_basek <= (basek + sizek))
-+		second_sizek = range_basek - basek;
-+
-+	if (range0_sizek > state->range_sizek) {
-+		unsigned long hole_basek, hole_sizek;
-+
-+		/* one hole in middle or at end */
-+		hole_sizek = range0_sizek - state->range_sizek - second_sizek;
-+		if (hole_sizek) {
-+			hole_basek = range_basek - hole_sizek - second_sizek;
-+			if (debug_print)
-+				printk(KERN_DEBUG "hole: %016lx - %016lx\n",
-+					 hole_basek<<10,
-+					 (hole_basek + hole_sizek)<<10);
-+			state->reg = range_to_mtrr(state->reg, hole_basek,
-+						   hole_sizek,
-+						   MTRR_TYPE_UNCACHABLE);
-+		}
-+	} else  {
-+		/* need to handle left over */
- 		range_sizek = state->range_sizek - range0_sizek;
--		second_basek = 0;
--		second_sizek = 0;
--	}
- 
--	if (debug_print)
--		printk(KERN_DEBUG "range: %016lx - %016lx\n", range_basek<<10,
--			 (range_basek + range_sizek)<<10);
--	state->reg = range_to_mtrr(state->reg, range_basek, range_sizek,
-+		if (range_sizek) {
-+			if (debug_print)
-+				printk(KERN_DEBUG "range: %016lx - %016lx\n",
-+					 range_basek<<10,
-+					 (range_basek + range_sizek)<<10);
-+			state->reg = range_to_mtrr(state->reg, range_basek,
-+					 range_sizek,
- 					 MTRR_TYPE_WRBACK);
--	if (hole_sizek) {
--		if (debug_print)
--			printk(KERN_DEBUG "hole: %016lx - %016lx\n",
--				 hole_basek<<10, (hole_basek + hole_sizek)<<10);
--		state->reg = range_to_mtrr(state->reg, hole_basek, hole_sizek,
--						 MTRR_TYPE_UNCACHABLE);
--
-+		}
- 	}
- 
- 	return second_sizek;
+> This moving of page_cgroup is done under
+>  - lru_lock of source/destination mem_cgroup is held.
+
+I suppose you mean and instead of either for the lru_lock
+
+>  - lock_page_cgroup() is held.
+> 
+> Then, a routine which touches pc->mem_cgroup without lock_page_cgroup() should
+> confirm pc->mem_cgroup is still valid or not. Typlical code can be following.
+> 
+> (while page is not under lock_page())
+> 	mem = pc->mem_cgroup;
+> 	mz = page_cgroup_zoneinfo(pc)
+> 	spin_lock_irqsave(&mz->lru_lock);
+> 	if (pc->mem_cgroup == mem)
+> 		...../* some list handling */
+> 	spin_unlock_irq(&mz->lru_lock);
+> 
+> Or better way is
+> 	lock_page_cgroup(pc);
+> 	....
+> 	unlock_page_cgroup(pc);
+> 
+> But you should confirm the nest of lock and avoid deadlock.
+> (trylock is better if it's ok.)
+> 
+> If you find page_cgroup from mem_cgroup's LRU under mz->lru_lock,
+> you don't have to worry about what pc->mem_cgroup points to.
+> 
+> Changelog: (v4) -> (v5)
+>   - check for lock_page() is removed.
+>   - rewrote description.
+> 
+> Changelog: (v2) -> (v4)
+>   - added lock_page_cgroup().
+>   - splitted out from new-force-empty patch.
+>   - added how-to-use text.
+>   - fixed race in __mem_cgroup_uncharge_common().
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+>  mm/memcontrol.c |   84 ++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 81 insertions(+), 3 deletions(-)
+> 
+> Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
+> +++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+> @@ -426,6 +426,7 @@ int task_in_mem_cgroup(struct task_struc
+>  void mem_cgroup_move_lists(struct page *page, enum lru_list lru)
+>  {
+>  	struct page_cgroup *pc;
+> +	struct mem_cgroup *mem;
+>  	struct mem_cgroup_per_zone *mz;
+>  	unsigned long flags;
+> 
+> @@ -444,9 +445,14 @@ void mem_cgroup_move_lists(struct page *
+> 
+>  	pc = page_get_page_cgroup(page);
+>  	if (pc) {
+> +		mem = pc->mem_cgroup;
+>  		mz = page_cgroup_zoneinfo(pc);
+>  		spin_lock_irqsave(&mz->lru_lock, flags);
+> -		__mem_cgroup_move_lists(pc, lru);
+> +		/*
+> +		 * check against the race with move_account.
+> +		 */
+> +		if (likely(mem == pc->mem_cgroup))
+> +			__mem_cgroup_move_lists(pc, lru);
+>  		spin_unlock_irqrestore(&mz->lru_lock, flags);
+>  	}
+>  	unlock_page_cgroup(page);
+> @@ -567,6 +573,70 @@ unsigned long mem_cgroup_isolate_pages(u
+>  	return nr_taken;
+>  }
+> 
+> +/**
+> + * mem_cgroup_move_account - move account of the page
+> + * @page ... the target page of being moved.
+> + * @pc   ... page_cgroup of the page.
+> + * @from ... mem_cgroup which the page is moved from.
+> + * @to   ... mem_cgroup which the page is moved to.
+> + *
+> + * The caller must confirm following.
+> + * 1. disable irq.
+> + * 2. lru_lock of old mem_cgroup should be held.
+> + * 3. pc is guaranteed to be valid and on mem_cgroup's LRU.
+> + *
+> + * Because we cannot call try_to_free_page() here, the caller must guarantee
+> + * this moving of charge never fails. (if charge fails, this call fails.)
+> + * Currently this is called only against root cgroup.
+> + * which has no limitation of resource.
+> + * Returns 0 at success, returns 1 at failure.
+> + */
+> +int mem_cgroup_move_account(struct page *page, struct page_cgroup *pc,
+> +	struct mem_cgroup *from, struct mem_cgroup *to)
+> +{
+> +	struct mem_cgroup_per_zone *from_mz, *to_mz;
+> +	int nid, zid;
+> +	int ret = 1;
+> +
+> +	VM_BUG_ON(!irqs_disabled());
+> +
+> +	nid = page_to_nid(page);
+> +	zid = page_zonenum(page);
+> +	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
+> +	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
+> +
+> +	if (res_counter_charge(&to->res, PAGE_SIZE)) {
+> +		/* Now, we assume no_limit...no failure here. */
+> +		return ret;
+> +	}
+
+Please BUG_ON() if the charging fails, we can be sure we catch assumptions that
+are broken.
+
+> +	if (!try_lock_page_cgroup(page)) {
+> +		res_counter_uncharge(&to->res, PAGE_SIZE);
+> +		return ret;
+> +	}
+> +
+> +	if (page_get_page_cgroup(page) != pc) {
+> +		res_counter_uncharge(&to->res, PAGE_SIZE);
+> +		goto out;
+> +	}
+> +
+> +	if (spin_trylock(&to_mz->lru_lock)) {
+
+The spin_trylock is to avoid deadlocks, right?
+
+> +		__mem_cgroup_remove_list(from_mz, pc);
+> +		css_put(&from->css);
+> +		res_counter_uncharge(&from->res, PAGE_SIZE);
+> +		pc->mem_cgroup = to;
+> +		css_get(&to->css);
+> +		__mem_cgroup_add_list(to_mz, pc);
+> +		ret = 0;
+> +		spin_unlock(&to_mz->lru_lock);
+> +	} else {
+> +		res_counter_uncharge(&to->res, PAGE_SIZE);
+> +	}
+> +out:
+> +	unlock_page_cgroup(page);
+> +
+> +	return ret;
+> +}
+> +
+>  /*
+>   * Charge the memory controller for page usage.
+>   * Return
+> @@ -754,16 +824,24 @@ __mem_cgroup_uncharge_common(struct page
+>  	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+>  	    && ((PageCgroupCache(pc) || page_mapped(page))))
+>  		goto unlock;
+> -
+> +retry:
+> +	mem = pc->mem_cgroup;
+>  	mz = page_cgroup_zoneinfo(pc);
+>  	spin_lock_irqsave(&mz->lru_lock, flags);
+> +	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED &&
+> +	    unlikely(mem != pc->mem_cgroup)) {
+> +		/* MAPPED account can be done without lock_page().
+> +		   Check race with mem_cgroup_move_account() */
+
+Coding style above is broken. Can this race really occur? Why do we get mem
+before acquiring the mz->lru_lock? We don't seem to be using it.
+
+> +		spin_unlock_irqrestore(&mz->lru_lock, flags);
+> +		goto retry;
+> +	}
+>  	__mem_cgroup_remove_list(mz, pc);
+>  	spin_unlock_irqrestore(&mz->lru_lock, flags);
+> 
+>  	page_assign_page_cgroup(page, NULL);
+>  	unlock_page_cgroup(page);
+> 
+> -	mem = pc->mem_cgroup;
+> +
+>  	res_counter_uncharge(&mem->res, PAGE_SIZE);
+>  	css_put(&mem->css);
+> 
+> 
+
+
+-- 
+	Balbir
