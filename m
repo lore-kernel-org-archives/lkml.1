@@ -1,202 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbYI0Cqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbYI0C4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752872AbYI0Cqo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 22:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbYI0Cqg
+	id S1752999AbYI0C4U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 22:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYI0C4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 22:46:36 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59210 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751134AbYI0Cqg (ORCPT
+	Fri, 26 Sep 2008 22:56:11 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:40483 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbYI0C4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 22:46:36 -0400
-Date: Sat, 27 Sep 2008 11:53:10 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp
-Subject: Re: [PATCH 0/12] memcg updates v5
-Message-Id: <20080927115310.df4283b9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080926194309.845d661b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926113228.ee377330.nishimura@mxp.nes.nec.co.jp>
-	<20080926115810.b5fbae51.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926120408.39187294.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926120019.33d58ca4.nishimura@mxp.nes.nec.co.jp>
-	<20080926130534.e16c9317.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080926142455.5b0e239e.nishimura@mxp.nes.nec.co.jp>
-	<20080926194309.845d661b.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Sep 2008 22:56:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=NGoBOcTtmfpuyZ2fi7j1mtifrQ5eYFAsjxdSGBiFBnkdkso1EOWGt3aDucELDQ7Pbp
+         KTzNeVQJGUz6khmCJZzN7Ec2yWF0kBFOSvcWLJqSuJmEjFbbxq1XUTD46BqFw7z4qTXS
+         T2AKJLrRuFSlyPA3qxnrQd+Q9MR83mvUzonmQ=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: mtrr_cleanup optimization
+Date: Fri, 26 Sep 2008 19:55:35 -0700
+Message-Id: <1222484135-15694-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Sep 2008 19:43:09 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+fix hpa's t61 with 4g ram
+1. add mtrr_cleanup_debug to print out more info about layout
+2. change layout from
+	(n - 1)*chunksize + chunk_size - NC
+   to
+	n*chunksize - NC
+3. change back chunksize to 2g
+   otherwise will get strange layout in 2G ram system like
+     0 - 4g WB, 2040M - 2048M UC, 2048M -  4G NC
+   instead of
+     0 - 2g WB, 2040M - 2048M UC
 
-> On Fri, 26 Sep 2008 14:24:55 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > Unfortunately, there remains some bugs yet...
-> > 
-> 
-> Thank you for your patient good test!
-> 
-> I'm now testing following (and will do over-night test.)
-> In this an hour, this seems to work good. 
-> (under your test which usually panics in 10-20min on my box.)
-> 
-This helps some, but causes other troubles. (But I know what it is.)
-I'll add lock_page_cgroup() to charge side and see what happens.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Thanks,
--Kame
+---
+ arch/x86/kernel/cpu/mtrr/main.c |   72 +++++++++++++++++++++-------------------
+ 1 file changed, 39 insertions(+), 33 deletions(-)
 
-
-
-> ==
-> page_cgroup is not valid until pc->mem_cgroup is set to appropriate value.
-> There is a small race between Set-Used-Bit and Set-Proper-pc->mem_cgroup.
-> This patch tries to fix that by adding PCG_VALID bit
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
->  include/linux/page_cgroup.h |    3 +++
->  mm/memcontrol.c             |   22 ++++++++++++++--------
->  2 files changed, 17 insertions(+), 8 deletions(-)
-> 
-> Index: mmotm-2.6.27-rc7+/include/linux/page_cgroup.h
-> ===================================================================
-> --- mmotm-2.6.27-rc7+.orig/include/linux/page_cgroup.h
-> +++ mmotm-2.6.27-rc7+/include/linux/page_cgroup.h
-> @@ -21,6 +21,7 @@ struct page_cgroup *lookup_page_cgroup(s
->  
->  enum {
->  	/* flags for mem_cgroup */
-> +	PCG_VALID, /* you can access this page cgroup */
->  	PCG_LOCK,  /* page cgroup is locked */
->  	PCG_CACHE, /* charged as cache */
->  	PCG_USED, /* this object is in use. */
-> @@ -50,6 +51,10 @@ static inline int TestSetPageCgroup##una
->  /* Cache flag is set only once (at allocation) */
->  TESTPCGFLAG(Cache, CACHE)
->  
-> +TESTPCGFLAG(Valid, VALID)
-> +SETPCGFLAG(Valid, VALID)
-> +CLEARPCGFLAG(Valid, VALID)
-> +
->  TESTPCGFLAG(Used, USED)
->  CLEARPCGFLAG(Used, USED)
->  TESTSETPCGFLAG(Used, USED)
-> Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
-> +++ mmotm-2.6.27-rc7+/mm/memcontrol.c
-> @@ -340,7 +340,7 @@ void mem_cgroup_move_lists(struct page *
->  	if (!trylock_page_cgroup(pc))
->  		return;
->  
-> -	if (PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
-> +	if (PageCgroupValid(pc) && PageCgroupLRU(pc)) {
->  		mem = pc->mem_cgroup;
->  		mz = page_cgroup_zoneinfo(pc);
->  		spin_lock_irqsave(&mz->lru_lock, flags);
-> @@ -434,7 +434,7 @@ unsigned long mem_cgroup_isolate_pages(u
->  	list_for_each_entry_safe_reverse(pc, tmp, src, lru) {
->  		if (scan >= nr_to_scan)
->  			break;
-> -		if (unlikely(!PageCgroupUsed(pc)))
-> +		if (unlikely(!PageCgroupValid(pc)))
->  			continue;
->  		page = pc->page;
->  
-> @@ -511,7 +511,7 @@ int mem_cgroup_move_account(struct page 
->  		return ret;
->  	}
->  
-> -	if (!PageCgroupUsed(pc)) {
-> +	if (!PageCgroupValid(pc)) {
->  		res_counter_uncharge(&to->res, PAGE_SIZE);
->  		goto out;
->  	}
-> @@ -580,6 +580,7 @@ __set_page_cgroup_lru(struct memcg_percp
->  	unsigned long flags;
->  	struct mem_cgroup_per_zone *mz, *prev_mz;
->  	struct page_cgroup *pc;
-> +	struct mem_cgroup *mem;
->  	int i, nr;
->  
->  	local_irq_save(flags);
-> @@ -589,6 +590,7 @@ __set_page_cgroup_lru(struct memcg_percp
->  
->  	for (i = nr - 1; i >= 0; i--) {
->  		pc = mpv->vec[i];
-> +		mem = pc->mem_cgroup;
->  		mz = page_cgroup_zoneinfo(pc);
->  		if (prev_mz != mz) {
->  			if (prev_mz)
-> @@ -596,9 +598,11 @@ __set_page_cgroup_lru(struct memcg_percp
->  			prev_mz = mz;
->  			spin_lock(&mz->lru_lock);
->  		}
-> -		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
-> -			SetPageCgroupLRU(pc);
-> -			__mem_cgroup_add_list(mz, pc);
-> +		if (PageCgroupValid(pc) && !PageCgroupLRU(pc)) {
-> +			if (mem == pc->mem_cgroup) {
-> +				SetPageCgroupLRU(pc);
-> +				__mem_cgroup_add_list(mz, pc);
-> +			}
->  		}
->  	}
->  
-> @@ -790,6 +794,7 @@ void mem_cgroup_commit_charge(struct pag
->  	}
->  
->  	pc->mem_cgroup = mem;
-> +	SetPageCgroupValid(pc);
->  	set_page_cgroup_lru(pc);
->  	css_put(&mem->css);
->  	preempt_enable();
-> @@ -928,6 +933,7 @@ __mem_cgroup_uncharge_common(struct page
->  		return;
->  	preempt_disable();
->  	lock_page_cgroup(pc);
-> +	ClearPageCgroupValid(pc);
->  	ClearPageCgroupUsed(pc);
->  	mem = pc->mem_cgroup;
->  	unlock_page_cgroup(pc);
-> @@ -970,7 +976,7 @@ int mem_cgroup_prepare_migration(struct 
->  
->  	pc = lookup_page_cgroup(page);
->  	lock_page_cgroup(pc);
-> -	if (PageCgroupUsed(pc)) {
-> +	if (PageCgroupValid(pc)) {
->  		mem = pc->mem_cgroup;
->  		css_get(&mem->css);
->  		if (PageCgroupCache(pc)) {
-> @@ -1086,7 +1092,7 @@ static void mem_cgroup_force_empty_list(
->  	spin_lock_irqsave(&mz->lru_lock, flags);
->  	list_for_each_entry_safe(pc, tmp, list, lru) {
->  		page = pc->page;
-> -		if (!PageCgroupUsed(pc))
-> +		if (!PageCgroupValid(pc))
->  			continue;
->  		/* For avoiding race with speculative page cache handling. */
->  		if (!PageLRU(page) || !get_page_unless_zero(page))
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
-
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+@@ -836,6 +836,13 @@ static int __init enable_mtrr_cleanup_se
+ }
+ early_param("enble_mtrr_cleanup", enable_mtrr_cleanup_setup);
+ 
++static int __init mtrr_cleanup_debug_setup(char *str)
++{
++	debug_print = 1;
++	return 0;
++}
++early_param("mtrr_cleanup_debug", mtrr_cleanup_debug_setup);
++
+ struct var_mtrr_state {
+ 	unsigned long	range_startk;
+ 	unsigned long	range_sizek;
+@@ -980,13 +987,12 @@ range_to_mtrr_with_hole(struct var_mtrr_
+ 		return 0;
+ 	}
+ 
+-	range0_sizek -= chunk_sizek;
+-	if (range0_sizek && sizek) {
+-	    while (range0_basek + range0_sizek > (basek + sizek)) {
+-		range0_sizek -= chunk_sizek;
+-		if (!range0_sizek)
+-			break;
+-	    }
++	if (sizek) {
++		while (range0_basek + range0_sizek > (basek + sizek)) {
++			range0_sizek -= chunk_sizek;
++			if (!range0_sizek)
++				break;
++		}
+ 	}
+ 
+ 	if (range0_sizek) {
+@@ -1000,39 +1006,38 @@ range_to_mtrr_with_hole(struct var_mtrr_
+ 	}
+ 
+ 	range_basek = range0_basek + range0_sizek;
+-	range_sizek = chunk_sizek;
++	range_sizek = 0;
+ 
+-	if (range_basek + range_sizek > basek &&
+-	    range_basek + range_sizek <= (basek + sizek)) {
++	if (range_basek > basek &&
++	    range_basek <= (basek + sizek)) {
+ 		/* one hole */
+ 		second_basek = basek;
+-		second_sizek = range_basek + range_sizek - basek;
++		second_sizek = range_basek - basek;
+ 	}
+ 
+ 	/* if last piece, only could one hole near end */
+-	if ((second_basek || !basek) &&
+-	    range_sizek - (state->range_sizek - range0_sizek) - second_sizek <
+-	    (chunk_sizek >> 1)) {
++	if (range0_sizek > state->range_sizek) {
+ 		/*
+ 		 * one hole in middle (second_sizek is 0) or at end
+ 		 * (second_sizek is 0 )
+ 		 */
+-		hole_sizek = range_sizek - (state->range_sizek - range0_sizek)
+-				 - second_sizek;
+-		hole_basek = range_basek + range_sizek - hole_sizek
++		hole_sizek = range0_sizek - state->range_sizek - second_sizek;
++		hole_basek = range_basek - hole_sizek
+ 				 - second_sizek;
+-	} else {
+-		/* fallback for big hole, or several holes */
++	} else  {
++		/* need to handle left over */
+ 		range_sizek = state->range_sizek - range0_sizek;
+-		second_basek = 0;
+-		second_sizek = 0;
+ 	}
+ 
+-	if (debug_print)
+-		printk(KERN_DEBUG "range: %016lx - %016lx\n", range_basek<<10,
+-			 (range_basek + range_sizek)<<10);
+-	state->reg = range_to_mtrr(state->reg, range_basek, range_sizek,
+-					 MTRR_TYPE_WRBACK);
++	if (range_sizek) {
++		if (debug_print)
++			printk(KERN_DEBUG "range: %016lx - %016lx\n",
++				 range_basek<<10,
++				 (range_basek + range_sizek)<<10);
++		state->reg = range_to_mtrr(state->reg, range_basek, range_sizek,
++						 MTRR_TYPE_WRBACK);
++	}
++
+ 	if (hole_sizek) {
+ 		if (debug_print)
+ 			printk(KERN_DEBUG "hole: %016lx - %016lx\n",
+@@ -1155,10 +1160,10 @@ struct mtrr_cleanup_result {
+ 
+ /*
+  * gran_size: 1M, 2M, ..., 2G
+- * chunk size: gran_size, ..., 4G
+- * so we need (2+13)*6
++ * chunk size: gran_size, ..., 2G
++ * so we need (1+12)*6
+  */
+-#define NUM_RESULT	90
++#define NUM_RESULT	78
+ #define PSHIFT		(PAGE_SHIFT - 10)
+ 
+ static struct mtrr_cleanup_result __initdata result[NUM_RESULT];
+@@ -1231,7 +1236,7 @@ static int __init mtrr_cleanup(unsigned
+ 	if (mtrr_chunk_size && mtrr_gran_size) {
+ 		int num_reg;
+ 
+-		debug_print = 1;
++		debug_print++;
+ 		/* convert ranges to var ranges state */
+ 		num_reg = x86_setup_var_mtrrs(range, nr_range, mtrr_chunk_size,
+ 					      mtrr_gran_size);
+@@ -1267,7 +1272,7 @@ static int __init mtrr_cleanup(unsigned
+ 		}
+ 		printk(KERN_INFO "invalid mtrr_gran_size or mtrr_chunk_size, "
+ 		       "will find optimal one\n");
+-		debug_print = 0;
++		debug_print--;
+ 		memset(result, 0, sizeof(result[0]));
+ 	}
+ 
+@@ -1275,7 +1280,7 @@ static int __init mtrr_cleanup(unsigned
+ 	memset(min_loss_pfn, 0xff, sizeof(min_loss_pfn));
+ 	memset(result, 0, sizeof(result));
+ 	for (gran_size = (1ULL<<20); gran_size < (1ULL<<32); gran_size <<= 1) {
+-		for (chunk_size = gran_size; chunk_size < (1ULL<<33);
++		for (chunk_size = gran_size; chunk_size < (1ULL<<32);
+ 		     chunk_size <<= 1) {
+ 			int num_reg;
+ 
+@@ -1370,8 +1375,9 @@ static int __init mtrr_cleanup(unsigned
+ 		chunk_size <<= 10;
+ 		gran_size = result[i].gran_sizek;
+ 		gran_size <<= 10;
+-		debug_print = 1;
++		debug_print++;
+ 		x86_setup_var_mtrrs(range, nr_range, chunk_size, gran_size);
++		debug_print--;
+ 		set_var_mtrr_all(address_bits);
+ 		return 1;
+ 	}
