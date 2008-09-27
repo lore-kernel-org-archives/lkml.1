@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbYI0RsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbYI0Rsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754304AbYI0RsN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 13:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbYI0Rkq
+	id S1756526AbYI0Rsn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 13:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbYI0Rkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 13:40:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39082 "EHLO ogre.sisk.pl"
+	Sat, 27 Sep 2008 13:40:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39088 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754743AbYI0Rkn convert rfc822-to-8bit (ORCPT
+	id S1754767AbYI0Rkt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 13:40:43 -0400
+	Sat, 27 Sep 2008 13:40:49 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Bjorn Helgaas" <bjorn.helgaas@hp.com>, "Frans Pop" <elendil@planet.nl>,
-       "Rene Herman" <rene.herman@gmail.com>,
-       "Rene Herman" <rene.herman@keyaccess.nl>
+       =?utf-8?q?P=C3=A4r=20Andersson?= <paran@lysator.liu.se>,
+       "Tejun Heo" <tj@kernel.org>
 References: <t_PcrlC6ypI.A.tGG.G7m3IB@albercik>
 In-Reply-To: <t_PcrlC6ypI.A.tGG.G7m3IB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <V8eU91268VO.A.f4G.07m3IB@albercik>
-Subject: =?utf-8?q?[Bug=20#11550]=20pnp:=20Huge=20number=20of=20"io=20resource=20overlap"=20messages?=
+Message-ID: <V8eU91268VO.A.2fG.a7m3IB@albercik>
+Subject: =?utf-8?q?[Bug=20#11615]=20sata_nv=20EH=20problems?=
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 27 Sep 2008 17:56:48 +0200 (CEST)
+Date: Sat, 27 Sep 2008 17:56:49 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,13 +36,9 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11550
-Subject		: pnp: Huge number of "io resource overlap" messages
-Submitter	: Frans Pop <elendil@planet.nl>
-Date		: 2008-09-09 10:50 (19 days old)
-References	: http://marc.info/?l=linux-kernel&m=122095745403793&w=4
-Handled-By	: Rene Herman <rene.herman@keyaccess.nl>
-		  Bjorn Helgaas <bjorn.helgaas@hp.com>
-Patch		: http://marc.info/?l=linux-kernel&m=122246533505643&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11615
+Subject		: sata_nv EH problems
+Submitter	: Pär Andersson <paran@lysator.liu.se>
+Date		: 2008-09-21 18:09 (7 days old)
 
 
