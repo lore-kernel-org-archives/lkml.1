@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbYI0Dyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752480AbYI0EZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752917AbYI0Dyi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 23:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYI0Dya
+	id S1752480AbYI0EZK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 00:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbYI0EY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 23:54:30 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:45864 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751138AbYI0Dy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 23:54:29 -0400
-Date: Fri, 26 Sep 2008 23:54:15 -0400
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: Tom Tucker <tom@opengridcomputing.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, linux-nfs@vger.kernel.org
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-Message-ID: <20080927035415.GC12765@fieldses.org>
-References: <1221544139.2534.18.camel@localhost.localdomain> <48CF9AC3.6060801@opengridcomputing.com> <1221577412.28572.60.camel@zakaz.uk.xensource.com> <48CFD7C3.5080207@opengridcomputing.com> <1221582285.28572.67.camel@zakaz.uk.xensource.com> <1222156770.6869.13.camel@localhost.localdomain> <1222169589.6869.20.camel@localhost.localdomain> <20080923170344.GC2700@fieldses.org> <1222443426.3949.18.camel@localhost.localdomain> <1222453053.3949.21.camel@localhost.localdomain>
+	Sat, 27 Sep 2008 00:24:57 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60699 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750823AbYI0EY5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 00:24:57 -0400
+Message-ID: <48DDB47E.8050505@zytor.com>
+Date: Fri, 26 Sep 2008 21:20:14 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222453053.3949.21.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: akataria@vmware.com
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
+       Daniel Hecht <dhecht@vmware.com>,
+       "Jun.Nakajima@Intel.Com" <Jun.Nakajima@Intel.Com>,
+       Tim Deegan <Tim.Deegan@citrix.com>
+Subject: Re: Use CPUID to communicate with the hypervisor.
+References: <1222472815.29886.43.camel@alok-dev1>  <48DD860C.50809@goop.org> <1222485079.23825.13.camel@alok-dev1>
+In-Reply-To: <1222485079.23825.13.camel@alok-dev1>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 07:17:33PM +0100, Ian Campbell wrote:
-> On Fri, 2008-09-26 at 16:37 +0100, Ian Campbell wrote:
-> > It's possible, the good case is naturally quite hard to establish with
-> > 100% certainty. I declared v2.6.26 OK after an uptime of 4 days and 19
-> > hours, compared with failure normally within 1-2 days. It's possible I
-> > was premature in doing so. I'll run 2e96d2867 for at least a full week
-> > before reporting back.
+Alok Kataria wrote:
 > 
-> Or it'll reproduce after just a few hours :-/
+> Avoiding existing leaves,
+> Microsoft's Hypervisor  is using levels 0x40000000 - 0x40000005.
+> The first 2 are standard levels and the rest of them are Microsoft
+> hypervisors specific levels. So started with 0x40000010.
 > 
-> Looks like a false negative on v2.6.26 -- I'll retest from there.
 
-OK, so apologies, but this has been a long thread, and maybe we could
-use a summary of the symptoms and the results so far.  I think you said
-2.6.24 or .25 was the last you're *positive* was good?
+The first two?  And standard according to whom?
 
---b.
+	-hpa
