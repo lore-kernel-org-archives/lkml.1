@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbYI0BCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbYI0BVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbYI0BCS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Sep 2008 21:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYI0BCJ
+	id S1753104AbYI0BVr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Sep 2008 21:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYI0BVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Sep 2008 21:02:09 -0400
-Received: from gw.goop.org ([64.81.55.164]:58958 "EHLO mail.goop.org"
+	Fri, 26 Sep 2008 21:21:39 -0400
+Received: from mga14.intel.com ([143.182.124.37]:65025 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752114AbYI0BCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Sep 2008 21:02:08 -0400
-Message-ID: <48DD860C.50809@goop.org>
-Date: Fri, 26 Sep 2008 18:02:04 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>, avi@redhat.com,
-       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
-       Dan Hecht <dhecht@vmware.com>, Jun.Nakajima@Intel.Com,
-       Tim Deegan <Tim.Deegan@citrix.com>
-Subject: Re: Use CPUID to communicate with the hypervisor.
-References: <1222472815.29886.43.camel@alok-dev1>
-In-Reply-To: <1222472815.29886.43.camel@alok-dev1>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1750886AbYI0BVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Sep 2008 21:21:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,317,1220252400"; 
+   d="asc'?scan'208";a="52045994"
+Subject: Re: [PATCH 2/4] x86: Add UV bios call infrastructure v2
+From: Huang Ying <ying.huang@intel.com>
+To: Russ Anderson <rja@sgi.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>
+In-Reply-To: <20080926200242.GC138671@sgi.com>
+References: <20080926200242.GC138671@sgi.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-/CoewJOhqIe5kbqHZbFx"
+Date: Sat, 27 Sep 2008 09:21:35 +0800
+Message-Id: <1222478495.28661.19.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> From: Alok N Kataria <akataria@vmware.com>
->
-> This patch proposes to use a cpuid interface to detect if we are running on an
-> hypervisor.
-> The discovery of a hypervisor is determined by bit 31 of CPUID#1_ECX, which is
-> defined to be "hypervisor present bit". For a VM, the bit is 1, otherwise it is
-> set to 0. This bit is not officially documented by either Intel/AMD yet, but
-> they plan to do so some time soon, in the meanwhile they have promised to keep
-> it reserved for virtualization.
->
-> Also, Intel & AMD have reserved the cpuid levels 0x40000000 - 0x400000FF for
-> software use. Hypervisors can use these levels to provide an interface to pass
-> information from the hypervisor to the guest. This is similar to how we extract
-> information about a physical cpu by using cpuid.
-> XEN/KVM are already using the info leaf to get the hypervisor signature.
->
-> VMware hardware version 7 defines some of these cpuid levels, below is a brief
-> description about those. These levels can be implemented by other hypervisors
-> too so that Linux has a standard way of communicating to any hypervisor.
->
-> Leaf 0x40000000, Hypervisor CPUID information
-> # EAX: The maximum input value for hypervisor CPUID info (0x40000010).
-> # EBX, ECX, EDX: Hypervisor vendor ID signature. E.g. "VMwareVMware"
->
-> Leaf 0x40000010,  Timing information.
-> # EAX: (Virtual) TSC frequency in kHz.
-> # EBX: (Virtual) Bus (local apic timer) frequency in kHz.
-> # ECX, EDX: RESERVED
->   
 
-I'm sympathetic to the idea, but it seems a bit under-defined.
+--=-/CoewJOhqIe5kbqHZbFx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Are you leaving a gap between 0x40000000 and -10 for what?  Future
-extension?  Avoiding existing hypervisor-specific leaves?
+On Fri, 2008-09-26 at 15:02 -0500, Russ Anderson wrote:
+> Index: linux/include/asm-x86/efi.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux.orig/include/asm-x86/efi.h	2008-09-26 14:13:24.000000000 -0500
+> +++ linux/include/asm-x86/efi.h	2008-09-26 14:13:36.000000000 -0500
+> @@ -49,6 +49,20 @@ extern u64 efi_call5(void *fp, u64 arg1,
+>  extern u64 efi_call6(void *fp, u64 arg1, u64 arg2, u64 arg3,
+>  		     u64 arg4, u64 arg5, u64 arg6);
+> =20
+> +
+> +#ifndef CONFIG_EFI
+> +/*
+> + * IF EFI is not configured, have the EFI calls return -ENOSYS.
+> + */
+> +#define efi_call0(_f)					(-ENOSYS)
+> +#define efi_call1(_f, _a1)				(-ENOSYS)
+> +#define efi_call2(_f, _a1, _a2)				(-ENOSYS)
+> +#define efi_call3(_f, _a1, _a2, _a3)			(-ENOSYS)
+> +#define efi_call4(_f, _a1, _a2, _a3, _a4)		(-ENOSYS)
+> +#define efi_call5(_f, _a1, _a2, _a3, _a4, _a5)		(-ENOSYS)
+> +#define efi_call6(_f, _a1, _a2, _a3, _a4, _a5, _a6)	(-ENOSYS)
+> +#endif /* CONFIG_EFI */
+> +
+>  #define efi_call_phys0(f)			\
+>  	efi_call0((void *)(f))
+>  #define efi_call_phys1(f, a1)			\
 
-I think there's a move towards doing a scan for a signature, such as
-checking every 16 leaves after 0x40000000 for "a while" looking for
-interesting signatures, so that a hypervisor can support multiple ABIs
-at once.  Given this, it would be better to define a "Generic Hypervisor
-ABI" signature, and put all the related leaves together.
+efi_call_virt<n> and efi_call_phys<n> is the API instead of efi_call<n>.
+And please put the implementation without CONFIG_EFI defined out of
 
-And then, rather than having a simple "maximum leaf", it would be better
-to have cap bits for each specific feature.  For example, how would the
-"RESERVED" registers in "Timing information" ever get used?  How would
-you know that they were no longer reserved, but now meaningful?
+#ifdef CONFIG_X86_32
+<...>
+#else
+<...>
+#endif
 
-That said, I'm a bit worried about the whole idea of having these kinds
-of timing parameters.  It does assume that they're constant for the
-whole life of the VM.  What if they change due to power management or
-migration?
+Best Regards,
+Huang Ying
 
-    J
+
+--=-/CoewJOhqIe5kbqHZbFx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkjdipwACgkQKhFGF+eHlphRpgCglb6PRLPtRU5orbnZzCQU9QBX
+erkAoIdi+itqpjVG8bV9dUqZB8jL57zG
+=FNzl
+-----END PGP SIGNATURE-----
+
+--=-/CoewJOhqIe5kbqHZbFx--
+
