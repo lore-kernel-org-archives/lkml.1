@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbYI0GTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYI0GTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbYI0GTT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 02:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYI0GSB
+	id S1754564AbYI0GTt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 02:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYI0GSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 02:18:01 -0400
-Received: from qmta07.emeryville.ca.mail.comcast.net ([76.96.30.64]:52689 "EHLO
-	QMTA07.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751632AbYI0GR7 (ORCPT
+	Sat, 27 Sep 2008 02:18:10 -0400
+Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:37494 "EHLO
+	QMTA03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753332AbYI0GSH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 02:17:59 -0400
-X-Authority-Analysis: v=1.0 c=1 a=qzJOE9tFdREA:10 a=Z77S866iAhYA:10
- a=l-ZSAgIrRNUgVz6KjyUA:9 a=fmuDoAoWXAGQAq8ObDEA:7
- a=yR2lRQ-QR2_OkMvxr7M7zIpHOrYA:4 a=vNGxQsTWjH8A:10
-Subject: [RFC PATCH 5/10] relay - Map the first sub-buffer at the end of
-	the buffer, for temporary convenience.
+	Sat, 27 Sep 2008 02:18:07 -0400
+X-Authority-Analysis: v=1.0 c=1 a=I0F2kDUGKxgA:10 a=EpsmnQaRcMsA:10
+ a=e9xhmM40zqqwFlG3hwAA:9 a=nQ0vRzC8zil8t1hcVc8A:7
+ a=TLk7caw6wrftlzmMRIy9R177cF4A:4 a=wZiCkNY6m2YA:10 a=eZLSmJVMEtUA:10
+Subject: [RFC PATCH 7/10] relay - Remove padding-related code from
+	relay_read()/relay_splice_read() et al.
 From: Tom Zanussi <zanussi@comcast.net>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -27,8 +27,8 @@ Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
        David Wilder <dwilder@us.ibm.com>
 Content-Type: text/plain
-Date: Sat, 27 Sep 2008 01:18:08 -0500
-Message-Id: <1222496288.6710.76.camel@charm-linux>
+Date: Sat, 27 Sep 2008 01:18:15 -0500
+Message-Id: <1222496295.6710.78.camel@charm-linux>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
@@ -36,82 +36,287 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Map the first sub-buffer at the end of the buffer, for temporary convenience.
+Remove padding-related code from relay_read()/relay_splice_read() et al.
 
-Make relay buffers 'circular' for writing by mapping the first subbuf
-at end of last subbuf.  This is so we can do writes across last subbuf
-boundary without adding special write logic.  This is a temporary
-state of affairs and it all goes away in a future patch, but it's here
-now so things will still work.
+Because we no longer write padding, we no longer have to read it or
+account for it anywhere else, greatly simplifying the related code.
 ---
- kernel/relay.c |   26 +++++++++++++++-----------
- 1 files changed, 15 insertions(+), 11 deletions(-)
+ kernel/relay.c |  149 ++++++++------------------------------------------------
+ 1 files changed, 20 insertions(+), 129 deletions(-)
 
 diff --git a/kernel/relay.c b/kernel/relay.c
-index 6c7698a..e9dd976 100644
+index d382528..b55466d 100644
 --- a/kernel/relay.c
 +++ b/kernel/relay.c
-@@ -125,20 +125,20 @@ static int relay_mmap_buf(struct rchan_buf *buf, struct vm_area_struct *vma)
- /**
-  *	relay_alloc_buf - allocate a channel buffer
-  *	@buf: the buffer struct
-- *	@size: total size of the buffer
-  *
-  *	Returns a pointer to the resulting buffer, %NULL if unsuccessful. The
-  *	passed in size will get page aligned, if it isn't already.
-  */
--static void *relay_alloc_buf(struct rchan_buf *buf, size_t *size)
-+static void *relay_alloc_buf(struct rchan_buf *buf)
+@@ -965,72 +965,13 @@ static void relay_file_read_consume(struct rchan_buf *buf,
+ 				    size_t bytes_consumed)
  {
- 	void *mem;
--	unsigned int i, j, n_pages;
-+	unsigned int i, j, n_pages, n_subbuf_pages;
+ 	size_t subbuf_size = buf->chan->subbuf_size;
+-	size_t n_subbufs = buf->chan->n_subbufs;
+-	size_t read_subbuf;
+-
+-	if (buf->subbufs_produced == buf->subbufs_consumed &&
+-	    buf->offset == buf->bytes_consumed)
+-		return;
+-
+-	if (buf->bytes_consumed + bytes_consumed > subbuf_size) {
+-		relay_subbufs_consumed(buf->chan, buf->cpu, 1);
+-		buf->bytes_consumed = 0;
+-	}
  
--	*size = PAGE_ALIGN(*size);
--	n_pages = *size >> PAGE_SHIFT;
-+	buf->chan->alloc_size = PAGE_ALIGN(buf->chan->alloc_size);
-+	n_pages = buf->chan->alloc_size >> PAGE_SHIFT;
-+	n_subbuf_pages = PAGE_ALIGN(buf->chan->subbuf_size) >> PAGE_SHIFT;
+ 	buf->bytes_consumed += bytes_consumed;
+-	if (!read_pos)
+-		read_subbuf = buf->subbufs_consumed % n_subbufs;
+-	else
+-		read_subbuf = read_pos / buf->chan->subbuf_size;
+-	if (buf->bytes_consumed + buf->padding[read_subbuf] == subbuf_size) {
+-		if ((read_subbuf == buf->subbufs_produced % n_subbufs) &&
+-		    (buf->offset == subbuf_size))
+-			return;
+-		relay_subbufs_consumed(buf->chan, buf->cpu, 1);
+-		buf->bytes_consumed = 0;
+-	}
+-}
  
--	buf->page_array = relay_alloc_page_array(n_pages);
-+	buf->page_array = relay_alloc_page_array(n_pages + n_subbuf_pages);
- 	if (!buf->page_array)
- 		return NULL;
- 
-@@ -148,11 +148,14 @@ static void *relay_alloc_buf(struct rchan_buf *buf, size_t *size)
- 			goto depopulate;
- 		set_page_private(buf->page_array[i], (unsigned long)buf);
+-/*
+- *	relay_file_read_avail - boolean, are there unconsumed bytes available?
+- */
+-static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
+-{
+-	size_t subbuf_size = buf->chan->subbuf_size;
+-	size_t n_subbufs = buf->chan->n_subbufs;
+-	size_t produced = buf->subbufs_produced;
+-	size_t consumed = buf->subbufs_consumed;
+-
+-	relay_file_read_consume(buf, read_pos, 0);
+-
+-	consumed = buf->subbufs_consumed;
+-
+-	if (unlikely(buf->offset > subbuf_size)) {
+-		if (produced == consumed)
+-			return 0;
+-		return 1;
+-	}
+-
+-	if (unlikely(produced - consumed >= n_subbufs)) {
+-		consumed = produced - n_subbufs + 1;
+-		buf->subbufs_consumed = consumed;
++	if (buf->bytes_consumed == subbuf_size) {
++		relay_subbufs_consumed(buf->chan, buf->cpu, 1);
+ 		buf->bytes_consumed = 0;
  	}
--	mem = vmap(buf->page_array, n_pages, VM_MAP, PAGE_KERNEL);
-+	for (i = 0; i < n_subbuf_pages; i++)
-+		buf->page_array[n_pages + i] = buf->page_array[i];
-+	mem = vmap(buf->page_array, n_pages + n_subbuf_pages, VM_MAP,
-+		   PAGE_KERNEL);
- 	if (!mem)
- 		goto depopulate;
+-
+-	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
+-	consumed = (consumed % n_subbufs) * subbuf_size + buf->bytes_consumed;
+-
+-	if (consumed > produced)
+-		produced += n_subbufs * subbuf_size;
+-
+-	if (consumed == produced) {
+-		if (buf->offset == subbuf_size &&
+-		    buf->subbufs_produced > buf->subbufs_consumed)
+-			return 1;
+-		return 0;
+-	}
+-
+-	return 1;
+ }
  
--	memset(mem, 0, *size);
-+	memset(mem, 0, buf->chan->alloc_size);
- 	buf->page_count = n_pages;
- 	return mem;
+ /**
+@@ -1041,21 +982,19 @@ static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
+ static size_t relay_file_read_subbuf_avail(size_t read_pos,
+ 					   struct rchan_buf *buf)
+ {
+-	size_t padding, avail = 0;
++	size_t avail;
+ 	size_t read_subbuf, read_offset, write_subbuf, write_offset;
+ 	size_t subbuf_size = buf->chan->subbuf_size;
  
-@@ -179,12 +182,13 @@ static struct rchan_buf *relay_create_buf(struct rchan *chan)
- 	if (!buf->padding)
- 		goto free_buf;
+ 	write_subbuf = (buf->data - buf->start) / subbuf_size;
+-	write_offset = buf->offset > subbuf_size ? subbuf_size : buf->offset;
++	write_offset = buf->offset;
+ 	read_subbuf = read_pos / subbuf_size;
+ 	read_offset = read_pos % subbuf_size;
+-	padding = buf->padding[read_subbuf];
  
--	buf->start = relay_alloc_buf(buf, &chan->alloc_size);
-+	buf->chan = chan;
-+	kref_get(&buf->chan->kref);
+-	if (read_subbuf == write_subbuf) {
+-		if (read_offset + padding < write_offset)
+-			avail = write_offset - (read_offset + padding);
+-	} else
+-		avail = (subbuf_size - padding) - read_offset;
++	avail = subbuf_size - read_offset;
 +
-+	buf->start = relay_alloc_buf(buf);
- 	if (!buf->start)
- 		goto free_buf;
++	if (read_subbuf == write_subbuf && read_offset < write_offset)
++		avail = write_offset - read_offset;
  
--	buf->chan = chan;
--	kref_get(&buf->chan->kref);
- 	return buf;
+ 	return avail;
+ }
+@@ -1065,28 +1004,17 @@ static size_t relay_file_read_subbuf_avail(size_t read_pos,
+  *	@read_pos: file read position
+  *	@buf: relay channel buffer
+  *
+- *	If the @read_pos is in the middle of padding, return the
+- *	position of the first actually available byte, otherwise
+- *	return the original value.
++ *	If the @read_pos is 0, return the position of the first
++ *	unconsumed byte, otherwise return the original value.
+  */
+ static size_t relay_file_read_start_pos(size_t read_pos,
+ 					struct rchan_buf *buf)
+ {
+-	size_t read_subbuf, padding, padding_start, padding_end;
+ 	size_t subbuf_size = buf->chan->subbuf_size;
+-	size_t n_subbufs = buf->chan->n_subbufs;
+-	size_t consumed = buf->subbufs_consumed % n_subbufs;
++	size_t consumed = buf->subbufs_consumed % buf->chan->n_subbufs;
  
- free_buf:
+ 	if (!read_pos)
+ 		read_pos = consumed * subbuf_size + buf->bytes_consumed;
+-	read_subbuf = read_pos / subbuf_size;
+-	padding = buf->padding[read_subbuf];
+-	padding_start = (read_subbuf + 1) * subbuf_size - padding;
+-	padding_end = (read_subbuf + 1) * subbuf_size;
+-	if (read_pos >= padding_start && read_pos < padding_end) {
+-		read_subbuf = (read_subbuf + 1) % n_subbufs;
+-		read_pos = read_subbuf * subbuf_size;
+-	}
+ 
+ 	return read_pos;
+ }
+@@ -1101,17 +1029,9 @@ static size_t relay_file_read_end_pos(struct rchan_buf *buf,
+ 				      size_t read_pos,
+ 				      size_t count)
+ {
+-	size_t read_subbuf, padding, end_pos;
+-	size_t subbuf_size = buf->chan->subbuf_size;
+-	size_t n_subbufs = buf->chan->n_subbufs;
++	size_t end_pos = read_pos + count;
+ 
+-	read_subbuf = read_pos / subbuf_size;
+-	padding = buf->padding[read_subbuf];
+-	if (read_pos % subbuf_size + count + padding == subbuf_size)
+-		end_pos = (read_subbuf + 1) * subbuf_size;
+-	else
+-		end_pos = read_pos + count;
+-	if (end_pos >= subbuf_size * n_subbufs)
++	if (end_pos >= buf->chan->subbuf_size * buf->chan->n_subbufs)
+ 		end_pos = 0;
+ 
+ 	return end_pos;
+@@ -1165,9 +1085,6 @@ static ssize_t relay_file_read_subbufs(struct file *filp, loff_t *ppos,
+ 
+ 	mutex_lock(&filp->f_path.dentry->d_inode->i_mutex);
+ 	do {
+-		if (!relay_file_read_avail(buf, *ppos))
+-			break;
+-
+ 		read_start = relay_file_read_start_pos(*ppos, buf);
+ 		avail = relay_file_read_subbuf_avail(read_start, buf);
+ 		if (!avail)
+@@ -1242,8 +1159,7 @@ static int subbuf_splice_actor(struct file *in,
+ 			       loff_t *ppos,
+ 			       struct pipe_inode_info *pipe,
+ 			       size_t len,
+-			       unsigned int flags,
+-			       int *nonpad_ret)
++			       unsigned int flags)
+ {
+ 	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
+ 	struct rchan_buf *rbuf = in->private_data;
+@@ -1251,9 +1167,6 @@ static int subbuf_splice_actor(struct file *in,
+ 	uint64_t pos = (uint64_t) *ppos;
+ 	uint32_t alloc_size = (uint32_t) rbuf->chan->alloc_size;
+ 	size_t read_start = (size_t) do_div(pos, alloc_size);
+-	size_t read_subbuf = read_start / subbuf_size;
+-	size_t padding = rbuf->padding[read_subbuf];
+-	size_t nonpad_end = read_subbuf * subbuf_size + subbuf_size - padding;
+ 	struct page *pages[PIPE_BUFFERS];
+ 	struct partial_page partial[PIPE_BUFFERS];
+ 	struct splice_pipe_desc spd = {
+@@ -1265,7 +1178,8 @@ static int subbuf_splice_actor(struct file *in,
+ 		.spd_release = relay_page_release,
+ 	};
+ 
+-	if (rbuf->subbufs_produced == rbuf->subbufs_consumed)
++	if (rbuf->subbufs_produced == rbuf->subbufs_consumed &&
++	    rbuf->offset == rbuf->bytes_consumed)
+ 		return 0;
+ 
+ 	/*
+@@ -1280,46 +1194,25 @@ static int subbuf_splice_actor(struct file *in,
+ 	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
+ 
+ 	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
+-		unsigned int this_len, this_end, private;
+-		unsigned int cur_pos = read_start + total_len;
++		unsigned int this_len;
+ 
+ 		if (!len)
+ 			break;
+ 
+ 		this_len = min_t(unsigned long, len, PAGE_SIZE - poff);
+-		private = this_len;
+ 
+ 		spd.pages[spd.nr_pages] = rbuf->page_array[pidx];
+ 		spd.partial[spd.nr_pages].offset = poff;
+ 
+-		this_end = cur_pos + this_len;
+-		if (this_end >= nonpad_end) {
+-			this_len = nonpad_end - cur_pos;
+-			private = this_len + padding;
+-		}
+ 		spd.partial[spd.nr_pages].len = this_len;
+-		spd.partial[spd.nr_pages].private = private;
+ 
+ 		len -= this_len;
+ 		total_len += this_len;
+ 		poff = 0;
+ 		pidx = (pidx + 1) % subbuf_pages;
+-
+-		if (this_end >= nonpad_end) {
+-			spd.nr_pages++;
+-			break;
+-		}
+ 	}
+ 
+-	if (!spd.nr_pages)
+-		return 0;
+-
+-	ret = *nonpad_ret = splice_to_pipe(pipe, &spd);
+-	if (ret < 0 || ret < total_len)
+-		return ret;
+-
+-        if (read_start + ret == nonpad_end)
+-                ret += padding;
++	ret = splice_to_pipe(pipe, &spd);
+ 
+         return ret;
+ }
+@@ -1332,13 +1225,12 @@ static ssize_t relay_file_splice_read(struct file *in,
+ {
+ 	ssize_t spliced;
+ 	int ret;
+-	int nonpad_ret = 0;
+ 
+ 	ret = 0;
+ 	spliced = 0;
+ 
+ 	while (len && !spliced) {
+-		ret = subbuf_splice_actor(in, ppos, pipe, len, flags, &nonpad_ret);
++		ret = subbuf_splice_actor(in, ppos, pipe, len, flags);
+ 		if (ret < 0)
+ 			break;
+ 		else if (!ret) {
+@@ -1355,8 +1247,7 @@ static ssize_t relay_file_splice_read(struct file *in,
+ 			len = 0;
+ 		else
+ 			len -= ret;
+-		spliced += nonpad_ret;
+-		nonpad_ret = 0;
++		spliced += ret;
+ 	}
+ 
+ 	if (spliced)
 -- 
 1.5.3.5
 
