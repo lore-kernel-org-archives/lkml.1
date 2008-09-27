@@ -1,836 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbYI0Nkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYI0Nko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753180AbYI0Nkb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 09:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYI0NkW
+	id S1753419AbYI0Nko (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 09:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbYI0Nka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 09:40:22 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:63823 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752353AbYI0NkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 09:40:20 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEADvO3UhMQWq+/2dsb2JhbACBYrgTgWc
-Date: Sat, 27 Sep 2008 09:40:12 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
-       David Wilder <dwilder@us.ibm.com>
-Subject: [RFC PATCH] LTTng relay buffer allocation, read, write
-Message-ID: <20080927134012.GA11930@Krystal>
-Mime-Version: 1.0
+	Sat, 27 Sep 2008 09:40:30 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:35519 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752986AbYI0Nk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 09:40:28 -0400
+Date: Sat, 27 Sep 2008 08:40:07 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 5/6] file capabilities: remove needless inline functions
+Message-ID: <20080927134007.GB10978@us.ibm.com>
+References: <1222482472-12847-1-git-send-email-serue@us.ibm.com> <7004aef68d149ffb4a11835f37469948496ffc18.1222451103.git.serue@us.ibm.com> <89d3843fc1aaf91ded89d741b2e6d425508e0146.1222451103.git.serue@us.ibm.com> <178a4b5984b7559cb5cdb93b242484386ec3e3ab.1222451103.git.serue@us.ibm.com> <c9c64bbdfd3f1c665f0d1b08b82f77622be701cc.1222451103.git.serue@us.ibm.com> <06b2774a667bc535442305193417ff1a479ef1aa.1222451103.git.serue@us.ibm.com> <48DDB8F5.7040208@kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:37:15 up 114 days, 18:17,  9 users,  load average: 0.96, 0.65,
-	0.64
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <48DDB8F5.7040208@kernel.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As I told Martin, I was thinking about taking an axe and moving stuff around in
-relay. Which I just did.
+Quoting Andrew G. Morgan (morgan@kernel.org):
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Serge,
+> 
+> I'd much rather simply remove the target argument from the
+> security_capset_check() call. Relying on the caller to not do something
 
-This patch reimplements relay with a linked list of pages. Provides read/write
-wrappers which should be used to read or write from the buffers. It's the core
-of a layered approach to the design requirements expressed by Martin and
-discussed earlier.
+Yes, I did do that in a patch on top of all of these.  It increased the
+kernel size by 8 (or was it 16) bytes :)  I assume that was because
+now there were more references to 'current' which is inlined?  So I
+should be able to fix that by saving current() away at the top of
+the fn.
 
-It does not provide _any_ sort of locking on buffer data. Locking should be done
-by the caller. Given that we might think of very lightweight locking schemes, it
-makes sense to me that the underlying buffering infrastructure supports event
-records larger than 1 page.
+Will try that.
 
-A cache saving 3 pointers is used to keep track of current page used for the
-buffer for write, read and current subbuffer header pointer lookup. The offset
-of each page within the buffer is saved in the page frame structure to permit
-cache lookup without extra locking.
+thanks,
+-serge
 
-TODO : Currently, no splice file operations are implemented. Should come soon.
-The idea is to splice the buffers directly into files or to the network.
-
-This patch is released as early RFC. It builds, that's about it. Testing will
-come when I implement the splice ops.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Martin Bligh <mbligh@google.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: prasad@linux.vnet.ibm.com
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: od@suse.com
-CC: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: hch@lst.de
-CC: David Wilder <dwilder@us.ibm.com>
----
- include/linux/ltt-relay.h |  291 +++++++++++++++++++++++++++++
- ltt/ltt-relay-alloc.c     |  450 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 741 insertions(+)
-
-Index: linux-2.6-lttng/ltt/ltt-relay-alloc.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/ltt/ltt-relay-alloc.c	2008-09-27 09:18:47.000000000 -0400
-@@ -0,0 +1,450 @@
-+/*
-+ * Public API and common code for kernel->userspace relay file support.
-+ *
-+ * Copyright (C) 2002-2005 - Tom Zanussi (zanussi@us.ibm.com), IBM Corp
-+ * Copyright (C) 1999-2005 - Karim Yaghmour (karim@opersys.com)
-+ * Copyright (C) 2008 - Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
-+ *
-+ * Moved to kernel/relay.c by Paul Mundt, 2006.
-+ * November 2006 - CPU hotplug support by Mathieu Desnoyers
-+ * 	(mathieu.desnoyers@polymtl.ca)
-+ *
-+ * This file is released under the GPL.
-+ */
-+#include <linux/errno.h>
-+#include <linux/stddef.h>
-+#include <linux/slab.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/ltt-relay.h>
-+#include <linux/vmalloc.h>
-+#include <linux/mm.h>
-+#include <linux/cpu.h>
-+#include <linux/splice.h>
-+
-+/* list of open channels, for cpu hotplug */
-+static DEFINE_MUTEX(relay_channels_mutex);
-+static LIST_HEAD(relay_channels);
-+
-+/**
-+ *	relay_alloc_buf - allocate a channel buffer
-+ *	@buf: the buffer struct
-+ *	@size: total size of the buffer
-+ */
-+static int relay_alloc_buf(struct rchan_buf *buf, size_t *size)
-+{
-+	unsigned int i, n_pages;
-+	struct buf_page *buf_page, *n;
-+
-+	*size = PAGE_ALIGN(*size);
-+	n_pages = *size >> PAGE_SHIFT;
-+
-+	for (i = 0; i < n_pages; i++) {
-+		buf_page = (struct buf_page *)alloc_page(GFP_KERNEL);
-+		if (unlikely(!buf_page))
-+			goto depopulate;
-+		list_add(&buf_page->list, &buf->pages);
-+		buf_page->offset = i << PAGE_SHIFT;
-+		buf_page->buf = buf;
-+		memset(page_address(&buf_page->page), 0, PAGE_SIZE);
-+		if (i == 0) {
-+			buf->wpage = buf_page;
-+			buf->hpage = buf_page;
-+			buf->rpage = buf_page;
-+		}
-+	}
-+	buf->page_count = n_pages;
-+	return 0;
-+
-+depopulate:
-+	list_for_each_entry_safe(buf_page, n, &buf->pages, list)
-+		__free_page(&buf_page->page);
-+	return -ENOMEM;
-+}
-+
-+/**
-+ *	relay_create_buf - allocate and initialize a channel buffer
-+ *	@chan: the relay channel
-+ *
-+ *	Returns channel buffer if successful, %NULL otherwise.
-+ */
-+static struct rchan_buf *relay_create_buf(struct rchan *chan)
-+{
-+	int ret;
-+	struct rchan_buf *buf = kzalloc(sizeof(struct rchan_buf), GFP_KERNEL);
-+	if (!buf)
-+		return NULL;
-+
-+	ret = relay_alloc_buf(buf, &chan->alloc_size);
-+	if (ret)
-+		goto free_buf;
-+
-+	buf->chan = chan;
-+	kref_get(&buf->chan->kref);
-+	return buf;
-+
-+free_buf:
-+	kfree(buf);
-+	return NULL;
-+}
-+
-+/**
-+ *	relay_destroy_channel - free the channel struct
-+ *	@kref: target kernel reference that contains the relay channel
-+ *
-+ *	Should only be called from kref_put().
-+ */
-+static void relay_destroy_channel(struct kref *kref)
-+{
-+	struct rchan *chan = container_of(kref, struct rchan, kref);
-+	kfree(chan);
-+}
-+
-+/**
-+ *	relay_destroy_buf - destroy an rchan_buf struct and associated buffer
-+ *	@buf: the buffer struct
-+ */
-+static void relay_destroy_buf(struct rchan_buf *buf)
-+{
-+	struct rchan *chan = buf->chan;
-+	struct buf_page *buf_page, *n;
-+
-+	list_for_each_entry_safe(buf_page, n, &buf->pages, list)
-+		__free_page(&buf_page->page);
-+	chan->buf[buf->cpu] = NULL;
-+	kfree(buf);
-+	kref_put(&chan->kref, relay_destroy_channel);
-+}
-+
-+/**
-+ *	relay_remove_buf - remove a channel buffer
-+ *	@kref: target kernel reference that contains the relay buffer
-+ *
-+ *	Removes the file from the fileystem, which also frees the
-+ *	rchan_buf_struct and the channel buffer.  Should only be called from
-+ *	kref_put().
-+ */
-+static void relay_remove_buf(struct kref *kref)
-+{
-+	struct rchan_buf *buf = container_of(kref, struct rchan_buf, kref);
-+	buf->chan->cb->remove_buf_file(buf->dentry);
-+	relay_destroy_buf(buf);
-+}
-+
-+/*
-+ * High-level relay kernel API and associated functions.
-+ */
-+
-+/*
-+ * rchan_callback implementations defining default channel behavior.  Used
-+ * in place of corresponding NULL values in client callback struct.
-+ */
-+
-+/*
-+ * create_buf_file_create() default callback.  Does nothing.
-+ */
-+static struct dentry *create_buf_file_default_callback(const char *filename,
-+						       struct dentry *parent,
-+						       int mode,
-+						       struct rchan_buf *buf)
-+{
-+	return NULL;
-+}
-+
-+/*
-+ * remove_buf_file() default callback.  Does nothing.
-+ */
-+static int remove_buf_file_default_callback(struct dentry *dentry)
-+{
-+	return -EINVAL;
-+}
-+
-+/* relay channel default callbacks */
-+static struct rchan_callbacks default_channel_callbacks = {
-+	.create_buf_file = create_buf_file_default_callback,
-+	.remove_buf_file = remove_buf_file_default_callback,
-+};
-+
-+/**
-+ *	wakeup_readers - wake up readers waiting on a channel
-+ *	@data: contains the channel buffer
-+ *
-+ *	This is the timer function used to defer reader waking.
-+ */
-+static void wakeup_readers(unsigned long data)
-+{
-+	struct rchan_buf *buf = (struct rchan_buf *)data;
-+	wake_up_interruptible(&buf->read_wait);
-+}
-+
-+/**
-+ *	__relay_reset - reset a channel buffer
-+ *	@buf: the channel buffer
-+ *	@init: 1 if this is a first-time initialization
-+ *
-+ *	See relay_reset() for description of effect.
-+ */
-+static void __relay_reset(struct rchan_buf *buf, unsigned int init)
-+{
-+	if (init) {
-+		init_waitqueue_head(&buf->read_wait);
-+		kref_init(&buf->kref);
-+		setup_timer(&buf->timer, wakeup_readers, (unsigned long)buf);
-+	} else
-+		del_timer_sync(&buf->timer);
-+
-+	buf->finalized = 0;
-+}
-+
-+/*
-+ *	relay_open_buf - create a new relay channel buffer
-+ *
-+ *	used by relay_open() and CPU hotplug.
-+ */
-+static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
-+{
-+ 	struct rchan_buf *buf = NULL;
-+	struct dentry *dentry;
-+ 	char *tmpname;
-+
-+	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
-+ 	if (!tmpname)
-+ 		goto end;
-+ 	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
-+
-+	buf = relay_create_buf(chan);
-+	if (!buf)
-+ 		goto free_name;
-+
-+ 	buf->cpu = cpu;
-+ 	__relay_reset(buf, 1);
-+
-+	/* Create file in fs */
-+ 	dentry = chan->cb->create_buf_file(tmpname, chan->parent, S_IRUSR,
-+ 					   buf);
-+ 	if (!dentry)
-+ 		goto free_buf;
-+
-+	buf->dentry = dentry;
-+
-+ 	goto free_name;
-+
-+free_buf:
-+ 	relay_destroy_buf(buf);
-+ 	buf = NULL;
-+free_name:
-+ 	kfree(tmpname);
-+end:
-+	return buf;
-+}
-+
-+/**
-+ *	relay_close_buf - close a channel buffer
-+ *	@buf: channel buffer
-+ *
-+ *	Marks the buffer finalized and restores the default callbacks.
-+ *	The channel buffer and channel buffer data structure are then freed
-+ *	automatically when the last reference is given up.
-+ */
-+static void relay_close_buf(struct rchan_buf *buf)
-+{
-+	del_timer_sync(&buf->timer);
-+	kref_put(&buf->kref, relay_remove_buf);
-+}
-+
-+static void setup_callbacks(struct rchan *chan,
-+				   struct rchan_callbacks *cb)
-+{
-+	if (!cb) {
-+		chan->cb = &default_channel_callbacks;
-+		return;
-+	}
-+
-+	if (!cb->create_buf_file)
-+		cb->create_buf_file = create_buf_file_default_callback;
-+	if (!cb->remove_buf_file)
-+		cb->remove_buf_file = remove_buf_file_default_callback;
-+	chan->cb = cb;
-+}
-+
-+/**
-+ * 	relay_hotcpu_callback - CPU hotplug callback
-+ * 	@nb: notifier block
-+ * 	@action: hotplug action to take
-+ * 	@hcpu: CPU number
-+ *
-+ * 	Returns the success/failure of the operation. (%NOTIFY_OK, %NOTIFY_BAD)
-+ */
-+static int __cpuinit relay_hotcpu_callback(struct notifier_block *nb,
-+				unsigned long action,
-+				void *hcpu)
-+{
-+	unsigned int hotcpu = (unsigned long)hcpu;
-+	struct rchan *chan;
-+
-+	switch(action) {
-+	case CPU_UP_PREPARE:
-+	case CPU_UP_PREPARE_FROZEN:
-+		mutex_lock(&relay_channels_mutex);
-+		list_for_each_entry(chan, &relay_channels, list) {
-+			if (chan->buf[hotcpu])
-+				continue;
-+			chan->buf[hotcpu] = relay_open_buf(chan, hotcpu);
-+			if(!chan->buf[hotcpu]) {
-+				printk(KERN_ERR
-+					"relay_hotcpu_callback: cpu %d buffer "
-+					"creation failed\n", hotcpu);
-+				mutex_unlock(&relay_channels_mutex);
-+				return NOTIFY_BAD;
-+			}
-+		}
-+		mutex_unlock(&relay_channels_mutex);
-+		break;
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+		/* No need to flush the cpu : will be flushed upon
-+		 * final relay_flush() call. */
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+/**
-+ *	ltt_relay_open - create a new relay channel
-+ *	@base_filename: base name of files to create
-+ *	@parent: dentry of parent directory, %NULL for root directory
-+ *	@subbuf_size: size of sub-buffers
-+ *	@n_subbufs: number of sub-buffers
-+ *	@cb: client callback functions
-+ *	@private_data: user-defined data
-+ *
-+ *	Returns channel pointer if successful, %NULL otherwise.
-+ *
-+ *	Creates a channel buffer for each cpu using the sizes and
-+ *	attributes specified.  The created channel buffer files
-+ *	will be named base_filename0...base_filenameN-1.  File
-+ *	permissions will be %S_IRUSR.
-+ */
-+struct rchan *ltt_relay_open(const char *base_filename,
-+			 struct dentry *parent,
-+			 size_t subbuf_size,
-+			 size_t n_subbufs,
-+			 struct rchan_callbacks *cb,
-+			 void *private_data)
-+{
-+	unsigned int i;
-+	struct rchan *chan;
-+	if (!base_filename)
-+		return NULL;
-+
-+	if (!(subbuf_size && n_subbufs))
-+		return NULL;
-+
-+	chan = kzalloc(sizeof(struct rchan), GFP_KERNEL);
-+	if (!chan)
-+		return NULL;
-+
-+	chan->version = LTT_RELAY_CHANNEL_VERSION;
-+	chan->n_subbufs = n_subbufs;
-+	chan->subbuf_size = subbuf_size;
-+	chan->alloc_size = FIX_SIZE(subbuf_size * n_subbufs);
-+	chan->parent = parent;
-+	chan->private_data = private_data;
-+	strlcpy(chan->base_filename, base_filename, NAME_MAX);
-+	setup_callbacks(chan, cb);
-+	kref_init(&chan->kref);
-+
-+	mutex_lock(&relay_channels_mutex);
-+	for_each_online_cpu(i) {
-+		chan->buf[i] = relay_open_buf(chan, i);
-+		if (!chan->buf[i])
-+			goto free_bufs;
-+	}
-+	list_add(&chan->list, &relay_channels);
-+	mutex_unlock(&relay_channels_mutex);
-+
-+	return chan;
-+
-+free_bufs:
-+	for_each_online_cpu(i) {
-+		if (!chan->buf[i])
-+			break;
-+		relay_close_buf(chan->buf[i]);
-+	}
-+
-+	kref_put(&chan->kref, relay_destroy_channel);
-+	mutex_unlock(&relay_channels_mutex);
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(ltt_relay_open);
-+
-+/**
-+ *	ltt_relay_close - close the channel
-+ *	@chan: the channel
-+ *
-+ *	Closes all channel buffers and frees the channel.
-+ */
-+void ltt_relay_close(struct rchan *chan)
-+{
-+	unsigned int i;
-+
-+	if (!chan)
-+		return;
-+
-+	mutex_lock(&relay_channels_mutex);
-+	for_each_possible_cpu(i)
-+		if (chan->buf[i])
-+			relay_close_buf(chan->buf[i]);
-+
-+	list_del(&chan->list);
-+	kref_put(&chan->kref, relay_destroy_channel);
-+	mutex_unlock(&relay_channels_mutex);
-+}
-+EXPORT_SYMBOL_GPL(ltt_relay_close);
-+
-+/**
-+ *	relay_file_open - open file op for relay files
-+ *	@inode: the inode
-+ *	@filp: the file
-+ *
-+ *	Increments the channel buffer refcount.
-+ */
-+static int relay_file_open(struct inode *inode, struct file *filp)
-+{
-+	struct rchan_buf *buf = inode->i_private;
-+	kref_get(&buf->kref);
-+	filp->private_data = buf;
-+
-+	return nonseekable_open(inode, filp);
-+}
-+
-+/**
-+ *	relay_file_release - release file op for relay files
-+ *	@inode: the inode
-+ *	@filp: the file
-+ *
-+ *	Decrements the channel refcount, as the filesystem is
-+ *	no longer using it.
-+ */
-+static int relay_file_release(struct inode *inode, struct file *filp)
-+{
-+	struct rchan_buf *buf = filp->private_data;
-+	kref_put(&buf->kref, relay_remove_buf);
-+
-+	return 0;
-+}
-+
-+const struct file_operations ltt_relay_file_operations = {
-+	.open		= relay_file_open,
-+	.llseek		= no_llseek,
-+	.release	= relay_file_release,
-+};
-+EXPORT_SYMBOL_GPL(ltt_relay_file_operations);
-+
-+static __init int relay_init(void)
-+{
-+	hotcpu_notifier(relay_hotcpu_callback, 5);
-+	return 0;
-+}
-+
-+module_init(relay_init);
-Index: linux-2.6-lttng/include/linux/ltt-relay.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/linux/ltt-relay.h	2008-09-27 09:22:34.000000000 -0400
-@@ -0,0 +1,291 @@
-+/*
-+ * linux/include/linux/ltt-relay.h
-+ *
-+ * Copyright (C) 2002, 2003 - Tom Zanussi (zanussi@us.ibm.com), IBM Corp
-+ * Copyright (C) 1999, 2000, 2001, 2002 - Karim Yaghmour (karim@opersys.com)
-+ * Copyright (C) 2008 - Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
-+ *
-+ * CONFIG_RELAY definitions and declarations
-+ */
-+
-+#ifndef _LINUX_LTT_RELAY_H
-+#define _LINUX_LTT_RELAY_H
-+
-+#include <linux/types.h>
-+#include <linux/sched.h>
-+#include <linux/timer.h>
-+#include <linux/wait.h>
-+#include <linux/list.h>
-+#include <linux/fs.h>
-+#include <linux/poll.h>
-+#include <linux/kref.h>
-+#include <linux/mm.h>
-+
-+/* Needs a _much_ better name... */
-+#define FIX_SIZE(x) ((((x) - 1) & PAGE_MASK) + PAGE_SIZE)
-+
-+/*
-+ * Tracks changes to rchan/rchan_buf structs
-+ */
-+#define LTT_RELAY_CHANNEL_VERSION		8
-+
-+struct buf_page {
-+	union {
-+		struct {
-+			unsigned long flags;    /* mandatory */
-+			atomic_t _count;        /* mandatory */
-+			struct list_head list;  /* linked list of buf pages */
-+			size_t offset;		/* page offset in the buffer */
-+		};
-+		struct page page;
-+	};
-+};
-+
-+/*
-+ * Per-cpu relay channel buffer
-+ */
-+struct rchan_buf
-+{
-+	struct rchan *chan;		/* associated channel */
-+	wait_queue_head_t read_wait;	/* reader wait queue */
-+	struct timer_list timer; 	/* reader wake-up timer */
-+	struct dentry *dentry;		/* channel file dentry */
-+	struct kref kref;		/* channel buffer refcount */
-+	struct list_head pages;		/* list of buffer pages */
-+	struct buf_page *wpage;		/* current write page (cache) */
-+	struct buf_page *hpage;		/* current subbuf header page (cache) */
-+	struct buf_page *rpage;		/* current subbuf read page (cache) */
-+	unsigned int page_count;	/* number of current buffer pages */
-+	unsigned int finalized;		/* buffer has been finalized */
-+	unsigned int cpu;		/* this buf's cpu */
-+} ____cacheline_aligned;
-+
-+/*
-+ * Relay channel data structure
-+ */
-+struct rchan
-+{
-+	u32 version;			/* the version of this struct */
-+	size_t subbuf_size;		/* sub-buffer size */
-+	size_t n_subbufs;		/* number of sub-buffers per buffer */
-+	size_t alloc_size;		/* total buffer size allocated */
-+	struct rchan_callbacks *cb;	/* client callbacks */
-+	struct kref kref;		/* channel refcount */
-+	void *private_data;		/* for user-defined data */
-+	struct rchan_buf *buf[NR_CPUS]; /* per-cpu channel buffers */
-+	struct list_head list;		/* for channel list */
-+	struct dentry *parent;		/* parent dentry passed to open */
-+	char base_filename[NAME_MAX];	/* saved base filename */
-+};
-+
-+/*
-+ * Relay channel client callbacks
-+ */
-+struct rchan_callbacks
-+{
-+	/*
-+	 * subbuf_start - called on buffer-switch to a new sub-buffer
-+	 * @buf: the channel buffer containing the new sub-buffer
-+	 * @subbuf: the start of the new sub-buffer
-+	 * @prev_subbuf: the start of the previous sub-buffer
-+	 * @prev_padding: unused space at the end of previous sub-buffer
-+	 *
-+	 * The client should return 1 to continue logging, 0 to stop
-+	 * logging.
-+	 *
-+	 * NOTE: subbuf_start will also be invoked when the buffer is
-+	 *       created, so that the first sub-buffer can be initialized
-+	 *       if necessary.  In this case, prev_subbuf will be NULL.
-+	 *
-+	 * NOTE: the client can reserve bytes at the beginning of the new
-+	 *       sub-buffer by calling subbuf_start_reserve() in this callback.
-+	 */
-+	int (*subbuf_start) (struct rchan_buf *buf,
-+			     void *subbuf,
-+			     void *prev_subbuf,
-+			     size_t prev_padding);
-+
-+	/*
-+	 * create_buf_file - create file to represent a relay channel buffer
-+	 * @filename: the name of the file to create
-+	 * @parent: the parent of the file to create
-+	 * @mode: the mode of the file to create
-+	 * @buf: the channel buffer
-+	 *
-+	 * Called during relay_open(), once for each per-cpu buffer,
-+	 * to allow the client to create a file to be used to
-+	 * represent the corresponding channel buffer.  If the file is
-+	 * created outside of relay, the parent must also exist in
-+	 * that filesystem.
-+	 *
-+	 * The callback should return the dentry of the file created
-+	 * to represent the relay buffer.
-+	 *
-+	 * Setting the is_global outparam to a non-zero value will
-+	 * cause relay_open() to create a single global buffer rather
-+	 * than the default set of per-cpu buffers.
-+	 *
-+	 * See Documentation/filesystems/relayfs.txt for more info.
-+	 */
-+	struct dentry *(*create_buf_file)(const char *filename,
-+					  struct dentry *parent,
-+					  int mode,
-+					  struct rchan_buf *buf);
-+
-+	/*
-+	 * remove_buf_file - remove file representing a relay channel buffer
-+	 * @dentry: the dentry of the file to remove
-+	 *
-+	 * Called during relay_close(), once for each per-cpu buffer,
-+	 * to allow the client to remove a file used to represent a
-+	 * channel buffer.
-+	 *
-+	 * The callback should return 0 if successful, negative if not.
-+	 */
-+	int (*remove_buf_file)(struct dentry *dentry);
-+};
-+
-+static inline struct buf_page *ltt_relay_find_prev_page(struct buf_page *page,
-+	ssize_t offset)
-+{
-+	list_for_each_entry_reverse(page, &page->list, list)
-+		if (offset >= page->offset &&
-+				offset < page->offset + PAGE_SIZE)
-+			return page;
-+	return NULL;
-+}
-+
-+static inline struct buf_page *ltt_relay_find_next_page(struct buf_page *page,
-+	ssize_t offset)
-+{
-+	list_for_each_entry(page, &page->list, list)
-+		if (offset >= page->offset &&
-+				offset < page->offset + PAGE_SIZE)
-+			return page;
-+	return NULL;
-+}
-+
-+/*
-+ * Find the page containing "offset". Cache it if it is after the currently
-+ * cached page.
-+ */
-+static inline
-+struct buf_page *ltt_relay_cache_page(struct buf_page **page_cache,
-+		struct buf_page *page, size_t offset)
-+{
-+	ssize_t diff_offset;
-+
-+	/*
-+	 * Make sure this is the page we want to write into. The current
-+	 * page is changed concurrently by other writers. [wrh]page are
-+	 * used as a cache remembering the last page written
-+	 * to/read/looked up for header address. No synchronization;
-+	 * could have to find the previous page is a nested write
-+	 * occured. Finding the right page is done by comparing the
-+	 * dest_offset with the buf_page offsets.
-+	 */
-+	diff_offset = offset - page->offset;
-+	if (unlikely(diff_offset >= PAGE_SIZE)) {
-+		page = ltt_relay_find_next_page(page, offset);
-+		WARN_ON(!page);
-+		*page_cache = page;
-+	} else if (unlikely(diff_offset < 0)) {
-+		page = ltt_relay_find_prev_page(page, offset);
-+		WARN_ON(!page);
-+	}
-+	return page;
-+}
-+
-+static inline int ltt_relay_write(struct rchan_buf *buf, size_t offset,
-+	const void *src, size_t len)
-+{
-+	struct buf_page *page;
-+	ssize_t pagecpy, orig_len;
-+
-+	orig_len = len;
-+	page = buf->wpage;
-+	if (unlikely(!len))
-+		return 0;
-+	for (;;) {
-+		page = ltt_relay_cache_page(&buf->wpage, page, offset);
-+		pagecpy = min(len, PAGE_SIZE - (offset & ~PAGE_MASK));
-+		memcpy(page_address(&page->page)
-+			+ (offset & ~PAGE_MASK), src, pagecpy);
-+		len -= pagecpy;
-+		if (likely(!len))
-+			break;
-+		src += pagecpy;
-+		offset += pagecpy;
-+		/*
-+		 * Underlying layer should never ask for writes across
-+		 * subbuffers.
-+		 */
-+		WARN_ON(offset >= buf->chan->alloc_size);
-+	}
-+	return orig_len;
-+}
-+
-+static inline int ltt_relay_read(struct rchan_buf *buf, size_t offset,
-+	void *dest, size_t len)
-+{
-+	struct buf_page *page;
-+	ssize_t pagecpy, orig_len;
-+
-+	orig_len = len;
-+	page = buf->rpage;
-+	if (unlikely(!len))
-+		return 0;
-+	for (;;) {
-+		page = ltt_relay_cache_page(&buf->rpage, page, offset);
-+		pagecpy = min(len, PAGE_SIZE - (offset & ~PAGE_MASK));
-+		memcpy(dest, page_address(&page->page) + (offset & ~PAGE_MASK),
-+			pagecpy);
-+		len -= pagecpy;
-+		if (likely(!len))
-+			break;
-+		dest += pagecpy;
-+		offset += pagecpy;
-+		/*
-+		 * Underlying layer should never ask for reads across
-+		 * subbuffers.
-+		 */
-+		WARN_ON(offset >= buf->chan->alloc_size);
-+	}
-+	return orig_len;
-+}
-+
-+/*
-+ * Return the address where a given offset is located.
-+ * Should be used to get the current subbuffer header pointer. Given we know
-+ * it's never on a page boundary, it's safe to write directly to this address,
-+ * as long as the write is never bigger than a page size.
-+ */
-+static inline void *ltt_relay_offset_address(struct rchan_buf *buf,
-+	size_t offset)
-+{
-+	struct buf_page *page;
-+
-+	page = buf->hpage;
-+	page = ltt_relay_cache_page(&buf->hpage, page, offset);
-+	return page_address(&page->page) + (offset & ~PAGE_MASK);
-+}
-+
-+/*
-+ * CONFIG_LTT_RELAY kernel API, ltt/ltt-relay-alloc.c
-+ */
-+
-+struct rchan *ltt_relay_open(const char *base_filename,
-+			 struct dentry *parent,
-+			 size_t subbuf_size,
-+			 size_t n_subbufs,
-+			 struct rchan_callbacks *cb,
-+			 void *private_data);
-+extern void ltt_relay_close(struct rchan *chan);
-+
-+/*
-+ * exported ltt_relay file operations, ltt/ltt-relay-alloc.c
-+ */
-+extern const struct file_operations ltt_relay_file_operations;
-+
-+#endif /* _LINUX_LTT_RELAY_H */
-+
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> bad seems fragile... If the code internally operates on current only,
+> then it doesn't need a target argument... No? (Evidently, such a change
+> is also needed to selinux_capset_check() too, but this doesn't look like
+> it will pose a problem for the selinux code.)
+> 
+> Cheers
+> 
+> Andrew
+> 
+> Serge E. Hallyn wrote:
+> > cap_limit_ptraced_target always returns 1, so nix it.
+> > 
+> > cap_block_setpcap can't return 1 any more, because
+> > kernel/capabilities.c:sys_capset() will return -EPERM
+> > if it is called on a task other than current, and will
+> > never get to cap_capset_check.
+> > 
+> > This brings the vmlinux size with my config down another
+> > 16 bytes (making up for the 8 byte increase from the
+> > last patch).
+> > 
+> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> > ---
+> >  security/commoncap.c |   22 +++-------------------
+> >  1 files changed, 3 insertions(+), 19 deletions(-)
+> > 
+> > diff --git a/security/commoncap.c b/security/commoncap.c
+> > index d48fdd8..e5afb7c 100644
+> > --- a/security/commoncap.c
+> > +++ b/security/commoncap.c
+> > @@ -93,15 +93,6 @@ int cap_capget (struct task_struct *target, kernel_cap_t *effective,
+> >  	return 0;
+> >  }
+> >  
+> > -static inline int cap_block_setpcap(struct task_struct *target)
+> > -{
+> > -	/*
+> > -	 * No support for remote process capability manipulation with
+> > -	 * filesystem capability support.
+> > -	 */
+> > -	return (target != current);
+> > -}
+> > -
+> >  static inline int cap_inh_is_capped(void)
+> >  {
+> >  	/*
+> > @@ -112,14 +103,9 @@ static inline int cap_inh_is_capped(void)
+> >  	return (cap_capable(current, CAP_SETPCAP) != 0);
+> >  }
+> >  
+> > -static inline int cap_limit_ptraced_target(void) { return 1; }
+> > -
+> >  int cap_capset_check (struct task_struct *target, kernel_cap_t *effective,
+> >  		      kernel_cap_t *inheritable, kernel_cap_t *permitted)
+> >  {
+> > -	if (cap_block_setpcap(target)) {
+> > -		return -EPERM;
+> > -	}
+> >  	if (cap_inh_is_capped()
+> >  	    && !cap_issubset(*inheritable,
+> >  			     cap_combine(target->cap_inheritable,
+> > @@ -343,11 +329,9 @@ void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
+> >  				bprm->e_uid = current->uid;
+> >  				bprm->e_gid = current->gid;
+> >  			}
+> > -			if (cap_limit_ptraced_target()) {
+> > -				bprm->cap_post_exec_permitted = cap_intersect(
+> > -					bprm->cap_post_exec_permitted,
+> > -					current->cap_permitted);
+> > -			}
+> > +			bprm->cap_post_exec_permitted = cap_intersect(
+> > +				bprm->cap_post_exec_permitted,
+> > +				current->cap_permitted);
+> >  		}
+> >  	}
+> >  
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.7 (Darwin)
+> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+> 
+> iD8DBQFI3bjz+bHCR3gb8jsRAqJpAJ9Ca1pADkG5BnGoOVZA+EmZbuRPfgCgoQ95
+> ljvsvj7Ssp+0mXDuCy0/TnU=
+> =79ni
+> -----END PGP SIGNATURE-----
