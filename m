@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbYI1QnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbYI1Qt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753293AbYI1QnN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 12:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYI1Qm7
+	id S1753376AbYI1Qt6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 12:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYI1Qtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 12:42:59 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40355 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbYI1Qm6 (ORCPT
+	Sun, 28 Sep 2008 12:49:49 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:48551 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751730AbYI1Qtt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 12:42:58 -0400
-To: Pardo <pardo@google.com>
-Cc: linux-kernel@vger.kernel.org, mbligh@google.com, briangrant@google.com,
-       odo@google.com, nil@google.com, jyasskin@google.com
-Subject: Re: Faster getcpu() and sched_getcpu()
-From: Andi Kleen <andi@firstfloor.org>
-References: <af8810200809111648n55e05ac9g286fcd498690432f@mail.gmail.com>
-	<af8810200809231209w7428347neb88094e543a048f@mail.gmail.com>
-Date: Sun, 28 Sep 2008 18:42:54 +0200
-In-Reply-To: <af8810200809231209w7428347neb88094e543a048f@mail.gmail.com> (pardo@google.com's message of "Tue, 23 Sep 2008 12:09:14 -0700")
-Message-ID: <87wsgwp6gh.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 28 Sep 2008 12:49:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=t0I5aX52r/I5IeJDbXBi5679X9GbghD5FG5FDn08hZ4XSzhY/V4zUa01c3UH4Kw8zP
+         VaudtDNxijzWaslM9chQoHlu876Q515Xs1Onf4oMHk82V1ILWCdS2ZJirVXtj6UJ9fnW
+         Ddh7vGh2mW+5zf2NIxINJ992LkT132XlqXuSU=
+Date: Sun, 28 Sep 2008 18:49:46 +0200
+From: dcg <diegocg@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86_64: be less annoying on boot
+Message-ID: <20080928184946.47bb63d9@diego-desktop>
+In-Reply-To: <20080927191824.GC18619@elte.hu>
+References: <20080924183517.GA24209@nostromo.devel.redhat.com>
+ <20080925091558.GE16734@elte.hu>
+ <20080925161300.GA17162@nostromo.devel.redhat.com>
+ <20080927185027.GB17867@elte.hu>
+ <20080927211131.2e0b60f0@diego-desktop>
+ <20080927191824.GC18619@elte.hu>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pardo <pardo@google.com> writes:
->
-> ANALYSIS AND SUGGESTIONS
->
-> Caching is currently disabled for 2.6.26/arch/x86/vdso/vgetcpu.c.
-> getcpu()/sched_getcpu() performance is most important when they are
-> used very frequently, in which case the jiffy-based cache is
-> effective.  Conversely, when calls are infrequent, cache miss overhead
-> is small.  Recommendation: caching should be enabled (probably for all
-> architectures, not just x86-64).
+El Sat, 27 Sep 2008 21:18:24 +0200, Ingo Molnar <mingo@elte.hu> escribió:
 
-Without a vsyscall the cache probably doesn't make too much sense
-because once you're in the kernel reading the real CPU number is really
-cheap.
+> could you please send a patch that only calls that early_printk() if 
+> console_loglevel == 10? (i.e. if "debug" has been passed)
 
-I agree with you that the cache should be enabled on all vDSO implementations
-(that is what my original code did)
 
-Also the TSCP version could probably go.
+Sure, here it is.
 
-I'm still not sure why you say no redzone is that expensive? Do you
-have numbers?  I know it's a few instructions, but it shouldn't 
-be that expensive.
 
-> A specialized version of the VDSO code for sched_getcpu() is
-> substantially faster than calling getcpu().  
 
-Yes, unfortunately glibc didn't chose the same interface as the kernel
-for this. I still don't know why. But now since we're in this mess
-specializing for the glibc implementation is probably a good idea.
-Or just add getcpu() to glibc :)
+Honour "quiet" boot parameter in early_printk() calls
 
--Andi
 
--- 
-ak@linux.intel.com
+Signed-off-by: Diego Calleja <diegocg@gmail.com>
+---
+ arch/x86/kernel/head64.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+Index: 2.6/arch/x86/kernel/head64.c
+===================================================================
+--- 2.6.orig/arch/x86/kernel/head64.c	2008-09-27 22:54:41.000000000 +0200
++++ 2.6/arch/x86/kernel/head64.c	2008-09-27 23:14:02.000000000 +0200
+@@ -108,11 +108,13 @@
+ 	}
+ 	load_idt((const struct desc_ptr *)&idt_descr);
+ 
+-	early_printk("Kernel alive\n");
++	if (console_loglevel == 10)
++		early_printk("Kernel alive\n");
+ 
+ 	x86_64_init_pda();
+ 
+-	early_printk("Kernel really alive\n");
++	if (console_loglevel == 10)
++		early_printk("Kernel really alive\n");
+ 
+ 	x86_64_start_reservations(real_mode_data);
+ }
+
+
