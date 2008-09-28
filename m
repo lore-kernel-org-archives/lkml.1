@@ -1,249 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYI1Ptu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbYI1PuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbYI1Ptu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 11:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYI1Ppu
+	id S1753833AbYI1PuR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 11:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYI1Ppy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 11:45:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50882 "EHLO mx2.redhat.com"
+	Sun, 28 Sep 2008 11:45:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50885 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753315AbYI1Ppr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 11:45:47 -0400
+	id S1753351AbYI1Ppu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 11:45:50 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, "Kay, Allen M" <allen.m.kay@intel.com>
-Subject: [PATCH 19/25] VT-d: Changes to support KVM
-Date: Sun, 28 Sep 2008 18:44:55 +0300
-Message-Id: <1222616701-1206-20-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Amit Shah <amit.shah@redhat.com>
+Subject: [PATCH 21/25] KVM: Device Assignment: Free device structures if IRQ allocation fails
+Date: Sun, 28 Sep 2008 18:44:57 +0300
+Message-Id: <1222616701-1206-22-git-send-email-avi@redhat.com>
 In-Reply-To: <1222616701-1206-1-git-send-email-avi@redhat.com>
 References: <1222616701-1206-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay, Allen M <allen.m.kay@intel.com>
+From: Amit Shah <amit.shah@redhat.com>
 
-This patch extends the VT-d driver to support KVM
+When an IRQ allocation fails, we free up the device structures and
+disable the device so that we can unregister the device in the
+userspace and not expose it to the guest at all.
 
-[Ben: fixed memory pinning]
-
-Signed-off-by: Kay, Allen M <allen.m.kay@intel.com>
-Signed-off-by: Weidong Han <weidong.han@intel.com>
-Signed-off-by: Ben-Ami Yassour <benami@il.ibm.com>
-Signed-off-by: Amit Shah <amit.shah@qumranet.com>
-
-Acked-by: Mark Gross <mgross@linux.intel.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
+Signed-off-by: Amit Shah <amit.shah@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- drivers/pci/dmar.c                           |    4 +-
- drivers/pci/intel-iommu.c                    |  116 +++++++++++++++++++++++++-
- drivers/pci/iova.c                           |    2 +-
- {drivers/pci => include/linux}/intel-iommu.h |   11 +++
- {drivers/pci => include/linux}/iova.h        |    0
- 5 files changed, 126 insertions(+), 7 deletions(-)
- rename {drivers/pci => include/linux}/intel-iommu.h (94%)
- rename {drivers/pci => include/linux}/iova.h (100%)
+ arch/x86/kvm/x86.c |   86 +++++++++++++++++++++++++++-------------------------
+ 1 files changed, 45 insertions(+), 41 deletions(-)
 
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index 8bf86ae..1df28ea 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -26,8 +26,8 @@
- 
- #include <linux/pci.h>
- #include <linux/dmar.h>
--#include "iova.h"
--#include "intel-iommu.h"
-+#include <linux/iova.h>
-+#include <linux/intel-iommu.h>
- 
- #undef PREFIX
- #define PREFIX "DMAR:"
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index c3edcdc..089ba3f 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -33,8 +33,8 @@
- #include <linux/dma-mapping.h>
- #include <linux/mempool.h>
- #include <linux/timer.h>
--#include "iova.h"
--#include "intel-iommu.h"
-+#include <linux/iova.h>
-+#include <linux/intel-iommu.h>
- #include <asm/proto.h> /* force_iommu in this header in x86-64*/
- #include <asm/cacheflush.h>
- #include <asm/iommu.h>
-@@ -160,7 +160,7 @@ static inline void *alloc_domain_mem(void)
- 	return iommu_kmem_cache_alloc(iommu_domain_cache);
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index c8a2793..61eddbe 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -166,6 +166,43 @@ static void kvm_assigned_dev_ack_irq(struct kvm_irq_ack_notifier *kian)
+ 	enable_irq(dev->host_irq);
  }
  
--static inline void free_domain_mem(void *vaddr)
-+static void free_domain_mem(void *vaddr)
++static void kvm_free_assigned_device(struct kvm *kvm,
++				     struct kvm_assigned_dev_kernel
++				     *assigned_dev)
++{
++	if (irqchip_in_kernel(kvm) && assigned_dev->irq_requested)
++		free_irq(assigned_dev->host_irq, (void *)assigned_dev);
++
++	kvm_unregister_irq_ack_notifier(kvm, &assigned_dev->ack_notifier);
++
++	if (cancel_work_sync(&assigned_dev->interrupt_work))
++		/* We had pending work. That means we will have to take
++		 * care of kvm_put_kvm.
++		 */
++		kvm_put_kvm(kvm);
++
++	pci_release_regions(assigned_dev->dev);
++	pci_disable_device(assigned_dev->dev);
++	pci_dev_put(assigned_dev->dev);
++
++	list_del(&assigned_dev->list);
++	kfree(assigned_dev);
++}
++
++static void kvm_free_all_assigned_devices(struct kvm *kvm)
++{
++	struct list_head *ptr, *ptr2;
++	struct kvm_assigned_dev_kernel *assigned_dev;
++
++	list_for_each_safe(ptr, ptr2, &kvm->arch.assigned_dev_head) {
++		assigned_dev = list_entry(ptr,
++					  struct kvm_assigned_dev_kernel,
++					  list);
++
++		kvm_free_assigned_device(kvm, assigned_dev);
++	}
++}
++
+ static int kvm_vm_ioctl_assign_irq(struct kvm *kvm,
+ 				   struct kvm_assigned_irq
+ 				   *assigned_irq)
+@@ -194,8 +231,8 @@ static int kvm_vm_ioctl_assign_irq(struct kvm *kvm,
+ 
+ 	if (irqchip_in_kernel(kvm)) {
+ 		if (!capable(CAP_SYS_RAWIO)) {
+-			return -EPERM;
+-			goto out;
++			r = -EPERM;
++			goto out_release;
+ 		}
+ 
+ 		if (assigned_irq->host_irq)
+@@ -214,17 +251,18 @@ static int kvm_vm_ioctl_assign_irq(struct kvm *kvm,
+ 		 */
+ 		if (request_irq(match->host_irq, kvm_assigned_dev_intr, 0,
+ 				"kvm_assigned_device", (void *)match)) {
+-			printk(KERN_INFO "%s: couldn't allocate irq for pv "
+-			       "device\n", __func__);
+ 			r = -EIO;
+-			goto out;
++			goto out_release;
+ 		}
+ 	}
+ 
+ 	match->irq_requested = true;
+-out:
+ 	mutex_unlock(&kvm->lock);
+ 	return r;
++out_release:
++	mutex_unlock(&kvm->lock);
++	kvm_free_assigned_device(kvm, match);
++	return r;
+ }
+ 
+ static int kvm_vm_ioctl_assign_device(struct kvm *kvm,
+@@ -300,40 +338,6 @@ out_free:
+ 	return r;
+ }
+ 
+-static void kvm_free_assigned_devices(struct kvm *kvm)
+-{
+-	struct list_head *ptr, *ptr2;
+-	struct kvm_assigned_dev_kernel *assigned_dev;
+-
+-	list_for_each_safe(ptr, ptr2, &kvm->arch.assigned_dev_head) {
+-		assigned_dev = list_entry(ptr,
+-					  struct kvm_assigned_dev_kernel,
+-					  list);
+-
+-		if (irqchip_in_kernel(kvm) && assigned_dev->irq_requested) {
+-			free_irq(assigned_dev->host_irq,
+-				 (void *)assigned_dev);
+-
+-			kvm_unregister_irq_ack_notifier(kvm,
+-							&assigned_dev->
+-							ack_notifier);
+-		}
+-
+-		if (cancel_work_sync(&assigned_dev->interrupt_work))
+-			/* We had pending work. That means we will have to take
+-			 * care of kvm_put_kvm.
+-			 */
+-			kvm_put_kvm(kvm);
+-
+-		pci_release_regions(assigned_dev->dev);
+-		pci_disable_device(assigned_dev->dev);
+-		pci_dev_put(assigned_dev->dev);
+-
+-		list_del(&assigned_dev->list);
+-		kfree(assigned_dev);
+-	}
+-}
+-
+ unsigned long segment_base(u16 selector)
  {
- 	kmem_cache_free(iommu_domain_cache, vaddr);
- }
-@@ -1414,7 +1414,7 @@ static void domain_remove_dev_info(struct dmar_domain *domain)
-  * find_domain
-  * Note: we use struct pci_dev->dev.archdata.iommu stores the info
-  */
--struct dmar_domain *
-+static struct dmar_domain *
- find_domain(struct pci_dev *pdev)
+ 	struct descriptor_table gdt;
+@@ -4296,7 +4300,7 @@ static void kvm_free_vcpus(struct kvm *kvm)
+ void kvm_arch_destroy_vm(struct kvm *kvm)
  {
- 	struct device_domain_info *info;
-@@ -2453,3 +2453,111 @@ int __init intel_iommu_init(void)
- 	return 0;
- }
- 
-+void intel_iommu_domain_exit(struct dmar_domain *domain)
-+{
-+	u64 end;
-+
-+	/* Domain 0 is reserved, so dont process it */
-+	if (!domain)
-+		return;
-+
-+	end = DOMAIN_MAX_ADDR(domain->gaw);
-+	end = end & (~PAGE_MASK_4K);
-+
-+	/* clear ptes */
-+	dma_pte_clear_range(domain, 0, end);
-+
-+	/* free page tables */
-+	dma_pte_free_pagetable(domain, 0, end);
-+
-+	iommu_free_domain(domain);
-+	free_domain_mem(domain);
-+}
-+EXPORT_SYMBOL_GPL(intel_iommu_domain_exit);
-+
-+struct dmar_domain *intel_iommu_domain_alloc(struct pci_dev *pdev)
-+{
-+	struct dmar_drhd_unit *drhd;
-+	struct dmar_domain *domain;
-+	struct intel_iommu *iommu;
-+
-+	drhd = dmar_find_matched_drhd_unit(pdev);
-+	if (!drhd) {
-+		printk(KERN_ERR "intel_iommu_domain_alloc: drhd == NULL\n");
-+		return NULL;
-+	}
-+
-+	iommu = drhd->iommu;
-+	if (!iommu) {
-+		printk(KERN_ERR
-+			"intel_iommu_domain_alloc: iommu == NULL\n");
-+		return NULL;
-+	}
-+	domain = iommu_alloc_domain(iommu);
-+	if (!domain) {
-+		printk(KERN_ERR
-+			"intel_iommu_domain_alloc: domain == NULL\n");
-+		return NULL;
-+	}
-+	if (domain_init(domain, DEFAULT_DOMAIN_ADDRESS_WIDTH)) {
-+		printk(KERN_ERR
-+			"intel_iommu_domain_alloc: domain_init() failed\n");
-+		intel_iommu_domain_exit(domain);
-+		return NULL;
-+	}
-+	return domain;
-+}
-+EXPORT_SYMBOL_GPL(intel_iommu_domain_alloc);
-+
-+int intel_iommu_context_mapping(
-+	struct dmar_domain *domain, struct pci_dev *pdev)
-+{
-+	int rc;
-+	rc = domain_context_mapping(domain, pdev);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(intel_iommu_context_mapping);
-+
-+int intel_iommu_page_mapping(
-+	struct dmar_domain *domain, dma_addr_t iova,
-+	u64 hpa, size_t size, int prot)
-+{
-+	int rc;
-+	rc = domain_page_mapping(domain, iova, hpa, size, prot);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(intel_iommu_page_mapping);
-+
-+void intel_iommu_detach_dev(struct dmar_domain *domain, u8 bus, u8 devfn)
-+{
-+	detach_domain_for_dev(domain, bus, devfn);
-+}
-+EXPORT_SYMBOL_GPL(intel_iommu_detach_dev);
-+
-+struct dmar_domain *
-+intel_iommu_find_domain(struct pci_dev *pdev)
-+{
-+	return find_domain(pdev);
-+}
-+EXPORT_SYMBOL_GPL(intel_iommu_find_domain);
-+
-+int intel_iommu_found(void)
-+{
-+	return g_num_of_iommus;
-+}
-+EXPORT_SYMBOL_GPL(intel_iommu_found);
-+
-+u64 intel_iommu_iova_to_pfn(struct dmar_domain *domain, u64 iova)
-+{
-+	struct dma_pte *pte;
-+	u64 pfn;
-+
-+	pfn = 0;
-+	pte = addr_to_dma_pte(domain, iova);
-+
-+	if (pte)
-+		pfn = dma_pte_addr(*pte);
-+
-+	return pfn >> PAGE_SHIFT_4K;
-+}
-+EXPORT_SYMBOL_GPL(intel_iommu_iova_to_pfn);
-diff --git a/drivers/pci/iova.c b/drivers/pci/iova.c
-index 3ef4ac0..2287116 100644
---- a/drivers/pci/iova.c
-+++ b/drivers/pci/iova.c
-@@ -7,7 +7,7 @@
-  * Author: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-  */
- 
--#include "iova.h"
-+#include <linux/iova.h>
- 
- void
- init_iova_domain(struct iova_domain *iovad, unsigned long pfn_32bit)
-diff --git a/drivers/pci/intel-iommu.h b/include/linux/intel-iommu.h
-similarity index 94%
-rename from drivers/pci/intel-iommu.h
-rename to include/linux/intel-iommu.h
-index afc0ad9..1490fc0 100644
---- a/drivers/pci/intel-iommu.h
-+++ b/include/linux/intel-iommu.h
-@@ -341,4 +341,15 @@ static inline void iommu_prepare_gfx_mapping(void)
- }
- #endif /* !CONFIG_DMAR_GFX_WA */
- 
-+void intel_iommu_domain_exit(struct dmar_domain *domain);
-+struct dmar_domain *intel_iommu_domain_alloc(struct pci_dev *pdev);
-+int intel_iommu_context_mapping(struct dmar_domain *domain,
-+				struct pci_dev *pdev);
-+int intel_iommu_page_mapping(struct dmar_domain *domain, dma_addr_t iova,
-+			     u64 hpa, size_t size, int prot);
-+void intel_iommu_detach_dev(struct dmar_domain *domain, u8 bus, u8 devfn);
-+struct dmar_domain *intel_iommu_find_domain(struct pci_dev *pdev);
-+int intel_iommu_found(void);
-+u64 intel_iommu_iova_to_pfn(struct dmar_domain *domain, u64 iova);
-+
- #endif
-diff --git a/drivers/pci/iova.h b/include/linux/iova.h
-similarity index 100%
-rename from drivers/pci/iova.h
-rename to include/linux/iova.h
+ 	kvm_iommu_unmap_guest(kvm);
+-	kvm_free_assigned_devices(kvm);
++	kvm_free_all_assigned_devices(kvm);
+ 	kvm_free_pit(kvm);
+ 	kfree(kvm->arch.vpic);
+ 	kfree(kvm->arch.vioapic);
 -- 
 1.6.0.1
 
