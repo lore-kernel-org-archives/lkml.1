@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbYI1Pxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbYI1PxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753031AbYI1Pxe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 11:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbYI1Pqq
+	id S1755458AbYI1PxM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 11:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYI1Ppd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 11:46:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50860 "EHLO mx2.redhat.com"
+	Sun, 28 Sep 2008 11:45:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50864 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752783AbYI1Pp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 11:45:26 -0400
+	id S1753066AbYI1Ppb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 11:45:31 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 11/25] KVM: x86 emulator: fix jmp r/m64 instruction
-Date: Sun, 28 Sep 2008 18:44:47 +0300
-Message-Id: <1222616701-1206-12-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 12/25] add MAINTAINERS entry for the KVM AMD module
+Date: Sun, 28 Sep 2008 18:44:48 +0300
+Message-Id: <1222616701-1206-13-git-send-email-avi@redhat.com>
 In-Reply-To: <1222616701-1206-1-git-send-email-avi@redhat.com>
 References: <1222616701-1206-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Avi Kivity <avi@qumranet.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-jmp r/m64 doesn't require the rex.w prefix to indicate the operand size
-is 64 bits.  Set the Stack attribute (even though it doesn't involve the
-stack, really) to indicate this.
-
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/x86_emulate.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ MAINTAINERS |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
-index 0630d21..0c120c4 100644
---- a/arch/x86/kvm/x86_emulate.c
-+++ b/arch/x86/kvm/x86_emulate.c
-@@ -288,7 +288,7 @@ static u16 group_table[] = {
- 	[Group5*8] =
- 	DstMem | SrcNone | ModRM, DstMem | SrcNone | ModRM,
- 	SrcMem | ModRM | Stack, 0,
--	SrcMem | ModRM, 0, SrcMem | ModRM | Stack, 0,
-+	SrcMem | ModRM | Stack, 0, SrcMem | ModRM | Stack, 0,
- 	[Group7*8] =
- 	0, 0, ModRM | SrcMem, ModRM | SrcMem,
- 	SrcNone | ModRM | DstMem | Mov, 0,
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cad81a2..232ff4a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2416,6 +2416,13 @@ L:	kvm@vger.kernel.org
+ W:	http://kvm.qumranet.com
+ S:	Supported
+ 
++KERNEL VIRTUAL MACHINE (KVM) FOR AMD-V
++P:	Joerg Roedel
++M:	joerg.roedel@amd.com
++L:	kvm@vger.kernel.org
++W:	http://kvm.qumranet.com
++S:	Supported
++
+ KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC
+ P:	Hollis Blanchard
+ M:	hollisb@us.ibm.com
 -- 
 1.6.0.1
 
