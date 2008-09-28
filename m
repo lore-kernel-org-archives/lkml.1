@@ -1,143 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbYI1UMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYI1Uij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbYI1UMy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 16:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYI1UMj
+	id S1753234AbYI1Uij (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 16:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbYI1Uib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 16:12:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40111 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752115AbYI1UMi (ORCPT
+	Sun, 28 Sep 2008 16:38:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58678 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752080AbYI1Uia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 16:12:38 -0400
-Date: Sun, 28 Sep 2008 13:12:50 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, tglx@tglx.de, netdev@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@elte.hu,
-       linux-ide@vger.kernel.org
-Subject: Oops/Warning report for the week of September 28th, 2008
-Message-ID: <20080928131250.112f2a08@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 28 Sep 2008 16:38:30 -0400
+Date: Sun, 28 Sep 2008 13:38:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, viro@zeniv.linux.org.uk,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc7-sha1: EIP at proc_sys_compare+0x36/0x50
+In-Reply-To: <m1bpyadlm0.fsf@frodo.ebiederm.org>
+Message-ID: <alpine.LFD.1.10.0809281326240.3265@nehalem.linux-foundation.org>
+References: <20080926152031.GA30831@x200.localdomain> <alpine.LFD.1.10.0809260838120.3265@nehalem.linux-foundation.org> <m1bpyadlm0.fsf@frodo.ebiederm.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The http://www.kerneloops.org website collects kernel oops and
-warning reports from various mailing lists and bugzillas as well as
-with a client users can install to auto-submit oopses.
-Below is a list of the top traces collected in the last 7 days.
-(Reports for version 2.6.25 or earlier have been omitted in collecting the top 10)
-
-This week, a total of 3357 oopses and warnings have been reported,
-compared to 2712 reports in the previous week.
 
 
-Per file statistics
-639	net/sched/sch_generic.c
-424	drivers/ata/libata-sff.c
-410	external/utrace
-157	fs/jbd/journal.c
-143	drivers/parport/procfs.c
-134	external/fireglx/binary (P)
-105	net/core/dev.c
-103	kernel/timer.c
-81	drivers/base/power/main.c
-70	kernel/sched.c
-42	drivers/char/random.c
-38	drivers/gpu/drm/radeon/radeon_cp.c
+On Sat, 27 Sep 2008, Eric W. Biederman wrote:
+> 
+> We hold the directory mutex in real_lookup
+> before calling i_op->lookup.
 
+Irrelevant.
 
-Unfixed
--------
+The d_compare function si called _before_ we get the directory mutex. It's 
+done purely under dentry->dlock (and the RCU read lock).
 
-Rank 1: dev_watchdog (oops)
-	Reported 639 times (1496 total reports)
-	Various device timeouts. Patch to report the driver name is in -rc7; per driver data is now
-	coming in but has not made the top 10 yet.
-	This oops was last seen in version 2.6.27-rc7-git1, and first seen in 2.6.26-rc3.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog
+So we have absolutely no directory-level locking here.
 
-Rank 3: utrace_control (oops)
-	Reported 409 times (775 total reports)
-	[fedora] Fedora merged a broken utrace patch
-	This oops was last seen in version 2.6.26.5, and first seen in 2.6.26.1.
-	More info: http://www.kerneloops.org/searchweek.php?search=utrace_control
+> So lookups should be serialized.
 
-Rank 4: journal_update_superblock (warning)
-	Reported 156 times (4183 total reports)
-	Caused by the user removing a USB stick while mounted
-	Ted has a patch to fix this, but isn't merged in Linus' tree yet.
-	This warning was last seen in version 2.6.27-rc7-git1, and first seen in 2.6.24-rc6-git1.
-	More info: http://www.kerneloops.org/searchweek.php?search=journal_update_superblock
+lookups are serialized before calling into the filesystem with ->lookup, 
+but _not_ at the d_compare level. If we serialized d_compare, the dentry 
+cache would be no use at all, we'd serialize all lookups, cached or not.
 
-Rank 6: firegl_ioctl (warning)
-	Reported 105 times (2694 total reports)
-	[external] Bug in the proprietary fireglx driver
-	warning only shows up in tainted kernels
-	This warning was last seen in version 2.6.26.5, and first seen in 2.6.25.
-	More info: http://www.kerneloops.org/searchweek.php?search=firegl_ioctl
+(Of course, sane filesystems will not have d_compare at all, just the 
+memcmp, but we're talking /proc here - although I forget why it wants to 
+do that insane d_compare thing)
 
-Rank 9: finish_task_switch (lockup)
-	Reported 58 times (139 total reports)
-	This oops was last seen in version 2.6.27-rc2-git1, and first seen in 2.6.24.
-	Potentially fixed by Thomas' timer patches, the jury is still out on this one
-	More info: http://www.kerneloops.org/searchweek.php?search=finish_task_switch
+So forget the directory mutex. d_compare is much more low-level than that. 
+It can hit a dentry that is being unhashed at the same time for whatever 
+reason (memory pressure, whatever).
 
-Rank 10: device_pm_add (warning)
-	Reported 56 times (231 total reports)
-	Bug in the Suspend/Resume code of drivers. Patch to report the actual driver involved is pending for .28
-	This warning was last seen in version 2.6.27-rc4, and first seen in 2.6.26-rc5.
-	More info: http://www.kerneloops.org/searchweek.php?search=device_pm_add
+The fact is, the "->lookup()" function is meant to be easy for filesystems 
+to use, but d_compare i really low-level dentry magic and is meant to look 
+at just the *name*. It's meant to be a replacement for memcpy() for things 
+like case-independent comparisons or strange utf-8 rules (ie "equivalent" 
+characters). It has no real locking, since the names are supposed to be 
+"stable" anyway (the dentry->d_lock should guarantee that the dentry isn't 
+being renamed etc).
 
-Rank 11: account (oops)
-	Reported 42 times (74 total reports)
-	Bug in the /dev/random driver
-	This oops was last seen in version 2.6.26.3, and first seen in 2.6.26.
-	More info: http://www.kerneloops.org/searchweek.php?search=account
+I may be missing something, of course, but the dentry eas actually found 
+_before_ takign even the dentry->d_lock, so the dentry we call compare on 
+may not even be *valid* any more, because something might have unhashed it 
+_after_ we found it, but _before_ we got d_lock.
 
-Rank 12: rs_get_rate (warning)
-	Reported 34 times (361 total reports)
-	Bug in the Intel IWL wireless drivers
-	This warning was last seen in version 2.6.27-rc7-git1, and first seen in 2.6.25-rc2-git5.
-	More info: http://www.kerneloops.org/searchweek.php?search=rs_get_rate
+d_compare() really is pretty special (d_revalidate is too, for that 
+matter, although at least _slightly_ less so: by that time we have at 
+least tested that the UNHASHED bit isn't set because we raced with 
+removal etc).
 
-Rank 13: ext3_commit_super (warning)
-	Reported 27 times (1069 total reports)
-	Likely caused by the user removing a USB stick while mounted
-	Ted has a patch to fix this, not merged yet.
-	This warning was last seen in version 2.6.27, and first seen in 2.6.24.
-	More info: http://www.kerneloops.org/searchweek.php?search=ext3_commit_super
-
-
-Fixed in Linus' tree
---------------------
-Rank 2: ata_sff_hsm_move (warning)
-	Reported 420 times (1019 total reports)
-	[fixed] redundant WARN_ON; fixed in 9c2676b61a5a4b6d99e65fb2f438fb3914302eda
-	This warning was last seen in version 2.6.27-rc2-git1, and first seen in 2.6.25.4.
-	More info: http://www.kerneloops.org/searchweek.php?search=ata_sff_hsm_move
-
-Rank 7: run_timer_softirq (oops)
-	Reported 90 times (205 total reports)
-	softlockup that got fixed by Thomas' timer fixes
-	This oops was last seen in version 2.6.27-rc1-git4, and first seen in 2.6.25.
-	More info: http://www.kerneloops.org/searchweek.php?search=run_timer_softirq
-
-Rank 8: __netif_schedule (warning)
-	Reported 88 times (694 total reports)
-	[fixed] issue as a result of the multiqueue feature, fixed for 2.6.27-rc1
-	This warning was last seen in version 2.6.27-rc0-git11, and first seen in 2.6.26-rc8-git.
-	More info: http://www.kerneloops.org/searchweek.php?search=__netif_schedule
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+		Linus
