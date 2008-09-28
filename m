@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbYI1OTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699AbYI1OWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752488AbYI1OTR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 10:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbYI1OTE
+	id S1752699AbYI1OWr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 10:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYI1OWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 10:19:04 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49026 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750887AbYI1OTD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 10:19:03 -0400
-Date: Sun, 28 Sep 2008 15:18:56 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, ebiederm@xmission.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc7-sha1: EIP at proc_sys_compare+0x36/0x50
-Message-ID: <20080928141856.GG28946@ZenIV.linux.org.uk>
-References: <20080926152031.GA30831@x200.localdomain> <alpine.LFD.1.10.0809260838120.3265@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809260838120.3265@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 28 Sep 2008 10:22:38 -0400
+Received: from sh.osrg.net ([192.16.179.4]:32864 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751224AbYI1OWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 10:22:37 -0400
+Date: Sun, 28 Sep 2008 23:21:23 +0900
+To: joerg.roedel@amd.com
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       iommu@lists.linux-foundation.org, dwmw2@infradead.org, muli@il.ibm.com,
+       amit.shah@qumranet.com, mingo@redhat.com, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1222107681-8185-10-git-send-email-joerg.roedel@amd.com>
+References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com>
+	<1222107681-8185-10-git-send-email-joerg.roedel@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080928231211X.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 08:47:51AM -0700, Linus Torvalds wrote:
+On Mon, 22 Sep 2008 20:21:21 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> and as far as I can tell, there is nothing to say that a /proc inode 
-> cannot be a negative dentry. Sure, we try to get rid of them, but during a 
-> parallel lookup, we will have added the dentry with a NULL inode in the 
-> other lookup.
+> This patch enables stackable dma_ops on x86. To do this, it also enables
+> the per-device dma_ops on i386.
 > 
-> So assuming that you have an inode at that point seems to be utter crap.
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> ---
+>  arch/x86/kernel/pci-dma.c     |   26 ++++++++++++++++++++++++++
+>  include/asm-x86/device.h      |    6 +++---
+>  include/asm-x86/dma-mapping.h |   14 +++++++-------
+>  3 files changed, 36 insertions(+), 10 deletions(-)
 > 
-> Now, the whole _function_ is utter crap and should probably be dropped, 
-> but whatever. That's just another sysctl insanity. In the meantime, 
-> something like this does look appropriate, no?
-> 
-> Al, did I miss something?
+> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> index b990fb6..2e517c2 100644
+> --- a/arch/x86/kernel/pci-dma.c
+> +++ b/arch/x86/kernel/pci-dma.c
+> @@ -82,6 +82,32 @@ void x86_register_dma_ops(struct dma_mapping_ops *ops,
+>  	write_unlock_irqrestore(&dma_ops_list_lock, flags);
+>  }
+>  
+> +struct dma_mapping_ops *find_dma_ops_for_device(struct device *dev)
+> +{
+> +	int i;
+> +	unsigned long flags;
+> +	struct dma_mapping_ops *entry, *ops = NULL;
+> +
+> +	read_lock_irqsave(&dma_ops_list_lock, flags);
+> +
+> +	for (i = 0; i < DMA_OPS_TYPE_MAX; ++i)
+> +		list_for_each_entry(entry, &dma_ops_list[i], list) {
+> +			if (!entry->device_supported)
+> +				continue;
+> +			if (entry->device_supported(dev)) {
+> +				ops = entry;
+> +				goto out;
+> +			}
+> +		}
+> +out:
+> +	read_unlock_irqrestore(&dma_ops_list_lock, flags);
 
-The real underlying bug, whatever it is.  If this sucker ever becomes
-negative, we have a big problem.  Where _could_ that happen?  Remember,
-we do not allow ->rmdir() and ->unlink() to succeed there.  So d_delete()
-callers in namei.c are out of question.  We also never do d_add() with
-NULL inode in there.  We _might_ be doing a bogus d_rehash() on a negative
-/prooc/sys/<something> dentry that had never been hashed to start with
-somewhere in generic code, but... I don't see where that could happen.
-vfs_rename_dir() with negative new_dentry would have to get it from
-something and that would have to be ->lookup().  And that sucker returns
-ERR_PTR() or a positive dentry in all cases here.  d_splice_alias() is not
-used there at all; d_move_locked() would scream bloody murder if dentry
-it's rehashing is negative.  d_materialize_unique() and d_add_unique()
-are not used.  So just WTF is creating this sucker?
-
-IOW, your patch will probably be enough to stop the visible problem, but
-I would dearly like to understand what's really causing it.  It appears to
-be a refcounting breakage somewhere and we have *another* bug report that
-smells like that - it seems like we sometimes end up with negative dentry
-on alias list of an inode (outside of /proc/sys, AFAICT).  Something really
-fishy is going on...
+Hmm, every time we call dma_sg/map_single, we call
+read_lock_irqsave(&dma_ops_list_lock, flags). It's likely that we see
+notable performance drop?
