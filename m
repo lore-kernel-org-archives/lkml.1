@@ -1,108 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbYI1JK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbYI1Js2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566AbYI1JK6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 05:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYI1JKr
+	id S1752676AbYI1Js2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 05:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYI1JsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 05:10:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:8496 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbYI1JKq (ORCPT
+	Sun, 28 Sep 2008 05:48:20 -0400
+Received: from c01.privatesystems.net ([65.99.213.12]:40636 "EHLO
+	c01.privatesystems.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751487AbYI1JsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 05:10:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Piab+aDzeQ22aqAWGp0boLUvpMi/qxwe1LqyzGnqC+2WHhRg3TEqtXvC1w9hD+nA1E
-         1pWPZAgT409HeTT2SjroO4yGLnarIP6U5qPar1S3x0X/RKBiA0NSqMKD6GKgl466XHex
-         cYcZqQYflPRHXT2fQDnchl/9Irdhbvr6de7xE=
-Message-ID: <86802c440809280210l4de854e6xf7416007034820d6@mail.gmail.com>
-Date: Sun, 28 Sep 2008 02:10:45 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Ingo Molnar" <mingo@elte.hu>, "Gabriel C" <nix.or.die@googlemail.com>
-Subject: Re: [PATCH] x86: mtrr_cleanup hole size should be less than half of chunk_size v2
-Cc: "Dylan Taft" <d13f00l@gmail.com>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080928071350.GA3624@elte.hu>
+	Sun, 28 Sep 2008 05:48:19 -0400
+X-Greylist: delayed 2362 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Sep 2008 05:48:19 EDT
+Message-ID: <48DF492A.6070503@talisiorder.ca>
+Date: Sun, 28 Sep 2008 05:06:50 -0400
+From: jbi <jbi@talisiorder.ca>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: e1000e NVM corruption
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1222572366-24424-1-git-send-email-yhlu.kernel@gmail.com>
-	 <86802c440809272258x1c418f0j7f274dfdfd8a87f6@mail.gmail.com>
-	 <20080928071350.GA3624@elte.hu>
-X-Google-Sender-Auth: bbbdf5d38885a156
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - c01.privatesystems.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - talisiorder.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 28, 2008 at 12:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yinghai@kernel.org> wrote:
->
->> On Sat, Sep 27, 2008 at 8:26 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> > v2: should check with half of range0 size instead of chunk_size
->> >
->> > So don't have silly big hole.
->> >
->> > in hpa's case we could auto detect instead of adding mtrr_chunk_size in command line
->> >
->> > Ingo, please consider to squash this one to previous one
->> > |  commit 2313c2793d290a8cc37c428f8622c53f3fe1d6dc
->> > |  Author: Yinghai Lu <yhlu.kernel@gmail.com>
->> > |  Date:   Sat Sep 27 00:30:08 2008 -0700
->> > |
->> > |      x86: mtrr_cleanup optimization, v2
->> >
->> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->> >
->>
->> Dylan,
->>
->> please try tip/master after Ingo put this patch into it...
->
-> applied to tip/x86/mtrr, thanks Yinghai! I've also propagated it to
-> tip/master and pushed it out, so Dylan could do a one-stop testing of
-> tip/master.
+I am not a member of this list (I read occasionally via the public 
+archives) or an experienced kernel hacker but I do have a few 
+semi-informed thoughts on the 8256x NVM corruption issue.  Take with 
+salt as necessary:
 
-Gabriel, can you check tip/mater too?
-http://people.redhat.com/mingo/tip.git/readme.txt
+According to Intel's datasheet, these interfaces expose *writable* PCI 
+ID registers at NVM words 0x0A-0x0E[1].  Fill the NVM with FFs and the 
+interface will probably respond with vendor ID : device ID FFFF:FFFF 
+during bus enumeration.  The potential for these devices to disappear 
+off the PCI bus after NVM corruption means that unbricking damaged 
+devices could be nontrivial.
 
-from
-reg00: base=0xd0000000 (3328MB), size= 256MB: uncachable, count=1
-reg01: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
-reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
-reg03: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
-reg04: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
-reg05: base=0x128000000 (4736MB), size=  64MB: write-back, count=1
-reg06: base=0xcf600000 (3318MB), size=   2MB: uncachable, count=1
+One possible recovery option would be see if a bricked interface still 
+responds to commands at the appropriate hardware address in the PCI 
+configuration space.  Even if the device escapes enumeration because its 
+vendor ID and device ID are invalid, the hardware might be alive enough 
+to work with an NVM-reflash driver that ignored the PCI ID.  In the best 
+case, getting a dead device back could just be a matter of setting up 
+MBARB by writing to the configuration space for bus 0 dev 25 fn 0 (for 
+ICH9) and reloading the NVM with a reasonable set of defaults.
 
-you should get
-Found optimal setting for mtrr clean up
-gran_size: 1M   chunk_size: 16M         num_reg: 7      lose RAM: 0M
-range0: 0000000000000000 - 00000000d0000000
-Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
-Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
-Setting variable MTRR 2, base: 3072MB, range: 256MB, type WB
-hole: 00000000cf600000 - 00000000cf800000
-Setting variable MTRR 3, base: 3318MB, range: 2MB, type UC
-rangeX: 0000000100000000 - 000000012c000000
-Setting variable MTRR 4, base: 4096MB, range: 512MB, type WB
-Setting variable MTRR 5, base: 4608MB, range: 128MB, type WB
-Setting variable MTRR 6, base: 4736MB, range: 64MB, type WB
+Another recovery possibility would be to rewrite the NVM using the ICH's 
+SPI interface.  The same flash chip serves both the BIOS and NIC.  The 
+NVM might be rewritable through the ICH even if the NVM is too deeply 
+corrupted for the NIC to respond to reflash commands.  This fix would be 
+complex, risky, and possibly motherboard specific, but should be able to 
+put most bricked 8256x NICs back together unless NVM corruption has 
+caused deeper damage.
 
-instead of
+Finally, given that one write to the wrong part of the NVM will turn one 
+of these NICs into a brick, memory mapping the NVM--even for the 
+briefest period--seems deeply imprudent.  As long as the NVM is memory 
+mapped, all it takes to turn one of these NICs into a brick is for one 
+kernel mode bug to make one dword write to any of those registers.  With 
+the current cost of stomping on 8256x NVM data running at upwards of 
+$500 per laptop, eliminating MMIO NVM access in favor of extensively 
+sanity checked IO-mapped access seems like a very good idea.  Unlike the 
+simplicity of MMIO writes, the IO-based flash write process for the 
+8256x chips is sufficiently complex that rogue writes are unlikely to 
+happen by accident.
 
-reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
-reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
-reg03: base=0xcfe00000 (3326MB), size=   2MB: uncachable, count=1
-reg04: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
-reg05: base=0x120000000 (4608MB), size= 256MB: write-back, count=1
-reg06: base=0x12c000000 (4800MB), size=  64MB: uncachable, count=1
 
-YH
+
+[1]
+http://download.intel.com/design/network/applnots/ICH9_NVM.pdf
+See especially the example NVM tables in the last few pages.
