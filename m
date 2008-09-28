@@ -1,162 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbYI1GNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbYI1Gfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752162AbYI1GNJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 02:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbYI1GM4
+	id S1752596AbYI1Gfz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 02:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbYI1Gfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 02:12:56 -0400
-Received: from gw-d.mimosa.com ([209.161.207.149]:38211 "EHLO gw-d.mimosa.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083AbYI1GM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 02:12:56 -0400
-X-Greylist: delayed 3762 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Sep 2008 02:12:55 EDT
-Date: Sun, 28 Sep 2008 01:10:12 -0400 (EDT)
-From: "D. Hugh Redelmeier" <hugh@mimosa.com>
-Reply-To: "D. Hugh Redelmeier" <hugh@mimosa.com>
-To: linux-kernel@vger.kernel.org
-Subject: questions about x86: mtrr cleanup for converting continuous to
- discrete layout
-Message-ID: <alpine.LRH.2.00.0809272343020.20325@redclaw.mimosa.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Sun, 28 Sep 2008 02:35:47 -0400
+Received: from flock1.newmail.ru ([82.204.219.207]:50873 "HELO
+	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751125AbYI1Gfq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 02:35:46 -0400
+From: Andrey Borzenkov <arvidjaar@newmail.ru>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] Ghost EDD devices in /sys again
+Date: Sun, 28 Sep 2008 10:34:58 +0400
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <200809062208.m86M8hJM016685@terminus.zytor.com>
+In-Reply-To: <200809062208.m86M8hJM016685@terminus.zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed;
+  boundary="nextPart1276939.FzfHb1WbHJ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200809281035.06547.arvidjaar@newmail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is my current understanding of the MTRR problems.  Please correct
-any mistakes.
+--nextPart1276939.FzfHb1WbHJ
+Content-Type: multipart/mixed;
+  boundary="Boundary-01=_UWy3IhuNYHpFHUe"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-There are two broad reasons (use cases) for Linux to change MTRRs
+--Boundary-01=_UWy3IhuNYHpFHUe
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-(1) to clean up after bad BIOSes.
+On Sunday 07 September 2008, H. Peter Anvin wrote:
+>=20
+> I think this is closer to what we really want; after all, memory being wr=
+itten is the "first principles" test that applies here.
+>=20
 
-(1a) Some BIOSes don't make all the MTRRs the same on all processors.
-This is just wrong and the kernel fixes this.
+OK I have been using this for some time. I do not actually insist on
+returning "failure" for zero signature; my main concern was duplicated
+signature resulted from not clearing read buffer. Still I assume that
+zero signature is the same as no signature; i.e. even if disk is physically
+present but zeroed out there is no point in presenting mbr_signature in
+sysfs either.
 
-(1b) Some BIOSes, for some memory configurations, fail to specify that
-certain bits of RAM should be cached.  The current fix is to not use
-that RAM, so the MTRRs are not actually changed, but they could be.
+--Boundary-01=_UWy3IhuNYHpFHUe
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="fix-edd-detection-v2"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline;
+	filename="fix-edd-detection-v2"
 
-(2) to allow userland programs to adjust the caching regime for chunks
-of memory.
+Subject: [PATCH] Fix ghost entries under /sys/firmware/edd take 2
+=46rom: Andrey Borzenkov < arvidjaar@mail.ru>
 
-The only use of this that I know of is by some (most) X device drivers
-to change the video device buffer from Uncachable to Write-Combining.
+Some BIOSes do not indicate error when trying to read from non-
+existing device. Zero buffer before reading and check that we
+actually got some data.
 
-(OK, I simplified: a very few other device drivers do the same thing,
-eg. the ib_path Infiniband driver.)
+This was fixed in different way for edd.S in
+http://marc.info/?l=3Dlinux-kernel&m=3D114087765422490&w=3D2, but lost
+again when edd.S was rewritten in C.
 
-Are there any other significant uses?
+Signed-off-by: Andrey Borzenkov < arvidjaar@mail.ru>
 
+=2D--
 
-Currently, the kernel is not capable of using the MTRR mechanism to
-change the caching behaviour of a range of memory that is a proper
-subset of the range of an existing MTRR.  That is a carefully worded
-statement -- I will unpack it:
-
-- the desired effect might be achieved using PAT, but we are only
-  dealing with MTRR here.
-
-- by "proper subset" I mean smaller than and contained within
-
-- generally, the BIOS sets up a distinct MTRR for a video buffer
-  so this condition will manifest itself as nested MTRR ranges.
-  But this isn't the only way it could arise.
-
-
-There is a proposal to fix the problem: patch "x86: mtrr cleanup for converting continuous to discrete
-layout, v8"
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=95ffa2438d0e9c48779f0106b1c0eb36165e759c
-and it apparently continues to be refined.
-
-[I have a userland program to attack the same problem.  See
-  ftp://ftp.cs.utoronto.ca/pub/hugh/mtrr-uncover-2008sept27.tgz
-When I make changes, the date portion of the name changes -- it is a
-work in progress.]
-
-I have some doubts about the kernel patch.
-
-(1) The name makes no sense to me.  The issue addressed is not whether
-MTRRs are "continuous" or "discreet", it is whether they are any
-nested MTRR ranges.  Another term for "nested" could be "overlapping"
-but that isn't quite as precise.
+ arch/x86/boot/edd.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
 
-(2) Ideally, the patch should reorganize MTRRs so that the ranges no
-longer overlap but that the caching type ascribed to each address is
-the same.
+diff --git a/arch/x86/boot/edd.c b/arch/x86/boot/edd.c
+index d93cbc6..0388234 100644
+=2D-- a/arch/x86/boot/edd.c
++++ b/arch/x86/boot/edd.c
+@@ -58,11 +58,12 @@ static u32 read_mbr_sig(u8 devno, struct edd_info *ei, =
+u32 *mbrsig)
+ 	if (mbrbuf_end > (char *)(size_t)boot_params.hdr.heap_end_ptr)
+ 		return -1;
+=20
++	memset(mbrbuf_ptr, 0, sector_size);
+ 	if (read_mbr(devno, mbrbuf_ptr))
+ 		return -1;
+=20
+ 	*mbrsig =3D *(u32 *)&mbrbuf_ptr[EDD_MBR_SIG_OFFSET];
+=2D	return 0;
++	return -!*mbrsig;	/* treat zero signature as no sig */
+ }
+=20
+ static int get_edd_info(u8 devno, struct edd_info *ei)
 
-This often cannot be done: an exact solution often requires more MTRR
-registers than the hardware provides.  So the patch will approximate
-the solution, rounding region sizes to a multiple of mtrr_gran_size,
-a user specified value.  Is there any reason to think that this
-approximation does not compromise the integrity of the system?
+--Boundary-01=_UWy3IhuNYHpFHUe--
 
-The fact that the user specifies mtrr_gran_size is apparently taken as
-some kind of consent.  Is there any likelihood of it being informed
-consent?  MTRR issues are quite complicated and poorly documented.
+--nextPart1276939.FzfHb1WbHJ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-(3) The real problem is not that MTRR ranges are nested, it is that a
-userland program (an X video driver) may wish to change the caching
-behaviour of a particular range of memory where that range is a proper
-subset of an existing MTRR range.
+iEYEABECAAYFAkjfJZQACgkQR6LMutpd94zxBQCfdYZoKz66iplURmkEZzOBOgak
+K/AAnAhht6c99KkrSoiegPazUt6cdcN1
+=Gp8v
+-----END PGP SIGNATURE-----
 
-This problem turns out to be solvable much more often than unnesting
-every MTRR.  I base this on modest experience with my mtrr-uncover
-program.  I've tested it with /proc/mtrr values contained within
-various bug reports on the web.  My program has not implemented any
-approximation and it has not been needed.  It has, however, often been
-necessary to specify the range of interest.
-
-Why is this likely to be so?  The reason a lot of MTRRs are required
-stems from the fact that their sizes are limited to powers of two (and
-their addresses must be aligned on a boundary that is a multiple of
-the size).  A little range nested within a much large range must be
-turned into a whole bunch of ranges (roughly: (log2 larger_size) -
-(log2 smaller_size) extra MTRR registers).  This happens a lot in real
-examples.
-
-But those examples turn out not to matter.  Video device buffers (of
-the kind X drivers wish to retype) are quite large.  Typically 256MiB
-or more on the kind of system with 4GiB or more of RAM.  So the
-horrible explosion of MTRR requirements does not happen when
-uncovering them.
-
-(4) I have seen comments made that SMM code may presume that the MTRRs
-are set up as the BIOS has left them.  After all, it seems as if the
-BIOS "owns" the MTRRs.  Wholesale changing of MTRRs might be
-dangerous.
-
-I have not seen any evidence to support this contention.  But those
-making the claims are known to be wise.
-
-Could someone point to anything that would clarify this issue?
-
-================
-
-I suggest that it would be much cleaner and safer if the kernel only
-reorganized MTRRs as needed.  So, for example, when an X driver
-requests that a region be changed to a different type, then, and only
-then, work at reorganizing to accomplish that narrow task.
-
-My program mtrr-uncover could be a prototype.  It is userland code and
-I think that the proper solution is kernel code, so I think new code
-is needed.
-
-In any case, I'm not really comfortable with the existing patch.  It
-rarely works without approximation and I'm not sure that the
-approximation is safe.
-
-================
-
-In my opinion, there are a bunch of things wrong the the MTRR API
-presented to userland.  I outlined a number of deficiencies with the
-ioctl part in http://lkml.org/lkml/2008/8/5/62
-I know more now.
-
-A summary is that the interface is poorly described and more
-complicated than needed for the use cases that I know.
-
-Should we cut it back?
+--nextPart1276939.FzfHb1WbHJ--
