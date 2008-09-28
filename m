@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbYI1PSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753049AbYI1P2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753138AbYI1PSv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 11:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYI1PSk
+	id S1753049AbYI1P2Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 11:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYI1P2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 11:18:40 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:49785 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbYI1PSk (ORCPT
+	Sun, 28 Sep 2008 11:28:15 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:18838 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751606AbYI1P2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 11:18:40 -0400
-Date: Sun, 28 Sep 2008 16:18:35 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Swap on loop device on tmpfs locks up machine
-In-Reply-To: <19f34abd0809261146j72a68765i964466336a3a34dc@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0809281604100.17064@blonde.site>
-References: <19f34abd0809261146j72a68765i964466336a3a34dc@mail.gmail.com>
+	Sun, 28 Sep 2008 11:28:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=fraXwTOF/iwCPly44l+Ssk1fO/LBPzVG7K9xFCF7i9l03Vbs5GlOXHpSW7Y/UUAh6S
+         Ew3dmm9+KpDblg+U4BuL+gQ3gvllvV79lB8xWU4+1G0je2OhYSuZy5DGTqiHHSK23eHZ
+         kHCer79obQlwa/2uMDkLmyaYhe0uSuVA52q+4=
+Message-ID: <48DFA285.1010701@panasas.com>
+Date: Sun, 28 Sep 2008 18:28:05 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       jens.axboe@oracle.com
+Subject: Re: scatterlist.c: bug in sg_next()?
+References: <c384c5ea0809280815l63fab13fqf97a619598f0dd71@mail.gmail.com>
+In-Reply-To: <c384c5ea0809280815l63fab13fqf97a619598f0dd71@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Sep 2008, Vegard Nossum wrote:
+Leon Woestenberg wrote:
+> Hello,
 > 
-> It turns out that swap over loop device on tmpfs will lock up the
-> machine. That is, all programs become blocked, but I can still do
-> things like switch VT consoles.
+> I was code-inspecting 2.6.27-r7 through git web, when I came across this:
 > 
-> To reproduce (as root):
+> In sg_next(), after following a chain_ptr, a few more checks should be
+> performed.
+> The rare case exists that the first entry in the chained list is a
+> last marker, in case NULL must be returned.
 > 
->     mount -t tmpfs tmpfs /mnt
->     dd if=/dev/zero of=/mnt/disk
->     swapoff -a
->     losetup -f /mnt/disk
->     mkswap /dev/loop0 # replace loop0 with actual loop device
->     swapon /dev/loop0
->     <memory hog, like continuous malloc()>
+> Can someone confirm and cook a patch?
 > 
-> I'm not sure it's really a very good idea to do this in the first
-> place, but should something give a warning or prevent a user from
-> doing it?
+> struct scatterlist *sg_next(struct scatterlist *sg)
+> {
+>   if (sg_is_last(sg))
+>     return NULL;
+>   sg++;
+>   if (unlikely(sg_is_chain(sg))) {
+>      sg = sg_chain_ptr(sg);
+> +#ifdef CONFIG_DEBUG_SG
+> + BUG_ON(sg->sg_magic != SG_MAGIC);
+> +#endif
+> +   if (sg_is_last(sg))
+> +     return NULL;
+>   }
+>   return sg;
+> }
+> 
+> Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
+> 
+> Regards,
 
-It's just a "don't do that" in my opinion, and it doesn't seem
-to have caused much trouble for sysadmins down the years.
+No! the last marker is set on a valid sg entry. Only it's next
+is no longer valid. So the check at the top is for the Next-sg
+not the passed-in-sg. What you thought of is a NULL terminating
+sg-list. The end marker is so to save the extra NULL entry.
 
-It's good to have a loop driver that can make regular files look
-like block devices, and it's good to have that working on tmpfs;
-and I'm glad that trying to swapon a tmpfs file directly just
-happens to fail because tmpfs doesn't support bmap().
+Boaz
 
-But I don't think it's worth adding in some "valid for swap" call
-to block devices, and saying no when loop or when loop over tmpfs.
-Trying to swap to loop over tmpfs is a particularly clear example
-of something that will end badly - unless the tmpfs file is locked
-in memory? haven't tried that - but I wouldn't recommend swapping
-to loop over anything (it interposes levels between swap and device
-which just increase the likelihood of hang).
-
-Just don't do that.
-
-Hugh
