@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbYI1CR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbYI1CUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbYI1CR4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Sep 2008 22:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbYI1CRs
+	id S1753294AbYI1CUV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Sep 2008 22:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbYI1CUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Sep 2008 22:17:48 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:57962 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751684AbYI1CRs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Sep 2008 22:17:48 -0400
-Date: Sat, 27 Sep 2008 22:17:46 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Ivan Zorin <ivan.a.zorin@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [question] "copy-on-write" in ext4
-Message-ID: <20080928021746.GB5025@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Ivan Zorin <ivan.a.zorin@gmail.com>, linux-kernel@vger.kernel.org
-References: <48DEBCE9.3000002@gmail.com>
+	Sat, 27 Sep 2008 22:20:07 -0400
+Received: from ns1.suse.de ([195.135.220.2]:59928 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751948AbYI1CUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Sep 2008 22:20:06 -0400
+Date: Sat, 27 Sep 2008 19:04:19 -0700
+From: Greg KH <gregkh@suse.de>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Kay Sievers <kay.sievers@vrfy.org>, Joe Perches <joe@perches.com>,
+       Tim Hockin <thockin@hockin.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Jochen =?iso-8859-1?B?Vm/f?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>, Jan Blunck <jblunck@suse.de>,
+       Rick Troth <rmt@casita.net>, Utz Bacher <utz.bacher@de.ibm.com>
+Subject: Re: [patch 2/6] kmsg: tagged device messages.
+Message-ID: <20080928020419.GA1257@suse.de>
+References: <20080925162827.818261893@de.ibm.com> <20080925163019.750494793@de.ibm.com> <20080926175745.GD700@suse.de> <1222557104.14610.3.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48DEBCE9.3000002@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1222557104.14610.3.camel@localhost>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 28, 2008 at 03:08:25AM +0400, Ivan Zorin wrote:
-> Hello, everybody. I have a question to ext4 filesystem developers. Could  
-> you tell me please, have you planned to implement (no matter, how soon)  
-> in ext4 some "copy-on-write" feature? If you have, then how it will be  
-> looks like (and how soon :-) ?
-> If you haven't, then did you think about ability to implement such  
-> feature and how it could be?
+On Sun, Sep 28, 2008 at 01:11:44AM +0200, Martin Schwidefsky wrote:
+> On Fri, 2008-09-26 at 10:57 -0700, Greg KH wrote:
+> > Note that you will get some merge errors with -next in device.h due to
+> > the dynamic debug printk work that is in my tree and in -next as well.
+> > But it should be simple to resolve.
+> 
+> Is the dynamic debug printk work going upstream with the next merge
+> window? If yes then I'll wait until it hit Linus tree and update my
+> patch.
 
-What do you mean by "copy on write", precisely?  Do you mean at the
-file level, directory level, or the filesystem level? 
+Yes, it is slated for 2.6.28 inclusion and is in the -next and -mm
+releases.
 
-We don't have any plans to implement "copy on write" in ext4, although
-you can create a copy-on-write snapshot at the block device level
-using LVM/devicemapper.  For many things (database backups, etc.) this
-is quite suitable.
+thanks,
 
-So why don't you tell us what you are trying to do, and we can suggest
-to you ways that you might be able to do it.
-
-							- Ted
+greg k-h
