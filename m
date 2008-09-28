@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYI1POB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbYI1PQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbYI1POB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 11:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYI1PNx
+	id S1753151AbYI1PQF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 11:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYI1PPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 11:13:53 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43228 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbYI1PNw (ORCPT
+	Sun, 28 Sep 2008 11:15:54 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:2672 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751721AbYI1PPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 11:13:52 -0400
-Message-ID: <48DF9EDA.1060809@zytor.com>
-Date: Sun, 28 Sep 2008 08:12:26 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 28 Sep 2008 11:15:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=ac7N0XSYvtwq7k6ctLwXrt0l5dJvzb55HBAoyemUublX46DIFbLCB4RRr+9qYEo8hv
+         Kwqk5UeM/lG4HXlOKwr2VekK4Mv4CMuSCEVLKggJ6G5JZxWseR4paF498Qge/7/p0aqK
+         CFa9usWs2Wd+hgRhJ2CiKzBeRRSBK2krQ+cOo=
+Message-ID: <c384c5ea0809280815l63fab13fqf97a619598f0dd71@mail.gmail.com>
+Date: Sun, 28 Sep 2008 17:15:52 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       jens.axboe@oracle.com
+Subject: scatterlist.c: bug in sg_next()?
 MIME-Version: 1.0
-To: Andrey Borzenkov <arvidjaar@newmail.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Ghost EDD devices in /sys again
-References: <200809062208.m86M8hJM016685@terminus.zytor.com> <200809281035.06547.arvidjaar@newmail.ru>
-In-Reply-To: <200809281035.06547.arvidjaar@newmail.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
-> On Sunday 07 September 2008, H. Peter Anvin wrote:
->> I think this is closer to what we really want; after all, memory being written is the "first principles" test that applies here.
->>
-> 
-> OK I have been using this for some time. I do not actually insist on
-> returning "failure" for zero signature; my main concern was duplicated
-> signature resulted from not clearing read buffer. Still I assume that
-> zero signature is the same as no signature; i.e. even if disk is physically
-> present but zeroed out there is no point in presenting mbr_signature in
-> sysfs either.
-> 
+Hello,
 
-Right, I think that's a much better patch.
+I was code-inspecting 2.6.27-r7 through git web, when I came across this:
 
-The really Right Thing[TM] to do is probably to pre-clear the buffer and 
-then look for the 0xaa55 signature at offset 510; it is required for 
-sector 0 to be a valid MBR-format partition table and hence for the MBR 
-*signature* to be valid.
+In sg_next(), after following a chain_ptr, a few more checks should be
+performed.
+The rare case exists that the first entry in the chained list is a
+last marker, in case NULL must be returned.
 
-I'll write that up tomorrow (I'm travelling today), or you can send me a 
-patch.
+Can someone confirm and cook a patch?
 
-	-hpa
+struct scatterlist *sg_next(struct scatterlist *sg)
+{
+  if (sg_is_last(sg))
+    return NULL;
+  sg++;
+  if (unlikely(sg_is_chain(sg))) {
+     sg = sg_chain_ptr(sg);
++#ifdef CONFIG_DEBUG_SG
++ BUG_ON(sg->sg_magic != SG_MAGIC);
++#endif
++   if (sg_is_last(sg))
++     return NULL;
+  }
+  return sg;
+}
 
+Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
+
+Regards,
+-- 
+Leon
