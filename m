@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbYI1SHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbYI1SHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753378AbYI1SHO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 14:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYI1SHA
+	id S1753805AbYI1SHi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 14:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbYI1SHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 14:07:00 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:14803 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751938AbYI1SHA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 14:07:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=Q+3jRfZAOAT5A9X4DPRuRoav+e8oTpG2A/ykY9SnjbaUJTyk/Iv1wydSlpzDG7R17b
-         V2HGi/qbANVUImH8Xv9R4LMpoUvLcPATZ/S9kqpcHtAoMNnPxA/IavYUvar2soHVfvOI
-         Us4pIdi0LKPh8wjaVOc3ctlJC3J3vv//KrVgI=
-Date: Sun, 28 Sep 2008 20:06:52 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] kmemcheck fixlets (for -tip)
-Message-ID: <20080928180652.GA8500@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+	Sun, 28 Sep 2008 14:07:25 -0400
+Received: from sh.osrg.net ([192.16.179.4]:35930 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752595AbYI1SHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 14:07:24 -0400
+Date: Mon, 29 Sep 2008 03:06:40 +0900
+To: mingo@elte.hu
+Cc: joerg.roedel@amd.com, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 3/3] x86/iommu: use __GFP_ZERO instead of memset for
+	GART
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080927181855.GA11147@elte.hu>
+References: <20080925104212.GA27928@amd.com>
+	<20080927181438.GF1108@elte.hu>
+	<20080927181855.GA11147@elte.hu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080929030640X.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Sat, 27 Sep 2008 20:18:55 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Here is the fixlets branch, including bitfields API. I think it would
-be very nice if you could make this a *separate* branch in -tip, say
-kmemcheck-fixlets or so, as it may touch any part of the kernel and
-doesn't carry the acks of those maintainers.
+> another thing:
+> 
+> How hard would it be to add an CONFIG_IOMMU_DEBUG option that forces as 
+> many DMA requests to go via the IOMMU as possible?
+> 
+> This slows things down of course so it's only for debugging - but it 
+> also makes sure that we utilize the IOMMU code to the maximum - which is 
+> not normally the case.
 
-With these patches, you should be able to include kmemcheck in auto-testing
-again. At least it works for me :-)
-
-You may also kill tip/kmemcheck-dma, which has been integrated already.
-
-
-The following changes since commit 9f24b3ed3058f022dad24f8304b9ad53adf5aa71:
-  Vegard Nossum (1):
-        x86: use REP MOVS instruction for memcpy if kmemcheck is enabled
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git fixlets-for-tip
-
-Vegard Nossum (6):
-      kmemcheck: bitfield API
-      net: use kmemcheck bitfields API for skbuff
-      net: annotate bitfields in struct inet_sock
-      ieee1394: annotate bitfield
-      ieee1394/csr1212: fix false positive kmemcheck report
-      kmemcheck: allocate struct siginfo with SLAB_NOTRACK
-
- drivers/ieee1394/csr1212.c |    2 ++
- drivers/ieee1394/nodemgr.c |    7 ++++++-
- include/linux/kmemcheck.h  |   39 +++++++++++++++++++++++++++++++++++++++
- include/linux/skbuff.h     |   31 +++++++++++++++++++------------
- include/net/inet_sock.h    |   24 +++++++++++++++---------
- kernel/signal.c            |    8 +++++++-
- net/core/skbuff.c          |    8 ++++++++
- 7 files changed, 96 insertions(+), 23 deletions(-)
-
-Thanks,
-
-
-Vegard
+If you use iommu=force boot option, GART always tries to use the
+IOMMU.
