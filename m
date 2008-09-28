@@ -1,551 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbYI1TrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbYI1UAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753387AbYI1TrR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 15:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYI1TrF
+	id S1753239AbYI1UAk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 16:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYI1UAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 15:47:05 -0400
-Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:17715 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752466AbYI1TrD convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 15:47:03 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-kernel@vger.kernel.org
-Subject: sdhci: Loads of scary messages during suspend/resume with SD card inserted
-Date: Sun, 28 Sep 2008 21:46:57 +0200
-User-Agent: KMail/1.9.9
-Cc: drzeus-mmc@drzeus.cx, linux-pm@lists.linux-foundation.org
+	Sun, 28 Sep 2008 16:00:32 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:41695 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752391AbYI1UAb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 16:00:31 -0400
+Message-ID: <35418.166.70.238.43.1222629892.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <20080928194536.GC8711@mit.edu>
+References: <33521.166.70.238.43.1222622153.squirrel@webmail.wolfmountaingroup.com>
+    <20080928194536.GC8711@mit.edu>
+Date: Sun, 28 Sep 2008 13:24:52 -0600 (MDT)
+Subject: Re: [REQUEST] Clarification from Copyright Holders on 
+     FUSE/NDISWRAPPER
+From: jmerkey@wolfmountaingroup.com
+To: "Theodore Tso" <tytso@mit.edu>, jmerkey@wolfmountaingroup.com,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200809282146.57960.elendil@planet.nl>
-X-OriginalArrivalTime: 28 Sep 2008 19:46:58.0781 (UTC) FILETIME=[F81C90D0:01C921A2]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My HP 2510p has an SD card slot and a few days ago I bought one to be able
-to add support for SD cards in the Debian Installer.
 
-Whilst playing with it, I found the following messages in my logs during
-suspend. At the time the card was inserted, but nothing on it was mounted.
+> The intent of the copyright owners is fairly clear; most of the kernel
+> (exceptions are noted on a handful of source fils) is to be licensed
+> under the terms of the GNU Public License, version 2.  There is
+> another long-standing assertion by Linus in the COPYING file:
+>
+>    NOTE! This copyright does *not* cover user programs that use kernel
+>  services by normal system calls - this is merely considered normal use
+>  of the kernel, and does *not* fall under the heading of "derived work".
+>  Also note that the GPL below is copyrighted by the Free Software
+>  Foundation, but the instance of code that it refers to (the Linux
+>  kernel) is copyrighted by me and others who actually wrote it.
+>
+> Given that FUSE drivers communicate to the kernel via /dev/fuse and
+> normal system calls, you can draw your own conclusions.  (However,
+> most FUSE userspace drivers do utilize libfuse, which available under
+> an LGPLv2 license.  If you are using Windows-based source code, and
+> linking it against an LGPLv2 license, there may be issues there as
+> well.)
+>
+> All of this is not legal advice, however; if you want real legal
+> advise, you need to ask a lawyer, not the FSF, and not LKML.
 
-There also seems to be a problem while resuming, especially:
-mmc mmc0:8879: parent mmc0 should not be sleeping
-More context at the bottom of the mail.
 
->From lspci -vvv:
-02:06.2 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 21)
-        Subsystem: Hewlett-Packard Company Device 30c9
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 64, Cache Line Size: 64 bytes
-        Interrupt: pin C routed to IRQ 20
-        Region 0: Memory at e0102000 (32-bit, non-prefetchable) [size=256]
-        Capabilities: <access denied>
-        Kernel driver in use: sdhci-pci
-        Kernel modules: sdhci-pci
+Thanks Ted,
 
-02:06.3 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev ff) (prog-if ff)
-        !!! Unknown header type 7f
-        Kernel driver in use: ricoh-mmc
-        Kernel modules: ricoh_mmc
+I have spoken to lots of lawyers about this and to be honest they were
+pretty much clueless since the real issues involve definitions about what
+technologies are covered in the user space exemptions and which are not,
+and your conclusions seem right on the money.   I was advised to ask the
+copyright holders their opinions, since this is very much a subjective
+determination based upon knowledge of technologies and where the line are
+drawn.  The legal issues are well understood -- the definitions on which
+technologies are classified as user space vs. kernel and which enjoy the
+exemptions and which do not are very much at the discretion of the
+copyright holders.
 
-Cheers,
-FJP
+You have eloquently answered the question.  FUSE drivers are under the GPL
+and are off limits unless you plan to open source them.  Distributors
+linking against Linux also sound like they are off limits too.  Given the
+response, Windows Executables installed and linked by a customer are not
+prohibited nor is the use of any other consumer of Linux (which is what
+the lawyers have told me).
 
-Messages from kern.log during suspend:
-Sep 28 23:12:39 aragorn kernel: Suspending console(s) (use no_console_suspend to debug)
-Sep 28 23:12:39 aragorn kernel: pci 0000:00:02.0: PCI INT A disabled
-Sep 28 23:12:39 aragorn kernel: sd 0:0:0:0: [sda] Synchronizing SCSI cache
-Sep 28 23:12:39 aragorn kernel: sd 0:0:0:0: [sda] Stopping disk
-Sep 28 23:12:39 aragorn kernel: ACPI handle has no context!
-Sep 28 23:12:39 aragorn kernel: ricoh-mmc: Suspending.
-Sep 28 23:12:39 aragorn kernel: ricoh-mmc: Controller is now re-enabled.
-Sep 28 23:12:39 aragorn kernel: mmc0: card 8879 removed
-Sep 28 23:12:39 aragorn kernel: MMC: killing requests for dead queue
-Sep 28 23:12:39 aragorn kernel: ACPI handle has no context!
-Sep 28 23:12:39 aragorn kernel: sdhci-pci 0000:02:06.2: PCI INT C disabled
-Sep 28 23:12:39 aragorn kernel: ACPI handle has no context!
-Sep 28 23:12:39 aragorn kernel: ACPI handle has no context!
-Sep 28 23:12:39 aragorn kernel: iwlagn 0000:10:00.0: PCI INT A disabled
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: ata2: port disabled. ignoring.
-Sep 28 23:12:39 aragorn kernel: ata_piix 0000:00:1f.1: PCI INT A disabled
-Sep 28 23:12:39 aragorn kernel: ehci_hcd 0000:00:1d.7: PCI INT A disabled
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: uhci_hcd 0000:00:1d.2: PCI INT C disabled
-Sep 28 23:12:39 aragorn kernel: uhci_hcd 0000:00:1d.1: PCI INT B disabled
-Sep 28 23:12:39 aragorn kernel: uhci_hcd 0000:00:1d.0: PCI INT A disabled
-Sep 28 23:12:39 aragorn kernel: HDA Intel 0000:00:1b.0: PCI INT A disabled
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: HDA Intel 0000:00:1b.0: power state changed by ACPI to D3
-Sep 28 23:12:39 aragorn kernel: ehci_hcd 0000:00:1a.7: PCI INT C disabled
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: uhci_hcd 0000:00:1a.1: PCI INT B disabled
-Sep 28 23:12:39 aragorn kernel: uhci_hcd 0000:00:1a.0: PCI INT A disabled
-Sep 28 23:12:39 aragorn kernel: ACPI handle has no context!
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Controller never released inhibit bit(s).
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x2 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x4 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: mmc0: Reset 0x1 never completed.
-Sep 28 23:12:39 aragorn kernel: sdhci: ============== REGISTER DUMP ==============
-Sep 28 23:12:39 aragorn kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-Sep 28 23:12:39 aragorn kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-Sep 28 23:12:39 aragorn kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-Sep 28 23:12:39 aragorn kernel: sdhci: ===========================================
-Sep 28 23:12:39 aragorn kernel: ACPI: Preparing to enter system sleep state S3
-Sep 28 23:12:39 aragorn kernel: Disabling non-boot CPUs ...
-Sep 28 23:12:39 aragorn kernel: CPU 1 is now offline
-Sep 28 23:12:39 aragorn kernel: SMP alternatives: switching to UP code
-Sep 28 23:12:39 aragorn kernel: CPU0 attaching NULL sched-domain.
-Sep 28 23:12:39 aragorn kernel: CPU1 attaching NULL sched-domain.
-Sep 28 23:12:39 aragorn kernel: CPU0 attaching NULL sched-domain.
-Sep 28 23:12:39 aragorn kernel: CPU1 is down
+Thanks for the clarification.    I moved this thread to the FUSE list, but
+to be honest, it sounds like FUSE is not the way to go.    Free BSD sounds
+like the way to go moving forward for these areas.
 
-Messages from kern.log during resume:
-Sep 28 23:12:39 aragorn kernel: sdhci-pci 0000:02:06.2: restoring config space at offset 0xf (was 0x300, writing 0x30a)
-Sep 28 23:12:39 aragorn kernel: sdhci-pci 0000:02:06.2: restoring config space at offset 0x4 (was 0x0, writing 0xe0102000)
-Sep 28 23:12:39 aragorn kernel: sdhci-pci 0000:02:06.2: restoring config space at offset 0x3 (was 0x800000, writing 0x804010)
-Sep 28 23:12:39 aragorn kernel: sdhci-pci 0000:02:06.2: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100006)
-Sep 28 23:12:39 aragorn kernel: sdhci-pci 0000:02:06.2: PCI INT C -> GSI 20 (level, low) -> IRQ 20
-Sep 28 23:12:39 aragorn kernel: ricoh-mmc: Resuming.
-Sep 28 23:12:39 aragorn kernel: ricoh-mmc: Controller is now disabled.
-Sep 28 23:12:39 aragorn kernel: sd 0:0:0:0: [sda] Starting disk
-Sep 28 23:12:39 aragorn kernel: mmc0: new SD card at address 8879
-Sep 28 23:12:39 aragorn kernel: mmc mmc0:8879: parent mmc0 should not be sleeping
-Sep 28 23:12:39 aragorn kernel: mmcblk0: mmc0:8879 SU02G 1985024KiB
-Sep 28 23:12:39 aragorn kernel:  mmcblk0: p1
+Thanks,
+
+Jeff
+
+
+
+
+
+>
+> 		    	    	  	      - Ted
+>
+
 
