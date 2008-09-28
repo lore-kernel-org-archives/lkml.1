@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYI1RDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYI1RLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbYI1RDc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 13:03:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYI1RDY
+	id S1753552AbYI1RLu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 13:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbYI1RLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 13:03:24 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:56441 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752123AbYI1RDX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 13:03:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=pJxcNP2dYPf+RtxzMeRg2fDNl5/FxFC2bQ9M5miJwJ3XX1W7lmKcK9SPih1B70M+iP
-         eoh2RDOkCiUrrsXbJONFPTkTkM5fwqQjJp6vgxSxnfrhgKHcOUigcn9RBnh5Y2AkQbhC
-         J7LJTznjxeBjVPbcd5N+KVshFkaKaxb/l3kEI=
-Date: Sun, 28 Sep 2008 19:03:16 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] kmemcheck updates (for -tip)
-Message-ID: <20080928170316.GA6893@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+	Sun, 28 Sep 2008 13:11:42 -0400
+Received: from sh.osrg.net ([192.16.179.4]:43603 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752371AbYI1RLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 13:11:42 -0400
+Date: Mon, 29 Sep 2008 02:11:38 +0900
+To: leon.woestenberg@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: scatterlist.c or dma_map_sg() should coalesce?
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <c384c5ea0809280847p6a7d2e9as1b2454142751a468@mail.gmail.com>
+References: <c384c5ea0809280847p6a7d2e9as1b2454142751a468@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080929021041R.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 28 Sep 2008 17:47:59 +0200
+"Leon Woestenberg" <leon.woestenberg@gmail.com> wrote:
 
-Here comes next batch of kmemcheck patches. Temporary work-around for
-x86_64 is to not track >4k pages. It would be nice to have this sorted
-out properly, but there is not enough time for me to look into it at
-the moment.
+> Hello,
+> 
+> in 2.6.27+, if I want to create a scatterlist of a large buffer in
+> virtual memory in a device driver, can I expect the scatterlist and/or
+> mapping API to provide me with a minimal list, each entry describing a
+> maximum bus-contiguous piece of memory? (i.e. can I assume coalescing
+> is done for me?).
 
-The following changes since commit 4b7f562ea9736b8b111ffeb60a7311075ce76849:
-  Ingo Molnar (1):
-        kmemcheck: build fix
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git for-tip
-
-Vegard Nossum (4):
-      kmemcheck: hide/show pages in each iteration of a REP instruction #2
-      kmemcheck: lazy checking for MOVS instructions
-      Revert "kmemcheck: use set_memory_4k() instead of disabling PSE"
-      x86: use REP MOVS instruction for memcpy if kmemcheck is enabled
-
- arch/x86/Makefile                 |    5 ++
- arch/x86/kernel/cpu/common.c      |    7 ++
- arch/x86/kernel/head_32.S         |    2 +-
- arch/x86/mm/init_32.c             |    2 +-
- arch/x86/mm/kmemcheck/kmemcheck.c |  127 +++++++++++++++++++++++++++++++++++--
- include/asm-x86/string_32.h       |    8 +++
- include/asm-x86/string_64.h       |    8 +++
- mm/kmemcheck.c                    |    8 +++
- 8 files changed, 159 insertions(+), 8 deletions(-)
-
-Thanks,
+No, it's not the job of dma_map_sg. Before dma_map_sg, physical
+continuous page frames in a scatter list are supposed be coalesced.
+For example, the block layer creates a scatter list in which physical
+continuous page frames are coalesced for SCSI drivers.
 
 
-Vegard
+> In 2.6.24, dma_map_sg() *may* coalesce, but doesn't do so for my
+> platform, so for optimal DMA transfers the device driver needs to
+> coalesce the list entries.
+
+With some of IOMMUs, dma_map_sg might coalesce virtual and physical
+continuous page frames. If 2.6.24 doesn't do for you, 2.6.27 doesn't
+too.
