@@ -1,110 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752067AbYI1PqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbYI1Pqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752067AbYI1PqM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 11:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbYI1PpL
+	id S1753750AbYI1Pqg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 11:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYI1PpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 11:45:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50825 "EHLO mx2.redhat.com"
+	Sun, 28 Sep 2008 11:45:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50834 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751087AbYI1PpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 11:45:07 -0400
+	id S1751409AbYI1PpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 11:45:10 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org
-Subject: [PATCH 00/25] KVM Updates for 2.6.28 merge window (part 3 of 3)
-Date: Sun, 28 Sep 2008 18:44:36 +0300
-Message-Id: <1222616701-1206-1-git-send-email-avi@redhat.com>
+Cc: kvm@vger.kernel.org, Sheng Yang <sheng.yang@intel.com>
+Subject: [PATCH 03/25] KVM: MMU: Modify kvm_shadow_walk.entry to accept u64 addr
+Date: Sun, 28 Sep 2008 18:44:39 +0300
+Message-Id: <1222616701-1206-4-git-send-email-avi@redhat.com>
+In-Reply-To: <1222616701-1206-1-git-send-email-avi@redhat.com>
+References: <1222616701-1206-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the third and last batch of the KVM updates for the 2.6.28 merge window.
+From: Sheng Yang <sheng.yang@intel.com>
 
-Linux 2.6.28 KVM will introduce support for pci device assignment and will
-improve overall emulation accuracy.
+EPT is 4 level by default in 32pae(48 bits), but the addr parameter
+of kvm_shadow_walk->entry() only accept unsigned long as virtual
+address, which is 32bit in 32pae. This result in SHADOW_PT_INDEX()
+overflow when try to fetch level 4 index.
 
-Amit Shah (1):
-  KVM: Device Assignment: Free device structures if IRQ allocation
-    fails
+Fix it by extend kvm_shadow_walk->entry() to accept 64bit addr in
+parameter.
 
-Avi Kivity (3):
-  KVM: Add statistics for guest irq injections
-  KVM: x86 emulator: fix jmp r/m64 instruction
-  MAINTAINERS: Update Avi Kivity's email address
+Signed-off-by: Sheng Yang <sheng.yang@intel.com>
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
+ arch/x86/kvm/mmu.c         |   10 +++++-----
+ arch/x86/kvm/paging_tmpl.h |    4 ++--
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-Ben-Ami Yassour (1):
-  KVM: Device Assignment with VT-d
-
-Guillaume Thouvenin (3):
-  KVM: x86 emulator: Add DstAcc operand type
-  KVM: x86 emulator: Add cmp al, imm and cmp ax, imm instructions
-    (ocodes 3c, 3d)
-  KVM: x86 emulator: Use DstAcc for 'and'
-
-Harvey Harrison (1):
-  KVM: x86.c make kvm_load_realmode_segment static
-
-Hollis Blanchard (1):
-  KVM: ppc: kvmppc_44x_shadow_release() does not require mmap_sem to be
-    locked
-
-Jan Kiszka (1):
-  KVM: VMX: Cleanup stalled INTR_INFO read
-
-Joerg Roedel (1):
-  add MAINTAINERS entry for the KVM AMD module
-
-Kay, Allen M (1):
-  VT-d: Changes to support KVM
-
-Marcelo Tosatti (4):
-  KVM: x86: do not execute halted vcpus
-  KVM: x86: unhalt vcpu0 on reset
-  KVM: opencode gfn_to_page in kvm_vm_fault
-  KVM: switch to get_user_pages_fast
-
-Mohammed Gamal (3):
-  KVM: x86 emulator: Add std and cld instructions (opcodes 0xfc-0xfd)
-  KVM: x86 emulator: Add in/out instructions (opcodes 0xe4-0xe7,
-    0xec-0xef)
-  KVM: x86 emulator: Add call near absolute instruction (opcode 0xff/2)
-
-Sheng Yang (4):
-  KVM: MMU: Modify kvm_shadow_walk.entry to accept u64 addr
-  x86: Move VMX MSRs to msr-index.h
-  KVM: VMX: Rename IA32_FEATURE_CONTROL bits
-  x86: Move FEATURE_CONTROL bits to msr-index.h
-
-Xiantao Zhang (1):
-  KVM: ia64: Implement kvm_arch_vcpu_ioctl_{set,get}_mpstate
-
- MAINTAINERS                                  |    9 +-
- arch/ia64/kvm/kvm-ia64.c                     |   37 ++++-
- arch/powerpc/kvm/44x_tlb.c                   |    8 -
- arch/x86/kvm/Makefile                        |    3 +
- arch/x86/kvm/i8254.c                         |    5 +-
- arch/x86/kvm/lapic.c                         |   16 +--
- arch/x86/kvm/mmu.c                           |   33 ++---
- arch/x86/kvm/paging_tmpl.h                   |   12 +-
- arch/x86/kvm/svm.c                           |    1 +
- arch/x86/kvm/vmx.c                           |   26 ++--
- arch/x86/kvm/vmx.h                           |   18 --
- arch/x86/kvm/vtd.c                           |  198 ++++++++++++++++++++++++
- arch/x86/kvm/x86.c                           |  215 +++++++++++++++-----------
- arch/x86/kvm/x86_emulate.c                   |  132 +++++++++++-----
- drivers/pci/dmar.c                           |    4 +-
- drivers/pci/intel-iommu.c                    |  116 +++++++++++++-
- drivers/pci/iova.c                           |    2 +-
- include/asm-x86/kvm_host.h                   |   24 +---
- include/asm-x86/msr-index.h                  |   19 +++
- {drivers/pci => include/linux}/intel-iommu.h |   11 ++
- {drivers/pci => include/linux}/iova.h        |    0
- include/linux/kvm.h                          |    3 +
- include/linux/kvm_host.h                     |   53 +++++++
- virt/kvm/kvm_main.c                          |   48 ++++--
- 24 files changed, 726 insertions(+), 267 deletions(-)
- create mode 100644 arch/x86/kvm/vtd.c
- rename {drivers/pci => include/linux}/intel-iommu.h (94%)
- rename {drivers/pci => include/linux}/iova.h (100%)
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 866d713..bce3e25 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -144,7 +144,7 @@ struct kvm_rmap_desc {
+ 
+ struct kvm_shadow_walk {
+ 	int (*entry)(struct kvm_shadow_walk *walk, struct kvm_vcpu *vcpu,
+-		     gva_t addr, u64 *spte, int level);
++		     u64 addr, u64 *spte, int level);
+ };
+ 
+ static struct kmem_cache *pte_chain_cache;
+@@ -941,7 +941,7 @@ static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
+ }
+ 
+ static int walk_shadow(struct kvm_shadow_walk *walker,
+-		       struct kvm_vcpu *vcpu, gva_t addr)
++		       struct kvm_vcpu *vcpu, u64 addr)
+ {
+ 	hpa_t shadow_addr;
+ 	int level;
+@@ -1270,7 +1270,7 @@ struct direct_shadow_walk {
+ 
+ static int direct_map_entry(struct kvm_shadow_walk *_walk,
+ 			    struct kvm_vcpu *vcpu,
+-			    gva_t addr, u64 *sptep, int level)
++			    u64 addr, u64 *sptep, int level)
+ {
+ 	struct direct_shadow_walk *walk =
+ 		container_of(_walk, struct direct_shadow_walk, walker);
+@@ -1289,7 +1289,7 @@ static int direct_map_entry(struct kvm_shadow_walk *_walk,
+ 
+ 	if (*sptep == shadow_trap_nonpresent_pte) {
+ 		pseudo_gfn = (addr & PT64_DIR_BASE_ADDR_MASK) >> PAGE_SHIFT;
+-		sp = kvm_mmu_get_page(vcpu, pseudo_gfn, addr, level - 1,
++		sp = kvm_mmu_get_page(vcpu, pseudo_gfn, (gva_t)addr, level - 1,
+ 				      1, ACC_ALL, sptep);
+ 		if (!sp) {
+ 			pgprintk("nonpaging_map: ENOMEM\n");
+@@ -1317,7 +1317,7 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t v, int write,
+ 		.pt_write = 0,
+ 	};
+ 
+-	r = walk_shadow(&walker.walker, vcpu, (gva_t)gfn << PAGE_SHIFT);
++	r = walk_shadow(&walker.walker, vcpu, gfn << PAGE_SHIFT);
+ 	if (r < 0)
+ 		return r;
+ 	return walker.pt_write;
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index b7064e1..b671f61 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -286,7 +286,7 @@ static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
+  * Fetch a shadow pte for a specific level in the paging hierarchy.
+  */
+ static int FNAME(shadow_walk_entry)(struct kvm_shadow_walk *_sw,
+-				    struct kvm_vcpu *vcpu, gva_t addr,
++				    struct kvm_vcpu *vcpu, u64 addr,
+ 				    u64 *sptep, int level)
+ {
+ 	struct shadow_walker *sw =
+@@ -326,7 +326,7 @@ static int FNAME(shadow_walk_entry)(struct kvm_shadow_walk *_sw,
+ 		metaphysical = 0;
+ 		table_gfn = gw->table_gfn[level - 2];
+ 	}
+-	shadow_page = kvm_mmu_get_page(vcpu, table_gfn, addr, level-1,
++	shadow_page = kvm_mmu_get_page(vcpu, table_gfn, (gva_t)addr, level-1,
+ 				       metaphysical, access, sptep);
+ 	if (!metaphysical) {
+ 		r = kvm_read_guest_atomic(vcpu->kvm, gw->pte_gpa[level - 2],
+-- 
+1.6.0.1
 
