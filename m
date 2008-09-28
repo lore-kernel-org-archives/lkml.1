@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbYI1E6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752556AbYI1FBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752052AbYI1E6u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 00:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbYI1E6l
+	id S1752556AbYI1FBR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 01:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbYI1FBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 00:58:41 -0400
-Received: from gw.goop.org ([64.81.55.164]:41823 "EHLO mail.goop.org"
+	Sun, 28 Sep 2008 01:01:04 -0400
+Received: from gw.goop.org ([64.81.55.164]:41846 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750859AbYI1E6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 00:58:41 -0400
-Message-ID: <48DF0EFA.1010904@goop.org>
-Date: Sat, 27 Sep 2008 21:58:34 -0700
+	id S1750767AbYI1FBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 01:01:03 -0400
+Message-ID: <48DF0F8D.3070302@goop.org>
+Date: Sat, 27 Sep 2008 22:01:01 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+To: akataria@vmware.com
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: Should irq_chip->mask disable percpu interrupts to all cpus,
- or just to this cpu?
-References: <48D94B64.3070004@goop.org> <20080924084558.GD5576@elte.hu> <m18wthna2f.fsf@frodo.ebiederm.org> <48DA8806.4060405@goop.org> <m1d4itl4ni.fsf@frodo.ebiederm.org> <20080927194424.GG18619@elte.hu>
-In-Reply-To: <20080927194424.GG18619@elte.hu>
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
+       Daniel Hecht <dhecht@vmware.com>,
+       "Jun.Nakajima@Intel.Com" <Jun.Nakajima@Intel.Com>,
+       Tim Deegan <Tim.Deegan@citrix.com>
+Subject: Re: Use CPUID to communicate with the hypervisor.
+References: <1222472815.29886.43.camel@alok-dev1>  <48DD860C.50809@goop.org> <1222485079.23825.13.camel@alok-dev1>
+In-Reply-To: <1222485079.23825.13.camel@alok-dev1>
 X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
->
->   
->> Jeremy Fitzhardinge <jeremy@goop.org> writes:
->>
->>     
->>> I found handle_percpu_irq() which addresses my concerns.  It doesn't
->>> attempt to mask the interrupt, takes no locks, and doesn't set or test
->>> IRQ_INPROGRESS in desc->status, so it will scale perfectly across
->>> multiple cpus.  It makes no changes to the desc structure, so there
->>> isn't even any cacheline bouncing.
->>>       
->> kstat_irqs.  Is arguably part of the irq structure.
->> And kstat_irqs is a major pain in my book.
->>
->> And for a rare event you have a cacheline read.
->> I don't think we are quite there yet but we really want to allocate
->> irq_desc on the right NUMA node in a multi socket system, to reduce
->> the cache miss times.
+Alok Kataria wrote:
+>> I think there's a move towards doing a scan for a signature, such as
+>> checking every 16 leaves after 0x40000000 for "a while" looking for
+>> interesting signatures, so that a hypervisor can support multiple ABIs
+>> at once.  Given this, it would be better to define a "Generic Hypervisor
+>> ABI" signature, and put all the related leaves together.
 >>     
 >
-> note that we already do _almost_ that in tip/irq/sparseirq. dyn_array[] 
-> will extend itself in a NUMA-aware fashion. (normal device irq_desc 
-> entries will be allocated via kmalloc)
->
-> what would be needed is to deallocate/reallocate irq_desc when the IRQ 
-> affinity is changed? (i.e. when a device is migrated to a specific NUMA 
-> node)
->
->   
->> Is it a big deal?  Probably not.  But I think it would be a bad idea 
->> to increasingly use infrastructure that will make it hard to optimize 
->> the code.
->>
->> Especially since the common case in high performance drivers is going 
->> to be, individually routable irq sources.  Having one queue per cpu 
->> and one irq per queue.  Which sounds like the same case you have.
->>     
->
-> agreed - the kstat_irqs cacheline bounce would show up in Xen benchmarks 
-> i'm sure.
+> Hmm interesting, do you have any pointers to this ?
 >   
 
-I've put that approach aside anyway, since I couldn't get it to work
-after a day of fiddling and I didn't want to waste too much time on it. 
-I've just restricted myself to avoiding the normal interrupt delivery
-path, and going direct from event channel to irq to desc->handler.
+No.  I think I saw a passing reference from Tim Deegan to it, but I
+couldn't find it again when I looked.
+
+> As far as live migration, for full-virt, we think that it should happen
+> invisibly to the guest.  So even if we move to a host with different TSC
+> frequency it should be the job of the hypervisor to still emulate the
+> old frequency. 
+>   
+
+Can the tsc be emulated without a performance hit, or does it trap into
+the hypervisor?
 
     J
