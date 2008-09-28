@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbYI1TfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYI1Tpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753166AbYI1TfL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 15:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYI1Te7
+	id S1753234AbYI1Tpt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 15:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYI1Tpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 15:34:59 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:15683 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751934AbYI1Te6 (ORCPT
+	Sun, 28 Sep 2008 15:45:40 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:47597 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751896AbYI1Tpj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 15:34:58 -0400
-X-BigFish: VPS-31(zz1432R98dR1805M1442J936fOzzzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K7X7PH-04-2AK-01
-Date: Sun, 28 Sep 2008 21:34:36 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 3/3] x86/iommu: use __GFP_ZERO instead of memset for GART
-Message-ID: <20080928193436.GA8386@amd.com>
-References: <1222337635-28285-1-git-send-email-joerg.roedel@amd.com> <1222337635-28285-4-git-send-email-joerg.roedel@amd.com> <20080925102012.GA13631@elte.hu> <20080925104212.GA27928@amd.com> <20080927181438.GF1108@elte.hu> <20080927181855.GA11147@elte.hu>
+	Sun, 28 Sep 2008 15:45:39 -0400
+Date: Sun, 28 Sep 2008 15:45:36 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: jmerkey@wolfmountaingroup.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [REQUEST] Clarification from Copyright Holders on
+	FUSE/NDISWRAPPER
+Message-ID: <20080928194536.GC8711@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
+References: <33521.166.70.238.43.1222622153.squirrel@webmail.wolfmountaingroup.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080927181855.GA11147@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 28 Sep 2008 19:34:36.0259 (UTC) FILETIME=[3D88B330:01C921A1]
+In-Reply-To: <33521.166.70.238.43.1222622153.squirrel@webmail.wolfmountaingroup.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 27, 2008 at 08:18:55PM +0200, Ingo Molnar wrote:
-> 
-> another thing:
-> 
-> How hard would it be to add an CONFIG_IOMMU_DEBUG option that forces as 
-> many DMA requests to go via the IOMMU as possible?
-> 
-> This slows things down of course so it's only for debugging - but it 
-> also makes sure that we utilize the IOMMU code to the maximum - which is 
-> not normally the case.
-> 
-> Would be nice to have it .config driven (default-disabled), so that 
-> -tip's randconfig testing can stumble upon it every now and then. I've 
-> got GART test-systems - this way we could find certain types of IOMMU 
-> breakages sooner.
+On Sun, Sep 28, 2008 at 11:15:53AM -0600, jmerkey@wolfmountaingroup.com wrote:
+> I have been involved in numerous discussions with a variety of folks,
+> including Bruce Perens regarding the new policy governing kernel drivers
+> created for specific hardware/features and the Linux Foundations position
+> on proprietary hardware drives.
 
-For AMD IOMMU I disabled the round-robin allocator to stress-test the
-code. This means that the address allocation bitmap is always traversed
-from the first bit. In consequence the TLB flushing is stressed a lot
-(both in hardware and software) because the same DMA addresses are used
-again and again. For testing I hardcoded it into the driver but I can
-also make it depend on CONFIG_IOMMU_DEBUG.
+The position statement on closed-source Linux Kernel Modules was
+deliberately not a "policy statement", nor did it talk about issues
+about what is or isn't legal.  This was deliberate.  Issues over
+whether or not the GPL covers binary modules fundamentally depend on
+individual legal jourisdictions' interpretations of copyright law and
+derivitive works, and that was something which the kernel developers
+who worked on the language of said joint position statement
+deliberately stayed away from that question.
 
-Joerg
+> The consensus opinion from Bruce and others seems to be that applications
+> that use normal system services on Linux do not appear to be involved in
+> GPL related issues.
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+If you need legal advice, you need to pay a lawyer to apply the facts
+of the your particular situation to the law, in a particular legal
+jourisdiction, and then give you official legal advice.  Opinions by
+kernel developers aren't particularly useful here, and is off-topic
+for this mailing list.
 
+The intent of the copyright owners is fairly clear; most of the kernel
+(exceptions are noted on a handful of source fils) is to be licensed
+under the terms of the GNU Public License, version 2.  There is
+another long-standing assertion by Linus in the COPYING file:
+
+   NOTE! This copyright does *not* cover user programs that use kernel
+ services by normal system calls - this is merely considered normal use
+ of the kernel, and does *not* fall under the heading of "derived work".
+ Also note that the GPL below is copyrighted by the Free Software
+ Foundation, but the instance of code that it refers to (the Linux
+ kernel) is copyrighted by me and others who actually wrote it.
+
+Given that FUSE drivers communicate to the kernel via /dev/fuse and
+normal system calls, you can draw your own conclusions.  (However,
+most FUSE userspace drivers do utilize libfuse, which available under
+an LGPLv2 license.  If you are using Windows-based source code, and
+linking it against an LGPLv2 license, there may be issues there as
+well.)
+
+All of this is not legal advice, however; if you want real legal
+advise, you need to ask a lawyer, not the FSF, and not LKML.
+
+		    	    	  	      - Ted
