@@ -1,37 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbYI1WX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbYI1Wil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753696AbYI1WX7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 18:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbYI1WXv
+	id S1753600AbYI1Wil (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 18:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYI1Wic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 18:23:51 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36896 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752813AbYI1WXu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 18:23:50 -0400
-Date: Sun, 28 Sep 2008 23:23:33 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Chris Li" <lkml@chrisli.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: irq 19: nobody cared
-Message-ID: <20080928232333.34c87ed0@lxorguk.ukuu.org.uk>
-In-Reply-To: <70318cbf0809191613u19ecc807j8911bc9a4ada50a2@mail.gmail.com>
-References: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com>
-	<20080919233808.64aa7539@lxorguk.ukuu.org.uk>
-	<70318cbf0809191613u19ecc807j8911bc9a4ada50a2@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 28 Sep 2008 18:38:32 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43223 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752778AbYI1Wic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 18:38:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: sdhci: Loads of scary messages during suspend/resume with SD card inserted
+Date: Mon, 29 Sep 2008 00:42:15 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx,
+       linux-pm@lists.linux-foundation.org
+References: <200809282146.57960.elendil@planet.nl> <200809282204.07696.elendil@planet.nl>
+In-Reply-To: <200809282204.07696.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809290042.16529.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Any thing I can do to help to identify the problem?
+On Sunday, 28 of September 2008, Frans Pop wrote:
+> On Sunday 28 September 2008, Frans Pop wrote:
+> > Whilst playing with it, I found the following messages in my logs
+> > during suspend. At the time the card was inserted, but nothing on it
+> > was mounted.
+> >
+> > There also seems to be a problem while resuming, especially:
+> > mmc mmc0:8879: parent mmc0 should not be sleeping
+> > More context at the bottom of the mail.
+> 
+> Forgot the most important bits.
+> 
+> Kernel is current git (2.6.27-rc7-106-g6ef190c), x86_64.
+> Laptop is running Debian amd64/unstable.
 
-Best is probably to file a bug report in bugzilla.kernel.org. These sort
-of things take a bit of pinning down and are often BIOS problems.
+The 'parent mmc0 should not be sleeping' message is a known problem with MMC.
+
+Thanks,
+Rafael
