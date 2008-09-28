@@ -1,96 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbYI1S6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbYI1TNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753042AbYI1S6a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 14:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbYI1S6W
+	id S1753206AbYI1TNp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 15:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbYI1TNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 14:58:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:42857 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbYI1S6W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 14:58:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding:sender;
-        b=b1v5IuuX3FsttsNJ2YRwzMImoyjb3J/LYSHCW61DnOgp3rs2Dpvab02z1bl1NMGGi9
-         1g7K2lbyW7C4DKPGWMiw5cGtqi/TtamAnp8th9R+hKYamc3eJh3eszisn2YVdKlQmFGe
-         OxaIES6C+rh+qe2RNURnCjUglXwGirLXJ/4g0=
-Date: Sun, 28 Sep 2008 21:58:15 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: "=?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker" <fweisbec@gmail.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: trace_pipe tentative fix
-Message-ID: <20080928215815.3a9aa355@daedalus.pq.iki.fi>
-In-Reply-To: <20080928201259.09bbac54@daedalus.pq.iki.fi>
-References: <48DD0347.5070008@gmail.com>
-	<20080927002121.0038cdfe@daedalus.pq.iki.fi>
-	<c62985530809270517g179f1d21nca05cf50b289b2f5@mail.gmail.com>
-	<20080928201259.09bbac54@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Sep 2008 15:13:36 -0400
+Received: from 8bytes.org ([88.198.83.132]:49940 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751152AbYI1TNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Sep 2008 15:13:35 -0400
+Date: Sun, 28 Sep 2008 21:13:33 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, Amit Shah <amit.shah@redhat.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       iommu@lists.linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
+       Ingo Molnar <mingo@redhat.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
+Message-ID: <20080928191333.GC26563@8bytes.org>
+References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <200809261326.19261.amit.shah@redhat.com> <20080926085924.GC27928@amd.com> <200809261619.51637.amit.shah@redhat.com> <20080926123243.GE27928@amd.com> <20080927001321.GI9118@il.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080927001321.GI9118@il.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Sep 2008 20:12:59 +0300
-Pekka Paalanen <pq@iki.fi> wrote:
-
-> If I understand you suggestion, it looks like the right thing to do.
-> Here is a tentative fix, which has not even been compile-tested.
+On Sat, Sep 27, 2008 at 03:13:21AM +0300, Muli Ben-Yehuda wrote:
+> On Fri, Sep 26, 2008 at 02:32:43PM +0200, Joerg Roedel wrote:
 > 
-> Is it so that the problem is triggered by consuming a trace entry
-> which does not produce any output? If that entry is all there is
-> in the ring at a time of a read call, then the last call to
-> trace_seq_to_user() returns -EBUSY, because there is nothing to
-> copy to user. What I failed to understand when I wrote that
-> piece of code, is that returning 0 means EOF. The only cases
-> when we do want to return an EOF are near the
-> 	while (trace_empty(iter)) {
-> loop.
+> > Ok, the allocation only matters for dma_alloc_coherent. Fujita
+> > introduced a generic software-based dma_alloc_coherent recently
+> > which you can use for that. I think implementing PVDMA into an own
+> > dma_ops backend and multiplex it using my patches introduces less
+> > overhead than an additional layer over the current dma_ops
+> > implementation.
 > 
-> Frederic, could you test the fix, and if it works, send it to Ingo?
+> I'm not sure what you have in mind, but I agree with Amit that
+> conceptually pvdma should be called after the guest's "native" dma_ops
+> have done their thing. This is not just for nommu, consider a guest
+> that is using an (emulated) hardware IOMMU, or that wants to use
+> swiotlb. We can't replicate their functionality in the pv_dma_ops
+> layer, we have to let them run first and then pass deal with whatever
+> we get back.
 
-Whoops, sret was left in a bad state. Here's a new one.
+I have something in mind what I discussed with Amit at the last KVM
+forum. The idea was not ready at the event but meanwhile it has matured
+a bit.
+I think we should try to build a paravirtualized IOMMU for KVM guests.
+It should work this way: We reserve a configurable amount of contiguous
+guest physical memory and map it dma contiguous using some kind of
+hardware IOMMU. This is possible with all hardare IOMMUs we have in the
+field by now, also Calgary and GART. The guest does dma_coherent
+allocations from this memory directly and is done. For map_single and map_sg
+the guest can do bounce buffering. We avoid nearly all pvdma hypercalls
+with this approach, keep guest swapping working and solve also the
+problems with device dma_masks and guest memory that is not contigous on
+the host side.
+For systems without any kind of hardware IOMMU we can extend the
+interface to support bounce buffering between host and guest (in this
+case we can not avoid the hypercalls). This means that the host
+reserves the memory for the DMA transaction (also recognizing the
+dma_mask) and copies it from/to the guest directly upon the dma_*_sync
+calls.
+This is what I have in mind and want to propose. Maybe we can discuss
+these ideas here. I think since there are many systems out there with
+some kind of hardware IOMMUs (every 64bit AMD processor has a GART) we
+should really consider this approach.
 
----
+> > Another two questions to your approach: What happens if a
+> > dma_alloc_coherent allocation crosses page boundarys and the gpa's
+> > are not contiguous in host memory? How will dma masks be handled?
+> 
+> That's a very good question. The host will need to be aware of a
+> device's DMA capabilities in order to return I/O addresses (which
+> could be hpa's if you don't have an IOMMU) that satisfy them. That's
+> quite a pain.
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 6ada059..16b8a22 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2605,7 +2605,6 @@ tracing_read_pipe(struct file *filp, char __user *ubuf,
-        sret = trace_seq_to_user(&iter->seq, ubuf, cnt);
-        if (sret != -EBUSY)
-                return sret;
--       sret = 0;
- 
-        trace_seq_reset(&iter->seq);
- 
-@@ -2616,6 +2615,8 @@ tracing_read_pipe(struct file *filp, char __user *ubuf,
-                        goto out;
-        }
- 
-+waitagain:
-+       sret = 0;
-        while (trace_empty(iter)) {
- 
-                if ((filp->f_flags & O_NONBLOCK)) {
-@@ -2749,8 +2750,13 @@ tracing_read_pipe(struct file *filp, char __user *ubuf,
-        sret = trace_seq_to_user(&iter->seq, ubuf, cnt);
-        if (iter->seq.readpos >= iter->seq.len)
-                trace_seq_reset(&iter->seq);
-+
-+       /*
-+        * If there was nothing to send to user, inspite of consuming trace
-+        * entries, go back to wait for more entries.
-+        */
-        if (sret == -EBUSY)
--               sret = 0;
-+               goto waitagain;
- 
- out:
-        mutex_unlock(&trace_types_lock);
+True. And I fear we don't get a simple and clean interface with this
+approach.
+
+Joerg
+
