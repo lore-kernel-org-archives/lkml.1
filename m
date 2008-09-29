@@ -1,79 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYI2DFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbYI2DV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbYI2DFq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 23:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYI2DFj
+	id S1753815AbYI2DV2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 23:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYI2DVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 23:05:39 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:42424 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721AbYI2DFi (ORCPT
+	Sun, 28 Sep 2008 23:21:20 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39016 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbYI2DVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 23:05:38 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <20080926152031.GA30831@x200.localdomain>
-	<alpine.LFD.1.10.0809260838120.3265@nehalem.linux-foundation.org>
-	<20080928141856.GG28946@ZenIV.linux.org.uk>
-	<Pine.LNX.4.64.0809282011020.1967@blonde.site>
-	<alpine.LFD.1.10.0809281350410.3265@nehalem.linux-foundation.org>
-Date: Sun, 28 Sep 2008 20:05:22 -0700
-In-Reply-To: <alpine.LFD.1.10.0809281350410.3265@nehalem.linux-foundation.org>
-	(Linus Torvalds's message of "Sun, 28 Sep 2008 13:55:29 -0700 (PDT)")
-Message-ID: <m1hc7zabyl.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Linus Torvalds <torvalds@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.0542]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: 2.6.27-rc7-sha1: EIP at proc_sys_compare+0x36/0x50
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Sun, 28 Sep 2008 23:21:19 -0400
+Date: Mon, 29 Sep 2008 12:27:51 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp, YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+Subject: Re: [PATCH 0/12] memcg updates v5
+Message-Id: <20080929122751.611451fc.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48E0452F.4080300@linux.vnet.ibm.com>
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
+	<48DC9AF2.1050101@linux.vnet.ibm.com>
+	<20080926182253.a62cc2d0.kamezawa.hiroyu@jp.fujitsu.com>
+	<48DCAC02.5050108@linux.vnet.ibm.com>
+	<20080926193602.6b397910.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080927121917.9058a41e.kamezawa.hiroyu@jp.fujitsu.com>
+	<48E0452F.4080300@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Mon, 29 Sep 2008 08:32:07 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> I actually like my second patch better - it looks simpler, and it means 
-> that the rules for filesystems using d_compare() are a bit clearer: at 
-> least we'll only pass them dentries to look at that haven't gone through 
-> d_drop (and we do hold dentry->d_lock that serializes all of that).
->
-> So here it is again (I sent it out just minutes ago, but you weren't on 
-> that cc, you must have picked this up off the kernel list)
->
-> NOTE! Totally untested patch! It looks sane and really obvious, but maybe 
-> it has some insane and non-obvious bug.
+> KAMEZAWA Hiroyuki wrote:
+> > On Fri, 26 Sep 2008 19:36:02 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > 
+> >>> I think (1) might be OK, except for the accounting issues pointed out (change in
+> >>> behaviour visible to end user again, sigh! :( ).
+> >> But it was just a BUG from my point of view...
+> >>
+> >>> Is (1) a serious issue? 
+> >> considering force_empty(), it's serious.
+> >>
+> >>> (2) seems OK, except for the locking change for mark_page_accessed. I am looking at
+> >>> (4) and (6) currently.
+> >>>
+> > 
+> > I'll do in following way in the next Monday.
+> > Divide patches into 2 set
+> > 
+> > in early fix/optimize set.
+> >   - push (2)
+> >   - push (4)
+> >   - push (6)
+> >   - push (1)
+> > 
+> 
+> Yes, sounds reasonable
+> 
+I'll just post this, today. 
 
-We definitely have a race between d_kill setting dentry->d_inode = NULL
-and proc_sys_compare reading d_inode. 
+> > drops (3).
+> > 
+> > I don't want to remove all? pages-never-on-LRU before fixing force_empty.
+> > 
+> > in updates
+> >   - introduce atomic flags. (5)
+> >   - add move_account() function (7)
+> 
+> without (3), don't we have a problem pushing (7)?
+> 
+I'll add -EBUSY behavior to force_empty.
+I'm now adding(merging) code to move_account.patch for supporing force_empty.
+It seems much clearer than v5.
 
-We don't generate negative dentries for /proc/sys.
 
-In dput atomic_dec_and_lock takes the lock before setting the count to 0.
-So there is no race there.
+> >   - add memory.attribute to each memcg dir. (NEW)
+> >   - enhance force_empty (was (8))
+> >        - remove "forget all" logic. and add attribute to select following 2 behavior
+> >           - call try_to_free_page() until the usage goes down to 0.
+> >             This allows faiulre (if page is mlocked, we can't do.). (NEW)
+> >           - call move_account() to move all charges to its parent (as much as possible) (NEW)
+> >           In future, I'd liket to add trash-box cgroup for force_empty somewhere.
+> >   - allocate all page cgroup at boot (9)
+> >   - lazy lru free/add (10,11) with fixes.
+> >   - fix race at charging swap. (12)
+> > 
+> 
+> I think (9) is probably the most important. I'll review it today
+> 
+Thanks. no major changes in my current stack from already posted one.
 
-Testing for d_unhashed and getting us out of rcu limbo before calling
-into the filesystem methods makes the reasoning a lot clearer.
+Thanks,
+-Kame
 
-
-Looks good to me.
-
-Reviewed-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> > After (9), all page and page_cgroup has one-to-one releationship and we want to
+> > assume that "if page is alive and on LRU, it's accounted and has page_cgroup."
+> > (other team, bio cgroup want to use page_cgroup and I want to make it easy.)
+> > 
+> > For this, fix to behavior of force_empty..."forget all" is necessary.
+> > SwapCache handling is also necessary but I'd like to postpone until next set
+> > because it's complicated.
+> > 
+> > After above all.
+> >  - handle swap cache 
+> >  - Mem+Swap controller.
+> >  - add trashbox feature ?
+> >  - add memory.shrink_usage_to file.
+> > 
+> > It's long way to what I really want to do....
+> > 
+> 
+> Yes a long way to go, I want to add
+> 
+> 1) Multi-hierarchy support
+> 2) Support for soft-limits
+> 3) get swappiness working (there are patches posted for it by Yamamoto-San, but
+> something is broken, I suspect even in global swappiness).
+> 
+> 
+> 
+> > 
+> > Thanks,
+> > -Kame
+> 
+> 
+> -- 
+> 	Balbir
+> 
 
