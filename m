@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbYI2SHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754587AbYI2SIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbYI2SHg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 14:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbYI2SDL
+	id S1754587AbYI2SIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 14:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbYI2SDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 14:03:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58617 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753667AbYI2SCw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 14:03:16 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:54322 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753964AbYI2SCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 29 Sep 2008 14:02:52 -0400
-Message-Id: <20080929180251.633894000@polaris-admin.engr.sgi.com>
+Message-Id: <20080929180252.051945000@polaris-admin.engr.sgi.com>
 References: <20080929180250.111209000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 29 Sep 2008 11:03:01 -0700
+Date: Mon, 29 Sep 2008 11:03:04 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -21,757 +20,732 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        David Miller <davem@davemloft.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
        Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 11/31] cpumask: remove set_cpus_allowed_ptr
-Content-Disposition: inline; filename=set_cpus_allowed_ptr
+Subject: [PATCH 14/31] cpumask: change first/next_cpu to cpus_first/next
+Content-Disposition: inline; filename=first-next_cpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-of-by: Mike Travis <travis@sgi.com>
 ---
- arch/x86/kernel/acpi/cstate.c                    |    4 ++--
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c       |   12 ++++++------
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c        |   20 ++++++++++----------
- arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   12 ++++++------
- arch/x86/kernel/cpu/cpufreq/speedstep-ich.c      |   12 ++++++------
- arch/x86/kernel/cpu/intel_cacheinfo.c            |    4 ++--
- arch/x86/kernel/cpu/mcheck/mce_amd_64.c          |    4 ++--
- arch/x86/kernel/microcode_core.c                 |   12 ++++++------
- arch/x86/kernel/reboot.c                         |    2 +-
- drivers/acpi/processor_throttling.c              |   10 +++++-----
- drivers/firmware/dcdbas.c                        |    4 ++--
- drivers/misc/sgi-xp/xpc_main.c                   |    2 +-
- drivers/pci/pci-driver.c                         |    4 ++--
- include/linux/sched.h                            |   12 ++++--------
- init/main.c                                      |    2 +-
- kernel/cpu.c                                     |    4 ++--
- kernel/cpuset.c                                  |    4 ++--
- kernel/kmod.c                                    |    2 +-
- kernel/kthread.c                                 |    4 ++--
- kernel/rcutorture.c                              |   10 +++++-----
- kernel/sched.c                                   |   12 ++++++------
- kernel/trace/trace_sysprof.c                     |    4 ++--
- mm/pdflush.c                                     |    2 +-
- mm/vmscan.c                                      |    4 ++--
- net/sunrpc/svc.c                                 |    4 ++--
- 25 files changed, 81 insertions(+), 85 deletions(-)
+ arch/x86/kernel/acpi/boot.c                |    2 -
+ arch/x86/kernel/apic.c                     |    2 -
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    4 +--
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c  |    6 ++---
+ arch/x86/kernel/cpu/intel_cacheinfo.c      |    4 +--
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c    |    2 -
+ arch/x86/kernel/cpu/proc.c                 |    4 +--
+ arch/x86/kernel/genapic_flat_64.c          |    4 +--
+ arch/x86/kernel/genx2apic_cluster.c        |    6 ++---
+ arch/x86/kernel/genx2apic_phys.c           |    6 ++---
+ arch/x86/kernel/genx2apic_uv_x.c           |    4 +--
+ arch/x86/kernel/io_apic.c                  |    2 -
+ arch/x86/kernel/smpboot.c                  |    2 -
+ arch/x86/mm/mmio-mod.c                     |    2 -
+ arch/x86/oprofile/op_model_p4.c            |    2 -
+ drivers/infiniband/hw/ehca/ehca_irq.c      |    4 +--
+ drivers/parisc/iosapic.c                   |    2 -
+ drivers/xen/events.c                       |    2 -
+ include/asm-x86/bigsmp/apic.h              |    4 +--
+ include/asm-x86/es7000/apic.h              |    6 ++---
+ include/asm-x86/summit/apic.h              |    8 +++----
+ include/asm-x86/topology.h                 |    4 +--
+ kernel/cpu.c                               |    6 ++---
+ kernel/power/poweroff.c                    |    2 -
+ kernel/sched.c                             |   32 ++++++++++++++---------------
+ kernel/sched_rt.c                          |    2 -
+ kernel/smp.c                               |    2 -
+ kernel/stop_machine.c                      |    2 -
+ kernel/time/clocksource.c                  |   11 +++++----
+ kernel/time/tick-broadcast.c               |    2 -
+ kernel/time/tick-common.c                  |    2 -
+ kernel/workqueue.c                         |    2 -
+ net/core/dev.c                             |    4 +--
+ net/iucv/iucv.c                            |    4 +--
+ 34 files changed, 77 insertions(+), 76 deletions(-)
 
---- struct-cpumasks.orig/arch/x86/kernel/acpi/cstate.c
-+++ struct-cpumasks/arch/x86/kernel/acpi/cstate.c
-@@ -91,7 +91,7 @@ int acpi_processor_ffh_cstate_probe(unsi
+--- struct-cpumasks.orig/arch/x86/kernel/acpi/boot.c
++++ struct-cpumasks/arch/x86/kernel/acpi/boot.c
+@@ -564,7 +564,7 @@ static int __cpuinit _acpi_map_lsapic(ac
+ 		return -EINVAL;
+ 	}
  
- 	/* Make sure we are running on right CPU */
- 	saved_mask = current->cpus_allowed;
--	retval = set_cpus_allowed_ptr(current, cpumask_of_cpu(cpu));
-+	retval = set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 	if (retval)
- 		return -1;
+-	cpu = first_cpu(new_map);
++	cpu = cpus_first(new_map);
  
-@@ -128,7 +128,7 @@ int acpi_processor_ffh_cstate_probe(unsi
- 		 cx->address);
+ 	*pcpu = cpu;
+ 	return 0;
+--- struct-cpumasks.orig/arch/x86/kernel/apic.c
++++ struct-cpumasks/arch/x86/kernel/apic.c
+@@ -1857,7 +1857,7 @@ void __cpuinit generic_processor_info(in
  
- out:
--	set_cpus_allowed_ptr(current, &saved_mask);
-+	set_cpus_allowed(current, &saved_mask);
- 	return retval;
- }
- EXPORT_SYMBOL_GPL(acpi_processor_ffh_cstate_probe);
+ 	num_processors++;
+ 	cpus_complement(tmp_map, cpu_present_map);
+-	cpu = first_cpu(tmp_map);
++	cpu = cpus_first(tmp_map);
+ 
+ 	physid_set(apicid, phys_cpu_present_map);
+ 	if (apicid == boot_cpu_physical_apicid) {
 --- struct-cpumasks.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
 +++ struct-cpumasks/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -192,9 +192,9 @@ static void drv_read(struct drv_cmd *cmd
- 	cpumask_t saved_mask = current->cpus_allowed;
- 	cmd->val = 0;
+@@ -219,14 +219,14 @@ static u32 get_cur_val(const cpumask_t *
+ 	if (unlikely(cpus_empty(*mask)))
+ 		return 0;
  
--	set_cpus_allowed_ptr(current, &cmd->mask);
-+	set_cpus_allowed(current, &cmd->mask);
- 	do_drv_read(cmd);
--	set_cpus_allowed_ptr(current, &saved_mask);
-+	set_cpus_allowed(current, &saved_mask);
- }
- 
- static void drv_write(struct drv_cmd *cmd)
-@@ -203,11 +203,11 @@ static void drv_write(struct drv_cmd *cm
- 	unsigned int i;
- 
- 	for_each_cpu_mask(i, cmd->mask) {
--		set_cpus_allowed_ptr(current, cpumask_of_cpu(i));
-+		set_cpus_allowed(current, cpumask_of_cpu(i));
- 		do_drv_write(cmd);
- 	}
- 
--	set_cpus_allowed_ptr(current, &saved_mask);
-+	set_cpus_allowed(current, &saved_mask);
- 	return;
- }
- 
-@@ -271,7 +271,7 @@ static unsigned int get_measured_perf(un
- 	unsigned int retval;
- 
- 	saved_mask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(cpu));
-+	set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 	if (get_cpu() != cpu) {
- 		/* We were not able to run on requested processor */
- 		put_cpu();
-@@ -329,7 +329,7 @@ static unsigned int get_measured_perf(un
- 	retval = per_cpu(drv_data, cpu)->max_freq * perf_percent / 100;
- 
- 	put_cpu();
--	set_cpus_allowed_ptr(current, &saved_mask);
-+	set_cpus_allowed(current, &saved_mask);
- 
- 	dprintk("cpu %d: performance percent %d\n", cpu, perf_percent);
- 	return retval;
+-	switch (per_cpu(drv_data, first_cpu(*mask))->cpu_feature) {
++	switch (per_cpu(drv_data, cpus_first(*mask))->cpu_feature) {
+ 	case SYSTEM_INTEL_MSR_CAPABLE:
+ 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
+ 		cmd.addr.msr.reg = MSR_IA32_PERF_STATUS;
+ 		break;
+ 	case SYSTEM_IO_CAPABLE:
+ 		cmd.type = SYSTEM_IO_CAPABLE;
+-		perf = per_cpu(drv_data, first_cpu(*mask))->acpi_data;
++		perf = per_cpu(drv_data, cpus_first(*mask))->acpi_data;
+ 		cmd.addr.io.port = perf->control_register.address;
+ 		cmd.addr.io.bit_width = perf->control_register.bit_width;
+ 		break;
 --- struct-cpumasks.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
 +++ struct-cpumasks/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -480,7 +480,7 @@ static int check_supported_cpu(unsigned 
- 	unsigned int rc = 0;
+@@ -639,7 +639,7 @@ static int fill_powernow_table(struct po
  
- 	oldmask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(cpu));
-+	set_cpus_allowed(current, cpumask_of_cpu(cpu));
+ 	dprintk("cfid 0x%x, cvid 0x%x\n", data->currfid, data->currvid);
+ 	data->powernow_table = powernow_table;
+-	if (first_cpu(per_cpu(cpu_core_map, data->cpu)) == data->cpu)
++	if (cpus_first(per_cpu(cpu_core_map, data->cpu)) == data->cpu)
+ 		print_basics(data);
  
- 	if (smp_processor_id() != cpu) {
- 		printk(KERN_ERR PFX "limiting to cpu %u failed\n", cpu);
-@@ -525,7 +525,7 @@ static int check_supported_cpu(unsigned 
- 	rc = 1;
+ 	for (j = 0; j < data->numps; j++)
+@@ -793,7 +793,7 @@ static int powernow_k8_cpu_init_acpi(str
  
- out:
--	set_cpus_allowed_ptr(current, &oldmask);
-+	set_cpus_allowed(current, &oldmask);
- 	return rc;
- }
+ 	/* fill in data */
+ 	data->numps = data->acpi_data.state_count;
+-	if (first_cpu(per_cpu(cpu_core_map, data->cpu)) == data->cpu)
++	if (cpus_first(per_cpu(cpu_core_map, data->cpu)) == data->cpu)
+ 		print_basics(data);
+ 	powernow_k8_acpi_pst_values(data, 0);
  
-@@ -1027,7 +1027,7 @@ static int powernowk8_target(struct cpuf
+@@ -1244,7 +1244,7 @@ static unsigned int powernowk8_get (unsi
+ 	unsigned int khz = 0;
+ 	unsigned int first;
  
- 	/* only run on specific CPU from here on */
- 	oldmask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(pol->cpu));
-+	set_cpus_allowed(current, cpumask_of_cpu(pol->cpu));
+-	first = first_cpu(per_cpu(cpu_core_map, cpu));
++	first = cpus_first(per_cpu(cpu_core_map, cpu));
+ 	data = per_cpu(powernow_data, first);
  
- 	if (smp_processor_id() != pol->cpu) {
- 		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
-@@ -1082,7 +1082,7 @@ static int powernowk8_target(struct cpuf
- 	ret = 0;
- 
- err_out:
--	set_cpus_allowed_ptr(current, &oldmask);
-+	set_cpus_allowed(current, &oldmask);
- 	return ret;
- }
- 
-@@ -1153,7 +1153,7 @@ static int __cpuinit powernowk8_cpu_init
- 
- 	/* only run on specific CPU from here on */
- 	oldmask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(pol->cpu));
-+	set_cpus_allowed(current, cpumask_of_cpu(pol->cpu));
- 
- 	if (smp_processor_id() != pol->cpu) {
- 		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
-@@ -1172,7 +1172,7 @@ static int __cpuinit powernowk8_cpu_init
- 		fidvid_msr_init();
- 
- 	/* run on any CPU again */
--	set_cpus_allowed_ptr(current, &oldmask);
-+	set_cpus_allowed(current, &oldmask);
- 
- 	if (cpu_family == CPU_HW_PSTATE)
- 		pol->cpus = cpumask_of_cpu(pol->cpu);
-@@ -1213,7 +1213,7 @@ static int __cpuinit powernowk8_cpu_init
- 	return 0;
- 
- err_out:
--	set_cpus_allowed_ptr(current, &oldmask);
-+	set_cpus_allowed(current, &oldmask);
- 	powernow_k8_cpu_exit_acpi(data);
- 
- 	kfree(data);
-@@ -1250,11 +1250,11 @@ static unsigned int powernowk8_get (unsi
  	if (!data)
- 		return -EINVAL;
- 
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(cpu));
-+	set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 	if (smp_processor_id() != cpu) {
- 		printk(KERN_ERR PFX
- 			"limiting to CPU %d failed in powernowk8_get\n", cpu);
--		set_cpus_allowed_ptr(current, &oldmask);
-+		set_cpus_allowed(current, &oldmask);
- 		return 0;
- 	}
- 
-@@ -1269,7 +1269,7 @@ static unsigned int powernowk8_get (unsi
- 
- 
- out:
--	set_cpus_allowed_ptr(current, &oldmask);
-+	set_cpus_allowed(current, &oldmask);
- 	return khz;
- }
- 
---- struct-cpumasks.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-+++ struct-cpumasks/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-@@ -419,7 +419,7 @@ static unsigned int get_cur_freq(unsigne
- 	cpumask_t saved_mask;
- 
- 	saved_mask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(cpu));
-+	set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 	if (smp_processor_id() != cpu)
- 		return 0;
- 
-@@ -437,7 +437,7 @@ static unsigned int get_cur_freq(unsigne
- 		clock_freq = extract_clock(l, cpu, 1);
- 	}
- 
--	set_cpus_allowed_ptr(current, &saved_mask);
-+	set_cpus_allowed(current, &saved_mask);
- 	return clock_freq;
- }
- 
-@@ -611,7 +611,7 @@ static int centrino_target (struct cpufr
- 		else
- 			cpu_set(j, *set_mask);
- 
--		set_cpus_allowed_ptr(current, set_mask);
-+		set_cpus_allowed(current, set_mask);
- 		preempt_disable();
- 		if (unlikely(!cpu_isset(smp_processor_id(), *set_mask))) {
- 			dprintk("couldn't limit to CPUs in this domain\n");
-@@ -679,7 +679,7 @@ static int centrino_target (struct cpufr
- 
- 		if (!cpus_empty(*covered_cpus))
- 			for_each_cpu_mask(j, *covered_cpus) {
--				set_cpus_allowed_ptr(current,
-+				set_cpus_allowed(current,
- 						     cpumask_of_cpu(j));
- 				wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
- 			}
-@@ -693,13 +693,13 @@ static int centrino_target (struct cpufr
- 			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- 		}
- 	}
--	set_cpus_allowed_ptr(current, saved_mask);
-+	set_cpus_allowed(current, saved_mask);
- 	retval = 0;
- 	goto out;
- 
- migrate_end:
- 	preempt_enable();
--	set_cpus_allowed_ptr(current, saved_mask);
-+	set_cpus_allowed(current, saved_mask);
- out:
- 	CPUMASK_FREE(allmasks);
- 	return retval;
---- struct-cpumasks.orig/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
-+++ struct-cpumasks/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
-@@ -235,9 +235,9 @@ static unsigned int _speedstep_get(const
- 	cpumask_t cpus_allowed;
- 
- 	cpus_allowed = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpus);
-+	set_cpus_allowed(current, cpus);
- 	speed = speedstep_get_processor_frequency(speedstep_processor);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	set_cpus_allowed(current, &cpus_allowed);
- 	dprintk("detected %u kHz as current frequency\n", speed);
- 	return speed;
- }
-@@ -285,12 +285,12 @@ static int speedstep_target (struct cpuf
- 	}
- 
- 	/* switch to physical CPU where state is to be changed */
--	set_cpus_allowed_ptr(current, &policy->cpus);
-+	set_cpus_allowed(current, &policy->cpus);
- 
- 	speedstep_set_state(newstate);
- 
- 	/* allow to be run on all CPUs */
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	set_cpus_allowed(current, &cpus_allowed);
- 
- 	for_each_cpu_mask(i, policy->cpus) {
- 		freqs.cpu = i;
-@@ -326,7 +326,7 @@ static int speedstep_cpu_init(struct cpu
- #endif
- 
- 	cpus_allowed = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, &policy->cpus);
-+	set_cpus_allowed(current, &policy->cpus);
- 
- 	/* detect low and high frequency and transition latency */
- 	result = speedstep_get_freqs(speedstep_processor,
-@@ -334,7 +334,7 @@ static int speedstep_cpu_init(struct cpu
- 				     &speedstep_freqs[SPEEDSTEP_HIGH].frequency,
- 				     &policy->cpuinfo.transition_latency,
- 				     &speedstep_set_state);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	set_cpus_allowed(current, &cpus_allowed);
- 	if (result)
- 		return result;
- 
 --- struct-cpumasks.orig/arch/x86/kernel/cpu/intel_cacheinfo.c
 +++ struct-cpumasks/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -550,7 +550,7 @@ static int __cpuinit detect_cache_attrib
- 		return -ENOMEM;
+@@ -690,7 +690,7 @@ static struct pci_dev *get_k8_northbridg
  
- 	oldmask = current->cpus_allowed;
--	retval = set_cpus_allowed_ptr(current, cpumask_of_cpu(cpu));
-+	retval = set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 	if (retval)
- 		goto out;
+ static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
+ {
+-	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
++	int node = cpu_to_node(cpus_first(this_leaf->shared_cpu_map));
+ 	struct pci_dev *dev = NULL;
+ 	ssize_t ret = 0;
+ 	int i;
+@@ -724,7 +724,7 @@ static ssize_t
+ store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
+ 		    size_t count)
+ {
+-	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
++	int node = cpu_to_node(cpus_first(this_leaf->shared_cpu_map));
+ 	struct pci_dev *dev = NULL;
+ 	unsigned int ret, index, val;
  
-@@ -567,7 +567,7 @@ static int __cpuinit detect_cache_attrib
- 		}
- 		cache_shared_cpu_map_setup(cpu, j);
- 	}
--	set_cpus_allowed_ptr(current, &oldmask);
-+	set_cpus_allowed(current, &oldmask);
- 
- out:
- 	if (retval) {
 --- struct-cpumasks.orig/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
 +++ struct-cpumasks/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-@@ -257,12 +257,12 @@ static void affinity_set(unsigned int cp
- 	*oldmask = current->cpus_allowed;
- 	cpus_clear(*newmask);
- 	cpu_set(cpu, *newmask);
--	set_cpus_allowed_ptr(current, newmask);
-+	set_cpus_allowed(current, newmask);
- }
- 
- static void affinity_restore(const cpumask_t *oldmask)
- {
--	set_cpus_allowed_ptr(current, oldmask);
-+	set_cpus_allowed(current, oldmask);
- }
- 
- #define SHOW_FIELDS(name)                                           \
---- struct-cpumasks.orig/arch/x86/kernel/microcode_core.c
-+++ struct-cpumasks/arch/x86/kernel/microcode_core.c
-@@ -122,7 +122,7 @@ static int do_microcode_update(const voi
- 		if (!uci->valid)
- 			continue;
- 
--		set_cpus_allowed_ptr(current, cpumask_of_cpu(cpu));
-+		set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 		error = microcode_ops->request_microcode_user(cpu, buf, size);
- 		if (error < 0)
- 			goto out;
-@@ -130,7 +130,7 @@ static int do_microcode_update(const voi
- 			microcode_ops->apply_microcode(cpu);
- 	}
- out:
--	set_cpus_allowed_ptr(current, &old);
-+	set_cpus_allowed(current, &old);
- 	return error;
- }
- 
-@@ -222,7 +222,7 @@ static ssize_t reload_store(struct sys_d
- 
- 		get_online_cpus();
- 		if (cpu_online(cpu)) {
--			set_cpus_allowed_ptr(current, cpumask_of_cpu(cpu));
-+			set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 			mutex_lock(&microcode_mutex);
- 			if (uci->valid) {
- 				err = microcode_ops->request_microcode_fw(cpu,
-@@ -231,7 +231,7 @@ static ssize_t reload_store(struct sys_d
- 					microcode_ops->apply_microcode(cpu);
- 			}
- 			mutex_unlock(&microcode_mutex);
--			set_cpus_allowed_ptr(current, &old);
-+			set_cpus_allowed(current, &old);
- 		}
- 		put_online_cpus();
- 	}
-@@ -351,9 +351,9 @@ static void microcode_init_cpu(int cpu)
- {
- 	cpumask_t old = current->cpus_allowed;
- 
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(cpu));
-+	set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 	microcode_update_cpu(cpu);
--	set_cpus_allowed_ptr(current, &old);
-+	set_cpus_allowed(current, &old);
- }
- 
- static int mc_sysdev_add(struct sys_device *sys_dev)
---- struct-cpumasks.orig/arch/x86/kernel/reboot.c
-+++ struct-cpumasks/arch/x86/kernel/reboot.c
-@@ -431,7 +431,7 @@ void native_machine_shutdown(void)
- 		reboot_cpu_id = smp_processor_id();
- 
- 	/* Make certain I only run on the appropriate processor */
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(reboot_cpu_id));
-+	set_cpus_allowed(current, cpumask_of_cpu(reboot_cpu_id));
- 
- 	/* O.K Now that I'm on the appropriate processor,
- 	 * stop all of the others.
---- struct-cpumasks.orig/drivers/acpi/processor_throttling.c
-+++ struct-cpumasks/drivers/acpi/processor_throttling.c
-@@ -838,10 +838,10 @@ static int acpi_processor_get_throttling
- 	 * Migrate task to the cpu pointed by pr.
- 	 */
- 	saved_mask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(pr->id));
-+	set_cpus_allowed(current, cpumask_of_cpu(pr->id));
- 	ret = pr->throttling.acpi_processor_get_throttling(pr);
- 	/* restore the previous state */
--	set_cpus_allowed_ptr(current, &saved_mask);
-+	set_cpus_allowed(current, &saved_mask);
- 
- 	return ret;
- }
-@@ -1025,7 +1025,7 @@ int acpi_processor_set_throttling(struct
- 	 * it can be called only for the cpu pointed by pr.
- 	 */
- 	if (p_throttling->shared_type == DOMAIN_COORD_TYPE_SW_ANY) {
--		set_cpus_allowed_ptr(current, cpumask_of_cpu(pr->id));
-+		set_cpus_allowed(current, cpumask_of_cpu(pr->id));
- 		ret = p_throttling->acpi_processor_set_throttling(pr,
- 						t_state.target_state);
- 	} else {
-@@ -1056,7 +1056,7 @@ int acpi_processor_set_throttling(struct
- 				continue;
- 			}
- 			t_state.cpu = i;
--			set_cpus_allowed_ptr(current, cpumask_of_cpu(i));
-+			set_cpus_allowed(current, cpumask_of_cpu(i));
- 			ret = match_pr->throttling.
- 				acpi_processor_set_throttling(
- 				match_pr, t_state.target_state);
-@@ -1074,7 +1074,7 @@ int acpi_processor_set_throttling(struct
- 							&t_state);
- 	}
- 	/* restore the previous state */
--	set_cpus_allowed_ptr(current, &saved_mask);
-+	set_cpus_allowed(current, &saved_mask);
- 	return ret;
- }
- 
---- struct-cpumasks.orig/drivers/firmware/dcdbas.c
-+++ struct-cpumasks/drivers/firmware/dcdbas.c
-@@ -255,7 +255,7 @@ static int smi_request(struct smi_cmd *s
- 
- 	/* SMI requires CPU 0 */
- 	old_mask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(0));
-+	set_cpus_allowed(current, cpumask_of_cpu(0));
- 	if (smp_processor_id() != 0) {
- 		dev_dbg(&dcdbas_pdev->dev, "%s: failed to get CPU 0\n",
- 			__func__);
-@@ -275,7 +275,7 @@ static int smi_request(struct smi_cmd *s
- 	);
- 
- out:
--	set_cpus_allowed_ptr(current, &old_mask);
-+	set_cpus_allowed(current, &old_mask);
- 	return ret;
- }
- 
---- struct-cpumasks.orig/drivers/misc/sgi-xp/xpc_main.c
-+++ struct-cpumasks/drivers/misc/sgi-xp/xpc_main.c
-@@ -318,7 +318,7 @@ xpc_hb_checker(void *ignore)
- 
- 	/* this thread was marked active by xpc_hb_init() */
- 
--	set_cpus_allowed_ptr(current, cpumask_of_cpu(XPC_HB_CHECK_CPU));
-+	set_cpus_allowed(current, cpumask_of_cpu(XPC_HB_CHECK_CPU));
- 
- 	/* set our heartbeating to other partitions into motion */
- 	xpc_hb_check_timeout = jiffies + (xpc_hb_check_interval * HZ);
---- struct-cpumasks.orig/drivers/pci/pci-driver.c
-+++ struct-cpumasks/drivers/pci/pci-driver.c
-@@ -185,7 +185,7 @@ static int pci_call_probe(struct pci_dri
- 
- 	if (node >= 0) {
- 		node_to_cpumask_ptr(nodecpumask, node);
--		set_cpus_allowed_ptr(current, nodecpumask);
-+		set_cpus_allowed(current, nodecpumask);
- 	}
- 	/* And set default memory allocation policy */
- 	oldpol = current->mempolicy;
-@@ -193,7 +193,7 @@ static int pci_call_probe(struct pci_dri
- #endif
- 	error = drv->probe(dev, id);
- #ifdef CONFIG_NUMA
--	set_cpus_allowed_ptr(current, &oldmask);
-+	set_cpus_allowed(current, &oldmask);
- 	current->mempolicy = oldpol;
- #endif
- 	return error;
---- struct-cpumasks.orig/include/linux/sched.h
-+++ struct-cpumasks/include/linux/sched.h
-@@ -960,7 +960,7 @@ struct sched_class {
- 	void (*task_tick) (struct rq *rq, struct task_struct *p, int queued);
- 	void (*task_new) (struct rq *rq, struct task_struct *p);
- 	void (*set_cpus_allowed)(struct task_struct *p,
--				 const cpumask_t *newmask);
-+				 const cpumask_t newmask);
- 
- 	void (*rq_online)(struct rq *rq);
- 	void (*rq_offline)(struct rq *rq);
-@@ -1582,21 +1582,17 @@ extern cputime_t task_gtime(struct task_
- #define used_math() tsk_used_math(current)
+@@ -475,7 +475,7 @@ static __cpuinit int threshold_create_ba
  
  #ifdef CONFIG_SMP
--extern int set_cpus_allowed_ptr(struct task_struct *p,
-+extern int set_cpus_allowed(struct task_struct *p,
- 				const cpumask_t new_mask);
- #else
--static inline int set_cpus_allowed_ptr(struct task_struct *p,
-+static inline int set_cpus_allowed(struct task_struct *p,
- 				       const cpumask_t new_mask)
+ 	if (cpu_data(cpu).cpu_core_id && shared_bank[bank]) {	/* symlink */
+-		i = first_cpu(per_cpu(cpu_core_map, cpu));
++		i = cpus_first(per_cpu(cpu_core_map, cpu));
+ 
+ 		/* first core not up yet */
+ 		if (cpu_data(i).cpu_core_id)
+--- struct-cpumasks.orig/arch/x86/kernel/cpu/proc.c
++++ struct-cpumasks/arch/x86/kernel/cpu/proc.c
+@@ -159,7 +159,7 @@ static int show_cpuinfo(struct seq_file 
+ static void *c_start(struct seq_file *m, loff_t *pos)
  {
--	if (!cpu_isset(0, *new_mask))
-+	if (!cpu_isset(0, new_mask))
- 		return -EINVAL;
- 	return 0;
- }
- #endif
--static inline int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
--{
--	return set_cpus_allowed_ptr(p, new_mask);
--}
+ 	if (*pos == 0)	/* just in case, cpu 0 is not the first */
+-		*pos = first_cpu(cpu_online_map);
++		*pos = cpus_first(cpu_online_map);
+ 	if ((*pos) < nr_cpu_ids && cpu_online(*pos))
+ 		return &cpu_data(*pos);
+ 	return NULL;
+@@ -167,7 +167,7 @@ static void *c_start(struct seq_file *m,
  
- extern unsigned long long sched_clock(void);
- 
---- struct-cpumasks.orig/init/main.c
-+++ struct-cpumasks/init/main.c
-@@ -937,7 +937,7 @@ static int __init kernel_init(void * unu
- 	/*
- 	 * init can run on any cpu.
- 	 */
--	set_cpus_allowed_ptr(current, CPU_MASK_ALL_PTR);
-+	set_cpus_allowed(current, CPU_MASK_ALL_PTR);
- 	/*
- 	 * Tell the world that we're going to be the grim
- 	 * reaper of innocent orphaned children.
---- struct-cpumasks.orig/kernel/cpu.c
-+++ struct-cpumasks/kernel/cpu.c
-@@ -253,7 +253,7 @@ static int __ref _cpu_down(unsigned int 
- 	old_allowed = current->cpus_allowed;
- 	cpus_setall(tmp);
- 	cpu_clear(cpu, tmp);
--	set_cpus_allowed_ptr(current, &tmp);
-+	set_cpus_allowed(current, &tmp);
- 	tmp = cpumask_of_cpu(cpu);
- 
- 	err = __stop_machine(take_cpu_down, &tcd_param, &tmp);
-@@ -282,7 +282,7 @@ static int __ref _cpu_down(unsigned int 
- 	check_for_tasks(cpu);
- 
- out_allowed:
--	set_cpus_allowed_ptr(current, &old_allowed);
-+	set_cpus_allowed(current, &old_allowed);
- out_release:
- 	cpu_hotplug_done();
- 	if (!err) {
---- struct-cpumasks.orig/kernel/cpuset.c
-+++ struct-cpumasks/kernel/cpuset.c
-@@ -837,7 +837,7 @@ static int cpuset_test_cpumask(struct ta
- static void cpuset_change_cpumask(struct task_struct *tsk,
- 				  struct cgroup_scanner *scan)
+ static void *c_next(struct seq_file *m, void *v, loff_t *pos)
  {
--	set_cpus_allowed_ptr(tsk, &((cgroup_cs(scan->cg))->cpus_allowed));
-+	set_cpus_allowed(tsk, &((cgroup_cs(scan->cg))->cpus_allowed));
+-	*pos = next_cpu(*pos, cpu_online_map);
++	*pos = cpus_next(*pos, cpu_online_map);
+ 	return c_start(m, pos);
  }
  
- /**
-@@ -1330,7 +1330,7 @@ static void cpuset_attach(struct cgroup_
- 
- 	mutex_lock(&callback_mutex);
- 	guarantee_online_cpus(cs, &cpus);
--	err = set_cpus_allowed_ptr(tsk, &cpus);
-+	err = set_cpus_allowed(tsk, &cpus);
- 	mutex_unlock(&callback_mutex);
- 	if (err)
- 		return;
---- struct-cpumasks.orig/kernel/kmod.c
-+++ struct-cpumasks/kernel/kmod.c
-@@ -166,7 +166,7 @@ static int ____call_usermodehelper(void 
- 	}
- 
- 	/* We can run anywhere, unlike our parent keventd(). */
--	set_cpus_allowed_ptr(current, CPU_MASK_ALL_PTR);
-+	set_cpus_allowed(current, CPU_MASK_ALL_PTR);
- 
- 	/*
- 	 * Our parent is keventd, which runs with elevated scheduling priority.
---- struct-cpumasks.orig/kernel/kthread.c
-+++ struct-cpumasks/kernel/kthread.c
-@@ -107,7 +107,7 @@ static void create_kthread(struct kthrea
- 		 */
- 		sched_setscheduler(create->result, SCHED_NORMAL, &param);
- 		set_user_nice(create->result, KTHREAD_NICE_LEVEL);
--		set_cpus_allowed_ptr(create->result, CPU_MASK_ALL_PTR);
-+		set_cpus_allowed(create->result, CPU_MASK_ALL_PTR);
- 	}
- 	complete(&create->done);
+--- struct-cpumasks.orig/arch/x86/kernel/genapic_flat_64.c
++++ struct-cpumasks/arch/x86/kernel/genapic_flat_64.c
+@@ -222,7 +222,7 @@ static void physflat_send_IPI_all(int ve
+ 	physflat_send_IPI_mask(&cpu_online_map, vector);
  }
-@@ -238,7 +238,7 @@ int kthreadd(void *unused)
- 	set_task_comm(tsk, "kthreadd");
- 	ignore_signals(tsk);
- 	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
--	set_cpus_allowed_ptr(tsk, CPU_MASK_ALL_PTR);
-+	set_cpus_allowed(tsk, CPU_MASK_ALL_PTR);
  
- 	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
- 
---- struct-cpumasks.orig/kernel/rcutorture.c
-+++ struct-cpumasks/kernel/rcutorture.c
-@@ -858,27 +858,27 @@ static void rcu_torture_shuffle_tasks(vo
- 	if (rcu_idle_cpu != -1)
- 		cpu_clear(rcu_idle_cpu, tmp_mask);
- 
--	set_cpus_allowed_ptr(current, &tmp_mask);
-+	set_cpus_allowed(current, &tmp_mask);
- 
- 	if (reader_tasks) {
- 		for (i = 0; i < nrealreaders; i++)
- 			if (reader_tasks[i])
--				set_cpus_allowed_ptr(reader_tasks[i],
-+				set_cpus_allowed(reader_tasks[i],
- 						     &tmp_mask);
- 	}
- 
- 	if (fakewriter_tasks) {
- 		for (i = 0; i < nfakewriters; i++)
- 			if (fakewriter_tasks[i])
--				set_cpus_allowed_ptr(fakewriter_tasks[i],
-+				set_cpus_allowed(fakewriter_tasks[i],
- 						     &tmp_mask);
- 	}
- 
- 	if (writer_task)
--		set_cpus_allowed_ptr(writer_task, &tmp_mask);
-+		set_cpus_allowed(writer_task, &tmp_mask);
- 
- 	if (stats_task)
--		set_cpus_allowed_ptr(stats_task, &tmp_mask);
-+		set_cpus_allowed(stats_task, &tmp_mask);
- 
- 	if (rcu_idle_cpu == -1)
- 		rcu_idle_cpu = num_online_cpus() - 1;
---- struct-cpumasks.orig/kernel/sched.c
-+++ struct-cpumasks/kernel/sched.c
-@@ -5453,7 +5453,7 @@ long sched_setaffinity(pid_t pid, const 
- 	cpuset_cpus_allowed(p, &cpus_allowed);
- 	cpus_and(new_mask, new_mask, cpus_allowed);
-  again:
--	retval = set_cpus_allowed_ptr(p, &new_mask);
-+	retval = set_cpus_allowed(p, &new_mask);
- 
- 	if (!retval) {
- 		cpuset_cpus_allowed(p, &cpus_allowed);
-@@ -5970,7 +5970,7 @@ static inline void sched_init_granularit
-  * task must not exit() & deallocate itself prematurely. The
-  * call is not atomic; no spinlocks may be held.
-  */
--int set_cpus_allowed_ptr(struct task_struct *p, const cpumask_t *new_mask)
-+int set_cpus_allowed(struct task_struct *p, const cpumask_t new_mask)
+-static unsigned int physflat_cpu_mask_to_apicid(const cpumask_t *cpumask)
++static unsigned int physflat_cpu_mask_to_apicid(const cpumask_t cpumask)
  {
- 	struct migration_req req;
- 	unsigned long flags;
-@@ -5978,13 +5978,13 @@ int set_cpus_allowed_ptr(struct task_str
- 	int ret = 0;
- 
- 	rq = task_rq_lock(p, &flags);
--	if (!cpus_intersects(*new_mask, cpu_online_map)) {
-+	if (!cpus_intersects(new_mask, cpu_online_map)) {
- 		ret = -EINVAL;
- 		goto out;
- 	}
- 
- 	if (unlikely((p->flags & PF_THREAD_BOUND) && p != current &&
--		     !cpus_equal(p->cpus_allowed, *new_mask))) {
-+		     !cpus_equal(p->cpus_allowed, new_mask))) {
- 		ret = -EINVAL;
- 		goto out;
- 	}
-@@ -6013,7 +6013,7 @@ out:
- 
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(set_cpus_allowed_ptr);
-+EXPORT_SYMBOL_GPL(set_cpus_allowed);
- 
- /*
-  * Move (not current) task off this cpu, onto dest cpu. We're doing
-@@ -8011,7 +8011,7 @@ void __init sched_init_smp(void)
- 	init_hrtick();
- 
- 	/* Move init over to a non-isolated CPU */
--	if (set_cpus_allowed_ptr(current, &non_isolated_cpus) < 0)
-+	if (set_cpus_allowed(current, &non_isolated_cpus) < 0)
- 		BUG();
- 	sched_init_granularity();
- }
---- struct-cpumasks.orig/kernel/trace/trace_sysprof.c
-+++ struct-cpumasks/kernel/trace/trace_sysprof.c
-@@ -213,10 +213,10 @@ static void start_stack_timers(void)
  	int cpu;
  
- 	for_each_online_cpu(cpu) {
--		set_cpus_allowed_ptr(current, cpumask_of_cpu(cpu));
-+		set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 		start_stack_timer(cpu);
- 	}
--	set_cpus_allowed_ptr(current, &saved_mask);
-+	set_cpus_allowed(current, &saved_mask);
- }
- 
- static void stop_stack_timer(int cpu)
---- struct-cpumasks.orig/mm/pdflush.c
-+++ struct-cpumasks/mm/pdflush.c
-@@ -188,7 +188,7 @@ static int pdflush(void *dummy)
- 	 * The boottime pdflush's are easily placed w/o these 2 lines.
+@@ -230,7 +230,7 @@ static unsigned int physflat_cpu_mask_to
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
  	 */
- 	cpuset_cpus_allowed(current, &cpus_allowed);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	set_cpus_allowed(current, &cpus_allowed);
- 
- 	return __pdflush(&my_work);
+-	cpu = first_cpu(*cpumask);
++	cpu = cpus_first(cpumask);
+ 	if ((unsigned)cpu < nr_cpu_ids)
+ 		return per_cpu(x86_cpu_to_apicid, cpu);
+ 	else
+--- struct-cpumasks.orig/arch/x86/kernel/genx2apic_cluster.c
++++ struct-cpumasks/arch/x86/kernel/genx2apic_cluster.c
+@@ -93,7 +93,7 @@ static int x2apic_apic_id_registered(voi
+ 	return 1;
  }
---- struct-cpumasks.orig/mm/vmscan.c
-+++ struct-cpumasks/mm/vmscan.c
-@@ -1690,7 +1690,7 @@ static int kswapd(void *p)
- 	node_to_cpumask_ptr(cpumask, pgdat->node_id);
  
- 	if (!cpus_empty(*cpumask))
--		set_cpus_allowed_ptr(tsk, cpumask);
-+		set_cpus_allowed(tsk, cpumask);
- 	current->reclaim_state = &reclaim_state;
+-static unsigned int x2apic_cpu_mask_to_apicid(const cpumask_t *cpumask)
++static unsigned int x2apic_cpu_mask_to_apicid(const cpumask_t cpumask)
+ {
+ 	int cpu;
+ 
+@@ -101,8 +101,8 @@ static unsigned int x2apic_cpu_mask_to_a
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = first_cpu(*cpumask);
+-	if ((unsigned)cpu < NR_CPUS)
++	cpu = cpus_first(cpumask);
++	if ((unsigned)cpu < nr_cpu_ids)
+ 		return per_cpu(x86_cpu_to_logical_apicid, cpu);
+ 	else
+ 		return BAD_APICID;
+--- struct-cpumasks.orig/arch/x86/kernel/genx2apic_phys.c
++++ struct-cpumasks/arch/x86/kernel/genx2apic_phys.c
+@@ -90,7 +90,7 @@ static int x2apic_apic_id_registered(voi
+ 	return 1;
+ }
+ 
+-static unsigned int x2apic_cpu_mask_to_apicid(const cpumask_t *cpumask)
++static unsigned int x2apic_cpu_mask_to_apicid(const cpumask_t cpumask)
+ {
+ 	int cpu;
+ 
+@@ -98,8 +98,8 @@ static unsigned int x2apic_cpu_mask_to_a
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = first_cpu(*cpumask);
+-	if ((unsigned)cpu < NR_CPUS)
++	cpu = cpus_first(cpumask);
++	if ((unsigned)cpu < nr_cpu_ids)
+ 		return per_cpu(x86_cpu_to_apicid, cpu);
+ 	else
+ 		return BAD_APICID;
+--- struct-cpumasks.orig/arch/x86/kernel/genx2apic_uv_x.c
++++ struct-cpumasks/arch/x86/kernel/genx2apic_uv_x.c
+@@ -155,7 +155,7 @@ static void uv_init_apic_ldr(void)
+ {
+ }
+ 
+-static unsigned int uv_cpu_mask_to_apicid(const cpumask_t *cpumask)
++static unsigned int uv_cpu_mask_to_apicid(const cpumask_t cpumask)
+ {
+ 	int cpu;
+ 
+@@ -163,7 +163,7 @@ static unsigned int uv_cpu_mask_to_apici
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = first_cpu(*cpumask);
++	cpu = cpus_first(cpumask);
+ 	if ((unsigned)cpu < nr_cpu_ids)
+ 		return per_cpu(x86_cpu_to_apicid, cpu);
+ 	else
+--- struct-cpumasks.orig/arch/x86/kernel/io_apic.c
++++ struct-cpumasks/arch/x86/kernel/io_apic.c
+@@ -2202,7 +2202,7 @@ static int ioapic_retrigger_irq(unsigned
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&vector_lock, flags);
+-	send_IPI_mask(&cpumask_of_cpu(first_cpu(cfg->domain)), cfg->vector);
++	send_IPI_mask(cpumask_of_cpu(cpus_first(cfg->domain)), cfg->vector);
+ 	spin_unlock_irqrestore(&vector_lock, flags);
+ 
+ 	return 1;
+--- struct-cpumasks.orig/arch/x86/kernel/smpboot.c
++++ struct-cpumasks/arch/x86/kernel/smpboot.c
+@@ -488,7 +488,7 @@ void __cpuinit set_cpu_sibling_map(int c
+ 				 * for each core in package, increment
+ 				 * the booted_cores for this new cpu
+ 				 */
+-				if (first_cpu(per_cpu(cpu_sibling_map, i)) == i)
++				if (cpus_first(per_cpu(cpu_sibling_map, i)) == i)
+ 					c->booted_cores++;
+ 				/*
+ 				 * increment the core count for all
+--- struct-cpumasks.orig/arch/x86/mm/mmio-mod.c
++++ struct-cpumasks/arch/x86/mm/mmio-mod.c
+@@ -387,7 +387,7 @@ static void enter_uniprocessor(void)
+ 
+ 	get_online_cpus();
+ 	downed_cpus = cpu_online_map;
+-	cpu_clear(first_cpu(cpu_online_map), downed_cpus);
++	cpu_clear(cpus_first(cpu_online_map), downed_cpus);
+ 	if (num_online_cpus() > 1)
+ 		pr_notice(NAME "Disabling non-boot CPUs...\n");
+ 	put_online_cpus();
+--- struct-cpumasks.orig/arch/x86/oprofile/op_model_p4.c
++++ struct-cpumasks/arch/x86/oprofile/op_model_p4.c
+@@ -380,7 +380,7 @@ static unsigned int get_stagger(void)
+ {
+ #ifdef CONFIG_SMP
+ 	int cpu = smp_processor_id();
+-	return (cpu != first_cpu(per_cpu(cpu_sibling_map, cpu)));
++	return (cpu != cpus_first(per_cpu(cpu_sibling_map, cpu)));
+ #endif
+ 	return 0;
+ }
+--- struct-cpumasks.orig/drivers/infiniband/hw/ehca/ehca_irq.c
++++ struct-cpumasks/drivers/infiniband/hw/ehca/ehca_irq.c
+@@ -650,9 +650,9 @@ static inline int find_next_online_cpu(s
+ 		ehca_dmp(&cpu_online_map, sizeof(cpumask_t), "");
+ 
+ 	spin_lock_irqsave(&pool->last_cpu_lock, flags);
+-	cpu = next_cpu(pool->last_cpu, cpu_online_map);
++	cpu = cpus_next(pool->last_cpu, cpu_online_map);
+ 	if (cpu >= nr_cpu_ids)
+-		cpu = first_cpu(cpu_online_map);
++		cpu = cpus_first(cpu_online_map);
+ 	pool->last_cpu = cpu;
+ 	spin_unlock_irqrestore(&pool->last_cpu_lock, flags);
+ 
+--- struct-cpumasks.orig/drivers/parisc/iosapic.c
++++ struct-cpumasks/drivers/parisc/iosapic.c
+@@ -713,7 +713,7 @@ static void iosapic_set_affinity_irq(uns
+ 	if (cpu_check_affinity(irq, &dest))
+ 		return;
+ 
+-	vi->txn_addr = txn_affinity_addr(irq, first_cpu(dest));
++	vi->txn_addr = txn_affinity_addr(irq, cpus_first(dest));
+ 
+ 	spin_lock_irqsave(&iosapic_lock, flags);
+ 	/* d1 contains the destination CPU, so only want to set that
+--- struct-cpumasks.orig/drivers/xen/events.c
++++ struct-cpumasks/drivers/xen/events.c
+@@ -612,7 +612,7 @@ static void rebind_irq_to_cpu(unsigned i
+ 
+ static void set_affinity_irq(unsigned irq, cpumask_t dest)
+ {
+-	unsigned tcpu = first_cpu(dest);
++	unsigned tcpu = cpus_first(dest);
+ 	rebind_irq_to_cpu(irq, tcpu);
+ }
+ 
+--- struct-cpumasks.orig/include/asm-x86/bigsmp/apic.h
++++ struct-cpumasks/include/asm-x86/bigsmp/apic.h
+@@ -121,12 +121,12 @@ static inline int check_phys_apicid_pres
+ }
+ 
+ /* As we are using single CPU as destination, pick only one CPU here */
+-static inline unsigned int cpu_mask_to_apicid(const cpumask_t *cpumask)
++static inline unsigned int cpu_mask_to_apicid(const cpumask_t cpumask)
+ {
+ 	int cpu;
+ 	int apicid;	
+ 
+-	cpu = first_cpu(*cpumask);
++	cpu = cpus_first(cpumask);
+ 	apicid = cpu_to_logical_apicid(cpu);
+ 	return apicid;
+ }
+--- struct-cpumasks.orig/include/asm-x86/es7000/apic.h
++++ struct-cpumasks/include/asm-x86/es7000/apic.h
+@@ -144,7 +144,7 @@ static inline int check_phys_apicid_pres
+ 	return (1);
+ }
+ 
+-static inline unsigned int cpu_mask_to_apicid(const cpumask_t *cpumask)
++static inline unsigned int cpu_mask_to_apicid(const cpumask_t cpumask)
+ {
+ 	int num_bits_set;
+ 	int cpus_found = 0;
+@@ -163,10 +163,10 @@ static inline unsigned int cpu_mask_to_a
+ 	 * The cpus in the mask must all be on the apic cluster.  If are not
+ 	 * on the same apicid cluster return default value of TARGET_CPUS.
+ 	 */
+-	cpu = first_cpu(*cpumask);
++	cpu = cpus_first(cpumask);
+ 	apicid = cpu_to_logical_apicid(cpu);
+ 	while (cpus_found < num_bits_set) {
+-		if (cpu_isset(cpu, *cpumask)) {
++		if (cpu_isset(cpu, cpumask)) {
+ 			int new_apicid = cpu_to_logical_apicid(cpu);
+ 			if (apicid_cluster(apicid) !=
+ 					apicid_cluster(new_apicid)){
+--- struct-cpumasks.orig/include/asm-x86/summit/apic.h
++++ struct-cpumasks/include/asm-x86/summit/apic.h
+@@ -137,14 +137,14 @@ static inline void enable_apic_mode(void
+ {
+ }
+ 
+-static inline unsigned int cpu_mask_to_apicid(const cpumask_t *cpumask)
++static inline unsigned int cpu_mask_to_apicid(const cpumask_t cpumask)
+ {
+ 	int num_bits_set;
+ 	int cpus_found = 0;
+ 	int cpu;
+ 	int apicid;
+ 
+-	num_bits_set = cpus_weight(*cpumask);
++	num_bits_set = cpus_weight(cpumask);
+ 	/* Return id to all */
+ 	if (num_bits_set == NR_CPUS)
+ 		return (int) 0xFF;
+@@ -152,10 +152,10 @@ static inline unsigned int cpu_mask_to_a
+ 	 * The cpus in the mask must all be on the apic cluster.  If are not
+ 	 * on the same apicid cluster return default value of TARGET_CPUS.
+ 	 */
+-	cpu = first_cpu(*cpumask);
++	cpu = cpus_first(cpumask);
+ 	apicid = cpu_to_logical_apicid(cpu);
+ 	while (cpus_found < num_bits_set) {
+-		if (cpu_isset(cpu, *cpumask)) {
++		if (cpu_isset(cpu, cpumask)) {
+ 			int new_apicid = cpu_to_logical_apicid(cpu);
+ 			if (apicid_cluster(apicid) !=
+ 					apicid_cluster(new_apicid)){
+--- struct-cpumasks.orig/include/asm-x86/topology.h
++++ struct-cpumasks/include/asm-x86/topology.h
+@@ -196,7 +196,7 @@ static inline cpumask_t node_to_cpumask(
+ }
+ static inline int node_to_first_cpu(int node)
+ {
+-	return first_cpu(cpu_online_map);
++	return cpus_first(cpu_online_map);
+ }
+ 
+ /* Replace default node_to_cpumask_ptr with optimized version */
+@@ -214,7 +214,7 @@ static inline int node_to_first_cpu(int 
+ static inline int node_to_first_cpu(int node)
+ {
+ 	node_to_cpumask_ptr(mask, node);
+-	return first_cpu(*mask);
++	return cpus_first(*mask);
+ }
+ #endif
+ 
+--- struct-cpumasks.orig/kernel/cpu.c
++++ struct-cpumasks/kernel/cpu.c
+@@ -401,17 +401,17 @@ static cpumask_t frozen_cpus;
+ 
+ int disable_nonboot_cpus(void)
+ {
+-	int cpu, first_cpu, error = 0;
++	int cpu, cpus_first, error = 0;
+ 
+ 	cpu_maps_update_begin();
+-	first_cpu = first_cpu(cpu_online_map);
++	cpus_first = cpus_first(cpu_online_map);
+ 	/* We take down all of the non-boot CPUs in one shot to avoid races
+ 	 * with the userspace trying to use the CPU hotplug at the same time
+ 	 */
+ 	cpus_clear(frozen_cpus);
+ 	printk("Disabling non-boot CPUs ...\n");
+ 	for_each_online_cpu(cpu) {
+-		if (cpu == first_cpu)
++		if (cpu == cpus_first)
+ 			continue;
+ 		error = _cpu_down(cpu, 1);
+ 		if (!error) {
+--- struct-cpumasks.orig/kernel/power/poweroff.c
++++ struct-cpumasks/kernel/power/poweroff.c
+@@ -27,7 +27,7 @@ static DECLARE_WORK(poweroff_work, do_po
+ static void handle_poweroff(int key, struct tty_struct *tty)
+ {
+ 	/* run sysrq poweroff on boot cpu */
+-	schedule_work_on(first_cpu(cpu_online_map), &poweroff_work);
++	schedule_work_on(cpus_first(cpu_online_map), &poweroff_work);
+ }
+ 
+ static struct sysrq_key_op	sysrq_poweroff_op = {
+--- struct-cpumasks.orig/kernel/sched.c
++++ struct-cpumasks/kernel/sched.c
+@@ -3120,7 +3120,7 @@ find_busiest_group(struct sched_domain *
+ 		local_group = cpu_isset(this_cpu, group->cpumask);
+ 
+ 		if (local_group)
+-			balance_cpu = first_cpu(group->cpumask);
++			balance_cpu = cpus_first(group->cpumask);
+ 
+ 		/* Tally up the load of all CPUs in the group */
+ 		sum_weighted_load = sum_nr_running = avg_load = 0;
+@@ -3246,8 +3246,8 @@ find_busiest_group(struct sched_domain *
+ 		 */
+ 		if ((sum_nr_running < min_nr_running) ||
+ 		    (sum_nr_running == min_nr_running &&
+-		     first_cpu(group->cpumask) <
+-		     first_cpu(group_min->cpumask))) {
++		     cpus_first(group->cpumask) <
++		     cpus_first(group_min->cpumask))) {
+ 			group_min = group;
+ 			min_nr_running = sum_nr_running;
+ 			min_load_per_task = sum_weighted_load /
+@@ -3262,8 +3262,8 @@ find_busiest_group(struct sched_domain *
+ 		if (sum_nr_running <= group_capacity - 1) {
+ 			if (sum_nr_running > leader_nr_running ||
+ 			    (sum_nr_running == leader_nr_running &&
+-			     first_cpu(group->cpumask) >
+-			      first_cpu(group_leader->cpumask))) {
++			     cpus_first(group->cpumask) >
++			      cpus_first(group_leader->cpumask))) {
+ 				group_leader = group;
+ 				leader_nr_running = sum_nr_running;
+ 			}
+@@ -4001,7 +4001,7 @@ static inline void trigger_load_balance(
+ 			 * TBD: Traverse the sched domains and nominate
+ 			 * the nearest cpu in the nohz.cpu_mask.
+ 			 */
+-			int ilb = first_cpu(nohz.cpu_mask);
++			int ilb = cpus_first(nohz.cpu_mask);
+ 
+ 			if (ilb < nr_cpu_ids)
+ 				resched_cpu(ilb);
+@@ -7098,7 +7098,7 @@ cpu_to_core_group(int cpu, const cpumask
+ 
+ 	*mask = per_cpu(cpu_sibling_map, cpu);
+ 	cpus_and(*mask, *mask, *cpu_map);
+-	group = first_cpu(*mask);
++	group = cpus_first(*mask);
+ 	if (sg)
+ 		*sg = &per_cpu(sched_group_core, group);
+ 	return group;
+@@ -7125,11 +7125,11 @@ cpu_to_phys_group(int cpu, const cpumask
+ #ifdef CONFIG_SCHED_MC
+ 	*mask = cpu_coregroup_map(cpu);
+ 	cpus_and(*mask, *mask, *cpu_map);
+-	group = first_cpu(*mask);
++	group = cpus_first(*mask);
+ #elif defined(CONFIG_SCHED_SMT)
+ 	*mask = per_cpu(cpu_sibling_map, cpu);
+ 	cpus_and(*mask, *mask, *cpu_map);
+-	group = first_cpu(*mask);
++	group = cpus_first(*mask);
+ #else
+ 	group = cpu;
+ #endif
+@@ -7157,7 +7157,7 @@ static int cpu_to_allnodes_group(int cpu
+ 
+ 	*nodemask = node_to_cpumask(cpu_to_node(cpu));
+ 	cpus_and(*nodemask, *nodemask, *cpu_map);
+-	group = first_cpu(*nodemask);
++	group = cpus_first(*nodemask);
+ 
+ 	if (sg)
+ 		*sg = &per_cpu(sched_group_allnodes, group);
+@@ -7176,7 +7176,7 @@ static void init_numa_sched_groups_power
+ 			struct sched_domain *sd;
+ 
+ 			sd = &per_cpu(phys_domains, j);
+-			if (j != first_cpu(sd->groups->cpumask)) {
++			if (j != cpus_first(sd->groups->cpumask)) {
+ 				/*
+ 				 * Only add "power" once for each
+ 				 * physical package.
+@@ -7253,7 +7253,7 @@ static void init_sched_groups_power(int 
+ 
+ 	WARN_ON(!sd || !sd->groups);
+ 
+-	if (cpu != first_cpu(sd->groups->cpumask))
++	if (cpu != cpus_first(sd->groups->cpumask))
+ 		return;
+ 
+ 	child = sd->child;
+@@ -7430,7 +7430,7 @@ static int __build_sched_domains(const c
+ 
+ 
+ #ifdef CONFIG_NUMA
+-	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
++	sched_group_nodes_bycpu[cpus_first(*cpu_map)] = sched_group_nodes;
+ #endif
  
  	/*
-@@ -1928,7 +1928,7 @@ static int __devinit cpu_callback(struct
+@@ -7509,7 +7509,7 @@ static int __build_sched_domains(const c
  
- 			if (any_online_cpu(*mask) < nr_cpu_ids)
- 				/* One of our CPUs online: restore mask */
--				set_cpus_allowed_ptr(pgdat->kswapd, mask);
-+				set_cpus_allowed(pgdat->kswapd, mask);
+ 		*this_sibling_map = per_cpu(cpu_sibling_map, i);
+ 		cpus_and(*this_sibling_map, *this_sibling_map, *cpu_map);
+-		if (i != first_cpu(*this_sibling_map))
++		if (i != cpus_first(*this_sibling_map))
+ 			continue;
+ 
+ 		init_sched_build_groups(this_sibling_map, cpu_map,
+@@ -7526,7 +7526,7 @@ static int __build_sched_domains(const c
+ 
+ 		*this_core_map = cpu_coregroup_map(i);
+ 		cpus_and(*this_core_map, *this_core_map, *cpu_map);
+-		if (i != first_cpu(*this_core_map))
++		if (i != cpus_first(*this_core_map))
+ 			continue;
+ 
+ 		init_sched_build_groups(this_core_map, cpu_map,
+@@ -7660,7 +7660,7 @@ static int __build_sched_domains(const c
+ 	if (sd_allnodes) {
+ 		struct sched_group *sg;
+ 
+-		cpu_to_allnodes_group(first_cpu(*cpu_map), cpu_map, &sg,
++		cpu_to_allnodes_group(cpus_first(*cpu_map), cpu_map, &sg,
+ 								tmpmask);
+ 		init_numa_sched_groups_power(sg);
+ 	}
+--- struct-cpumasks.orig/kernel/sched_rt.c
++++ struct-cpumasks/kernel/sched_rt.c
+@@ -966,7 +966,7 @@ static inline int pick_optimal_cpu(int t
+ 	if ((this_cpu != -1) && cpu_isset(this_cpu, *mask))
+ 		return this_cpu;
+ 
+-	first = first_cpu(*mask);
++	first = cpus_first(*mask);
+ 	if (first != NR_CPUS)
+ 		return first;
+ 
+--- struct-cpumasks.orig/kernel/smp.c
++++ struct-cpumasks/kernel/smp.c
+@@ -342,7 +342,7 @@ int smp_call_function_mask(cpumask_t mas
+ 	if (!num_cpus)
+ 		return 0;
+ 	else if (num_cpus == 1) {
+-		cpu = first_cpu(mask);
++		cpu = cpus_first(mask);
+ 		return smp_call_function_single(cpu, func, info, wait);
+ 	}
+ 
+--- struct-cpumasks.orig/kernel/stop_machine.c
++++ struct-cpumasks/kernel/stop_machine.c
+@@ -127,7 +127,7 @@ int __stop_machine(int (*fn)(void *), vo
+ 		struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
+ 
+ 		if (!cpus) {
+-			if (i == first_cpu(cpu_online_map))
++			if (i == cpus_first(cpu_online_map))
+ 				smdata = &active;
+ 		} else {
+ 			if (cpu_isset(i, *cpus))
+--- struct-cpumasks.orig/kernel/time/clocksource.c
++++ struct-cpumasks/kernel/time/clocksource.c
+@@ -151,12 +151,13 @@ static void clocksource_watchdog(unsigne
+ 		 * Cycle through CPUs to check if the CPUs stay
+ 		 * synchronized to each other.
+ 		 */
+-		int next_cpu = next_cpu(raw_smp_processor_id(), cpu_online_map);
++		int next_cpu = cpus_next(raw_smp_processor_id(),
++					 cpu_online_map);
+ 
+ 		if (next_cpu >= nr_cpu_ids)
+-			next_cpu = first_cpu(cpu_online_map);
++			next_cpu = cpus_first(cpu_online_map);
+ 		watchdog_timer.expires += WATCHDOG_INTERVAL;
+-		add_timer_on(&watchdog_timer, next_cpu);
++		add_timer_on(&watchdog_timer, cpus_next);
+ 	}
+ 	spin_unlock(&watchdog_lock);
+ }
+@@ -179,7 +180,7 @@ static void clocksource_check_watchdog(s
+ 			watchdog_last = watchdog->read();
+ 			watchdog_timer.expires = jiffies + WATCHDOG_INTERVAL;
+ 			add_timer_on(&watchdog_timer,
+-				     first_cpu(cpu_online_map));
++				     cpus_first(cpu_online_map));
+ 		}
+ 	} else {
+ 		if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
+@@ -201,7 +202,7 @@ static void clocksource_check_watchdog(s
+ 				watchdog_timer.expires =
+ 					jiffies + WATCHDOG_INTERVAL;
+ 				add_timer_on(&watchdog_timer,
+-					     first_cpu(cpu_online_map));
++					     cpus_first(cpu_online_map));
+ 			}
  		}
  	}
- 	return NOTIFY_OK;
---- struct-cpumasks.orig/net/sunrpc/svc.c
-+++ struct-cpumasks/net/sunrpc/svc.c
-@@ -310,13 +310,13 @@ svc_pool_map_set_cpumask(struct task_str
- 	switch (m->mode) {
- 	case SVC_POOL_PERCPU:
- 	{
--		set_cpus_allowed_ptr(task, cpumask_of_cpu(node));
-+		set_cpus_allowed(task, cpumask_of_cpu(node));
- 		break;
+--- struct-cpumasks.orig/kernel/time/tick-broadcast.c
++++ struct-cpumasks/kernel/time/tick-broadcast.c
+@@ -148,7 +148,7 @@ static void tick_do_broadcast(cpumask_t 
+ 		 * one of the first device. This works as long as we have this
+ 		 * misfeature only on x86 (lapic)
+ 		 */
+-		cpu = first_cpu(mask);
++		cpu = cpus_first(mask);
+ 		td = &per_cpu(tick_cpu_device, cpu);
+ 		td->evtdev->broadcast(mask);
  	}
- 	case SVC_POOL_PERNODE:
- 	{
- 		node_to_cpumask_ptr(nodecpumask, node);
--		set_cpus_allowed_ptr(task, nodecpumask);
-+		set_cpus_allowed(task, nodecpumask);
- 		break;
+--- struct-cpumasks.orig/kernel/time/tick-common.c
++++ struct-cpumasks/kernel/time/tick-common.c
+@@ -299,7 +299,7 @@ static void tick_shutdown(unsigned int *
  	}
+ 	/* Transfer the do_timer job away from this cpu */
+ 	if (*cpup == tick_do_timer_cpu) {
+-		int cpu = first_cpu(cpu_online_map);
++		int cpu = cpus_first(cpu_online_map);
+ 
+ 		tick_do_timer_cpu = (cpu != NR_CPUS) ? cpu :
+ 			TICK_DO_TIMER_NONE;
+--- struct-cpumasks.orig/kernel/workqueue.c
++++ struct-cpumasks/kernel/workqueue.c
+@@ -968,7 +968,7 @@ undo:
+ void __init init_workqueues(void)
+ {
+ 	cpu_populated_map = cpu_online_map;
+-	singlethread_cpu = first_cpu(cpu_possible_map);
++	singlethread_cpu = cpus_first(cpu_possible_map);
+ 	cpu_singlethread_map = cpumask_of_cpu(singlethread_cpu);
+ 	hotcpu_notifier(workqueue_cpu_callback, 0);
+ 	keventd_wq = create_workqueue("events");
+--- struct-cpumasks.orig/net/core/dev.c
++++ struct-cpumasks/net/core/dev.c
+@@ -4550,7 +4550,7 @@ static void net_dma_rebalance(struct net
+ 	}
+ 
+ 	i = 0;
+-	cpu = first_cpu(cpu_online_map);
++	cpu = cpus_first(cpu_online_map);
+ 
+ 	for_each_cpu(chan_idx, net_dma->channel_mask) {
+ 		chan = net_dma->channels[chan_idx];
+@@ -4561,7 +4561,7 @@ static void net_dma_rebalance(struct net
+ 
+ 		while(n) {
+ 			per_cpu(softnet_data, cpu).net_dma = chan;
+-			cpu = next_cpu(cpu, cpu_online_map);
++			cpu = cpus_next(cpu, cpu_online_map);
+ 			n--;
+ 		}
+ 		i++;
+--- struct-cpumasks.orig/net/iucv/iucv.c
++++ struct-cpumasks/net/iucv/iucv.c
+@@ -496,7 +496,7 @@ static void iucv_setmask_up(void)
+ 
+ 	/* Disable all cpu but the first in cpu_irq_cpumask. */
+ 	cpumask = iucv_irq_cpumask;
+-	cpu_clear(first_cpu(iucv_irq_cpumask), cpumask);
++	cpu_clear(cpus_first(iucv_irq_cpumask), cpumask);
+ 	for_each_cpu(cpu, cpumask)
+ 		smp_call_function_single(cpu, iucv_block_cpu, NULL, 1);
+ }
+@@ -596,7 +596,7 @@ static int __cpuinit iucv_cpu_notify(str
+ 			return NOTIFY_BAD;
+ 		smp_call_function_single(cpu, iucv_retrieve_cpu, NULL, 1);
+ 		if (cpus_empty(iucv_irq_cpumask))
+-			smp_call_function_single(first_cpu(iucv_buffer_cpumask),
++			smp_call_function_single(cpus_first(iucv_buffer_cpumask),
+ 						 iucv_allow_cpu, NULL, 1);
+ 		break;
  	}
 
 -- 
