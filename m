@@ -1,141 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbYI2DV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbYI2DsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753815AbYI2DV2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 23:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYI2DVU
+	id S1753743AbYI2DsR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 23:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYI2DsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 23:21:20 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39016 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751631AbYI2DVT (ORCPT
+	Sun, 28 Sep 2008 23:48:06 -0400
+Received: from rn-out-0910.google.com ([64.233.170.188]:46919 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbYI2DsE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 23:21:19 -0400
-Date: Mon, 29 Sep 2008 12:27:51 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
-       ryov@valinux.co.jp, YAMAMOTO Takashi <yamamoto@valinux.co.jp>
-Subject: Re: [PATCH 0/12] memcg updates v5
-Message-Id: <20080929122751.611451fc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48E0452F.4080300@linux.vnet.ibm.com>
-References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com>
-	<48DC9AF2.1050101@linux.vnet.ibm.com>
-	<20080926182253.a62cc2d0.kamezawa.hiroyu@jp.fujitsu.com>
-	<48DCAC02.5050108@linux.vnet.ibm.com>
-	<20080926193602.6b397910.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080927121917.9058a41e.kamezawa.hiroyu@jp.fujitsu.com>
-	<48E0452F.4080300@linux.vnet.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 28 Sep 2008 23:48:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=gqubvyp7EAu4/97l6pHGmd9NO8RUkvGLoTLV+cxnSZf6x9cbFyJ3A/bi3AYwsHuyFv
+         v06kg0J6hisr/k2xEZjzUJgwQb3gOHFHAsTHsi0Wtm9sy4yiOQemDbOPE8DiAlH46GkT
+         WHCJF6B5Dsk+/dzEJC7laY5Io4AGJxRZfVjl8=
+Message-ID: <aec7e5c30809282048x3d9a201j12303091e9d93a49@mail.gmail.com>
+Date: Mon, 29 Sep 2008 12:48:02 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [patch 2.6.27-rc7] gpiolib: request/free hooks
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <200809271129.07241.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200809241508.11091.david-b@pacbell.net>
+	 <aec7e5c30809270800y7a4b59eem8af480d5899a791a@mail.gmail.com>
+	 <200809271129.07241.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008 08:32:07 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Sun, Sep 28, 2008 at 3:29 AM, David Brownell <david-b@pacbell.net> wrote:
+> On Saturday 27 September 2008, Magnus Damm wrote:
+>>
+>> Looking good. I'm currently hacking on some pinmuxed gpio code for
+>> SuperH, and I'd like to use these request/free callbacks to select
+>> proper pinmux state.
+>
+> I'm not so keen on that particular overloading, but I can
+> understand why it might be wanted on systems which have a
+> happy one-to-one mapping between GPIOs and pins.
 
-> KAMEZAWA Hiroyuki wrote:
-> > On Fri, 26 Sep 2008 19:36:02 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > 
-> >>> I think (1) might be OK, except for the accounting issues pointed out (change in
-> >>> behaviour visible to end user again, sigh! :( ).
-> >> But it was just a BUG from my point of view...
-> >>
-> >>> Is (1) a serious issue? 
-> >> considering force_empty(), it's serious.
-> >>
-> >>> (2) seems OK, except for the locking change for mark_page_accessed. I am looking at
-> >>> (4) and (6) currently.
-> >>>
-> > 
-> > I'll do in following way in the next Monday.
-> > Divide patches into 2 set
-> > 
-> > in early fix/optimize set.
-> >   - push (2)
-> >   - push (4)
-> >   - push (6)
-> >   - push (1)
-> > 
-> 
-> Yes, sounds reasonable
-> 
-I'll just post this, today. 
+Hm, sounds like you prefer to keep pinmuxing and GPIO code separated?
 
-> > drops (3).
-> > 
-> > I don't want to remove all? pages-never-on-LRU before fixing force_empty.
-> > 
-> > in updates
-> >   - introduce atomic flags. (5)
-> >   - add move_account() function (7)
-> 
-> without (3), don't we have a problem pushing (7)?
-> 
-I'll add -EBUSY behavior to force_empty.
-I'm now adding(merging) code to move_account.patch for supporing force_empty.
-It seems much clearer than v5.
+> If you do that, be ready to provide a pinmux-only interface
+> at some point when this "piggybacking" breaks something...
 
+In the SuperH case GPIO pin direction selection is done in the same
+way as selecting pin function. So in and out directions can be seen as
+two pin functions. And since we want to support GPIO pin direction we
+may as well support setting pin functions as well.
 
-> >   - add memory.attribute to each memcg dir. (NEW)
-> >   - enhance force_empty (was (8))
-> >        - remove "forget all" logic. and add attribute to select following 2 behavior
-> >           - call try_to_free_page() until the usage goes down to 0.
-> >             This allows faiulre (if page is mlocked, we can't do.). (NEW)
-> >           - call move_account() to move all charges to its parent (as much as possible) (NEW)
-> >           In future, I'd liket to add trash-box cgroup for force_empty somewhere.
-> >   - allocate all page cgroup at boot (9)
-> >   - lazy lru free/add (10,11) with fixes.
-> >   - fix race at charging swap. (12)
-> > 
-> 
-> I think (9) is probably the most important. I'll review it today
-> 
-Thanks. no major changes in my current stack from already posted one.
+But maybe there are better ways to integrate it, I'm not sure.
 
-Thanks,
--Kame
+>> > --- a/drivers/gpio/gpiolib.c
+>> > +++ b/drivers/gpio/gpiolib.c
+>> > @@ -781,6 +785,7 @@ EXPORT_SYMBOL_GPL(gpiochip_remove);
+>> >  int gpio_request(unsigned gpio, const char *label)
+>> >     ...
+>>
+>> The code above doesn't catch double gpio_request() user calls
+>> properly. Or rather, the user will receive an error but the
+>> chip->request() callback may get called twice.
+>>
+>> What about modifying the gpiolib code to handle that? I think that
+>> sounds like a better idea than cover ing that case in the chip code...
+>
+> Yeah.  Better to test-and-set the flag and then request, and backout
+> if it fails, than the other way.  Just who wrote that crap in the
+> first place?  Sigh.  (Notice it's done that way already in the code
+> path handling implicit requesting ... )
 
-> > After (9), all page and page_cgroup has one-to-one releationship and we want to
-> > assume that "if page is alive and on LRU, it's accounted and has page_cgroup."
-> > (other team, bio cgroup want to use page_cgroup and I want to make it easy.)
-> > 
-> > For this, fix to behavior of force_empty..."forget all" is necessary.
-> > SwapCache handling is also necessary but I'd like to postpone until next set
-> > because it's complicated.
-> > 
-> > After above all.
-> >  - handle swap cache 
-> >  - Mem+Swap controller.
-> >  - add trashbox feature ?
-> >  - add memory.shrink_usage_to file.
-> > 
-> > It's long way to what I really want to do....
-> > 
-> 
-> Yes a long way to go, I want to add
-> 
-> 1) Multi-hierarchy support
-> 2) Support for soft-limits
-> 3) get swappiness working (there are patches posted for it by Yamamoto-San, but
-> something is broken, I suspect even in global swappiness).
-> 
-> 
-> 
-> > 
-> > Thanks,
-> > -Kame
-> 
-> 
-> -- 
-> 	Balbir
-> 
+Sounds good.
 
+> I'll send an updated patch along soonish.
+
+Thank you!
+
+/ magnus
