@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbYI2Rcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYI2Rdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbYI2Rcy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYI2Rb7
+	id S1754603AbYI2Rdf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYI2RcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:31:59 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:35330 "EHLO mummy.ncsc.mil"
+	Mon, 29 Sep 2008 13:32:06 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:35331 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751733AbYI2Rbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751713AbYI2Rbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 29 Sep 2008 13:31:52 -0400
 From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
 To: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
@@ -17,9 +17,9 @@ Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
        labeled-nfs@linux-nfs.org, "David P. Quigley" <dpquigl@tycho.nsa.gov>,
        "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
-Subject: [PATCH 06/14] KConfig: Add KConfig entries for Labeled NFS
-Date: Mon, 29 Sep 2008 13:06:18 -0400
-Message-Id: <1222707986-26606-7-git-send-email-dpquigl@tycho.nsa.gov>
+Subject: [PATCH 10/14] NFSv4: Introduce new label structure
+Date: Mon, 29 Sep 2008 13:06:22 -0400
+Message-Id: <1222707986-26606-11-git-send-email-dpquigl@tycho.nsa.gov>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov>
 References: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov>
@@ -27,59 +27,91 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds two entries into the fs/KConfig file. The first entry
-NFS_V4_SECURITY_LABEL enables security label support for the NFSv4 client while
-the second entry NFSD_V4_SECURITY_LABEL enables security labeling support on
-the server side.
+In order to mimic the way that NFSv4 ACLs are implemented we have created a
+structure to be used to pass label data up and down the call chain. This patch
+adds the new structure and new members to the required NFSv4 call structures.
 
 Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
 Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 ---
- fs/Kconfig |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
+ include/linux/nfs4.h      |    6 ++++++
+ include/linux/nfs_xdr.h   |    3 +++
+ include/linux/nfsd/xdr4.h |    3 +++
+ 3 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index abccb5d..47ffb42 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1633,6 +1633,7 @@ config NFS_V4
+diff --git a/include/linux/nfs4.h b/include/linux/nfs4.h
+index 144eacf..dd99b27 100644
+--- a/include/linux/nfs4.h
++++ b/include/linux/nfs4.h
+@@ -112,6 +112,12 @@ struct nfs4_acl {
+ 	struct nfs4_ace	aces[0];
+ };
  
- 	  If unsure, say N.
- 
-+
- config ROOT_NFS
- 	bool "Root file system on NFS"
- 	depends on NFS_FS=y && IP_PNP
-@@ -1644,6 +1645,15 @@ config ROOT_NFS
- 
- 	  Most people say N here.
- 
-+config NFS_V4_SECURITY_LABEL
-+	bool "Provide Security Label support for NFSv4 client"
-+	depends on NFS_V4 && SECURITY
-+	help
-+	  Say Y here if you want label attribute support for NFS version 4.
++struct nfs4_label {
++	void		*label;
++	u32		len;
++};
 +
 +
-+	  If unsure, say N.
-+
- config NFSD
- 	tristate "NFS server support"
- 	depends on INET
-@@ -1725,6 +1735,13 @@ config NFSD_V4
+ typedef struct { char data[NFS4_VERIFIER_SIZE]; } nfs4_verifier;
+ typedef struct { char data[NFS4_STATEID_SIZE]; } nfs4_stateid;
  
- 	  If unsure, say N.
+diff --git a/include/linux/nfs_xdr.h b/include/linux/nfs_xdr.h
+index 0d77568..c4fa2df 100644
+--- a/include/linux/nfs_xdr.h
++++ b/include/linux/nfs_xdr.h
+@@ -135,6 +135,7 @@ struct nfs_openargs {
+ 	const struct nfs_server *server;	 /* Needed for ID mapping */
+ 	const u32 *		bitmask;
+ 	__u32			claim;
++	const struct nfs4_label *label;
+ };
  
-+config NFSD_V4_SECURITY_LABEL
-+	bool "Provide Security Label support for NFSv4 server"
-+	depends on NFSD_V4 && SECURITY
-+	help
-+	  If you would like to include support for label file attributes
-+	  over NFSv4, say Y here.
-+
- config LOCKD
- 	tristate
+ struct nfs_openres {
+@@ -353,6 +354,7 @@ struct nfs_setattrargs {
+ 	struct iattr *                  iap;
+ 	const struct nfs_server *	server; /* Needed for name mapping */
+ 	const u32 *			bitmask;
++	const struct nfs4_label *	label;
+ };
  
+ struct nfs_setaclargs {
+@@ -577,6 +579,7 @@ struct nfs4_create_arg {
+ 	const struct iattr *		attrs;
+ 	const struct nfs_fh *		dir_fh;
+ 	const u32 *			bitmask;
++	const struct nfs4_label *	label;
+ };
+ 
+ struct nfs4_create_res {
+diff --git a/include/linux/nfsd/xdr4.h b/include/linux/nfsd/xdr4.h
+index 27bd3e3..a0f3d79 100644
+--- a/include/linux/nfsd/xdr4.h
++++ b/include/linux/nfsd/xdr4.h
+@@ -94,6 +94,7 @@ struct nfsd4_create {
+ 	struct iattr	cr_iattr;           /* request */
+ 	struct nfsd4_change_info  cr_cinfo; /* response */
+ 	struct nfs4_acl *cr_acl;
++	struct nfs4_label *cr_label;
+ };
+ #define cr_linklen	u.link.namelen
+ #define cr_linkname	u.link.name
+@@ -223,6 +224,7 @@ struct nfsd4_open {
+ 	int		op_truncate;        /* used during processing */
+ 	struct nfs4_stateowner *op_stateowner; /* used during processing */
+ 	struct nfs4_acl *op_acl;
++	struct nfs4_label *op_label;
+ };
+ #define op_iattr	u.iattr
+ #define op_verf		u.verf
+@@ -304,6 +306,7 @@ struct nfsd4_setattr {
+ 	u32		sa_bmval[2];        /* request */
+ 	struct iattr	sa_iattr;           /* request */
+ 	struct nfs4_acl *sa_acl;
++	struct nfs4_label *sa_label;
+ };
+ 
+ struct nfsd4_setclientid {
 -- 
 1.5.5.1
 
