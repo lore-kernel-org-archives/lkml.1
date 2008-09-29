@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYI2SE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYI2SE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbYI2SE0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 14:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbYI2SC4
+	id S1754897AbYI2SE4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 14:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbYI2SC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 14:02:56 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:36434 "EHLO relay.sgi.com"
+	Mon, 29 Sep 2008 14:02:58 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:54297 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753953AbYI2SCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752406AbYI2SCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 29 Sep 2008 14:02:51 -0400
-Message-Id: <20080929180250.287081000@polaris-admin.engr.sgi.com>
+Message-Id: <20080929180251.096807000@polaris-admin.engr.sgi.com>
 References: <20080929180250.111209000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 29 Sep 2008 11:02:51 -0700
+Date: Mon, 29 Sep 2008 11:02:57 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -20,92 +20,99 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        David Miller <davem@davemloft.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
        Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 01/31] cpumask: Documentation
-Content-Disposition: inline; filename=docs
+Subject: [PATCH 07/31] cpumask: changes to compile init/main.c
+Content-Disposition: inline; filename=init_main
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-of-by: Mike Travis <travis@sgi.com>
 ---
- cpumask.txt |   73 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 73 insertions(+)
+ include/linux/sched.h    |    6 +++---
+ include/linux/seq_file.h |    4 ++--
+ init/main.c              |   11 ++++++-----
+ kernel/cpu.c             |    5 +++++
+ 4 files changed, 16 insertions(+), 10 deletions(-)
 
---- /dev/null
-+++ struct-cpumasks/cpumask.txt
-@@ -0,0 +1,73 @@
+--- struct-cpumasks.orig/include/linux/sched.h
++++ struct-cpumasks/include/linux/sched.h
+@@ -1583,10 +1583,10 @@ extern cputime_t task_gtime(struct task_
+ 
+ #ifdef CONFIG_SMP
+ extern int set_cpus_allowed_ptr(struct task_struct *p,
+-				const cpumask_t *new_mask);
++				const cpumask_t new_mask);
+ #else
+ static inline int set_cpus_allowed_ptr(struct task_struct *p,
+-				       const cpumask_t *new_mask)
++				       const cpumask_t new_mask)
+ {
+ 	if (!cpu_isset(0, *new_mask))
+ 		return -EINVAL;
+@@ -1595,7 +1595,7 @@ static inline int set_cpus_allowed_ptr(s
+ #endif
+ static inline int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
+ {
+-	return set_cpus_allowed_ptr(p, &new_mask);
++	return set_cpus_allowed_ptr(p, new_mask);
+ }
+ 
+ extern unsigned long long sched_clock(void);
+--- struct-cpumasks.orig/include/linux/seq_file.h
++++ struct-cpumasks/include/linux/seq_file.h
+@@ -50,9 +50,9 @@ int seq_dentry(struct seq_file *, struct
+ int seq_path_root(struct seq_file *m, struct path *path, struct path *root,
+ 		  char *esc);
+ int seq_bitmap(struct seq_file *m, unsigned long *bits, unsigned int nr_bits);
+-static inline int seq_cpumask(struct seq_file *m, cpumask_t *mask)
++static inline int seq_cpumask(struct seq_file *m, cpumask_t mask)
+ {
+-	return seq_bitmap(m, mask->bits, NR_CPUS);
++	return seq_bitmap(m, mask->bits, nr_cpu_ids);
+ }
+ 
+ static inline int seq_nodemask(struct seq_file *m, nodemask_t *mask)
+--- struct-cpumasks.orig/init/main.c
++++ struct-cpumasks/init/main.c
+@@ -367,12 +367,8 @@ static inline void smp_prepare_cpus(unsi
+ 
+ #else
+ 
+-#if NR_CPUS > BITS_PER_LONG
+-cpumask_t cpu_mask_all __read_mostly = CPU_MASK_ALL;
+-EXPORT_SYMBOL(cpu_mask_all);
+-#endif
+-
+ /* Setup number of possible processor ids */
++#ifndef nr_cpu_ids
+ int nr_cpu_ids __read_mostly = NR_CPUS;
+ EXPORT_SYMBOL(nr_cpu_ids);
+ 
+@@ -386,6 +382,11 @@ static void __init setup_nr_cpu_ids(void
+ 
+ 	nr_cpu_ids = highest_cpu + 1;
+ }
++#else
++static inline void setup_nr_cpu_ids(void)
++{
++}
++#endif
+ 
+ #ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
+ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+--- struct-cpumasks.orig/kernel/cpu.c
++++ struct-cpumasks/kernel/cpu.c
+@@ -24,6 +24,11 @@
+ cpumask_t cpu_present_map __read_mostly;
+ EXPORT_SYMBOL(cpu_present_map);
+ 
++#if NR_CPUS > BITS_PER_LONG
++cpumask_map_t cpu_mask_all __read_mostly = CPU_MASK_ALL;
++EXPORT_SYMBOL(cpu_mask_all);
++#endif
 +
-+		CPUMASKS
-+		--------
-+
-+	      [PRELIMINARY]
-+
-+Introduction
-+
-+Cpumask variables are used to represent (with a single bit) all the
-+CPU's in a system.  With the prolific increase in the number of CPU's
-+in a single system image (SSI), managing this large number of cpus has
-+become an ordeal.  When the limit of CPU's in a system was small, the
-+cpumask could fit within an integer.  Even with the increase to 128, a
-+bit pattern was well within a managable size.  Now with systems available
-+with 2048 cores, with hyperthreading, there are 4096 cpu threads.  And the
-+number of cpus in an SSI is growing, 16,384 is right around the corner.
-+Even desktop systems with only 2 or 4 sockets, a new generation of Intel
-+processors that have 128 cores per socket will increase the count of CPU
-+threads tremendously.
-+
-+Thus the handling of the cpumask that represents this 4096 limit needs
-+512 bytes, putting pressure on the amount of stack space needed to
-+accomodate temporary cpumask variables.
-+
-+The primary goal of the cpumasks API is to accomodate these large number
-+of cpus without effecting the compactness of Linux for small, compact
-+systems.
-+
-+
-+The Changes
-+
-+Provide new cpumask interface API.  The relevant change is basically
-+cpumask_t becomes an opaque object.  This should result in the minimum
-+amount of modifications while still allowing the inline cpumask functions,
-+and the ability to declare static cpumask objects.
-+
-+
-+    /* raw declaration */
-+    struct __cpumask_data_s { DECLARE_BITMAP(bits, NR_CPUS); };
-+
-+    /* cpumask_map_t used for declaring static cpumask maps */
-+    typedef struct __cpumask_data_s cpumask_map_t[1];
-+
-+    /* cpumask_t used for function args and return pointers */
-+    typedef struct __cpumask_data_s *cpumask_t;
-+    typedef const struct __cpumask_data_s *const_cpumask_t;
-+
-+    /* cpumask_var_t used for local variable, definition follows */
-+    typedef struct __cpumask_data_s	cpumask_var_t[1]; /* SMALL NR_CPUS */
-+    typedef struct __cpumask_data_s	*cpumask_var_t;	  /* LARGE NR_CPUS */
-+
-+    /* replaces cpumask_t dst = (cpumask_t)src */
-+    void cpus_copy(cpumask_t dst, const cpumask_t src);
-+
-+This removes the '*' indirection in all references to cpumask_t objects.
-+You can change the reference to the cpumask object but to change the
-+cpumask object itself you must use the functions that operate on cpumask
-+objects (f.e. the cpu_* operators).  Functions can return a cpumask_t
-+(which is a pointer to the cpumask object) and can only be passed a
-+cpumask_t.
-+
-+All uses of a cpumask_t variable on the stack are changed to be cpumask_var_t
-+except for pointers to static (read only) cpumask objects.  Allocation of
-+local (temp) cpumask objects use the functions available in cpumask_alloc.h.
-+(descriptions to be supplied.)
-+
-+All cpumask operators now operate using nr_cpu_ids instead of NR_CPUS.  All
-+variants of the cpumask operators which used nr_cpu_ids instead of NR_CPUS
-+have been deleted.
-+
-+All variants of functions which use the (old cpumask_t *) pointer have been
-+deleted (f.e. set_cpus_allowed_ptr()).
-+
+ #ifndef CONFIG_SMP
+ 
+ /*
 
 -- 
