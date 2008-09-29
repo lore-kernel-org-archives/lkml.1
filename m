@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbYI2ERp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbYI2EXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752787AbYI2ERp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 00:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbYI2ERg
+	id S1752608AbYI2EXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 00:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYI2EXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 00:17:36 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34470 "EHLO mail.dvmed.net"
+	Mon, 29 Sep 2008 00:23:01 -0400
+Received: from venema.h4ckr.net ([217.24.1.135]:55826 "EHLO venema.h4ckr.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbYI2ERg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 00:17:36 -0400
-Message-ID: <48E056DA.4040401@garzik.org>
-Date: Mon, 29 Sep 2008 00:17:30 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1750909AbYI2EXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 00:23:00 -0400
+X-Greylist: delayed 1926 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Sep 2008 00:23:00 EDT
+Message-ID: <1086.92.50.127.85.1222660252.squirrel@webmail.madwifi.org>
+In-Reply-To: <48DF8412.2010304@foomagic.org>
+References: <20080926215701.GC5972@tesla> <48DF8412.2010304@foomagic.org>
+Date: Mon, 29 Sep 2008 05:50:52 +0200 (CEST)
+Subject: Re: Release of Atheros 802.11abg HAL under the ISC
+From: "Michael Renzmann" <mrenzmann@madwifi.org>
+To: "Glenn Saberton" <gsaberton@foomagic.org>
+Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       ath5k-devel@venema.h4ckr.net, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.9a
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH PROPOSAL] libata/pci: Move D3 hack handling from libata
- into PCI
-References: <20080724171838.591f6a31@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080724171838.591f6a31@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> Libata has some hacks to deal with certain controllers going silly in D3
-> state. The right way to handle this is to keep a PCI device flag for such
-> devices. That can then be generalised for no ATA devices with power
-> problems.
-> 
-> Signed-off-by: Alan Cox <alan@redhat.com>
+Hi.
 
+Glenn Saberton wrote:
+> Why is #ath9k invite only?
 
-ACK
+It's not particularly on-topic here, so just a short note: #ath9k should
+not be invite-only (but I will check again). It forwards to #madwifi,
+which is used for discussion about MadWifi, ath5k and ath9k.
 
+Bye, Mike
