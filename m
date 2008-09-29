@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbYI2Osw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752909AbYI2Ow0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbYI2Osw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 10:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYI2Osp
+	id S1752909AbYI2Ow0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 10:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYI2OwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 10:48:45 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48155 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411AbYI2Oso (ORCPT
+	Mon, 29 Sep 2008 10:52:18 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:59229 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502AbYI2OwR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 10:48:44 -0400
-Date: Mon, 29 Sep 2008 16:54:08 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: dean gaudet <odo@google.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Pardo <pardo@google.com>,
-       linux-kernel@vger.kernel.org, mbligh@google.com, briangrant@google.com,
-       nil@google.com, jyasskin@google.com
-Subject: Re: Faster getcpu() and sched_getcpu()
-Message-ID: <20080929145408.GQ25711@one.firstfloor.org>
-References: <af8810200809111648n55e05ac9g286fcd498690432f@mail.gmail.com> <af8810200809231209w7428347neb88094e543a048f@mail.gmail.com> <87wsgwp6gh.fsf@basil.nowhere.org> <48E0834D.6010608@google.com>
-Mime-Version: 1.0
+	Mon, 29 Sep 2008 10:52:17 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: [PATCH] md: Add support for data integrity to MD
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <yq1y71mmjvw.fsf@sermon.lab.mkp.net>
+	<18649.43504.157272.351801@notabene.brown>
+Date: Mon, 29 Sep 2008 10:51:54 -0400
+In-Reply-To: <18649.43504.157272.351801@notabene.brown> (Neil Brown's message of "Wed\, 24 Sep 2008 12\:46\:08 +1000")
+Message-ID: <yq1ej33f1it.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48E0834D.6010608@google.com>
-User-Agent: Mutt/1.4.2.1i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 29, 2008 at 12:27:09AM -0700, dean gaudet wrote:
-> Andi Kleen wrote:
-> > I'm still not sure why you say no redzone is that expensive? Do you
-> > have numbers?  I know it's a few instructions, but it shouldn't 
-> > be that expensive.
-> >
-> >   
-> 
-> it depends on the processor involved and the kernel config options --
-> i.e. if frame pointers are enabled then the stack frame guarantees a
-> store operation (push rbp) and on processors which do memops in-order
-> this delays the other memops in the vsyscall (i.e. testing the cache or
-> executing SIDT).  it was 2 or 3 cycles difference in most cases iirc.
+>>>>> "Neil" == Neil Brown <neilb@suse.de> writes:
 
-Ok frame pointers are always a performance disasters on some CPUs.
-Perhaps they should be just unconditionally disabled for vsyscall.c
-and the vdso
+Neil> But what if we subsequently add a different device to that array
+Neil> which uses a different protection format.  Would we be able to
+Neil> tell the filesystem that integrity protection isn't available
+Neil> any more?  Or can we detect if the filesystem is using integrity
+Neil> protection, and reject the new device if it doesn't match?
 
--Andi
+Generally the filesystem will look at the block device's integrity
+profile every time it prepares an I/O.  So if we add a subdevice and
+detect a mismatch the mddev integrity profile should be removed.
+
+
+Neil> In either case, some extra handling is needed in
+Neil> bind_rdev_to_array.
+
+This code has been sitting in my patch queue for several months
+waiting for the core of the integrity stuff to go in.  So I'm a bit
+fuzzy on the details.  I'll take a look...
+
 -- 
-ak@linux.intel.com
+Martin K. Petersen	Oracle Linux Engineering
+
