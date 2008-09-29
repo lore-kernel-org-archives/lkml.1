@@ -1,60 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbYI2PE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYI2PFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753795AbYI2PE3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 11:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYI2PET
+	id S1753388AbYI2PFu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 11:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYI2PFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 11:04:19 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:22241 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751658AbYI2PER (ORCPT
+	Mon, 29 Sep 2008 11:05:44 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46056 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbYI2PFn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 11:04:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding:sender;
-        b=loXk7INv+MaU0P9uwNxA5gd55zAtVeMYXJhAv72X1pewBkLbM+gNbdgU9Kdr7NPfA5
-         WYBJWXyz5UjuG3feIbHaLMIvL1ksO3QZjzqZNZqxIXRQMWT6P/fL7nsdqv/AkKXQkq0x
-         1vtdRkHS/bcss2LhC128y1i6bZBNoQFn6uBug=
-Date: Mon, 29 Sep 2008 18:04:09 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: "=?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker" <fweisbec@gmail.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: [Path -tip 1/3] Tracing/ftrace: Change the type of the
- print_line callback
-Message-ID: <20080929180409.68cdf8ba@daedalus.pq.iki.fi>
-In-Reply-To: <c62985530809290211l7df01459lf80456ab98fc6ed0@mail.gmail.com>
-References: <48DCFEE1.4010102@gmail.com>
-	<20080928191918.1b26c0ab@daedalus.pq.iki.fi>
-	<c62985530809290211l7df01459lf80456ab98fc6ed0@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 29 Sep 2008 11:05:43 -0400
+Date: Mon, 29 Sep 2008 11:05:39 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH v9] Unified trace buffer
+In-Reply-To: <20080927200028.GA28937@elte.hu>
+Message-ID: <alpine.DEB.1.10.0809291048180.2625@gandalf.stny.rr.com>
+References: <48DC406D.1050508@redhat.com> <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809261631420.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809262148070.30105@gandalf.stny.rr.com>
+ <alpine.DEB.1.10.0809270203270.1628@gandalf.stny.rr.com> <20080927183912.GA13685@elte.hu> <alpine.DEB.1.10.0809271444460.11865@gandalf.stny.rr.com> <20080927194105.GF18619@elte.hu> <alpine.DEB.1.10.0809271549160.16572@gandalf.stny.rr.com>
+ <20080927200028.GA28937@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008 11:11:15 +0200
-"Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
 
-> 2008/9/28 Pekka Paalanen <pq@iki.fi>:
+On Sat, 27 Sep 2008, Ingo Molnar wrote:
 > 
+> > > no, it is not readable. My point was that you should do:
+> > > > 
+> > > >    RB_ENUM_TYPE,	/*
+> > > > 			 * Comment
+> > > > 			 */
+> > > > 
+> > > > The comment is not at the same line as the enum, which also looks 
+> > > > unpleasing.
+> > > 
+> > > but you did:
+> > > 
+> > > >    RB_ENUM_TYPE,	/* Comment
+> > > > 			 */
+> > > 
 
-[static int print_trace_line(struct trace_iterator *iter)]
+OK, I did a quick survey of what others did in include/linux to handle 
+multi line comments for enums. I ignored the single line comments since 
+that is pretty standard. Here's what I found:
 
-> > Shouldn't the return type be bool?
-> > If it's not, reading this function makes me wonder about the conversion
-> > from enum to int, i.e. what is the meaning of the int.
-> 
-> Actually it should be enum print_line_t. I forgot to change its type.
-> But we need to check its return value as an enum print_line_t.
+Those that do:
 
-Is print_line_t necessary? Does it have to return any other information than
-"this entry was handled somehow" vs. "this entry must be handled later"?
-Currently it's just a flag to say "please flush and retry".
+enum myenum {
+	ENUM_PING_PONG,		/* Bounce a ball back and forth
+				   till you have a winner. */
+	ENUM_HONEY_CONE,	/* Soft and sweet a yummy for
+				   the tummy. */
+};
 
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+include/linux/atmdev.h
+include/linux/fd.h
+include/linux/hil.h
+include/linux/if_pppol2tp.h
+include/linux/ivtv.h
+include/linux/libata.h
+include/linux/mmzone.h
+include/linux/reiserfs_fs.h
+include/linux/reiserfs_fs_sb.h
+include/linux/rtnetlink.h
+include/linux/scc.h
+include/linux/videodev2.h
+
+Those that do:
+
+enum myenum {
+        ENUM_PING_PONG,         /* Bounce a ball back and forth */
+                                /* till you have a winner.      */
+        ENUM_HONEY_CONE,        /* Soft and sweet a yummy for   */
+                                /* the tummy.                   */
+};
+
+include/linux/atmsvc.h
+include/linux/pktcdvd.h
+
+
+Those that do (what I did):
+
+enum myenum {
+        ENUM_PING_PONG,         /* Bounce a ball back and forth
+                                 * till you have a winner.
+				 */
+        ENUM_HONEY_CONE,        /* Soft and sweet a yummy for
+                                 * the tummy.
+				 */
+};
+
+include/linux/buffer_head.h (with space between the two enums)
+include/linux/personality.h
+
+
+Those that do:
+
+enum myenum {
+	/*
+	 * Bounce a ball back and forth
+	 * till you have a winner.
+	 */
+        ENUM_PING_PONG,
+	/*
+	 * Soft and sweet a yummy for
+	 * the tummy.
+	 */
+        ENUM_HONEY_CONE,
+};
+
+include/linux/cgroup.h
+include/linux/cn_proc.h
+include/linux/exportfs.h
+include/linux/fb.h
+include/linux/hil_mlc.h
+include/linux/pci.h
+include/linux/reiserfs_fs_i.h
+
+
+And finally Doc book style:
+
+/**
+ * enum myenum
+ * @ENUM_PING_PONG: Bounce a ball back and forth
+ *                  till you have a winner.
+ * @ENUM_HONEY_CONE: Soft and sweet a yummy for
+ *                   the tummy.
+ */
+enum myenum {
+	ENUM_PING_PONG,
+	ENUM_HONEY_CONE,
+};
+
+Note I did not see any enum users that did what you asked:
+
+enum myenum {
+        ENUM_PING_PONG,		/*
+				 * Bounce a ball back and forth
+				 * till you have a winner.
+				 */
+        ENUM_HONEY_CONE,	/*
+				 * Soft and sweet a yummy for
+				 * the tummy.
+				 */
+};
+
+So by adding that, I will be adding yet another format.
+
+Actually I think the docbook style is the most appropriate for me. I'll go 
+with that one.
+
+Thanks,
+
+-- Steve
+
