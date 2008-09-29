@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbYI2RT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYI2RUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbYI2RT4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYI2RTs
+	id S1753880AbYI2RUa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYI2RUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:19:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49754 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750819AbYI2RTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 13:19:48 -0400
-Message-ID: <48E10E4F.3000201@redhat.com>
-Date: Mon, 29 Sep 2008 13:20:15 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 29 Sep 2008 13:20:21 -0400
+Received: from outbound-mail-02.bluehost.com ([69.89.21.12]:46899 "HELO
+	outbound-mail-02.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751478AbYI2RUT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 13:20:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=Isro1ls32zRf7J+6uAJZvb/jwjdU0axuu4bctfyEbHr8SkFHxF0Zh4+1XuYOSiQTLm3A4MckMNdv5cVBgwqJIq/jngfU3bMtICxHOTu2jY3Ra/EA2VDPAac3+/78AzOR;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Subject: Re: [PATCH 01/19] pci: introduce an pci_ioremap(pdev, barnr) function
+Date: Mon, 29 Sep 2008 10:20:11 -0700
+User-Agent: KMail/1.9.9
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+References: <20080928163611.3df8a9e0@infradead.org> <200809291902.44813.eike-kernel@sf-tec.de>
+In-Reply-To: <200809291902.44813.eike-kernel@sf-tec.de>
 MIME-Version: 1.0
-To: Jason Czerak <jason@czerak.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: mounted file system bottleneck
-References: <325d52860809290641haddf616xfe9c98912352ba22@mail.gmail.com> <325d52860809290645p7526b318h7ff9b7e76570f65f@mail.gmail.com>
-In-Reply-To: <325d52860809290645p7526b318h7ff9b7e76570f65f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809291020.12942.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Czerak wrote:
-> I believe I found some sort of bottleneck with mounted networked file
-> systems over 10Gig Ethernet.  I've posted a question to linux-net with
-> zero response since Friday.
+On Monday, September 29, 2008 10:02 am Rolf Eike Beer wrote:
+> Arjan van de Ven wrote:
+> > The patch below introduces a pci_ioremap() function that should make it
+> > easier for driver authors to do the right thing for the simple, common
+> > case.
+> >
+> > There's also 18 patches that introduce users of this; to reduce lkml
+> > noise I've only stuck them in a git tree at
+> > git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-pci_ioremap
+> >.g it
+> > (http://git.kernel.org/?p=linux/kernel/git/arjan/linux-2.6-pci_ioremap.gi
+> >t; a=summary)
+> >
+> >
+> > From fef1dd836bc7dc07962a0ae4019af9efd373c76f Mon Sep 17 00:00:00 2001
+> > From: Arjan van de Ven <arjan@linux.intel.com>
+> > Date: Fri, 26 Sep 2008 16:34:52 -0700
+> > Subject: [PATCH 01/19] pci: introduce an pci_ioremap(pdev, barnr)
+> > function
+> >
+> > A common thing in many PCI drivers is to ioremap() an entire bar.
+> > This is a slightly fragile thing right now, needing both an address and a
+> > size, and many driver writers do.. various things there.
+> >
+> > This patch introduces an pci_ioremap() function taking just a PCI device
+> > struct and the bar number as arguments, and figures this all out itself,
+> > in one place. In addition, we can add various sanity checks to this
+> > function (the patch already checks to make sure that the bar in question
+> > really is a MEM bar; few to no drivers do that sort of thing).
+>
+> This is the same like pci_iomap(pdev, number, 0), no?
 
-You're posting a support question to a developer list.  This is frowned upon. 
-You might get more attention here if you conduct a more scientific test and 
-report it in a more scientific fashion.
+Yeah... Looks like that function isn't that widely used though.  Is the maxlen 
+param really needed?  Looks like the drivers that use it often pass 0 or the 
+BAR length anyway, and Arjan converted existing drivers too, which is where 
+the real work is.
 
-> http://www.uwsg.indiana.edu/hypermail/linux/net/0809.3/0013.html
-
-This is also frowned upon.  Please send your data directly to the list, unless 
-it is absolutely enormous.
-
-> Could a few of you folks here take a look at this and tell me what you
-> think is the issue?
-
-Offhand, I'd guess atime updates.  Unless you're seeing this on a new upstream 
-kernel, you should contact your vendor for support.  Or NetApp.
-
--- Chris
+Jesse
