@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbYI2Ihh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbYI2Ikg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbYI2Ihh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 04:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbYI2Iha
+	id S1753979AbYI2Ikg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 04:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYI2Ik1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 04:37:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39780 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751420AbYI2Ih3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 04:37:29 -0400
-Date: Mon, 29 Sep 2008 10:37:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: How how latent should non-preemptive scheduling be?
-Message-ID: <20080929083709.GD18663@elte.hu>
-References: <fa.Td8xkKZKMSMghlJmEYefTRVF2kc@ifi.uio.no> <48D39312.9000400@yahoo.com> <20080922115749.GE14301@elte.hu> <48D88DB4.9020003@yahoo.com> <20080923115323.GA27240@elte.hu> <48D919A9.5000708@yahoo.com> <48D9460C.5040504@yahoo.com> <48D96725.1080909@yahoo.com> <20080927204834.GA31650@elte.hu> <48DFEF8A.3000502@yahoo.com>
+	Mon, 29 Sep 2008 04:40:27 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:31306 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbYI2IkZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 04:40:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dOZxOZMAQV8EhUk6046opOjQyWuCyvZuOjWdcX/DI5AL0MepV/mCgCoMry938I0Xsw
+         q62BJ9oL24bnMcc5ymmbDMG6Cfk8P0MBZNnnNfxF7PpQRskT1xYjKygJTzHgtY0azE4t
+         /9x4LxG+uoN8z/4eF54JGL7DZY5mhAS+lI/ks=
+Message-ID: <1ba2fa240809290140i5a47d534qa30f9088df834162@mail.gmail.com>
+Date: Mon, 29 Sep 2008 11:40:24 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Andres Freund" <andres@anarazel.de>
+Subject: Re: bad DMAR interaction with iwlagn and SATA
+Cc: "Johannes Berg" <johannes@sipsolutions.net>,
+       "Muli Ben-Yehuda" <muli@il.ibm.com>, "Jeff Garzik" <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <200809291027.50453.andres@anarazel.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48DFEF8A.3000502@yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <200809251511.20132.andres@anarazel.de>
+	 <1222441955.3798.13.camel@johannes.berg>
+	 <1ba2fa240809261630y7a8e5f20g75ab47ff98a1e614@mail.gmail.com>
+	 <200809291027.50453.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-
-> Ingo Molnar wrote:
->> does it get better if you have CONFIG_PREEMPT_VOLUNTARY=y enabled? That 
->> 
+On Mon, Sep 29, 2008 at 11:27 AM, Andres Freund <andres@anarazel.de> wrote:
+> Hi,
 >
-> CONFIG_PREEMPT_VOLUNTARY=y has always been enabled in these results.
+> On Saturday 27 September 2008, Tomas Winkler wrote in "Re: bad DMAR
+> interaction with iwlagn and SATA":
+>> Meanwhile it all reported bugs in this case points to 64 bit
+>> installations, I'll give it more testing
+> Would it help to test on 32bit? I have some dissk with 32bit system installed
+> lying around somewhere...
 
-okay - then this definitely needs fixed.
+It would help to try to isolate this as 64 bit issue
 
->> _should_ break up this section neatly. If it doesnt then please add a  
->> might_sleep() check to kernel/kernel/semaphore.c's down_timeout()  
->> function - that is called a number of times in this trace.
->
-> I added might_sleep() to the start of down_timeout() but it neither 
-> printed anything to dmesg nor changed the latency issue...
->
-> Strangely stalling only seems to turn up in linux-tip kernels with 
-> very little debugging options set within them. I have a linux-tip that 
-> has lots of extra debugging options set and this problem doesn't show 
-> up...
->
-> I've also asked about this on the ACPI mailing list and had a huge 
-> amount of help from finding a good point for a cond_resched - 
-> http://marc.info/?l=linux-acpi&m=122236450105747&w=2 . Certain things 
-> (like games) still stutter when the battery is read but it's enough to 
-> play back sound in rhythmbox without stuttering.
->
-> Any ideas why the issue would go away with a debug kernel though?
+> Any other patches to try?
 
-hm, that's weird indeed. You could try to trace the full battery readout 
-itself, via a script like this:
+I've posted few patches lately to address some RX buffers issues you
+may to try those. Not sure it will help though.
+http://marc.info/?l=linux-wireless&m=122241327108723&w=2
+http://marc.info/?l=linux-wireless&m=122241327208729&w=2
 
-  cat /debug/tracing/trace > /dev/null        # drain trace
-  cat /proc/acpi/whatever  
-  cat /debug/tracing/trace > trace.txt
-
-this way you should be seeing a full trace of the whole thing. (with the 
-'ftrace' tracer plugin set in current_tracer)
-
-then, assuming the trace.txt is complete, you can check where it 
-reschedules and why. Search for 'schedule' calls. Compare the debug 
-versus non-debug traces.
-
-You can even turn on stack backtrace tracing feature, via:
-
-  echo stacktrace > /debug/tracing/iter_ctrl
-
-this adds extra trace entries that show the call path of every 
-reschedule. [this attribute is default-disabled.]
-
-	Ingo
+Thanks
+Tomas
