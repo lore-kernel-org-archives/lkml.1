@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYI2Vii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYI2Vje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbYI2Vii (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 17:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYI2Via
+	id S1754221AbYI2Vje (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 17:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYI2VjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 17:38:30 -0400
-Received: from mga02.intel.com ([134.134.136.20]:51303 "EHLO mga02.intel.com"
+	Mon, 29 Sep 2008 17:39:23 -0400
+Received: from mga09.intel.com ([134.134.136.24]:57312 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbYI2Via (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 17:38:30 -0400
+	id S1751602AbYI2VjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 17:39:22 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
-   d="scan'208";a="341919538"
+   d="scan'208";a="445052877"
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Subject: [PATCH] x86: export set_memory_ro and set_memory_rw
 To: mingo@elte.hu, davem@davemloft.net
-Cc: =netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        jesse.brandeburg@intel.com, bruce.w.allan@intel.com
-Date: Mon, 29 Sep 2008 14:38:24 -0700
-Message-ID: <20080929213824.20346.49328.stgit@jbrandeb-bw.jf.intel.com>
+Date: Mon, 29 Sep 2008 14:39:21 -0700
+Message-ID: <20080929213921.20384.77770.stgit@jbrandeb-bw.jf.intel.com>
 User-Agent: StGIT/0.14.3.163.g06f9.dirty
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
