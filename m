@@ -1,155 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbYI2Vao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYI2Vii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754186AbYI2Vao (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 17:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbYI2Vaf
+	id S1753909AbYI2Vii (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 17:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYI2Via
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 17:30:35 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:58251 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751908AbYI2Vae (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 17:30:34 -0400
-Message-ID: <48E14A00.7060105@novell.com>
-Date: Mon, 29 Sep 2008 17:34:56 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Mon, 29 Sep 2008 17:38:30 -0400
+Received: from mga02.intel.com ([134.134.136.20]:51303 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750991AbYI2Via (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 17:38:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
+   d="scan'208";a="341919538"
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: [PATCH] x86: export set_memory_ro and set_memory_rw
+To: mingo@elte.hu, davem@davemloft.net
+Cc: =netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jesse.brandeburg@intel.com, bruce.w.allan@intel.com
+Date: Mon, 29 Sep 2008 14:38:24 -0700
+Message-ID: <20080929213824.20346.49328.stgit@jbrandeb-bw.jf.intel.com>
+User-Agent: StGIT/0.14.3.163.g06f9.dirty
 MIME-Version: 1.0
-To: linux-rt-users <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, chirag@linux.vnet.ibm.com
-Subject: Re: [BUG][PPC64] BUG in 2.6.26.5-rt9 causing Hang
-References: <20080925123235.GA27916@linux.vnet.ibm.com> <48E1460A.5000504@novell.com>
-In-Reply-To: <48E1460A.5000504@novell.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig2DF373CE36AFD927296B31B8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2DF373CE36AFD927296B31B8
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Gregory Haskins wrote:
-> Hi Chirag
->
-> Chirag Jog wrote:
->  =20
->> Hi Gregory,
->> We see the following BUG followed by a hang on the latest kernel 2.6.2=
-6.5-rt9 on a Power6 blade (PPC64)
->> It is easily recreated by running the async_handler or sbrk_mutex (rea=
-ltime tests from ltp) tests.
->>  =20
->>    =20
->
-> Call me an LTP newbie, but where can I get the sbrk_mutex/async_handler=
+Export set_memory_ro() and set_memory_rw() calls for use by drivers that need
+to have more debug information about who might be writing to memory space.
+this was initially developed for use while debugging a memory corruption
+problem with e1000e.
 
-> tests.
-Ok, I figured out this part.  I needed a newer version of the .rpm from
-a different repo.  However, both async_handler and sbrk_mutex seem to
-segfault for me.  Hmm
+Ingo Molnar <mingo@elte.hu> said:
+>> +EXPORT_SYMBOL(set_memory_rw);
+> that's fine, as long as you make it kernel-internal EXPORT_SYMBOL_GPL()
 
+patch was modified with this suggestion.
+
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 ---
 
-ghaskins@test:~> uname -a
-Linux test 2.6.26.5-rt9-rt #1 SMP PREEMPT RT Mon Sep 29 14:26:45 EDT
-2008 x86_64 x86_64 x86_64 GNU/Linux
+ arch/x86/mm/pageattr.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-test:/home/ghaskins #
-/usr/lib64/ltp/testcases/realtime/func/async_handler/async_handler
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 43e2f84..62c1eef 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -906,11 +906,13 @@ int set_memory_ro(unsigned long addr, int numpages)
+ {
+ 	return change_page_attr_clear(addr, numpages, __pgprot(_PAGE_RW));
+ }
++EXPORT_SYMBOL_GPL(set_memory_ro);
+ 
+ int set_memory_rw(unsigned long addr, int numpages)
+ {
+ 	return change_page_attr_set(addr, numpages, __pgprot(_PAGE_RW));
+ }
++EXPORT_SYMBOL_GPL(set_memory_rw);
+ 
+ int set_memory_np(unsigned long addr, int numpages)
+ {
 
------------------------------------
-Asynchronous Event Handling Latency
------------------------------------
-
-jvmsim disabled
-Running 1000000 iterations
-Segmentation fault
-
----
-
-Any ideas?
-
--Greg
-
->   I installed the LTP rpm and I dont seem to have tests by that
-> name.  I have a 26.5-rt9 kernel all configured and ready to go but no
-> way to reproduce this issue.  Please advise.
->
-> Regards,
-> -Greg
->
->
->  =20
->> login: cpu 0x2: Vector: 700 (Program Check) at [c0000000e8e875d0]
->>     pc: c00000000005110c: .pick_next_pushable_task+0x54/0x9c
->>     lr: c000000000059f50: .push_rt_task+0x44/0x2b4
->>     sp: c0000000e8e87850
->>    msr: 8000000000021032
->>   current =3D 0xc0000000ea5bb2e0
->>   paca    =3D 0xc000000000608700
->>     pid   =3D 2811, comm =3D async_handler
->> kernel BUG at kernel/sched_rt.c:1041! <---------------------
->> enter ? for help
->> [link register   ] c000000000059f50 .push_rt_task+0x44/0x2b4
->> [c0000000e8e87850] c0000000e8e878f0 (unreliable)
->> [c0000000e8e87900] c00000000005a1dc .push_rt_tasks+0x1c/0x38
->> [c0000000e8e87980] c00000000005a21c .post_schedule_rt+0x24/0x44
->> [c0000000e8e87a10] c000000000057cbc .finish_task_switch+0xd0/0x180
->> [c0000000e8e87ab0] c0000000003b6e88 .__schedule+0x6e0/0x798
->> [c0000000e8e87b90] c0000000003b7148 .schedule+0xec/0x11c
->> [c0000000e8e87c10] c0000000003b7a40 .do_nanosleep+0x6c/0xcc
->> [c0000000e8e87c90] c000000000080738 .hrtimer_nanosleep+0x7c/0x100
->> [c0000000e8e87d90] c000000000080830 .sys_nanosleep+0x74/0x94
->> [c0000000e8e87e30] c0000000000086ac syscall_exit+0x0/0x40
->> --- Exception: c00 (System Call) at 0000008026449844
->> SP (400014185f0) is in userspace
->>
->>
->> This is generated by the BUG_ON lines in the pick_next_pushable functi=
-on
->> introduced by the sched-only-push-once-per-queue.patch .
->>
->> The -rt kernel prior to this patch didnot give such BUGes.
->>
->> All this was tried with
->> CONFIG_GROUP_SCHED=3DN
->> CONFIG_RT_GROUP_SCHED=3DN
->>
->>
->> Setting the options
->> CONFIG_GROUP_SCHED=3Dy
->> CONFIG_RT_GROUP_SCHED=3DY,
->> seems to solve the problem.
->>
->>
->>
->>  =20
->>    =20
->
->
->  =20
-
-
-
---------------enig2DF373CE36AFD927296B31B8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkjhSgAACgkQlOSOBdgZUxkoUwCcCngpurwiTG5oczTTKkCD2mWs
-c2MAmgKls1xGnJysUipFmKUjSYRXCBno
-=Xfpw
------END PGP SIGNATURE-----
-
---------------enig2DF373CE36AFD927296B31B8--
