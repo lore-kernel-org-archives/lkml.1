@@ -1,44 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbYI2SCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbYI2SDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbYI2SCi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 14:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYI2SCb
+	id S1754162AbYI2SDJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 14:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbYI2SCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 14:02:31 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:61344 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750819AbYI2SCa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 14:02:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=yj6UZEcOj/h7lPVUEll3YVopfbcZ/c1jKYAqoMJ9MbDzBgonv9cwXHt2v1JV+cC9x
-	w9sfru1/Y91xW2PADsTMQ==
-Message-ID: <af8810200809291102w452de643u5902dc216cafe3eb@mail.gmail.com>
-Date: Mon, 29 Sep 2008 11:02:23 -0700
-From: Pardo <pardo@google.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: Faster getcpu() and sched_getcpu()
-Cc: "dean gaudet" <odo@google.com>, linux-kernel@vger.kernel.org,
-       mbligh@google.com, briangrant@google.com, nil@google.com,
-       jyasskin@google.com
-In-Reply-To: <20080929145408.GQ25711@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <af8810200809111648n55e05ac9g286fcd498690432f@mail.gmail.com>
-	 <af8810200809231209w7428347neb88094e543a048f@mail.gmail.com>
-	 <87wsgwp6gh.fsf@basil.nowhere.org> <48E0834D.6010608@google.com>
-	 <20080929145408.GQ25711@one.firstfloor.org>
+	Mon, 29 Sep 2008 14:02:52 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:54277 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753279AbYI2SCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 14:02:51 -0400
+Message-Id: <20080929180250.111209000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 29 Sep 2008 11:02:50 -0700
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 00/31] cpumask: Provide new cpumask API
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->[Maybe disable frame pointers for vsyscall.c and the vdso?]
 
-IIRC, some vsyscall.c code needs them enabled, so Dean's earlier patch
-split vsyscall.c, creating a vsyscall_user.c for code which can run
-without them.  Seem reasonable?
+Ingo Molnar wrote:
+>
+> could you please send whatever .c changes you have already, so that we 
+> can have a look at how the end result will look like? Doesnt have to 
+> build, i'm just curious about how it looks like in practice, 
+> semantically.
+> 
+> 	Ingo
+
+Here's one(*) proposal for a new cpumask interface API in a patch
+that's compilable.  Obviously with a change of this magnitude, a large
+number of files are affected.  I tried to group them into functional
+changes, but there are a lot of "clean up" types of patches, so these
+are grouped in the second half by sections.  Hopefully this minimizes
+the interdependencies between patches.
+
+[* - Rusty has an alternative approach that he'll be submitting shortly.]
+
+The patches in this patchset are:
+
+  * Doc files and basic "cleanup" changes.
+
+	docs
+	send_IPI_mask
+	remove-min
+
+  * Base changes to cpumask.h and helper files.
+
+	mv-cpumask-alloc
+	cpumask-base
+	lib-cpumask
+
+  * Minimal changes to let init/main.c compile cleanly.
+
+  	init_main
+
+  * Mechanical changes, mostly automated.
+
+	Modify cpu-maps
+	Get-rid-of-_nr variations
+	Fix cpumask_of_cpu refs
+	Remove set_cpus_allowed_ptr
+	Remove CPU_MASK_ALL_PTR
+	Modify for_each_cpu_mask
+	Change first_cpu/next_cpu to cpus_first/cpus_next
+	Remove node_to_cpumask_ptr
+
+  * Sectional changes, to agree with API changes:
+
+	acpi
+	apic
+	cpu
+	cpufreq
+	irq
+	kernel
+	misc
+	mm
+	pci
+	rcu
+	sched
+	smp
+	time
+	tlb
+	trace
+	xen
+
+  * Allocation of temporary onstack cpumask variables.
+    (To be supplied.  See cpumask_alloc.h for prelim info.)
+
+  * Changes to non-x86 architecture files.
+    (To be supplied.)
+
+
+These changes should work in the current code.  The flag to turn on the
+new code is "CONFIG_CPUMASKS_OFFSTACK".  This is not yet turned on so
+this code should be completely compatible with current code, only laying
+down the groundwork for when cpumasks will be "offstack".  This should
+allow testing to insure that the basic interface is functionally complete.
+
+[Note: testing not yet started.]
+
+-- 
