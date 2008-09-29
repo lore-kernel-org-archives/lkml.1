@@ -1,112 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYI2UxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbYI2Uzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbYI2UxE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 16:53:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYI2Uwy
+	id S1753885AbYI2Uzv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 16:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYI2Uzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 16:52:54 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:42877 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752007AbYI2Uwx (ORCPT
+	Mon, 29 Sep 2008 16:55:43 -0400
+Received: from mga09.intel.com ([134.134.136.24]:43692 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751482AbYI2Uzm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 16:52:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ePmV8lHBteQGQ6NZuEjlb3luuVInelnzp81BYFJjtkKSR0Ha5wET3NrNIKwl5FGkuK
-         k/RaZbL6YeKIR6wXoRghvmkoD6WlocX1FsMz8DzMYPDOW0nfUfbxyMnjs2MfWDybUDdc
-         C25Dw8JI/9U9n+2vSOjefnKvTYrZpBHPoDsYw=
-Message-ID: <9e4733910809291352r7a581cfel5a3212bebac4336@mail.gmail.com>
-Date: Mon, 29 Sep 2008 16:52:40 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Maxim Levitsky" <maximlevitsky@gmail.com>
-Subject: Re: [RFC PATCH 0/4] Implementation of IR support using the input subsystem
-Cc: linux-kernel@vger.kernel.org, lirc-list@lists.sourceforge.net,
-       lirc@bartelmus.de
-In-Reply-To: <48E1371A.7050906@gmail.com>
+	Mon, 29 Sep 2008 16:55:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
+   d="scan'208";a="341906981"
+From: "Nakajima, Jun" <jun.nakajima@intel.com>
+To: "akataria@vmware.com" <akataria@vmware.com>,
+       Gerd Hoffmann <kraxel@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
+       Daniel Hecht <dhecht@vmware.com>
+Date: Mon, 29 Sep 2008 13:55:19 -0700
+Subject: RE: Use CPUID to communicate with the hypervisor.
+Thread-Topic: Use CPUID to communicate with the hypervisor.
+Thread-Index: Ackiav0P/IqPiFqhRnO6hg0TbjhDtwAA6w9Q
+Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A15726E15A@orsmsx505.amr.corp.intel.com>
+References: <1222472815.29886.43.camel@alok-dev1>
+	 <48E090B6.2080809@redhat.com> <1222710924.30247.21.camel@alok-dev1>
+	 <48E1227B.9040809@redhat.com> <1222717085.30247.44.camel@alok-dev1>
+In-Reply-To: <1222717085.30247.44.camel@alok-dev1>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080929155506.14559.35166.stgit@terra>
-	 <48E1371A.7050906@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 29, 2008 at 4:14 PM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> Jon Smirl wrote:
->>
->> Second pass at implementing evdev support for IR. The goal of in-kernel IR
->> is to integrate IR events into the evdev input event queue and maintain
->> ordering of events from all input devices.
->>
->> Note that user space IR device drivers can use the existing support in
->> evdev to inject events into the input queue.
->>
->> Send and receive are implemented. Received IR messages are decoded and
->> sent to user space as input messages. Send is done via an IOCTL on the input
->> device.
->>
->> Two drivers are supplied. mceusb2 implements send and receive support for
->> the Microsoft USB IR dongle.
->> The GPT driver implements receive only support for a GPT pin - GPT is a
->> GPIO with a timer attached.
->>
->> Encoders and decoders have not been written for all protocols. Repeat is
->> not handled for any protocol. I'm looking for help. There are 15 more
->> existing LIRC drivers.
+On 9/29/2008 12:38:05 PM, Alok Kataria wrote:
+> On Mon, 2008-09-29 at 11:46 -0700, Gerd Hoffmann wrote:
+> > Alok Kataria wrote:
+> > > Hi Gerd,
+> > >
+> > > > Shouldn't you check the hypervisor signature here?
+> > >
+> > > Nope the whole idea of not checking the hypervisor signature is
+> > > that we should keep this interface generic.
+> >
+> > Nice idea.  Problem with that is that approach is that we don't have
+> > full control here.  It probably isn't that a hard to have vmware,
+> > xen and kvm agree here, given vmware proposes this and for xen+kvm
+> > one can send patches.
 >
->
-> Hi,
->
-> One thing worries me, there are bazillion of different IR protocols,
-> but in-kernel decode support will mean that only handful of known protocols
-> will work.
-> Suppose I take an old remote which has some unknown protocol.
-> I want to be able to teach the system to listen to it.
-> But how this can be done if protocols are hard coded?
-
-There's not a bazillion different protocols.
-
-For example thirty different vendors may use the NEC encoding. They
-will each use a unique device number and their own commands. While
-each of the thirty vendors may assign different device/command codes
-they are all still using the NEC encoding. These remotes won't trigger
-the other devices because the device fields won't match.
-
-This code only converts raw IR timing of NEC/etc encoding into
-device/command. User space has to then figure out how to interpret
-device/command.
-
-Christoph has pointed out that their are some more obscure encodings
-from RCMM, Grundig, Bang&Olufsen, Goldstar, Serial, Denon, RECS80, and
-Motorola that are different than the common ones at
-http://www.sbprojects.com.
-
-It takes about 1KB of code to add an encoding. We could make an "extra
-encoding" module for these obscure ones.
-
-You can't have an infinite variety of encodings or table based
-universal remote controls wouldn't work.
-
-
->
-> I think that it would be much better to pass raw ir codes to userspace, and
-> make it deal with bazillion protocols, and you can always make it auto learn
-> too, and save
-> results in configuration file.
->
-> My .02 cents.
->
-> Best regards,
->        Maxim Levitsky
+> Yep.
+> And please note that this does allow either Xen/KVM to propose a new
+> leaf and the rest of the hypervisor players can decide to export that
+> leaf or return a zero value.
 >
 
+For example, we can set the following ranges so that so that each VMM vender can define and implement features avoiding conflicts:
+vmware to define 0x4000001X
+xen to define 0x4000002X
+kvm to define 0x4000003X
+...
 
+The point here is that all the features are generic because we don't make them exclusive. To that end, we don't check the signature. Whatever common features can be found in the above, and each hypervisor can choose to implement what was defined by other hypervisors.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Detection of the feature 0x400000XY is done by:
+1.  Get EAX from Leaf 0x4000000000, Hypervisor CPUID information. EAX returns the maximum input value for hypervisor CPUID info.
+
+    If EAX < 0x400000XY, then the feature is not available.
+
+2.  Get EAX from the target Leaf 0x400000XY by doing cpuid_eax(0x400000XY).
+
+    If (EAX == 0), the feature is not implemented.
+
+If the hypervisor does not implement a particular feature specified by 0x400000XN and 0x400000XN < 0x400000XY, the hypervisor needs to return 0 in EAX with cpuid_eax(0x400000XN) (XN > 0).
+
+             .
+Jun Nakajima | Intel Open Source Technology Center
