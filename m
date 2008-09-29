@@ -1,57 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbYI2Pca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbYI2PjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752512AbYI2Pca (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 11:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYI2PcX
+	id S1752731AbYI2PjT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 11:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYI2PjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 11:32:23 -0400
-Received: from mga02.intel.com ([134.134.136.20]:4639 "EHLO mga02.intel.com"
+	Mon, 29 Sep 2008 11:39:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41499 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbYI2PcW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 11:32:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,332,1220252400"; 
-   d="scan'208";a="341809658"
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: Avi Kivity <avi@redhat.com>, Gleb Natapov <gleb@redhat.com>
-CC: Alok Kataria <akataria@vmware.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
-       Dan Hecht <dhecht@vmware.com>
-Date: Mon, 29 Sep 2008 08:32:10 -0700
-Subject: RE: Use CPUID to communicate with the hypervisor.
-Thread-Topic: Use CPUID to communicate with the hypervisor.
-Thread-Index: AckiBkBz0YQD2bo+RlaCKKnqGOt5ggAQQnMQ
-Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A15726DBE3@orsmsx505.amr.corp.intel.com>
-References: <1222472815.29886.43.camel@alok-dev1>
- <20080929065557.GB9952@redhat.com> <48E085B3.1080507@redhat.com>
-In-Reply-To: <48E085B3.1080507@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1751337AbYI2PjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 11:39:05 -0400
+Date: Mon, 29 Sep 2008 11:35:58 -0400 (EDT)
+Message-Id: <20080929.113558.112628070.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, akpm@linux-foundation.org, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com
+Subject: [PATCH 1/1] block: add lld busy state exporting interface
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/29/2008 12:37:23 AM, Avi Kivity wrote:
-> Gleb Natapov wrote:
-> > Can this interface be used to pass variable sized data from a
-> > hypervisor to a gust? ACPI or DMI tables for instance.
-> >
->
-> In theory it can, but it would be a bad idea.  cpuid is best used to
-> communicate cpu features; ACPI and DMI are (mostly) system features.
+Hi Jens,
 
-Also, we have reserved the MSRs from 0x40000000 - 0x400000FF for software use. We could use such MSRs, but what's the benefits of using those when ACPI already defined the detection mechanism?
+I hope the previous RFC patch(*) would be no problem, since I haven't
+gotten any negative comment.
+    (*) http://lkml.org/lkml/2008/9/25/262
 
-             .
-Jun Nakajima | Intel Open Source Technology Center
+So could you take this patch for 2.6.28 additionally?
+This patch adds a new interface for request stacking drivers.
+There should be no regression risk.
+
+This patch was created on top of the commit below of for-2.6.28.
+---------------------------------------------------------------------
+commit e857b07acc3f1352224f380fcbf26ef985116cc8
+Author: Sven Schuetz <sven@linux.vnet.ibm.com>
+Date:   Fri Sep 26 10:58:02 2008 +0200
+
+    include blktrace_api.h in headers_install
+---------------------------------------------------------------------
+
+Thanks,
+Kiyoshi Ueda
+
+
+Subject: [PATCH 1/1] block: add lld busy state exporting interface
+
+This patch adds an new interface, blk_lld_busy(), to check lld's
+busy state from the block layer.
+blk_lld_busy() calls down into low-level drivers for the checking
+if the drivers set q->lld_busy_fn() using blk_queue_lld_busy().
+
+This resolves a performance problem on request stacking devices below.
+
+Some drivers like scsi mid layer stop dispatching request when
+they detect busy state on its low-level device like host/target/device.
+It allows other requests to stay in the I/O scheduler's queue
+for a chance of merging.
+
+Request stacking drivers like request-based dm should follow
+the same logic.
+However, there is no generic interface for the stacked device
+to check if the underlying device(s) are busy.
+If the request stacking driver dispatches and submits requests to
+the busy underlying device, the requests will stay in
+the underlying device's queue without a chance of merging.
+This causes performance problem on burst I/O load.
+
+With this patch, busy state of the underlying device is exported
+via q->lld_busy_fn().  So the request stacking driver can check it
+and stop dispatching requests if busy.
+
+The underlying device driver must return the busy state appropriately:
+    1: when the device driver can't process requests immediately.
+    0: when the device driver can process requests immediately,
+       including abnormal situations where the device driver needs
+       to kill all requests.
+
+
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+---
+ block/blk-core.c       |   25 +++++++++++++++++++++++++
+ block/blk-settings.c   |    6 ++++++
+ include/linux/blkdev.h |    4 ++++
+ 3 files changed, 35 insertions(+)
+
+Index: linux-2.6-block/block/blk-settings.c
+===================================================================
+--- linux-2.6-block.orig/block/blk-settings.c
++++ linux-2.6-block/block/blk-settings.c
+@@ -89,6 +89,12 @@ void blk_queue_rq_timed_out(struct reque
+ }
+ EXPORT_SYMBOL_GPL(blk_queue_rq_timed_out);
+ 
++void blk_queue_lld_busy(struct request_queue *q, lld_busy_fn *fn)
++{
++	q->lld_busy_fn = fn;
++}
++EXPORT_SYMBOL_GPL(blk_queue_lld_busy);
++
+ /**
+  * blk_queue_make_request - define an alternate make_request function for a device
+  * @q:  the request queue for the device to be affected
+Index: linux-2.6-block/include/linux/blkdev.h
+===================================================================
+--- linux-2.6-block.orig/include/linux/blkdev.h
++++ linux-2.6-block/include/linux/blkdev.h
+@@ -269,6 +269,7 @@ typedef int (merge_bvec_fn) (struct requ
+ typedef void (prepare_flush_fn) (struct request_queue *, struct request *);
+ typedef void (softirq_done_fn)(struct request *);
+ typedef int (dma_drain_needed_fn)(struct request *);
++typedef int (lld_busy_fn) (struct request_queue *q);
+ 
+ enum blk_eh_timer_return {
+ 	BLK_EH_NOT_HANDLED,
+@@ -325,6 +326,7 @@ struct request_queue
+ 	softirq_done_fn		*softirq_done_fn;
+ 	rq_timed_out_fn		*rq_timed_out_fn;
+ 	dma_drain_needed_fn	*dma_drain_needed;
++	lld_busy_fn		*lld_busy_fn;
+ 
+ 	/*
+ 	 * Dispatch queue sorting
+@@ -699,6 +701,7 @@ extern struct request *blk_get_request(s
+ extern void blk_insert_request(struct request_queue *, struct request *, int, void *);
+ extern void blk_requeue_request(struct request_queue *, struct request *);
+ extern int blk_rq_check_limits(struct request_queue *q, struct request *rq);
++extern int blk_lld_busy(struct request_queue *q);
+ extern int blk_insert_cloned_request(struct request_queue *q,
+ 				     struct request *rq);
+ extern void blk_plug_device(struct request_queue *);
+@@ -835,6 +838,7 @@ extern void blk_queue_update_dma_pad(str
+ extern int blk_queue_dma_drain(struct request_queue *q,
+ 			       dma_drain_needed_fn *dma_drain_needed,
+ 			       void *buf, unsigned int size);
++extern void blk_queue_lld_busy(struct request_queue *q, lld_busy_fn *fn);
+ extern void blk_queue_segment_boundary(struct request_queue *, unsigned long);
+ extern void blk_queue_prep_rq(struct request_queue *, prep_rq_fn *pfn);
+ extern void blk_queue_merge_bvec(struct request_queue *, merge_bvec_fn *);
+Index: linux-2.6-block/block/blk-core.c
+===================================================================
+--- linux-2.6-block.orig/block/blk-core.c
++++ linux-2.6-block/block/blk-core.c
+@@ -2098,6 +2098,31 @@ void blk_rq_bio_prep(struct request_queu
+ 		rq->rq_disk = bio->bi_bdev->bd_disk;
+ }
+ 
++/**
++ * blk_lld_busy - Check if underlying low-level drivers of a device are busy
++ * @q : the queue of the device being checked
++ *
++ * Description:
++ *    Check if underlying low-level drivers of a device are busy.
++ *    If the drivers want to export their busy state, they must set own
++ *    exporting function using blk_queue_lld_busy() first.
++ *
++ *    Basically, this function is used only by request stacking drivers
++ *    to stop dispatching requests to underlying devices when underlying
++ *    devices are busy.  This behavior helps more I/O merging on the queue
++ *    of the request stacking driver and prevents I/O throughput regression
++ *    on burst I/O load.
++ *
++ * Return:
++ *    0 - Not busy (The request stacking driver should dispatch request)
++ *    1 - Busy (The request stacking driver should stop dispatching request)
++ */
++int blk_lld_busy(struct request_queue *q)
++{
++	return q->lld_busy_fn ? q->lld_busy_fn(q) : 0;
++}
++EXPORT_SYMBOL_GPL(blk_lld_busy);
++
+ int kblockd_schedule_work(struct request_queue *q, struct work_struct *work)
+ {
+ 	return queue_work(kblockd_workqueue, work);
