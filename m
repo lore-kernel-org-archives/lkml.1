@@ -1,115 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbYI2SPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbYI2SOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757276AbYI2SPn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 14:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbYI2SJY
+	id S1757182AbYI2SOv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 14:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbYI2SGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 14:09:24 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:33535 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755907AbYI2SJW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 14:09:22 -0400
-Message-ID: <48E11AD5.8060508@novell.com>
-Date: Mon, 29 Sep 2008 14:13:41 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: ghaskins@novell.com, linux-rt-users <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [BUG][PPC64] BUG in 2.6.26.5-rt9 causing Hang
-References: <20080925123235.GA27916@linux.vnet.ibm.com>
-In-Reply-To: <20080925123235.GA27916@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig881914E056A300BD217DBD85"
+	Mon, 29 Sep 2008 14:06:11 -0400
+Received: from zombie2.ncsc.mil ([144.51.88.133]:41094 "EHLO zombie2.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755144AbYI2SGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 14:06:09 -0400
+X-Greylist: delayed 2043 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Sep 2008 14:06:08 EDT
+From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+To: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
+       sds@tycho.nsa.gov, matthew.dodd@sparta.com, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       labeled-nfs@linux-nfs.org, "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
+Subject: [PATCH 08/14] NFS: Add security_label text mount option and handling code to NFS
+Date: Mon, 29 Sep 2008 13:06:20 -0400
+Message-Id: <1222707986-26606-9-git-send-email-dpquigl@tycho.nsa.gov>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov>
+References: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig881914E056A300BD217DBD85
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch adds two new text options to to the NFS mount options to specify
+security labeling. It also sends certain LSM related mount options into the
+module for handling.
 
-Hi Chirag
+Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
+Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
+---
+ fs/nfs/super.c             |    9 +++++++++
+ include/linux/nfs4_mount.h |    6 +++++-
+ security/selinux/hooks.c   |    2 +-
+ 3 files changed, 15 insertions(+), 2 deletions(-)
 
-Chirag Jog wrote:
-> Hi Gregory,
-> We see the following BUG followed by a hang on the latest kernel 2.6.26=
-=2E5-rt9 on a Power6 blade (PPC64)
-> It is easily recreated by running the async_handler or sbrk_mutex (real=
-time tests from ltp) tests.
->  =20
-FYI I am looking at this now.  I suspect a dequeue_pushable_task()
-probably found its way inside a conditional for GROUP_SCHED and
-inadventently gets compiled away if you disable the feature.=20
-Investigating now..
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 9abcd2b..256ce27 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -75,6 +75,7 @@ enum {
+ 	Opt_acl, Opt_noacl,
+ 	Opt_rdirplus, Opt_nordirplus,
+ 	Opt_sharecache, Opt_nosharecache,
++	Opt_security_label, Opt_nosecurity_label,
+ 
+ 	/* Mount options that take integer arguments */
+ 	Opt_port,
+@@ -128,6 +129,8 @@ static match_table_t nfs_mount_option_tokens = {
+ 	{ Opt_nordirplus, "nordirplus" },
+ 	{ Opt_sharecache, "sharecache" },
+ 	{ Opt_nosharecache, "nosharecache" },
++	{ Opt_security_label, "security_label" },
++	{ Opt_nosecurity_label, "nosecurity_label" },
+ 
+ 	{ Opt_port, "port=%u" },
+ 	{ Opt_rsize, "rsize=%u" },
+@@ -1033,6 +1036,12 @@ static int nfs_parse_mount_options(char *raw,
+ 		case Opt_nosharecache:
+ 			mnt->flags |= NFS_MOUNT_UNSHARED;
+ 			break;
++		case Opt_nosecurity_label:
++			mnt->flags &= ~NFS4_MOUNT_SECURITY_LABEL;
++			break;
++		case Opt_security_label:
++			mnt->flags |= NFS4_MOUNT_SECURITY_LABEL;
++			break;
+ 
+ 		/*
+ 		 * options that take numeric values
+diff --git a/include/linux/nfs4_mount.h b/include/linux/nfs4_mount.h
+index a0dcf66..e65067b 100644
+--- a/include/linux/nfs4_mount.h
++++ b/include/linux/nfs4_mount.h
+@@ -17,6 +17,7 @@
+  * but here they are anyway.
+  */
+ #define NFS4_MOUNT_VERSION	1
++#define NFS4_MAX_CONTEXT_LEN	4096
+ 
+ struct nfs_string {
+ 	unsigned int len;
+@@ -53,6 +54,8 @@ struct nfs4_mount_data {
+ 	/* Pseudo-flavours to use for authentication. See RFC2623 */
+ 	int auth_flavourlen;			/* 1 */
+ 	int __user *auth_flavours;		/* 1 */
++
++	char context[NFS4_MAX_CONTEXT_LEN + 1];  /* 2 */
+ };
+ 
+ /* bits in the flags field */
+@@ -66,6 +69,7 @@ struct nfs4_mount_data {
+ #define NFS4_MOUNT_NOAC		0x0020	/* 1 */
+ #define NFS4_MOUNT_STRICTLOCK	0x1000	/* 1 */
+ #define NFS4_MOUNT_UNSHARED	0x8000	/* 1 */
+-#define NFS4_MOUNT_FLAGMASK	0x9033
++#define NFS4_MOUNT_SECURITY_LABEL 0x10000 /* 2 */
++#define NFS4_MOUNT_FLAGMASK	0x19033
+ 
+ #endif
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 78e79d3..6919766 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -612,7 +612,7 @@ static int selinux_set_mnt_opts(struct super_block *sb,
+ 	for (i = 0; i < num_opts; i++) {
+ 		u32 sid;
+ 		if (flags[i] == NATIVE_LABELS_MNT) {
+-			sbsec->flags | = NATIVE_LABELS_MNT;
++			sbsec->flags |= NATIVE_LABELS_MNT;
+ 			continue;
+ 		}
+ 		rc = security_context_to_sid(mount_options[i],
+-- 
+1.5.5.1
 
--Greg
-
-> login: cpu 0x2: Vector: 700 (Program Check) at [c0000000e8e875d0]
->     pc: c00000000005110c: .pick_next_pushable_task+0x54/0x9c
->     lr: c000000000059f50: .push_rt_task+0x44/0x2b4
->     sp: c0000000e8e87850
->    msr: 8000000000021032
->   current =3D 0xc0000000ea5bb2e0
->   paca    =3D 0xc000000000608700
->     pid   =3D 2811, comm =3D async_handler
-> kernel BUG at kernel/sched_rt.c:1041! <---------------------
-> enter ? for help
-> [link register   ] c000000000059f50 .push_rt_task+0x44/0x2b4
-> [c0000000e8e87850] c0000000e8e878f0 (unreliable)
-> [c0000000e8e87900] c00000000005a1dc .push_rt_tasks+0x1c/0x38
-> [c0000000e8e87980] c00000000005a21c .post_schedule_rt+0x24/0x44
-> [c0000000e8e87a10] c000000000057cbc .finish_task_switch+0xd0/0x180
-> [c0000000e8e87ab0] c0000000003b6e88 .__schedule+0x6e0/0x798
-> [c0000000e8e87b90] c0000000003b7148 .schedule+0xec/0x11c
-> [c0000000e8e87c10] c0000000003b7a40 .do_nanosleep+0x6c/0xcc
-> [c0000000e8e87c90] c000000000080738 .hrtimer_nanosleep+0x7c/0x100
-> [c0000000e8e87d90] c000000000080830 .sys_nanosleep+0x74/0x94
-> [c0000000e8e87e30] c0000000000086ac syscall_exit+0x0/0x40
-> --- Exception: c00 (System Call) at 0000008026449844
-> SP (400014185f0) is in userspace
->
->
-> This is generated by the BUG_ON lines in the pick_next_pushable functio=
-n
-> introduced by the sched-only-push-once-per-queue.patch .
->
-> The -rt kernel prior to this patch didnot give such BUGes.
->
-> All this was tried with
-> CONFIG_GROUP_SCHED=3DN
-> CONFIG_RT_GROUP_SCHED=3DN
->
->
-> Setting the options
-> CONFIG_GROUP_SCHED=3Dy
-> CONFIG_RT_GROUP_SCHED=3DY,
-> seems to solve the problem.
->
->
->
->  =20
-
-
-
---------------enig881914E056A300BD217DBD85
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkjhGtUACgkQlOSOBdgZUxkCVgCffaEoDeJs6xpk6hMTxms94vYQ
-9YUAn0Mcc78HvOozpckeG+tfE4OIbTmS
-=ZbVA
------END PGP SIGNATURE-----
-
---------------enig881914E056A300BD217DBD85--
