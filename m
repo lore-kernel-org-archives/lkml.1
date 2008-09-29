@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYI2JQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbYI2JT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023AbYI2JQQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 05:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYI2JQE
+	id S1753935AbYI2JT6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 05:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYI2JTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 05:16:04 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:44874 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751594AbYI2JQB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 05:16:01 -0400
-Date: Mon, 29 Sep 2008 10:15:55 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: vincen <mcuos.com@gmail.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: PATCH linux-2.6.27-rc7-git5]ARM:Add the Nuvoton w90P910
-	Platform support to LINUX-ARM tree
-Message-ID: <20080929091555.GB14564@fluff.org.uk>
-References: <e68bb3470809280515v2079e787yf190af69ea1be3ab@mail.gmail.com>
+	Mon, 29 Sep 2008 05:19:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58049 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750912AbYI2JTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 05:19:49 -0400
+Date: Mon, 29 Sep 2008 11:19:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: merge winchip-2 and winchip-2a cpu choices
+Message-ID: <20080929091908.GA7735@elte.hu>
+References: <20080928212815.6ffea9d9.krzysztof.h1@wp.pl> <48E09AE9.3090501@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <e68bb3470809280515v2079e787yf190af69ea1be3ab@mail.gmail.com>
-X-Disclaimer: These are my own opinions, so there!
+In-Reply-To: <48E09AE9.3090501@zytor.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 28, 2008 at 08:15:10PM +0800, vincen wrote:
-> From: vincen.zswan mcuos.com@gmail.com
-> 
-> Dear sir,
-> I have add the Nuvoton ARM series IC W90P910 Platform support to LINUX
-> ARM tree and make a patch named patch-2.6.27-rc7-git5-w90p910.patch.
-> 
-> As the file size 177kb,so you can get the patch file from link:
-> 
-> http://www.mcuos.com/attachment.php?aid=583
 
-If posting large patches, it would generally be much easier to split
-them into smaller chunks of logical changes. For an example, the defconfig
-addition could be seperated from the main submission, etc.
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> If the patch file is not accepted by Linux, please give some advice ,
-> I need to modify it better.thanks!
-> 
-> Only add the mach-w90x900 directory to /linux/arch/arm and modify
-> Makefile and Kconfig.
-> Now,The Platform code support only uart driver and add the
-> w90p910_serial.c to /driver/serial and  modify Makefile and Kconfig.
-> 
-> The Platform default config in arch/arm/configs/w90p910_defconfig
-> 
-> Changes:
-> patching file arch/arm/Kconfig
-> patching file arch/arm/Makefile
-> patching file arch/arm/configs/w90p910_defconfig
-> 
-> patching file arch/arm/mach-w90x900
-> 
-> patching file arch/arm/mm/Kconfig
-> patching file drivers/serial/Kconfig
-> patching file drivers/serial/Makefile
-> patching file drivers/serial/w90x900_serial.c
-> patching file include/linux/serial_core.h
-> 
-> -- 
-> Vincen
-> Signed-off-by: vincen.zswan <mcuos.com@gmail.com>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Looks good to me.
+>
+> Acked-by: H. Peter Anvin <hpa@zytor.com>
+>
+> Krzysztof Helt wrote:
+>> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+>>
+>> The Winchip-2 and Winchip-2A cpu choices select the
+>> same options for kernel and compiler. 
+>>
+>> Merge them to save few bytes and reduce confusion.
+>>
+>> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+applied to tip/x86/core, thanks Krzysztof!
 
-  'a smiley only costs 4 bytes'
+(I left out the UML defconfig update - that can be done later and it 
+doesnt hurt anyway.)
+
+	Ingo
