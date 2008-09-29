@@ -1,267 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbYI2HDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbYI2HDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753794AbYI2HDi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 03:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYI2HDV
+	id S1753987AbYI2HDy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 03:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYI2HDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 03:03:21 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:44683 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752134AbYI2HDU (ORCPT
+	Mon, 29 Sep 2008 03:03:32 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:35684 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753413AbYI2HDb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 03:03:20 -0400
+	Mon, 29 Sep 2008 03:03:31 -0400
 From: Krishna Kumar <krkumar2@in.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Oleg Nesterov <oleg@tv-sign.ru>, Krishna Kumar <krkumar2@in.ibm.com>
-Date: Mon, 29 Sep 2008 12:33:14 +0530
-Message-Id: <20080929070314.7386.28163.sendpatchset@localhost.localdomain>
+Date: Mon, 29 Sep 2008 12:33:28 +0530
+Message-Id: <20080929070328.7386.70911.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080929070302.7386.72726.sendpatchset@localhost.localdomain>
 References: <20080929070302.7386.72726.sendpatchset@localhost.localdomain>
-Subject: [REV2: PATCH 1/2]: workqueue: Implement the kernel API
+Subject: [REV2: PATCH 2/2]: workqueue: Modify some users to use the new API
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Krishna Kumar <krkumar2@in.ibm.com>
 
-Implement two API's for quickly updating delayed works:
-	int schedule_update_delayed_work(struct delayed_work *dwork,
-					 unsigned long delay);
-	int queue_update_delayed_work(struct workqueue_struct *wq,
-					 struct delayed_work *dwork,
-					 unsigned long delay);
-
-These API's are useful to update an existing work entry more efficiently (but
-can also be used to queue a new work entry) when the operation is done very
-frequently. The rationale is to save time of first cancelling work/timer and
-adding work/timer when the same work is added many times in quick succession.
+Modify some users to use the new API.
 
 Signed-off-by: Krishna Kumar <krkumar2@in.ibm.com>
 ---
- include/linux/timer.h     |    1 
- include/linux/workqueue.h |    4 +
- kernel/timer.c            |   22 ++++++
- kernel/workqueue.c        |  124 +++++++++++++++++++++++++++++++-----
- 4 files changed, 135 insertions(+), 16 deletions(-)
+ drivers/net/wireless/ipw2100.c       |   12 ++++++------
+ drivers/net/wireless/libertas/scan.c |    5 ++---
+ drivers/net/wireless/libertas/wext.c |    7 +++----
+ fs/afs/vlocation.c                   |   11 +++--------
+ fs/ocfs2/cluster/heartbeat.c         |    5 ++---
+ 5 files changed, 16 insertions(+), 24 deletions(-)
 
-diff -ruNp 2.6.27-rc7-org/include/linux/timer.h 2.6.27-rc7-new/include/linux/timer.h
---- 2.6.27-rc7-org/include/linux/timer.h	2008-09-22 03:59:55.000000000 +0530
-+++ 2.6.27-rc7-new/include/linux/timer.h	2008-09-29 12:06:17.000000000 +0530
-@@ -88,6 +88,7 @@ extern void add_timer_on(struct timer_li
- extern int del_timer(struct timer_list * timer);
- extern int __mod_timer(struct timer_list *timer, unsigned long expires);
- extern int mod_timer(struct timer_list *timer, unsigned long expires);
-+extern int update_timer_expiry(struct timer_list *timer, unsigned long expires);
+diff -ruNp 2.6.27-rc7-org/drivers/net/wireless/ipw2100.c 2.6.27-rc7-new/drivers/net/wireless/ipw2100.c
+--- 2.6.27-rc7-org/drivers/net/wireless/ipw2100.c	2008-09-22 03:59:55.000000000 +0530
++++ 2.6.27-rc7-new/drivers/net/wireless/ipw2100.c	2008-09-29 12:06:55.000000000 +0530
+@@ -2085,9 +2085,8 @@ static void isr_indicate_rf_kill(struct 
+ 
+ 	/* Make sure the RF Kill check timer is running */
+ 	priv->stop_rf_kill = 0;
+-	cancel_delayed_work(&priv->rf_kill);
+-	queue_delayed_work(priv->workqueue, &priv->rf_kill,
+-			   round_jiffies_relative(HZ));
++	queue_update_delayed_work(priv->workqueue, &priv->rf_kill,
++				  round_jiffies_relative(HZ));
+ }
+ 
+ static void send_scan_event(void *data)
+@@ -4241,9 +4240,10 @@ static int ipw_radio_kill_sw(struct ipw2
+ 					  "disabled by HW switch\n");
+ 			/* Make sure the RF_KILL check timer is running */
+ 			priv->stop_rf_kill = 0;
+-			cancel_delayed_work(&priv->rf_kill);
+-			queue_delayed_work(priv->workqueue, &priv->rf_kill,
+-					   round_jiffies_relative(HZ));
++
++			queue_update_delayed_work(priv->workqueue,
++						  &priv->rf_kill,
++						  round_jiffies_relative(HZ));
+ 		} else
+ 			schedule_reset(priv);
+ 	}
+diff -ruNp 2.6.27-rc7-org/drivers/net/wireless/libertas/scan.c 2.6.27-rc7-new/drivers/net/wireless/libertas/scan.c
+--- 2.6.27-rc7-org/drivers/net/wireless/libertas/scan.c	2008-09-22 03:59:55.000000000 +0530
++++ 2.6.27-rc7-new/drivers/net/wireless/libertas/scan.c	2008-09-29 12:06:55.000000000 +0530
+@@ -435,9 +435,8 @@ int lbs_scan_networks(struct lbs_private
+ 				priv->scan_channel = to_scan;
+ 			else
+ 				priv->scan_channel += to_scan;
+-			cancel_delayed_work(&priv->scan_work);
+-			queue_delayed_work(priv->work_thread, &priv->scan_work,
+-					   msecs_to_jiffies(300));
++			queue_update_delayed_work(priv->work_thread,
++				&priv->scan_work, msecs_to_jiffies(300));
+ 			/* skip over GIWSCAN event */
+ 			goto out;
+ 		}
+diff -ruNp 2.6.27-rc7-org/drivers/net/wireless/libertas/wext.c 2.6.27-rc7-new/drivers/net/wireless/libertas/wext.c
+--- 2.6.27-rc7-org/drivers/net/wireless/libertas/wext.c	2008-09-22 03:59:55.000000000 +0530
++++ 2.6.27-rc7-new/drivers/net/wireless/libertas/wext.c	2008-09-29 12:06:55.000000000 +0530
+@@ -24,10 +24,9 @@
+ 
+ static inline void lbs_postpone_association_work(struct lbs_private *priv)
+ {
+-	if (priv->surpriseremoved)
+-		return;
+-	cancel_delayed_work(&priv->assoc_work);
+-	queue_delayed_work(priv->work_thread, &priv->assoc_work, HZ / 2);
++	if (!priv->surpriseremoved)
++		queue_update_delayed_work(priv->work_thread, &priv->assoc_work,
++					  HZ / 2);
+ }
+ 
+ static inline void lbs_cancel_association_work(struct lbs_private *priv)
+diff -ruNp 2.6.27-rc7-org/fs/afs/vlocation.c 2.6.27-rc7-new/fs/afs/vlocation.c
+--- 2.6.27-rc7-org/fs/afs/vlocation.c	2008-09-22 03:59:55.000000000 +0530
++++ 2.6.27-rc7-new/fs/afs/vlocation.c	2008-09-29 12:06:55.000000000 +0530
+@@ -557,12 +557,8 @@ static void afs_vlocation_reaper(struct 
+ 		if (expiry > now) {
+ 			delay = (expiry - now) * HZ;
+ 			_debug("delay %lu", delay);
+-			if (!schedule_delayed_work(&afs_vlocation_reap,
+-						   delay)) {
+-				cancel_delayed_work(&afs_vlocation_reap);
+-				schedule_delayed_work(&afs_vlocation_reap,
+-						      delay);
+-			}
++			schedule_update_delayed_work(&afs_vlocation_reap,
++						     delay);
+ 			break;
+ 		}
+ 
+@@ -615,8 +611,7 @@ void afs_vlocation_purge(void)
+ 			   &afs_vlocation_update, 0);
+ 	destroy_workqueue(afs_vlocation_update_worker);
+ 
+-	cancel_delayed_work(&afs_vlocation_reap);
+-	schedule_delayed_work(&afs_vlocation_reap, 0);
++	schedule_update_delayed_work(&afs_vlocation_reap, 0);
+ }
  
  /*
-  * The jiffies value which is added to now, when there is no timer
-diff -ruNp 2.6.27-rc7-org/include/linux/workqueue.h 2.6.27-rc7-new/include/linux/workqueue.h
---- 2.6.27-rc7-org/include/linux/workqueue.h	2008-09-22 03:59:55.000000000 +0530
-+++ 2.6.27-rc7-new/include/linux/workqueue.h	2008-09-29 12:06:17.000000000 +0530
-@@ -185,6 +185,8 @@ extern int queue_delayed_work(struct wor
- 			struct delayed_work *work, unsigned long delay);
- extern int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
- 			struct delayed_work *work, unsigned long delay);
-+extern int queue_update_delayed_work(struct workqueue_struct *wq,
-+			struct delayed_work *dwork, unsigned long delay);
+diff -ruNp 2.6.27-rc7-org/fs/ocfs2/cluster/heartbeat.c 2.6.27-rc7-new/fs/ocfs2/cluster/heartbeat.c
+--- 2.6.27-rc7-org/fs/ocfs2/cluster/heartbeat.c	2008-09-22 03:59:55.000000000 +0530
++++ 2.6.27-rc7-new/fs/ocfs2/cluster/heartbeat.c	2008-09-29 12:06:55.000000000 +0530
+@@ -172,10 +172,9 @@ static void o2hb_arm_write_timeout(struc
+ {
+ 	mlog(0, "Queue write timeout for %u ms\n", O2HB_MAX_WRITE_TIMEOUT_MS);
  
- extern void flush_workqueue(struct workqueue_struct *wq);
- extern void flush_scheduled_work(void);
-@@ -194,6 +196,8 @@ extern int schedule_work_on(int cpu, str
- extern int schedule_delayed_work(struct delayed_work *work, unsigned long delay);
- extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
- 					unsigned long delay);
-+extern int schedule_update_delayed_work(struct delayed_work *work,
-+					unsigned long delay);
- extern int schedule_on_each_cpu(work_func_t func);
- extern int current_is_keventd(void);
- extern int keventd_up(void);
-diff -ruNp 2.6.27-rc7-org/kernel/timer.c 2.6.27-rc7-new/kernel/timer.c
---- 2.6.27-rc7-org/kernel/timer.c	2008-09-22 03:59:55.000000000 +0530
-+++ 2.6.27-rc7-new/kernel/timer.c	2008-09-29 12:06:29.000000000 +0530
-@@ -520,6 +520,28 @@ static struct tvec_base *lock_timer_base
- 	}
+-	cancel_delayed_work(&reg->hr_write_timeout_work);
+ 	reg->hr_last_timeout_start = jiffies;
+-	schedule_delayed_work(&reg->hr_write_timeout_work,
+-			      msecs_to_jiffies(O2HB_MAX_WRITE_TIMEOUT_MS));
++	schedule_update_delayed_work(&reg->hr_write_timeout_work,
++			msecs_to_jiffies(O2HB_MAX_WRITE_TIMEOUT_MS));
  }
  
-+/*
-+ * update_timer: Quickly update the timer expiry if the timer is pending.
-+ *
-+ * Return 1 if the timer was successfully updated; otherwise return 0.
-+ */
-+int update_timer_expiry(struct timer_list *timer, unsigned long expires)
-+{
-+	struct tvec_base *base;
-+	unsigned long flags;
-+	int ret = 0;
-+
-+	base = lock_timer_base(timer, &flags);
-+	if (likely(timer_pending(timer))) {
-+		detach_timer(timer, 0);
-+		timer->expires = expires;
-+		internal_add_timer(base, timer);
-+		ret = 1;
-+	}
-+	spin_unlock_irqrestore(&base->lock, flags);
-+	return ret;
-+}
-+
- int __mod_timer(struct timer_list *timer, unsigned long expires)
- {
- 	struct tvec_base *base, *new_base;
-diff -ruNp 2.6.27-rc7-org/kernel/workqueue.c 2.6.27-rc7-new/kernel/workqueue.c
---- 2.6.27-rc7-org/kernel/workqueue.c	2008-09-22 03:59:55.000000000 +0530
-+++ 2.6.27-rc7-new/kernel/workqueue.c	2008-09-29 12:20:27.000000000 +0530
-@@ -202,6 +202,30 @@ static void delayed_work_timer_fn(unsign
- 	__queue_work(wq_per_cpu(wq, smp_processor_id()), &dwork->work);
- }
- 
-+static inline void __queue_delayed_work(int cpu, struct delayed_work *dwork,
-+					struct work_struct *work,
-+					struct workqueue_struct *wq,
-+					unsigned long delay)
-+{
-+	struct timer_list *timer = &dwork->timer;
-+
-+	BUG_ON(timer_pending(timer));
-+	BUG_ON(!list_empty(&work->entry));
-+
-+	timer_stats_timer_set_start_info(timer);
-+
-+	/* This stores cwq for the moment, for the timer_fn */
-+	set_wq_data(work, wq_per_cpu(wq, raw_smp_processor_id()));
-+	timer->expires = jiffies + delay;
-+	timer->data = (unsigned long)dwork;
-+	timer->function = delayed_work_timer_fn;
-+
-+	if (unlikely(cpu >= 0))
-+		add_timer_on(timer, cpu);
-+	else
-+		add_timer(timer);
-+}
-+
- /**
-  * queue_delayed_work - queue work on a workqueue after delay
-  * @wq: workqueue to use
-@@ -233,31 +257,75 @@ int queue_delayed_work_on(int cpu, struc
- 			struct delayed_work *dwork, unsigned long delay)
- {
- 	int ret = 0;
--	struct timer_list *timer = &dwork->timer;
- 	struct work_struct *work = &dwork->work;
- 
- 	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
--		BUG_ON(timer_pending(timer));
--		BUG_ON(!list_empty(&work->entry));
--
--		timer_stats_timer_set_start_info(&dwork->timer);
--
--		/* This stores cwq for the moment, for the timer_fn */
--		set_wq_data(work, wq_per_cpu(wq, raw_smp_processor_id()));
--		timer->expires = jiffies + delay;
--		timer->data = (unsigned long)dwork;
--		timer->function = delayed_work_timer_fn;
--
--		if (unlikely(cpu >= 0))
--			add_timer_on(timer, cpu);
--		else
--			add_timer(timer);
-+		__queue_delayed_work(cpu, dwork, work, wq, delay);
- 		ret = 1;
- 	}
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(queue_delayed_work_on);
- 
-+static int try_to_grab_pending(struct work_struct *work);
-+static void wait_on_work(struct work_struct *work);
-+
-+/**
-+ * queue_update_delayed_work - queue or update a work entry on a workqueue
-+ *			       after delay
-+ * @wq: workqueue to use
-+ * @dwork: delayable work to queue
-+ * @delay: number of jiffies to wait before queueing work
-+ *
-+ * This function is useful to update an existing delayed work without having
-+ * to first cancel it. E.g. code snippets that can use this API:
-+ * 	if (delayed_work_pending(&work))
-+ * 		cancel_delayed_work(&work);
-+ * 	queue_delayed_work(wq, &work, delay);
-+ *
-+ * Returns 0 if @work was already on a queue, non-zero otherwise.
-+ */
-+int queue_update_delayed_work(struct workqueue_struct *wq,
-+			      struct delayed_work *dwork, unsigned long delay)
-+{
-+	struct work_struct *work = &dwork->work;
-+
-+	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
-+		__queue_delayed_work(-1, dwork, work, wq, delay);
-+		return 1;
-+	} else {
-+		struct timer_list *timer = &dwork->timer;
-+		unsigned long when = jiffies + delay;
-+		int ret;
-+
-+		/*
-+		 * Work is already scheduled. There is nothing to be done if
-+		 * the work is being modified to run at the same time.
-+		 */
-+		if (timer->expires == when)
-+			return 0;
-+
-+		do {
-+			/*
-+			 * If the timer has been added and it has not fired,
-+			 * update_timer_expiry will update it with the correct
-+			 * expiry. Otherwise timer has either not yet been
-+			 * added or it has already fired - we need to try again.
-+			 */
-+			if (likely(update_timer_expiry(timer, when)))
-+				return 0;
-+
-+			ret = try_to_grab_pending(work);
-+			if (ret < 0)
-+				wait_on_work(work);
-+		} while (ret < 0);
-+
-+		__queue_delayed_work(-1, dwork, work, wq, delay);
-+		return 0;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(queue_update_delayed_work);
-+
- static void run_workqueue(struct cpu_workqueue_struct *cwq)
- {
- 	spin_lock_irq(&cwq->lock);
-@@ -667,6 +735,30 @@ int schedule_delayed_work_on(int cpu,
- EXPORT_SYMBOL(schedule_delayed_work_on);
- 
- /**
-+ * schedule_update_delayed_work - queue or update a work entry in global
-+ *				  workqueue after a delay
-+ * @dwork: job to be done
-+ * @delay: number of jiffies to wait before queueing work
-+ *
-+ * This function is useful to update an existing delayed work without having
-+ * to first cancel it. E.g. code snippets that can use this API:
-+ * 	if (delayed_work_pending(&work))
-+ * 		cancel_delayed_work(&work);
-+ * 	schedule_delayed_work(&work, delay);
-+ *
-+ * After waiting for a given time this puts a job in the kernel global
-+ * workqueue.
-+ *
-+ * Returns 0 if @work was already on global workqueue, non-zero otherwise.
-+ */
-+int schedule_update_delayed_work(struct delayed_work *dwork,
-+				  unsigned long delay)
-+{
-+	return queue_update_delayed_work(keventd_wq, dwork, delay);
-+}
-+EXPORT_SYMBOL(schedule_update_delayed_work);
-+
-+/**
-  * schedule_on_each_cpu - call a function on each online CPU from keventd
-  * @func: the function to call
-  *
+ static void o2hb_disarm_write_timeout(struct o2hb_region *reg)
