@@ -1,90 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYI2JZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbYI2J0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754026AbYI2JZv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 05:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbYI2JZm
+	id S1752971AbYI2J0L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 05:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbYI2JZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 05:25:42 -0400
-Received: from mailout3.samsung.com ([203.254.224.33]:15244 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbYI2JZm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 05:25:42 -0400
-Date: Mon, 29 Sep 2008 14:58:02 +0530
-From: apgmoorthy <moorthy.apg@samsung.com>
-Subject: RE: [ANNOUNCE] [PATCH] [MTD] Flex-OneNAND MTD Driver available.
-In-reply-to: <1222417176.5012.17.camel@sauron>
-To: "'David Woodhouse'" <dwmw2@infradead.org>
-Cc: "'Kyungmin Park'" <kmpark@infradead.org>, linux-mtd@lists.infradead.org,
-       "'lkml'" <linux-kernel@vger.kernel.org>, dedekind@infradead.org
-Message-id: <000b01c92215$ae62d4e0$3dd66c6b@sisodomain.com>
-MIME-version: 1.0
-X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Mailer: Microsoft Office Outlook 11
-Content-type: text/plain; charset=koi8-r
-Content-transfer-encoding: 8BIT
-Thread-index: AckfsKkwJ68cddOERoKsr6o1e9elJgCZDN3g
-References: <19198934.52871221827459790.JavaMail.weblogic@epml16>
- <9c9fda240809220011w49c0875q804f836550ff3476@mail.gmail.com>
- <000001c91e42$1aa86c50$3dd66c6b@sisodomain.com>
- <9c9fda240809251731y48272a63j988e0001dc50d78@mail.gmail.com>
- <1222404711.5012.5.camel@sauron>
- <A09E9029F2344F78959A3E36179C468E@sisodomain.com>
- <1222417176.5012.17.camel@sauron>
+	Mon, 29 Sep 2008 05:25:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51537 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754114AbYI2JZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 05:25:53 -0400
+Date: Mon, 29 Sep 2008 11:25:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] kmemcheck fixlets (for -tip)
+Message-ID: <20080929092546.GB7735@elte.hu>
+References: <20080928180652.GA8500@localhost.localdomain> <20080929085512.GA2190@elte.hu> <19f34abd0809290213m54a2c485p5917fcd46747ad6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0809290213m54a2c485p5917fcd46747ad6@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi David,
+* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-   Please do comment on this patch. 
-
-   "Not to expose whole OOB" suggestion by Kyungmin should be fine , but
-looking for your suggestion.
-
-With Regards
-Gangheyamoorthy.A.P
-
------Original Message-----
-From: Artem Bityutskiy [mailto:dedekind@infradead.org] 
-Sent: Friday, September 26, 2008 1:50 PM
-To: Amit Kumar Sharma
-Cc: Kyungmin Park; apgmoorthy; linux-mtd@lists.infradead.org; Kyungmin Park;
-lkml; David Woodhouse
-Subject: Re: [ANNOUNCE] [PATCH] [MTD] Flex-OneNAND MTD Driver available.
-
-
-On Fri, 2008-09-26 at 13:31 +0530, Amit Kumar Sharma wrote:
-> Hi Artem
+> On Mon, Sep 29, 2008 at 10:55 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> > FYI, i've reactivated kmemcheck on one of the -tip auto-test boxes
+> > earlier today and it's looking good so far - for example a 32-bit
+> > allyesconfig-ish config booted in just fine with kmemcheck enabled.
+> > Also, the box is very usable interactively - while previous one could
+> > always tell whether there's kmemcheck active.
 > 
-> we have following erro message  if we maintain 64 bytes 
-> eccpos.
+> Oops. Probably kmemcheck was not enabled (for all the right caches).
+> Here's what may go wrong:
 > 
-> /flash_eraseall -j /dev/mtd4
-> ./flash_eraseall: /dev/mtd4: unable to get NAND oobinfo
+> 1. kmemcheck is in one-shot mode. Only one error is reported; after
+> that, box will start returning to normal speed.
+
+i'd have noticed that error.
+
+> 2. SLUB debugging was enabled. kmemcheck will not track "debugged"
+> caches, so I suggest turning SLUB off in kernel config, or by booting
+> with "slub_debug=-". But I think that SLUB debug can be turned off in
+> kernel config as well, which means that your randconfig testing will
+> hit both cases eventually.
+
+ok, slub debugging was indeed on. I'll re-test with that disabled.
+
+> > [ only one CPU is active, but we knew that. We've still got this
+> >  test-commit:
+> >
+> >     21d01a4: x86: add functions for duplicating page tables
+> >
+> >  it's not in tip/master but we still have it around. ]
+> >
+> > btw., is there any easy way to tell from within a script what the
+> > current status of kmemcheck is? In particular, whether it's running.
+> > Normally i have this in the syslog:
+> >
+> >  [    0.448022] kmemcheck: "Bugs, beware!"
+> >  [    0.452002] kmemcheck: Limiting number of CPUs to 1.
+> >
+> > but this time the log was too large so this bit was snipped out and i
+> > was unsure about it - needed a second bootup with a larger buffer to
+> > make sure. With lockdep we've got the 'debug_locks' /proc/lockdep_stats.
+> >
 > 
-> ./nandwrite -j /dev/mtd2 /jffs2.img
-> MEMSETOOBSEL: Inappropriate ioctl for device
+> You can read /proc/sys/kernel/kmemcheck. We also set a per-cache flag 
+> in slabs, so I think you can get some information from SLUB sysfs. But 
+> I agree -- it is not always easy to tell what kmemcheck is actually 
+> doing. Maybe some counters and stats would be appropriate.
+
+ah, missed that flag.
+
+> > also, all kmemcheck warnings follow the usual WARN_ON() format, so 
+> > that automated tests can pick it up, correct? -tip testing does so 
+> > many bootups that there's no chance to notice non-system-crashing 
+> > bugs and printouts but via automated means.
 > 
-> but i think as OneNAND has hw ecc controller so Jffs2 will 
-> not face any problem
-> still i think mtd should consider for 128 bytes eccpos for 
-> 4K page size.
+> Uhm, not correct. We need a few more infos (like read size, shadow, 
+> etc.), also the stacktraces are saved, so the default stacktrace of 
+> WARN is useless. But we can certainly try to emulate it. What text 
+> should I insert in order for your scripts to pick it up?
 
-Well, anyway, in Linux ABI is a holy cow, you cannot change it.
-That is a tough rule. Old user-space binaries have to always
-works.
+a kernel log line beginning with:
 
-Thus you may do one of:
-1. Invent a new ioctl for 4KiB page NANDs
-2. Add sysfs support
-3. Just do not expose whole OOB as Kyungmin suggested
+ INFO:
+ WARNING:
+ BUG:
 
-But I think assume dwmw2 would need to comment on this and
-tell which approach would agree on.
+would be noticed. (That pattern has to be at the beginning of the line. 
+Otherwise we'd match on things like 'DEBUG: ' - such printouts exist)
 
--- 
-Best regards,
-Artem Bityutskiy (‚…‘¿√À…  ·“‘£Õ)
-
+	Ingo
