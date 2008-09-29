@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYI2WCC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbYI2WCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbYI2WCC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 18:02:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYI2WBy
+	id S1754438AbYI2WCW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 18:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYI2WCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 18:01:54 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50829 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbYI2WBx (ORCPT
+	Mon, 29 Sep 2008 18:02:07 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39896 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754097AbYI2WCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 18:01:53 -0400
-Date: Tue, 30 Sep 2008 00:07:17 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: dean gaudet <odo@google.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Pardo <pardo@google.com>,
-       linux-kernel@vger.kernel.org, mbligh@google.com, briangrant@google.com,
-       nil@google.com, jyasskin@google.com
-Subject: Re: Faster getcpu() and sched_getcpu()
-Message-ID: <20080929220717.GU25711@one.firstfloor.org>
-References: <af8810200809111648n55e05ac9g286fcd498690432f@mail.gmail.com> <af8810200809231209w7428347neb88094e543a048f@mail.gmail.com> <87wsgwp6gh.fsf@basil.nowhere.org> <48E0834D.6010608@google.com> <20080929145408.GQ25711@one.firstfloor.org> <af8810200809291101r6f3208beua36a4b2d3b5713eb@mail.gmail.com> <20080929205054.GR25711@one.firstfloor.org> <48E14ECE.6080402@google.com>
+	Mon, 29 Sep 2008 18:02:06 -0400
+Date: Mon, 29 Sep 2008 17:02:04 -0500
+From: Russ Anderson <rja@sgi.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       Huang Ying <ying.huang@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: [PATCH 0/4] x86: UV runtime bios calls
+Message-ID: <20080929220201.GB108640@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48E14ECE.6080402@google.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 29, 2008 at 02:55:26PM -0700, dean gaudet wrote:
-> Andi Kleen wrote:
-> > On Mon, Sep 29, 2008 at 11:01:26AM -0700, Pardo wrote:
-> >   
-> >>> [Maybe disable frame pointers for vsyscall.c and the vdso?]
-> >>>       
-> >> IIRC, some vsyscall.c code needs them enabled, so Dean's earlier patch split
-> >>     
-> >
-> > I don't think it really needs it.
-> >
-> >   
-> >> vsyscall.c, creating a vsyscall_user.c for code which can run without them.
-> >> Seem reasonable?
-> >>     
-> >
-> > Seems unnecessarily complicated.
-> >   
-> 
-> i disagree that it's complicated to have two files, and disagree that
-> it's unnecessary to have two files.
+[PATCH 0/4] x86: UV runtime bios calls
 
-It's unnecessary to have frame pointer in the kernel functions I meant.
-I agree with you that disabling redzone is needed for kernel code,
-but without frame pointers (which are generally a bad idea for 
-performance and should not have been added to the 64bit port ever) 
-redzone is also not particularly expensive and it shouldn't be needed
-to do anything complicated (like splitting files) just for the few
-cycles.
+Purpose: 
+	Create an interface to allow calls into bios to return platform
+	specific information.  The interface adds a new EFI runtime call
+	for OEMs.  EFI provides a mechanism for defining runtime calls 
+	to firmware routines.  This patchset builds on the EFI mechanism
+	to provide access to those firmware routines.
 
--Andi
+Version 3 changes:
+	Add function (oem) to efi_runtime_services_t, replacing uv_systab.
+	Use efi_call_virt<n>.
+	Remove efi_call<n> stubs.
 
+
+Version 2 changes:
+	Add uv_systab to efi struct.
+	Define efi_call* stubs in include/asm-x86/uv/bios.h.
+	Made symbols EXPORT_SYMBOL_GPL().
+	Added check for failure on sysfs_create_file() calls.
+	Other code style changes.
+
+
+Patches:
+	uv_efi_bios:	Add function (oem) to efi_runtime_services_t.
+
+	uv_bios_common:	Add the EFI callback function using the EFI oem
+			runtime function.  Create associated wrapper code.
+
+	uv_bios_call_partition: Add call to get partitioning related info.
+
+	uv_sysfs:	Create sysfs entrys in /sys/firmware/sgi_uv/ for
+			partitioning related information.
+
+Implementation comments:
+
+	This patch adds a new EFI runtime function (oem).
+
+	The location in sysfs (/sys/firmware/sgi_uv/) is based on
+	community feedback.  The interface is documented in
+	Documentation/ABI/testing/sysfs-firmware-sgi_uv.
+
+	If EFI is not configured (CONFIG_EFI), the calls will return -ENOSYS.
+	If run on a system with a bios that does not support EFI UV, the
+	calls will return -ENOSYS.
+
+	Paul Jackson assisted in the development of this code.
+	
 -- 
-ak@linux.intel.com
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
