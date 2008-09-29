@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbYI2GvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbYI2G4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbYI2GvR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 02:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbYI2GvG
+	id S1753070AbYI2G4Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 02:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbYI2G4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 02:51:06 -0400
-Received: from elasmtp-spurfowl.atl.sa.earthlink.net ([209.86.89.66]:43663
-	"EHLO elasmtp-spurfowl.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750801AbYI2GvG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 02:51:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=teleport.com;
-  b=WsPXhdhofHw8E5u80ayAOD7JxoKf1xzPXHve1elqboqK5OBROfVz5T7ytH0c6QHw;
-  h=Message-ID:Date:From:Reply-To:To:Subject:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Mailer:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <31134782.1222671063829.JavaMail.root@elwamui-mouette.atl.sa.earthlink.net>
-Date: Sun, 28 Sep 2008 23:51:03 -0700 (GMT-07:00)
-From: Alan Young <ayoung@teleport.com>
-Reply-To: Alan Young <ayoung@teleport.com>
-To: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [kernel-abi] symbol versioning vs. out-of-tree modules.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Mailer: EarthLink Zoo Mail 1.0
-X-ELNK-Trace: d1a1f54f9acf59c5c1b8efd72c01d9e49001757d58ee4b9d8a5bc6fb3a131f0b3514e6857a044e10350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 209.86.224.41
+	Mon, 29 Sep 2008 02:56:00 -0400
+Received: from il.qumranet.com ([212.179.150.194]:46577 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751328AbYI2G4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 02:56:00 -0400
+Date: Mon, 29 Sep 2008 09:55:57 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: Alok Kataria <akataria@vmware.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, avi@redhat.com,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
+       Dan Hecht <dhecht@vmware.com>, Jun.Nakajima@Intel.Com
+Subject: Re: Use CPUID to communicate with the hypervisor.
+Message-ID: <20080929065557.GB9952@redhat.com>
+References: <1222472815.29886.43.camel@alok-dev1>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222472815.29886.43.camel@alok-dev1>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008 at 05:10:07 +0200, Greg KH wrote:
+On Fri, Sep 26, 2008 at 04:46:55PM -0700, Alok Kataria wrote:
+> From: Alok N Kataria <akataria@vmware.com>
+> 
+> This patch proposes to use a cpuid interface to detect if we are running on an
+> hypervisor.
+> The discovery of a hypervisor is determined by bit 31 of CPUID#1_ECX, which is
+> defined to be "hypervisor present bit". For a VM, the bit is 1, otherwise it is
+> set to 0. This bit is not officially documented by either Intel/AMD yet, but
+> they plan to do so some time soon, in the meanwhile they have promised to keep
+> it reserved for virtualization.
+> 
+> Also, Intel & AMD have reserved the cpuid levels 0x40000000 - 0x400000FF for
+> software use. Hypervisors can use these levels to provide an interface to pass
+> information from the hypervisor to the guest. This is similar to how we extract
+> information about a physical cpu by using cpuid.
+> XEN/KVM are already using the info leaf to get the hypervisor signature.
+> 
+Can this interface be used to pass variable sized data from a hypervisor
+to a gust? ACPI or DMI tables for instance.
 
-> What kernel modules do you currently use/rely on that are not in the
-> main kernel tree?  Do you have links to them?  I'd be glad to add them.
-
-I still use the ES56-PI modem driver @ http://tx.technion.ac.il/~raindel.
-It has a 2.6 port up to 2.6.24, but it's not more current than that due to
-serial/tty interface changes.  And there's a challenge that it uses a binary
-blob. :-(  Best case would be to see if the vendor could open up like
-Atheros (Thanks! Yea!) did.  If not, I wonder if the blob could be minimalized
-to the bare modem functions and the serial interfaces be brought out into open code.
-
-Alan
+--
+			Gleb.
