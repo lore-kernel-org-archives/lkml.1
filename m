@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbYI2Odc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbYI2OgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752599AbYI2Odc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 10:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYI2OdY
+	id S1752600AbYI2OgS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 10:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYI2OgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 10:33:24 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49583 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751328AbYI2OdX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 10:33:23 -0400
-Message-ID: <48E0E73A.40803@sgi.com>
-Date: Mon, 29 Sep 2008 07:33:30 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 29 Sep 2008 10:36:08 -0400
+Received: from sandeen.net ([209.173.210.139]:13803 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751367AbYI2OgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 10:36:07 -0400
+Message-ID: <48E0E7D4.1090409@sandeen.net>
+Date: Mon, 29 Sep 2008 09:36:04 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, David Miller <davem@davemloft.net>,
-       Alan.Brunelle@hp.com, tglx@linutronix.de, rjw@sisk.pl,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kernel-testers@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, arjan@linux.intel.com,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -	bisected
-References: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <200809251150.26760.rusty@rustcorp.com.au> <alpine.LFD.1.10.0809250836270.3265@nehalem.linux-foundation.org> <200809261525.30258.rusty@rustcorp.com.au> <48DC78F2.8060400@sgi.com> <20080927191653.GB18619@elte.hu>
-In-Reply-To: <20080927191653.GB18619@elte.hu>
+To: Christoph Hellwig <hch@infradead.org>
+CC: Takashi Sato <t-sato@yk.jp.nec.com>, Ric Wheeler <rwheeler@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-fsdevel@vger.kernel.org,
+       dm-devel@redhat.com, viro@ZenIV.linux.org.uk,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, axboe@kernel.dk,
+       mtk.manpages@googlemail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] Add timeout feature
+References: <20080908205337t-sato@mail.jp.nec.com> <20080908171119.GB22521@infradead.org> <48DBFD42.6030307@redhat.com> <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp> <20080929141326.GA31781@infradead.org>
+In-Reply-To: <20080929141326.GA31781@infradead.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
+Christoph Hellwig wrote:
+> On Fri, Sep 26, 2008 at 05:52:35PM +0900, Takashi Sato wrote:
+>> I think that your concern is that the freezer cannot recognize the occurrence
+>> of a timeout and it continues the backup process and the backup data is
+>> corrupted finally.
 > 
->> Hi Rusty,
->>
->> I've gotten some good traction on the changes in the following patch.  
->> About 30% of the kernel is compiling right now and I'm picking up 
->> errors and warnings as I'm going along.  I think it's doing most of 
->> what we need.  Attempting to hide the cpumask struct definition caused 
->> all kinds of problems with the inline functions and statically 
->> declaring cpumask's.
->>
->> (The following patch is a combination of all the changes to cpumask.h 
->> with the header from the first patch.  I'll send you a complete copy 
->> in separate email.)
-> 
-> could you please send whatever .c changes you have already, so that we 
-> can have a look at how the end result will look like? Doesnt have to 
-> build, i'm just curious about how it looks like in practice, 
-> semantically.
-> 
-> 	Ingo
+> What timeout should happen?  the freeze ioctl must not return until the
+> filesystem is a clean state and all writes are blocked.
 
+The suggestion was that *UN*freeze would return ETIMEDOUT if the
+filesystem had already unfrozen itself, I think.  That way you know that
+the snapshot you just took is worthless, at least.
 
-I will, and the full "allyesconfig" does compile.  And it's basically a
-benign change in that the functionality is still the same.  I'm currently
-reordering it a bit to clean it up.
+I'm still not really sold on the timeout, but I think the above was the
+intent.
 
-Thanks,
-Mike
+-Eric
