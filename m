@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbYI2J3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbYI2J3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbYI2J3T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 05:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYI2J3F
+	id S1754164AbYI2J3f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 05:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYI2J3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 05:29:05 -0400
-Received: from smtp02.citrix.com ([66.165.176.63]:36992 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbYI2J3E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 05:29:04 -0400
-X-IronPort-AV: E=Sophos;i="4.33,330,1220241600"; 
-   d="scan'208";a="21762748"
-Date: Mon, 29 Sep 2008 10:28:55 +0100
-From: Tim Deegan <Tim.Deegan@citrix.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: akataria@vmware.com, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
-       Daniel Hecht <dhecht@vmware.com>,
-       "Jun.Nakajima@Intel.Com" <Jun.Nakajima@Intel.Com>
-Subject: Re: Use CPUID to communicate with the hypervisor.
-Message-ID: <20080929092855.GK3776@york.uk.xensource.com>
-References: <1222472815.29886.43.camel@alok-dev1> <48DD860C.50809@goop.org> <1222485079.23825.13.camel@alok-dev1> <48DF0F8D.3070302@goop.org>
+	Mon, 29 Sep 2008 05:29:20 -0400
+Received: from 8bytes.org ([88.198.83.132]:51430 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754651AbYI2J3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 05:29:19 -0400
+Date: Mon, 29 Sep 2008 11:29:17 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joerg.roedel@amd.com,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       iommu@lists.linux-foundation.org, dwmw2@infradead.org,
+       amit.shah@qumranet.com, mingo@redhat.com
+Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
+Message-ID: <20080929092917.GO27426@8bytes.org>
+References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <1222107681-8185-10-git-send-email-joerg.roedel@amd.com> <20080928231211X.fujita.tomonori@lab.ntt.co.jp> <20080928184424.GA26563@8bytes.org> <20080929092549.GA6931@il.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48DF0F8D.3070302@goop.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 29 Sep 2008 09:29:01.0852 (UTC) FILETIME=[CEF3EDC0:01C92215]
+In-Reply-To: <20080929092549.GA6931@il.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At 22:01 -0700 on 27 Sep (1222552861), Jeremy Fitzhardinge wrote:
-> Alok Kataria wrote:
->>> I think there's a move towards doing a scan for a signature, such as
->>> checking every 16 leaves after 0x40000000 for "a while" looking for
->>> interesting signatures, so that a hypervisor can support multiple ABIs
->>> at once.  Given this, it would be better to define a "Generic Hypervisor
->>> ABI" signature, and put all the related leaves together.
->>
->> Hmm interesting, do you have any pointers to this ?
->
-> No.  I think I saw a passing reference from Tim Deegan to it, but I
-> couldn't find it again when I looked.
+On Mon, Sep 29, 2008 at 12:25:49PM +0300, Muli Ben-Yehuda wrote:
+> On Sun, Sep 28, 2008 at 08:44:24PM +0200, Joerg Roedel wrote:
+> 
+> > Hmm, we should only call find_dma_ops_for_device() the first time a
+> > dma api call is done (look into get_dma_ops). But I also thought
+> > about how this lock can be avoided. In the real world it should not
+> > be necessary because the dma_ops list is initialized before dma api
+> > calls are done. But since there is now a register function which can
+> > be called its safer this way. What do you think, are we still safe
+> > enough without this lock?
+> 
+> We could be, if we add a check to the register function that verifies
+> it isn't being called after DMAs have started. Something like:
+> 
+> in register:
+> 
+>   if (dma_started)
+>     yell loudly
+> 
+> before PCI device initialization and after IOMMU initialization:
+>   dma_started = true
 
-I was talking about checking every 256 leaves from 0x40000000, but I
-can't remember where I heard it.  The only relevant reference I can
-find is the MS hypervisor interface spec's description of leaf
-0x40000001: "Hypervisor vendor-neutral interface identification.  This
-determines the semantics of the leaves from 0x40000002 through
-0x400000FF"
+Good idea. I will change this in my patchset, thanks.
 
-Cheers,
+Joerg
 
-Tim.
-
--- 
-Tim Deegan <Tim.Deegan@citrix.com>
-Principal Software Engineer, Citrix Systems (R&D) Ltd.
-[Company #02300071, SL9 0DZ, UK.]
