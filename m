@@ -1,101 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbYI2SOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbYI2SPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757046AbYI2SOe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 14:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbYI2SE4
+	id S1757276AbYI2SPn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 14:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbYI2SJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 14:04:56 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:28548 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754496AbYI2SEz (ORCPT
+	Mon, 29 Sep 2008 14:09:24 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:33535 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755907AbYI2SJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 14:04:55 -0400
-Date: Mon, 29 Sep 2008 20:06:03 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: do not allow to optimize flag_is_changeable_p()
-Message-Id: <20080929200603.dcdc5b71.krzysztof.h1@poczta.fm>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: c8c0b138
+	Mon, 29 Sep 2008 14:09:22 -0400
+Message-ID: <48E11AD5.8060508@novell.com>
+Date: Mon, 29 Sep 2008 14:13:41 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+MIME-Version: 1.0
+To: ghaskins@novell.com, linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [BUG][PPC64] BUG in 2.6.26.5-rt9 causing Hang
+References: <20080925123235.GA27916@linux.vnet.ibm.com>
+In-Reply-To: <20080925123235.GA27916@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig881914E056A300BD217DBD85"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig881914E056A300BD217DBD85
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-The flag_is_changeable_p() is used by
-has_cpuid_p() which can return different results
-in the code sequence below:
+Hi Chirag
 
- if (!have_cpuid_p())
-      identify_cpu_without_cpuid(c);
+Chirag Jog wrote:
+> Hi Gregory,
+> We see the following BUG followed by a hang on the latest kernel 2.6.26=
+=2E5-rt9 on a Power6 blade (PPC64)
+> It is easily recreated by running the async_handler or sbrk_mutex (real=
+time tests from ltp) tests.
+>  =20
+FYI I am looking at this now.  I suspect a dequeue_pushable_task()
+probably found its way inside a conditional for GROUP_SCHED and
+inadventently gets compiled away if you disable the feature.=20
+Investigating now..
 
-  /* cyrix could have cpuid enabled via c_identify()*/
-  if (!have_cpuid_p())
-      return;
+-Greg
 
-Otherwise, the gcc 3.4.6 optimizes these two calls
-into one which make the code not working correctly.
-Cyrix cpus have the CPUID instruction enabled but
-it is not detected due to the gcc optimization.
-Thus the ARR registers (mtrr like) are not detected
-on such a cpu.
+> login: cpu 0x2: Vector: 700 (Program Check) at [c0000000e8e875d0]
+>     pc: c00000000005110c: .pick_next_pushable_task+0x54/0x9c
+>     lr: c000000000059f50: .push_rt_task+0x44/0x2b4
+>     sp: c0000000e8e87850
+>    msr: 8000000000021032
+>   current =3D 0xc0000000ea5bb2e0
+>   paca    =3D 0xc000000000608700
+>     pid   =3D 2811, comm =3D async_handler
+> kernel BUG at kernel/sched_rt.c:1041! <---------------------
+> enter ? for help
+> [link register   ] c000000000059f50 .push_rt_task+0x44/0x2b4
+> [c0000000e8e87850] c0000000e8e878f0 (unreliable)
+> [c0000000e8e87900] c00000000005a1dc .push_rt_tasks+0x1c/0x38
+> [c0000000e8e87980] c00000000005a21c .post_schedule_rt+0x24/0x44
+> [c0000000e8e87a10] c000000000057cbc .finish_task_switch+0xd0/0x180
+> [c0000000e8e87ab0] c0000000003b6e88 .__schedule+0x6e0/0x798
+> [c0000000e8e87b90] c0000000003b7148 .schedule+0xec/0x11c
+> [c0000000e8e87c10] c0000000003b7a40 .do_nanosleep+0x6c/0xcc
+> [c0000000e8e87c90] c000000000080738 .hrtimer_nanosleep+0x7c/0x100
+> [c0000000e8e87d90] c000000000080830 .sys_nanosleep+0x74/0x94
+> [c0000000e8e87e30] c0000000000086ac syscall_exit+0x0/0x40
+> --- Exception: c00 (System Call) at 0000008026449844
+> SP (400014185f0) is in userspace
+>
+>
+> This is generated by the BUG_ON lines in the pick_next_pushable functio=
+n
+> introduced by the sched-only-push-once-per-queue.patch .
+>
+> The -rt kernel prior to this patch didnot give such BUGes.
+>
+> All this was tried with
+> CONFIG_GROUP_SCHED=3DN
+> CONFIG_RT_GROUP_SCHED=3DN
+>
+>
+> Setting the options
+> CONFIG_GROUP_SCHED=3Dy
+> CONFIG_RT_GROUP_SCHED=3DY,
+> seems to solve the problem.
+>
+>
+>
+>  =20
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
 
-I have tested the 6x86MX cpu with the CPUID
-disabled. I have used linux-next tree (20080819)
-and Yinghai Lu's patch:
 
-x86: identify_cpu_without_cpuid v2
+--------------enig881914E056A300BD217DBD85
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-http://marc.info/?l=linux-kernel&m=122138380004347&w=2
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-The patch below is required to make the patch
-above working correctly.
+iEYEARECAAYFAkjhGtUACgkQlOSOBdgZUxkCVgCffaEoDeJs6xpk6hMTxms94vYQ
+9YUAn0Mcc78HvOozpckeG+tfE4OIbTmS
+=ZbVA
+-----END PGP SIGNATURE-----
 
-diff -urp linux-orig/arch/x86/kernel/cpu/common.c linux-2.6.27/arch/x86/kernel/cpu/common.c
---- linux-orig/arch/x86/kernel/cpu/common.c	2008-09-29 07:11:54.000000000 +0200
-+++ linux-2.6.27/arch/x86/kernel/cpu/common.c	2008-09-29 18:07:27.667392725 +0200
-@@ -124,18 +124,18 @@ static inline int flag_is_changeable_p(u
- {
- 	u32 f1, f2;
- 
--	asm("pushfl\n\t"
--	    "pushfl\n\t"
--	    "popl %0\n\t"
--	    "movl %0,%1\n\t"
--	    "xorl %2,%0\n\t"
--	    "pushl %0\n\t"
--	    "popfl\n\t"
--	    "pushfl\n\t"
--	    "popl %0\n\t"
--	    "popfl\n\t"
--	    : "=&r" (f1), "=&r" (f2)
--	    : "ir" (flag));
-+	asm volatile ("pushfl\n\t"
-+		      "pushfl\n\t"
-+		      "popl %0\n\t"
-+		      "movl %0,%1\n\t"
-+		      "xorl %2,%0\n\t"
-+		      "pushl %0\n\t"
-+		      "popfl\n\t"
-+		      "pushfl\n\t"
-+		      "popl %0\n\t"
-+		      "popfl\n\t"
-+		      : "=&r" (f1), "=&r" (f2)
-+		      : "ir" (flag));
- 
- 	return ((f1^f2) & flag) != 0;
- }
-
-----------------------------------------------------------------------
-Dzwon taniej na zagraniczne komorki!
-Sprawdz >> http://link.interia.pl/f1f26 
-
+--------------enig881914E056A300BD217DBD85--
