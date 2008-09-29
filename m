@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbYI2Noa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbYI2Npm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753401AbYI2Noa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 09:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYI2NoV
+	id S1753563AbYI2Npm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 09:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbYI2Npf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 09:44:21 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54888 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750819AbYI2NoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 09:44:21 -0400
-Date: Mon, 29 Sep 2008 22:42:37 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, joro@8bytes.org,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       iommu@lists.linux-foundation.org, dwmw2@infradead.org, muli@il.ibm.com,
-       amit.shah@qumranet.com, mingo@redhat.com
-Subject: Re: [PATCH 0/9][RFC] stackable dma_ops for x86
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080929132647.GJ27928@amd.com>
-References: <20080928184926.GB26563@8bytes.org>
-	<20080929221354T.fujita.tomonori@lab.ntt.co.jp>
-	<20080929132647.GJ27928@amd.com>
+	Mon, 29 Sep 2008 09:45:35 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47693 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750910AbYI2Npe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 09:45:34 -0400
+Date: Mon, 29 Sep 2008 08:45:29 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] - New UV genapic functions for x2apic
+Message-ID: <20080929134529.GA12829@sgi.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080929224246K.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008 15:26:47 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+Add functions that use the infrastructure added by the x2apic code. These
+functions were originally stubbed out since the UV code went into the
+tree prior to the x2apic code.
 
-> On Mon, Sep 29, 2008 at 10:16:39PM +0900, FUJITA Tomonori wrote:
-> > On Sun, 28 Sep 2008 20:49:26 +0200
-> > Joerg Roedel <joro@8bytes.org> wrote:
-> > 
-> > > On Sun, Sep 28, 2008 at 11:21:26PM +0900, FUJITA Tomonori wrote:
-> > > > On Mon, 22 Sep 2008 20:21:12 +0200
-> > > > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > > 
-> > > > > Hi,
-> > > > > 
-> > > > > this patch series implements stackable dma_ops on x86. This is useful to
-> > > > > be able to fall back to a different dma_ops implementation if one can
-> > > > > not handle a particular device (as necessary for example with
-> > > > > paravirtualized device passthrough or if a hardware IOMMU only handles a
-> > > > > subset of available devices).
-> > > > 
-> > > > We already handle the latter. This patchset is more flexible but
-> > > > seems to incur more overheads.
-> > > > 
-> > > > This feature will be used for only paravirtualized device passthrough?
-> > > > If so, I feel that there is more simpler (and specific) solutions for
-> > > > it.
-> > > 
-> > > Its not only for device passthrough. It handles also the cases where a
-> > > hardware IOMMU does not handle all devices in the system (like in some
-> > > Calgary systems but also possible with AMD IOMMU). With this patchset we
-> > 
-> > I know that. As I wrote in the previous mail, we already solved that
-> > problem with per-device-dma-ops.
-> > 
-> > My question is what unsolved problems this patchset can fix?
-> > 
-> > 
-> > This patchset is named "stackable dma_ops" but it's different from
-> > what we discussed as "stackable dma_ops". This patchset provides
-> > IOMMUs a generic mechanism to set up "stackable dma_ops". But this
-> > patchset doesn't solve the problem that a hardware IOMMU does not
-> > handle all devices (it was already solved with per-device-dma-ops).
-> > 
-> > If paravirtualized device passthrough still needs to call multiple
-> > dma_ops, then this patchset doesn't solve that issue.
-> 
-> Ok, the name "stackable" is misleading and was a bad choice. I will
-> rename it to "multiplexing". This should make it more clear what it is.
-> Like you pointed out, the problems are solved with per-device dma_ops,
-> but in the current implementation it needs special hacks in the IOMMU
-> drivers to use these per-device dma_ops.
-> I see this patchset as a continuation of the per-device dma_ops idea. It
-> moves the per-device handling out of the specific drivers to a common
-> place. So we can avoid or remove special hacks in the IOMMU drivers.
+Signed-off-by: Jack Steiner <steiner@sgi.com>
 
-Basically, I'm not against this patchset. It simplify Calgary and AMD
-IOMMUs code to set up per-device-dma-ops (though it makes dma_ops a
-bit complicated).
+---
+ arch/x86/kernel/genx2apic_uv_x.c |   10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-But it doesn't solve any problems including the paravirtualized device
-passthrough. When I wrote per-device-dma-ops, I expected that KVM
-people want more changes (such as stackable dma_ops) to dma_ops for
-the paravirtualized device passthrough. I'd like to hear what they
-want first.
+Index: linux/arch/x86/kernel/genx2apic_uv_x.c
+===================================================================
+--- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-09-28 07:27:00.000000000 -0500
++++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-09-28 11:53:23.000000000 -0500
+@@ -114,7 +114,7 @@ static void uv_send_IPI_one(int cpu, int
+ 	unsigned long val, apicid, lapicid;
+ 	int pnode;
+ 
+-	apicid = per_cpu(x86_cpu_to_apicid, cpu); /* ZZZ - cache node-local ? */
++	apicid = per_cpu(x86_cpu_to_apicid, cpu);
+ 	lapicid = apicid & 0x3f;		/* ZZZ macro needed */
+ 	pnode = uv_apicid_to_pnode(apicid);
+ 	val =
+@@ -202,12 +202,10 @@ static unsigned int phys_pkg_id(int inde
+ 	return uv_read_apic_id() >> index_msb;
+ }
+ 
+-#ifdef ZZZ		/* Needs x2apic patch */
+ static void uv_send_IPI_self(int vector)
+ {
+ 	apic_write(APIC_SELF_IPI, vector);
+ }
+-#endif
+ 
+ struct genapic apic_x2apic_uv_x = {
+ 	.name = "UV large system",
+@@ -215,15 +213,15 @@ struct genapic apic_x2apic_uv_x = {
+ 	.int_delivery_mode = dest_Fixed,
+ 	.int_dest_mode = (APIC_DEST_PHYSICAL != 0),
+ 	.target_cpus = uv_target_cpus,
+-	.vector_allocation_domain = uv_vector_allocation_domain,/* Fixme ZZZ */
++	.vector_allocation_domain = uv_vector_allocation_domain,
+ 	.apic_id_registered = uv_apic_id_registered,
+ 	.init_apic_ldr = uv_init_apic_ldr,
+ 	.send_IPI_all = uv_send_IPI_all,
+ 	.send_IPI_allbutself = uv_send_IPI_allbutself,
+ 	.send_IPI_mask = uv_send_IPI_mask,
+-	/* ZZZ.send_IPI_self = uv_send_IPI_self, */
++	.send_IPI_self = uv_send_IPI_self,
+ 	.cpu_mask_to_apicid = uv_cpu_mask_to_apicid,
+-	.phys_pkg_id = phys_pkg_id,	/* Fixme ZZZ */
++	.phys_pkg_id = phys_pkg_id,
+ 	.get_apic_id = get_apic_id,
+ 	.set_apic_id = set_apic_id,
+ 	.apic_id_mask = (0xFFFFFFFFu),
