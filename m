@@ -1,360 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYI2Thy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbYI2Tid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYI2Thy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 15:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYI2Tgz
+	id S1754472AbYI2Tid (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 15:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYI2TiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 15:36:55 -0400
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:51137 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752602AbYI2Tgy (ORCPT
+	Mon, 29 Sep 2008 15:38:07 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:37904 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753527AbYI2TiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 15:36:54 -0400
-Message-Id: <20080929193516.278278446@quilx.com>
-References: <20080929193500.470295078@quilx.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 29 Sep 2008 12:35:03 -0700
-From: Christoph Lameter <cl@linux-foundation.org>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-CC: linux-mm@kvack.org
-Cc: rusty@rustcorp.com.au
-Cc: jeremy@goop.org
-Cc: ebiederm@xmission.com
-Cc: travis@sgi.com
-Cc: herbert@gondor.apana.org.au
-Cc: xemul@openvz.org
-Cc: penberg@cs.helsinki.fi
-Subject: [patch 3/4] cpu alloc: The allocator
-Content-Disposition: inline; filename=cpu_alloc_base
+	Mon, 29 Sep 2008 15:38:06 -0400
+Subject: Re: Use CPUID to communicate with the hypervisor.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
+       Daniel Hecht <dhecht@vmware.com>,
+       "Jun.Nakajima@Intel.Com" <Jun.Nakajima@Intel.Com>
+In-Reply-To: <48E1227B.9040809@redhat.com>
+References: <1222472815.29886.43.camel@alok-dev1>
+	 <48E090B6.2080809@redhat.com> <1222710924.30247.21.camel@alok-dev1>
+	 <48E1227B.9040809@redhat.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 29 Sep 2008 12:38:05 -0700
+Message-Id: <1222717085.30247.44.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The per cpu allocator allows dynamic allocation of memory on all
-processors simultaneously. A bitmap is used to track used areas.
-The allocator implements tight packing to reduce the cache footprint
-and increase speed since cacheline contention is typically not a concern
-for memory mainly used by a single cpu. Small objects will fill up gaps
-left by larger allocations that required alignments.
+On Mon, 2008-09-29 at 11:46 -0700, Gerd Hoffmann wrote:
+> Alok Kataria wrote:
+> > Hi Gerd,
+> >
+> >> Shouldn't you check the hypervisor signature here?
+> >
+> > Nope the whole idea of not checking the hypervisor signature is that we
+> > should keep this interface generic.
+> 
+> Nice idea.  Problem with that is that approach is that we don't have
+> full control here.  It probably isn't that a hard to have vmware, xen
+> and kvm agree here, given vmware proposes this and for xen+kvm one can
+> send patches.  
 
-The size of the cpu_alloc area can be changed via the percpu=xxx
-kernel parameter.
+Yep.
+And please note that this does allow either Xen/KVM to propose a new
+leaf and the rest of the hypervisor players can decide to export that
+leaf or return a zero value. 
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> But even that you can't take for granted, see the
+> discussion of the "tsc-may-change-on-migration" problem.
 
----
- include/linux/percpu.h |   46 ++++++++++++
- include/linux/vmstat.h |    2 
- mm/Makefile            |    2 
- mm/cpu_alloc.c         |  181 +++++++++++++++++++++++++++++++++++++++++++++++++
- mm/vmstat.c            |    1 
- 5 files changed, 230 insertions(+), 2 deletions(-)
- create mode 100644 include/linux/cpu_alloc.h
- create mode 100644 mm/cpu_alloc.c
+I may have been unclear in my first attempt to this question, let me try
+again. 
+If the frequency of tsc changes during migration, it should be the task
+of hypervisor to handle it. There could be multiple ways to solve that
+problem, either the hypervisor emulates the old frequency (by whatever
+way) or there are cpufreq drivers in the guest which detect changes in
+frequency, and ask the hypervisor for the new frequency. The interface
+still allows you to query the cpuid leaf and get the new frequency.
+right ? 
 
-Index: linux-2.6/include/linux/vmstat.h
-===================================================================
---- linux-2.6.orig/include/linux/vmstat.h	2008-09-29 13:08:23.000000000 -0500
-+++ linux-2.6/include/linux/vmstat.h	2008-09-29 13:09:33.000000000 -0500
-@@ -37,7 +37,7 @@
- 		FOR_ALL_ZONES(PGSCAN_KSWAPD),
- 		FOR_ALL_ZONES(PGSCAN_DIRECT),
- 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
--		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
-+		PAGEOUTRUN, ALLOCSTALL, PGROTATED, CPU_BYTES,
- #ifdef CONFIG_HUGETLB_PAGE
- 		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
- #endif
-Index: linux-2.6/mm/Makefile
-===================================================================
---- linux-2.6.orig/mm/Makefile	2008-09-29 13:08:23.000000000 -0500
-+++ linux-2.6/mm/Makefile	2008-09-29 13:09:33.000000000 -0500
-@@ -11,7 +11,7 @@
- 			   maccess.o page_alloc.o page-writeback.o pdflush.o \
- 			   readahead.o swap.o truncate.o vmscan.o \
- 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
--			   page_isolation.o mm_init.o $(mmu-y)
-+			   page_isolation.o mm_init.o cpu_alloc.o $(mmu-y)
- 
- obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
- obj-$(CONFIG_BOUNCE)	+= bounce.o
-Index: linux-2.6/mm/cpu_alloc.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/mm/cpu_alloc.c	2008-09-29 13:09:33.000000000 -0500
-@@ -0,0 +1,185 @@
-+/*
-+ * Cpu allocator - Manage objects allocated for each processor
-+ *
-+ * (C) 2008 SGI, Christoph Lameter <cl@linux-foundation.org>
-+ * 	Basic implementation with allocation and free from a dedicated per
-+ * 	cpu area.
-+ *
-+ * The per cpu allocator allows a dynamic allocation of a piece of memory on
-+ * every processor. A bitmap is used to track used areas.
-+ * The allocator implements tight packing to reduce the cache footprint
-+ * and increase speed since cacheline contention is typically not a concern
-+ * for memory mainly used by a single cpu. Small objects will fill up gaps
-+ * left by larger allocations that required alignments.
-+ */
-+#include <linux/mm.h>
-+#include <linux/mmzone.h>
-+#include <linux/module.h>
-+#include <linux/percpu.h>
-+#include <linux/bitmap.h>
-+#include <asm/sections.h>
-+#include <linux/bootmem.h>
-+
-+/*
-+ * Basic allocation unit. A bit map is created to track the use of each
-+ * UNIT_SIZE element in the cpu area.
-+ */
-+#define UNIT_TYPE int
-+#define UNIT_SIZE sizeof(UNIT_TYPE)
-+
-+int units;	/* Actual available units */
-+
-+/*
-+ * How many units are needed for an object of a given size
-+ */
-+static int size_to_units(unsigned long size)
-+{
-+	return DIV_ROUND_UP(size, UNIT_SIZE);
-+}
-+
-+/*
-+ * Lock to protect the bitmap and the meta data for the cpu allocator.
-+ */
-+static DEFINE_SPINLOCK(cpu_alloc_map_lock);
-+static unsigned long *cpu_alloc_map;
-+static int nr_units;		/* Number of available units */
-+static int first_free;		/* First known free unit */
-+
-+/*
-+ * Mark an object as used in the cpu_alloc_map
-+ *
-+ * Must hold cpu_alloc_map_lock
-+ */
-+static void set_map(int start, int length)
-+{
-+	while (length-- > 0)
-+		__set_bit(start++, cpu_alloc_map);
-+}
-+
-+/*
-+ * Mark an area as freed.
-+ *
-+ * Must hold cpu_alloc_map_lock
-+ */
-+static void clear_map(int start, int length)
-+{
-+	while (length-- > 0)
-+		__clear_bit(start++, cpu_alloc_map);
-+}
-+
-+/*
-+ * Allocate an object of a certain size
-+ *
-+ * Returns a special pointer that can be used with CPU_PTR to find the
-+ * address of the object for a certain cpu.
-+ */
-+void *cpu_alloc(unsigned long size, gfp_t gfpflags, unsigned long align)
-+{
-+	unsigned long start;
-+	int units = size_to_units(size);
-+	void *ptr;
-+	int first;
-+	unsigned long flags;
-+
-+	if (!size)
-+		return ZERO_SIZE_PTR;
-+
-+	WARN_ON(align > PAGE_SIZE);
-+
-+	if (align < UNIT_SIZE)
-+		align = UNIT_SIZE;
-+
-+	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
-+
-+	first = 1;
-+	start = first_free;
-+
-+	for ( ; ; ) {
-+
-+		start = find_next_zero_bit(cpu_alloc_map, nr_units, start);
-+		if (start >= nr_units)
-+			goto out_of_memory;
-+
-+		if (first)
-+			first_free = start;
-+
-+		/*
-+		 * Check alignment and that there is enough space after
-+		 * the starting unit.
-+		 */
-+		if (start % (align / UNIT_SIZE) == 0 &&
-+			find_next_bit(cpu_alloc_map, nr_units, start + 1)
-+					>= start + units)
-+				break;
-+		start++;
-+		first = 0;
-+	}
-+
-+	if (first)
-+		first_free = start + units;
-+
-+	if (start + units > nr_units)
-+		goto out_of_memory;
-+
-+	set_map(start, units);
-+	__count_vm_events(CPU_BYTES, units * UNIT_SIZE);
-+
-+	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
-+
-+	ptr = (int *)__per_cpu_end + start;
-+
-+	if (gfpflags & __GFP_ZERO) {
-+		int cpu;
-+
-+		for_each_possible_cpu(cpu)
-+			memset(CPU_PTR(ptr, cpu), 0, size);
-+	}
-+
-+	return ptr;
-+
-+out_of_memory:
-+	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(cpu_alloc);
-+
-+/*
-+ * Free an object. The pointer must be a cpu pointer allocated
-+ * via cpu_alloc.
-+ */
-+void cpu_free(void *start, unsigned long size)
-+{
-+	unsigned long units = size_to_units(size);
-+	unsigned long index = (int *)start - (int *)__per_cpu_end;
-+	unsigned long flags;
-+
-+	if (!start || start == ZERO_SIZE_PTR)
-+		return;
-+
-+	if (WARN_ON(index >= nr_units))
-+		return;
-+
-+	if (WARN_ON(!test_bit(index, cpu_alloc_map) ||
-+		!test_bit(index + units - 1, cpu_alloc_map)))
-+			return;
-+
-+	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
-+
-+	clear_map(index, units);
-+	__count_vm_events(CPU_BYTES, -units * UNIT_SIZE);
-+
-+	if (index < first_free)
-+		first_free = index;
-+
-+	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
-+}
-+EXPORT_SYMBOL(cpu_free);
-+
-+
-+void __init cpu_alloc_init(void)
-+{
-+	nr_units = percpu_reserve / UNIT_SIZE;
-+
-+	cpu_alloc_map = alloc_bootmem(BITS_TO_LONGS(nr_units));
-+}
-+
-Index: linux-2.6/mm/vmstat.c
-===================================================================
---- linux-2.6.orig/mm/vmstat.c	2008-09-29 13:08:23.000000000 -0500
-+++ linux-2.6/mm/vmstat.c	2008-09-29 13:09:33.000000000 -0500
-@@ -671,6 +671,7 @@
- 	"allocstall",
- 
- 	"pgrotated",
-+	"cpu_bytes",
- #ifdef CONFIG_HUGETLB_PAGE
- 	"htlb_buddy_alloc_success",
- 	"htlb_buddy_alloc_fail",
-Index: linux-2.6/include/linux/percpu.h
-===================================================================
---- linux-2.6.orig/include/linux/percpu.h	2008-09-29 13:09:29.000000000 -0500
-+++ linux-2.6/include/linux/percpu.h	2008-09-29 13:09:33.000000000 -0500
-@@ -107,4 +107,50 @@
- #define free_percpu(ptr)	percpu_free((ptr))
- #define per_cpu_ptr(ptr, cpu)	percpu_ptr((ptr), (cpu))
- 
-+
-+/*
-+ * cpu allocator definitions
-+ *
-+ * The cpu allocator allows allocating an instance of an object for each
-+ * processor and the use of a single pointer to access all instances
-+ * of the object. cpu_alloc provides optimized means for accessing the
-+ * instance of the object belonging to the currently executing processor
-+ * as well as special atomic operations on fields of objects of the
-+ * currently executing processor.
-+ *
-+ * Cpu objects are typically small. The allocator packs them tightly
-+ * to increase the chance on each access that a per cpu object is already
-+ * cached. Alignments may be specified but the intent is to align the data
-+ * properly due to cpu alignment constraints and not to avoid cacheline
-+ * contention. Any holes left by aligning objects are filled up with smaller
-+ * objects that are allocated later.
-+ *
-+ * Cpu data can be allocated using CPU_ALLOC. The resulting pointer is
-+ * pointing to the instance of the variable in the per cpu area provided
-+ * by the loader. It is generally an error to use the pointer directly
-+ * unless we are booting the system.
-+ *
-+ * __GFP_ZERO may be passed as a flag to zero the allocated memory.
-+ */
-+
-+/* Return a pointer to the instance of a object for a particular processor */
-+#define CPU_PTR(__p, __cpu)	SHIFT_PERCPU_PTR((__p), per_cpu_offset(__cpu))
-+
-+/*
-+ * Return a pointer to the instance of the object belonging to the processor
-+ * running the current code.
-+ */
-+#define THIS_CPU(__p)	SHIFT_PERCPU_PTR((__p), my_cpu_offset)
-+#define __THIS_CPU(__p)	SHIFT_PERCPU_PTR((__p), __my_cpu_offset)
-+
-+#define CPU_ALLOC(type, flags)	((typeof(type) *)cpu_alloc(sizeof(type), (flags), \
-+							__alignof__(type)))
-+#define CPU_FREE(pointer)	cpu_free((pointer), sizeof(*(pointer)))
-+
-+/*
-+ * Raw calls
-+ */
-+void *cpu_alloc(unsigned long size, gfp_t flags, unsigned long align);
-+void cpu_free(void *cpu_pointer, unsigned long size);
-+
- #endif /* __LINUX_PERCPU_H */
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c	2008-09-29 13:09:30.000000000 -0500
-+++ linux-2.6/init/main.c	2008-09-29 13:09:33.000000000 -0500
-@@ -115,6 +115,7 @@
- /* Default late time init is NULL. archs can override this later. */
- void (*late_time_init)(void);
- extern void softirq_init(void);
-+extern void cpu_alloc_init(void);
- 
- /* Untouched command line saved by arch-specific code. */
- char __initdata boot_command_line[COMMAND_LINE_SIZE];
-@@ -583,6 +587,7 @@
- 	mm_init_owner(&init_mm, &init_task);
- 	setup_command_line(command_line);
- 	unwind_setup();
-+	cpu_alloc_init();
- 	setup_per_cpu_areas();
- 	setup_nr_cpu_ids();
- 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+> 
+> The real big problem are other closed-source hypervisors (VirtualPC /
+> Hyper-V / Parallels / ...).  How can we be sure they don't define that
+> leaf to something different?
 
--- 
+How does that matter, if we are able to standardize all this then,
+hypervisors which want to run a Linux guest should effectively play by
+the standards over here or else they would never work properly on Linux.
+What we are trying to do here is try to standardize things for Linux so
+that the Linux kernel implementation for Virtualization is that much
+more easier. If this goes well other closed source hypervisors too can
+effectively follow these standards. 
+If the other closed source hypervisors define their own cpuid leafs they
+will still have to make Linux kernel side changes to make use of these
+new leafs. Which allows them to add to these pool of cpuid interface's
+too.
+
+> 
+> > Also one thing to remember is, that a hypervisor can decide to not
+> > implement this level and just return "0" the kernel can then just ignore
+> > that value. That's what we do currently in native_calibrate_tsc.
+> 
+> The fudamental issue outlined above aside:  Even the "ignore 0" part
+> isn't in the patch right now.
+
+Hmm, I am confused, from the patch i posted above, in
+native_calibrate_tsc
+
++       tsc_khz = hypervisor_tsc_freq();
++       if (tsc_khz)
++               return tsc_khz;
+
+We do ignore zero values over here.
+
+> 
+> >> Right now both kvm and xen use the first one or two leafes (after info),
+> >> but in incompatible ways, so for these the signature *must* be checked
+> >> before using the info found there.
+> >
+> > Hmm that's unfortunate, but we can have exceptions for these one of
+> > cases and AFAIK these are only checked in the kvm/xen code path and not
+> > in any generic code as of now, right ?
+> 
+> Yes.
+> 
+> > btw, i could only find the semantics for 0x40000001 leaf in KVM's header
+> > file but don't see Xen using that leaf, can you please point me which
+> > leafs are you referring to here.
+> 
+> pv drivers in hvm guests use that (and query very xen-specific stuff
+> which wouldn't make much sense in other hypervisors).  It isn't in the
+> kernel source tree, look here instead:
+> 
+> http://xenbits.xensource.com/xen-3.3-testing.hg?file/19201eebab16/unmodified_drivers/linux-2.6/platform-pci/platform-pci.c
+
+Thanks for the pointer. This would fall in the exception too.
+
+Thanks,
+Alok
+
+> 
+> cheers,
+>   Gerd
+> 
+> 
+
