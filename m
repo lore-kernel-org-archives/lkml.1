@@ -1,107 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbYI2AKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbYI2BV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753706AbYI2AKM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 20:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbYI2AJ7
+	id S1753520AbYI2BV2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 21:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYI2BVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 20:09:59 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:57316 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752353AbYI2AJ7 (ORCPT
+	Sun, 28 Sep 2008 21:21:21 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:14486 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751684AbYI2BVU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 20:09:59 -0400
-Message-ID: <58677.166.70.238.43.1222644857.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <20080928194616.10d25760@bree.surriel.com>
-References: <33521.166.70.238.43.1222622153.squirrel@webmail.wolfmountaingroup.com>
-    <20080928194536.GC8711@mit.edu>
-    <20080928194616.10d25760@bree.surriel.com>
-Date: Sun, 28 Sep 2008 17:34:17 -0600 (MDT)
-Subject: Re: [REQUEST] Clarification from Copyright Holders on 
-     FUSE/NDISWRAPPER
-From: jmerkey@wolfmountaingroup.com
-To: "Rik van Riel" <riel@redhat.com>
-Cc: "Theodore Tso" <tytso@mit.edu>, jmerkey@wolfmountaingroup.com,
+	Sun, 28 Sep 2008 21:21:20 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 28 Sep 2008 21:21:14 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-am33-list@redhat.com,
        linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Subject: Re: [PATCH 1/2] MN10300: Move asm-arm/cnt32_to_63.h to include/linux/
+In-reply-to: <1222430930.16700.268.camel@lappy.programming.kicks-ass.net>
+Message-id: <alpine.LFD.2.00.0809282114530.3635@xanadu.home>
+References: <20080924164826.14867.63020.stgit@warthog.procyon.org.uk>
+ <1222426580.16700.258.camel@lappy.programming.kicks-ass.net>
+ <alpine.LFD.2.00.0809260802310.3635@xanadu.home>
+ <1222430930.16700.268.camel@lappy.programming.kicks-ass.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 28 Sep 2008 15:45:36 -0400
-> Theodore Tso <tytso@mit.edu> wrote:
->
->> The position statement on closed-source Linux Kernel Modules was
->> deliberately not a "policy statement", nor did it talk about issues
->> about what is or isn't legal.  This was deliberate.  Issues over
->> whether or not the GPL covers binary modules fundamentally depend on
->> individual legal jurisdictions' interpretations of copyright law and
->> derivitive works,
->
-> This, of course, means you may want to ask your lawyer to
-> make sure to which countries binary only kernel modules can
-> be distributed and in which countries they are definately
-> illegal.
->
-> Then you can put some access control in place on your web
-> site to make sure people from countries where binary only
-> kernel modules are illegal cannot download your drivers.
->
-> Of course, what to do with the countries where the answer
-> to the question is not clear cut is up to you...
->
-> Investigating a few hundred jurisdictions could be a fair
-> amount of work, but if you want to be absolutely sure there's
-> not much else you can do.
->
-> --
-> All rights reversed.
->
+On Fri, 26 Sep 2008, Peter Zijlstra wrote:
 
-Rik,
+> On Fri, 2008-09-26 at 08:03 -0400, Nicolas Pitre wrote:
+> > On Fri, 26 Sep 2008, Peter Zijlstra wrote:
+> > 
+> > > On Wed, 2008-09-24 at 17:48 +0100, David Howells wrote:
+> > > > Move asm-arm/cnt32_to_63.h to include/linux/ so that MN10300 can make use of it
+> > > > too.
+> > > > 
+> > > > Signed-off-by: David Howells <dhowells@redhat.com>
+> > > > ---
+> > > > 
+> > > >  arch/arm/mach-pxa/time.c       |    2 +
+> > > >  arch/arm/mach-sa1100/generic.c |    2 +
+> > > >  arch/arm/mach-versatile/core.c |    2 +
+> > > >  include/linux/cnt32_to_63.h    |   80 ++++++++++++++++++++++++++++++++++++++++
+> > > >  4 files changed, 83 insertions(+), 3 deletions(-)
+> > > >  create mode 100644 include/linux/cnt32_to_63.h
+> > > 
+> > > Didn't you forget to remove the old one?
+> > > 
+> > > 
+> > > > +#define cnt32_to_63(cnt_lo) \
+> > > > +({ \
+> > > > +	static volatile u32 __m_cnt_hi; \
+> > > > +	union cnt32_to_63 __x; \
+> > > > +	__x.hi = __m_cnt_hi; \
+> > > > +	__x.lo = (cnt_lo); \
+> > > > +	if (unlikely((s32)(__x.hi ^ __x.lo) < 0)) \
+> > > > +		__m_cnt_hi = __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31); \
+> > > > +	__x.val; \
+> > > > +})
+> > > > +
+> > > > +#endif
+> > > 
+> > > That code is way to smart :-)
+> > > 
+> > > Better make sure that non of its users are SMP capable though.
+> > 
+> > Why would that matter?
+> 
+> It has a local static variable and no synchronization.
 
-I do not distribute anything outside of the US, and nothing I offer as
-downloads is binary without sources.  My website at wolfmountaingroup.org
-is open source only, and I feel I am doing my part to the OSS empire in
-putting out a kernel debugger and a bunch of other stuff for free.
+So?  The whole point of this algorithm is to avoid all kind of locking 
+and require absolutely no synchronization as it relies solely on the 
+implicit synchronization from the top bit of both values.  You would get 
+cache bouncing but the result will still be correct.
 
-Ad for countries with anally retentive laws about binary drivers, it
-sounds like places no one wants to pay for stuff anyway so I doubt any of
-my business associates have any interest in distributing in these
-jurisdictions.
+> Also, if the counters differ per cpu the value of __m_cnt_hi ought to 
+> be different per cpu.
 
-The other stuff, including file systems is for commercial companies and
-it's not on my website, nor do I distribute it.  I ported the proprietary
-file systems over to Free BSD over the summer.  Linux had some advantages
-because it has better overall driver support for newer hardware, but the
-newer desktops on FreeBSD that are out have left Linux in the dust, and
-Free BSD has finally started to catch up to Linux.
-
-One nice thing about putting out a kernel debugger is it gives me a unique
-view into the numbers and status developers working on Linux -- and it's
-shrinking from the download patterns and the types of folks downloading
-it.
-
-Linux is pervasive, but based upon my observations, development is
-declining and almost non-existent in commercial companies except for a
-small handful of companies.  I do not believe that Free BSD or some other
-Unix is going to replace Linux, but what I see happening is a loss of
-interest in Unix platforms generally.
-
-M$ has won, again, and not because they are better or have better products
-(Linux is tons better than Windows and a lot easier to develop on), but
-because there still is simply nothing else out there that is better or
-competes well in their space.
-
-Jeff
+True.
 
 
-
-
-
-
-
+Nicolas
