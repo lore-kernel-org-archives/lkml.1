@@ -1,108 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbYI2KST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbYI2Kku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754503AbYI2KST (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 06:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYI2KSG
+	id S1753150AbYI2Kku (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 06:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbYI2Kkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 06:18:06 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56457 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751876AbYI2KSE (ORCPT
+	Mon, 29 Sep 2008 06:40:42 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:34367 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751323AbYI2Kkl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 06:18:04 -0400
-Date: Mon, 29 Sep 2008 19:24:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 4/4] memcg: optimze cpustat
-Message-Id: <20080929192430.e93d4f21.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080929191927.caabec89.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080929191927.caabec89.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Mon, 29 Sep 2008 06:40:41 -0400
+Date: Mon, 29 Sep 2008 19:40:36 +0900 (JST)
+Message-Id: <20080929.194036.105502812.taka@valinux.co.jp>
+To: righi.andrea@gmail.com
+Cc: vgoyal@redhat.com, ryov@valinux.co.jp, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <48DD0617.3050403@gmail.com>
+References: <20080924145331.GD547@redhat.com>
+	<20080926.220418.83079316.taka@valinux.co.jp>
+	<48DD0617.3050403@gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some obvious optimization to memcg.
+Hi,
 
-I found mem_cgroup_charge_statistics() is a little big (in object) and
-does unnecessary address calclation.
-This patch is for optimization to reduce the size of this function.
+> >>>>> It's possible the algorithm of dm-ioband can be placed in the block layer
+> >>>>> if it is really a big problem.
+> >>>>> But I doubt it can control every control block I/O as we wish since
+> >>>>> the interface the cgroup supports is quite poor.
+> >>>> Had a question regarding cgroup interface. I am assuming that in a system,
+> >>>> one will be using other controllers as well apart from IO-controller.
+> >>>> Other controllers will be using cgroup as a grouping mechanism.
+> >>>> Now coming up with additional grouping mechanism for only io-controller seems
+> >>>> little odd to me. It will make the job of higher level management software
+> >>>> harder.
+> >>>>
+> >>>> Looking at the dm-ioband grouping examples given in patches, I think cases
+> >>>> of grouping based  in pid, pgrp, uid and kvm can be handled by creating right
+> >>>> cgroup and making sure applications are launched/moved into right cgroup by
+> >>>> user space tools. 
+> >>> Grouping in pid, pgrp and uid is not the point, which I've been thinking
+> >>> can be replaced with cgroup once the implementation of bio-cgroup is done.
+> >>>
+> >>> I think problems of cgroup are that they can't support lots of storages
+> >>> and hotplug devices, it just handle them as if they were just one resource.
+> >>> I don't insist the interface of dm-ioband is the best. I just hope the
+> >>> cgroup infrastructure support this kind of resources.
+> >>>
+> >> Sorry, I did not understand fully. Can you please explain in detail what
+> >> kind of situation will not be covered by cgroup interface.
+> > 
+> > From the concept of the cgroup, if you want control several disks
+> > independently, you should make each disk have its own cgroup subsystem,
+> > which only can be defined when compiling the kernel. This is impossible
+> > because every linux box has various number of disks.
+> 
+> mmh? not true. You can define a single cgroup subsystem that implements
+> the opportune interfaces to apply your type of control, and use many
+> structures allocated dynamically for each controlled object (one for
+> each block device, disk, partition, ... or using any kind of
+> grouping/splitting policy). Actually, this is how cgroup-io-throttle, as
+> well as any other cgroup subsystem, is implemented.
+> 
+> > So you think it may be possible to make each cgroup have lots of control
+> > files for each device as a workaround. But it isn't allowed to add/remove
+> > control files when some devices are hot-added or hot-removed.
+> 
+> Why not a single control file for all the devices?
 
-And res_counter_charge() is 'likely' to success.
+This is possible but I wonder if this is really the way we should go.
+It looks like you tried implementing another ioctl-like interface
+on the cgroup control file interface. You can do anything you want
+with this interface though.
 
-Changlog: v5->v6
- - patch series was reordered and needs some adjustment. no changes in logic.
-Changelog v3->v4:
- - merged with an other leaf patch.
+I guess there should be at least some rules to implement this kind of
+ioctl-like interface if they don't want to enhance the cgroup interface, 
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Thank you,
+Hirokazu Takahashi.
 
 
- mm/memcontrol.c |   18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
-
-Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
-+++ mmotm-2.6.27-rc7+/mm/memcontrol.c
-@@ -66,11 +66,10 @@ struct mem_cgroup_stat {
- /*
-  * For accounting under irq disable, no need for increment preempt count.
-  */
--static void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat *stat,
-+static inline void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat_cpu *stat,
- 		enum mem_cgroup_stat_index idx, int val)
- {
--	int cpu = smp_processor_id();
--	stat->cpustat[cpu].count[idx] += val;
-+	stat->count[idx] += val;
- }
- 
- static s64 mem_cgroup_read_stat(struct mem_cgroup_stat *stat,
-@@ -190,18 +189,21 @@ static void mem_cgroup_charge_statistics
- {
- 	int val = (charge)? 1 : -1;
- 	struct mem_cgroup_stat *stat = &mem->stat;
-+	struct mem_cgroup_stat_cpu *cpustat;
- 
- 	VM_BUG_ON(!irqs_disabled());
-+
-+	cpustat = &stat->cpustat[smp_processor_id()];
- 	if (flags & PAGE_CGROUP_FLAG_CACHE)
--		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
-+		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_CACHE, val);
- 	else
--		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
-+		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_RSS, val);
- 
- 	if (charge)
--		__mem_cgroup_stat_add_safe(stat,
-+		__mem_cgroup_stat_add_safe(cpustat,
- 				MEM_CGROUP_STAT_PGPGIN_COUNT, 1);
- 	else
--		__mem_cgroup_stat_add_safe(stat,
-+		__mem_cgroup_stat_add_safe(cpustat,
- 				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
- }
- 
-@@ -558,7 +560,7 @@ static int mem_cgroup_charge_common(stru
- 		css_get(&memcg->css);
- 	}
- 
--	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
-+	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
- 		if (!(gfp_mask & __GFP_WAIT))
- 			goto out;
- 
 
