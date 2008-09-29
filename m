@@ -1,102 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYI2QVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYI2QVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbYI2QVB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 12:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYI2QUx
+	id S1754255AbYI2QVe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 12:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYI2QVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 12:20:53 -0400
-Received: from styx.suse.cz ([82.119.242.94]:54866 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751355AbYI2QUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 12:20:52 -0400
-Date: Mon, 29 Sep 2008 18:20:50 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-cc: LKML <linux-kernel@vger.kernel.org>, agospoda@redhat.com,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Graham, David" <david.graham@intel.com>, kkiel@suse.de,
-       Thomas Gleixner <tglx@linutronix.de>, chris.jones@canonical.com,
-       arjan@linux.jf.intel.com
-Subject: Re: e1000e NVM corruption issue status
-In-Reply-To: <alpine.LNX.1.10.0809291740140.4022@jikos.suse.cz>
-Message-ID: <alpine.LNX.1.10.0809291817130.4022@jikos.suse.cz>
-References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com> <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com> <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com> <Pine.WNT.4.63.0809251913300.1736@jbrandeb-desk.amr.corp.intel.com>
- <alpine.LNX.1.10.0809291740140.4022@jikos.suse.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Mon, 29 Sep 2008 12:21:24 -0400
+Received: from mail.collax.com ([82.194.105.242]:33802 "EHLO mail.collax.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752273AbYI2QVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 12:21:23 -0400
+Message-ID: <48E1007F.4000400@collax.com>
+Date: Mon, 29 Sep 2008 18:21:19 +0200
+From: Tilman Baumann <tilman.baumann@collax.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Casey Schaufler <casey@schaufler-ca.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+Subject: Re: SMACK netfilter smacklabel socket match
+References: <48DBC9A1.20900@collax.com> <48DC5A45.8020801@schaufler-ca.com> <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com> <48DDBE2E.3010006@schaufler-ca.com>
+In-Reply-To: <48DDBE2E.3010006@schaufler-ca.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Filtered: By ProxSMTP
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.33/RELEASE, bases: 29092008 #1137956, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008, Jiri Kosina wrote:
 
-> > in case your mailer hoses something apply in this order:
-> > # This series applies on GIT commit 011fcfcb75311c7368f13170b9e68adcf146a557
-> > 01-e-mem.patch
-> > 02-e_flash.patch
-> > 03-e1000e-release-lock-in-reset.patch
-> > 04-e1000e-dont-sleep.patch
-> > 05-e1000e-no-deeplocks.patch
-> > 06-e1000e-drop-stats-lock.patch
-> > 07-subject-e1000e-debug-patch.patch
-> > 08-e1000e-version.patch
-> > 09-e1000e-allow-bad-checksum.patch
-> > 10-e1000e-dump-eeprom-to-dmesg.txt
-> When using this patchset (plus patch that adds check for address range in 
-> pci_mmap_resource() by Jesse Barnes), the machine (that already has 
-> corrupted (but not completely erased)) hangs after dumping eeprom 
-> contents:
-> 0000:00:19.0: 0000:00:19.0: The NVM Checksum Is Not Valid
-> /*********************/
-> Current EEPROM Checksum : 0x2259
-> Calculated              : 0xa259
-> Offset    Values
-> ========  ======
-> 00000000: 00 15 58 c6 4a ff 00 08 ff ff 30 00 ff ff ff ff
-> 00000010: ff ff ff ff c7 10 b9 20 aa 17 49 10 86 80 00 00
-> 00000020: 01 0d 00 00 00 00 05 16 20 50 00 38 00 00 8b 0d
-> 00000030: 02 06 c1 01 03 08 00 00 00 00 00 00 00 00 00 00
-> 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 00000060: 00 01 00 40 28 12 07 40 ff ff ff ff ff ff ff ff
-> 00000070: ff ff ff ff ff ff ff ff ff ff ff ff ff ff 59 22
-> /*********************/
-> after this, alt-sysrq-p indicates that it's somehow running in the loops 
-> around r1000_read_nvm_ich8lan and e1000_release_swflag_uch8lan. Below 
-> there are several subsequent alt-sysrq-p outputs on this frozen system
 
-And I believe that this is because of this code in 
-09-e1000e-allow-bad-checksum.patch:
+Casey Schaufler wrote:
+> Tilman Baumann wrote:
 
-        for (i = 0;; i++) {
-                if (e1000_validate_nvm_checksum(hw) >= 0) {
-                        /* copy the MAC address out of the NVM */
-                        if (e1000e_read_mac_addr(&adapter->hw))
-                                e_err("NVM Read Error reading MAC address\n");
-                        break;
-                }
-                if (i == 2) {
-                        e_err("The NVM Checksum Is Not Valid\n");
-                        e1000e_dump_eeprom(adapter);
-                        /*
-                         * set MAC address to all zeroes to invalidate and
-                         * temporary disable this device for the user. This
-                         * blocks regular traffic while still permitting
-                         * ethtool ioctls from reaching the hardware as well as
-                         * allowing the user to run the interface after
-                         * manually setting a hw addr using
-                         * `ip link set address`
-                         */
-                        memset(hw->mac.addr, 0, netdev->addr_len);
-                }
-        }
+>>> Hmm. It looks as if your code will do what you're asking it to do.
+>>> Are you going to be happy with the access restrictions that will be
+>>> imposed by Smack?
+>>
+>> I helped myself with rules like this.
+>> _ foo rwx
+>> But i wanted to add some security stuff like selinux for years,
+>> and SMACK seems to be just great.
+>> So i will spend some time making security rules after i got this routing
+>> stuff to work. :)
+>>
+> I confess that I'm still not completely sure what you're up too,
+> but you might want to look at smackpolyport (it's in the smack-util
+> tarball) and might make your life easier if you want to have a
+> single server (running at foo) that deals with connections from
+> processes with multiple labels.
 
-We are missing 'break;' after the memset, and that is where the hanging 
-machine comes from (the loop keeps spinning forever), right? I will verify 
-this right away.
+I'm essentially using this as some kind of iptables owner-match on steroids.
+Owner match allows to filter on the processes uid, gid, and some other 
+process attributes.
+Unfortunately owner match is pretty much useless because of it's limited 
+matching capabilities.
+
+I'm really just abusing the way how security contexts of processes are 
+transfered to all it's sockets.
+This way I can label a process with a specific label which then gets 
+transfered to all of it's sockets.
+With this match I can look at the label via the socket of any packet in 
+  iptables.
+I'm pretty much ignoring the Security aspect of SMACK right now  and 
+just use it as some label that I can stick to processes.
+
+What I then to is write iptables OUTPUT chain matches which match for 
+any of these labels and set some connection marks and firewall marks.
+Which I then can use in routing rules to give different routing rules to 
+specific processes. (Like all proxy traffic over a second DSL line)
+
+I know, it's totally crazy. But it seems to work. :)
+I just hope the security part of this all will not break anything. But 
+it does not look like it would right now.
 
 -- 
-Jiri Kosina
-SUSE Labs
+Tilman Baumann
+Software Developer
+Collax GmbH . Boetzinger Strasse 60 . 79111 Freiburg . Germany
+
+p: +49 (0) 89-990157-0
+f: +49 (0) 89-990157-11
+
+Geschaeftsfuehrer: William K. Hite / Boris Nalbach
+AG Muenchen HRB 158898, Ust.-IdNr: DE 814464942
