@@ -1,720 +1,337 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbYI2Rdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbYI2ReN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbYI2Rdu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYI2RcN
+	id S1754798AbYI2ReN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYI2Rca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:32:13 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:35335 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751704AbYI2Rbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 13:31:52 -0400
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
-       sds@tycho.nsa.gov, matthew.dodd@sparta.com, trond.myklebust@fys.uio.no,
-       bfields@fieldses.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       labeled-nfs@linux-nfs.org, "David P. Quigley" <dpquigl@tycho.nsa.gov>,
-       "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
-Subject: [PATCH 11/14] NFS/RPC: Add the auth_seclabel security flavor to allow the process label to be sent to the server.
-Date: Mon, 29 Sep 2008 13:06:23 -0400
-Message-Id: <1222707986-26606-12-git-send-email-dpquigl@tycho.nsa.gov>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov>
-References: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov>
+	Mon, 29 Sep 2008 13:32:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45351 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbYI2Rc3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 13:32:29 -0400
+Subject: Re: [RFC PATCH] LTTng relay buffer allocation, read, write
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>, Tom Zanussi <zanussi@comcast.net>
+In-Reply-To: <20080929155004.GA11029@Krystal>
+References: <20080927134012.GA11930@Krystal>
+	 <1222535419.16700.300.camel@lappy.programming.kicks-ass.net>
+	 <20080929155004.GA11029@Krystal>
+Content-Type: text/plain
+Date: Mon, 29 Sep 2008 19:30:45 +0200
+Message-Id: <1222709445.23876.70.camel@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a new RPC flavor that allows the NFSv4 client to pass the
-process label of the calling process on the client to the server to make an
-access control decision. This is accomplished by taking the credential from the
-wire and replacing the acting credential on the server for the NFSD process
-with that new context.
+On Mon, 2008-09-29 at 11:50 -0400, Mathieu Desnoyers wrote:
+> * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> > On Sat, 2008-09-27 at 09:40 -0400, Mathieu Desnoyers wrote:
+> > > As I told Martin, I was thinking about taking an axe and moving stuff around in
+> > > relay. Which I just did.
+> > > 
+> > > This patch reimplements relay with a linked list of pages. Provides read/write
+> > > wrappers which should be used to read or write from the buffers. It's the core
+> > > of a layered approach to the design requirements expressed by Martin and
+> > > discussed earlier.
+> > > 
+> > > It does not provide _any_ sort of locking on buffer data. Locking should be done
+> > > by the caller. Given that we might think of very lightweight locking schemes, it
+> > > makes sense to me that the underlying buffering infrastructure supports event
+> > > records larger than 1 page.
+> > > 
+> > > A cache saving 3 pointers is used to keep track of current page used for the
+> > > buffer for write, read and current subbuffer header pointer lookup. The offset
+> > > of each page within the buffer is saved in the page frame structure to permit
+> > > cache lookup without extra locking.
+> > > 
+> > > TODO : Currently, no splice file operations are implemented. Should come soon.
+> > > The idea is to splice the buffers directly into files or to the network.
+> > > 
+> > > This patch is released as early RFC. It builds, that's about it. Testing will
+> > > come when I implement the splice ops.
+> > 
+> > Why? What aspects of Steve's ring-buffer interface will hinder us
+> > optimizing the implementation to be as light-weight as you like?
+> > 
+> > The thing is, I'd like to see it that light as well ;-)
+> > 
+> 
+> Ok, I'll try to explain my point of view. The thing is : I want those
+> binary buffers to be exported to userspace, and I fear that the approach
+> taken by Steven (let's write "simple" C structure directly into the
+> buffers) will in fact be much more _complex_ (due to subtle compiler
+> dependencies) that doing our own event payload (event data) format.
 
-Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
-Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
----
- fs/nfs/nfs4proc.c               |    6 +-
- fs/nfsd/auth.c                  |   21 +++
- include/linux/sunrpc/auth.h     |    4 +
- include/linux/sunrpc/msg_prot.h |    1 +
- include/linux/sunrpc/svcauth.h  |    4 +
- net/sunrpc/Makefile             |    1 +
- net/sunrpc/auth.c               |   16 ++
- net/sunrpc/auth_seclabel.c      |  291 +++++++++++++++++++++++++++++++++++++++
- net/sunrpc/svc.c                |    1 +
- net/sunrpc/svcauth.c            |    6 +
- net/sunrpc/svcauth_unix.c       |   97 +++++++++++++-
- security/security.c             |    2 +
- security/selinux/hooks.c        |    2 +-
- 13 files changed, 446 insertions(+), 6 deletions(-)
- create mode 100644 net/sunrpc/auth_seclabel.c
+The only compiler dependant thing in there is the bitfield, which could
+be recoded using regular bitops.
 
-diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
-index c4a4271..92522cc 100644
---- a/fs/nfs/nfs4proc.c
-+++ b/fs/nfs/nfs4proc.c
-@@ -1410,6 +1410,9 @@ nfs4_atomic_open(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
- 	struct nfs4_state *state;
- 	struct dentry *res;
- 
-+	cred = rpc_lookup_cred();
-+	if (IS_ERR(cred))
-+		return (struct dentry *)cred;
- 	if (nd->flags & LOOKUP_CREATE) {
- 		attr.ia_mode = nd->intent.open.create_mode;
- 		attr.ia_valid = ATTR_MODE;
-@@ -1420,9 +1423,6 @@ nfs4_atomic_open(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
- 		BUG_ON(nd->intent.open.flags & O_CREAT);
- 	}
- 
--	cred = rpc_lookup_cred();
--	if (IS_ERR(cred))
--		return (struct dentry *)cred;
- 	parent = dentry->d_parent;
- 	/* Protect against concurrent sillydeletes */
- 	nfs_block_sillyrename(parent);
-diff --git a/fs/nfsd/auth.c b/fs/nfsd/auth.c
-index 294992e..400edf5 100644
---- a/fs/nfsd/auth.c
-+++ b/fs/nfsd/auth.c
-@@ -10,6 +10,9 @@
- #include <linux/sunrpc/svcauth.h>
- #include <linux/nfsd/nfsd.h>
- #include <linux/nfsd/export.h>
-+#ifdef CONFIG_SECURITY
-+#include <linux/security.h>
-+#endif
- #include "auth.h"
- 
- int nfsexp_flags(struct svc_rqst *rqstp, struct svc_export *exp)
-@@ -32,6 +35,24 @@ int nfsd_setuser(struct svc_rqst *rqstp, struct svc_export *exp)
- 	int flags = nfsexp_flags(rqstp, exp);
- 	int ret;
- 
-+#ifdef CONFIG_SECURITY
-+	if (cred.cr_label_len != 0) {
-+		ret = security_setprocattr(current, "current",
-+				(void *)cred.cr_label, cred.cr_label_len);
-+		if (ret < 0) {
-+			printk(KERN_ERR "%s(): "
-+					"flavor %d "
-+					"security_setprocattr(\"%*s\", %d) = %d\n",
-+					__func__,
-+					rqstp->rq_flavor,
-+					cred.cr_label_len,
-+					(char *)cred.cr_label,
-+					cred.cr_label_len, ret);
-+			return ret;
-+		}
-+	}
-+#endif
-+	
- 	if (flags & NFSEXP_ALLSQUASH) {
- 		cred.cr_uid = exp->ex_anon_uid;
- 		cred.cr_gid = exp->ex_anon_gid;
-diff --git a/include/linux/sunrpc/auth.h b/include/linux/sunrpc/auth.h
-index 3f63218..11c054d 100644
---- a/include/linux/sunrpc/auth.h
-+++ b/include/linux/sunrpc/auth.h
-@@ -27,6 +27,10 @@ struct auth_cred {
- 	gid_t	gid;
- 	struct group_info *group_info;
- 	unsigned char machine_cred : 1;
-+#ifdef CONFIG_SECURITY
-+	char   *label;
-+	size_t  label_len;
-+#endif
- };
- 
- /*
-diff --git a/include/linux/sunrpc/msg_prot.h b/include/linux/sunrpc/msg_prot.h
-index 70df4f1..e2667f6 100644
---- a/include/linux/sunrpc/msg_prot.h
-+++ b/include/linux/sunrpc/msg_prot.h
-@@ -24,6 +24,7 @@ enum rpc_auth_flavors {
- 	RPC_AUTH_DES   = 3,
- 	RPC_AUTH_KRB   = 4,
- 	RPC_AUTH_GSS   = 6,
-+	RPC_AUTH_SECLABEL = 7,
- 	RPC_AUTH_MAXFLAVOR = 8,
- 	/* pseudoflavors: */
- 	RPC_AUTH_GSS_KRB5  = 390003,
-diff --git a/include/linux/sunrpc/svcauth.h b/include/linux/sunrpc/svcauth.h
-index d39dbdc..5557361 100644
---- a/include/linux/sunrpc/svcauth.h
-+++ b/include/linux/sunrpc/svcauth.h
-@@ -21,6 +21,10 @@ struct svc_cred {
- 	uid_t			cr_uid;
- 	gid_t			cr_gid;
- 	struct group_info	*cr_group_info;
-+#ifdef CONFIG_SECURITY
-+	void			*cr_label;
-+	u32			cr_label_len;
-+#endif
- };
- 
- struct svc_rqst;		/* forward decl */
-diff --git a/net/sunrpc/Makefile b/net/sunrpc/Makefile
-index 5369aa3..5e03065 100644
---- a/net/sunrpc/Makefile
-+++ b/net/sunrpc/Makefile
-@@ -6,6 +6,7 @@
- obj-$(CONFIG_SUNRPC) += sunrpc.o
- obj-$(CONFIG_SUNRPC_GSS) += auth_gss/
- obj-$(CONFIG_SUNRPC_XPRT_RDMA) += xprtrdma/
-+obj-$(CONFIG_SECURITY) += auth_seclabel.o
- 
- sunrpc-y := clnt.o xprt.o socklib.o xprtsock.o sched.o \
- 	    auth.o auth_null.o auth_unix.o auth_generic.o \
-diff --git a/net/sunrpc/auth.c b/net/sunrpc/auth.c
-index 6bfea9e..b1d9e4e 100644
---- a/net/sunrpc/auth.c
-+++ b/net/sunrpc/auth.c
-@@ -14,6 +14,7 @@
- #include <linux/hash.h>
- #include <linux/sunrpc/clnt.h>
- #include <linux/spinlock.h>
-+#include <linux/security.h>
- 
- #ifdef RPC_DEBUG
- # define RPCDBG_FACILITY	RPCDBG_AUTH
-@@ -359,11 +360,19 @@ rpcauth_lookupcred(struct rpc_auth *auth, int flags)
- 
- 	dprintk("RPC:       looking up %s cred\n",
- 		auth->au_ops->au_name);
-+#ifdef CONFIG_SECURITY
-+	acred.label_len = security_getprocattr(current, "current",&acred.label);
-+#endif
- 	get_group_info(acred.group_info);
- 	ret = auth->au_ops->lookup_cred(auth, &acred, flags);
- 	put_group_info(acred.group_info);
-+#ifdef CONFIG_SECURITY
-+	if (acred.label != NULL)
-+		security_release_secctx(acred.label, acred.label_len);
-+#endif
- 	return ret;
+I'm not seeing anything particularly worrysome about that.
+
+> Also, things such as 
+> ring_buffer_lock: A way to lock the entire buffer.
+> ring_buffer_unlock: unlock the buffer.
+> will probably become a problem when trying to go for a more efficient
+> locking scheme.
+
+You can do
+
+stop:
+cpu_buffer->stop=1;
+smp_wmb();
+sched_sync();
+
+start:
+smp_wmb();
+cpu_buffer->stop=0;
+
+
+write:
+if (unlikely(smp_rmb(), cpu_buffer->stop))) {
+  return -EBUSY;
+    or
+  while (cpu_buffer->stop)
+    cpu_relax();
+}
+
+The read in the fast path is just a read, nothing fancy...
+
+> ring_buffer_peek: Look at a next item in the cpu buffer.
+> This kind of feature is useless for data extraction to userspace and
+> poses serious synchronization concerns if you have other writers in the
+> same buffer.
+
+Sure, its probably possible to rework the merge-iterator to use consume,
+but that would require it having storage for 1 event, which might be a
+bit messy.
+
+How would your locking deal with this? - it really is a requirement to
+be able to merge-sort-iterate the output from kernel space..
+
+> Structure for event records :
+> 
+> struct ring_buffer_event {
+>         u32 type:2, len:3, time_delta:27;
+>         u32 array[];
+> };
+> 
+> The only good thing about reserving 2 bits for event IDs in there is to
+> put the most frequent events in those IDs
+
+Not so, these types are buffer package types, not actual event types, I
+think thats a useful distinction.
+
+> , which is clearly not the
+> case:
+> RB_TYPE_PADDING: utterly useless. Can be expressed by a sub-buffer
+> header telling the length of data written into the subbuffer (what you
+> guys call a "page", but what I still think might be worthy to be of
+> variable size, especially with a light locking infrastructure and
+> considering we might want to export this data to userspace).
+
+But then you'd need a sub-buffer header, which in itself takes space,
+this padding solution seems like a fine middle-ground, it only takes
+space when you need it and it free otherwise.
+
+The sub-buffer headers would always take space.
+
+> RB_TYPE_TIME_EXTENT : I'd reserve a separate bit for this one.
+> 
+> Also, if size _really_ matters,
+
+You and Martin have been telling it does ;-)
+
+>  we should just export the event ID and
+> look up the event payload size through a separate table. If the payload
+> consists of a binary blob, then the data structure should start by a
+> payload size and then have a the actual binary blob.
+> 
+> struct ring_buffer_event {
+>         u32 time_ext:1, evid:4, time_lsb:27;
+>         union {
+>           u32 array[];
+>           struct {
+>             u32 ext_id;
+>             u32 array[];
+>           };
+>           struct {
+>             u32 ext_time;
+>             u32 array[];
+>           };
+>           struct {
+>             u32 ext_time;
+>             u32 ext_id;
+>             u32 array[];
+>           };
+> };
+> 
+> Therefore we can encode up to 15 event IDs into this compact
+> representation (we reserve ID 0xF for extended id). If we assign those
+> IDs per subbuffer, it leaves plenty of room before we have to write a
+> supplementary field for more IDs.
+> 
+> OTOH, if we really want to have an event size in there (which is more
+> solid), we could have :
+> 
+> struct ring_buffer_event {
+>         u32 time_ext:1, time_lsb:31;
+>         u16 evid;
+>         u16 evsize;
+>         union {
+>           u32 array[];
+>           struct {
+>             u32 ext_time;
+>             u32 array[];
+>           };
+> };
+> 
+> That's a bit bigger, but keeps the event size in the data stream.
+
+I'm really not seeing what any of these proposals have on top of what
+Steve currently has. We have the ability to encode up to 28 bytes of
+payload in a 4 bytes header, which should suffice for most entries,
+right?
+
+> Also, nobody has explained successfully why we have to encode a time
+> _delta_ (current tsc - prev tsc) rather than just putting the LSBs. So
+> either I fail to see the light here (I doubt it), or I am not clear
+> enough when I say that we can just put the raw LSBs and compute the
+> delta afterward when reading the buffers, manage to keep the same
+> overflow detection power, and also keep the absolute value of the tsc
+> lsb, which makes it much easier to cross-check than "deltas".
+
+Still not quite understanding where you get the MSBs from, how do you
+tell if two LSBs are from the same period?
+
+> Now for the buffer pages implementation :
+> 
+> 
+> +struct buffer_page {
+> +       union {
+> +               struct {
+> +                       unsigned long flags;    /* mandatory */
+> +                       atomic_t _count;        /* mandatory */
+> +                       u64     time_stamp;     /* page time stamp */
+> 
+> Why should we ever associate a time stamp with a page ??
+
+Discarting the whole sub-buffer idea, it could be used to validate
+whichever time-stamp logic.
+
+Personally I don't particulary like the sub-buffer concept, and I don't
+think we need it.
+
+> I see that we could save the timestamp at which a subbuffer switch
+> happens (which in this patchset semantics happens to be a page), but why
+> would we every want to save that in the page frame ? Especially if we
+> simply write the LSBs instead of a time delta... Also, I would write
+> this timestamp in a subbuffer _header_ which is exported to userspace,
+
+Why have sub-buffers at all?
+
+> but I clealry don't see why we keep it here. In addition, it's
+> completely wrong in a layered approach : if we want to switch from pages
+> to video memory or to a statically allocated buffer at boot time, such
+> "page-related" timestamp hacks won't do.
+
+I don't think you _ever_ want to insert actual video memory in the
+trace, what you _might_ possibly want to do, is insert a copy of a
+frame, but that you can do with paged buffers like we have, just add an
+entry with 3840*1200*4 bytes (one screen in my case), and use sub-writes
+to copy everything to page-alinged chunks.
+
+There is nothing techinically prohibiting this in Steve's scheme, except
+for Linus telling you you're an idiot for doing it.
+
+The NOP packets you dislike allow us to align regular entries with page
+boundaries, which in turn allows this 0-copy stuff. If you use the
+sub-write iterator stuff we taked about a while ago, you can leave out
+the NOPs.
+
+Having both makes sense (if you want the large packets stuff), use the
+regular page aligned 0-copy stuff for regular small packets, and use the
+sub-write iterator stuff for your huge packets.
+
+> > As for the page-spanning entries, I think we can do that with Steve's
+> > system just fine, its just that Linus said its a dumb idea and Steve
+> > dropped it, but there is nothing fundamental stopping us from recording
+> > a length that is > PAGE_SIZE and copying data into the pages one at a
+> > time.
+> > 
+> > Nor do I see it impossible to implement splice on top of Steve's
+> > ring-buffer..
+> > 
+> > So again, why?
+> > 
+> 
+> I'd like to separate the layer which deals with data read/write from the
+> layer which deals with synchronization of data write/read to/from the
+> buffers so we can eventually switch to a locking mechanism which
+> provides a sane performance level, and given Steven's linked list
+> implementation, it will just add unneeded locking requirements.
+
+How does it differ from your linked list implementation? Reaslistically,
+we want but a single locking scheme for the trace buffer stuff. So
+factoring it out doesn't really make sense.
+
+> Compared to this, I deal with buffer coherency with two 32 bits counters
+> in LTTng : a write offset and a consumer offset. (plus a per-subbuffer
+> commit count). 
+
+I think that can work just fine on top of Steve's stuff too, it needs a
+bit of trimming etc.. but afaict there isn't anything stopping us from
+implementing his reserve function as light as you want:
+
+int reserve(buffer, size, flags)
+{
+ preempt_disable()
+ cpu = smp_processor_id();
+ cpu_buf = buffer->buffers[cpu];
+
+ if (cpu_buf->stop) {
+   ret = -EBUSY;
+   goto out;
  }
-+EXPORT_SYMBOL_GPL(rpcauth_lookupcred);
- 
- void
- rpcauth_init_cred(struct rpc_cred *cred, const struct auth_cred *acred,
-@@ -403,11 +412,18 @@ rpcauth_bind_root_cred(struct rpc_task *task)
- 
- 	dprintk("RPC: %5u looking up %s cred\n",
- 		task->tk_pid, task->tk_client->cl_auth->au_ops->au_name);
-+#ifdef CONFIG_SECURITY
-+	acred.label_len = security_getprocattr(current, "current",&acred.label);
-+#endif
- 	ret = auth->au_ops->lookup_cred(auth, &acred, 0);
- 	if (!IS_ERR(ret))
- 		task->tk_msg.rpc_cred = ret;
- 	else
- 		task->tk_status = PTR_ERR(ret);
-+#ifdef CONFIG_SECURITY
-+	if (acred.label != NULL)
-+		security_release_secctx(acred.label, acred.label_len);
-+#endif
+
+again:
+ pos = cpu_buf->write_pos;
+ if (flags & CONTIG) {
+   new_pos = pos + size;
+ } else {
+   if (size > PAGE_SIZE) {
+     ret = -ENOSPACE;
+     goto out;
+   }
+   if ((pos + size) & PAGE_MASK != pos & PAGE_MASK) {
+     insert_nops();
+   }
+   new_pos = pos + size;
  }
- 
- static void
-diff --git a/net/sunrpc/auth_seclabel.c b/net/sunrpc/auth_seclabel.c
-new file mode 100644
-index 0000000..3e3b8ef
---- /dev/null
-+++ b/net/sunrpc/auth_seclabel.c
-@@ -0,0 +1,291 @@
-+/*
-+ * linux/net/sunrpc/auth_seclabel.c
-+ *
-+ * UNIX-style authentication; no AUTH_SHORT support
-+ * SECLABEL-style authentication with security label support
-+ *
-+ * Copyright (C) 2007, 2008, SPARTA, Inc.
-+ * Copyright (C) 1996, Olaf Kirch <okir@monad.swb.de>
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/types.h>
-+#include <linux/slab.h>
-+#include <linux/sched.h>
-+
-+#include <linux/sunrpc/clnt.h>
-+#include <linux/sunrpc/auth.h>
-+#include <linux/security.h>
-+
-+#define NFS_NGROUPS	16
-+
-+struct seclabel_cred {
-+	struct rpc_cred		slc_base;
-+	gid_t			slc_gid;
-+	gid_t			slc_gids[NFS_NGROUPS];
-+	char		       *slc_label;
-+	size_t			slc_label_len;
-+};
-+#define slc_uid			slc_base.cr_uid
-+
-+#define UNX_WRITESLACK		(21 + (UNX_MAXNODENAME >> 2))
-+
-+#ifdef RPC_DEBUG
-+# define RPCDBG_FACILITY	RPCDBG_AUTH
-+#endif
-+
-+static struct rpc_auth		seclabel_auth;
-+static struct rpc_cred_cache	seclabel_cred_cache;
-+static const struct rpc_credops	seclabel_credops;
-+
-+static struct rpc_auth *
-+seclabel_create(struct rpc_clnt *clnt, rpc_authflavor_t flavor)
-+{
-+	dprintk("RPC:       creating SECLABEL authenticator for client %p\n",
-+			clnt);
-+	atomic_inc(&seclabel_auth.au_count);
-+	return &seclabel_auth;
-+}
-+
-+static void
-+seclabel_destroy(struct rpc_auth *auth)
-+{
-+	dprintk("RPC:       destroying SECLABEL authenticator %p\n", auth);
-+	rpcauth_clear_credcache(auth->au_credcache);
-+}
-+
-+/*
-+ * Lookup AUTH_SECLABEL creds for current process
-+ */
-+static struct rpc_cred *
-+seclabel_lookup_cred(struct rpc_auth *auth, struct auth_cred *acred, int flags)
-+{
-+	return rpcauth_lookup_credcache(auth, acred, flags);
-+}
-+
-+static struct rpc_cred *
-+seclabel_create_cred(struct rpc_auth *auth, struct auth_cred *acred, int flags)
-+{
-+	struct seclabel_cred	*cred;
-+	unsigned int groups = 0;
-+	unsigned int i;
-+
-+	dprintk("RPC:       allocating SECLABEL cred for uid %d gid %d\n",
-+			acred->uid, acred->gid);
-+
-+	if (!(cred = kmalloc(sizeof(*cred), GFP_KERNEL)))
-+		return ERR_PTR(-ENOMEM);
-+
-+	cred->slc_label = kmalloc(acred->label_len, GFP_KERNEL);
-+	if (cred->slc_label == NULL) {
-+		kfree(cred);
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	rpcauth_init_cred(&cred->slc_base, acred, auth, &seclabel_credops);
-+	cred->slc_base.cr_flags = 1UL << RPCAUTH_CRED_UPTODATE;
-+
-+	if (acred->group_info != NULL)
-+		groups = acred->group_info->ngroups;
-+	if (groups > NFS_NGROUPS)
-+		groups = NFS_NGROUPS;
-+
-+	cred->slc_gid = acred->gid;
-+	for (i = 0; i < groups; i++)
-+		cred->slc_gids[i] = GROUP_AT(acred->group_info, i);
-+	if (i < NFS_NGROUPS)
-+		cred->slc_gids[i] = NOGROUP;
-+
-+	cred->slc_label_len = acred->label_len;
-+	memcpy(cred->slc_label, acred->label, acred->label_len);
-+
-+	return &cred->slc_base;
-+}
-+
-+static void
-+seclabel_free_cred(struct seclabel_cred *seclabel_cred)
-+{
-+	dprintk("RPC:       seclabel_free_cred %p\n", seclabel_cred);
-+	security_release_secctx(seclabel_cred->slc_label,
-+				seclabel_cred->slc_label_len);
-+	kfree(seclabel_cred);
-+}
-+
-+static void
-+seclabel_free_cred_callback(struct rcu_head *head)
-+{
-+	struct seclabel_cred *seclabel_cred = container_of(head, struct seclabel_cred, slc_base.cr_rcu);
-+	seclabel_free_cred(seclabel_cred);
-+}
-+
-+static void
-+seclabel_destroy_cred(struct rpc_cred *cred)
-+{
-+	call_rcu(&cred->cr_rcu, seclabel_free_cred_callback);
-+}
-+
-+/*
-+ * Match credentials against current process creds.
-+ * The root_override argument takes care of cases where the caller may
-+ * request root creds (e.g. for NFS swapping).
-+ */
-+static int
-+seclabel_match(struct auth_cred *acred, struct rpc_cred *rcred, int flags)
-+{
-+	struct seclabel_cred	*cred = container_of(rcred, struct seclabel_cred, slc_base);
-+	unsigned int groups = 0;
-+	unsigned int i;
-+
-+
-+	if (acred->label_len != cred->slc_label_len)
-+		return 0;
-+	if (strcmp(acred->label, cred->slc_label) != 0)
-+		return 0;
-+	if (cred->slc_uid != acred->uid || cred->slc_gid != acred->gid)
-+		return 0;
-+
-+	if (acred->group_info != NULL)
-+		groups = acred->group_info->ngroups;
-+	if (groups > NFS_NGROUPS)
-+		groups = NFS_NGROUPS;
-+	for (i = 0; i < groups ; i++)
-+		if (cred->slc_gids[i] != GROUP_AT(acred->group_info, i))
-+			return 0;
-+	return 1;
-+}
-+
-+/*
-+ * Marshal credentials.
-+ * Maybe we should keep a cached credential for performance reasons.
-+ */
-+static __be32 *
-+seclabel_marshal(struct rpc_task *task, __be32 *p)
-+{
-+	struct rpc_clnt	*clnt = task->tk_client;
-+	struct seclabel_cred	*cred = container_of(task->tk_msg.rpc_cred, struct seclabel_cred, slc_base);
-+	__be32		*base, *hold;
-+	int		i;
-+
-+	*p++ = htonl(RPC_AUTH_SECLABEL);
-+	base = p++;
-+	*p++ = htonl(jiffies/HZ);
-+
-+	/*
-+	 * Copy the UTS nodename captured when the client was created.
-+	 */
-+	p = xdr_encode_array(p, clnt->cl_nodename, clnt->cl_nodelen);
-+
-+	/*
-+	 * Label
-+	 */
-+	p = xdr_encode_array(p, cred->slc_label, cred->slc_label_len);
-+
-+	*p++ = htonl((u32) cred->slc_uid);
-+	*p++ = htonl((u32) cred->slc_gid);
-+	hold = p++;
-+	for (i = 0; i < 16 && cred->slc_gids[i] != (gid_t) NOGROUP; i++)
-+		*p++ = htonl((u32) cred->slc_gids[i]);
-+	*hold = htonl(p - hold - 1);		/* gid array length */
-+	*base = htonl((p - base - 1) << 2);	/* cred length */
-+
-+	*p++ = htonl(RPC_AUTH_NULL);
-+	*p++ = htonl(0);
-+
-+	return p;
-+}
-+
-+/*
-+ * Refresh credentials. This is a no-op for AUTH_SECLABEL
-+ */
-+static int
-+seclabel_refresh(struct rpc_task *task)
-+{
-+	set_bit(RPCAUTH_CRED_UPTODATE, &task->tk_msg.rpc_cred->cr_flags);
-+	return 0;
-+}
-+
-+static __be32 *
-+seclabel_validate(struct rpc_task *task, __be32 *p)
-+{
-+	rpc_authflavor_t	flavor;
-+	u32			size;
-+
-+	flavor = ntohl(*p++);
-+	if (flavor != RPC_AUTH_NULL &&
-+	    flavor != RPC_AUTH_SECLABEL &&
-+	    flavor != RPC_AUTH_SHORT) {
-+		printk("RPC: bad verf flavor: %u\n", flavor);
-+		return NULL;
-+	}
-+
-+	size = ntohl(*p++);
-+	if (size > RPC_MAX_AUTH_SIZE) {
-+		printk("RPC: giant verf size: %u\n", size);
-+		return NULL;
-+	}
-+	task->tk_msg.rpc_cred->cr_auth->au_rslack = (size >> 2) + 2;
-+	p += (size >> 2);
-+
-+	return p;
-+}
-+
-+static const struct rpc_authops authseclabel_ops = {
-+	.owner		= THIS_MODULE,
-+	.au_flavor	= RPC_AUTH_SECLABEL,
-+	.au_name	= "SECLABEL",
-+	.create		= seclabel_create,
-+	.destroy	= seclabel_destroy,
-+	.lookup_cred	= seclabel_lookup_cred,
-+	.crcreate	= seclabel_create_cred,
-+};
-+
-+static struct rpc_cred_cache	seclabel_cred_cache = {
-+};
-+
-+static struct rpc_auth		seclabel_auth = {
-+	.au_cslack	= UNX_WRITESLACK,
-+	.au_rslack	= 2,			/* assume AUTH_NULL verf */
-+	.au_ops		= &authseclabel_ops,
-+	.au_flavor	= RPC_AUTH_SECLABEL,
-+	.au_count	= ATOMIC_INIT(0),
-+	.au_credcache	= &seclabel_cred_cache,
-+};
-+
-+static const struct rpc_credops seclabel_credops = {
-+	.cr_name	= "AUTH_SECLABEL",
-+	.crdestroy	= seclabel_destroy_cred,
-+	.crbind		= rpcauth_generic_bind_cred,
-+	.crmatch	= seclabel_match,
-+	.crmarshal	= seclabel_marshal,
-+	.crrefresh	= seclabel_refresh,
-+	.crvalidate	= seclabel_validate,
-+};
-+
-+/*
-+ * Initialize RPCSEC_GSS module
-+ */
-+static int __init init_auth_seclabel(void)
-+{
-+	int err = 0;
-+
-+	err = rpcauth_register(&authseclabel_ops);
-+	if (err)
-+		goto out;
-+
-+	spin_lock_init(&seclabel_cred_cache.lock);
-+
-+	return 0;
-+out:
-+	rpcauth_unregister(&authseclabel_ops);
-+	return err;
-+}
-+
-+static void __exit exit_auth_seclabel(void)
-+{
-+        rpcauth_unregister(&authseclabel_ops);
-+}
-+
-+MODULE_LICENSE("GPL");
-+module_init(init_auth_seclabel)
-+module_exit(exit_auth_seclabel)
-diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
-index 5a32cb7..126eeb1 100644
---- a/net/sunrpc/svc.c
-+++ b/net/sunrpc/svc.c
-@@ -830,6 +830,7 @@ svc_process(struct svc_rqst *rqstp)
- 	rqstp->rq_res.buflen = PAGE_SIZE;
- 	rqstp->rq_res.tail[0].iov_base = NULL;
- 	rqstp->rq_res.tail[0].iov_len = 0;
-+	memset(&rqstp->rq_cred, 0, sizeof(struct svc_cred));
- 	/* Will be turned off only in gss privacy case: */
- 	rqstp->rq_splice_ok = 1;
- 
-diff --git a/net/sunrpc/svcauth.c b/net/sunrpc/svcauth.c
-index 8a73cbb..ca8c99f 100644
---- a/net/sunrpc/svcauth.c
-+++ b/net/sunrpc/svcauth.c
-@@ -26,11 +26,17 @@
-  */
- extern struct auth_ops svcauth_null;
- extern struct auth_ops svcauth_unix;
-+#ifdef CONFIG_SECURITY
-+extern struct auth_ops svcauth_seclabel;
-+#endif
- 
- static DEFINE_SPINLOCK(authtab_lock);
- static struct auth_ops	*authtab[RPC_AUTH_MAXFLAVOR] = {
- 	[0] = &svcauth_null,
- 	[1] = &svcauth_unix,
-+#ifdef CONFIG_SECURITY
-+	[RPC_AUTH_SECLABEL] = &svcauth_seclabel,
-+#endif
- };
- 
- int
-diff --git a/net/sunrpc/svcauth_unix.c b/net/sunrpc/svcauth_unix.c
-index f24800f..4dfecf0 100644
---- a/net/sunrpc/svcauth_unix.c
-+++ b/net/sunrpc/svcauth_unix.c
-@@ -31,6 +31,9 @@ struct unix_domain {
- };
- 
- extern struct auth_ops svcauth_unix;
-+#ifdef CONFIG_SECURITY
-+extern struct auth_ops svcauth_seclabel;
-+#endif
- 
- struct auth_domain *unix_domain_find(char *name)
- {
-@@ -43,7 +46,11 @@ struct auth_domain *unix_domain_find(char *name)
- 			if (new && rv != &new->h)
- 				auth_domain_put(&new->h);
- 
--			if (rv->flavour != &svcauth_unix) {
-+			if (rv->flavour != &svcauth_unix
-+#ifdef CONFIG_SECURITY
-+			    && rv->flavour != &svcauth_seclabel
-+#endif
-+			   ) {
- 				auth_domain_put(rv);
- 				return NULL;
- 			}
-@@ -358,7 +365,11 @@ int auth_unix_add_addr(struct in6_addr *addr, struct auth_domain *dom)
- 	struct unix_domain *udom;
- 	struct ip_map *ipmp;
- 
--	if (dom->flavour != &svcauth_unix)
-+	if (dom->flavour != &svcauth_unix
-+#ifdef CONFIG_SECURITY
-+	    && dom->flavour != &svcauth_seclabel
-+#endif
-+	   )
- 		return -EINVAL;
- 	udom = container_of(dom, struct unix_domain, h);
- 	ipmp = ip_map_lookup("nfsd", addr);
-@@ -374,6 +385,11 @@ int auth_unix_forget_old(struct auth_domain *dom)
- {
- 	struct unix_domain *udom;
- 
-+	if (dom->flavour != &svcauth_unix
-+#ifdef CONFIG_SECURITY
-+	    && dom->flavour != &svcauth_seclabel
-+#endif
-+	   )
- 	if (dom->flavour != &svcauth_unix)
- 		return -EINVAL;
- 	udom = container_of(dom, struct unix_domain, h);
-@@ -873,3 +889,80 @@ struct auth_ops svcauth_unix = {
- 	.set_client	= svcauth_unix_set_client,
- };
- 
-+#ifdef CONFIG_SECURITY
-+static int
-+svcauth_seclabel_accept(struct svc_rqst *rqstp, __be32 *authp)
-+{
-+	struct kvec	*argv = &rqstp->rq_arg.head[0];
-+	struct kvec	*resv = &rqstp->rq_res.head[0];
-+	struct svc_cred	*cred = &rqstp->rq_cred;
-+	u32		slen, i;
-+	int		len   = argv->iov_len;
-+
-+	cred->cr_group_info = NULL;
-+	rqstp->rq_client = NULL;
-+
-+	if ((len -= 3*4) < 0)
-+		return SVC_GARBAGE;
-+
-+	svc_getu32(argv);			/* length */
-+	svc_getu32(argv);			/* time stamp */
-+	slen = XDR_QUADLEN(svc_getnl(argv));	/* machname length */
-+	if (slen > 64 || (len -= (slen + 3)*4) < 0)
-+		goto badcred;
-+	argv->iov_base = (void*)((__be32*)argv->iov_base + slen);	/* skip machname */
-+	argv->iov_len -= slen*4;
-+
-+	slen = svc_getnl(argv);			/* security label length */
-+	/* XXX: sanity check label... */
-+	cred->cr_label = argv->iov_base;
-+	cred->cr_label_len = slen;
-+	argv->iov_base = (void*)((__be32*)argv->iov_base + XDR_QUADLEN(slen));
-+	argv->iov_len -= slen;
-+
-+	cred->cr_uid = svc_getnl(argv);		/* uid */
-+	cred->cr_gid = svc_getnl(argv);		/* gid */
-+	slen = svc_getnl(argv);			/* gids length */
-+	if (slen > 16 || (len -= (slen + 2)*4) < 0)
-+		goto badcred;
-+	if (unix_gid_find(cred->cr_uid, &cred->cr_group_info, rqstp)
-+	    == -EAGAIN)
-+		return SVC_DROP;
-+	if (cred->cr_group_info == NULL) {
-+		cred->cr_group_info = groups_alloc(slen);
-+		if (cred->cr_group_info == NULL)
-+			return SVC_DROP;
-+		for (i = 0; i < slen; i++)
-+			GROUP_AT(cred->cr_group_info, i) = svc_getnl(argv);
-+	} else {
-+		for (i = 0; i < slen ; i++)
-+			svc_getnl(argv);
-+	}
-+	if (svc_getu32(argv) != htonl(RPC_AUTH_NULL) || svc_getu32(argv) != 0) {
-+		*authp = rpc_autherr_badverf;
-+		return SVC_DENIED;
-+	}
-+
-+	/* Put NULL verifier */
-+	svc_putnl(resv, RPC_AUTH_NULL);
-+	svc_putnl(resv, 0);
-+
-+	rqstp->rq_flavor = RPC_AUTH_SECLABEL;
-+	return SVC_OK;
-+
-+badcred:
-+	*authp = rpc_autherr_badcred;
-+	return SVC_DENIED;
-+}
-+
-+struct auth_ops svcauth_seclabel = {
-+	.name		= "seclabel",
-+	.owner		= THIS_MODULE,
-+	.flavour	= RPC_AUTH_SECLABEL,
-+	.accept 	= svcauth_seclabel_accept,
-+	.release	= svcauth_unix_release,
-+	.domain_release	= svcauth_unix_domain_release,
-+	.set_client	= svcauth_unix_set_client,
-+};
-+#endif
-+
-diff --git a/security/security.c b/security/security.c
-index 1955094..2337d7f 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -841,11 +841,13 @@ int security_getprocattr(struct task_struct *p, char *name, char **value)
- {
- 	return security_ops->getprocattr(p, name, value);
- }
-+EXPORT_SYMBOL(security_getprocattr);
- 
- int security_setprocattr(struct task_struct *p, char *name, void *value, size_t size)
- {
- 	return security_ops->setprocattr(p, name, value, size);
- }
-+EXPORT_SYMBOL(security_setprocattr);
- 
- int security_netlink_send(struct sock *sk, struct sk_buff *skb)
- {
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 6919766..05a10be 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -5298,7 +5298,7 @@ static int selinux_setprocattr(struct task_struct *p,
- 			return -EINVAL;
- 
- 		/* Only allow single threaded processes to change context */
--		if (atomic_read(&p->mm->mm_users) != 1) {
-+		if (p->mm && atomic_read(&p->mm->mm_users) != 1) {
- 			struct task_struct *g, *t;
- 			struct mm_struct *mm = p->mm;
- 			read_lock(&tasklist_lock);
--- 
-1.5.5.1
+ if (cmpxchg(&cpu_buf->write_pos, pos, new_pos) != pos)
+   goto again;
+ return pos;
+
+out:
+ preempt_enable();
+ return ret;
+}
+
+If you put the offset&PAGE_MASK in each page-frame you can use that to
+easily detect when you need to flip to the next page.
+
+Which I imagine is similar to what you have... although I must admit to
+not being sure how to deal with over-write here, I guess your buffer
+must be large enough to ensure no nesting depth allows you to
+wrap-around while having an even un-commited.
 
