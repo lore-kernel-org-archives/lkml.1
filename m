@@ -1,124 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYI2S16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYI2S1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbYI2S16 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 14:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYI2S1s
+	id S1754175AbYI2S1b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 14:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbYI2S1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 14:27:48 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:40921 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754455AbYI2S1q (ORCPT
+	Mon, 29 Sep 2008 14:27:17 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:55634 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754357AbYI2S1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 14:27:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=VvBoLwsYL2dMZTNi+2qKfJ0fVyIi1giw2nCWgsxV1orCvYDLPpKVyKWj+vvTmULouf
-         jin/lRIA8eNjVaWiAM3V+cYYS20ZdIcoVD41Jn205zJyq73ZzENsrMfLwZ0o8VZDR70b
-         BtP9raRCW+8+fuHyd88nfcqCB//q6qggYy2Uk=
-Message-ID: <48E11E1E.7010001@gmail.com>
-Date: Mon, 29 Sep 2008 20:27:42 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 29 Sep 2008 14:27:16 -0400
+Message-ID: <48E11EFA.8010402@keyaccess.nl>
+Date: Mon, 29 Sep 2008 20:31:22 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-To: mingo@elte.hu
-CC: linux-kernel@vger.kernel.org, pq@iki.fi, rostedt@goodmis.org
-Subject: [PATCH V2 -tip 3/4] Tracing/ftrace: Adapt mmiotrace to the new type
- of print_line
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Adam Belay <abelay@mit.edu>,
+       Avuton Olrich <avuton@gmail.com>,
+       Karl Bellve <karl.bellve@umassmed.edu>, Willem Riede <wriede@riede.org>,
+       Matthew Hall <mhall@mhcomputing.net>
+Subject: Re: [patch 2/2] PNP: don't check disabled PCI BARs for conflicts
+ in quirk_system_pci_resources()
+References: <200809290953.56565.bjorn.helgaas@hp.com> <200809290957.59813.bjorn.helgaas@hp.com> <alpine.LFD.1.10.0809290912060.3265@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809290912060.3265@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adapt mmiotrace to the new print_line type.
-By default, it ignores (and consumes) types it doesn't support.
+On 29-09-08 18:34, Linus Torvalds wrote:
 
-Acked-by: Pekka Paalanen <pq@iki.fi>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace_mmiotrace.c |   25 ++++++++++++-------------
- 1 files changed, 12 insertions(+), 13 deletions(-)
+> On Mon, 29 Sep 2008, Bjorn Helgaas wrote:
+>>  
+>> +			if (!pci_resource_enabled(pdev, i))
+>> +				continue;
+> 
+> I really don't think this is the right approach.
+> 
+> Maybe the PCI device has been turned off, but the *resource* may still be 
+> valid.
+> 
+> Wouldn't it be much better to just check whether the resource is inserted 
+> in the resource tree or not? 
+> 
+> Quite frankly, it looks like your change will basically cause us to look 
+> over *every* system PnP resource, and for each of them, it will look at 
+> *every* PCI device, and for each PCI device it will look at *every* BAR, 
+> and for each BAR it finds it will read the PCI status register, over and 
+> over and over again.
+> 
+> Now, I doubt you'll be able to wear out the PCI bus, but doesn't this just 
+> make you go "umm, that's not pretty, and it doesn't make much sense".
+> 
+> If we've detected the PCI resource as being valid by the PCI layer, why 
+> not just use that information? And afaik, the easy way to check that is 
+> just whether it's inserted into the resource tree, which in turn is most 
+> trivially done by just checking whether the resource has a parent.
+> 
+> IOW, why isn't it just doing
+> 
+> 	struct resource *res = dev->resource[bar];
+> 
+> 	if (!res->parent)
+> 		continue;
+> 
+> or something? Or what was wrong with just checking the res->start for 
+> being zero? Wherever PnP is relevant, resources that start at zero are 
+> disabled, no? 
 
-diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
-index a108c32..be0a6b0 100644
---- a/kernel/trace/trace_mmiotrace.c
-+++ b/kernel/trace/trace_mmiotrace.c
-@@ -171,7 +171,7 @@ print_out:
- 	return (ret == -EBUSY) ? 0 : ret;
- }
- 
--static int mmio_print_rw(struct trace_iterator *iter)
-+static enum print_line_t mmio_print_rw(struct trace_iterator *iter)
- {
- 	struct trace_entry *entry = iter->ent;
- 	struct mmiotrace_rw *rw	= &entry->field.mmiorw;
-@@ -209,11 +209,11 @@ static int mmio_print_rw(struct trace_iterator *iter)
- 		break;
- 	}
- 	if (ret)
--		return 1;
--	return 0;
-+		return TRACE_TYPE_HANDLED;
-+	return TRACE_TYPE_PARTIAL_LINE;
- }
- 
--static int mmio_print_map(struct trace_iterator *iter)
-+static enum print_line_t mmio_print_map(struct trace_iterator *iter)
- {
- 	struct trace_entry *entry = iter->ent;
- 	struct mmiotrace_map *m	= &entry->field.mmiomap;
-@@ -221,7 +221,7 @@ static int mmio_print_map(struct trace_iterator *iter)
- 	unsigned long long t	= ns2usecs(entry->field.t);
- 	unsigned long usec_rem	= do_div(t, 1000000ULL);
- 	unsigned secs		= (unsigned long)t;
--	int ret = 1;
-+	int ret;
- 
- 	switch (entry->field.mmiorw.opcode) {
- 	case MMIO_PROBE:
-@@ -241,11 +241,11 @@ static int mmio_print_map(struct trace_iterator *iter)
- 		break;
- 	}
- 	if (ret)
--		return 1;
--	return 0;
-+		return TRACE_TYPE_HANDLED;
-+	return TRACE_TYPE_PARTIAL_LINE;
- }
- 
--static int mmio_print_mark(struct trace_iterator *iter)
-+static enum print_line_t mmio_print_mark(struct trace_iterator *iter)
- {
- 	struct trace_entry *entry = iter->ent;
- 	const char *msg		= entry->field.print.buf;
-@@ -258,16 +258,15 @@ static int mmio_print_mark(struct trace_iterator *iter)
- 	/* The trailing newline must be in the message. */
- 	ret = trace_seq_printf(s, "MARK %lu.%06lu %s", secs, usec_rem, msg);
- 	if (!ret)
--		return 0;
-+		return TRACE_TYPE_PARTIAL_LINE;
- 
- 	if (entry->field.flags & TRACE_FLAG_CONT)
- 		trace_seq_print_cont(s, iter);
- 
--	return 1;
-+	return TRACE_TYPE_HANDLED;
- }
- 
--/* return 0 to abort printing without consuming current entry in pipe mode */
--static int mmio_print_line(struct trace_iterator *iter)
-+static enum print_line_t mmio_print_line(struct trace_iterator *iter)
- {
- 	switch (iter->ent->type) {
- 	case TRACE_MMIO_RW:
-@@ -277,7 +276,7 @@ static int mmio_print_line(struct trace_iterator *iter)
- 	case TRACE_PRINT:
- 		return mmio_print_mark(iter);
- 	default:
--		return 1; /* ignore unknown entries */
-+		return TRACE_TYPE_HANDLED; /* ignore unknown entries */
- 	}
- }
- 
+I believe the possible issue is that resources that do _not_ (seem to) 
+start at zero might also be disabled.
+
+Bjorn commented that pci_resource_start() returns a CPU address for I/O 
+which might not be the actual I/O address on some platforms. I haven't a 
+clue if that's actually possible "wherever PnP is relevent" as you put 
+it but that seems to otherwise make sense.
+
+If it does though, it might for all I know also be possible to check 
+against some ARCH_SPECIFIC_INVALID_IO_ADDRESS instead of plain unadorned 
+0 (or just recheck the actual BAR again if not stored anywhere).
+
+But that's the issue as I understood it: we might miss them on some 
+platforms if checking against 0...
+
+Rene.
