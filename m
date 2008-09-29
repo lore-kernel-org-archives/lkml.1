@@ -1,124 +1,420 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbYI2MHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbYI2MLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbYI2MHm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 08:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYI2MHe
+	id S1753785AbYI2MLx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 08:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbYI2MLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 08:07:34 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:34502 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751897AbYI2MHd (ORCPT
+	Mon, 29 Sep 2008 08:11:47 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:48888 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751876AbYI2MLq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 08:07:33 -0400
-Date: Mon, 29 Sep 2008 21:07:29 +0900 (JST)
-Message-Id: <20080929.210729.117112710.taka@valinux.co.jp>
-To: righi.andrea@gmail.com
-Cc: vgoyal@redhat.com, ryov@valinux.co.jp, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
-       jens.axboe@oracle.com
-Subject: Re: dm-ioband + bio-cgroup benchmarks
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <48DD17A9.9080607@gmail.com>
-References: <20080924140355.GB547@redhat.com>
-	<48DD09AD.2010200@gmail.com>
-	<48DD17A9.9080607@gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Sep 2008 08:11:46 -0400
+Date: Mon, 29 Sep 2008 13:11:42 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: sdhci: Loads of scary messages during suspend/resume with SD card inserted
+Message-ID: <20080929121142.GA18486@srcf.ucam.org>
+References: <200809282146.57960.elendil@planet.nl> <20080929113857.GA17379@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080929113857.GA17379@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Andrea,
+More to the point, how about this one? It should also handle the resume 
+case, but I haven't tested it yet.
 
-> >> Ok, I will give more details of the thought process.
-> >>
-> >> I was thinking of maintaing an rb-tree per request queue and not an
-> >> rb-tree per cgroup. This tree can contain all the bios submitted to that
-> >> request queue through __make_request(). Every node in the tree will represent
-> >> one cgroup and will contain a list of bios issued from the tasks from that
-> >> cgroup.
-> >>
-> >> Every bio entering the request queue through __make_request() function
-> >> first will be queued in one of the nodes in this rb-tree, depending on which
-> >> cgroup that bio belongs to.
-> >>
-> >> Once the bios are buffered in rb-tree, we release these to underlying
-> >> elevator depending on the proportionate weight of the nodes/cgroups.
-> >>
-> >> Some more details which I was trying to implement yesterday.
-> >>
-> >> There will be one bio_cgroup object per cgroup. This object will contain
-> >> many bio_group objects. Each bio_group object will be created for each
-> >> request queue where a bio from bio_cgroup is queued. Essentially the idea
-> >> is that bios belonging to a cgroup can be on various request queues in the
-> >> system. So a single object can not serve the purpose as it can not be on
-> >> many rb-trees at the same time.  Hence create one sub object which will keep
-> >> track of bios belonging to one cgroup on a particular request queue.
-> >>
-> >> Each bio_group will contain a list of bios and this bio_group object will
-> >> be a node in the rb-tree of request queue. For example. Lets say there are
-> >> two request queues in the system q1 and q2 (lets say they belong to /dev/sda
-> >> and /dev/sdb). Let say a task t1 in /cgroup/io/test1 is issueing io both
-> >> for /dev/sda and /dev/sdb.
-> >>
-> >> bio_cgroup belonging to /cgroup/io/test1 will have two sub bio_group
-> >> objects, say bio_group1 and bio_group2. bio_group1 will be in q1's rb-tree
-> >> and bio_group2 will be in q2's rb-tree. bio_group1 will contain a list of
-> >> bios issued by task t1 for /dev/sda and bio_group2 will contain a list of
-> >> bios issued by task t1 for /dev/sdb. I thought the same can be extended
-> >> for stacked devices also.
-> >>   
-> >> I am still trying to implementing it and hopefully this is doable idea.
-> >> I think at the end of the day it will be something very close to dm-ioband
-> >> algorithm just that there will be no lvm driver and no notion of separate
-> >> dm-ioband device. 
-> > 
-> > Vivek, thanks for the detailed explanation. Only a comment. I guess, if
-> > we don't change also the per-process optimizations/improvements made by
-> > some IO scheduler, I think we can have undesirable behaviours.
-> > 
-> > For example: CFQ uses the per-process iocontext to improve fairness
-> > between *all* the processes in a system. But it doesn't have the concept
-> > that there's a cgroup context on-top-of the processes.
-> > 
-> > So, some optimizations made to guarantee fairness among processes could
-> > conflict with algorithms implemented at the cgroup layer. And
-> > potentially lead to undesirable behaviours.
-> > 
-> > For example an issue I'm experiencing with my cgroup-io-throttle
-> > patchset is that a cgroup can consistently increase the IO rate (always
-> > respecting the max limits), simply increasing the number of IO worker
-> > tasks respect to another cgroup with a lower number of IO workers. This
-> > is probably due to the fact the CFQ tries to give the same amount of
-> > "IO time" to all the tasks, without considering that they're organized
-> > in cgroup.
-> 
-> BTW this is why I proposed to use a single shared iocontext for all the
-> processes running in the same cgroup. Anyway, this is not the best
-> solution, because in this way all the IO requests coming from a cgroup
-> will be queued to the same cfq queue. If I'm not wrong in this way we
-> would implement noop (FIFO) between tasks belonging to the same cgroup
-> and CFQ between cgroups. But, at least for this particular case, we
-> would be able to provide fairness among cgroups.
-> 
-> -Andrea
+diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+index ea8d7a3..806bcd8 100644
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -48,23 +48,6 @@ config MMC_SDHCI_PCI
+ 
+ 	  If unsure, say N.
+ 
+-config MMC_RICOH_MMC
+-	tristate "Ricoh MMC Controller Disabler  (EXPERIMENTAL)"
+-	depends on MMC_SDHCI_PCI
+-	help
+-	  This selects the disabler for the Ricoh MMC Controller. This
+-	  proprietary controller is unnecessary because the SDHCI driver
+-	  supports MMC cards on the SD controller, but if it is not
+-	  disabled, it will steal the MMC cards away - rendering them
+-	  useless. It is safe to select this driver even if you don't
+-	  have a Ricoh based card reader.
+-
+-
+-	  To compile this driver as a module, choose M here:
+-	  the module will be called ricoh_mmc.
+-
+-	  If unsure, say Y.
+-
+ config MMC_OMAP
+ 	tristate "TI OMAP Multimedia Card Interface support"
+ 	depends on ARCH_OMAP
+diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
+index c794cc5..0676890 100644
+--- a/drivers/mmc/host/Makefile
++++ b/drivers/mmc/host/Makefile
+@@ -11,7 +11,6 @@ obj-$(CONFIG_MMC_PXA)		+= pxamci.o
+ obj-$(CONFIG_MMC_IMX)		+= imxmmc.o
+ obj-$(CONFIG_MMC_SDHCI)		+= sdhci.o
+ obj-$(CONFIG_MMC_SDHCI_PCI)	+= sdhci-pci.o
+-obj-$(CONFIG_MMC_RICOH_MMC)	+= ricoh_mmc.o
+ obj-$(CONFIG_MMC_WBSD)		+= wbsd.o
+ obj-$(CONFIG_MMC_AU1X)		+= au1xmmc.o
+ obj-$(CONFIG_MMC_OMAP)		+= omap.o
+diff --git a/drivers/mmc/host/ricoh_mmc.c b/drivers/mmc/host/ricoh_mmc.c
+deleted file mode 100644
+index a16d760..0000000
+--- a/drivers/mmc/host/ricoh_mmc.c
++++ /dev/null
+@@ -1,257 +0,0 @@
+-/*
+- *  ricoh_mmc.c - Dummy driver to disable the Rioch MMC controller.
+- *
+- *  Copyright (C) 2007 Philip Langdale, All Rights Reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or (at
+- * your option) any later version.
+- */
+-
+-/*
+- * This is a conceptually ridiculous driver, but it is required by the way
+- * the Ricoh multi-function R5C832 works. This chip implements firewire
+- * and four different memory card controllers. Two of those controllers are
+- * an SDHCI controller and a proprietary MMC controller. The linux SDHCI
+- * driver supports MMC cards but the chip detects MMC cards in hardware
+- * and directs them to the MMC controller - so the SDHCI driver never sees
+- * them. To get around this, we must disable the useless MMC controller.
+- * At that point, the SDHCI controller will start seeing them. As a bonus,
+- * a detection event occurs immediately, even if the MMC card is already
+- * in the reader.
+- *
+- * The relevant registers live on the firewire function, so this is unavoidably
+- * ugly. Such is life.
+- */
+-
+-#include <linux/pci.h>
+-
+-#define DRIVER_NAME "ricoh-mmc"
+-
+-static const struct pci_device_id pci_ids[] __devinitdata = {
+-	{
+-		.vendor		= PCI_VENDOR_ID_RICOH,
+-		.device		= PCI_DEVICE_ID_RICOH_R5C843,
+-		.subvendor	= PCI_ANY_ID,
+-		.subdevice	= PCI_ANY_ID,
+-	},
+-	{ /* end: all zeroes */ },
+-};
+-
+-MODULE_DEVICE_TABLE(pci, pci_ids);
+-
+-static int ricoh_mmc_disable(struct pci_dev *fw_dev)
+-{
+-	u8 write_enable;
+-	u8 write_target;
+-	u8 disable;
+-
+-	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
+-		/* via RL5C476 */
+-
+-		pci_read_config_byte(fw_dev, 0xB7, &disable);
+-		if (disable & 0x02) {
+-			printk(KERN_INFO DRIVER_NAME
+-				": Controller already disabled. " \
+-				"Nothing to do.\n");
+-			return -ENODEV;
+-		}
+-
+-		pci_read_config_byte(fw_dev, 0x8E, &write_enable);
+-		pci_write_config_byte(fw_dev, 0x8E, 0xAA);
+-		pci_read_config_byte(fw_dev, 0x8D, &write_target);
+-		pci_write_config_byte(fw_dev, 0x8D, 0xB7);
+-		pci_write_config_byte(fw_dev, 0xB7, disable | 0x02);
+-		pci_write_config_byte(fw_dev, 0x8E, write_enable);
+-		pci_write_config_byte(fw_dev, 0x8D, write_target);
+-	} else {
+-		/* via R5C832 */
+-
+-		pci_read_config_byte(fw_dev, 0xCB, &disable);
+-		if (disable & 0x02) {
+-			printk(KERN_INFO DRIVER_NAME
+-			       ": Controller already disabled. " \
+-				"Nothing to do.\n");
+-			return -ENODEV;
+-		}
+-
+-		pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+-		pci_write_config_byte(fw_dev, 0xCA, 0x57);
+-		pci_write_config_byte(fw_dev, 0xCB, disable | 0x02);
+-		pci_write_config_byte(fw_dev, 0xCA, write_enable);
+-	}
+-
+-	printk(KERN_INFO DRIVER_NAME
+-	       ": Controller is now disabled.\n");
+-
+-	return 0;
+-}
+-
+-static int ricoh_mmc_enable(struct pci_dev *fw_dev)
+-{
+-	u8 write_enable;
+-	u8 write_target;
+-	u8 disable;
+-
+-	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
+-		/* via RL5C476 */
+-
+-		pci_read_config_byte(fw_dev, 0x8E, &write_enable);
+-		pci_write_config_byte(fw_dev, 0x8E, 0xAA);
+-		pci_read_config_byte(fw_dev, 0x8D, &write_target);
+-		pci_write_config_byte(fw_dev, 0x8D, 0xB7);
+-		pci_read_config_byte(fw_dev, 0xB7, &disable);
+-		pci_write_config_byte(fw_dev, 0xB7, disable & ~0x02);
+-		pci_write_config_byte(fw_dev, 0x8E, write_enable);
+-		pci_write_config_byte(fw_dev, 0x8D, write_target);
+-	} else {
+-		/* via R5C832 */
+-
+-		pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+-		pci_read_config_byte(fw_dev, 0xCB, &disable);
+-		pci_write_config_byte(fw_dev, 0xCA, 0x57);
+-		pci_write_config_byte(fw_dev, 0xCB, disable & ~0x02);
+-		pci_write_config_byte(fw_dev, 0xCA, write_enable);
+-	}
+-
+-	printk(KERN_INFO DRIVER_NAME
+-	       ": Controller is now re-enabled.\n");
+-
+-	return 0;
+-}
+-
+-static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+-				     const struct pci_device_id *ent)
+-{
+-	u8 rev;
+-	u8 ctrlfound = 0;
+-
+-	struct pci_dev *fw_dev = NULL;
+-
+-	BUG_ON(pdev == NULL);
+-	BUG_ON(ent == NULL);
+-
+-	pci_read_config_byte(pdev, PCI_CLASS_REVISION, &rev);
+-
+-	printk(KERN_INFO DRIVER_NAME
+-		": Ricoh MMC controller found at %s [%04x:%04x] (rev %x)\n",
+-		pci_name(pdev), (int)pdev->vendor, (int)pdev->device,
+-		(int)rev);
+-
+-	while ((fw_dev =
+-		pci_get_device(PCI_VENDOR_ID_RICOH,
+-			PCI_DEVICE_ID_RICOH_RL5C476, fw_dev))) {
+-		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
+-		    pdev->bus == fw_dev->bus) {
+-			if (ricoh_mmc_disable(fw_dev) != 0)
+-				return -ENODEV;
+-
+-			pci_set_drvdata(pdev, fw_dev);
+-
+-			++ctrlfound;
+-			break;
+-		}
+-	}
+-
+-	fw_dev = NULL;
+-
+-	while (!ctrlfound &&
+-	    (fw_dev = pci_get_device(PCI_VENDOR_ID_RICOH,
+-					PCI_DEVICE_ID_RICOH_R5C832, fw_dev))) {
+-		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
+-		    pdev->bus == fw_dev->bus) {
+-			if (ricoh_mmc_disable(fw_dev) != 0)
+-				return -ENODEV;
+-
+-			pci_set_drvdata(pdev, fw_dev);
+-
+-			++ctrlfound;
+-		}
+-	}
+-
+-	if (!ctrlfound) {
+-		printk(KERN_WARNING DRIVER_NAME
+-		       ": Main firewire function not found. Cannot disable controller.\n");
+-		return -ENODEV;
+-	}
+-
+-	return 0;
+-}
+-
+-static void __devexit ricoh_mmc_remove(struct pci_dev *pdev)
+-{
+-	struct pci_dev *fw_dev = NULL;
+-
+-	fw_dev = pci_get_drvdata(pdev);
+-	BUG_ON(fw_dev == NULL);
+-
+-	ricoh_mmc_enable(fw_dev);
+-
+-	pci_set_drvdata(pdev, NULL);
+-}
+-
+-static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state)
+-{
+-	struct pci_dev *fw_dev = NULL;
+-
+-	fw_dev = pci_get_drvdata(pdev);
+-	BUG_ON(fw_dev == NULL);
+-
+-	printk(KERN_INFO DRIVER_NAME ": Suspending.\n");
+-
+-	ricoh_mmc_enable(fw_dev);
+-
+-	return 0;
+-}
+-
+-static int ricoh_mmc_resume(struct pci_dev *pdev)
+-{
+-	struct pci_dev *fw_dev = NULL;
+-
+-	fw_dev = pci_get_drvdata(pdev);
+-	BUG_ON(fw_dev == NULL);
+-
+-	printk(KERN_INFO DRIVER_NAME ": Resuming.\n");
+-
+-	ricoh_mmc_disable(fw_dev);
+-
+-	return 0;
+-}
+-
+-static struct pci_driver ricoh_mmc_driver = {
+-	.name = 	DRIVER_NAME,
+-	.id_table =	pci_ids,
+-	.probe = 	ricoh_mmc_probe,
+-	.remove =	__devexit_p(ricoh_mmc_remove),
+-	.suspend =	ricoh_mmc_suspend,
+-	.resume =	ricoh_mmc_resume,
+-};
+-
+-/*****************************************************************************\
+- *                                                                           *
+- * Driver init/exit                                                          *
+- *                                                                           *
+-\*****************************************************************************/
+-
+-static int __init ricoh_mmc_drv_init(void)
+-{
+-	printk(KERN_INFO DRIVER_NAME
+-		": Ricoh MMC Controller disabling driver\n");
+-	printk(KERN_INFO DRIVER_NAME ": Copyright(c) Philip Langdale\n");
+-
+-	return pci_register_driver(&ricoh_mmc_driver);
+-}
+-
+-static void __exit ricoh_mmc_drv_exit(void)
+-{
+-	pci_unregister_driver(&ricoh_mmc_driver);
+-}
+-
+-module_init(ricoh_mmc_drv_init);
+-module_exit(ricoh_mmc_drv_exit);
+-
+-MODULE_AUTHOR("Philip Langdale <philipl@alumni.utexas.net>");
+-MODULE_DESCRIPTION("Ricoh MMC Controller disabling driver");
+-MODULE_LICENSE("GPL");
+-
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 9236e7f..4557fa3 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1790,6 +1790,74 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_BROADCOM,
+ 			 PCI_DEVICE_ID_NX2_5709S,
+ 			 quirk_brcm_570x_limit_vpd);
+ 
++/*
++ * This is a conceptually ridiculous quirk, but it is required by the
++ * way the Ricoh multi-function R5C832 works. This chip implements
++ * firewire and four different memory card controllers. Two of those
++ * controllers are an SDHCI controller and a proprietary MMC
++ * controller. The linux SDHCI driver supports MMC cards but the chip
++ * detects MMC cards in hardware and directs them to the MMC
++ * controller - so the SDHCI driver never sees them. To get around
++ * this, we must disable the useless MMC controller.  At that point,
++ * the SDHCI controller will start seeing them. As a bonus, a
++ * detection event occurs immediately, even if the MMC card is already
++ * in the reader.
++ *
++ * The relevant registers live on the firewire function, so this is
++ * unavoidably ugly. Such is life.
++ */
++
++static void quirk_ricoh_rl5c476_mmc_disable(struct pci_dev *dev)
++{
++	u8 write_enable;
++	u8 write_target;
++	u8 disable;
++
++	pci_read_config_byte(dev, 0xB7, &disable);
++
++	if (disable & 0x02)
++		/* Already disabled */
++		return;
++
++	pci_read_config_byte(dev, 0x8E, &write_enable);
++	pci_write_config_byte(dev, 0x8E, 0xAA);
++	pci_read_config_byte(dev, 0x8D, &write_target);
++	pci_write_config_byte(dev, 0x8D, 0xB7);
++	pci_write_config_byte(dev, 0xB7, disable | 0x02);
++	pci_write_config_byte(dev, 0x8E, write_enable);
++	pci_write_config_byte(dev, 0x8D, write_target);
++}
++
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_RICOH,
++			 PCI_DEVICE_ID_RICOH_RL5C476,
++			 quirk_ricoh_rl5c476_mmc_disable);
++DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_RICOH,
++			       PCI_DEVICE_ID_RICOH_RL5C476,
++			       quirk_ricoh_rl5c476_mmc_disable);
++
++static void quirk_ricoh_rl5c832_mmc_disable(struct pci_dev *dev)
++{
++	u8 disable;
++	u8 write_enable;
++
++	pci_read_config_byte(dev, 0xCB, &disable);
++
++	if (disable & 0x02)
++		return;
++
++	pci_read_config_byte(dev, 0xCA, &write_enable);
++	pci_write_config_byte(dev, 0xCA, 0x57);
++	pci_write_config_byte(dev, 0xCB, disable | 0x02);
++	pci_write_config_byte(dev, 0xCA, write_enable);
++}
++
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_RICOH,
++			 PCI_DEVICE_ID_RICOH_RL5C476,
++			 quirk_ricoh_rl5c832_mmc_disable);
++DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_RICOH,
++			       PCI_DEVICE_ID_RICOH_RL5C476,
++			       quirk_ricoh_rl5c832_mmc_disable);
++
+ #ifdef CONFIG_PCI_MSI
+ /* Some chipsets do not support MSI. We cannot easily rely on setting
+  * PCI_BUS_FLAGS_NO_MSI in its bus flags because there are actually
 
-I ever thought the same thing but this approach breaks the compatibility.
-I think we should make ionice only effective for the processes in the
-same cgroup.
-
-A system gives some amount of bandwidths to its cgroups, and
-the processes in one of the cgroups fairly share the given bandwidth.
-I think this is the straight approach. What do you think?
-
-I think all the CFQ-cgroup the NEC guys are working, OpenVZ team's CFQ
-scheduler and dm-ioband with bio-cgroup work like this.
-
-Thank you,
-Hirokazu Takahashi.
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
