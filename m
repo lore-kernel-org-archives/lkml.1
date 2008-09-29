@@ -1,65 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbYI2P5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYI2P5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbYI2P5E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 11:57:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYI2P4y
+	id S1753973AbYI2P5Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 11:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbYI2P5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 11:56:54 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:61593 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751464AbYI2P4x convert rfc822-to-8bit (ORCPT
+	Mon, 29 Sep 2008 11:57:15 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:2294 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbYI2P5N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 11:56:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GNKforVxE+Z9xXCf3yLbPOAG6gEYrqV7OiuCJSFrGS3IIlzaC+HY/qLKrz5IzrM9e0
-         xaXgH0vY90w0R3ICR8GexCi0YjIWs4sDNhUZiCtfgTMBiwOp/KB/rcC+4ijLvI5Y33k7
-         jOkt5BDxCMiASaZy+zFN6Q+wsYrJGKbomdbXc=
-Message-ID: <c62985530809290856w4045c3acx8779d8a11445a14a@mail.gmail.com>
-Date: Mon, 29 Sep 2008 17:56:50 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Pekka Paalanen" <pq@iki.fi>
-Subject: Re: [Path -tip 1/3] Tracing/ftrace: Change the type of the print_line callback
-Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080929180409.68cdf8ba@daedalus.pq.iki.fi>
+	Mon, 29 Sep 2008 11:57:13 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 1/2] PCI: add pci_resource_enabled()
+Date: Mon, 29 Sep 2008 09:56:56 -0600
+User-Agent: KMail/1.9.9
+Cc: Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Rene Herman <rene.herman@keyaccess.nl>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Adam Belay <abelay@mit.edu>, Avuton Olrich <avuton@gmail.com>,
+       Karl Bellve <karl.bellve@umassmed.edu>, Willem Riede <wriede@riede.org>,
+       Matthew Hall <mhall@mhcomputing.net>
+References: <200809290953.56565.bjorn.helgaas@hp.com>
+In-Reply-To: <200809290953.56565.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <48DCFEE1.4010102@gmail.com>
-	 <20080928191918.1b26c0ab@daedalus.pq.iki.fi>
-	 <c62985530809290211l7df01459lf80456ab98fc6ed0@mail.gmail.com>
-	 <20080929180409.68cdf8ba@daedalus.pq.iki.fi>
+Message-Id: <200809290956.57727.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/29 Pekka Paalanen <pq@iki.fi>:
-> On Mon, 29 Sep 2008 11:11:15 +0200
-> "Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
->
->> 2008/9/28 Pekka Paalanen <pq@iki.fi>:
->>
->
-> [static int print_trace_line(struct trace_iterator *iter)]
->
->> > Shouldn't the return type be bool?
->> > If it's not, reading this function makes me wonder about the conversion
->> > from enum to int, i.e. what is the meaning of the int.
->>
->> Actually it should be enum print_line_t. I forgot to change its type.
->> But we need to check its return value as an enum print_line_t.
->
-> Is print_line_t necessary? Does it have to return any other information than
-> "this entry was handled somehow" vs. "this entry must be handled later"?
-> Currently it's just a flag to say "please flush and retry".
+Add pci_resource_enabled() to determine whether a PCI BAR is
+enabled.  Sometimes firmware leaves PCI BARs unconfigured, and
+this interface is a way for the OS to identify that situation.
+    
+This is based on section 3.5 of the PCI Firmware spec, which says:
+    
+  Since not all devices may be configured prior to the operating
+  system handoff, the operating system needs to know whether a
+  specific BAR register has been configured by firmware. The operating
+  system makes the determination by checking the I/O Enable, and
+  Memory Enable bits in the device's command register, and Expansion
+  ROM BAR enable bits. If the enable bit is set, then the corresponding
+  resource register has been configured.
+    
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-
-It would just make the code more readable in the read_pipe function.
-if (sret == TRACE_TYPE_PARTIAL_LINE) tells us more than if (!sret).
-And it would avoid some tests to return a boolean in print_trace_line.
-
-No?
+diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+index 1a5fc83..c4c90f8 100644
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -26,6 +26,32 @@
+ #include "pci.h"
+ 
+ 
++int pci_resource_enabled(struct pci_dev *dev, int bar)
++{
++	u16 command = 0;
++	u32 addr = 0;
++
++	/*
++	 * Based on section 3.5, "Device State at Firmware/Operating System
++	 * Handoff," in the PCI Firmware spec.
++	 */
++	pci_read_config_word(dev, PCI_COMMAND, &command);
++
++	if (pci_resource_flags(dev, bar) & IORESOURCE_IO)
++		return command & PCI_COMMAND_IO;
++
++	if (command & PCI_COMMAND_MEMORY) {
++		if (bar == PCI_ROM_RESOURCE) {
++			pci_read_config_dword(dev, dev->rom_base_reg, &addr);
++			return addr & PCI_ROM_ADDRESS_ENABLE;
++		}
++
++		return 1;
++	}
++
++	return 0;
++}
++
+ void pci_update_resource(struct pci_dev *dev, struct resource *res, int resno)
+ {
+ 	struct pci_bus_region region;
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index c0e1400..28ec520 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -796,6 +796,8 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+ }
+ #endif /* CONFIG_PCI_DOMAINS */
+ 
++extern int pci_resource_enabled(struct pci_dev *dev, int bar);
++
+ #else /* CONFIG_PCI is not enabled */
+ 
+ /*
+@@ -976,6 +978,9 @@ static inline struct pci_dev *pci_get_bus_and_slot(unsigned int bus,
+ 						unsigned int devfn)
+ { return NULL; }
+ 
++static inline int pci_resource_enabled(struct pci_dev *dev, int bar)
++{ return 0; }
++
+ #endif /* CONFIG_PCI */
+ 
+ /* Include architecture-dependent settings and functions */
