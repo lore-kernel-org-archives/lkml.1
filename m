@@ -1,76 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbYI2WJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbYI2WPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753988AbYI2WJU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 18:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYI2WJE
+	id S1753871AbYI2WPs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 18:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYI2WP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 18:09:04 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:37016 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbYI2WJC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 18:09:02 -0400
-Message-ID: <48E151F7.5050408@hp.com>
-Date: Mon, 29 Sep 2008 18:08:55 -0400
-From: jim owens <jowens@hp.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 29 Sep 2008 18:15:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48214 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751423AbYI2WP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 18:15:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 0/6] SATA: Blacklist systems that spin off disks during ACPI power off
+Date: Tue, 30 Sep 2008 00:06:23 +0200
+User-Agent: KMail/1.9.9
+Cc: Tejun Heo <htejun@gmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
+       Frans Pop <elendil@planet.nl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200808290002.55026.rjw@sisk.pl> <200809150200.57055.rjw@sisk.pl> <48D17BBE.5020807@garzik.org>
+In-Reply-To: <48D17BBE.5020807@garzik.org>
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@sandeen.net>
-CC: Christoph Hellwig <hch@infradead.org>, Takashi Sato <t-sato@yk.jp.nec.com>,
-       Ric Wheeler <rwheeler@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-fsdevel@vger.kernel.org,
-       dm-devel@redhat.com, viro@ZenIV.linux.org.uk,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, axboe@kernel.dk,
-       mtk.manpages@googlemail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] Add timeout feature
-References: <20080908205337t-sato@mail.jp.nec.com> <20080908171119.GB22521@infradead.org> <48DBFD42.6030307@redhat.com> <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp> <20080929141326.GA31781@infradead.org> <48E0E7D4.1090409@sandeen.net> <20080929143749.GA13286@infradead.org> <48E0EA0B.7000701@sandeen.net>
-In-Reply-To: <48E0EA0B.7000701@sandeen.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200809300006.24919.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
- > Christoph Hellwig wrote:
- >> But why would the filesystem every unfreeze itself?  That defeats the
- >> whole point of freezing it.
- >
- > I agree.  Was just trying to clarify the above point.
- >
- > But there have been what, 12 submissions now, with the unfreeze timeout
- > in place so it's a persistent theme ;)
- >
- > Perhaps a demonstration of just how easy (or not easy) it is to deadlock
- > a filesystem by freezing the root might be in order, at least.
- >
- > And even if it is relatively easy, I still maintain that it is the
- > administrator's role to not inflict damage on the machine being
- > administered.  There are a lot of potentially dangerous tools at root's
- > disposal; why this particular one needs a nanny I'm still not quite sure.
+On Wednesday, 17 of September 2008, Jeff Garzik wrote:
+> Rafael J. Wysocki wrote:
+> > On Sunday, 14 of September 2008, Jeff Garzik wrote:
+> >> Tejun Heo wrote:
+> >>> Rafael J. Wysocki wrote:
+> >>>> SATA: Blacklist systems that spin off disks during ACPI power off
+> >>>>
+> >>>> Some notebooks from HP have the problem that their BIOSes attempt to
+> >>>> spin down hard drives before entering ACPI system states S4 and S5.
+> >>>> This leads to a yo-yo effect during system power-off shutdown and the
+> >>>> last phase of hibernation when the disk is first spun down by the
+> >>>> kernel and then almost immediately turned on and off by the BIOS.
+> >>>> This, in turn, may result in shortening the disk's life times.
+> >>>>
+> >>>> To prevent this from happening we can blacklist the affected systems
+> >>>> using DMI information.  However, only the on-board controlles should
+> >>>> be blacklisted and their PCI slot numbers can be used for this
+> >>>> purpose.  Unfortunately the existing interface for checking DMI
+> >>>> information of the system is not very convenient for this purpose,
+> >>>> because to use it, we would have to define special callback functions
+> >>>> or create a separate struct dmi_system_id table for each blacklisted
+> >>>> system.
+> >>>>
+> >>>> To overcome this difficulty introduce a new function
+> >>>> dmi_first_match() returning a pointer to the first entry in an array
+> >>>> of struct dmi_system_id elements that matches the system DMI
+> >>>> information.  Then, we can use this pointer to access the entry's
+> >>>> .driver_data field containing the additional information, such as
+> >>>> the PCI slot number, allowing us to do the desired blacklisting.
+> >>>>
+> >>>> Introduce a new libata flag ATA_FLAG_NO_POWEROFF_SPINDOWN that, if
+> >>>> set, will prevent disks from being spun off during system power off
+> >>>> and hibernation (to handle the hibernation case we need a new system
+> >>>> state SYSTEM_HIBERNATE_ENTER that can be checked against by libata,
+> >>>> in analogy with SYSTEM_POWER_OFF).  Use dmi_first_match() to set this
+> >>>> flag for some systems affected by the problem described above (HP nx6325,
+> >>>> HP nx6310, HP 2510p).
+> >>>>
+> >>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >>> libata part looks good to me but I think it would be better to
+> >>> separate out DMI changes into a separate patch.
+> >> Did these changes ever get separated out?
+> > 
+> > I only have the 'combo' patch if that's what you're asking about.  [The latest
+> > version is at http://bugzilla.kernel.org/attachment.cgi?id=17702&action=view]
+> > 
+> > Still, I can easily split the patch, although in that case the reason for the
+> > DMI changes won't be very clear without a reference to the SATA changes IMO.
+> 
+> That's the nature of every single API change -- you have the change, and 
+> then you have the users.
+> 
+> Respectfully, please split up the patch as requested, into DMI subsystem 
+> and ata subsystem pieces.
+> 
+> Re-reviewing the patch, I would even think that you should split out the 
+> kernel/power/disk and linux/kernel.h changes as well.
 
-Since this patch hit fsdev, there have been an equal number
-of supporters and opponents of the timeout.
+Here you go (sorry for the delay).  I have also split the SATA changes so that
+the driver patches are droppable individually if there are problems with them
+(not anticipated).
 
-I'm not opposed to the timeout on the API, but I don't think
-it is needed if we have a system configurable timeout (default
-is no timeout) that can be changed by an admin.
+Thanks,
+Rafael
 
-My experience is that a timeout is not needed protect against
-a stupid admin or against software bugs.
+---
+SATA: Blacklist systems that spin off disks during ACPI power off
 
-The justification for a timeout as far as I am concerned
-is so the admin can log in and reset hung hardware.  If we
-think there is no chance of forcing the external device that
-went to sleep to respond so the system can continue to be used,
-then I don't think a timeout has any valid use.
+Some notebooks from HP have the problem that their BIOSes attempt to
+spin down hard drives before entering ACPI system states S4 and S5.
+This leads to a yo-yo effect during system power-off shutdown and the
+last phase of hibernation when the disk is first spun down by the
+kernel and then almost immediately turned on and off by the BIOS.
+This, in turn, may result in shortening the disk's life times.
 
-My timeout desire is based on some past SAN behavior and
-I'm OK if people argue those devices should just be fixed.
-But we argued the same thing and were ignored because bad
-device behavior did not stop people from buying them.
+To prevent this from happening we can blacklist the affected systems
+using DMI information, which is implemented by the following series of
+patches.
 
-jim
