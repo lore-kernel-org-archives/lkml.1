@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752255AbYI2Oby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbYI2Odc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752255AbYI2Oby (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 10:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYI2Obq
+	id S1752599AbYI2Odc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 10:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYI2OdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 10:31:46 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49529 "EHLO
+	Mon, 29 Sep 2008 10:33:24 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49583 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751367AbYI2Obp (ORCPT
+	with ESMTP id S1751328AbYI2OdX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 10:31:45 -0400
-Date: Mon, 29 Sep 2008 09:31:44 -0500
-From: Russ Anderson <rja@sgi.com>
-To: Huang Ying <ying.huang@intel.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: Re: [PATCH 2/4] x86: Add UV bios call infrastructure v2
-Message-ID: <20080929143144.GA116670@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-References: <20080926200242.GC138671@sgi.com> <1222478495.28661.19.camel@yhuang-dev.sh.intel.com> <20080928150106.GA204845@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080928150106.GA204845@sgi.com>
-User-Agent: Mutt/1.5.9i
+	Mon, 29 Sep 2008 10:33:23 -0400
+Message-ID: <48E0E73A.40803@sgi.com>
+Date: Mon, 29 Sep 2008 07:33:30 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, David Miller <davem@davemloft.net>,
+       Alan.Brunelle@hp.com, tglx@linutronix.de, rjw@sisk.pl,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kernel-testers@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, arjan@linux.intel.com,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c -	bisected
+References: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <200809251150.26760.rusty@rustcorp.com.au> <alpine.LFD.1.10.0809250836270.3265@nehalem.linux-foundation.org> <200809261525.30258.rusty@rustcorp.com.au> <48DC78F2.8060400@sgi.com> <20080927191653.GB18619@elte.hu>
+In-Reply-To: <20080927191653.GB18619@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 28, 2008 at 10:01:07AM -0500, Russ Anderson wrote:
-> On Sat, Sep 27, 2008 at 09:21:35AM +0800, Huang Ying wrote:
-> > On Fri, 2008-09-26 at 15:02 -0500, Russ Anderson wrote:
-> > > Index: linux/include/asm-x86/efi.h
-> > > ===================================================================
-> > > --- linux.orig/include/asm-x86/efi.h	2008-09-26 14:13:24.000000000 -0500
-> > > +++ linux/include/asm-x86/efi.h	2008-09-26 14:13:36.000000000 -0500
-> > > @@ -49,6 +49,20 @@ extern u64 efi_call5(void *fp, u64 arg1,
-> > >  extern u64 efi_call6(void *fp, u64 arg1, u64 arg2, u64 arg3,
-> > >  		     u64 arg4, u64 arg5, u64 arg6);
-> > >  
-> > > +
-> > > +#ifndef CONFIG_EFI
-> > > +/*
-> > > + * IF EFI is not configured, have the EFI calls return -ENOSYS.
-> > > + */
-> > > +#define efi_call0(_f)					(-ENOSYS)
-> > > +#define efi_call1(_f, _a1)				(-ENOSYS)
-> > > +#define efi_call2(_f, _a1, _a2)				(-ENOSYS)
-> > > +#define efi_call3(_f, _a1, _a2, _a3)			(-ENOSYS)
-> > > +#define efi_call4(_f, _a1, _a2, _a3, _a4)		(-ENOSYS)
-> > > +#define efi_call5(_f, _a1, _a2, _a3, _a4, _a5)		(-ENOSYS)
-> > > +#define efi_call6(_f, _a1, _a2, _a3, _a4, _a5, _a6)	(-ENOSYS)
-> > > +#endif /* CONFIG_EFI */
-> > > +
-> > >  #define efi_call_phys0(f)			\
-> > >  	efi_call0((void *)(f))
-> > >  #define efi_call_phys1(f, a1)			\
-> > 
-> > efi_call_virt<n> and efi_call_phys<n> is the API instead of efi_call<n>.
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
 > 
-> #define efi_call_virt6(f, a1, a2, a3, a4, a5, a6)                       \
->         efi_call6((void *)(efi.systab->runtime->f), (u64)(a1), (u64)(a2), \
->                   (u64)(a3), (u64)(a4), (u64)(a5), (u64)(a6))
+>> Hi Rusty,
+>>
+>> I've gotten some good traction on the changes in the following patch.  
+>> About 30% of the kernel is compiling right now and I'm picking up 
+>> errors and warnings as I'm going along.  I think it's doing most of 
+>> what we need.  Attempting to hide the cpumask struct definition caused 
+>> all kinds of problems with the inline functions and statically 
+>> declaring cpumask's.
+>>
+>> (The following patch is a combination of all the changes to cpumask.h 
+>> with the header from the first patch.  I'll send you a complete copy 
+>> in separate email.)
 > 
-> efi_call_virt6() uses efi.systab->runtime->f.
-> My call needs to use uv_systab, not efi.systab.
-
-After thinking about this, if a new runtime call was added to
-efi_runtime_services_t, then the existing efi_call_virt<n> could be
-used.  This would remove the need to create uv_systab.  I'll post
-a patch shortly.
-
+> could you please send whatever .c changes you have already, so that we 
+> can have a look at how the end result will look like? Doesnt have to 
+> build, i'm just curious about how it looks like in practice, 
+> semantically.
+> 
+> 	Ingo
 
 
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+I will, and the full "allyesconfig" does compile.  And it's basically a
+benign change in that the functionality is still the same.  I'm currently
+reordering it a bit to clean it up.
+
+Thanks,
+Mike
