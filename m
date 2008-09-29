@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbYI2RLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYI2RQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753720AbYI2RLa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbYI2RLI
+	id S1753139AbYI2RQr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYI2RQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:11:08 -0400
-Received: from colo.lackof.org ([198.49.126.79]:49883 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751440AbYI2RLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 13:11:06 -0400
-Date: Mon, 29 Sep 2008 11:10:49 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Grant Grundler <grundler@parisc-linux.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: introduce users of ioremap_pcibar()
-Message-ID: <20080929171049.GA14409@colo.lackof.org>
-References: <20080926163641.288bf868@infradead.org> <20080926163718.32f0867e@infradead.org> <20080929072643.GA28871@colo.lackof.org> <20080929064220.374c68a4@infradead.org>
+	Mon, 29 Sep 2008 13:16:39 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40940 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751102AbYI2RQj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 13:16:39 -0400
+To: Avi Kivity <avi@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] ioctl: generic ioctl dispatcher
+From: Andi Kleen <andi@firstfloor.org>
+References: <1222530242-1272-1-git-send-email-avi@redhat.com>
+	<1222530242-1272-2-git-send-email-avi@redhat.com>
+Date: Mon, 29 Sep 2008 19:16:35 +0200
+In-Reply-To: <1222530242-1272-2-git-send-email-avi@redhat.com> (Avi Kivity's message of "Sat, 27 Sep 2008 18:44:00 +0300")
+Message-ID: <87od26q3d8.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080929064220.374c68a4@infradead.org>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 29, 2008 at 06:42:20AM -0700, Arjan van de Ven wrote:
-...
-> > This patch changes that behavior of the device driver so it uses
-> > uncacheable instead of cacheable mappings.  This is the only thing
-> > I'm uncertain about for this patch.
-> 
-> ioremap() also is uncachable today.
+Avi Kivity <avi@redhat.com> writes:
 
-Ok...it was using cacheable mapping on ia64 until this commit in 2007:
-    http://www.gelato.unsw.edu.au/archives/linux-ia64/0703/20211.html
+> +/**
+> + * dispatch_ioctl - dispatch to an ioctl handler based on ioctl number
+> + * @inode:	inode to invoke ioctl method on
+> + * @filp:	open file to invoke ioctl method on
+> + * @cmd:	ioctl command to execute
+> + * @arg:	command-specific argument for ioctl
+> + * @handlers:	list of potential handlers for @cmd; null terminated;
+> + *              place frequently used cmds first
+> + * @fallback:   optional function to call if @cmd not found in @handlers
+> + *
+> + * Locates and calls ioctl handler in @handlers; if none exist, calls
+> + * @fallback; if that does not exist, return -ENOTTY.
+> + */
+> +long dispatch_ioctl(struct inode *inode, struct file *filp,
+> +		    unsigned cmd, unsigned long arg,
+> +		    const struct ioctl_handler *handlers,
+> +		    long (*fallback)(const struct ioctl_arg *arg))
 
-I stopped paying close attention  on ia64 in 2006 for the most part.
-It's always been uncacheable on parisc.
+The basic idea is good, but i don't like the proliferation of callbacks,
+which tends to make complicated code and is ugly for simple code
+(which a lot of ioctls are)
 
-After finding willy's patch (March 2006) on lwn.net, I remember the
-discussion around changing the behavior of ioremap() to be uncached:
-    http://lwn.net/Articles/178084/
+How about you make it return an number that can index a switch() instead?
+Then everything could be still kept in the same function.
 
-And I have to agree with willy/alan, pci_iomap() is already doing this.
-
-However, pci_iomap() isn't quite right either:
-        if (flags & IORESOURCE_MEM) {
-                if (flags & IORESOURCE_CACHEABLE)
-                        return ioremap(start, len);
-                return ioremap_nocache(start, len);
-        }
-
-I expect it needs to use ioremap_cache() instead of ioremap().
-One line patch below fixes that. Build-tested on x86 only.
-
-Signed-off-by: Grant Grundler <grundler@parisc-linux.org>
-
-> > And I have a second issue less important issue.
-> > What is the result of ioremap_pcibar(pci, 1) when BAR0 is a 64-bit
-> > bar? Given the name, I expect to call "ioremap_pcibar(pci,2)" to get
-> > the desired result.  Maybe just document how to handle this correctly
-> > in Documentation/pci.txt would be sufficient.
-> 
-> we should detect this and DTRT inside the implementation, not in the
-> drivers.
-
-pci_iomap() is already doing this. See lib/iomap.c:pci_iomap().
-
-thanks,
-grant
-
-
-diff --git a/lib/iomap.c b/lib/iomap.c
-index d322293..5565cf9 100644
---- a/lib/iomap.c
-+++ b/lib/iomap.c
-@@ -267,7 +267,7 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
- 		return ioport_map(start, len);
- 	if (flags & IORESOURCE_MEM) {
- 		if (flags & IORESOURCE_CACHEABLE)
--			return ioremap(start, len);
-+			return ioremap_cache(start, len);
- 		return ioremap_nocache(start, len);
- 	}
- 	/* What? */
+-Andi
