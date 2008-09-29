@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbYI2RDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYI2RFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753115AbYI2RDE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbYI2RCy
+	id S1753374AbYI2RFx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYI2RFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:02:54 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:40751 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751704AbYI2RCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 13:02:53 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 01/19] pci: introduce an pci_ioremap(pdev, barnr) function
-Date: Mon, 29 Sep 2008 19:02:37 +0200
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <20080928163611.3df8a9e0@infradead.org>
-In-Reply-To: <20080928163611.3df8a9e0@infradead.org>
+	Mon, 29 Sep 2008 13:05:45 -0400
+Received: from outbound-mail-31.bluehost.com ([69.89.18.151]:36807 "HELO
+	outbound-mail-31.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751355AbYI2RFo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 13:05:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=a0A0q2Cj7d6Cwq9ZKgjRC3iRYOlzKcotlFKJBmpW81a2oa8d226HQmj7nbpIrGH/T97ABGm4rDRBWZt3hlyKRLTtRd9uFaZGgGwhqGnuoLDopK8N9FvBFTGA83c+q4im;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: [PATCH 7/7] x86: print out irq nr for msi/ht -v2
+Date: Mon, 29 Sep 2008 10:05:02 -0700
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Yinghai Lu <yinghai@kernel.org>, Len Brown <lenb@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <1222323223-23529-1-git-send-email-yhlu.kernel@gmail.com> <20080927185306.GA18619@elte.hu> <20080927190237.GD10186@localhost>
+In-Reply-To: <20080927190237.GD10186@localhost>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1808441.iSY7s540mx";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200809291902.44813.eike-kernel@sf-tec.de>
+Content-Disposition: inline
+Message-Id: <200809291005.04941.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1808441.iSY7s540mx
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Arjan van de Ven wrote:
-> The patch below introduces a pci_ioremap() function that should make it
-> easier for driver authors to do the right thing for the simple, common
-> case.
+On Saturday, September 27, 2008 12:02 pm Cyrill Gorcunov wrote:
+> [Ingo Molnar - Sat, Sep 27, 2008 at 08:53:06PM +0200]
 >
-> There's also 18 patches that introduce users of this; to reduce lkml noise
-> I've only stuck them in a git tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-pci_ioremap.g
->it
-> (http://git.kernel.org/?p=linux/kernel/git/arjan/linux-2.6-pci_ioremap.git;
->a=summary)
+> ...
 >
+> A bit offtopic...well...completely offtopic I would say :)
 >
-> From fef1dd836bc7dc07962a0ae4019af9efd373c76f Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Fri, 26 Sep 2008 16:34:52 -0700
-> Subject: [PATCH 01/19] pci: introduce an pci_ioremap(pdev, barnr) function
->
-> A common thing in many PCI drivers is to ioremap() an entire bar.
-> This is a slightly fragile thing right now, needing both an address and a
-> size, and many driver writers do.. various things there.
->
-> This patch introduces an pci_ioremap() function taking just a PCI device
-> struct and the bar number as arguments, and figures this all out itself, in
-> one place. In addition, we can add various sanity checks to this function
-> (the patch already checks to make sure that the bar in question really is a
-> MEM bar; few to no drivers do that sort of thing).
+> Ingo maybe you have any PCI specs? I've asked several people
+> for this. Peter adviced to ask HW vendors but I don't have
+> friends who has access to a such docs. Evgeniy Polyakov
+> promised to ask someone but I think there will not be success
+> too :(. I'll ask Maciej too later since now he seems to be
+> quite busy.
 
-This is the same like pci_iomap(pdev, number, 0), no?
+I think if you use google you can find the PCI spec in pdf form (search for 
+pci pdf probably).  The MindShare books are also quite good, and cover PCI, 
+PCI-X, and PCI Express in great detail (far more readable than the spec too).
 
-Greetings,
-
-Eike
-
---nextPart1808441.iSY7s540mx
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkjhCjQACgkQXKSJPmm5/E7P/wCeIeEicfs1lcyEMgvBs5sYodyU
-lFcAoIggPnl02ujOMhrqeVXgGdrc/kcp
-=sLlo
------END PGP SIGNATURE-----
-
---nextPart1808441.iSY7s540mx--
+-- 
+Jesse Barnes, Intel Open Source Technology Center
