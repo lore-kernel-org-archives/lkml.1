@@ -1,107 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbYI2J0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbYI2J0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752971AbYI2J0L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 05:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbYI2JZy
+	id S1754601AbYI2J0o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 05:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYI2J0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 05:25:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51537 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754114AbYI2JZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 05:25:53 -0400
-Date: Mon, 29 Sep 2008 11:25:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] kmemcheck fixlets (for -tip)
-Message-ID: <20080929092546.GB7735@elte.hu>
-References: <20080928180652.GA8500@localhost.localdomain> <20080929085512.GA2190@elte.hu> <19f34abd0809290213m54a2c485p5917fcd46747ad6@mail.gmail.com>
+	Mon, 29 Sep 2008 05:26:34 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:39302 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752976AbYI2J0b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 05:26:31 -0400
+Date: Mon, 29 Sep 2008 12:25:49 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joerg.roedel@amd.com,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       iommu@lists.linux-foundation.org, dwmw2@infradead.org,
+       amit.shah@qumranet.com, mingo@redhat.com
+Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
+Message-ID: <20080929092549.GA6931@il.ibm.com>
+References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <1222107681-8185-10-git-send-email-joerg.roedel@amd.com> <20080928231211X.fujita.tomonori@lab.ntt.co.jp> <20080928184424.GA26563@8bytes.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0809290213m54a2c485p5917fcd46747ad6@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080928184424.GA26563@8bytes.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Sep 28, 2008 at 08:44:24PM +0200, Joerg Roedel wrote:
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> Hmm, we should only call find_dma_ops_for_device() the first time a
+> dma api call is done (look into get_dma_ops). But I also thought
+> about how this lock can be avoided. In the real world it should not
+> be necessary because the dma_ops list is initialized before dma api
+> calls are done. But since there is now a register function which can
+> be called its safer this way. What do you think, are we still safe
+> enough without this lock?
 
-> On Mon, Sep 29, 2008 at 10:55 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > FYI, i've reactivated kmemcheck on one of the -tip auto-test boxes
-> > earlier today and it's looking good so far - for example a 32-bit
-> > allyesconfig-ish config booted in just fine with kmemcheck enabled.
-> > Also, the box is very usable interactively - while previous one could
-> > always tell whether there's kmemcheck active.
-> 
-> Oops. Probably kmemcheck was not enabled (for all the right caches).
-> Here's what may go wrong:
-> 
-> 1. kmemcheck is in one-shot mode. Only one error is reported; after
-> that, box will start returning to normal speed.
+We could be, if we add a check to the register function that verifies
+it isn't being called after DMAs have started. Something like:
 
-i'd have noticed that error.
+in register:
 
-> 2. SLUB debugging was enabled. kmemcheck will not track "debugged"
-> caches, so I suggest turning SLUB off in kernel config, or by booting
-> with "slub_debug=-". But I think that SLUB debug can be turned off in
-> kernel config as well, which means that your randconfig testing will
-> hit both cases eventually.
+  if (dma_started)
+    yell loudly
 
-ok, slub debugging was indeed on. I'll re-test with that disabled.
+before PCI device initialization and after IOMMU initialization:
+  dma_started = true
 
-> > [ only one CPU is active, but we knew that. We've still got this
-> >  test-commit:
-> >
-> >     21d01a4: x86: add functions for duplicating page tables
-> >
-> >  it's not in tip/master but we still have it around. ]
-> >
-> > btw., is there any easy way to tell from within a script what the
-> > current status of kmemcheck is? In particular, whether it's running.
-> > Normally i have this in the syslog:
-> >
-> >  [    0.448022] kmemcheck: "Bugs, beware!"
-> >  [    0.452002] kmemcheck: Limiting number of CPUs to 1.
-> >
-> > but this time the log was too large so this bit was snipped out and i
-> > was unsure about it - needed a second bootup with a larger buffer to
-> > make sure. With lockdep we've got the 'debug_locks' /proc/lockdep_stats.
-> >
-> 
-> You can read /proc/sys/kernel/kmemcheck. We also set a per-cache flag 
-> in slabs, so I think you can get some information from SLUB sysfs. But 
-> I agree -- it is not always easy to tell what kmemcheck is actually 
-> doing. Maybe some counters and stats would be appropriate.
-
-ah, missed that flag.
-
-> > also, all kmemcheck warnings follow the usual WARN_ON() format, so 
-> > that automated tests can pick it up, correct? -tip testing does so 
-> > many bootups that there's no chance to notice non-system-crashing 
-> > bugs and printouts but via automated means.
-> 
-> Uhm, not correct. We need a few more infos (like read size, shadow, 
-> etc.), also the stacktraces are saved, so the default stacktrace of 
-> WARN is useless. But we can certainly try to emulate it. What text 
-> should I insert in order for your scripts to pick it up?
-
-a kernel log line beginning with:
-
- INFO:
- WARNING:
- BUG:
-
-would be noticed. (That pattern has to be at the beginning of the line. 
-Otherwise we'd match on things like 'DEBUG: ' - such printouts exist)
-
-	Ingo
+Cheers,
+Muli
+-- 
+The First Workshop on I/O Virtualization (WIOV '08)
+Dec 2008, San Diego, CA, http://www.usenix.org/wiov08/
+                      xxx
+SYSTOR 2009---The Israeli Experimental Systems Conference
+http://www.haifa.il.ibm.com/conferences/systor2009/
