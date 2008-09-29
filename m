@@ -1,75 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbYI2B5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYI2DDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753299AbYI2B5o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 21:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbYI2B5h
+	id S1753571AbYI2DDi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Sep 2008 23:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYI2DDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 21:57:37 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:43924 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750787AbYI2B5h (ORCPT
+	Sun, 28 Sep 2008 23:03:31 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:35053 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367AbYI2DDa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 21:57:37 -0400
-Date: Sun, 28 Sep 2008 21:57:30 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: jmerkey@wolfmountaingroup.com
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [REQUEST] Clarification from Copyright Holders on
-	FUSE/NDISWRAPPER
-Message-ID: <20080929015730.GK8711@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	jmerkey@wolfmountaingroup.com, Rik van Riel <riel@redhat.com>,
-	linux-kernel@vger.kernel.org
-References: <33521.166.70.238.43.1222622153.squirrel@webmail.wolfmountaingroup.com> <20080928194536.GC8711@mit.edu> <20080928194616.10d25760@bree.surriel.com> <58677.166.70.238.43.1222644857.squirrel@webmail.wolfmountaingroup.com>
+	Sun, 28 Sep 2008 23:03:30 -0400
+Message-ID: <48E0452F.4080300@linux.vnet.ibm.com>
+Date: Mon, 29 Sep 2008 08:32:07 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <58677.166.70.238.43.1222644857.squirrel@webmail.wolfmountaingroup.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp, YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+Subject: Re: [PATCH 0/12] memcg updates v5
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com> <48DC9AF2.1050101@linux.vnet.ibm.com> <20080926182253.a62cc2d0.kamezawa.hiroyu@jp.fujitsu.com> <48DCAC02.5050108@linux.vnet.ibm.com> <20080926193602.6b397910.kamezawa.hiroyu@jp.fujitsu.com> <20080927121917.9058a41e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080927121917.9058a41e.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 28, 2008 at 05:34:17PM -0600, jmerkey@wolfmountaingroup.com wrote:
-> One nice thing about putting out a kernel debugger is it gives me a unique
-> view into the numbers and status developers working on Linux -- and it's
-> shrinking from the download patterns and the types of folks downloading
-> it.
+KAMEZAWA Hiroyuki wrote:
+> On Fri, 26 Sep 2008 19:36:02 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+>>> I think (1) might be OK, except for the accounting issues pointed out (change in
+>>> behaviour visible to end user again, sigh! :( ).
+>> But it was just a BUG from my point of view...
+>>
+>>> Is (1) a serious issue? 
+>> considering force_empty(), it's serious.
+>>
+>>> (2) seems OK, except for the locking change for mark_page_accessed. I am looking at
+>>> (4) and (6) currently.
+>>>
+> 
+> I'll do in following way in the next Monday.
+> Divide patches into 2 set
+> 
+> in early fix/optimize set.
+>   - push (2)
+>   - push (4)
+>   - push (6)
+>   - push (1)
+> 
 
-You're assuming that your metrics of people downloading your kernel
-debugger is an accurate way of measuring how many people are
-developing Linux.
+Yes, sounds reasonable
 
-> Linux is pervasive, but based upon my observations, development is
-> declining and almost non-existent in commercial companies except for a
-> small handful of companies.  I do not believe that Free BSD or some other
-> Unix is going to replace Linux, but what I see happening is a loss of
-> interest in Unix platforms generally.
+> drops (3).
+> 
+> I don't want to remove all? pages-never-on-LRU before fixing force_empty.
+> 
+> in updates
+>   - introduce atomic flags. (5)
+>   - add move_account() function (7)
 
-You may find these research reports interesting:
+without (3), don't we have a problem pushing (7)?
 
-http://www.linuxfoundation.org/publications/linuxkerneldevelopment.php
-http://www.linux-foundation.org/publications/IDC_Workloads.pdf
+>   - add memory.attribute to each memcg dir. (NEW)
+>   - enhance force_empty (was (8))
+>        - remove "forget all" logic. and add attribute to select following 2 behavior
+>           - call try_to_free_page() until the usage goes down to 0.
+>             This allows faiulre (if page is mlocked, we can't do.). (NEW)
+>           - call move_account() to move all charges to its parent (as much as possible) (NEW)
+>           In future, I'd liket to add trash-box cgroup for force_empty somewhere.
+>   - allocate all page cgroup at boot (9)
+>   - lazy lru free/add (10,11) with fixes.
+>   - fix race at charging swap. (12)
+> 
 
-The former shows that the development rate is if anything, increasing
-based on analyzing the rate that changes are flowing into the Linus's
-git tree --- something which I think everyone would agree is a better
-way of measuring the rate of development than the number of downloads
-of mdb.
+I think (9) is probably the most important. I'll review it today
 
-The latter is a report from IDC which calculates total enterprise
-spending in the Linux ecosystem at $21 billion in 2007, and predicts
-that by 2011 the figure will more than double to $49 billion.
+> After (9), all page and page_cgroup has one-to-one releationship and we want to
+> assume that "if page is alive and on LRU, it's accounted and has page_cgroup."
+> (other team, bio cgroup want to use page_cgroup and I want to make it easy.)
+> 
+> For this, fix to behavior of force_empty..."forget all" is necessary.
+> SwapCache handling is also necessary but I'd like to postpone until next set
+> because it's complicated.
+> 
+> After above all.
+>  - handle swap cache 
+>  - Mem+Swap controller.
+>  - add trashbox feature ?
+>  - add memory.shrink_usage_to file.
+> 
+> It's long way to what I really want to do....
+> 
 
-So the health of Linux, both in terms of the rate of development and
-the enterprise server ecosystem, seems to be doing quite well (never
-mind the surge of interest of Linux for mobile platforms).  But if you
-want to develop on FreeBSD, hey, don't let us stop you.  Different
-licensing strokes for different folks, after all...
+Yes a long way to go, I want to add
 
-Regards,
+1) Multi-hierarchy support
+2) Support for soft-limits
+3) get swappiness working (there are patches posted for it by Yamamoto-San, but
+something is broken, I suspect even in global swappiness).
 
-						- Ted
+
+
+> 
+> Thanks,
+> -Kame
+
+
+-- 
+	Balbir
