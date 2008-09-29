@@ -1,64 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbYI2VNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbYI2VNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbYI2VNA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 17:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYI2VMw
+	id S1754088AbYI2VNw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 17:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYI2VNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 17:12:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36497 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483AbYI2VMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 17:12:52 -0400
-Date: Mon, 29 Sep 2008 22:56:34 +0200
-From: Karel Zak <kzak@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: akataria@vmware.com, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, avi@redhat.com,
-       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
-       Dan Hecht <dhecht@vmware.com>, Jun.Nakajima@intel.com,
-       ksrinivasan@novell.com, Matthias Koenig <mkoenig@suse.de>
-Subject: Re: Use CPUID to communicate with the hypervisor.
-Message-ID: <20080929205634.GA2907@nb.net.home>
-References: <1222472815.29886.43.camel@alok-dev1> <48DD799C.3070706@zytor.com>
+	Mon, 29 Sep 2008 17:13:41 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:57605 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752596AbYI2VNk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 17:13:40 -0400
+Message-ID: <48E1460A.5000504@novell.com>
+Date: Mon, 29 Sep 2008 17:18:02 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48DD799C.3070706@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: ghaskins@novell.com, linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [BUG][PPC64] BUG in 2.6.26.5-rt9 causing Hang
+References: <20080925123235.GA27916@linux.vnet.ibm.com>
+In-Reply-To: <20080925123235.GA27916@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig731E53F0DBD8A7EB399C5973"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 05:09:00PM -0700, H. Peter Anvin wrote:
-> Alok Kataria wrote:
->> +{
->> +	if (cpu_has_hypervisor) {
->> +		unsigned int eax, ebx, ecx, edx;
->> +		char hyper_vendor_id[13];
->> +
->> +		cpuid(HYPERVISOR_INFO_LEAF, &eax, &ebx, &ecx, &edx);
->> +		memcpy(hyper_vendor_id + 0, &ebx, 4);
->> +		memcpy(hyper_vendor_id + 4, &ecx, 4);
->> +		memcpy(hyper_vendor_id + 8, &edx, 4);
->> +		hyper_vendor_id[12] = '\0';
->> +		printk(KERN_INFO "Hypervisor vendor id %s\n", hyper_vendor_id);
->> +	}
->> +}
->> +
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig731E53F0DBD8A7EB399C5973
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi Chirag
+
+Chirag Jog wrote:
+> Hi Gregory,
+> We see the following BUG followed by a hang on the latest kernel 2.6.26=
+=2E5-rt9 on a Power6 blade (PPC64)
+> It is easily recreated by running the async_handler or sbrk_mutex (real=
+time tests from ltp) tests.
+>  =20
+
+Call me an LTP newbie, but where can I get the sbrk_mutex/async_handler
+tests.  I installed the LTP rpm and I dont seem to have tests by that
+name.  I have a 26.5-rt9 kernel all configured and ready to go but no
+way to reproduce this issue.  Please advise.
+
+Regards,
+-Greg
+
+
+> login: cpu 0x2: Vector: 700 (Program Check) at [c0000000e8e875d0]
+>     pc: c00000000005110c: .pick_next_pushable_task+0x54/0x9c
+>     lr: c000000000059f50: .push_rt_task+0x44/0x2b4
+>     sp: c0000000e8e87850
+>    msr: 8000000000021032
+>   current =3D 0xc0000000ea5bb2e0
+>   paca    =3D 0xc000000000608700
+>     pid   =3D 2811, comm =3D async_handler
+> kernel BUG at kernel/sched_rt.c:1041! <---------------------
+> enter ? for help
+> [link register   ] c000000000059f50 .push_rt_task+0x44/0x2b4
+> [c0000000e8e87850] c0000000e8e878f0 (unreliable)
+> [c0000000e8e87900] c00000000005a1dc .push_rt_tasks+0x1c/0x38
+> [c0000000e8e87980] c00000000005a21c .post_schedule_rt+0x24/0x44
+> [c0000000e8e87a10] c000000000057cbc .finish_task_switch+0xd0/0x180
+> [c0000000e8e87ab0] c0000000003b6e88 .__schedule+0x6e0/0x798
+> [c0000000e8e87b90] c0000000003b7148 .schedule+0xec/0x11c
+> [c0000000e8e87c10] c0000000003b7a40 .do_nanosleep+0x6c/0xcc
+> [c0000000e8e87c90] c000000000080738 .hrtimer_nanosleep+0x7c/0x100
+> [c0000000e8e87d90] c000000000080830 .sys_nanosleep+0x74/0x94
+> [c0000000e8e87e30] c0000000000086ac syscall_exit+0x0/0x40
+> --- Exception: c00 (System Call) at 0000008026449844
+> SP (400014185f0) is in userspace
 >
-> This should be broken out into a separate file in cpu/*, because we  
-> *will* need to detect hypervisors by other means.
+>
+> This is generated by the BUG_ON lines in the pick_next_pushable functio=
+n
+> introduced by the sched-only-push-once-per-queue.patch .
+>
+> The -rt kernel prior to this patch didnot give such BUGes.
+>
+> All this was tried with
+> CONFIG_GROUP_SCHED=3DN
+> CONFIG_RT_GROUP_SCHED=3DN
+>
+>
+> Setting the options
+> CONFIG_GROUP_SCHED=3Dy
+> CONFIG_RT_GROUP_SCHED=3DY,
+> seems to solve the problem.
+>
+>
+>
+>  =20
 
- Yes. It would be nice to have "Hypervisor vendor id" somewhere in
- /sys or /proc. It seems that userspace is already hungry for that
- information:
 
- http://article.gmane.org/gmane.linux.utilities.util-linux-ng/1788
 
-    Karel
+--------------enig731E53F0DBD8A7EB399C5973
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
--- 
- Karel Zak  <kzak@redhat.com>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkjhRgoACgkQlOSOBdgZUxmlNgCfa/xFj965yDpe9DjTF4fptuwH
+TT8Anjf1YKB9XXwWXOmFT6kMoSjrtzPC
+=QOAH
+-----END PGP SIGNATURE-----
+
+--------------enig731E53F0DBD8A7EB399C5973--
