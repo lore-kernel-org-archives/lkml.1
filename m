@@ -1,87 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbYI2N1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750910AbYI2Ndg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753059AbYI2N1S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 09:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYI2N1I
+	id S1750910AbYI2Ndg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 09:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYI2Nd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 09:27:08 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:47963 "EHLO
-	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbYI2N1H (ORCPT
+	Mon, 29 Sep 2008 09:33:26 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:60998 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848AbYI2NdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 09:27:07 -0400
+	Mon, 29 Sep 2008 09:33:25 -0400
 X-BigFish: VPS-23(zz1432R98dR1805M936fO873fnzzzzz32i6bh43j61h)
 X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K7YLCM-04-A6A-01
-Date: Mon, 29 Sep 2008 15:26:47 +0200
+X-WSS-ID: 0K7YLN9-03-NBM-01
+Date: Mon, 29 Sep 2008 15:33:11 +0200
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: joro@8bytes.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       iommu@lists.linux-foundation.org, dwmw2@infradead.org, muli@il.ibm.com,
-       amit.shah@qumranet.com, mingo@redhat.com
-Subject: Re: [PATCH 0/9][RFC] stackable dma_ops for x86
-Message-ID: <20080929132647.GJ27928@amd.com>
-References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <20080928232129J.fujita.tomonori@lab.ntt.co.jp> <20080928184926.GB26563@8bytes.org> <20080929221354T.fujita.tomonori@lab.ntt.co.jp>
+CC: joro@8bytes.org, muli@il.ibm.com, amit.shah@redhat.com,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       iommu@lists.linux-foundation.org, dwmw2@infradead.org, mingo@redhat.com
+Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
+Message-ID: <20080929133311.GK27928@amd.com>
+References: <20080928191333.GC26563@8bytes.org> <20080929093044.GB6931@il.ibm.com> <20080929093652.GQ27426@8bytes.org> <20080929221640X.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20080929221354T.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080929221640X.fujita.tomonori@lab.ntt.co.jp>
 User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 29 Sep 2008 13:26:48.0275 (UTC) FILETIME=[06675230:01C92237]
+X-OriginalArrivalTime: 29 Sep 2008 13:33:11.0529 (UTC) FILETIME=[EAD73D90:01C92237]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 29, 2008 at 10:16:39PM +0900, FUJITA Tomonori wrote:
-> On Sun, 28 Sep 2008 20:49:26 +0200
+On Mon, Sep 29, 2008 at 10:16:44PM +0900, FUJITA Tomonori wrote:
+> On Mon, 29 Sep 2008 11:36:52 +0200
 > Joerg Roedel <joro@8bytes.org> wrote:
 > 
-> > On Sun, Sep 28, 2008 at 11:21:26PM +0900, FUJITA Tomonori wrote:
-> > > On Mon, 22 Sep 2008 20:21:12 +0200
-> > > Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > On Mon, Sep 29, 2008 at 12:30:44PM +0300, Muli Ben-Yehuda wrote:
+> > > On Sun, Sep 28, 2008 at 09:13:33PM +0200, Joerg Roedel wrote:
 > > > 
-> > > > Hi,
-> > > > 
-> > > > this patch series implements stackable dma_ops on x86. This is useful to
-> > > > be able to fall back to a different dma_ops implementation if one can
-> > > > not handle a particular device (as necessary for example with
-> > > > paravirtualized device passthrough or if a hardware IOMMU only handles a
-> > > > subset of available devices).
+> > > > I think we should try to build a paravirtualized IOMMU for KVM
+> > > > guests.  It should work this way: We reserve a configurable amount
+> > > > of contiguous guest physical memory and map it dma contiguous using
+> > > > some kind of hardware IOMMU. This is possible with all hardare
+> > > > IOMMUs we have in the field by now, also Calgary and GART. The guest
+> > > > does dma_coherent allocations from this memory directly and is done.
+> > > > For map_single and map_sg 
+> > > > the guest can do bounce buffering. We avoid nearly all pvdma hypercalls
+> > > > with this approach, keep guest swapping working and solve also the
+> > > > problems with device dma_masks and guest memory that is not contigous on
+> > > > the host side.
 > > > 
-> > > We already handle the latter. This patchset is more flexible but
-> > > seems to incur more overheads.
-> > > 
-> > > This feature will be used for only paravirtualized device passthrough?
-> > > If so, I feel that there is more simpler (and specific) solutions for
-> > > it.
+> > > I'm not sure I follow, but if I understand correctly with this
+> > > approach the guest could only DMA into buffers that fall within the
+> > > range you allocated for DMA and mapped. Isn't that a pretty nasty
+> > > limitation?  The guest would need to bounce-bufer every frame that
+> > > happened to not fall inside that range, with the resulting loss of
+> > > performance.
 > > 
-> > Its not only for device passthrough. It handles also the cases where a
-> > hardware IOMMU does not handle all devices in the system (like in some
-> > Calgary systems but also possible with AMD IOMMU). With this patchset we
+> > The bounce buffering is needed for map_single/map_sg allocations. For
+> > dma_alloc_coherent we can directly allocate from that range. The
+> > performance loss of the bounce buffering may be lower than the
+> > hypercalls we need as the alternative (we need hypercalls for map, unmap
+> > and sync).
 > 
-> I know that. As I wrote in the previous mail, we already solved that
-> problem with per-device-dma-ops.
-> 
-> My question is what unsolved problems this patchset can fix?
-> 
-> 
-> This patchset is named "stackable dma_ops" but it's different from
-> what we discussed as "stackable dma_ops". This patchset provides
-> IOMMUs a generic mechanism to set up "stackable dma_ops". But this
-> patchset doesn't solve the problem that a hardware IOMMU does not
-> handle all devices (it was already solved with per-device-dma-ops).
-> 
-> If paravirtualized device passthrough still needs to call multiple
-> dma_ops, then this patchset doesn't solve that issue.
+> Nobody cares about the performance of dma_alloc_coherent. Only the
+> performance of map_single/map_sg matters.
+>
+> I'm not sure how expensive the hypercalls are, but they are more
+> expensive than bounce buffering coping lots of data for every I/Os?
 
-Ok, the name "stackable" is misleading and was a bad choice. I will
-rename it to "multiplexing". This should make it more clear what it is.
-Like you pointed out, the problems are solved with per-device dma_ops,
-but in the current implementation it needs special hacks in the IOMMU
-drivers to use these per-device dma_ops.
-I see this patchset as a continuation of the per-device dma_ops idea. It
-moves the per-device handling out of the specific drivers to a common
-place. So we can avoid or remove special hacks in the IOMMU drivers.
+I don't think that we can avoid bounce buffering into the guests at all
+(with and without my idea of a paravirtualized IOMMU) when we want to
+handle dma_masks and requests that cross guest physical pages properly.
+
+With mapping/unmapping through hypercalls we add the world-switch
+overhead to the copy-overhead. We can't avoid this when we have no
+hardware support at all. But already with older IOMMUs like Calgary and
+GART we can at least avoid the world-switch. And since, for example,
+every 64 bit capable AMD processor has a GART we can make use of it.
 
 Joerg
 
