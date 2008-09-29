@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYI2RFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752605AbYI2RLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbYI2RFx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYI2RFp
+	id S1752605AbYI2RLR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYI2RLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:05:45 -0400
-Received: from outbound-mail-31.bluehost.com ([69.89.18.151]:36807 "HELO
-	outbound-mail-31.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751355AbYI2RFo (ORCPT
+	Mon, 29 Sep 2008 13:11:06 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:44650 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbYI2RLE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 13:05:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=a0A0q2Cj7d6Cwq9ZKgjRC3iRYOlzKcotlFKJBmpW81a2oa8d226HQmj7nbpIrGH/T97ABGm4rDRBWZt3hlyKRLTtRd9uFaZGgGwhqGnuoLDopK8N9FvBFTGA83c+q4im;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH 7/7] x86: print out irq nr for msi/ht -v2
-Date: Mon, 29 Sep 2008 10:05:02 -0700
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Yinghai Lu <yinghai@kernel.org>, Len Brown <lenb@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <1222323223-23529-1-git-send-email-yhlu.kernel@gmail.com> <20080927185306.GA18619@elte.hu> <20080927190237.GD10186@localhost>
-In-Reply-To: <20080927190237.GD10186@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 29 Sep 2008 13:11:04 -0400
+Subject: setup_per_zone_pages_min(): zone->lock vs. zone->lru_lock
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 29 Sep 2008 19:10:57 +0200
+Message-Id: <1222708257.4723.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809291005.04941.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, September 27, 2008 12:02 pm Cyrill Gorcunov wrote:
-> [Ingo Molnar - Sat, Sep 27, 2008 at 08:53:06PM +0200]
->
-> ...
->
-> A bit offtopic...well...completely offtopic I would say :)
->
-> Ingo maybe you have any PCI specs? I've asked several people
-> for this. Peter adviced to ask HW vendors but I don't have
-> friends who has access to a such docs. Evgeniy Polyakov
-> promised to ask someone but I think there will not be success
-> too :(. I'll ask Maciej too later since now he seems to be
-> quite busy.
+Hi,
 
-I think if you use google you can find the PCI spec in pdf form (search for 
-pci pdf probably).  The MindShare books are also quite good, and cover PCI, 
-PCI-X, and PCI Express in great detail (far more readable than the spec too).
+is zone->lru_lock really the right lock to take in setup_per_zone_pages_min()?
+All other functions in mm/page_alloc.c take zone->lock instead, for working
+with page->lru free-list or PageBuddy().
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+setup_per_zone_pages_min() eventually calls move_freepages(), which is also
+manipulating the page->lru free-list and checking for PageBuddy(). Both
+should be protected by zone->lock instead of zone->lru_lock, if I understood
+that right, or else there could be a race with the other functions in
+mm/page_alloc.c.
+
+We ran into a list corruption bug in free_pages_bulk() once, during memory
+hotplug stress test, but cannot reproduce it easily. So I cannot verify if
+using zone->lock instead of zone->lru_lock would fix it, but to me it looks
+like this may be the problem.
+
+Any thoughts?
+
+BTW, I also wonder if a spin_lock_irq() would be enough, instead of
+spin_lock_irqsave(), because this function should never be called from
+interrupt context, right?
+
+Thanks,
+Gerald
+
+
