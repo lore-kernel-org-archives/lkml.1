@@ -1,175 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbYI2Vzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYI2V7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754165AbYI2Vzr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 17:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYI2Vzi
+	id S1753882AbYI2V7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 17:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYI2V7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 17:55:38 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:43388 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751974AbYI2Vzh (ORCPT
+	Mon, 29 Sep 2008 17:59:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:40392 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbYI2V7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 17:55:37 -0400
-Message-ID: <48E14FE1.7040507@novell.com>
-Date: Mon, 29 Sep 2008 18:00:01 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Mon, 29 Sep 2008 17:59:35 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
+	references:in-reply-to:content-type:content-transfer-encoding;
+	b=HIDytQpmCAqp+1cRPvrQRhUGsQqkTA+uTX9QGyuqui3/1pAPGZxJ6lAi6UPptzoFs
+	/GjDV7oExgYpta3y9FiJg==
+Message-ID: <48E14FB5.9010405@google.com>
+Date: Mon, 29 Sep 2008 14:59:17 -0700
+From: dean gaudet <odo@google.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: linux-rt-users <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, chirag@linux.vnet.ibm.com
-CC: dvhltc@us.ibm.com
-Subject: Re: [BUG][PPC64] BUG in 2.6.26.5-rt9 causing Hang
-References: <20080925123235.GA27916@linux.vnet.ibm.com> <48E1460A.5000504@novell.com> <48E14A00.7060105@novell.com>
-In-Reply-To: <48E14A00.7060105@novell.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB62C0F83C307E6EBA17D6124"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Pardo <pardo@google.com>, linux-kernel@vger.kernel.org, mbligh@google.com,
+       briangrant@google.com, nil@google.com, jyasskin@google.com
+Subject: Re: Faster getcpu() and sched_getcpu()
+References: <af8810200809111648n55e05ac9g286fcd498690432f@mail.gmail.com> <af8810200809231209w7428347neb88094e543a048f@mail.gmail.com> <87wsgwp6gh.fsf@basil.nowhere.org> <48E0834D.6010608@google.com> <20080929145408.GQ25711@one.firstfloor.org> <af8810200809291101r6f3208beua36a4b2d3b5713eb@mail.gmail.com> <20080929205054.GR25711@one.firstfloor.org> <48E14ECE.6080402@google.com>
+In-Reply-To: <48E14ECE.6080402@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB62C0F83C307E6EBA17D6124
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+[attempting resend in plain-text only because thunderbird lost the
+battle vs. vger]
 
-Gregory Haskins wrote:
-> Gregory Haskins wrote:
->  =20
->> Hi Chirag
+dean gaudet wrote:
+> Andi Kleen wrote:
+>> On Mon, Sep 29, 2008 at 11:01:26AM -0700, Pardo wrote:
+>>   
+>>>> [Maybe disable frame pointers for vsyscall.c and the vdso?]
+>>>>       
+>>> IIRC, some vsyscall.c code needs them enabled, so Dean's earlier patch split
+>>>     
 >>
->> Chirag Jog wrote:
->>  =20
->>    =20
->>> Hi Gregory,
->>> We see the following BUG followed by a hang on the latest kernel 2.6.=
-26.5-rt9 on a Power6 blade (PPC64)
->>> It is easily recreated by running the async_handler or sbrk_mutex (re=
-altime tests from ltp) tests.
->>>  =20
->>>    =20
->>>      =20
->> Call me an LTP newbie, but where can I get the sbrk_mutex/async_handle=
-r
->> tests.
->>    =20
-> Ok, I figured out this part.  I needed a newer version of the .rpm from=
-
-> a different repo.  However, both async_handler and sbrk_mutex seem to
-> segfault for me.  Hmm
->  =20
-
-Thanks to help from Darren I got around this issue.  Unfortunately both
-tests pass so I cannot reproduce this issue, nor do I see the problem
-via code inspection.  Ill keep digging but I am currently at a loss.  I
-may need to send you some diagnostic patches to find this, if that is ok
-with you Chirag?
-
--Greg
-
-> ---
->
-> ghaskins@test:~> uname -a
-> Linux test 2.6.26.5-rt9-rt #1 SMP PREEMPT RT Mon Sep 29 14:26:45 EDT
-> 2008 x86_64 x86_64 x86_64 GNU/Linux
->
-> test:/home/ghaskins #
-> /usr/lib64/ltp/testcases/realtime/func/async_handler/async_handler
->
-> -----------------------------------
-> Asynchronous Event Handling Latency
-> -----------------------------------
->
-> jvmsim disabled
-> Running 1000000 iterations
-> Segmentation fault
->
-> ---
->
-> Any ideas?
->
-> -Greg
->
->  =20
->>   I installed the LTP rpm and I dont seem to have tests by that
->> name.  I have a 26.5-rt9 kernel all configured and ready to go but no
->> way to reproduce this issue.  Please advise.
+>> I don't think it really needs it.
 >>
->> Regards,
->> -Greg
+>>   
+>>> vsyscall.c, creating a vsyscall_user.c for code which can run without them.
+>>> Seem reasonable?
+>>>     
 >>
->>
->>  =20
->>    =20
->>> login: cpu 0x2: Vector: 700 (Program Check) at [c0000000e8e875d0]
->>>     pc: c00000000005110c: .pick_next_pushable_task+0x54/0x9c
->>>     lr: c000000000059f50: .push_rt_task+0x44/0x2b4
->>>     sp: c0000000e8e87850
->>>    msr: 8000000000021032
->>>   current =3D 0xc0000000ea5bb2e0
->>>   paca    =3D 0xc000000000608700
->>>     pid   =3D 2811, comm =3D async_handler
->>> kernel BUG at kernel/sched_rt.c:1041! <---------------------
->>> enter ? for help
->>> [link register   ] c000000000059f50 .push_rt_task+0x44/0x2b4
->>> [c0000000e8e87850] c0000000e8e878f0 (unreliable)
->>> [c0000000e8e87900] c00000000005a1dc .push_rt_tasks+0x1c/0x38
->>> [c0000000e8e87980] c00000000005a21c .post_schedule_rt+0x24/0x44
->>> [c0000000e8e87a10] c000000000057cbc .finish_task_switch+0xd0/0x180
->>> [c0000000e8e87ab0] c0000000003b6e88 .__schedule+0x6e0/0x798
->>> [c0000000e8e87b90] c0000000003b7148 .schedule+0xec/0x11c
->>> [c0000000e8e87c10] c0000000003b7a40 .do_nanosleep+0x6c/0xcc
->>> [c0000000e8e87c90] c000000000080738 .hrtimer_nanosleep+0x7c/0x100
->>> [c0000000e8e87d90] c000000000080830 .sys_nanosleep+0x74/0x94
->>> [c0000000e8e87e30] c0000000000086ac syscall_exit+0x0/0x40
->>> --- Exception: c00 (System Call) at 0000008026449844
->>> SP (400014185f0) is in userspace
->>>
->>>
->>> This is generated by the BUG_ON lines in the pick_next_pushable funct=
-ion
->>> introduced by the sched-only-push-once-per-queue.patch .
->>>
->>> The -rt kernel prior to this patch didnot give such BUGes.
->>>
->>> All this was tried with
->>> CONFIG_GROUP_SCHED=3DN
->>> CONFIG_RT_GROUP_SCHED=3DN
->>>
->>>
->>> Setting the options
->>> CONFIG_GROUP_SCHED=3Dy
->>> CONFIG_RT_GROUP_SCHED=3DY,
->>> seems to solve the problem.
->>>
->>>
->>>
->>>  =20
->>>    =20
->>>      =20
->>  =20
->>    =20
+>> Seems unnecessarily complicated.
+>>   
 >
+> i disagree that it's complicated to have two files, and disagree that
+> it's unnecessary to have two files.
 >
->  =20
+> userland code does not have the same limitations/conventions as kernel
+> code.  the ABIs are completely different.
+>
+> -dean
 
-
-
---------------enigB62C0F83C307E6EBA17D6124
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkjhT+EACgkQlOSOBdgZUxm1pQCePZF5i6Frqe3grrmFvyiHiIkf
-5dkAoI9Koi7jHmEMTjd7Bthe2OrVAW4R
-=kPRO
------END PGP SIGNATURE-----
-
---------------enigB62C0F83C307E6EBA17D6124--
