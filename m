@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYI2RSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbYI2RT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbYI2RSR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYI2RSF
+	id S1753519AbYI2RT4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYI2RTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:18:05 -0400
-Received: from styx.suse.cz ([82.119.242.94]:58330 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750855AbYI2RSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 13:18:05 -0400
-Date: Mon, 29 Sep 2008 19:18:03 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-cc: LKML <linux-kernel@vger.kernel.org>, agospoda@redhat.com,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Graham, David" <david.graham@intel.com>, Karsten Keil <kkeil@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, chris.jones@canonical.com,
-       arjan@linux.jf.intel.com
-Subject: RE: e1000e NVM corruption issue status
-In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52064B1603@orsmsx418.amr.corp.intel.com>
-Message-ID: <alpine.LNX.1.10.0809291917220.4022@jikos.suse.cz>
-References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com> <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com> <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com> <Pine.WNT.4.63.0809251913300.1736@jbrandeb-desk.amr.corp.intel.com>
- <alpine.LNX.1.10.0809291740140.4022@jikos.suse.cz> <alpine.LNX.1.10.0809291817130.4022@jikos.suse.cz> <36D9DB17C6DE9E40B059440DB8D95F52064B1603@orsmsx418.amr.corp.intel.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Mon, 29 Sep 2008 13:19:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49754 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750819AbYI2RTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 13:19:48 -0400
+Message-ID: <48E10E4F.3000201@redhat.com>
+Date: Mon, 29 Sep 2008 13:20:15 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jason Czerak <jason@czerak.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: mounted file system bottleneck
+References: <325d52860809290641haddf616xfe9c98912352ba22@mail.gmail.com> <325d52860809290645p7526b318h7ff9b7e76570f65f@mail.gmail.com>
+In-Reply-To: <325d52860809290645p7526b318h7ff9b7e76570f65f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008, Brandeburg, Jesse wrote:
+Jason Czerak wrote:
+> I believe I found some sort of bottleneck with mounted networked file
+> systems over 10Gig Ethernet.  I've posted a question to linux-net with
+> zero response since Friday.
 
-> > We are missing 'break;' after the memset, and that is where the
-> > hanging machine comes from (the loop keeps spinning forever), right?
-> > I will verify this right away.
-> Yep, I think you're right.  I'm almost done prepping our current patch
-> series, I'll include that fix.  Please let me know if your test shows it
-> fixes it.
+You're posting a support question to a developer list.  This is frowned upon. 
+You might get more attention here if you conduct a more scientific test and 
+report it in a more scientific fashion.
 
-Yes, it fixed the hang. It crashed later though
+> http://www.uwsg.indiana.edu/hypermail/linux/net/0809.3/0013.html
 
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000050
-IP: [<ffffffffa045211b>] inet6_net_init+0x98/0xf2 [ipv6]
-PGD 39d15067 PUD 39d14067 PMD 0
-Oops: 0000 [1] SMP
-last sysfs file: 
-/sys/devices/pci0000:00/0000:00:1e.0/0000:15:00.0/0000:16:00.0/local_cpus
+This is also frowned upon.  Please send your data directly to the list, unless 
+it is absolutely enormous.
 
-which is probably related I guess.
+> Could a few of you folks here take a look at this and tell me what you
+> think is the issue?
 
--- 
-Jiri Kosina
-SUSE Labs
+Offhand, I'd guess atime updates.  Unless you're seeing this on a new upstream 
+kernel, you should contact your vendor for support.  Or NetApp.
+
+-- Chris
