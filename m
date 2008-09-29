@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752341AbYI2Opn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbYI2Osw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752341AbYI2Opn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 10:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYI2Ope
+	id S1752892AbYI2Osw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 10:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYI2Osp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 10:45:34 -0400
-Received: from sandeen.net ([209.173.210.139]:14066 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751482AbYI2Opd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 10:45:33 -0400
-X-Greylist: delayed 567 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Sep 2008 10:45:33 EDT
-Message-ID: <48E0EA0B.7000701@sandeen.net>
-Date: Mon, 29 Sep 2008 09:45:31 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Takashi Sato <t-sato@yk.jp.nec.com>, Ric Wheeler <rwheeler@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-fsdevel@vger.kernel.org,
-       dm-devel@redhat.com, viro@ZenIV.linux.org.uk,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, axboe@kernel.dk,
-       mtk.manpages@googlemail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] Add timeout feature
-References: <20080908205337t-sato@mail.jp.nec.com> <20080908171119.GB22521@infradead.org> <48DBFD42.6030307@redhat.com> <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp> <20080929141326.GA31781@infradead.org> <48E0E7D4.1090409@sandeen.net> <20080929143749.GA13286@infradead.org>
-In-Reply-To: <20080929143749.GA13286@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Sep 2008 10:48:45 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48155 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751411AbYI2Oso (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 10:48:44 -0400
+Date: Mon, 29 Sep 2008 16:54:08 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: dean gaudet <odo@google.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Pardo <pardo@google.com>,
+       linux-kernel@vger.kernel.org, mbligh@google.com, briangrant@google.com,
+       nil@google.com, jyasskin@google.com
+Subject: Re: Faster getcpu() and sched_getcpu()
+Message-ID: <20080929145408.GQ25711@one.firstfloor.org>
+References: <af8810200809111648n55e05ac9g286fcd498690432f@mail.gmail.com> <af8810200809231209w7428347neb88094e543a048f@mail.gmail.com> <87wsgwp6gh.fsf@basil.nowhere.org> <48E0834D.6010608@google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48E0834D.6010608@google.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Mon, Sep 29, 2008 at 09:36:04AM -0500, Eric Sandeen wrote:
->> Christoph Hellwig wrote:
->>> On Fri, Sep 26, 2008 at 05:52:35PM +0900, Takashi Sato wrote:
->>>> I think that your concern is that the freezer cannot recognize the occurrence
->>>> of a timeout and it continues the backup process and the backup data is
->>>> corrupted finally.
->>> What timeout should happen?  the freeze ioctl must not return until the
->>> filesystem is a clean state and all writes are blocked.
->> The suggestion was that *UN*freeze would return ETIMEDOUT if the
->> filesystem had already unfrozen itself, I think.  That way you know that
->> the snapshot you just took is worthless, at least.
+On Mon, Sep 29, 2008 at 12:27:09AM -0700, dean gaudet wrote:
+> Andi Kleen wrote:
+> > I'm still not sure why you say no redzone is that expensive? Do you
+> > have numbers?  I know it's a few instructions, but it shouldn't 
+> > be that expensive.
+> >
+> >   
 > 
-> But why would the filesystem every unfreeze itself?  That defeats the
-> whole point of freezing it.
+> it depends on the processor involved and the kernel config options --
+> i.e. if frame pointers are enabled then the stack frame guarantees a
+> store operation (push rbp) and on processors which do memops in-order
+> this delays the other memops in the vsyscall (i.e. testing the cache or
+> executing SIDT).  it was 2 or 3 cycles difference in most cases iirc.
 
-I agree.  Was just trying to clarify the above point.
+Ok frame pointers are always a performance disasters on some CPUs.
+Perhaps they should be just unconditionally disabled for vsyscall.c
+and the vdso
 
-But there have been what, 12 submissions now, with the unfreeze timeout
-in place so it's a persistent theme ;)
-
-Perhaps a demonstration of just how easy (or not easy) it is to deadlock
-a filesystem by freezing the root might be in order, at least.
-
-And even if it is relatively easy, I still maintain that it is the
-administrator's role to not inflict damage on the machine being
-administered.  There are a lot of potentially dangerous tools at root's
-disposal; why this particular one needs a nanny I'm still not quite sure.
-
--Eric
+-Andi
+-- 
+ak@linux.intel.com
