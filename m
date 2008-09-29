@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbYI2Xk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYI2Xkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754114AbYI2Xk3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 19:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbYI2XkV
+	id S1754681AbYI2Xkw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 19:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754340AbYI2Xkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 19:40:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:24096 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbYI2XkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 19:40:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vgaWdpsq2QzJNJu5ksEWHBXt+wUahqhbQpxa4MqmXO+xCA3YN0yUvWF08AZpu3Qx8C
-         k+V6C3Hu6eGP06y0WixI7j66LO1WKTIYU46AeFH9uV1ULGO8RTY0XePKtLQD5Gdv6oBC
-         DJ781AeY+0vo5pr5d1O1nsdPZ7Xqscpq5AvCU=
-Date: Tue, 30 Sep 2008 01:40:05 +0200
-From: Karol Lewandowski <lmctlx@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Karol Lewandowski <lmctlx@gmail.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: BUG: Commit 1b7fc5aae8867046f8d3d45808309d5b7f2e036a makes special keys on my T21 unusable after resume
-Message-ID: <20080929234005.GA2616@localdomain>
-References: <20080929221628.GA3082@localdomain> <200809300025.52904.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809300025.52904.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 29 Sep 2008 19:40:43 -0400
+Received: from waste.org ([66.93.16.53]:55210 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752353AbYI2Xkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 19:40:42 -0400
+Subject: Re: [RFC PATCH 1/2] Shrink compat_ioctl.c
+From: Matt Mackall <mpm@selenic.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080929233842.GW25711@one.firstfloor.org>
+References: <1222730830.23159.12.camel@calx>
+	 <20080929233842.GW25711@one.firstfloor.org>
+Content-Type: text/plain
+Date: Mon, 29 Sep 2008 18:38:02 -0500
+Message-Id: <1222731482.23159.23.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 12:25:52AM +0200, Rafael J. Wysocki wrote:
 
-> Can you see if the patch at
-> http://bugzilla.kernel.org/attachment.cgi?id=18044&action=view
-> (against current -git) helps?
+On Tue, 2008-09-30 at 01:38 +0200, Andi Kleen wrote:
+> On Mon, Sep 29, 2008 at 06:27:10PM -0500, Matt Mackall wrote:
+> > I'm throwing this out untested as I don't have a mixed 64/32 system
+> > handy at the moment.
+> 
+> Makes sense (assuming it works, haven't tested)
+> 
+> > compat_ioctl: shrink structures
+> > 
+> > Initially, compat_ioctl.c has a ~18k table of translated ioctls.
+> > Each table entry is 24 bytes but we can shrink this to 16:
+> > 
+> > - use short table indexes rather than a pointer for .next values
+> > - use unsigned ints for cmd numbers (they're 32-bit ioctls, after all)
+> > 
+> > In addition, there's a 2k hash table that we can do away with simply
+> > by hashifying the main table in place at init time.
+> 
+> You mean by using a closed hash?
 
-It doesn't help (and -rc8 doesn't help either).
+The original hash table was 256 pointers into the main table. I simply
+rearrange the main table so the first 256 entries have an appropriate
+hash. Basically:
 
-Thanks.
+for i in len(table):
+  h = hash(table[i])
+  swap(table[i], table[hash])
+
+At the end of this loop, table[0:256] will contain an appropriate table
+entry, if it exists. So no secondary table is needed.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
