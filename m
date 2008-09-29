@@ -1,88 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYI2XWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbYI2X3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbYI2XWF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 19:22:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbYI2XVy
+	id S1753656AbYI2X3v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 19:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYI2X3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 19:21:54 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:46706 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751477AbYI2XVy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 19:21:54 -0400
-Subject: Re: Use CPUID to communicate with the hypervisor.
-From: Zachary Amsden <zach@vmware.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Alok Kataria <akataria@vmware.com>, Gerd Hoffmann <kraxel@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Daniel Hecht <dhecht@vmware.com>
-In-Reply-To: <48E1486C.3060306@goop.org>
-References: <1222472815.29886.43.camel@alok-dev1>
-	 <48E090B6.2080809@redhat.com> <1222710924.30247.21.camel@alok-dev1>
-	 <48E1227B.9040809@redhat.com> <1222717085.30247.44.camel@alok-dev1>
-	 <0B53E02A2965CE4F9ADB38B34501A3A15726E15A@orsmsx505.amr.corp.intel.com>
-	 <48E1437D.7080606@zytor.com>  <48E1486C.3060306@goop.org>
+	Mon, 29 Sep 2008 19:29:43 -0400
+Received: from waste.org ([66.93.16.53]:51413 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751337AbYI2X3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 19:29:42 -0400
+Subject: [RFC PATCH 1/2] Shrink compat_ioctl.c
+From: Matt Mackall <mpm@selenic.com>
+To: Andi Kleen <andi@firstfloor.org>, Pavel Machek <pavel@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Mon, 29 Sep 2008 16:20:05 -0700
-Message-Id: <1222730405.27056.237.camel@bodhitayantram.eng.vmware.com>
+Date: Mon, 29 Sep 2008 18:27:10 -0500
+Message-Id: <1222730830.23159.12.camel@calx>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-29 at 14:28 -0700, Jeremy Fitzhardinge wrote:
-> > Unless there is a central authority assigning these, "we" can do all
-> > we want, enough people will not pay attention.
-> >
-> > Basically, there needs to be a standards document that describes the
-> > architecture, *and* needs to either have universal buy-in with all the
-> > vendors or imposed by an authority with enough clout to do so (Intel
-> > might.)
-> ...
+I'm throwing this out untested as I don't have a mixed 64/32 system
+handy at the moment.
 
-> I think using fixed offsets is unwise, since there's already contention
-> for the same leaves.  Making sure that each block of leaves (where a
-> block is 16, 256 or some other number of leaves) is self-describing via
-> ABI signatures is the only sane way to go.  There's still the issue of
+compat_ioctl: shrink structures
 
-Aren't we overthinking / overdesigning this a bit?  It's not rocket
-science.  We'd like to have a leaf set aside for TSC frequency, and
-maybe another leaf in the future.  We think other vendors might find a
-static clock frequency leaf to be useful, so if that happens to be the
-case, feel free to re-use the leaf.
+Initially, compat_ioctl.c has a ~18k table of translated ioctls.
+Each table entry is 24 bytes but we can shrink this to 16:
 
-We don't expect to see lots of proliferation of CPU leaves at all, in
-fact, we'd be flummoxed to propose more than one right now.  So
-basically a nicely written comment section explaining how the SW CPUID
-registers are layed out is probably sufficient.  Other vendors can add
-to it as they see fit, and Linux itself can be the central standard
-body.  After all, it's what we all work on, and it makes sense for
-everyone here, even MS, to have the software leaves defined in a public
-work.
+- use short table indexes rather than a pointer for .next values
+- use unsigned ints for cmd numbers (they're 32-bit ioctls, after all)
 
-The whole thing is software defined so it's not a big deal if one or all
-parties eventually don't play well with others, grow up to become
-bullies with ADD, or simply autistic children who ignore the whole
-thing.  You can always make detection vendor dependent when that
-happens.
+In addition, there's a 2k hash table that we can do away with simply
+by hashifying the main table in place at init time.
 
-Right now there's nothing shockingly vendor dependent, just a whole lot
-of complicated proposals about how to define what the bits are going to
-define and not enough bits of information to actually express.  It seems
-perfectly okay for now to have new leaf proposals defined by fiat for
-now.
+This saves about 6k data and 2k BSS.
 
-As long as there is a vendor-ID leaf, nobody is blocking any forward
-progress by adding a new non-conflicting leaf.  We can always add the
-meta-leafs required for decoding if something tangible materializes, but
-for now the TSC leaf seems pretty useful and I would probably want to
-proclaim it by fatwa, if I had such a power.
+diff -r f6d1daaf90b2 -r b055e64aea17 fs/compat_ioctl.c
+--- a/fs/compat_ioctl.c	Mon Sep 29 17:28:28 2008 -0500
++++ b/fs/compat_ioctl.c	Mon Sep 29 17:28:41 2008 -0500
+@@ -1825,21 +1825,21 @@
+ 					unsigned long, struct file *);
+ 
+ struct ioctl_trans {
+-	unsigned long cmd;
+ 	ioctl_trans_handler_t handler;
+-	struct ioctl_trans *next;
++	unsigned int cmd;
++	unsigned short next;
+ };
+ 
+ #define HANDLE_IOCTL(cmd,handler) \
+-	{ (cmd), (ioctl_trans_handler_t)(handler) },
++	{ (ioctl_trans_handler_t)(handler), (cmd)},
+ 
+ /* pointer to compatible structure or no argument */
+ #define COMPATIBLE_IOCTL(cmd) \
+-	{ (cmd), do_ioctl32_pointer },
++	{ do_ioctl32_pointer, (cmd) },
+ 
+ /* argument is an unsigned long integer, not a pointer */
+ #define ULONG_IOCTL(cmd) \
+-	{ (cmd), (ioctl_trans_handler_t)sys_ioctl },
++	{ (ioctl_trans_handler_t)sys_ioctl, (cmd) },
+ 
+ /* ioctl should not be warned about even if it's not implemented.
+    Valid reasons to use this:
+@@ -1850,7 +1850,7 @@
+    Most other reasons are not valid. */
+ #define IGNORE_IOCTL(cmd) COMPATIBLE_IOCTL(cmd)
+ 
+-static struct ioctl_trans ioctl_start[] = {
++static struct ioctl_trans ioctl_table[] = {
+ /* compatible ioctls first */
+ COMPATIBLE_IOCTL(0x4B50)   /* KDGHWCLK - not in the kernel, but don't complain */
+ COMPATIBLE_IOCTL(0x4B51)   /* KDSHWCLK - not in the kernel, but don't complain */
+@@ -2728,10 +2728,9 @@
+ #endif
+ };
+ 
+-#define IOCTL_HASHSIZE 256
+-static struct ioctl_trans *ioctl32_hash_table[IOCTL_HASHSIZE];
++#define IOCTL_HASHSIZE 256 /* must be less than table size */
+ 
+-static inline unsigned long ioctl32_hash(unsigned long cmd)
++static inline unsigned int ioctl32_hash(unsigned int cmd)
+ {
+ 	return (((cmd >> 6) ^ (cmd >> 4) ^ cmd)) % IOCTL_HASHSIZE;
+ }
+@@ -2770,7 +2769,7 @@
+ {
+ 	struct file *filp;
+ 	int error = -EBADF;
+-	struct ioctl_trans *t;
++	int t;
+ 	int fput_needed;
+ 
+ 	filp = fget_light(fd, &fput_needed);
+@@ -2815,8 +2814,8 @@
+ 		break;
+ 	}
+ 
+-	for (t = ioctl32_hash_table[ioctl32_hash(cmd)]; t; t = t->next) {
+-		if (t->cmd == cmd)
++	for (t = ioctl32_hash(cmd); t >= 0; t = ioctl_table[t].next) {
++		if (ioctl_table[t].cmd == cmd)
+ 			goto found_handler;
+ 	}
+ 
+@@ -2837,9 +2836,9 @@
+ 	goto out_fput;
+ 
+  found_handler:
+-	if (t->handler) {
++	if (ioctl_table[t].handler) {
+ 		lock_kernel();
+-		error = t->handler(fd, cmd, arg, filp);
++		error = ioctl_table[t].handler(fd, cmd, arg, filp);
+ 		unlock_kernel();
+ 		goto out_fput;
+ 	}
+@@ -2852,34 +2851,25 @@
+ 	return error;
+ }
+ 
+-static void ioctl32_insert_translation(struct ioctl_trans *trans)
+-{
+-	unsigned long hash;
+-	struct ioctl_trans *t;
+-
+-	hash = ioctl32_hash (trans->cmd);
+-	if (!ioctl32_hash_table[hash])
+-		ioctl32_hash_table[hash] = trans;
+-	else {
+-		t = ioctl32_hash_table[hash];
+-		while (t->next)
+-			t = t->next;
+-		trans->next = NULL;
+-		t->next = trans;
+-	}
+-}
+-
+ static int __init init_sys32_ioctl(void)
+ {
+ 	int i;
++	unsigned long hash;
++	struct ioctl_trans t;
+ 
+-	for (i = 0; i < ARRAY_SIZE(ioctl_start); i++) {
+-		if (ioctl_start[i].next) {
+-			printk("ioctl translation %d bad\n",i);
+-			return -1;
+-		}
++	/* hash-order table in-place */
++	for (i = 0; i < ARRAY_SIZE(ioctl_table); i++) {
++		hash = ioctl32_hash(ioctl_table[i].cmd);
++		t = ioctl_table[hash];
++		ioctl_table[hash] = ioctl_table[i];
++		ioctl_table[i] = t;
++	}
+ 
+-		ioctl32_insert_translation(&ioctl_start[i]);
++	/* link entries outside of hash area */
++	for (i = IOCTL_HASHSIZE; i < ARRAY_SIZE(ioctl_table); i++) {
++		hash = ioctl32_hash(ioctl_table[i].cmd);
++		ioctl_table[i].next = ioctl_table[hash].next;
++		ioctl_table[hash].next = i;
+ 	}
+ 	return 0;
+ }
 
-Zach
+
+-- 
+Mathematics is the supreme nostalgia of our time.
 
