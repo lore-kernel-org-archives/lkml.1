@@ -1,89 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbYI2Uzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbYI2VDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753885AbYI2Uzv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 16:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYI2Uzn
+	id S1753895AbYI2VDZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 17:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYI2VDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 16:55:43 -0400
-Received: from mga09.intel.com ([134.134.136.24]:43692 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751482AbYI2Uzm convert rfc822-to-8bit (ORCPT
+	Mon, 29 Sep 2008 17:03:17 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:9280 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbYI2VDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 16:55:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
-   d="scan'208";a="341906981"
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: "akataria@vmware.com" <akataria@vmware.com>,
-       Gerd Hoffmann <kraxel@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
-       Daniel Hecht <dhecht@vmware.com>
-Date: Mon, 29 Sep 2008 13:55:19 -0700
-Subject: RE: Use CPUID to communicate with the hypervisor.
-Thread-Topic: Use CPUID to communicate with the hypervisor.
-Thread-Index: Ackiav0P/IqPiFqhRnO6hg0TbjhDtwAA6w9Q
-Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A15726E15A@orsmsx505.amr.corp.intel.com>
-References: <1222472815.29886.43.camel@alok-dev1>
-	 <48E090B6.2080809@redhat.com> <1222710924.30247.21.camel@alok-dev1>
-	 <48E1227B.9040809@redhat.com> <1222717085.30247.44.camel@alok-dev1>
-In-Reply-To: <1222717085.30247.44.camel@alok-dev1>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 29 Sep 2008 17:03:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=pTMrggkquffB81tQZIZxkdS4AhSSOLtf7FNG83e3O0sdOPot+PwoyUHOsaAMWezGvY
+         lmBX214nBzWvL+MQ20ii+luCV8cdF/rwyE6wDUo7gMXDNpP7jEohIDcjRq+BtPOf0h11
+         U9nqR0O/SYk9DslaFflvd/3q2XrK9OUaNO82E=
+Message-ID: <4727185d0809291403w38422338p3ffe2a1c27c39939@mail.gmail.com>
+Date: Mon, 29 Sep 2008 23:03:14 +0200
+From: "Vincent Legoll" <vincent.legoll@gmail.com>
+To: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] PCI probing debug message uniformization
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/29/2008 12:38:05 PM, Alok Kataria wrote:
-> On Mon, 2008-09-29 at 11:46 -0700, Gerd Hoffmann wrote:
-> > Alok Kataria wrote:
-> > > Hi Gerd,
-> > >
-> > > > Shouldn't you check the hypervisor signature here?
-> > >
-> > > Nope the whole idea of not checking the hypervisor signature is
-> > > that we should keep this interface generic.
-> >
-> > Nice idea.  Problem with that is that approach is that we don't have
-> > full control here.  It probably isn't that a hard to have vmware,
-> > xen and kvm agree here, given vmware proposes this and for xen+kvm
-> > one can send patches.
->
-> Yep.
-> And please note that this does allow either Xen/KVM to propose a new
-> leaf and the rest of the hypervisor players can decide to export that
-> leaf or return a zero value.
->
+Hello,
 
-For example, we can set the following ranges so that so that each VMM vender can define and implement features avoiding conflicts:
-vmware to define 0x4000001X
-xen to define 0x4000002X
-kvm to define 0x4000003X
-...
+Here is a patch to uniformize PCI probing debug messages at
+boot with dev_printk() intead of manual printk()
 
-The point here is that all the features are generic because we don't make them exclusive. To that end, we don't check the signature. Whatever common features can be found in the above, and each hypervisor can choose to implement what was defined by other hypervisors.
+for example, it goes from the mixed-style:
 
-Detection of the feature 0x400000XY is done by:
-1.  Get EAX from Leaf 0x4000000000, Hypervisor CPUID information. EAX returns the maximum input value for hypervisor CPUID info.
+PCI: 0000:00:1b.0 reg 10 64bit mmio: [f4280000, f4283fff]
+pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
 
-    If EAX < 0x400000XY, then the feature is not available.
+to uniform:
 
-2.  Get EAX from the target Leaf 0x400000XY by doing cpuid_eax(0x400000XY).
+pci 0000:00:1b.0: reg 10 64bit mmio: [f4280000, f4283fff]
+pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
 
-    If (EAX == 0), the feature is not implemented.
+If people prefer the UPPERCASE "PCI:" prefix from dev_printk(),
+that would be matter for another patch...
 
-If the hypervisor does not implement a particular feature specified by 0x400000XN and 0x400000XN < 0x400000XY, the hypervisor needs to return 0 in EAX with cpuid_eax(0x400000XN) (XN > 0).
+I'm currently running the kernel with that patch applied, and
+diffed bootlog, everything looks OK
 
-             .
-Jun Nakajima | Intel Open Source Technology Center
+Signed-off-by: Vincent Legoll <vincent.legoll@gmail.com>
+
+-- 
+Vincent Legoll
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 36698e5..2acb43d 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -304,8 +304,9 @@ static int __pci_read_base(struct pci_dev *dev,
+enum pci_bar_type type,
+ 		} else {
+ 			res->start = l64;
+ 			res->end = l64 + sz64;
+-			printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
+-				pci_name(dev), pos, (unsigned long long)res->start,
++			dev_printk(KERN_DEBUG, &dev->dev,
++				"reg %x 64bit mmio: [%llx, %llx]\n", pos,
++				(unsigned long long)res->start,
+ 				(unsigned long long)res->end);
+ 		}
+ 	} else {
+@@ -316,8 +317,8 @@ static int __pci_read_base(struct pci_dev *dev,
+enum pci_bar_type type,
+
+ 		res->start = l;
+ 		res->end = l + sz;
+-		printk(KERN_DEBUG "PCI: %s reg %x %s: [%llx, %llx]\n", pci_name(dev),
+-			pos, (res->flags & IORESOURCE_IO) ? "io port":"32bit mmio",
++		dev_printk(KERN_DEBUG, &dev->dev, "reg %x %s: [%llx, %llx]\n", pos,
++			(res->flags & IORESOURCE_IO) ? "io port" : "32bit mmio",
+ 			(unsigned long long)res->start, (unsigned long long)res->end);
+ 	}
+
+@@ -389,8 +390,8 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 			res->start = base;
+ 		if (!res->end)
+ 			res->end = limit + 0xfff;
+-		printk(KERN_DEBUG "PCI: bridge %s io port: [%llx, %llx]\n",
+-			pci_name(dev), (unsigned long long) res->start,
++		dev_printk(KERN_DEBUG, &dev->dev, "bridge io port: [%llx, %llx]\n",
++			(unsigned long long) res->start,
+ 			(unsigned long long) res->end);
+ 	}
+
+@@ -403,8 +404,8 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
+ 		res->start = base;
+ 		res->end = limit + 0xfffff;
+-		printk(KERN_DEBUG "PCI: bridge %s 32bit mmio: [%llx, %llx]\n",
+-			pci_name(dev), (unsigned long long) res->start,
++		dev_printk(KERN_DEBUG, &dev->dev, "bridge 32bit mmio: [%llx, %llx]\n",
++			(unsigned long long) res->start,
+ 			(unsigned long long) res->end);
+ 	}
+
+@@ -441,8 +442,8 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) |
+IORESOURCE_MEM | IORESOURCE_PREFETCH;
+ 		res->start = base;
+ 		res->end = limit + 0xfffff;
+-		printk(KERN_DEBUG "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n",
+-			pci_name(dev), (res->flags & PCI_PREF_RANGE_TYPE_64) ? "64" : "32",
++		dev_printk(KERN_DEBUG, &dev->dev, "bridge %sbit mmio pref: [%llx, %llx]\n",
++			(res->flags & PCI_PREF_RANGE_TYPE_64) ? "64" : "32",
+ 			(unsigned long long) res->start, (unsigned long long) res->end);
+ 	}
+ }
