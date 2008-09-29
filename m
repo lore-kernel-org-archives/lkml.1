@@ -1,82 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbYI2JL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYI2JNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754160AbYI2JL1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 05:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbYI2JLT
+	id S1754201AbYI2JNX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 05:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYI2JNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 05:11:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:48505 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbYI2JLS (ORCPT
+	Mon, 29 Sep 2008 05:13:16 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:39242 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752196AbYI2JNP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 05:11:18 -0400
+	Mon, 29 Sep 2008 05:13:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=vqiOrGcNA6kFDkIo4+Mesz+zDzeXDHDOJq1mO3qq+B7QttKD59dA8eEhBV/u3D3wjW
-         vo80iFAX/up3Q1HGJ67sXdgr9/sh5CJnjF7YNaf/ik+fD7k0kda+8FfrOgxzyt08w1Zz
-         8PI8nOYvTuhAQh05nGyyqZuTNKJy3qGiXrB+I=
-Message-ID: <c62985530809290211l7df01459lf80456ab98fc6ed0@mail.gmail.com>
-Date: Mon, 29 Sep 2008 11:11:15 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Pekka Paalanen" <pq@iki.fi>
-Subject: Re: [Path -tip 1/3] Tracing/ftrace: Change the type of the print_line callback
-Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080928191918.1b26c0ab@daedalus.pq.iki.fi>
+        b=ZSUGZnbfbT3ry7cfIDWzKm060E9FcGfy0CHY5RfsSqSK/r7MzDgdmY3vBrgbH2SnxH
+         beONuuWPokjFJaSU0fmrX1RyoeMskf7jwVLF5E9Xf7wgjQAuI8D7HxJ4Rt1ETuBzfHFo
+         6qkiRrLMrEQell5jtmbScDEnLCnwJfVqzMC7I=
+Message-ID: <19f34abd0809290213m54a2c485p5917fcd46747ad6@mail.gmail.com>
+Date: Mon, 29 Sep 2008 11:13:14 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [GIT PULL] kmemcheck fixlets (for -tip)
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080929085512.GA2190@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <48DCFEE1.4010102@gmail.com>
-	 <20080928191918.1b26c0ab@daedalus.pq.iki.fi>
+References: <20080928180652.GA8500@localhost.localdomain>
+	 <20080929085512.GA2190@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/28 Pekka Paalanen <pq@iki.fi>:
-> I might have chosen names like TRACE_PRINT_{RETRY,DONE,DEFAULT_FORMAT},
-> but it's your call. I'm not sure which one is more self-explanatory
-> when you see a "return TRACE_...;" or "if (ret == TRACE_...)"
+On Mon, Sep 29, 2008 at 10:55 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> FYI, i've reactivated kmemcheck on one of the -tip auto-test boxes
+> earlier today and it's looking good so far - for example a 32-bit
+> allyesconfig-ish config booted in just fine with kmemcheck enabled.
+> Also, the box is very usable interactively - while previous one could
+> always tell whether there's kmemcheck active.
 
-Hmm yes that's perhaps more explicit.
+Oops. Probably kmemcheck was not enabled (for all the right caches).
+Here's what may go wrong:
+
+1. kmemcheck is in one-shot mode. Only one error is reported; after
+that, box will start returning to normal speed.
+2. SLUB debugging was enabled. kmemcheck will not track "debugged"
+caches, so I suggest turning SLUB off in kernel config, or by booting
+with "slub_debug=-". But I think that SLUB debug can be turned off in
+kernel config as well, which means that your randconfig testing will
+hit both cases eventually.
+
+>
+> [ only one CPU is active, but we knew that. We've still got this
+>  test-commit:
+>
+>     21d01a4: x86: add functions for duplicating page tables
+>
+>  it's not in tip/master but we still have it around. ]
+>
+> btw., is there any easy way to tell from within a script what the
+> current status of kmemcheck is? In particular, whether it's running.
+> Normally i have this in the syslog:
+>
+>  [    0.448022] kmemcheck: "Bugs, beware!"
+>  [    0.452002] kmemcheck: Limiting number of CPUs to 1.
+>
+> but this time the log was too large so this bit was snipped out and i
+> was unsure about it - needed a second bootup with a larger buffer to
+> make sure. With lockdep we've got the 'debug_locks' /proc/lockdep_stats.
+>
+
+You can read /proc/sys/kernel/kmemcheck. We also set a per-cache flag
+in slabs, so I think you can get some information from SLUB sysfs. But
+I agree -- it is not always easy to tell what kmemcheck is actually
+doing. Maybe some counters and stats would be appropriate.
+
+> also, all kmemcheck warnings follow the usual WARN_ON() format, so that
+> automated tests can pick it up, correct? -tip testing does so many
+> bootups that there's no chance to notice non-system-crashing bugs and
+> printouts but via automated means.
+
+Uhm, not correct. We need a few more infos (like read size, shadow,
+etc.), also the stacktraces are saved, so the default stacktrace of
+WARN is useless. But we can certainly try to emulate it. What text
+should I insert in order for your scripts to pick it up?
+
+Thanks!
 
 
-> Shouldn't the return type be bool?
-> If it's not, reading this function makes me wonder about the conversion
-> from enum to int, i.e. what is the meaning of the int.
+Vegard
 
-Actually it should be enum print_line_t. I forgot to change its type.
-But we need to check its return value as an enum print_line_t.
+PS: Awaiting your fatal system crashing reports ;-)
 
-> It would be shorter to write
-> if (ret != TRACE_TYPE_UNHANDLED)
-> and then one could even
-> return (ret == TRACE_TYPE_HANDLED);
-
-Yes, I corrected it in my "week-end patch" :-)
-
-> Do these actually need checking? I don't think
-> the default print functions would ever return
-> TRACE_TYPE_UNHANDLED, could they?
-> And even if they did, do all the different default print
-> functions not handle the same set of entry types?
-
-At this moment they don't. But I just wanted to set a security in case
-of possible future changes in these functions.
-
-
-> We have to find a proper way to prevent the pipe from closing
-> early. I'm trying to look into this. I'd like you to leave
-> that last hunk out. Other than that, very good.
-
-I made a new patch this week-end and I found a way to prevent from
-closing the pipe.
-I will just change a bit my patch in the base of your comments.
-
-> btw. there might be a corner case, when a single line does not
-> fit even into an empty struct trace_seq in tracing_read_pipe(),
-> but I haven't thought of that yet. I'd expect it to hang.
-
-I should look at this possible issue too. I didn't think about it yet.
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
