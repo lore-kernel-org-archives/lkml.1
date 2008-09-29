@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbYI2SaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751727AbYI2ScS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753492AbYI2SaI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 14:30:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYI2S34
+	id S1751727AbYI2ScS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 14:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYI2ScE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 14:29:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53683 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751876AbYI2S34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 14:29:56 -0400
-From: Adam Jackson <ajax@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Adam Jackson <ajax@redhat.com>
-Subject: [PATCH] ACPI: Reduce blacklist-by-date failures to KERN_INFO
-Date: Mon, 29 Sep 2008 14:29:54 -0400
-Message-Id: <1222712994-1017-1-git-send-email-ajax@redhat.com>
+	Mon, 29 Sep 2008 14:32:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:51275 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbYI2ScB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 14:32:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=JLPWTZ9AbKfXG28v519P8knh51/NYfJuwwRty0Lcv3MbX7qcDqsUi4kebutyprgu6q
+         3skDIOE0V8ZaxXoOrPJUlZJ3SqNfnS/nqWqjcE5/bp7UE9KvvGt1ZV3ISjwzVtqQ2E+y
+         ZLGNnC4XSr8qehzFdHmvWfb6X9YD1N/QXCxEw=
+Message-ID: <48E11F1E.4060809@gmail.com>
+Date: Mon, 29 Sep 2008 20:31:58 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: mingo@elte.hu
+CC: pq@iki.fi, linux-kernel@vger.kernel.org, rostedt@goodmis.org
+Subject: [PATCH -tip 4/4] Tracing/ftrace: adapt the boot tracer to the new
+ print_line type
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No reason to punish quiet boot for these.
+This patch adapts the boot tracer to the new type of the
+print_line callback.
+It still relays entries it doesn't support to default output
+functions.
 
-Signed-off-by: Adam Jackson <ajax@redhat.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- drivers/acpi/blacklist.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ kernel/trace/trace_boot.c |   15 +++++++++------
+ 1 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/acpi/blacklist.c b/drivers/acpi/blacklist.c
-index ea92bac..00498fe 100644
---- a/drivers/acpi/blacklist.c
-+++ b/drivers/acpi/blacklist.c
-@@ -81,18 +81,18 @@ static int __init blacklist_by_year(void)
- 	int year = dmi_get_year(DMI_BIOS_DATE);
- 	/* Doesn't exist? Likely an old system */
- 	if (year == -1) {
--		printk(KERN_ERR PREFIX "no DMI BIOS year, "
-+		printk(KERN_INFO PREFIX "no DMI BIOS year, "
- 			"acpi=force is required to enable ACPI\n" );
- 		return 1;
- 	}
- 	/* 0? Likely a buggy new BIOS */
- 	if (year == 0) {
--		printk(KERN_ERR PREFIX "DMI BIOS year==0, "
-+		printk(KERN_INFO PREFIX "DMI BIOS year==0, "
- 			"assuming ACPI-capable machine\n" );
- 		return 0;
- 	}
- 	if (year < CONFIG_ACPI_BLACKLIST_YEAR) {
--		printk(KERN_ERR PREFIX "BIOS age (%d) fails cutoff (%d), "
-+		printk(KERN_INFO PREFIX "BIOS age (%d) fails cutoff (%d), "
- 		       "acpi=force is required to enable ACPI\n",
- 		       year, CONFIG_ACPI_BLACKLIST_YEAR);
- 		return 1;
--- 
-1.6.0.1
-
+diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
+index d5c9e2e..48186b1 100644
+--- a/kernel/trace/trace_boot.c
++++ b/kernel/trace/trace_boot.c
+@@ -45,21 +45,24 @@ static void boot_trace_ctrl_update(struct trace_array *tr)
+ 		stop_boot_trace(tr);
+ }
+ 
+-static int initcall_print_line(struct trace_iterator *iter)
++static enum print_line_t initcall_print_line(struct trace_iterator *iter)
+ {
+-	int ret = 0;
++	int ret;
+ 	struct trace_entry *entry = iter->ent;
+ 	struct boot_trace *it = &entry->field.initcall;
+ 	struct trace_seq *s = &iter->seq;
+ 
+-	if (iter->ent->type == TRACE_BOOT)
++	if (iter->ent->type == TRACE_BOOT) {
+ 		ret = trace_seq_printf(s, "%pF called from %i "
+ 				       "returned %d after %lld msecs\n",
+ 				       it->func, it->caller, it->result,
+ 				       it->duration);
+-	if (ret)
+-		return 1;
+-	return 0;
++		if (ret)
++			return TRACE_TYPE_HANDLED;
++		else
++			return TRACE_TYPE_PARTIAL_LINE;
++	}
++	return TRACE_TYPE_UNHANDLED;
+ }
+ 
+ struct tracer boot_tracer __read_mostly =
