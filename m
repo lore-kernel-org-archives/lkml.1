@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbYI2J2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbYI2J3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbYI2J2n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 05:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYI2J2g
+	id S1754659AbYI2J3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 05:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYI2J3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 05:28:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:48328 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbYI2J2f (ORCPT
+	Mon, 29 Sep 2008 05:29:05 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:36992 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbYI2J3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 05:28:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=kQFzIeg005b2CKG3tM9TooSbYyjrpp0/LtB4osO1x+VuokjvxbverJcP6CWZ427lmk
-         tzbEbUqLsXZNWZBIzDPhWlrhIxEXsdwoIBbC6Et+3B40zSKMN8T+bY0rcPyk5Z1y/hTC
-         yqcLWG03P7KAvllLsYpW2I79W2v9a6s/1WfDs=
-Message-ID: <c62985530809290228w2aae150dk97749159bd495c3b@mail.gmail.com>
-Date: Mon, 29 Sep 2008 11:28:33 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH -tip 2/3] Tracing/ftrace: Adapt mmiotrace to the new type of print_line
-Cc: "Pekka Paalanen" <pq@iki.fi>, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080929090231.GD2190@elte.hu>
+	Mon, 29 Sep 2008 05:29:04 -0400
+X-IronPort-AV: E=Sophos;i="4.33,330,1220241600"; 
+   d="scan'208";a="21762748"
+Date: Mon, 29 Sep 2008 10:28:55 +0100
+From: Tim Deegan <Tim.Deegan@citrix.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: akataria@vmware.com, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
+       Daniel Hecht <dhecht@vmware.com>,
+       "Jun.Nakajima@Intel.Com" <Jun.Nakajima@Intel.Com>
+Subject: Re: Use CPUID to communicate with the hypervisor.
+Message-ID: <20080929092855.GK3776@york.uk.xensource.com>
+References: <1222472815.29886.43.camel@alok-dev1> <48DD860C.50809@goop.org> <1222485079.23825.13.camel@alok-dev1> <48DF0F8D.3070302@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <48DD0347.5070008@gmail.com>
-	 <20080928192909.30e0f5dd@daedalus.pq.iki.fi>
-	 <20080929090231.GD2190@elte.hu>
+In-Reply-To: <48DF0F8D.3070302@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 29 Sep 2008 09:29:01.0852 (UTC) FILETIME=[CEF3EDC0:01C92215]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/29 Ingo Molnar <mingo@elte.hu>:
->
-> * Pekka Paalanen <pq@iki.fi> wrote:
->
->> > +           return TRACE_TYPE_HANDLED;
->> >     }
->> >  }
+At 22:01 -0700 on 27 Sep (1222552861), Jeremy Fitzhardinge wrote:
+> Alok Kataria wrote:
+>>> I think there's a move towards doing a scan for a signature, such as
+>>> checking every 16 leaves after 0x40000000 for "a while" looking for
+>>> interesting signatures, so that a hypervisor can support multiple ABIs
+>>> at once.  Given this, it would be better to define a "Generic Hypervisor
+>>> ABI" signature, and put all the related leaves together.
 >>
->> Otherwise, very good.
->>
->> As Ingo reverted the two earlier patches, you need to rebase these
->> two. I'd like to see these in upstream. Let's handle the pipe closing
->> bug in a different patch.
+>> Hmm interesting, do you have any pointers to this ?
 >
-> good. Frederic, please just resubmit all fixes you have against
-> tip/master, with Pekka's Acked-by added. You can submit Pekka's patch as
-> well, so that it's a coherent series. The customary way for that is to
-> add in a From line as the first line of the changelog:
->
->  From: Pekka Paalanen <pq@iki.fi>
->
-> and add your signoff to the end of the changelog. This way Git will show
-> Pekka as the author and the path of the patch is well understood.
->
+> No.  I think I saw a passing reference from Tim Deegan to it, but I
+> couldn't find it again when I looked.
 
-Ok so... I resend my patches (without changes?) but I adapt them to
-latest -tip master?
-And I add the pekka's patches (whit appropriate "from" line) with them?
+I was talking about checking every 256 leaves from 0x40000000, but I
+can't remember where I heard it.  The only relevant reference I can
+find is the MS hypervisor interface spec's description of leaf
+0x40000001: "Hypervisor vendor-neutral interface identification.  This
+determines the semantics of the leaves from 0x40000002 through
+0x400000FF"
 
-Sorry I 'm a bit lost....
+Cheers,
+
+Tim.
+
+-- 
+Tim Deegan <Tim.Deegan@citrix.com>
+Principal Software Engineer, Citrix Systems (R&D) Ltd.
+[Company #02300071, SL9 0DZ, UK.]
