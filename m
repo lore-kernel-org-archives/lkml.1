@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYI2RQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYI2RSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753139AbYI2RQr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYI2RQj
+	id S1753439AbYI2RSR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYI2RSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:16:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40940 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751102AbYI2RQj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 13:16:39 -0400
-To: Avi Kivity <avi@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ioctl: generic ioctl dispatcher
-From: Andi Kleen <andi@firstfloor.org>
-References: <1222530242-1272-1-git-send-email-avi@redhat.com>
-	<1222530242-1272-2-git-send-email-avi@redhat.com>
-Date: Mon, 29 Sep 2008 19:16:35 +0200
-In-Reply-To: <1222530242-1272-2-git-send-email-avi@redhat.com> (Avi Kivity's message of "Sat, 27 Sep 2008 18:44:00 +0300")
-Message-ID: <87od26q3d8.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 29 Sep 2008 13:18:05 -0400
+Received: from styx.suse.cz ([82.119.242.94]:58330 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750855AbYI2RSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 13:18:05 -0400
+Date: Mon, 29 Sep 2008 19:18:03 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+cc: LKML <linux-kernel@vger.kernel.org>, agospoda@redhat.com,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Graham, David" <david.graham@intel.com>, Karsten Keil <kkeil@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, chris.jones@canonical.com,
+       arjan@linux.jf.intel.com
+Subject: RE: e1000e NVM corruption issue status
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52064B1603@orsmsx418.amr.corp.intel.com>
+Message-ID: <alpine.LNX.1.10.0809291917220.4022@jikos.suse.cz>
+References: <987CEB09A2567F4A963E1E226364E2D33A685B4B@orsmsx418.amr.corp.intel.com> <Pine.WNT.4.63.0809251811330.1736@jbrandeb-desk.amr.corp.intel.com> <Pine.WNT.4.63.0809251857360.1736@jbrandeb-desk.amr.corp.intel.com> <Pine.WNT.4.63.0809251913300.1736@jbrandeb-desk.amr.corp.intel.com>
+ <alpine.LNX.1.10.0809291740140.4022@jikos.suse.cz> <alpine.LNX.1.10.0809291817130.4022@jikos.suse.cz> <36D9DB17C6DE9E40B059440DB8D95F52064B1603@orsmsx418.amr.corp.intel.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity <avi@redhat.com> writes:
+On Mon, 29 Sep 2008, Brandeburg, Jesse wrote:
 
-> +/**
-> + * dispatch_ioctl - dispatch to an ioctl handler based on ioctl number
-> + * @inode:	inode to invoke ioctl method on
-> + * @filp:	open file to invoke ioctl method on
-> + * @cmd:	ioctl command to execute
-> + * @arg:	command-specific argument for ioctl
-> + * @handlers:	list of potential handlers for @cmd; null terminated;
-> + *              place frequently used cmds first
-> + * @fallback:   optional function to call if @cmd not found in @handlers
-> + *
-> + * Locates and calls ioctl handler in @handlers; if none exist, calls
-> + * @fallback; if that does not exist, return -ENOTTY.
-> + */
-> +long dispatch_ioctl(struct inode *inode, struct file *filp,
-> +		    unsigned cmd, unsigned long arg,
-> +		    const struct ioctl_handler *handlers,
-> +		    long (*fallback)(const struct ioctl_arg *arg))
+> > We are missing 'break;' after the memset, and that is where the
+> > hanging machine comes from (the loop keeps spinning forever), right?
+> > I will verify this right away.
+> Yep, I think you're right.  I'm almost done prepping our current patch
+> series, I'll include that fix.  Please let me know if your test shows it
+> fixes it.
 
-The basic idea is good, but i don't like the proliferation of callbacks,
-which tends to make complicated code and is ugly for simple code
-(which a lot of ioctls are)
+Yes, it fixed the hang. It crashed later though
 
-How about you make it return an number that can index a switch() instead?
-Then everything could be still kept in the same function.
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000050
+IP: [<ffffffffa045211b>] inet6_net_init+0x98/0xf2 [ipv6]
+PGD 39d15067 PUD 39d14067 PMD 0
+Oops: 0000 [1] SMP
+last sysfs file: 
+/sys/devices/pci0000:00/0000:00:1e.0/0000:15:00.0/0000:16:00.0/local_cpus
 
--Andi
+which is probably related I guess.
+
+-- 
+Jiri Kosina
+SUSE Labs
