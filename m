@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYI2SP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbYI2SSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbYI2SP7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 14:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbYI2SKa
+	id S1755457AbYI2SSK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 14:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbYI2SR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 14:10:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59809 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753925AbYI2SK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 14:10:29 -0400
-From: Adam Jackson <ajax@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Adam Jackson <ajax@redhat.com>
-Subject: [PATCH] PIIX3: Warn softer about enabling passive release.
-Date: Mon, 29 Sep 2008 14:10:26 -0400
-Message-Id: <1222711826-891-1-git-send-email-ajax@redhat.com>
+	Mon, 29 Sep 2008 14:17:56 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:52759 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752596AbYI2SRz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 14:17:55 -0400
+Message-ID: <48E11BBE.3080709@zytor.com>
+Date: Mon, 29 Sep 2008 11:17:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: do not allow to optimize flag_is_changeable_p()
+References: <20080929200603.dcdc5b71.krzysztof.h1@poczta.fm>
+In-Reply-To: <20080929200603.dcdc5b71.krzysztof.h1@poczta.fm>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All the other quirks are dev_info() not dev_err(), this one isn't
-special.  This makes 'quiet' boot in qemu really quiet.
+Krzysztof Helt wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> The flag_is_changeable_p() is used by
+> has_cpuid_p() which can return different results
+> in the code sequence below:
+> 
+>  if (!have_cpuid_p())
+>       identify_cpu_without_cpuid(c);
+> 
+>   /* cyrix could have cpuid enabled via c_identify()*/
+>   if (!have_cpuid_p())
+>       return;
+> 
+> Otherwise, the gcc 3.4.6 optimizes these two calls
+> into one which make the code not working correctly.
+> Cyrix cpus have the CPUID instruction enabled but
+> it is not detected due to the gcc optimization.
+> Thus the ARR registers (mtrr like) are not detected
+> on such a cpu.
+> 
 
-Signed-off-by: Adam Jackson <ajax@redhat.com>
----
- drivers/pci/quirks.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I suspect we should also out-of-line this function.  It's actually 
+relatively sizable and certainly there is no point in inlining it.
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 9236e7f..a299724 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -47,7 +47,7 @@ static void quirk_passive_release(struct pci_dev *dev)
- 	while ((d = pci_get_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371SB_0, d))) {
- 		pci_read_config_byte(d, 0x82, &dlc);
- 		if (!(dlc & 1<<1)) {
--			dev_err(&d->dev, "PIIX3: Enabling Passive Release\n");
-+			dev_info(&d->dev, "PIIX3: Enabling Passive Release\n");
- 			dlc |= 1<<1;
- 			pci_write_config_byte(d, 0x82, dlc);
- 		}
--- 
-1.6.0.1
-
+	-hpa
