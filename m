@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbYI2KPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbYI2KQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800AbYI2KPi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 06:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbYI2KPb
+	id S1753948AbYI2KQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 06:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYI2KQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 06:15:31 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51521 "EHLO
+	Mon, 29 Sep 2008 06:16:51 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51586 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909AbYI2KPa (ORCPT
+	with ESMTP id S1750712AbYI2KQu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 06:15:30 -0400
-Date: Mon, 29 Sep 2008 19:21:23 +0900
+	Mon, 29 Sep 2008 06:16:50 -0400
+Date: Mon, 29 Sep 2008 19:22:40 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        LKML <linux-kernel@vger.kernel.org>,
        "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
        "xemul@openvz.org" <xemul@openvz.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: [PATCH 1/4] memcg: account swap cache under lock
-Message-Id: <20080929192123.5ce60c24.kamezawa.hiroyu@jp.fujitsu.com>
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 2/4] memcg: set page->mapping NULL before uncharge
+Message-Id: <20080929192240.ddd59d7f.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20080929191927.caabec89.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20080929191927.caabec89.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: Fujitsu
@@ -31,49 +32,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While page-cache's charge/uncharge is done under page_lock(), swap-cache
-isn't. (anonymous page is charged when it's newly allocated.)
+This patch tries to make page->mapping to be NULL before
+mem_cgroup_uncharge_cache_page() is called.
 
-This patch moves do_swap_page()'s charge() call under lock.
-I don't see any bad problem *now* but this fix will be good for future
-for avoiding unneccesary racy state.
+"page->mapping == NULL" is a good check for "whether the page is still
+radix-tree or not".
+This patch also adds BUG_ON() to mem_cgroup_uncharge_cache_page();
 
-
-Changelog: (v5) -> (v6)
- - mark_page_accessed() is moved before lock_page().
- - fixed missing unlock_page()
-(no changes in previous version)
 
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
- mm/memory.c |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ mm/filemap.c    |    2 +-
+ mm/memcontrol.c |    1 +
+ mm/migrate.c    |    9 +++++++--
+ 3 files changed, 9 insertions(+), 3 deletions(-)
 
-Index: mmotm-2.6.27-rc7+/mm/memory.c
+Index: mmotm-2.6.27-rc7+/mm/filemap.c
 ===================================================================
---- mmotm-2.6.27-rc7+.orig/mm/memory.c
-+++ mmotm-2.6.27-rc7+/mm/memory.c
-@@ -2326,16 +2326,17 @@ static int do_swap_page(struct mm_struct
- 		count_vm_event(PGMAJFAULT);
- 	}
+--- mmotm-2.6.27-rc7+.orig/mm/filemap.c
++++ mmotm-2.6.27-rc7+/mm/filemap.c
+@@ -116,12 +116,12 @@ void __remove_from_page_cache(struct pag
+ {
+ 	struct address_space *mapping = page->mapping;
  
-+	mark_page_accessed(page);
-+
-+	lock_page(page);
-+	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-+
- 	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
--		delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
- 		ret = VM_FAULT_OOM;
-+		unlock_page(page);
- 		goto out;
- 	}
+-	mem_cgroup_uncharge_cache_page(page);
+ 	radix_tree_delete(&mapping->page_tree, page->index);
+ 	page->mapping = NULL;
+ 	mapping->nrpages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	BUG_ON(page_mapped(page));
++	mem_cgroup_uncharge_cache_page(page);
  
--	mark_page_accessed(page);
--	lock_page(page);
--	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
--
  	/*
- 	 * Back out if somebody else already faulted in this pte.
- 	 */
+ 	 * Some filesystems seem to re-dirty the page even after
+Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+@@ -734,6 +734,7 @@ void mem_cgroup_uncharge_page(struct pag
+ void mem_cgroup_uncharge_cache_page(struct page *page)
+ {
+ 	VM_BUG_ON(page_mapped(page));
++	VM_BUG_ON(page->mapping);
+ 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+ }
+ 
+Index: mmotm-2.6.27-rc7+/mm/migrate.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/migrate.c
++++ mmotm-2.6.27-rc7+/mm/migrate.c
+@@ -330,8 +330,6 @@ static int migrate_page_move_mapping(str
+ 	__inc_zone_page_state(newpage, NR_FILE_PAGES);
+ 
+ 	spin_unlock_irq(&mapping->tree_lock);
+-	if (!PageSwapCache(newpage))
+-		mem_cgroup_uncharge_cache_page(page);
+ 
+ 	return 0;
+ }
+@@ -341,6 +339,8 @@ static int migrate_page_move_mapping(str
+  */
+ static void migrate_page_copy(struct page *newpage, struct page *page)
+ {
++	int anon;
++
+ 	copy_highpage(newpage, page);
+ 
+ 	if (PageError(page))
+@@ -378,8 +378,13 @@ static void migrate_page_copy(struct pag
+ #endif
+ 	ClearPagePrivate(page);
+ 	set_page_private(page, 0);
++	/* page->mapping contains a flag for PageAnon() */
++	anon = PageAnon(page);
+ 	page->mapping = NULL;
+ 
++	if (!anon) /* This page was removed from radix-tree. */
++		mem_cgroup_uncharge_cache_page(page);
++
+ 	/*
+ 	 * If any waiters have accumulated on the new page then
+ 	 * wake them up.
 
