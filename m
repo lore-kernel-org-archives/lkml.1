@@ -1,83 +1,364 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbYI2T6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbYI2UFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753522AbYI2T6I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 15:58:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYI2T5y
+	id S1753318AbYI2UFy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 16:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYI2UFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 15:57:54 -0400
-Received: from colo.lackof.org ([198.49.126.79]:51889 "EHLO colo.lackof.org"
+	Mon, 29 Sep 2008 16:05:46 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:36348 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751824AbYI2T5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 15:57:53 -0400
-Date: Mon, 29 Sep 2008 13:57:41 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Yinghai Lu <yinghai@kernel.org>,
-       Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 7/7] x86: print out irq nr for msi/ht -v2
-Message-ID: <20080929195741.GB14409@colo.lackof.org>
-References: <1222323223-23529-1-git-send-email-yhlu.kernel@gmail.com> <20080927185306.GA18619@elte.hu> <20080927190237.GD10186@localhost> <200809291005.04941.jbarnes@virtuousgeek.org> <20080929172928.GC7360@localhost>
+	id S1751974AbYI2UFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 16:05:45 -0400
+Date: Mon, 29 Sep 2008 13:05:09 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: linux-mm@kvack.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, Gary Hade <garyhade@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Nish Aravamudan <nish.aravamudan@gmail.com>
+Subject: [PATCH] mm: show node to memory section relationship with symlinks
+	in sysfs
+Message-ID: <20080929200509.GC21255@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080929172928.GC7360@localhost>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 29, 2008 at 09:29:28PM +0400, Cyrill Gorcunov wrote:
-> [Jesse Barnes - Mon, Sep 29, 2008 at 10:05:02AM -0700]
-> | On Saturday, September 27, 2008 12:02 pm Cyrill Gorcunov wrote:
-> | > [Ingo Molnar - Sat, Sep 27, 2008 at 08:53:06PM +0200]
-> | >
-> | > ...
-> | >
-> | > A bit offtopic...well...completely offtopic I would say :)
-> | >
-> | > Ingo maybe you have any PCI specs? I've asked several people
-> | > for this. Peter adviced to ask HW vendors but I don't have
-> | > friends who has access to a such docs. Evgeniy Polyakov
-> | > promised to ask someone but I think there will not be success
-> | > too :(. I'll ask Maciej too later since now he seems to be
-> | > quite busy.
-> | 
-> | I think if you use google you can find the PCI spec in pdf form (search for 
-> | pci pdf probably).
 
-Not probably. You will find them that way.
+Show node to memory section relationship with symlinks in sysfs
 
-It is illegal for anyone to redistribute PCISIG copyrighted documents.
-That hasn't stopped it from happening. I've pointed this out in the past
-(and got a polite "please don't point that out again publicly").
-I'm glad Jesse did instead. :)
+Add /sys/devices/system/node/nodeX/memoryY symlinks for all
+the memory sections located on nodeX.  For example:
+/sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+indicates that memory section 135 resides on node1.
 
->   The MindShare books are also quite good, and cover PCI, 
-> | PCI-X, and PCI Express in great detail (far more readable than the spec too).
+Successfully tested with 2.6.27-rc7 source on 2-node x86_64,
+2-node ppc64, and 2-node ia64 systems.
 
-+1
+Also revises documentation to cover this change as well as updating
+Documentation/ABI/testing/sysfs-devices-memory to include descriptions
+of memory hotremove files 'phys_device', 'phys_index', and 'state'
+that were previously not described there.
 
-grant
+Supersedes the "mm: show memory section to node relationship in sysfs"
+patch posted on 05 Sept 2008 which created node ID containing 'node'
+files in /sys/devices/system/memory/memoryX instead of symlinks.
+Changed from files to symlinks due to feedback that symlinks were
+more consistent with the sysfs way.
 
-> | 
-> | -- 
-> | Jesse Barnes, Intel Open Source Technology Center
-> | 
-> 
-> Thanks for reply, Jesse! Of course I could use google. But actually
-> the only think I found is version 2.2 (which is a bit old). Will take
-> a look if I could buy this book (not sure if it may be done here). PCI
-> membership is quite expencive for me that is why I was asking for this
-> documents in private mails I sent before. I don't like to behave like
-> that but just had to.
-> 
-> 		- Cyrill -
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+
+---
+ Documentation/ABI/testing/sysfs-devices-memory |   51 ++++++++++++
+ Documentation/memory-hotplug.txt               |   16 +++
+ drivers/base/memory.c                          |   10 ++
+ drivers/base/node.c                            |   61 +++++++++++++++
+ include/linux/memory.h                         |    4 
+ include/linux/node.h                           |   11 ++
+ 6 files changed, 146 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.27-rc5/Documentation/ABI/testing/sysfs-devices-memory
+===================================================================
+--- linux-2.6.27-rc5.orig/Documentation/ABI/testing/sysfs-devices-memory	2008-09-24 13:19:23.000000000 -0700
++++ linux-2.6.27-rc5/Documentation/ABI/testing/sysfs-devices-memory	2008-09-25 13:36:41.000000000 -0700
+@@ -6,7 +6,6 @@
+ 		internal state of the kernel memory blocks. Files could be
+ 		added or removed dynamically to represent hot-add/remove
+ 		operations.
+-
+ Users:		hotplug memory add/remove tools
+ 		https://w3.opensource.ibm.com/projects/powerpc-utils/
+ 
+@@ -19,6 +18,56 @@
+ 		This is useful for a user-level agent to determine
+ 		identify removable sections of the memory before attempting
+ 		potentially expensive hot-remove memory operation
++Users:		hotplug memory remove tools
++		https://w3.opensource.ibm.com/projects/powerpc-utils/
++
++What:		/sys/devices/system/memory/memoryX/phys_device
++Date:		September 2008
++Contact:	Badari Pulavarty <pbadari@us.ibm.com>
++Description:
++		The file /sys/devices/system/memory/memoryX/phys_device
++		is read-only and is designed to show the name of physical
++		memory device.  Implementation is currently incomplete.
+ 
++What:		/sys/devices/system/memory/memoryX/phys_index
++Date:		September 2008
++Contact:	Badari Pulavarty <pbadari@us.ibm.com>
++Description:
++		The file /sys/devices/system/memory/memoryX/phys_index
++		is read-only and contains the section ID in hexadecimal
++		which is equivalent to decimal X contained in the
++		memory section directory name.
++
++What:		/sys/devices/system/memory/memoryX/state
++Date:		September 2008
++Contact:	Badari Pulavarty <pbadari@us.ibm.com>
++Description:
++		The file /sys/devices/system/memory/memoryX/state
++		is read-write.  When read, it's contents show the
++		online/offline state of the memory section.  When written,
++		root can toggle the the online/offline state of a removable
++		memory section (see removable file description above)
++		using the following commands.
++		# echo online > /sys/devices/system/memory/memoryX/state
++		# echo offline > /sys/devices/system/memory/memoryX/state
++
++		For example, if /sys/devices/system/memory/memory22/removable
++		contains a value of 1 and
++		/sys/devices/system/memory/memory22/state contains the
++		string "online" the following command can be executed by
++		by root to offline that section.
++		# echo offline > /sys/devices/system/memory/memory22/state
+ Users:		hotplug memory remove tools
+ 		https://w3.opensource.ibm.com/projects/powerpc-utils/
++
++What:		/sys/devices/system/node/nodeX/memoryY
++Date:		September 2008
++Contact:	Gary Hade <garyhade@us.ibm.com>
++Description:
++		When CONFIG_NUMA is enabled
++		/sys/devices/system/node/nodeX/memoryY is a symbolic link that
++		points to the corresponding /sys/devices/system/memory/memoryY
++		memory section directory.  For example, the following symbolic
++		link is created for memory section 9 on node0.
++		/sys/devices/system/node/node0/memory9 -> ../../memory/memory9
++
+Index: linux-2.6.27-rc5/Documentation/memory-hotplug.txt
+===================================================================
+--- linux-2.6.27-rc5.orig/Documentation/memory-hotplug.txt	2008-09-24 13:19:23.000000000 -0700
++++ linux-2.6.27-rc5/Documentation/memory-hotplug.txt	2008-09-25 13:36:58.000000000 -0700
+@@ -124,7 +124,7 @@
+     This option can be kernel module too.
+ 
+ --------------------------------
+-3 sysfs files for memory hotplug
++4 sysfs files for memory hotplug
+ --------------------------------
+ All sections have their device information under /sys/devices/system/memory as
+ 
+@@ -138,11 +138,12 @@
+ (0x100000000 / 1Gib = 4)
+ This device covers address range [0x100000000 ... 0x140000000)
+ 
+-Under each section, you can see 3 files.
++Under each section, you can see 4 files.
+ 
+ /sys/devices/system/memory/memoryXXX/phys_index
+ /sys/devices/system/memory/memoryXXX/phys_device
+ /sys/devices/system/memory/memoryXXX/state
++/sys/devices/system/memory/memoryXXX/removable
+ 
+ 'phys_index' : read-only and contains section id, same as XXX.
+ 'state'      : read-write
+@@ -150,10 +151,20 @@
+                at write: user can specify "online", "offline" command
+ 'phys_device': read-only: designed to show the name of physical memory device.
+                This is not well implemented now.
++'removable'  : read-only: contains an integer value indicating
++               whether the memory section is removable or not
++               removable.  A value of 1 indicates that the memory
++               section is removable and a value of 0 indicates that
++               it is not removable.
+ 
+ NOTE:
+   These directories/files appear after physical memory hotplug phase.
+ 
++If CONFIG_NUMA is specified the
++/sys/devices/system/memory/memoryXXX memory section
++directories can also be accessed via symbolic links located in
++the /sys/devices/system/node/node* directories.  For example:
++/sys/devices/system/node/node0/memory9 -> ../../memory/memory9
+ 
+ --------------------------------
+ 4. Physical memory hot-add phase
+@@ -365,7 +376,6 @@
+   - allowing memory hot-add to ZONE_MOVABLE. maybe we need some switch like
+     sysctl or new control file.
+   - showing memory section and physical device relationship.
+-  - showing memory section and node relationship (maybe good for NUMA)
+   - showing memory section is under ZONE_MOVABLE or not
+   - test and make it better memory offlining.
+   - support HugeTLB page migration and offlining.
+Index: linux-2.6.27-rc5/drivers/base/memory.c
+===================================================================
+--- linux-2.6.27-rc5.orig/drivers/base/memory.c	2008-09-24 13:19:23.000000000 -0700
++++ linux-2.6.27-rc5/drivers/base/memory.c	2008-09-24 13:19:29.000000000 -0700
+@@ -368,6 +368,13 @@
+ 		ret = mem_create_simple_file(mem, phys_device);
+ 	if (!ret)
+ 		ret = mem_create_simple_file(mem, removable);
++	if (!ret) {
++		ret = register_mem_sect_under_node(mem);
++		if (ret == -EFAULT) {
++			/* expected during boot if node not registered yet */
++			ret = 0;
++		}
++	}
+ 
+ 	return ret;
+ }
+@@ -380,7 +387,7 @@
+  *
+  * This could be made generic for all sysdev classes.
+  */
+-static struct memory_block *find_memory_block(struct mem_section *section)
++struct memory_block *find_memory_block(struct mem_section *section)
+ {
+ 	struct kobject *kobj;
+ 	struct sys_device *sysdev;
+@@ -409,6 +416,7 @@
+ 	struct memory_block *mem;
+ 
+ 	mem = find_memory_block(section);
++	unregister_mem_sect_under_node(mem);
+ 	mem_remove_simple_file(mem, phys_index);
+ 	mem_remove_simple_file(mem, state);
+ 	mem_remove_simple_file(mem, phys_device);
+Index: linux-2.6.27-rc5/drivers/base/node.c
+===================================================================
+--- linux-2.6.27-rc5.orig/drivers/base/node.c	2008-09-24 13:19:23.000000000 -0700
++++ linux-2.6.27-rc5/drivers/base/node.c	2008-09-25 13:36:00.000000000 -0700
+@@ -6,6 +6,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/mm.h>
++#include <linux/memory.h>
+ #include <linux/node.h>
+ #include <linux/hugetlb.h>
+ #include <linux/cpumask.h>
+@@ -225,6 +226,63 @@
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
++int register_mem_sect_under_node(struct memory_block *mem_blk)
++{
++	unsigned int nid;
++
++	if (!mem_blk)
++		return -EFAULT;
++	nid = section_nr_to_nid(mem_blk->phys_index);
++	if (!node_online(nid))
++		return 0;
++	return sysfs_create_link_nowarn(&node_devices[nid].sysdev.kobj,
++		&mem_blk->sysdev.kobj, kobject_name(&mem_blk->sysdev.kobj));
++}
++
++int unregister_mem_sect_under_node(struct memory_block *mem_blk)
++{
++	unsigned int nid;
++
++	if (!mem_blk)
++		return -EFAULT;
++	nid = section_nr_to_nid(mem_blk->phys_index);
++	if (!node_online(nid))
++		return 0;
++	sysfs_remove_link(&node_devices[nid].sysdev.kobj,
++			 kobject_name(&mem_blk->sysdev.kobj));
++	return 0;
++}
++
++static int link_mem_sections(int nid)
++{
++	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
++	unsigned long end_pfn = start_pfn + NODE_DATA(nid)->node_spanned_pages;
++	unsigned long pfn;
++	int err = 0;
++
++	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
++		unsigned long section_nr = pfn_to_section_nr(pfn);
++		struct mem_section *mem_sect;
++		struct memory_block *mem_blk;
++		int ret;
++
++		if (!present_section_nr(section_nr))
++			continue;
++		if (pfn_to_nid(pfn) != nid)
++			continue;
++		mem_sect = __nr_to_section(section_nr);
++		mem_blk = find_memory_block(mem_sect);
++		ret = register_mem_sect_under_node(mem_blk);
++		if (!err)
++			err = ret;
++	}
++	return err;
++}
++#else
++static int link_mem_sections(int nid) { return 0; }
++#endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
++
+ int register_one_node(int nid)
+ {
+ 	int error = 0;
+@@ -244,6 +302,9 @@
+ 			if (cpu_to_node(cpu) == nid)
+ 				register_cpu_under_node(cpu, nid);
+ 		}
++
++		/* link memory sections under this node */
++		error = link_mem_sections(nid);
+ 	}
+ 
+ 	return error;
+Index: linux-2.6.27-rc5/include/linux/memory.h
+===================================================================
+--- linux-2.6.27-rc5.orig/include/linux/memory.h	2008-09-24 13:19:23.000000000 -0700
++++ linux-2.6.27-rc5/include/linux/memory.h	2008-09-24 13:19:29.000000000 -0700
+@@ -84,9 +84,9 @@
+ extern int memory_dev_init(void);
+ extern int remove_memory_block(unsigned long, struct mem_section *, int);
+ extern int memory_notify(unsigned long val, void *v);
++extern struct memory_block *find_memory_block(struct mem_section *);
+ #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+-
+-
++#define section_nr_to_nid(section_nr) pfn_to_nid(section_nr_to_pfn(section_nr))
+ #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+Index: linux-2.6.27-rc5/include/linux/node.h
+===================================================================
+--- linux-2.6.27-rc5.orig/include/linux/node.h	2008-09-24 13:19:23.000000000 -0700
++++ linux-2.6.27-rc5/include/linux/node.h	2008-09-24 13:19:29.000000000 -0700
+@@ -26,6 +26,7 @@
+ 	struct sys_device	sysdev;
+ };
+ 
++struct memory_block;
+ extern struct node node_devices[];
+ 
+ extern int register_node(struct node *, int, struct node *);
+@@ -35,6 +36,8 @@
+ extern void unregister_one_node(int nid);
+ extern int register_cpu_under_node(unsigned int cpu, unsigned int nid);
+ extern int unregister_cpu_under_node(unsigned int cpu, unsigned int nid);
++extern int register_mem_sect_under_node(struct memory_block *mem_blk);
++extern int unregister_mem_sect_under_node(struct memory_block *mem_blk);
+ #else
+ static inline int register_one_node(int nid)
+ {
+@@ -52,6 +55,14 @@
+ {
+ 	return 0;
+ }
++static inline int register_mem_sect_under_node(struct memory_block *mem_blk)
++{
++	return 0;
++}
++static inline int unregister_mem_sect_under_node(struct memory_block *mem_blk)
++{
++	return 0;
++}
+ #endif
+ 
+ #define to_node(sys_device) container_of(sys_device, struct node, sysdev)
