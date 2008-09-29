@@ -1,144 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbYI2WDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbYI2WJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbYI2WDy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 18:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYI2WDn
+	id S1753988AbYI2WJU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 18:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYI2WJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 18:03:43 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:48087 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753082AbYI2WDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 18:03:42 -0400
-Date: Mon, 29 Sep 2008 17:03:41 -0500
-From: Russ Anderson <rja@sgi.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       Huang Ying <ying.huang@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: [PATCH 4/4] Add sysfs entries for UV
-Message-ID: <20080929220341.GF108640@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Mon, 29 Sep 2008 18:09:04 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:37016 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbYI2WJC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 18:09:02 -0400
+Message-ID: <48E151F7.5050408@hp.com>
+Date: Mon, 29 Sep 2008 18:08:55 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Eric Sandeen <sandeen@sandeen.net>
+CC: Christoph Hellwig <hch@infradead.org>, Takashi Sato <t-sato@yk.jp.nec.com>,
+       Ric Wheeler <rwheeler@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-fsdevel@vger.kernel.org,
+       dm-devel@redhat.com, viro@ZenIV.linux.org.uk,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, axboe@kernel.dk,
+       mtk.manpages@googlemail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] Add timeout feature
+References: <20080908205337t-sato@mail.jp.nec.com> <20080908171119.GB22521@infradead.org> <48DBFD42.6030307@redhat.com> <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp> <20080929141326.GA31781@infradead.org> <48E0E7D4.1090409@sandeen.net> <20080929143749.GA13286@infradead.org> <48E0EA0B.7000701@sandeen.net>
+In-Reply-To: <48E0EA0B.7000701@sandeen.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 4/4] Add sysfs entries for UV
+Eric Sandeen wrote:
+ > Christoph Hellwig wrote:
+ >> But why would the filesystem every unfreeze itself?  That defeats the
+ >> whole point of freezing it.
+ >
+ > I agree.  Was just trying to clarify the above point.
+ >
+ > But there have been what, 12 submissions now, with the unfreeze timeout
+ > in place so it's a persistent theme ;)
+ >
+ > Perhaps a demonstration of just how easy (or not easy) it is to deadlock
+ > a filesystem by freezing the root might be in order, at least.
+ >
+ > And even if it is relatively easy, I still maintain that it is the
+ > administrator's role to not inflict damage on the machine being
+ > administered.  There are a lot of potentially dangerous tools at root's
+ > disposal; why this particular one needs a nanny I'm still not quite sure.
 
-Create /sys/firmware/sgi_uv sysfs entries for partition_id and coherence_id.
+Since this patch hit fsdev, there have been an equal number
+of supporters and opponents of the timeout.
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
+I'm not opposed to the timeout on the API, but I don't think
+it is needed if we have a system configurable timeout (default
+is no timeout) that can be changed by an admin.
 
----
- arch/x86/kernel/Makefile   |    2 -
- arch/x86/kernel/uv_sysfs.c |   72 +++++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/uv/bios.h  |    1 
- 3 files changed, 74 insertions(+), 1 deletion(-)
+My experience is that a timeout is not needed protect against
+a stupid admin or against software bugs.
 
-Index: linux/arch/x86/kernel/Makefile
-===================================================================
---- linux.orig/arch/x86/kernel/Makefile	2008-09-29 16:13:05.000000000 -0500
-+++ linux/arch/x86/kernel/Makefile	2008-09-29 16:56:29.000000000 -0500
-@@ -107,7 +107,7 @@ obj-$(CONFIG_OLPC)		+= olpc.o
- # 64 bit specific files
- ifeq ($(CONFIG_X86_64),y)
-         obj-y				+= genapic_64.o genapic_flat_64.o genx2apic_uv_x.o tlb_uv.o
--	obj-y				+= bios_uv.o
-+	obj-y				+= bios_uv.o uv_sysfs.o
-         obj-y				+= genx2apic_cluster.o
-         obj-y				+= genx2apic_phys.o
-         obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
-Index: linux/arch/x86/kernel/uv_sysfs.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/arch/x86/kernel/uv_sysfs.c	2008-09-29 16:56:29.000000000 -0500
-@@ -0,0 +1,72 @@
-+/*
-+ * This file supports the /sys/firmware/sgi_uv interfaces for SGI UV.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ *
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Russ Anderson
-+ */
-+
-+#include <linux/sysdev.h>
-+#include <asm/uv/bios.h>
-+
-+struct kobject *sgi_uv_kobj;
-+
-+static ssize_t partition_id_show(struct kobject *kobj,
-+			struct kobj_attribute *attr, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%ld\n", sn_partition_id);
-+}
-+
-+static ssize_t coherence_id_show(struct kobject *kobj,
-+			struct kobj_attribute *attr, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%ld\n", partition_coherence_id());
-+}
-+
-+static struct kobj_attribute partition_id_attr =
-+	__ATTR(partition_id, S_IRUGO, partition_id_show, NULL);
-+
-+static struct kobj_attribute coherence_id_attr =
-+	__ATTR(coherence_id, S_IRUGO, coherence_id_show, NULL);
-+
-+
-+static int __init sgi_uv_sysfs_init(void)
-+{
-+	unsigned long ret;
-+
-+	if (!sgi_uv_kobj)
-+		sgi_uv_kobj = kobject_create_and_add("sgi_uv", firmware_kobj);
-+	if (!sgi_uv_kobj) {
-+		printk(KERN_WARNING "kobject_create_and_add sgi_uv failed \n");
-+		return -EINVAL;
-+	}
-+
-+	ret = sysfs_create_file(sgi_uv_kobj, &partition_id_attr.attr);
-+	if (ret) {
-+		printk(KERN_WARNING "sysfs_create_file partition_id failed \n");
-+		return ret;
-+	}
-+
-+	ret = sysfs_create_file(sgi_uv_kobj, &coherence_id_attr.attr);
-+	if (ret) {
-+		printk(KERN_WARNING "sysfs_create_file coherence_id failed \n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+device_initcall(sgi_uv_sysfs_init);
-Index: linux/include/asm-x86/uv/bios.h
-===================================================================
---- linux.orig/include/asm-x86/uv/bios.h	2008-09-29 16:55:32.000000000 -0500
-+++ linux/include/asm-x86/uv/bios.h	2008-09-29 16:56:29.000000000 -0500
-@@ -78,5 +78,6 @@ extern long uv_coherency_id;
- extern long uv_region_size;
- #define partition_coherence_id()	(uv_coherency_id)
- 
-+extern struct kobject *sgi_uv_kobj;	/* /sys/firmware/sgi_uv */
- 
- #endif /* ASM_X86__UV__BIOS_H */
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+The justification for a timeout as far as I am concerned
+is so the admin can log in and reset hung hardware.  If we
+think there is no chance of forcing the external device that
+went to sleep to respond so the system can continue to be used,
+then I don't think a timeout has any valid use.
+
+My timeout desire is based on some past SAN behavior and
+I'm OK if people argue those devices should just be fixed.
+But we argued the same thing and were ignored because bad
+device behavior did not stop people from buying them.
+
+jim
