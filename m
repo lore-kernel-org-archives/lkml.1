@@ -1,124 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbYI2OLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYI2OMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555AbYI2OLT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 10:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYI2OLK
+	id S1753335AbYI2OMS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 10:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYI2OMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 10:11:10 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:60680 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750759AbYI2OLJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 10:11:09 -0400
-Subject: [GIT PATCH] SCSI bug fixes for 2.6.27-rc6
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 29 Sep 2008 09:10:38 -0500
-Message-Id: <1222697438.3150.7.camel@localhost.localdomain>
+	Mon, 29 Sep 2008 10:12:12 -0400
+Received: from sh.osrg.net ([192.16.179.4]:49159 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751258AbYI2OMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 10:12:12 -0400
+Date: Mon, 29 Sep 2008 23:11:19 +0900
+To: mingo@elte.hu
+Cc: joerg.roedel@amd.com, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 3/3] x86/iommu: use __GFP_ZERO instead of memset for
+	GART
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080929085647.GB2190@elte.hu>
+References: <20080927181855.GA11147@elte.hu>
+	<20080928193436.GA8386@amd.com>
+	<20080929085647.GB2190@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080929231116Q.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just three.  One is to prevent an I/O hang when we get an error on a
-split request (affects USB devices with the last sector bug).  One is to
-defer enabling qla2xxx interrupts until the device is fully initialised
-(fixes intermittent oops on NULL deref in the driver) and one is to make
-the qlogicpti fill its continuation segments correctly (fixes data
-corruption on various sun systems)
+On Mon, 29 Sep 2008 10:56:47 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-The patch is available here:
+> 
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > On Sat, Sep 27, 2008 at 08:18:55PM +0200, Ingo Molnar wrote:
+> > > 
+> > > another thing:
+> > > 
+> > > How hard would it be to add an CONFIG_IOMMU_DEBUG option that forces as 
+> > > many DMA requests to go via the IOMMU as possible?
+> > > 
+> > > This slows things down of course so it's only for debugging - but it 
+> > > also makes sure that we utilize the IOMMU code to the maximum - which is 
+> > > not normally the case.
+> > > 
+> > > Would be nice to have it .config driven (default-disabled), so that 
+> > > -tip's randconfig testing can stumble upon it every now and then. I've 
+> > > got GART test-systems - this way we could find certain types of IOMMU 
+> > > breakages sooner.
+> > 
+> > For AMD IOMMU I disabled the round-robin allocator to stress-test the 
+> > code. This means that the address allocation bitmap is always 
+> > traversed from the first bit. In consequence the TLB flushing is 
+> > stressed a lot (both in hardware and software) because the same DMA 
+> > addresses are used again and again. For testing I hardcoded it into 
+> > the driver but I can also make it depend on CONFIG_IOMMU_DEBUG.
+> 
+> yes - could you please make a new option for it, 
+> CONFIG_IOMMU_DEBUG_FORCE=y or so - and cover all iommus that support it?
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+I'm not sure we are talking about the same thing. Surely, I and Joerg
+are talking different things.
 
-The short changelog is:
-
-Andrew Vasquez (1):
-      qla2xxx: Defer enablement of RISC interrupts until ISP initialization comp
-
-Boaz Harrosh (1):
-      qlogicpti: fix sg list traversal error in continuation entries
-
-James Bottomley (1):
-      Fix hang with split requests
-
-And the diffstat:
-
- drivers/scsi/qla2xxx/qla_isr.c |    1 -
- drivers/scsi/qla2xxx/qla_os.c  |    2 ++
- drivers/scsi/qlogicpti.c       |    1 +
- drivers/scsi/scsi_lib.c        |    3 ++-
- 4 files changed, 5 insertions(+), 2 deletions(-)
-
-The entire diff is attached below.
-
-James
-
----
-
-diff --git a/drivers/scsi/qla2xxx/qla_isr.c b/drivers/scsi/qla2xxx/qla_isr.c
-index 45a3b93..bf41887 100644
---- a/drivers/scsi/qla2xxx/qla_isr.c
-+++ b/drivers/scsi/qla2xxx/qla_isr.c
-@@ -1834,7 +1834,6 @@ clear_risc_ints:
- 		WRT_REG_WORD(&reg->isp.hccr, HCCR_CLR_HOST_INT);
- 	}
- 	spin_unlock_irq(&ha->hardware_lock);
--	ha->isp_ops->enable_intrs(ha);
- 
- fail:
- 	return ret;
-diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
-index 26afe44..6d0f0e5 100644
---- a/drivers/scsi/qla2xxx/qla_os.c
-+++ b/drivers/scsi/qla2xxx/qla_os.c
-@@ -1740,6 +1740,8 @@ qla2x00_probe_one(struct pci_dev *pdev, const struct pci_device_id *id)
- 	if (ret)
- 		goto probe_failed;
- 
-+	ha->isp_ops->enable_intrs(ha);
-+
- 	scsi_scan_host(host);
- 
- 	qla2x00_alloc_sysfs_attr(ha);
-diff --git a/drivers/scsi/qlogicpti.c b/drivers/scsi/qlogicpti.c
-index 4a1cf63..9053508 100644
---- a/drivers/scsi/qlogicpti.c
-+++ b/drivers/scsi/qlogicpti.c
-@@ -914,6 +914,7 @@ static inline int load_cmd(struct scsi_cmnd *Cmnd, struct Command_Entry *cmd,
- 				ds[i].d_count = sg_dma_len(s);
- 			}
- 			sg_count -= n;
-+			sg = s;
- 		}
- 	} else {
- 		cmd->dataseg[0].d_base = 0;
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index ff5d56b..62307bd 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -852,7 +852,7 @@ static void scsi_end_bidi_request(struct scsi_cmnd *cmd)
- void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
- {
- 	int result = cmd->result;
--	int this_count = scsi_bufflen(cmd);
-+	int this_count;
- 	struct request_queue *q = cmd->device->request_queue;
- 	struct request *req = cmd->request;
- 	int error = 0;
-@@ -908,6 +908,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
- 	 */
- 	if (scsi_end_request(cmd, error, good_bytes, result == 0) == NULL)
- 		return;
-+	this_count = blk_rq_bytes(req);
- 
- 	/* good_bytes = 0, or (inclusive) there were leftovers and
- 	 * result = 0, so scsi_end_request couldn't retry.
+GART driver doesn't need to use the IOMMU hardware at all times. GART
+does a virtual mapping only when necessary (a device needs to handle
+an address that it can't access to). But as I wrote, if you use
+iommu=force, GART driver always use the IOMMU hardware.
 
 
+Other x86 IOMMU drivers always use the IOMMU hardware. Except for
+Intel VT-D, they manage free virtual I/O space in the round-robin
+manner with the bitmap algorithm to avoid frequent IOTLB flush. Joerg
+said he tested AMD IOMMU driver with the round-robin manner disabled
+so AMD IOMMU driver uses the same virtual I/O space with lots of IOTLB
+flush.
