@@ -1,361 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbYI2NCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbYI2NFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752759AbYI2NCp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 09:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbYI2NCi
+	id S1753166AbYI2NFp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 09:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYI2NFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 09:02:38 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:44880 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483AbYI2NCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 09:02:37 -0400
-Date: Mon, 29 Sep 2008 15:02:22 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, marty <martyleisner@yahoo.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: disk IO directly from PCI memory to block device sectors
-Message-ID: <20080929130222.GX2677@kernel.dk>
-References: <247018.46515.qm@web50603.mail.re2.yahoo.com> <20080926094653.1e0a9260@lxorguk.ukuu.org.uk> <20080926091135.GV2677@kernel.dk> <556445368AFA1C438794ABDA8901891C0999203A@USA0300MS03.na.xerox.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <556445368AFA1C438794ABDA8901891C0999203A@USA0300MS03.na.xerox.net>
+	Mon, 29 Sep 2008 09:05:39 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:42187 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475AbYI2NFi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 09:05:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:content-type:date:message-id:mime-version
+         :x-mailer;
+        b=FjzUDAFTrQFkEfGb+OFcM6AETQzBR9n44c/jBRKf7ayQy3M+pGE1NjpWcPKKRFmqYG
+         13otO4OZ1DEWqTLGA0QSkFN00qnriKWATM0Ys4sfZFOGddYxK7QL/4xvKEhN5srZiBBE
+         LLkftkjMM52Yt1bbTgWCN9+cNPruPkNeIcCCc=
+Subject: [libata] Spurious error msg on ahci controller
+From: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<alejandro.riveira@gmail.com>
+Reply-To: alejandro.riveira@gmail.com
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-VSCTHG4Sfv7VF2UGEN49"
+Date: Mon, 29 Sep 2008 15:05:32 +0200
+Message-Id: <1222693532.9527.3.camel@varda>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 26 2008, Leisner, Martin wrote:
-> 
-> 
-> >   -----Original Message-----
-> >   From: Jens Axboe [mailto:jens.axboe@oracle.com]
-> >   Sent: Friday, September 26, 2008 5:12 AM
-> >   To: Alan Cox
-> >   Cc: marty; linux-kernel@vger.kernel.org; Leisner, Martin
-> >   Subject: Re: disk IO directly from PCI memory to block device
-> sectors
-> >   
-> >   On Fri, Sep 26 2008, Alan Cox wrote:
-> >   > > What I'm looking is for a more generic/driver independent way of
-> >   sticking
-> >   > > contents of PCI ram onto a disk.
-> >   >
-> >   > Ermm seriously why not have a userspace task with the PCI RAM
-> mmapped
-> >   > and just use write() like normal sane people do ?
-> >   
-> >   To avoid the fault and copy, I would assume.
-> >   
-> >   --
-> >   Jens Axboe
-> 
-> Also:
->    a) to deal with interrupts from the hardware
->    b) using legacy code/design/architecture
->    
-> The splice approaches look very interesting...thanks...
 
-Just for kicks, I did the read part of the fast bdev interface as well.
-As with the write, it's totally untested (apart from compiled). Just in
-case anyone is curious... I plan to do a bit of testing on this this
-week.
-
-IMHO, this interface totally rocks. It's really async like splice was
-intended, and it's fast too. I may have to look into some generic IO
-mechanism to unify them all, O_DIRECT/page cache/splice. Famous last
-words, I'm sure.
+--=-VSCTHG4Sfv7VF2UGEN49
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index aff5421..f8df781 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -24,6 +24,7 @@
- #include <linux/uio.h>
- #include <linux/namei.h>
- #include <linux/log2.h>
-+#include <linux/splice.h>
- #include <asm/uaccess.h>
- #include "internal.h"
- 
-@@ -1155,6 +1156,264 @@ static long block_ioctl(struct file *file, unsigned cmd, unsigned long arg)
- 	return blkdev_ioctl(file->f_mapping->host, file, cmd, arg);
- }
- 
-+static void block_splice_write_end_io(struct bio *bio, int err)
-+{
-+	bio_put(bio);
-+}
-+
-+static int pipe_to_disk(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
-+			struct splice_desc *sd)
-+{
-+	struct block_device *bdev = I_BDEV(sd->u.file->f_mapping->host);
-+	struct bio *bio;
-+	int ret, bs;
-+
-+	bs = queue_hardsect_size(bdev_get_queue(bdev));
-+	if (sd->pos & (bs - 1))
-+		return -EINVAL;
-+
-+	ret = buf->ops->confirm(pipe, buf);
-+	if (unlikely(ret))
-+		return ret;
-+
-+	bio = bio_alloc(GFP_KERNEL, 1);
-+	bio->bi_sector = sd->pos / bs;
-+	bio->bi_bdev = bdev;
-+	bio->bi_end_io = block_splice_write_end_io;
-+
-+	bio_add_page(bio, buf->page, buf->len, buf->offset);
-+
-+	submit_bio(WRITE, bio);
-+	return buf->len;
-+}
-+
-+/*
-+ * Splice to file opened with O_DIRECT. Bypass caching completely and
-+ * just go direct-to-bio
-+ */
-+static ssize_t __block_splice_write(struct pipe_inode_info *pipe,
-+				    struct file *out, loff_t *ppos, size_t len,
-+				    unsigned int flags)
-+{
-+	struct splice_desc sd = {
-+		.total_len = len,
-+		.flags = flags,
-+		.pos = *ppos,
-+		.u.file = out,
-+	};
-+	struct inode *inode = out->f_mapping->host;
-+	ssize_t ret;
-+
-+	if (unlikely(*ppos & 511))
-+		return -EINVAL;
-+
-+	inode_double_lock(inode, pipe->inode);
-+	ret = __splice_from_pipe(pipe, &sd, pipe_to_disk);
-+	inode_double_unlock(inode, pipe->inode);
-+
-+	if (ret > 0)
-+		*ppos += ret;
-+
-+	return ret;
-+}
-+
-+static ssize_t block_splice_write(struct pipe_inode_info *pipe,
-+				  struct file *out, loff_t *ppos, size_t len,
-+				  unsigned int flags)
-+{
-+	if (out->f_flags & O_DIRECT)
-+		return __block_splice_write(pipe, out, ppos, len, flags);
-+
-+	return generic_file_splice_write(pipe, out, ppos, len, flags);
-+}
-+
-+static void block_pipe_buf_release(struct pipe_inode_info *pipe,
-+				   struct pipe_buffer *buf)
-+{
-+	struct bio *bio;
-+
-+	bio = (struct bio *) buf->private;
-+	if (bio)
-+		bio_put(bio);
-+
-+	__free_pages(buf->page, 0);
-+}
-+
-+/*
-+ * Wait for IO to be done on the bio that this buf belongs to
-+ */
-+static int block_pipe_buf_confirm(struct pipe_inode_info *pipe,
-+				  struct pipe_buffer *buf)
-+{
-+	struct bio *bio = (struct bio *) buf->private;
-+	struct completion *comp = bio->bi_private;
-+
-+	wait_for_completion(comp);
-+	return 0;
-+}
-+
-+static const struct pipe_buf_operations block_pipe_buf_ops = {
-+	.can_merge = 0,
-+	.map = generic_pipe_buf_map,
-+	.unmap = generic_pipe_buf_unmap,
-+	.confirm = block_pipe_buf_confirm,
-+	.release = block_pipe_buf_release,
-+	.steal = generic_pipe_buf_steal,
-+	.get = generic_pipe_buf_get,
-+};
-+
-+static void block_release_page(struct splice_pipe_desc *spd, unsigned int i)
-+{
-+	struct bio *bio;
-+
-+	bio = (struct bio *) spd->partial[i].private;
-+	if (bio)
-+		bio_put(bio);
-+
-+	__free_pages(spd->pages[i], 0);
-+}
-+
-+/*
-+ * READ end io handling completes the bio, so that we can wakeup
-+ * anyone waiting in ->confirm().
-+ */
-+static void block_splice_read_end_io(struct bio *bio, int err)
-+{
-+	struct completion *comp = bio->bi_private;
-+
-+	complete(comp);
-+	bio_put(bio);
-+}
-+
-+static void block_splice_bio_destructor(struct bio *bio)
-+{
-+	kfree(bio->bi_private);
-+	bio_free(bio, fs_bio_set);
-+}
-+
-+/*
-+ * Bypass the page cache and allocate pages for IO directly
-+ */
-+static ssize_t __block_splice_read(struct pipe_inode_info *pipe,
-+				    struct file *in, loff_t *ppos, size_t len,
-+				    unsigned int flags)
-+{
-+	struct page *pages[PIPE_BUFFERS];
-+	struct partial_page partial[PIPE_BUFFERS];
-+	struct splice_pipe_desc spd = {
-+		.pages = pages,
-+		.partial = partial,
-+		.flags = flags,
-+		.ops = &block_pipe_buf_ops,
-+		.spd_release = block_release_page,
-+	};
-+	struct inode *inode = in->f_mapping->host;
-+	struct block_device *bdev = I_BDEV(inode);
-+	struct bio *bio;
-+	sector_t sector;
-+	loff_t isize, left;
-+	int bs, err;
-+
-+	/*
-+	 * First to alignment and length sanity checks
-+	 */
-+	bs = queue_hardsect_size(bdev_get_queue(bdev));
-+	if (*ppos & (bs - 1))
-+		return -EINVAL;
-+
-+	isize = i_size_read(inode);
-+	if (unlikely(*ppos >= isize))
-+		return 0;
-+
-+	left = isize - *ppos;
-+	if (unlikely(left < len))
-+		len = left;
-+
-+	err = 0;
-+	spd.nr_pages = 0;
-+	sector = *ppos / bs;
-+	bio = NULL;
-+	while (len) {
-+		struct completion *comp;
-+		unsigned int this_len;
-+		struct page *page;
-+
-+		this_len = len;
-+		if (this_len > PAGE_SIZE)
-+			this_len = PAGE_SIZE;
-+
-+		page = alloc_page(GFP_KERNEL);
-+		if (!page) {
-+			err = -ENOMEM;
-+			break;
-+		}
-+
-+		if (!bio) {
-+alloc_new_bio:
-+			comp = kmalloc(sizeof(*comp), GFP_KERNEL);
-+			if (!comp) {
-+				err = -ENOMEM;
-+				break;
-+			}
-+
-+			init_completion(comp);
-+
-+			bio = bio_alloc(GFP_KERNEL, (len + PAGE_SIZE - 1) / PAGE_SIZE);
-+			bio->bi_sector = sector;
-+			bio->bi_bdev = bdev;
-+			bio->bi_private = comp;
-+			bio->bi_end_io = block_splice_read_end_io;
-+
-+			/*
-+			 * Not too nice...
-+			 */
-+			bio->bi_destructor = block_splice_bio_destructor;
-+		}
-+
-+		/*
-+		 * if we fail adding page, then submit this bio and get
-+		 * a new one
-+		 */
-+		if (bio_add_page(bio, page, this_len, 0) != this_len) {
-+			submit_bio(READ, bio);
-+			bio = NULL;
-+			goto alloc_new_bio;
-+		}
-+
-+		/*
-+		 * The pipe buffer needs to hang on to the bio, so that we
-+		 * can reuse it in the ->confirm() part of the pipe ops
-+		 */
-+		bio_get(bio);
-+
-+		sector += (this_len / bs);
-+		len -= this_len;
-+		partial[spd.nr_pages].offset = 0;
-+		partial[spd.nr_pages].len = this_len;
-+		partial[spd.nr_pages].private = (unsigned long) bio;
-+		pages[spd.nr_pages] = page;
-+		spd.nr_pages++;
-+	}
-+
-+	if (bio)
-+		submit_bio(READ, bio);
-+
-+	if (spd.nr_pages)
-+		return splice_to_pipe(pipe, &spd);
-+
-+	return err;
-+}
-+
-+static ssize_t block_splice_read(struct file *in, loff_t *ppos,
-+				 struct pipe_inode_info *pipe, size_t len,
-+				 unsigned int flags)
-+{
-+	if (in->f_flags & O_DIRECT)
-+		return __block_splice_read(pipe, in, ppos, len, flags);
-+
-+	return generic_file_splice_read(in, ppos, pipe, len, flags);
-+}
-+
- static const struct address_space_operations def_blk_aops = {
- 	.readpage	= blkdev_readpage,
- 	.writepage	= blkdev_writepage,
-@@ -1179,8 +1438,8 @@ const struct file_operations def_blk_fops = {
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl	= compat_blkdev_ioctl,
- #endif
--	.splice_read	= generic_file_splice_read,
--	.splice_write	= generic_file_splice_write,
-+	.splice_read	= block_splice_read,
-+	.splice_write	= block_splice_write,
- };
- 
- int ioctl_by_bdev(struct block_device *bdev, unsigned cmd, unsigned long arg)
+Linux varda 2.6.27-rc7 #9 SMP PREEMPT Mon Sep 22 01:37:23 CEST 2008
+x86_64 GNU/Linux
 
--- 
-Jens Axboe
+
+ I got this on dmesg although nothing is attached to that port.=20
+
+[  415.871744] ata1: exception Emask 0x10 SAct 0x0 SErr 0x4000000 action 0x=
+e frozen
+[  415.873390] ata1: irq_stat 0x00000040, connection status changed
+[  415.874642] ata1: SError: { DevExch }
+[  415.875472] ata1: hard resetting link
+[  416.599282] ata1: SATA link down (SStatus 0 SControl 300)
+[  416.600523] ata1: EH complete
+
+lspci
+
+00:00.0 Host bridge: ALi Corporation M1697 HTT Host Bridge
+00:01.0 PCI bridge: ALi Corporation PCI Express Root Port
+00:02.0 PCI bridge: ALi Corporation PCI Express Root Port
+00:03.0 PCI bridge: ALi Corporation PCI Express Root Port
+00:04.0 PCI bridge: ALi Corporation PCI Express Root Port
+00:11.0 PCI bridge: ALi Corporation M5249 HTT to PCI Bridge
+00:12.0 Ethernet controller: ALi Corporation ULi 1689,1573 integrated ether=
+net. (rev 60)
+00:13.0 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
+00:13.1 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
+00:13.2 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
+00:13.3 USB Controller: ALi Corporation USB 2.0 Controller (rev 01)
+00:14.0 Audio device: ALi Corporation High Definition Audio/AC'97 Host Cont=
+roller (rev 01)
+00:15.0 ISA bridge: ALi Corporation PCI to LPC Controller (rev 10)
+00:15.1 Bridge: ALi Corporation M7101 Power Management Controller [PMU]
+00:16.0 IDE interface: ALi Corporation M5229 IDE (rev c7)
+00:16.1 SATA controller: ALi Corporation ULi M5288 SATA
+00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Hyp=
+erTransport Technology Configuration
+00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Add=
+ress Map
+00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRA=
+M Controller
+00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Mis=
+cellaneous Control
+01:00.0 VGA compatible controller: nVidia Corporation G70 [GeForce 7300 GT]=
+ (rev a1)
+05:0a.0 Network controller: RaLink RT2500 802.11g Cardbus/mini-PCI (rev 01)
+05:0b.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8169 Gigab=
+it Ethernet (rev 10)
+05:0c.0 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
+05:0c.1 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
+05:0c.2 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
+05:0c.3 USB Controller: ALi Corporation USB 2.0 Controller (rev 01)
+
+
+--=-VSCTHG4Sfv7VF2UGEN49
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Esta parte del mensaje =?ISO-8859-1?Q?est=E1?= firmada
+	digitalmente
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iEYEABECAAYFAkjg0pwACgkQ3GEkiSnUSOEFKACaAiao54D7wiFWuOJ6R2td2MHI
+ZOkAn39eG/Qu432zQydDMICbL40VaTtK
+=0JKq
+-----END PGP SIGNATURE-----
+
+--=-VSCTHG4Sfv7VF2UGEN49--
 
