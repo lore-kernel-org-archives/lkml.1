@@ -1,231 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbYI2Dxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752389AbYI2EDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754024AbYI2Dxb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Sep 2008 23:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYI2DxG
+	id S1752389AbYI2EDb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 00:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbYI2EDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Sep 2008 23:53:06 -0400
-Received: from linux-m68k.xs4all.nl ([82.95.193.92]:48220 "EHLO
-	scrub.xs4all.nl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753042AbYI2DxE (ORCPT
+	Mon, 29 Sep 2008 00:03:24 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:37927 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712AbYI2EDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Sep 2008 23:53:04 -0400
-Message-Id: <20080929032837.695642586@linux-m68k.org>
-References: <20080929032709.693370201@linux-m68k.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 29 Sep 2008 05:27:10 +0200
-From: zippel@linux-m68k.org
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: [PATCH 1/2] fix silentoldconfig
-Content-Disposition: inline; filename=fix-conf
+	Mon, 29 Sep 2008 00:03:23 -0400
+Message-ID: <49203.166.70.238.43.1222658858.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <20080929015730.GK8711@mit.edu>
+References: <33521.166.70.238.43.1222622153.squirrel@webmail.wolfmountaingroup.com>
+    <20080928194536.GC8711@mit.edu>
+    <20080928194616.10d25760@bree.surriel.com>
+    <58677.166.70.238.43.1222644857.squirrel@webmail.wolfmountaingroup.com>
+    <20080929015730.GK8711@mit.edu>
+Date: Sun, 28 Sep 2008 21:27:38 -0600 (MDT)
+Subject: Re: [REQUEST] Clarification from Copyright Holders on 
+     FUSE/NDISWRAPPER
+From: jmerkey@wolfmountaingroup.com
+To: "Theodore Tso" <tytso@mit.edu>, jmerkey@wolfmountaingroup.com,
+       "Rik van Riel" <riel@redhat.com>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recent changes to oldconfig have mixed up the silentoldconfig handling,
-so this fixes that by clearly separating that special mode, e.g.
-KCONFIG_NOSILENTUPDATE is only relevant here, the .config is written as
-needed.
-This will also properly close Bug 11230.
+> You may find these research reports interesting:
+>
+> http://www.linuxfoundation.org/publications/linuxkerneldevelopment.php
+> http://www.linux-foundation.org/publications/IDC_Workloads.pdf
+>
+> The former shows that the development rate is if anything, increasing
+> based on analyzing the rate that changes are flowing into the Linus's
+> git tree --- something which I think everyone would agree is a better
+> way of measuring the rate of development than the number of downloads
+> of mdb.
+>
+> The latter is a report from IDC which calculates total enterprise
+> spending in the Linux ecosystem at $21 billion in 2007, and predicts
+> that by 2011 the figure will more than double to $49 billion.
+>
+> So the health of Linux, both in terms of the rate of development and
+> the enterprise server ecosystem, seems to be doing quite well (never
+> mind the surge of interest of Linux for mobile platforms).  But if you
+> want to develop on FreeBSD, hey, don't let us stop you.  Different
+> licensing strokes for different folks, after all...
+>
+> Regards,
+>
+> 						- Ted
+>
 
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+Hi Ted,
 
----
- scripts/kconfig/conf.c |  123 ++++++++++++++++++++++---------------------------
- 1 file changed, 57 insertions(+), 66 deletions(-)
+The figures I am quoting are based on who is downloading not how many.  I
+had over 27,000 downloads the first week but only a few of them were from
+fortune 1000 of 500 companies.  After two weeks it dropped off sharply to
+a very low level.  Most of the downloads are still from my primary
+servers, and not google or sourceforge.  I agree Linux is pervasive and
+its use is increasing among the US customer base, but its interest from
+technology companies (distributors) is declining.
 
-Index: linux-2.6/scripts/kconfig/conf.c
-===================================================================
---- linux-2.6.orig/scripts/kconfig/conf.c
-+++ linux-2.6/scripts/kconfig/conf.c
-@@ -32,6 +32,7 @@ char *defconfig_file;
- 
- static int indent = 1;
- static int valid_stdin = 1;
-+static int sync_kconfig;
- static int conf_cnt;
- static char line[128];
- static struct menu *rootEntry;
-@@ -65,7 +66,7 @@ static void strip(char *str)
- 
- static void check_stdin(void)
- {
--	if (!valid_stdin && input_mode == ask_silent) {
-+	if (!valid_stdin) {
- 		printf(_("aborted!\n\n"));
- 		printf(_("Console input/output is redirected. "));
- 		printf(_("Run 'make oldconfig' to update configuration.\n\n"));
-@@ -427,43 +428,6 @@ static void check_conf(struct menu *menu
- 		check_conf(child);
- }
- 
--static void conf_do_update(void)
--{
--	/* Update until a loop caused no more changes */
--	do {
--		conf_cnt = 0;
--		check_conf(&rootmenu);
--	} while (conf_cnt);
--}
--
--static int conf_silent_update(void)
--{
--	const char *name;
--
--	if (conf_get_changed()) {
--		name = getenv("KCONFIG_NOSILENTUPDATE");
--		if (name && *name) {
--			fprintf(stderr,
--			_("\n*** Kernel configuration requires explicit update.\n\n"));
--			return 1;
--		}
--		conf_do_update();
--	}
--	return 0;
--}
--
--static int conf_update(void)
--{
--	rootEntry = &rootmenu;
--	conf(&rootmenu);
--	if (input_mode == ask_all) {
--		input_mode = ask_silent;
--		valid_stdin = 1;
--	}
--	conf_do_update();
--	return 0;
--}
--
- int main(int ac, char **av)
- {
- 	int opt;
-@@ -477,11 +441,11 @@ int main(int ac, char **av)
- 	while ((opt = getopt(ac, av, "osdD:nmyrh")) != -1) {
- 		switch (opt) {
- 		case 'o':
--			input_mode = ask_new;
-+			input_mode = ask_silent;
- 			break;
- 		case 's':
- 			input_mode = ask_silent;
--			valid_stdin = isatty(0) && isatty(1) && isatty(2);
-+			sync_kconfig = 1;
- 			break;
- 		case 'd':
- 			input_mode = set_default;
-@@ -519,6 +483,19 @@ int main(int ac, char **av)
- 	name = av[optind];
- 	conf_parse(name);
- 	//zconfdump(stdout);
-+	if (sync_kconfig) {
-+		if (stat(".config", &tmpstat)) {
-+			fprintf(stderr, _("***\n"
-+				"*** You have not yet configured your kernel!\n"
-+				"*** (missing kernel .config file)\n"
-+				"***\n"
-+				"*** Please run some configurator (e.g. \"make oldconfig\" or\n"
-+				"*** \"make menuconfig\" or \"make xconfig\").\n"
-+				"***\n"));
-+			exit(1);
-+		}
-+	}
-+
- 	switch (input_mode) {
- 	case set_default:
- 		if (!defconfig_file)
-@@ -531,16 +508,6 @@ int main(int ac, char **av)
- 		}
- 		break;
- 	case ask_silent:
--		if (stat(".config", &tmpstat)) {
--			printf(_("***\n"
--				"*** You have not yet configured your kernel!\n"
--				"*** (missing kernel .config file)\n"
--				"***\n"
--				"*** Please run some configurator (e.g. \"make oldconfig\" or\n"
--				"*** \"make menuconfig\" or \"make xconfig\").\n"
--				"***\n"));
--			exit(1);
--		}
- 	case ask_all:
- 	case ask_new:
- 		conf_read(NULL);
-@@ -569,6 +536,19 @@ int main(int ac, char **av)
- 	default:
- 		break;
- 	}
-+
-+	if (sync_kconfig) {
-+		if (conf_get_changed()) {
-+			name = getenv("KCONFIG_NOSILENTUPDATE");
-+			if (name && *name) {
-+				fprintf(stderr,
-+					_("\n*** Kernel configuration requires explicit update.\n\n"));
-+				return 1;
-+			}
-+		}
-+		valid_stdin = isatty(0) && isatty(1) && isatty(2);
-+	}
-+
- 	switch (input_mode) {
- 	case set_no:
- 		conf_set_all_new_symbols(def_no);
-@@ -585,27 +565,38 @@ int main(int ac, char **av)
- 	case set_default:
- 		conf_set_all_new_symbols(def_default);
- 		break;
--	case ask_silent:
- 	case ask_new:
--		if (conf_silent_update())
--			exit(1);
--		break;
- 	case ask_all:
--		if (conf_update())
--			exit(1);
-+		rootEntry = &rootmenu;
-+		conf(&rootmenu);
-+		input_mode = ask_silent;
-+		/* fall through */
-+	case ask_silent:
-+		/* Update until a loop caused no more changes */
-+		do {
-+			conf_cnt = 0;
-+			check_conf(&rootmenu);
-+		} while (conf_cnt);
- 		break;
- 	}
- 
--	if (conf_write(NULL)) {
--		fprintf(stderr, _("\n*** Error during writing of the kernel configuration.\n\n"));
--		exit(1);
--	}
--	/* ask_silent is used during the build so we shall update autoconf.
--	 * All other commands are only used to generate a config.
--	 */
--	if (input_mode == ask_silent && conf_write_autoconf()) {
--		fprintf(stderr, _("\n*** Error during writing of the kernel configuration.\n\n"));
--		return 1;
-+	if (sync_kconfig) {
-+		/* silentoldconfig is used during the build so we shall update autoconf.
-+		 * All other commands are only used to generate a config.
-+		 */
-+		if (conf_get_changed() && conf_write(NULL)) {
-+			fprintf(stderr, _("\n*** Error during writing of the kernel configuration.\n\n"));
-+			exit(1);
-+		}
-+		if (conf_write_autoconf()) {
-+			fprintf(stderr, _("\n*** Error during update of the kernel configuration.\n\n"));
-+			return 1;
-+		}
-+	} else {
-+		if (conf_write(NULL)) {
-+			fprintf(stderr, _("\n*** Error during writing of the kernel configuration.\n\n"));
-+			exit(1);
-+		}
- 	}
- 	return 0;
- }
+This is usually the first sign.  You have to remember, I was at Novell in
+its heyday and I watched the trends.  Novell's customer base was steadily
+increasing long after the company lost its lead and started its decline. 
+The first sign is lack of interest in new development, not lack of
+interest in using it.   This is reflected in the lack of innovation
+occurring at present in Linux (how many ways can you serve up unix?).
 
--- 
+The numbers you are quoting are tied to hardware sales and deployment
+where software is just some free gizmo tossed on the server -- I do not
+consider them representative of Linux itself.
+
+The GPL and its advantages for the success of Linux can be liked to the
+theory of http://en.wikipedia.org/wiki/Antagonistic_pleiotropy_hypothesis
+in biology.  The GPL conferred distinct advantages to Linux its early
+development but now that the platform is mature, it is manifesting in
+other ways --most of them deleterious.  Who wants to develop software
+under the GPL for commercial use when you have people who sit around on
+their ass and file lawsuits (I should talk) against people using for
+example busybox so they can be lazy and extort money out of folks?  That's
+where GPL in general seems to be headed.  I cannot convince any investors
+to put a plug nickle into Linux anymore because there's no profit model
+that works for software only businesses or even hardware businesses if you
+add technology.  The danger of a rabid FSF lawsuit is too great.
+
+Don't get me wrong, I love working on Linux and the debugger, but I think
+its ill advised to use it in any commercial venture where proprietary
+technology is being developed -- it's risky these days.
+
+:-)
+
+Jeff
+
+
+
+
 
