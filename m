@@ -1,150 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752134AbYI2TWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbYI2Tg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752134AbYI2TWW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 15:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbYI2TWI
+	id S1753030AbYI2Tg4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 15:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYI2Tgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 15:22:08 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:56034 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752605AbYI2TWH (ORCPT
+	Mon, 29 Sep 2008 15:36:46 -0400
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:50932 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751102AbYI2Tgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 15:22:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nI2iAPe85+kSsI7a2IvaSj7ytv8Bs5myNXx+OqZwrN88+WoLaVh4uKzC2I18pGgdmb
-         iOsru0/ytOX9JOUC3zKkKE5RD0LzXIaCEafWCJbbRk07MK6pN+LLS1wvI7LAnxUayCGa
-         gCxoqNsFzGxJ+syU7BdUF8YqObmFPdB+lDsMM=
-Message-ID: <dd18b0c30809291222u1182f712yef52aad3ca0762a9@mail.gmail.com>
-Date: Mon, 29 Sep 2008 12:22:05 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Rabin Vincent" <rabin@rab.in>
-Subject: Re: BUG kmalloc-16: Object already free
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       marcel@holtmann.org, linux-bluetooth@vger.kernel.org
-In-Reply-To: <20080929181752.GA2027@debian>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30809281554g11ac7275x819812935b6ac68f@mail.gmail.com>
-	 <20080929181752.GA2027@debian>
+	Mon, 29 Sep 2008 15:36:45 -0400
+Message-Id: <20080929193516.500912533@quilx.com>
+References: <20080929193500.470295078@quilx.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 29 Sep 2008 12:35:04 -0700
+From: Christoph Lameter <cl@linux-foundation.org>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
+CC: linux-mm@kvack.org
+Cc: rusty@rustcorp.com.au
+Cc: jeremy@goop.org
+Cc: ebiederm@xmission.com
+Cc: travis@sgi.com
+Cc: herbert@gondor.apana.org.au
+Cc: xemul@openvz.org
+Cc: penberg@cs.helsinki.fi
+Subject: [patch 4/4] cpu alloc: Use cpu allocator instead of the builtin modules per cpu allocator
+Content-Disposition: inline; filename=cpu_alloc_replace_modules_per_cpu_allocator
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 29, 2008 at 11:17 AM, Rabin Vincent <rabin@rab.in> wrote:
-> On Sun, Sep 28, 2008 at 03:54:23PM -0700, Justin Mattock wrote:
->> After frying my system, I'm finally up and
->> running. Not sure if this was due to a git-pull
->> (only be a few days since the last pull), or what:
->> when waking from suspend I see this
->> (I know it says tainted in it, so this will be the only noise you'll
->> here from me on this);
->>
->> [  274.327003] =============================================================================
->> [  274.327528] BUG kmalloc-16: Object already free
->> [  274.327877] -----------------------------------------------------------------------------
->> [  274.327879]
->> [  274.327890] INFO: Allocated in btusb_open+0x82/0x16f [btusb] age=0
->> cpu=1 pid=3763
->> [  274.327899] INFO: Freed in btusb_open+0x13d/0x16f [btusb] age=0
->> cpu=1 pid=3763
->> [  274.327905] INFO: Slab 0xc139a100 objects=64 used=62 fp=0xdcd08100
->> flags=0x400000c3
->
-> There's a commit in the latest git which looks like it will solve the
-> btusb suspend/resume issues: 5fbcd260.. ("[Bluetooth] Fix USB disconnect
-> handling of btusb driver").
->
-> Marcel / linux-bluetooth, I think this double free is a separate issue
-> with the error handling, and the following patch should fix it.
->
-> ---
-> From: Rabin Vincent <rabin@rab.in>
-> Subject: [PATCH] btusb, bpa10x: fix double frees on error paths
->
-> Justin Mattock reported this double free in btusb:
->
->  BUG kmalloc-16: Object already free
->  -----------------------------------------------------------------------------
->
->  INFO: Allocated in btusb_open+0x82/0x16f [btusb] age=3D0 cpu=3D1 pid=3D3763
->  INFO: Freed in btusb_open+0x13d/0x16f [btusb] age=3D0 cpu=3D1 pid=3D3763
->
-> This occurs because the urb's transfer buffer is being freed separately
-> in the error path even though the URB_FREE_BUFFER transfer_flag is set
-> on the urb.
->
-> There are similar cases elsewhere in btusb and in bpa10x.  Fix all of
-> them by removing the additional kfree()'s.
->
-> Reported-by: Justin Mattock <justinmattock@gmail.com>
-> Signed-off-by: Rabin Vincent <rabin@rab.in>
-> ---
->  drivers/bluetooth/bpa10x.c |    2 --
->  drivers/bluetooth/btusb.c  |    3 ---
->  2 files changed, 0 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/bluetooth/bpa10x.c b/drivers/bluetooth/bpa10x.c
-> index 1e55a65..32f3a8e 100644
-> --- a/drivers/bluetooth/bpa10x.c
-> +++ b/drivers/bluetooth/bpa10x.c
-> @@ -256,7 +256,6 @@ static inline int bpa10x_submit_intr_urb(struct hci_dev *hdev)
->                BT_ERR("%s urb %p submission failed (%d)",
->                                                hdev->name, urb, -err);
->                usb_unanchor_urb(urb);
-> -               kfree(buf);
->        }
->
->        usb_free_urb(urb);
-> @@ -298,7 +297,6 @@ static inline int bpa10x_submit_bulk_urb(struct hci_dev *hdev)
->                BT_ERR("%s urb %p submission failed (%d)",
->                                                hdev->name, urb, -err);
->                usb_unanchor_urb(urb);
-> -               kfree(buf);
->        }
->
->        usb_free_urb(urb);
-> diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-> index 29ae998..262e9be 100644
-> --- a/drivers/bluetooth/btusb.c
-> +++ b/drivers/bluetooth/btusb.c
-> @@ -271,7 +271,6 @@ static int btusb_submit_intr_urb(struct hci_dev *hdev)
->                BT_ERR("%s urb %p submission failed (%d)",
->                                                hdev->name, urb, -err);
->                usb_unanchor_urb(urb);
-> -               kfree(buf);
->        }
->
->        usb_free_urb(urb);
-> @@ -354,7 +353,6 @@ static int btusb_submit_bulk_urb(struct hci_dev *hdev)
->                BT_ERR("%s urb %p submission failed (%d)",
->                                                hdev->name, urb, -err);
->                usb_unanchor_urb(urb);
-> -               kfree(buf);
->        }
->
->        usb_free_urb(urb);
-> @@ -475,7 +473,6 @@ static int btusb_submit_isoc_urb(struct hci_dev *hdev)
->                BT_ERR("%s urb %p submission failed (%d)",
->                                                hdev->name, urb, -err);
->                usb_unanchor_urb(urb);
-> -               kfree(buf);
->        }
->
->        usb_free_urb(urb);
-> --
-> 1.5.6.5
->
->
+Remove the builtin per cpu allocator from modules.c and use cpu_alloc instead.
 
-Cool, depending on the status of
-this patch. either I'll apply this one, or just wait
-until it gets commited,and then just do a git-pull.
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+
+---
+ include/linux/module.h |    1 
+ kernel/module.c        |  178 ++++---------------------------------------------
+ 2 files changed, 17 insertions(+), 162 deletions(-)
+
+Index: linux-2.6/kernel/module.c
+===================================================================
+--- linux-2.6.orig/kernel/module.c	2008-09-19 08:12:10.000000000 -0500
++++ linux-2.6/kernel/module.c	2008-09-19 08:16:04.000000000 -0500
+@@ -337,121 +337,6 @@
+ 	return NULL;
+ }
+ 
+-#ifdef CONFIG_SMP
+-/* Number of blocks used and allocated. */
+-static unsigned int pcpu_num_used, pcpu_num_allocated;
+-/* Size of each block.  -ve means used. */
+-static int *pcpu_size;
+-
+-static int split_block(unsigned int i, unsigned short size)
+-{
+-	/* Reallocation required? */
+-	if (pcpu_num_used + 1 > pcpu_num_allocated) {
+-		int *new;
+-
+-		new = krealloc(pcpu_size, sizeof(new[0])*pcpu_num_allocated*2,
+-			       GFP_KERNEL);
+-		if (!new)
+-			return 0;
+-
+-		pcpu_num_allocated *= 2;
+-		pcpu_size = new;
+-	}
+-
+-	/* Insert a new subblock */
+-	memmove(&pcpu_size[i+1], &pcpu_size[i],
+-		sizeof(pcpu_size[0]) * (pcpu_num_used - i));
+-	pcpu_num_used++;
+-
+-	pcpu_size[i+1] -= size;
+-	pcpu_size[i] = size;
+-	return 1;
+-}
+-
+-static inline unsigned int block_size(int val)
+-{
+-	if (val < 0)
+-		return -val;
+-	return val;
+-}
+-
+-static void *percpu_modalloc(unsigned long size, unsigned long align,
+-			     const char *name)
+-{
+-	unsigned long extra;
+-	unsigned int i;
+-	void *ptr;
+-
+-	if (align > PAGE_SIZE) {
+-		printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
+-		       name, align, PAGE_SIZE);
+-		align = PAGE_SIZE;
+-	}
+-
+-	ptr = __per_cpu_start;
+-	for (i = 0; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
+-		/* Extra for alignment requirement. */
+-		extra = ALIGN((unsigned long)ptr, align) - (unsigned long)ptr;
+-		BUG_ON(i == 0 && extra != 0);
+-
+-		if (pcpu_size[i] < 0 || pcpu_size[i] < extra + size)
+-			continue;
+-
+-		/* Transfer extra to previous block. */
+-		if (pcpu_size[i-1] < 0)
+-			pcpu_size[i-1] -= extra;
+-		else
+-			pcpu_size[i-1] += extra;
+-		pcpu_size[i] -= extra;
+-		ptr += extra;
+-
+-		/* Split block if warranted */
+-		if (pcpu_size[i] - size > sizeof(unsigned long))
+-			if (!split_block(i, size))
+-				return NULL;
+-
+-		/* Mark allocated */
+-		pcpu_size[i] = -pcpu_size[i];
+-		return ptr;
+-	}
+-
+-	printk(KERN_WARNING "Could not allocate %lu bytes percpu data\n",
+-	       size);
+-	return NULL;
+-}
+-
+-static void percpu_modfree(void *freeme)
+-{
+-	unsigned int i;
+-	void *ptr = __per_cpu_start + block_size(pcpu_size[0]);
+-
+-	/* First entry is core kernel percpu data. */
+-	for (i = 1; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
+-		if (ptr == freeme) {
+-			pcpu_size[i] = -pcpu_size[i];
+-			goto free;
+-		}
+-	}
+-	BUG();
+-
+- free:
+-	/* Merge with previous? */
+-	if (pcpu_size[i-1] >= 0) {
+-		pcpu_size[i-1] += pcpu_size[i];
+-		pcpu_num_used--;
+-		memmove(&pcpu_size[i], &pcpu_size[i+1],
+-			(pcpu_num_used - i) * sizeof(pcpu_size[0]));
+-		i--;
+-	}
+-	/* Merge with next? */
+-	if (i+1 < pcpu_num_used && pcpu_size[i+1] >= 0) {
+-		pcpu_size[i] += pcpu_size[i+1];
+-		pcpu_num_used--;
+-		memmove(&pcpu_size[i+1], &pcpu_size[i+2],
+-			(pcpu_num_used - (i+1)) * sizeof(pcpu_size[0]));
+-	}
+-}
+-
+ static unsigned int find_pcpusec(Elf_Ehdr *hdr,
+ 				 Elf_Shdr *sechdrs,
+ 				 const char *secstrings)
+@@ -467,48 +352,6 @@
+ 		memcpy(pcpudest + per_cpu_offset(cpu), from, size);
+ }
+ 
+-static int percpu_modinit(void)
+-{
+-	pcpu_num_used = 2;
+-	pcpu_num_allocated = 2;
+-	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
+-			    GFP_KERNEL);
+-	/* Static in-kernel percpu data (used). */
+-	pcpu_size[0] = -(__per_cpu_end-__per_cpu_start);
+-	/* Free room. */
+-	pcpu_size[1] = PERCPU_AREA_SIZE + pcpu_size[0];
+-	if (pcpu_size[1] < 0) {
+-		printk(KERN_ERR "No per-cpu room for modules.\n");
+-		pcpu_num_used = 1;
+-	}
+-
+-	return 0;
+-}
+-__initcall(percpu_modinit);
+-#else /* ... !CONFIG_SMP */
+-static inline void *percpu_modalloc(unsigned long size, unsigned long align,
+-				    const char *name)
+-{
+-	return NULL;
+-}
+-static inline void percpu_modfree(void *pcpuptr)
+-{
+-	BUG();
+-}
+-static inline unsigned int find_pcpusec(Elf_Ehdr *hdr,
+-					Elf_Shdr *sechdrs,
+-					const char *secstrings)
+-{
+-	return 0;
+-}
+-static inline void percpu_modcopy(void *pcpudst, const void *src,
+-				  unsigned long size)
+-{
+-	/* pcpusec should be 0, and size of that section should be 0. */
+-	BUG_ON(size != 0);
+-}
+-#endif /* CONFIG_SMP */
+-
+ #define MODINFO_ATTR(field)	\
+ static void setup_modinfo_##field(struct module *mod, const char *s)  \
+ {                                                                     \
+@@ -1433,7 +1276,7 @@
+ 	module_free(mod, mod->module_init);
+ 	kfree(mod->args);
+ 	if (mod->percpu)
+-		percpu_modfree(mod->percpu);
++		cpu_free(mod->percpu, mod->percpu_size);
+ 
+ 	/* Free lock-classes: */
+ 	lockdep_free_key_range(mod->module_core, mod->core_size);
+@@ -1833,6 +1676,7 @@
+ 	unsigned int markersstringsindex;
+ 	struct module *mod;
+ 	long err = 0;
++	unsigned long percpu_size = 0;
+ 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
+ 	struct exception_table_entry *extable;
+ 	mm_segment_t old_fs;
+@@ -1981,15 +1825,20 @@
+ 
+ 	if (pcpuindex) {
+ 		/* We have a special allocation for this section. */
+-		percpu = percpu_modalloc(sechdrs[pcpuindex].sh_size,
+-					 sechdrs[pcpuindex].sh_addralign,
+-					 mod->name);
++		unsigned long align = sechdrs[pcpuindex].sh_addralign;
++
++		percpu_size = sechdrs[pcpuindex].sh_size;
++		percpu = cpu_alloc(percpu_size, GFP_KERNEL|__GFP_ZERO, align);
++		if (!percpu)
++			printk(KERN_WARNING "Could not allocate %lu bytes percpu data\n",
++	      							percpu_size);
+ 		if (!percpu) {
+ 			err = -ENOMEM;
+ 			goto free_mod;
+ 		}
+ 		sechdrs[pcpuindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
+ 		mod->percpu = percpu;
++		mod->percpu_size = percpu_size;
+ 	}
+ 
+ 	/* Determine total sizes, and put offsets in sh_entsize.  For now
+@@ -2243,7 +2092,7 @@
+ 	module_free(mod, mod->module_core);
+  free_percpu:
+ 	if (percpu)
+-		percpu_modfree(percpu);
++		cpu_free(percpu, percpu_size);
+  free_mod:
+ 	kfree(args);
+  free_hdr:
+Index: linux-2.6/include/linux/module.h
+===================================================================
+--- linux-2.6.orig/include/linux/module.h	2008-09-19 08:12:07.000000000 -0500
++++ linux-2.6/include/linux/module.h	2008-09-19 08:12:10.000000000 -0500
+@@ -323,6 +323,7 @@
+ 
+ 	/* Per-cpu data. */
+ 	void *percpu;
++	int percpu_size;
+ 
+ 	/* The command line arguments (may be mangled).  People like
+ 	   keeping pointers to this stuff */
 
 -- 
-Justin P. Mattock
