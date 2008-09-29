@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbYI2Top@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYI2TzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753492AbYI2Top (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 15:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbYI2Tof
+	id S1753320AbYI2TzR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 15:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYI2TzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 15:44:35 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:48783 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751915AbYI2Toe (ORCPT
+	Mon, 29 Sep 2008 15:55:03 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37626 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbYI2TzB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 15:44:34 -0400
-Subject: [RFC] Btrfs mainline plans
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 29 Sep 2008 15:44:20 -0400
-Message-Id: <1222717460.30627.56.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 29 Sep 2008 15:55:01 -0400
+Date: Mon, 29 Sep 2008 15:54:56 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, od@suse.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>, Tom Zanussi <zanussi@comcast.net>
+Subject: Re: [RFC PATCH] LTTng relay buffer allocation, read, write
+In-Reply-To: <alpine.DEB.1.10.0809291452180.8145@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.1.10.0809291548390.8145@gandalf.stny.rr.com>
+References: <20080927134012.GA11930@Krystal> <1222535419.16700.300.camel@lappy.programming.kicks-ass.net> <20080929155004.GA11029@Krystal> <alpine.DEB.1.10.0809291224470.5493@gandalf.stny.rr.com> <20080929183833.GA17490@Krystal>
+ <alpine.DEB.1.10.0809291452180.8145@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
 
-Thanks to help from David Woodhouse and Linus, I have btrfs source repos
-migrated over to git.  My goal is to make the sources easier for people
-to review, and to start some discussions around the best time to merge
-Btrfs.
+On Mon, 29 Sep 2008, Steven Rostedt wrote:
+>   We do not need to worry about SMP for writes.
+>   That is, if you reserve data and atomically push the head forward
+>    if the head goes past the end of page, One, you check if your
+>    start of head (head - length) is still on the page. If it is
+>    you add your padding (you already reserved it), then you atomically
+>    push the head forward. Then you start the process again.
+>   If the start of the head (head - length) is not on the page, that
+>    means that an IRQ or NMI came in and pushed it before you.
 
-The current code has a number of problems (and this is not a complete
-list):
+I forgot to mention one important detail. The "head" index will stay
+on the page frame. That way we do not need to figure out which 
+head_page we are on. We grab the head_page, we atomically 
+(local_inc_return) the head pointer on that page. If the return value is 
+still on the page, we succeeded. We can also increment a value on this 
+page frame that will prevent recording if we somehow overflowed the buffer 
+before relinquishing the stack.
 
-* The disk format is not finalized
-* ENOSPC can result in BUG()
-* blocksize != pagesize does not work
-* Error handling is missing in a number of places
+That is
 
-But, the code is very actively developed, and I believe the best way to
-develop Btrfs from here is to get it into the mainline kernel (with a
-large warning label about the disk format) and attract more extensive
-review of both the disk format and underlying code.
+  reserve_event()
 
-The Btrfs developers are committed to making the FS work and to working
-well within the kernel community.  I think everyone will be happier with
-the final result if I am able to attract eyeballs as early as possible.
+     IRQ->
+            reserve_event();
 
-The plan is to have the disk format finalized by the end of the year.  I
-do expect to have a provisional disk format over the next 2 weeks that
-should have all the moving pieces btrfs needs to implement the remaining
-1.0 features, and I hope to restrict any additional format changes after
-that to include backward compatibility.  
+      [...]
 
-The sources:
+     IRQ->reserve_event() came back to original head!
 
-Kernel module (against rc7):
-http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable.git;a=summary
+      Here we do not have a big enough buffer, and this is just stupid ;-)
+      We would drop packets in this case, and should drop the guy on his
+      head who came up with the too small buffer.
 
-
-Btrfs progs:
-
-http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-progs-unstable.git;a=summary
-
-General Btrfs information:
-
-http://btrfs.wiki.kernel.org/
-
-Most of the remaining features before 1.0:
-
-http://btrfs.wiki.kernel.org/index.php/Development_timeline
-
--chris
-
+-- Steve
 
