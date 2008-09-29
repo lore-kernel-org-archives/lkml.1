@@ -1,105 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYI2Rt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbYI2Rzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbYI2Rt5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYI2Rtt
+	id S1753319AbYI2Rzn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYI2Rzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:49:49 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:48006 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751102AbYI2Rts (ORCPT
+	Mon, 29 Sep 2008 13:55:36 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:57082 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751377AbYI2Rzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 13:49:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=jRKWl/FHGXgNZj3WXdXm4T2zPyj11Mj1RTtetcXlYKxkoj3p9WtxGhZB3hGV3BJWTR
-         xE/6E6XC3wMPMbFouZ25JNBlJaRQzjfaJHiMU9yNscbx2sMdyb2weq97MPk8k2PphV24
-         ccR82fKMWyeupmdeVPylImYutByWJWgPhRVsE=
-Message-ID: <c62985530809291049k35610fa8g703195b6c62ba180@mail.gmail.com>
-Date: Mon, 29 Sep 2008 19:49:46 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Pekka Paalanen" <pq@iki.fi>
-Subject: Re: trace_pipe tentative fix
-Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080928215815.3a9aa355@daedalus.pq.iki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 29 Sep 2008 13:55:35 -0400
+Subject: Re: Use CPUID to communicate with the hypervisor.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
+       Daniel Hecht <dhecht@vmware.com>,
+       "Jun.Nakajima@Intel.Com" <Jun.Nakajima@Intel.Com>
+In-Reply-To: <48E090B6.2080809@redhat.com>
+References: <1222472815.29886.43.camel@alok-dev1>
+	 <48E090B6.2080809@redhat.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 29 Sep 2008 10:55:24 -0700
+Message-Id: <1222710924.30247.21.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48DD0347.5070008@gmail.com>
-	 <20080927002121.0038cdfe@daedalus.pq.iki.fi>
-	 <c62985530809270517g179f1d21nca05cf50b289b2f5@mail.gmail.com>
-	 <20080928201259.09bbac54@daedalus.pq.iki.fi>
-	 <20080928215815.3a9aa355@daedalus.pq.iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/28 Pekka Paalanen <pq@iki.fi>:
-> On Sun, 28 Sep 2008 20:12:59 +0300
-> Pekka Paalanen <pq@iki.fi> wrote:
->
->> If I understand you suggestion, it looks like the right thing to do.
->> Here is a tentative fix, which has not even been compile-tested.
->>
->> Is it so that the problem is triggered by consuming a trace entry
->> which does not produce any output? If that entry is all there is
->> in the ring at a time of a read call, then the last call to
->> trace_seq_to_user() returns -EBUSY, because there is nothing to
->> copy to user. What I failed to understand when I wrote that
->> piece of code, is that returning 0 means EOF. The only cases
->> when we do want to return an EOF are near the
->>       while (trace_empty(iter)) {
->> loop.
->>
->> Frederic, could you test the fix, and if it works, send it to Ingo?
->
-> Whoops, sret was left in a bad state. Here's a new one.
->
-> ---
->
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 6ada059..16b8a22 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -2605,7 +2605,6 @@ tracing_read_pipe(struct file *filp, char __user *ubuf,
->        sret = trace_seq_to_user(&iter->seq, ubuf, cnt);
->        if (sret != -EBUSY)
->                return sret;
-> -       sret = 0;
->
->        trace_seq_reset(&iter->seq);
->
-> @@ -2616,6 +2615,8 @@ tracing_read_pipe(struct file *filp, char __user *ubuf,
->                        goto out;
->        }
->
-> +waitagain:
-> +       sret = 0;
->        while (trace_empty(iter)) {
->
->                if ((filp->f_flags & O_NONBLOCK)) {
-> @@ -2749,8 +2750,13 @@ tracing_read_pipe(struct file *filp, char __user *ubuf,
->        sret = trace_seq_to_user(&iter->seq, ubuf, cnt);
->        if (iter->seq.readpos >= iter->seq.len)
->                trace_seq_reset(&iter->seq);
-> +
-> +       /*
-> +        * If there was nothing to send to user, inspite of consuming trace
-> +        * entries, go back to wait for more entries.
-> +        */
->        if (sret == -EBUSY)
-> -               sret = 0;
-> +               goto waitagain;
->
->  out:
->        mutex_unlock(&trace_types_lock);
->
+Hi Gerd,
 
-Tested! And, no problem as far as I can see :)
-So I'm going to send the new patchset.
+On Mon, 2008-09-29 at 01:24 -0700, Gerd Hoffmann wrote:
+>   Hi,
+> 
+> > +unsigned long hypervisor_tsc_freq(void)
+> > +{
+> > +     unsigned long tsc_khz;
+> > +     unsigned int max_cpuid_leaf;
+> > +
+> > +     if (cpu_has_hypervisor) {
+> > +             max_cpuid_leaf = cpuid_eax(HYPERVISOR_INFO_LEAF);
+> > +             if (max_cpuid_leaf >= HYPERVISOR_TIMING_LEAF) {
+> > +                     tsc_khz = cpuid_eax(HYPERVISOR_TIMING_LEAF);
+> > +                     printk(KERN_INFO
+> > +                             "TSC frequency read from hypervisor\n");
+> > +                     return tsc_khz;
+> > +             }
+> > +     }
+> > +     return 0;
+> > +}
+> 
+> Shouldn't you check the hypervisor signature here?
 
-Thanks.
+Nope the whole idea of not checking the hypervisor signature is that we
+should keep this interface generic. 
+In the current code, before poking the TIMING_LEAF, we do check if the
+maximum supported cpuid level is greater than that leaf. If it is we go
+ahead and probe that cpuid leaf. 
+Also one thing to remember is, that a hypervisor can decide to not
+implement this level and just return "0" the kernel can then just ignore
+that value. That's what we do currently in native_calibrate_tsc.
+
+> 
+> >  /*
+> > + * Intel & AMD have reserved the cpuid levels 0x40000000 - 0x400000FF for
+> > + * software use. Hypervisors can use these levels to provide an interface
+> > + * to pass information from the hypervisor to the guest. This is similar
+> > + * to how we extract information about a physical cpu by using cpuid.
+> > + */
+> > +
+> > +/*
+> > + * This CPUID leaf returns the information about the hypervisor.
+> > + * EAX : maximum input value for CPUID supported by the hypervisor.
+> > + * EBX, ECX, EDX : Hypervisor vendor ID signature. E.g. VMwareVMware.
+> > + */
+> > +#define HYPERVISOR_INFO_LEAF   0x40000000
+> > +/*
+> > + * This leaf gets timing information from the hypervisor.info.
+> > + * EAX: (Virtual) TSC frequency in kHz.
+> > + * EBX: (Virtual) Bus (local apic timer) frequency in kHz.
+> > + * ECX, EDX: RESERVED
+> > + */
+> > +#define HYPERVISOR_TIMING_LEAF 0x40000010
+> 
+> Likewise, I think this should be HYPERVISOR_VMWARE_TIMING_LEAF.
+Nope, lets do the "Or" part :)
+> 
+> Or we need some way to
+>   (a) standardize hypervisor cpuid leafes (or parts of it) and
+>   (b) handle sparsely filled cpuid info.
+> 
+Exactly.
+Returning zero for the fields which are not supported by the hypervisor,
+lets us do that. 
+So for instance right now, VMware has defined 40000010 leaf, if either
+kvm/xen think it could be useful they could just define that leaf to
+return nonzero value and the kernel will start using it for them.
+Likewise, if in future either kvm/xen come up with a need to define a
+new CPUID leaf they can define the semantics for that leaf, and the
+corresponding kernel side stuff. If VMware, think that this new leaf is
+useful, we can then support that leaf in our hypervisor or return zero
+otherwise.
+
+> Right now both kvm and xen use the first one or two leafes (after info),
+> but in incompatible ways, so for these the signature *must* be checked
+> before using the info found there.
+
+Hmm that's unfortunate, but we can have exceptions for these one of
+cases and AFAIK these are only checked in the kvm/xen code path and not
+in any generic code as of now, right ? 
+
+btw, i could only find the semantics for 0x40000001 leaf in KVM's header
+file but don't see Xen using that leaf, can you please point me which
+leafs are you referring to here. 
+
+> 
+> 0x40000010 doesn't clash with anything as far I know, so we could
+> attempt to make that standard accross hypervisors.
+Yep.
+
+Thanks,
+Alok
+> 
+> cheers,
+>   Gerd
+
