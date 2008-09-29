@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbYI2WQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbYI2WQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbYI2WQN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 18:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbYI2WPh
+	id S1754779AbYI2WQr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 18:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYI2WPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 18:15:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48224 "EHLO ogre.sisk.pl"
+	Mon, 29 Sep 2008 18:15:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48234 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752364AbYI2WPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 18:15:32 -0400
+	id S1752603AbYI2WPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 18:15:33 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 5/6] SATA Sil: Blacklist system that spins off disks during ACPI power off
-Date: Tue, 30 Sep 2008 00:16:26 +0200
+Subject: [PATCH 1/6] Hibernation: Introduce new system state for the last phase of hibernation
+Date: Tue, 30 Sep 2008 00:10:37 +0200
 User-Agent: KMail/1.9.9
 Cc: Tejun Heo <htejun@gmail.com>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
@@ -24,92 +24,64 @@ Cc: Tejun Heo <htejun@gmail.com>,
 References: <200808290002.55026.rjw@sisk.pl> <48D17BBE.5020807@garzik.org> <200809300006.24919.rjw@sisk.pl>
 In-Reply-To: <200809300006.24919.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200809300016.27190.rjw@sisk.pl>
 Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809300010.39000.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-SATA Sil: Blacklist system that spins off disks during ACPI power off
+Hibernation: Introduce new system state for the last phase of hibernation
 
-Some notebooks from HP have the problem that their BIOSes attempt to
-spin down hard drives before entering ACPI system states S4 and S5.
-This leads to a yo-yo effect during system power-off shutdown and the
-last phase of hibernation when the disk is first spun down by the
-kernel and then almost immediately turned on and off by the BIOS.
-This, in turn, may result in shortening the disk's life times.
+Replace unused SYSTEM_SUSPEND_DISK with a new system_state value
+SYSTEM_HIBERNATE_ENTER that can be used by device drivers to check if
+the system is in the last phase of hibernation.
 
-To prevent this from happening we can blacklist the affected systems
-using DMI information.
-
-Blacklist HP nx6325 that uses the sata_sil driver.
+In particular, some SATA drivers are going to use it for blacklisting
+systems in which the disks should not be spun down during the last
+phase of hibernation (the BIOS will do that anyway).
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/ata/sata_sil.c |   36 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 35 insertions(+), 1 deletion(-)
+ include/linux/kernel.h |    2 +-
+ kernel/power/disk.c    |    2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/ata/sata_sil.c
+Index: linux-2.6/kernel/power/disk.c
 ===================================================================
---- linux-2.6.orig/drivers/ata/sata_sil.c
-+++ linux-2.6/drivers/ata/sata_sil.c
-@@ -603,11 +603,38 @@ static void sil_init_controller(struct a
- 	}
- }
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -416,6 +416,7 @@ int hibernation_platform_enter(void)
+ 	if (error)
+ 		goto Close;
  
-+static bool sil_broken_system_poweroff(struct pci_dev *pdev)
-+{
-+	static const struct dmi_system_id broken_systems[] = {
-+		{
-+			.ident = "HP Compaq nx6325",
-+			.matches = {
-+				DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-+				DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6325"),
-+			},
-+			/* PCI slot number of the controller */
-+			.driver_data = (void *)0x12UL,
-+		},
-+
-+		{ }	/* terminate list */
-+	};
-+	const struct dmi_system_id *dmi = dmi_first_match(broken_systems);
-+
-+	if (dmi) {
-+		unsigned long slot = (unsigned long)dmi->driver_data;
-+		/* apply the quirk only to on-board controllers */
-+		return slot == PCI_SLOT(pdev->devfn);
-+	}
-+
-+	return false;
-+}
-+
- static int sil_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
- 	static int printed_version;
- 	int board_id = ent->driver_data;
--	const struct ata_port_info *ppi[] = { &sil_port_info[board_id], NULL };
-+	struct ata_port_info pi = sil_port_info[board_id];
-+	const struct ata_port_info *ppi[] = { &pi, NULL };
- 	struct ata_host *host;
- 	void __iomem *mmio_base;
- 	int n_ports, rc;
-@@ -621,6 +648,13 @@ static int sil_init_one(struct pci_dev *
- 	if (board_id == sil_3114)
- 		n_ports = 4;
++	system_state = SYSTEM_HIBERNATE_ENTER;
+ 	suspend_console();
+ 	ftrace_save = __ftrace_enabled_save();
+ 	error = device_suspend(PMSG_HIBERNATE);
+@@ -451,6 +452,7 @@ int hibernation_platform_enter(void)
+  Finish:
+ 	hibernation_ops->finish();
+  Resume_devices:
++	system_state = SYSTEM_RUNNING;
+ 	device_resume(PMSG_RESTORE);
+ 	__ftrace_enabled_restore(ftrace_save);
+ 	resume_console();
+Index: linux-2.6/include/linux/kernel.h
+===================================================================
+--- linux-2.6.orig/include/linux/kernel.h
++++ linux-2.6/include/linux/kernel.h
+@@ -247,7 +247,7 @@ extern enum system_states {
+ 	SYSTEM_HALT,
+ 	SYSTEM_POWER_OFF,
+ 	SYSTEM_RESTART,
+-	SYSTEM_SUSPEND_DISK,
++	SYSTEM_HIBERNATE_ENTER,
+ } system_state;
  
-+	if (sil_broken_system_poweroff(pdev)) {
-+		pi.flags |= ATA_FLAG_NO_POWEROFF_SPINDOWN |
-+					ATA_FLAG_NO_HIBERNATE_SPINDOWN;
-+		dev_info(&pdev->dev, "quirky BIOS, skipping spindown "
-+				"on poweroff and hibernation\n");
-+	}
-+
- 	host = ata_host_alloc_pinfo(&pdev->dev, ppi, n_ports);
- 	if (!host)
- 		return -ENOMEM;
+ #define TAINT_PROPRIETARY_MODULE	(1<<0)
 
