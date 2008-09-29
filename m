@@ -1,158 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbYI2XSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYI2XWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754522AbYI2XSL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 19:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYI2XR5
+	id S1754123AbYI2XWF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 19:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbYI2XVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 19:17:57 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:16328 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751556AbYI2XR4 (ORCPT
+	Mon, 29 Sep 2008 19:21:54 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:46706 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751477AbYI2XVy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 19:17:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HioMUT3n3R9+k7o1iw4i9AH3oX5clVh5mDTrJ6o0EH5PnZ0LukQBBoUs5ScLid0PGY
-         dh9UbapRWiQQWzhgo5HlxUp/5hGGW12GMoscBCxmKXvxEDWk6MfzA8Z2qGVQI4GUItTP
-         Uja5J+OCQTfS+KCgjNyyV+0IhqEry0R8oWoxk=
-Message-ID: <48E1621D.1080803@gmail.com>
-Date: Tue, 30 Sep 2008 02:17:49 +0300
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: emmanuel.fuste@laposte.net, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/4] Implementation of IR support using the input
- subsystem
-References: <48E15447.1000200@laposte.net> <9e4733910809291602v2d2611edqba3663f7d2711ea9@mail.gmail.com>
-In-Reply-To: <9e4733910809291602v2d2611edqba3663f7d2711ea9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 29 Sep 2008 19:21:54 -0400
+Subject: Re: Use CPUID to communicate with the hypervisor.
+From: Zachary Amsden <zach@vmware.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Alok Kataria <akataria@vmware.com>, Gerd Hoffmann <kraxel@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <48E1486C.3060306@goop.org>
+References: <1222472815.29886.43.camel@alok-dev1>
+	 <48E090B6.2080809@redhat.com> <1222710924.30247.21.camel@alok-dev1>
+	 <48E1227B.9040809@redhat.com> <1222717085.30247.44.camel@alok-dev1>
+	 <0B53E02A2965CE4F9ADB38B34501A3A15726E15A@orsmsx505.amr.corp.intel.com>
+	 <48E1437D.7080606@zytor.com>  <48E1486C.3060306@goop.org>
+Content-Type: text/plain
+Date: Mon, 29 Sep 2008 16:20:05 -0700
+Message-Id: <1222730405.27056.237.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl wrote:
-> On Mon, Sep 29, 2008 at 6:18 PM, Emmanuel Fusté
-> <emmanuel.fuste@laposte.net> wrote:
->>> Jon Smirl wrote:
->>> On Mon, Sep 29, 2008 at 4:14 PM, Maxim Levitsky <maximlevitsky@gmail.com>
->>> wrote:
->>>> Jon Smirl wrote:
->>>>> Second pass at implementing evdev support for IR. The goal of in-kernel
->>>>> IR
->>>>> is to integrate IR events into the evdev input event queue and maintain
->>>>> ordering of events from all input devices.
->>>>>
->>>>> Note that user space IR device drivers can use the existing support in
->>>>> evdev to inject events into the input queue.
->>>>>
->>>>> Send and receive are implemented. Received IR messages are decoded and
->>>>> sent to user space as input messages. Send is done via an IOCTL on the
->>>>> input
->>>>> device.
->>>>>
->>>>> Two drivers are supplied. mceusb2 implements send and receive support
->>>>> for
->>>>> the Microsoft USB IR dongle.
->>>>> The GPT driver implements receive only support for a GPT pin - GPT is a
->>>>> GPIO with a timer attached.
->>>>>
->>>>> Encoders and decoders have not been written for all protocols. Repeat
->>>>> is
->>>>> not handled for any protocol. I'm looking for help. There are 15 more
->>>>> existing LIRC drivers.
->>>>
->>>> Hi,
->>>>
->>>> One thing worries me, there are bazillion of different IR protocols,
->>>> but in-kernel decode support will mean that only handful of known
->>>> protocols
->>>> will work.
->>>> Suppose I take an old remote which has some unknown protocol.
->>>> I want to be able to teach the system to listen to it.
->>>> But how this can be done if protocols are hard coded?
->>> There's not a bazillion different protocols.
->>>
->>> For example thirty different vendors may use the NEC encoding. They
->>> will each use a unique device number and their own commands. While
->>> each of the thirty vendors may assign different device/command codes
->>> they are all still using the NEC encoding. These remotes won't trigger
->>> the other devices because the device fields won't match.
->>>
->>> This code only converts raw IR timing of NEC/etc encoding into
->>> device/command. User space has to then figure out how to interpret
->>> device/command.
->>>
->>> Christoph has pointed out that their are some more obscure encodings
->>> from RCMM, Grundig, Bang&Olufsen, Goldstar, Serial, Denon, RECS80, and
->>> Motorola that are different than the common ones at
->>> http://www.sbprojects.com.
->>>
->>> It takes about 1KB of code to add an encoding. We could make an "extra
->>> encoding" module for these obscure ones.
->>>
->>> You can't have an infinite variety of encodings or table based
->>> universal remote controls wouldn't work.
->>>
->> Yes, in kernel clean/smalls (encoding/)decoding engines abstracted by the
->> input subsystem
->> are a good thing.
->> But you still need a way to send and received raw IR signal  to be able to
->> send or
->> decode very out of spec signals like RC5 timing dependent  Philips service
->> mode
->> codes. Or simply to decode / reverse engineer an IR protocol not already
->> implemented
->> by a kernel encoder/decoder.
-> 
-> I've been considering a sysfs interface for raw signals. Specialized
-> apps that can handle raw signal could use this interface. It's not
-> hard to add support for raw codes, maybe in the next pass. Something
-> like a "raw" attribute. Write ints to it and they get sent, read ints
-> from it to see what was received.
-> 
-> I'd don't think we should expose raw codes on the main evdev interfaces.
-Just one question,
+On Mon, 2008-09-29 at 14:28 -0700, Jeremy Fitzhardinge wrote:
+> > Unless there is a central authority assigning these, "we" can do all
+> > we want, enough people will not pay attention.
+> >
+> > Basically, there needs to be a standards document that describes the
+> > architecture, *and* needs to either have universal buy-in with all the
+> > vendors or imposed by an authority with enough clout to do so (Intel
+> > might.)
+> ...
 
-Suppose I have non-standard remote, and I want to teach lirc to use it,
-and I have general purpose receiver, how can I do this?
+> I think using fixed offsets is unwise, since there's already contention
+> for the same leaves.  Making sure that each block of leaves (where a
+> block is 16, 256 or some other number of leaves) is self-describing via
+> ABI signatures is the only sane way to go.  There's still the issue of
 
-Best regards,
-	Maxim Levitsky
+Aren't we overthinking / overdesigning this a bit?  It's not rocket
+science.  We'd like to have a leaf set aside for TSC frequency, and
+maybe another leaf in the future.  We think other vendors might find a
+static clock frequency leaf to be useful, so if that happens to be the
+case, feel free to re-use the leaf.
 
+We don't expect to see lots of proliferation of CPU leaves at all, in
+fact, we'd be flummoxed to propose more than one right now.  So
+basically a nicely written comment section explaining how the SW CPUID
+registers are layed out is probably sufficient.  Other vendors can add
+to it as they see fit, and Linux itself can be the central standard
+body.  After all, it's what we all work on, and it makes sense for
+everyone here, even MS, to have the software leaves defined in a public
+work.
 
-> 
-> 
->>>> I think that it would be much better to pass raw ir codes to userspace,
->>>> and
->>>> make it deal with bazillion protocols, and you can always make it auto
->>>> learn
->>>> too, and save
->>>> results in configuration file.
->>>>
->>>> My .02 cents.
->>>>
->>>> Best regards,
->>>>        Maxim Levitsky
->>>>
->>>
->>>
->>> --
->>> Jon Smirl
->>> jonsmirl@gmail.com
->> Best regards,
->> Emmanuel.
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> 
-> 
-> 
+The whole thing is software defined so it's not a big deal if one or all
+parties eventually don't play well with others, grow up to become
+bullies with ADD, or simply autistic children who ignore the whole
+thing.  You can always make detection vendor dependent when that
+happens.
+
+Right now there's nothing shockingly vendor dependent, just a whole lot
+of complicated proposals about how to define what the bits are going to
+define and not enough bits of information to actually express.  It seems
+perfectly okay for now to have new leaf proposals defined by fiat for
+now.
+
+As long as there is a vendor-ID leaf, nobody is blocking any forward
+progress by adding a new non-conflicting leaf.  We can always add the
+meta-leafs required for decoding if something tangible materializes, but
+for now the TSC leaf seems pretty useful and I would probably want to
+proclaim it by fatwa, if I had such a power.
+
+Zach
 
