@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYI2SKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756225AbYI2SK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756148AbYI2SKn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 14:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYI2SDZ
+	id S1756225AbYI2SK7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 14:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYI2SD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 14:03:25 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:54349 "EHLO relay.sgi.com"
+	Mon, 29 Sep 2008 14:03:26 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:54356 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754008AbYI2SCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754012AbYI2SCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 29 Sep 2008 14:02:54 -0400
-Message-Id: <20080929180253.799091000@polaris-admin.engr.sgi.com>
+Message-Id: <20080929180253.935410000@polaris-admin.engr.sgi.com>
 References: <20080929180250.111209000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 29 Sep 2008 11:03:17 -0700
+Date: Mon, 29 Sep 2008 11:03:18 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -20,233 +20,227 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        David Miller <davem@davemloft.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
        Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 27/31] cpumask: clean time files
-Content-Disposition: inline; filename=clean-time
+Subject: [PATCH 28/31] cpumask: clean smp files
+Content-Disposition: inline; filename=clean-smp
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-of-by: Mike Travis <travis@sgi.com>
 ---
- arch/x86/kernel/hpet.c       |    4 ++--
- arch/x86/kernel/i8253.c      |    2 +-
- arch/x86/kernel/time_64.c    |    2 +-
- include/linux/clockchips.h   |    4 ++--
- include/linux/tick.h         |    4 ++--
- kernel/time/clocksource.c    |    2 +-
- kernel/time/tick-broadcast.c |   26 +++++++++++++-------------
- kernel/time/tick-common.c    |    6 +++---
- 8 files changed, 25 insertions(+), 25 deletions(-)
+ arch/x86/kernel/smp.c     |    6 +++---
+ arch/x86/kernel/smpboot.c |   20 ++++++++++++--------
+ include/asm-x86/smp.h     |    6 +++---
+ include/linux/smp.h       |    8 ++++----
+ kernel/smp.c              |   15 ++++++++-------
+ 5 files changed, 30 insertions(+), 25 deletions(-)
 
---- struct-cpumasks.orig/arch/x86/kernel/hpet.c
-+++ struct-cpumasks/arch/x86/kernel/hpet.c
-@@ -265,7 +265,7 @@ static void hpet_legacy_clockevent_regis
- 	 * Start hpet with the boot cpu mask and make it
- 	 * global after the IO_APIC has been initialized.
- 	 */
--	hpet_clockevent.cpumask = cpumask_of_cpu(smp_processor_id());
-+	cpus_copy(hpet_clockevent.cpumask, cpumask_of_cpu(smp_processor_id()));
- 	clockevents_register_device(&hpet_clockevent);
- 	global_clock_event = &hpet_clockevent;
- 	printk(KERN_DEBUG "hpet clockevent registered\n");
-@@ -512,7 +512,7 @@ static void init_one_hpet_msi_clockevent
- 	/* 5 usec minimum reprogramming delta. */
- 	evt->min_delta_ns = 5000;
- 
--	evt->cpumask = cpumask_of_cpu(hdev->cpu);
-+	cpus_copy(evt->cpumask, cpumask_of_cpu(hdev->cpu));
- 	clockevents_register_device(evt);
- }
- 
---- struct-cpumasks.orig/arch/x86/kernel/i8253.c
-+++ struct-cpumasks/arch/x86/kernel/i8253.c
-@@ -114,7 +114,7 @@ void __init setup_pit_timer(void)
- 	 * Start pit with the boot cpu mask and make it global after the
- 	 * IO_APIC has been initialized.
- 	 */
--	pit_clockevent.cpumask = cpumask_of_cpu(smp_processor_id());
-+	cpus_copy(pit_clockevent.cpumask, cpumask_of_cpu(smp_processor_id()));
- 	pit_clockevent.mult = div_sc(CLOCK_TICK_RATE, NSEC_PER_SEC,
- 				     pit_clockevent.shift);
- 	pit_clockevent.max_delta_ns =
---- struct-cpumasks.orig/arch/x86/kernel/time_64.c
-+++ struct-cpumasks/arch/x86/kernel/time_64.c
-@@ -125,7 +125,7 @@ void __init hpet_time_init(void)
- 		setup_pit_timer();
+--- struct-cpumasks.orig/arch/x86/kernel/smp.c
++++ struct-cpumasks/arch/x86/kernel/smp.c
+@@ -118,15 +118,15 @@ static void native_smp_send_reschedule(i
+ 		WARN_ON(1);
+ 		return;
  	}
- 
--	irq0.mask = cpumask_of_cpu(0);
-+	cpus_copy(irq0.mask, cpumask_of_cpu(0));
- 	setup_irq(0, &irq0);
+-	send_IPI_mask(&cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
++	send_IPI_mask(cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
  }
  
---- struct-cpumasks.orig/include/linux/clockchips.h
-+++ struct-cpumasks/include/linux/clockchips.h
-@@ -82,13 +82,13 @@ struct clock_event_device {
- 	int			shift;
- 	int			rating;
- 	int			irq;
--	cpumask_t		cpumask;
-+	cpumask_map_t		cpumask;
- 	int			(*set_next_event)(unsigned long evt,
- 						  struct clock_event_device *);
- 	void			(*set_mode)(enum clock_event_mode mode,
- 					    struct clock_event_device *);
- 	void			(*event_handler)(struct clock_event_device *);
--	void			(*broadcast)(cpumask_t mask);
-+	void			(*broadcast)(const_cpumask_t mask);
- 	struct list_head	list;
- 	enum clock_event_mode	mode;
- 	ktime_t			next_event;
---- struct-cpumasks.orig/include/linux/tick.h
-+++ struct-cpumasks/include/linux/tick.h
-@@ -84,10 +84,10 @@ static inline void tick_cancel_sched_tim
- 
- # ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
- extern struct tick_device *tick_get_broadcast_device(void);
--extern cpumask_t *tick_get_broadcast_mask(void);
-+extern const_cpumask_t tick_get_broadcast_mask(void);
- 
- #  ifdef CONFIG_TICK_ONESHOT
--extern cpumask_t *tick_get_broadcast_oneshot_mask(void);
-+extern const_cpumask_t tick_get_broadcast_oneshot_mask(void);
- #  endif
- 
- # endif /* BROADCAST */
---- struct-cpumasks.orig/kernel/time/clocksource.c
-+++ struct-cpumasks/kernel/time/clocksource.c
-@@ -157,7 +157,7 @@ static void clocksource_watchdog(unsigne
- 		if (next_cpu >= nr_cpu_ids)
- 			next_cpu = cpus_first(cpu_online_map);
- 		watchdog_timer.expires += WATCHDOG_INTERVAL;
--		add_timer_on(&watchdog_timer, cpus_next);
-+		add_timer_on(&watchdog_timer, next_cpu);
- 	}
- 	spin_unlock(&watchdog_lock);
- }
---- struct-cpumasks.orig/kernel/time/tick-broadcast.c
-+++ struct-cpumasks/kernel/time/tick-broadcast.c
-@@ -28,7 +28,7 @@
-  */
- 
- struct tick_device tick_broadcast_device;
--static cpumask_t tick_broadcast_mask;
-+static cpumask_map_t tick_broadcast_mask;
- static DEFINE_SPINLOCK(tick_broadcast_lock);
- static int tick_broadcast_force;
- 
-@@ -46,9 +46,9 @@ struct tick_device *tick_get_broadcast_d
- 	return &tick_broadcast_device;
- }
- 
--cpumask_t *tick_get_broadcast_mask(void)
-+const_cpumask_t tick_get_broadcast_mask(void)
+ void native_send_call_func_single_ipi(int cpu)
  {
--	return &tick_broadcast_mask;
-+	return (const_cpumask_t)tick_broadcast_mask;
+-	send_IPI_mask(&cpumask_of_cpu(cpu), CALL_FUNCTION_SINGLE_VECTOR);
++	send_IPI_mask(cpumask_of_cpu(cpu), CALL_FUNCTION_SINGLE_VECTOR);
  }
+ 
+-void native_send_call_func_ipi(const cpumask_t *mask)
++void native_send_call_func_ipi(const_cpumask_t mask)
+ {
+ 	int cpu = smp_processor_id();
+ 
+--- struct-cpumasks.orig/arch/x86/kernel/smpboot.c
++++ struct-cpumasks/arch/x86/kernel/smpboot.c
+@@ -466,7 +466,8 @@ void __cpuinit set_cpu_sibling_map(int c
+ 	cpu_set(cpu, c->llc_shared_map);
+ 
+ 	if (current_cpu_data.x86_max_cores == 1) {
+-		per_cpu(cpu_core_map, cpu) = per_cpu(cpu_sibling_map, cpu);
++		cpus_copy(per_cpu(cpu_core_map, cpu),
++			  per_cpu(cpu_sibling_map, cpu));
+ 		c->booted_cores = 1;
+ 		return;
+ 	}
+@@ -503,7 +504,7 @@ void __cpuinit set_cpu_sibling_map(int c
+ }
+ 
+ /* maps the cpu to the sched domain representing multi-core */
+-const cpumask_t cpu_coregroup_map(int cpu)
++const_cpumask_t cpu_coregroup_map(int cpu)
+ {
+ 	struct cpuinfo_x86 *c = &cpu_data(cpu);
+ 	/*
+@@ -511,9 +512,9 @@ const cpumask_t cpu_coregroup_map(int cp
+ 	 * And for power savings, we return cpu_core_map
+ 	 */
+ 	if (sched_mc_power_savings || sched_smt_power_savings)
+-		return (const cpumask_t)per_cpu(cpu_core_map, cpu);
++		return (const_cpumask_t)per_cpu(cpu_core_map, cpu);
+ 	else
+-		return (const cpumask_t)c->llc_shared_map;
++		return (const_cpumask_t)c->llc_shared_map;
+ }
+ 
+ static void impress_friends(void)
+@@ -1036,12 +1037,13 @@ int __cpuinit native_cpu_up(unsigned int
+  */
+ static __init void disable_smp(void)
+ {
+-	cpu_present_map = cpumask_of_cpu(0);
+-	cpu_possible_map = cpumask_of_cpu(0);
++	cpus_copy(cpu_present_map, cpumask_of_cpu(0));
++	cpus_copy(cpu_possible_map, cpumask_of_cpu(0));
+ 	smpboot_clear_io_apic_irqs();
+ 
+ 	if (smp_found_config)
+-		physid_set_mask_of_physid(boot_cpu_physical_apicid, &phys_cpu_present_map);
++		physid_set_mask_of_physid(boot_cpu_physical_apicid,
++					  &phys_cpu_present_map);
+ 	else
+ 		physid_set_mask_of_physid(0, &phys_cpu_present_map);
+ 	map_cpu_to_logical_apicid();
+@@ -1169,7 +1171,7 @@ void __init native_smp_prepare_cpus(unsi
+ 	preempt_disable();
+ 	smp_cpu_index_default();
+ 	current_cpu_data = boot_cpu_data;
+-	cpu_callin_map = cpumask_of_cpu(0);
++	cpus_copy(cpu_callin_map, cpumask_of_cpu(0));
+ 	mb();
+ 	/*
+ 	 * Setup boot CPU information
+@@ -1337,7 +1339,9 @@ __init void prefill_possible_map(void)
+ 	for (i = 0; i < possible; i++)
+ 		cpu_set(i, cpu_possible_map);
+ 
++#ifndef nr_cpu_ids
+ 	nr_cpu_ids = possible;
++#endif
+ }
+ 
+ static void __ref remove_cpu_from_maps(int cpu)
+--- struct-cpumasks.orig/include/asm-x86/smp.h
++++ struct-cpumasks/include/asm-x86/smp.h
+@@ -60,7 +60,7 @@ struct smp_ops {
+ 	void (*cpu_die)(unsigned int cpu);
+ 	void (*play_dead)(void);
+ 
+-	void (*send_call_func_ipi)(const cpumask_t mask);
++	void (*send_call_func_ipi)(const_cpumask_t mask);
+ 	void (*send_call_func_single_ipi)(int cpu);
+ };
+ 
+@@ -123,7 +123,7 @@ static inline void arch_send_call_functi
+ 	smp_ops.send_call_func_single_ipi(cpu);
+ }
+ 
+-static inline void arch_send_call_function_ipi(const cpumask_t mask)
++static inline void arch_send_call_function_ipi(const_cpumask_t mask)
+ {
+ 	smp_ops.send_call_func_ipi(mask);
+ }
+@@ -138,7 +138,7 @@ void native_cpu_die(unsigned int cpu);
+ void native_play_dead(void);
+ void play_dead_common(void);
+ 
+-void native_send_call_func_ipi(const cpumask_t mask);
++void native_send_call_func_ipi(const_cpumask_t mask);
+ void native_send_call_func_single_ipi(int cpu);
+ 
+ void smp_store_cpu_info(int id);
+--- struct-cpumasks.orig/include/linux/smp.h
++++ struct-cpumasks/include/linux/smp.h
+@@ -62,10 +62,10 @@ extern void smp_cpus_done(unsigned int m
+  * Call a function on all other processors
+  */
+ int smp_call_function(void(*func)(void *info), void *info, int wait);
+-int smp_call_function_mask(cpumask_t mask, void(*func)(void *info), void *info,
+-				int wait);
+-int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
+-				int wait);
++int smp_call_function_mask(const_cpumask_t mask,
++				void (*func)(void *info), void *info, int wait);
++int smp_call_function_single(int cpuid,
++				void (*func)(void *info), void *info, int wait);
+ void __smp_call_function_single(int cpuid, struct call_single_data *data);
  
  /*
-@@ -160,7 +160,7 @@ static void tick_do_broadcast(cpumask_t 
+--- struct-cpumasks.orig/kernel/smp.c
++++ struct-cpumasks/kernel/smp.c
+@@ -24,7 +24,7 @@ struct call_function_data {
+ 	struct call_single_data csd;
+ 	spinlock_t lock;
+ 	unsigned int refs;
+-	cpumask_t cpumask;
++	cpumask_map_t cpumask;
+ 	struct rcu_head rcu_head;
+ };
+ 
+@@ -287,7 +287,7 @@ static void quiesce_dummy(void *unused)
+  * If a faster scheme can be made, we could go back to preferring stack based
+  * data -- the data allocation/free is non-zero cost.
   */
- static void tick_do_periodic_broadcast(void)
+-static void smp_call_function_mask_quiesce_stack(const cpumask_t *mask)
++static void smp_call_function_mask_quiesce_stack(const_cpumask_t mask)
  {
--	cpumask_t mask;
-+	cpumask_var_t mask;
- 
- 	spin_lock(&tick_broadcast_lock);
- 
-@@ -364,9 +364,9 @@ static cpumask_t tick_broadcast_oneshot_
- /*
-  * Debugging: see timer_list.c
-  */
--cpumask_t *tick_get_broadcast_oneshot_mask(void)
-+const_cpumask_t tick_get_broadcast_oneshot_mask(void)
- {
--	return &tick_broadcast_oneshot_mask;
-+	return (const_cpumask_t)tick_broadcast_oneshot_mask;
- }
- 
- static int tick_broadcast_set_event(ktime_t expires, int force)
-@@ -388,7 +388,7 @@ int tick_resume_broadcast_oneshot(struct
- static void tick_handle_oneshot_broadcast(struct clock_event_device *dev)
- {
- 	struct tick_device *td;
--	cpumask_t mask;
-+	cpumask_var_t mask;
- 	ktime_t now, next_event;
+ 	struct call_single_data data;
  	int cpu;
- 
-@@ -396,7 +396,7 @@ static void tick_handle_oneshot_broadcas
- again:
- 	dev->next_event.tv64 = KTIME_MAX;
- 	next_event.tv64 = KTIME_MAX;
--	mask = CPU_MASK_NONE;
-+	cpus_clear(mask);
- 	now = ktime_get();
- 	/* Find all expired events */
- 	for_each_cpu(cpu, tick_broadcast_oneshot_mask) {
-@@ -491,12 +491,12 @@ static void tick_broadcast_clear_oneshot
- 	cpu_clear(cpu, tick_broadcast_oneshot_mask);
- }
- 
--static void tick_broadcast_init_next_event(cpumask_t *mask, ktime_t expires)
-+static void tick_broadcast_init_next_event(const_cpumask_t mask, ktime_t expires)
- {
- 	struct tick_device *td;
- 	int cpu;
+@@ -295,7 +295,7 @@ static void smp_call_function_mask_quies
+ 	data.func = quiesce_dummy;
+ 	data.info = NULL;
  
 -	for_each_cpu(cpu, *mask) {
 +	for_each_cpu(cpu, mask) {
- 		td = &per_cpu(tick_cpu_device, cpu);
- 		if (td->evtdev)
- 			td->evtdev->next_event = expires;
-@@ -512,7 +512,7 @@ void tick_broadcast_setup_oneshot(struct
- 	if (bc->event_handler != tick_handle_oneshot_broadcast) {
- 		int was_periodic = bc->mode == CLOCK_EVT_MODE_PERIODIC;
- 		int cpu = smp_processor_id();
--		cpumask_t mask;
-+		cpumask_var_t mask;
- 
- 		bc->event_handler = tick_handle_oneshot_broadcast;
- 		clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
-@@ -526,13 +526,13 @@ void tick_broadcast_setup_oneshot(struct
- 		 * oneshot_mask bits for those and program the
- 		 * broadcast device to fire.
- 		 */
--		mask = tick_broadcast_mask;
-+		cpus_copy(mask, tick_broadcast_mask);
- 		cpu_clear(cpu, mask);
- 		cpus_or(tick_broadcast_oneshot_mask,
- 			tick_broadcast_oneshot_mask, mask);
- 
- 		if (was_periodic && !cpus_empty(mask)) {
--			tick_broadcast_init_next_event(&mask, tick_next_period);
-+			tick_broadcast_init_next_event(mask, tick_next_period);
- 			tick_broadcast_set_event(tick_next_period, 1);
- 		} else
- 			bc->next_event.tv64 = KTIME_MAX;
---- struct-cpumasks.orig/kernel/time/tick-common.c
-+++ struct-cpumasks/kernel/time/tick-common.c
-@@ -136,7 +136,7 @@ void tick_setup_periodic(struct clock_ev
+ 		data.flags = CSD_FLAG_WAIT;
+ 		generic_exec_single(cpu, &data);
+ 	}
+@@ -318,7 +318,7 @@ static void smp_call_function_mask_quies
+  * hardware interrupt handler or from a bottom half handler. Preemption
+  * must be disabled when calling this function.
   */
- static void tick_setup_device(struct tick_device *td,
- 			      struct clock_event_device *newdev, int cpu,
--			      const cpumask_t *cpumask)
-+			      const_cpumask_t cpumask)
+-int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
++int smp_call_function_mask(const_cpumask_t inmask, void (*func)(void *), void *info,
+ 			   int wait)
  {
- 	ktime_t next_event;
- 	void (*handler)(struct clock_event_device *) = NULL;
-@@ -171,8 +171,8 @@ static void tick_setup_device(struct tic
- 	 * When the device is not per cpu, pin the interrupt to the
- 	 * current cpu:
- 	 */
--	if (!cpus_equal(newdev->cpumask, *cpumask))
--		irq_set_affinity(newdev->irq, *cpumask);
-+	if (!cpus_equal(newdev->cpumask, cpumask))
-+		irq_set_affinity(newdev->irq, cpumask);
+ 	struct call_function_data d;
+@@ -326,12 +326,13 @@ int smp_call_function_mask(cpumask_t mas
+ 	unsigned long flags;
+ 	int cpu, num_cpus;
+ 	int slowpath = 0;
++	cpumask_var_t mask;
  
- 	/*
- 	 * When global broadcasting is active, check if the current
+ 	/* Can deadlock when called with interrupts disabled */
+ 	WARN_ON(irqs_disabled());
+ 
+ 	cpu = smp_processor_id();
+-	cpus_and(mask, mask, cpu_online_map);
++	cpus_and(mask, inmask, cpu_online_map);
+ 	cpu_clear(cpu, mask);
+ 	num_cpus = cpus_weight(mask);
+ 
+@@ -362,7 +363,7 @@ int smp_call_function_mask(cpumask_t mas
+ 	data->csd.func = func;
+ 	data->csd.info = info;
+ 	data->refs = num_cpus;
+-	data->cpumask = mask;
++	cpus_copy(data->cpumask, mask);
+ 
+ 	spin_lock_irqsave(&call_function_lock, flags);
+ 	list_add_tail_rcu(&data->csd.list, &call_function_queue);
+@@ -375,7 +376,7 @@ int smp_call_function_mask(cpumask_t mas
+ 	if (wait) {
+ 		csd_flag_wait(&data->csd);
+ 		if (unlikely(slowpath))
+-			smp_call_function_mask_quiesce_stack(&mask);
++			smp_call_function_mask_quiesce_stack(mask);
+ 	}
+ 
+ 	return 0;
 
 -- 
