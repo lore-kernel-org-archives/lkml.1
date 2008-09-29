@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYI2IPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYI2I02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753521AbYI2IPy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 04:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYI2IPm
+	id S1753205AbYI2I02 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 04:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYI2I0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 04:15:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56227 "EHLO hera.kernel.org"
+	Mon, 29 Sep 2008 04:26:20 -0400
+Received: from mail.anarazel.de ([217.115.131.40]:53462 "EHLO smtp.anarazel.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751802AbYI2IPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 04:15:40 -0400
-Message-ID: <48E08E2D.6050905@kernel.org>
-Date: Mon, 29 Sep 2008 17:13:33 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	id S1751642AbYI2I0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 04:26:19 -0400
+From: Andres Freund <andres@anarazel.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: bad DMAR interaction with iwlagn and SATA
+Date: Mon, 29 Sep 2008 10:26:15 +0200
+User-Agent: KMail/1.10.1 (Linux/2.6.27-rc7; KDE/4.1.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       Tomas Winkler <tomasw@gmail.com>
+References: <200809251511.20132.andres@anarazel.de> <1222441833.3798.10.camel@johannes.berg>
+In-Reply-To: <1222441833.3798.10.camel@johannes.berg>
 MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Gwendal Grignou <gwendal@google.com>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Brian Rademacher <rad@radfiles.net>, linux-ide@vger.kernel.org,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>
-Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
-References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA>	 <alpine.DEB.1.10.0809220404400.18908@p34.internal.lan>	 <5A4A9A3B0AAA4A20A33BC2D578F5F75F@909927SOSLA>	 <alpine.DEB.1.10.0809220828490.23159@p34.internal.lan>	 <5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>	 <alpine.DEB.1.10.0809220903400.23159@p34.internal.lan>	 <4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA>	 <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>	 <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan> <e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com> <48DBAB81.8050900@tmr.com>
-In-Reply-To: <48DBAB81.8050900@tmr.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart1671546.fHiBhP5sPO";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 29 Sep 2008 08:15:18 +0000 (UTC)
+Message-Id: <200809291026.16394.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> Gwendal Grignou wrote:
->> About ata1:0 problem, as reported in the bugzilla bug: I would try to
->> disable NCQ to see if it helps. Your disks firmware might not fully
->> support it.
->>
->> You can either add the parameter "libata.force=noncq" when loading
->> your kernel, or set queue_depth to 1 for all the Seagate drives behind
->> the Marvell MV88SX6081 controller.
->>
->> About ata5:0 , someone - in user space probably - is trying to do a
->> SMART ENABLE operation, but the device ignores it. I don't know which
->> device you are using, but I assume it does not support ATA SMART
->> feature set. Timeout is an acceptable but not a nice way to answer, a
->> cancel would have been better; check if there is a firmware upgrade
->> for your device.
->>   
-> 
-> You certainly called the SMART issue, I was wondering why a new
-> distribution install on some older hardware was getting all the errors,
-> clearly the Fedora "smartd" doesn't check SMART capability before trying
-> to enable the feature. Oddly the drive on which I see this does reply to
-> SMART requests, so the firmware must be "semi-functional." Not a
-> problem, in my case the drive is just used for testing handling of hot
-> swap, and has no data of any value.
+--nextPart1671546.fHiBhP5sPO
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Can you post full kernel log including the boot messages and the error
-messages?  Also, please attach the output of hdparm -I on the drive
-which fails the smart command.
+Hi,
 
-(cc'ing Bruce, hi!) Bruce, this is the second report I see about drive
-timing out SMART ENABLE OPERATIONS.  Does anything ring a bell?
+On Friday 26 September 2008, you wrote in "Re: bad DMAR interaction with=20
+iwlagn and SATA":
+> > [ 4184.617392] DMAR:[DMA Read] Request device [03:00.0] fault addr
+> > fa946000 [ 4184.617393] DMAR:[fault reason 06] PTE Read access is not s=
+et
+> > [ 4184.644081] iwlagn: Microcode HW error detected.  Restarting. [
+> > 4186.646000] psmouse.c: TouchPad at isa0060/serio1/input0 lost
+> > synchronization, throwing 1 bytes away. [ 4186.683034] Registered led
+> > device: iwl-phy0:radio
+> > [ 4186.683478] Registered led device: iwl-phy0:assoc
+> > [ 4186.683793] Registered led device: iwl-phy0:RX
+> > [ 4186.684094] Registered led device: iwl-phy0:TX
+> > [ 4186.689749] wlan0: authenticate with AP 00:1d:7e:42:fe:42
+> > [ 4186.691691] wlan0: authenticated
+> > [ 4186.691705] wlan0: associate with AP 00:1d:7e:42:fe:42
+> > [ 4186.696380] wlan0: RX ReassocResp from 00:1d:7e:42:fe:42 (capab=3D0x=
+411
+> > status=3D0 aid=3D2) [ 4186.696392] wlan0: associated
 
-Thanks.
+> > Most of the time when this happened, the machine wasnt reacting for 1-3
+> > seconds and had audio buffer underruns, but I also had a hard lockup
+> > which I couldnt diagnose so far.
+> I suspect the hard lockup was due to a BUG_ON in the iwlagn driver, if
+> you can reproduce this either try applying the patch here [1] or going
+> to a VC to see if it crashes there. It's a BUG_ON in iwl-tx.c.
+Could not reproduce so far - it is rather hard working on the machine with=
+=20
+DMAR enabled because I get 1-5s lockups all the time like described above...
 
--- 
-tejun
+Andres
+
+
+--nextPart1671546.fHiBhP5sPO
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkjgkSgACgkQporPraT14ii4cACfQBehnutTOVuJiZ2XqKgldTrH
+fwMAnitB5D7h0bnzHmoqlCAFY2iU3ixp
+=Xg1+
+-----END PGP SIGNATURE-----
+
+--nextPart1671546.fHiBhP5sPO--
