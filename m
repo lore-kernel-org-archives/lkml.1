@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYI2RVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbYI2RXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbYI2RVn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYI2RVg
+	id S1753855AbYI2RXL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYI2RW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:21:36 -0400
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:32421 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751733AbYI2RVf (ORCPT
+	Mon, 29 Sep 2008 13:22:58 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:35317 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbYI2RW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 13:21:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=k3rwr8zrUFhTHaoVMLd2ng2mGKkBhtrUJlFimYUtBABuzt81+S7su7ANXTyF+exMD+oIIGlNBfG1M/J0fTfUNXxIyYptnLSJuw/gz2TE71+rIZTJfo014bXos979zlwVidpG0LdQLVV+qZQrhWoF5ETGzGTtaXoPcyE5Uh+jz1Q=  ;
-X-YMail-OSG: 4PaoM80VM1mOawhtppSjA3Uv_Ihxs8UHZ9VNJZRQsPWGtXK8iF1GuqEJ4qpo6s7it2HDvYVLiuJVJEus6gXVpL.CnCOYw7Cw3q2bEAHFZS6V7GpGe5hQLzxPElmyxi9WvjU-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Magnus Damm" <magnus.damm@gmail.com>
-Subject: Re: [patch 2.6.27-rc7] gpiolib: request/free hooks
-Date: Mon, 29 Sep 2008 10:21:29 -0700
-User-Agent: KMail/1.9.9
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-References: <200809241508.11091.david-b@pacbell.net> <200809271129.07241.david-b@pacbell.net> <aec7e5c30809282048x3d9a201j12303091e9d93a49@mail.gmail.com>
-In-Reply-To: <aec7e5c30809282048x3d9a201j12303091e9d93a49@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 29 Sep 2008 13:22:57 -0400
+Date: Mon, 29 Sep 2008 19:24:07 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       sfr@canb.auug.org.au
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: enable CPUID on Cyrix cpus with CPUID disabled
+Message-Id: <20080929192407.1c31fe90.krzysztof.h1@poczta.fm>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809291021.30655.david-b@pacbell.net>
+X-EMID: 7ac0b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 28 September 2008, Magnus Damm wrote:
-> Hm, sounds like you prefer to keep pinmuxing and GPIO code separated?
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Yep.
+The macros setCx86_old() and getCx86_old() do not
+work as a comment says in the processor-cyrix.h.
 
-> > If you do that, be ready to provide a pinmux-only interface
-> > at some point when this "piggybacking" breaks something...
-> 
-> In the SuperH case GPIO pin direction selection is done in the same
-> way as selecting pin function. So in and out directions can be seen as
-> two pin functions. And since we want to support GPIO pin direction we
-> may as well support setting pin functions as well.
-> 
-> But maybe there are better ways to integrate it, I'm not sure.
+Use working inline functions instead to enable
+the CPUID instriction on Cyrix cpus. 
 
-Just don't expect the GPIO framework to address the problem of
-how to configure one of those pins for a non-GPIO function.
+Tested on IBM 6x86MX cpu with disabled the
+CPUID instruction.
 
-Such pinmux problems deserve different programming interfaces.
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
 
-\
-> > Yeah.  Better to test-and-set the flag and then request, and backout
-> > if it fails, than the other way.  Just who wrote that crap in the
-> > first place?  Sigh.  (Notice it's done that way already in the code
-> > path handling implicit requesting ... )
-> 
-> Sounds good.
-> 
-> > I'll send an updated patch along soonish.
-> 
-> Thank you!
+This patch is against the linux-next tree (20080819)
+as it contains the following patch:
 
-... after I come up with a happy fix for the locking goofs;
-those new methods may not be called under spinlock protection.
+x86, cyrix: debug
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-- Dave
+http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=026e2c05ef58ef413e2d52696f125d5ea1aa8bce
+
+The linux-2.6-tip tree has not the Ingo's patch so it 
+does not require my patch.
+
+I am confused. Is the x86 detection code for Cyrix
+cpus is right in the linux-next or in the linux-2.6-tip?
+Should I prepare patches against the linux-2.6-tip
+or linux-next?
+
+diff -urp linux-orig/arch/x86/kernel/cpu/cyrix.c linux-2.6.27/arch/x86/kernel/cpu/cyrix.c
+--- linux-orig/arch/x86/kernel/cpu/cyrix.c	2008-09-29 00:16:31.000000000 +0200
++++ linux-2.6.27/arch/x86/kernel/cpu/cyrix.c	2008-09-29 17:03:52.563864398 +0200
+@@ -428,7 +428,7 @@ static void __cpuinit cyrix_identify(str
+ 			local_irq_save(flags);
+ 			ccr3 = getCx86(CX86_CCR3);
+ 			setCx86(CX86_CCR3, (ccr3 & 0x0f) | 0x10);       /* enable MAPEN  */
+-			setCx86_old(CX86_CCR4, getCx86_old(CX86_CCR4) | 0x80);  /* enable cpuid  */
++			setCx86(CX86_CCR4, getCx86(CX86_CCR4) | 0x80);  /* enable cpuid  */
+ 			setCx86(CX86_CCR3, ccr3);                       /* disable MAPEN */
+ 			local_irq_restore(flags);
+ 		}
+
+----------------------------------------------------------------------
+Dzwon taniej na zagraniczne komorki!
+Sprawdz >> http://link.interia.pl/f1f26 
+
