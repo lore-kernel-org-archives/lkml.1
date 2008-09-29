@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbYI2EXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbYI2EfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752608AbYI2EXR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 00:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYI2EXB
+	id S1753232AbYI2EfE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 00:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYI2Eey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 00:23:01 -0400
-Received: from venema.h4ckr.net ([217.24.1.135]:55826 "EHLO venema.h4ckr.net"
+	Mon, 29 Sep 2008 00:34:54 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50460 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750909AbYI2EXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 00:23:00 -0400
-X-Greylist: delayed 1926 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Sep 2008 00:23:00 EDT
-Message-ID: <1086.92.50.127.85.1222660252.squirrel@webmail.madwifi.org>
-In-Reply-To: <48DF8412.2010304@foomagic.org>
-References: <20080926215701.GC5972@tesla> <48DF8412.2010304@foomagic.org>
-Date: Mon, 29 Sep 2008 05:50:52 +0200 (CEST)
-Subject: Re: Release of Atheros 802.11abg HAL under the ISC
-From: "Michael Renzmann" <mrenzmann@madwifi.org>
-To: "Glenn Saberton" <gsaberton@foomagic.org>
-Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       "linux-wireless" <linux-wireless@vger.kernel.org>,
-       ath5k-devel@venema.h4ckr.net, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
+	id S1751355AbYI2Eey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 00:34:54 -0400
+Message-ID: <48E05AE9.1040901@pobox.com>
+Date: Mon, 29 Sep 2008 00:34:49 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Seth Heasley <seth.heasley@intel.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, htejun@gmail.com
+Subject: Re: [PATCH 2.6.26.7-rc4] ata_piix: IDE Mode SATA patch for Intel
+ Ibex Peak DeviceIDs
+References: <200808271640.06762.seth.heasley@intel.com>
+In-Reply-To: <200808271640.06762.seth.heasley@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Seth Heasley wrote:
+> This patch updates the Intel Ibex Peak (PCH) IDE mode SATA Controller DeviceIDs.
+> 
+> Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+> 
+> --- linux-2.6/drivers/ata/ata_piix.c.orig	2008-08-27 11:32:28.000000000 -0700
+> +++ linux-2.6/drivers/ata/ata_piix.c	2008-08-27 11:47:59.000000000 -0700
+> @@ -278,12 +278,15 @@
+>  	/* SATA Controller IDE (PCH) */
+>  	{ 0x8086, 0x3b20, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata },
+>  	/* SATA Controller IDE (PCH) */
+> +	{ 0x8086, 0x3b21, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
+> +	/* SATA Controller IDE (PCH) */
+>  	{ 0x8086, 0x3b26, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
+>  	/* SATA Controller IDE (PCH) */
+> +	{ 0x8086, 0x3b28, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata },
+> +	/* SATA Controller IDE (PCH) */
+>  	{ 0x8086, 0x3b2d, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
+>  	/* SATA Controller IDE (PCH) */
+>  	{ 0x8086, 0x3b2e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata },
+> -
+>  	{ }	/* terminate list */
+>  };
 
-Glenn Saberton wrote:
-> Why is #ath9k invite only?
+applied
 
-It's not particularly on-topic here, so just a short note: #ath9k should
-not be invite-only (but I will check again). It forwards to #madwifi,
-which is used for discussion about MadWifi, ath5k and ath9k.
 
-Bye, Mike
