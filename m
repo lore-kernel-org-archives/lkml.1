@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbYI2NjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbYI2NmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752774AbYI2NjV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 09:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYI2NjN
+	id S1753206AbYI2NmS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 09:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYI2NmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 09:39:13 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:51535 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750819AbYI2NjN (ORCPT
+	Mon, 29 Sep 2008 09:42:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53435 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293AbYI2NmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 09:39:13 -0400
-Message-ID: <48E0DA7C.5010403@canonical.com>
-Date: Mon, 29 Sep 2008 09:39:08 -0400
-From: Stefan Bader <stefan.bader@canonical.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: Reserve FIRST_DEVICE_VECTOR in used_vectors bitmap.
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------080506090909060609030508"
+	Mon, 29 Sep 2008 09:42:07 -0400
+Date: Mon, 29 Sep 2008 06:42:20 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: introduce users of ioremap_pcibar()
+Message-ID: <20080929064220.374c68a4@infradead.org>
+In-Reply-To: <20080929072643.GA28871@colo.lackof.org>
+References: <20080926163641.288bf868@infradead.org>
+	<20080926163718.32f0867e@infradead.org>
+	<20080929072643.GA28871@colo.lackof.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080506090909060609030508
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Mon, 29 Sep 2008 01:26:43 -0600
+Grant Grundler <grundler@parisc-linux.org> wrote:
+> 
+> Alternatively, the ioremap_pcibar() code needs to check for
+> cacheable attribute and DTRT.
+
+we should make it "if prefetchable, UC-, if not, hard UC", yes.
+
+> > -	core->lmmio = ioremap(pci_resource_start(pci, 0),
+> > -			      pci_resource_len(pci, 0));
+> > +	core->lmmio = ioremap_pcibar(pci, 0);
+> 
+> Is there any easy way to tell if the device driver should be using
+> uncached mappings vs cacheable mappings?
+> (Just from looking at the source code)
+> 
+> This patch changes that behavior of the device driver so it uses
+> uncacheable instead of cacheable mappings.  This is the only thing
+> I'm uncertain about for this patch.
+
+ioremap() also is uncachable today.
 
 
+> 
+> And I have a second issue less important issue.
+> What is the result of ioremap_pcibar(pci, 1) when BAR0 is a 64-bit
+> bar? Given the name, I expect to call "ioremap_pcibar(pci,2)" to get
+> the desired result.  Maybe just document how to handle this correctly
+> in Documentation/pci.txt would be sufficient.
 
---------------080506090909060609030508
-Content-Type: application/mbox;
- name="0001-x86-Reserve-FIRST_DEVICE_VECTOR-in-used_vectors-bit.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename*0="0001-x86-Reserve-FIRST_DEVICE_VECTOR-in-used_vectors-bit.pat";
- filename*1="ch"
+we should detect this and DTRT inside the implementation, not in the
+drivers.
 
-RnJvbSBhMjcyYTI4ZjUyMGM1OGE4NDg1M2UwOThiNGVlNTY1NDg2Y2E1MDYyIE1vbiBTZXAg
-MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBTdGVmYW4gQmFkZXIgPHN0ZWZhbi5iYWRlckBjYW5v
-bmljYWwuY29tPgpEYXRlOiBTYXQsIDI3IFNlcCAyMDA4IDExOjA3OjMwIC0wNDAwClN1Ympl
-Y3Q6IFtQQVRDSF0geDg2OiBSZXNlcnZlIEZJUlNUX0RFVklDRV9WRUNUT1IgaW4gdXNlZF92
-ZWN0b3JzIGJpdG1hcC4KClNvbWVvbmUgZnJvbSB0aGUgY29tbXVuaXR5IGZvdW5kIG91dCwg
-dGhhdCBhZnRlciByZXBlYXRlZGx5IHVubG9hZGluZyBhbmQKbG9hZGluZyBhIGRldmljZSBk
-cml2ZXIgdGhhdCB1c2VzIE1TSSBJUlFzLCB0aGUgc3lzdGVtIGV2ZW50dWFsbHkgYXNzaWdu
-ZWQKdGhlIHZlY3RvciBpbml0aWFsbHkgcmVzZXJ2ZWQgZm9yIElSUTAgdG8gdGhlIGRldmlj
-ZSBkcml2ZXIuCgpUaGUgcmVhc29uIGZvciB0aGlzIGlzLCB0aGF0IGFsdGhvdWdoIElSUTAg
-aXMgdGllZCB0byB0aGUgRklSU1RfREVWSUNFX1ZFQ1RPUgp3aGVuIGRlY2xhcmluZyB0aGUg
-aXJxX3ZlY3RvciB0YWJsZSwgdGhlIGNvcnJlc3BvbmRpbmcgYml0IGluIHRoZSB1c2VkX3Zl
-Y3RvcnMKbWFwIGlzIG5vdCBzZXQuIFNvLCBpZiB2ZWN0b3JzIGFyZSByZWxlYXNlZCBhbmQg
-YXNzaWduZWQgb2Z0ZW4gZW5vdWdoLCB0aGUKdmVjdG9yIHdpbGwgZ2V0IGFzc2lnbmVkIHRv
-IGFub3RoZXIgaW50ZXJydXB0LiBUaGlzIGhhcHBlbnMgbW9yZSBvZnRlbiB3aXRoCk1TSSBp
-bnRlcnJ1cHRzIGFzIHRob3NlIGFyZSBleGNsdXNpdmVseSB1c2luZyBhIHZlY3Rvci4KCkZp
-eCB0aGlzIGJ5IHNldHRpbmcgdGhlIGJpdCBmb3IgdGhlIEZJUlNUX0RFVklDRV9WRUNUT1Ig
-aW4gdGhlIGJpdG1hcC4KClNpZ25lZC1vZmYtYnk6IFN0ZWZhbiBCYWRlciA8c3RlZmFuLmJh
-ZGVyQGNhbm9uaWNhbC5jb20+Ci0tLQogYXJjaC94ODYva2VybmVsL2lvX2FwaWNfMzIuYyB8
-ICAgIDMgKysrCiAxIGZpbGVzIGNoYW5nZWQsIDMgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlv
-bnMoLSkKCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9rZXJuZWwvaW9fYXBpY18zMi5jIGIvYXJj
-aC94ODYva2VybmVsL2lvX2FwaWNfMzIuYwppbmRleCAwOWNkZGI1Li5iZmQ5ZmM1IDEwMDY0
-NAotLS0gYS9hcmNoL3g4Ni9rZXJuZWwvaW9fYXBpY18zMi5jCisrKyBiL2FyY2gveDg2L2tl
-cm5lbC9pb19hcGljXzMyLmMKQEAgLTIzMTQsNiArMjMxNCw5IEBAIHZvaWQgX19pbml0IHNl
-dHVwX0lPX0FQSUModm9pZCkKIAlmb3IgKGkgPSBmaXJzdF9zeXN0ZW1fdmVjdG9yOyBpIDwg
-TlJfVkVDVE9SUzsgaSsrKQogCQlzZXRfYml0KGksIHVzZWRfdmVjdG9ycyk7CiAKKwkvKiBN
-YXJrIEZJUlNUX0RFVklDRV9WRUNUT1Igd2hpY2ggaXMgYXNzaWduZWQgdG8gSVJRMCBhcyB1
-c2VkLiAqLworCXNldF9iaXQoRklSU1RfREVWSUNFX1ZFQ1RPUiwgdXNlZF92ZWN0b3JzKTsK
-KwogCWVuYWJsZV9JT19BUElDKCk7CiAKIAlpb19hcGljX2lycXMgPSB+UElDX0lSUVM7Ci0t
-IAoxLjUuNC4zCgo=
---------------080506090909060609030508--
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
