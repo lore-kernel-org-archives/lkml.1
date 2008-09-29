@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238AbYI2TO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbYI2TTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752238AbYI2TO4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 15:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYI2TOr
+	id S1753036AbYI2TTu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 15:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYI2TTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 15:14:47 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:58183 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750991AbYI2TOq (ORCPT
+	Mon, 29 Sep 2008 15:19:42 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:24189 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbYI2TTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 15:14:46 -0400
+	Mon, 29 Sep 2008 15:19:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
          :mime-version:content-type:content-transfer-encoding:sender;
-        b=W/Wb9Idkv11ZHnk9g84+Fm/oiuJwBrvyzCpcqlhYwB39ogVdxr9kAOcj5snhjfbimd
-         e4QLpKqorDcWXBvsmH7XJ9NeI2phgdSe63IogRIXHAuRCQGoIUOVOGMgG49EwoFFWhep
-         K3gKlEpItebSotNUZyE0FbI88rO0G4HZS+vKs=
-Date: Mon, 29 Sep 2008 22:14:39 +0300
+        b=EymiGxk7dglHlVwmrnzOaeRowlQFimCl471gqbJOr5Fm9Bb5F3z1ZvAw7gHr25PbRX
+         5Hhpzqto2azrSaWrmvAyI2DVd3ji+GdDrgaU9M/WVJgusM7uhz+cP7l12NOEt+a+euZj
+         W6jsPgVR1i2AxgQe2ON5q3rgvGGxxI1IVk6P0=
+Date: Mon, 29 Sep 2008 22:19:34 +0300
 From: Pekka Paalanen <pq@iki.fi>
-To: linux-kernel@vger.kernel.org
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, mingo@elte.hu,
-       rostedt@goodmis.org
-Subject: A style question: repeated return value check
-Message-ID: <20080929221439.547d65ec@daedalus.pq.iki.fi>
-In-Reply-To: <48E11BFA.1070503@gmail.com>
-References: <48E11BFA.1070503@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rostedt@goodmis.org
+Subject: Re: [PATCH V2 -tip 3/4] Tracing/ftrace: Adapt mmiotrace to the new
+ type of print_line
+Message-ID: <20080929221934.260306dd@daedalus.pq.iki.fi>
+In-Reply-To: <48E11E1E.7010001@gmail.com>
+References: <48E11E1E.7010001@gmail.com>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,69 +34,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008 20:18:34 +0200
+On Mon, 29 Sep 2008 20:27:42 +0200
 Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> We need a kind of disambiguation when a print_line callback
-> returns 0.
+> Adapt mmiotrace to the new print_line type.
+> By default, it ignores (and consumes) types it doesn't support.
 > 
-> _There is not enough space to print all the entry. 
->  Please flush the seq and retry.
-> _I can't handle this type of entry
-> 
-> This patch changes the type of this callback for better information.
-> 
-> Also some changes have been made in this V2.
-> 
-> _ Only relay to default functions after the print_line callback fails.
-> _ This patch doesn't fix the issue with the broken pipe (see patch 2/4 for that)
-> 
-> Some things are still in discussion:
-> 
-> _ Find better names for the enum print_line_t values
-> _ Change the type of print_trace_line into boolean.
-> 
-> Patches to change that can be sent later.
-> 
+> Acked-by: Pekka Paalanen <pq@iki.fi>
 > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+Ack!
+All four patches looking good.
+
+
+Cheers.
+
 > ---
->  kernel/trace/trace.c |   77 ++++++++++++++++++++++++++-----------------------
->  kernel/trace/trace.h |   10 ++++++-
->  2 files changed, 50 insertions(+), 37 deletions(-)
+>  kernel/trace/trace_mmiotrace.c |   25 ++++++++++++-------------
+>  1 files changed, 12 insertions(+), 13 deletions(-)
 > 
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 6ada059..61f33da 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-[...]
-> @@ -1633,24 +1633,24 @@ static int print_trace_fmt(struct trace_iterator *iter)
+> diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
+> index a108c32..be0a6b0 100644
+> --- a/kernel/trace/trace_mmiotrace.c
+> +++ b/kernel/trace/trace_mmiotrace.c
+> @@ -171,7 +171,7 @@ print_out:
+>  	return (ret == -EBUSY) ? 0 : ret;
+>  }
 >  
->  	ret = trace_seq_printf(s, "%16s-%-5d ", comm, field->pid);
+> -static int mmio_print_rw(struct trace_iterator *iter)
+> +static enum print_line_t mmio_print_rw(struct trace_iterator *iter)
+>  {
+>  	struct trace_entry *entry = iter->ent;
+>  	struct mmiotrace_rw *rw	= &entry->field.mmiorw;
+> @@ -209,11 +209,11 @@ static int mmio_print_rw(struct trace_iterator *iter)
+>  		break;
+>  	}
+>  	if (ret)
+> -		return 1;
+> -	return 0;
+> +		return TRACE_TYPE_HANDLED;
+> +	return TRACE_TYPE_PARTIAL_LINE;
+>  }
+>  
+> -static int mmio_print_map(struct trace_iterator *iter)
+> +static enum print_line_t mmio_print_map(struct trace_iterator *iter)
+>  {
+>  	struct trace_entry *entry = iter->ent;
+>  	struct mmiotrace_map *m	= &entry->field.mmiomap;
+> @@ -221,7 +221,7 @@ static int mmio_print_map(struct trace_iterator *iter)
+>  	unsigned long long t	= ns2usecs(entry->field.t);
+>  	unsigned long usec_rem	= do_div(t, 1000000ULL);
+>  	unsigned secs		= (unsigned long)t;
+> -	int ret = 1;
+> +	int ret;
+>  
+>  	switch (entry->field.mmiorw.opcode) {
+>  	case MMIO_PROBE:
+> @@ -241,11 +241,11 @@ static int mmio_print_map(struct trace_iterator *iter)
+>  		break;
+>  	}
+>  	if (ret)
+> -		return 1;
+> -	return 0;
+> +		return TRACE_TYPE_HANDLED;
+> +	return TRACE_TYPE_PARTIAL_LINE;
+>  }
+>  
+> -static int mmio_print_mark(struct trace_iterator *iter)
+> +static enum print_line_t mmio_print_mark(struct trace_iterator *iter)
+>  {
+>  	struct trace_entry *entry = iter->ent;
+>  	const char *msg		= entry->field.print.buf;
+> @@ -258,16 +258,15 @@ static int mmio_print_mark(struct trace_iterator *iter)
+>  	/* The trailing newline must be in the message. */
+>  	ret = trace_seq_printf(s, "MARK %lu.%06lu %s", secs, usec_rem, msg);
 >  	if (!ret)
 > -		return 0;
 > +		return TRACE_TYPE_PARTIAL_LINE;
->  	ret = trace_seq_printf(s, "[%03d] ", iter->cpu);
->  	if (!ret)
-> -		return 0;
-> +		return TRACE_TYPE_PARTIAL_LINE;
->  	ret = trace_seq_printf(s, "%5lu.%06lu: ", secs, usec_rem);
->  	if (!ret)
-> -		return 0;
-> +		return TRACE_TYPE_PARTIAL_LINE;
+>  
+>  	if (entry->field.flags & TRACE_FLAG_CONT)
+>  		trace_seq_print_cont(s, iter);
+>  
+> -	return 1;
+> +	return TRACE_TYPE_HANDLED;
+>  }
+>  
+> -/* return 0 to abort printing without consuming current entry in pipe mode */
+> -static int mmio_print_line(struct trace_iterator *iter)
+> +static enum print_line_t mmio_print_line(struct trace_iterator *iter)
+>  {
+>  	switch (iter->ent->type) {
+>  	case TRACE_MMIO_RW:
+> @@ -277,7 +276,7 @@ static int mmio_print_line(struct trace_iterator *iter)
+>  	case TRACE_PRINT:
+>  		return mmio_print_mark(iter);
+>  	default:
+> -		return 1; /* ignore unknown entries */
+> +		return TRACE_TYPE_HANDLED; /* ignore unknown entries */
+>  	}
+>  }
+>  
+> 
 
-Off-thread style question: Would it be better or worse to write the
-above as
-
-	ret = trace_seq_printf(s, "%16s-%-5d ", comm, field->pid);
-	ret = ret && trace_seq_printf(s, "[%03d] ", iter->cpu);
-	ret = ret && trace_seq_printf(s, "%5lu.%06lu: ", secs, usec_rem);
-	if (!ret)
-		return TRACE_TYPE_PARTIAL_LINE;
-
-which would do exactly the same, but is more compact.
-Good or bad style?
-
-Well, it could be rolled into a single trace_seq_printf() call, too.
 
 -- 
 Pekka Paalanen
