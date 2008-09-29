@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYI2RUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYI2RVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753880AbYI2RUa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 13:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYI2RUV
+	id S1753827AbYI2RVn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 13:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYI2RVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 13:20:21 -0400
-Received: from outbound-mail-02.bluehost.com ([69.89.21.12]:46899 "HELO
-	outbound-mail-02.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751478AbYI2RUT (ORCPT
+	Mon, 29 Sep 2008 13:21:36 -0400
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:32421 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751733AbYI2RVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 13:20:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=Isro1ls32zRf7J+6uAJZvb/jwjdU0axuu4bctfyEbHr8SkFHxF0Zh4+1XuYOSiQTLm3A4MckMNdv5cVBgwqJIq/jngfU3bMtICxHOTu2jY3Ra/EA2VDPAac3+/78AzOR;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Subject: Re: [PATCH 01/19] pci: introduce an pci_ioremap(pdev, barnr) function
-Date: Mon, 29 Sep 2008 10:20:11 -0700
+	Mon, 29 Sep 2008 13:21:35 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=k3rwr8zrUFhTHaoVMLd2ng2mGKkBhtrUJlFimYUtBABuzt81+S7su7ANXTyF+exMD+oIIGlNBfG1M/J0fTfUNXxIyYptnLSJuw/gz2TE71+rIZTJfo014bXos979zlwVidpG0LdQLVV+qZQrhWoF5ETGzGTtaXoPcyE5Uh+jz1Q=  ;
+X-YMail-OSG: 4PaoM80VM1mOawhtppSjA3Uv_Ihxs8UHZ9VNJZRQsPWGtXK8iF1GuqEJ4qpo6s7it2HDvYVLiuJVJEus6gXVpL.CnCOYw7Cw3q2bEAHFZS6V7GpGe5hQLzxPElmyxi9WvjU-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Magnus Damm" <magnus.damm@gmail.com>
+Subject: Re: [patch 2.6.27-rc7] gpiolib: request/free hooks
+Date: Mon, 29 Sep 2008 10:21:29 -0700
 User-Agent: KMail/1.9.9
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-References: <20080928163611.3df8a9e0@infradead.org> <200809291902.44813.eike-kernel@sf-tec.de>
-In-Reply-To: <200809291902.44813.eike-kernel@sf-tec.de>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+References: <200809241508.11091.david-b@pacbell.net> <200809271129.07241.david-b@pacbell.net> <aec7e5c30809282048x3d9a201j12303091e9d93a49@mail.gmail.com>
+In-Reply-To: <aec7e5c30809282048x3d9a201j12303091e9d93a49@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809291020.12942.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Message-Id: <200809291021.30655.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, September 29, 2008 10:02 am Rolf Eike Beer wrote:
-> Arjan van de Ven wrote:
-> > The patch below introduces a pci_ioremap() function that should make it
-> > easier for driver authors to do the right thing for the simple, common
-> > case.
-> >
-> > There's also 18 patches that introduce users of this; to reduce lkml
-> > noise I've only stuck them in a git tree at
-> > git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-pci_ioremap
-> >.g it
-> > (http://git.kernel.org/?p=linux/kernel/git/arjan/linux-2.6-pci_ioremap.gi
-> >t; a=summary)
-> >
-> >
-> > From fef1dd836bc7dc07962a0ae4019af9efd373c76f Mon Sep 17 00:00:00 2001
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Date: Fri, 26 Sep 2008 16:34:52 -0700
-> > Subject: [PATCH 01/19] pci: introduce an pci_ioremap(pdev, barnr)
-> > function
-> >
-> > A common thing in many PCI drivers is to ioremap() an entire bar.
-> > This is a slightly fragile thing right now, needing both an address and a
-> > size, and many driver writers do.. various things there.
-> >
-> > This patch introduces an pci_ioremap() function taking just a PCI device
-> > struct and the bar number as arguments, and figures this all out itself,
-> > in one place. In addition, we can add various sanity checks to this
-> > function (the patch already checks to make sure that the bar in question
-> > really is a MEM bar; few to no drivers do that sort of thing).
->
-> This is the same like pci_iomap(pdev, number, 0), no?
+On Sunday 28 September 2008, Magnus Damm wrote:
+> Hm, sounds like you prefer to keep pinmuxing and GPIO code separated?
 
-Yeah... Looks like that function isn't that widely used though.  Is the maxlen 
-param really needed?  Looks like the drivers that use it often pass 0 or the 
-BAR length anyway, and Arjan converted existing drivers too, which is where 
-the real work is.
+Yep.
 
-Jesse
+> > If you do that, be ready to provide a pinmux-only interface
+> > at some point when this "piggybacking" breaks something...
+> 
+> In the SuperH case GPIO pin direction selection is done in the same
+> way as selecting pin function. So in and out directions can be seen as
+> two pin functions. And since we want to support GPIO pin direction we
+> may as well support setting pin functions as well.
+> 
+> But maybe there are better ways to integrate it, I'm not sure.
+
+Just don't expect the GPIO framework to address the problem of
+how to configure one of those pins for a non-GPIO function.
+
+Such pinmux problems deserve different programming interfaces.
+
+\
+> > Yeah.  Better to test-and-set the flag and then request, and backout
+> > if it fails, than the other way.  Just who wrote that crap in the
+> > first place?  Sigh.  (Notice it's done that way already in the code
+> > path handling implicit requesting ... )
+> 
+> Sounds good.
+> 
+> > I'll send an updated patch along soonish.
+> 
+> Thank you!
+
+... after I come up with a happy fix for the locking goofs;
+those new methods may not be called under spinlock protection.
+
+- Dave
