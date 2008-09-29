@@ -1,142 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbYI2HDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbYI2HYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbYI2HDy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 03:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYI2HDc
+	id S1753145AbYI2HYr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 03:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYI2HYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 03:03:32 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:35684 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbYI2HDb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 03:03:31 -0400
-From: Krishna Kumar <krkumar2@in.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Krishna Kumar <krkumar2@in.ibm.com>
-Date: Mon, 29 Sep 2008 12:33:28 +0530
-Message-Id: <20080929070328.7386.70911.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080929070302.7386.72726.sendpatchset@localhost.localdomain>
-References: <20080929070302.7386.72726.sendpatchset@localhost.localdomain>
-Subject: [REV2: PATCH 2/2]: workqueue: Modify some users to use the new API
+	Mon, 29 Sep 2008 03:24:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34789 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751063AbYI2HYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 03:24:39 -0400
+Message-ID: <48E0824B.4010408@kernel.org>
+Date: Mon, 29 Sep 2008 16:22:51 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Robert Krawitz <rlk@alum.mit.edu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Another one for fixup-storage
+References: <4897809E.8070902@alum.mit.edu>
+In-Reply-To: <4897809E.8070902@alum.mit.edu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 29 Sep 2008 07:24:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krishna Kumar <krkumar2@in.ibm.com>
+Robert Krawitz wrote:
+> This is for a Dell Inspiron E1705/9400.  I'm using a non-OEM disk (a
+> Hitachi 320 GB drive).
+> 
+> Note that matching on "MP061" doesn't work -- it needs to be "MP061*"
+> due to the way dmidecode seems to return the data (with a bunch of
+> spaces after the tag).  Hence I've attached the data rather than merely
+> 
+> I've only had this thing a month or so and already had over 70,000
+> unload cycles.  Ick.
 
-Modify some users to use the new API.
+Can you please attach the result of "smartctl -a" output?
 
-Signed-off-by: Krishna Kumar <krkumar2@in.ibm.com>
----
- drivers/net/wireless/ipw2100.c       |   12 ++++++------
- drivers/net/wireless/libertas/scan.c |    5 ++---
- drivers/net/wireless/libertas/wext.c |    7 +++----
- fs/afs/vlocation.c                   |   11 +++--------
- fs/ocfs2/cluster/heartbeat.c         |    5 ++---
- 5 files changed, 16 insertions(+), 24 deletions(-)
+Thanks.
 
-diff -ruNp 2.6.27-rc7-org/drivers/net/wireless/ipw2100.c 2.6.27-rc7-new/drivers/net/wireless/ipw2100.c
---- 2.6.27-rc7-org/drivers/net/wireless/ipw2100.c	2008-09-22 03:59:55.000000000 +0530
-+++ 2.6.27-rc7-new/drivers/net/wireless/ipw2100.c	2008-09-29 12:06:55.000000000 +0530
-@@ -2085,9 +2085,8 @@ static void isr_indicate_rf_kill(struct 
- 
- 	/* Make sure the RF Kill check timer is running */
- 	priv->stop_rf_kill = 0;
--	cancel_delayed_work(&priv->rf_kill);
--	queue_delayed_work(priv->workqueue, &priv->rf_kill,
--			   round_jiffies_relative(HZ));
-+	queue_update_delayed_work(priv->workqueue, &priv->rf_kill,
-+				  round_jiffies_relative(HZ));
- }
- 
- static void send_scan_event(void *data)
-@@ -4241,9 +4240,10 @@ static int ipw_radio_kill_sw(struct ipw2
- 					  "disabled by HW switch\n");
- 			/* Make sure the RF_KILL check timer is running */
- 			priv->stop_rf_kill = 0;
--			cancel_delayed_work(&priv->rf_kill);
--			queue_delayed_work(priv->workqueue, &priv->rf_kill,
--					   round_jiffies_relative(HZ));
-+
-+			queue_update_delayed_work(priv->workqueue,
-+						  &priv->rf_kill,
-+						  round_jiffies_relative(HZ));
- 		} else
- 			schedule_reset(priv);
- 	}
-diff -ruNp 2.6.27-rc7-org/drivers/net/wireless/libertas/scan.c 2.6.27-rc7-new/drivers/net/wireless/libertas/scan.c
---- 2.6.27-rc7-org/drivers/net/wireless/libertas/scan.c	2008-09-22 03:59:55.000000000 +0530
-+++ 2.6.27-rc7-new/drivers/net/wireless/libertas/scan.c	2008-09-29 12:06:55.000000000 +0530
-@@ -435,9 +435,8 @@ int lbs_scan_networks(struct lbs_private
- 				priv->scan_channel = to_scan;
- 			else
- 				priv->scan_channel += to_scan;
--			cancel_delayed_work(&priv->scan_work);
--			queue_delayed_work(priv->work_thread, &priv->scan_work,
--					   msecs_to_jiffies(300));
-+			queue_update_delayed_work(priv->work_thread,
-+				&priv->scan_work, msecs_to_jiffies(300));
- 			/* skip over GIWSCAN event */
- 			goto out;
- 		}
-diff -ruNp 2.6.27-rc7-org/drivers/net/wireless/libertas/wext.c 2.6.27-rc7-new/drivers/net/wireless/libertas/wext.c
---- 2.6.27-rc7-org/drivers/net/wireless/libertas/wext.c	2008-09-22 03:59:55.000000000 +0530
-+++ 2.6.27-rc7-new/drivers/net/wireless/libertas/wext.c	2008-09-29 12:06:55.000000000 +0530
-@@ -24,10 +24,9 @@
- 
- static inline void lbs_postpone_association_work(struct lbs_private *priv)
- {
--	if (priv->surpriseremoved)
--		return;
--	cancel_delayed_work(&priv->assoc_work);
--	queue_delayed_work(priv->work_thread, &priv->assoc_work, HZ / 2);
-+	if (!priv->surpriseremoved)
-+		queue_update_delayed_work(priv->work_thread, &priv->assoc_work,
-+					  HZ / 2);
- }
- 
- static inline void lbs_cancel_association_work(struct lbs_private *priv)
-diff -ruNp 2.6.27-rc7-org/fs/afs/vlocation.c 2.6.27-rc7-new/fs/afs/vlocation.c
---- 2.6.27-rc7-org/fs/afs/vlocation.c	2008-09-22 03:59:55.000000000 +0530
-+++ 2.6.27-rc7-new/fs/afs/vlocation.c	2008-09-29 12:06:55.000000000 +0530
-@@ -557,12 +557,8 @@ static void afs_vlocation_reaper(struct 
- 		if (expiry > now) {
- 			delay = (expiry - now) * HZ;
- 			_debug("delay %lu", delay);
--			if (!schedule_delayed_work(&afs_vlocation_reap,
--						   delay)) {
--				cancel_delayed_work(&afs_vlocation_reap);
--				schedule_delayed_work(&afs_vlocation_reap,
--						      delay);
--			}
-+			schedule_update_delayed_work(&afs_vlocation_reap,
-+						     delay);
- 			break;
- 		}
- 
-@@ -615,8 +611,7 @@ void afs_vlocation_purge(void)
- 			   &afs_vlocation_update, 0);
- 	destroy_workqueue(afs_vlocation_update_worker);
- 
--	cancel_delayed_work(&afs_vlocation_reap);
--	schedule_delayed_work(&afs_vlocation_reap, 0);
-+	schedule_update_delayed_work(&afs_vlocation_reap, 0);
- }
- 
- /*
-diff -ruNp 2.6.27-rc7-org/fs/ocfs2/cluster/heartbeat.c 2.6.27-rc7-new/fs/ocfs2/cluster/heartbeat.c
---- 2.6.27-rc7-org/fs/ocfs2/cluster/heartbeat.c	2008-09-22 03:59:55.000000000 +0530
-+++ 2.6.27-rc7-new/fs/ocfs2/cluster/heartbeat.c	2008-09-29 12:06:55.000000000 +0530
-@@ -172,10 +172,9 @@ static void o2hb_arm_write_timeout(struc
- {
- 	mlog(0, "Queue write timeout for %u ms\n", O2HB_MAX_WRITE_TIMEOUT_MS);
- 
--	cancel_delayed_work(&reg->hr_write_timeout_work);
- 	reg->hr_last_timeout_start = jiffies;
--	schedule_delayed_work(&reg->hr_write_timeout_work,
--			      msecs_to_jiffies(O2HB_MAX_WRITE_TIMEOUT_MS));
-+	schedule_update_delayed_work(&reg->hr_write_timeout_work,
-+			msecs_to_jiffies(O2HB_MAX_WRITE_TIMEOUT_MS));
- }
- 
- static void o2hb_disarm_write_timeout(struct o2hb_region *reg)
+-- 
+tejun
