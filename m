@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYI3Wjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbYI3Wkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbYI3Wjo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 18:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbYI3Wjc
+	id S1754443AbYI3Wkb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 18:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYI3WkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 18:39:32 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:10348 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754260AbYI3Wjb (ORCPT
+	Tue, 30 Sep 2008 18:40:20 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:42141 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753368AbYI3WkS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 18:39:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Czfv/hiMWEF0JKcOWZNWdisY7iYHmVtgpNDrW252hictgo0bvR5bcdonmJ4BQlY0V2
-         pd6/+gic7di3bnjVjcJXi6z8iNFGAZ2DElC1/BQLseEUImk4STpPiXWST+xAN+nFVxci
-         GDgimoXrfbXNG5Wa1qLs8IVcvUJ6mjUey/qGM=
-Message-ID: <f7848160809301539i1ebc7c2ek185c1589839a3d78@mail.gmail.com>
-Date: Tue, 30 Sep 2008 18:39:30 -0400
-From: "Parag Warudkar" <parag.lkml@gmail.com>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [ksoftirqd/1] CPU reporting.
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <9e4733910809300741n1da80e6ep777c39bc1373417c@mail.gmail.com>
+	Tue, 30 Sep 2008 18:40:18 -0400
+X-IronPort-AV: E=Sophos;i="4.33,340,1220227200"; 
+   d="scan'208";a="166165985"
+From: Roland Dreier <rdreier@cisco.com>
+To: "Zhao\, Yu" <yu.zhao@intel.com>
+Cc: "linux-pci\@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Alex Chiang <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
+       Greg KH <greg@kroah.com>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm\@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization\@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 4/6 v3] PCI: support SR-IOV capability
+References: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5F4@pdsmsx502.ccr.corp.intel.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 30 Sep 2008 15:40:15 -0700
+In-Reply-To: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5F4@pdsmsx502.ccr.corp.intel.com>
+	(Yu Zhao's message of "Sat, 27 Sep 2008 16:28:15 +0800")
+Message-ID: <ada3ajhfeb4.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9e4733910809300741n1da80e6ep777c39bc1373417c@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 30 Sep 2008 22:40:16.0149 (UTC) FILETIME=[82408450:01C9234D]
+Authentication-Results: sj-dkim-8; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim8002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 10:41 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
-> What's up with ksoftirqd? I'm pretty sure it hasn't used 14,676 years
-> of CPU time.
-> Linus current git on a Q6600 64b.
->
-> jonsmirl@terra:~/fs$ ps aux
-> USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-> root         7 160920245  0.0 0     0 ?        S<   07:27 21133795:38
-> [ksoftirqd/1]
+ > +       ctrl = pci_ari_enabled(dev) ? PCI_IOV_CTRL_ARI : 0;
+ > +       pci_write_config_word(dev, pos + PCI_IOV_CTRL, ctrl);
+ > +       ssleep(1);
 
-Uh oh - Here we go again.
+You seem to sleep for 1 second wherever you write the IOV_CTRL
+register.  Why is this?  Is this specified by PCI, or is it coming from
+somewhere else?
 
-Rafael - time for re-reopening of
-http://bugzilla.kernel.org/show_bug.cgi?id=11209 I suppose?
-
-Parag
+ - R.
