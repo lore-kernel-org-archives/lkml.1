@@ -1,65 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYI3Af0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYI3AgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023AbYI3Af0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 20:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYI3AfP
+	id S1754217AbYI3AgU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 20:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYI3AgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 20:35:15 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43283 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbYI3AfO (ORCPT
+	Mon, 29 Sep 2008 20:36:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:42939 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752965AbYI3AgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 20:35:14 -0400
-Date: Tue, 30 Sep 2008 09:40:17 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: gerald.schaefer@de.ibm.com
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: setup_per_zone_pages_min(): zone->lock vs. zone->lru_lock
-Message-Id: <20080930094017.5ed2938a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1222723206.6791.2.camel@ubuntu>
-References: <1222708257.4723.23.camel@localhost.localdomain>
-	<20080929173607.GC14905@brain>
-	<1222723206.6791.2.camel@ubuntu>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 29 Sep 2008 20:36:11 -0400
+Message-ID: <48E17363.7060103@zytor.com>
+Date: Mon, 29 Sep 2008 17:31:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: akataria@vmware.com
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
+       Daniel Hecht <dhecht@vmware.com>
+Subject: Re: Use CPUID to communicate with the hypervisor.
+References: <1222472815.29886.43.camel@alok-dev1>	 <48E090B6.2080809@redhat.com> <1222710924.30247.21.camel@alok-dev1>	 <48E1227B.9040809@redhat.com> <1222717085.30247.44.camel@alok-dev1>	 <0B53E02A2965CE4F9ADB38B34501A3A15726E15A@orsmsx505.amr.corp.intel.com>	 <48E1437D.7080606@zytor.com>  <48E1486C.3060306@goop.org> <1222733523.30247.91.camel@alok-dev1>
+In-Reply-To: <1222733523.30247.91.camel@alok-dev1>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008 23:20:05 +0200
-Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
-
-> On Mon, 2008-09-29 at 18:36 +0100, Andy Whitcroft wrote:
-> > The allocator protects it freelists using zone->lock (as we can see in
-> > rmqueue_bulk), so anything which manipulates those should also be using
-> > that lock.  move_freepages() is scanning the cmap and picking up free
-> > pages directly off the free lists, it is expecting those lists to be
-> > stable; it would appear to need zone->lock.  It does look like
-> > setup_per_zone_pages_min() is holding the wrong thing at first look.
+Alok Kataria wrote:
 > 
-> I just noticed that the spin_lock in that function is much older than the
-> call to setup_zone_migrate_reserve(), which then calls move_freepages().
-> So it seems that the zone->lru_lock there does (did?) have another purpose,
-> maybe protecting zone->present_pages/pages_min/etc.
+> Sure, some leaves have been defined already, but it's not too late to
+> try to go the generic route for the remaining leaves.
+> The longer we wait to come to a consensus on generic leaves, the more
+> contention we will have.  So let's try to address it now.  
 > 
-Maybe.
 
-> Looks like the need for a zone->lock (if any) was added later, but I'm not
-> sure if makes sense to take both locks together, or if the lru_lock is still
-> needed at all.
->
-At first look, replacing zone->lru_lock with zone->lock is enough...
-This function is an only one function which use zone->lru_lock in page_alloc.c
-And zone_watermark_ok() which access zone->pages_min/low/high is not under any
-locks. So, taking zone->lru_lock here doesn't seem to be necessary...
+We don't have a quorum to create a consensus, since we only have a 
+subset of the relevant parties present.
 
+We can get away with that if we agree on a standard that includes 
+postive definition.
 
-Thanks,
--Kame
+> 1. This solution really bloats the kernel, below are few observations
 
+You have no basis for that assertion.
+
+> i)  What happens if two ABI signature blocks define a cpuid leaf which
+> have similar semantics, how does the kernel handle this ?
+
+We already have this situation in a number of places.  The answer is 
+generally that there is one form that the kernel prefer over another (in 
+CPUID space, leaf 80000006 over leaf 2, for example) because it is 
+better designed/more reliable/mode complete.
+
+> ii) Also, think about a case where a hypervisor supports 2 such ABI
+> blocks - which have cpuid leafs with similar semantics - and decides to
+> implement one of those and not the other leaf. How does the kernel
+> handle this ?
+
+The standard way to handle that in CPUID space is to leave the 
+unimplemented leaf as zero.
+
+> I do understand that there are ways to handle this in the kernel but at
+> the cost of just making the kernel more and more complicated for such
+> corner cases.
+
+The complexity is relatively minor.
+
+> 2. Also as a side note, what you are proposing just breaks down the
+> problem in to sub-problems, i.e we still need to make sure that the
+> individual cpuid leafs in the "block of leaves" are still generic. Also
+> we may still have situations where hypervisor "A" wants to define a
+> subset of cpuid block X, hypervisor B had defined.
+
+It gives individual sub-APIs positive identification.  This is similar 
+to PCI capabilities, for example.
+
+> 3. All in all, the end result of doing this would be that each
+> hypervisor defines its own signature block forgetting about what the
+> other hypervisor is doing. This is hardly generalizing this space.
+> 
+> Seriously, if we want to generalize this in the current situation, how
+> about doing this ? 
+> 
+> 1. Have 0x40000000 as the hypervisor signature leaf.
+> 2. Have 0x40000001-0x4000000F as the hypervisor specific leafs.
+> 3. 0x40000010 - 0x400000FF as the generic space. 
+> Use the non-zero meaning defined semantics for this generic space. 
+
+As I said, I don't think we have any kind of quorum to declare such a 
+"standard", and we'll see violations with failures as a result.
+
+	-hpa
