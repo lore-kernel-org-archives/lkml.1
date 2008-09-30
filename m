@@ -1,80 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYIQOMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYI3WCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbYIQOMm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 10:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYIQOMe
+	id S1753827AbYI3WCS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 18:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYI3WCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 10:12:34 -0400
-Received: from [165.204.77.10] ([165.204.77.10]:26094 "EHLO elemente.amd.com"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752361AbYIQOMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 10:12:34 -0400
-Date: Mon, 17 Sep 2001 00:00:00 +0200
-Message-Id: <200809171324.m8HDO4Kr003664@elemente.amd.com>
-In-Reply-To: <b647ffbd0809161443o5b7bf71aw59853d8d6086ee2d@mail.gmail.com>
-References: <b647ffbd0809161443o5b7bf71aw59853d8d6086ee2d@mail.gmail.com>
-From: Peter Oruba <peter.oruba@amd.com>
-Subject: [PATCH] x86, microcode rework, v2, renaming
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>
-CC: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
+	Tue, 30 Sep 2008 18:02:07 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:32155 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751720AbYI3WCF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 18:02:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=UMZ55WwjGQSW3/OG5XEN8KhgsMk3197/9cb2WB1f+Ik0pC9N/hQ7G5J24QZ1KzYub3
+         Pq5Tz4m57dxxzPQmqyEz7SznLVaG1onPrf6HsLPHgFjtImbKyGYug9MQ+uAVx3PRQ5gt
+         iq9japx/Lg6wg37yP2Hlx2MVp10Xb+R/fTkbc=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: mtrr_cleanup update command line and doc mtrrcleanup_debug
+Date: Tue, 30 Sep 2008 15:01:26 -0700
+Message-Id: <1222812086-15774-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Renaming based on patch from Dmitry Adamushko.
+change enable_mtrr_cleanup to mtrrcleanup, disable_mtrr_cleanup to nomtrrcleanup.
+so doc mtrrcleanup_debug.
 
-Made code more readable by renaming define and variables related
-to microcode _container_file_ header to make it distinguishable from
-microcode _patch_ header.
+and change MTRR_SANITIZER to def_bool y
 
-Signed-off-by: Peter Oruba <peter.oruba@amd.com>
-
-
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- arch/x86/kernel/microcode_amd.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ Documentation/kernel-parameters.txt |    7 +++++--
+ arch/x86/Kconfig                    |    6 +++---
+ arch/x86/kernel/cpu/mtrr/main.c     |    6 +++---
+ 3 files changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index 48aec9f..8d97840 100644
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -274,12 +274,12 @@ static void * get_next_ucode(u8 *buf, unsigned int size,
- static int install_equiv_cpu_table(u8 *buf,
- 		int (*get_ucode_data)(void *, const void *, size_t))
- {
--#define UCODE_HEADER_SIZE	12
--	u8 *hdr[UCODE_HEADER_SIZE];
--	unsigned int *buf_pos = (unsigned int *)hdr;
-+#define UCODE_CONTAINER_HEADER_SIZE	12
-+	u8 *container_hdr[UCODE_CONTAINER_HEADER_SIZE];
-+	unsigned int *buf_pos = (unsigned int *)container_hdr;
- 	unsigned long size;
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -614,12 +614,15 @@ and is between 256 and 4096 characters.
+ 			See drivers/char/README.epca and
+ 			Documentation/digiepca.txt.
  
--	if (get_ucode_data(&hdr, buf, UCODE_HEADER_SIZE))
-+	if (get_ucode_data(&container_hdr, buf, UCODE_CONTAINER_HEADER_SIZE))
- 		return 0;
+-	disable_mtrr_cleanup [X86]
+-	enable_mtrr_cleanup [X86]
++	nomtrrcleanup [X86]
++	mtrrcleanup [X86]
+ 			The kernel tries to adjust MTRR layout from continuous
+ 			to discrete, to make X server driver able to add WB
+ 			entry later. This parameter enables/disables that.
  
- 	size = buf_pos[2];
-@@ -296,14 +296,14 @@ static int install_equiv_cpu_table(u8 *buf,
- 		return 0;
- 	}
++	mtrrcleanup_debug [X86]
++			print out more debug info for mtrr cleanup.
++
+ 	mtrr_chunk_size=nn[KMG] [X86]
+ 			used for mtrr cleanup. It is largest continous chunk
+ 			that could hold holes aka. UC entries.
+Index: linux-2.6/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -1243,18 +1243,18 @@ config MTRR
+ 	  See <file:Documentation/x86/mtrr.txt> for more information.
  
--	buf += UCODE_HEADER_SIZE;
-+	buf += UCODE_CONTAINER_HEADER_SIZE;
- 	if (get_ucode_data(equiv_cpu_table, buf, size)) {
- 		vfree(equiv_cpu_table);
- 		return 0;
- 	}
+ config MTRR_SANITIZER
+-	bool
++	def_bool y
+ 	prompt "MTRR cleanup support"
+ 	depends on MTRR
+ 	help
+ 	  Convert MTRR layout from continuous to discrete, so X drivers can
+ 	  add writeback entries.
  
--	return size + UCODE_HEADER_SIZE; /* add header length */
--#undef UCODE_HEADER_SIZE
-+	return size + UCODE_CONTAINER_HEADER_SIZE; /* add header length */
-+#undef UCODE_CONTAINER_HEADER_SIZE
+-	  Can be disabled with disable_mtrr_cleanup on the kernel command line.
++	  Can be disabled with nomtrrcleanup on the kernel command line.
+ 	  The largest mtrr entry size for a continous block can be set with
+ 	  mtrr_chunk_size.
+ 
+-	  If unsure, say N.
++	  If unsure, say Y.
+ 
+ config MTRR_SANITIZER_ENABLE_DEFAULT
+ 	int "MTRR cleanup enable value (0-1)"
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+@@ -826,7 +826,7 @@ static int __init disable_mtrr_cleanup_s
+ 		enable_mtrr_cleanup = 0;
+ 	return 0;
  }
+-early_param("disable_mtrr_cleanup", disable_mtrr_cleanup_setup);
++early_param("nomtrrcleanup", disable_mtrr_cleanup_setup);
  
- static void free_equiv_cpu_table(void)
--- 
-1.5.4.1
-
+ static int __init enable_mtrr_cleanup_setup(char *str)
+ {
+@@ -834,14 +834,14 @@ static int __init enable_mtrr_cleanup_se
+ 		enable_mtrr_cleanup = 1;
+ 	return 0;
+ }
+-early_param("enable_mtrr_cleanup", enable_mtrr_cleanup_setup);
++early_param("mtrrcleanup", enable_mtrr_cleanup_setup);
+ 
+ static int __init mtrr_cleanup_debug_setup(char *str)
+ {
+ 	debug_print = 1;
+ 	return 0;
+ }
+-early_param("mtrr_cleanup_debug", mtrr_cleanup_debug_setup);
++early_param("mtrrcleanup_debug", mtrr_cleanup_debug_setup);
+ 
+ struct var_mtrr_state {
+ 	unsigned long	range_startk;
