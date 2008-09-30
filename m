@@ -1,67 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbYI3NOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbYI3NSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753718AbYI3NOt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 09:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbYI3NOm
+	id S1753405AbYI3NSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 09:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYI3NSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 09:14:42 -0400
-Received: from tallyho.bytemark.co.uk ([80.68.81.166]:55146 "EHLO
-	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318AbYI3NOl (ORCPT
+	Tue, 30 Sep 2008 09:18:14 -0400
+Received: from fhw-relay07.plus.net ([212.159.14.148]:55280 "EHLO
+	fhw-relay07.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbYI3NSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 09:14:41 -0400
-Date: Tue, 30 Sep 2008 14:14:40 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Jan Beulich <jbeulich@novell.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] checkpatch: Check for %L for all integer formats (was:
-	Re: [PATCH] fix printk format compiler warnings)
-Message-ID: <20080930131440.GM14905@brain>
-References: <48C13CE0.76E4.0078.0@novell.com> <Pine.LNX.4.64.0809301314270.6954@vixen.sonytel.be>
+	Tue, 30 Sep 2008 09:18:14 -0400
+Message-ID: <48E22720.9030603@yahoo.com>
+Date: Tue, 30 Sep 2008 14:18:24 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0809301314270.6954@vixen.sonytel.be>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: How how latent should non-preemptive scheduling be?
+References: <20080922115749.GE14301@elte.hu> <48D88DB4.9020003@yahoo.com> <20080923115323.GA27240@elte.hu> <48D919A9.5000708@yahoo.com> <48D9460C.5040504@yahoo.com> <48D96725.1080909@yahoo.com> <20080927204834.GA31650@elte.hu> <48DFEF8A.3000502@yahoo.com> <20080929083709.GD18663@elte.hu> <48E16097.8060905@yahoo.com> <20080930112241.GC21367@elte.hu>
+In-Reply-To: <20080930112241.GC21367@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Plusnet-Relay: 41ff41c45fbafd1dbd2d5e076d267175
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 01:29:44PM +0200, Geert Uytterhoeven wrote:
-> On Fri, 5 Sep 2008, Jan Beulich wrote:
-> > %llx and the like cannot be used on u64-derived data types - they must
-> > be cast to long long explicitly for arch-es where u64 is a typedef of
-> > unsigned long (ia64 is where I observed the problem).
+Ingo Molnar wrote:
+> * Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
 > 
-> > -		printk(KERN_INFO "PCI: bridge %s io port: [%llx, %llx]\n", pci_name(dev), res->start, res->end);
-> > +		printk(KERN_INFO "PCI: bridge %s io port: [%Lx, %Lx]\n",
+>>              cat-7717  [000]  1392.941867: __tasklet_schedule <-ath5k_intr
+>>              cat-7717  [000]  1393.005963: __tasklet_schedule <-ath5k_intr
+>>              cat-7717  [000]  1393.033222: __switch_to <-schedule
+>>
+>> Here a schedule seemingly doesn't happen for a few hundredths of a second...
 > 
-> > -		printk(KERN_INFO "PCI: bridge %s 32bit mmio: [%llx, %llx]\n", pci_name(dev), res->start, res->end);
-> > +		printk(KERN_INFO "PCI: bridge %s 32bit mmio: [%Lx, %Lx]\n",
-> 
-> > -		printk(KERN_INFO "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n", pci_name(dev), (res->flags & PCI_PREF_RANGE_TYPE_64)?"64":"32",res->start, res->end);
-> > +		printk(KERN_INFO "PCI: bridge %s %dbit mmio pref: [%Lx, %Lx]\n",
-> 
-> > -		printk(KERN_INFO "bus: %02x index %x %s: [%llx, %llx]\n", bus->number, i, (res->flags & IORESOURCE_IO)? "io port":"mmio", res->start, res->end);
-> > +		printk(KERN_INFO "bus: %02x index %x %s: [%Lx, %Lx]\n",
-> 
-> Why did you replace `%ll' by `%L'?
-> 
-> While `L' is used as an internal flag in Linux' vsnprintf() implementation and
-> is still supported because of historical (pre-C99) reasons, the `L' conversion
-> qualifier is meant for the `long double' floating point type, as per C99.
-> The recommended conversion qualifier for the `long long' integer type is `ll'.
-> 
-> Perhaps checkpatch should check for this? Ah, it already does for some of the
-> integer formats. The patch below adds checks for the missing ones.
+> that's about 60 msecs. ath5k_intr IRQ handling overhead? IRQ handlers 
+> are non-preemptible. (even under CONFIG_PREEMPT=y)
 
-[...]
+What about the piece leading up to that:
 
-Yes that looks entirly reasonable to me.  Will queue it up with my next
-batch for Andrew.
+              cat-7717  [000]  1392.752092: del_timer <-schedule_timeout
+              cat-7717  [000]  1392.772263: account_scheduler_latency 
+<-enqueue_task_fair
+              cat-7717  [000]  1392.773224: __tasklet_schedule <-kbd_event
+              cat-7717  [000]  1392.773225: schedule_console_callback 
+<-kbd_event
+              cat-7717  [000]  1392.773225: schedule_work 
+<-schedule_console_callback
+              cat-7717  [000]  1392.773226: queue_work <-schedule_work
+              cat-7717  [000]  1392.773232: account_scheduler_latency 
+<-enqueue_task_fair
+              cat-7717  [000]  1392.773240: account_scheduler_latency 
+<-enqueue_task_fair
+              cat-7717  [000]  1392.773251: schedule_delayed_work 
+<-put_queue
+              cat-7717  [000]  1392.773251: queue_delayed_work 
+<-schedule_delayed_work
+              cat-7717  [000]  1392.773258: schedule_console_callback 
+<-kbd_event
+              cat-7717  [000]  1392.773258: schedule_work 
+<-schedule_console_callback
+              cat-7717  [000]  1392.773259: queue_work <-schedule_work
+              cat-7717  [000]  1392.773267: schedule_console_callback 
+<-kbd_event
+              cat-7717  [000]  1392.773268: schedule_work 
+<-schedule_console_callback
+              cat-7717  [000]  1392.773268: queue_work <-schedule_work
+              cat-7717  [000]  1392.807931: account_scheduler_latency 
+<-enqueue_task_fair
+              cat-7717  [000]  1392.839464: __tasklet_schedule <-ath5k_intr
 
-Thanks.
+Here's a snippet from 
+http://sucs.org/~sits/test/eeepc-debug/20080929/trace-on-battery.txt.bz2 :
+              cat-7717  [000]  1392.752092: del_timer <-schedule_timeout
+              cat-7717  [000]  1392.752092: acpi_ec_check_status 
+<-acpi_ec_wait
+              cat-7717  [000]  1392.752093: constant_test_bit 
+<-acpi_ec_check_status
+              cat-7717  [000]  1392.752095: mutex_unlock 
+<-acpi_ec_transaction
+              cat-7717  [000]  1392.752096: acpi_ex_enter_interpreter 
+<-acpi_ev_address_space_dispatch
+              cat-7717  [000]  1392.752097: acpi_os_wait_semaphore 
+<-acpi_ut_acquire_mutex
+              cat-7717  [000]  1392.752097: down_timeout 
+<-acpi_os_wait_semaphore
+              cat-7717  [000]  1392.752098: acpi_ex_release_global_lock 
+<-acpi_ex_read_data_from_field
+              cat-7717  [000]  1392.752099: acpi_ex_release_mutex_object 
+<-acpi_ex_release_global_lock
+              cat-7717  [000]  1392.752100: acpi_ev_release_global_lock 
+<-acpi_ex_release_mutex_object
+              cat-7717  [000]  1392.752100: __acpi_release_global_lock 
+<-acpi_ev_release_global_lock
+              cat-7717  [000]  1392.752101: acpi_os_signal_semaphore 
+<-acpi_ev_release_global_lock
+              cat-7717  [000]  1392.752102: up <-acpi_os_signal_semaphore
+...
+              cat-7717  [000]  1392.839447: 
+acpi_ex_truncate_for32bit_table <-acpi_ds_exec_end_op
+              cat-7717  [000]  1392.839447: acpi_ps_next_parse_state 
+<-acpi_ps_parse_loop
+              cat-7717  [000]  1392.839448: acpi_ps_complete_op 
+<-acpi_ps_parse_loop
+              cat-7717  [000]  1392.839448: acpi_ps_complete_this_op 
+<-acpi_ps_complete_op
+              cat-7717  [000]  1392.839449: acpi_ps_delete_parse_tree 
+<-acpi_ps_complete_this_op
+              cat-7717  [000]  1392.839449: acpi_ps_get_arg 
+<-acpi_ps_delete_parse_tree
+              cat-7717  [000]  1392.839450: acpi_ps_get_opcode_info 
+<-acpi_ps_get_arg
+              cat-7717  [000]  1392.839450: acpi_ps_get_arg 
+<-acpi_ps_delete_parse_tree
+              cat-7717  [000]  1392.839451: acpi_ps_get_opcode_info 
+<-acpi_ps_get_arg
+              cat-7717  [000]  1392.839452: do_IRQ <-common_interrupt
+              cat-7717  [000]  1392.839453: irq_enter <-do_IRQ
+              cat-7717  [000]  1392.839453: irq_to_desc <-do_IRQ
+              cat-7717  [000]  1392.839454: handle_fasteoi_irq <-do_IRQ
+              cat-7717  [000]  1392.839455: handle_IRQ_event 
+<-handle_fasteoi_irq
+              cat-7717  [000]  1392.839455: usb_hcd_irq <-handle_IRQ_event
+              cat-7717  [000]  1392.839456: uhci_irq <-usb_hcd_irq
+              cat-7717  [000]  1392.839458: ath5k_intr <-handle_IRQ_event
+              cat-7717  [000]  1392.839459: ath5k_hw_is_intr_pending 
+<-ath5k_intr
+              cat-7717  [000]  1392.839461: ath5k_hw_get_isr <-ath5k_intr
+              cat-7717  [000]  1392.839464: __tasklet_schedule <-ath5k_intr
 
--apw
+
+Why didn't another process cut in from 1392.752092 to 1392.839464? In 
+the schedule grep normally runs for cat are half as long e.g.:
+
+           <idle>-0     [000]  1392.747102: __switch_to <-schedule
+              cat-7717  [000]  1392.747103: del_timer <-schedule_timeout
+              cat-7717  [000]  1392.747107: 
+schedule_timeout_uninterruptible <-msleep
+              cat-7717  [000]  1392.747107: schedule_timeout 
+<-schedule_timeout_uninterruptible
+              cat-7717  [000]  1392.747108: init_timer <-schedule_timeout
+              cat-7717  [000]  1392.747108: __mod_timer <-schedule_timeout
+              cat-7717  [000]  1392.747111: __switch_to <-schedule
+           <idle>-0     [000]  1392.749067: account_scheduler_latency 
+<-enqueue_task_fair
+
+
+Further why (after taking a break to process the ath5k interrupt) did it 
+not schedule another process other than cat until 1393.033226:
+
+              cat-7717  [000]  1393.033215: set_normalized_timespec 
+<-ktime_get_ts
+              cat-7717  [000]  1393.033216: ktime_add_safe 
+<-hrtimer_start_range_ns
+              cat-7717  [000]  1393.033217: ktime_add_safe 
+<-hrtimer_start_range_ns
+              cat-7717  [000]  1393.033217: enqueue_hrtimer 
+<-hrtimer_start_range_ns
+              cat-7717  [000]  1393.033222: __switch_to <-schedule
+  hald-addon-inpu-3237  [000]  1393.033226: fget_light <-do_sys_poll
+
+-- 
+Sitsofe | http://sucs.org/~sits/
