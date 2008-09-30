@@ -1,711 +1,474 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbYI3KYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbYI3KY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472AbYI3KYA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 06:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYI3KXk
+	id S1753583AbYI3KY3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 06:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYI3KXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 06:23:40 -0400
-Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:33873 "EHLO
+	Tue, 30 Sep 2008 06:23:41 -0400
+Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:33876 "EHLO
 	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149AbYI3KXi (ORCPT
+	with ESMTP id S1752411AbYI3KXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Sep 2008 06:23:38 -0400
-Message-Id: <20080930102335.701629037@zoo.weinigel.se>
+Message-Id: <20080930102336.217571444@zoo.weinigel.se>
 References: <20080930102313.418263345@zoo.weinigel.se>
 User-Agent: quilt/0.46-1
-Date: Tue, 30 Sep 2008 12:23:14 +0200
+Date: Tue, 30 Sep 2008 12:23:15 +0200
 From: Christer Weinigel <christer@weinigel.se>
 To: drzeus-list@drzeus.cx
 Cc: Christer Weinigel <christer.weinigel@csr.com>,
        linux-kernel@vger.kernel.org
-Subject: [patch 1/3] RFC: Low-latency SDIO, add asynchronous SDIO operations
-Content-Disposition: inline; filename=sdio-async-ops.patch
+Subject: [patch 2/3] RFC: Low-latency SDIO, convert sdio_irq_thread to workqueue.
+Content-Disposition: inline; filename=sdio-async-workqueue.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To improve the latency of the SDIO operations, I've add asynchronous
-versions of sdio operations that split a blocking sdio call into a
-_start call which takes a callback and a _result function which gets
-the result from the last operation.  The callback is called directly
-from interrupt context so this avoids the scheduling overhead from
-waking up the calling thread all the time.  This makes a noticeable
-difference in latency and CPU load on slow embedded systems.
+Change sdio_irq_thread into a workqueue.  The polling logic is moved
+to delayed_work which runs periodically.
 
-To begin with the patch extracts the guts of mmc_io_rw_direct into two
-functions, mmc_io_rw_direct_start and mmc_io_rw_direct_result which
-can be called separately.  mmc_io_rw_direct is still there but
-delegates most of its work to the above functions, and becomes:
+There are two major changes in behaviour from the thread version:
 
-    mmc_io_rw_direct_start(..., mmc_io_done, &complete);
-    wait_for_completion(&complete);
-    return mmc_io_rw_direct_result(card, out);
+First, mmc_signal_sdio_irq will use an asynchronous operation to read
+SDIO_CCCR_INTx, and the asynchronous callback then schedules
+sdio_irq_work to do the processing.  Since this function can be called
+from interrupt context, the request function in the SDIO host driver
+can no longer sleep, something that it could get away with before when
+all calls into the SDIO layer were made from a thread context.  
 
-To support the above mmc_start_request has to be exported and since
-the function can be called directly I moved the host->claimed check
-into that function.
+Second, I disable interrupts in mmc_claim_host (and enable them from
+mmc_release_host).  Since the first thing mmc_signal_sdio_irq does is
+mmc_try_claim_host, it can't do anything if someone else has claimed
+the host anyway.  I don't think this should break anything.
 
-A similar refactoring is done for most sdio_ops functions, e.g. for
-sdio_readb I've added sdio_readb_start and sdio_readb_result while
-keeping the original function unmodified.
-
-A lot of state had to be moved from local variables into the mmc_card
-structure.
-
-With the above changes, a driver which used to run in a worker thread
-and did a blocking call to sdio_readb:
-
-    void foo() 
-    {
-        value = sdio_readb(func, addr, &err);
-    }
-
-can now be writen as:
-
-    void foo_done(struct sdio_func *func);
-
-    void foo()
-    {
-         sdio_readb_start(func, addr, foo_done);
-    }
-
-    void foo_done(struct sdio_func *func)
-    {
-        value = sdio_readb_result(func, &err);
-    }
-
-This is a lot more complex, but the advantage is that since it won't
-sleep, all of this can be done directly from interrupt context which
-can give much better latency and a bit lower CPU load by avoiding the
-thread scheduling.  Non latency sensitive applications can still use
-the blocking calls of course.
+Existing SDIO function drivers should still work as before and should
+not notice any difference.
 
 This work is done for my employer, CSR.
 
 Signed-off-by: Christer Weinigel CSR <christer.weinigel@csr.com>
 
-  /Christer
-
-Index: linux-2.6.26.2/drivers/mmc/core/sdio_ops.c
+Index: linux-2.6.26.2/drivers/mmc/core/sdio_irq.c
 ===================================================================
---- linux-2.6.26.2.orig/drivers/mmc/core/sdio_ops.c
-+++ linux-2.6.26.2/drivers/mmc/core/sdio_ops.c
-@@ -67,110 +67,158 @@ int mmc_send_io_op_cond(struct mmc_host 
- 	return err;
+--- linux-2.6.26.2.orig/drivers/mmc/core/sdio_irq.c
++++ linux-2.6.26.2/drivers/mmc/core/sdio_irq.c
+@@ -28,18 +28,10 @@
+ static int process_sdio_pending_irqs(struct mmc_card *card)
+ {
+ 	int i, ret, count;
+-	unsigned char pending;
+-
+-	ret = mmc_io_rw_direct(card, 0, 0, SDIO_CCCR_INTx, 0, &pending);
+-	if (ret) {
+-		printk(KERN_DEBUG "%s: error %d reading SDIO_CCCR_INTx\n",
+-		       mmc_card_id(card), ret);
+-		return ret;
+-	}
+ 
+ 	count = 0;
+ 	for (i = 1; i <= 7; i++) {
+-		if (pending & (1 << i)) {
++		if (card->pending_irqs & (1 << i)) {
+ 			struct sdio_func *func = card->sdio_func[i - 1];
+ 			if (!func) {
+ 				printk(KERN_WARNING "%s: pending IRQ for "
+@@ -47,6 +39,7 @@ static int process_sdio_pending_irqs(str
+ 					mmc_card_id(card));
+ 				ret = -EINVAL;
+ 			} else if (func->irq_handler) {
++				card->pending_irqs &= ~(1 << i);
+ 				func->irq_handler(func);
+ 				count++;
+ 			} else {
+@@ -63,86 +56,29 @@ static int process_sdio_pending_irqs(str
+ 	return ret;
  }
  
--int mmc_io_rw_direct(struct mmc_card *card, int write, unsigned fn,
--	unsigned addr, u8 in, u8* out)
-+static void mmc_io_done(struct mmc_request *mrq)
+-static int sdio_irq_thread(void *_host)
++/* Set realtime priority on the workqueue thread. */
++static void sdio_irq_sched_work(struct work_struct *work)
  {
--	struct mmc_command cmd;
--	int err;
-+	complete(mrq->done_data);
+-	struct mmc_host *host = _host;
+ 	struct sched_param param = { .sched_priority = 1 };
+-	unsigned long period, idle_period;
+-	int ret;
+ 
+ 	sched_setscheduler(current, SCHED_FIFO, &param);
 +}
  
-+void mmc_io_rw_direct_start(struct mmc_card *card, int write, unsigned fn,
-+			    unsigned addr, u8 in, bool want_out,
-+			    void (*done)(struct mmc_request *),
-+			    void *done_data)
-+{
- 	BUG_ON(!card);
- 	BUG_ON(fn > 7);
- 
--	memset(&cmd, 0, sizeof(struct mmc_command));
-+	memset(&card->cmd, 0, sizeof(struct mmc_command));
-+
-+	card->cmd.opcode = SD_IO_RW_DIRECT;
-+	card->cmd.arg = write ? 0x80000000 : 0x00000000;
-+	card->cmd.arg |= fn << 28;
-+	card->cmd.arg |= (write && want_out) ? 0x08000000 : 0x00000000;
-+	card->cmd.arg |= addr << 9;
-+	card->cmd.arg |= in;
-+	card->cmd.flags = MMC_RSP_SPI_R5 | MMC_RSP_R5 | MMC_CMD_AC;
-+
-+	memset(card->cmd.resp, 0, sizeof(card->cmd.resp));
-+	card->cmd.retries = 0;
-+
-+	memset(&card->mrq, 0, sizeof(struct mmc_request));
-+	card->mrq.cmd = &card->cmd;
-+	card->cmd.data = NULL;
-+
-+	card->mrq.done_data = done_data;
-+	card->mrq.done = done;
-+
-+	mmc_start_request(card->host, &card->mrq);
-+}
- 
--	cmd.opcode = SD_IO_RW_DIRECT;
--	cmd.arg = write ? 0x80000000 : 0x00000000;
--	cmd.arg |= fn << 28;
--	cmd.arg |= (write && out) ? 0x08000000 : 0x00000000;
--	cmd.arg |= addr << 9;
--	cmd.arg |= in;
--	cmd.flags = MMC_RSP_SPI_R5 | MMC_RSP_R5 | MMC_CMD_AC;
+-	/*
+-	 * We want to allow for SDIO cards to work even on non SDIO
+-	 * aware hosts.  One thing that non SDIO host cannot do is
+-	 * asynchronous notification of pending SDIO card interrupts
+-	 * hence we poll for them in that case.
+-	 */
+-	idle_period = msecs_to_jiffies(10);
+-	period = (host->caps & MMC_CAP_SDIO_IRQ) ?
+-		MAX_SCHEDULE_TIMEOUT : idle_period;
 -
--	err = mmc_wait_for_cmd(card->host, &cmd, 0);
--	if (err)
--		return err;
-+int mmc_io_rw_direct_result(struct mmc_card *card, u8 *out)
+-	pr_debug("%s: IRQ thread started (poll period = %lu jiffies)\n",
+-		 mmc_hostname(host), period);
+-
+-	do {
+-		/*
+-		 * We claim the host here on drivers behalf for a couple
+-		 * reasons:
+-		 *
+-		 * 1) it is already needed to retrieve the CCCR_INTx;
+-		 * 2) we want the driver(s) to clear the IRQ condition ASAP;
+-		 * 3) we need to control the abort condition locally.
+-		 *
+-		 * Just like traditional hard IRQ handlers, we expect SDIO
+-		 * IRQ handlers to be quick and to the point, so that the
+-		 * holding of the host lock does not cover too much work
+-		 * that doesn't require that lock to be held.
+-		 */
+-		ret = __mmc_claim_host(host, &host->sdio_irq_thread_abort);
+-		if (ret)
+-			break;
+-		ret = process_sdio_pending_irqs(host->card);
+-		mmc_release_host(host);
+-
+-		/*
+-		 * Give other threads a chance to run in the presence of
+-		 * errors.  FIXME: determine if due to card removal and
+-		 * possibly exit this thread if so.
+-		 */
+-		if (ret < 0)
+-			ssleep(1);
+-
+-		/*
+-		 * Adaptive polling frequency based on the assumption
+-		 * that an interrupt will be closely followed by more.
+-		 * This has a substantial benefit for network devices.
+-		 */
+-		if (!(host->caps & MMC_CAP_SDIO_IRQ)) {
+-			if (ret > 0)
+-				period /= 2;
+-			else {
+-				period++;
+-				if (period > idle_period)
+-					period = idle_period;
+-			}
+-		}
++static void sdio_irq_work(struct work_struct *work)
 +{
-+	if (card->cmd.error)
-+		return card->cmd.error;
++	struct mmc_host *host = container_of(work, struct mmc_host, irq_work);
  
- 	if (mmc_host_is_spi(card->host)) {
- 		/* host driver already reported errors */
- 	} else {
--		if (cmd.resp[0] & R5_ERROR)
-+		if (card->cmd.resp[0] & R5_ERROR)
- 			return -EIO;
--		if (cmd.resp[0] & R5_FUNCTION_NUMBER)
-+		if (card->cmd.resp[0] & R5_FUNCTION_NUMBER)
- 			return -EINVAL;
--		if (cmd.resp[0] & R5_OUT_OF_RANGE)
-+		if (card->cmd.resp[0] & R5_OUT_OF_RANGE)
- 			return -ERANGE;
+-		set_current_state(TASK_INTERRUPTIBLE);
+-		if (host->caps & MMC_CAP_SDIO_IRQ)
+-			host->ops->enable_sdio_irq(host, 1);
+-		if (!kthread_should_stop())
+-			schedule_timeout(period);
+-		set_current_state(TASK_RUNNING);
+-	} while (!kthread_should_stop());
++	process_sdio_pending_irqs(host->card);
+ 
+-	if (host->caps & MMC_CAP_SDIO_IRQ)
+-		host->ops->enable_sdio_irq(host, 0);
++	mmc_release_host(host);
++}
+ 
+-	pr_debug("%s: IRQ thread exiting with code %d\n",
+-		 mmc_hostname(host), ret);
++static void sdio_irq_poll_work(struct work_struct *work)
++{
++	struct mmc_host *host = container_of(work, struct mmc_host,
++					     irq_poll_work.work);
+ 
+-	return ret;
++	mmc_signal_sdio_irq(host);
+ }
+ 
+ static int sdio_card_irq_get(struct mmc_card *card)
+@@ -152,14 +88,21 @@ static int sdio_card_irq_get(struct mmc_
+ 	WARN_ON(!host->claimed);
+ 
+ 	if (!host->sdio_irqs++) {
+-		atomic_set(&host->sdio_irq_thread_abort, 0);
+-		host->sdio_irq_thread =
+-			kthread_run(sdio_irq_thread, host, "ksdiorqd");
+-		if (IS_ERR(host->sdio_irq_thread)) {
+-			int err = PTR_ERR(host->sdio_irq_thread);
++		host->irq_workqueue =
++			create_singlethread_workqueue("ksdiorqd");
++		if (!host->irq_workqueue) {
+ 			host->sdio_irqs--;
+-			return err;
++			return -ENOMEM;
+ 		}
++
++		INIT_WORK(&host->irq_sched_work, sdio_irq_sched_work);
++		INIT_WORK(&host->irq_work, sdio_irq_work);
++		INIT_DELAYED_WORK(&host->irq_poll_work,
++				  sdio_irq_poll_work);
++
++		queue_work(host->irq_workqueue, &host->irq_sched_work);
++
++		host->irq_poll_period = msecs_to_jiffies(10);
  	}
  
- 	if (out) {
- 		if (mmc_host_is_spi(card->host))
--			*out = (cmd.resp[0] >> 8) & 0xFF;
-+			*out = (card->cmd.resp[0] >> 8) & 0xFF;
- 		else
--			*out = cmd.resp[0] & 0xFF;
-+			*out = card->cmd.resp[0] & 0xFF;
+ 	return 0;
+@@ -172,14 +115,114 @@ static int sdio_card_irq_put(struct mmc_
+ 	WARN_ON(!host->claimed);
+ 	BUG_ON(host->sdio_irqs < 1);
+ 
+-	if (!--host->sdio_irqs) {
+-		atomic_set(&host->sdio_irq_thread_abort, 1);
+-		kthread_stop(host->sdio_irq_thread);
++	if (!--host->sdio_irqs)
++		destroy_workqueue(host->irq_workqueue);
++
++	return 0;
++}
++
++void sdio_enable_irq(struct mmc_host *host)
++{
++	if (host->sdio_irqs) {
++		if (host->caps & MMC_CAP_SDIO_IRQ)
++			host->ops->enable_sdio_irq(host, 1);
++		else {
++			queue_delayed_work(host->irq_workqueue,
++					   &host->irq_poll_work,
++					   host->irq_poll_period);
++		}
++	}
++}
++
++void sdio_disable_irq(struct mmc_host *host)
++{
++	if (host->sdio_irqs) {
++		if (host->caps & MMC_CAP_SDIO_IRQ)
++			host->ops->enable_sdio_irq(host, 0);
++		else
++			cancel_delayed_work(&host->irq_poll_work);
++	}
++}
++
++int sdio_kick_irq(struct mmc_host *host)
++{
++	if (!host->card)
++		return 0;
++
++	if (host->sdio_irqs && host->card->pending_irqs) {
++		queue_work(host->irq_workqueue, &host->irq_work);
++		return 1;
  	}
  
  	return 0;
  }
  
--int mmc_io_rw_extended(struct mmc_card *card, int write, unsigned fn,
--	unsigned addr, int incr_addr, u8 *buf, unsigned blocks, unsigned blksz)
-+int mmc_io_rw_direct(struct mmc_card *card, int write, unsigned fn,
-+	unsigned addr, u8 in, u8 *out)
- {
--	struct mmc_request mrq;
--	struct mmc_command cmd;
--	struct mmc_data data;
--	struct scatterlist sg;
-+	DECLARE_COMPLETION_ONSTACK(complete);
- 
-+	mmc_io_rw_direct_start(card, write, fn, addr, in, out,
-+			       mmc_io_done, &complete);
++static void sdio_irq_pending_done(struct mmc_request *mrq);
 +
-+	wait_for_completion(&complete);
++/**
++ *	mmc_signal_sdio_irq - signal a SDIO IRQ
++ *	@host: SDIO host
++ *
++ *	This function should be called by the MMC host driver when
++ *	it has detected a SDIO IRQ.
++ */
++void mmc_signal_sdio_irq(struct mmc_host *host)
++{
++	/*
++	 * We claim the host here on drivers behalf and don't release
++	 * it until all interrupts are processed.
++	 */
 +
-+	return mmc_io_rw_direct_result(card, out);
++	if (!mmc_try_claim_host(host)) {
++		/* this should only happen if the MMC host
++		 * driver signals SDIO interrupts even if they
++		 * are disabled  */
++		pr_debug("%s: card already claimed\n", __func__);
++		return;
++	}
++
++	mmc_io_rw_direct_start(host->card, 0, 0, SDIO_CCCR_INTx, 0, 1,
++			       sdio_irq_pending_done, host);
++}
++EXPORT_SYMBOL_GPL(mmc_signal_sdio_irq);
++
++/* Called when the asynchronous operation has fetched the pending irqs */
++static void sdio_irq_pending_done(struct mmc_request *mrq)
++{
++	struct mmc_host *host = mrq->done_data;
++	int ret;
++
++	ret = mmc_io_rw_direct_result(host->card, &host->card->pending_irqs);
++	if (ret) {
++		pr_warning("%s: error %d reading SDIO_CCCR_INTx\n",
++			   mmc_card_id(host->card), ret);
++		host->card->pending_irqs = 0;
++		mmc_release_host(host);
++		return;
++	}
++
++	if (!(host->caps & MMC_CAP_SDIO_IRQ)) {
++		unsigned long idle_period = msecs_to_jiffies(100);
++
++		/*
++		 * Adaptive polling frequency based on the assumption
++		 * that an interrupt will be closely followed by more.
++		 * This has a substantial benefit for network devices.
++		 */
++		if (host->card->pending_irqs)
++			host->irq_poll_period /= 2;
++		else {
++			host->irq_poll_period++;
++			if (host->irq_poll_period > idle_period)
++				host->irq_poll_period = idle_period;
++		}
++	}
++
++	/* If pending_irqs is set this this will kick the SDIO irq
++	 * handling, otherwise we'll just release the host. */
++	mmc_release_host(host);
 +}
 +
-+void mmc_io_rw_extended_start(struct mmc_card *card, int write, unsigned fn,
-+	unsigned addr, int incr_addr, u8 *buf, unsigned blocks, unsigned blksz,
-+	void (*done)(struct mmc_request *), void *done_data)
-+{
- 	BUG_ON(!card);
- 	BUG_ON(fn > 7);
- 	BUG_ON(blocks == 1 && blksz > 512);
- 	WARN_ON(blocks == 0);
- 	WARN_ON(blksz == 0);
+ /**
+  *	sdio_claim_irq - claim the IRQ for a SDIO function
+  *	@func: SDIO function
+Index: linux-2.6.26.2/include/linux/mmc/host.h
+===================================================================
+--- linux-2.6.26.2.orig/include/linux/mmc/host.h
++++ linux-2.6.26.2/include/linux/mmc/host.h
+@@ -128,8 +128,11 @@ struct mmc_host {
+ 	unsigned int		bus_refs;	/* reference counter */
  
--	memset(&mrq, 0, sizeof(struct mmc_request));
--	memset(&cmd, 0, sizeof(struct mmc_command));
--	memset(&data, 0, sizeof(struct mmc_data));
+ 	unsigned int		sdio_irqs;
+-	struct task_struct	*sdio_irq_thread;
+-	atomic_t		sdio_irq_thread_abort;
++	struct workqueue_struct *irq_workqueue;
++	struct delayed_work     irq_poll_work;
++	unsigned long           irq_poll_period;
++	struct work_struct      irq_work;
++	struct work_struct      irq_sched_work;
+ 
+ #ifdef CONFIG_LEDS_TRIGGERS
+ 	struct led_trigger	*led;		/* activity led */
+@@ -159,12 +162,7 @@ extern int mmc_resume_host(struct mmc_ho
+ 
+ extern void mmc_detect_change(struct mmc_host *, unsigned long delay);
+ extern void mmc_request_done(struct mmc_host *, struct mmc_request *);
 -
--	mrq.cmd = &cmd;
--	mrq.data = &data;
--
--	cmd.opcode = SD_IO_RW_EXTENDED;
--	cmd.arg = write ? 0x80000000 : 0x00000000;
--	cmd.arg |= fn << 28;
--	cmd.arg |= incr_addr ? 0x04000000 : 0x00000000;
--	cmd.arg |= addr << 9;
-+	memset(&card->mrq, 0, sizeof(struct mmc_request));
-+	memset(&card->cmd, 0, sizeof(struct mmc_command));
-+	memset(&card->data, 0, sizeof(struct mmc_data));
-+
-+	card->mrq.cmd = &card->cmd;
-+	card->mrq.data = &card->data;
-+
-+	card->cmd.opcode = SD_IO_RW_EXTENDED;
-+	card->cmd.arg = write ? 0x80000000 : 0x00000000;
-+	card->cmd.arg |= fn << 28;
-+	card->cmd.arg |= incr_addr ? 0x04000000 : 0x00000000;
-+	card->cmd.arg |= addr << 9;
- 	if (blocks == 1 && blksz <= 512)
--		cmd.arg |= (blksz == 512) ? 0 : blksz;	/* byte mode */
-+		card->cmd.arg |= (blksz == 512) ? 0 : blksz;	/* byte mode */
- 	else
--		cmd.arg |= 0x08000000 | blocks;		/* block mode */
--	cmd.flags = MMC_RSP_SPI_R5 | MMC_RSP_R5 | MMC_CMD_ADTC;
-+		card->cmd.arg |= 0x08000000 | blocks;		/* block mode */
-+	card->cmd.flags = MMC_RSP_SPI_R5 | MMC_RSP_R5 | MMC_CMD_ADTC;
+-static inline void mmc_signal_sdio_irq(struct mmc_host *host)
+-{
+-	host->ops->enable_sdio_irq(host, 0);
+-	wake_up_process(host->sdio_irq_thread);
+-}
++extern void mmc_signal_sdio_irq(struct mmc_host *host);
  
--	data.blksz = blksz;
--	data.blocks = blocks;
--	data.flags = write ? MMC_DATA_WRITE : MMC_DATA_READ;
--	data.sg = &sg;
--	data.sg_len = 1;
-+	card->data.blksz = blksz;
-+	card->data.blocks = blocks;
-+	card->data.flags = write ? MMC_DATA_WRITE : MMC_DATA_READ;
-+	card->data.sg = &card->sg;
-+	card->data.sg_len = 1;
+ #endif
  
--	sg_init_one(&sg, buf, blksz * blocks);
-+	sg_init_one(&card->sg, buf, blksz * blocks);
- 
--	mmc_set_data_timeout(&data, card);
-+	mmc_set_data_timeout(&card->data, card);
- 
--	mmc_wait_for_req(card->host, &mrq);
-+	card->mrq.done_data = done_data;
-+	card->mrq.done = done;
- 
--	if (cmd.error)
--		return cmd.error;
--	if (data.error)
--		return data.error;
-+	mmc_start_request(card->host, &card->mrq);
-+}
-+
-+// TODO this can be merged with mmc_io_rw_direct_result
-+int mmc_io_rw_extended_result(struct mmc_card *card)
-+{
-+	if (card->cmd.error)
-+		return card->cmd.error;
-+	if (card->data.error)
-+		return card->data.error;
- 
- 	if (mmc_host_is_spi(card->host)) {
- 		/* host driver already reported errors */
- 	} else {
--		if (cmd.resp[0] & R5_ERROR)
-+		if (card->cmd.resp[0] & R5_ERROR)
- 			return -EIO;
--		if (cmd.resp[0] & R5_FUNCTION_NUMBER)
-+		if (card->cmd.resp[0] & R5_FUNCTION_NUMBER)
- 			return -EINVAL;
--		if (cmd.resp[0] & R5_OUT_OF_RANGE)
-+		if (card->cmd.resp[0] & R5_OUT_OF_RANGE)
- 			return -ERANGE;
- 	}
- 
- 	return 0;
- }
- 
-+int mmc_io_rw_extended(struct mmc_card *card, int write, unsigned fn,
-+	unsigned addr, int incr_addr, u8 *buf, unsigned blocks, unsigned blksz)
-+{
-+	DECLARE_COMPLETION_ONSTACK(complete);
-+
-+	mmc_io_rw_extended_start(card, write, fn, addr, incr_addr,
-+				 buf, blocks, blksz,
-+				 mmc_io_done, &complete);
-+
-+	wait_for_completion(&complete);
-+
-+	return mmc_io_rw_extended_result(card);
-+}
-+
 Index: linux-2.6.26.2/drivers/mmc/core/core.c
 ===================================================================
 --- linux-2.6.26.2.orig/drivers/mmc/core/core.c
 +++ linux-2.6.26.2/drivers/mmc/core/core.c
-@@ -113,16 +113,16 @@ void mmc_request_done(struct mmc_host *h
- 			mrq->done(mrq);
+@@ -34,6 +34,7 @@
+ #include "mmc_ops.h"
+ #include "sd_ops.h"
+ #include "sdio_ops.h"
++#include "sdio_irq.h"
+ 
+ static struct workqueue_struct *workqueue;
+ 
+@@ -294,6 +295,30 @@ void mmc_set_data_timeout(struct mmc_dat
+ EXPORT_SYMBOL(mmc_set_data_timeout);
+ 
+ /**
++ *	mmc_try_claim_host - exclusively claim a host
++ *	@host: mmc host to claim
++ *
++ *	Claim a host for a set of operations.  Returns true with the
++ *	lock held if it acquired the lock or false if it failed.
++ */
++int mmc_try_claim_host(struct mmc_host *host)
++{
++	unsigned long flags;
++	int ret = 0;
++
++	spin_lock_irqsave(&host->lock, flags);
++	if (!host->claimed) {
++		host->claimed = 1;
++		sdio_disable_irq(host);
++		ret = 1;
++	}
++	spin_unlock_irqrestore(&host->lock, flags);
++
++	return ret;
++}
++EXPORT_SYMBOL(mmc_try_claim_host);
++
++/**
+  *	__mmc_claim_host - exclusively claim a host
+  *	@host: mmc host to claim
+  *	@abort: whether or not the operation should be aborted
+@@ -322,6 +347,7 @@ int __mmc_claim_host(struct mmc_host *ho
+ 		schedule();
+ 		spin_lock_irqsave(&host->lock, flags);
  	}
- }
--
- EXPORT_SYMBOL(mmc_request_done);
++	sdio_disable_irq(host);
+ 	set_current_state(TASK_RUNNING);
+ 	if (!stop)
+ 		host->claimed = 1;
+@@ -347,7 +373,11 @@ void mmc_release_host(struct mmc_host *h
  
--static void
--mmc_start_request(struct mmc_host *host, struct mmc_request *mrq)
-+void mmc_start_request(struct mmc_host *host, struct mmc_request *mrq)
- {
- #ifdef CONFIG_MMC_DEBUG
- 	unsigned int i, sz;
- #endif
+ 	WARN_ON(!host->claimed);
  
-+	WARN_ON(!host->claimed);
++	if (sdio_kick_irq(host))
++		return;
 +
- 	pr_debug("%s: starting CMD%u arg %08x flags %08x\n",
- 		 mmc_hostname(host), mrq->cmd->opcode,
- 		 mrq->cmd->arg, mrq->cmd->flags);
-@@ -172,6 +172,7 @@ mmc_start_request(struct mmc_host *host,
- 	}
- 	host->ops->request(host, mrq);
- }
-+EXPORT_SYMBOL(mmc_start_request);
+ 	spin_lock_irqsave(&host->lock, flags);
++	sdio_enable_irq(host);
+ 	host->claimed = 0;
+ 	spin_unlock_irqrestore(&host->lock, flags);
  
- static void mmc_wait_done(struct mmc_request *mrq)
- {
-@@ -215,8 +216,6 @@ int mmc_wait_for_cmd(struct mmc_host *ho
- {
- 	struct mmc_request mrq;
- 
--	WARN_ON(!host->claimed);
--
- 	memset(&mrq, 0, sizeof(struct mmc_request));
- 
- 	memset(cmd->resp, 0, sizeof(cmd->resp));
-Index: linux-2.6.26.2/drivers/mmc/core/sdio_io.c
+Index: linux-2.6.26.2/drivers/mmc/core/sdio_irq.h
 ===================================================================
---- linux-2.6.26.2.orig/drivers/mmc/core/sdio_io.c
-+++ linux-2.6.26.2/drivers/mmc/core/sdio_io.c
-@@ -189,6 +189,92 @@ int sdio_set_block_size(struct sdio_func
- 
- EXPORT_SYMBOL_GPL(sdio_set_block_size);
- 
-+static void sdio_async_done(struct mmc_request *mrq)
-+{
-+	struct sdio_func *func = mrq->done_data;
-+	func->card->done(func);
-+}
-+
-+static void sdio_io_rw_async_ext_start(struct sdio_func *func);
-+
-+static void sdio_io_rw_async_ext_done(struct mmc_request *mrq)
-+{
-+	struct sdio_func *func = mrq->done_data;
-+	struct mmc_card *card = func->card;
-+
-+	card->remainder -= card->size;
-+	card->buf += card->size;
-+	if (card->incr_addr)
-+		card->addr += card->size;
-+
-+	if (card->remainder)
-+		sdio_io_rw_async_ext_start(func);
-+	else
-+		sdio_async_done(mrq);
-+}
-+
-+static void sdio_io_rw_async_ext_start(struct sdio_func *func)
-+{
-+	struct mmc_card *card = func->card;
-+	unsigned max_blocks;
-+
-+	/* Do the bulk of the transfer using block mode (if supported). */
-+	if (card->cccr.multi_block) {
-+		/* Blocks per command is limited by host count, host transfer
-+		 * size (we only use a single sg entry) and the maximum for
-+		 * IO_RW_EXTENDED of 511 blocks. */
-+		max_blocks = min(min(
-+			card->host->max_blk_count,
-+			card->host->max_seg_size / func->cur_blksize),
-+			511u);
-+
-+		if (card->remainder > func->cur_blksize) {
-+			unsigned blocks;
-+
-+			blocks = card->remainder / func->cur_blksize;
-+			if (blocks > max_blocks)
-+				blocks = max_blocks;
-+			card->size = blocks * func->cur_blksize;
-+
-+			mmc_io_rw_extended_start(
-+				card, card->write, func->num,
-+				card->addr, card->incr_addr,
-+				card->buf, blocks, func->cur_blksize,
-+				sdio_io_rw_async_ext_done, func);
-+			return;
-+		}
-+	}
-+
-+	/* Write the remainder using byte mode. */
-+	card->size = card->remainder;
-+	if (card->size > func->cur_blksize)
-+		card->size = func->cur_blksize;
-+	if (card->size > 512)
-+		card->size = 512; /* maximum size for byte mode */
-+
-+	mmc_io_rw_extended_start(card, card->write, func->num,
-+				 card->addr, card->incr_addr,
-+				 card->buf, 1, card->size,
-+				 sdio_io_rw_async_ext_done, func);
-+}
-+
-+static void sdio_io_rw_async_ext_helper(struct sdio_func *func, int write,
-+	unsigned addr, int incr_addr, u8 *buf, unsigned size,
-+	void (*done)(struct sdio_func *func))
-+{
-+	struct mmc_card *card = func->card;
-+
-+	card->done = done;
-+	card->size = 0;
-+	card->write = write;
-+	card->addr = addr;
-+	card->incr_addr = incr_addr;
-+	card->buf = buf;
-+	card->remainder = size;
-+
-+	sdio_io_rw_async_ext_start(func);
-+}
-+
- /* Split an arbitrarily sized data transfer into several
-  * IO_RW_EXTENDED commands. */
- static int sdio_io_rw_ext_helper(struct sdio_func *func, int write,
-@@ -283,6 +369,58 @@ unsigned char sdio_readb(struct sdio_fun
- EXPORT_SYMBOL_GPL(sdio_readb);
- 
- /**
-+ *	sdio_readb_start - start a single byte read from a SDIO function
-+ *	@func: SDIO function to access
-+ *	@addr: address to read
-+ *	@done: callback function to call when the read is done
-+ *      @done_done: data passed to the callback function
+--- /dev/null
++++ linux-2.6.26.2/drivers/mmc/core/sdio_irq.h
+@@ -0,0 +1,17 @@
++/*
++ *  linux/drivers/mmc/core/sdio_irq.h
 + *
-+ *	Reads a single byte from the address space of a given SDIO
-+ *	function. If there is a problem reading the address, 0xff is
-+ *	returned and the err parameter of the callback will contain
-+ *	the error code.
++ *  Copyright (C) 2008 CSR
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + */
-+void sdio_readb_start(struct sdio_func *func, unsigned int addr,
-+		      void (*done)(struct sdio_func *func))
-+{
-+	BUG_ON(!func);
++#ifndef _MMC_CORE_SDIO_IRQ_H
++#define _MMC_CORE_SDIO_IRQ_H
 +
-+	func->card->done = done;
-+	mmc_io_rw_direct_start(func->card, 0, func->num, addr, 0, 1,
-+			       sdio_async_done, func);
-+}
-+EXPORT_SYMBOL_GPL(sdio_readb_start);
++void sdio_enable_irq(struct mmc_host *host);
++void sdio_disable_irq(struct mmc_host *host);
++bool sdio_kick_irq(struct mmc_host *host);
 +
-+/**
-+ *	sdio_readb_result - get the result from a single byte read
-+ *	@func: SDIO function to access
-+ *	@addr: address to read
-+ *	@err_ret: optional status value from transfer
-+ *
-+ *	Reads a single byte from the address space of a given SDIO
-+ *	function. If there is a problem reading the address, 0xff
-+ *	is returned and @err_ret will contain the error code.
-+ */
-+unsigned char sdio_readb_result(struct sdio_func *func, int *err_ret)
-+{
-+	int ret;
-+	unsigned char val;
-+
-+	if (err_ret)
-+		*err_ret = 0;
-+
-+	ret = mmc_io_rw_direct_result(func->card, &val);
-+	if (ret) {
-+		if (err_ret)
-+			*err_ret = ret;
-+		return 0xFF;
-+	}
-+
-+	return val;
-+}
-+EXPORT_SYMBOL_GPL(sdio_readb_result);
-+
-+/**
-  *	sdio_writeb - write a single byte to a SDIO function
-  *	@func: SDIO function to access
-  *	@b: byte to write
-@@ -307,6 +445,75 @@ void sdio_writeb(struct sdio_func *func,
- EXPORT_SYMBOL_GPL(sdio_writeb);
- 
- /**
-+ *	sdio_writeb_start - start a single byte write to a SDIO function
-+ *	@func: SDIO function to access
-+ *	@b: byte to write
-+ *	@addr: address to write to
-+ *	@done: callback function to call when the read is done
-+ *
-+ *	Writes a single byte to the address space of a given SDIO
-+ *	function.  If there is a problem writing the address err
-+ *	parameter of the callback will contain the error code. */
-+void sdio_writeb_start(struct sdio_func *func,
-+		       unsigned char b, unsigned int addr,
-+		       void (*done)(struct sdio_func *func))
-+{
-+	BUG_ON(!func);
-+
-+	func->card->done = done;
-+	mmc_io_rw_direct_start(func->card, 1, func->num, addr, b, 0,
-+			       sdio_async_done, func);
-+}
-+EXPORT_SYMBOL_GPL(sdio_writeb_start);
-+
-+/**
-+ *	sdio_writeb_result - get the result from a single byte write
-+ *	to a SDIO function
-+ *	@func: SDIO function to access
-+ *	@err_ret: optional status value from transfer
-+ *
-+ *	@err_ret will contain the status of the actual
-+ *	transfer.
-+ */
-+void sdio_writeb_result(struct sdio_func *func, int *err_ret)
-+{
-+	int ret;
-+
-+	if (err_ret)
-+		*err_ret = 0;
-+
-+	ret = mmc_io_rw_direct_result(func->card, NULL);
-+	if (ret) {
-+		if (err_ret)
-+			*err_ret = ret;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(sdio_writeb_result);
-+
-+/**
-+ *	sdio_block_io_result - get the result from a SDIO operation
-+ *	@func: SDIO function to access
-+ *	@err_ret: optional status value from transfer
-+ *
-+ *	@err_ret will contain the status of the actual
-+ *	transfer.
-+ */
-+void sdio_block_io_result(struct sdio_func *func, int *err_ret)
-+{
-+	int ret;
-+
-+	if (err_ret)
-+		*err_ret = 0;
-+
-+	ret = mmc_io_rw_extended_result(func->card);
-+	if (ret) {
-+		if (err_ret)
-+			*err_ret = ret;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(sdio_block_io_result);
-+
-+/**
-  *	sdio_memcpy_fromio - read a chunk of memory from a SDIO function
-  *	@func: SDIO function to access
-  *	@dst: buffer to store the data
-@@ -359,6 +566,23 @@ int sdio_readsb(struct sdio_func *func, 
- EXPORT_SYMBOL_GPL(sdio_readsb);
- 
- /**
-+ *	sdio_readsb_start - start read from a FIFO on a SDIO function
-+ *	@func: SDIO function to access
-+ *	@dst: buffer to store the data
-+ *	@addr: address of (single byte) FIFO
-+ *	@count: number of bytes to read
-+ *	@done: callback function to call when the read is done
-+ *
-+ *	Reads from the specified FIFO of a given SDIO function.
-+ */
-+void sdio_readsb_start(struct sdio_func *func, void *dst, unsigned int addr,
-+		       int count, void (*done)(struct sdio_func *func))
-+{
-+	sdio_io_rw_async_ext_helper(func, 0, addr, 0, dst, count, done);
-+}
-+EXPORT_SYMBOL_GPL(sdio_readsb_start);
-+
-+/**
-  *	sdio_writesb - write to a FIFO of a SDIO function
-  *	@func: SDIO function to access
-  *	@addr: address of (single byte) FIFO
-Index: linux-2.6.26.2/drivers/mmc/core/sdio_ops.h
-===================================================================
---- linux-2.6.26.2.orig/drivers/mmc/core/sdio_ops.h
-+++ linux-2.6.26.2/drivers/mmc/core/sdio_ops.h
-@@ -15,8 +15,17 @@
- int mmc_send_io_op_cond(struct mmc_host *host, u32 ocr, u32 *rocr);
- int mmc_io_rw_direct(struct mmc_card *card, int write, unsigned fn,
- 	unsigned addr, u8 in, u8* out);
-+void mmc_io_rw_direct_start(struct mmc_card *card, int write, unsigned fn,
-+			    unsigned addr, u8 in, bool want_out,
-+			    void (*done)(struct mmc_request *),
-+			    void *done_data);
-+int mmc_io_rw_direct_result(struct mmc_card *card, u8 *out);
- int mmc_io_rw_extended(struct mmc_card *card, int write, unsigned fn,
- 	unsigned addr, int incr_addr, u8 *buf, unsigned blocks, unsigned blksz);
-+void mmc_io_rw_extended_start(struct mmc_card *card, int write, unsigned fn,
-+	unsigned addr, int incr_addr, u8 *buf, unsigned blocks, unsigned blksz,
-+	void (*done)(struct mmc_request *), void *done_data);
-+int mmc_io_rw_extended_result(struct mmc_card *card);
- 
- #endif
- 
-Index: linux-2.6.26.2/include/linux/mmc/core.h
-===================================================================
---- linux-2.6.26.2.orig/include/linux/mmc/core.h
-+++ linux-2.6.26.2/include/linux/mmc/core.h
-@@ -129,6 +129,7 @@ struct mmc_request {
- struct mmc_host;
- struct mmc_card;
- 
-+extern void mmc_start_request(struct mmc_host *host, struct mmc_request *mrq);
- extern void mmc_wait_for_req(struct mmc_host *, struct mmc_request *);
- extern int mmc_wait_for_cmd(struct mmc_host *, struct mmc_command *, int);
- extern int mmc_wait_for_app_cmd(struct mmc_host *, struct mmc_card *,
-Index: linux-2.6.26.2/include/linux/mmc/sdio_func.h
-===================================================================
---- linux-2.6.26.2.orig/include/linux/mmc/sdio_func.h
-+++ linux-2.6.26.2/include/linux/mmc/sdio_func.h
-@@ -122,18 +122,30 @@ extern int sdio_release_irq(struct sdio_
- 
- extern unsigned char sdio_readb(struct sdio_func *func,
- 	unsigned int addr, int *err_ret);
-+extern void sdio_readb_start(struct sdio_func *func, unsigned int addr,
-+	void (*done)(struct sdio_func *func));
-+extern unsigned char sdio_readb_result(struct sdio_func *func, int *err_ret);
- extern unsigned short sdio_readw(struct sdio_func *func,
- 	unsigned int addr, int *err_ret);
- extern unsigned long sdio_readl(struct sdio_func *func,
- 	unsigned int addr, int *err_ret);
- 
-+extern void sdio_block_io_result(struct sdio_func *func, int *err_ret);
-+
- extern int sdio_memcpy_fromio(struct sdio_func *func, void *dst,
- 	unsigned int addr, int count);
- extern int sdio_readsb(struct sdio_func *func, void *dst,
- 	unsigned int addr, int count);
-+extern void sdio_readsb_start(struct sdio_func *func, void *dst,
-+	unsigned int addr, int count,
-+	void (*done)(struct sdio_func *func));
- 
- extern void sdio_writeb(struct sdio_func *func, unsigned char b,
- 	unsigned int addr, int *err_ret);
-+extern void sdio_writeb_start(struct sdio_func *func,
-+	unsigned char b, unsigned int addr,
-+	void (*done)(struct sdio_func *func));
-+void sdio_writeb_result(struct sdio_func *func, int *err_ret);
- extern void sdio_writew(struct sdio_func *func, unsigned short b,
- 	unsigned int addr, int *err_ret);
- extern void sdio_writel(struct sdio_func *func, unsigned long b,
++#endif
 Index: linux-2.6.26.2/include/linux/mmc/card.h
 ===================================================================
 --- linux-2.6.26.2.orig/include/linux/mmc/card.h
 +++ linux-2.6.26.2/include/linux/mmc/card.h
-@@ -10,6 +10,8 @@
- #ifndef LINUX_MMC_CARD_H
- #define LINUX_MMC_CARD_H
- 
-+#include <linux/scatterlist.h>
+@@ -127,6 +127,8 @@ struct mmc_card {
+ 	int			incr_addr;	/* true if a block operation should increment the address */
+ 	u8			*buf;		/* the buffer for a block operation */
+ 	unsigned		size;		/* the size of a block operation */
 +
- #include <linux/mmc/core.h>
- 
- struct mmc_cid {
-@@ -111,6 +113,20 @@ struct mmc_card {
- 	unsigned		num_info;	/* number of info strings */
- 	const char		**info;		/* info strings */
- 	struct sdio_func_tuple	*tuples;	/* unknown common tuples */
-+
-+	/* state used internally by asynchronous operations */
-+	struct mmc_command	cmd;		/* current command */
-+	struct mmc_request	mrq;		/* current request */
-+	struct mmc_data		data;		/* data for current
-+						 * request */
-+	struct scatterlist	sg;		/*  */
-+	void			(*done)(struct sdio_func *func); /* called when request done */
-+	unsigned		remainder;	/* amount of data left for block operation */
-+	int			write;		/* true if this is a write operation */
-+	unsigned		addr;		/* address for operation */
-+	int			incr_addr;	/* true if a block operation should increment the address */
-+	u8			*buf;		/* the buffer for a block operation */
-+	unsigned		size;		/* the size of a block operation */
++	unsigned char		pending_irqs;	/* pending SDIO interrupts */
  };
  
  #define mmc_card_mmc(c)		((c)->type == MMC_TYPE_MMC)
+Index: linux-2.6.26.2/include/linux/mmc/core.h
+===================================================================
+--- linux-2.6.26.2.orig/include/linux/mmc/core.h
++++ linux-2.6.26.2/include/linux/mmc/core.h
+@@ -137,6 +137,7 @@ extern int mmc_wait_for_app_cmd(struct m
+ 
+ extern void mmc_set_data_timeout(struct mmc_data *, const struct mmc_card *);
+ 
++extern int mmc_try_claim_host(struct mmc_host *host);
+ extern int __mmc_claim_host(struct mmc_host *host, atomic_t *abort);
+ extern void mmc_release_host(struct mmc_host *host);
+ 
 
 -- 
 "Just how much can I get away with and still go to heaven?"
