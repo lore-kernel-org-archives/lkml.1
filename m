@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbYI3Seh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbYI3Sfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753530AbYI3Seh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 14:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYI3Se3
+	id S1753860AbYI3Sfm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 14:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbYI3Sfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 14:34:29 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:33725 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752546AbYI3Se3 (ORCPT
+	Tue, 30 Sep 2008 14:35:33 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:48184 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752835AbYI3Sfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 14:34:29 -0400
-Date: Tue, 30 Sep 2008 21:33:10 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, iommu@lists.linux-foundation.org,
-       David Woodhouse <dwmw2@infradead.org>,
-       Amit Shah <amit.shah@qumranet.com>, Ingo Molnar <mingo@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 6/9] x86/iommu: change Calgary to use dma_ops register
-	interface
-Message-ID: <20080930183310.GB20341@il.ibm.com>
-References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <1222107681-8185-7-git-send-email-joerg.roedel@amd.com> <20080930111028.GC12529@elte.hu> <20080930133024.GA20341@il.ibm.com> <20080930153815.GA22693@elte.hu>
-MIME-Version: 1.0
+	Tue, 30 Sep 2008 14:35:33 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhUFAHAO4khMQWq+/2dsb2JhbACBZr4PgWk
+Date: Tue, 30 Sep 2008 14:35:31 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, od@suse.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>, Tom Zanussi <zanussi@comcast.net>
+Subject: Re: [RFC PATCH] LTTng relay buffer allocation, read, write
+Message-ID: <20080930183531.GA20670@Krystal>
+References: <20080927134012.GA11930@Krystal> <1222535419.16700.300.camel@lappy.programming.kicks-ass.net> <20080929155004.GA11029@Krystal> <1222709445.23876.70.camel@twins.programming.kicks-ass.net> <20080929203124.GA23070@Krystal> <alpine.DEB.1.10.0809291643570.8145@gandalf.stny.rr.com> <33307c790809301022q2821ecc7iabf41eb513707e0c@mail.gmail.com> <33307c790809301023v1b0755fbsab1bbfa9bfaad58@mail.gmail.com> <20080930181436.GA19690@Krystal> <alpine.DEB.1.10.0809301421330.6224@gandalf.stny.rr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080930153815.GA22693@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <alpine.DEB.1.10.0809301421330.6224@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:30:19 up 117 days, 23:10,  9 users,  load average: 0.47, 0.39,
+	0.44
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 05:38:15PM +0200, Ingo Molnar wrote:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> * Muli Ben-Yehuda <muli@il.ibm.com> wrote:
-> 
-> > > > +static int calgary_device_supported(struct device *dev)
-> > > > +{
-> > > > +	return translation_enabled(find_iommu_table(dev));
-> > > > +}
+> On Tue, 30 Sep 2008, Mathieu Desnoyers wrote:
 > > 
-> > Sure, but I prefer the explicit form since it lends itself to easier
-> > debugging (oops line numbers, adding printks, etc.).
+> > In Steven's scheme, the event IDs in the 4 bytes are reserved for
+> > (useless) internal use ;) They can therefore not be used for specific
+> > tracer event IDs, which I think is a misuse of the precious bits
+> > otherwise available to store really useful event IDs.
 > 
-> we never do that for simple stuff like this. The kernel would be
-> twice as large if we did.
+> I'm using them, so they must not be totally useless. ;-)
+> 
+> But ftrace has its own event ids and I don't want the ring buffer to ever 
+> have to know about them.
+> 
+> -- Steve
+> 
 
-I assume you are talking about the source size, because the generated
-code size should be exactly the same.
+You are actually using them to put redundant information that could be
+encoded differently and thus save 4 bits per event records, more or less
+what will be needed by most tracers (15 IDs, 1 reserved for an extended
+ID field).
 
-In any case, arguing where to place the semi-colon is a waste of
-time. Do as you see fit.
+So the fact that you use them does not mean they are really required,
+and I don't think such duplicated information actually makes things more
+solid. Maybe just more obscure ?
 
-Cheers,
-Muli
+Mathieu
+
 -- 
-The First Workshop on I/O Virtualization (WIOV '08)
-Dec 2008, San Diego, CA, http://www.usenix.org/wiov08/
-                      xxx
-SYSTOR 2009---The Israeli Experimental Systems Conference
-http://www.haifa.il.ibm.com/conferences/systor2009/
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
