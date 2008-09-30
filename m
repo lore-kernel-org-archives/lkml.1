@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbYI3L6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbYI3MBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753818AbYI3L6x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 07:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYI3L6n
+	id S1753378AbYI3MBg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 08:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbYI3MB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 07:58:43 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:39978 "EHLO
-	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751829AbYI3L6m (ORCPT
+	Tue, 30 Sep 2008 08:01:28 -0400
+Received: from cpsmtpo-eml04.kpnxchange.com ([213.75.38.153]:46130 "EHLO
+	cpsmtpo-eml04.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751873AbYI3MB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 07:58:42 -0400
-X-BigFish: VPS-29(zz1432R98dR1805M936fOzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K80BX7-04-XPG-01
-Date: Tue, 30 Sep 2008 13:58:18 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       iommu@lists.linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Amit Shah <amit.shah@qumranet.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 6/9] x86/iommu: change Calgary to use dma_ops register interface
-Message-ID: <20080930115818.GO27928@amd.com>
-References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <1222107681-8185-7-git-send-email-joerg.roedel@amd.com> <20080930111028.GC12529@elte.hu>
+	Tue, 30 Sep 2008 08:01:27 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Tony Vroon <tony@vroon.org>
+Subject: Re: CD tray closes spontaneously after opening it
+Date: Tue, 30 Sep 2008 14:01:22 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+References: <200809301247.05367.elendil@planet.nl> <1222773491.4003.2.camel@localhost>
+In-Reply-To: <1222773491.4003.2.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080930111028.GC12529@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 30 Sep 2008 11:58:19.0021 (UTC) FILETIME=[D44133D0:01C922F3]
+Message-Id: <200809301401.23160.elendil@planet.nl>
+X-OriginalArrivalTime: 30 Sep 2008 12:01:25.0632 (UTC) FILETIME=[437BC800:01C922F4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 01:10:28PM +0200, Ingo Molnar wrote:
-> 
-> * Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > +static int calgary_device_supported(struct device *dev)
-> > +{
-> > +	struct iommu_table *tbl;
-> > +
-> > +	tbl = find_iommu_table(dev);
-> > +
-> > +	return translation_enabled(tbl);
-> > +}
-> 
-> i guess this could be written as a simple:
-> 
-> > +static int calgary_device_supported(struct device *dev)
-> > +{
-> > +	return translation_enabled(find_iommu_table(dev));
-> > +}
-> 
-> ?
+On Tuesday 30 September 2008, Tony Vroon wrote:
+> On Tue, 2008-09-30 at 12:47 +0200, Frans Pop wrote:
+> > Since 2.6.27 I've had several times, but not always, that after I
+> > open the CD tray by pressing the eject button it spontaneously closes
+> > after a short delay. The delay varies between ~0 and ~2 seconds.
+>
+> For the record, I had this on my Gentoo system. It turned out that HAL
+> was responsible. (So it may not be a kernel bug at all)
+>
+> Do see this report:
+> http://bugs.gentoo.org/show_bug.cgi?id=230886
 
-Yes. I will change it.
+Thanks for the link.
 
-Joerg
+It cannot be hal in my case as I've disabled polling by hal for both
+drives using the 'hal-disable-polling' command.
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+The bug report also mentions udev, but I'm not sure if that's it either
+as the bit in the report is about sr* devices, which is SCSI/SATA and
+the patch linked there is in Debian's udev.
+The udev changelog for Debian has:
+udev (0.125-4) unstable; urgency=medium
+  * 60-persistent-storage.rules: do not run vol_id on media tray open
+    events or the kernel will close the tray again.
 
+Hmm, in Debian unstable /etc/udev/rules.d/60-persistent-storage.rules
+also has:
+# skip removable ide devices, because open(2) on them causes an events loop
+KERNEL=="hd*[!0-9]", ATTR{removable}=="1", DRIVERS=="ide-cs|ide-floppy", \
+                                        GOTO="persistent_storage_end"
+
+I wonder if we've got a simple case of a typo here: ide-cs instead of
+ide-cd? However, there is such a thing as an ide-cs driver (legacy driver
+for PCMCIA IDE/ATA disk cards).
+But it does seem logical that rule should also cover IDE CDs...
+
+Cheers,
+FJP
