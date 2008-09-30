@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbYI3K6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbYI3LD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753242AbYI3K6i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 06:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYI3K6a
+	id S1753206AbYI3LD7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 07:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYI3LDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 06:58:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34313 "EHLO mx2.mail.elte.hu"
+	Tue, 30 Sep 2008 07:03:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42916 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751829AbYI3K6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 06:58:30 -0400
-Date: Tue, 30 Sep 2008 12:58:15 +0200
+	id S1752424AbYI3LDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 07:03:50 -0400
+Date: Tue, 30 Sep 2008 13:03:19 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [rfc] "improve" preempt debugging
-Message-ID: <20080930105814.GA7712@elte.hu>
-References: <200809302050.27306.nickpiggin@yahoo.com.au>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: joerg.roedel@amd.com, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] x86/iommu: use __GFP_ZERO instead of memset for
+	GART
+Message-ID: <20080930110319.GA12529@elte.hu>
+References: <20080927181855.GA11147@elte.hu> <20080928193436.GA8386@amd.com> <20080929085647.GB2190@elte.hu> <20080929231116Q.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200809302050.27306.nickpiggin@yahoo.com.au>
+In-Reply-To: <20080929231116Q.fujita.tomonori@lab.ntt.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,76 +36,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-> Hi, don't know if you really like this patch or not, but it helped me 
-> out with a problem I recently had....
+> > yes - could you please make a new option for it, 
+> > CONFIG_IOMMU_DEBUG_FORCE=y or so - and cover all iommus that support 
+> > it?
 > 
-> Basically, when the kernel lock is held, then preempt_count underflow 
-> does not get detected until it is released which may be a long time 
-> (and arbitrarily, eg at different points it may be rescheduled). If 
-> the bkl is released at schedule, the resulting output is actually 
-> fairly cryptic...
+> I'm not sure we are talking about the same thing. Surely, I and Joerg 
+> are talking different things.
 > 
-> With any other lock that elevates preempt_count, it is illegal to 
-> schedule under it (which would get found pretty quickly). bkl allows 
-> scheduling with preempt_count elevated, which makes underflows hard to 
-> debug.
-> 
-> Index: linux-2.6/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched.c       2008-09-30 11:32:56.000000000 +1000
-> +++ linux-2.6/kernel/sched.c    2008-09-30 11:38:18.000000000 +1000
-> @@ -4305,7 +4305,7 @@ void __kprobes sub_preempt_count(int val
->         /*
->          * Underflow?
->          */
-> -       if (DEBUG_LOCKS_WARN_ON(val > preempt_count()))
-> +       if (DEBUG_LOCKS_WARN_ON(val > preempt_count() - (!!kernel_locked())))
->                 return;
+> GART driver doesn't need to use the IOMMU hardware at all times. GART 
+> does a virtual mapping only when necessary (a device needs to handle 
+> an address that it can't access to). But as I wrote, if you use 
+> iommu=force, GART driver always use the IOMMU hardware.
 
-looks useful to me. This hardcodes a "BKL is tied to preempt-off" 
-assumption but that should be OK - when get rid of the BKL by turning it 
-into a plain mutex we have to remember to remove this.
+yes - but iommu=force is not randconfig covered, hence it never gets 
+tested by -tip testing. So my suggestion was a really simple patch: a 
+new Kconfig entry that makes iommu=force default. 
 
-applied the commit below to tip/core/locking, thanks Nick!
+CONFIG_BOOTPARAM_IOMMU_FORCE=y would be the right name for it. (disabled 
+by default, of course)
 
-Peter, does it look good to you too?
+> Other x86 IOMMU drivers always use the IOMMU hardware. Except for 
+> Intel VT-D, they manage free virtual I/O space in the round-robin 
+> manner with the bitmap algorithm to avoid frequent IOTLB flush. Joerg 
+> said he tested AMD IOMMU driver with the round-robin manner disabled 
+> so AMD IOMMU driver uses the same virtual I/O space with lots of IOTLB 
+> flush.
+
+all i'm suggesting is to please expose existing debug capabilities in 
+the .config space, so that it can be tested in automated setups.
 
 	Ingo
-
---------------->
->From 7317d7b87edb41a9135e30be1ec3f7ef817c53dd Mon Sep 17 00:00:00 2001
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Tue, 30 Sep 2008 20:50:27 +1000
-Subject: [PATCH] sched: improve preempt debugging
-
-This patch helped me out with a problem I recently had....
-
-Basically, when the kernel lock is held, then preempt_count underflow does not
-get detected until it is released which may be a long time (and arbitrarily,
-eg at different points it may be rescheduled). If the bkl is released at
-schedule, the resulting output is actually fairly cryptic...
-
-With any other lock that elevates preempt_count, it is illegal to schedule
-under it (which would get found pretty quickly). bkl allows scheduling with
-preempt_count elevated, which makes underflows hard to debug.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 9889080..ec3bd1f 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4305,7 +4305,7 @@ void __kprobes sub_preempt_count(int val)
- 	/*
- 	 * Underflow?
- 	 */
--	if (DEBUG_LOCKS_WARN_ON(val > preempt_count()))
-+       if (DEBUG_LOCKS_WARN_ON(val > preempt_count() - (!!kernel_locked())))
- 		return;
- 	/*
- 	 * Is the spinlock portion underflowing?
