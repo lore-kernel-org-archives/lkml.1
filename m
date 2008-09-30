@@ -1,54 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYI3Xj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbYI3XkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538AbYI3Xj5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 19:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbYI3XjA
+	id S1754549AbYI3XkY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 19:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbYI3XjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 19:39:00 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51034 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753514AbYI3XjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 19:39:00 -0400
-Date: Wed, 1 Oct 2008 01:19:52 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: carbonated beverage <ramune@net-ronin.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Thinkpad brightness keys kill X on 2.6.26.5
-Message-ID: <20080930231952.GB15903@ucw.cz>
-References: <20080925060244.GA18945@net-ronin.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080925060244.GA18945@net-ronin.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 30 Sep 2008 19:39:14 -0400
+Received: from xenotime.net ([66.160.160.81]:48413 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754472AbYI3XjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 19:39:13 -0400
+Date: Tue, 30 Sep 2008 16:57:39 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86: mtrr_cleanup update command line
+Message-Id: <20080930165739.7847be37.rdunlap@xenotime.net>
+In-Reply-To: <1222817380-29481-1-git-send-email-yhlu.kernel@gmail.com>
+References: <1222817380-29481-1-git-send-email-yhlu.kernel@gmail.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 30 Sep 2008 16:29:38 -0700 Yinghai Lu wrote:
 
-> I just upgraded from 2.6.25.17 to 2.6.26.5 on my Thinkpad Z61t, and found
-> the brightness keys will cause the X server to die.  When using the
-> brightness up/down keys, the screen will go blank -- Control+Alt+F# will
-> still switch to a different virtual console, but switching back will not
-> restore the video state.
+> change enable_mtrr_cleanup to mtrr-cleanup, disable_mtrr_cleanup to nomtrr-cleanup.
 > 
-> After killing the window manager, I was able to bring up X again without
-> a problem -- but using the brightness keys still causes it to go blank
-> again within X, while the brightness does get changed correctly on the
-> console.
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 > 
-> There were no kernel messages, but this appeared in the Xorg log:
+> ---
+>  Documentation/kernel-parameters.txt |    4 ++--
+>  arch/x86/Kconfig                    |    2 +-
+>  arch/x86/kernel/cpu/mtrr/main.c     |    4 ++--
+>  3 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> Index: linux-2.6/Documentation/kernel-parameters.txt
+> ===================================================================
+> --- linux-2.6.orig/Documentation/kernel-parameters.txt
+> +++ linux-2.6/Documentation/kernel-parameters.txt
+> @@ -614,8 +614,8 @@ and is between 256 and 4096 characters.
+>  			See drivers/char/README.epca and
+>  			Documentation/digiepca.txt.
+>  
+> -	disable_mtrr_cleanup [X86]
+> -	enable_mtrr_cleanup [X86]
+> +	nomtrr-cleanup [X86]
+> +	mtrr-cleanup [X86]
+>  			The kernel tries to adjust MTRR layout from continuous
+>  			to discrete, to make X server driver able to add WB
+>  			entry later. This parameter enables/disables that.
 
-Yes, I had similar problems... for me it blanked screen on closing
-lid. Problem disappeared after upgrading X...
+Looks like Documentation/kernel-parameters.txt needs a comment that says that
+entries are supposed to be listed in alphabetical order, not grouped by <subject>.
+Please don't add them like this.
 
-> .config attached -- is this a known issue?  In the meantime, I'm starting
-> a bisection to figure out where the problem crops up.
+E.g., the "apic" entries are not grouped together and these mtrr entries should
+not be grouped together unless they all begin with "mtrr", which is an option here:
+they could be renamed to "mtrr-cleanup" and "mtrr-nocleanup".
+And "disable_mtrr_trim" could be renamed to "mtrr-notrim".
 
-For me CONFIG_ACPI_VIDEO never really worked...
+
+> Index: linux-2.6/arch/x86/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/Kconfig
+> +++ linux-2.6/arch/x86/Kconfig
+> @@ -1250,7 +1250,7 @@ config MTRR_SANITIZER
+>  	  Convert MTRR layout from continuous to discrete, so X drivers can
+>  	  add writeback entries.
+>  
+> -	  Can be disabled with disable_mtrr_cleanup on the kernel command line.
+> +	  Can be disabled with nomtrr-cleanup on the kernel command line.
+>  	  The largest mtrr entry size for a continous block can be set with
+>  	  mtrr_chunk_size.
+>  
+> Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
+> +++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+> @@ -826,7 +826,7 @@ static int __init disable_mtrr_cleanup_s
+>  		enable_mtrr_cleanup = 0;
+>  	return 0;
+>  }
+> -early_param("disable_mtrr_cleanup", disable_mtrr_cleanup_setup);
+> +early_param("nomtrr-cleanup", disable_mtrr_cleanup_setup);
+>  
+>  static int __init enable_mtrr_cleanup_setup(char *str)
+>  {
+> @@ -834,7 +834,7 @@ static int __init enable_mtrr_cleanup_se
+>  		enable_mtrr_cleanup = 1;
+>  	return 0;
+>  }
+> -early_param("enable_mtrr_cleanup", enable_mtrr_cleanup_setup);
+> +early_param("mtrr-cleanup", enable_mtrr_cleanup_setup);
+>  
+>  static int __init mtrr_cleanup_debug_setup(char *str)
+>  {
 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+---
+~Randy
