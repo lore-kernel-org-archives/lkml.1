@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYI3R3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYI3Rc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbYI3R3A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 13:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbYI3R2w
+	id S1753476AbYI3Rc2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 13:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYI3RcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 13:28:52 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39864 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbYI3R2v (ORCPT
+	Tue, 30 Sep 2008 13:32:18 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:52957 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbYI3RcR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 13:28:51 -0400
-Date: Tue, 30 Sep 2008 10:28:40 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, morgan@kernel.org,
-       selinux@tycho.nsa.gov
-Subject: Re: [PATCH] capability: WARN when invalid capability is requested
- rather than BUG/panic
-Message-ID: <20080930102840.1dbd0c48@infradead.org>
-In-Reply-To: <1222795350.28251.98.camel@localhost.localdomain>
-References: <1222782946.28251.63.camel@localhost.localdomain>
-	<alpine.LRH.1.10.0810010008130.2068@tundra.namei.org>
-	<1222785389.28251.83.camel@localhost.localdomain>
-	<20080930153820.GA28616@us.ibm.com>
-	<1222790843.28251.92.camel@localhost.localdomain>
-	<20080930162830.GB31779@us.ibm.com>
-	<1222795350.28251.98.camel@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Sep 2008 13:32:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=xYDPM2HLYjo1p2PNKK9sm7MWPMRROVJpjsiDtS5V5GnvkhWjRAYACsj7g8EAkm8Zzj
+         jrbi930n268WVSrPYM77z4A2Ev4yweT/SxziS0wxlx324swfalh7z3q49zJuYTS+J33J
+         mV4MEg3tr3r9FNc/y0LvXWRFUGROLk2AavjQc=
+Message-ID: <806dafc20809301032n559832et45f3bf5e3f7c495c@mail.gmail.com>
+Date: Tue, 30 Sep 2008 13:32:15 -0400
+From: "Monty Montgomery" <monty@xiph.org>
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [regression] CD-DA delay needed after insertion (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
+Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       linux-scsi@vger.kernel.org,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0809301719000.5818@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+	 <1214925487.3316.12.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0809171701330.21347@vixen.sonytel.be>
+	 <806dafc20809300117u2806e37bx986b54543862f358@mail.gmail.com>
+	 <Pine.LNX.4.64.0809301430370.5818@vixen.sonytel.be>
+	 <806dafc20809300548y4af5f10bs8a80caa24f176c79@mail.gmail.com>
+	 <806dafc20809300551i7678660aq5e4fd6e8080382a0@mail.gmail.com>
+	 <Pine.LNX.4.64.0809301648490.5818@vixen.sonytel.be>
+	 <806dafc20809300807h6d38bbeex2f2b4e496b0d155c@mail.gmail.com>
+	 <Pine.LNX.4.64.0809301719000.5818@vixen.sonytel.be>
+X-Google-Sender-Auth: 45ec00ca0dbffead
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Sep 2008 13:22:30 -0400
-Eric Paris <eparis@redhat.com> wrote:
-> 
-> No argument from me that patching up for buggy drivers sucks.  Yours
-> would be less overhead, and it would return the cap system back to
-> pre-2.6.25 operation (garbage in garbage out but no panic).  Since we
-> already have the branch in SELinux its no 'extra' overhead to EPERM
-> there instead of here (garbage in EPERM out).
+On Tue, Sep 30, 2008 at 11:21 AM, Geert Uytterhoeven
+<Geert.Uytterhoeven@sonycom.com> wrote:
 
-to be honest, this is really a case of 
-panic("This stuff is really borken")
+>> (May I ask-- why the hard starting/stopping of the interface?  Power saving?]
+>
+> Which hard starting/stopping do you mean?
 
-if it passes some random value, what other api's does it pass a random
-value to ?
+why the calls to sg_start?
 
-(and in addition, random values to security critical APIs deserve a
-process kill, because it could well be an exploit attempt at guessing
-something. At least by not letting it live it's harder to get such type
-of exploits to be able to guess things. So imo, BUG() is the right
-answer)
-
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Monty
