@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbYI3S1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbYI3Seh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753574AbYI3S1m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 14:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYI3S1f
+	id S1753530AbYI3Seh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 14:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYI3Se3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 14:27:35 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:49886 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751838AbYI3S1e (ORCPT
+	Tue, 30 Sep 2008 14:34:29 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:33725 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752546AbYI3Se3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 14:27:34 -0400
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Organization: Mandriva
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Subject: Re: Linux 2.6.27-rc8
-Date: Tue, 30 Sep 2008 15:27:39 -0300
-User-Agent: KMail/1.9.10
-Cc: Eric Piel <eric.piel@tremplin-utc.net>, Jiri Kosina <jkosina@suse.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Airlie <airlied@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jesse.brandeburg@intel.com
-References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org> <48E1DC40.2020508@tremplin-utc.net> <20080930132831.1cc4d56c@doriath.conectiva>
-In-Reply-To: <20080930132831.1cc4d56c@doriath.conectiva>
+	Tue, 30 Sep 2008 14:34:29 -0400
+Date: Tue, 30 Sep 2008 21:33:10 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, iommu@lists.linux-foundation.org,
+       David Woodhouse <dwmw2@infradead.org>,
+       Amit Shah <amit.shah@qumranet.com>, Ingo Molnar <mingo@redhat.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 6/9] x86/iommu: change Calgary to use dma_ops register
+	interface
+Message-ID: <20080930183310.GB20341@il.ibm.com>
+References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <1222107681-8185-7-git-send-email-joerg.roedel@amd.com> <20080930111028.GC12529@elte.hu> <20080930133024.GA20341@il.ibm.com> <20080930153815.GA22693@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809301527.40636.herton@mandriva.com.br>
+In-Reply-To: <20080930153815.GA22693@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 September 2008 13:28:31 Luiz Fernando N. Capitulino wrote:
-> Em Tue, 30 Sep 2008 09:58:56 +0200
->
-> Eric Piel <eric.piel@tremplin-utc.net> escreveu:
-> | Jiri Kosina schreef:
-> | > On Mon, 29 Sep 2008, Linus Torvalds wrote:
-> | >>> If it is X related then its both a kernel + X server issue, the
-> | >>> e1000e driver opens the barn door, the X server drives the horses
-> | >>> through it.
-> | >>
-> | >> Are you sure? There was a mandriva report abou NVM corruption on an
-> | >> e100 too (that one apparently just caused PXE failure, the networking
-> | >> worked fine).
-> | >
-> | > That is very probably completely separate issue, and shoudl have been
-> | > fixed already by 78566fecb.
-> |
-> | Likely not, you are mentioning a patch for e1000, while the Mandriva bug
-> | report is about e100:
-> | https://qa.mandriva.com/show_bug.cgi?id=44192
->
->  Yes, also the reporter has said that he has got the problem with -rc7 and
-> this fix is available since -rc6.
->
->  Jiri, doesn't e100 need that fix as well?
->
->  Anyway, it is not clear for us whether this is a kernel problem. We
-> could not reproduce it here and the reporter is now checking his network.
+On Tue, Sep 30, 2008 at 05:38:15PM +0200, Ingo Molnar wrote:
+> 
+> * Muli Ben-Yehuda <muli@il.ibm.com> wrote:
+> 
+> > > > +static int calgary_device_supported(struct device *dev)
+> > > > +{
+> > > > +	return translation_enabled(find_iommu_table(dev));
+> > > > +}
+> > 
+> > Sure, but I prefer the explicit form since it lends itself to easier
+> > debugging (oops line numbers, adding printks, etc.).
+> 
+> we never do that for simple stuff like this. The kernel would be
+> twice as large if we did.
 
-He finished checks and discovered the e100 issue was in reality a hardware 
-problem in the switch being used that started to have problems now, 
-coincidently with this e1000e issue getting more attention, after swapping 
-the switch the problem stopped, so just a false alarm. I closed 
-https://qa.mandriva.com/show_bug.cgi?id=44192 that was the original report.
+I assume you are talking about the source size, because the generated
+code size should be exactly the same.
 
---
-[]'s
-Herton
+In any case, arguing where to place the semi-colon is a waste of
+time. Do as you see fit.
+
+Cheers,
+Muli
+-- 
+The First Workshop on I/O Virtualization (WIOV '08)
+Dec 2008, San Diego, CA, http://www.usenix.org/wiov08/
+                      xxx
+SYSTOR 2009---The Israeli Experimental Systems Conference
+http://www.haifa.il.ibm.com/conferences/systor2009/
