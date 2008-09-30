@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbYI3MH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYI3MOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbYI3MH0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 08:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbYI3MG4
+	id S1753325AbYI3MOy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 08:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYI3MOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 08:06:56 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54505 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752923AbYI3MGz (ORCPT
+	Tue, 30 Sep 2008 08:14:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45187 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751967AbYI3MOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 08:06:55 -0400
-Date: Tue, 30 Sep 2008 13:06:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, Dave Airlie <airlied@gmail.com>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jesse.brandeburg@intel.com
-Subject: Re: Linux 2.6.27-rc8
-Message-ID: <20080930130628.31536c9a@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.00.0809291923440.3389@nehalem.linux-foundation.org>
-References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org>
-	<Pine.LNX.4.64.0809300125460.2307@twin.jikos.cz>
-	<alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org>
-	<21d7e9970809291859s5bff81e3ue0f63402c2ad422d@mail.gmail.com>
-	<20080929190612.111f16ac@infradead.org>
-	<alpine.LFD.2.00.0809291921310.3389@nehalem.linux-foundation.org>
-	<alpine.LFD.2.00.0809291923440.3389@nehalem.linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Sep 2008 08:14:45 -0400
+Message-ID: <48E217C2.4080802@linux-foundation.org>
+Date: Tue, 30 Sep 2008 07:12:50 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, rusty@rustcorp.com.au, jeremy@goop.org,
+       ebiederm@xmission.com, travis@sgi.com, herbert@gondor.apana.org.au,
+       xemul@openvz.org
+Subject: Re: [patch 3/4] cpu alloc: The allocator
+References: <20080929193500.470295078@quilx.com>	 <20080929193516.278278446@quilx.com>	 <1222756559.10002.23.camel@penberg-laptop>	 <48E20F98.4010106@linux-foundation.org> <1222775286.10002.38.camel@penberg-laptop>
+In-Reply-To: <1222775286.10002.38.camel@penberg-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Mostly. I think you can still do bad things to internal LCD's on at least 
-> some laptops. Although I hope I'm wrong. 
+Pekka Enberg wrote:
+> 
+> I think you're confusing it to "nr_units" or, alternatively, I need new
+> glasses.
+> 
 
-You still can in some cases. You can also erase many video card
-firmwares, trash disks, brick DVD drives and the like fairly easily too
-but you do tend to have to try to be evil in these cases, not just get an
-address wrong.
+You are right. units is debri from earlier revs and has no function today.
 
-Alan
+
+Subject: cpu_alloc: Remove useless variable
+
+The "units" variable is a leftover and has no function at this point.
+
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+
+Index: linux-2.6/mm/cpu_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/cpu_alloc.c	2008-09-30 07:09:09.000000000 -0500
++++ linux-2.6/mm/cpu_alloc.c	2008-09-30 07:10:20.000000000 -0500
+@@ -27,8 +27,6 @@
+ #define UNIT_TYPE int
+ #define UNIT_SIZE sizeof(UNIT_TYPE)
+
+-int units;	/* Actual available units */
+-
+ /*
+  * How many units are needed for an object of a given size
+  */
