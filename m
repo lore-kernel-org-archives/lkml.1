@@ -1,187 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbYI3NJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbYI3NKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753232AbYI3NJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 09:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbYI3NJl
+	id S1753477AbYI3NKr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 09:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYI3NKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 09:09:41 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:46639 "EHLO mail.screens.ru"
+	Tue, 30 Sep 2008 09:10:37 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:35451 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751927AbYI3NJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 09:09:41 -0400
-Date: Tue, 30 Sep 2008 17:15:50 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Krishna Kumar2 <krkumar2@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [REV2: PATCH 1/2]: workqueue: Implement the kernel API
-Message-ID: <20080930131550.GA267@tv-sign.ru>
-References: <20080929070302.7386.72726.sendpatchset@localhost.localdomain> <20080929070314.7386.28163.sendpatchset@localhost.localdomain> <20080929142734.GB85@tv-sign.ru> <OFA3316176.447F329E-ON652574D4.001B02A6-652574D4.003D36A8@in.ibm.com>
-Mime-Version: 1.0
+	id S1752052AbYI3NKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 09:10:36 -0400
+Date: Tue, 30 Sep 2008 06:10:34 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] RCU read sched
+Message-ID: <20080930131034.GA6716@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <48E08B05.7030802@cn.fujitsu.com> <20080929082722.GB18663@elte.hu> <20080929150646.GD11245@Krystal>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <OFA3316176.447F329E-ON652574D4.001B02A6-652574D4.003D36A8@in.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080929150646.GD11245@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/30, Krishna Kumar2 wrote:
->
-> Oleg Nesterov <oleg@tv-sign.ru> wrote on 09/29/2008 07:57:34 PM:
->
-> > > +   if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
-> > > +      __queue_delayed_work(-1, dwork, work, wq, delay);
-> > > +      return 1;
-> >
-> > Please note that the above is the open-coded queue_delayed_work().
-> > I'd suggest to just start with
-> >
-> >    if (queue_delayed_work(...))
-> >       return 1;
-> >
-> >    ... slow path ...
->
-> The reason I had coded this way was to avoid an unnecessary call -
-> unnecessary
+On Mon, Sep 29, 2008 at 11:06:46AM -0400, Mathieu Desnoyers wrote:
+> (probably already in -tip)
+> 
+> Add rcu_read_lock_sched() and rcu_read_unlock_sched() to rcupdate.h to match the
+> recently added write-side call_rcu_sched() and rcu_barrier_sched(). They also
+> match the no-so-recently-added synchronize_sched().
+> 
+> It will help following matching use of the update/read lock primitives. Those
+> new read lock will replace preempt_disable()/enable() used in pair with
+> RCU-classic synchronization.
 
-Yes I see. But actually I meant "see below, I don't think we need
-__queue_delayed_work()".
+Looks like a very good addition to me!
 
-> since the update function should be usually called to update a work and
-> hence
-> the work is almost always pending.
+							Thanx, Paul
 
-Exactly! And in that case update_timer_expiry() will do its work.
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Yes, the games with __queue_delayed_work() can save a couple of clear/set
-bit, but this is the slow an unlikely path, that was my point.
-
-And, if we are talking about the function call overhead. Please note
-that __queue_delayed_work() adds the "unnecessary" call to the "normal"
-queue_delayed_work(), and this path is more common.
-
-But see below.
-
-> > Note!!! queue_update_delayed_work() is _not_ equal to cancel() + queue()
-> > anyway, the fastpath doesn't cancel the work if it is active (I mean,
-> > it is ->current_work and running).
->
-> Correct. But the behavior is the same as the existing (say driver) code
-> which
-> calls cancel (which also doesn't cancel as the work is already running)
-
-Hmm. How so? cancel() always cancells the work.
-
-OK, let's suppose we have
-
-	cancel_delayed_work(dwork);
-	queue_delayed_work(dwork, delay);
-
-and now (the next patch you sent) we turn this code into
-
-	queue_update_delayed_work(dwork, delay);
-
-Now we have a subtle difference which _may_ be important for some users.
-
-Suppose that this dwork was queued before, the timer has expired, and
-now cwq->thread runs dwork->work->func(). Note that this dwork is not
-pending (WORK_STRUCT_PENDING is cleared).
-
-Before the change above, cancel_delayed_work() waits until work->func()
-completes, then we re-queue the work.
-
-After the change, the fast path just queues the same dwork again.
-If the workqueue is not singlethreaded, it is possible that both
-old and new "instances" will run on the different CPUs at the same
-time.
-
-(that is why I think these changes need the review from maintainer).
-
-> > But: this also means that 2 concurrent queue_update_delayed_work()s can
-> > livelock in the same manner, perhaps this deserves a note.
->
-> Assuming the work is already pending (which is why both calls are in the
-> middle
-> of this new API):
->
-> [...]
-
-No.
-
-dwork is not pending, L is a lower priority thread, H - real time.
-
-L calls queue_update_delayed_work(), and sets WORK_STRUCT_PENDING
-successfully(). It is going to do __queue_delayed_work(), but it
-is preempted by H.
-
-H does queue_update_delayed_work(), WORK_STRUCT_PENDING is already
-set and the timer is not pending. Now it will do try_to_grab_pending()
-in a loop "forever".
-
-> > I am not really sure it is worth to play with WORK_STRUCT_PENDING,
-> > the simple
-> > (snip code) ...
-> > does not need any modifications in workqueue.c, but its slow-path is a
-> bit
-> > slower. Should we really care about the slow-path?
->
-> I am not insisting either way since both approaches achieve a big
-> improvement in
-> time saved. I am open to which way to go, please suggest. Here is the
-> updated
-> function. If you feel it is too complicated,
-
-Yes. I must admit, I prefer the simple, non-intrusive code I suggested
-much more.
-
-Once again, the slow path is (at least, supposed to be) unlikely, and
-the difference is not that large. (I mean the slow path is when both
-queue() and update_timer() fail).
-
-Should we complicate the code to add this minor optimization (and
-btw pessimize the "normal" queue_delayed_work) ?
-
-And, once we have the correct and simple code, we can optimize it
-later.
-
-> I will go with the above
-> approach.
-
-No. Please do what _you_ think right ;)
-
-But, if possible, please explain why do this think this optimization
-is worthwhile.
-
-> > Final note. What about the special "delay == 0" case? Actually, I don't
-> > understand why queue_delayed_work() has this special case, and I have
-> > no opinion on what update_() should do.
-> >
-> > But, if we should care, then the code above can be fixed trivially:
-> >
-> >    -   if (update_timer_expiry(...))
-> >    +   if (delay && update_timer_expiry(...))
->
-> Without that change, update_timer should still return success after
-> updating the
-> timer to run at 'jiffies' (internal_add_timer handles negative expiry). If
-> the
-> timer is not yet added or already fired, we loop till either timer is
-> updated
-> or grab_pending returns >= 0. I think both codes handles delay==0 case, or
-> did
-> I misunderstand your point?
-
-Yes. Please note that queue_delayed_work(work, 0) does not use the timer
-at all. IOW, queue_delayed_work(wq, work, 0) == queue_work(wq, &dwork->work).
-Perhaps (I don't know) update_queue_delayed_work() should do the same.
-
->From the next patch:
-
-	-       cancel_delayed_work(&afs_vlocation_reap);
-	-       schedule_delayed_work(&afs_vlocation_reap, 0);
-	+       schedule_update_delayed_work(&afs_vlocation_reap, 0);
-
-Again, I don't claim this is wrong, but please note that delay == 0.
-
-Oleg.
-
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Acked-by: Peter Zijlstra <peterz@infradead.org>
+> CC: Paul E McKenney <paulmck@linux.vnet.ibm.com>
+> CC: akpm@linux-foundation.org
+> ---
+>  include/linux/rcupdate.h |   20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> Index: linux-2.6-lttng/include/linux/rcupdate.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/linux/rcupdate.h	2008-07-15 15:18:20.000000000 -0400
+> +++ linux-2.6-lttng/include/linux/rcupdate.h	2008-07-15 15:18:46.000000000 -0400
+> @@ -132,6 +132,26 @@ struct rcu_head {
+>  #define rcu_read_unlock_bh() __rcu_read_unlock_bh()
+> 
+>  /**
+> + * rcu_read_lock_sched - mark the beginning of a RCU-classic critical section
+> + *
+> + * Should be used with either
+> + * - synchronize_sched()
+> + * or
+> + * - call_rcu_sched() and rcu_barrier_sched()
+> + * on the write-side to insure proper synchronization.
+> + */
+> +#define rcu_read_lock_sched() preempt_disable()
+> +
+> +/*
+> + * rcu_read_unlock_sched - marks the end of a RCU-classic critical section
+> + *
+> + * See rcu_read_lock_sched for more information.
+> + */
+> +#define rcu_read_unlock_sched() preempt_enable()
+> +
+> +
+> +
+> +/**
+>   * rcu_dereference - fetch an RCU-protected pointer in an
+>   * RCU read-side critical section.  This pointer may later
+>   * be safely dereferenced.
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
