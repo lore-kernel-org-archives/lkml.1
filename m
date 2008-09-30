@@ -1,90 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbYI3NGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbYI3NJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753227AbYI3NGU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 09:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYI3NGM
+	id S1753232AbYI3NJt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 09:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbYI3NJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 09:06:12 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:33347 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbYI3NGL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 09:06:11 -0400
-Date: 30 Sep 2008 15:06:06 +0200
-From: krzysztof.h1@poczta.fm
-Subject: Re: [PATCH] x86: enable CPUID on Cyrix cpus with CPUID disabled
-To: Ingo Molnar <mingo@elte.hu>, Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Samuel Sieb <samuel@sieb.net>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-ORIGINATE-IP: 83.17.101.58
-X-Mailer: PSE
-Message-Id: <20080930130606.66276199B265@f14.poczta.interia.pl>
-X-EMID: 99d40acc
+	Tue, 30 Sep 2008 09:09:41 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:46639 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751927AbYI3NJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 09:09:41 -0400
+Date: Tue, 30 Sep 2008 17:15:50 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Krishna Kumar2 <krkumar2@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [REV2: PATCH 1/2]: workqueue: Implement the kernel API
+Message-ID: <20080930131550.GA267@tv-sign.ru>
+References: <20080929070302.7386.72726.sendpatchset@localhost.localdomain> <20080929070314.7386.28163.sendpatchset@localhost.localdomain> <20080929142734.GB85@tv-sign.ru> <OFA3316176.447F329E-ON652574D4.001B02A6-652574D4.003D36A8@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <OFA3316176.447F329E-ON652574D4.001B02A6-652574D4.003D36A8@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> * Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
-> 
-> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > 
-> > The macros setCx86_old() and getCx86_old() do not
-> > work as a comment says in the processor-cyrix.h.
-> > 
-> > Use working inline functions instead to enable
-> > the CPUID instriction on Cyrix cpus. 
-> > 
-> > Tested on IBM 6x86MX cpu with disabled the
-> > CPUID instruction.
-> > 
-> > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > ---
-> > 
-> > This patch is against the linux-next tree (20080819)
-> > as it contains the following patch:
-> > 
-> > x86, cyrix: debug
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
+On 09/30, Krishna Kumar2 wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> wrote on 09/29/2008 07:57:34 PM:
+>
+> > > +   if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
+> > > +      __queue_delayed_work(-1, dwork, work, wq, delay);
+> > > +      return 1;
 > >
-> http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=026e2c05ef58ef413e2d52696f125d5ea1aa8bce
-> > 
-> > The linux-2.6-tip tree has not the Ingo's patch so it 
-> > does not require my patch.
-> > 
-> > I am confused. Is the x86 detection code for Cyrix
-> > cpus is right in the linux-next or in the linux-2.6-tip?
-> > Should I prepare patches against the linux-2.6-tip
-> > or linux-next?
-> 
-> now that the bug is correctly understood and fixed, could you please 
-> send a patch that cleans it all up and gets rid of the setCx86_old() / 
-> setCx86() API distinction? I.e. revert commit 026e2c0 ("x86, cyrix: 
-> debug"). Against tip/master please.
-> 
-> note that this was all done in connection to:
-> 
->  commit c6744955d0ec0cb485c28c51eeb7185e260f6172
->  Author: Samuel Sieb <samuel@sieb.net>
->  Date:   Wed Aug 6 22:06:29 2008 -0700
-> 
->     x86: fix "kernel won't boot on a Cyrix MediaGXm (Geode)"
-> 
+> > Please note that the above is the open-coded queue_delayed_work().
+> > I'd suggest to just start with
+> >
+> >    if (queue_delayed_work(...))
+> >       return 1;
+> >
+> >    ... slow path ...
+>
+> The reason I had coded this way was to avoid an unnecessary call -
+> unnecessary
 
-I know that it was connected with the Geode booting, but I read the cyrix.c file and most paths are Geode specific and I won't be able to test them. I tested that reverting the commit 026e2c0 ("x86, cyrix: debug") does not break anything on 6x86MX cpu.
+Yes I see. But actually I meant "see below, I don't think we need
+__queue_delayed_work()".
 
-If the tip/master is a correct tree, please revert the commit 026e2c0 in the linux-next and drop this patch. This way everything is correct.
+> since the update function should be usually called to update a work and
+> hence
+> the work is almost always pending.
 
-Regards,
-Krzysztof
+Exactly! And in that case update_timer_expiry() will do its work.
 
-----------------------------------------------------------------------
-Dzwon taniej na zagraniczne komorki!
-Sprawdz >> http://link.interia.pl/f1f26 
+Yes, the games with __queue_delayed_work() can save a couple of clear/set
+bit, but this is the slow an unlikely path, that was my point.
+
+And, if we are talking about the function call overhead. Please note
+that __queue_delayed_work() adds the "unnecessary" call to the "normal"
+queue_delayed_work(), and this path is more common.
+
+But see below.
+
+> > Note!!! queue_update_delayed_work() is _not_ equal to cancel() + queue()
+> > anyway, the fastpath doesn't cancel the work if it is active (I mean,
+> > it is ->current_work and running).
+>
+> Correct. But the behavior is the same as the existing (say driver) code
+> which
+> calls cancel (which also doesn't cancel as the work is already running)
+
+Hmm. How so? cancel() always cancells the work.
+
+OK, let's suppose we have
+
+	cancel_delayed_work(dwork);
+	queue_delayed_work(dwork, delay);
+
+and now (the next patch you sent) we turn this code into
+
+	queue_update_delayed_work(dwork, delay);
+
+Now we have a subtle difference which _may_ be important for some users.
+
+Suppose that this dwork was queued before, the timer has expired, and
+now cwq->thread runs dwork->work->func(). Note that this dwork is not
+pending (WORK_STRUCT_PENDING is cleared).
+
+Before the change above, cancel_delayed_work() waits until work->func()
+completes, then we re-queue the work.
+
+After the change, the fast path just queues the same dwork again.
+If the workqueue is not singlethreaded, it is possible that both
+old and new "instances" will run on the different CPUs at the same
+time.
+
+(that is why I think these changes need the review from maintainer).
+
+> > But: this also means that 2 concurrent queue_update_delayed_work()s can
+> > livelock in the same manner, perhaps this deserves a note.
+>
+> Assuming the work is already pending (which is why both calls are in the
+> middle
+> of this new API):
+>
+> [...]
+
+No.
+
+dwork is not pending, L is a lower priority thread, H - real time.
+
+L calls queue_update_delayed_work(), and sets WORK_STRUCT_PENDING
+successfully(). It is going to do __queue_delayed_work(), but it
+is preempted by H.
+
+H does queue_update_delayed_work(), WORK_STRUCT_PENDING is already
+set and the timer is not pending. Now it will do try_to_grab_pending()
+in a loop "forever".
+
+> > I am not really sure it is worth to play with WORK_STRUCT_PENDING,
+> > the simple
+> > (snip code) ...
+> > does not need any modifications in workqueue.c, but its slow-path is a
+> bit
+> > slower. Should we really care about the slow-path?
+>
+> I am not insisting either way since both approaches achieve a big
+> improvement in
+> time saved. I am open to which way to go, please suggest. Here is the
+> updated
+> function. If you feel it is too complicated,
+
+Yes. I must admit, I prefer the simple, non-intrusive code I suggested
+much more.
+
+Once again, the slow path is (at least, supposed to be) unlikely, and
+the difference is not that large. (I mean the slow path is when both
+queue() and update_timer() fail).
+
+Should we complicate the code to add this minor optimization (and
+btw pessimize the "normal" queue_delayed_work) ?
+
+And, once we have the correct and simple code, we can optimize it
+later.
+
+> I will go with the above
+> approach.
+
+No. Please do what _you_ think right ;)
+
+But, if possible, please explain why do this think this optimization
+is worthwhile.
+
+> > Final note. What about the special "delay == 0" case? Actually, I don't
+> > understand why queue_delayed_work() has this special case, and I have
+> > no opinion on what update_() should do.
+> >
+> > But, if we should care, then the code above can be fixed trivially:
+> >
+> >    -   if (update_timer_expiry(...))
+> >    +   if (delay && update_timer_expiry(...))
+>
+> Without that change, update_timer should still return success after
+> updating the
+> timer to run at 'jiffies' (internal_add_timer handles negative expiry). If
+> the
+> timer is not yet added or already fired, we loop till either timer is
+> updated
+> or grab_pending returns >= 0. I think both codes handles delay==0 case, or
+> did
+> I misunderstand your point?
+
+Yes. Please note that queue_delayed_work(work, 0) does not use the timer
+at all. IOW, queue_delayed_work(wq, work, 0) == queue_work(wq, &dwork->work).
+Perhaps (I don't know) update_queue_delayed_work() should do the same.
+
+>From the next patch:
+
+	-       cancel_delayed_work(&afs_vlocation_reap);
+	-       schedule_delayed_work(&afs_vlocation_reap, 0);
+	+       schedule_update_delayed_work(&afs_vlocation_reap, 0);
+
+Again, I don't claim this is wrong, but please note that delay == 0.
+
+Oleg.
 
