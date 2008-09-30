@@ -1,118 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbYI3Q2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbYI3QbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753992AbYI3Q2m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 12:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbYI3Q2c
+	id S1753635AbYI3QbD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 12:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYI3Qav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 12:28:32 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:49549 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751927AbYI3Q2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 12:28:32 -0400
-Date: Tue, 30 Sep 2008 11:28:30 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       sds@tycho.nsa.gov, morgan@kernel.org, selinux@tycho.nsa.gov
-Subject: Re: [PATCH] capability: WARN when invalid capability is requested
-	rather than BUG/panic
-Message-ID: <20080930162830.GB31779@us.ibm.com>
-References: <1222782946.28251.63.camel@localhost.localdomain> <alpine.LRH.1.10.0810010008130.2068@tundra.namei.org> <1222785389.28251.83.camel@localhost.localdomain> <20080930153820.GA28616@us.ibm.com> <1222790843.28251.92.camel@localhost.localdomain>
+	Tue, 30 Sep 2008 12:30:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56079 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751949AbYI3Qau (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 12:30:50 -0400
+Date: Tue, 30 Sep 2008 09:29:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Adam Belay <abelay@mit.edu>,
+       Avuton Olrich <avuton@gmail.com>,
+       Karl Bellve <karl.bellve@umassmed.edu>, Willem Riede <wriede@riede.org>,
+       Matthew Hall <mhall@mhcomputing.net>
+Subject: Re: [patch 2/2] PNP: don't check disabled PCI BARs for conflicts in
+ quirk_system_pci_resources()
+In-Reply-To: <48E24C6F.3030903@keyaccess.nl>
+Message-ID: <alpine.LFD.2.00.0809300904530.3389@nehalem.linux-foundation.org>
+References: <200809290953.56565.bjorn.helgaas@hp.com> <200809290957.59813.bjorn.helgaas@hp.com> <alpine.LFD.1.10.0809290912060.3265@nehalem.linux-foundation.org> <48E11EFA.8010402@keyaccess.nl> <alpine.LFD.2.00.0809291211330.3389@nehalem.linux-foundation.org>
+ <48E1EF0E.8030006@keyaccess.nl> <alpine.LFD.2.00.0809300741320.3389@nehalem.linux-foundation.org> <48E24C6F.3030903@keyaccess.nl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222790843.28251.92.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric Paris (eparis@redhat.com):
-> On Tue, 2008-09-30 at 10:38 -0500, Serge E. Hallyn wrote:
-> > Quoting Eric Paris (eparis@redhat.com):
-> > > On Wed, 2008-10-01 at 00:23 +1000, James Morris wrote:
-> > > > On Tue, 30 Sep 2008, Eric Paris wrote:
-> > > > 
-> > > > > This patch adds a WARN_ONCE() to cap_capable() so we will stop
-> > > > > dereferencing random spots of memory and will cleanly tell the obviously
-> > > > > broken driver that it doesn't have that ridiculous permissions.  No idea
-> > > > > if the driver is going to handle EPERM but anything that calls capable
-> > > > > and doesn't expect a denial has got to be the worst piece of code ever
-> > > > > written.....  I could return EINVAL, but I think its clear that noone
-> > > > > has capabilities over 64 so clearly they don't have that permission.
-> > > > > 
-> > > > > This 'could' be considered a regression since 2.6.24.  Neither SELinux
-> > > > > nor the capabilities system had a problem with ginormous request values
-> > > > > until we got 64 bit support, although this is OBVIOUSLY a bug with the
-> > > > > out of tree closed source driver....
-> > > > 
-> > > > An issue here is whether we should be adding workarounds in the mainline 
-> > > > kernel for buggy closed drivers.  Papering over problems rather than 
-> > > > getting them fixed does not seem like a winning approach.  Especially 
-> > > > problems which are unexpectedly messing with kernel security APIs.
-> > > 
-> > > I don't know, looking at the feelings on "Can userspace bugs be kernel
-> > > regressions" leads me to believe that when we break something that once
-> > > worked we are supposed to fix it.
-> > > 
-> > > http://lwn.net/Articles/292143/
-> > > 
-> > > I don't think the proprietary closed source nature of the driver makes
-> > > it any less our problem
-> > 
-> > The kernel-space nature of the driver is the distinction here.
-> > 
-> > > to not make changes which cause the kernel to
-> > > esplode.
-> > > 
-> > > > Also, won't this encourage vendors of such drivers to continue with this 
-> > > > behavior, while discouraging those vendors who are doing the right thing?
-> > > 
-> > > Discouraging people who open source their drivers and put them in the
-> > > kernel?  obviously not.  encouraging crap?  well, I hope we fix
-> > > regressions no matter how they are found...
-> > > 
-> > > > Do we know if this even really helps the user?  For all we know, the 
-> > > > driver may simply crash differently with an -EPERM.
-> > > 
-> > > Well, before the 64 bit capabilities change we did:
-> > > 
-> > > (cap_t(c) & CAP_TO_MASK(flag))
-> > > 
-> > > so a huge value for "flag" got masked off.
-> > > 
-> > > After 64 bit capabilities we do:
-> > > 
-> > > ((c).cap[CAP_TO_INDEX(flag)] & CAP_TO_MASK(flag))
-> > 
-> > Perhaps we should have CAP_TO_INDEX mask itself?
-> > 
-> > #define CAP_TO_INDEX(x)		(((x) >> 5) & _KERNEL_CAPABILITY_U32S)
+
+
+On Tue, 30 Sep 2008, Rene Herman wrote:
 > 
-> Well, you save a branch and won't get the pagefault so it does 'fix' the
-> pagefault/panic from cap code.  It doesn't tell us when others screw up
-> and SELinux is still possibly going to BUG().  We are also going to
-> actually be returning a permission decision not on what was requested
-> but on something wholely different.
-
-So exactly what was requested?
-
-> I like mine better, but I'm ok with yours and can just do my changes in
-> SELinux if this is how cap wants to handle it.  I don't really like the
-
-Heh I don't like either one, just thought this would reduce the overhead
-a bit :)
-
-Andrew Morgan, any opinions?
-
-> idea of mutating the inputs and then making the security decision based
-> on that mutation rather than on the original inputs (and yes, I realize
-> that exactly what 2.6.24 was doing)
+> > Of course, it may be that the PnP code runs too early, and we have only
+> > parsed the PCI resources, not inserted them into the resource tree yet. If
+> > so, none of this will work, of course.
 > 
-> > Though I still think it's not unreasonable to simply ask for the driver
-> > to be fixed.
-> 
-> I'm not going to argue that the driver needs fixed and that is the real
-> problem.  I know its been filed with them and the response was that
-> there is no support for linux.  I have today tried to poke the path I
-> know of between Red Hat and them to ask them to take a look.
+> It doesn't. With the test negated it triggers for all PCI resources (and
+> ofcourse my soundcard driver fails again).
+
+Oh, ok. Looking at it, it does seem that we actually _insert_ the PCI 
+resources too late. We do it in pcibios_allocate_resources(), and there we 
+even take care to look at whether it was enabled or disabled (we 
+prioritize enabled resources, so that a disabled one will never be 
+requested before an enabled one and if they clash, it's always the 
+disabled one that loses the resource).
+
+But pcibios_allocate_resources() is called from pcibios_resource_survey(), 
+which is called from pcibios_init(), which in turn is caled from 
+pci_subsys_init() that is a "subsys_initcall()".
+
+In contrast, the PnP fixup thing is called from pnp_fixup_device, called 
+from __pnp_add_device(), called from pnp_add_device() (and 
+pnp_add_card(), but that should be later), and those in turn from
+pnpacpi_add_device and pnpacpi_init(). 
+
+And pnpacpi_init is _also_ a subsys_initcall, but arch/x86/pci/built-in.o 
+gets linked in _after_ drivers/built-in.o. That, in turn, is because it's 
+marked as a "driver" in the x86 Makefile, and the main Makefile actually 
+ends up forcing "drivers-y" to have drivers/ first.
+
+Just for fun, does this patch make a difference and allow you to just 
+take the "is it registered" thing into account?
+
+It's a scary change right now, and I wouldn't commit it as is (I think 
+that for 2.6.27 the thing to do is to just do the minimal "zero means 
+disabled" thing), but having some random driver level initialize before 
+the core architecture-specific PCI code does smell. So something like this 
+sounds conceptually right anyway.
+
+		Linus
+
+---
+ arch/x86/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index f5631da..97d0e86 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -159,7 +159,7 @@ core-$(CONFIG_IA32_EMULATION) += arch/x86/ia32/
+ 
+ # drivers-y are linked after core-y
+ drivers-$(CONFIG_MATH_EMULATION) += arch/x86/math-emu/
+-drivers-$(CONFIG_PCI)            += arch/x86/pci/
++core-$(CONFIG_PCI)            += arch/x86/pci/
+ 
+ # must be linked after kernel/
+ drivers-$(CONFIG_OPROFILE) += arch/x86/oprofile/
