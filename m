@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYI3X3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbYI3Xaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbYI3X3u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 19:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYI3X3l
+	id S1754360AbYI3Xaa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 19:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYI3XaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 19:29:41 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37485 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751983AbYI3X3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 19:29:41 -0400
-Date: Tue, 30 Sep 2008 16:29:32 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-Subject: Re: [PATCH] mm: show node to memory section relationship with
-	symlinks in sysfs
-Message-ID: <20080930232932.GB7123@us.ibm.com>
-References: <20080929200509.GC21255@us.ibm.com> <20080930163324.44A7.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080930163324.44A7.E1E9C6FF@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 30 Sep 2008 19:30:20 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:39997 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbYI3XaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 19:30:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=RrCFq26iaAm1S7tfHTBINMRDZZqBBBhnnlywfZQPqpQxDPEeVUAgAHYTxTnMabRoF7
+         2/cOgLsrHpBKTo3vTkDlbaUb2oplveh5U1sxkK1o5bu9E7fdt39Sdq26+tXppeWe3T2z
+         KBEhEY2O0OqHVcJkrkkeclWkdZbf3T/Cit7Cs=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH 1/3] x86: mtrr_cleanup update command line
+Date: Tue, 30 Sep 2008 16:29:38 -0700
+Message-Id: <1222817380-29481-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 05:06:08PM +0900, Yasunori Goto wrote:
-> 
-> > +#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-> > +int register_mem_sect_under_node(struct memory_block *mem_blk)
->         :
-> 
-> I think this patch is convenience even when memory hotplug is disabled.
-> CONFIG_SPARSEMEM seems better than CONFIG_MEMORY_HOTPLUG_SPARSE.
+change enable_mtrr_cleanup to mtrr-cleanup, disable_mtrr_cleanup to nomtrr-cleanup.
 
-Yes, this would be nice but unfortunately the presence of the
-memory section directories that are referenced by the symlinks
-also depend on CONFIG_MEMORY_HOTPLUG_SPARSE being enabled.  Removal
-of the memory hotplug dependency for the code in drivers/base/memory.c
-will require more than a simple CONFIG_MEMORY_HOTPLUG_SPARSE to
-CONFIG_SPARSEMEM dependency change.  I am still looking at this.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Thanks for the review and testing.
+---
+ Documentation/kernel-parameters.txt |    4 ++--
+ arch/x86/Kconfig                    |    2 +-
+ arch/x86/kernel/cpu/mtrr/main.c     |    4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -614,8 +614,8 @@ and is between 256 and 4096 characters.
+ 			See drivers/char/README.epca and
+ 			Documentation/digiepca.txt.
+ 
+-	disable_mtrr_cleanup [X86]
+-	enable_mtrr_cleanup [X86]
++	nomtrr-cleanup [X86]
++	mtrr-cleanup [X86]
+ 			The kernel tries to adjust MTRR layout from continuous
+ 			to discrete, to make X server driver able to add WB
+ 			entry later. This parameter enables/disables that.
+Index: linux-2.6/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -1250,7 +1250,7 @@ config MTRR_SANITIZER
+ 	  Convert MTRR layout from continuous to discrete, so X drivers can
+ 	  add writeback entries.
+ 
+-	  Can be disabled with disable_mtrr_cleanup on the kernel command line.
++	  Can be disabled with nomtrr-cleanup on the kernel command line.
+ 	  The largest mtrr entry size for a continous block can be set with
+ 	  mtrr_chunk_size.
+ 
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+@@ -826,7 +826,7 @@ static int __init disable_mtrr_cleanup_s
+ 		enable_mtrr_cleanup = 0;
+ 	return 0;
+ }
+-early_param("disable_mtrr_cleanup", disable_mtrr_cleanup_setup);
++early_param("nomtrr-cleanup", disable_mtrr_cleanup_setup);
+ 
+ static int __init enable_mtrr_cleanup_setup(char *str)
+ {
+@@ -834,7 +834,7 @@ static int __init enable_mtrr_cleanup_se
+ 		enable_mtrr_cleanup = 1;
+ 	return 0;
+ }
+-early_param("enable_mtrr_cleanup", enable_mtrr_cleanup_setup);
++early_param("mtrr-cleanup", enable_mtrr_cleanup_setup);
+ 
+ static int __init mtrr_cleanup_debug_setup(char *str)
+ {
