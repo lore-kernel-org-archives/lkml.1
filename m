@@ -1,115 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbYI3K4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbYI3K6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752971AbYI3K4X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 06:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYI3K4P
+	id S1753242AbYI3K6i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 06:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYI3K6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 06:56:15 -0400
-Received: from smtp23.orange.fr ([80.12.242.50]:32255 "EHLO smtp23.orange.fr"
+	Tue, 30 Sep 2008 06:58:30 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34313 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbYI3K4P convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 06:56:15 -0400
-X-ME-UUID: 20080930105612359.57C781C000AC@mwinf2304.orange.fr
-Message-ID: <48E205BE.8030908@cosmosbay.com>
-Date: Tue, 30 Sep 2008 12:55:58 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	id S1751829AbYI3K6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 06:58:30 -0400
+Date: Tue, 30 Sep 2008 12:58:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [rfc] "improve" preempt debugging
+Message-ID: <20080930105814.GA7712@elte.hu>
+References: <200809302050.27306.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 0/4] futex: get_user_pages_fast() for shared futexes
-References: <20080926173219.885155151@twins.programming.kicks-ass.net>	 <20080927161712.GA1525@elte.hu>	 <200809301721.52148.nickpiggin@yahoo.com.au> <1222764669.12646.26.camel@twins.programming.kicks-ass.net>
-In-Reply-To: <1222764669.12646.26.camel@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809302050.27306.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra a écrit :
-> Just to be sure, I only hold the page lock over the get_futex_key() op,
-> and drop it after getting a ref on the futex key.
-> 
-> I then drop the futex key ref after the futex op is complete.
-> 
-> This assumes the futex key ref is suffucient to guarantee whatever is
-> needed - which is the point I'm still not quite sure about myself.
-> 
-> The futex key ref was used between futex ops, with I assume the intent
-> to ensure the futex backing stays valid. However, the key ref only takes
-> a ref on either the inode or the mm, neither which avoid the specific
-> address of the futex to get unmapped between ops.
-> 
-> So in that respect we're not worse off than before, and any application
-> doing: futex_wait(), munmap(), futex_wake() is going to suffer. And as
-> far as I understand it get the waiting task stuck in D state for
-> ever-more or somesuch.
-> 
-> By now not holding the mmap_sem over the full futex op, but only over
-> the get_futex_key(), that munmap() race gets larger and the actual futex
-> could disappear while we're working on it, but in all cases I looked at
-> that will make the futex op return -EFAULT, so we should be good there.
-> 
-> Gah, now that I look at it, it looks like I made get_futex_key()
-> asymetric wrt private futexes, they don't take a ref on the key, but
-> then do drop one... ouch.. Patch below.
-> 
->> Nice work, Peter.
-> 
-> Thanks!
-> 
->> BTW. what kinds of things use inter-process futexes as of now?
-> 
-> On a regular modern Linux system, not much. But I've been told there are
-> applications out there that do indeed make heavy use of them - as
-> they're part of POSIX etc.. blah blah :-)
 
-inter-process futexes are still used for pthread creation/join 
-(aka clear_child_tid / CLONE_CHILD_CLEARTID)
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-kernel/fork.c, functions mm_release() & sys_set_tid_address()
-
-I am not sure how it could be converted to private futexes, since
-old binaries (static glibc) will use FUTEX_WAKE like calls.
-
+> Hi, don't know if you really like this patch or not, but it helped me 
+> out with a problem I recently had....
 > 
-> Also some legacy stuff that's stuck on an ancient glibc (but somehow did
-> manage to upgrade the kernel) might benefit.
+> Basically, when the kernel lock is held, then preempt_count underflow 
+> does not get detected until it is released which may be a long time 
+> (and arbitrarily, eg at different points it may be rescheduled). If 
+> the bkl is released at schedule, the resulting output is actually 
+> fairly cryptic...
 > 
+> With any other lock that elevates preempt_count, it is illegal to 
+> schedule under it (which would get found pretty quickly). bkl allows 
+> scheduling with preempt_count elevated, which makes underflows hard to 
+> debug.
 > 
-> ---
-> Subject: futex: fixup get_futex_key() for private futexes
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> With the get_user_pages_fast() patches we made get_futex_key() obtain a
-> reference on the returned key, but failed to do so for private futexes.
-> 
+> Index: linux-2.6/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched.c       2008-09-30 11:32:56.000000000 +1000
+> +++ linux-2.6/kernel/sched.c    2008-09-30 11:38:18.000000000 +1000
+> @@ -4305,7 +4305,7 @@ void __kprobes sub_preempt_count(int val
+>         /*
+>          * Underflow?
+>          */
+> -       if (DEBUG_LOCKS_WARN_ON(val > preempt_count()))
+> +       if (DEBUG_LOCKS_WARN_ON(val > preempt_count() - (!!kernel_locked())))
+>                 return;
 
-Sorry I am lost...
-private futexes dont need to get references at all...
+looks useful to me. This hardcodes a "BKL is tied to preempt-off" 
+assumption but that should be OK - when get rid of the BKL by turning it 
+into a plain mutex we have to remember to remove this.
 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
-> diff --git a/kernel/futex.c b/kernel/futex.c
-> index 197fdab..beee9af 100644
-> --- a/kernel/futex.c
-> +++ b/kernel/futex.c
-> @@ -227,6 +227,7 @@ static int get_futex_key(u32 __user *uaddr, int
-> fshared, union futex_key *key)
->  			return -EFAULT;
->  		key->private.mm = mm;
->  		key->private.address = address;
-> +		get_futex_key_refs(key);
->  		return 0;
->  	}
->  
-> 
-> 
-> 
+applied the commit below to tip/core/locking, thanks Nick!
 
+Peter, does it look good to you too?
 
+	Ingo
 
+--------------->
+>From 7317d7b87edb41a9135e30be1ec3f7ef817c53dd Mon Sep 17 00:00:00 2001
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+Date: Tue, 30 Sep 2008 20:50:27 +1000
+Subject: [PATCH] sched: improve preempt debugging
 
+This patch helped me out with a problem I recently had....
+
+Basically, when the kernel lock is held, then preempt_count underflow does not
+get detected until it is released which may be a long time (and arbitrarily,
+eg at different points it may be rescheduled). If the bkl is released at
+schedule, the resulting output is actually fairly cryptic...
+
+With any other lock that elevates preempt_count, it is illegal to schedule
+under it (which would get found pretty quickly). bkl allows scheduling with
+preempt_count elevated, which makes underflows hard to debug.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 9889080..ec3bd1f 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4305,7 +4305,7 @@ void __kprobes sub_preempt_count(int val)
+ 	/*
+ 	 * Underflow?
+ 	 */
+-	if (DEBUG_LOCKS_WARN_ON(val > preempt_count()))
++       if (DEBUG_LOCKS_WARN_ON(val > preempt_count() - (!!kernel_locked())))
+ 		return;
+ 	/*
+ 	 * Is the spinlock portion underflowing?
