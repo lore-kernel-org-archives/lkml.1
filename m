@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbYI3SsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbYI3SvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753477AbYI3SsX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 14:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbYI3SsI
+	id S1753873AbYI3SvR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 14:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYI3SvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 14:48:08 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:27529 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751999AbYI3SsH (ORCPT
+	Tue, 30 Sep 2008 14:51:04 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:25584 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752720AbYI3SvB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 14:48:07 -0400
-Date: Tue, 30 Sep 2008 11:36:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Alessandro Rubini <ar@gnudd.com>,
-       Alessandro Rubini <rubini@vision.unipv.it>
-Subject: Re: About the maintainer of "MOUSE AND MISC DEVICES"
-Message-Id: <20080930113647.5aee57ec.randy.dunlap@oracle.com>
-In-Reply-To: <20080930153708.GX18732@tekkaman>
-References: <20080930153708.GX18732@tekkaman>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Sep 2008 14:51:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=mbjR3pLUKaU5VldgeUuJKYTnXXo+pnw8O1dOkWrpbHRxpOX/YMDKTkfy/HMujveP4a
+         Q6UEBpijuhfOKBlDfdcD/jywLoNDu/BLzrCnJ9iY0qnU29/1Y/MFDNrViC1T3Z8Z+NDN
+         fhqqF+yh3rop7hLlg485hZRcD/HCmtsw5/9dU=
+Message-ID: <f4527be0809301151k66277093gd5303e73df6d834e@mail.gmail.com>
+Date: Tue, 30 Sep 2008 19:51:00 +0100
+From: "Andrew Lyon" <andrew.lyon@gmail.com>
+To: "Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: kernel.org missing .1 incremental patches
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Sep 2008 17:37:08 +0200 Rodolfo Giometti wrote:
+Hi,
 
-> Hello,
-> 
-> I just wrote to Alessandro in order to have some suggestions about a
-> misc device I wish to propose to this list, but he told me that he
-> wants leave his maintanership.
-> 
-> So which is the person should I send my requests about misc devices?
-> 
-> He also asked to me to propose to this list a "patch" to remove him
-> from the MAINTANERS file... if so the new entry should be:
-> 
-> MOUSE AND MISC DEVICES [GENERAL]
-> L:      linux-kernel@vger.kernel.org
-> S:      Maintained
-> 
-> Is taht correct?
+The incremental patches at
+http://www.kernel.org/pub/linux/kernel/v2.6/incr/ seem to be missing
+all .1 patches, for example there are patches to take 2.6.25 from
+EXTRAVERSION = .2 to .17 but no patch for .0 > .1, attempting to apply
+patch-2.6.25.1-2 to 2.6.25 will fail on the Makefile as it does not
+have the correct starting version.
 
-I'd say that the entry should just be for MISC DEVICES.
-MOUSE is covered/handled by INPUT DRIVERS.
+I assume the patches are generated from a script and there is a bug,
+easily worked around by downloading the full 2.6.25.1 tarball but the
+full incremental set would be very useful for a project I am working
+on.
 
-The L: and S: look OK to me.
-
-Please send a patch to linux-kernel@vger.kernel.org and
-to akpm@linux-foundation.org .
-
-Thanks,
----
-~Randy
+Thanks
+Andy
