@@ -1,127 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYI3UGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbYI3UMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbYI3UGg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 16:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYI3UGX
+	id S1753804AbYI3UMv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 16:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbYI3UMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 16:06:23 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:34637 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753810AbYI3UGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 16:06:21 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 2/2] PNP: don't check disabled PCI BARs for conflicts in quirk_system_pci_resources()
-Date: Tue, 30 Sep 2008 22:05:44 +0200
-User-Agent: KMail/1.9.10
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rene Herman <rene.herman@keyaccess.nl>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Adam Belay <abelay@mit.edu>, Avuton Olrich <avuton@gmail.com>,
-       Karl Bellve <karl.bellve@umassmed.edu>, Willem Riede <wriede@riede.org>,
-       Matthew Hall <mhall@mhcomputing.net>, Sam Ravnborg <sam@ravnborg.org>
-References: <200809290957.59813.bjorn.helgaas@hp.com> <alpine.LFD.2.00.0809301015210.4651@nehalem.linux-foundation.org> <20080930193819.GA29860@elte.hu>
-In-Reply-To: <20080930193819.GA29860@elte.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1483641.zdhIWxlzK1";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200809302206.11391.eike-kernel@sf-tec.de>
+	Tue, 30 Sep 2008 16:12:43 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39951 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752601AbYI3UMm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 16:12:42 -0400
+Date: Tue, 30 Sep 2008 21:12:24 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Nicolas Pitre <nico@cam.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: wrong usage of MAX_DMA_ADDRESS in bootmem.h
+Message-ID: <20080930201224.GL15911@flint.arm.linux.org.uk>
+References: <1222230419-15661-21-git-send-email-nico@cam.org> <1222230592-15868-1-git-send-email-nico@cam.org> <20080930162809.GD15911@flint.arm.linux.org.uk> <alpine.LFD.2.00.0809301409230.3635@xanadu.home> <20080930184411.GJ15911@flint.arm.linux.org.uk> <alpine.LFD.2.00.0809301513260.3635@xanadu.home> <48E2846A.4030802@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48E2846A.4030802@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1483641.zdhIWxlzK1
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Ingo Molnar wrote:
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > Dang.
+On Tue, Sep 30, 2008 at 02:56:26PM -0500, Christoph Lameter wrote:
+> Nicolas Pitre wrote:
+> > I have implemented highmem for ARM.  To catch wrong usage of __pa() and 
 > >
-> > I guess we'll have to bite the bullet some day and actually create
-> > some explicit topological ordering of initcalls rather than depend on
-> > the initcall levels and link order. That is one particular complexity
-> > I've tried to avoid. But the subtlety of the current ordering is
-> > certainly not at all good either.
->
-> incidentally, i've been talking to Arjan about this recently in context
-> of the CONFIG_FASTBOOT feature. Because, as a side-effect, in the long
-> run, once the dependencies between initcalls fan out in a more natural
-> way, with explicit initcall ordering we'll also be able to boot a bit
-> faster and a bit more parallel.
->
->  [ but performance is far less important than robustness, so this idea
->    was on the backburner. ]
->
-> and i think on the conceptual level initcall levels and implicit
-> ordering are bad in the same way SPL and IPL based locking is worse than
-> real, explicit spinlocks.
->
-> i think the topological ordering should not be just an extension of the
-> current hardcoded initcall levels, but it should be symbol space based:
-> i.e. an initcall should depend not on some kind of artificial enum, but
-> it should depend on _another initcall_. (a list of initcalls more
-> generally)
->
-> so instead of the current hardcoded levels:
->
->   core_initcall(sysctl_init);
->
-> we could have natural constructs like:
->
->   initcall_depends_on(sysctl_init, securityfs_init);
->   initcall_depends_on(sock_init, sysctl_init)
->
-> where we create explicit dependencies between actual initcalls just by
-> listing their dependencies. In many cases we could express dependencies
-> in a natural way:
->
->   initcall_depends_on(some_subsys_init, kmem_cache_init);
->   initcall_depends_on(some_subsys_init, sched_init);
->
-> which would express the fact that some_subsys_init() must execute after
-> kmem_cache_init() and after sched_init().
->
-> Each initcall is associated with an 'initcall descriptor', which shows
-> which other initcalls this initcall depend on, and whether the initcall
-> has been executed already.
->
-> during bootup the initcall engine would parse the graph and would
-> execute all the 'leaf' initcalls, and would complete the graph
-> gradually.
->
-> ( More details: we'd have a number of compatibility and convenience
->   symbols as well - well-known initialization stages for various
->   customary phases of bootup.
->
->   And at link time we could detect circular dependencies. )
->
-> So ... this scheme looks elegant to me, but maybe it is overdesigned?
+> > One issue is that bootmem.h uses __pa(MAX_DMA_ADDRESS). However 
+> > MAX_DMA_ADDRESS on ARM is defined as 0xffffffff because there is usually 
+> > no restriction on the maximum DMA-able address.
+> > 
+> > RMK suggested that those places should be using ISA_DMA_THRESHOLD 
+> > instead -- here's an excert of our conversation on this topic:
+> >
+> 
+> ok so do
+> 
+> #define MAX_DMA_ADDRESS ISA_DMA_THRESHOLD
 
-Why calculate this at boot time? Do you expect this to change between bootups?
+Not correct.  MAX_DMA_ADDRESS is a virtual address.  ISA_DMA_THRESHOLD
+is the last byte of _physical_ memory which ISA DMA can transfer:
 
-Eike
+include/asm-x86/scatterlist.h:#define ISA_DMA_THRESHOLD (0x00ffffff)
 
---nextPart1483641.zdhIWxlzK1
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+So what you've just suggested is completely insane.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+>  >> I suspect all those places which are doing __pa(MAX_DMA_ADDRESS) really
+> >> want to be using ISA_DMA_THRESHOLD - that's something to raise on LKML
+> >> if it's causing problems.
+> 
+> MAX_DMA_ADDRESS is the highest address used for ZONE_DMA / GFP_DMA
 
-iEYEABECAAYFAkjihrMACgkQXKSJPmm5/E4hFwCgoJl5F/jj3jHauCMm5g7LTBJz
-bs8An3c5w2wTgQMyJokhsbsyG3pUFkSE
-=Uxea
------END PGP SIGNATURE-----
+Incorrect.  MAX_DMA_ADDRESS is the highest possible virtual DMA address:
 
---nextPart1483641.zdhIWxlzK1--
+include/asm-x86/dma.h:#define MAX_DMA_ADDRESS      (PAGE_OFFSET + 0x1000000)
+
+Think about what that means on an x86 machine with less than 16MB of RAM.
+
+> Does ISA_DMA_THRESHOLD have any meaning on ARM? If you use old ISA stuff then
+> you need CONFIG_ZONE_DMA and therefore also MAX_DMA_ADDRESS.
+
+As we have already covered in the past, CONFIG_ZONE_DMA has to always
+be enabled on ARM because ARM always puts all memory in the first zone.
+To do otherwise introduces lots of special cases, and I steadfastly
+refuse to make the memory initialisation any more complicated than it
+already is.
+
+And besides, this has nothing to do with that issue.
