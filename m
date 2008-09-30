@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828AbYI3T4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbYI3T5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754828AbYI3T4H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 15:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYI3Tzy
+	id S1754558AbYI3T5b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 15:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYI3T5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 15:55:54 -0400
-Received: from lirone.symas.net ([64.71.152.235]:45462 "EHLO lirone.symas.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753318AbYI3Tzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 15:55:53 -0400
-Message-ID: <48E28443.7060708@symas.com>
-Date: Tue, 30 Sep 2008 12:55:47 -0700
-From: Howard Chu <hyc@symas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; rv:1.9.1b1pre) Gecko/20080917130338 SeaMonkey/2.0a1pre
+	Tue, 30 Sep 2008 15:57:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44962 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750751AbYI3T5X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 15:57:23 -0400
+Message-ID: <48E2846A.4030802@linux-foundation.org>
+Date: Tue, 30 Sep 2008 14:56:26 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: APIC frequency too slow on HP dv5z
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Nicolas Pitre <nico@cam.org>
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: wrong usage of MAX_DMA_ADDRESS in bootmem.h
+References: <1222230419-15661-21-git-send-email-nico@cam.org> <1222230592-15868-1-git-send-email-nico@cam.org> <20080930162809.GD15911@flint.arm.linux.org.uk> <alpine.LFD.2.00.0809301409230.3635@xanadu.home> <20080930184411.GJ15911@flint.arm.linux.org.uk> <alpine.LFD.2.00.0809301513260.3635@xanadu.home>
+In-Reply-To: <alpine.LFD.2.00.0809301513260.3635@xanadu.home>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-More often than not, on a warm boot I see something like this
+Nicolas Pitre wrote:
+> I have implemented highmem for ARM.  To catch wrong usage of __pa() and 
+>
+> One issue is that bootmem.h uses __pa(MAX_DMA_ADDRESS). However 
+> MAX_DMA_ADDRESS on ARM is defined as 0xffffffff because there is usually 
+> no restriction on the maximum DMA-able address.
+> 
+> RMK suggested that those places should be using ISA_DMA_THRESHOLD 
+> instead -- here's an excert of our conversation on this topic:
+>
 
-msg.new:[    1.940031] Using local APIC timer interrupts.
-msg.new:[    1.944031] APIC timer calibration result 466046
-msg.new:[    1.944031] Detected 0.466 MHz APIC timer.
-msg.new:[    1.944031] APIC frequency too slow, disabling apic timer
+ok so do
 
-On cold boots it may see 12.5MHz, or may not...
+#define MAX_DMA_ADDRESS ISA_DMA_THRESHOLD
 
-[    2.000584] Using local APIC timer interrupts.
-[    2.004067] APIC timer calibration result 12500236
-[    2.004080] Detected 12.500 MHz APIC timer.
+ >> I suspect all those places which are doing __pa(MAX_DMA_ADDRESS) really
+>> want to be using ISA_DMA_THRESHOLD - that's something to raise on LKML
+>> if it's causing problems.
 
-I haven't figured out yet what the pattern is behind the behavior. Has anyone 
-else seen this kind of problem before?
--- 
-   -- Howard Chu
-   CTO, Symas Corp.           http://www.symas.com
-   Director, Highland Sun     http://highlandsun.com/hyc/
-   Chief Architect, OpenLDAP  http://www.openldap.org/project/
+MAX_DMA_ADDRESS is the highest address used for ZONE_DMA / GFP_DMA
+
+Does ISA_DMA_THRESHOLD have any meaning on ARM? If you use old ISA stuff then
+you need CONFIG_ZONE_DMA and therefore also MAX_DMA_ADDRESS.
+
+If not then there is no need to define CONFIG_ZONE_DMA and MAX_DMA_ADDRESS
+looses its usual meaning.
