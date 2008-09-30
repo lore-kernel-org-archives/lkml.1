@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbYI3WIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYI3WKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182AbYI3WIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 18:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbYI3WIH
+	id S1754178AbYI3WKa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 18:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbYI3WKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 18:08:07 -0400
-Received: from www.tglx.de ([62.245.132.106]:35197 "EHLO www.tglx.de"
+	Tue, 30 Sep 2008 18:10:23 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37354 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753301AbYI3WIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 18:08:06 -0400
-Date: Wed, 1 Oct 2008 00:07:51 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: RE: Linux 2.6.27-rc8
-In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52064B1CE4@orsmsx418.amr.corp.intel.com>
-Message-ID: <alpine.LFD.1.10.0810010006470.5549@apollo.tec.linutronix.de>
-References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org> <Pine.LNX.4.64.0809300125460.2307@twin.jikos.cz> <alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org>
- <36D9DB17C6DE9E40B059440DB8D95F52064B1CE4@orsmsx418.amr.corp.intel.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751720AbYI3WKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 18:10:22 -0400
+Subject: Re: [PATCH] suspend/resume for ATI Mobility Radeon RV350
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Wolfgang Kroener <lkml@azog.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080930140658.GL10156@casella.faui2k3.org>
+References: <20080930140658.GL10156@casella.faui2k3.org>
+Content-Type: text/plain
+Date: Wed, 01 Oct 2008 08:10:10 +1000
+Message-Id: <1222812610.9006.74.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008, Brandeburg, Jesse wrote:
-> Linus Torvalds wrote:
-> > What's the magic to trigger it? I've got a laptop with that e1000e
-> > chip in it, and am obviously running a recent kernel on it. Do people
-> > have a handle on it? Is it actually verified to be kernel-related,
-> > and not related to the X server etc?
-> 
-> my current status mail was posted earlier today to lkml from this
-> address, since then we've had a local reproduction and are going for
-> number two.  The reproduction seems racy, i.e. it doesn't happen every
-> time, so we put it in a loop doing detect, check eeprom, detect, etc,
-> and we'll see if it fails.
-> 
-> Reproduction seems to consistently be around X probing time, no firm
-> leads yet.  As for Intel we have keithp and jbarnes as well as arjan,
-> auke, myself and a few others involved.
-> 
-> We have some patches to lock the nvm down, we'll be posting those
-> tonight and tomorrow, I also have some debug logic (and fixes) to help
-> prove that we don't think it's a race in e1000e.
+On Tue, 2008-09-30 at 16:06 +0200, Wolfgang Kroener wrote:
+> Hi,
+> I have a ATI Mobility Radeon RV350 and similar problems with radeonfb
+> described in http://kernel.org/doc/Documentation/power/s2ram.txt
+> Adding the device to radeon_workaround_list solves the Problem.
+> Please accept the following patch:
 
-Can we get the simple debug patches including the fixes which resulted
-from them pushed upstream ASAP ?
+Can you resend it with a proper Signed-off-by: line ? Thanks !
 
-Thanks,
+Cheers,
+Ben.
 
-	tglx
+> --8<--
+> --- drivers/video/aty/radeon_pm.c.orig	2008-09-30 15:00:40.988111330 +0200
+> +++ drivers/video/aty/radeon_pm.c	2008-09-30 15:14:10.941524474 +0200
+> @@ -89,6 +89,9 @@
+>  	BUGFIX("Acer Aspire 2010",
+>  	       PCI_VENDOR_ID_AI, 0x0061,
+>  	       radeon_pm_off, radeon_reinitialize_M10),
+> +	BUGFIX("Acer Travelmate 290D/292LMi",
+> +	       PCI_VENDOR_ID_AI, 0x005a,
+> +	       radeon_pm_off, radeon_reinitialize_M10),
+>  	{ .ident = NULL }
+>  };
+> 
+> -->8--
+> Kind regards,
+> Wolfgang
+> 
+> P. S. please CC me, because I'm not subscribed to the lkml
+
