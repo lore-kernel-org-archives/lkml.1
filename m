@@ -1,79 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbYI3Tta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYI3Ttm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbYI3Tta (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 15:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYI3TtU
+	id S1754512AbYI3Ttm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 15:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYI3TtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 15:49:20 -0400
-Received: from www.tglx.de ([62.245.132.106]:44862 "EHLO www.tglx.de"
+	Tue, 30 Sep 2008 15:49:22 -0400
+Received: from www.tglx.de ([62.245.132.106]:44864 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753132AbYI3TtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 15:49:20 -0400
-Message-Id: <20080930194445.978351700@linutronix.de>
+	id S1753360AbYI3TtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 15:49:21 -0400
+Message-Id: <20080930194516.788193391@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Tue, 30 Sep 2008 19:48:52 -0000
+Date: Tue, 30 Sep 2008 19:48:56 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
        Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>,
        Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: [RFC patch 0/3] signals: add rt_tgsigqueueinfo syscall
+Subject: [RFC patch 1/3] signals: split do_tkill
+References: <20080930194445.978351700@linutronix.de>
+Content-Disposition: inline; filename=signals-split-do-tkill.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sys_kill has a counterpart sys_tgkill which allows to send signals to
-a particular thread. sys_rt_sigqueueinfo is lacking such a counterpart.
+Split out the code from do_tkill to make it reusable by the follow up
+patch which implements sys_rt_tgsigqueueinfo
 
-Aside of the asymetry it is a show stopper for migrating applications
-from other unix-alike RTOSes.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/signal.c |   31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
 
-The following patch series implements rt_tgsigqueueinfo and hooks it
-up for x86.
-
-Find below the raw documentation.
-
-Thanks,
-
-	tglx
-----
-
-NAME
-       rt_tgsigqueueinfo - Send signal information to a signal to a thread
-
-SYNOPSIS
-       long sys_rt_tgsigqueueinfo (int tgid, int tid, int sig, siginfo_t *uinfo);
-
-DESCRIPTION
-
-       rt_tgsigqueueinfo sends signal sig information uinfo to the
-       thread with the thread ID tid in the thread group tgid.  (By
-       contrast, rt_sigqueueinfo(2) can only be used to send a signal
-       info to a process (i.e., thread group) as a whole, and the
-       signal will be delivered to an arbitrary thread within that
-       process.)
-
-RETURN VALUE
-
-       rt_tgsigqueueinfo returns 0 on success; otherwise,
-       rt_sigqueueinfo returns one of the errors listed in the
-       "Errors" section.
-
-ERRORS
-       -EFAULT
-              An invalid value for uinfo was specified.
-
-       -EINVAL
-	      An invalid TID, TGID or signal was specified.
-
-       -EPERM 
-              Permission denied.  For the required permissions,
-              see rt_sigqueueinfo(2).
-
-       -ESRCH 
-       	      No process with the specified thread ID and thread group
-              ID exists.
-
+Index: linux-2.6-tip/kernel/signal.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/signal.c
++++ linux-2.6-tip/kernel/signal.c
+@@ -2212,24 +2212,20 @@ sys_kill(pid_t pid, int sig)
+ 	return kill_something_info(sig, &info, pid);
+ }
  
+-static int do_tkill(pid_t tgid, pid_t pid, int sig)
++static int
++do_send_specific(pid_t tgid, pid_t pid, int sig, struct siginfo *info)
+ {
+-	int error;
+-	struct siginfo info;
+ 	struct task_struct *p;
+ 	unsigned long flags;
++	int error = -ESRCH;
+ 
+-	error = -ESRCH;
+-	info.si_signo = sig;
+-	info.si_errno = 0;
+-	info.si_code = SI_TKILL;
+-	info.si_pid = task_tgid_vnr(current);
+-	info.si_uid = current->uid;
++	info->si_pid = task_tgid_vnr(current);
++	info->si_uid = current->uid;
+ 
+ 	rcu_read_lock();
+ 	p = find_task_by_vpid(pid);
+ 	if (p && (tgid <= 0 || task_tgid_vnr(p) == tgid)) {
+-		error = check_kill_permission(sig, &info, p);
++		error = check_kill_permission(sig, info, p);
+ 		/*
+ 		 * The null signal is a permissions and process existence
+ 		 * probe.  No signal is actually delivered.
+@@ -2239,7 +2235,7 @@ static int do_tkill(pid_t tgid, pid_t pi
+ 		 * signal is private anyway.
+ 		 */
+ 		if (!error && sig && lock_task_sighand(p, &flags)) {
+-			error = specific_send_sig_info(sig, &info, p);
++			error = specific_send_sig_info(sig, info, p);
+ 			unlock_task_sighand(p, &flags);
+ 		}
+ 	}
+@@ -2248,6 +2244,19 @@ static int do_tkill(pid_t tgid, pid_t pi
+ 	return error;
+ }
+ 
++static int do_tkill(pid_t tgid, pid_t pid, int sig)
++{
++	struct siginfo info;
++
++	info.si_signo = sig;
++	info.si_errno = 0;
++	info.si_code = SI_TKILL;
++	info.si_pid = task_tgid_vnr(current);
++	info.si_uid = current->uid;
++
++	return do_send_specific(tgid, pid, sig, &info);
++}
++
+ /**
+  *  sys_tgkill - send signal to one specific thread
+  *  @tgid: the thread group ID of the thread
 
 
