@@ -1,96 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbYI3QbD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbYI3Qb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbYI3QbD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 12:31:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYI3Qav
+	id S1753938AbYI3Qb7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 12:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbYI3Qbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 12:30:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56079 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751949AbYI3Qau (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 12:30:50 -0400
-Date: Tue, 30 Sep 2008 09:29:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Adam Belay <abelay@mit.edu>,
-       Avuton Olrich <avuton@gmail.com>,
-       Karl Bellve <karl.bellve@umassmed.edu>, Willem Riede <wriede@riede.org>,
-       Matthew Hall <mhall@mhcomputing.net>
-Subject: Re: [patch 2/2] PNP: don't check disabled PCI BARs for conflicts in
- quirk_system_pci_resources()
-In-Reply-To: <48E24C6F.3030903@keyaccess.nl>
-Message-ID: <alpine.LFD.2.00.0809300904530.3389@nehalem.linux-foundation.org>
-References: <200809290953.56565.bjorn.helgaas@hp.com> <200809290957.59813.bjorn.helgaas@hp.com> <alpine.LFD.1.10.0809290912060.3265@nehalem.linux-foundation.org> <48E11EFA.8010402@keyaccess.nl> <alpine.LFD.2.00.0809291211330.3389@nehalem.linux-foundation.org>
- <48E1EF0E.8030006@keyaccess.nl> <alpine.LFD.2.00.0809300741320.3389@nehalem.linux-foundation.org> <48E24C6F.3030903@keyaccess.nl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 30 Sep 2008 12:31:51 -0400
+Received: from web35405.mail.mud.yahoo.com ([66.163.179.114]:22855 "HELO
+	web35405.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751792AbYI3Qbu convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 12:31:50 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Sep 2008 12:31:50 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=NdZmslssSge63LjUVKGBfesmx0isjQWDPlwll4e5pT4ZsiZI+nTe5j5vKsiWlSabE6sFF+tF81AedG3Gv5w0aWicMNig4fouem+oGvF1UTnuDBlqZ0dNpE8pa03pW9oOwurWqaGFd4BydqcPj1iOtGx6L4PY95zkJ2wxpbmFSW0=;
+X-YMail-OSG: ZUsLFoQVM1lzIdlKiyhNh8Qh.qcMHL3o5jjE_jehCpIr4nmoDohzasq_VmJospwUsqcW5FORLd4zjFQ.ucUGS8GxuTDih7fFxLz.eN5WAyAi32w.vb_ntLLWUmpu0Z0d2SMv8UmcNZfKR2A5oFkrZ5OtUTmSourHbDP4O8G8bZT6htUXTA--
+X-Mailer: YahooMailWebService/0.7.218.2
+Date: Tue, 30 Sep 2008 09:25:09 -0700 (PDT)
+From: Krishna Kumar <krikkku@yahoo.com>
+Reply-To: krikkku@yahoo.com
+Subject: Re: [REV2: PATCH 1/2]: workqueue: Implement the kernel API 
+To: linux-kernel@vger.kernel.org
+Cc: oleg@tv-sign.ru
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <509896.58523.qm@web35405.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Oleg,
+
+(sending from a different email address)
+
+> Oleg Nesterov <oleg@tv-sign.ru> wrote on 09/29/2008 07:57:34 PM:
+>
+> Yes. I must admit, I prefer the simple, non-intrusive code I suggested
+> much more.
+>
+> Once again, the slow path is (at least, supposed to be) unlikely, and
+> the difference is not that large. (I mean the slow path is when both
+> queue() and update_timer() fail).
+>
+> Should we complicate the code to add this minor optimization (and
+> btw pessimize the "normal" queue_delayed_work) ?
+>
+> And, once we have the correct and simple code, we can optimize it
+> later.
+>
+> > I will go with the above
+> > approach.
+>
+> No. Please do what _you_ think right ;)
+
+No, you are right - I will go to the simpler (and bug-free?) interface.
+
+> Yes. Please note that queue_delayed_work(work, 0) does not use the timer
+> at all. IOW, queue_delayed_work(wq, work, 0) == queue_work(wq, &dwork->work).
+> Perhaps (I don't know) update_queue_delayed_work() should do the same.
+>
+> From the next patch:
+>
+>       -       cancel_delayed_work(&afs_vlocation_reap);
+>       -       schedule_delayed_work(&afs_vlocation_reap, 0);
+>       +       schedule_update_delayed_work(&afs_vlocation_reap, 0);
+>
+> Again, I don't claim this is wrong, but please note that delay == 0.
+
+As you stated in an earlier mail, the following code should handle all cases.
+I think delay==0 is fine now, we take the costly (but rare) path.
+
+int queue_update_delayed_work(struct workqueue_struct *wq,
+                              struct delayed_work *dwork, unsigned long delay)
+{
+        int ret = 1;
+
+        while (queue_delayed_work(wq, dwork, delay)) {
+                unsigned long when = jiffies + delay;
+
+                ret = 0;
+                if (delay && update_timer_expiry(&dwork->timer, when))
+                        break;
+                cancel_work_sync(&dwork->work);
+        }
+
+        return ret;
+}
+
+I will run some tests and submit again.
+
+Thanks once more for explaining patiently some very complicated portions :)
+
+- KK
 
 
-On Tue, 30 Sep 2008, Rene Herman wrote:
-> 
-> > Of course, it may be that the PnP code runs too early, and we have only
-> > parsed the PCI resources, not inserted them into the resource tree yet. If
-> > so, none of this will work, of course.
-> 
-> It doesn't. With the test negated it triggers for all PCI resources (and
-> ofcourse my soundcard driver fails again).
-
-Oh, ok. Looking at it, it does seem that we actually _insert_ the PCI 
-resources too late. We do it in pcibios_allocate_resources(), and there we 
-even take care to look at whether it was enabled or disabled (we 
-prioritize enabled resources, so that a disabled one will never be 
-requested before an enabled one and if they clash, it's always the 
-disabled one that loses the resource).
-
-But pcibios_allocate_resources() is called from pcibios_resource_survey(), 
-which is called from pcibios_init(), which in turn is caled from 
-pci_subsys_init() that is a "subsys_initcall()".
-
-In contrast, the PnP fixup thing is called from pnp_fixup_device, called 
-from __pnp_add_device(), called from pnp_add_device() (and 
-pnp_add_card(), but that should be later), and those in turn from
-pnpacpi_add_device and pnpacpi_init(). 
-
-And pnpacpi_init is _also_ a subsys_initcall, but arch/x86/pci/built-in.o 
-gets linked in _after_ drivers/built-in.o. That, in turn, is because it's 
-marked as a "driver" in the x86 Makefile, and the main Makefile actually 
-ends up forcing "drivers-y" to have drivers/ first.
-
-Just for fun, does this patch make a difference and allow you to just 
-take the "is it registered" thing into account?
-
-It's a scary change right now, and I wouldn't commit it as is (I think 
-that for 2.6.27 the thing to do is to just do the minimal "zero means 
-disabled" thing), but having some random driver level initialize before 
-the core architecture-specific PCI code does smell. So something like this 
-sounds conceptually right anyway.
-
-		Linus
-
----
- arch/x86/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index f5631da..97d0e86 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -159,7 +159,7 @@ core-$(CONFIG_IA32_EMULATION) += arch/x86/ia32/
- 
- # drivers-y are linked after core-y
- drivers-$(CONFIG_MATH_EMULATION) += arch/x86/math-emu/
--drivers-$(CONFIG_PCI)            += arch/x86/pci/
-+core-$(CONFIG_PCI)            += arch/x86/pci/
- 
- # must be linked after kernel/
- drivers-$(CONFIG_OPROFILE) += arch/x86/oprofile/
+      Unlimited freedom, unlimited storage. Get it now, on http://help.yahoo.com/l/in/yahoo/mail/yahoomail/tools/tools-08.html/
