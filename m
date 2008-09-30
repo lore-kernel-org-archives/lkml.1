@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYI3PvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbYI3Pwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbYI3PvO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 11:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYI3Pu6
+	id S1754104AbYI3Pwc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 11:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbYI3PwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 11:50:58 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40960 "EHLO e3.ny.us.ibm.com"
+	Tue, 30 Sep 2008 11:52:24 -0400
+Received: from waste.org ([66.93.16.53]:45504 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751792AbYI3Pu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 11:50:57 -0400
-Subject: Re: [PATCH] mm: show node to memory section relationship with
-	symlinks in sysfs
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-In-Reply-To: <20080930163324.44A7.E1E9C6FF@jp.fujitsu.com>
-References: <20080929200509.GC21255@us.ibm.com>
-	 <20080930163324.44A7.E1E9C6FF@jp.fujitsu.com>
+	id S1751935AbYI3PwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 11:52:23 -0400
+Subject: Re: [PATCH] slub: reduce total stack usage of slab_err & object_err
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Richard Kennedy <richard@rsk.demon.co.uk>,
+       penberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <48E2480A.9090003@linux-foundation.org>
+References: <1222787736.2995.24.camel@castor.localdomain>
+	 <48E2480A.9090003@linux-foundation.org>
 Content-Type: text/plain
-Date: Tue, 30 Sep 2008 08:50:37 -0700
-Message-Id: <1222789837.17630.41.camel@nimitz>
+Date: Tue, 30 Sep 2008 10:49:45 -0500
+Message-Id: <1222789785.23159.27.camel@calx>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-30 at 17:06 +0900, Yasunori Goto wrote:
-> > +#define section_nr_to_nid(section_nr) pfn_to_nid(section_nr_to_pfn(section_nr))
-> >  #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
+
+On Tue, 2008-09-30 at 10:38 -0500, Christoph Lameter wrote:
+> Richard Kennedy wrote:
+> > reduce the total stack usage of slab_err & object_err.
+> > 
+> > Introduce a new function to display a simple slab bug message, and call
+> > this when vprintk is not needed.
 > 
-> If the first page of the section is not valid, then this section_nr_to_nid()
-> doesn't return correct value.
-> 
-> I tested this patch. In my box, the start_pfn of node 1 is 1200400, but 
-> section_nr_to_pfn(mem_blk->phys_index) returns 1200000. As a result,
-> the section is linked to node 0.
+> You could simply get rid of the 100 byte buffer by using vprintk? Same method
+> could be used elsewhere in the kernel and does not require additional
+> functions. Compiles, untestted.
 
-Crap, I was worried about that.
+I'm fixing a bunch of these in the kernel right now.
 
-Gary, this means that we have a N:1 relationship between NUMA nodes and
-sections.  This normally isn't a problem because sections don't really
-care about nodes and they layer underneath them.
-
-We'll probably need multiple symlinks in each section directory.
-
--- Dave
+-- 
+Mathematics is the supreme nostalgia of our time.
 
