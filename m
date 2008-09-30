@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbYI3CGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbYI3CJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753562AbYI3CGQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 22:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbYI3CGB
+	id S1753961AbYI3CJS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 22:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbYI3CJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 22:06:01 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57931 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752284AbYI3CGA (ORCPT
+	Mon, 29 Sep 2008 22:09:04 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52882 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbYI3CJB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 22:06:00 -0400
-Date: Mon, 29 Sep 2008 19:06:12 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Dave Airlie" <airlied@gmail.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jiri Kosina" <jkosina@suse.cz>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       jesse.brandeburg@intel.com
-Subject: Re: Linux 2.6.27-rc8
-Message-ID: <20080929190612.111f16ac@infradead.org>
-In-Reply-To: <21d7e9970809291859s5bff81e3ue0f63402c2ad422d@mail.gmail.com>
-References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org>
-	<Pine.LNX.4.64.0809300125460.2307@twin.jikos.cz>
-	<alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org>
-	<21d7e9970809291859s5bff81e3ue0f63402c2ad422d@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 29 Sep 2008 22:09:01 -0400
+Message-ID: <48E189BF.4020907@jp.fujitsu.com>
+Date: Tue, 30 Sep 2008 11:06:55 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>
+CC: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
+Subject: Re: [PATCH v3 02/14] PCI: prevent duplicate slot names
+References: <20080923163753.12628.98683.stgit@bob.kio> <20080923164523.12628.69510.stgit@bob.kio> <48E09936.2030905@jp.fujitsu.com>
+In-Reply-To: <48E09936.2030905@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Sep 2008 11:59:58 +1000
-"Dave Airlie" <airlied@gmail.com> wrote:
+It seems my previous e-mail was not sent properly. So resending it.
 
-> On Tue, Sep 30, 2008 at 11:56 AM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> >
-> >
-> > On Tue, 30 Sep 2008, Jiri Kosina wrote:
-> >>
-> >> Intel is working with us on tracking down and resolving the issue,
-> >> but this is not going as well as one would like to see (one
-> >> attempt, one card with completely hosed EEPROM contents ... and
-> >> restoring the contents is not *that* trivial).
-> >
-> > What's the magic to trigger it? I've got a laptop with that e1000e
-> > chip in it, and am obviously running a recent kernel on it. Do
-> > people have a handle on it? Is it actually verified to be
-> > kernel-related, and not related to the X server etc?
+Thanks,
+Kenji Kaneshige
+
+Kenji Kaneshige wrote:
+> Hi Alex-san,
 > 
-> If we had the magic we'd have fixed it by now, the current working
-> theory is its X server related. This
-> hasn't been proven, though my ATI GPU e1000e seems fine so it may have
-> some legs.
+> Here is one comment, though I have not finished reviewing/testing
+> your patches yet (sorry for the delay).
 > 
-> If it is X related then its both a kernel + X server issue, the e1000e
-> driver opens the barn door, the X server drives the horses through it.
+> Alex Chiang wrote:
 > 
-> Of course until someone produces a way to fix the hw after it breaks,
-> reproducing this isn't something for the feint hearted. I'm hoping my
-> laptop
-> comes back today with a brand new motherboard in it.
+> (snip.)
+> 
+>> diff --git a/drivers/pci/hotplug/pci_hotplug_core.c 
+>> b/drivers/pci/hotplug/pci_hotplug_core.c
+>> index 3e37d63..46802dc 100644
+>> --- a/drivers/pci/hotplug/pci_hotplug_core.c
+>> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
+>> @@ -570,39 +570,32 @@ int pci_hp_register(struct hotplug_slot *slot, 
+>> struct pci_bus *bus, int slot_nr,
+>>          return -EINVAL;
+>>      }
+>>  
+>> -    /* Check if we have already registered a slot with the same name. */
+>> -    if (get_slot_from_name(name))
+>> -        return -EEXIST;
+>> -
+>>      /*
+>> -     * No problems if we call this interface from both ACPI_PCI_SLOT
+>> -     * driver and call it here again. If we've already created the
+>> -     * pci_slot, the interface will simply bump the refcount.
+>> +     * Look for existing slot. If we find it, and it was created by a
+>> +     * slot detection driver (ie, doesn't have a ->hotplug()) then we
+>> +     * allow the hotplug driver calling us to rename the slot if 
+>> desired.
+>> +     *
+>> +     * Otherwise, create the slot and carry on with life.
+>>       */
+>> -    pci_slot = pci_create_slot(bus, slot_nr, name);
+>> -    if (IS_ERR(pci_slot))
+>> -        return PTR_ERR(pci_slot);
+>> -
+>> -    if (pci_slot->hotplug) {
+>> -        dbg("%s: already claimed\n", __func__);
+>> -        pci_destroy_slot(pci_slot);
+>> -        return -EBUSY;
+>> +    pci_slot = pci_get_pci_slot(bus, slot_nr);
+> 
+> The pci_get_pci_slot() function refers pci_bus->slots list, so it
+> should be called with pci_bus_sem semaphore held as pci_create_slot()
+> does, or pci_bus_sem semaphore should be held by pci_get_pci_slot()
+> itself.
+> 
+> Thanks,
+> Kenji Kaneshige
 > 
 
-we have a patch to save/restore now, in final testing stages
-(obviously we want to be really careful with this)
 
-Note that so far it seems to mostly hit with "new" distros, so both
-new kernel and new X... ;(
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
