@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbYI3SgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbYI3Sob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754000AbYI3SgH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 14:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbYI3Sfz
+	id S1753556AbYI3Sob (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 14:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbYI3SoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 14:35:55 -0400
-Received: from waste.org ([66.93.16.53]:43731 "EHLO waste.org"
+	Tue, 30 Sep 2008 14:44:22 -0400
+Received: from www.tglx.de ([62.245.132.106]:58024 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752835AbYI3Sfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 14:35:54 -0400
-Subject: Re: [PATCH] slub: reduce total stack usage of slab_err & object_err
-From: Matt Mackall <mpm@selenic.com>
-To: Richard Kennedy <richard@rsk.demon.co.uk>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       penberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1222796245.23159.38.camel@calx>
-References: <1222787736.2995.24.camel@castor.localdomain>
-	 <48E2480A.9090003@linux-foundation.org>
-	 <1222791638.2995.41.camel@castor.localdomain>
-	 <1222796245.23159.38.camel@calx>
-Content-Type: text/plain
-Date: Tue, 30 Sep 2008 13:33:06 -0500
-Message-Id: <1222799586.23159.57.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	id S1751999AbYI3SoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 14:44:22 -0400
+Message-Id: <20080930121337.905084180@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Tue, 30 Sep 2008 18:44:09 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Veen <arjan@infradead.org>
+Subject: [patch 1/3] timer_list: print real timer address
+References: <20080930121310.879471299@linutronix.de>
+Content-Disposition: inline; filename=timerlist-make-output-useful.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The current timer_list output prints the address of the on stack copy
+of the active hrtimer instead of the hrtimer itself.
 
-On Tue, 2008-09-30 at 12:37 -0500, Matt Mackall wrote:
-> On Tue, 2008-09-30 at 17:20 +0100, Richard Kennedy wrote:
-> > Yes, using vprintk is better but you still have this path :
-> > ( with your patch applied)
-> > 
-> > 	object_err -> slab_bug(208) -> printk(216)
-> > instead of 
-> > 	object_err -> slab_bug_message(8) -> printk(216)
-> > 
-> > unfortunately the overhead for having var_args is pretty big, at least
-> > on x86_64. I haven't measured it on 32 bit yet.
-> 
-> That's fascinating. I tried a simple test case in userspace:
-> 
-> #include <stdarg.h>
-> #include <stdio.h>
-> 
-> void p(char *fmt, ...)
-> {
-> 	va_list args;
-> 
-> 	va_start(args, fmt);
-> 	vprintf(fmt, args);
-> 	va_end(args);
-> }
-> 
-> On 32-bit, I'm seeing 32 bytes of stack vs 216 on 64-bit. Disassembly
-> suggests it's connected to va_list fiddling with XMM registers, which
-> seems quite odd.
+Print the address of the real timer instead.
 
-Ok, on closer inspection, this is part of the x86_64 calling convention.
-When calling a varargs function, the caller passes the number of
-floating point SSE regs used in rax. The callee then has to save these
-away for va_list use. The GCC prologue apparently sets aside space for
-xmm0-xmm7 (16 bytes each) all the time (plus rdi, rsi, rdx, rcx, r8, and
-r9).
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/time/timer_list.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Obviously, we're never passing floating point args in the kernel, so
-we're taking about a 40+ byte hit in code size and 128 byte hit in stack
-size for every varargs call.
+Index: linux-2.6-tip/kernel/time/timer_list.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/time/timer_list.c
++++ linux-2.6-tip/kernel/time/timer_list.c
+@@ -47,13 +47,14 @@ static void print_name_offset(struct seq
+ }
+ 
+ static void
+-print_timer(struct seq_file *m, struct hrtimer *timer, int idx, u64 now)
++print_timer(struct seq_file *m, struct hrtimer *taddr, struct hrtimer *timer,
++	    int idx, u64 now)
+ {
+ #ifdef CONFIG_TIMER_STATS
+ 	char tmp[TASK_COMM_LEN + 1];
+ #endif
+ 	SEQ_printf(m, " #%d: ", idx);
+-	print_name_offset(m, timer);
++	print_name_offset(m, taddr);
+ 	SEQ_printf(m, ", ");
+ 	print_name_offset(m, timer->function);
+ 	SEQ_printf(m, ", S:%02lx", timer->state);
+@@ -99,7 +100,7 @@ next_one:
+ 		tmp = *timer;
+ 		spin_unlock_irqrestore(&base->cpu_base->lock, flags);
+ 
+-		print_timer(m, &tmp, i, now);
++		print_timer(m, timer, &tmp, i, now);
+ 		next++;
+ 		goto next_one;
+ 	}
 
-Looks like the gcc people have a patch in progress:
-
-http://gcc.gnu.org/ml/gcc-patches/2008-08/msg02165.html
-
-So I think we should assume that x86_64 will sort this out eventually.
-
--- 
-Mathematics is the supreme nostalgia of our time.
 
