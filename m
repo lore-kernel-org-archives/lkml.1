@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbYI3MqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbYI3MrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542AbYI3MqE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 08:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYI3Mpy
+	id S1753948AbYI3MrT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 08:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYI3MrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 08:45:54 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49611 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752669AbYI3Mpx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 08:45:53 -0400
-Date: Tue, 30 Sep 2008 08:45:52 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Pekka Paalanen <pq@iki.fi>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2 -tip 3/4] Tracing/ftrace: Adapt mmiotrace to the new
- type of print_line
-In-Reply-To: <c62985530809300539o2842c14fk16708abaf69c4e2f@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0809300844270.1984@gandalf.stny.rr.com>
-References: <48E11E1E.7010001@gmail.com>  <20080929221934.260306dd@daedalus.pq.iki.fi>  <20080930085241.GB10374@elte.hu> <c62985530809300539o2842c14fk16708abaf69c4e2f@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 30 Sep 2008 08:47:10 -0400
+Received: from ns.netcenter.hu ([195.228.254.57]:50359 "EHLO netcenter.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797AbYI3MrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 08:47:09 -0400
+Message-ID: <3c5801c922f5$a3a8a440$0400a8c0@dcccs>
+From: "Janos Haar" <janos.haar@netcenter.hu>
+To: "Dave Chinner" <david@fromorbit.com>
+Cc: <linux-kernel@vger.kernel.org>
+References: <2e8201c91fba$1befac80$0400a8c0@dcccs> <20080927014431.GU27997@disturbed>
+Subject: Re: Whats going on? (somebody can say something?)
+Date: Tue, 30 Sep 2008 14:09:44 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+----- Original Message ----- 
+From: "Dave Chinner" <david@fromorbit.com>
+To: "Janos Haar" <djani22@netcenter.hu>
+Cc: <linux-kernel@vger.kernel.org>; <xfs@premium9.geo.yahoo7.akadns.net>
+Sent: Saturday, September 27, 2008 3:44 AM
+Subject: Re: Whats going on? (somebody can say something?)
 
-On Tue, 30 Sep 2008, Fr?d?ric Weisbecker wrote:
-> 
-> Thanks Ingo.
-> 
-> I'm currently testing tip/master, since tracing/pipe is merged into.
-> It seems there are some locking issues that I hadn't when I tested the patches.
-> Perhaps it's because of the merge with the new ring buffer.
-> 
-> I just launched the sched_switch tracer and it worked well until 4
-> seconds of execution. And after that it blocked.
-> I tested too a marker message adding and it is never displayed. Worse:
-> I can't break the pipe with Ctrl + C after that.
-> 
-> When I will have some time, I will try to debug all what I find.
-> 
 
-OK, I'll nuke the ring_buffer_lock :-/
+> On Fri, Sep 26, 2008 at 11:27:27AM +0200, Janos Haar wrote:
+>> Hello list,
+>>
+>> Good day for everibody.
+>>
+>> I have one problem with my new linux box. (again)
+>> The hw is tested. (memtest86, 4 days)
+>>
+>> The samba freezed and makes 40 load.
+>>
+>> All what i am using is in-kernel solution, excepting samba.
+>>
+>> libata ->bock -> raid -> cryptoloop -> xfs -> [samba] ->eth
+>>
+>> The log file is here:
+>>
+>> http://download.netcenter.hu/bughunt/20080925/messages
+>>
+>> some points:
+>> Sep 24 01:15:58 - Sep 24 01:19:16 -> i have repaired the 2 xfs on loop0
+>> and loop1Sep 24 14:18:00 -> only a little interesting time, when the
+>> first bug was issued. (cron?)Sep 25 21:47:39 -> i have logged in.Sep 25
+>> 21:50:50 -> i have forced the sysreq from script to make some more debug
+>> information.(I have saved the lsof too if somebody interested.)Any help
+>> will be appreciated.Thanks a lot,Janos Haar
+>
+> What kernel?
 
-The trace_pipe calls that and then calls print_trace_line which will 
-eventually lock the buffer again. This is a bug on my part. I'll fix that 
-today.
+Linux version 2.6.26.2 (root@gl-albth) (gcc version 4.1.1 20061011 (Red Hat 
+4.1.1-30)) #2 SMP Sun Aug 10 00:00:15 CEST 2008
+
+>
+> I have seen all those XFS oops/stack traces before. With the last
+> pull request to linus for 2.6.27-rc7, all known causes of the btree
+> corruption reported in your log messages should be fixed. I guess
+> you'll have to wait for 2.6.27-rc8 or 2.6.28 for them....
+
+unfortunately, i can't wait for this, and don't want to step back in the 
+versions, this is a productive box. :-(
+This time i forced to use another FS, but nex time i will check again with 
+xfs.
+
+>
+> FWIW, next time you have XFS issues, please make it clear in the
+> subject line and cc xfs@oss.sgi.com.
+
+Ok, Thank you.
+
 
 Thanks,
+Janos Haar
 
--- Steve
+>
+> Cheers,
+>
+> Dave.
+> -- 
+> Dave Chinner
+> david@fromorbit.com 
 
