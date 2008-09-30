@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbYI3MyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbYI3NGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753766AbYI3MyR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 08:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYI3MyF
+	id S1753227AbYI3NGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 09:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYI3NGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 08:54:05 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:57075 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752477AbYI3MyE (ORCPT
+	Tue, 30 Sep 2008 09:06:12 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:33347 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbYI3NGL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 08:54:04 -0400
-Message-ID: <48E22165.7040907@canonical.com>
-Date: Tue, 30 Sep 2008 08:53:57 -0400
-From: Stefan Bader <stefan.bader@canonical.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 30 Sep 2008 09:06:11 -0400
+Date: 30 Sep 2008 15:06:06 +0200
+From: krzysztof.h1@poczta.fm
+Subject: Re: [PATCH] x86: enable CPUID on Cyrix cpus with CPUID disabled
+To: Ingo Molnar <mingo@elte.hu>, Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Samuel Sieb <samuel@sieb.net>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: Reserve FIRST_DEVICE_VECTOR in used_vectors	bitmap.
-References: <48E0DA7C.5010403@canonical.com> <20080930095149.GA7557@elte.hu>
-In-Reply-To: <20080930095149.GA7557@elte.hu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-ORIGINATE-IP: 83.17.101.58
+X-Mailer: PSE
+Message-Id: <20080930130606.66276199B265@f14.poczta.interia.pl>
+X-EMID: 99d40acc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->> Someone from the community found out, that after repeatedly unloading 
->> and loading a device driver that uses MSI IRQs, the system eventually 
->> assigned the vector initially reserved for IRQ0 to the device driver.
 > 
->> The reason for this is, that although IRQ0 is tied to the 
->> FIRST_DEVICE_VECTOR when declaring the irq_vector table, the 
->> corresponding bit in the used_vectors map is not set. So, if vectors 
->> are released and assigned often enough, the vector will get assigned 
->> to another interrupt. This happens more often with MSI interrupts as 
->> those are exclusively using a vector.
->>
->> Fix this by setting the bit for the FIRST_DEVICE_VECTOR in the bitmap.
+> * Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 > 
-> hi, the IO-APIC code got unified in the x86 tree for v2.6.28.
+> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > 
+> > The macros setCx86_old() and getCx86_old() do not
+> > work as a comment says in the processor-cyrix.h.
+> > 
+> > Use working inline functions instead to enable
+> > the CPUID instriction on Cyrix cpus. 
+> > 
+> > Tested on IBM 6x86MX cpu with disabled the
+> > CPUID instruction.
+> > 
+> > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > ---
+> > 
+> > This patch is against the linux-next tree (20080819)
+> > as it contains the following patch:
+> > 
+> > x86, cyrix: debug
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> >
+> http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=026e2c05ef58ef413e2d52696f125d5ea1aa8bce
+> > 
+> > The linux-2.6-tip tree has not the Ingo's patch so it 
+> > does not require my patch.
+> > 
+> > I am confused. Is the x86 detection code for Cyrix
+> > cpus is right in the linux-next or in the linux-2.6-tip?
+> > Should I prepare patches against the linux-2.6-tip
+> > or linux-next?
 > 
-> So could you please send the fix against tip/master:
+> now that the bug is correctly understood and fixed, could you please 
+> send a patch that cleans it all up and gets rid of the setCx86_old() / 
+> setCx86() API distinction? I.e. revert commit 026e2c0 ("x86, cyrix: 
+> debug"). Against tip/master please.
 > 
->   http://people.redhat.com/mingo/tip.git/README
+> note that this was all done in connection to:
 > 
-> Thanks,
+>  commit c6744955d0ec0cb485c28c51eeb7185e260f6172
+>  Author: Samuel Sieb <samuel@sieb.net>
+>  Date:   Wed Aug 6 22:06:29 2008 -0700
 > 
-> 	Ingo
+>     x86: fix "kernel won't boot on a Cyrix MediaGXm (Geode)"
+> 
 
-I can't see this as required for tip. FIRST_DEVICE_VECTOR is there defined
-distinct to the ISA IRQs (IRQ15_VECTOR+2) while it is defined to be equal to
-IRQ0_VECTOR on 2.6.27 and before (at least down to 2.6.24).
+I know that it was connected with the Geode booting, but I read the cyrix.c file and most paths are Geode specific and I won't be able to test them. I tested that reverting the commit 026e2c0 ("x86, cyrix: debug") does not break anything on 6x86MX cpu.
+
+If the tip/master is a correct tree, please revert the commit 026e2c0 in the linux-next and drop this patch. This way everything is correct.
 
 Regards,
-Stefan
--- 
+Krzysztof
 
-When all other means of communication fail, try words!
-
+----------------------------------------------------------------------
+Dzwon taniej na zagraniczne komorki!
+Sprawdz >> http://link.interia.pl/f1f26 
 
