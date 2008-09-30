@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752906AbYI3JDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbYI3JFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752906AbYI3JDY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 05:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYI3JDO
+	id S1753316AbYI3JFA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 05:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbYI3JEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 05:03:14 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:51376 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbYI3JDN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 05:03:13 -0400
-Subject: Re: What is in ubifs-2.6.git
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Amit Kumar Sharma <amitsharma.9@samsung.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-mtd@lists.infradead.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <EC8994007A40495FA924271106803A63@sisodomain.com>
-References: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
-	 <EC8994007A40495FA924271106803A63@sisodomain.com>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 30 Sep 2008 12:02:43 +0300
-Message-Id: <1222765363.8051.10.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 30 Sep 2008 09:02:56.0522 (UTC) FILETIME=[545B46A0:01C922DB]
-X-Nokia-AV: Clean
+	Tue, 30 Sep 2008 05:04:52 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:33062 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751704AbYI3JEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 05:04:52 -0400
+Date: Tue, 30 Sep 2008 11:04:34 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Tom Zanussi <zanussi@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>
+Subject: Re: [RFC PATCH 7/11] relay - Remove padding-related code from relay_read()/relay_splice_read() et al.
+Message-ID: <20080930090433.GD2677@kernel.dk>
+References: <1222666828.7637.180.camel@charm-linux> <20080929162743.GA15472@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080929162743.GA15472@Krystal>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-09-30 at 14:25 +0530, Amit Kumar Sharma wrote:
-> Hi Artem
+On Mon, Sep 29 2008, Mathieu Desnoyers wrote:
+> * Tom Zanussi (zanussi@comcast.net) wrote:
+> > Remove padding-related code from relay_read()/relay_splice_read() et al.
+> > 
+> > Because we no longer write padding, we no longer have to read it or
+> > account for it anywhere else, greatly simplifying the related code.
+> > 
+> > Signed-off-by: Tom Zanussi <zanussi@comcast.net>
+> > 
 > 
-> OneNAND can support for full block read also in sync burst 
-> block read mode ,so why u want to limit bulk read only for 4 
-> pages , with sync burst enable u can read max 64 pages.
-> so in place of max 4 pages , u can set max to 64 it will be 
-> improve performance if sync burst mode is upported.
+> Hi Tom,
+> 
+> This question might sound a bit dumb, but I'll ask anyway : why do you
+> implement a splice_read rather than a splice_write in relay ?
+> 
+> splice_read allows reading information from a file or from a socket to a
+> pipe, while splice_write does the opposite.
+> 
+> So if you implement a relay splice_read, you probably consider the
+> relay buffers to be a "file", so you really have to send the information
+> to a pipe, and then you have to use this pipe to send the data
+> elsewhere.
+> 
+> My first reaction when looking at the splice implementation is that what
+> we would really want is a splice_write which would take the data from a
+> pipe (actually, we would have to write an actor which would make the
+> relay buffer behave like a pipe) and write it either to disk or to a
+> socket.
 
-Actually UBIFS reads up to whole eraseblock. So if you have
-a file, and it is resided in consecutive NAND pages of an
-eraseblock, and UBIFS has decided to do read-ahead, it would
-read whole eraseblock. So for OneNAND, indeed UBIFS may read
-up to 64 NAND pages at one go.
+I don't understand where you are going with this... With the
+->splice_read(), we can move relay data into a pipe and pass that to a
+user application (or send it off using sendfile() or splice to a
+socket). So it's a way to get the data to user space, instead of using
+read().
+
+With a ->splice_write(), you could support adding data to relayfs from
+userspace. Why? You want the ->splice_write() on the output end, for
+your socket or file or wherever you want to send to relay data TO.
+
+So as long as your model is that the kernel produces data and the user
+app consumes them, you need the ->splice_read() and not a
+->splice_write().
+
+> Is there something I am misunderstanding here ?
+
+I think so :-)
 
 -- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+Jens Axboe
 
