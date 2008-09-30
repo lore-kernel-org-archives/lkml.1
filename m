@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbYI3QVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbYI3QXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753555AbYI3QVS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 12:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbYI3QVF
+	id S1753780AbYI3QXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 12:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbYI3QXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 12:21:05 -0400
-Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:46343 "EHLO
-	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752842AbYI3QVE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 12:21:04 -0400
-Subject: Re: [PATCH] slub: reduce total stack usage of slab_err & object_err
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: penberg <penberg@cs.helsinki.fi>, mpm <mpm@selenic.com>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <48E2480A.9090003@linux-foundation.org>
-References: <1222787736.2995.24.camel@castor.localdomain>
-	 <48E2480A.9090003@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 30 Sep 2008 17:20:38 +0100
-Message-Id: <1222791638.2995.41.camel@castor.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Sep 2008 12:23:23 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49179 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751817AbYI3QXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 12:23:23 -0400
+Date: Tue, 30 Sep 2008 11:23:21 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haradats@nttdata.co.jp,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [TOMOYO #9 (2.6.27-rc7-mm1) 1/6] LSM adapter functions.
+Message-ID: <20080930162321.GA31779@us.ibm.com>
+References: <20080924090317.359685535@nttdata.co.jp> <20080924090338.407746083@nttdata.co.jp> <20080925165954.GA25587@us.ibm.com> <48DC7553.8040708@nttdata.co.jp> <20080926130409.GA14055@us.ibm.com> <48E053DB.3010201@nttdata.co.jp> <20080930154553.GA29249@us.ibm.com> <1222791288.19676.114.camel@moss-spartans.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222791288.19676.114.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-30 at 10:38 -0500, Christoph Lameter wrote:
-> Richard Kennedy wrote:
-> > reduce the total stack usage of slab_err & object_err.
+Quoting Stephen Smalley (sds@tycho.nsa.gov):
+> 
+> On Tue, 2008-09-30 at 10:45 -0500, Serge E. Hallyn wrote:
+> > Quoting Kentaro Takeda (takedakn@nttdata.co.jp):
+> > > Serge E. Hallyn wrote:
+> > > > Unfortunately I think that is a shortcoming in the security_path_*
+> > > > patchset.  Unfortunate bc that is going to be a pain to work out.
+> > > Thanks for your constructive and tough suggestion. ;-)
+> > > 
+> > > > So for starters,
+> > > > both vfs_mknod and vfs_create do may_create, so just pull that
+> > > > into the callers.
+> > > Do you mean that we should move DAC code to all the caller of vfs_* ? 
 > > 
-> > Introduce a new function to display a simple slab bug message, and call
-> > this when vprintk is not needed.
+> > That's not reasonable, is it.
+> > 
+> > The rule thus far has been 'DAC before MAC'.  Question to all:  do we
+> > insist on keeping it that way?
 > 
-> You could simply get rid of the 100 byte buffer by using vprintk? Same method
-> could be used elsewhere in the kernel and does not require additional
-> functions. Compiles, untestted.
-> 
-> 
-> 
-> 
-> Subject: Slub reduce slab_bug stack usage by using vprintk
-> 
-> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-> 
-> Index: linux-2.6/mm/slub.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slub.c	2008-09-30 10:34:40.000000000 -0500
-> +++ linux-2.6/mm/slub.c	2008-09-30 10:36:10.000000000 -0500
-> @@ -422,15 +422,14 @@
->  static void slab_bug(struct kmem_cache *s, char *fmt, ...)
->  {
->  	va_list args;
-> -	char buf[100];
-> 
->  	va_start(args, fmt);
-> -	vsnprintf(buf, sizeof(buf), fmt, args);
-> -	va_end(args);
->  	printk(KERN_ERR "========================================"
->  			"=====================================\n");
-> -	printk(KERN_ERR "BUG %s: %s\n", s->name, buf);
-> -	printk(KERN_ERR "----------------------------------------"
-> +	printk(KERN_ERR "BUG %s: ", s->name);
-> +	vprintk(fmt, args);
-> +	va_end(args);
-> +	printk(KERN_ERR "\n----------------------------------------"
->  			"-------------------------------------\n\n");
->  }
-> 
-Yes, using vprintk is better but you still have this path :
-( with your patch applied)
+> It isn't a hard rule; there are already some hooks that occur before the
+> DAC checking, e.g. setattr, because the DAC checking happens in the fs
+> code as part of the inode op.  But when possible, we prefer DAC before
+> MAC for SELinux so that we don't get noise in the audit logs from
 
-	object_err -> slab_bug(208) -> printk(216)
-instead of 
-	object_err -> slab_bug_message(8) -> printk(216)
+Since SELinux won't be using the security_path hooks, it won't be
+affected by this, though, right?
 
-unfortunately the overhead for having var_args is pretty big, at least
-on x86_64. I haven't measured it on 32 bit yet.
+Though if we start down the path of mixing dac+mac with _path hooks then
+it may get harder to continue to keep that order for other hooks...
 
-Richard
+> harmless application/library probing that would be denied by DAC anyway.
+> Same issue would seemingly apply for learning modes of TOMOYO or
+> AppArmor.
 
+Good point.  Kentaro, is that an issue for you?
 
+> > If the answer is yes, then the security_path_hooks patch is inherently
+> > wrong.
+> > 
+> > If the answer is no, then Kentaro doesn't need to resort to this
+> > ugliness to try and get may_delete() called before his MAC code, only to
+> > have may_delete() called a second time from the vfs_* functions.
+> 
+> -- 
+> Stephen Smalley
+> National Security Agency
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
