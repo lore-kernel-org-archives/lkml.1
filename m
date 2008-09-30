@@ -1,79 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbYI3DOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbYI3DTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753527AbYI3DOS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 23:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbYI3DOI
+	id S1752566AbYI3DTj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 23:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYI3DTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 23:14:08 -0400
-Received: from mga01.intel.com ([192.55.52.88]:27836 "EHLO mga01.intel.com"
+	Mon, 29 Sep 2008 23:19:30 -0400
+Received: from mga14.intel.com ([143.182.124.37]:2935 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751726AbYI3DOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 23:14:07 -0400
+	id S1751293AbYI3DT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 23:19:29 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
-   d="scan'208";a="385852656"
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "akataria@vmware.com" <akataria@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
-       Daniel Hecht <dhecht@vmware.com>
-Date: Mon, 29 Sep 2008 20:14:01 -0700
-Subject: RE: Use CPUID to communicate with the hypervisor.
-Thread-Topic: Use CPUID to communicate with the hypervisor.
-Thread-Index: Ackio7/Q0ft17vQQT4iRQzqkhL5OmAABUGrQ
-Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A15726E5B1@orsmsx505.amr.corp.intel.com>
-References: <1222472815.29886.43.camel@alok-dev1>
-	 <48E090B6.2080809@redhat.com> <1222710924.30247.21.camel@alok-dev1>
-	 <48E1227B.9040809@redhat.com> <1222717085.30247.44.camel@alok-dev1>
-	 <0B53E02A2965CE4F9ADB38B34501A3A15726E15A@orsmsx505.amr.corp.intel.com>
-	 <48E1437D.7080606@zytor.com>  <48E1486C.3060306@goop.org>
- <1222733523.30247.91.camel@alok-dev1> <48E17363.7060103@zytor.com>
- <0B53E02A2965CE4F9ADB38B34501A3A15726E51D@orsmsx505.amr.corp.intel.com>
- <48E17999.8080403@zytor.com>
- <0B53E02A2965CE4F9ADB38B34501A3A15726E52E@orsmsx505.amr.corp.intel.com>
- <48E18D21.8040305@zytor.com>
-In-Reply-To: <48E18D21.8040305@zytor.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+   d="scan'208";a="53008299"
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
+To: linux-kernel@vger.kernel.org
+Cc: linux-netdev@vger.kernel.org, kkeil@suse.de, agospoda@redhat.com,
+       arjan@linux.intel.com, david.graham@intel.com, bruce.w.allan@intel.com,
+       jkosina@suse.cz, john.ronciak@intel.com, tglx@linutronix.de,
+       chris.jones@canonical.com, tim.gardner@intel.com, airlied@gmail.com,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Mon, 29 Sep 2008 20:19:27 -0700
+Message-ID: <20080930031927.22950.4692.stgit@jbrandeb-bw.jf.intel.com>
+In-Reply-To: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
+User-Agent: StGIT/0.14.3.163.g06f9.dirty
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Sep 2008 03:19:27.0356 (UTC) FILETIME=[58561BC0:01C922AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m8U3ENdq028540
 
-On 9/29/2008 7:21:21 PM, H. Peter Anvin wrote:
-> Nakajima, Jun wrote:
-> > On 9/29/2008 5:58:01 PM, H. Peter Anvin wrote:
-> > > Nakajima, Jun wrote:
-> > > > > We don't have a quorum to create a consensus, since we only
-> > > > > have a subset of the relevant parties present.
-> > > > Who else do we need here?
-> > > >
-> > > At least Parallels and Virtual PC/Virtual Server.
-> > >
-> > >         -hpa
-> >
-> > That should be doable. Although I'm not sure if their engineers want
-> > to discuss in public, we can come back with their ack/nak.
-> >
->
-> OK, if so we should write up a formal proposal.
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-I assume that the scope is limited to virtualization of Linux.
+> I did some snooping around, and while doing so I noticed that the PCI
+> mmap code for x86 doesn't do one bit of range checking on the size, or
+> any other aspect of the request, wrt. the MMIO regions actually mapped
+> in the BARs of the PCI device.
 
->
->         -hpa
-             .
-Jun Nakajima | Intel Open Source Technology Center
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Here's a patch that adds range checking to the sysfs mappings at
+least.  This patch should catch the case where X (or some other
+process) tries to map beyond the specific BAR it's (supposedly)
+trying to access, making things safer in general.  FWIW both my
+F9 and development versions of X start up fine with this patch
+applied.
+
+DaveM, will this work for you on sparc?  It looked like your code
+was allowing bridge window mappings, but that behavior should be
+preserved as long as your bridge devices reflect their window
+sizes correctly in their pdev->resources?
+
+If we add similar code to the procfs stuff we wouldn't need to do
+any checking in the arches.
+
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+
+ drivers/pci/pci-sysfs.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 9c71858..4d1aa6e 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -16,6 +16,7 @@
+ 
+ 
+ #include <linux/kernel.h>
++#include <linux/sched.h>
+ #include <linux/pci.h>
+ #include <linux/stat.h>
+ #include <linux/topology.h>
+@@ -502,6 +503,8 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
+ 	struct resource *res = (struct resource *)attr->private;
+ 	enum pci_mmap_state mmap_type;
+ 	resource_size_t start, end;
++	unsigned long map_len = vma->vm_end - vma->vm_start;
++	unsigned long map_offset = vma->vm_pgoff << PAGE_SHIFT;
+ 	int i;
+ 
+ 	for (i = 0; i < PCI_ROM_RESOURCE; i++)
+@@ -510,6 +513,17 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
+ 	if (i >= PCI_ROM_RESOURCE)
+ 		return -ENODEV;
+ 
++	/*
++	 * Make sure the range the user is trying to map falls within
++	 * the resource
++	 */
++	if (map_offset + map_len > pci_resource_len(pdev, i)) {
++		WARN(1, "process \"%s\" tried to map 0x%08lx-0x%08lx on BAR %d (size 0x%08lx)\n",
++		     current->comm, map_offset, map_offset + map_len, i,
++		     (unsigned long)pci_resource_len(pdev, i));
++		return -EINVAL;
++	}
++
+ 	/* pci_mmap_page_range() expects the same kind of entry as coming
+ 	 * from /proc/bus/pci/ which is a "user visible" value. If this is
+ 	 * different from the resource itself, arch will do necessary fixup.
+
