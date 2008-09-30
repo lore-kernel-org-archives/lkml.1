@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbYI3OKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbYI3OLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754104AbYI3OKc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 10:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYI3OKX
+	id S1754274AbYI3OLS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 10:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYI3OLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 10:10:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60633 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753142AbYI3OKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 10:10:21 -0400
-Message-ID: <48E232FC.1090902@kernel.org>
-Date: Tue, 30 Sep 2008 23:09:00 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Tue, 30 Sep 2008 10:11:07 -0400
+Received: from styx.suse.cz ([82.119.242.94]:38254 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753522AbYI3OLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 10:11:06 -0400
+Date: Tue, 30 Sep 2008 16:11:04 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jesse.brandeburg@intel.com
+Subject: Re: Linux 2.6.27-rc8
+In-Reply-To: <m3d4ilk9n5.fsf@maximus.localdomain>
+Message-ID: <alpine.LNX.1.10.0809301610300.4022@jikos.suse.cz>
+References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org> <Pine.LNX.4.64.0809300125460.2307@twin.jikos.cz> <alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org> <alpine.LNX.1.10.0809300859590.4022@jikos.suse.cz>
+ <m3d4ilk9n5.fsf@maximus.localdomain>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-References: <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org> <20080924105943.GB2094@anita> <20080925081848.GB2305@anita> <48DEA40D.40709@kernel.org> <20080930081257.GB18961@anita.doom>
-In-Reply-To: <20080930081257.GB18961@anita.doom>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 30 Sep 2008 14:10:20 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Konstantin Kletschke wrote:
-> Am 2008-09-28 06:22 +0900 schrieb Tejun Heo:
-> 
->> Sorry about lack of response.  I was on vacation after a series of
-> 
-> Thats no Problem at all :-) I hope the vacation was fine.
-> 
->> conferences.  There's a bug entry for this problem and I just posted a
->> patch.
->>
->>   http://bugzilla.kernel.org/show_bug.cgi?id=11615
->>
->> Can you please try the patch attached there and post the result
->> there?
-> 
-> Well, this Patch simply installs the old weird behaviour with the
-> result in sometimes no cold boot possible yielding into
-> 
-> ataX: link too slow to response ...
-> ataX: COMRESET failed (errno=-16)
-> 
-> After that powercycle required. I wrote it down from memory. If there
-> is a detailed log required I can create them tomorrow when I have my
-> Hands back onto the machine.
+On Tue, 30 Sep 2008, Krzysztof Halasa wrote:
 
-Ah.. okay, so generic is not the only one affected by the original
-hardreset problem.  Can you please post the result of "lspci -nn"?
+> > So far it seems to be that you need 1) something close to xorg 7.4 and 
+> > 2) 2.6.27-rcX kernel to trigger it. Not every system having e1000e is 
+> > affected.
+> And this e1000e must be ICH*, right? I.e. not a separate e1000e
+> chip/card?
+
+So far all the affected systems I am aware of were ICH.
 
 -- 
-tejun
+Jiri Kosina
+SUSE Labs
