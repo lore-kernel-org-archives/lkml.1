@@ -1,51 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbYI3Hom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbYI3HpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753961AbYI3Hom (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 03:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYI3HmI
+	id S1753603AbYI3HpZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 03:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbYI3HmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 03:42:08 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:18987 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323AbYI3HmD (ORCPT
+	Tue, 30 Sep 2008 03:42:14 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:58991 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752489AbYI3HmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 03:42:03 -0400
+	Tue, 30 Sep 2008 03:42:07 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>, linux-kernel@vger.kernel.org,
        linux-mtd@lists.infradead.org
-Subject: [PATCH] UBIFS: correct condition to eliminate unecessary assignment
-Date: Tue, 30 Sep 2008 12:19:17 +0300
-Message-Id: <1222766358-21886-22-git-send-email-dedekind@infradead.org>
+Subject: [PATCH] UBIFS: fix races in bit-fields
+Date: Tue, 30 Sep 2008 12:19:08 +0300
+Message-Id: <1222766358-21886-13-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
 References: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 30 Sep 2008 07:41:37.0897 (UTC) FILETIME=[F8782D90:01C922CF]
+X-OriginalArrivalTime: 30 Sep 2008 07:41:37.0037 (UTC) FILETIME=[F7F4F3D0:01C922CF]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+We cannot store bit-fields together if the processes which
+change them may race, unless we serialize them.
+
+Thus, move the nospc and nospc_rp bit-fields eway from
+the mount option/constant bit-fields, to avoid races.
+
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ---
- fs/ubifs/tnc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/ubifs/ubifs.h |   17 +++++++++--------
+ 1 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/fs/ubifs/tnc.c b/fs/ubifs/tnc.c
-index e0878a4..d27fd91 100644
---- a/fs/ubifs/tnc.c
-+++ b/fs/ubifs/tnc.c
-@@ -1600,7 +1600,7 @@ out:
- 	 * An enormous hole could cause bulk-read to encompass too many
- 	 * page cache pages, so limit the number here.
- 	 */
--	if (bu->blk_cnt >= UBIFS_MAX_BULK_READ)
-+	if (bu->blk_cnt > UBIFS_MAX_BULK_READ)
- 		bu->blk_cnt = UBIFS_MAX_BULK_READ;
- 	/*
- 	 * Ensure that bulk-read covers a whole number of page cache
+diff --git a/fs/ubifs/ubifs.h b/fs/ubifs/ubifs.h
+index 542cbaf..c3ac5a8 100644
+--- a/fs/ubifs/ubifs.h
++++ b/fs/ubifs/ubifs.h
+@@ -334,7 +334,7 @@ struct ubifs_gced_idx_leb {
+  * @bulk_read: non-zero if bulk-read should be used
+  * @ui_mutex: serializes inode write-back with the rest of VFS operations,
+  *            serializes "clean <-> dirty" state changes, serializes bulk-read,
+- *            protects @dirty, @ui_size, and @xattr_size
++ *            protects @dirty, @bulk_read, @ui_size, and @xattr_size
+  * @ui_lock: protects @synced_i_size
+  * @synced_i_size: synchronized size of inode, i.e. the value of inode size
+  *                 currently stored on the flash; used only for regular file
+@@ -944,10 +944,6 @@ struct ubifs_mount_opts {
+  * @fast_unmount: do not run journal commit before un-mounting
+  * @big_lpt: flag that LPT is too big to write whole during commit
+  * @check_lpt_free: flag that indicates LPT GC may be needed
+- * @nospace: non-zero if the file-system does not have flash space (used as
+- *           optimization)
+- * @nospace_rp: the same as @nospace, but additionally means that even reserved
+- *              pool is full
+  * @no_chk_data_crc: do not check CRCs when reading data nodes (except during
+  *                   recovery)
+  * @bulk_read: enable bulk-reads
+@@ -1017,12 +1013,17 @@ struct ubifs_mount_opts {
+  *                        but which still have to be taken into account because
+  *                        the index has not been committed so far
+  * @space_lock: protects @budg_idx_growth, @budg_data_growth, @budg_dd_growth,
+- *              @budg_uncommited_idx, @min_idx_lebs, @old_idx_sz, and @lst;
++ *              @budg_uncommited_idx, @min_idx_lebs, @old_idx_sz, @lst,
++ *              @nospace, and @nospace_rp;
+  * @min_idx_lebs: minimum number of LEBs required for the index
+  * @old_idx_sz: size of index on flash
+  * @calc_idx_sz: temporary variable which is used to calculate new index size
+  *               (contains accurate new index size at end of TNC commit start)
+  * @lst: lprops statistics
++ * @nospace: non-zero if the file-system does not have flash space (used as
++ *           optimization)
++ * @nospace_rp: the same as @nospace, but additionally means that even reserved
++ *              pool is full
+  *
+  * @page_budget: budget for a page
+  * @inode_budget: budget for an inode
+@@ -1191,8 +1192,6 @@ struct ubifs_info {
+ 	unsigned int fast_unmount:1;
+ 	unsigned int big_lpt:1;
+ 	unsigned int check_lpt_free:1;
+-	unsigned int nospace:1;
+-	unsigned int nospace_rp:1;
+ 	unsigned int no_chk_data_crc:1;
+ 	unsigned int bulk_read:1;
+ 
+@@ -1263,6 +1262,8 @@ struct ubifs_info {
+ 	unsigned long long old_idx_sz;
+ 	unsigned long long calc_idx_sz;
+ 	struct ubifs_lp_stats lst;
++	unsigned int nospace:1;
++	unsigned int nospace_rp:1;
+ 
+ 	int page_budget;
+ 	int inode_budget;
 -- 
 1.5.4.1
 
