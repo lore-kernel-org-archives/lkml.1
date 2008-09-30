@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbYI3Dls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbYI3Dmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851AbYI3Dls (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 23:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYI3Dlk
+	id S1753071AbYI3Dmx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 23:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbYI3Dmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 23:41:40 -0400
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:59256 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751482AbYI3Dlj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 23:41:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuYEACM94UhMQWq+/2dsb2JhbACBZLlzgWc
-Date: Mon, 29 Sep 2008 23:41:37 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] markers: let marker_debug as module parameter
-Message-ID: <20080930034137.GB12733@Krystal>
-References: <48E19CE8.8070006@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <48E19CE8.8070006@cn.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:40:12 up 117 days,  8:20, 10 users,  load average: 5.03, 2.70,
-	1.40
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Mon, 29 Sep 2008 23:42:46 -0400
+Received: from mga11.intel.com ([192.55.52.93]:57401 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751522AbYI3Dmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 23:42:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
+   d="scan'208";a="621772031"
+Date: Mon, 29 Sep 2008 20:42:43 -0700 (Pacific Daylight Time)
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Arjan van de Ven <arjan@infradead.org>, Dave Airlie <airlied@gmail.com>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jesse.brandeburg@intel.com
+Subject: Re: Linux 2.6.27-rc8
+In-Reply-To: <alpine.LFD.2.00.0809291921310.3389@nehalem.linux-foundation.org>
+Message-ID: <Pine.WNT.4.63.0809292040140.2188@jbrandeb-desk.amr.corp.intel.com>
+References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org>
+ <Pine.LNX.4.64.0809300125460.2307@twin.jikos.cz>
+ <alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org>
+ <21d7e9970809291859s5bff81e3ue0f63402c2ad422d@mail.gmail.com>
+ <20080929190612.111f16ac@infradead.org> <alpine.LFD.2.00.0809291921310.3389@nehalem.linux-foundation.org>
+ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+X-X-Sender: jesse.brandeburg@intel.com@imap.glb.intel.com
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> 
-> if we want to enable marker debug output, we have to modify
-> the code and remake/reinstall the kernel in current code.
-> 
-> this patch enable marker_debug to be set when kernel start.
-> 
+On Mon, 29 Sep 2008, Linus Torvalds wrote:
+> Btw, the _real_ bug is clearly in the hardware design that allows you to 
+> brick those things without apparently even having a lock bit.
 
-Given it's only called at probe registration/unregistration and never
-put in the critical path of an executed marker, it makes sense to make
-this a kernel arg debug option. I like this patch :)
+The hardware has a lock bit, and we're trying to figure out why the BIOS 
+writers guide doesn't say to set it.  Probably because of the MAC address, 
+but who knows.
+ 
+> I'm hoping Intel doesn't treat this as just a software bug. Some hw 
+> designer should be thinking hard about which orifice they put their head 
+> up in.
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+We will post a patch to e1000e tomorrow that sets a lock bit that prevents 
+the registers memory mapped by 0:19.0 BAR1 from causing flash write 
+cycles.
 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/marker.c b/kernel/marker.c
-> index 9f76c4a..5d8404f 100644
-> --- a/kernel/marker.c
-> +++ b/kernel/marker.c
-> @@ -28,8 +28,9 @@
->  extern struct marker __start___markers[];
->  extern struct marker __stop___markers[];
->  
-> -/* Set to 1 to enable marker debug output */
-> -static const int marker_debug;
-> +static int marker_debug;
-> +module_param(marker_debug, bool, 0);
-> +MODULE_PARM_DESC(marker_debug, "Set to 1 to enable marker debug output");
->  
->  /*
->   * markers_mutex nests inside module_mutex. Markers mutex protects the builtin
-> 
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+The patches I've just posted don't quite do that yet.
