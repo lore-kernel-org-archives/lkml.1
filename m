@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbYI3ADV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbYI3AJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668AbYI3ADV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 20:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbYI3ADM
+	id S1753657AbYI3AJf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 20:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbYI3AJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 20:03:12 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:62876 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbYI3ADM (ORCPT
+	Mon, 29 Sep 2008 20:09:27 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:47707 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbYI3AJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 20:03:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuYEAKYE4UhMQWq+/2dsb2JhbACBZLslgWc
-Date: Mon, 29 Sep 2008 20:03:07 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH v10 Golden] Unified trace buffer
-Message-ID: <20080930000307.GA2929@Krystal>
-References: <alpine.DEB.1.10.0809252101080.8124@gandalf.stny.rr.com> <48DC406D.1050508@redhat.com> <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809261631420.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809262148070.30105@gandalf.stny.rr.com> <alpine.DEB.1.10.0809270203270.1628@gandalf.stny.rr.com> <alpine.DEB.1.10.0809291202180.5493@gandalf.stny.rr.com> <20080929233539.GA31143@Krystal> <alpine.DEB.1.10.0809292000160.8145@gandalf.stny.rr.com>
-Mime-Version: 1.0
+	Mon, 29 Sep 2008 20:09:27 -0400
+Date: Tue, 30 Sep 2008 01:09:23 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Jeffrey W. Baker" <jwbaker@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Put unused PCI devices in D3
+Message-ID: <20080930000923.GA29775@srcf.ucam.org>
+References: <1222719064.19236.129.camel@squeak.gghcwest.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0809292000160.8145@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:02:17 up 117 days,  4:42,  9 users,  load average: 0.55, 0.75,
-	0.54
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1222719064.19236.129.camel@squeak.gghcwest.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Mon, 29 Sep 2008, Mathieu Desnoyers wrote:
-> 
-> > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > 
-> > You should have a look at mm/slob.c free_slob_page(). I think your page
-> > free will generate a "bad_page" call due to mapping != NULL and mapcount
-> > != 0. I just ran into this in my own code. :)
-> 
-> 
-> Hi Mathieu!
-> 
-> Thanks! I must have been lucky some how not to trigger this :-/
-> 
+On Mon, Sep 29, 2008 at 01:11:03PM -0700, Jeffrey W. Baker wrote:
 
-My guess is that you never free your buffers in your test cases. I don't
-know if it was expected; probably not if your code is built into the
-kernel.
-
-Mathieu
-
-> I'll add an update patch for this.
+> Currently it looks to me from browsing the code that D3 is only used in
+> Linux when the whole machine is headed for S3, and the drivers are asked
+> to suspend.  I think the drivers should be able to enter D3 in other
+> circumstances:
 > 
-> -- Steve
-> 
+> * During pci_unregister_driver ... i.e. on module unload
 
+The fact that Linux isn't using a device doesn't inherently mean that 
+the system isn't using it. For example, the smbus controller will 
+probably still be used by ACPI even if there's no Linux driver loaded.
+
+> * When a network interface is downed
+
+Yes. Drivers are moving towards this model.
+
+> * If the device is a bridge or hub with no downstream device
+
+Potential problems with hotplugging? But sure, this kind of thing is 
+being implemented in USB and SCSI.
+
+> * Whenever userspace requests D3 via sysfs
+
+This functionality was explicitly removed a few years back.
+
+> So, what fundamental problem prevents me from, for example, calling
+> pci_set_power_state() from ohci1394's __exit?
+
+Nothing I'm aware of. It sounds pretty safe in that case. But that would 
+require you to load and unload the driver - better to have the driver 
+loaded the entire time and make sure it does as much runtime power 
+management as possible. I don't know enough about the firewire OHCI 
+hardware, but can you power down most of the chip and still get hotplug 
+events?
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Matthew Garrett | mjg59@srcf.ucam.org
