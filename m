@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYI3Xj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYI3Xj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbYI3Xj0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 19:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbYI3Xi4
+	id S1754538AbYI3Xj5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 19:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbYI3XjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 19:38:56 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39673 "EHLO UNKNOWN"
+	Tue, 30 Sep 2008 19:39:00 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51034 "EHLO UNKNOWN"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753242AbYI3Xiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 19:38:55 -0400
-Date: Wed, 1 Oct 2008 00:25:49 +0200
+	id S1753514AbYI3XjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 19:39:00 -0400
+Date: Wed, 1 Oct 2008 01:19:52 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Nico Schottelius <nico@schottelius.org>
-Subject: Re: [Bug #11220] Screen stays black after resume
-Message-ID: <20080930222545.GA15903@ucw.cz>
-References: <PJz8fNrJNHG.A.65F.wzq1IB@albercik> <7lIhZC4hCxE.A.9lB.P4q1IB@albercik>
+To: carbonated beverage <ramune@net-ronin.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Thinkpad brightness keys kill X on 2.6.26.5
+Message-ID: <20080930231952.GB15903@ucw.cz>
+References: <20080925060244.GA18945@net-ronin.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7lIhZC4hCxE.A.9lB.P4q1IB@albercik>
+In-Reply-To: <20080925060244.GA18945@net-ronin.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-09-21 20:54:09, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Hi!
+
+> I just upgraded from 2.6.25.17 to 2.6.26.5 on my Thinkpad Z61t, and found
+> the brightness keys will cause the X server to die.  When using the
+> brightness up/down keys, the screen will go blank -- Control+Alt+F# will
+> still switch to a different virtual console, but switching back will not
+> restore the video state.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
+> After killing the window manager, I was able to bring up X again without
+> a problem -- but using the brightness keys still causes it to go blank
+> again within X, while the brightness does get changed correctly on the
+> console.
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11220
-> Subject		: Screen stays black after resume
-> Submitter	: Nico Schottelius <nico@schottelius.org>
-> Date		: 2008-07-31 21:05 (53 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121753882422899&w=4
+> There were no kernel messages, but this appeared in the Xorg log:
 
-This is actually three problems in one :-(.
+Yes, I had similar problems... for me it blanked screen on closing
+lid. Problem disappeared after upgrading X...
 
-If you try to suspend with minimum config, will resume still take 30
-seconds?
+> .config attached -- is this a known issue?  In the meantime, I'm starting
+> a bisection to figure out where the problem crops up.
 
-Is the problem still there in 2.6.27-rc7?
+For me CONFIG_ACPI_VIDEO never really worked...
 
-Is there chance to bisect it?
-									Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
