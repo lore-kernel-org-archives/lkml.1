@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbYI3SvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753465AbYI3Svg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753873AbYI3SvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 14:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYI3SvE
+	id S1753465AbYI3Svg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 14:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYI3Sv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 14:51:04 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:25584 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752720AbYI3SvB (ORCPT
+	Tue, 30 Sep 2008 14:51:27 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55216 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753080AbYI3Sv0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 14:51:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=mbjR3pLUKaU5VldgeUuJKYTnXXo+pnw8O1dOkWrpbHRxpOX/YMDKTkfy/HMujveP4a
-         Q6UEBpijuhfOKBlDfdcD/jywLoNDu/BLzrCnJ9iY0qnU29/1Y/MFDNrViC1T3Z8Z+NDN
-         fhqqF+yh3rop7hLlg485hZRcD/HCmtsw5/9dU=
-Message-ID: <f4527be0809301151k66277093gd5303e73df6d834e@mail.gmail.com>
-Date: Tue, 30 Sep 2008 19:51:00 +0100
-From: "Andrew Lyon" <andrew.lyon@gmail.com>
-To: "Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: kernel.org missing .1 incremental patches
+	Tue, 30 Sep 2008 14:51:26 -0400
+Message-ID: <48E274F7.4080803@zytor.com>
+Date: Tue, 30 Sep 2008 11:50:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] x86: mtrr_cleanup prepare to make gran_size to	less
+ 1M
+References: <1222739652-17169-1-git-send-email-yhlu.kernel@gmail.com> <48E1A5E8.3030304@zytor.com> <20080930074552.GA19366@elte.hu> <20080930081141.GA29840@elte.hu>
+In-Reply-To: <20080930081141.GA29840@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>> * H. Peter Anvin <hpa@zytor.com> wrote:
+>>
+>>> Applied series to tip:x86/mtrr, thanks!
+>> tested them and pushed it out into tip/master.
+> 
+> btw., now that we've got wide enough exposure (a kernel release), could 
+> we please flip around the default of CONFIG_MTRR_SANITIZER and make it 
+> default-y? This feature should only produce a worse result if there's a 
+> bug in that code, right?
+> 
 
-The incremental patches at
-http://www.kernel.org/pub/linux/kernel/v2.6/incr/ seem to be missing
-all .1 patches, for example there are patches to take 2.6.25 from
-EXTRAVERSION = .2 to .17 but no patch for .0 > .1, attempting to apply
-patch-2.6.25.1-2 to 2.6.25 will fail on the Makefile as it does not
-have the correct starting version.
+Yes.  Furthermore, right now the code has to be enabled *and* a kernel 
+command line option has to be passed.  I suspect we eventually want to 
+runtime-enable it by default, too.
 
-I assume the patches are generated from a script and there is a bug,
-easily worked around by downloading the full 2.6.25.1 tarball but the
-full incremental set would be very useful for a project I am working
-on.
-
-Thanks
-Andy
+	-hpa
