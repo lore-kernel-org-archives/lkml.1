@@ -1,167 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYI3BL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYI3BOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbYI3BL1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 21:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYI3BLQ
+	id S1754340AbYI3BOi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 21:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYI3BOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 21:11:16 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:50730 "EHLO
-	camus.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754162AbYI3BLO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 21:11:14 -0400
-Subject: Re: [patch] mm: pageable memory allocator (for DRM-GEM?)
-From: Eric Anholt <eric@anholt.net>
-To: Nick Piggin <npiggin@suse.de>
-Cc: keith.packard@intel.com, hugh@veritas.com, hch@infradead.org,
-       airlied@linux.ie, jbarnes@virtuousgeek.org, thomas@tungstengraphics.com,
-       dri-devel@lists.sourceforge.net,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080923091017.GB29718@wotan.suse.de>
-References: <20080923091017.GB29718@wotan.suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Kmgad1jb77/jvWd9ZI7N"
-Date: Mon, 29 Sep 2008 18:10:05 -0700
-Message-Id: <1222737005.21655.61.camel@vonnegut.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 29 Sep 2008 21:14:30 -0400
+Received: from mga01.intel.com ([192.55.52.88]:38128 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752380AbYI3BO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 21:14:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
+   d="scan'208";a="621698817"
+From: "Nakajima, Jun" <jun.nakajima@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "akataria@vmware.com" <akataria@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
+       Daniel Hecht <dhecht@vmware.com>
+Date: Mon, 29 Sep 2008 18:14:15 -0700
+Subject: RE: Use CPUID to communicate with the hypervisor.
+Thread-Topic: Use CPUID to communicate with the hypervisor.
+Thread-Index: AckimC5hOHi9rOljSRSwCpZB3UwTaAAAEZFg
+Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A15726E52E@orsmsx505.amr.corp.intel.com>
+References: <1222472815.29886.43.camel@alok-dev1>
+	 <48E090B6.2080809@redhat.com> <1222710924.30247.21.camel@alok-dev1>
+	 <48E1227B.9040809@redhat.com> <1222717085.30247.44.camel@alok-dev1>
+	 <0B53E02A2965CE4F9ADB38B34501A3A15726E15A@orsmsx505.amr.corp.intel.com>
+	 <48E1437D.7080606@zytor.com>  <48E1486C.3060306@goop.org>
+ <1222733523.30247.91.camel@alok-dev1> <48E17363.7060103@zytor.com>
+ <0B53E02A2965CE4F9ADB38B34501A3A15726E51D@orsmsx505.amr.corp.intel.com>
+ <48E17999.8080403@zytor.com>
+In-Reply-To: <48E17999.8080403@zytor.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m8U1Egdq027381
 
+On 9/29/2008 5:58:01 PM, H. Peter Anvin wrote:
+> Nakajima, Jun wrote:
+> > > >
+> > > We don't have a quorum to create a consensus, since we only have a
+> > > subset of the relevant parties present.
+> >
+> > Who else do we need here?
+> >
+>
+> At least Parallels and Virtual PC/Virtual Server.
+>
+>         -hpa
 
---=-Kmgad1jb77/jvWd9ZI7N
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+That should be doable. Although I'm not sure if their engineers want to discuss in public, we can come back with their ack/nak.
 
-On Tue, 2008-09-23 at 11:10 +0200, Nick Piggin wrote:
-> Hi,
->=20
-> So I promised I would look at this again, because I (and others) have som=
-e
-> issues with exporting shmem_file_setup for DRM-GEM to go off and do thing=
-s
-> with.
->=20
-> The rationale for using shmem seems to be that pageable "objects" are nee=
-ded,
-> and they can't be created by userspace because that would be ugly for som=
-e
-> reason, and/or they are required before userland is running.
->=20
-> I particularly don't like the idea of exposing these vfs objects to rando=
-m
-> drivers because they're likely to get things wrong or become out of synch
-> or unreviewed if things change. I suggested a simple pageable object allo=
-cator
-> that could live in mm and hide the exact details of how shmem / pagecache
-> works. So I've coded that up quickly.
-
-Hiding the details of shmem and the pagecache sounds pretty good to me
-(since we've got it wrong at least twice so far).  Hopefully the result
-isn't even more fragile code on our part.
-
-> Upon actually looking at how "GEM" makes use of its shmem_file_setup filp=
-, I
-> see something strange... it seems that userspace actually gets some kind =
-of
-> descriptor, a descriptor to an object backed by this shmem file (let's ca=
-ll it
-> a "file descriptor"). Anyway, it turns out that userspace sometimes needs=
- to
-> pread, pwrite, and mmap these objects, but unfortunately it has no direct=
- way
-> to do that, due to not having open(2)ed the files directly. So what GEM d=
-oes
-> is to add some ioctls which take the "file descriptor" things, and derive=
-s
-> the shmem file from them, and then calls into the vfs to perform the oper=
-ation.
->=20
-> If my cursory reading is correct, then my allocator won't work so well as=
- a
-> drop in replacement because one isn't allowed to know about the filp behi=
-nd
-> the pageable object. It would also indicate some serious crack smoking by
-> anyone who thinks open(2), pread(2), mmap(2), etc is ugly in comparison..=
-.
-
-I think the explanation for this got covered in other parts of the
-thread, but drm_gem.c comments at the top also cover it.
-
-> So please, nobody who worked on that code is allowed to use ugly as an
-> argument. Technical arguments are fine, so let's try to cover them.
->=20
-> BTW. without knowing much of either the GEM or the SPU subsystems, the
-> GEM problem seems similar to SPU. Did anyone look at that code? Was it ev=
-er
-> considered to make the object allocator be a filesystem? That way you cou=
-ld
-> control the backing store to the objects yourself, those that want pageab=
-le
-> memory could use the following allocator, the ioctls could go away,
-> you could create your own objects if needed before userspace is up...
-
-Yes, we definitely considered a filesystem (it would be nice for
-debugging to be able to look at object contents from a debugger process
-\easily).  However, once we realized that fds just wouldn't work (we're
-allocating objects in a library, so we couldn't just dup2 them up high,
-and we couldn't rely on being able to up the open file limit for the
-process), shmem seemed to already be exactly what we wanted, and we
-assumed that whatever future API changes in the couple of VFS and
-pagecache calls we made would be easier to track than duplicating all of
-shmem.c into our driver.
-
-I'm porting our stuff to test on your API now, and everything looks
-straightforward except for mmap.  For that I seem to have three options:
-
-1) Implement a range allocator on the DRM device and have a hashtable of
-ranges to objects, then have a GEM hook in the mmap handler of the drm
-device when we find we're in one of those ranges.
-
-This was the path that TTM took.  Since we have different paths to
-mmapping objects (direct backing store access, or aperture access,
-though the second isn't in my tree yet), it means we end up having
-multiple offsets to represent different mmap types, or multiplying the
-size of the range and having the top half of the range mean the other
-mmap type.
-
-2) Create a kernel-internal filesystem and get struct files for the
-objects.
-
-This is the method that seemed like the right thing to do in the linux
-style, so I've been trying to figure that part out.  I've been assured
-that libfs makes my job easy here, but as I look at it I'm less sure.
-The sticking point to me is how the page list I get from your API ends
-up getting used by simple_file_* and generic_file_*.  And, in the future
-where the pageable memory allocator is actually pageable while mmapped,
-what does the API I get to consume look like, roughly?
-
-3) Use shmem_file_setup()
-
-This was what we originally went with.  It got messy when we wanted a
-different mmap path, so that we had to do one of 1) or 2) anyway.
-
-Also, I'm looking at a bunch of spu*.c code, and I'm having a hard time
-finding something relevant for us, but maybe I'm not looking in the
-right place.  Can you elaborate on that comment?
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-Kmgad1jb77/jvWd9ZI7N
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEUEABECAAYFAkjhfGwACgkQHUdvYGzw6vd9JACY5RR3xKpIbPINc3tqPzMNn2ey
-SwCeKFkw89FJ1xmlu1OCn4PooBl2LNw=
-=eof9
------END PGP SIGNATURE-----
-
---=-Kmgad1jb77/jvWd9ZI7N--
+             .
+Jun Nakajima | Intel Open Source Technology Center
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
