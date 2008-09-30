@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbYI3Rlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbYI3RmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbYI3Rlh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 13:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbYI3Rl2
+	id S1754086AbYI3RmV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 13:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYI3RmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 13:41:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:61808 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079AbYI3Rl2 (ORCPT
+	Tue, 30 Sep 2008 13:42:09 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:56096 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753071AbYI3RmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 13:41:28 -0400
-Date: Tue, 30 Sep 2008 13:41:23 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH v10 Golden] Unified trace buffer
-In-Reply-To: <1222794043.24384.22.camel@twins>
-Message-ID: <alpine.DEB.1.10.0809301339140.6224@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>  <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>  <alpine.DEB.1.10.0809261631420.21618@gandalf.stny.rr.com>  <alpine.DEB.1.10.0809262148070.30105@gandalf.stny.rr.com> 
- <alpine.DEB.1.10.0809270203270.1628@gandalf.stny.rr.com>  <alpine.DEB.1.10.0809291202180.5493@gandalf.stny.rr.com>  <20080929233539.GA31143@Krystal>  <alpine.DEB.1.10.0809292000160.8145@gandalf.stny.rr.com>  <20080930000307.GA2929@Krystal> 
- <alpine.DEB.1.10.0809292010530.8145@gandalf.stny.rr.com>  <20080930034603.GA13801@Krystal>  <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com>  <20080930092001.69849210@bike.lwn.net> <1222790072.24384.21.camel@twins> 
- <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <1222794043.24384.22.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 30 Sep 2008 13:42:08 -0400
+Date: Tue, 30 Sep 2008 11:41:51 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Monty Montgomery <monty@xiph.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [regression] CD-DA delay needed after insertion (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
+Message-ID: <20080930174151.GB13822@parisc-linux.org>
+References: <1214925487.3316.12.camel@localhost.localdomain> <Pine.LNX.4.64.0809171701330.21347@vixen.sonytel.be> <806dafc20809300117u2806e37bx986b54543862f358@mail.gmail.com> <Pine.LNX.4.64.0809301430370.5818@vixen.sonytel.be> <806dafc20809300548y4af5f10bs8a80caa24f176c79@mail.gmail.com> <806dafc20809300551i7678660aq5e4fd6e8080382a0@mail.gmail.com> <Pine.LNX.4.64.0809301648490.5818@vixen.sonytel.be> <806dafc20809300807h6d38bbeex2f2b4e496b0d155c@mail.gmail.com> <Pine.LNX.4.64.0809301719000.5818@vixen.sonytel.be> <806dafc20809301032n559832et45f3bf5e3f7c495c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <806dafc20809301032n559832et45f3bf5e3f7c495c@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 30 Sep 2008, Peter Zijlstra wrote:
-> > 
-> > Actually, looking at the code, there is no reason I need to keep this in 
-> > the frame buffer itself. I've also encapsulated the accesses to the 
-> > incrementing of the pointers so it would be trivial to try other 
-> > approaches.
-> > 
-> > The problem we had with the big array struct is that we can want large 
-> > buffers and to do that with pointers means we would need to either come up 
-> > with a large allocator or use vmap.
-> > 
-> > But I just realized that I could also just make a link list of page 
-> > pointers and do the exact same thing without having to worry about page 
-> > frames.  Again, the way I coded this up, it is quite trivial to replace 
-> > the handling of the pages with other schemes.
+On Tue, Sep 30, 2008 at 01:32:15PM -0400, Monty Montgomery wrote:
+> On Tue, Sep 30, 2008 at 11:21 AM, Geert Uytterhoeven
+> <Geert.Uytterhoeven@sonycom.com> wrote:
 > 
-> The list_head in the page frame should be available regardless of
-> splice() stuffs.
+> >> (May I ask-- why the hard starting/stopping of the interface?  Power saving?]
+> why the calls to sg_start?
 
-Regardless, there's more info we want to store for each page than the list 
-head.  Especially when we start converting this to lockless. I rather get 
-out of the overlaying of the page frames, its nice to save the space, but 
-really scares the hell out of me. I can just imagine this blowing up if we 
-redo the paging, and I dislike this transparent coupling between the 
-tracer buffer and the pages.
+In this case, sg means scatter/gather, and it's a purely internal
+interface.  It does not start/stop the drive, nor the scsi interface.
 
--- Steve
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
