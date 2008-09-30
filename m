@@ -1,51 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYI3RpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbYI3Rpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbYI3RpW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 13:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYI3RpI
+	id S1754186AbYI3Rpj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 13:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbYI3RpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 13:45:08 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:49499 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753072AbYI3RpH (ORCPT
+	Tue, 30 Sep 2008 13:45:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63004 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbYI3RpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 13:45:07 -0400
-Date: Tue, 30 Sep 2008 11:45:05 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Monty Montgomery <monty@xiph.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [regression] CD-DA delay needed after insertion (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
-Message-ID: <20080930174505.GC13822@parisc-linux.org>
-References: <Pine.LNX.4.64.0809171701330.21347@vixen.sonytel.be> <806dafc20809300117u2806e37bx986b54543862f358@mail.gmail.com> <Pine.LNX.4.64.0809301430370.5818@vixen.sonytel.be> <806dafc20809300548y4af5f10bs8a80caa24f176c79@mail.gmail.com> <806dafc20809300551i7678660aq5e4fd6e8080382a0@mail.gmail.com> <Pine.LNX.4.64.0809301648490.5818@vixen.sonytel.be> <806dafc20809300807h6d38bbeex2f2b4e496b0d155c@mail.gmail.com> <Pine.LNX.4.64.0809301719000.5818@vixen.sonytel.be> <806dafc20809301032n559832et45f3bf5e3f7c495c@mail.gmail.com> <20080930174151.GB13822@parisc-linux.org>
+	Tue, 30 Sep 2008 13:45:09 -0400
+Date: Tue, 30 Sep 2008 13:45:07 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pekka Paalanen <pq@iki.fi>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 6/6] ftrace: take advantage of variable length entries
+In-Reply-To: <20080930203342.5b5ca814@daedalus.pq.iki.fi>
+Message-ID: <alpine.DEB.1.10.0809301341300.6224@gandalf.stny.rr.com>
+References: <20080930030236.230994826@goodmis.org> <20080930030652.883661046@goodmis.org> <20080930203342.5b5ca814@daedalus.pq.iki.fi>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080930174151.GB13822@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 11:41:51AM -0600, Matthew Wilcox wrote:
-> On Tue, Sep 30, 2008 at 01:32:15PM -0400, Monty Montgomery wrote:
-> > On Tue, Sep 30, 2008 at 11:21 AM, Geert Uytterhoeven
-> > <Geert.Uytterhoeven@sonycom.com> wrote:
-> > 
-> > >> (May I ask-- why the hard starting/stopping of the interface?  Power saving?]
-> > why the calls to sg_start?
+
+On Tue, 30 Sep 2008, Pekka Paalanen wrote:
+
+> Hi Steven,
 > 
-> In this case, sg means scatter/gather, and it's a purely internal
-> interface.  It does not start/stop the drive, nor the scsi interface.
+> This is great news. I have some questions below.
 
-That'll teach me to comment before reading the entire thread.  Please
-ignore this mistaken explanation; I thought you were commenting on a
-patch, not on the commands used at the command line.
+Thanks!
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> On Mon, 29 Sep 2008 23:02:42 -0400
+> Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > Now that the underlining ring buffer for ftrace now hold variable length
+> > entries, we can take advantage of this by only storing the size of the
+> > actual event into the buffer. This happens to increase the number of
+> > entries in the buffer dramatically.
+> 
+> I've read this paragraph over and over, and I can't really understand
+> "only storing the size of the ... event". Maybe you are trying to say
+> that now we are not consuming more ring space than the actual size of
+> the event?
+> 
+> Oh! I misunderstood also the last sentence, it's not generating extra
+> entries but there is room for more entries than before.
+
+Yeah, it means that we can now store more entries with the same space.
+
+> >  
+> > @@ -71,10 +89,34 @@ struct stack_entry {
+> >   * ftrace_printk entry:
+> >   */
+> >  struct print_entry {
+> > +	struct trace_entry	ent;
+> >  	unsigned long		ip;
+> >  	char			buf[];
+> >  };
+> >  
+> > +#define TRACE_OLD_SIZE		88
+> 
+> I'm just wondering, does this hold for both 32- and 64-bit kernels?
+> Long type is quite common in the structs. I realize this is going
+> away, so maybe it doesn't even matter.
+
+I believe 88 was what I came up with on x86_64. It was just a size to
+pick out of the blue and has no real meaning. I'm not sure anyone uses it
+but before I hacked it away, I wanted to make sure.
+
+> > -/*
+> > - * The trace field - the most basic unit of tracing. This is what
+> > - * is printed in the end as a single line in the trace output, such as:
+> > - *
+> > - *     bash-15816 [01]   235.197585: idle_cpu <- irq_enter
+> > - */
+> > -struct trace_field {
+> > -	char			cpu;
+> > -	char			flags;
+> > -	char			preempt_count;
+> > -	int			pid;
+> > -	union {
+> > -		struct ftrace_entry		fn;
+> > -		struct ctx_switch_entry		ctx;
+> > -		struct special_entry		special;
+> > -		struct stack_entry		stack;
+> > -		struct print_entry		print;
+> > -		struct mmiotrace_rw		mmiorw;
+> > -		struct mmiotrace_map		mmiomap;
+> > -		struct boot_trace		initcall;
+> > -	};
+> > -};
+> 
+> Finally we get rid of the union :-)
+
+Yeah, this is my favorite part of the patch.
+
+> >  		ret = trace_seq_printf(s,
+> >  			"R %d %lu.%06lu %d 0x%llx 0x%lx 0x%lx %d\n",
+> > @@ -220,14 +222,14 @@ static int mmio_print_rw(struct trace_it
+> >  static int mmio_print_map(struct trace_iterator *iter)
+> >  {
+> >  	struct trace_entry *entry = iter->ent;
+> > -	struct mmiotrace_map *m	= &entry->field.mmiomap;
+> > +	struct mmiotrace_map *m	= (struct mmiotrace_map *)entry;
+> 
+> This is different style than above, missing the struct
+> trace_mmiotrace_map intermediate step. Looks like a bug,
+> since struct mmiotrace_map is not the first field in
+> struct trace_mmiotrace_map.
+
+Crap! yes this is a bug. Thanks for pointing this out.
+
+> > @@ -252,7 +254,8 @@ static int mmio_print_map(struct trace_i
+> >  static int mmio_print_mark(struct trace_iterator *iter)
+> >  {
+> >  	struct trace_entry *entry = iter->ent;
+> > -	const char *msg		= entry->field.print.buf;
+> > +	struct print_entry *print = (struct print_entry *)entry;
+> > +	const char *msg		= print->buf;
+> >  	struct trace_seq *s	= &iter->seq;
+> >  	unsigned long long t	= ns2usecs(iter->ts);
+> >  	unsigned long usec_rem	= do_div(t, 1000000ULL);
+> > @@ -264,7 +267,7 @@ static int mmio_print_mark(struct trace_
+> >  	if (!ret)
+> >  		return 0;
+> >  
+> > -	if (entry->field.flags & TRACE_FLAG_CONT)
+> > +	if (entry->flags & TRACE_FLAG_CONT)
+> >  		trace_seq_print_cont(s, iter);
+> 
+> If we have variable length entries, doesn't that mean that
+> print_entry::buf will always hold the full nil-terminated message,
+> and that we could simply remove all the trace_seq_print_cont()
+> calls?
+> 
+> In fact, TRACE_FLAG_CONT will never be set. I didn't dig up the
+> other patches to verify, but trace_vprintk() isn't setting it
+> anymore.
+
+This patch is bringing us to the stage to get rid of the CONT flag.
+I kept this in just to not break more than I need to ;-)
+
+> > @@ -336,7 +339,7 @@ static void __trace_mmiotrace_map(struct
+> >  				struct mmiotrace_map *map)
+> >  {
+> >  	struct ring_buffer_event *event;
+> > -	struct trace_entry *entry;
+> > +	struct trace_mmiotrace_map *entry;
+> >  	unsigned long irq_flags;
+> >  
+> >  	event	= ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
+> > @@ -344,9 +347,9 @@ static void __trace_mmiotrace_map(struct
+> >  	if (!event)
+> >  		return;
+> >  	entry	= ring_buffer_event_data(event);
+> > -	tracing_generic_entry_update(entry, 0);
+> > -	entry->type			= TRACE_MMIO_MAP;
+> > -	entry->field.mmiomap		= *map;
+> > +	tracing_generic_entry_update(&entry->ent, 0);
+> > +	entry->ent.type			= TRACE_MMIO_MAP;
+> > +	entry->map			= *map;
+> >  	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+> >  
+> >  	trace_wake_up();
+> 
+> On the mmiotrace part, I don't see anything wrong here apart
+> from that one bug.
+
+Thanks, I'll add a patch to my coming queue to handle this.
+
+-- Steve
+
