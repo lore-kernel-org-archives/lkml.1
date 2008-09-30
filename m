@@ -1,78 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbYI3Tyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYI3TzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbYI3Tyb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 15:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYI3TyO
+	id S1754754AbYI3TzB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 15:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYI3Tyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 15:54:14 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:34910 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753820AbYI3TyM (ORCPT
+	Tue, 30 Sep 2008 15:54:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44467 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753071AbYI3Tyo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 15:54:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhUFAHwg4khMQWq+/2dsb2JhbACBZr1XgWk
-Date: Tue, 30 Sep 2008 15:54:09 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Martin Bligh <mbligh@google.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
-       David Wilder <dwilder@us.ibm.com>, Tom Zanussi <zanussi@comcast.net>
-Subject: Re: [RFC PATCH] LTTng relay buffer allocation, read, write
-Message-ID: <20080930195409.GA24169@Krystal>
-References: <20080929155004.GA11029@Krystal> <1222709445.23876.70.camel@twins.programming.kicks-ass.net> <20080929203124.GA23070@Krystal> <alpine.DEB.1.10.0809291643570.8145@gandalf.stny.rr.com> <33307c790809301022q2821ecc7iabf41eb513707e0c@mail.gmail.com> <33307c790809301023v1b0755fbsab1bbfa9bfaad58@mail.gmail.com> <20080930181436.GA19690@Krystal> <alpine.DEB.1.10.0809301421330.6224@gandalf.stny.rr.com> <20080930183531.GA20670@Krystal> <33307c790809301244x40218be6of61b53104b8d7da3@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <33307c790809301244x40218be6of61b53104b8d7da3@mail.gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:48:36 up 118 days, 29 min, 10 users,  load average: 0.40,
-	0.57, 0.50
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 30 Sep 2008 15:54:44 -0400
+Date: Tue, 30 Sep 2008 12:51:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Adam Belay <abelay@mit.edu>, Avuton Olrich <avuton@gmail.com>,
+       Karl Bellve <karl.bellve@umassmed.edu>, Willem Riede <wriede@riede.org>,
+       Matthew Hall <mhall@mhcomputing.net>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch 2/2] PNP: don't check disabled PCI BARs for conflicts in
+ quirk_system_pci_resources()
+In-Reply-To: <20080930193819.GA29860@elte.hu>
+Message-ID: <alpine.LFD.2.00.0809301244290.3262@nehalem.linux-foundation.org>
+References: <200809290957.59813.bjorn.helgaas@hp.com> <alpine.LFD.1.10.0809290912060.3265@nehalem.linux-foundation.org> <48E11EFA.8010402@keyaccess.nl> <alpine.LFD.2.00.0809291211330.3389@nehalem.linux-foundation.org> <48E1EF0E.8030006@keyaccess.nl>
+ <alpine.LFD.2.00.0809300741320.3389@nehalem.linux-foundation.org> <48E24C6F.3030903@keyaccess.nl> <alpine.LFD.2.00.0809300904530.3389@nehalem.linux-foundation.org> <alpine.LFD.2.00.0809301001280.3389@nehalem.linux-foundation.org>
+ <alpine.LFD.2.00.0809301015210.4651@nehalem.linux-foundation.org> <20080930193819.GA29860@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Martin Bligh (mbligh@google.com) wrote:
-> > You are actually using them to put redundant information that could be
-> > encoded differently and thus save 4 bits per event records, more or less
-> > what will be needed by most tracers (15 IDs, 1 reserved for an extended
-> > ID field).
+
+
+On Tue, 30 Sep 2008, Ingo Molnar wrote:
 > 
-> You have 15 event types that are useful with no data payload at all?
+> incidentally, i've been talking to Arjan about this recently in context 
+> of the CONFIG_FASTBOOT feature. Because, as a side-effect, in the long 
+> run, once the dependencies between initcalls fan out in a more natural 
+> way, with explicit initcall ordering we'll also be able to boot a bit 
+> faster and a bit more parallel.
+
+Hell no.
+
+We do not want any implicit parallelism in the initcalls. That way lies 
+madness.
+
+The probe functions that explicitly know that they are slow (like USB 
+detection and/or other individual drivers that have timeouts) should put 
+themselves in the background. We should _not_ use the dependency chain to 
+do so automatically, because for most cases drivers are totally 
+independent, but we still want a _reliable_  and _repeatable_ ordering.
+
+Which means that I will not accept stuff that makes for a parallel bootup 
+as a general initcall notion. I want things like network devices to show 
+up in the same order for the same kernel, thank you very much - even if 
+there is absolutely _zero_ ordering constraints between two independent 
+network drivers.
+
+Anything else will inevitably cause just totally random and undebuggable 
+problems.
+
+> i think the topological ordering should not be just an extension of the 
+> current hardcoded initcall levels, but it should be symbol space based: 
+> i.e. an initcall should depend not on some kind of artificial enum, but 
+> it should depend on _another initcall_. (a list of initcalls more 
+> generally)
+
+Yes, it should be explicit.
+
+However, I don't agree with the notion of having initcalls point to other 
+initcalls. One big _idea_ of initcalls is that you can put them anywhere 
+in the source code, and that CONFIG_XYZ variables will automatically run 
+them or not depending on whether the code was compiled in. Having 
+something like:
+
+> so instead of the current hardcoded levels:
 > 
-
-I am not saying anything about the actual number of events with 0 bytes
-payload I actually have in my own instrumentation, if this is what you
-mean. I am just saying that it leaves this room available for such
-events.
-
-Even if there is a 32 bits payload associated with those events, the
-fact that we can encode the event ID in the 32 bits header will bring
-those events from 96 bits (due to 32 bits alignment) down to 64 bits.
-
-> > So the fact that you use them does not mean they are really required,
-> > and I don't think such duplicated information actually makes things more
-> > solid. Maybe just more obscure ?
+>   core_initcall(sysctl_init);
 > 
-> This is all over 1 bit of information, right? Since you need at least 1 for
-> the timestamp stuff.
+> we could have natural constructs like:
+> 
+>   initcall_depends_on(sysctl_init, securityfs_init);
+>   initcall_depends_on(sock_init, sysctl_init)
 
-4 bits of information could be added to the 32-bits header if we allow
-tracers to register their first 15 event IDs in those 4 bits.
+would be a TOTAL DISASTER, because if you do that, then you are 
+essentially back to the insane situation where people need to know what 
+other parts are enabled.
 
-But well... let's keep that for v2. ;)
+So no. No "one call depends on another" crap.
 
-Mathieu
+But I think we could add a separate notion of a dependancy point, and have 
+a setup where we describe "initcall X needs to happen before point A" and 
+"initcall Z needs to happen after point A".
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+And then we can create a separate set of these dependency points, so that 
+X and Y don't have to know about each other, they just have to have some 
+knowledge about some common synchronization point - one that exists 
+regardless of whether X or Y are even compiled in!
+
+			Linus
