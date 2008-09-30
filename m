@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbYI3NZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbYI3N0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbYI3NZx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 09:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYI3NZp
+	id S1753928AbYI3N0k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 09:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYI3N0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 09:25:45 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:37609 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbYI3NZo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 09:25:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dzNjmMvmwT/YvCH4aKkVrXX1a/4KzHCwyGDEFhmuSnXEK5HCLqCpTFW1nQ+BzrhXzi
-         lK/PQXm06uFiNcioGkzIDsuEz9vEfZbhyQ1M5w9YQAzDt0qq0vQvAVPaT7P8ZHTO8U72
-         P318mhvkmzzObIOz4/HZFRqn+eKjlXh63le9o=
-Message-ID: <c62985530809300625p6c178c0ew6b9619998c3d5011@mail.gmail.com>
-Date: Tue, 30 Sep 2008 15:25:42 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH V2 -tip 3/4] Tracing/ftrace: Adapt mmiotrace to the new type of print_line
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Pekka Paalanen" <pq@iki.fi>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0809300844270.1984@gandalf.stny.rr.com>
+	Tue, 30 Sep 2008 09:26:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59278 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751767AbYI3N0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 09:26:30 -0400
+Date: Tue, 30 Sep 2008 15:26:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com,
+       a.p.zijlstra@chello.nl
+Subject: Re: [PATCH][resubmit] sched: minor optimizations in wake_affine
+	and select_task_rq_fair
+Message-ID: <20080930132609.GA19233@elte.hu>
+References: <20080929100227.GA21129@amitarora.in.ibm.com> <20080930114539.GB14977@amitarora.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48E11E1E.7010001@gmail.com>
-	 <20080929221934.260306dd@daedalus.pq.iki.fi>
-	 <20080930085241.GB10374@elte.hu>
-	 <c62985530809300539o2842c14fk16708abaf69c4e2f@mail.gmail.com>
-	 <alpine.DEB.1.10.0809300844270.1984@gandalf.stny.rr.com>
+In-Reply-To: <20080930114539.GB14977@amitarora.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/30 Steven Rostedt <rostedt@goodmis.org>:
->
-> OK, I'll nuke the ring_buffer_lock :-/
->
-> The trace_pipe calls that and then calls print_trace_line which will
-> eventually lock the buffer again. This is a bug on my part. I'll fix that
-> today.
->
-> Thanks,
 
-Strange, I can't see any case where print_trace_line could call the
-ring_buffer_lock.
-Hmm, I will see in your patch.
+* Amit K. Arora <aarora@linux.vnet.ibm.com> wrote:
 
-Ingo, I just saw one damage from the merging, trace_empty() returns
-TRACE_TYPE_HANDLED. The type is wrong, it should return 1.
-It's not urgent since the value is the same. Should I send a patch for
-such a small error?
+> As mentioned in http://lkml.org/lkml/2008/9/30/141 , this is the new
+> patch.
+> 
+> sched: Minor optimizations in wake_affine and select_task_rq_fair
+> 
+> This patch does following:
+> o Removes unused variable and argument "rq".
+> o Optimizes one of the "if" conditions in wake_affine() - i.e.  if
+>   "balanced" is true, we need not do rest of the calculations in the
+>   condition.
+> o If this cpu is same as the previous cpu (on which woken up task
+>   was running when it went to sleep), no need to call wake_affine at all.
+> 
+> Signed-off-by: Amit K Arora <aarora@linux.vnet.ibm.com>
+> CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> CC: Ingo Molnar <mingo@elte.hu>
 
-Thanks.
+applied to tip/sched/devel, thanks Amit!
+
+	Ingo
