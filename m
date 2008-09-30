@@ -1,60 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbYI3LpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbYI3Lqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753148AbYI3LpL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 07:45:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYI3Lo6
+	id S1753462AbYI3Lqk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 07:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYI3Lqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 07:44:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51948 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751792AbYI3Lo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 07:44:58 -0400
-Date: Tue, 30 Sep 2008 13:44:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/2] x86: split out dumpstack code from traps_xx.c
-Message-ID: <20080930114437.GF21367@elte.hu>
-References: <1222773135-1073-1-git-send-email-heukelum@fastmail.fm>
+	Tue, 30 Sep 2008 07:46:32 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:43339 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751958AbYI3Lqb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 07:46:31 -0400
+Date: Tue, 30 Sep 2008 17:15:39 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: vatsa@linux.vnet.ibm.com, a.p.zijlstra@chello.nl, mingo@elte.hu,
+       aarora@linux.vnet.ibm.com
+Subject: [PATCH][resubmit] sched: minor optimizations in wake_affine and
+	select_task_rq_fair
+Message-ID: <20080930114539.GB14977@amitarora.in.ibm.com>
+References: <20080929100227.GA21129@amitarora.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1222773135-1073-1-git-send-email-heukelum@fastmail.fm>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0004]
+In-Reply-To: <20080929100227.GA21129@amitarora.in.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+As mentioned in http://lkml.org/lkml/2008/9/30/141 , this is the new
+patch.
 
-* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
 
-> Patches are against the current master branch of the tip tree. The 
-> defconfigs compile fine and I ran some simple configs within qemu.
+sched: Minor optimizations in wake_affine and select_task_rq_fair
 
-applied to tip/x86/traps:
+This patch does following:
+o Removes unused variable and argument "rq".
+o Optimizes one of the "if" conditions in wake_affine() - i.e.  if
+  "balanced" is true, we need not do rest of the calculations in the
+  condition.
+o If this cpu is same as the previous cpu (on which woken up task
+  was running when it went to sleep), no need to call wake_affine at all.
 
- # 9bb2b4f: x86_64: split out dumpstack code from traps_64.c
- # f616942: i386: split out dumpstack code from traps_32.c
+Signed-off-by: Amit K Arora <aarora@linux.vnet.ibm.com>
+CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched_fair.c |   16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
-there were some interactions with other branches:
-
- 054efa5: Merge branch 'tracing/nmisafe' into x86/traps
- 9ecb7cf: Merge branch 'kmemcheck' into x86/traps
- 8955b63: Merge branch 'core/signal' into x86/traps
- ff1b7a8: Merge branch 'x86/signal' into x86/traps
- 76b22d8: Merge commit 'v2.6.27-rc8' into x86/traps
- b58c936: Merge branch 'x86/core' into x86/traps
-
-I hope i sorted them out right.
-
-	Ingo
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1143,7 +1143,7 @@ static inline unsigned long effective_lo
+ #endif
+ 
+ static int
+-wake_affine(struct rq *rq, struct sched_domain *this_sd, struct rq *this_rq,
++wake_affine(struct sched_domain *this_sd, struct rq *this_rq,
+ 	    struct task_struct *p, int prev_cpu, int this_cpu, int sync,
+ 	    int idx, unsigned long load, unsigned long this_load,
+ 	    unsigned int imbalance)
+@@ -1191,8 +1191,8 @@ wake_affine(struct rq *rq, struct sched_
+ 	schedstat_inc(p, se.nr_wakeups_affine_attempts);
+ 	tl_per_task = cpu_avg_load_per_task(this_cpu);
+ 
+-	if ((tl <= load && tl + target_load(prev_cpu, idx) <= tl_per_task) ||
+-			balanced) {
++	if (balanced || (tl <= load && tl + target_load(prev_cpu, idx) <=
++			tl_per_task)) {
+ 		/*
+ 		 * This domain has SD_WAKE_AFFINE and
+ 		 * p is cache cold in this domain, and
+@@ -1211,16 +1211,17 @@ static int select_task_rq_fair(struct ta
+ 	struct sched_domain *sd, *this_sd = NULL;
+ 	int prev_cpu, this_cpu, new_cpu;
+ 	unsigned long load, this_load;
+-	struct rq *rq, *this_rq;
++	struct rq *this_rq;
+ 	unsigned int imbalance;
+ 	int idx;
+ 
+ 	prev_cpu	= task_cpu(p);
+-	rq		= task_rq(p);
+ 	this_cpu	= smp_processor_id();
+ 	this_rq		= cpu_rq(this_cpu);
+ 	new_cpu		= prev_cpu;
+ 
++	if (prev_cpu == this_cpu)
++		goto out;
+ 	/*
+ 	 * 'this_sd' is the first domain that both
+ 	 * this_cpu and prev_cpu are present in:
+@@ -1248,13 +1249,10 @@ static int select_task_rq_fair(struct ta
+ 	load = source_load(prev_cpu, idx);
+ 	this_load = target_load(this_cpu, idx);
+ 
+-	if (wake_affine(rq, this_sd, this_rq, p, prev_cpu, this_cpu, sync, idx,
++	if (wake_affine(this_sd, this_rq, p, prev_cpu, this_cpu, sync, idx,
+ 				     load, this_load, imbalance))
+ 		return this_cpu;
+ 
+-	if (prev_cpu == this_cpu)
+-		goto out;
+-
+ 	/*
+ 	 * Start passive balancing when half the imbalance_pct
+ 	 * limit is reached.
