@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbYI3HLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbYI3HPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbYI3HLs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 03:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbYI3HL3
+	id S1753274AbYI3HPn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 03:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYI3HPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 03:11:29 -0400
-Received: from styx.suse.cz ([82.119.242.94]:48674 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752339AbYI3HL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 03:11:28 -0400
-Date: Tue, 30 Sep 2008 09:11:18 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Dave Airlie <airlied@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jesse.brandeburg@intel.com
-Subject: Re: Linux 2.6.27-rc8
-In-Reply-To: <alpine.LFD.2.00.0809291909360.3389@nehalem.linux-foundation.org>
-Message-ID: <alpine.LNX.1.10.0809300906550.4022@jikos.suse.cz>
-References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org>  <Pine.LNX.4.64.0809300125460.2307@twin.jikos.cz>  <alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org> <21d7e9970809291859s5bff81e3ue0f63402c2ad422d@mail.gmail.com>
- <alpine.LFD.2.00.0809291909360.3389@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 30 Sep 2008 03:15:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32780 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751622AbYI3HPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 03:15:34 -0400
+Date: Tue, 30 Sep 2008 09:15:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] markers: let marker_debug as module parameter
+Message-ID: <20080930071520.GA2838@elte.hu>
+References: <48E19CE8.8070006@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48E19CE8.8070006@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008, Linus Torvalds wrote:
 
-> > If it is X related then its both a kernel + X server issue, the e1000e 
-> > driver opens the barn door, the X server drives the horses through it.
-> Are you sure? There was a mandriva report abou NVM corruption on an e100 
-> too (that one apparently just caused PXE failure, the networking worked 
-> fine).
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-That is very probably completely separate issue, and shoudl have been 
-fixed already by 78566fecb.
+> if we want to enable marker debug output, we have to modify
+> the code and remake/reinstall the kernel in current code.
+> 
+> this patch enable marker_debug to be set when kernel start.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/marker.c b/kernel/marker.c
+> index 9f76c4a..5d8404f 100644
+> --- a/kernel/marker.c
+> +++ b/kernel/marker.c
+> @@ -28,8 +28,9 @@
+>  extern struct marker __start___markers[];
+>  extern struct marker __stop___markers[];
+>  
+> -/* Set to 1 to enable marker debug output */
+> -static const int marker_debug;
+> +static int marker_debug;
+> +module_param(marker_debug, bool, 0);
+> +MODULE_PARM_DESC(marker_debug, "Set to 1 to enable marker debug output");
 
-> The Ubuntu people are some of the crazier ones (should I be surprised?), 
-> but that one also has Ben Collins claiming they use the same e1000e 
-> driver for the 2.6.26/27 kernels (from intels sf.net project). That may 
-> be bogus, but if true it would indicate that it's possibly not so 
-> kernel-related, or at least not so e1000e-driver-related.
+hm, in tip/master we already have ftrace_printk(), which allows such 
+debug output to any of the active tracers. That is a far more useful way 
+of debugging such things. See:
 
-I think that not many peeople are suspecting bug in e1000e directly. 
-Rather a combination of X bug, kernel allowing X to do bad things (for 
-example the missing check in drivers/pci/pci-sysfs.c:pci_mmap_resource() 
-looks particularly suspicious) and a "bug-friendly" hardware behavior.
+  http://people.redhat.com/mingo/tip.git/README
 
--- 
-Jiri Kosina
-SUSE Labs
+and:
+
+  http://redhat.com/~mingo/sched-devel.git/readme-tracer.txt
+
+note how much cleaner and more usable it will also become: no silly 
+module flags or recompilation to activate this debug output, and no 
+debug clutter in the syslog.
+
+if you enable tracing in the 'nop' tracer then only the 
+ftrace_printk()'s will be printed, no other trace entries.
+
+	Ingo
