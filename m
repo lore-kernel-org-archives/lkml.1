@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYI3XTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYI3X3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047AbYI3XTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 19:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYI3XTL
+	id S1753958AbYI3X3u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 19:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYI3X3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 19:19:11 -0400
-Received: from nebensachen.de ([195.34.83.29]:45524 "EHLO mail.nebensachen.de"
+	Tue, 30 Sep 2008 19:29:41 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:37485 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbYI3XTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 19:19:10 -0400
-X-Hashcash: 1:20:080930:jens.axboe@oracle.com::W4WI7vDEc3Y+K9kx:00000000000000000000000000000000000000007Nta
-X-Hashcash: 1:20:080930:linux-kernel@vger.kernel.org::5lpUa7+RcZdixgeU:0000000000000000000000000000000001564
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Block: Fix blk_start_queueing() so as not to process a stopped queue
-Date: Wed, 01 Oct 2008 01:19:01 +0200
-Message-ID: <87wsgtb4t6.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	id S1751983AbYI3X3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 19:29:41 -0400
+Date: Tue, 30 Sep 2008 16:29:32 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Nish Aravamudan <nish.aravamudan@gmail.com>
+Subject: Re: [PATCH] mm: show node to memory section relationship with
+	symlinks in sysfs
+Message-ID: <20080930232932.GB7123@us.ibm.com>
+References: <20080929200509.GC21255@us.ibm.com> <20080930163324.44A7.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080930163324.44A7.E1E9C6FF@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Especially since blk_start_queueing() is used as the unplug_fn() callback
-by the cfq scheduler, we'd better make it behave like a proper unplug
-function. That is to say, return immediately if the queue is stopped.
+On Tue, Sep 30, 2008 at 05:06:08PM +0900, Yasunori Goto wrote:
+> 
+> > +#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+> > +int register_mem_sect_under_node(struct memory_block *mem_blk)
+>         :
+> 
+> I think this patch is convenience even when memory hotplug is disabled.
+> CONFIG_SPARSEMEM seems better than CONFIG_MEMORY_HOTPLUG_SPARSE.
 
-Cc: stable <stable@kernel.org>
-Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
----
-This is not a recent regression, so it might not be accepted as an rc
-fix. However, it most definitely is a bug and should go into a stable
-release. Applies to 2.6.27-rc8.
+Yes, this would be nice but unfortunately the presence of the
+memory section directories that are referenced by the symlinks
+also depend on CONFIG_MEMORY_HOTPLUG_SPARSE being enabled.  Removal
+of the memory hotplug dependency for the code in drivers/base/memory.c
+will require more than a simple CONFIG_MEMORY_HOTPLUG_SPARSE to
+CONFIG_SPARSEMEM dependency change.  I am still looking at this.
 
- block/blk-core.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+Thanks for the review and testing.
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 2cba5ef..f9a0bfb 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -888,9 +888,11 @@ EXPORT_SYMBOL(blk_get_request);
-  */
- void blk_start_queueing(struct request_queue *q)
- {
--	if (!blk_queue_plugged(q))
-+	if (!blk_queue_plugged(q)) {
-+		if (unlikely(blk_queue_stopped(q)))
-+			return;
- 		q->request_fn(q);
--	else
-+	} else
- 		__generic_unplug_device(q);
- }
- EXPORT_SYMBOL(blk_start_queueing);
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
