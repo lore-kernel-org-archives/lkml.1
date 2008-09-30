@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967AbYI3DJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbYI3DOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751967AbYI3DJJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 23:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbYI3DHH
+	id S1753527AbYI3DOS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 23:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbYI3DOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 23:07:07 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53645 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbYI3DG5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 23:06:57 -0400
-Message-Id: <20080930030652.298596016@goodmis.org>
-References: <20080930030236.230994826@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 29 Sep 2008 23:02:39 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/6] ring_buffer: add paranoid check for buffer page
-Content-Disposition: inline; filename=ring-buffer-paranoid-buffer-page-check.patch
+	Mon, 29 Sep 2008 23:14:08 -0400
+Received: from mga01.intel.com ([192.55.52.88]:27836 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751726AbYI3DOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 23:14:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
+   d="scan'208";a="385852656"
+From: "Nakajima, Jun" <jun.nakajima@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "akataria@vmware.com" <akataria@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zach Amsden <zach@vmware.com>,
+       Daniel Hecht <dhecht@vmware.com>
+Date: Mon, 29 Sep 2008 20:14:01 -0700
+Subject: RE: Use CPUID to communicate with the hypervisor.
+Thread-Topic: Use CPUID to communicate with the hypervisor.
+Thread-Index: Ackio7/Q0ft17vQQT4iRQzqkhL5OmAABUGrQ
+Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A15726E5B1@orsmsx505.amr.corp.intel.com>
+References: <1222472815.29886.43.camel@alok-dev1>
+	 <48E090B6.2080809@redhat.com> <1222710924.30247.21.camel@alok-dev1>
+	 <48E1227B.9040809@redhat.com> <1222717085.30247.44.camel@alok-dev1>
+	 <0B53E02A2965CE4F9ADB38B34501A3A15726E15A@orsmsx505.amr.corp.intel.com>
+	 <48E1437D.7080606@zytor.com>  <48E1486C.3060306@goop.org>
+ <1222733523.30247.91.camel@alok-dev1> <48E17363.7060103@zytor.com>
+ <0B53E02A2965CE4F9ADB38B34501A3A15726E51D@orsmsx505.amr.corp.intel.com>
+ <48E17999.8080403@zytor.com>
+ <0B53E02A2965CE4F9ADB38B34501A3A15726E52E@orsmsx505.amr.corp.intel.com>
+ <48E18D21.8040305@zytor.com>
+In-Reply-To: <48E18D21.8040305@zytor.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m8U3ENdq028540
 
-If for some strange reason the buffer_page gets bigger, or the page struct
-gets smaller, I want to know this ASAP.  The best way is to not let the
-kernel compile.
+On 9/29/2008 7:21:21 PM, H. Peter Anvin wrote:
+> Nakajima, Jun wrote:
+> > On 9/29/2008 5:58:01 PM, H. Peter Anvin wrote:
+> > > Nakajima, Jun wrote:
+> > > > > We don't have a quorum to create a consensus, since we only
+> > > > > have a subset of the relevant parties present.
+> > > > Who else do we need here?
+> > > >
+> > > At least Parallels and Virtual PC/Virtual Server.
+> > >
+> > >         -hpa
+> >
+> > That should be doable. Although I'm not sure if their engineers want
+> > to discuss in public, we can come back with their ack/nak.
+> >
+>
+> OK, if so we should write up a formal proposal.
 
-This patch adds code to test the size of the struct buffer_page against the
-page struct and will cause compile issues if the buffer_page ever gets bigger
-than the page struct.
+I assume that the scope is limited to virtualization of Linux.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/ring_buffer.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-Index: linux-tip.git/kernel/trace/ring_buffer.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/ring_buffer.c	2008-09-29 17:31:05.000000000 -0400
-+++ linux-tip.git/kernel/trace/ring_buffer.c	2008-09-29 19:59:24.000000000 -0400
-@@ -289,6 +289,12 @@ static void rb_free_cpu_buffer(struct ri
- 	kfree(cpu_buffer);
- }
- 
-+/*
-+ * Causes compile errors if the struct buffer_page gets bigger
-+ * than the struct page.
-+ */
-+extern int ring_buffer_page_too_big(void);
-+
- /**
-  * ring_buffer_alloc - allocate a new ring_buffer
-  * @size: the size in bytes that is needed.
-@@ -305,6 +311,11 @@ struct ring_buffer *ring_buffer_alloc(un
- 	int bsize;
- 	int cpu;
- 
-+	/* Paranoid! Optimizes out when all is well */
-+	if (sizeof(struct buffer_page) > sizeof(struct page))
-+		ring_buffer_page_too_big();
-+
-+
- 	/* keep it in its own cache line */
- 	buffer = kzalloc(ALIGN(sizeof(*buffer), cache_line_size()),
- 			 GFP_KERNEL);
-
--- 
+>
+>         -hpa
+             .
+Jun Nakajima | Intel Open Source Technology Center
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
