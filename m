@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbYI3To2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754408AbYI3To5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754279AbYI3To2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 15:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbYI3ToS
+	id S1754408AbYI3To5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 15:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYI3Toq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 15:44:18 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:11632 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754069AbYI3ToR (ORCPT
+	Tue, 30 Sep 2008 15:44:46 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:55837 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507AbYI3Top (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 15:44:17 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=RMFMo2mSzILM3zMKxvP6isAGTbRQX7NHscnUSobmlv4C4uVWTMxXXqVpKhUCRIVg6
-	LWL+QcEUkLUGPG+seS4tw==
-Message-ID: <33307c790809301244x40218be6of61b53104b8d7da3@mail.gmail.com>
-Date: Tue, 30 Sep 2008 12:44:08 -0700
-From: "Martin Bligh" <mbligh@google.com>
-To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [RFC PATCH] LTTng relay buffer allocation, read, write
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       prasad@linux.vnet.ibm.com,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, hch@lst.de,
-       "David Wilder" <dwilder@us.ibm.com>,
-       "Tom Zanussi" <zanussi@comcast.net>
-In-Reply-To: <20080930183531.GA20670@Krystal>
+	Tue, 30 Sep 2008 15:44:45 -0400
+Date: Tue, 30 Sep 2008 22:44:01 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, joro@8bytes.org,
+       amit.shah@redhat.com, linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       iommu@lists.linux-foundation.org, dwmw2@infradead.org, mingo@redhat.com
+Subject: Re: [PATCH 9/9] x86/iommu: use dma_ops_list in get_dma_ops
+Message-ID: <20080930194401.GC20341@il.ibm.com>
+References: <20080928191333.GC26563@8bytes.org> <20080929093044.GB6931@il.ibm.com> <20080929093652.GQ27426@8bytes.org> <20080929221640X.fujita.tomonori@lab.ntt.co.jp> <20080929133311.GK27928@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080927134012.GA11930@Krystal> <20080929155004.GA11029@Krystal>
-	 <1222709445.23876.70.camel@twins.programming.kicks-ass.net>
-	 <20080929203124.GA23070@Krystal>
-	 <alpine.DEB.1.10.0809291643570.8145@gandalf.stny.rr.com>
-	 <33307c790809301022q2821ecc7iabf41eb513707e0c@mail.gmail.com>
-	 <33307c790809301023v1b0755fbsab1bbfa9bfaad58@mail.gmail.com>
-	 <20080930181436.GA19690@Krystal>
-	 <alpine.DEB.1.10.0809301421330.6224@gandalf.stny.rr.com>
-	 <20080930183531.GA20670@Krystal>
+In-Reply-To: <20080929133311.GK27928@amd.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You are actually using them to put redundant information that could be
-> encoded differently and thus save 4 bits per event records, more or less
-> what will be needed by most tracers (15 IDs, 1 reserved for an extended
-> ID field).
+On Mon, Sep 29, 2008 at 03:33:11PM +0200, Joerg Roedel wrote:
 
-You have 15 event types that are useful with no data payload at all?
+> > Nobody cares about the performance of dma_alloc_coherent. Only the
+> > performance of map_single/map_sg matters.
+> >
+> > I'm not sure how expensive the hypercalls are, but they are more
+> > expensive than bounce buffering coping lots of data for every
+> > I/Os?
+> 
+> I don't think that we can avoid bounce buffering into the guests at
+> all (with and without my idea of a paravirtualized IOMMU) when we
+> want to handle dma_masks and requests that cross guest physical
+> pages properly.
 
-> So the fact that you use them does not mean they are really required,
-> and I don't think such duplicated information actually makes things more
-> solid. Maybe just more obscure ?
+It might be possible to have a per-device slow or fast path, where the
+fast path is for devices which have no DMA limitations (high-end
+devices generally don't) and the slow path is for devices which do.
 
-This is all over 1 bit of information, right? Since you need at least 1 for
-the timestamp stuff.
+> With mapping/unmapping through hypercalls we add the world-switch
+> overhead to the copy-overhead. We can't avoid this when we have no
+> hardware support at all. But already with older IOMMUs like Calgary
+> and GART we can at least avoid the world-switch. And since, for
+> example, every 64 bit capable AMD processor has a GART we can make
+> use of it.
+
+It should be possible to reduce the number and overhead of hypercalls
+to the point where their cost is immaterial. I think that's
+fundamentally a better approach.
+
+Cheers,
+Muli
+-- 
+The First Workshop on I/O Virtualization (WIOV '08)
+Dec 2008, San Diego, CA, http://www.usenix.org/wiov08/
+                      xxx
+SYSTOR 2009---The Israeli Experimental Systems Conference
+http://www.haifa.il.ibm.com/conferences/systor2009/
