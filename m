@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbYI3OLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbYI3OSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbYI3OLS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 10:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYI3OLH
+	id S1754092AbYI3OSG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 10:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYI3ORz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 10:11:07 -0400
-Received: from styx.suse.cz ([82.119.242.94]:38254 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753522AbYI3OLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 10:11:06 -0400
-Date: Tue, 30 Sep 2008 16:11:04 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jesse.brandeburg@intel.com
-Subject: Re: Linux 2.6.27-rc8
-In-Reply-To: <m3d4ilk9n5.fsf@maximus.localdomain>
-Message-ID: <alpine.LNX.1.10.0809301610300.4022@jikos.suse.cz>
-References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org> <Pine.LNX.4.64.0809300125460.2307@twin.jikos.cz> <alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org> <alpine.LNX.1.10.0809300859590.4022@jikos.suse.cz>
- <m3d4ilk9n5.fsf@maximus.localdomain>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 30 Sep 2008 10:17:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50085 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752941AbYI3ORy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 10:17:54 -0400
+Message-ID: <48E234B8.4050009@kernel.org>
+Date: Tue, 30 Sep 2008 23:16:24 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Robert Krawitz <rlk@alum.mit.edu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Another one for fixup-storage
+References: <4897809E.8070902@alum.mit.edu> <48E0824B.4010408@kernel.org> <200809291141.m8TBfxiU004269@dsl092-065-009.bos1.dsl.speakeasy.net>
+In-Reply-To: <200809291141.m8TBfxiU004269@dsl092-065-009.bos1.dsl.speakeasy.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 30 Sep 2008 14:17:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Sep 2008, Krzysztof Halasa wrote:
+Robert Krawitz wrote:
+>    Date: Mon, 29 Sep 2008 16:22:51 +0900
+>    From: Tejun Heo <tj@kernel.org>
+> 
+>    Robert Krawitz wrote:
+>    > This is for a Dell Inspiron E1705/9400.  I'm using a non-OEM disk (a
+>    > Hitachi 320 GB drive).
+>    > 
+>    > Note that matching on "MP061" doesn't work -- it needs to be "MP061*"
+>    > due to the way dmidecode seems to return the data (with a bunch of
+>    > spaces after the tag).  Hence I've attached the data rather than merely
+>    > 
+>    > I've only had this thing a month or so and already had over 70,000
+>    > unload cycles.  Ick.
+> 
+>    Can you please attach the result of "smartctl -a" output?
+> 
+> # smartctl -a /dev/sda
+> smartctl 5.39 2008-05-08 21:56 [x86_64-unknown-linux-gnu] (local build)
+> Copyright (C) 2002-8 by Bruce Allen, http://smartmontools.sourceforge.net
 
-> > So far it seems to be that you need 1) something close to xorg 7.4 and 
-> > 2) 2.6.27-rcX kernel to trigger it. Not every system having e1000e is 
-> > affected.
-> And this e1000e must be ICH*, right? I.e. not a separate e1000e
-> chip/card?
-
-So far all the affected systems I am aware of were ICH.
+Thanks.  And how much does the load cycle count increase per hour
+without any adustment?
 
 -- 
-Jiri Kosina
-SUSE Labs
+tejun
