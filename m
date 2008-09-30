@@ -1,85 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbYI3H4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbYI3H6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753387AbYI3H4S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 03:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYI3H4H
+	id S1753515AbYI3H6A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 03:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYI3H5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 03:56:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35149 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751358AbYI3H4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 03:56:05 -0400
-Date: Tue, 30 Sep 2008 09:55:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: Typo bug [Re: Linux 2.6.27-rc8]
-Message-ID: <20080930075553.GB20241@elte.hu>
-References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org> <20080930094346.307ef1e5@werewolf.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080930094346.307ef1e5@werewolf.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 30 Sep 2008 03:57:50 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:20798 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750701AbYI3H5t convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 03:57:49 -0400
+Subject: Re: What is in ubifs-2.6.git
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: linux-fsdevel@vger.kernel.org
+Cc: linux-mtd@lists.infradead.org, Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
+References: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 30 Sep 2008 10:56:23 +0300
+Message-Id: <1222761383.8051.5.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 30 Sep 2008 07:56:36.0563 (UTC) FILETIME=[101DBA30:01C922D2]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* J.A. Magall�n <jamagallon@ono.com> wrote:
+On Tue, 2008-09-30 at 12:18 +0300, Artem Bityutskiy wrote:
+> addresses. For example, if user-space asks to read page zero of a
+> file, and page 0-4 are in consecutive flash addressed, UBIFS reads
+> pages 0-4 and populates them to the Page Cache.
 
-> Hi....
-> 
-> On Mon, 29 Sep 2008 15:39:09 -0700 (PDT), Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > 
-> > So yet another week, another -rc. This one should be the last one: we're 
-> > certainly not running out of regressions, but at the same time, at some 
-> > point I just have to pick some point, and on the whole the regressions 
-> > don't look _too_ scary. And -rc8 obviously does fix more of them.
-> > 
-> > Most of the changes since -rc7 are pretty small, and there aren't even a 
-> > whole lot of them. The shortlog (appended) is just a couple of pages, and 
-> > the diffstat is even smaller, but since the dirstat is a dense overview, 
-> > I'll just put that here instead:
-> > 
-> 
-> 
-> Dealing with my Aspire One setup, I found this (so obvious I don't 
-> send a patch:)
-> 
-> 
-> arch/x86/kernel/cpu/mtrr/main.c:
-> 
-> static int __init disable_mtrr_cleanup_setup(char *str)
-> {
->     if (enable_mtrr_cleanup != -1)
->         enable_mtrr_cleanup = 0;
->     return 0;
-> }
-> early_param("disable_mtrr_cleanup", disable_mtrr_cleanup_setup);
-> 
-> static int __init enable_mtrr_cleanup_setup(char *str)
-> {
->     if (enable_mtrr_cleanup != -1)
->         enable_mtrr_cleanup = 1;
->     return 0;
-> }
-> early_param("enble_mtrr_cleanup", enable_mtrr_cleanup_setup);
->              ^^^^^^
-> 
-> Nice ;)
+Actually this example is a little wrong, because UBIFS starts
+doing bulk-read only if few pages were read sequentially before.
+So, user would have to read pages 0-3 sequentially, then UBIFS
+would start doing bulk-read for this inode.
 
-heh. Could you send a patch with a changelog please?
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-	Ingo
