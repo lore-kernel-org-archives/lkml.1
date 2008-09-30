@@ -1,45 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYI3ReY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbYI3Rej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbYI3ReY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 13:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYI3ReL
+	id S1754085AbYI3Rej (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 13:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbYI3ReV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 13:34:11 -0400
-Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:35825 "EHLO
-	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752016AbYI3ReK (ORCPT
+	Tue, 30 Sep 2008 13:34:21 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59914 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882AbYI3ReT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 13:34:10 -0400
-Date: Tue, 30 Sep 2008 13:34:05 -0400
-Message-Id: <200809301734.m8UHY5lg027393@dsl092-065-009.bos1.dsl.speakeasy.net>
-From: Robert Krawitz <rlk@alum.mit.edu>
-To: Tejun Heo <tj@kernel.org>
-CC: linux-kernel@vger.kernel.org
-In-reply-to: <48E25D6D.30504@kernel.org> (tj@kernel.org)
-Subject: Re: Another one for fixup-storage
-References: <4897809E.8070902@alum.mit.edu> <48E25D6D.30504@kernel.org>
+	Tue, 30 Sep 2008 13:34:19 -0400
+Subject: Re: [PATCH v10 Golden] Unified trace buffer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+In-Reply-To: <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>
+	 <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>
+	 <alpine.DEB.1.10.0809261631420.21618@gandalf.stny.rr.com>
+	 <alpine.DEB.1.10.0809262148070.30105@gandalf.stny.rr.com>
+	 <alpine.DEB.1.10.0809270203270.1628@gandalf.stny.rr.com>
+	 <alpine.DEB.1.10.0809291202180.5493@gandalf.stny.rr.com>
+	 <20080929233539.GA31143@Krystal>
+	 <alpine.DEB.1.10.0809292000160.8145@gandalf.stny.rr.com>
+	 <20080930000307.GA2929@Krystal>
+	 <alpine.DEB.1.10.0809292010530.8145@gandalf.stny.rr.com>
+	 <20080930034603.GA13801@Krystal>
+	 <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com>
+	 <20080930092001.69849210@bike.lwn.net> <1222790072.24384.21.camel@twins>
+	 <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org>
+	 <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Tue, 30 Sep 2008 19:00:43 +0200
+Message-Id: <1222794043.24384.22.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-   Date: Wed, 01 Oct 2008 02:10:05 +0900
-   From: Tejun Heo <tj@kernel.org>
+On Tue, 2008-09-30 at 12:48 -0400, Steven Rostedt wrote:
+> On Tue, 30 Sep 2008, Linus Torvalds wrote:
+> > 
+> > Trace buffers are different, though. Do people realize that doing the 
+> > overloading means that you never EVER can use those buffers for anything 
+> > else? Do people realize that it means that splice() and friends are out of 
+> > the question?
+> > 
+> > > Trouble is, looking at it I see no easy way out,
+> > 
+> > Quite frankly, we could just put it at the head of the page itself. Having 
+> > a "whole page" for the trace data is not possible anyway, since the trace 
+> > header itself will always eat 8 bytes.
+> > 
+> > And I do think it would potentially be a better model. Or at least safer.
+> 
+> Actually, looking at the code, there is no reason I need to keep this in 
+> the frame buffer itself. I've also encapsulated the accesses to the 
+> incrementing of the pointers so it would be trivial to try other 
+> approaches.
+> 
+> The problem we had with the big array struct is that we can want large 
+> buffers and to do that with pointers means we would need to either come up 
+> with a large allocator or use vmap.
+> 
+> But I just realized that I could also just make a link list of page 
+> pointers and do the exact same thing without having to worry about page 
+> frames.  Again, the way I coded this up, it is quite trivial to replace 
+> the handling of the pages with other schemes.
 
-   Robert Krawitz wrote:
-   > This is for a Dell Inspiron E1705/9400.  I'm using a non-OEM disk (a
-   > Hitachi 320 GB drive).
+The list_head in the page frame should be available regardless of
+splice() stuffs.
 
-   Just one more question.  What do you mean by non-OEM?  It didn't come
-   with the listed harddrive?
-
-Correct.  I purchased and installed the hard drive after I bought the
-laptop.
-
-Anyway, here's my smartctl output.  My laptop was mostly fairly idle
-during these 2 10-minute periods, although I was doing a few things
-(an OOo document, for example).  It's a bit more than twice a minute:
-
-# while true ; do smartctl -a /dev/sda |grep 193; sleep 600; done
-193 Load_Cycle_Count        0x0012   093   093   000    Old_age   Always       -       72102
-193 Load_Cycle_Count        0x0012   093   093   000    Old_age   Always       -       72124
-193 Load_Cycle_Count        0x0012   093   093   000    Old_age   Always       -       72148
