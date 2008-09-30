@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbYI3SOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbYI3SOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753703AbYI3SOi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 14:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbYI3SO3
+	id S1754076AbYI3SOw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 14:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbYI3SOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 14:14:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58407 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752588AbYI3SO2 (ORCPT
+	Tue, 30 Sep 2008 14:14:40 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:58236 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753711AbYI3SOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 14:14:28 -0400
-Date: Tue, 30 Sep 2008 11:13:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Adam Belay <abelay@mit.edu>,
-       Avuton Olrich <avuton@gmail.com>,
-       Karl Bellve <karl.bellve@umassmed.edu>, Willem Riede <wriede@riede.org>,
-       Matthew Hall <mhall@mhcomputing.net>
-Subject: Re: [patch 2/2] PNP: don't check disabled PCI BARs for conflicts in
- quirk_system_pci_resources()
-In-Reply-To: <alpine.LFD.2.00.0809301052200.3436@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0809301107500.3262@nehalem.linux-foundation.org>
-References: <200809290953.56565.bjorn.helgaas@hp.com> <200809290957.59813.bjorn.helgaas@hp.com> <alpine.LFD.1.10.0809290912060.3265@nehalem.linux-foundation.org> <48E11EFA.8010402@keyaccess.nl> <alpine.LFD.2.00.0809291211330.3389@nehalem.linux-foundation.org>
- <48E1EF0E.8030006@keyaccess.nl> <alpine.LFD.2.00.0809300741320.3389@nehalem.linux-foundation.org> <48E24C6F.3030903@keyaccess.nl> <alpine.LFD.2.00.0809300904530.3389@nehalem.linux-foundation.org>
- <alpine.LFD.2.00.0809301052200.3436@nehalem.linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Sep 2008 14:14:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhUFAJMI4khMQWq+/2dsb2JhbACBZL4hgWk
+Date: Tue, 30 Sep 2008 14:14:36 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Martin Bligh <mbligh@google.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, od@suse.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>, Tom Zanussi <zanussi@comcast.net>
+Subject: Re: [RFC PATCH] LTTng relay buffer allocation, read, write
+Message-ID: <20080930181436.GA19690@Krystal>
+References: <20080927134012.GA11930@Krystal> <1222535419.16700.300.camel@lappy.programming.kicks-ass.net> <20080929155004.GA11029@Krystal> <1222709445.23876.70.camel@twins.programming.kicks-ass.net> <20080929203124.GA23070@Krystal> <alpine.DEB.1.10.0809291643570.8145@gandalf.stny.rr.com> <33307c790809301022q2821ecc7iabf41eb513707e0c@mail.gmail.com> <33307c790809301023v1b0755fbsab1bbfa9bfaad58@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <33307c790809301023v1b0755fbsab1bbfa9bfaad58@mail.gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:13:15 up 117 days, 22:53,  8 users,  load average: 0.53, 0.48,
+	0.63
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 30 Sep 2008, Linus Torvalds wrote:
+* Martin Bligh (mbligh@google.com) wrote:
+> On Tue, Sep 30, 2008 at 10:22 AM, Martin Bligh <mbligh@google.com> wrote:
+> >> A 4 byte dataless payload is useless anyway.
+> >
+> > Not at all convinced that's true - we used it for lots of things.
+> > Start and end of irq event is one frequent example.
+> >
+> > Also, in a compact mode, we can record start and end of
+> > syscalls like this (without parameters).
 > 
-> Hmm?  Bjorn? Everything that is true about "pnp_system_init" should be 
-> equally true abote pnpacpi_init and pnpbios_init, no?
+> Ah, sorry, maybe I misread this. No data with no event ids, etc
+> is fairly useless. 4 bytes data including space to record event ids is OK.
 
-Side note: unlike the more radical "move all arch driver initcalls 
-earlier", this one actually works for me. But it does cause 
-pnp_system_init() to actually run before pnpacpi_init and pnpbios_init, 
-due to the link order within PnP. That seems ok, since the system/acpi/pnp 
-drivers should all be just different versions of PnP drivers, but I 
-thought I'd mention it. Maybe there is some PnP internal reason why 
-pnp_system_init should run after the pnp_acpi/bios_init functions.
+In Steven's scheme, the event IDs in the 4 bytes are reserved for
+(useless) internal use ;) They can therefore not be used for specific
+tracer event IDs, which I think is a misuse of the precious bits
+otherwise available to store really useful event IDs.
 
-(And if so, then just changing the order in drivers/pnp/Makefile would fix 
-it up again).
+Mathieu
 
-Bjorn, is there any reason why this isn't the right thign to do?
-
-Rene - I have this suspicion that just doing this part should already fix 
-your issues with _no_ other patch, since now anything PnP does is after 
-all the PCI setup code anyway. So does your sound card (or whatever it 
-was) work by just doing the subsys_initcall -> fs_initcall change in PnP?
-
-		Linus
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
