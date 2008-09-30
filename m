@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbYI3UFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbYI3UGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbYI3UFi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 16:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYI3UF0
+	id S1754424AbYI3UGM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 16:06:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYI3UF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 16:05:26 -0400
-Received: from nebensachen.de ([195.34.83.29]:46912 "EHLO mail.nebensachen.de"
+	Tue, 30 Sep 2008 16:05:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39667 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752267AbYI3UFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 16:05:25 -0400
-X-Hashcash: 1:20:080930:linux-kernel@vger.kernel.org::RzuZhU8bGKWj+sIk:000000000000000000000000000000000CW43
-From: Elias Oltmanns <eo@nebensachen.de>
-To: linux-kernel@vger.kernel.org
-Subject: Rounding conventions for jiffies_to_msecs / msecs_to_jiffies
-Date: Tue, 30 Sep 2008 22:05:14 +0200
-Message-ID: <8763od9z7p.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
-MIME-Version: 1.0
+	id S1751731AbYI3UFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 16:05:55 -0400
+Date: Tue, 30 Sep 2008 16:01:12 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, od@suse.com,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>, Tom Zanussi <zanussi@comcast.net>
+Subject: Re: [RFC PATCH] LTTng relay buffer allocation, read, write
+Message-ID: <20080930200112.GD27822@redhat.com>
+References: <20080929155004.GA11029@Krystal> <1222709445.23876.70.camel@twins.programming.kicks-ass.net> <20080929203124.GA23070@Krystal> <alpine.DEB.1.10.0809291643570.8145@gandalf.stny.rr.com> <33307c790809301022q2821ecc7iabf41eb513707e0c@mail.gmail.com> <33307c790809301023v1b0755fbsab1bbfa9bfaad58@mail.gmail.com> <20080930181436.GA19690@Krystal> <alpine.DEB.1.10.0809301421330.6224@gandalf.stny.rr.com> <20080930183531.GA20670@Krystal> <alpine.DEB.1.10.0809301541120.7993@gandalf.stny.rr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0809301541120.7993@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi -
 
-since I don't really understand the algorithm in jiffies_to_msecs() for
-HZ values that are not divisors or multiples of 1000 right now, I'd like
-to ask if somebody can tell me something about it. In particular, I'd
-like to know what we can assume wrt rounding, i.e. always round up /
-down, etc. In fact, I'm most interested in the case where the argument
-of jiffies_to_msecs() is close to zero. Can I safely assume that a
-non-zero argument will *always* result in a non-zero return value
-whatever HZ may be?
+On Tue, Sep 30, 2008 at 03:43:45PM -0400, Steven Rostedt wrote:
+> [...]
+> On Tue, 30 Sep 2008, Mathieu Desnoyers wrote:
+> > 
+> > You are actually using them to put redundant information that could be
+> > encoded differently and thus save 4 bits per event records, more or less
+> > what will be needed by most tracers (15 IDs, 1 reserved for an extended
+> > ID field).
+> 
+> I really like the idea of keeping the tracer event ids out of the ring 
+> buffer logic.
 
-Even though I'm mostly concerned with jiffies_to_msecs() at the moment,
-I am still intersted in the same questions wrt msecs_to_jiffies(), so
-please don't shrink from an elaborate explanation ;-).
+That's fine for a ring buffer that only ever contains data from one
+event source.  How do you imagine multiplexing working, where one
+wants to grep a single debugfs file that contains data from different
+event sources?  Punt to another layer?
 
-Thanks for all efforts in advance,
-
-Elias
+- FChE
