@@ -1,127 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYI3DWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbYI3DWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbYI3DWA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 23:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbYI3DTv
+	id S1753303AbYI3DWY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 23:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYI3DTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 23:19:51 -0400
-Received: from mga14.intel.com ([143.182.124.37]:59015 "EHLO mga14.intel.com"
+	Mon, 29 Sep 2008 23:19:55 -0400
+Received: from mga09.intel.com ([134.134.136.24]:62011 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752992AbYI3DTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 23:19:49 -0400
+	id S1753195AbYI3DTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 23:19:54 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
-   d="scan'208";a="53008360"
+   d="scan'208";a="342013746"
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: [RFC PATCH 06/12] e1000e: drop stats lock
+Subject: [RFC PATCH 07/12] e1000e: debug contention on NVM SWFLAG
 To: linux-kernel@vger.kernel.org
 Cc: linux-netdev@vger.kernel.org, kkeil@suse.de, agospoda@redhat.com,
        arjan@linux.intel.com, david.graham@intel.com, bruce.w.allan@intel.com,
        jkosina@suse.cz, john.ronciak@intel.com, tglx@linutronix.de,
        chris.jones@canonical.com, tim.gardner@intel.com, airlied@gmail.com,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Date: Mon, 29 Sep 2008 20:19:47 -0700
-Message-ID: <20080930031947.22950.34259.stgit@jbrandeb-bw.jf.intel.com>
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Mon, 29 Sep 2008 20:19:52 -0700
+Message-ID: <20080930031952.22950.45228.stgit@jbrandeb-bw.jf.intel.com>
 In-Reply-To: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
 References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
 User-Agent: StGIT/0.14.3.163.g06f9.dirty
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Sep 2008 03:19:47.0872 (UTC) FILETIME=[64909A00:01C922AB]
+X-OriginalArrivalTime: 30 Sep 2008 03:19:52.0996 (UTC) FILETIME=[679E7640:01C922AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the stats lock is left over from e1000, e1000e no longer
-has the adjust tbi stats function that required the addition
-of the stats lock to begin with.
+From: Thomas Gleixner <tglx@linutronix.de>
 
-adding a mutex to acquire_swflag helped catch this one too.
+This patch adds a mutex to the e1000e driver that would help
+catch any collisions of two e1000e threads accessing hardware
+at the same time.
 
+description and patch updated by Jesse
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-CC: Thomas Gleixner <tglx@linutronix.de>
 ---
 
- drivers/net/e1000e/e1000.h  |    1 -
- drivers/net/e1000e/netdev.c |   18 ------------------
- 2 files changed, 0 insertions(+), 19 deletions(-)
+ drivers/net/e1000e/ich8lan.c |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
-index ed9d974..f80e43a 100644
---- a/drivers/net/e1000e/e1000.h
-+++ b/drivers/net/e1000e/e1000.h
-@@ -257,7 +257,6 @@ struct e1000_adapter {
- 	struct net_device *netdev;
- 	struct pci_dev *pdev;
- 	struct net_device_stats net_stats;
--	spinlock_t stats_lock;      /* prevent concurrent stats updates */
- 
- 	/* structs defined in e1000_hw.h */
- 	struct e1000_hw hw;
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index 44ce120..9aa3c79 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -2600,8 +2600,6 @@ static int __devinit e1000_sw_init(struct e1000_adapter *adapter)
- 	/* Explicitly disable IRQ since the NIC can be in any state. */
- 	e1000_irq_disable(adapter);
- 
--	spin_lock_init(&adapter->stats_lock);
--
- 	set_bit(__E1000_DOWN, &adapter->state);
+diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
+index a076079..57c6d2f 100644
+--- a/drivers/net/e1000e/ich8lan.c
++++ b/drivers/net/e1000e/ich8lan.c
+@@ -366,6 +366,9 @@ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
  	return 0;
+ }
  
-@@ -2953,7 +2951,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct pci_dev *pdev = adapter->pdev;
--	unsigned long irq_flags;
++static DEFINE_MUTEX(nvm_mutex);
++static pid_t nvm_owner = -1;
++
+ /**
+  *  e1000_acquire_swflag_ich8lan - Acquire software control flag
+  *  @hw: pointer to the HW structure
+@@ -379,6 +382,15 @@ static s32 e1000_acquire_swflag_ich8lan(struct e1000_hw *hw)
+ 	u32 extcnf_ctrl;
+ 	u32 timeout = PHY_CFG_TIMEOUT;
  
- 	/*
- 	 * Prevent stats update while adapter is being reset, or if the pci
-@@ -2964,14 +2961,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
- 	if (pci_channel_offline(pdev))
- 		return;
++	WARN_ON(preempt_count());
++
++	if (!mutex_trylock(&nvm_mutex)) {
++		WARN(1, KERN_ERR "e1000e mutex contention. Owned by pid %d\n",
++		     nvm_owner);
++		mutex_lock(&nvm_mutex);
++	}
++	nvm_owner = current->pid;
++
+ 	while (timeout) {
+ 		extcnf_ctrl = er32(EXTCNF_CTRL);
+ 		extcnf_ctrl |= E1000_EXTCNF_CTRL_SWFLAG;
+@@ -393,6 +405,8 @@ static s32 e1000_acquire_swflag_ich8lan(struct e1000_hw *hw)
  
--	spin_lock_irqsave(&adapter->stats_lock, irq_flags);
--
--	/*
--	 * these counters are modified from e1000_adjust_tbi_stats,
--	 * called from the interrupt context, so they must only
--	 * be written while holding adapter->stats_lock
--	 */
--
- 	adapter->stats.crcerrs += er32(CRCERRS);
- 	adapter->stats.gprc += er32(GPRC);
- 	adapter->stats.gorc += er32(GORCL);
-@@ -3046,8 +3035,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
- 	adapter->stats.mgptc += er32(MGTPTC);
- 	adapter->stats.mgprc += er32(MGTPRC);
- 	adapter->stats.mgpdc += er32(MGTPDC);
--
--	spin_unlock_irqrestore(&adapter->stats_lock, irq_flags);
+ 	if (!timeout) {
+ 		hw_dbg(hw, "FW or HW has locked the resource for too long.\n");
++		nvm_owner = -1;
++		mutex_unlock(&nvm_mutex);
+ 		return -E1000_ERR_CONFIG;
+ 	}
+ 
+@@ -414,6 +428,9 @@ static void e1000_release_swflag_ich8lan(struct e1000_hw *hw)
+ 	extcnf_ctrl = er32(EXTCNF_CTRL);
+ 	extcnf_ctrl &= ~E1000_EXTCNF_CTRL_SWFLAG;
+ 	ew32(EXTCNF_CTRL, extcnf_ctrl);
++
++	nvm_owner = -1;
++	mutex_unlock(&nvm_mutex);
  }
  
  /**
-@@ -3059,9 +3046,6 @@ static void e1000_phy_read_status(struct e1000_adapter *adapter)
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct e1000_phy_regs *phy = &adapter->phy_regs;
- 	int ret_val;
--	unsigned long irq_flags;
--
--	spin_lock_irqsave(&adapter->stats_lock, irq_flags);
- 
- 	if ((er32(STATUS) & E1000_STATUS_LU) &&
- 	    (adapter->hw.phy.media_type == e1000_media_type_copper)) {
-@@ -3092,8 +3076,6 @@ static void e1000_phy_read_status(struct e1000_adapter *adapter)
- 		phy->stat1000 = 0;
- 		phy->estatus = (ESTATUS_1000_TFULL | ESTATUS_1000_THALF);
- 	}
--
--	spin_unlock_irqrestore(&adapter->stats_lock, irq_flags);
- }
- 
- static void e1000_print_link_info(struct e1000_adapter *adapter)
 
