@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713AbYI3LkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbYI3LpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753713AbYI3LkY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 07:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYI3LkK
+	id S1753148AbYI3LpL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 07:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYI3Lo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 07:40:10 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:58276 "EHLO e2.ny.us.ibm.com"
+	Tue, 30 Sep 2008 07:44:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51948 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752374AbYI3LkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 07:40:08 -0400
-Date: Tue, 30 Sep 2008 17:10:00 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org,
-       vatsa@linux.vnet.ibm.com, a.p.zijlstra@chello.nl
-Subject: Re: [PATCH] sched: minor optimizations in wake_affine and
-	select_task_rq_fair
-Message-ID: <20080930114000.GA14977@amitarora.in.ibm.com>
-References: <20080929100227.GA21129@amitarora.in.ibm.com> <48E0FDC5.1080500@nortel.com> <20080930070158.GA12465@elte.hu>
+	id S1751792AbYI3Lo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 07:44:58 -0400
+Date: Tue, 30 Sep 2008 13:44:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/2] x86: split out dumpstack code from traps_xx.c
+Message-ID: <20080930114437.GF21367@elte.hu>
+References: <1222773135-1073-1-git-send-email-heukelum@fastmail.fm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080930070158.GA12465@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1222773135-1073-1-git-send-email-heukelum@fastmail.fm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0004]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 09:01:58AM +0200, Ingo Molnar wrote:
-> 
-> * Chris Friesen <cfriesen@nortel.com> wrote:
-> 
-> > Amit K. Arora wrote:
-> >> Hello,
-> >>
-> >> Please consider this patch. It makes a few minor changes to
-> >> sched_fair.c.
-> >>
-> >>
-> >> sched: Minor optimizations in wake_affine and select_task_rq_fair
-> >>
-> >> This patch does following:
-> >> o Reduces the number of arguments to wake_affine().
-> >
-> > At what point is it cheaper to pass items as args rather than 
-> > recalculating them?  If reducing the number of args is desirable, what 
-> > about removing the "this_cpu" and "prev_cpu" args and recalculating 
-> > them in wake_affine()?
-> 
-> it's usually not worth it, especially if it leads to duplicated 
-> calculations (and code) like:
-> 
-> +       unsigned int imbalance = 100 + (this_sd->imbalance_pct - 100) / 2;
-> 
-> gcc will optimize it away because it's all static functions, but still.
 
-Ok. I will resubmit the patch with other suggested changes only. It
-won't try to reduce wake_affine's arguments (besides the first argument
-"rq" which is not being used at all). 
+* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
 
-Regards,
-Amit Arora
-> 
-> 'size kernel/sched.o' should be a good guideline: if the .o's text 
-> section gets smaller due to a patch it usually gets faster as well.
-> 
-> 	Ingo
+> Patches are against the current master branch of the tip tree. The 
+> defconfigs compile fine and I ran some simple configs within qemu.
+
+applied to tip/x86/traps:
+
+ # 9bb2b4f: x86_64: split out dumpstack code from traps_64.c
+ # f616942: i386: split out dumpstack code from traps_32.c
+
+there were some interactions with other branches:
+
+ 054efa5: Merge branch 'tracing/nmisafe' into x86/traps
+ 9ecb7cf: Merge branch 'kmemcheck' into x86/traps
+ 8955b63: Merge branch 'core/signal' into x86/traps
+ ff1b7a8: Merge branch 'x86/signal' into x86/traps
+ 76b22d8: Merge commit 'v2.6.27-rc8' into x86/traps
+ b58c936: Merge branch 'x86/core' into x86/traps
+
+I hope i sorted them out right.
+
+	Ingo
