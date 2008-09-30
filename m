@@ -1,103 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbYI3Hnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbYI3HoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753089AbYI3Hnp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 03:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYI3Hl7
+	id S1753772AbYI3HoB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 03:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbYI3HmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 03:41:59 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:41737 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751958AbYI3Hlx (ORCPT
+	Tue, 30 Sep 2008 03:42:01 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:58929 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbYI3Hl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 03:41:53 -0400
+	Tue, 30 Sep 2008 03:41:56 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>, linux-kernel@vger.kernel.org,
        linux-mtd@lists.infradead.org
-Subject: [PATCH] UBIFS: check buffer length when scanning for LPT nodes
-Date: Tue, 30 Sep 2008 12:19:18 +0300
-Message-Id: <1222766358-21886-23-git-send-email-dedekind@infradead.org>
+Subject: [PATCH] UBIFS: use an IS_ERR test rather than a NULL test
+Date: Tue, 30 Sep 2008 12:19:00 +0300
+Message-Id: <1222766358-21886-5-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
 References: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 30 Sep 2008 07:41:38.0053 (UTC) FILETIME=[F88FFB50:01C922CF]
+X-OriginalArrivalTime: 30 Sep 2008 07:41:36.0631 (UTC) FILETIME=[F7B70070:01C922CF]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+From: Julien Brunel <brunel@diku.dk>
 
-'is_a_node()' function was reading from a buffer before
-checking the buffer length, resulting in an OOPS as
-follows:
+In case of error, the function kthread_create returns an ERR pointer,
+but never returns a NULL pointer. So a NULL test that comes before an
+IS_ERR test should be deleted.
 
-BUG: unable to handle kernel paging request at f8f74002
-IP: [<f8f9783f>] :ubifs:ubifs_unpack_bits+0xca/0x233
-*pde = 19e95067 *pte = 00000000
-Oops: 0000 [#1] PREEMPT SMP
-Modules linked in: ubifs ubi mtdchar bio2mtd mtd brd video output
-[last unloaded: mtd]
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-Pid: 6414, comm: integck Not tainted (2.6.27-rc6ubifs34 #23)
-EIP: 0060:[<f8f9783f>] EFLAGS: 00010246 CPU: 0
-EIP is at ubifs_unpack_bits+0xca/0x233 [ubifs]
-EAX: 00000000 EBX: f6090630 ECX: d9badcfc EDX: 00000000
-ESI: 00000004 EDI: f8f74002 EBP: d9badcec ESP: d9badcc0
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process integck (pid: 6414, ti=d9bac000 task=f727dae0 task.ti=d9bac000)
-Stack: 00000006 f7306240 00000002 00000000 d9badcfc d9badd00 0000001c 00000000
-       f6090630 f6090630 f8f74000 d9badd10 f8fa1cc9 00000000 f8f74002 00000000
-       f8f74002 f60fe128 f6090630 f8f74000 d9badd68 f8fa1e46 00000000 0001e000
-Call Trace:
- [<f8fa1cc9>] ? is_a_node+0x30/0x90 [ubifs]
- [<f8fa1e46>] ? dbg_check_ltab+0x11d/0x5bd [ubifs]
- [<f8fa388f>] ? ubifs_lpt_start_commit+0x42/0xed3 [ubifs]
- [<c038e76a>] ? mutex_unlock+0x8/0xa
- [<f8f9625d>] ? ubifs_tnc_start_commit+0x1c8/0xedb [ubifs]
- [<f8f8d90b>] ? do_commit+0x187/0x523 [ubifs]
- [<c038e76a>] ? mutex_unlock+0x8/0xa
- [<f8f7ca17>] ? bud_wbuf_callback+0x22/0x28 [ubifs]
- [<f8f8dd1d>] ? ubifs_run_commit+0x76/0xc0 [ubifs]
- [<f8f8032c>] ? ubifs_sync_fs+0xd2/0xe6 [ubifs]
- [<c01a2e97>] ? vfs_quota_sync+0x0/0x17e
- [<c01a5ba6>] ? quota_sync_sb+0x26/0xbb
- [<c01a2e97>] ? vfs_quota_sync+0x0/0x17e
- [<c01a5c5d>] ? sync_dquots+0x22/0x12c
- [<c0173d1b>] ? __fsync_super+0x19/0x68
- [<c0173d75>] ? fsync_super+0xb/0x19
- [<c0174065>] ? generic_shutdown_super+0x22/0xe7
- [<c01a31fc>] ? vfs_quota_off+0x0/0x5fd
- [<f8f7cf4d>] ? ubifs_kill_sb+0x31/0x35 [ubifs]
- [<c01741f9>] ? deactivate_super+0x5e/0x71
- [<c0187610>] ? mntput_no_expire+0x82/0xe4
- [<c0187905>] ? sys_umount+0x4c/0x2f6
- [<c0187bc8>] ? sys_oldumount+0x19/0x1b
- [<c0103b71>] ? sysenter_do_call+0x12/0x25
- =======================
-Code: c1 f8 03 8d 04 07 8b 4d e8 89 01 8b 45 e4 89 10 89 d8 89 f1 d3 e8 85 c0
-      74 07 29 d6 83 fe 20 75 2a 89 d8 83 c4 20 5b 5e 5f 5d
-EIP: [<f8f9783f>] ubifs_unpack_bits+0xca/0x233 [ubifs] SS:ESP 0068:d9badcc0
----[ end trace 1f02572436518c13 ]---
+// <smpl>
+@match_bad_null_test@
+expression x, E;
+statement S1,S2;
+@@
+x = kthread_create(...)
+... when != x = E
+* if (x == NULL)
+S1 else S2
+// </smpl>
 
-Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Signed-off-by: Julien Brunel <brunel@diku.dk>
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ---
- fs/ubifs/lpt_commit.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ fs/ubifs/super.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/fs/ubifs/lpt_commit.c b/fs/ubifs/lpt_commit.c
-index 8546865..eed5a00 100644
---- a/fs/ubifs/lpt_commit.c
-+++ b/fs/ubifs/lpt_commit.c
-@@ -1089,6 +1089,8 @@ static int is_a_node(struct ubifs_info *c, uint8_t *buf, int len)
- 	int pos = 0, node_type, node_len;
- 	uint16_t crc, calc_crc;
+diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
+index 667c72d..d87b0cf 100644
+--- a/fs/ubifs/super.c
++++ b/fs/ubifs/super.c
+@@ -1032,8 +1032,6 @@ static int mount_ubifs(struct ubifs_info *c)
  
-+	if (len < UBIFS_LPT_CRC_BYTES + (UBIFS_LPT_TYPE_BITS + 7) / 8)
-+		return 0;
- 	node_type = ubifs_unpack_bits(&addr, &pos, UBIFS_LPT_TYPE_BITS);
- 	if (node_type == UBIFS_LPT_NOT_A_NODE)
- 		return 0;
+ 		/* Create background thread */
+ 		c->bgt = kthread_create(ubifs_bg_thread, c, c->bgt_name);
+-		if (!c->bgt)
+-			c->bgt = ERR_PTR(-EINVAL);
+ 		if (IS_ERR(c->bgt)) {
+ 			err = PTR_ERR(c->bgt);
+ 			c->bgt = NULL;
+@@ -1347,8 +1345,6 @@ static int ubifs_remount_rw(struct ubifs_info *c)
+ 
+ 	/* Create background thread */
+ 	c->bgt = kthread_create(ubifs_bg_thread, c, c->bgt_name);
+-	if (!c->bgt)
+-		c->bgt = ERR_PTR(-EINVAL);
+ 	if (IS_ERR(c->bgt)) {
+ 		err = PTR_ERR(c->bgt);
+ 		c->bgt = NULL;
 -- 
 1.5.4.1
 
