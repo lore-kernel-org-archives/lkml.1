@@ -1,94 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbYI3R5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbYI3SC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753503AbYI3R5j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 13:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYI3R5a
+	id S1753549AbYI3SC1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 14:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYI3SCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 13:57:30 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43543 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752390AbYI3R53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 13:57:29 -0400
-Date: Tue, 30 Sep 2008 13:56:36 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH v10 Golden] Unified trace buffer
-In-Reply-To: <1222796952.24384.25.camel@twins>
-Message-ID: <alpine.DEB.1.10.0809301350410.6224@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>  <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>  <alpine.DEB.1.10.0809261631420.21618@gandalf.stny.rr.com>  <alpine.DEB.1.10.0809262148070.30105@gandalf.stny.rr.com> 
- <alpine.DEB.1.10.0809270203270.1628@gandalf.stny.rr.com>  <alpine.DEB.1.10.0809291202180.5493@gandalf.stny.rr.com>  <20080929233539.GA31143@Krystal>  <alpine.DEB.1.10.0809292000160.8145@gandalf.stny.rr.com>  <20080930000307.GA2929@Krystal> 
- <alpine.DEB.1.10.0809292010530.8145@gandalf.stny.rr.com>  <20080930034603.GA13801@Krystal>  <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com>  <20080930092001.69849210@bike.lwn.net> <1222790072.24384.21.camel@twins> 
- <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org>  <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com>  <1222794043.24384.22.camel@twins>  <alpine.DEB.1.10.0809301339140.6224@gandalf.stny.rr.com> <1222796952.24384.25.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 30 Sep 2008 14:02:19 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:52484 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752359AbYI3SCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 14:02:18 -0400
+Message-ID: <48E269B6.1080904@sgi.com>
+Date: Tue, 30 Sep 2008 11:02:30 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, David Miller <davem@davemloft.net>,
+       Alan.Brunelle@hp.com, tglx@linutronix.de, rjw@sisk.pl,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kernel-testers@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, arjan@linux.intel.com,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+References: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <200809251150.26760.rusty@rustcorp.com.au> <alpine.LFD.1.10.0809250836270.3265@nehalem.linux-foundation.org> <200809261525.30258.rusty@rustcorp.com.au> <48DC78F2.8060400@sgi.com> <20080927191653.GB18619@elte.hu> <48E0E73A.40803@sgi.com> <20080930110459.GB12529@elte.hu> <48E2506C.7000406@sgi.com> <alpine.LFD.2.00.0809300939450.3389@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0809300939450.3389@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 30 Sep 2008, Peter Zijlstra wrote:
+Linus Torvalds wrote:
 > 
-> The problem with storing the page link information inside the page is
-> that it doesnt transfer to another address space, so if you do indeed
-> mmap these pages, then the link information is bogus.
+> On Tue, 30 Sep 2008, Mike Travis wrote:
+>> One pain is:
+>>
+>> 	typedef struct __cpumask_s *cpumask_t;
+>> 	const cpumask_t xxx;
+>>
+>> is not the same as:
+>>
+>> 	typedef const struct __cpumask_s *const_cpumask_t;
+>> 	const_cpumask_t xxx;
+>>
+>> and I'm not exactly sure why.
 > 
-> Of course, in such a situation you could ignore these headers, but
-> somehow that doesn't sound too apealing.
+> Umm. The const has different 
+> 
+> One is
+> 
+> 	typedef const struct __cpumask_s *const_cpumask_t;
+> 
+> which becomes
+> 
+> 	(const struct __cpumask_s) *
+> 
+> while the other is
+> 
+> 	const cpumask_t xxx
+> 
+> which is
+> 
+> 	const (struct __cpumask_s *)
+> 
+> and if you look a bit more closely, you'll see that they are _obviously_ 
+> not the same thing at all.
 
+Thanks, yes that explains what I should have figured out.  (Nice way to
+explain it btw... ;-)
 
-No that's not what I'm proposing. I'm proposing to allocate a page_header 
-structure for every page we alloc, and make a link list of them.
-In other words:
+> 
+> Quite frankly, I personally do hate typedefs that end up being pointers, 
+> and used as pointers, without showing that in the source code.
+> 
+> When you do
+> 
+> 	type_t a;
+> 
+> 	fn(a);
+> 
+> I expect the code to essentially do a pass-by-value. But when the type_t 
+> is a pointer, that doesn't really work.
 
+I agree, and as I mentioned, Rusty was working towards an alternative
+method of declaring cpumask's which does not hide this.
 
-struct ring_buffer_per_cpu {
-	[...]
-	struct list_head pages;
-	[...]
-};
+My goal was to create an (apparent) opaque handle for cpumask_t and modify
+the code so all changes to the contents of the cpumask are via functions.
 
-struct buffer_page {
-	[...];
-	void *page;
-	struct list_head list;
-	[...];
-};
+> 
+> Your issue with 'const' is just another version of the same. You don't 
+> want the _pointer_ to be const, you want what it points _to_ to be const. 
+> But because you hid the pointerness inside the typedef, you simply cannot 
+> do that.
+> 
+> The problem with cpumask's, of course, is that for the "small mask" case, 
+> we really don't want it to be a pointer. So now it's sometimes a pointer 
+> and sometimes not. The typedef hides that, and I understand why it's a 
+> good idea, but I'm surprised you didn't understand what the implications 
+> were for 'const', and I'm now a bit more leery about this whole thing just 
+> because the typedef ends up hiding so much - it doesn't just hide the 
+> basic type, it hides a very basic *code* issue.
 
-In ring_buffer_allocate_cpu:
+Perhaps then defining the cpumask as a list of unsigned longs (remove the
+outer struct) would play more "naturally".  Lists by definition are always
+referenced by pointers.  I have another version of the patchset that shows
+this and I'll post just the cpumask.h and doc files.
 
-	struct buffer_page *bpage;
-	struct unsigned long addr;
+> 
+> 			Linus
 
-	[...]
-
-	for every page() {
-		bpage = kzalloc(sizeof(*bpage), GFP_KERNEL);
-		addr = get_free_page();
-		bpage->page = (void *)addr;
-		list_add(&bpage->list, &cpu_buffer->pages);
-	}
-
-
-Obviously need to add the error checking, but you get the idea. Here I do 
-not need to change any of the later logic, because we are still dealing 
-with the buffer_page. I only need to update way to index the page which is 
-already encapsulated in its own function.
-
--- Steve
-
-
+Thanks!
+Mike
