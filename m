@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYI3Hti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYI3HtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754413AbYI3Hti (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 03:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYI3Hmx
+	id S1753907AbYI3HtV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 03:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbYI3Hmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 03:42:53 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:58943 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752186AbYI3Hl7 (ORCPT
+	Tue, 30 Sep 2008 03:42:52 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:18985 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbYI3HmC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 03:41:59 -0400
+	Tue, 30 Sep 2008 03:42:02 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>, linux-kernel@vger.kernel.org,
        linux-mtd@lists.infradead.org
-Subject: [PATCH] UBIFS: allow for sync_fs when read-only
-Date: Tue, 30 Sep 2008 12:19:13 +0300
-Message-Id: <1222766358-21886-18-git-send-email-dedekind@infradead.org>
+Subject: [PATCH] UBIFS: check data CRC when in error state
+Date: Tue, 30 Sep 2008 12:19:04 +0300
+Message-Id: <1222766358-21886-9-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
 References: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 30 Sep 2008 07:41:37.0772 (UTC) FILETIME=[F8651AC0:01C922CF]
+X-OriginalArrivalTime: 30 Sep 2008 07:41:36.0741 (UTC) FILETIME=[F7C7C950:01C922CF]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-sync_fs can be called even if the file system is mounted
-read-only.  Ensure the commit is not run in that case.
+When UBIFS switches to R/O mode because of an error,
+it is reasonable to enable data CRC checking.
 
-Reported-by: Zoltan Sogor <weth@inf.u-szeged.hu>
-Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ---
- fs/ubifs/super.c |   19 ++++++++++---------
- 1 files changed, 10 insertions(+), 9 deletions(-)
+ fs/ubifs/io.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
-index 7e1f3ef..7fd759d 100644
---- a/fs/ubifs/super.c
-+++ b/fs/ubifs/super.c
-@@ -420,21 +420,22 @@ static int ubifs_sync_fs(struct super_block *sb, int wait)
- 	int i, ret = 0, err;
- 	long long bud_bytes;
- 
--	if (c->jheads)
-+	if (c->jheads) {
- 		for (i = 0; i < c->jhead_cnt; i++) {
- 			err = ubifs_wbuf_sync(&c->jheads[i].wbuf);
- 			if (err && !ret)
- 				ret = err;
- 		}
- 
--	/* Commit the journal unless it has too few data */
--	spin_lock(&c->buds_lock);
--	bud_bytes = c->bud_bytes;
--	spin_unlock(&c->buds_lock);
--	if (bud_bytes > c->leb_size) {
--		err = ubifs_run_commit(c);
--		if (err)
--			return err;
-+		/* Commit the journal unless it has too little data */
-+		spin_lock(&c->buds_lock);
-+		bud_bytes = c->bud_bytes;
-+		spin_unlock(&c->buds_lock);
-+		if (bud_bytes > c->leb_size) {
-+			err = ubifs_run_commit(c);
-+			if (err)
-+				return err;
-+		}
+diff --git a/fs/ubifs/io.c b/fs/ubifs/io.c
+index 40e2790..0168271 100644
+--- a/fs/ubifs/io.c
++++ b/fs/ubifs/io.c
+@@ -62,6 +62,7 @@ void ubifs_ro_mode(struct ubifs_info *c, int err)
+ {
+ 	if (!c->ro_media) {
+ 		c->ro_media = 1;
++		c->no_chk_data_crc = 0;
+ 		ubifs_warn("switched to read-only mode, error %d", err);
+ 		dbg_dump_stack();
  	}
- 
- 	/*
 -- 
 1.5.4.1
 
