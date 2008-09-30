@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYI3QRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbYI3QVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbYI3QRU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 12:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYI3QRJ
+	id S1753555AbYI3QVS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 12:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbYI3QVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 12:17:09 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:50126 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752446AbYI3QRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 12:17:08 -0400
-Message-ID: <48E25111.7060305@sgi.com>
-Date: Tue, 30 Sep 2008 09:17:21 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/31] cpumask: Provide new cpumask API
-References: <20080929180250.111209000@polaris-admin.engr.sgi.com> <20080929180250.825653000@polaris-admin.engr.sgi.com> <20080930091140.GB27452@elte.hu> <48E248CB.5080305@sgi.com>
-In-Reply-To: <48E248CB.5080305@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 30 Sep 2008 12:21:05 -0400
+Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:46343 "EHLO
+	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752842AbYI3QVE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 12:21:04 -0400
+Subject: Re: [PATCH] slub: reduce total stack usage of slab_err & object_err
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: penberg <penberg@cs.helsinki.fi>, mpm <mpm@selenic.com>,
+       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <48E2480A.9090003@linux-foundation.org>
+References: <1222787736.2995.24.camel@castor.localdomain>
+	 <48E2480A.9090003@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 30 Sep 2008 17:20:38 +0100
+Message-Id: <1222791638.2995.41.camel@castor.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Ingo Molnar wrote:
-...
+On Tue, 2008-09-30 at 10:38 -0500, Christoph Lameter wrote:
+> Richard Kennedy wrote:
+> > reduce the total stack usage of slab_err & object_err.
+> > 
+> > Introduce a new function to display a simple slab bug message, and call
+> > this when vprintk is not needed.
 > 
->> In what way will Rusty's changes differ? Since you incorporate some of 
->> Rusty's changes already, could you please iterate towards a single 
->> patchset which we could then start testing?
+> You could simply get rid of the 100 byte buffer by using vprintk? Same method
+> could be used elsewhere in the kernel and does not require additional
+> functions. Compiles, untestted.
 > 
-> Our timezones are not very conducive to a lot of email exchanges (and he's moving.)
->>From what I've seen I believe he's leaning towards using struct cpumask * and
-> less trickery than I have.
+> 
+> 
+> 
+> Subject: Slub reduce slab_bug stack usage by using vprintk
+> 
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+> Index: linux-2.6/mm/slub.c
+> ===================================================================
+> --- linux-2.6.orig/mm/slub.c	2008-09-30 10:34:40.000000000 -0500
+> +++ linux-2.6/mm/slub.c	2008-09-30 10:36:10.000000000 -0500
+> @@ -422,15 +422,14 @@
+>  static void slab_bug(struct kmem_cache *s, char *fmt, ...)
+>  {
+>  	va_list args;
+> -	char buf[100];
+> 
+>  	va_start(args, fmt);
+> -	vsnprintf(buf, sizeof(buf), fmt, args);
+> -	va_end(args);
+>  	printk(KERN_ERR "========================================"
+>  			"=====================================\n");
+> -	printk(KERN_ERR "BUG %s: %s\n", s->name, buf);
+> -	printk(KERN_ERR "----------------------------------------"
+> +	printk(KERN_ERR "BUG %s: ", s->name);
+> +	vprintk(fmt, args);
+> +	va_end(args);
+> +	printk(KERN_ERR "\n----------------------------------------"
+>  			"-------------------------------------\n\n");
+>  }
+> 
+Yes, using vprintk is better but you still have this path :
+( with your patch applied)
 
-Oh yeah, I forgot the other major point of Rusty's approach.  He wants the
-patchset to be completely bisectable.  That's far from true in my version.  
+	object_err -> slab_bug(208) -> printk(216)
+instead of 
+	object_err -> slab_bug_message(8) -> printk(216)
 
-Thanks,
-Mike
+unfortunately the overhead for having var_args is pretty big, at least
+on x86_64. I haven't measured it on 32 bit yet.
+
+Richard
+
+
