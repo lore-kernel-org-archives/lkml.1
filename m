@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbYI3Oha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbYI3Olk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322AbYI3Oha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 10:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbYI3OhW
+	id S1753556AbYI3Olk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 10:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYI3Old
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 10:37:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37274 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752406AbYI3OhW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 10:37:22 -0400
-Subject: Re: [PATCH] capability: WARN when invalid capability is requested
-	rather than BUG/panic
-From: Eric Paris <eparis@redhat.com>
-To: James Morris <jmorris@namei.org>
-Cc: linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, morgan@kernel.org,
-       serue@us.ibm.com, selinux@tycho.nsa.gov
-In-Reply-To: <alpine.LRH.1.10.0810010008130.2068@tundra.namei.org>
-References: <1222782946.28251.63.camel@localhost.localdomain>
-	 <alpine.LRH.1.10.0810010008130.2068@tundra.namei.org>
-Content-Type: text/plain
-Date: Tue, 30 Sep 2008 10:36:28 -0400
-Message-Id: <1222785389.28251.83.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Tue, 30 Sep 2008 10:41:33 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:33494 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752406AbYI3Olc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 10:41:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=ZAsjPRjNi8bL3NPFQeWYgvp+FJ63dp2WkOVC7k+DlJbuScXvGtbu15q3LShnJZ9V3q
+         ik/7t9krE8/32hTEPiDuRHdL7FHaUagDWJKOqeBBNT0SvqULotoXC50V+FUKA8dXI2zp
+         iRnDkiWtJ3rK7rvsOuBIAKFcm0QSpqJTUwK+4=
+Message-ID: <9e4733910809300741n1da80e6ep777c39bc1373417c@mail.gmail.com>
+Date: Tue, 30 Sep 2008 10:41:31 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [ksoftirqd/1] CPU reporting.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-01 at 00:23 +1000, James Morris wrote:
-> On Tue, 30 Sep 2008, Eric Paris wrote:
-> 
-> > This patch adds a WARN_ONCE() to cap_capable() so we will stop
-> > dereferencing random spots of memory and will cleanly tell the obviously
-> > broken driver that it doesn't have that ridiculous permissions.  No idea
-> > if the driver is going to handle EPERM but anything that calls capable
-> > and doesn't expect a denial has got to be the worst piece of code ever
-> > written.....  I could return EINVAL, but I think its clear that noone
-> > has capabilities over 64 so clearly they don't have that permission.
-> > 
-> > This 'could' be considered a regression since 2.6.24.  Neither SELinux
-> > nor the capabilities system had a problem with ginormous request values
-> > until we got 64 bit support, although this is OBVIOUSLY a bug with the
-> > out of tree closed source driver....
-> 
-> An issue here is whether we should be adding workarounds in the mainline 
-> kernel for buggy closed drivers.  Papering over problems rather than 
-> getting them fixed does not seem like a winning approach.  Especially 
-> problems which are unexpectedly messing with kernel security APIs.
+What's up with ksoftirqd? I'm pretty sure it hasn't used 14,676 years
+of CPU time.
+Linus current git on a Q6600 64b.
 
-I don't know, looking at the feelings on "Can userspace bugs be kernel
-regressions" leads me to believe that when we break something that once
-worked we are supposed to fix it.
+jonsmirl@terra:~/fs$ ps aux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0   4016   884 ?        Ss   07:27   0:01 /sbin/init
+root         2  0.0  0.0      0     0 ?        S<   07:27   0:00 [kthreadd]
+root         3  0.0  0.0      0     0 ?        S<   07:27   0:00 [migration/0]
+root         4  0.0  0.0      0     0 ?        S<   07:27   0:00 [ksoftirqd/0]
+root         5  0.0  0.0      0     0 ?        S<   07:27   0:00 [watchdog/0]
+root         6  0.0  0.0      0     0 ?        S<   07:27   0:00 [migration/1]
+root         7 160920245  0.0 0     0 ?        S<   07:27 21133795:38
+[ksoftirqd/1]
+root         8  0.0  0.0      0     0 ?        S<   07:27   0:00 [watchdog/1]
+root         9  0.0  0.0      0     0 ?        S<   07:27   0:00 [migration/2]
+root        10  0.0  0.0      0     0 ?        S<   07:27   0:00 [ksoftirqd/2]
+root        11  0.0  0.0      0     0 ?        S<   07:27   0:00 [watchdog/2]
+root        12  0.0  0.0      0     0 ?        S<   07:27   0:00 [migration/3]
+root        13  0.0  0.0      0     0 ?        S<   07:27   0:00 [ksoftirqd/3]
+root        14  0.0  0.0      0     0 ?        S<   07:27   0:00 [watchdog/3]
+....
 
-http://lwn.net/Articles/292143/
-
-I don't think the proprietary closed source nature of the driver makes
-it any less our problem to not make changes which cause the kernel to
-esplode.
-
-> Also, won't this encourage vendors of such drivers to continue with this 
-> behavior, while discouraging those vendors who are doing the right thing?
-
-Discouraging people who open source their drivers and put them in the
-kernel?  obviously not.  encouraging crap?  well, I hope we fix
-regressions no matter how they are found...
-
-> Do we know if this even really helps the user?  For all we know, the 
-> driver may simply crash differently with an -EPERM.
-
-Well, before the 64 bit capabilities change we did:
-
-(cap_t(c) & CAP_TO_MASK(flag))
-
-so a huge value for "flag" got masked off.
-
-After 64 bit capabilities we do:
-
-((c).cap[CAP_TO_INDEX(flag)] & CAP_TO_MASK(flag))
-
-so a huge flag causes an array index out of bounds and either explodes
-here or continues onto SELinux where it BUG().
-
-So this is regression.  It would have gotten an EPERM, now it gets a
-BUG/panic.
-
-Yes ATI needs to fix their driver, but we broke it and I don't remember
-the driver not working on 2.6.24 and earlier....
-
--Eric
-
+-- 
+Jon Smirl
+jonsmirl@gmail.com
