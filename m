@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYI3Rju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbYI3Rkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbYI3Rju (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 13:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYI3Rjm
+	id S1753862AbYI3Rkx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 13:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbYI3Rkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 13:39:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34610 "EHLO hera.kernel.org"
+	Tue, 30 Sep 2008 13:40:45 -0400
+Received: from waste.org ([66.93.16.53]:35650 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752546AbYI3Rjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 13:39:41 -0400
-Message-ID: <48E26400.8020604@kernel.org>
-Date: Wed, 01 Oct 2008 02:38:08 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Robert Krawitz <rlk@alum.mit.edu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Another one for fixup-storage
-References: <4897809E.8070902@alum.mit.edu> <48E25D6D.30504@kernel.org> <200809301734.m8UHY5lg027393@dsl092-065-009.bos1.dsl.speakeasy.net>
-In-Reply-To: <200809301734.m8UHY5lg027393@dsl092-065-009.bos1.dsl.speakeasy.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	id S1752016AbYI3Rko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 13:40:44 -0400
+Subject: Re: [PATCH] slub: reduce total stack usage of slab_err & object_err
+From: Matt Mackall <mpm@selenic.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       penberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
+       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1222791638.2995.41.camel@castor.localdomain>
+References: <1222787736.2995.24.camel@castor.localdomain>
+	 <48E2480A.9090003@linux-foundation.org>
+	 <1222791638.2995.41.camel@castor.localdomain>
+Content-Type: text/plain
+Date: Tue, 30 Sep 2008 12:37:25 -0500
+Message-Id: <1222796245.23159.38.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 30 Sep 2008 17:39:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Robert Krawitz wrote:
->    Date: Wed, 01 Oct 2008 02:10:05 +0900
->    From: Tejun Heo <tj@kernel.org>
+On Tue, 2008-09-30 at 17:20 +0100, Richard Kennedy wrote:
+> Yes, using vprintk is better but you still have this path :
+> ( with your patch applied)
 > 
->    Robert Krawitz wrote:
->    > This is for a Dell Inspiron E1705/9400.  I'm using a non-OEM disk (a
->    > Hitachi 320 GB drive).
+> 	object_err -> slab_bug(208) -> printk(216)
+> instead of 
+> 	object_err -> slab_bug_message(8) -> printk(216)
 > 
->    Just one more question.  What do you mean by non-OEM?  It didn't come
->    with the listed harddrive?
-> 
-> Correct.  I purchased and installed the hard drive after I bought the
-> laptop.
+> unfortunately the overhead for having var_args is pretty big, at least
+> on x86_64. I haven't measured it on 32 bit yet.
 
-Ah... thanks.  I Robert's case is like that too and I don't think
-storage-fixup is the right place to deal with that.  It seems we'll need
-something which is somewhat intelligent and more dynamic.  I'll talk
-with Bruce whether we can do something about it using smartd.
+That's fascinating. I tried a simple test case in userspace:
 
-Thanks.
+#include <stdarg.h>
+#include <stdio.h>
+
+void p(char *fmt, ...)
+{
+	va_list args;
+
+	va_start(args, fmt);
+	vprintf(fmt, args);
+	va_end(args);
+}
+
+On 32-bit, I'm seeing 32 bytes of stack vs 216 on 64-bit. Disassembly
+suggests it's connected to va_list fiddling with XMM registers, which
+seems quite odd.
 
 -- 
-tejun
+Mathematics is the supreme nostalgia of our time.
+
