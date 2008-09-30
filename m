@@ -1,103 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYI3SDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbYI3SGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbYI3SDZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 14:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbYI3SDP
+	id S1753796AbYI3SGQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 14:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYI3SGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 14:03:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42623 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753004AbYI3SDN (ORCPT
+	Tue, 30 Sep 2008 14:06:01 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:34992 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752624AbYI3SGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 14:03:13 -0400
-Date: Tue, 30 Sep 2008 11:01:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rene Herman <rene.herman@keyaccess.nl>
-cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Adam Belay <abelay@mit.edu>,
-       Avuton Olrich <avuton@gmail.com>,
-       Karl Bellve <karl.bellve@umassmed.edu>, Willem Riede <wriede@riede.org>,
-       Matthew Hall <mhall@mhcomputing.net>
-Subject: Re: [patch 2/2] PNP: don't check disabled PCI BARs for conflicts in
- quirk_system_pci_resources()
-In-Reply-To: <alpine.LFD.2.00.0809300904530.3389@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0809301052200.3436@nehalem.linux-foundation.org>
-References: <200809290953.56565.bjorn.helgaas@hp.com> <200809290957.59813.bjorn.helgaas@hp.com> <alpine.LFD.1.10.0809290912060.3265@nehalem.linux-foundation.org> <48E11EFA.8010402@keyaccess.nl> <alpine.LFD.2.00.0809291211330.3389@nehalem.linux-foundation.org>
- <48E1EF0E.8030006@keyaccess.nl> <alpine.LFD.2.00.0809300741320.3389@nehalem.linux-foundation.org> <48E24C6F.3030903@keyaccess.nl> <alpine.LFD.2.00.0809300904530.3389@nehalem.linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Sep 2008 14:06:00 -0400
+Subject: [PATCH] x86, Fix broken LDT access in VMI
+From: Zachary Amsden <zach@vmware.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>
+Content-Type: multipart/mixed; boundary="=-Gfxsqg7PAw78oZqAYOXx"
+Date: Tue, 30 Sep 2008 11:02:12 -0700
+Message-Id: <1222797732.7330.35.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-Gfxsqg7PAw78oZqAYOXx
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Tue, 30 Sep 2008, Linus Torvalds wrote:
-> 
-> In contrast, the PnP fixup thing is called from pnp_fixup_device, called 
-> from __pnp_add_device(), called from pnp_add_device() (and 
-> pnp_add_card(), but that should be later), and those in turn from
-> pnpacpi_add_device and pnpacpi_init(). 
-> 
-> And pnpacpi_init is _also_ a subsys_initcall [...]
+This one took a long time to rear up because LDT usage is not very
+common, but the bug is quite serious.  It got introduced along with
+another bug, already fixed, by 75b8bb3e56ca09a467fbbe5229bc68627f7445be 
 
-Btw, why is that? We very much have a separate
+Please apply.  Fix should also be headed for stable tree and backported,
+it is really sadly trivial.  Glauber, Ingo, sorry for the offlist
+posting, somehow the original missed LKML.
 
-	/**
-	 * Reserve motherboard resources after PCI claim BARs,
-	 * but before PCI assign resources for uninitialized PCI devices
-	 */
-	fs_initcall(pnp_system_init);
+Zach
 
-which is called much later. That seems to be the _right_ point for any 
-quirks. It seems that the _real_ problem here is that the PnP device fixup 
-is simply called from the wrong point. Ie, why do we do device discovery - 
-and thus PnP quirks - in pnp_init (before the PCI bus is actually fully 
-initialized!), rather than in pnp_system_init?
+--=-Gfxsqg7PAw78oZqAYOXx
+Content-Disposition: attachment; filename=vmi-ldt-fix.patch
+Content-Type: text/x-patch; name=vmi-ldt-fix.patch; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-Ie, maybe the proper thing to do is to simply be *consistent* in the PnP 
-subsystem, and always use fs_initcall (for the stated reasons!) for the 
-device discovery. Ie the patch would be something like the appended, and 
-then you really can depend on the PCI subsystem having been set up, 
-including having all relevant resources inserted into the tree!
+After investigating a JRE failure, I found this bug was introduced a long time
+ago, and had already managed to survive another bugfix which occurred on the
+same line.  The result is a total failure of the JRE due to LDT selectors not
+working properly.
 
-Hmm?  Bjorn? Everything that is true about "pnp_system_init" should be 
-equally true abote pnpacpi_init and pnpbios_init, no?
+Signed-off-by: Zachary Amsden <zach@vmware.com>
 
-			Linus
-
----
- drivers/pnp/pnpacpi/core.c |    2 +-
- drivers/pnp/pnpbios/core.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
-index c1b9ea3..53561d7 100644
---- a/drivers/pnp/pnpacpi/core.c
-+++ b/drivers/pnp/pnpacpi/core.c
-@@ -268,7 +268,7 @@ static int __init pnpacpi_init(void)
- 	return 0;
+diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
+index 040a95e..411e34f 100644
+--- a/arch/x86/kernel/vmi_32.c
++++ b/arch/x86/kernel/vmi_32.c
+@@ -234,7 +234,7 @@ static void vmi_write_ldt_entry(struct desc_struct *dt, int entry,
+ 				const void *desc)
+ {
+ 	u32 *ldt_entry = (u32 *)desc;
+-	vmi_ops.write_idt_entry(dt, entry, ldt_entry[0], ldt_entry[1]);
++	vmi_ops.write_ldt_entry(dt, entry, ldt_entry[0], ldt_entry[1]);
  }
  
--subsys_initcall(pnpacpi_init);
-+fs_initcall(pnpacpi_init);
- 
- static int __init pnpacpi_setup(char *str)
- {
-diff --git a/drivers/pnp/pnpbios/core.c b/drivers/pnp/pnpbios/core.c
-index 19a4be1..662dfcd 100644
---- a/drivers/pnp/pnpbios/core.c
-+++ b/drivers/pnp/pnpbios/core.c
-@@ -571,7 +571,7 @@ static int __init pnpbios_init(void)
- 	return 0;
- }
- 
--subsys_initcall(pnpbios_init);
-+fs_initcall(pnpbios_init);
- 
- static int __init pnpbios_thread_init(void)
- {
+ static void vmi_load_sp0(struct tss_struct *tss,
+
+--=-Gfxsqg7PAw78oZqAYOXx--
+
