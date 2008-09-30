@@ -1,210 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbYI3OyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbYI3PHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754053AbYI3OyS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 10:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYI3OyE
+	id S1753204AbYI3PHr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 11:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYI3PHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 10:54:04 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:38992 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753004AbYI3OyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 10:54:01 -0400
-Message-ID: <48E23D6C.4030406@linux.vnet.ibm.com>
-Date: Tue, 30 Sep 2008 09:53:32 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 30 Sep 2008 11:07:37 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:58969 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751813AbYI3PHg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 11:07:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=YAI23T3vJvxxvcf4s5oS6Cit2kiLRGsavIpU0JGdJr9LepAc69KxhF5xTvmYYA9dLa
+         VDhC56WE/Ldbw6IcfspNZhkhIUmbVxE0rYeNfMNJJG7wSqtS12Bb5D0Uy8+UQ0GxIsN3
+         BK17m3TpBdWeaJzxBEkeBF/7oeJlsQMguo1O4=
+Message-ID: <806dafc20809300807h6d38bbeex2f2b4e496b0d155c@mail.gmail.com>
+Date: Tue, 30 Sep 2008 11:07:34 -0400
+From: "Monty Montgomery" <monty@xiph.org>
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [regression] CD-DA delay needed after insertion (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
+Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       linux-scsi@vger.kernel.org,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0809301648490.5818@vixen.sonytel.be>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adam Litke <agl@linux.vnet.ibm.com>
-Subject: [PATCH] properly reserve in bootmem the lmb reserved regions that
- cross numa nodes
-X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+	 <Pine.LNX.4.64.0806301120570.10868@vixen.sonytel.be>
+	 <1214841102.3381.5.camel@localhost.localdomain>
+	 <1214925487.3316.12.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0809171701330.21347@vixen.sonytel.be>
+	 <806dafc20809300117u2806e37bx986b54543862f358@mail.gmail.com>
+	 <Pine.LNX.4.64.0809301430370.5818@vixen.sonytel.be>
+	 <806dafc20809300548y4af5f10bs8a80caa24f176c79@mail.gmail.com>
+	 <806dafc20809300551i7678660aq5e4fd6e8080382a0@mail.gmail.com>
+	 <Pine.LNX.4.64.0809301648490.5818@vixen.sonytel.be>
+X-Google-Sender-Auth: 537c8fb8d0484dfb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If there are multiple reserved memory blocks via lmb_reserve() that are 
-contiguous addresses and on different numa nodes we are losing track of which 
-address ranges to reserve in bootmem on which node.  I discovered this 
-when I only recently got to try 16GB huge pages on a system with more 
-then 2 nodes.
+> With latest cdparanoia git-^H^H^H^Hsvn, the problem still happens.
+> After applying the patch below, there's no more crash thanks to your last
+> commit, and It Just Works(tm):
 
-When scanning the device tree in early boot we call lmb_reserve() with 
-the addresses of the 16G pages that we find so that the memory doesn't 
-get used for something else.  For example the addresses for the pages 
-could be 4000000000, 4400000000, 4800000000, 4C00000000, etc - 8 pages, 
-one on each of eight nodes.  In the lmb after all the pages have been 
-reserved it will look something like the following:
+Then I will be doing some headscratching over a copy of the kernel.
+Oh--  what *exact* kernel are you using?  non-x86 trees don't always
+sync often with the 'official' mainline and I want to be sure I'm
+reading the correct thing.  I was a longtime PPC user until about two
+years ago, and I'm used to there being several substantially different
+PPC kernel trees [just making sure].
 
-lmb_dump_all:
-    memory.cnt            = 0x2
-    memory.size           = 0x3e80000000
-    memory.region[0x0].base       = 0x0
-                      .size     = 0x1e80000000
-    memory.region[0x1].base       = 0x4000000000
-                      .size     = 0x2000000000
-    reserved.cnt          = 0x5
-    reserved.size         = 0x3e80000000
-    reserved.region[0x0].base       = 0x0
-                      .size     = 0x7b5000
-    reserved.region[0x1].base       = 0x2a00000
-                      .size     = 0x78c000
-    reserved.region[0x2].base       = 0x328c000
-                      .size     = 0x43000
-    reserved.region[0x3].base       = 0xf4e8000
-                      .size     = 0xb18000
-    reserved.region[0x4].base       = 0x4000000000
-                      .size     = 0x2000000000
+OTOH, if the kernel isn't even servicing the device as a block device
+until the drive returns a ready status and O_NONBLOCK thwarts waiting
+for that.... sigh.  Nothing like a passthrough interface that still
+isn't a passthrough interface after fifteen years of dicking around.
 
+I'm not willing to cripple cdparanoia on more-than-one-cdrom systems
+because of an edge case due to yet another ill-considered block layer
+'feature'.  For one thing *I* need to be able to scan devices without
+blocking on my own multiple drive systems.  If there's a workaround to
+get both, I will find it.
 
-The reserved.region[0x4] contains the 16G pages.  In 
-arch/powerpc/mm/num.c: do_init_bootmem() we loop through each of the 
-node numbers looking for the reserved regions that belong to the 
-particular node.  It is not able to identify region 0x4 as being a part 
-of each of the 8 nodes.  It is assuming that a reserved region is only
-on a single node.
+But it's too early to say for sure.  I'll check again.
 
-This patch takes out the reserved region loop from inside
-the loop that goes over each node.  It looks up the active region containing
-the start of the reserved region.  If it extends past that active region then
-it adjusts the size and gets the next active region containing it.
+(May I ask-- why the hard starting/stopping of the interface?  Power saving?]
 
-
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
----
-
-
- arch/powerpc/mm/numa.c |   63 ++++++++++++++++++++++++++++---------------------
- include/linux/mm.h     |    2 +
- mm/page_alloc.c        |   19 ++++++++++++++
- 3 files changed, 57 insertions(+), 27 deletions(-)
-
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index d9a1813..07b8726 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -837,36 +837,45 @@ void __init do_init_bootmem(void)
- 				  start_pfn, end_pfn);
-
- 		free_bootmem_with_active_regions(nid, end_pfn);
-+	}
-
--		/* Mark reserved regions on this node */
--		for (i = 0; i < lmb.reserved.cnt; i++) {
--			unsigned long physbase = lmb.reserved.region[i].base;
--			unsigned long size = lmb.reserved.region[i].size;
--			unsigned long start_paddr = start_pfn << PAGE_SHIFT;
--			unsigned long end_paddr = end_pfn << PAGE_SHIFT;
--
--			if (early_pfn_to_nid(physbase >> PAGE_SHIFT) != nid &&
--			    early_pfn_to_nid((physbase+size-1) >> PAGE_SHIFT) != nid)
--				continue;
--
--			if (physbase < end_paddr &&
--			    (physbase+size) > start_paddr) {
--				/* overlaps */
--				if (physbase < start_paddr) {
--					size -= start_paddr - physbase;
--					physbase = start_paddr;
--				}
--
--				if (size > end_paddr - physbase)
--					size = end_paddr - physbase;
--
--				dbg("reserve_bootmem %lx %lx\n", physbase,
--				    size);
--				reserve_bootmem_node(NODE_DATA(nid), physbase,
--						     size, BOOTMEM_DEFAULT);
--			}
-+	/* Mark reserved regions */
-+	for (i = 0; i < lmb.reserved.cnt; i++) {
-+		unsigned long physbase = lmb.reserved.region[i].base;
-+		unsigned long size = lmb.reserved.region[i].size;
-+		unsigned long start_pfn = physbase >> PAGE_SHIFT;
-+		unsigned long end_pfn = ((physbase+size-1) >> PAGE_SHIFT);
-+		struct node_active_region *node_ar;
-+
-+		node_ar = get_node_active_region(start_pfn);
-+		while (start_pfn < end_pfn && node_ar != NULL) {
-+			/*
-+			 * if reserved region extends past active region
-+			 * then trim size to active region
-+			 */
-+			if (end_pfn >= node_ar->end_pfn)
-+				size = (node_ar->end_pfn << PAGE_SHIFT)
-+					- (start_pfn << PAGE_SHIFT);
-+			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase, size,
-+				node_ar->nid);
-+			reserve_bootmem_node(NODE_DATA(node_ar->nid), physbase,
-+						size, BOOTMEM_DEFAULT);
-+			/*
-+			 * if reserved region extends past the active region
-+			 * then get next active region that contains
-+			 *        this reserved region
-+			 */
-+			if (end_pfn >= node_ar->end_pfn) {
-+				start_pfn = node_ar->end_pfn;
-+				physbase = start_pfn << PAGE_SHIFT;
-+				node_ar = get_node_active_region(start_pfn);
-+			} else
-+				break;
- 		}
-
-+	}
-+
-+	for_each_online_node(nid) {
- 		sparse_memory_present_with_active_regions(nid);
- 	}
- }
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 72a15dc..d186a7e 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1020,6 +1020,8 @@ extern void push_node_boundaries(unsigned int nid, unsigned long start_pfn,
- extern void remove_all_active_ranges(void);
- extern unsigned long absent_pages_in_range(unsigned long start_pfn,
- 						unsigned long end_pfn);
-+struct node_active_region *get_node_active_region(
-+						unsigned long start_pfn);
- extern void get_pfn_range_for_nid(unsigned int nid,
- 			unsigned long *start_pfn, unsigned long *end_pfn);
- extern unsigned long find_min_pfn_with_active_regions(void);
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index e293c58..3a15c49 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -3071,6 +3071,25 @@ static void __meminit account_node_boundary(unsigned int nid,
- 		unsigned long *start_pfn, unsigned long *end_pfn) {}
- #endif
-
-+/**
-+ * get_node_active_region - Return active region containing start_pfn
-+ * @start_pfn The page to return the region for.
-+ *
-+ * It will return NULL if active region is not found.
-+ */
-+struct node_active_region *get_node_active_region(
-+							unsigned long start_pfn)
-+{
-+	int i;
-+	for (i = 0; i < nr_nodemap_entries; i++) {
-+		unsigned long node_start_pfn = early_node_map[i].start_pfn;
-+		unsigned long node_end_pfn = early_node_map[i].end_pfn;
-+
-+		if (node_start_pfn <= start_pfn && node_end_pfn > start_pfn)
-+			return &early_node_map[i];
-+	}
-+	return NULL;
-+}
-
- /**
-  * get_pfn_range_for_nid - Return the start and end page frames for a node
-
-
-
+Monty
