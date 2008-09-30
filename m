@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbYI3Bza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYI3Bzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164AbYI3Bza (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 21:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbYI3Byz
+	id S1754528AbYI3Bzs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 21:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbYI3Bzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 21:54:55 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:57917 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752377AbYI3Byx (ORCPT
+	Mon, 29 Sep 2008 21:55:38 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52266 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752573AbYI3Bzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 21:54:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=daHuIop2QpcD8Mm7pOSIFCL2JobqDRpacqnYCusoDSsQhXQijBhhNlCYvHMmIZ36yK
-         bplbXlRD+LdMlmqV7REJwW4WQuvwKnaBidbPt+x7Widyo2042HIWqEIq2eermom4c5zT
-         +E0BT7GAWwTbziZCkeJtjV/yLZOng+59Asoxw=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 2/2] x86: mtrr_cleanup try gran_size to less than 1M
-Date: Mon, 29 Sep 2008 18:54:12 -0700
-Message-Id: <1222739652-17169-2-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1222739652-17169-1-git-send-email-yhlu.kernel@gmail.com>
-References: <1222739652-17169-1-git-send-email-yhlu.kernel@gmail.com>
+	Mon, 29 Sep 2008 21:55:37 -0400
+Date: Tue, 30 Sep 2008 10:53:41 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: gerald.schaefer@de.ibm.com
+Subject: Re: setup_per_zone_pages_min(): zone->lock vs. zone->lru_lock
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080930094017.5ed2938a.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1222723206.6791.2.camel@ubuntu> <20080930094017.5ed2938a.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080930103748.44A3.E1E9C6FF@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-one have gran < 1M
+> On Mon, 29 Sep 2008 23:20:05 +0200
+> Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
+> 
+> > On Mon, 2008-09-29 at 18:36 +0100, Andy Whitcroft wrote:
+> > > The allocator protects it freelists using zone->lock (as we can see in
+> > > rmqueue_bulk), so anything which manipulates those should also be using
+> > > that lock.  move_freepages() is scanning the cmap and picking up free
+> > > pages directly off the free lists, it is expecting those lists to be
+> > > stable; it would appear to need zone->lock.  It does look like
+> > > setup_per_zone_pages_min() is holding the wrong thing at first look.
+> > 
+> > I just noticed that the spin_lock in that function is much older than the
+> > call to setup_zone_migrate_reserve(), which then calls move_freepages().
+> > So it seems that the zone->lru_lock there does (did?) have another purpose,
+> > maybe protecting zone->present_pages/pages_min/etc.
+> > 
+> Maybe.
 
-reg00: base=0xd8000000 (3456MB), size= 128MB: uncachable, count=1
-reg01: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
-reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
-reg03: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
-reg04: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
-reg05: base=0xd7f80000 (3455MB), size= 512KB: uncachable, count=1
+The zone->lru_lock() have been used before memory hotplug code was
+implemented. But I can't find any reason why it have been used.
 
-will get
+> 
+> > Looks like the need for a zone->lock (if any) was added later, but I'm not
+> > sure if makes sense to take both locks together, or if the lru_lock is still
+> > needed at all.
+> >
+> At first look, replacing zone->lru_lock with zone->lock is enough...
+> This function is an only one function which use zone->lru_lock in page_alloc.c
+> And zone_watermark_ok() which access zone->pages_min/low/high is not under any
+> locks. So, taking zone->lru_lock here doesn't seem to be necessary...
 
-Found optimal setting for mtrr clean up
-gran_size: 512K         chunk_size: 2M  num_reg: 7      lose RAM: 0G
-range0: 0000000000000000 - 00000000d8000000
-Setting variable MTRR 0, base: 0GB, range: 2GB, type WB
-Setting variable MTRR 1, base: 2GB, range: 1GB, type WB
-Setting variable MTRR 2, base: 3GB, range: 256MB, type WB
-Setting variable MTRR 3, base: 3328MB, range: 128MB, type WB
-hole: 00000000d7f00000 - 00000000d7f80000
-Setting variable MTRR 4, base: 3455MB, range: 512KB, type UC
-rangeX: 0000000100000000 - 0000000128000000
-Setting variable MTRR 5, base: 4GB, range: 512MB, type WB
-Setting variable MTRR 6, base: 4608MB, range: 128MB, type WB
+I agree.
 
-so start from 64k instead of 1M
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
----
- arch/x86/kernel/cpu/mtrr/main.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Bye.
+-- 
+Yasunori Goto 
 
-Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
-+++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
-@@ -1197,11 +1197,11 @@ struct mtrr_cleanup_result {
- };
- 
- /*
-- * gran_size: 1M, 2M, ..., 2G
-+ * gran_size: 64K, 128K, 256K, 512K, 1M, 2M, ..., 2G
-  * chunk size: gran_size, ..., 2G
-- * so we need (1+12)*6
-+ * so we need (1+16)*8
-  */
--#define NUM_RESULT	78
-+#define NUM_RESULT	136
- #define PSHIFT		(PAGE_SHIFT - 10)
- 
- static struct mtrr_cleanup_result __initdata result[NUM_RESULT];
-@@ -1322,7 +1322,7 @@ static int __init mtrr_cleanup(unsigned
- 	i = 0;
- 	memset(min_loss_pfn, 0xff, sizeof(min_loss_pfn));
- 	memset(result, 0, sizeof(result));
--	for (gran_size = (1ULL<<20); gran_size < (1ULL<<32); gran_size <<= 1) {
-+	for (gran_size = (1ULL<<16); gran_size < (1ULL<<32); gran_size <<= 1) {
- 		char gran_factor;
- 		unsigned long gran_base;
- 
+
