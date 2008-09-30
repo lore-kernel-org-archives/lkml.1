@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbYI3MBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753060AbYI3MCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753378AbYI3MBg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 08:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbYI3MB2
+	id S1753060AbYI3MCf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 08:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYI3MC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 08:01:28 -0400
-Received: from cpsmtpo-eml04.kpnxchange.com ([213.75.38.153]:46130 "EHLO
-	cpsmtpo-eml04.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751873AbYI3MB1 (ORCPT
+	Tue, 30 Sep 2008 08:02:27 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:43683 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752265AbYI3MC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 08:01:27 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Tony Vroon <tony@vroon.org>
-Subject: Re: CD tray closes spontaneously after opening it
-Date: Tue, 30 Sep 2008 14:01:22 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <200809301247.05367.elendil@planet.nl> <1222773491.4003.2.camel@localhost>
-In-Reply-To: <1222773491.4003.2.camel@localhost>
+	Tue, 30 Sep 2008 08:02:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Lzi6pG88PPbmxWvkRhs2kG31qqCCcqwOuR/bILu4Eupj9rokFx8CXu65gKauvNQtI/
+         2j14OATlbKFSR2EhJmRoio02p+w5gSu/r2hOopTIzFPnlbnTUzow8x/SEOERMnRwJl0+
+         XfbzYHkPOecb0eNZ2NJVvEC1Rf+k1nzQMDlAM=
+Message-ID: <c384c5ea0809300502h48915058r78a6586968c1ac1a@mail.gmail.com>
+Date: Tue, 30 Sep 2008 14:02:25 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH] mtd: AT49BV6416 has swapped erase regions
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1222775733-6690-1-git-send-email-haavard.skinnemoen@atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809301401.23160.elendil@planet.nl>
-X-OriginalArrivalTime: 30 Sep 2008 12:01:25.0632 (UTC) FILETIME=[437BC800:01C922F4]
+References: <1222775733-6690-1-git-send-email-haavard.skinnemoen@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 September 2008, Tony Vroon wrote:
-> On Tue, 2008-09-30 at 12:47 +0200, Frans Pop wrote:
-> > Since 2.6.27 I've had several times, but not always, that after I
-> > open the CD tray by pressing the eject button it spontaneously closes
-> > after a short delay. The delay varies between ~0 and ~2 seconds.
+Haavard,
+
+On Tue, Sep 30, 2008 at 1:55 PM, Haavard Skinnemoen
+<haavard.skinnemoen@atmel.com> wrote:
+> The CFI information read from AT49BV6416 lists the erase regions in the
+> wrong order, causing problems when trying to erase or update the first
+> or last 64K block.
 >
-> For the record, I had this on my Gentoo system. It turned out that HAL
-> was responsible. (So it may not be a kernel bug at all)
->
-> Do see this report:
-> http://bugs.gentoo.org/show_bug.cgi?id=230886
+Are there other Atmel designs with this bug or only the chip with this CFI ID?
 
-Thanks for the link.
+I ask, because the check in u-boot is too generic; I found u-boot
+wrongly assumes wrong order for another Atmel part, not checking on a
+specific CFI ID.
 
-It cannot be hal in my case as I've disabled polling by hal for both
-drives using the 'hal-disable-polling' command.
+(Need to lookup the part numbers later at home).
 
-The bug report also mentions udev, but I'm not sure if that's it either
-as the bit in the report is about sr* devices, which is SCSI/SATA and
-the patch linked there is in Debian's udev.
-The udev changelog for Debian has:
-udev (0.125-4) unstable; urgency=medium
-  * 60-persistent-storage.rules: do not run vol_id on media tray open
-    events or the kernel will close the tray again.
-
-Hmm, in Debian unstable /etc/udev/rules.d/60-persistent-storage.rules
-also has:
-# skip removable ide devices, because open(2) on them causes an events loop
-KERNEL=="hd*[!0-9]", ATTR{removable}=="1", DRIVERS=="ide-cs|ide-floppy", \
-                                        GOTO="persistent_storage_end"
-
-I wonder if we've got a simple case of a typo here: ide-cs instead of
-ide-cd? However, there is such a thing as an ide-cs driver (legacy driver
-for PCMCIA IDE/ATA disk cards).
-But it does seem logical that rule should also cover IDE CDs...
-
-Cheers,
-FJP
+Regards,
+-- 
+Leon
