@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbYI3Dmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbYI3Do0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbYI3Dmx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 23:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbYI3Dmq
+	id S1753132AbYI3Do0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 23:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbYI3DoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 23:42:46 -0400
-Received: from mga11.intel.com ([192.55.52.93]:57401 "EHLO mga11.intel.com"
+	Mon, 29 Sep 2008 23:44:18 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51951 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751522AbYI3Dmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 23:42:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
-   d="scan'208";a="621772031"
-Date: Mon, 29 Sep 2008 20:42:43 -0700 (Pacific Daylight Time)
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Arjan van de Ven <arjan@infradead.org>, Dave Airlie <airlied@gmail.com>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jesse.brandeburg@intel.com
-Subject: Re: Linux 2.6.27-rc8
-In-Reply-To: <alpine.LFD.2.00.0809291921310.3389@nehalem.linux-foundation.org>
-Message-ID: <Pine.WNT.4.63.0809292040140.2188@jbrandeb-desk.amr.corp.intel.com>
-References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org>
- <Pine.LNX.4.64.0809300125460.2307@twin.jikos.cz>
- <alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org>
- <21d7e9970809291859s5bff81e3ue0f63402c2ad422d@mail.gmail.com>
- <20080929190612.111f16ac@infradead.org> <alpine.LFD.2.00.0809291921310.3389@nehalem.linux-foundation.org>
-ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-X-X-Sender: jesse.brandeburg@intel.com@imap.glb.intel.com
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751157AbYI3DoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 23:44:17 -0400
+Subject: Re: [GIT pull] timer fixes for .27
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: paulmck@linux.vnet.ibm.com
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080929224440.GG6697@linux.vnet.ibm.com>
+References: <alpine.LFD.2.00.0809292255490.17289@localhost.localdomain>
+	 <20080929224440.GG6697@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 30 Sep 2008 13:41:56 +1000
+Message-Id: <1222746116.9006.23.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008, Linus Torvalds wrote:
-> Btw, the _real_ bug is clearly in the hardware design that allows you to 
-> brick those things without apparently even having a lock bit.
+On Mon, 2008-09-29 at 15:44 -0700, Paul E. McKenney wrote:
+> > Please pull the latest timers-fixes-for-linus git tree from:
+> > 
+> >
+> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+> timers-fixes-for-linus
+> > 
+> > The patches fix hard to trigger bugs in the CPU offline code of
+> > hrtimers which were noticed by Paul McKenney recently. In the worst
+> > case they can leave migrated hrtimers in a stale state.
+> 
+> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-The hardware has a lock bit, and we're trying to figure out why the BIOS 
-writers guide doesn't say to set it.  Probably because of the MAC address, 
-but who knows.
- 
-> I'm hoping Intel doesn't treat this as just a software bug. Some hw 
-> designer should be thinking hard about which orifice they put their head 
-> up in.
+Ah, so we found and fixed these ?
 
-We will post a patch to e1000e tomorrow that sets a lock bit that prevents 
-the registers memory mapped by 0:19.0 BAR1 from causing flash write 
-cycles.
+Linus, those bugs are actually a regression from when we didn't use the
+new timer code (which isn't that long ago). It would be nice to have the
+fixes in .27 (and thus in the various distros that will derive from it)
+but I would understand if the size of the patch made you choke that late
+in the -rc cycle... In which case we'll be in for more backports :-)
 
-The patches I've just posted don't quite do that yet.
+Cheers,
+Ben.
+
+
