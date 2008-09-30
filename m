@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbYI3Sfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbYI3SgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753860AbYI3Sfm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 14:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbYI3Sfd
+	id S1754000AbYI3SgH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 14:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbYI3Sfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 14:35:33 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:48184 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752835AbYI3Sfd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 14:35:33 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhUFAHAO4khMQWq+/2dsb2JhbACBZr4PgWk
-Date: Tue, 30 Sep 2008 14:35:31 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
-       David Wilder <dwilder@us.ibm.com>, Tom Zanussi <zanussi@comcast.net>
-Subject: Re: [RFC PATCH] LTTng relay buffer allocation, read, write
-Message-ID: <20080930183531.GA20670@Krystal>
-References: <20080927134012.GA11930@Krystal> <1222535419.16700.300.camel@lappy.programming.kicks-ass.net> <20080929155004.GA11029@Krystal> <1222709445.23876.70.camel@twins.programming.kicks-ass.net> <20080929203124.GA23070@Krystal> <alpine.DEB.1.10.0809291643570.8145@gandalf.stny.rr.com> <33307c790809301022q2821ecc7iabf41eb513707e0c@mail.gmail.com> <33307c790809301023v1b0755fbsab1bbfa9bfaad58@mail.gmail.com> <20080930181436.GA19690@Krystal> <alpine.DEB.1.10.0809301421330.6224@gandalf.stny.rr.com>
+	Tue, 30 Sep 2008 14:35:55 -0400
+Received: from waste.org ([66.93.16.53]:43731 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752835AbYI3Sfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 14:35:54 -0400
+Subject: Re: [PATCH] slub: reduce total stack usage of slab_err & object_err
+From: Matt Mackall <mpm@selenic.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       penberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
+       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1222796245.23159.38.camel@calx>
+References: <1222787736.2995.24.camel@castor.localdomain>
+	 <48E2480A.9090003@linux-foundation.org>
+	 <1222791638.2995.41.camel@castor.localdomain>
+	 <1222796245.23159.38.camel@calx>
+Content-Type: text/plain
+Date: Tue, 30 Sep 2008 13:33:06 -0500
+Message-Id: <1222799586.23159.57.camel@calx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0809301421330.6224@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:30:19 up 117 days, 23:10,  9 users,  load average: 0.47, 0.39,
-	0.44
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Tue, 30 Sep 2008, Mathieu Desnoyers wrote:
+
+On Tue, 2008-09-30 at 12:37 -0500, Matt Mackall wrote:
+> On Tue, 2008-09-30 at 17:20 +0100, Richard Kennedy wrote:
+> > Yes, using vprintk is better but you still have this path :
+> > ( with your patch applied)
 > > 
-> > In Steven's scheme, the event IDs in the 4 bytes are reserved for
-> > (useless) internal use ;) They can therefore not be used for specific
-> > tracer event IDs, which I think is a misuse of the precious bits
-> > otherwise available to store really useful event IDs.
+> > 	object_err -> slab_bug(208) -> printk(216)
+> > instead of 
+> > 	object_err -> slab_bug_message(8) -> printk(216)
+> > 
+> > unfortunately the overhead for having var_args is pretty big, at least
+> > on x86_64. I haven't measured it on 32 bit yet.
 > 
-> I'm using them, so they must not be totally useless. ;-)
+> That's fascinating. I tried a simple test case in userspace:
 > 
-> But ftrace has its own event ids and I don't want the ring buffer to ever 
-> have to know about them.
+> #include <stdarg.h>
+> #include <stdio.h>
 > 
-> -- Steve
+> void p(char *fmt, ...)
+> {
+> 	va_list args;
 > 
+> 	va_start(args, fmt);
+> 	vprintf(fmt, args);
+> 	va_end(args);
+> }
+> 
+> On 32-bit, I'm seeing 32 bytes of stack vs 216 on 64-bit. Disassembly
+> suggests it's connected to va_list fiddling with XMM registers, which
+> seems quite odd.
 
-You are actually using them to put redundant information that could be
-encoded differently and thus save 4 bits per event records, more or less
-what will be needed by most tracers (15 IDs, 1 reserved for an extended
-ID field).
+Ok, on closer inspection, this is part of the x86_64 calling convention.
+When calling a varargs function, the caller passes the number of
+floating point SSE regs used in rax. The callee then has to save these
+away for va_list use. The GCC prologue apparently sets aside space for
+xmm0-xmm7 (16 bytes each) all the time (plus rdi, rsi, rdx, rcx, r8, and
+r9).
 
-So the fact that you use them does not mean they are really required,
-and I don't think such duplicated information actually makes things more
-solid. Maybe just more obscure ?
+Obviously, we're never passing floating point args in the kernel, so
+we're taking about a 40+ byte hit in code size and 128 byte hit in stack
+size for every varargs call.
 
-Mathieu
+Looks like the gcc people have a patch in progress:
+
+http://gcc.gnu.org/ml/gcc-patches/2008-08/msg02165.html
+
+So I think we should assume that x86_64 will sort this out eventually.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Mathematics is the supreme nostalgia of our time.
+
