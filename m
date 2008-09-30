@@ -1,105 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbYI3DTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbYI3DT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566AbYI3DTj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 23:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYI3DTa
+	id S1753209AbYI3DT4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 23:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYI3DTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 29 Sep 2008 23:19:30 -0400
-Received: from mga14.intel.com ([143.182.124.37]:2935 "EHLO mga14.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:59268 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751293AbYI3DT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751412AbYI3DT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 29 Sep 2008 23:19:29 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
-   d="scan'208";a="53008299"
+   d="scan'208";a="621752524"
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
+Subject: [RFC PATCH 00/12] e1000e debug and protection patches
 To: linux-kernel@vger.kernel.org
 Cc: linux-netdev@vger.kernel.org, kkeil@suse.de, agospoda@redhat.com,
        arjan@linux.intel.com, david.graham@intel.com, bruce.w.allan@intel.com,
        jkosina@suse.cz, john.ronciak@intel.com, tglx@linutronix.de,
-       chris.jones@canonical.com, tim.gardner@intel.com, airlied@gmail.com,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 29 Sep 2008 20:19:27 -0700
-Message-ID: <20080930031927.22950.4692.stgit@jbrandeb-bw.jf.intel.com>
-In-Reply-To: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
-References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
+       chris.jones@canonical.com, tim.gardner@intel.com, airlied@gmail.com
+Date: Mon, 29 Sep 2008 20:19:16 -0700
+Message-ID: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
 User-Agent: StGIT/0.14.3.163.g06f9.dirty
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Sep 2008 03:19:27.0356 (UTC) FILETIME=[58561BC0:01C922AB]
+X-OriginalArrivalTime: 30 Sep 2008 03:19:17.0107 (UTC) FILETIME=[523A3C30:01C922AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+please be warned this is a test series of patches that we are currently
+validating, but we wanted to post them sooner than later. this series of
+patches implements:
 
-> I did some snooping around, and while doing so I noticed that the PCI
-> mmap code for x86 doesn't do one bit of range checking on the size, or
-> any other aspect of the request, wrt. the MMIO regions actually mapped
-> in the BARs of the PCI device.
+1-2) base kernel code fixes that might be helpful for debugging
+3-6) a series of patches to fix some (possible) buglets in eeprom access code
+7) a patch that triggered the bugs that were fixed in 3-6, from Thomas
+8-9) (what should be) debug helper patches for testers to log to syslog the
+     first bytes of the eeprom, that are checksummed at least.
+10) protect iomapped memory from write by kernel processes
+11) write protect the actual e1000e flash space, add module param to disable[1]
+12) update the version so we can tell we're running with this test driver.
 
-Here's a patch that adds range checking to the sysfs mappings at
-least.  This patch should catch the case where X (or some other
-process) tries to map beyond the specific BAR it's (supposedly)
-trying to access, making things safer in general.  FWIW both my
-F9 and development versions of X start up fine with this patch
-applied.
+# This series applies on GIT commit eaf9e45100b56c18a2236464cadd92d9a3d399ea
 
-DaveM, will this work for you on sparc?  It looked like your code
-was allowing bridge window mappings, but that behavior should be
-preserved as long as your bridge devices reflect their window
-sizes correctly in their pdev->resources?
+Tomorrow we should be able to test and post the eeprom restore patches for
+the driver.
 
-If we add similar code to the procfs stuff we wouldn't need to do
-any checking in the arches.
+[1]  we will follow up tomorrow with a patch that locks the actual flash AND
+     the bits used by 11) that requires a full chip reset to unlock, as
+     we see a possible way that the iomapped registers could still be poked
+     in such a way to unlock the flash space.
 
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+I will probably update these again but they seem to work for now.
+
 ---
 
- drivers/pci/pci-sysfs.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+Bruce Allan (3):
+      e1000e: write protect ICHx NVM to prevent malicious write/erase
+      e1000e: Use set_memory_ro()/set_memory_rw() to protect flash memory
+      x86: export set_memory_ro and set_memory_rw
 
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 9c71858..4d1aa6e 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -16,6 +16,7 @@
- 
- 
- #include <linux/kernel.h>
-+#include <linux/sched.h>
- #include <linux/pci.h>
- #include <linux/stat.h>
- #include <linux/topology.h>
-@@ -502,6 +503,8 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
- 	struct resource *res = (struct resource *)attr->private;
- 	enum pci_mmap_state mmap_type;
- 	resource_size_t start, end;
-+	unsigned long map_len = vma->vm_end - vma->vm_start;
-+	unsigned long map_offset = vma->vm_pgoff << PAGE_SHIFT;
- 	int i;
- 
- 	for (i = 0; i < PCI_ROM_RESOURCE; i++)
-@@ -510,6 +513,17 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
- 	if (i >= PCI_ROM_RESOURCE)
- 		return -ENODEV;
- 
-+	/*
-+	 * Make sure the range the user is trying to map falls within
-+	 * the resource
-+	 */
-+	if (map_offset + map_len > pci_resource_len(pdev, i)) {
-+		WARN(1, "process \"%s\" tried to map 0x%08lx-0x%08lx on BAR %d (size 0x%08lx)\n",
-+		     current->comm, map_offset, map_offset + map_len, i,
-+		     (unsigned long)pci_resource_len(pdev, i));
-+		return -EINVAL;
-+	}
-+
- 	/* pci_mmap_page_range() expects the same kind of entry as coming
- 	 * from /proc/bus/pci/ which is a "user visible" value. If this is
- 	 * different from the resource itself, arch will do necessary fixup.
+Jesse Barnes (1):
+      pci sysfs warning
 
+Jesse Brandeburg (7):
+      update version
+      e1000e: dump eeprom to dmesg for ich8/9
+      e1000e: allow bad checksum
+      e1000e: drop stats lock
+      e1000e: fix lockdep issues
+      e1000e: do not ever sleep in interrupt context
+      e1000e: reset swflag after resetting hardware
+
+Thomas Gleixner (1):
+      e1000e: debug contention on NVM SWFLAG
+
+
+ arch/x86/mm/pageattr.c       |    2 +
+ drivers/net/e1000e/e1000.h   |    6 +-
+ drivers/net/e1000e/ethtool.c |    9 ++
+ drivers/net/e1000e/hw.h      |    1 
+ drivers/net/e1000e/ich8lan.c |   82 +++++++++++++++++++++
+ drivers/net/e1000e/netdev.c  |  167 ++++++++++++++++++++++++++++--------------
+ drivers/net/e1000e/param.c   |   30 ++++++++
+ drivers/pci/pci-sysfs.c      |   14 ++++
+ 8 files changed, 255 insertions(+), 56 deletions(-)
+
+-- 
+Signature
