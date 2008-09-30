@@ -1,66 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYI3PUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbYI3PVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbYI3PUR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 11:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYI3PUF
+	id S1753554AbYI3PVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 11:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbYI3PVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 11:20:05 -0400
-Received: from vena.lwn.net ([206.168.112.25]:46777 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752654AbYI3PUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 11:20:04 -0400
-Date: Tue, 30 Sep 2008 09:20:01 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH v10 Golden] Unified trace buffer
-Message-ID: <20080930092001.69849210@bike.lwn.net>
-In-Reply-To: <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0809261631420.21618@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0809262148070.30105@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0809270203270.1628@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0809291202180.5493@gandalf.stny.rr.com>
-	<20080929233539.GA31143@Krystal>
-	<alpine.DEB.1.10.0809292000160.8145@gandalf.stny.rr.com>
-	<20080930000307.GA2929@Krystal>
-	<alpine.DEB.1.10.0809292010530.8145@gandalf.stny.rr.com>
-	<20080930034603.GA13801@Krystal>
-	<alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Tue, 30 Sep 2008 11:21:31 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58833 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752720AbYI3PVa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 11:21:30 -0400
+Date: Tue, 30 Sep 2008 17:21:29 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Monty Montgomery <monty@xiph.org>
+cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [regression] CD-DA delay needed after insertion
+ (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
+In-Reply-To: <806dafc20809300807h6d38bbeex2f2b4e496b0d155c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0809301719000.5818@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+ <Pine.LNX.4.64.0806301120570.10868@vixen.sonytel.be>
+ <1214841102.3381.5.camel@localhost.localdomain> <1214925487.3316.12.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0809171701330.21347@vixen.sonytel.be>
+ <806dafc20809300117u2806e37bx986b54543862f358@mail.gmail.com>
+ <Pine.LNX.4.64.0809301430370.5818@vixen.sonytel.be>
+ <806dafc20809300548y4af5f10bs8a80caa24f176c79@mail.gmail.com>
+ <806dafc20809300551i7678660aq5e4fd6e8080382a0@mail.gmail.com>
+ <Pine.LNX.4.64.0809301648490.5818@vixen.sonytel.be>
+ <806dafc20809300807h6d38bbeex2f2b4e496b0d155c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-74525993-1222788089=:5818"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Sep 2008 00:00:11 -0400 (EDT)
-Steven Rostedt <rostedt@goodmis.org> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Ah, I believe the disk IO uses the page frame. That might be a bit more 
-> difficult to pass the data to disk and still keep information on the
-> page frame.
+---584349381-74525993-1222788089=:5818
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Perhaps I'm speaking out of turn, but I have to wonder: am I the only one
-who gets uncomfortable looking at these hacks to overload struct page?  It
-seems fragile as all hell; woe to he who tries to make a change to struct
-page someday and has to track all of this stuff down.
+On Tue, 30 Sep 2008, Monty Montgomery wrote:
+> > With latest cdparanoia git-^H^H^H^Hsvn, the problem still happens.
+> > After applying the patch below, there's no more crash thanks to your last
+> > commit, and It Just Works(tm):
+> 
+> Then I will be doing some headscratching over a copy of the kernel.
+> Oh--  what *exact* kernel are you using?  non-x86 trees don't always
+> sync often with the 'official' mainline and I want to be sure I'm
+> reading the correct thing.  I was a longtime PPC user until about two
+> years ago, and I'm used to there being several substantially different
+> PPC kernel trees [just making sure].
 
-Are the savings gained by using struct page this way really worth the
-added complexity?
+It happens on anything after 2.6.24 (cfr.
+http://bugzilla.kernel.org/show_bug.cgi?id=10974).
+E.g. mainline 2.6.27-rc8.
 
-jon
+> OTOH, if the kernel isn't even servicing the device as a block device
+> until the drive returns a ready status and O_NONBLOCK thwarts waiting
+> for that.... sigh.  Nothing like a passthrough interface that still
+> isn't a passthrough interface after fifteen years of dicking around.
+> 
+> I'm not willing to cripple cdparanoia on more-than-one-cdrom systems
+> because of an edge case due to yet another ill-considered block layer
+> 'feature'.  For one thing *I* need to be able to scan devices without
+> blocking on my own multiple drive systems.  If there's a workaround to
+> get both, I will find it.
+> 
+> But it's too early to say for sure.  I'll check again.
+
+The difficult part is who's to blame: Linux commit
+38582a62ecd337de4212004c7d4844899dc57890 or cdparanoia?
+
+> (May I ask-- why the hard starting/stopping of the interface?  Power saving?]
+
+Which hard starting/stopping do you mean?
+
+Thanks!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-74525993-1222788089=:5818--
