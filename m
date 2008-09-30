@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYI3NdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbYI3Nh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbYI3NdT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 09:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbYI3NdI
+	id S1753807AbYI3Nh3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 09:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYI3NhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 09:33:08 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46619 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbYI3NdH (ORCPT
+	Tue, 30 Sep 2008 09:37:16 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:56281 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751669AbYI3NhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 09:33:07 -0400
-Date: Tue, 30 Sep 2008 09:33:04 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Pekka Paalanen <pq@iki.fi>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2 -tip 3/4] Tracing/ftrace: Adapt mmiotrace to the new
- type of print_line
-In-Reply-To: <c62985530809300625p6c178c0ew6b9619998c3d5011@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0809300931180.1984@gandalf.stny.rr.com>
-References: <48E11E1E.7010001@gmail.com>  <20080929221934.260306dd@daedalus.pq.iki.fi>  <20080930085241.GB10374@elte.hu>  <c62985530809300539o2842c14fk16708abaf69c4e2f@mail.gmail.com>  <alpine.DEB.1.10.0809300844270.1984@gandalf.stny.rr.com>
- <c62985530809300625p6c178c0ew6b9619998c3d5011@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 30 Sep 2008 09:37:13 -0400
+Date: Tue, 30 Sep 2008 15:37:12 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Monty Montgomery <monty@xiph.org>
+cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [regression] CD-DA delay needed after insertion
+ (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
+In-Reply-To: <806dafc20809300548y4af5f10bs8a80caa24f176c79@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0809301535470.5818@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+ <1213648258.3420.12.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
+ <1214605634.3394.91.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0806301120570.10868@vixen.sonytel.be>
+ <1214841102.3381.5.camel@localhost.localdomain> <1214925487.3316.12.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0809171701330.21347@vixen.sonytel.be>
+ <806dafc20809300117u2806e37bx986b54543862f358@mail.gmail.com>
+ <Pine.LNX.4.64.0809301430370.5818@vixen.sonytel.be>
+ <806dafc20809300548y4af5f10bs8a80caa24f176c79@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-228785917-1222781832=:5818"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Tue, 30 Sep 2008, Fr?d?ric Weisbecker wrote:
+---584349381-228785917-1222781832=:5818
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> 2008/9/30 Steven Rostedt <rostedt@goodmis.org>:
+	Hi Monty,
+
+On Tue, 30 Sep 2008, Monty Montgomery wrote:
+> > | 0x0ffd5730 in cdda_read_timed () from /usr/lib/libcdda_interface.so.0
+> > | (gdb) bt
+> > | #0  0x0ffd5730 in cdda_read_timed () from /usr/lib/libcdda_interface.so.0
+> > | #1  0x0ffa7624 in i_read_c_block () from /usr/lib/libcdda_paranoia.so.0
+> > | #2  0x0ffa9114 in paranoia_read_limited () from /usr/lib/libcdda_paranoia.so.0
+> > | #3  0x10004da0 in ?? ()
+> > | #4  0x0fd46704 in ?? () from /lib/libc.so.6
+> > | #5  0x0fd468c0 in __libc_start_main () from /lib/libc.so.6
+> > | #6  0x00000000 in ?? ()
 > >
-> > OK, I'll nuke the ring_buffer_lock :-/
-> >
-> > The trace_pipe calls that and then calls print_trace_line which will
-> > eventually lock the buffer again. This is a bug on my part. I'll fix that
-> > today.
-> >
-> > Thanks,
+> > due to the `buffer' parameter being NULL.
 > 
-> Strange, I can't see any case where print_trace_line could call the
-> ring_buffer_lock.
-> Hmm, I will see in your patch.
+> Oh, good catch.  Platform/drive combination that hadn't been tripped
+> here.  Fixing in SVN now.
 
-Opps, I mean the find_next_entry_inc will do the lock.
+OK, I'll take a look...
 
-The ring_buffer_lock locks all CPU buffers, and the find_next_entry_inc
-will read from the ring buffer which will also lock the buffer. Hence
-a deadlock.
+> (you're on bigendian or using an old bigendian SCSI drive?)
 
--- Steve
+Yep. This is on PS3, which is ppc64 (albeit most userland is ppc32).
 
-> 
-> Ingo, I just saw one damage from the merging, trace_empty() returns
-> TRACE_TYPE_HANDLED. The type is wrong, it should return 1.
-> It's not urgent since the value is the same. Should I send a patch for
-> such a small error?
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-228785917-1222781832=:5818--
