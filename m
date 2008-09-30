@@ -1,53 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbYI3OxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbYI3OyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753971AbYI3OxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 10:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYI3OxH
+	id S1754053AbYI3OyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 10:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYI3OyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 10:53:07 -0400
-Received: from faui2k3.org ([213.95.10.24]:60421 "EHLO casella.faui2k3.org"
+	Tue, 30 Sep 2008 10:54:04 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:38992 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752406AbYI3OxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 10:53:06 -0400
-X-Greylist: delayed 2757 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Sep 2008 10:53:06 EDT
-Date: Tue, 30 Sep 2008 16:06:58 +0200
-From: Wolfgang Kroener <lkml@azog.de>
-To: benh@kernel.crashing.org, linux-kernel@vger.kernel.org
-Message-ID: <20080930140658.GL10156@casella.faui2k3.org>
+	id S1753004AbYI3OyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 10:54:01 -0400
+Message-ID: <48E23D6C.4030406@linux.vnet.ibm.com>
+Date: Tue, 30 Sep 2008 09:53:32 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: lkml@azog.de
-Subject: [PATCH] suspend/resume for ATI Mobility Radeon RV350
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on casella.faui2k3.org)
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adam Litke <agl@linux.vnet.ibm.com>
+Subject: [PATCH] properly reserve in bootmem the lmb reserved regions that
+ cross numa nodes
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I have a ATI Mobility Radeon RV350 and similar problems with radeonfb
-described in http://kernel.org/doc/Documentation/power/s2ram.txt
-Adding the device to radeon_workaround_list solves the Problem.
-Please accept the following patch:
+If there are multiple reserved memory blocks via lmb_reserve() that are 
+contiguous addresses and on different numa nodes we are losing track of which 
+address ranges to reserve in bootmem on which node.  I discovered this 
+when I only recently got to try 16GB huge pages on a system with more 
+then 2 nodes.
 
---8<--
---- drivers/video/aty/radeon_pm.c.orig	2008-09-30 15:00:40.988111330 +0200
-+++ drivers/video/aty/radeon_pm.c	2008-09-30 15:14:10.941524474 +0200
-@@ -89,6 +89,9 @@
- 	BUGFIX("Acer Aspire 2010",
- 	       PCI_VENDOR_ID_AI, 0x0061,
- 	       radeon_pm_off, radeon_reinitialize_M10),
-+	BUGFIX("Acer Travelmate 290D/292LMi",
-+	       PCI_VENDOR_ID_AI, 0x005a,
-+	       radeon_pm_off, radeon_reinitialize_M10),
- 	{ .ident = NULL }
- };
+When scanning the device tree in early boot we call lmb_reserve() with 
+the addresses of the 16G pages that we find so that the memory doesn't 
+get used for something else.  For example the addresses for the pages 
+could be 4000000000, 4400000000, 4800000000, 4C00000000, etc - 8 pages, 
+one on each of eight nodes.  In the lmb after all the pages have been 
+reserved it will look something like the following:
 
--->8--
-Kind regards,
-Wolfgang
+lmb_dump_all:
+    memory.cnt            = 0x2
+    memory.size           = 0x3e80000000
+    memory.region[0x0].base       = 0x0
+                      .size     = 0x1e80000000
+    memory.region[0x1].base       = 0x4000000000
+                      .size     = 0x2000000000
+    reserved.cnt          = 0x5
+    reserved.size         = 0x3e80000000
+    reserved.region[0x0].base       = 0x0
+                      .size     = 0x7b5000
+    reserved.region[0x1].base       = 0x2a00000
+                      .size     = 0x78c000
+    reserved.region[0x2].base       = 0x328c000
+                      .size     = 0x43000
+    reserved.region[0x3].base       = 0xf4e8000
+                      .size     = 0xb18000
+    reserved.region[0x4].base       = 0x4000000000
+                      .size     = 0x2000000000
 
-P. S. please CC me, because I'm not subscribed to the lkml
+
+The reserved.region[0x4] contains the 16G pages.  In 
+arch/powerpc/mm/num.c: do_init_bootmem() we loop through each of the 
+node numbers looking for the reserved regions that belong to the 
+particular node.  It is not able to identify region 0x4 as being a part 
+of each of the 8 nodes.  It is assuming that a reserved region is only
+on a single node.
+
+This patch takes out the reserved region loop from inside
+the loop that goes over each node.  It looks up the active region containing
+the start of the reserved region.  If it extends past that active region then
+it adjusts the size and gets the next active region containing it.
+
+
+Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+---
+
+
+ arch/powerpc/mm/numa.c |   63 ++++++++++++++++++++++++++++---------------------
+ include/linux/mm.h     |    2 +
+ mm/page_alloc.c        |   19 ++++++++++++++
+ 3 files changed, 57 insertions(+), 27 deletions(-)
+
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index d9a1813..07b8726 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -837,36 +837,45 @@ void __init do_init_bootmem(void)
+ 				  start_pfn, end_pfn);
+
+ 		free_bootmem_with_active_regions(nid, end_pfn);
++	}
+
+-		/* Mark reserved regions on this node */
+-		for (i = 0; i < lmb.reserved.cnt; i++) {
+-			unsigned long physbase = lmb.reserved.region[i].base;
+-			unsigned long size = lmb.reserved.region[i].size;
+-			unsigned long start_paddr = start_pfn << PAGE_SHIFT;
+-			unsigned long end_paddr = end_pfn << PAGE_SHIFT;
+-
+-			if (early_pfn_to_nid(physbase >> PAGE_SHIFT) != nid &&
+-			    early_pfn_to_nid((physbase+size-1) >> PAGE_SHIFT) != nid)
+-				continue;
+-
+-			if (physbase < end_paddr &&
+-			    (physbase+size) > start_paddr) {
+-				/* overlaps */
+-				if (physbase < start_paddr) {
+-					size -= start_paddr - physbase;
+-					physbase = start_paddr;
+-				}
+-
+-				if (size > end_paddr - physbase)
+-					size = end_paddr - physbase;
+-
+-				dbg("reserve_bootmem %lx %lx\n", physbase,
+-				    size);
+-				reserve_bootmem_node(NODE_DATA(nid), physbase,
+-						     size, BOOTMEM_DEFAULT);
+-			}
++	/* Mark reserved regions */
++	for (i = 0; i < lmb.reserved.cnt; i++) {
++		unsigned long physbase = lmb.reserved.region[i].base;
++		unsigned long size = lmb.reserved.region[i].size;
++		unsigned long start_pfn = physbase >> PAGE_SHIFT;
++		unsigned long end_pfn = ((physbase+size-1) >> PAGE_SHIFT);
++		struct node_active_region *node_ar;
++
++		node_ar = get_node_active_region(start_pfn);
++		while (start_pfn < end_pfn && node_ar != NULL) {
++			/*
++			 * if reserved region extends past active region
++			 * then trim size to active region
++			 */
++			if (end_pfn >= node_ar->end_pfn)
++				size = (node_ar->end_pfn << PAGE_SHIFT)
++					- (start_pfn << PAGE_SHIFT);
++			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase, size,
++				node_ar->nid);
++			reserve_bootmem_node(NODE_DATA(node_ar->nid), physbase,
++						size, BOOTMEM_DEFAULT);
++			/*
++			 * if reserved region extends past the active region
++			 * then get next active region that contains
++			 *        this reserved region
++			 */
++			if (end_pfn >= node_ar->end_pfn) {
++				start_pfn = node_ar->end_pfn;
++				physbase = start_pfn << PAGE_SHIFT;
++				node_ar = get_node_active_region(start_pfn);
++			} else
++				break;
+ 		}
+
++	}
++
++	for_each_online_node(nid) {
+ 		sparse_memory_present_with_active_regions(nid);
+ 	}
+ }
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 72a15dc..d186a7e 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1020,6 +1020,8 @@ extern void push_node_boundaries(unsigned int nid, unsigned long start_pfn,
+ extern void remove_all_active_ranges(void);
+ extern unsigned long absent_pages_in_range(unsigned long start_pfn,
+ 						unsigned long end_pfn);
++struct node_active_region *get_node_active_region(
++						unsigned long start_pfn);
+ extern void get_pfn_range_for_nid(unsigned int nid,
+ 			unsigned long *start_pfn, unsigned long *end_pfn);
+ extern unsigned long find_min_pfn_with_active_regions(void);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index e293c58..3a15c49 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -3071,6 +3071,25 @@ static void __meminit account_node_boundary(unsigned int nid,
+ 		unsigned long *start_pfn, unsigned long *end_pfn) {}
+ #endif
+
++/**
++ * get_node_active_region - Return active region containing start_pfn
++ * @start_pfn The page to return the region for.
++ *
++ * It will return NULL if active region is not found.
++ */
++struct node_active_region *get_node_active_region(
++							unsigned long start_pfn)
++{
++	int i;
++	for (i = 0; i < nr_nodemap_entries; i++) {
++		unsigned long node_start_pfn = early_node_map[i].start_pfn;
++		unsigned long node_end_pfn = early_node_map[i].end_pfn;
++
++		if (node_start_pfn <= start_pfn && node_end_pfn > start_pfn)
++			return &early_node_map[i];
++	}
++	return NULL;
++}
+
+ /**
+  * get_pfn_range_for_nid - Return the start and end page frames for a node
+
+
+
