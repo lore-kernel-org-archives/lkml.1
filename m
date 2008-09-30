@@ -1,81 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbYI3Uhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYI3Uk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494AbYI3Uhi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 16:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYI3Uha
+	id S1753726AbYI3Uk6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 16:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYI3Uks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 16:37:30 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:25433 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbYI3Uh3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 16:37:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Nn8ATh3W05a59BuL5NARARV8Bwyvdv7F58wnrtlSm577x7ou+5HlO2AB+R1hK3hKLX
-         +qO4LDamphUGzIGP58OQ6b5aHU0iuY2XAfV+XqGGqgzJKwJZSmlXlx8adDNp9J/DrAjN
-         0Q5Ylp8IK2el3Dv2cL10pRuRW9ifxpz62TncE=
-Message-ID: <86802c440809301337i1bbf6e9ckb8de8a1ef08955d3@mail.gmail.com>
-Date: Tue, 30 Sep 2008 13:37:28 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Alexander van Heukelum" <heukelum@mailshack.com>
-Subject: Re: [PATCH] fix: x86: remove cpu_vendor_dev
-Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080930193736.GA4453@mailshack.com>
+	Tue, 30 Sep 2008 16:40:48 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:37217 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752124AbYI3Ukr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 16:40:47 -0400
+Date: Tue, 30 Sep 2008 15:40:26 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+Cc: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
+       sds@tycho.nsa.gov, matthew.dodd@sparta.com, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov, labeled-nfs@linux-nfs.org
+Subject: Re: [PATCH 06/14] KConfig: Add KConfig entries for Labeled NFS
+Message-ID: <20080930204026.GE21039@us.ibm.com>
+References: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov> <1222707986-26606-7-git-send-email-dpquigl@tycho.nsa.gov>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1222792897-5691-1-git-send-email-heukelum@fastmail.fm>
-	 <20080930193736.GA4453@mailshack.com>
-X-Google-Sender-Auth: 36e0b05ece4ed49a
+In-Reply-To: <1222707986-26606-7-git-send-email-dpquigl@tycho.nsa.gov>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 12:37 PM, Alexander van Heukelum
-<heukelum@mailshack.com> wrote:
-> x86_64-kernels after commit 10a434fcb "x86: remove cpu_vendor_dev"
-> crashed on qemu-system-x86_64 due to a typo in vmlinux_64.lds.S.
->
-> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
->
+Quoting David P. Quigley (dpquigl@tycho.nsa.gov):
+> This patch adds two entries into the fs/KConfig file. The first entry
+> NFS_V4_SECURITY_LABEL enables security label support for the NFSv4 client while
+> the second entry NFSD_V4_SECURITY_LABEL enables security labeling support on
+> the server side.
+> 
+> Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
+> Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 > ---
->
-> On Tue, Sep 30, 2008 at 06:41:33PM +0200, Alexander van Heukelum wrote:
->> Moreover, a defconfig won't run :-/ (on qemu-system-x86_64).
->> Bisection pointed to commit 10a434fcb "x86: remove cpu_vendor_dev".
->> The kernel crashes early with a general protection fault in a call
->> to strnlen. I have no idea what goes wrong, yet.
->
-> It took quite some time, but I found the problem... I'll leave
-> the other one to you ;).
->
-> Greetings,
->        Alexander
->
->  arch/x86/kernel/vmlinux_64.lds.S |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-> index 201e81a..46e0544 100644
-> --- a/arch/x86/kernel/vmlinux_64.lds.S
-> +++ b/arch/x86/kernel/vmlinux_64.lds.S
-> @@ -172,8 +172,8 @@ SECTIONS
->   .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
->        *(.x86_cpu_dev.init)
->   }
-> -  SECURITY_INIT
->   __x86_cpu_dev_end = .;
-> +  SECURITY_INIT
->
->   . = ALIGN(8);
->   .parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
->
+>  fs/Kconfig |   17 +++++++++++++++++
+>  1 files changed, 17 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/Kconfig b/fs/Kconfig
+> index abccb5d..47ffb42 100644
+> --- a/fs/Kconfig
+> +++ b/fs/Kconfig
+> @@ -1633,6 +1633,7 @@ config NFS_V4
+> 
+>  	  If unsure, say N.
+> 
+> +
+>  config ROOT_NFS
+>  	bool "Root file system on NFS"
+>  	depends on NFS_FS=y && IP_PNP
+> @@ -1644,6 +1645,15 @@ config ROOT_NFS
+> 
+>  	  Most people say N here.
+> 
+> +config NFS_V4_SECURITY_LABEL
+> +	bool "Provide Security Label support for NFSv4 client"
+> +	depends on NFS_V4 && SECURITY
+> +	help
+> +	  Say Y here if you want label attribute support for NFS version 4.
 
-that is merging problem, Ingo should fix that already...
+A little more here :)
 
-YH
+"Say Y here if you want security label attribute support for NFS version
+4.  Security labels allow security modules like SELinux and Smack to
+label files to facilitate enforcement of their policies.
+
+If you do not wish to enforce SELinux or Smack policies on NFSv4 files,
+say N."
+
+Or something...  the idea being to make it clear to anyone configuring
+a new kernel whether they should say n or y.
+
+> +
+> +
+> +	  If unsure, say N.
+> +
+>  config NFSD
+>  	tristate "NFS server support"
+>  	depends on INET
+> @@ -1725,6 +1735,13 @@ config NFSD_V4
+> 
+>  	  If unsure, say N.
+> 
+> +config NFSD_V4_SECURITY_LABEL
+> +	bool "Provide Security Label support for NFSv4 server"
+> +	depends on NFSD_V4 && SECURITY
+> +	help
+> +	  If you would like to include support for label file attributes
+> +	  over NFSv4, say Y here.
+> +
+>  config LOCKD
+>  	tristate
+> 
+> -- 
+> 1.5.5.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
