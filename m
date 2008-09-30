@@ -1,60 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbYI3L1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbYI3L3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753037AbYI3L1w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 07:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYI3L1p
+	id S1753522AbYI3L3z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 07:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbYI3L3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 07:27:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56352 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752141AbYI3L1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 07:27:44 -0400
-Date: Tue, 30 Sep 2008 13:27:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 0/2] x86: split out dumpstack code from traps_xx.c
-Message-ID: <20080930112728.GD21367@elte.hu>
-References: <1222773135-1073-1-git-send-email-heukelum@fastmail.fm>
+	Tue, 30 Sep 2008 07:29:48 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:53774 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752545AbYI3L3r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 07:29:47 -0400
+Date: Tue, 30 Sep 2008 13:29:44 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Jan Beulich <jbeulich@novell.com>, Andy Whitcroft <apw@shadowen.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] checkpatch: Check for %L for all integer formats (was: Re:
+ [PATCH] fix printk format compiler warnings)
+In-Reply-To: <48C13CE0.76E4.0078.0@novell.com>
+Message-ID: <Pine.LNX.4.64.0809301314270.6954@vixen.sonytel.be>
+References: <48C13CE0.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222773135-1073-1-git-send-email-heukelum@fastmail.fm>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1569103459-1222773675=:6954"
+Content-ID: <Pine.LNX.4.64.0809301323240.6954@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+---584349381-1569103459-1222773675=:6954
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0809301323241.6954@vixen.sonytel.be>
 
-> Hi Ingo,
-> 
-> I intend to keep looking for possibilities to bring traps_32.c and 
-> traps_64.c closer to each-other. One trivial way (from my point of 
-> view) is to split out code into separate files. These two patches 
-> split out a large piece of code that has nothing to do with hardware 
-> traps. Are you willing to take those two patches? Or are they to 
-> intrusive?
+On Fri, 5 Sep 2008, Jan Beulich wrote:
+> %llx and the like cannot be used on u64-derived data types - they must
+> be cast to long long explicitly for arch-es where u64 is a typedef of
+> unsigned long (ia64 is where I observed the problem).
 
-they are not intrusive at all! The right way to do such things is to 
-keep them in reasonably small files.
+> -		printk(KERN_INFO "PCI: bridge %s io port: [%llx, %llx]\n", pci_name(dev), res->start, res->end);
+> +		printk(KERN_INFO "PCI: bridge %s io port: [%Lx, %Lx]\n",
 
-> Patches are against the current master branch of the tip tree. The 
-> defconfigs compile fine and I ran some simple configs within qemu.
+> -		printk(KERN_INFO "PCI: bridge %s 32bit mmio: [%llx, %llx]\n", pci_name(dev), res->start, res->end);
+> +		printk(KERN_INFO "PCI: bridge %s 32bit mmio: [%Lx, %Lx]\n",
 
-would be nice to bring dumpstack_32.c and dumpstack_64.c together as 
-well. While some of the details like IST stack logic (which dont exist 
-on 32-bit) are special, most of the glue, the iterators, the boot 
-parameters, and even the output should be unified some more.
+> -		printk(KERN_INFO "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n", pci_name(dev), (res->flags & PCI_PREF_RANGE_TYPE_64)?"64":"32",res->start, res->end);
+> +		printk(KERN_INFO "PCI: bridge %s %dbit mmio pref: [%Lx, %Lx]\n",
 
-	Ingo
+> -		printk(KERN_INFO "bus: %02x index %x %s: [%llx, %llx]\n", bus->number, i, (res->flags & IORESOURCE_IO)? "io port":"mmio", res->start, res->end);
+> +		printk(KERN_INFO "bus: %02x index %x %s: [%Lx, %Lx]\n",
+
+Why did you replace `%ll' by `%L'?
+
+While `L' is used as an internal flag in Linux' vsnprintf() implementation and
+is still supported because of historical (pre-C99) reasons, the `L' conversion
+qualifier is meant for the `long double' floating point type, as per C99.
+The recommended conversion qualifier for the `long long' integer type is `ll'.
+
+Perhaps checkpatch should check for this? Ah, it already does for some of the
+integer formats. The patch below adds checks for the missing ones.
+
+Subject: [PATCH] checkpatch: Check for %L for all integer formats
+
+Checkpatch checks for the use of the non-standard `L' conversion qualifier for
+some (`u', `d', and `i') of the 6 integers formats.  Add the missing ones
+(`o', `x', and `X'), and keep the list sorted.
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index bc67793..92cbf5e 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -2277,12 +2277,12 @@ sub process {
+ 			WARN("usage of NR_CPUS is often wrong - consider using cpu_possible(), num_possible_cpus(), for_each_possible_cpu(), etc\n" . $herecurr);
+ 		}
+ 
+-# check for %L{u,d,i} in strings
++# check for %L{d,i,o,u,x,X} in strings
+ 		my $string;
+ 		while ($line =~ /(?:^|")([X\t]*)(?:"|$)/g) {
+ 			$string = substr($rawline, $-[1], $+[1] - $-[1]);
+-			if ($string =~ /(?<!%)%L[udi]/) {
+-				WARN("\%Ld/%Lu are not-standard C, use %lld/%llu\n" . $herecurr);
++			if ($string =~ /(?<!%)%L[diouxX]/) {
++				WARN("\%L[diouxX] are not-standard C, use %ll[diouxX]\n" . $herecurr);
+ 				last;
+ 			}
+ 		}
+
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-1569103459-1222773675=:6954--
