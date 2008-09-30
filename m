@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYI3Kji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbYI3Kj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbYI3Kji (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 06:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYI3Kja
+	id S1753289AbYI3Kj6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 06:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYI3Kjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 06:39:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44629 "EHLO mx2.mail.elte.hu"
+	Tue, 30 Sep 2008 06:39:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44757 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446AbYI3Kj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 06:39:29 -0400
-Date: Tue, 30 Sep 2008 12:39:06 +0200
+	id S1751489AbYI3Kjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 06:39:47 -0400
+Date: Tue, 30 Sep 2008 12:39:24 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Eric Dumazet <dada1@cosmosbay.com>,
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Eric Dumazet <dada1@cosmosbay.com>,
        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
 Subject: Re: [PATCH 0/4] futex: get_user_pages_fast() for shared futexes
-Message-ID: <20080930103906.GF7557@elte.hu>
-References: <20080926173219.885155151@twins.programming.kicks-ass.net> <20080927161712.GA1525@elte.hu> <200809301721.52148.nickpiggin@yahoo.com.au>
+Message-ID: <20080930103924.GG7557@elte.hu>
+References: <20080926173219.885155151@twins.programming.kicks-ass.net> <20080927161712.GA1525@elte.hu> <200809301721.52148.nickpiggin@yahoo.com.au> <1222764669.12646.26.camel@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200809301721.52148.nickpiggin@yahoo.com.au>
+In-Reply-To: <1222764669.12646.26.camel@twins.programming.kicks-ass.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,47 +36,87 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> On Sunday 28 September 2008 02:17, Ingo Molnar wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > Since get_user_pages_fast() made it in, I thought to give this another
-> > > try. Lightly tested by disabling the private futexes and running some
-> > > java proglets.
-> >
-> > hm, very interesting. Since this is an important futex usecase i started
-> > testing it in tip/core/futexes:
-> >
-> >  cd33272: futex: cleanup fshared
-> >  a135356: futex: use fast_gup()
-> >  39ce77b: futex: reduce mmap_sem usage
-> >  0d7a336: futex: rely on get_user_pages() for shared futexes
-> >
-> > Nick, it would be nice to get an Acked-by/Reviewed-by from you, before
-> > we think about whether it should go upstream.
+> On Tue, 2008-09-30 at 17:21 +1000, Nick Piggin wrote:
+> > On Sunday 28 September 2008 02:17, Ingo Molnar wrote:
+> > > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > > Since get_user_pages_fast() made it in, I thought to give this another
+> > > > try. Lightly tested by disabling the private futexes and running some
+> > > > java proglets.
+> > >
+> > > hm, very interesting. Since this is an important futex usecase i started
+> > > testing it in tip/core/futexes:
+> > >
+> > >  cd33272: futex: cleanup fshared
+> > >  a135356: futex: use fast_gup()
+> > >  39ce77b: futex: reduce mmap_sem usage
+> > >  0d7a336: futex: rely on get_user_pages() for shared futexes
+> > >
+> > > Nick, it would be nice to get an Acked-by/Reviewed-by from you, before
+> > > we think about whether it should go upstream.
+> > 
+> > Yeah, these all look pretty good. It's nice to get rid of mmap sem here.
+> > 
+> > Which reminds me, we need to put a might_lock mmap_sem into
+> > get_user_pages_fast...
 > 
-> Yeah, these all look pretty good. It's nice to get rid of mmap sem here.
+> Yeah..
 > 
-> Which reminds me, we need to put a might_lock mmap_sem into
-> get_user_pages_fast...
+> > But these patches look good to me (last time we discussed them I thought
+> > there was a race with page truncate, but it looks like you've closed that
+> > by holding page lock over the whole operation...)
 > 
-> But these patches look good to me (last time we discussed them I thought
-> there was a race with page truncate, but it looks like you've closed that
-> by holding page lock over the whole operation...)
+> Just to be sure, I only hold the page lock over the get_futex_key() op,
+> and drop it after getting a ref on the futex key.
 > 
-> Nice work, Peter.
+> I then drop the futex key ref after the futex op is complete.
+> 
+> This assumes the futex key ref is suffucient to guarantee whatever is
+> needed - which is the point I'm still not quite sure about myself.
+> 
+> The futex key ref was used between futex ops, with I assume the intent
+> to ensure the futex backing stays valid. However, the key ref only takes
+> a ref on either the inode or the mm, neither which avoid the specific
+> address of the futex to get unmapped between ops.
+> 
+> So in that respect we're not worse off than before, and any application
+> doing: futex_wait(), munmap(), futex_wake() is going to suffer. And as
+> far as I understand it get the waiting task stuck in D state for
+> ever-more or somesuch.
+> 
+> By now not holding the mmap_sem over the full futex op, but only over
+> the get_futex_key(), that munmap() race gets larger and the actual futex
+> could disappear while we're working on it, but in all cases I looked at
+> that will make the futex op return -EFAULT, so we should be good there.
+> 
+> Gah, now that I look at it, it looks like I made get_futex_key()
+> asymetric wrt private futexes, they don't take a ref on the key, but
+> then do drop one... ouch.. Patch below.
+> 
+> > Nice work, Peter.
+> 
+> Thanks!
+> 
+> > BTW. what kinds of things use inter-process futexes as of now?
+> 
+> On a regular modern Linux system, not much. But I've been told there are
+> applications out there that do indeed make heavy use of them - as
+> they're part of POSIX etc.. blah blah :-)
+> 
+> Also some legacy stuff that's stuck on an ancient glibc (but somehow did
+> manage to upgrade the kernel) might benefit.
+> 
+> 
+> ---
+> Subject: futex: fixup get_futex_key() for private futexes
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> 
+> With the get_user_pages_fast() patches we made get_futex_key() obtain a
+> reference on the returned key, but failed to do so for private futexes.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-great - i've added your Acked-by to the patches and have activated the 
-tip/core/futexes branch for tip/auto-core-next linux-next integration.
-
-here are the commits:
-
- 42569c3: futex: fixup get_futex_key() for private futexes
- c2f9f20: futex: cleanup fshared
- 734b05b: futex: use fast_gup()
- 6127070: futex: reduce mmap_sem usage
- 38d47c1: futex: rely on get_user_pages() for shared futexes
-
-Thanks,
+applied to tip/core/futexes, thanks Peter!
 
 	Ingo
