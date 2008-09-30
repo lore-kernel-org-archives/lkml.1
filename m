@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbYI3Mle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbYI3Mlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbYI3Mle (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 08:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYI3MlZ
+	id S1754040AbYI3Mlr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 08:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYI3Ml1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 08:41:25 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:58621 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752052AbYI3MlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 08:41:24 -0400
-Date: Tue, 30 Sep 2008 14:40:58 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>
-cc: linux-kernel@vger.kernel.org, linux-netdev@vger.kernel.org, kkeil@suse.de,
-       agospoda@redhat.com, arjan@linux.intel.com, david.graham@intel.com,
-       Bruce Allan <bruce.w.allan@intel.com>, john.ronciak@intel.com,
-       Thomas Gleixner <tglx@linutronix.de>, chris.jones@canonical.com,
-       tim.gardner@intel.com, airlied@gmail.com,
-       Bruce Allan <bruce.w.allan@intel.com>
-Subject: Re: [RFC PATCH 11/12] e1000e: write protect ICHx NVM to prevent
- malicious write/erase
-In-Reply-To: <20080930032013.22950.70966.stgit@jbrandeb-bw.jf.intel.com>
-Message-ID: <Pine.LNX.4.64.0809301439021.2307@twin.jikos.cz>
-References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
- <20080930032013.22950.70966.stgit@jbrandeb-bw.jf.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Sep 2008 08:41:27 -0400
+Received: from viefep31-int.chello.at ([62.179.121.49]:54079 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbYI3Ml0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 08:41:26 -0400
+Subject: Re: [PATCH 00/30] Swap over NFS -v18
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>
+In-Reply-To: <20080724140042.408642539@chello.nl>
+References: <20080724140042.408642539@chello.nl>
+Content-Type: text/plain
+Date: Tue, 30 Sep 2008 14:41:16 +0200
+Message-Id: <1222778476.9044.1.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008, Jesse Brandeburg wrote:
-
-> Set the hardware to ignore all write/erase cycles to the GbE region in
-> the ICHx NVM.  This feature can be disabled by the WriteProtectNVM module
-> parameter (enabled by default) though that is not recommended.
+On Thu, 2008-07-24 at 16:00 +0200, Peter Zijlstra wrote:
+> Latest version of the swap over nfs work.
 > 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Patches are against: v2.6.26-rc8-mm1
+> 
+> I still need to write some more comments in the reservation code.
+> 
+> Pekka, it uses ksize(), please have a look.
+> 
+> This version also deals with network namespaces.
+> Two things where I could do with some suggestsion:
+> 
+>   - currently the sysctl code uses current->nrproxy.net_ns to obtain
+>     the current network namespace
+> 
+>   - the ipv6 route cache code has some initialization order issues
 
-I guess there is no chance to have kernel somehow notified when 
-write/erase cycle is unsuccessfully tried, is it? This way, it would also 
-make chasing the root cause easier.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+Daniel, have you ever found time to look at my namespace issues?
 
