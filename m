@@ -1,237 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYI3UWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbYI3Uhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbYI3UWj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 16:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYI3UW0
+	id S1753494AbYI3Uhi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 16:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYI3Uha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 16:22:26 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:53830 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751999AbYI3UWZ (ORCPT
+	Tue, 30 Sep 2008 16:37:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:25433 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbYI3Uh3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 16:22:25 -0400
-Date: Tue, 30 Sep 2008 15:22:11 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Cc: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
-       sds@tycho.nsa.gov, matthew.dodd@sparta.com, trond.myklebust@fys.uio.no,
-       bfields@fieldses.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov, labeled-nfs@linux-nfs.org
-Subject: Re: [PATCH 02/14] LSM/SELinux: inode_{get,set,notify}secctx hooks
-	to access LSM security context information.
-Message-ID: <20080930202211.GD21039@us.ibm.com>
-References: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov> <1222707986-26606-3-git-send-email-dpquigl@tycho.nsa.gov>
+	Tue, 30 Sep 2008 16:37:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Nn8ATh3W05a59BuL5NARARV8Bwyvdv7F58wnrtlSm577x7ou+5HlO2AB+R1hK3hKLX
+         +qO4LDamphUGzIGP58OQ6b5aHU0iuY2XAfV+XqGGqgzJKwJZSmlXlx8adDNp9J/DrAjN
+         0Q5Ylp8IK2el3Dv2cL10pRuRW9ifxpz62TncE=
+Message-ID: <86802c440809301337i1bbf6e9ckb8de8a1ef08955d3@mail.gmail.com>
+Date: Tue, 30 Sep 2008 13:37:28 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Alexander van Heukelum" <heukelum@mailshack.com>
+Subject: Re: [PATCH] fix: x86: remove cpu_vendor_dev
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080930193736.GA4453@mailshack.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1222707986-26606-3-git-send-email-dpquigl@tycho.nsa.gov>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <1222792897-5691-1-git-send-email-heukelum@fastmail.fm>
+	 <20080930193736.GA4453@mailshack.com>
+X-Google-Sender-Auth: 36e0b05ece4ed49a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David P. Quigley (dpquigl@tycho.nsa.gov):
-> This patch introduces three new hooks. The inode_getsecctx hook is used to get
-> all relevant information from an LSM about an inode. The inode_setsecctx is
-> used to set both the in-core and on-disk state for the inode based on a context
-> derived from inode_getsecctx.The final hook inode_notifysecctx will notify the
-> LSM of a change for the in-core state of the inode in question. These hooks are
-> for use in the labeled NFS code and addresses concerns of how to set security
-> on an inode in a multi-xattr LSM. For historical reasons Stephen Smalley's
-> explanation of the reason for these hooks is pasted below.
-> 
-> Quote Stephen Smalley
-> 
-> inode_setsecctx:  Change the security context of an inode.  Updates the
-> in core security context managed by the security module and invokes the
-> fs code as needed (via __vfs_setxattr_noperm) to update any backing
-> xattrs that represent the context.  Example usage:  NFS server invokes
-> this hook to change the security context in its incore inode and on the
-> backing file system to a value provided by the client on a SETATTR
-> operation.
-> 
-> inode_notifysecctx:  Notify the security module of what the security
-> context of an inode should be.  Initializes the incore security context
-> managed by the security module for this inode.  Example usage:  NFS
-> client invokes this hook to initialize the security context in its
-> incore inode to the value provided by the server for the file when the
-> server returned the file's attributes to the client.
-> 
-> Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
-> Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
-
-Hmm, sorry, for all of these new hooks which you introduce, you do not
-define empty cap_* versions and assign them when need in
-security_fixup_ops().  But you unconditionally call them if
-CONFIG_SECURITY=y.  So if you compile a kernel with CONFIG_SECURITY=y
-but CONFIG_SECURITY_SELINUX=n, don't you hose your box?
-
+On Tue, Sep 30, 2008 at 12:37 PM, Alexander van Heukelum
+<heukelum@mailshack.com> wrote:
+> x86_64-kernels after commit 10a434fcb "x86: remove cpu_vendor_dev"
+> crashed on qemu-system-x86_64 due to a typo in vmlinux_64.lds.S.
+>
+> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+>
 > ---
->  include/linux/security.h |   50 ++++++++++++++++++++++++++++++++++++++++++++++
->  security/security.c      |   18 ++++++++++++++++
->  security/selinux/hooks.c |   25 +++++++++++++++++++++++
->  3 files changed, 93 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index 80c4d00..8b5b041 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -1289,6 +1289,36 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
->   *	audit_rule_init.
->   *	@rule contains the allocated rule
->   *
-> + * @inode_notifysecctx:
-> + *	Notify the security module of what the security context of an inode
-> + *	should be.  Initializes the incore security context managed by the
-> + *	security module for this inode.  Example usage:  NFS client invokes
-> + *	this hook to initialize the security context in its incore inode to the
-> + *	value provided by the server for the file when the server returned the
-> + *	file's attributes to the client.
-> + *
-> + * 	@inode we wish to set the security context of.
-> + * 	@ctx contains the string which we wish to set in the inode.
-> + * 	@ctxlen contains the length of @ctx.
-> + *
-> + * @inode_setsecctx:
-> + * 	Change the security context of an inode.  Updates the
-> + * 	incore security context managed by the security module and invokes the
-> + * 	fs code as needed (via __vfs_setxattr_noperm) to update any backing
-> + * 	xattrs that represent the context.  Example usage:  NFS server invokes
-> + * 	this hook to change the security context in its incore inode and on the
-> + * 	backing filesystem to a value provided by the client on a SETATTR
-> + * 	operation.
-> + *
-> + * 	@dentry contains the inode we wish to set the security context of.
-> + * 	@ctx contains the string which we wish to set in the inode.
-> + * 	@ctxlen contains the length of @ctx.
-> + *
-> + * @inode_getsecctx:
-> + * 	Returns a string containing all relavent security context information
-> + * 	@inode we wish to set the security context of.
-> + *	@ctx is a pointer to place the allocated security context should be placed.
-> + *	@ctxlen points to the place to put the length of @ctx.
->   * This is the main security structure.
->   */
->  struct security_operations {
-> @@ -1479,6 +1509,10 @@ struct security_operations {
->  	int (*secctx_to_secid) (const char *secdata, u32 seclen, u32 *secid);
->  	void (*release_secctx) (char *secdata, u32 seclen);
-> 
-> +	int (*inode_notifysecctx)(struct inode *inode, void *ctx, u32 ctxlen);
-> +	int (*inode_setsecctx)(struct dentry *dentry, void *ctx, u32 ctxlen);
-> +	int (*inode_getsecctx)(struct inode *inode, void **ctx, u32 *ctxlen);
-> +
->  #ifdef CONFIG_SECURITY_NETWORK
->  	int (*unix_stream_connect) (struct socket *sock,
->  				    struct socket *other, struct sock *newsk);
-> @@ -1727,6 +1761,9 @@ int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen);
->  int security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid);
->  void security_release_secctx(char *secdata, u32 seclen);
-> 
-> +int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen);
-> +int security_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen);
-> +int security_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen);
->  #else /* CONFIG_SECURITY */
->  struct security_mnt_opts {
->  };
-> @@ -2458,6 +2495,19 @@ static inline int security_secctx_to_secid(const char *secdata,
->  static inline void security_release_secctx(char *secdata, u32 seclen)
->  {
->  }
-> +
-> +static inline int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
-> +{
-> +	return -EOPNOTSUPP;
-> +}
-> +static inline int security_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
-> +{
-> +	return -EOPNOTSUPP;
-> +}
-> +static inline int security_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
-> +{
-> +	return -EOPNOTSUPP;
-> +}
->  #endif	/* CONFIG_SECURITY */
-> 
->  #ifdef CONFIG_SECURITY_NETWORK
-> diff --git a/security/security.c b/security/security.c
-> index 3a4b4f5..d0fd42a 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -869,6 +869,24 @@ void security_release_secctx(char *secdata, u32 seclen)
->  }
->  EXPORT_SYMBOL(security_release_secctx);
-> 
-> +int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
-> +{
-> +	return security_ops->inode_notifysecctx(inode, ctx, ctxlen);
-> +}
-> +EXPORT_SYMBOL(security_inode_notifysecctx);
-> +
-> +int security_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
-> +{
-> +	return security_ops->inode_setsecctx(dentry, ctx, ctxlen);
-> +}
-> +EXPORT_SYMBOL(security_inode_setsecctx);
-> +
-> +int security_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
-> +{
-> +	return security_ops->inode_getsecctx(inode, ctx, ctxlen);
-> +}
-> +EXPORT_SYMBOL(security_inode_getsecctx);
-> +
->  #ifdef CONFIG_SECURITY_NETWORK
-> 
->  int security_unix_stream_connect(struct socket *sock, struct socket *other,
-> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-> index 03fc6a8..b07871b 100644
-> --- a/security/selinux/hooks.c
-> +++ b/security/selinux/hooks.c
-> @@ -5285,6 +5285,28 @@ static void selinux_release_secctx(char *secdata, u32 seclen)
->  	kfree(secdata);
->  }
-> 
-> +/*
-> + *	This hook requires that the inode i_mutex be locked
-> + */
-> +static int selinux_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
-> +{
-> +	return selinux_inode_setsecurity(inode, XATTR_SELINUX_SUFFIX, ctx, ctxlen, 0);
-> +}
-> +
-> +/*
-> + *	This hook requires that the inode i_mutex be locked
-> + */
-> +static int selinux_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
-> +{
-> +	return __vfs_setxattr_noperm(dentry, XATTR_NAME_SELINUX, ctx, ctxlen, 0);
-> +}
-> +
-> +static int selinux_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
-> +{
-> +	*ctxlen = selinux_inode_getsecurity(inode, XATTR_SELINUX_SUFFIX,
-> +						ctx, true);
-> +	return *ctxlen;
-> +}
->  #ifdef CONFIG_KEYS
-> 
->  static int selinux_key_alloc(struct key *k, struct task_struct *tsk,
-> @@ -5491,6 +5513,9 @@ static struct security_operations selinux_ops = {
->  	.secid_to_secctx =		selinux_secid_to_secctx,
->  	.secctx_to_secid =		selinux_secctx_to_secid,
->  	.release_secctx =		selinux_release_secctx,
-> +	.inode_notifysecctx =		selinux_inode_notifysecctx,
-> +	.inode_setsecctx =		selinux_inode_setsecctx,
-> +	.inode_getsecctx =		selinux_inode_getsecctx,
-> 
->  	.unix_stream_connect =		selinux_socket_unix_stream_connect,
->  	.unix_may_send =		selinux_socket_unix_may_send,
-> -- 
-> 1.5.5.1
-> 
-> 
-> --
-> This message was distributed to subscribers of the selinux mailing list.
-> If you no longer wish to subscribe, send mail to majordomo@tycho.nsa.gov with
-> the words "unsubscribe selinux" without quotes as the message.
+>
+> On Tue, Sep 30, 2008 at 06:41:33PM +0200, Alexander van Heukelum wrote:
+>> Moreover, a defconfig won't run :-/ (on qemu-system-x86_64).
+>> Bisection pointed to commit 10a434fcb "x86: remove cpu_vendor_dev".
+>> The kernel crashes early with a general protection fault in a call
+>> to strnlen. I have no idea what goes wrong, yet.
+>
+> It took quite some time, but I found the problem... I'll leave
+> the other one to you ;).
+>
+> Greetings,
+>        Alexander
+>
+>  arch/x86/kernel/vmlinux_64.lds.S |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+> index 201e81a..46e0544 100644
+> --- a/arch/x86/kernel/vmlinux_64.lds.S
+> +++ b/arch/x86/kernel/vmlinux_64.lds.S
+> @@ -172,8 +172,8 @@ SECTIONS
+>   .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
+>        *(.x86_cpu_dev.init)
+>   }
+> -  SECURITY_INIT
+>   __x86_cpu_dev_end = .;
+> +  SECURITY_INIT
+>
+>   . = ALIGN(8);
+>   .parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
+>
+
+that is merging problem, Ingo should fix that already...
+
+YH
