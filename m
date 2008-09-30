@@ -1,167 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYI3DW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbYI3DWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbYI3DW7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 23:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYI3DUQ
+	id S1754797AbYI3DWl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Sep 2008 23:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYI3DUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 23:20:16 -0400
-Received: from mga02.intel.com ([134.134.136.20]:21516 "EHLO mga02.intel.com"
+	Mon, 29 Sep 2008 23:20:12 -0400
+Received: from mga11.intel.com ([192.55.52.93]:23303 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752130AbYI3DUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 23:20:14 -0400
+	id S1752086AbYI3DUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Sep 2008 23:20:09 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,334,1220252400"; 
-   d="scan'208";a="445147601"
+   d="scan'208";a="621752659"
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: [RFC PATCH 08/12] e1000e: allow bad checksum
+Subject: [RFC PATCH 10/12] e1000e: Use set_memory_ro()/set_memory_rw() to
+	protect flash memory
 To: linux-kernel@vger.kernel.org
 Cc: linux-netdev@vger.kernel.org, kkeil@suse.de, agospoda@redhat.com,
        arjan@linux.intel.com, david.graham@intel.com, bruce.w.allan@intel.com,
        jkosina@suse.cz, john.ronciak@intel.com, tglx@linutronix.de,
        chris.jones@canonical.com, tim.gardner@intel.com, airlied@gmail.com,
+       Bruce Allan <bruce.w.allan@intel.com>,
        Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 29 Sep 2008 20:19:58 -0700
-Message-ID: <20080930031957.22950.5669.stgit@jbrandeb-bw.jf.intel.com>
+Date: Mon, 29 Sep 2008 20:20:08 -0700
+Message-ID: <20080930032008.22950.69702.stgit@jbrandeb-bw.jf.intel.com>
 In-Reply-To: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
 References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
 User-Agent: StGIT/0.14.3.163.g06f9.dirty
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Sep 2008 03:19:58.0121 (UTC) FILETIME=[6AAC7990:01C922AB]
+X-OriginalArrivalTime: 30 Sep 2008 03:20:08.0387 (UTC) FILETIME=[70CAF130:01C922AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-currently if the driver notices a bad checksum it will fail to
-load.  This patch allows the driver load process to continue with
-an invalid mac address and could allow the user to use ethtool or
-another app to fix the eeprom.
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-copied from implementation in e1000
+A number of users have reported NVM corruption on various ICHx platform
+LOMs.  One possible reasons for this could be unexpected and/or malicious
+writes to the flash memory area mapped into kernel memory.  Once the
+interface is up, there should be very few reads/writes of the mapped flash
+memory.  This patch makes use of the x86 set_memory_*() functions to set
+the mapped memory read-only and temporarily set it writable only when the
+driver needs to write to it.  With the memory set read-only, any unexpected
+write will be logged with a stack dump indicating the offending code.
 
+Since these LOMs are only on x86 ICHx platforms, it does not matter that
+this API is not yet available on other architectures, however it is
+dependent on a previous patch that exports these function name symbols.
+
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
 
- drivers/net/e1000e/netdev.c |   81 ++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 67 insertions(+), 14 deletions(-)
+ drivers/net/e1000e/e1000.h   |    1 +
+ drivers/net/e1000e/hw.h      |    1 +
+ drivers/net/e1000e/ich8lan.c |   16 ++++++++++++++++
+ drivers/net/e1000e/netdev.c  |   11 +++++++----
+ 4 files changed, 25 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index 9aa3c79..48b0ded 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -4338,6 +4338,52 @@ static void e1000_eeprom_checks(struct e1000_adapter *adapter)
+diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
+index f80e43a..2a3a311 100644
+--- a/drivers/net/e1000e/e1000.h
++++ b/drivers/net/e1000e/e1000.h
+@@ -36,6 +36,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/io.h>
+ #include <linux/netdevice.h>
++#include <asm/cacheflush.h>
+ 
+ #include "hw.h"
+ 
+diff --git a/drivers/net/e1000e/hw.h b/drivers/net/e1000e/hw.h
+index 74f263a..dd25009 100644
+--- a/drivers/net/e1000e/hw.h
++++ b/drivers/net/e1000e/hw.h
+@@ -863,6 +863,7 @@ struct e1000_hw {
+ 
+ 	u8 __iomem *hw_addr;
+ 	u8 __iomem *flash_address;
++	resource_size_t flash_len;
+ 
+ 	struct e1000_mac_info  mac;
+ 	struct e1000_fc_info   fc;
+diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
+index 57c6d2f..2b1aa2a 100644
+--- a/drivers/net/e1000e/ich8lan.c
++++ b/drivers/net/e1000e/ich8lan.c
+@@ -176,12 +176,28 @@ static inline u32 __er32flash(struct e1000_hw *hw, unsigned long reg)
+ 
+ static inline void __ew16flash(struct e1000_hw *hw, unsigned long reg, u16 val)
+ {
++#ifdef _ASM_X86_CACHEFLUSH_H
++	set_memory_rw((unsigned long)hw->flash_address,
++	              hw->flash_len >> PAGE_SHIFT);
++#endif
+ 	writew(val, hw->flash_address + reg);
++#ifdef _ASM_X86_CACHEFLUSH_H
++	set_memory_ro((unsigned long)hw->flash_address,
++	              hw->flash_len >> PAGE_SHIFT);
++#endif
  }
  
- /**
-+ * e1000e_dump_eeprom - write the eeprom to kernel log
-+ * @adapter: our adapter struct
-+ *
-+ * Dump the eeprom for users having checksum issues
-+ **/
-+static void e1000e_dump_eeprom(struct e1000_adapter *adapter)
-+{
-+	struct net_device *netdev = adapter->netdev;
-+	struct ethtool_eeprom eeprom;
-+	const struct ethtool_ops *ops = netdev->ethtool_ops;
-+	u8 *data;
-+	int i;
-+	u16 csum_old, csum_new = 0;
-+
-+	eeprom.len = ops->get_eeprom_len(netdev);
-+	eeprom.offset = 0;
-+
-+	data = kzalloc(eeprom.len, GFP_KERNEL);
-+	if (!data) {
-+		printk(KERN_ERR "Unable to allocate memory to dump EEPROM"
-+		       " data\n");
-+		return;
-+	}
-+
-+	ops->get_eeprom(netdev, &eeprom, data);
-+
-+	csum_old = (data[NVM_CHECKSUM_REG * 2]) +
-+		   (data[NVM_CHECKSUM_REG * 2 + 1] << 8);
-+	for (i = 0; i < NVM_CHECKSUM_REG * 2; i += 2)
-+		csum_new += data[i] + (data[i + 1] << 8);
-+	csum_new = NVM_SUM - csum_new;
-+
-+	printk(KERN_ERR "/*********************/\n");
-+	printk(KERN_ERR "Current EEPROM Checksum : 0x%04x\n", csum_old);
-+	printk(KERN_ERR "Calculated              : 0x%04x\n", csum_new);
-+
-+	printk(KERN_ERR "Offset    Values\n");
-+	printk(KERN_ERR "========  ======\n");
-+	print_hex_dump(KERN_ERR, "", DUMP_PREFIX_OFFSET, 16, 1, data, 128, 0);
-+
-+	printk(KERN_ERR "/*********************/\n");
-+
-+	kfree(data);
-+}
-+
-+/**
-  * e1000_probe - Device Initialization Routine
-  * @pdev: PCI device information struct
-  * @ent: entry in e1000_pci_tbl
-@@ -4527,31 +4573,39 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
- 	 * attempt. Let's give it a few tries
- 	 */
- 	for (i = 0;; i++) {
--		if (e1000_validate_nvm_checksum(&adapter->hw) >= 0)
-+		if (e1000_validate_nvm_checksum(hw) >= 0) {
-+			/* copy the MAC address out of the NVM */
-+			if (e1000e_read_mac_addr(&adapter->hw))
-+				e_err("NVM Read Error reading MAC address\n");
- 			break;
-+		}
- 		if (i == 2) {
- 			e_err("The NVM Checksum Is Not Valid\n");
--			err = -EIO;
--			goto err_eeprom;
-+			e1000e_dump_eeprom(adapter);
-+			/*
-+			 * set MAC address to all zeroes to invalidate and
-+			 * temporary disable this device for the user. This
-+			 * blocks regular traffic while still permitting
-+			 * ethtool ioctls from reaching the hardware as well as
-+			 * allowing the user to run the interface after
-+			 * manually setting a hw addr using
-+			 * `ip link set address`
-+			 */
-+			memset(hw->mac.addr, 0, netdev->addr_len);
-+			break;
- 		}
+ static inline void __ew32flash(struct e1000_hw *hw, unsigned long reg, u32 val)
+ {
++#ifdef _ASM_X86_CACHEFLUSH_H
++	set_memory_rw((unsigned long)hw->flash_address,
++	              hw->flash_len >> PAGE_SHIFT);
++#endif
+ 	writel(val, hw->flash_address + reg);
++#ifdef _ASM_X86_CACHEFLUSH_H
++	set_memory_ro((unsigned long)hw->flash_address,
++	              hw->flash_len >> PAGE_SHIFT);
++#endif
+ }
+ 
+ #define er16flash(reg)		__er16flash(hw, (reg))
+diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+index 57cead3..f04de5a 100644
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -4402,7 +4402,6 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
+ 	struct e1000_hw *hw;
+ 	const struct e1000_info *ei = e1000_info_tbl[ent->driver_data];
+ 	resource_size_t mmio_start, mmio_len;
+-	resource_size_t flash_start, flash_len;
+ 
+ 	static int cards_found;
+ 	int i, err, pci_using_dac;
+@@ -4472,11 +4471,15 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
+ 
+ 	if ((adapter->flags & FLAG_HAS_FLASH) &&
+ 	    (pci_resource_flags(pdev, 1) & IORESOURCE_MEM)) {
+-		flash_start = pci_resource_start(pdev, 1);
+-		flash_len = pci_resource_len(pdev, 1);
+-		adapter->hw.flash_address = ioremap(flash_start, flash_len);
++		adapter->hw.flash_len = pci_resource_len(pdev, 1);
++		adapter->hw.flash_address = ioremap(pci_resource_start(pdev, 1),
++		                                    adapter->hw.flash_len);
+ 		if (!adapter->hw.flash_address)
+ 			goto err_flashmap;
++#ifdef _ASM_X86_CACHEFLUSH_H
++		set_memory_ro((unsigned long)adapter->hw.flash_address,
++		              adapter->hw.flash_len >> PAGE_SHIFT);
++#endif
  	}
  
- 	e1000_eeprom_checks(adapter);
- 
--	/* copy the MAC address out of the NVM */
--	if (e1000e_read_mac_addr(&adapter->hw))
--		e_err("NVM Read Error while reading MAC address\n");
--
-+	/* don't block initalization here due to bad MAC address */
- 	memcpy(netdev->dev_addr, adapter->hw.mac.addr, netdev->addr_len);
- 	memcpy(netdev->perm_addr, adapter->hw.mac.addr, netdev->addr_len);
- 
- 	if (!is_valid_ether_addr(netdev->perm_addr)) {
--		e_err("Invalid MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
--		      netdev->perm_addr[0], netdev->perm_addr[1],
--		      netdev->perm_addr[2], netdev->perm_addr[3],
--		      netdev->perm_addr[4], netdev->perm_addr[5]);
--		err = -EIO;
--		goto err_eeprom;
-+		DECLARE_MAC_BUF(mac);
-+		e_err("Invalid MAC Address: %s\n",
-+		      print_mac(mac, netdev->perm_addr));
- 	}
- 
- 	init_timer(&adapter->watchdog_timer);
-@@ -4640,7 +4694,6 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
- err_register:
- 	if (!(adapter->flags & FLAG_HAS_AMT))
- 		e1000_release_hw_control(adapter);
--err_eeprom:
- 	if (!e1000_check_reset_block(&adapter->hw))
- 		e1000_phy_hw_reset(&adapter->hw);
- err_hw_init:
+ 	/* construct the net_device struct */
 
