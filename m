@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbYI3HGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751846AbYI3HH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753103AbYI3HGq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 03:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYI3HGh
+	id S1751846AbYI3HH7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 03:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYI3HHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 03:06:37 -0400
-Received: from styx.suse.cz ([82.119.242.94]:48517 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752003AbYI3HGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 03:06:36 -0400
-Date: Tue, 30 Sep 2008 09:06:33 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jesse.brandeburg@intel.com
-Subject: Re: Linux 2.6.27-rc8
-In-Reply-To: <alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org>
-Message-ID: <alpine.LNX.1.10.0809300859590.4022@jikos.suse.cz>
-References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org> <Pine.LNX.4.64.0809300125460.2307@twin.jikos.cz> <alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 30 Sep 2008 03:07:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33024 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751446AbYI3HHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 03:07:49 -0400
+Date: Tue, 30 Sep 2008 09:07:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-netdev@vger.kernel.org, kkeil@suse.de,
+       agospoda@redhat.com, arjan@linux.intel.com, david.graham@intel.com,
+       bruce.w.allan@intel.com, jkosina@suse.cz, john.ronciak@intel.com,
+       tglx@linutronix.de, chris.jones@canonical.com, tim.gardner@intel.com,
+       airlied@gmail.com
+Subject: Re: [RFC PATCH 01/12] x86: export set_memory_ro and set_memory_rw
+Message-ID: <20080930070731.GA30927@elte.hu>
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com> <20080930031922.22950.84239.stgit@jbrandeb-bw.jf.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080930031922.22950.84239.stgit@jbrandeb-bw.jf.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008, Linus Torvalds wrote:
 
-> > Intel is working with us on tracking down and resolving the issue, but 
-> > this is not going as well as one would like to see (one attempt, one 
-> > card with completely hosed EEPROM contents ... and restoring the 
-> > contents is not *that* trivial).
-> What's the magic to trigger it? I've got a laptop with that e1000e chip 
-> in it, and am obviously running a recent kernel on it. Do people have a 
-> handle on it? Is it actually verified to be kernel-related, and not 
-> related to the X server etc?
+* Jesse Brandeburg <jesse.brandeburg@intel.com> wrote:
 
-So far it seems to be that you need 1) something close to xorg 7.4 and 
-2) 2.6.27-rcX kernel to trigger it. Not every system having e1000e is 
-affected.
+> From: Bruce Allan <bruce.w.allan@intel.com>
+> 
+> Export set_memory_ro() and set_memory_rw() calls for use by drivers 
+> that need to have more debug information about who might be writing to 
+> memory space. this was initially developed for use while debugging a 
+> memory corruption problem with e1000e.
 
-Apparently it is some kind of race, as it usually takes multiple cycles to 
-trigger (on one of our testing machines this took three attempts to 
-trigger for the first time, and then after unbricking the machine and 
-restarting testing, the reproduction tests have been running for several 
-hours).
+applied to tip/x86/exports, thanks Jesse.
 
-It always seems to happen when X is probing/initializing the graphics 
-card. So it really seems to be some badness in Xorg intel driver 
-initialization code, and kernel/hardware allows bad things to happen.
-
-Last time I heard, our X developers are suspecting vbeinit initialization 
-code in Intel driver and are looking into it.
-
-Also, we are going to release next opensuse/SLES beta with patches that 
-should mitigate the problem (Jesse has posted a new version of them), so 
-hopefully we will then receive some stacktraces from the users who are 
-able to trigger the problem more easily.
-
--- 
-Jiri Kosina
-SUSE Labs
+	Ingo
