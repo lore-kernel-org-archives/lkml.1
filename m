@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbYI3N0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbYI3NbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753928AbYI3N0k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 09:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYI3N0b
+	id S1753798AbYI3NbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 09:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYI3NbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 09:26:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59278 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751767AbYI3N0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 09:26:30 -0400
-Date: Tue, 30 Sep 2008 15:26:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com,
-       a.p.zijlstra@chello.nl
-Subject: Re: [PATCH][resubmit] sched: minor optimizations in wake_affine
-	and select_task_rq_fair
-Message-ID: <20080930132609.GA19233@elte.hu>
-References: <20080929100227.GA21129@amitarora.in.ibm.com> <20080930114539.GB14977@amitarora.in.ibm.com>
+	Tue, 30 Sep 2008 09:31:09 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:53811 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbYI3NbG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 09:31:06 -0400
+Date: Tue, 30 Sep 2008 16:30:24 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, iommu@lists.linux-foundation.org,
+       David Woodhouse <dwmw2@infradead.org>,
+       Amit Shah <amit.shah@qumranet.com>, Ingo Molnar <mingo@redhat.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 6/9] x86/iommu: change Calgary to use dma_ops register
+	interface
+Message-ID: <20080930133024.GA20341@il.ibm.com>
+References: <1222107681-8185-1-git-send-email-joerg.roedel@amd.com> <1222107681-8185-7-git-send-email-joerg.roedel@amd.com> <20080930111028.GC12529@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080930114539.GB14977@amitarora.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080930111028.GC12529@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Amit K. Arora <aarora@linux.vnet.ibm.com> wrote:
-
-> As mentioned in http://lkml.org/lkml/2008/9/30/141 , this is the new
-> patch.
+On Tue, Sep 30, 2008 at 01:10:28PM +0200, Ingo Molnar wrote:
 > 
-> sched: Minor optimizations in wake_affine and select_task_rq_fair
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
-> This patch does following:
-> o Removes unused variable and argument "rq".
-> o Optimizes one of the "if" conditions in wake_affine() - i.e.  if
->   "balanced" is true, we need not do rest of the calculations in the
->   condition.
-> o If this cpu is same as the previous cpu (on which woken up task
->   was running when it went to sleep), no need to call wake_affine at all.
+> > +static int calgary_device_supported(struct device *dev)
+> > +{
+> > +	struct iommu_table *tbl;
+> > +
+> > +	tbl = find_iommu_table(dev);
+> > +
+> > +	return translation_enabled(tbl);
+> > +}
 > 
-> Signed-off-by: Amit K Arora <aarora@linux.vnet.ibm.com>
-> CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> CC: Ingo Molnar <mingo@elte.hu>
+> i guess this could be written as a simple:
+> 
+> > +static int calgary_device_supported(struct device *dev)
+> > +{
+> > +	return translation_enabled(find_iommu_table(dev));
+> > +}
 
-applied to tip/sched/devel, thanks Amit!
+Sure, but I prefer the explicit form since it lends itself to easier
+debugging (oops line numbers, adding printks, etc.).
 
-	Ingo
+Cheers,
+Muli
+-- 
+The First Workshop on I/O Virtualization (WIOV '08)
+Dec 2008, San Diego, CA, http://www.usenix.org/wiov08/
+                      xxx
+SYSTOR 2009---The Israeli Experimental Systems Conference
+http://www.haifa.il.ibm.com/conferences/systor2009/
