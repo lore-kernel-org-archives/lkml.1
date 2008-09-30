@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbYI3PsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYI3Ps5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754298AbYI3PsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 11:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbYI3PsA
+	id S1754422AbYI3Ps5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 11:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYI3Pss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 11:48:00 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:57143 "EHLO e1.ny.us.ibm.com"
+	Tue, 30 Sep 2008 11:48:48 -0400
+Received: from mga09.intel.com ([134.134.136.24]:61606 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753154AbYI3Pr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 11:47:59 -0400
-Subject: Re: [PATCH] properly reserve in bootmem the lmb reserved regions
-	that cross numa nodes
-From: Adam Litke <agl@us.ibm.com>
-To: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
+	id S1752992AbYI3Pss convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 11:48:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,338,1220252400"; 
+   d="scan'208";a="342221684"
+From: "Allan, Bruce W" <bruce.w.allan@intel.com>
+To: Jiri Kosina <jkosina@suse.cz>, Krzysztof Halasa <khc@pm.waw.pl>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adam Litke <agl@linux.vnet.ibm.com>
-In-Reply-To: <48E23D6C.4030406@linux.vnet.ibm.com>
-References: <48E23D6C.4030406@linux.vnet.ibm.com>
-Content-Type: text/plain
-Organization: IBM
-Date: Tue, 30 Sep 2008 10:47:55 -0500
-Message-Id: <1222789675.13978.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Date: Tue, 30 Sep 2008 08:48:36 -0700
+Subject: RE: Linux 2.6.27-rc8
+Thread-Topic: Linux 2.6.27-rc8
+Thread-Index: AckjCUH0Cqbou5QjSxeb5+7x8s1GZwACqHhg
+Message-ID: <B27EBC40D200ED48A3F4CC2EBEABAE0B157C5019@orsmsx501.amr.corp.intel.com>
+References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org>
+ <Pine.LNX.4.64.0809300125460.2307@twin.jikos.cz>
+ <alpine.LFD.2.00.0809291855000.3389@nehalem.linux-foundation.org>
+ <alpine.LNX.1.10.0809300859590.4022@jikos.suse.cz>
+ <m3d4ilk9n5.fsf@maximus.localdomain>
+ <alpine.LNX.1.10.0809301610300.4022@jikos.suse.cz>
+In-Reply-To: <alpine.LNX.1.10.0809301610300.4022@jikos.suse.cz>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This seems like the right approach to me.  I have pointed out a few
-stylistic issues below.
+Ditto here, i.e. we have no similar reports on other parts.
 
-On Tue, 2008-09-30 at 09:53 -0500, Jon Tollefson wrote:
-<snip>
-> +	/* Mark reserved regions */
-> +	for (i = 0; i < lmb.reserved.cnt; i++) {
-> +		unsigned long physbase = lmb.reserved.region[i].base;
-> +		unsigned long size = lmb.reserved.region[i].size;
-> +		unsigned long start_pfn = physbase >> PAGE_SHIFT;
-> +		unsigned long end_pfn = ((physbase+size-1) >> PAGE_SHIFT);
+-----Original Message-----
+From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Jiri Kosina
+Sent: Tuesday, September 30, 2008 7:11 AM
+To: Krzysztof Halasa
+Cc: Linus Torvalds; Linux Kernel Mailing List; Brandeburg, Jesse
+Subject: Re: Linux 2.6.27-rc8
 
-CodingStyle dictates that this should be:
-unsigned long end_pfn = ((physbase + size - 1) >> PAGE_SHIFT);
+On Tue, 30 Sep 2008, Krzysztof Halasa wrote:
 
-<snip>
+> > So far it seems to be that you need 1) something close to xorg 7.4 and
+> > 2) 2.6.27-rcX kernel to trigger it. Not every system having e1000e is
+> > affected.
+> And this e1000e must be ICH*, right? I.e. not a separate e1000e
+> chip/card?
 
-> +/**
-> + * get_node_active_region - Return active region containing start_pfn
-> + * @start_pfn The page to return the region for.
-> + *
-> + * It will return NULL if active region is not found.
-> + */
-> +struct node_active_region *get_node_active_region(
-> +							unsigned long start_pfn)
+So far all the affected systems I am aware of were ICH.
 
-Bad style.  I think the convention would be to write it like this:
-
-struct node_active_region *
-get_node_active_region(unsigned long start_pfn)
-
-> +{
-> +	int i;
-> +	for (i = 0; i < nr_nodemap_entries; i++) {
-> +		unsigned long node_start_pfn = early_node_map[i].start_pfn;
-> +		unsigned long node_end_pfn = early_node_map[i].end_pfn;
-> +
-> +		if (node_start_pfn <= start_pfn && node_end_pfn > start_pfn)
-> +			return &early_node_map[i];
-> +	}
-> +	return NULL;
-> +}
-
-Since this is using the early_node_map[], should we mark the function
-__mminit?  
-
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
-
+--
+Jiri Kosina
+SUSE Labs
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
