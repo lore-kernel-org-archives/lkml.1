@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbYI3SGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbYI3SLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753796AbYI3SGQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 14:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYI3SGB
+	id S1753574AbYI3SLP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 14:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYI3SK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 14:06:01 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:34992 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752624AbYI3SGA (ORCPT
+	Tue, 30 Sep 2008 14:10:59 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:56879 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752301AbYI3SK6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 14:06:00 -0400
-Subject: [PATCH] x86, Fix broken LDT access in VMI
-From: Zachary Amsden <zach@vmware.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>
-Content-Type: multipart/mixed; boundary="=-Gfxsqg7PAw78oZqAYOXx"
-Date: Tue, 30 Sep 2008 11:02:12 -0700
-Message-Id: <1222797732.7330.35.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Tue, 30 Sep 2008 14:10:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=MJn3r++sHRtR9S0k9MSwQlFC3we+QproDKrZQE90+/fSG+iRGnfCrtC+F+wG480aBD
+         mpRCnFCQ6y8VxUGASjh+qU7ywl35dmNeQ9Yoi2GWwi8F4DxyH6KpmffbhJJZgcIxhkdN
+         48M3GlAj8uKnaFRCn1aaGwfpPUn6G+/rwVh1Y=
+Message-ID: <806dafc20809301110h2817e9e8g42ba031220763e9d@mail.gmail.com>
+Date: Tue, 30 Sep 2008 14:10:56 -0400
+From: "Monty Montgomery" <monty@xiph.org>
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [regression] CD-DA delay needed after insertion (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
+Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       linux-scsi@vger.kernel.org,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0809301719000.5818@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+	 <1214925487.3316.12.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0809171701330.21347@vixen.sonytel.be>
+	 <806dafc20809300117u2806e37bx986b54543862f358@mail.gmail.com>
+	 <Pine.LNX.4.64.0809301430370.5818@vixen.sonytel.be>
+	 <806dafc20809300548y4af5f10bs8a80caa24f176c79@mail.gmail.com>
+	 <806dafc20809300551i7678660aq5e4fd6e8080382a0@mail.gmail.com>
+	 <Pine.LNX.4.64.0809301648490.5818@vixen.sonytel.be>
+	 <806dafc20809300807h6d38bbeex2f2b4e496b0d155c@mail.gmail.com>
+	 <Pine.LNX.4.64.0809301719000.5818@vixen.sonytel.be>
+X-Google-Sender-Auth: 66dc0085ca37a08c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> It happens on anything after 2.6.24 (cfr.
+> http://bugzilla.kernel.org/show_bug.cgi?id=10974).
+> E.g. mainline 2.6.27-rc8.
 
---=-Gfxsqg7PAw78oZqAYOXx
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Ah.
 
-This one took a long time to rear up because LDT usage is not very
-common, but the bug is quite serious.  It got introduced along with
-another bug, already fixed, by 75b8bb3e56ca09a467fbbe5229bc68627f7445be 
+Geert, I'm sorry this has come up and thanks for bringing it to my attention.
 
-Please apply.  Fix should also be headed for stable tree and backported,
-it is really sadly trivial.  Glauber, Ingo, sorry for the offlist
-posting, somehow the original missed LKML.
+I'm relying on 15 year old behavior.  It has always been the case that
+the packet pass-through interfaces treat O_NONBLOCK as 'don't wait for
+commands' (ie, classic async communication or, in the case of SGIO,
+don't block on mandatory locks) not 'change how you mediate the
+communication'.  The whole point of the passthrough interface is
+'please don't fuck with the packet stream.  My userspace application
+knows better than the kernel in this case'.  If the kernel has
+suddenly changed that, it is responsible for the loss of
+functionality, not cdparanoia.
 
-Zach
+It is also the case that the kernel randomly interspersing its own
+packets, commands and setup would be yanking setup state out from
+under cdparanoia.  What am I supposed to do if I set density and
+completely change the data mode of a cdrom drive (persistent across
+disc changes), or change the block descriptor caching extents, only to
+have the kernel decide to change them back without warning? If you
+eject media with one of these new kernels, do I still get any
+meaningful sense state, or is the sense key and all subsequent
+commands merely intercepted and refused?  What happens on a timeout?
+A media error?  A bus reset?  Does any 'CHECK CONDITION' status
+completely yank the rug out from under the passthrough?
 
---=-Gfxsqg7PAw78oZqAYOXx
-Content-Disposition: attachment; filename=vmi-ldt-fix.patch
-Content-Type: text/x-patch; name=vmi-ldt-fix.patch; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+The kernel must not interfere with the pass-through or cdparanoia is
+castrated. Or... I'm back to the era of enacting workarounds based on
+kernel dot-version.  Regardless, this is a change to a longstanding
+behavior.  Is it on purpose, unintentional or 'intentional but without
+realizing it was actually important'?  Would be interesting to know.
 
-After investigating a JRE failure, I found this bug was introduced a long time
-ago, and had already managed to survive another bugfix which occurred on the
-same line.  The result is a total failure of the JRE due to LDT selectors not
-working properly.
+> In this case, sg means scatter/gather, and it's a purely internal
+> interface.  It does not start/stop the drive, nor the scsi interface.
 
-Signed-off-by: Zachary Amsden <zach@vmware.com>
+Ah, I confused it with a much older utility that would up/down an SG
+device entirely.
 
-diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-index 040a95e..411e34f 100644
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -234,7 +234,7 @@ static void vmi_write_ldt_entry(struct desc_struct *dt, int entry,
- 				const void *desc)
- {
- 	u32 *ldt_entry = (u32 *)desc;
--	vmi_ops.write_idt_entry(dt, entry, ldt_entry[0], ldt_entry[1]);
-+	vmi_ops.write_ldt_entry(dt, entry, ldt_entry[0], ldt_entry[1]);
- }
- 
- static void vmi_load_sp0(struct tss_struct *tss,
-
---=-Gfxsqg7PAw78oZqAYOXx--
-
+Monty
