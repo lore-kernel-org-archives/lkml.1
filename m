@@ -1,46 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYI3VOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbYI3VQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151AbYI3VOq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 17:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYI3VO2
+	id S1753063AbYI3VQj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 17:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYI3VQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 17:14:28 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:40483 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753300AbYI3VO1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 17:14:27 -0400
-Message-ID: <48E2969F.9000303@nortel.com>
-Date: Tue, 30 Sep 2008 15:14:07 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: unpredictability in scheduler test results -- still present
-References: <48D2DA0D.4060300@nortel.com> <48DA5A84.8030704@nortel.com> <48DACF55.3070209@nortel.com> <20080927200433.GC28937@elte.hu> <48E0F7B9.3040301@nortel.com> <20080930111217.GA21367@elte.hu>
-In-Reply-To: <20080930111217.GA21367@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 30 Sep 2008 17:16:32 -0400
+Received: from mx1.wp.pl ([212.77.101.5]:61205 "EHLO mx1.wp.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753061AbYI3VQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 17:16:31 -0400
+Date: Tue, 30 Sep 2008 23:17:51 +0200
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH] x86: do not allow to optimize flag_is_changeable_p() (rev.
+ 2)
+Message-Id: <20080930231751.58db0fff.krzysztof.h1@wp.pl>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Sep 2008 21:14:09.0514 (UTC) FILETIME=[7AB294A0:01C92341]
+X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
+X-WP-SPAM: NO 0000000 [UQPU]                               
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Chris Friesen <cfriesen@nortel.com> wrote:
->> Ingo Molnar wrote:
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
->>> OTOH, what does 'truning on dftrace' exactly mean? Just enabling it in  
->>> the .config, or also activating it via /debug/tracing/current_tracer?
+The flag_is_changeable_p() is used by
+has_cpuid_p() which can return different results
+in the code sequence below:
 
->> Just enabling it in the .config is enough to trigger the behaviour 
->> change.  I'm not explicitly activating any traces.
+ if (!have_cpuid_p())
+      identify_cpu_without_cpuid(c);
 
-> ok, that would be a clear ftrace bug i guess?
+  /* cyrix could have cpuid enabled via c_identify()*/
+  if (!have_cpuid_p())
+      return;
 
-It's either an ftrace bug or a fragile load balancer bug.  I wonder if 
-it's related somehow to the stop_machine() call in ftrace_dynamic_init()?
+Otherwise, the gcc 3.4.6 optimizes these two calls
+into one which make the code not working correctly.
 
-Chris
+Cyrix cpus have the CPUID instruction enabled before
+the second call to the have_cpuid_p() but
+it is not detected due to the gcc optimization.
+Thus the ARR registers (mtrr like) are not detected
+on such a cpu.
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+
+The second revision of this patch adds comment
+after request from Jeremy Fitzhardinge.
+
+I have tested the 6x86MX cpu with the CPUID
+disabled. I have used linux-next tree (20080919)
+and Yinghai Lu's patch:
+
+x86: identify_cpu_without_cpuid v2
+
+http://marc.info/?l=linux-kernel&m=122138380004347&w=2
+
+The patch below is required to make the patch
+above working correctly.
+
+diff -urp linux-ref/arch/x86/kernel/cpu/common.c linux-mm/arch/x86/kernel/cpu/common.c
+--- linux-ref/arch/x86/kernel/cpu/common.c	2008-09-30 23:07:08.000000000 +0200
++++ linux-mm/arch/x86/kernel/cpu/common.c	2008-09-30 23:12:19.098190815 +0200
+@@ -124,18 +124,25 @@ static inline int flag_is_changeable_p(u
+ {
+ 	u32 f1, f2;
+ 
+-	asm("pushfl\n\t"
+-	    "pushfl\n\t"
+-	    "popl %0\n\t"
+-	    "movl %0,%1\n\t"
+-	    "xorl %2,%0\n\t"
+-	    "pushl %0\n\t"
+-	    "popfl\n\t"
+-	    "pushfl\n\t"
+-	    "popl %0\n\t"
+-	    "popfl\n\t"
+-	    : "=&r" (f1), "=&r" (f2)
+-	    : "ir" (flag));
++	/*
++	 * Cyrix and IDT cpus allow disabling of CPUID
++	 * so the code below may return different results
++	 * when it is executed before and after enabling
++	 * the CPUID. Add "volatile" to not allow gcc to
++	 * optimize the subsequent calls to this function.
++	 */
++	asm volatile ("pushfl\n\t"
++		      "pushfl\n\t"
++		      "popl %0\n\t"
++		      "movl %0,%1\n\t"
++		      "xorl %2,%0\n\t"
++		      "pushl %0\n\t"
++		      "popfl\n\t"
++		      "pushfl\n\t"
++		      "popl %0\n\t"
++		      "popfl\n\t"
++		      : "=&r" (f1), "=&r" (f2)
++		      : "ir" (flag));
+ 
+ 	return ((f1^f2) & flag) != 0;
+ }
