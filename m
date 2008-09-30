@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYI3Mvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbYI3MyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbYI3Mvp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 08:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYI3Mvg
+	id S1753766AbYI3MyR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 08:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYI3MyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 08:51:36 -0400
-Received: from rn-out-0910.google.com ([64.233.170.191]:40940 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752669AbYI3Mvf (ORCPT
+	Tue, 30 Sep 2008 08:54:05 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:57075 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752477AbYI3MyE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 08:51:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=FNgwCOZ92YRRNJ9xgMyvw0C+7+iDrrd2ClgnPocOYFpPBirbMXbCDyoubsMnxFb9MD
-         M081XfS1SmyFrgmPD3K436UK1c9DCrA/N1xvUORsWDuyvx6SG8KebDHJ1fc1Ii7A2hxO
-         qJaM1Ro5eTrvcVEtiMRf1N4dY2SExFE/7APuA=
-Message-ID: <806dafc20809300551i7678660aq5e4fd6e8080382a0@mail.gmail.com>
-Date: Tue, 30 Sep 2008 08:51:34 -0400
-From: "Monty Montgomery" <monty@xiph.org>
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [regression] CD-DA delay needed after insertion (http://bugzilla.kernel.org/show_bug.cgi?id=10974)
-Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       linux-scsi@vger.kernel.org,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>
-In-Reply-To: <806dafc20809300548y4af5f10bs8a80caa24f176c79@mail.gmail.com>
+	Tue, 30 Sep 2008 08:54:04 -0400
+Message-ID: <48E22165.7040907@canonical.com>
+Date: Tue, 30 Sep 2008 08:53:57 -0400
+From: Stefan Bader <stefan.bader@canonical.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: Reserve FIRST_DEVICE_VECTOR in used_vectors	bitmap.
+References: <48E0DA7C.5010403@canonical.com> <20080930095149.GA7557@elte.hu>
+In-Reply-To: <20080930095149.GA7557@elte.hu>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
-	 <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
-	 <1214605634.3394.91.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0806301120570.10868@vixen.sonytel.be>
-	 <1214841102.3381.5.camel@localhost.localdomain>
-	 <1214925487.3316.12.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0809171701330.21347@vixen.sonytel.be>
-	 <806dafc20809300117u2806e37bx986b54543862f358@mail.gmail.com>
-	 <Pine.LNX.4.64.0809301430370.5818@vixen.sonytel.be>
-	 <806dafc20809300548y4af5f10bs8a80caa24f176c79@mail.gmail.com>
-X-Google-Sender-Auth: 68e09c552aad3009
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed in SVN; pull a copy and try again.
+Ingo Molnar wrote:
+>> Someone from the community found out, that after repeatedly unloading 
+>> and loading a device driver that uses MSI IRQs, the system eventually 
+>> assigned the vector initially reserved for IRQ0 to the device driver.
+> 
+>> The reason for this is, that although IRQ0 is tied to the 
+>> FIRST_DEVICE_VECTOR when declaring the irq_vector table, the 
+>> corresponding bit in the used_vectors map is not set. So, if vectors 
+>> are released and assigned often enough, the vector will get assigned 
+>> to another interrupt. This happens more often with MSI interrupts as 
+>> those are exclusively using a vector.
+>>
+>> Fix this by setting the bit for the FIRST_DEVICE_VECTOR in the bitmap.
+> 
+> hi, the IO-APIC code got unified in the x86 tree for v2.6.28.
+> 
+> So could you please send the fix against tip/master:
+> 
+>   http://people.redhat.com/mingo/tip.git/README
+> 
+> Thanks,
+> 
+> 	Ingo
 
-[Mein Gott, that bug was just embarrassing]
+I can't see this as required for tip. FIRST_DEVICE_VECTOR is there defined
+distinct to the ISA IRQs (IRQ15_VECTOR+2) while it is defined to be equal to
+IRQ0_VECTOR on 2.6.27 and before (at least down to 2.6.24).
 
-Monty
+Regards,
+Stefan
+-- 
+
+When all other means of communication fail, try words!
+
+
