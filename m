@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbYI3Hq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYI3HrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbYI3Hq5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 03:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYI3HmZ
+	id S1754672AbYI3HrW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 03:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYI3Hm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 03:42:25 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:59027 "EHLO
+	Tue, 30 Sep 2008 03:42:26 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:59037 "EHLO
 	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752605AbYI3HmN (ORCPT
+	with ESMTP id S1752468AbYI3HmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 03:42:13 -0400
+	Tue, 30 Sep 2008 03:42:15 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>, linux-kernel@vger.kernel.org,
        linux-mtd@lists.infradead.org
-Subject: [PATCH] UBIFS: improve garbage collection
-Date: Tue, 30 Sep 2008 12:19:14 +0300
-Message-Id: <1222766358-21886-19-git-send-email-dedekind@infradead.org>
+Subject: [PATCH] UBIFS: correct key comparison
+Date: Tue, 30 Sep 2008 12:19:06 +0300
+Message-Id: <1222766358-21886-11-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
 References: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 30 Sep 2008 07:41:37.0819 (UTC) FILETIME=[F86C46B0:01C922CF]
+X-OriginalArrivalTime: 30 Sep 2008 07:41:36.0975 (UTC) FILETIME=[F7EB7DF0:01C922CF]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,147 +28,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Adrian Hunter <ext-adrian.hunter@nokia.com>
 
-Make garbage collection try to keep data nodes from the same
-inode together and in ascending order.  This improves
-performance when reading those nodes especially when bulk-read
-is used.
+The comparison was working, but more by accident than design.
 
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/gc.c |   82 ++++++++++++++++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 72 insertions(+), 10 deletions(-)
+ fs/ubifs/tnc_misc.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/ubifs/gc.c b/fs/ubifs/gc.c
-index a6b633a..0bef650 100644
---- a/fs/ubifs/gc.c
-+++ b/fs/ubifs/gc.c
-@@ -96,6 +96,48 @@ static int switch_gc_head(struct ubifs_info *c)
- }
+diff --git a/fs/ubifs/tnc_misc.c b/fs/ubifs/tnc_misc.c
+index a25c1cc..b48db99 100644
+--- a/fs/ubifs/tnc_misc.c
++++ b/fs/ubifs/tnc_misc.c
+@@ -480,8 +480,8 @@ int ubifs_tnc_read_node(struct ubifs_info *c, struct ubifs_zbranch *zbr,
+ 	}
  
- /**
-+ * joinup - bring data nodes for an inode together.
-+ * @c: UBIFS file-system description object
-+ * @sleb: describes scanned LEB
-+ * @inum: inode number
-+ * @blk: block number
-+ * @data: list to which to add data nodes
-+ *
-+ * This function looks at the first few nodes in the scanned LEB @sleb and adds
-+ * them to @data if they are data nodes from @inum and have a larger block
-+ * number than @blk. This function returns %0 on success and a negative error
-+ * code on failure.
-+ */
-+static int joinup(struct ubifs_info *c, struct ubifs_scan_leb *sleb, ino_t inum,
-+		  unsigned int blk, struct list_head *data)
-+{
-+	int err, cnt = 6, lnum = sleb->lnum, offs;
-+	struct ubifs_scan_node *snod, *tmp;
-+	union ubifs_key *key;
-+
-+	list_for_each_entry_safe(snod, tmp, &sleb->nodes, list) {
-+		key = &snod->key;
-+		if (key_inum(c, key) == inum &&
-+		    key_type(c, key) == UBIFS_DATA_KEY &&
-+		    key_block(c, key) > blk) {
-+			offs = snod->offs;
-+			err = ubifs_tnc_has_node(c, key, 0, lnum, offs, 0);
-+			if (err < 0)
-+				return err;
-+			list_del(&snod->list);
-+			if (err) {
-+				list_add_tail(&snod->list, data);
-+				blk = key_block(c, key);
-+			} else
-+				kfree(snod);
-+			cnt = 6;
-+		} else if (--cnt == 0)
-+			break;
-+	}
-+	return 0;
-+}
-+
-+/**
-  * move_nodes - move nodes.
-  * @c: UBIFS file-system description object
-  * @sleb: describes nodes to move
-@@ -116,16 +158,21 @@ static int switch_gc_head(struct ubifs_info *c)
- static int move_nodes(struct ubifs_info *c, struct ubifs_scan_leb *sleb)
- {
- 	struct ubifs_scan_node *snod, *tmp;
--	struct list_head large, medium, small;
-+	struct list_head data, large, medium, small;
- 	struct ubifs_wbuf *wbuf = &c->jheads[GCHD].wbuf;
- 	int avail, err, min = INT_MAX;
-+	unsigned int blk = 0;
-+	ino_t inum = 0;
- 
-+	INIT_LIST_HEAD(&data);
- 	INIT_LIST_HEAD(&large);
- 	INIT_LIST_HEAD(&medium);
- 	INIT_LIST_HEAD(&small);
- 
--	list_for_each_entry_safe(snod, tmp, &sleb->nodes, list) {
--		struct list_head *lst;
-+	while (!list_empty(&sleb->nodes)) {
-+		struct list_head *lst = sleb->nodes.next;
-+
-+		snod = list_entry(lst, struct ubifs_scan_node, list);
- 
- 		ubifs_assert(snod->type != UBIFS_IDX_NODE);
- 		ubifs_assert(snod->type != UBIFS_REF_NODE);
-@@ -136,7 +183,6 @@ static int move_nodes(struct ubifs_info *c, struct ubifs_scan_leb *sleb)
- 		if (err < 0)
- 			goto out;
- 
--		lst = &snod->list;
- 		list_del(lst);
- 		if (!err) {
- 			/* The node is obsolete, remove it from the list */
-@@ -145,15 +191,30 @@ static int move_nodes(struct ubifs_info *c, struct ubifs_scan_leb *sleb)
- 		}
- 
- 		/*
--		 * Sort the list of nodes so that large nodes go first, and
--		 * small nodes go last.
-+		 * Sort the list of nodes so that data nodes go first, large
-+		 * nodes go second, and small nodes go last.
- 		 */
--		if (snod->len > MEDIUM_NODE_WM)
--			list_add(lst, &large);
-+		if (key_type(c, &snod->key) == UBIFS_DATA_KEY) {
-+			if (inum != key_inum(c, &snod->key)) {
-+				if (inum) {
-+					/*
-+					 * Try to move data nodes from the same
-+					 * inode together.
-+					 */
-+					err = joinup(c, sleb, inum, blk, &data);
-+					if (err)
-+						goto out;
-+				}
-+				inum = key_inum(c, &snod->key);
-+				blk = key_block(c, &snod->key);
-+			}
-+			list_add_tail(lst, &data);
-+		} else if (snod->len > MEDIUM_NODE_WM)
-+			list_add_tail(lst, &large);
- 		else if (snod->len > SMALL_NODE_WM)
--			list_add(lst, &medium);
-+			list_add_tail(lst, &medium);
- 		else
--			list_add(lst, &small);
-+			list_add_tail(lst, &small);
- 
- 		/* And find the smallest node */
- 		if (snod->len < min)
-@@ -164,6 +225,7 @@ static int move_nodes(struct ubifs_info *c, struct ubifs_scan_leb *sleb)
- 	 * Join the tree lists so that we'd have one roughly sorted list
- 	 * ('large' will be the head of the joined list).
- 	 */
-+	list_splice(&data, &large);
- 	list_splice(&medium, large.prev);
- 	list_splice(&small, large.prev);
- 
+ 	/* Make sure the key of the read node is correct */
+-	key_read(c, key, &key1);
+-	if (memcmp(node + UBIFS_KEY_OFFSET, &key1, c->key_len)) {
++	key_read(c, node + UBIFS_KEY_OFFSET, &key1);
++	if (!keys_eq(c, key, &key1)) {
+ 		ubifs_err("bad key in node at LEB %d:%d",
+ 			  zbr->lnum, zbr->offs);
+ 		dbg_tnc("looked for key %s found node's key %s",
 -- 
 1.5.4.1
 
