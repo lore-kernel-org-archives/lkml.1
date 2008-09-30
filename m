@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbYI3NzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbYI3OCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbYI3NzZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 09:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYI3NzN
+	id S1753593AbYI3OCe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 10:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbYI3OC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 09:55:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:16165 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389AbYI3NzM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 09:55:12 -0400
-Message-ID: <ac3eb2510809300655u319f8a9v58e4825f97ee329c@mail.gmail.com>
-Date: Tue, 30 Sep 2008 15:55:10 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Frans Pop" <elendil@planet.nl>
-Subject: Re: CD tray closes spontaneously after opening it
-Cc: "Tony Vroon" <tony@vroon.org>, linux-kernel@vger.kernel.org,
-       "Tejun Heo" <tj@kernel.org>, "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <200809301447.35915.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 30 Sep 2008 10:02:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39895 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752301AbYI3OC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 10:02:26 -0400
+Subject: [PATCH] capability: WARN when invalid capability is requested
+	rather than BUG/panic
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: sds@tycho.nsa.gov, jmorris@namei.org, morgan@kernel.org, serue@us.ibm.com,
+       selinux@tycho.nsa.gov
+Content-Type: text/plain
+Date: Tue, 30 Sep 2008 09:55:46 -0400
+Message-Id: <1222782946.28251.63.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200809301247.05367.elendil@planet.nl>
-	 <200809301401.23160.elendil@planet.nl>
-	 <ac3eb2510809300535s1a9a1dk1bd8b1080385e864@mail.gmail.com>
-	 <200809301447.35915.elendil@planet.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 2:47 PM, Frans Pop <elendil@planet.nl> wrote:
-> On Tuesday 30 September 2008, Kay Sievers wrote:
->> You might need:
->> http://git.kernel.org/?p=linux/hotplug/udev.git;a=commitdiff;h=f755fd56
->>57b619fd27160ad202fc5d773d096e9c
->
-> Yes, I'd seen that new rule, but:
-> - that fix is already included in the udev version I'm using
-> - I'm seeing the issue on /dev/hda (IDE DVD drive), not on /dev/sr*
+The firegl ATI/AMD closed source proprietary driver has some 2,733
+panics registered on kerneloops.org and recently SELinux was blamed for
+BUGing because of this driver.
 
-Does:
-  /sbin/udevadm monitor --env
-print something while you see the tray closing?
+http://www.kerneloops.org/search.php?search=firegl_ioctl&btnG=Function+Search
 
-Does this also happen when you set:
-  /proc/sys/dev/cdrom/autoclose
-to 0?
+Basically it looks like the firegl_ioctl() function is calling capable()
+with a huge value.  cap_capable dereferences an array (64 bits long) WAY
+off the end.  I know a specific example would be referencing the array
+c.cap[0x7B4BB01].  As dumb luck would have it occasionally this doesn't
+pagefault / panic and so we get to selinux code which has a clean check
+for values which are obviously too large and BUG().
 
-Kay
+This patch adds a WARN_ONCE() to cap_capable() so we will stop
+dereferencing random spots of memory and will cleanly tell the obviously
+broken driver that it doesn't have that ridiculous permissions.  No idea
+if the driver is going to handle EPERM but anything that calls capable
+and doesn't expect a denial has got to be the worst piece of code ever
+written.....  I could return EINVAL, but I think its clear that noone
+has capabilities over 64 so clearly they don't have that permission.
+
+This 'could' be considered a regression since 2.6.24.  Neither SELinux
+nor the capabilities system had a problem with ginormous request values
+until we got 64 bit support, although this is OBVIOUSLY a bug with the
+out of tree closed source driver....
+
+Oh yeah, and if anyone knows people at ATI/AMD tell them to fix their
+broken driver....
+
+Signed-off-by: Eric Paris <eparis@redhat.com>
+
+---
+
+ security/commoncap.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/security/commoncap.c b/security/commoncap.c
+index e4c4b3f..92715e7 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -50,6 +50,11 @@ EXPORT_SYMBOL(cap_netlink_recv);
+  */
+ int cap_capable (struct task_struct *tsk, int cap)
+ {
++	if (unlikely(!cap_valid(cap))) {
++		WARN_ONCE(1, "Invalid capability:%d\n", cap);
++		return -EPERM;
++	}
++
+ 	/* Derived from include/linux/sched.h:capable. */
+ 	if (cap_raised(tsk->cap_effective, cap))
+ 		return 0;
+
+
