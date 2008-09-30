@@ -1,42 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYI3QlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbYI3Qqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbYI3QlZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 12:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbYI3QlA
+	id S1753101AbYI3Qqd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 12:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYI3QqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 12:41:00 -0400
-Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:10771 "EHLO
-	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753624AbYI3QlA (ORCPT
+	Tue, 30 Sep 2008 12:46:24 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:55449 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752698AbYI3QqX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 12:41:00 -0400
-From: Alexander van Heukelum <heukelum@fastmail.fm>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH 0/4] traps: x86: more unification
-Date: Tue, 30 Sep 2008 18:41:33 +0200
-Message-Id: <1222792897-5691-1-git-send-email-heukelum@fastmail.fm>
-X-Mailer: git-send-email 1.5.4.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Tue, 30 Sep 2008 18:40:41 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.34; VDF: 7.0.6.231; host: AntiVir2)
+	Tue, 30 Sep 2008 12:46:23 -0400
+Subject: Re: Use CPUID to communicate with the hypervisor.
+From: Zachary Amsden <zach@vmware.com>
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Alok Kataria <akataria@vmware.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Daniel Hecht <dhecht@vmware.com>,
+       "Jun.Nakajima@Intel.Com" <Jun.Nakajima@Intel.Com>
+In-Reply-To: <48E1DF2C.9050409@redhat.com>
+References: <1222472815.29886.43.camel@alok-dev1>
+	 <48E090B6.2080809@redhat.com> <1222710924.30247.21.camel@alok-dev1>
+	 <48E1227B.9040809@redhat.com> <1222717085.30247.44.camel@alok-dev1>
+	 <48E15AC7.2080603@redhat.com> <1222734838.30247.102.camel@alok-dev1>
+	 <48E1DF2C.9050409@redhat.com>
+Content-Type: text/plain
+Date: Tue, 30 Sep 2008 09:42:38 -0700
+Message-Id: <1222792958.7330.16.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Tue, 2008-09-30 at 01:11 -0700, Gerd Hoffmann wrote:
+> Alok Kataria wrote:
 
-Here are some more unification patches for traps_xx.c. They
-are against the current x86/traps branch in the tip tree and
-work fine for my miniconfigs.
+> Well, that should be clearly defined, that is my point.  When asking the
+> hypervisor for the tsc instead of running a calibration loop, then we
+> have a small bit of paravirtualization:  The guest is aware that it runs
+> on a hypervisor and just asks it directly.  So while we are at it we can
+> also define a way to communicate tsc freq changes between host and
+> guest, so the cost of trap'n'emulate tsc reads can be avoided.  Or we
+> define "tsc is constant" and leave it to the hypervisor to make sure it
 
-The branch does not at the moment compile a defconfig kernel,
-due to a missing PCI_DEVICE_ID_AMD_10H_NB_MISC define, however.
+For our purposes, we define TSC is constant.
 
-Moreover, a defconfig won't run :-/ (on qemu-system-x86_64).
-Bisection pointed to commit 10a434fcb "x86: remove cpu_vendor_dev".
-The kernel crashes early with a general protection fault in a call
-to strnlen. I have no idea what goes wrong, yet.
+> actually appears being constant to the guest, even in case it changes on
+> the host.  But it must be defined one way or another, so the guest knows
+> whenever it should expect the tsc frequency change or not.  And in case
+> we allow tsc changes, we also need a way to signal that to the guest.
 
-Greetings,
-	Alexander
+Non-constant TSCs probably won't want to use CPUID based retreival, due
+to the extra trap it would require to read TSC frequency, it can't be
+done at every TSC read (or else, virtualizing TSC frequency has the same
+cost and you haven't won anything by making it dynamic).  It's also not
+clean to issue interrupts to the guest telling it TSC frequency has
+changed because the guest may not notice the interrupt before making
+computations using the old value, and multiple rapid changes would
+require multiple interrupt injections for each affected guest.
+
+> Is the tsc cpu leaf interface set in stone already (aka implemented in
+> vmware versions released to public)?
+
+Not to my knowledge.
+
+Zach
+
