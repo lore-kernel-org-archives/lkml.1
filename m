@@ -1,129 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbYI3HmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbYI3Hmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752501AbYI3HmH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 03:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYI3Hlr
+	id S1752980AbYI3Hmn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 03:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYI3Hlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 03:41:47 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:58877 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbYI3Hlq (ORCPT
+	Tue, 30 Sep 2008 03:41:52 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:41728 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751629AbYI3Hls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 03:41:46 -0400
+	Tue, 30 Sep 2008 03:41:48 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>, linux-kernel@vger.kernel.org,
        linux-mtd@lists.infradead.org
-Subject: What is in ubifs-2.6.git
-Date: Tue, 30 Sep 2008 12:18:56 +0300
-Message-Id: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
+Subject: [PATCH] UBIFS: improve znode splitting rules
+Date: Tue, 30 Sep 2008 12:19:03 +0300
+Message-Id: <1222766358-21886-8-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.5.4.1
-X-OriginalArrivalTime: 30 Sep 2008 07:41:36.0397 (UTC) FILETIME=[F7934BD0:01C922CF]
+In-Reply-To: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
+References: <1222766358-21886-1-git-send-email-dedekind@infradead.org>
+X-OriginalArrivalTime: 30 Sep 2008 07:41:36.0709 (UTC) FILETIME=[F7C2E750:01C922CF]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
 
-here is the stuff we have scheduled for 2.6.28. The patches
-contains various small fixes and cleanups, but there is something
-interesting as well.
+When inserting into a full znode it is split into two
+znodes.  Because data node keys are usually consecutive,
+it is better to try to keep them together.  This patch
+does a better job of that.
 
-The first interesting thing is new "bulk read" functionality. The
-idea is that many NAND flashes support "bulk read" in some form.
-For example, OneNAND has "read while load" feature, which allows
-reading consecutive NAND pages faster than reading them one-by-one.
+Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+---
+ fs/ubifs/tnc.c |   54 +++++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 33 insertions(+), 21 deletions(-)
 
-So we've made UBIFS benefit from this feature and introduced new
-"bulk_read" mount option. With this option enabled UBIFS reads files
-a little ahead if the file data sits in consecutive physical
-addresses. For example, if user-space asks to read page zero of a
-file, and page 0-4 are in consecutive flash addressed, UBIFS reads
-pages 0-4 and populates them to the Page Cache.
+diff --git a/fs/ubifs/tnc.c b/fs/ubifs/tnc.c
+index 66dc571..e0878a4 100644
+--- a/fs/ubifs/tnc.c
++++ b/fs/ubifs/tnc.c
+@@ -1962,7 +1962,7 @@ static int tnc_insert(struct ubifs_info *c, struct ubifs_znode *znode,
+ {
+ 	struct ubifs_znode *zn, *zi, *zp;
+ 	int i, keep, move, appending = 0;
+-	union ubifs_key *key = &zbr->key;
++	union ubifs_key *key = &zbr->key, *key1;
+ 
+ 	ubifs_assert(n >= 0 && n <= c->fanout);
+ 
+@@ -2003,20 +2003,33 @@ again:
+ 	zn->level = znode->level;
+ 
+ 	/* Decide where to split */
+-	if (znode->level == 0 && n == c->fanout &&
+-	    key_type(c, key) == UBIFS_DATA_KEY) {
+-		union ubifs_key *key1;
+-
+-		/*
+-		 * If this is an inode which is being appended - do not split
+-		 * it because no other zbranches can be inserted between
+-		 * zbranches of consecutive data nodes anyway.
+-		 */
+-		key1 = &znode->zbranch[n - 1].key;
+-		if (key_inum(c, key1) == key_inum(c, key) &&
+-		    key_type(c, key1) == UBIFS_DATA_KEY &&
+-		    key_block(c, key1) == key_block(c, key) - 1)
+-			appending = 1;
++	if (znode->level == 0 && key_type(c, key) == UBIFS_DATA_KEY) {
++		/* Try not to split consecutive data keys */
++		if (n == c->fanout) {
++			key1 = &znode->zbranch[n - 1].key;
++			if (key_inum(c, key1) == key_inum(c, key) &&
++			    key_type(c, key1) == UBIFS_DATA_KEY)
++				appending = 1;
++		} else
++			goto check_split;
++	} else if (appending && n != c->fanout) {
++		/* Try not to split consecutive data keys */
++		appending = 0;
++check_split:
++		if (n >= (c->fanout + 1) / 2) {
++			key1 = &znode->zbranch[0].key;
++			if (key_inum(c, key1) == key_inum(c, key) &&
++			    key_type(c, key1) == UBIFS_DATA_KEY) {
++				key1 = &znode->zbranch[n].key;
++				if (key_inum(c, key1) != key_inum(c, key) ||
++				    key_type(c, key1) != UBIFS_DATA_KEY) {
++					keep = n;
++					move = c->fanout - keep;
++					zi = znode;
++					goto do_split;
++				}
++			}
++		}
+ 	}
+ 
+ 	if (appending) {
+@@ -2046,6 +2059,8 @@ again:
+ 			zbr->znode->parent = zn;
+ 	}
+ 
++do_split:
++
+ 	__set_bit(DIRTY_ZNODE, &zn->flags);
+ 	atomic_long_inc(&c->dirty_zn_cnt);
+ 
+@@ -2072,14 +2087,11 @@ again:
+ 
+ 	/* Insert new znode (produced by spitting) into the parent */
+ 	if (zp) {
+-		i = n;
++		if (n == 0 && zi == znode && znode->iip == 0)
++			correct_parent_keys(c, znode);
++
+ 		/* Locate insertion point */
+ 		n = znode->iip + 1;
+-		if (appending && n != c->fanout)
+-			appending = 0;
+-
+-		if (i == 0 && zi == znode && znode->iip == 0)
+-			correct_parent_keys(c, znode);
+ 
+ 		/* Tail recursion */
+ 		zbr->key = zn->zbranch[0].key;
+-- 
+1.5.4.1
 
-Note, this is disabled by default and UBIFS has to be explicitly
-mounted mounted with "bulk_read" option. The reason for this is
-that we consider this feature as experimental so far.
-
-Note, UBIFS does not use VFS read-ahead and actually explicitly
-disables it. This is because MTD is synchronous and all I/O is
-done synchronously, so read-ahead actually slows things down for
-UBIFS, instead of improving them. So the "bulk read" feature is
-basically internal UBIFS read-ahead implementation.
-
-We are able to gain 4-5MiB/s of read speed on OneNAND with bulk
-read enabled.
-
-The second interesting thing is new "no_chk_data_crc" mount option
-which disables data CRC32 checking.
-
-UBIFS always checks CRC of everything it reads from flash by default.
-On ARM platform this results in ~30% of total CPU usage in profiles,
-which is quite high. But many modern flashes are very reliable
-(e.g., OneNAND), and one does not need that level of protection.
-So now it is possible to disable CRC checking for _data_. However:
-
-* internal indexing information CRC is always checked;
-* when replaying the journal, data CRC is always checked;
-* on write, CRC is always calculated.
-
-With this mount option we are able to gain another 4-5MiB/s of read
-speed on OneNAND. And together with bulk-read, the read speed becomes
-~10MiB/s faster.
-
-Adrian Hunter (11):
-      UBIFS: add bulk-read facility
-      UBIFS: add no_chk_data_crc mount option
-      UBIFS: improve znode splitting rules
-      UBIFS: correct key comparison
-      UBIFS: ensure data read beyond i_size is zeroed out correctly
-      UBIFS: allow for sync_fs when read-only
-      UBIFS: improve garbage collection
-      UBIFS: fix bulk-read handling uptodate pages
-      UBIFS: add more debugging messages for LPT
-      UBIFS: correct condition to eliminate unecessary assignment
-      UBIFS: check buffer length when scanning for LPT nodes
-
-Artem Bityutskiy (9):
-      UBIFS: add a print, fix comments and more minor stuff
-      UBIFS: inline one-line functions
-      UBIFS: check data CRC when in error state
-      UBIFS: use bit-fields when possible
-      UBIFS: fix races in bit-fields
-      UBIFS: fix commentary
-      UBIFS: update dbg_dump_inode
-      UBIFS: correct comment for commit_on_unmount
-      UBIFS: commit on sync_fs
-
-Hirofumi Nakagawa (1):
-      UBIFS: remove unneeded unlikely()
-
-Julien Brunel (1):
-      UBIFS: use an IS_ERR test rather than a NULL test
-
- Documentation/filesystems/ubifs.txt |    9 +
- fs/ubifs/budget.c                   |   26 ++--
- fs/ubifs/debug.c                    |   79 +++++++--
- fs/ubifs/debug.h                    |    6 +
- fs/ubifs/file.c                     |  260 ++++++++++++++++++++++++++
- fs/ubifs/find.c                     |    4 +-
- fs/ubifs/gc.c                       |   90 ++++++++--
- fs/ubifs/io.c                       |   12 +-
- fs/ubifs/key.h                      |   22 ++-
- fs/ubifs/lprops.c                   |   34 +----
- fs/ubifs/lpt.c                      |    3 +-
- fs/ubifs/lpt_commit.c               |  187 ++++++++++++++++++-
- fs/ubifs/misc.h                     |   27 +++
- fs/ubifs/scan.c                     |    2 +-
- fs/ubifs/super.c                    |  109 +++++++++--
- fs/ubifs/tnc.c                      |  345 ++++++++++++++++++++++++++++++++---
- fs/ubifs/tnc_misc.c                 |    4 +-
- fs/ubifs/ubifs-media.h              |    1 -
- fs/ubifs/ubifs.h                    |   85 +++++++--
- fs/ubifs/xattr.c                    |    2 +-
- 20 files changed, 1149 insertions(+), 158 deletions(-)
-
---
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
