@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753040AbYI3Dyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752182AbYI3EA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753040AbYI3Dyo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Sep 2008 23:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYI3Dyg
+	id S1752182AbYI3EA2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 00:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750742AbYI3EAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Sep 2008 23:54:36 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:44252 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751157AbYI3Dyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Sep 2008 23:54:35 -0400
-Date: Mon, 29 Sep 2008 20:54:12 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 30 Sep 2008 00:00:15 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41585 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750701AbYI3EAN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 00:00:13 -0400
+Date: Tue, 30 Sep 2008 00:00:11 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT pull] timer fixes for .27
-Message-ID: <20080930035412.GA7049@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <alpine.LFD.2.00.0809292255490.17289@localhost.localdomain> <20080929224440.GG6697@linux.vnet.ibm.com> <1222746116.9006.23.camel@pasglop>
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH v10 Golden] Unified trace buffer
+In-Reply-To: <20080930034603.GA13801@Krystal>
+Message-ID: <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0809261245420.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809261349400.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809261631420.21618@gandalf.stny.rr.com> <alpine.DEB.1.10.0809262148070.30105@gandalf.stny.rr.com>
+ <alpine.DEB.1.10.0809270203270.1628@gandalf.stny.rr.com> <alpine.DEB.1.10.0809291202180.5493@gandalf.stny.rr.com> <20080929233539.GA31143@Krystal> <alpine.DEB.1.10.0809292000160.8145@gandalf.stny.rr.com> <20080930000307.GA2929@Krystal>
+ <alpine.DEB.1.10.0809292010530.8145@gandalf.stny.rr.com> <20080930034603.GA13801@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222746116.9006.23.camel@pasglop>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 01:41:56PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2008-09-29 at 15:44 -0700, Paul E. McKenney wrote:
-> > > Please pull the latest timers-fixes-for-linus git tree from:
-> > > 
-> > >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-> > timers-fixes-for-linus
-> > > 
-> > > The patches fix hard to trigger bugs in the CPU offline code of
-> > > hrtimers which were noticed by Paul McKenney recently. In the worst
-> > > case they can leave migrated hrtimers in a stale state.
-> > 
-> > Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> Ah, so we found and fixed these ?
 
-For "we" == Thomas, yes.  ;-)
+On Mon, 29 Sep 2008, Mathieu Desnoyers wrote:
+> 
+> I also got some corruption of the offset field in the struct page I use.
+> I think it might be related to the fact that I don't set the PG_private
+> bit (slob does set it when the page is in its free pages list). However,
+> given I'd like to pass the buffer pages to disk I/O and for network
 
-							Thanx, Paul
+Ah, I believe the disk IO uses the page frame. That might be a bit more 
+difficult to pass the data to disk and still keep information on the
+page frame.
 
-> Linus, those bugs are actually a regression from when we didn't use the
-> new timer code (which isn't that long ago). It would be nice to have the
-> fixes in .27 (and thus in the various distros that will derive from it)
-> but I would understand if the size of the patch made you choke that late
-> in the -rc cycle... In which case we'll be in for more backports :-)
-> 
-> Cheers,
-> Ben.
-> 
-> 
+-- Steve
+
