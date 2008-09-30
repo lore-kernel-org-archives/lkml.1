@@ -1,38 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbYI3PfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYI3Ph7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753492AbYI3PfZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 11:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYI3PfQ
+	id S1753550AbYI3Ph7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 11:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYI3Phv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 11:35:16 -0400
-Received: from waste.org ([66.93.16.53]:48630 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751813AbYI3PfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 11:35:15 -0400
-Subject: Re: [PATCH] slub: reduce total stack usage of slab_err & object_err
-From: Matt Mackall <mpm@selenic.com>
-To: Richard Kennedy <richard@rsk.demon.co.uk>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       penberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1222787736.2995.24.camel@castor.localdomain>
-References: <1222787736.2995.24.camel@castor.localdomain>
-Content-Type: text/plain
-Date: Tue, 30 Sep 2008 10:32:48 -0500
-Message-Id: <1222788768.23159.26.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Sep 2008 11:37:51 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:39204 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbYI3Phu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 11:37:50 -0400
+Date: Tue, 30 Sep 2008 17:37:08 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: linux-kernel@vger.kernel.org
+Cc: Alessandro Rubini <ar@gnudd.com>,
+       Alessandro Rubini <rubini@vision.unipv.it>
+Message-ID: <20080930153708.GX18732@tekkaman>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: About the maintainer of "MOUSE AND MISC DEVICES"
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Tue, 2008-09-30 at 16:15 +0100, Richard Kennedy wrote:
-> reduce the total stack usage of slab_err & object_err.
+I just wrote to Alessandro in order to have some suggestions about a
+misc device I wish to propose to this list, but he told me that he
+wants leave his maintanership.
 
-I've got a better idea: use vprintk.
+So which is the person should I send my requests about misc devices?
+
+He also asked to me to propose to this list a "patch" to remove him
+from the MAINTANERS file... if so the new entry should be:
+
+MOUSE AND MISC DEVICES [GENERAL]
+L:      linux-kernel@vger.kernel.org
+S:      Maintained
+
+Is taht correct?
+
+Ciao,
+
+Rodolfo
 
 -- 
-Mathematics is the supreme nostalgia of our time.
 
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
