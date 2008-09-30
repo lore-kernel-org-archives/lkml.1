@@ -1,47 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbYI3Pwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbYI3Pw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754104AbYI3Pwc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 11:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbYI3PwY
+	id S1754479AbYI3Pw7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 11:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbYI3Pwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 11:52:24 -0400
-Received: from waste.org ([66.93.16.53]:45504 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbYI3PwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 11:52:23 -0400
-Subject: Re: [PATCH] slub: reduce total stack usage of slab_err & object_err
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Richard Kennedy <richard@rsk.demon.co.uk>,
-       penberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <48E2480A.9090003@linux-foundation.org>
-References: <1222787736.2995.24.camel@castor.localdomain>
-	 <48E2480A.9090003@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 30 Sep 2008 10:49:45 -0500
-Message-Id: <1222789785.23159.27.camel@calx>
+	Tue, 30 Sep 2008 11:52:49 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:55442 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753145AbYI3Pws (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 11:52:48 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArgEALHl4UhMQWq+/2dsb2JhbACBZL0KgWc
+Date: Tue, 30 Sep 2008 11:52:45 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH] Markers : fix reentrancy
+Message-ID: <20080930155245.GC12623@Krystal>
+References: <20080930054151.GA16961@Krystal> <20080930070923.GB30927@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080930070923.GB30927@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:43:02 up 117 days, 20:23,  8 users,  load average: 0.36, 0.38,
+	0.36
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-09-30 at 10:38 -0500, Christoph Lameter wrote:
-> Richard Kennedy wrote:
-> > reduce the total stack usage of slab_err & object_err.
-> > 
-> > Introduce a new function to display a simple slab bug message, and call
-> > this when vprintk is not needed.
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> You could simply get rid of the 100 byte buffer by using vprintk? Same method
-> could be used elsewhere in the kernel and does not require additional
-> functions. Compiles, untestted.
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > Lai Jiangshan <laijs@cn.fujitsu.com> wrote :
+> > > marker_synchronize_unregister must be called _also_ between unregistration
+> > > and destruction the data that unregistration-ed probes need to make sure
+> > > there is no caller executing a probe when it's data is destroyed.
+> > > 
+> > 
+> > Ah, you're right. I looked again through your patch description and I
+> > think using a :
+> > 
+> > 
+> > if (entry->rcu_pending)
+> >                 rcu_barrier_sched();
+> > 
+> > After each time the markers_mutex is taken would keep the fast batch 
+> > registration/unregistration and fix the reentrancy problem. The 
+> > following patch should address the problem.
+> 
+> could you please send a delta patch against tip/master? Lai's patch is 
+> already applied and is tested. Thanks,
+> 
+> 	Ingo
 
-I'm fixing a bunch of these in the kernel right now.
+Hrm,
 
+Most of Lai "simplifications" to use synchronize_sched() instead of
+call_rcu_sched() will make batch registration/unregistration much
+slower (very noticeable on ~50 markers on a loaded machine). It also
+contains two different fixes in one, one of which has been nacked.
+
+The correct list of changes against tip now becomes :
+
+Revert commit d587284c1d26b796bf52a6e3d3f783db4e462119
+Apply patch "Markers : marker_synchronize_unregister()"
+Apply patch "Markers : probe example fix teardown"
+Apply patch "Markers : documentation fix teardown"
+Apply patch "sputrace : use marker_synchronize_unregister()"
+Apply patch "Markers : fix reentrancy"
+
+Sorry, but rebasing those marker fixes will just make all those changes
+really messy. I think the cleanest way is to just revert. :-/
+
+Mathieu
 -- 
-Mathematics is the supreme nostalgia of our time.
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
