@@ -1,186 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbYJASVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYJASWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754393AbYJASVb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 14:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYJASVW
+	id S1754255AbYJASWm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 14:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbYJASWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 14:21:22 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:42061 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753573AbYJASVV (ORCPT
+	Wed, 1 Oct 2008 14:22:33 -0400
+Received: from smtp103.prem.mail.sp1.yahoo.com ([98.136.44.58]:24616 "HELO
+	smtp103.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753604AbYJASWc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 14:21:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ap8EACNZ40hMQWq+/2dsb2JhbACBZrxegWo
-Date: Wed, 1 Oct 2008 14:21:19 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH] ring_buffer: allocate buffer page pointer
-Message-ID: <20081001182119.GA17524@Krystal>
-References: <20080930000307.GA2929@Krystal> <alpine.DEB.1.10.0809292010530.8145@gandalf.stny.rr.com> <20080930034603.GA13801@Krystal> <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com> <20080930092001.69849210@bike.lwn.net> <1222790072.24384.21.camel@twins> <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 1 Oct 2008 14:22:32 -0400
+X-YMail-OSG: J5wJItAVM1k.Qxg15F4lrucmZepZg15QYfC9.jczXcP0ceyhNHc.T7QXBhepRedph9D0lK6Nhiaw.SHoz5qU84j19Kza2MH34px2Apujv8.3hYRsSr791uPx09.A2nymVSHY2k_gxtkxPIjU.Civ838x1jQl1aXbuE3BahW5W.DFFp8bSA--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <48E3BFDE.7010300@schaufler-ca.com>
+Date: Wed, 01 Oct 2008 11:22:22 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Tilman Baumann <tilman.baumann@collax.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+Subject: Re: SMACK netfilter smacklabel socket match
+References: <48DBC9A1.20900@collax.com> <48DC5A45.8020801@schaufler-ca.com> <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com> <48DDBE2E.3010006@schaufler-ca.com> <48E1007F.4000400@collax.com> <48E19D01.9050809@schaufler-ca.com> <48E35F36.4030203@collax.com> <48E3957A.7040201@schaufler-ca.com> <48E3AB97.8020305@collax.com>
+In-Reply-To: <48E3AB97.8020305@collax.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:20:54 up 118 days, 23:01,  8 users,  load average: 0.15, 0.49,
-	1.01
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> The current method of overlaying the page frame as the buffer page pointer
-> can be very dangerous and limits our ability to do other things with
-> a page from the buffer, like send it off to disk.
-> 
-> This patch allocates the buffer_page instead of overlaying the page's
-> page frame. The use of the buffer_page has hardly changed due to this.
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/trace/ring_buffer.c |   54 ++++++++++++++++++++++++++-------------------
->  1 file changed, 32 insertions(+), 22 deletions(-)
-> 
-> Index: linux-tip.git/kernel/trace/ring_buffer.c
-> ===================================================================
-> --- linux-tip.git.orig/kernel/trace/ring_buffer.c	2008-10-01 09:37:23.000000000 -0400
-> +++ linux-tip.git/kernel/trace/ring_buffer.c	2008-10-01 11:03:16.000000000 -0400
-> @@ -115,16 +115,10 @@ void *ring_buffer_event_data(struct ring
->   * Thanks to Peter Zijlstra for suggesting this idea.
->   */
->  struct buffer_page {
-> -	union {
-> -		struct {
-> -			unsigned long	 flags;		/* mandatory */
-> -			atomic_t	 _count;	/* mandatory */
-> -			u64		 time_stamp;	/* page time stamp */
-> -			unsigned	 size;		/* size of page data */
-> -			struct list_head list;		/* list of free pages */
-> -		};
-> -		struct page page;
-> -	};
-> +	u64		 time_stamp;	/* page time stamp */
-> +	unsigned	 size;		/* size of page data */
-> +	struct list_head list;		/* list of free pages */
-> +	void *page;			/* Actual data page */
->  };
->  
->  /*
-> @@ -133,9 +127,9 @@ struct buffer_page {
->   */
->  static inline void free_buffer_page(struct buffer_page *bpage)
->  {
-> -	reset_page_mapcount(&bpage->page);
-> -	bpage->page.mapping = NULL;
-> -	__free_page(&bpage->page);
-> +	if (bpage->page)
-> +		__free_page(bpage->page);
-> +	kfree(bpage);
->  }
->  
->  /*
-> @@ -237,11 +231,16 @@ static int rb_allocate_pages(struct ring
->  	unsigned i;
->  
->  	for (i = 0; i < nr_pages; i++) {
-> +		page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
-> +				    GFP_KERNEL, cpu_to_node(cpu));
-> +		if (!page)
-> +			goto free_pages;
-> +		list_add(&page->list, &pages);
-> +
->  		addr = __get_free_page(GFP_KERNEL);
+Tilman Baumann wrote:
+> Casey Schaufler wrote:
+>> Tilman Baumann wrote:
+>>> Casey Schaufler wrote:
+>>>> Smack will eventually bite you if you're not careful, but users of
+>>>> MAC systems wouldn't be surprised by that.
+>>> Speaking of the devil...
+>>> This is exactly what happened to me right now. I have problems with 
+>>> _some_ https connects. The problem lies somewhere in openssl.
+>>> I did not yet find any clue with strace.
+>>> Is there some straight forward way to audit/debug LSM interventions?
+>>
+>> strace is probably your best bet, as it will tell you what syscalls
+>> fail. Your current situation is most likely a case where your program
+>> running with a label "Foo" is trying to communicate with a service on
+>> a machine that doesn't talk CIPSO and hence Smack is treating all
+>> packets to and from that host with the ambient (%cat /smack/ambient)
+>> label, which is "_" unless you've changed it.
+>
+> Yea, I just found that out.
+> I did not expect smack to add netlabels by default. I thought I would 
+> need to configure something before it will start adding netlabels 'on 
+> the wire'.
 
-You could probably use alloc_pages_node instead here...
+It's pretty important to do it the way it is, because if a "Foo" process
+can talk to port/host and a "Bar" process can talk to the same you can
+pretty well assume that you have an information channel. I'm starting
+to think about how I might go about allowing you to do it anyway.
 
-Mathieu
+> In my case 'security' is something that should only concern the local 
+> machine.
 
->  		if (!addr)
->  			goto free_pages;
-> -		page = (struct buffer_page *)virt_to_page(addr);
-> -		list_add(&page->list, &pages);
-> +		page->page = (void *)addr;
->  	}
->  
->  	list_splice(&pages, head);
-> @@ -262,6 +261,7 @@ static struct ring_buffer_per_cpu *
->  rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
->  {
->  	struct ring_buffer_per_cpu *cpu_buffer;
-> +	struct buffer_page *page;
->  	unsigned long addr;
->  	int ret;
->  
-> @@ -275,10 +275,17 @@ rb_allocate_cpu_buffer(struct ring_buffe
->  	spin_lock_init(&cpu_buffer->lock);
->  	INIT_LIST_HEAD(&cpu_buffer->pages);
->  
-> +	page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
-> +			    GFP_KERNEL, cpu_to_node(cpu));
-> +	if (!page)
-> +		goto fail_free_buffer;
-> +
-> +	cpu_buffer->reader_page = page;
->  	addr = __get_free_page(GFP_KERNEL);
->  	if (!addr)
-> -		goto fail_free_buffer;
-> -	cpu_buffer->reader_page = (struct buffer_page *)virt_to_page(addr);
-> +		goto fail_free_reader;
-> +	page->page = (void *)addr;
-> +
->  	INIT_LIST_HEAD(&cpu_buffer->reader_page->list);
->  	cpu_buffer->reader_page->size = 0;
->  
-> @@ -523,11 +530,16 @@ int ring_buffer_resize(struct ring_buffe
->  
->  	for_each_buffer_cpu(buffer, cpu) {
->  		for (i = 0; i < new_pages; i++) {
-> +			page = kzalloc_node(ALIGN(sizeof(*page),
-> +						  cache_line_size()),
-> +					    GFP_KERNEL, cpu_to_node(cpu));
-> +			if (!page)
-> +				goto free_pages;
-> +			list_add(&page->list, &pages);
->  			addr = __get_free_page(GFP_KERNEL);
->  			if (!addr)
->  				goto free_pages;
-> -			page = (struct buffer_page *)virt_to_page(addr);
-> -			list_add(&page->list, &pages);
-> +			page->page = (void *)addr;
->  		}
->  	}
->  
-> @@ -567,9 +579,7 @@ static inline int rb_null_event(struct r
->  
->  static inline void *rb_page_index(struct buffer_page *page, unsigned index)
->  {
-> -	void *addr = page_address(&page->page);
-> -
-> -	return addr + index;
-> +	return page->page + index;
->  }
->  
->  static inline struct ring_buffer_event *
-> 
-> 
+Unfortunately, any time you talk off the machine you have to consider that
+the other machine(s) may not be very careful about information flows.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> Unfortunately I never bothered to test this before. :-/
+>
+> If I set /smack/nltype to 'unlabeled' I have effectively shut off the 
+> network.
+> I guess I'm missing some essential point here.
+> Sorry to bother you with such trivialities.
+
+Not to worry. The essential point is that with MAC you can't just lock
+the doors, you have to lock the windows as well. What I mean by that is
+that traditional access controls apply to files, but not network
+communications. Network communications became popular in part because
+they were allowed to leave any restrictions up to the applications
+and their protocols. MAC requirements are pickier than that. The good
+news is that with a scheme like CIPSO you can easily enforce the
+policy. The bad news is that network services in general assume that
+there is no policy being enforced on them.
+
+>
+> btw. I find it very hard to find informations on the various files in 
+> /smack/ and it's respective intention and formating rules. 
+> security/smack/smackfs.c helps a bit.
+If you pull down the smack-util-0.1 package from http://schaufler-ca.com
+you will find programs that will do that formatting for you.
+>
+> This is my current setup:
+> /smack/ambient (default)
+> /smack/load = _ foo rwx
+> Unlabeled process work fine.
+> Labeled processes produce CIPSO labeled packets (which never get any 
+> answer anywhere from the internet)
+>
+> If i set /smack/nltype to 'unlabled' i don't even get SYN packets out. 
+> (operation not permitted)
+
+That's probably a bug, but I think the "fix" is to disable the ability to
+set the nltype to anything other than CIPSO at least for the time being.
+
