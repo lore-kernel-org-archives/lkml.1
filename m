@@ -1,102 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbYJANsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbYJANxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbYJANsr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 09:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYJANsj
+	id S1752600AbYJANxV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 09:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbYJANxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 09:48:39 -0400
-Received: from ns.netcenter.hu ([195.228.254.57]:51795 "EHLO netcenter.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750895AbYJANsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 09:48:38 -0400
-Message-ID: <41e201c923cb$e06cf4e0$0400a8c0@dcccs>
-From: "Janos Haar" <janos.haar@netcenter.hu>
-To: "Andrey Borzenkov" <arvidjaar@mail.ru>, "Milton Miller" <miltonm@bga.com>
-Cc: <linux-kernel@vger.kernel.org>
-References: <200809301450.m8UEo5wT027331@sullivan.realtime.net> <409101c923af$c8092020$0400a8c0@dcccs> <11424badd1aca3f1ec752f97c47f589b@bga.com> <20081001114428.DCCEB1723EF@smtp11.mtu.ru>
-Subject: Re: How can i read really 512 byte?
-Date: Wed, 1 Oct 2008 15:44:41 +0200
+	Wed, 1 Oct 2008 09:53:13 -0400
+Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:51000 "EHLO
+	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750769AbYJANxN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 09:53:13 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: CD tray closes spontaneously after opening it
+Date: Wed, 1 Oct 2008 15:53:04 +0200
+User-Agent: KMail/1.9.9
+Cc: "Tony Vroon" <tony@vroon.org>, linux-kernel@vger.kernel.org,
+       "Tejun Heo" <tj@kernel.org>, "Jens Axboe" <jens.axboe@oracle.com>
+References: <200809301247.05367.elendil@planet.nl> <200809302150.38872.elendil@planet.nl> <ac3eb2510809301302l7d966896tfb0e3d230598974@mail.gmail.com>
+In-Reply-To: <ac3eb2510809301302l7d966896tfb0e3d230598974@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
+Content-Disposition: inline
+Message-Id: <200810011553.05318.elendil@planet.nl>
+X-OriginalArrivalTime: 01 Oct 2008 13:53:09.0945 (UTC) FILETIME=[09FA8290:01C923CD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
------ Original Message ----- 
-From: "Andrey Borzenkov" <arvidjaar@mail.ru>
-To: "Milton Miller" <miltonm@bga.com>; <janos.haar@netcenter.hu>; "Linux 
-Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Sent: Wednesday, October 01, 2008 2:36 PM
-Subject: Re: How can i read really 512 byte?
-
-
-> Milton Miller wrote:
+On Tuesday 30 September 2008, Kay Sievers wrote:
+> >> Does this also happen when you set:
+> >>   /proc/sys/dev/cdrom/autoclose
+> >> to 0?
+> >
+> > I'll set that on boot using /etc/sysctl.conf and will report if I can
+> > still reproduce with that setting. I've checked that the "normal"
+> > value is 1.
 >
->>
->> On Oct 1, 2008, at 5:23 AM, Janos Haar wrote:
->>
->>>> On Tue, 30 Sep 2008 at 08:29:15 -0400 (EDT), Janos Haar wrote:
->>>>> Now i am working on recover some data from one defective drive.  I
->>>>> am using dd_rescue, and dd, but both ready only 4K, i think, because
->>>>> the kernel's block size is 4K.
->>>>> I have tried to google for the solution, but only found this trick:
->>>>> losetup /dev/loop0 /dev/hdc
->>>>> blockdev --setbsz 512 /dev/hdc
->>>>> and after this set, trying to read the hdc...
->>>>> It looks like working on the first look, but not really. :-( The
->>>>> 512 size bad sectors still have 4K sizes, but the reading attempt
->>>>> takes more (8x ?) longer.
->>>>> Somebody can help me to set the reading block size to 512 byte?
->>>> You need to add O_DIRECT to the open call in the flags parameter
->>>> (the second argument).   (My brother tested this a year or so ago,
->>>> and it worked for him).
->>>> milton
->>>
->>> Hello,
->>>
->>> Thank you for the information.
->>> Can you help me a little bit more?
->>> Where need to add this parameter?
->>> In the kernel, in the blocked's source, or in the dd_rescue's source?
->>
->> dd_rescue ... there is a call to open, add O_DIRECT to the second
->> argument and recompile.  If it says unknown identifier, just copy the
->> #define from the kernel header into the dd_rescue source.
->>
->
-> C'mon, really.
->
-> {pts/0}% dd_rescue -h
->
-> dd_rescue Version 1.14, garloff@suse.de, GNU GPL
-> [...]
->         -b softbs  block size for copy operation (def=65536),
->         -B hardbs  fallback block size in case of errs (def=512),
-> [...]
->         -d/D       use O_DIRECT for input/output (def=no),
+> That will prevent the closing, when something tries to open the device
+> in blocking mode. If that solves the issue, you should start looking
+> which process tries to access your drive.
 
-YES! 8-)
-It works! :-)
+Right. It happens with autoclose=0 too.
 
-Thank you wery much for you, and Milton!
+Any suggestions for the next step? Maybe add some instrumentation in the 
+cdrom or ide-cd drivers?
 
-Thanks
-Janos Haar
+I think I'll also go back to 2.6.26 for a while to see if I can reproduce 
+it with that. I'm fairly sure it won't, but confirming that will be a 
+good data point.
 
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/ 
+I don't see myself bisecting this as long as I don't have a reliable way 
+to reproduce it.
 
+BTW, I have considered a hardware problem like a short in the eject 
+button, but I don't think that's it. The eject button "feels" good and 
+I'd expect it to also spontaneously eject if that was the problem.
+It also does feel like there is a pattern to it, even if I cannot see yet 
+what that pattern would be.
