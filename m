@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbYJAKer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbYJAK6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752732AbYJAKer (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 06:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbYJAKeb
+	id S1753275AbYJAK6M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 06:58:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYJAK56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 06:34:31 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46206 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753521AbYJAKea (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 06:34:30 -0400
-Date: Wed, 1 Oct 2008 11:34:18 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Steven Noonan <steven@uplinklabs.net>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Steven Noonan <steven@uplinklabs.net>
+	Wed, 1 Oct 2008 06:57:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49639 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752715AbYJAK55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 06:57:57 -0400
+Date: Wed, 1 Oct 2008 12:57:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Steven Noonan <steven@uplinklabs.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH -tip] drivers/serial/8250.c: 'i' may be used
- uninitialized
-Message-ID: <20081001113418.1b23ccb7@lxorguk.ukuu.org.uk>
-In-Reply-To: <1222849017-10896-1-git-send-email-steven@uplinklabs.net>
-References: <20081001080150.GC25832@elte.hu>
-	<1222849017-10896-1-git-send-email-steven@uplinklabs.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	uninitialized
+Message-ID: <20081001105741.GA32062@elte.hu>
+References: <1222847847-7127-1-git-send-email-steven@uplinklabs.net> <1222847847-7127-2-git-send-email-steven@uplinklabs.net> <1222847847-7127-3-git-send-email-steven@uplinklabs.net> <20081001080150.GC25832@elte.hu> <20081001113343.4bf25ea5@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081001113343.4bf25ea5@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  1 Oct 2008 01:16:57 -0700
-Steven Noonan <steven@uplinklabs.net> wrote:
 
-> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-I'd rather have the warning than that particular ugly in the source
-of the serial/tty code. It doesn't fit the pattern of attributes used
-elsewhere in the code (__unused __user etc).
+> On Wed, 1 Oct 2008 10:01:50 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > ( Alan Cc:-ed. Seems like gcc bogosity - so your solution of using
+> >   uninitialized_var() is the correct way to annotate this. )
+> 
+> Sorry but uninitialized_var() is too ugly to be acceptable. Please use 
+> a proper __foo style notation for consistency with the rest of the 
+> kernel
 
-Alan
+it cannot be wrapped like that via __foo style notation (which can be 
+used for section tricks), and uninitialized_var() is the accepted 
+upstream facility for this, it got introduced 1.5 years ago, via commit 
+94909914 ("Add unitialized_var() macro for suppressing gcc warnings").
+
+> (Besides which last time I checked current gcc could figure that one 
+> out)
+
+that would indeed moot the patch.
+
+	Ingo
