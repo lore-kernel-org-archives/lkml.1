@@ -1,110 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYJAOSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbYJAOVD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbYJAOSf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 10:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYJAOSY
+	id S1753889AbYJAOVD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 10:21:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbYJAOUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 10:18:24 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:60924
-	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752375AbYJAOSX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 10:18:23 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH] sched: add a stacktrace on enqueue_pushable error
-To: Chirag Jog <chirag@linux.vnet.ibm.com>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, dvhltc@us.ibm.com, dino@in.ibm.com
-Date: Wed, 01 Oct 2008 10:22:47 -0400
-Message-ID: <20081001142117.27846.83759.stgit@dev.haskins.net>
-In-Reply-To: <20080930044320.GA4685@linux.vnet.ibm.com>
-References: <20080930044320.GA4685@linux.vnet.ibm.com>
-User-Agent: StGIT/0.14.2
+	Wed, 1 Oct 2008 10:20:52 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:43321 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751590AbYJAOUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 10:20:51 -0400
+Date: Wed, 1 Oct 2008 16:19:27 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: rusty@rustcorp.com.au, oakad@yahoo.com, adrian@mcmen.demon.co.uk,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       j-nomura@ce.jp.nec.com
+Subject: Re: [PATCH 0/5] block: remove end_{queued|dequeued}_request()
+Message-ID: <20081001141926.GG19428@kernel.dk>
+References: <20081001.100942.74754500.k-ueda@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081001.100942.74754500.k-ueda@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Chirag,
-  Please apply this patch to your 26.5-rt9 tree for ppc64, enable
-  CONFIG_PROVE_LOCKING (which enables CONFIG_STACKTRACE) and give it a whirl.
-  If you get an oops, please post the console output.
+On Wed, Oct 01 2008, Kiyoshi Ueda wrote:
+> Hi Jens,
+> 
+> This patch-set removes end_queued_request() and end_dequeued_request(),
+> which became identical by the blk_end_request patch-set:
+>     http://marc.info/?l=linux-kernel&m=119741306502719&w=2
+> 
+> They just calls __blk_end_request() actually, so users of them are
+> converted to call __blk_end_request() directly.
+> There should be no functional change.
+> 
+> This patch-set was created on top of the commit below of for-2.6.28.
+> ---------------------------------------------------------------------
+> commit e857b07acc3f1352224f380fcbf26ef985116cc8
+> Author: Sven Schuetz <sven@linux.vnet.ibm.com>
+> Date:   Fri Sep 26 10:58:02 2008 +0200
+> 
+>     include blktrace_api.h in headers_install
+> ---------------------------------------------------------------------
+> 
+> end_request() could be also removed, but it has been used by
+> many old drivers and auditing all such codes will take a time.
+> So this patch-set doesn't remove end_request().
+> 
+> Please review and apply.
 
-Thanks!
+Looks good, applied to the mix! Thanks.
 
--Greg
-
-------------------
-sched: add a stacktrace on enqueue_pushable error
-
-NOT FOR INCLUSION!
-
-This is to help debug an issue discovered by Chirag Jog in the thread
-
-http://lkml.org/lkml/2008/9/25/189
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
-
- include/linux/sched.h |    6 ++++++
- kernel/sched_rt.c     |   20 +++++++++++++++++++-
- 2 files changed, 25 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 67da014..53e8a6a 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -87,6 +87,7 @@ struct sched_param {
- #include <linux/task_io_accounting.h>
- #include <linux/kobject.h>
- #include <linux/latencytop.h>
-+#include <linux/stacktrace.h>
- 
- #include <asm/processor.h>
- 
-@@ -1170,6 +1171,11 @@ struct task_struct {
- 
- 	struct list_head tasks;
- 	struct plist_node pushable_tasks;
-+	struct {
-+		unsigned long data[15];
-+		struct stack_trace trace;
-+		pid_t pid;
-+	} pushable_stack;
- 
- 	/*
- 	 * ptrace_list/ptrace_children forms the list of my children
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 57a0c0d..0e6a88c 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -55,7 +55,25 @@ static void update_rt_migration(struct rq *rq)
- 
- static void enqueue_pushable_task(struct rq *rq, struct task_struct *p)
- {
--	plist_del(&p->pushable_tasks, &rq->rt.pushable_tasks);
-+	if (plist_node_empty(&p->pushable_tasks)) {
-+		struct stack_trace *trace = &p->pushable_stack.trace;
-+
-+		trace->nr_entries = 0;
-+		trace->max_entries = sizeof(p->pushable_stack.data)/sizeof(p->pushable_stack.data[0]);
-+		trace->entries = &p->pushable_stack.data[0];
-+		trace->skip = 0;
-+
-+		save_stack_trace(trace);
-+
-+		p->pushable_stack.pid = current->pid;
-+	} else {
-+		printk(KERN_CRIT "redundant enqueue by %d detected\n",
-+		       p->pushable_stack.pid);
-+		print_stack_trace(&p->pushable_stack.trace, 5);
-+
-+		BUG_ON(!plist_node_empty(&p->pushable_tasks));
-+	}
-+
- 	plist_node_init(&p->pushable_tasks, p->prio);
- 	plist_add(&p->pushable_tasks, &rq->rt.pushable_tasks);
- }
+-- 
+Jens Axboe
 
