@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYJATym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbYJAT4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754181AbYJATym (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 15:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYJATyd
+	id S1754351AbYJAT4v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 15:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYJAT4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 15:54:33 -0400
-Received: from vena.lwn.net ([206.168.112.25]:47131 "EHLO vena.lwn.net"
+	Wed, 1 Oct 2008 15:56:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:40036 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753680AbYJATyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 15:54:33 -0400
-Date: Wed, 1 Oct 2008 13:54:30 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Michael Kerrisk" <mtk.manpages@googlemail.com>,
-       Alberto Bertogli <albertito@blitiri.com.ar>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: [PULL] Documentation
-Message-ID: <20081001135430.6e2b2493@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	id S1753836AbYJAT4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 15:56:41 -0400
+Message-ID: <48E3D5F2.4090708@goop.org>
+Date: Wed, 01 Oct 2008 12:56:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: akataria@vmware.com, "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>, Dan Hecht <dhecht@vmware.com>,
+       Zachary Amsden <zach@vmware.com>,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org
+Subject: Re: [RFC] CPUID usage for interaction between Hypervisors and Linux.
+References: <1222881242.9381.17.camel@alok-dev1> <48E3BBC1.2050607@goop.org> <48E3BC47.60900@zytor.com> <48E3BD83.2090801@goop.org> <48E3BE65.2050909@zytor.com> <48E3C32B.3090701@goop.org> <48E3C4C3.1050903@zytor.com>
+In-Reply-To: <48E3C4C3.1050903@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My documentation tree contains the development process document I wrote
-back in June; it has been reviewed on the list a couple of times and
-published by the Linux Foundation.  I've also put in a few docs changes
-from others that I have run across.  I can guarantee it will cause no
-2.6.27 regressions, but there is also no real reason why it can't wait
-until the merge window opens.
+H. Peter Anvin wrote:
+> What you'd want, at least, is a standard CPUID identification and 
+> range leaf at the top.  256 leaves is a *lot*, though; I'm not saying 
+> one couldn't run out, but it'd be hard.  Keep in mind that for large 
+> objects there are "counting" CPUID levels, as much as I personally 
+> dislike them, and one could easily argue that if you're doing 
+> something that would require anywhere near 256 leaves you probably are 
+> storing bulk data that belongs elsewhere.
 
-jon
+I agree, but it just makes the proposal a bit more brittle.
 
-The following changes are available in the git repository at:
+> Of course, if we had some kind of central authority assigning 8-bit 
+> IDs that would be even better, especially since there are tools in the 
+> field which already scan on 64K boundaries.  I don't know, though, how 
+> likely it is that we'll have to deal with 256 hypervisors.
 
-  git://git.lwn.net/linux-2.6.git docs
+I'm assuming that the likelihood of getting all possible vendors - 
+current and future - to agree to a scheme like this is pretty small.  We 
+need to come up with something that will work well when there are 
+non-cooperative parties to deal with.
 
-Alberto Bertogli (1):
-      Documentation/block/data-integrity.txt: Fix section numbers
+> I agree completely, of course (except that "what hypervisor is this" 
+> still has limited usage, especially when it comes to dealing with bug 
+> workarounds.  Similar to the way we use CPU vendor IDs and stepping 
+> numbers for physical CPUs.)
 
-Hidetoshi Seto (1):
-      doc: Test-by?
+I guess.  Its certainly useful to be able to identify the hypervisor for 
+bug reporting and just general status information.  But making 
+functional changes on that basis should be a last resort.
 
-Jonathan Corbet (1):
-      Add the development process document
-
-Michael Kerrisk (2):
-      SubmitChecklist: interfaces changes should CC linux-api@
-      Documentation/HOWTO: info about interface changes should CC linux-api@vger
-
- Documentation/00-INDEX                             |    3 +
- Documentation/HOWTO                                |    3 +-
- Documentation/SubmitChecklist                      |    2 +
- Documentation/SubmittingPatches                    |    2 +-
- Documentation/block/data-integrity.txt             |    4 +-
- Documentation/development-process/1.Intro          |  274 ++++++++++++
- Documentation/development-process/2.Process        |  459 ++++++++++++++++++++
- Documentation/development-process/3.Early-stage    |  195 +++++++++
- Documentation/development-process/4.Coding         |  384 ++++++++++++++++
- Documentation/development-process/5.Posting        |  278 ++++++++++++
- Documentation/development-process/6.Followthrough  |  202 +++++++++
- Documentation/development-process/7.AdvancedTopics |  173 ++++++++
- Documentation/development-process/8.Conclusion     |   74 ++++
- 13 files changed, 2049 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/development-process/1.Intro
- create mode 100644 Documentation/development-process/2.Process
- create mode 100644 Documentation/development-process/3.Early-stage
- create mode 100644 Documentation/development-process/4.Coding
- create mode 100644 Documentation/development-process/5.Posting
- create mode 100644 Documentation/development-process/6.Followthrough
- create mode 100644 Documentation/development-process/7.AdvancedTopics
- create mode 100644 Documentation/development-process/8.Conclusion
+    J
