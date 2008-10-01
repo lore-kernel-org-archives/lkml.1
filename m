@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbYJANH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbYJANbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbYJANH3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 09:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYJANHT
+	id S1753581AbYJANbf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 09:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYJANb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 09:07:19 -0400
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:45936 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681AbYJANHS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 09:07:18 -0400
-Date: Wed, 1 Oct 2008 09:07:17 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, Arjan van de Ven <arjan@infradead.org>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: introduce users of ioremap_pcibar()
-Message-ID: <20081001130717.GE10632@phobos.i.cabal.ca>
-References: <20080926163641.288bf868@infradead.org> <20080926163718.32f0867e@infradead.org> <20080929072643.GA28871@colo.lackof.org> <20080929064220.374c68a4@infradead.org> <20080929171049.GA14409@colo.lackof.org> <20080929102325.0ca5c0c9@infradead.org> <20081001052450.GB7348@colo.lackof.org> <20080930153001.1107c0de@infradead.org> <20081001124254.GD10632@phobos.i.cabal.ca> <20081001125711.GG13822@parisc-linux.org>
+	Wed, 1 Oct 2008 09:31:27 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:40139 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752307AbYJANb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 09:31:27 -0400
+Date: Wed, 1 Oct 2008 15:29:24 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: "Allan, Bruce W" <bruce.w.allan@intel.com>
+cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-netdev@vger.kernel.org" <linux-netdev@vger.kernel.org>,
+       "kkeil@suse.de" <kkeil@suse.de>,
+       "agospoda@redhat.com" <agospoda@redhat.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "Graham, David" <david.graham@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "chris.jones@canonical.com" <chris.jones@canonical.com>,
+       "tim.gardner@intel.com" <tim.gardner@intel.com>,
+       "airlied@gmail.com" <airlied@gmail.com>, Olaf Kirch <okir@suse.cz>
+Subject: RE: [RFC PATCH 11/12] e1000e: write protect ICHx NVM to prevent
+ malicious write/erase
+In-Reply-To: <B27EBC40D200ED48A3F4CC2EBEABAE0B157C500E@orsmsx501.amr.corp.intel.com>
+Message-ID: <Pine.LNX.4.64.0810011528180.2307@twin.jikos.cz>
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
+ <20080930032013.22950.70966.stgit@jbrandeb-bw.jf.intel.com>
+ <Pine.LNX.4.64.0809301439021.2307@twin.jikos.cz>
+ <B27EBC40D200ED48A3F4CC2EBEABAE0B157C500E@orsmsx501.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081001125711.GG13822@parisc-linux.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 01, 2008 at 06:57:11AM -0600, Matthew Wilcox wrote:
-> > If they use the iomap interface they shouldn't be using readl at all,
-> > they should be using ioread*... It would be a bug otherwise.
-> 
-> That's a viewpoint I've heard several people espouse over the last few
-> days, but it's not (entirely) true.  Addresses returned from calling
-> iomap() on a memory location must be compatible with addresses returned
-> from calling ioremap(), so you can use readl() on an iomap address, as
-> long as you know that it was a memory address that was iomapped.
-> 
->         if (flags & IORESOURCE_MEM) {
->                 if (flags & IORESOURCE_CACHEABLE)
->                         return ioremap(start, len);
->                 return ioremap_nocache(start, len);
->         }
-> 
-> OK, not all architectures use the generic code, but I've been through
-> and they all do more or less the above (mn10300 and frv just return the
-> address, but their readl() and inl() are identical)
-> 
+On Tue, 30 Sep 2008, Allan, Bruce W wrote:
 
-I don't recall anyone ever promising that the iomap interfaces would be
-usable with legacy accessors. I'd certainly prefer it if we didn't, as
-well, as it makes for more explicitly written drivers...
+> Yeah, we can do that.  I need to amend the patch a bit to prevent the 
+> protected range lock from being lifted unintentionally and will add some 
+> debug statements if/when any write/erase cycles fail.
 
-Just because you can use them, doesn't mean you should.
+Olaf raised a rather interesting question -- would iAMT be able to access 
+NVM contents directly, even if the lock bit would be set on the device? 
+I.e. is iAMT allowed direct access to the EEPROM contents, bypassing 
+shadow ram mappings?
 
-regards, Kyle
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
+
