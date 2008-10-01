@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYJAJE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbYJAJIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbYJAJE5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 05:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbYJAJB7
+	id S1754629AbYJAJIg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 05:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYJAJI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 05:01:59 -0400
-Received: from styx.suse.cz ([82.119.242.94]:43885 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754977AbYJAJB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 05:01:57 -0400
-Date: Wed, 1 Oct 2008 11:01:56 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Rodolfo Giometti <giometti@enneenne.com>
-cc: Randy Dunlap <rdunlap@xenotime.net>,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alessandro Rubini <ar@gnudd.com>,
-       Alessandro Rubini <rubini@vision.unipv.it>
-Subject: Re: About the maintainer of "MOUSE AND MISC DEVICES"
-In-Reply-To: <20081001085509.GG18732@tekkaman>
-Message-ID: <alpine.LNX.1.10.0810011100120.4022@jikos.suse.cz>
-References: <20080930153708.GX18732@tekkaman> <Pine.LNX.4.64.0809302248150.2307@twin.jikos.cz> <20080930230644.107e6428.kristoffer.ericson@gmail.com> <alpine.LNX.1.10.0809302340190.4022@jikos.suse.cz> <20080930154908.aaf80a11.rdunlap@xenotime.net>
- <20081001085509.GG18732@tekkaman>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 1 Oct 2008 05:08:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52157 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751215AbYJAJI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 05:08:27 -0400
+Date: Wed, 1 Oct 2008 11:08:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 05/31] cpumask: Provide new cpumask API
+Message-ID: <20081001090809.GA8281@elte.hu>
+References: <20080929180250.111209000@polaris-admin.engr.sgi.com> <20080929180250.825653000@polaris-admin.engr.sgi.com> <20080930091140.GB27452@elte.hu> <48E248CB.5080305@sgi.com> <48E25111.7060305@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48E25111.7060305@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Oct 2008, Rodolfo Giometti wrote:
 
-> > Ack.  And there is no MISC maintainer, so Jiri's patch to remove the 
-> > entire entry makes sense IMO.
-> However misc devices exist, so no maintaner for them? I'd like to
-> propose a misc device and I'd like to have some suggestions about it,
-> so should I send my questions to the LKML?
+* Mike Travis <travis@sgi.com> wrote:
 
-If you have a driver that doesn't fit under any particular subsystem, it 
-therefore probably belongs into drivers/misc, yes.
+> Mike Travis wrote:
+> > Ingo Molnar wrote:
+> ...
+> > 
+> >> In what way will Rusty's changes differ? Since you incorporate some of 
+> >> Rusty's changes already, could you please iterate towards a single 
+> >> patchset which we could then start testing?
+> > 
+> > Our timezones are not very conducive to a lot of email exchanges 
+> > (and he's moving.) From what I've seen I believe he's leaning 
+> > towards using struct cpumask * and less trickery than I have.
 
-Send them to LKML and CC Andrew Morton and possibly also Greg KH.
+actually, that's quite sane to do. const_cpumask_t looked a bit weird to 
+me.
 
-Thanks,
+the extra indirection to a cpumask_t is not a big issue IMO, so in that 
+sense whether we pass by value or pass by reference is not a _big_ 
+performance item.
 
--- 
-Jiri Kosina
-SUSE Labs
+The complications (both present and expected ones) all come from the 
+allocations.
+
+> Oh yeah, I forgot the other major point of Rusty's approach.  He wants 
+> the patchset to be completely bisectable.  That's far from true in my 
+> version.
+
+well, it should be a smooth transition and completely bisectable, 
+there's hundreds of usages of cpumask_t and quite many in the pipeline. 
+It's far easier to _you_ to get this stuff to work if it's all gradual 
+and is expected to work all across. Have a default-off debug mode that 
+turns off compatible cpumask_t perhaps - we can remove that later on.
+
+with 'struct cpumask' we could keep cpumask_t as the compatible API, and 
+could see the impact of these changes in a very finegrained and gradual 
+way. Seems like a fundamentally sane approach to me ...
+
+	Ingo
