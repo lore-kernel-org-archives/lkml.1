@@ -1,148 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYJALf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYJALis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbYJALf5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 07:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYJALfr
+	id S1753931AbYJALis (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 07:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYJALih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 07:35:47 -0400
-Received: from phunq.net ([64.81.85.152]:45825 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753269AbYJALfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 07:35:45 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: linux-kernel@vger.kernel.org
-Subject: Tux3 Report: Extolling the Extensive Virtues of Extents
-Date: Wed, 1 Oct 2008 04:35:39 -0700
-User-Agent: KMail/1.9.5
-Cc: linux-fsdevel@vger.kernel.org, tux3@tux3.org
+	Wed, 1 Oct 2008 07:38:37 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:34754 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752250AbYJALif (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 07:38:35 -0400
+Message-ID: <48E3612E.1020607@fr.ibm.com>
+Date: Wed, 01 Oct 2008 13:38:22 +0200
+From: Daniel Lezcano <dlezcano@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 18/30] netvm: INET reserves.
+References: <20080724140042.408642539@chello.nl> <20080724141530.573585429@chello.nl>
+In-Reply-To: <20080724141530.573585429@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810010435.39891.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After a couple of weeks of painstakingly slow progress, Tux3 now is 
-close enough to having extents that I feel it is time to sit back, 
-limber up the proverbial knuckle joints for some heavy typing, and 
-launch yet another Tux3 design missive into the wild blue yonder.
+> Add reserves for INET.
+> 
+> The two big users seem to be the route cache and ip-fragment cache.
+> 
+> Reserve the route cache under generic RX reserve, its usage is bounded by
+> the high reclaim watermark, and thus does not need further accounting.
+> 
+> Reserve the ip-fragement caches under SKB data reserve, these add to the
+> SKB RX limit. By ensuring we can at least receive as much data as fits in
+> the reassmbly line we avoid fragment attack deadlocks.
+> 
+> Adds to the reserve tree:
+> 
+>   total network reserve      
+>     network TX reserve       
+>       protocol TX pages      
+>     network RX reserve       
+> +     IPv6 route cache       
+> +     IPv4 route cache       
+>       SKB data reserve       
+> +       IPv6 fragment cache  
+> +       IPv4 fragment cache  
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  include/net/inet_frag.h  |    7 +++
+>  include/net/netns/ipv6.h |    4 ++
+>  net/ipv4/inet_fragment.c |    3 +
+>  net/ipv4/ip_fragment.c   |   89 +++++++++++++++++++++++++++++++++++++++++++++--
+>  net/ipv4/route.c         |   72 +++++++++++++++++++++++++++++++++++++-
+>  net/ipv6/af_inet6.c      |   20 +++++++++-
+>  net/ipv6/reassembly.c    |   88 +++++++++++++++++++++++++++++++++++++++++++++-
+>  net/ipv6/route.c         |   66 ++++++++++++++++++++++++++++++++++
+>  8 files changed, 341 insertions(+), 8 deletions(-)
+> 
 
-What is all this noise about extents and why is everybody doing it?  And 
-what is an extent anyway?
+Sorry for the delay ...
 
-Traditional filesystems record a pointer to each individual disk block, 
-whereas modern extent-based filesystems record pointers to runs of disk 
-blocks, each such extent having a starting address and a count of data 
-blocks that store all or part of some file.  A file may consist of many 
-extents, and may be sparse, which requires that logical addresses also 
-be stored, in order to know the position of each extent within a file.  
-An extent can therefore be thought of as a triple {logical address, 
-physical address, block count} or alternatively, as a pair {physical 
-address, block count} indexed by a logical address.  Tux3 uses the 
-latter approach while Ext4 uses the former.
+[ cut ]
 
-Extents themselves are simple things: just add a count to a block 
-pointer and you have an extent, which is just what we did in Tux3.  The 
-extent count is packed into 6 unused bits of a 64 bit physical block 
-pointer.  "For free" you could say.
+I removed a big portion of code because the remarks below apply to the 
+rest of the code.
 
-On the other hand, algorithms to handle extents are far from simple.  It 
-is amazing how much complexity jumped out of the woodwork when that 
-innocent little count field appeared.  For one thing, extents 
-constitute variable sized logical objects so you can't store them in a 
-radix tree as with the classic direct/indirect/double/triple scheme 
-inherited by Ext2 from UFS.  A considerably more complex b-tree scheme 
-is required.  Well, we had the b-trees anyway for other reasons 
-(variable sized inodes, multiple block pointers per logical address) 
-but that is just one of the issues.
+> +static int sysctl_intvec_route(struct ctl_table *table,
+> +		int __user *name, int nlen,
+> +		void __user *oldval, size_t __user *oldlenp,
+> +		void __user *newval, size_t newlen)
+> +{
+> +	struct net *net = current->nsproxy->net_ns;
 
-Extents introduce a large number of new boundary conditions into file 
-allocation and access code.  To illustrate, consider the complexity of 
-rewriting a region of a file on top of some number of pre-existing 
-extents, which can have gaps between them.  We want to overwrite some 
-extents and allocate new extents to fill in the gaps.  Maybe we want to 
-enlarge some existing extents where possible, or delete some of the 
-pre-existing extents in favor of a larger, newly allocated contiguous 
-region.  Maybe beginning or end of the region we are writing lands in 
-the middle of a pre-existing extent, and we have to handle that.  This 
-is a whole lot more detail to worry about than just writing a block at 
-a time, no?  Indeed it is.  So why would we want to put ourselves 
-through such pain anyway?
+I think you can use the container_of and get rid of using 
+current->nsproxy->net_ns.
 
-The answer is: extents yield huge performance benefits.  Recently, 
-somebody said that extents are just a performance hack, and that is 
-true, but then cache is just a performance hack too.  Extents are 
-simply the biggest performance optimization to come along for 
-filesystems since... buffer cache.
+	struct net *net = container_of(table->data, struct net,
+				ipv6.sysctl.ip6_rt_max_size);
 
-We get all of these benefits from extents:
+Another solution could be to pass directly the sysctl structure pointer 
+in the table data instead of
+".data = &init_net.ipv6.sysctl.ip6_rt_max_size" when initializing the 
+sysctl table below. But you have to set the right field value yourself.
 
-  * Allocate an entire range of blocks at once - fewer trips into
-    the allocator.
+> +	int write = (newval && newlen);
+> +	int new_size, ret;
+> +
+> +	mutex_lock(&net->ipv6.sysctl.ip6_rt_lock);
+> +
+> +	if (write)
+> +		table->data = &new_size;
+> +
+> +	ret = sysctl_intvec(table, name, nlen, oldval, oldlenp, newval, newlen);
+> +
+> +	if (!ret && write) {
+> +		ret = mem_reserve_kmem_cache_set(&net->ipv6.ip6_rt_reserve,
+> +				net->ipv6.ip6_dst_ops.kmem_cachep, new_size);
+> +		if (!ret)
+> +			net->ipv6.sysctl.ip6_rt_max_size = new_size;
+> +	}
+> +
+> +	if (write)
+> +		table->data = &net->ipv6.sysctl.ip6_rt_max_size;
+> +
+> +	mutex_unlock(&net->ipv6.sysctl.ip6_rt_lock);
+> +
+> +	return ret;
+> +}
 
-  * Each extent is allocated contiguously - fragmentation reduction
-    without guesswork.
+Dancing with the table->data looks safe but it is not very nice.
+Isn't possible to use a temporary table like in the function 
+"ipv4_sysctl_local_port_range" ?
 
-  * Assign disk addresses to entire ranges of a file write at once -
-    fewer walks through the file index blocks.
+>  ctl_table ipv6_route_table_template[] = {
+>  	{
+>  		.procname	=	"flush",
+> @@ -2520,7 +2581,8 @@ ctl_table ipv6_route_table_template[] = 
+>  		.data		=	&init_net.ipv6.sysctl.ip6_rt_max_size,
+>  		.maxlen		=	sizeof(int),
+>  		.mode		=	0644,
+> -		.proc_handler	=	&proc_dointvec,
+> +		.proc_handler	=	&proc_dointvec_route,
+> +		.strategy	= 	&sysctl_intvec_route,
+>  	},
+>  	{
+>  		.ctl_name	=	NET_IPV6_ROUTE_GC_MIN_INTERVAL,
+> @@ -2608,6 +2670,8 @@ struct ctl_table *ipv6_route_sysctl_init
+>  		table[8].data = &net->ipv6.sysctl.ip6_rt_min_advmss;
+>  	}
+> 
+> +	mutex_init(&net->ipv6.sysctl.ip6_rt_lock);
+> +
+>  	return table;
+>  }
+>  #endif
+> Index: linux-2.6/include/net/inet_frag.h
+> ===================================================================
+> --- linux-2.6.orig/include/net/inet_frag.h
+> +++ linux-2.6/include/net/inet_frag.h
+> @@ -1,6 +1,9 @@
+>  #ifndef __NET_FRAG_H__
+>  #define __NET_FRAG_H__
+> 
+> +#include <linux/reserve.h>
+> +#include <linux/mutex.h>
+> +
+>  struct netns_frags {
+>  	int			nqueues;
+>  	atomic_t		mem;
+> @@ -10,6 +13,10 @@ struct netns_frags {
+>  	int			timeout;
+>  	int			high_thresh;
+>  	int			low_thresh;
+> +
+> +	/* reserves */
+> +	struct mutex		lock;
+> +	struct mem_reserve	reserve;
+>  };
+> 
+>  struct inet_frag_queue {
+> Index: linux-2.6/net/ipv4/inet_fragment.c
+> ===================================================================
+> --- linux-2.6.orig/net/ipv4/inet_fragment.c
+> +++ linux-2.6/net/ipv4/inet_fragment.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/random.h>
+>  #include <linux/skbuff.h>
+>  #include <linux/rtnetlink.h>
+> +#include <linux/reserve.h>
+> 
+>  #include <net/inet_frag.h>
+> 
+> @@ -74,6 +75,8 @@ void inet_frags_init_net(struct netns_fr
+>  	nf->nqueues = 0;
+>  	atomic_set(&nf->mem, 0);
+>  	INIT_LIST_HEAD(&nf->lru_list);
+> +	mutex_init(&nf->lock);
+> +	mem_reserve_init(&nf->reserve, "IP fragement cache", NULL);
+>  }
+>  EXPORT_SYMBOL(inet_frags_init_net);
+> 
+> Index: linux-2.6/include/net/netns/ipv6.h
+> ===================================================================
+> --- linux-2.6.orig/include/net/netns/ipv6.h
+> +++ linux-2.6/include/net/netns/ipv6.h
+> @@ -24,6 +24,8 @@ struct netns_sysctl_ipv6 {
+>  	int ip6_rt_mtu_expires;
+>  	int ip6_rt_min_advmss;
+>  	int icmpv6_time;
+> +
+> +	struct mutex ip6_rt_lock;
+>  };
+> 
+>  struct netns_ipv6 {
+> @@ -55,5 +57,7 @@ struct netns_ipv6 {
+>  	struct sock             *ndisc_sk;
+>  	struct sock             *tcp_sk;
+>  	struct sock             *igmp_sk;
+> +
+> +	struct mem_reserve	ip6_rt_reserve;
+>  };
+>  #endif
+> Index: linux-2.6/net/ipv6/af_inet6.c
+> ===================================================================
+> --- linux-2.6.orig/net/ipv6/af_inet6.c
+> +++ linux-2.6/net/ipv6/af_inet6.c
+> @@ -851,6 +851,20 @@ static int inet6_net_init(struct net *ne
+>  	net->ipv6.sysctl.ip6_rt_min_advmss = IPV6_MIN_MTU - 20 - 40;
+>  	net->ipv6.sysctl.icmpv6_time = 1*HZ;
+> 
+> +	mem_reserve_init(&net->ipv6.ip6_rt_reserve, "IPv6 route cache",
+> +			 &net_rx_reserve);
+> +	/*
+> +	 * XXX: requires that net->ipv6.ip6_dst_ops is already set-up
+> +	 *      but afaikt its impossible to order the various
+> +	 *      pernet_subsys calls so that this one is done after
+> +	 *      ip6_route_net_init().
+> +	 */
 
-  * At sync time, form larger and fewer bio transactions that can be
-    merged more efficiently by the disk elevator and require less
-    handling in the block IO path than individual blocks.
+As this code seems related to the routes, is there a particular reason 
+to not put it at the end of "ip6_route_net_init" function ? You will be 
+sure "net->ipv6.ip6_dst_ops is already set-up", no ?
 
-  * Fewer edits of file metadata - don't trash the cache.
+> +	err = mem_reserve_kmem_cache_set(&net->ipv6.ip6_rt_reserve,
+> +			net->ipv6.ip6_dst_ops.kmem_cachep,
+> +			net->ipv6.sysctl.ip6_rt_max_size);
+> +	if (err)
+> +		goto reserve_fail;
+> +
+>  #ifdef CONFIG_PROC_FS
+>  	err = udp6_proc_init(net);
+>  	if (err)
+> @@ -861,8 +875,8 @@ static int inet6_net_init(struct net *ne
+>  	err = ac6_proc_init(net);
+>  	if (err)
+>  		goto proc_ac6_fail;
+> -out:
+>  #endif
+> +out:
+>  	return err;
+> 
+>  #ifdef CONFIG_PROC_FS
+> @@ -870,8 +884,10 @@ proc_ac6_fail:
+>  	tcp6_proc_exit(net);
+>  proc_tcp6_fail:
+>  	udp6_proc_exit(net);
+> -	goto out;
+>  #endif
+> +reserve_fail:
+> +	mem_reserve_disconnect(&net->ipv6.ip6_rt_reserve);
 
-  * More compact representation on disk - less metadata to load into
-    memory and write back out to disk.
+Idem.
 
-  * Lower ratio of metadata blocks to data blocks - less seeking on
-    read.
+> +	goto out;
+>  }
+> 
+>  static void inet6_net_exit(struct net *net)
 
-  * More compact representation in memory - less cache pressure.
+Isn't "mem_reserve_disconnect" missing here ? (but going to 
+ip6_route_net_exit)
 
-  * Extent data is handled in batches at each step: allocation,
-    index editing, io submission, freeing, so code execution is well
-    localized - better use of processor execution cache.
 
-To quantify some of these benefits, consider that a block-oriented 
-filesystem like Ext3 must read one index block for each thousand data 
-blocks, 4 MB of data, which takes about 16 milliseconds to read.  If an 
-extra seek is required to pick up the next index block, and then back 
-to where the next data will be read, that is maybe 12 ms on top of the 
-16 ms linear transfer time, a 75% performance penalty.  Tux3 indexes 
-about 85 MB of data per index block, which translates into about 3% 
-seek overhead for a large linear read.
+I hope this review helped :)
 
-An even more dramatic improvement can be expected with file deletion.  
-Ext3 has to read one metadata block per 4 MB of deleted data in order 
-to find the blocks that should be freed.  This overhead is about 1.5 
-seconds per Gigabyte, or 25 minutes per terabyte.  Tux3 will reduce 
-that to about .07 seconds per gigabyte or about 1.2 minutes per 
-terabyte, using extents.
+Thanks
+	--Daniel
 
-In both cases, further savings can be had using larger extents, but 
-Tux3's modest 64 block extent limit already promises upwards of 95% of 
-the benefit that is to be had.  That said, Tux3 may well add an 
-optimization to support larger extents later.  This is not very hard, 
-it is just more code, but for the time being we have a better use in 
-mind for those bits we saved (versioning).
 
-As mentioned above, the one big drawback of extents is that they are 
-hard to code and get right.  That is why they have only slowly appeared 
-in our grassroots open source filesystems on Linux.  Big iron Unix 
-vendors have known about the benefits of extents for decades, and have 
-had the workloads to showcase them.  Well now we have those loads on 
-Linux too.  Time to get our collective act together.
-
-I did not get into the details of Tux3's extent design because this post 
-is already long enough.  But they are interesting, at least I think so, 
-and do deserve a post of their own.  Please stay tuned.  And please 
-keep in mind: Halloween is fast approaching, and therefore so is the 
-Tux3 Halloween Cabal party.
-
-Regards,
-
-Daniel
