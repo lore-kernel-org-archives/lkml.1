@@ -1,91 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbYJATon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYJATym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbYJATon (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 15:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbYJATof
+	id S1754181AbYJATym (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 15:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYJATyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 15:44:35 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:61596 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753728AbYJAToe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 15:44:34 -0400
-Date: Wed, 1 Oct 2008 12:44:07 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Samuel Ortiz <sameo@openedhand.com>, lkml <linux-kernel@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>, Felipe Balbi <felipe.balbi@nokia.com>,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc8 1/2] drivers/mfd/twl4030-core.c
-Message-Id: <20081001124407.aa090ccd.randy.dunlap@oracle.com>
-In-Reply-To: <200810011144.20510.david-b@pacbell.net>
-References: <200810011144.20510.david-b@pacbell.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Wed, 1 Oct 2008 15:54:33 -0400
+Received: from vena.lwn.net ([206.168.112.25]:47131 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753680AbYJATyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 15:54:33 -0400
+Date: Wed, 1 Oct 2008 13:54:30 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Michael Kerrisk" <mtk.manpages@googlemail.com>,
+       Alberto Bertogli <albertito@blitiri.com.ar>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: [PULL] Documentation
+Message-ID: <20081001135430.6e2b2493@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Oct 2008 11:44:19 -0700 David Brownell wrote:
+My documentation tree contains the development process document I wrote
+back in June; it has been reviewed on the list a couple of times and
+published by the Linux Foundation.  I've also put in a few docs changes
+from others that I have run across.  I can guarantee it will cause no
+2.6.27 regressions, but there is also no real reason why it can't wait
+until the merge window opens.
 
->  drivers/mfd/Kconfig                |   14 
->  drivers/mfd/Makefile               |    2 
->  drivers/mfd/twl4030-core.c         | 1255 +++++++++++++++++++++++++++++++++++
->  include/linux/i2c/twl4030-gpio.h   |   76 ++
->  include/linux/i2c/twl4030-madc.h   |  134 +++
->  include/linux/i2c/twl4030-pwrirq.h |   37 +
->  include/linux/i2c/twl4030.h        |  191 +++++
->  7 files changed, 1709 insertions(+)
-> 
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -50,6 +50,20 @@ config HTC_PASIC3
->  	  HTC Magician devices, respectively. Actual functionality is
->  	  handled by the leds-pasic3 and ds1wm drivers.
->  
-> +config TWL4030_CORE
-> +	bool "Texas Instruments TWL4030/TPS659x0 Support"
-> +	depends on I2C=y && (ARCH_OMAP2 || ARCH_OMAP3)
-> +	help
-> +	  Say yes here if you have TWL4030 family chip on your board.
-> +	  This core driver provides register access and IRQ handling
-> +	  facilities, and registers devices for the various functions
-> +	  so that function-specific drivers can bind to them.
-> +
-> +	  These multi-function chps are found on many OMAP2 and OMAP3
+jon
 
-	                       chips
+The following changes are available in the git repository at:
 
-> +	  boards, providing power management, RTC, GPIO, keypad, a
-> +	  high speed USB OTG transceiver, an audio codec (on most
-> +	  versions) and many other features.
-> +
->  config MFD_TMIO
->  	bool
->  	default n
+  git://git.lwn.net/linux-2.6.git docs
 
-> --- /dev/null
-> +++ b/include/linux/i2c/twl4030-madc.h
-> @@ -0,0 +1,134 @@
-> +/*
-> + * include/linux/i2c/twl4030-madc.h
-> + *
-> + * TWL4030 MADC module driver header
-> + *
-> + * Copyright (C) 2008 Nokia Corporation
-> + * Mikko Ylinen <mikko.k.ylinen@nokia.com>
+Alberto Bertogli (1):
+      Documentation/block/data-integrity.txt: Fix section numbers
 
+Hidetoshi Seto (1):
+      doc: Test-by?
 
-> +#define TWL4030_MADC_IOC_MAGIC '`'
+Jonathan Corbet (1):
+      Add the development process document
 
-Add that to Documentation/ioctl-number.txt (?)
+Michael Kerrisk (2):
+      SubmitChecklist: interfaces changes should CC linux-api@
+      Documentation/HOWTO: info about interface changes should CC linux-api@vger
 
----
-~Randy
+ Documentation/00-INDEX                             |    3 +
+ Documentation/HOWTO                                |    3 +-
+ Documentation/SubmitChecklist                      |    2 +
+ Documentation/SubmittingPatches                    |    2 +-
+ Documentation/block/data-integrity.txt             |    4 +-
+ Documentation/development-process/1.Intro          |  274 ++++++++++++
+ Documentation/development-process/2.Process        |  459 ++++++++++++++++++++
+ Documentation/development-process/3.Early-stage    |  195 +++++++++
+ Documentation/development-process/4.Coding         |  384 ++++++++++++++++
+ Documentation/development-process/5.Posting        |  278 ++++++++++++
+ Documentation/development-process/6.Followthrough  |  202 +++++++++
+ Documentation/development-process/7.AdvancedTopics |  173 ++++++++
+ Documentation/development-process/8.Conclusion     |   74 ++++
+ 13 files changed, 2049 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/development-process/1.Intro
+ create mode 100644 Documentation/development-process/2.Process
+ create mode 100644 Documentation/development-process/3.Early-stage
+ create mode 100644 Documentation/development-process/4.Coding
+ create mode 100644 Documentation/development-process/5.Posting
+ create mode 100644 Documentation/development-process/6.Followthrough
+ create mode 100644 Documentation/development-process/7.AdvancedTopics
+ create mode 100644 Documentation/development-process/8.Conclusion
