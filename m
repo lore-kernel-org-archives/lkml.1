@@ -1,93 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbYJAQEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYJAQHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753704AbYJAQEN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 12:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbYJAQED
+	id S1753850AbYJAQHe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 12:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYJAQH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 12:04:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33036
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750901AbYJAQEB (ORCPT
+	Wed, 1 Oct 2008 12:07:26 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:43313 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752171AbYJAQHY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 12:04:01 -0400
-Date: Wed, 01 Oct 2008 09:03:50 -0700 (PDT)
-Message-Id: <20081001.090350.193699565.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Oct 2008 12:07:24 -0400
+Date: Wed, 1 Oct 2008 10:07:07 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Zhao, Yu" <yu.zhao@intel.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Alex Chiang <achiang@hp.com>, Roland Dreier <rdreier@cisco.com>,
+       Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 6/6 v3] PCI: document the change
+Message-ID: <20081001160706.GI13822@parisc-linux.org>
+References: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5F6@pdsmsx502.ccr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5F6@pdsmsx502.ccr.corp.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Sep 27, 2008 at 04:28:45PM +0800, Zhao, Yu wrote:
+> +++ b/Documentation/DocBook/kernel-api.tmpl
+> @@ -239,6 +239,7 @@ X!Ekernel/module.c
+>       </sect1>
+> 
+>       <sect1><title>PCI Support Library</title>
+> +!Iinclude/linux/pci.h
 
-1) tcp_v4_send_ack() and tcp_v6_send_ack() can derference
-   a NULL skb->dev in certain circumstances with namespaces
-   enabled.
+Why do you need to do this?  Thus far, all the documentation has been
+with the implementation, not in the header file.
 
-   Fix from Denis V. Lunev and Vitaliy Gusev
+> +1.2 What is ARI
+> +
+> +Alternative Routing-ID Interpretation (ARI) allows a PCI Express Endpoint
+> +to use its device number field as part of function number. Traditionally,
+> +an Endpoint can only have 8 functions, and the device number of all
+> +Endpoints is zero. With ARI enabled, an Endpoint can have up to 256
+> +functions by using device number in conjunction with function number to
+> +indicate a function in the device. This is almost transparent to the Linux
+> +kernel because the Linux kernel still can use 8-bit bus number field plus
+> +8-bit devfn number field to locate a function. ARI is managed via the ARI
+> +Forwarding bit in the Device Capabilities 2 register of the PCI Express
+> +Capability on the Root Port or the Downstream Port and a new ARI Capability
+> +on the Endpoint.
 
-2) ip6_dst_blackhole_ops has a NULL kmem_cachep field leading
-   to OOPS with blackhole routes.  Fix from Arnaud Ebalard.
+I don't think this section actually helps a software developer use
+SR-IOV, does it?
 
-3) If the AF_KEY socket is closed in the middle of an IPSEC
-   rule dump, we leak rules.
+> +2. User Guide
+> +
+> +2.1 How can I manage SR-IOV
+> +
+> +If a device supports SR-IOV, then there should be some entries under
+> +Physical Function's PCI device directory. These entries are in directory:
+> +       - /sys/bus/pci/devices/BB:DD.F/iov/
+> +               (BB:DD:F is bus:dev:fun)
 
-   Fix from Timo Teras.
+The 'domain:' prefix has been there for a long time now.
 
-4) SCTP crash fix in protocol violation parameter processing,
-   this is probably triggerable remotely.
+> +and
+> +       - /sys/bus/pci/devices/BB:DD.F/iov/N
+> +               (N is VF number from 0 to initialvfs-1)
+> +
+> +To enable or disable SR-IOV:
+> +       - /sys/bus/pci/devices/BB:DD.F/iov/enable
+> +               (writing 1/0 means enable/disable VFs, state change will
+> +                notify PF driver)
+> +
+> +To change number of Virtual Functions:
+> +       - /sys/bus/pci/devices/BB:DD.F/iov/numvfs
+> +               (writing positive integer to this file will change NumVFs)
+> +
+> +The total and initial number of VFs can get from:
+> +       - /sys/bus/pci/devices/BB:DD.F/iov/totalvfs
+> +       - /sys/bus/pci/devices/BB:DD.F/iov/initialvfs
+> +
+> +The identifier of a VF that belongs to this PF can get from:
+> +       - /sys/bus/pci/devices/BB:DD.F/iov/N/rid
+> +               (for all class of devices)
 
-   Fix from Wei Yongjun.
+Wouldn't it be more useful to have the iov/N directories be a symlink to
+the actual pci_dev used by the virtual function?
 
-5) Fix an IUCV protocol mismserge in 2.6.27, this was causing
-   scheduling in interrupt problems and other nasties.
+> +For network device, there are:
+> +       - /sys/bus/pci/devices/BB:DD.F/iov/N/mac
+> +       - /sys/bus/pci/devices/BB:DD.F/iov/N/vlan
+> +               (value update will notify PF driver)
 
-   Fix from Heiko Carstens.
+We already have tools to set the MAC and VLAN parameters for network
+devices.
 
-Please pull, thanks a lot!
+> +To register SR-IOV service, Physical Function device driver needs to call:
+> +       int pci_iov_register(struct pci_dev *dev,
+> +               int (*notify)(struct pci_dev *, u32), char **entries)
 
-The following changes since commit 94aca1dac6f6d21f4b07e4864baf7768cabcc6e7:
-  Linus Torvalds (1):
-        Linux 2.6.27-rc8
+I think a better interface would put the 'notify' into the struct
+pci_driver.  That would make 'notify' a bad name .... how about
+'virtual'?  There's also no documentation for the second parameter to
+'notify'.
 
-are available in the git repository at:
+> +Note: entries could be NULL if PF driver doesn't want to create new entries
+> +under /sys/bus/pci/devices/BB:DD.F/iov/N/.
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+So 'entries' is a list of names to create sysfs entries for?
 
-Arnaud Ebalard (1):
-      XFRM,IPv6: initialize ip6_dst_blackhole_ops.kmem_cachep
+> +To enable SR-IOV, Physical Function device driver needs to call:
+> +       int pci_iov_enable(struct pci_dev *dev, int numvfs)
+> +
+> +To disable SR-IOV, Physical Function device driver needs to call:
+> +       void pci_iov_disable(struct pci_dev *dev)
 
-Denis V. Lunev (1):
-      ipv6: NULL pointer dereferrence in tcp_v6_send_ack
+I'm not 100% convinced about this API.  The assumption here is that the
+driver will do it, but I think it should probably be in the core.  The
+driver probably wants to be notified that the PCI core is going to
+create a virtual function, and would it please prepare to do so, but I'm
+not convinced this should be triggered by the driver.  How would the
+driver decide to create a new virtual function?
 
-Heiko Carstens (1):
-      iucv: Fix mismerge again.
+> +To read or write VFs configuration:
+> +       - int pci_iov_read_config(struct pci_dev *dev, int id,
+> +                       char *entry, char *buf, int size);
+> +       - int pci_iov_write_config(struct pci_dev *dev, int id,
+> +                       char *entry, char *buf);
 
-Herbert Xu (1):
-      ipsec: Fix pskb_expand_head corruption in xfrm_state_check_space
+I think we'd be better off having the driver create its own sysfs
+entries if it really needs to.
 
-Timo Teras (1):
-      af_key: Free dumping state on socket close
+> +3.2 Usage example
+> +
+> +Following piece of code illustrates the usage of APIs above.
+> +
+[...]
+> +static struct pci_driver dev_driver = {
+> +       .name =         "SR-IOV Physical Function driver",
+> +       .id_table =     dev_id_table,
+> +       .probe =        dev_probe,
+> +       .remove =       __devexit_p(dev_remove),
+> +#ifdef CONFIG_PM
+> +       .suspend =      dev_suspend,
+> +       .resume =       dev_resume,
+> +#endif
+> +};
 
-Vitaliy Gusev (1):
-      tcp: Fix NULL dereference in tcp_4_send_ack()
+>From my reading of the SR-IOV spec, this isn't how it's supposed to
+work.  The device is supposed to be a fully functional PCI device that
+on demand can start peeling off virtual functions; it's not supposed to
+boot up and initialise all its virtual functions at once.
 
-Wei Yongjun (1):
-      sctp: Fix kernel panic while process protocol violation parameter
-
- include/net/sctp/sm.h    |    3 ++
- net/ipv4/tcp_ipv4.c      |    2 +-
- net/ipv6/route.c         |    2 +
- net/ipv6/tcp_ipv6.c      |    2 +-
- net/iucv/iucv.c          |    3 +-
- net/key/af_key.c         |   30 ++++++++++++++++++----------
- net/sctp/sm_make_chunk.c |   37 +++++++++++++++++++++++------------
- net/sctp/sm_statefuns.c  |   48 +++++++++++++++++++++++++++++++++++----------
- net/xfrm/xfrm_output.c   |   12 +++++++---
- 9 files changed, 97 insertions(+), 42 deletions(-)
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
