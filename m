@@ -1,108 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYJAHyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbYJAHzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754178AbYJAHyq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 03:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYJAHyh
+	id S1754469AbYJAHzQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 03:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYJAHzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 03:54:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44034 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752132AbYJAHyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 03:54:36 -0400
-Date: Wed, 1 Oct 2008 09:54:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 6/6] ftrace: take advantage of variable length entries
-Message-ID: <20081001075419.GA24509@elte.hu>
-References: <20080930030236.230994826@goodmis.org> <20080930030652.883661046@goodmis.org> <20080930203342.5b5ca814@daedalus.pq.iki.fi> <alpine.DEB.1.10.0809301341300.6224@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0809301341300.6224@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 1 Oct 2008 03:55:01 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48347 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752597AbYJAHzA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 03:55:00 -0400
+Date: Wed, 1 Oct 2008 17:01:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: [PATCH 6/6] memcg: lazy lru addition
+Message-Id: <20081001170119.80a617b7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Delaying add_to_lru() and do it in batched manner like page_vec.
+For doing that 2 flags PCG_USED and PCG_LRU.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Because __set_page_cgroup_lru() itself doesn't take lock_page_cgroup(),
+we need a sanity check inside lru_lock().
 
-> > >  	struct trace_entry *entry = iter->ent;
-> > > -	struct mmiotrace_map *m	= &entry->field.mmiomap;
-> > > +	struct mmiotrace_map *m	= (struct mmiotrace_map *)entry;
-> > 
-> > This is different style than above, missing the struct
-> > trace_mmiotrace_map intermediate step. Looks like a bug,
-> > since struct mmiotrace_map is not the first field in
-> > struct trace_mmiotrace_map.
-> 
-> Crap! yes this is a bug. Thanks for pointing this out.
+And this delaying make css_put()/get() complicated. 
+To make it clear,
+ * css_get() is called from mem_cgroup_add_list().
+ * css_put() is called from mem_cgroup_remove_list().
+ * css_get()->css_put() is called while try_charge()->commit/cancel sequence.
+is newly added.
 
-hm, there's a significant amount of type casts, see the grep below.
+Changelog: v5 -> v6.
+ - css_get()/put comes back again...it's called via add_list(), remove_list().
+ - patch for PCG_LRU bit part is moved to release_page_cgroup_lru() patch.
+ - Avoid TestSet and just use lock_page_cgroup() etc.
+ - fixed race condition we saw in v5. (smp_wmb() and USED bit magic help us)
 
-The ringbuffer becoming type-opaque has exactly these kinds of dangers, 
-and as i suggested a few days ago, please think about a debug mode that 
-stores the record type in the trace entry and validates it on extraction 
-or something like that.
+Changelog: v3 -> v5.
+ - removed css_get/put per page_cgroup struct.
+   Now, *new* force_empty checks there is page_cgroup on the memcg.
+   We don't need to be afraid of leak.
 
-That might even be a robustness feature: the tracer should not crash if 
-the trace buffer gets corrupted. ftrace had that invariant before, i 
-think we should try to keep as many aspects of it as possible.
+Changelog: v2 -> v3
+ - added TRANSIT flag and removed lock from core logic.
+Changelog: v1 -> v2:
+ - renamed function name from use_page_cgroup to set_page_cgroup_lru().
 
-	Ingo
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-------------->
-ring_buffer.c:		page = (struct buffer_page *)virt_to_page(addr);
-ring_buffer.c:	cpu_buffer->reader_page = (struct buffer_page *)virt_to_page(addr);
-ring_buffer.c:static void rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer);
-ring_buffer.c:			page = (struct buffer_page *)virt_to_page(addr);
-trace_boot.c:	struct trace_boot *field = (struct trace_boot *)entry;
-trace.c:static DEFINE_PER_CPU(struct trace_array_cpu, global_trace_cpu);
-trace.c:static DEFINE_PER_CPU(struct trace_array_cpu, max_data);
-trace.c:		cont = (struct trace_field_cont *)ent;
-trace.c:		struct ftrace_entry *field = (struct ftrace_entry *)entry;
-trace.c:			(struct ctx_switch_entry *)entry;
-trace.c:		struct special_entry *field = (struct special_entry *)entry;
-trace.c:		struct stack_entry *field = (struct stack_entry *)entry;
-trace.c:		struct print_entry *field = (struct print_entry *)entry;
-trace.c:		struct ftrace_entry *field = (struct ftrace_entry *)entry;
-trace.c:			(struct ctx_switch_entry *)entry;
-trace.c:		struct special_entry *field = (struct special_entry *)entry;
-trace.c:		struct stack_entry *field = (struct stack_entry *)entry;
-trace.c:		struct print_entry *field = (struct print_entry *)entry;
-trace.c:		struct ftrace_entry *field = (struct ftrace_entry *)entry;
-trace.c:			(struct ctx_switch_entry *)entry;
-trace.c:		struct special_entry *field = (struct special_entry *)entry;
-trace.c:		struct print_entry *field = (struct print_entry *)entry;
-trace.c:		struct ftrace_entry *field = (struct ftrace_entry *)entry;
-trace.c:			(struct ctx_switch_entry *)entry;
-trace.c:		struct special_entry *field = (struct special_entry *)entry;
-trace.c:		struct ftrace_entry *field = (struct ftrace_entry *)entry;
-trace.c:			(struct ctx_switch_entry *)entry;
-trace.c:		struct special_entry *field = (struct special_entry *)entry;
-trace.c:	struct seq_file *m = (struct seq_file *)file->private_data;
-trace.c:	       offsetof(struct trace_iterator, seq));
-trace.c:		       offsetof(struct trace_iterator, seq));
-trace_mmiotrace.c:		(struct trace_mmiotrace_rw *)entry;
-trace_mmiotrace.c:	struct mmiotrace_map *m	= (struct mmiotrace_map *)entry;
-trace_mmiotrace.c:	struct print_entry *print = (struct print_entry *)entry;
-trace_sched_wakeup.c:static void __wakeup_reset(struct trace_array *tr);
-trace_sysprof.c:static DEFINE_PER_CPU(struct hrtimer, stack_trace_hrtimer);
-trace_sysprof.c:	stack = ((char *)regs + sizeof(struct pt_regs));
-trace_sysprof.c:		regs = (struct pt_regs *)current->thread.sp0 - 1;
+ mm/memcontrol.c |   83 +++++++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 73 insertions(+), 10 deletions(-)
+
+Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+@@ -255,6 +255,7 @@ static void __mem_cgroup_remove_list(str
+ 
+ 	mem_cgroup_charge_statistics(pc->mem_cgroup, pc, false);
+ 	list_del(&pc->lru);
++	css_put(&pc->mem_cgroup->css);
+ }
+ 
+ static void __mem_cgroup_add_list(struct mem_cgroup_per_zone *mz,
+@@ -278,6 +279,7 @@ static void __mem_cgroup_add_list(struct
+ 		list_add_tail(&pc->lru, &mz->lists[lru]);
+ 
+ 	mem_cgroup_charge_statistics(pc->mem_cgroup, pc, true);
++	css_get(&pc->mem_cgroup->css);
+ }
+ 
+ static void __mem_cgroup_move_lists(struct page_cgroup *pc, enum lru_list lru)
+@@ -479,6 +481,7 @@ struct memcg_percpu_vec {
+ 	struct page_cgroup *vec[MEMCG_PCPVEC_SIZE];
+ };
+ static DEFINE_PER_CPU(struct memcg_percpu_vec, memcg_free_vec);
++static DEFINE_PER_CPU(struct memcg_percpu_vec, memcg_add_vec);
+ 
+ static void
+ __release_page_cgroup(struct memcg_percpu_vec *mpv)
+@@ -509,7 +512,6 @@ __release_page_cgroup(struct memcg_percp
+ 		if (!PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
+ 			ClearPageCgroupLRU(pc);
+ 			__mem_cgroup_remove_list(mz, pc);
+-			css_put(&pc->mem_cgroup->css);
+ 		}
+ 	}
+ 	if (prev_mz)
+@@ -519,10 +521,53 @@ __release_page_cgroup(struct memcg_percp
+ }
+ 
+ static void
++__set_page_cgroup_lru(struct memcg_percpu_vec *mpv)
++{
++	unsigned long flags;
++	struct mem_cgroup *mem;
++	struct mem_cgroup_per_zone *mz, *prev_mz;
++	struct page_cgroup *pc;
++	int i, nr;
++
++	local_irq_save(flags);
++	nr = mpv->nr;
++	mpv->nr = 0;
++	prev_mz = NULL;
++
++	for (i = nr - 1; i >= 0; i--) {
++		pc = mpv->vec[i];
++		mem = pc->mem_cgroup;
++		mz = page_cgroup_zoneinfo(pc);
++		if (prev_mz != mz) {
++			if (prev_mz)
++				spin_unlock(&prev_mz->lru_lock);
++			prev_mz = mz;
++			spin_lock(&mz->lru_lock);
++		}
++		if (PageCgroupUsed(pc) && !PageCgroupLRU(pc)) {
++			/*
++			 * while we wait for lru_lock, uncharge()->charge()
++			 * can occur. check here pc->mem_cgroup is what
++			 * we expected or yet.
++			 */
++			smp_rmb();
++			if (likely(mem == pc->mem_cgroup)) {
++				SetPageCgroupLRU(pc);
++				__mem_cgroup_add_list(mz, pc, true);
++			}
++		}
++	}
++
++	if (prev_mz)
++		spin_unlock(&prev_mz->lru_lock);
++	local_irq_restore(flags);
++
++}
++
++static void
+ release_page_cgroup(struct page_cgroup *pc)
+ {
+ 	struct memcg_percpu_vec *mpv;
+-
+ 	mpv = &get_cpu_var(memcg_free_vec);
+ 	mpv->vec[mpv->nr++] = pc;
+ 	if (mpv->nr >= mpv->limit)
+@@ -530,11 +575,25 @@ release_page_cgroup(struct page_cgroup *
+ 	put_cpu_var(memcg_free_vec);
+ }
+ 
++static void
++set_page_cgroup_lru(struct page_cgroup *pc)
++{
++	struct memcg_percpu_vec *mpv;
++
++	mpv = &get_cpu_var(memcg_add_vec);
++	mpv->vec[mpv->nr++] = pc;
++	if (mpv->nr >= mpv->limit)
++		__set_page_cgroup_lru(mpv);
++	put_cpu_var(memcg_add_vec);
++}
++
+ static void page_cgroup_start_cache_cpu(int cpu)
+ {
+ 	struct memcg_percpu_vec *mpv;
+ 	mpv = &per_cpu(memcg_free_vec, cpu);
+ 	mpv->limit = MEMCG_PCPVEC_SIZE;
++	mpv = &per_cpu(memcg_add_vec, cpu);
++	mpv->limit = MEMCG_PCPVEC_SIZE;
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -543,6 +602,8 @@ static void page_cgroup_stop_cache_cpu(i
+ 	struct memcg_percpu_vec *mpv;
+ 	mpv = &per_cpu(memcg_free_vec, cpu);
+ 	mpv->limit = 0;
++	mpv = &per_cpu(memcg_add_vec, cpu);
++	mpv->limit = 0;
+ }
+ #endif
+ 
+@@ -556,6 +617,9 @@ static DEFINE_MUTEX(memcg_force_drain_mu
+ static void drain_page_cgroup_local(struct work_struct *work)
+ {
+ 	struct memcg_percpu_vec *mpv;
++	mpv = &get_cpu_var(memcg_add_vec);
++	__set_page_cgroup_lru(mpv);
++	put_cpu_var(mpv);
+ 	mpv = &get_cpu_var(memcg_free_vec);
+ 	__release_page_cgroup(mpv);
+ 	put_cpu_var(mpv);
+@@ -710,17 +774,18 @@ static void __mem_cgroup_commit_charge(s
+ 	/* Here, PCG_LRU bit is cleared */
+ 	pc->mem_cgroup = mem;
+ 	/*
++	 * We have to set pc->mem_cgroup before set USED bit for avoiding
++	 * race with (delayed) __set_page_cgroup_lru() in other cpu.
++	 */
++	smp_wmb();
++	/*
+ 	 * below pcg_default_flags includes PCG_LOCK bit.
+ 	 */
+ 	pc->flags = pcg_default_flags[ctype];
+ 	unlock_page_cgroup(pc);
+ 
+-	mz = page_cgroup_zoneinfo(pc);
+-
+-	spin_lock_irqsave(&mz->lru_lock, flags);
+-	__mem_cgroup_add_list(mz, pc, true);
+-	SetPageCgroupLRU(pc);
+-	spin_unlock_irqrestore(&mz->lru_lock, flags);
++	set_page_cgroup_lru(pc);
++	css_put(&mem->css);
+ }
+ 
+ /**
+@@ -767,10 +832,8 @@ static int mem_cgroup_move_account(struc
+ 
+ 	if (spin_trylock(&to_mz->lru_lock)) {
+ 		__mem_cgroup_remove_list(from_mz, pc);
+-		css_put(&from->css);
+ 		res_counter_uncharge(&from->res, PAGE_SIZE);
+ 		pc->mem_cgroup = to;
+-		css_get(&to->css);
+ 		__mem_cgroup_add_list(to_mz, pc, false);
+ 		ret = 0;
+ 		spin_unlock(&to_mz->lru_lock);
+
