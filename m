@@ -1,109 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752605AbYJAHgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbYJAHil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752605AbYJAHgy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 03:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbYJAHgp
+	id S1753030AbYJAHil (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 03:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYJAHid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 03:36:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38847 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750701AbYJAHgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 03:36:45 -0400
-Date: Wed, 1 Oct 2008 09:36:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix: x86: remove cpu_vendor_dev
-Message-ID: <20081001073636.GE9366@elte.hu>
-References: <1222792897-5691-1-git-send-email-heukelum@fastmail.fm> <20080930193736.GA4453@mailshack.com> <86802c440809301337i1bbf6e9ckb8de8a1ef08955d3@mail.gmail.com> <20081001064942.GA651@elte.hu> <86802c440810010022x5597655dre535aa5d4b986719@mail.gmail.com>
+	Wed, 1 Oct 2008 03:38:33 -0400
+Received: from mail.ku-gbr.de ([81.3.11.18]:32830 "EHLO ku-gbr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751384AbYJAHic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 03:38:32 -0400
+Date: Wed, 1 Oct 2008 09:38:17 +0200
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+Message-ID: <20081001073817.GA3098@anita.doom>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org> <20080924105943.GB2094@anita> <20080925081848.GB2305@anita> <48DEA40D.40709@kernel.org> <20080930081257.GB18961@anita.doom> <48E232FC.1090902@kernel.org> <20080930151622.GC18961@anita.doom> <48E25831.4030505@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440810010022x5597655dre535aa5d4b986719@mail.gmail.com>
+In-Reply-To: <48E25831.4030505@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am 2008-10-01 01:47 +0900 schrieb Tejun Heo:
+> Please apply the attached patch and see whether the problem goes
+> away.
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+I will take care of this this evening.
 
-> On Tue, Sep 30, 2008 at 11:49 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Yinghai Lu <yinghai@kernel.org> wrote:
-> >
-> >> On Tue, Sep 30, 2008 at 12:37 PM, Alexander van Heukelum
-> >> <heukelum@mailshack.com> wrote:
-> >> > x86_64-kernels after commit 10a434fcb "x86: remove cpu_vendor_dev"
-> >> > crashed on qemu-system-x86_64 due to a typo in vmlinux_64.lds.S.
-> >> >
-> >> > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> >> >
-> >> > ---
-> >> >
-> >> > On Tue, Sep 30, 2008 at 06:41:33PM +0200, Alexander van Heukelum wrote:
-> >> >> Moreover, a defconfig won't run :-/ (on qemu-system-x86_64).
-> >> >> Bisection pointed to commit 10a434fcb "x86: remove cpu_vendor_dev".
-> >> >> The kernel crashes early with a general protection fault in a call
-> >> >> to strnlen. I have no idea what goes wrong, yet.
-> >> >
-> >> > It took quite some time, but I found the problem... I'll leave
-> >> > the other one to you ;).
-> >> >
-> >> > Greetings,
-> >> >        Alexander
-> >> >
-> >> >  arch/x86/kernel/vmlinux_64.lds.S |    2 +-
-> >> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >> >
-> >> > diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-> >> > index 201e81a..46e0544 100644
-> >> > --- a/arch/x86/kernel/vmlinux_64.lds.S
-> >> > +++ b/arch/x86/kernel/vmlinux_64.lds.S
-> >> > @@ -172,8 +172,8 @@ SECTIONS
-> >> >   .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
-> >> >        *(.x86_cpu_dev.init)
-> >> >   }
-> >> > -  SECURITY_INIT
-> >> >   __x86_cpu_dev_end = .;
-> >> > +  SECURITY_INIT
-> >> >
-> >> >   . = ALIGN(8);
-> >> >   .parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
-> >> >
-> >>
-> >> that is merging problem, Ingo should fix that already...
-> >
-> > indeed. I've fixed it in tip/x86/traps by applying Alexander's patch.
-> >
-> 
-> still have merging problem... in tip/master we have
-> 
->   __x86_cpu_dev_start = .;
->   .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
->         *(.x86_cpu_dev.init)
->   }
->   __x86_cpu_dev_end = .;
->   SECURITY_INIT
-> 
->   DYN_ARRAY_INIT(8)
-> 
->   SECURITY_INIT
-> 
-> there is two copy of SECURITY_INIT
+> Also, can you test whether hotplug works with the patch applied?
 
-indeed. I fixed this up now.
+Erm... I never did Hotplug on SATA, should I plug out the Disk out of
+the Mainboard Connector to see what happens? I suspect I need another
+additional disk the or a live-usb linux with this Kernel...
 
-interestingly, this seems to be one of the rare cases where Git 
-auto-merge does the wrong thing - tt should have detected a conflict.
+> Thanks.
 
-	Ingo
+Thats no problem, but one question:
+
+Should this 
+
+> diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
+> index 14601dc..18f81d2 100644
+> +++ b/drivers/ata/sata_nv.c
+> @@ -433,6 +433,7 @@ static struct ata_port_operations nv_nf2_ops = {
+>  	.inherits		= &nv_common_ops,
+>  	.freeze			= nv_nf2_freeze,
+>  	.thaw			= nv_nf2_thaw,
+> +	.hardreset		= ATA_OP_NULL,
+>  };
+>  
+>  static struct ata_port_operations nv_ck804_ops = {
+
+go onto vanilla 2.6.27_rc7 WITH or withOUT
+sata_nv-reinstate-nv_hardreset.patch?
+
+
+Regards, Konsti
+
+
+-- 
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
