@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYJAICf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbYJAIGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbYJAICf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 04:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYJAICK
+	id S1753929AbYJAIGY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 04:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYJAIGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 04:02:10 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:1149 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754631AbYJAICI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 04:02:08 -0400
-Message-ID: <f488382f0810010102y551f4a3bs64524fa70ef04ca3@mail.gmail.com>
-Date: Wed, 1 Oct 2008 01:02:06 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: drivers/pci/probe.c compile warnings on -tip
-Cc: linux-kernel@vger.kernel.org, "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Hugh Dickins" <hugh@veritas.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>
+	Wed, 1 Oct 2008 04:06:09 -0400
+Received: from lucidpixels.com ([75.144.35.66]:48051 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750815AbYJAIGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 04:06:07 -0400
+Date: Wed, 1 Oct 2008 04:06:06 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
+cc: Tom Mortensen <tmmlkml@gmail.com>, Tejun Heo <tj@kernel.org>,
+       Bill Davidsen <davidsen@tmr.com>, Gwendal Grignou <gwendal@google.com>,
+       Brian Rademacher <rad@radfiles.net>, linux-ide@vger.kernel.org,
+       linux-raid maillist <linux-raid@vger.kernel.org>,
+       Linux Kernel Maillist <linux-kernel@vger.kernel.org>,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>
+Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
+In-Reply-To: <alpine.LNX.2.00.0809301946020.16014@filesrv1.baby-dragons.com>
+Message-ID: <alpine.DEB.1.10.0810010403500.16900@p34.internal.lan>
+References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA>  <alpine.DEB.1.10.0809220828490.23159@p34.internal.lan>  <5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>  <alpine.DEB.1.10.0809220903400.23159@p34.internal.lan>  <4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA>
+  <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>  <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan>  <e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com>  <48DBAB81.8050900@tmr.com> <48E08E2D.6050905@kernel.org>
+ <a52a95e30809301347s70b57ebfh280a6871329afd72@mail.gmail.com> <alpine.DEB.1.10.0809301715280.14600@p34.internal.lan> <alpine.LNX.2.00.0809301946020.16014@filesrv1.baby-dragons.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was hunting down some warnings I got when compiling -tip, and with
-one of them, I'm not sure what would be a proper way to handle it.
-
-If CONFIG_PHYS_ADDR_T_64BIT is not enabled, these warnings show up:
-
-drivers/pci/probe.c: In function '__pci_read_base':
-drivers/pci/probe.c:308: warning: format '%llx' expects type 'long
-long unsigned int', but argument 4 has type 'resource_size_t'
-drivers/pci/probe.c:308: warning: format '%llx' expects type 'long
-long unsigned int', but argument 5 has type 'resource_size_t'
-drivers/pci/probe.c:320: warning: format '%llx' expects type 'long
-long unsigned int', but argument 5 has type 'resource_size_t'
-drivers/pci/probe.c:320: warning: format '%llx' expects type 'long
-long unsigned int', but argument 6 has type 'resource_size_t'
-drivers/pci/probe.c: In function 'pci_read_bridge_bases':
-drivers/pci/probe.c:392: warning: format '%llx' expects type 'long
-long unsigned int', but argument 3 has type 'resource_size_t'
-drivers/pci/probe.c:392: warning: format '%llx' expects type 'long
-long unsigned int', but argument 4 has type 'resource_size_t'
-drivers/pci/probe.c:405: warning: format '%llx' expects type 'long
-long unsigned int', but argument 3 has type 'resource_size_t'
-drivers/pci/probe.c:405: warning: format '%llx' expects type 'long
-long unsigned int', but argument 4 has type 'resource_size_t'
-drivers/pci/probe.c:443: warning: format '%llx' expects type 'long
-long unsigned int', but argument 4 has type 'resource_size_t'
-drivers/pci/probe.c:443: warning: format '%llx' expects type 'long
-long unsigned int', but argument 5 has type 'resource_size_t'
 
 
-Each of the lines is something like this:
+On Tue, 30 Sep 2008, Mr. James W. Laferriere wrote:
 
-printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
-pci_name(dev), pos, res->start, res->end);
+> 	Hello Justin ,
+>
+>> 
+>> Justin.
+> 	I take it you've tried differant drive manufacturers ?
+It happens across 12-14 velociraptors.
 
-res->start and res->end are resource_size_t (which is phys_addr_t),
-and are sized either 32-bit or 64-bit, based on whether
-CONFIG_PHYS_ADDR_T_64BIT is set. So, it seems to me that something
-like these would be horrendously bad solutions (for obvious reasons,
-like readability):
+> 	Or even a differant drive of same manuf. ?
+It also occurs (I have seen it) on WD 750GiB drives on a different motherboard
+and chipset (P35).
 
-#ifdef CONFIG_PHYS_ADDR_T_64BIT
-printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
-pci_name(dev), pos, res->start, res->end);
-#else
-printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%lx, %lx]\n",
-pci_name(dev), pos, res->start, res->end);
-#endif
+> 	Seeing as you've moved this same drive(?) across several chipsets & 
+> possibly mother boards ,  Leads me to beleive that the difficulty is either 
+> with the driver or the drive (if it is always the same drive or drive model) 
+Other people have the same problem with Seagate and / other drives.
+This also occurs on Raptor 150s.
 
-or
+Justin.
 
-#ifdef CONFIG_PHYS_ADDR_T_64BIT
-printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
-pci_name(dev), pos, res->start, res->end);
-#endif
 
-What's the appropriate way to handle it? Moreover, are those printk's
-even truly necessary?
-
-- Steven
