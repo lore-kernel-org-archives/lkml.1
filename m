@@ -1,115 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbYJAO6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbYJAPBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753485AbYJAO6Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 10:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYJAO6B
+	id S1753573AbYJAPBU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 11:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYJAPBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 10:58:01 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:47015 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752386AbYJAO6A (ORCPT
+	Wed, 1 Oct 2008 11:01:08 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:33369 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751133AbYJAPBH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 10:58:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=ws/48QXDmBrnepi6nWwaF+OMXUEIq47DLxpjrtir+S6axtrbr4l+ci3njbh6k7veK1
-         M2Tfe9/2NskS8USj/D1pGCdLgtlRYAk1Aem1MylvGXbYD/j8TaYvVcvjf6Fa78UWmH9m
-         A4kKEFMGTaEci17T/KEK61OWfhI0NXf3SFBGg=
-Message-ID: <cfd18e0f0810010757j7a9f6deaj47a06f30e371af1e@mail.gmail.com>
-Date: Wed, 1 Oct 2008 16:57:58 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [RFC patch 0/3] signals: add rt_tgsigqueueinfo syscall V2
-Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Ulrich Drepper" <drepper@redhat.com>,
-       "Roland McGrath" <roland@redhat.com>, "Oleg Nesterov" <oleg@tv-sign.ru>,
-       linux-api@vger.kernel.org
-In-Reply-To: <20081001095204.343984413@linutronix.de>
+	Wed, 1 Oct 2008 11:01:07 -0400
+Date: Wed, 1 Oct 2008 09:00:50 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Notes from LPC PCI/MSI BoF session
+Message-ID: <20081001150050.GH13822@parisc-linux.org>
+References: <200809221229.18501.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081001095204.343984413@linutronix.de>
+In-Reply-To: <200809221229.18501.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CC+=linux-api@vger.kernel.org]
+On Mon, Sep 22, 2008 at 12:29:18PM -0700, Jesse Barnes wrote:
+> PCI address space management
+> ----------------------------
+> TJ has a bunch of code to improve address space management in Linux.  We 
+> talked for a few minutes about this at the BoF; at this point I'm just 
+> waiting for TJ to post his stuff so we can start integrating it.  Hopefully 
+> we can start merging small pieces of it (like the multiple PCI gap stuff) for 
+> 2.6.28, and get some more eyes on the more aggressive PCI-DMAR stuff he's 
+> been talking about soon.
+> 
+> Well that's all I have in the way of notes.  Feel free to add your own if I 
+> missed anything or correct me if I mischaracterized things.
 
-On Wed, Oct 1, 2008 at 12:01 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> Changes vs. V1: compat_sys_rt_sigqueueinfo implemented. Thanks Roland !
->
-> sys_kill has a counterpart sys_tgkill which allows to send signals to
-> a particular thread. sys_rt_sigqueueinfo is lacking such a counterpart.
->
-> Aside of the asymetry it is a show stopper for migrating applications
-> from other unix-alike RTOSes.
->
-> The following patch series implements rt_tgsigqueueinfo and hooks it
-> up for x86.
-
-This is an excellent candidate for CCing to the new linux-api@vger
-(http://thread.gmane.org/gmane.linux.ltp/5658/), since it is an API
-change.
-
-> Find below the raw documentation.
-
-Thanks -- I'll work that up into a man page when this gets closer to release.
-
-Cheers,
-
-Michael
-
-> ----
->
-> NAME
->       rt_tgsigqueueinfo - Send signal information to a signal to a thread
->
-> SYNOPSIS
->       long sys_rt_tgsigqueueinfo (int tgid, int tid, int sig, siginfo_t *uinfo);
->
-> DESCRIPTION
->
->       rt_tgsigqueueinfo sends signal sig information uinfo to the
->       thread with the thread ID tid in the thread group tgid.  (By
->       contrast, rt_sigqueueinfo(2) can only be used to send a signal
->       info to a process (i.e., thread group) as a whole, and the
->       signal will be delivered to an arbitrary thread within that
->       process.)
->
-> RETURN VALUE
->
->       rt_tgsigqueueinfo returns 0 on success; otherwise,
->       rt_sigqueueinfo returns one of the errors listed in the
->       "Errors" section.
->
-> ERRORS
->       -EFAULT
->              An invalid value for uinfo was specified.
->
->       -EINVAL
->              An invalid TID, TGID or signal was specified.
->
->       -EPERM
->              Permission denied.  For the required permissions,
->              see rt_sigqueueinfo(2).
->
->       -ESRCH
->              No process with the specified thread ID and thread group
->              ID exists.
->
->
->
-
-
+One thing that wasn't resolved at the meeting was the question of 64-bit
+addressing and PCI-PCI bridges (primarily because nobody had their
+PCI-SIG login with them).  I've now downloaded the latest PCI-PCI Bridge
+spec and there are still no facilities to forward addresses >4GB (other
+than the prefetchable region that was already in PPB 1.1).
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
