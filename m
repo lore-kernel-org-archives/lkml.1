@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYJADUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYJAD2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753880AbYJADUD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 23:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYJADTx
+	id S1753902AbYJAD2b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 23:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbYJAD2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 23:19:53 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46896 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbYJADTw (ORCPT
+	Tue, 30 Sep 2008 23:28:23 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:41924 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753426AbYJAD2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 23:19:52 -0400
-Date: Tue, 30 Sep 2008 20:19:07 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org
-Subject: Re: Building two (external) modules from the same sources
-Message-ID: <20081001031907.GA19181@kroah.com>
-References: <200809290949.35749.arvidjaar@mail.ru>
+	Tue, 30 Sep 2008 23:28:22 -0400
+Message-ID: <48E2EE54.2070009@ct.jp.nec.com>
+Date: Tue, 30 Sep 2008 20:28:20 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809290949.35749.arvidjaar@mail.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] x86_64: ia32_signal.c: remove unnecessary cast to u32
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 29, 2008 at 09:49:34AM +0400, Andrey Borzenkov wrote:
-> I have here driver that can be built for two different types of
-> hardware from basically the same sources (this is port of old Agere
-> drivers for Hermes-I/Hermes-II chipsets).
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Cool, do you have a link to the code, I'd be glad to add it to
-drivers/staging/ if it's not in a fully-mergable state yet to get wider
-users for it.
+__put_user() looks type of the 2nd parameter, so casting the 1st parameter
+is not necessary.
 
-> Build differs only in one define -DHERMES2 and single file with
-> different firmware. Unfortunately "if HII" are spread over sources
-> which makes splitting of sources rather questionable.
-> 
-> What is the best way (from kbuild POV) to build two modules - for H-I
-> and H-II - from the same set of source files?
+   text	   data	    bss	    dec	    hex	filename
+   6227	      0	      8	   6235	   185b	ia32_signal.o.new
+   6227	      0	      8	   6235	   185b	ia32_signal.o.old
 
-Not to create two different modules, but rather have one module that
-works for both pieces of hardware, with dynamic checks for the different
-portions.
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/ia32/ia32_signal.c |   26 +++++++++++++-------------
+ 1 files changed, 13 insertions(+), 13 deletions(-)
 
-thanks,
+diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+index e47bed2..690a480 100644
+--- a/arch/x86/ia32/ia32_signal.c
++++ b/arch/x86/ia32/ia32_signal.c
+@@ -351,21 +351,21 @@ static int ia32_setup_sigcontext(struct sigcontext_ia32 __user *sc,
+ 	savesegment(es, tmp);
+ 	err |= __put_user(tmp, (unsigned int __user *)&sc->es);
+ 
+-	err |= __put_user((u32)regs->di, &sc->di);
+-	err |= __put_user((u32)regs->si, &sc->si);
+-	err |= __put_user((u32)regs->bp, &sc->bp);
+-	err |= __put_user((u32)regs->sp, &sc->sp);
+-	err |= __put_user((u32)regs->bx, &sc->bx);
+-	err |= __put_user((u32)regs->dx, &sc->dx);
+-	err |= __put_user((u32)regs->cx, &sc->cx);
+-	err |= __put_user((u32)regs->ax, &sc->ax);
+-	err |= __put_user((u32)regs->cs, &sc->cs);
+-	err |= __put_user((u32)regs->ss, &sc->ss);
++	err |= __put_user(regs->di, &sc->di);
++	err |= __put_user(regs->si, &sc->si);
++	err |= __put_user(regs->bp, &sc->bp);
++	err |= __put_user(regs->sp, &sc->sp);
++	err |= __put_user(regs->bx, &sc->bx);
++	err |= __put_user(regs->dx, &sc->dx);
++	err |= __put_user(regs->cx, &sc->cx);
++	err |= __put_user(regs->ax, &sc->ax);
++	err |= __put_user(regs->cs, &sc->cs);
++	err |= __put_user(regs->ss, &sc->ss);
+ 	err |= __put_user(current->thread.trap_no, &sc->trapno);
+ 	err |= __put_user(current->thread.error_code, &sc->err);
+-	err |= __put_user((u32)regs->ip, &sc->ip);
+-	err |= __put_user((u32)regs->flags, &sc->flags);
+-	err |= __put_user((u32)regs->sp, &sc->sp_at_signal);
++	err |= __put_user(regs->ip, &sc->ip);
++	err |= __put_user(regs->flags, &sc->flags);
++	err |= __put_user(regs->sp, &sc->sp_at_signal);
+ 
+ 	tmp = save_i387_xstate_ia32(fpstate);
+ 	if (tmp < 0)
+-- 
+1.5.6
 
-greg k-h
