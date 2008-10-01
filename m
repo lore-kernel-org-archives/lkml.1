@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbYJANxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbYJANxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752600AbYJANxV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 09:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbYJANxN
+	id S1753362AbYJANxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 09:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbYJANxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 09:53:13 -0400
-Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:51000 "EHLO
-	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750769AbYJANxN (ORCPT
+	Wed, 1 Oct 2008 09:53:23 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60718 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752541AbYJANxV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 09:53:13 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Subject: Re: CD tray closes spontaneously after opening it
-Date: Wed, 1 Oct 2008 15:53:04 +0200
-User-Agent: KMail/1.9.9
-Cc: "Tony Vroon" <tony@vroon.org>, linux-kernel@vger.kernel.org,
-       "Tejun Heo" <tj@kernel.org>, "Jens Axboe" <jens.axboe@oracle.com>
-References: <200809301247.05367.elendil@planet.nl> <200809302150.38872.elendil@planet.nl> <ac3eb2510809301302l7d966896tfb0e3d230598974@mail.gmail.com>
-In-Reply-To: <ac3eb2510809301302l7d966896tfb0e3d230598974@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 1 Oct 2008 09:53:21 -0400
+Date: Wed, 1 Oct 2008 06:53:05 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Matthew Wilcox <matthew@wil.cx>, Kyle McMartin <kyle@mcmartin.ca>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: introduce users of ioremap_pcibar()
+Message-ID: <20081001065305.647715b3@infradead.org>
+In-Reply-To: <20081001130717.GE10632@phobos.i.cabal.ca>
+References: <20080926163641.288bf868@infradead.org>
+	<20080926163718.32f0867e@infradead.org>
+	<20080929072643.GA28871@colo.lackof.org>
+	<20080929064220.374c68a4@infradead.org>
+	<20080929171049.GA14409@colo.lackof.org>
+	<20080929102325.0ca5c0c9@infradead.org>
+	<20081001052450.GB7348@colo.lackof.org>
+	<20080930153001.1107c0de@infradead.org>
+	<20081001124254.GD10632@phobos.i.cabal.ca>
+	<20081001125711.GG13822@parisc-linux.org>
+	<20081001130717.GE10632@phobos.i.cabal.ca>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810011553.05318.elendil@planet.nl>
-X-OriginalArrivalTime: 01 Oct 2008 13:53:09.0945 (UTC) FILETIME=[09FA8290:01C923CD]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 September 2008, Kay Sievers wrote:
-> >> Does this also happen when you set:
-> >>   /proc/sys/dev/cdrom/autoclose
-> >> to 0?
-> >
-> > I'll set that on boot using /etc/sysctl.conf and will report if I can
-> > still reproduce with that setting. I've checked that the "normal"
-> > value is 1.
->
-> That will prevent the closing, when something tries to open the device
-> in blocking mode. If that solves the issue, you should start looking
-> which process tries to access your drive.
+On Wed, 1 Oct 2008 09:07:17 -0400
+Kyle McMartin <kyle@mcmartin.ca> wrote:
+> > 
+> > OK, not all architectures use the generic code, but I've been
+> > through and they all do more or less the above (mn10300 and frv
+> > just return the address, but their readl() and inl() are identical)
+> > 
+> 
+> I don't recall anyone ever promising that the iomap interfaces would
+> be usable with legacy accessors. I'd certainly prefer it if we
+> didn't, as well, as it makes for more explicitly written drivers...
+> 
+> Just because you can use them, doesn't mean you should.
+> 
 
-Right. It happens with autoclose=0 too.
+ok so now we're full circle.
+I started with a real ioremap, was told "no must use iomap" despite the
+same argument you make, and now we're back to square one.
 
-Any suggestions for the next step? Maybe add some instrumentation in the 
-cdrom or ide-cd drivers?
+What I want is an interface that can replace ioremap() for the common
+"I want the bar uncached" case. Nothing more nothing less.... sigh.
 
-I think I'll also go back to 2.6.26 for a while to see if I can reproduce 
-it with that. I'm fairly sure it won't, but confirming that will be a 
-good data point.
 
-I don't see myself bisecting this as long as I don't have a reliable way 
-to reproduce it.
-
-BTW, I have considered a hardware problem like a short in the eject 
-button, but I don't think that's it. The eject button "feels" good and 
-I'd expect it to also spontaneously eject if that was the problem.
-It also does feel like there is a pattern to it, even if I cannot see yet 
-what that pattern would be.
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
