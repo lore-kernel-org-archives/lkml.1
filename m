@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYJAGOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbYJAGfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423AbYJAGOj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 02:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYJAGOc
+	id S1752629AbYJAGfo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 02:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbYJAGfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 02:14:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58364 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751500AbYJAGOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 02:14:31 -0400
-Date: Wed, 1 Oct 2008 08:14:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Pekka Paalanen <pq@iki.fi>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Martin Bligh <mbligh@google.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/2] ring_buffer: remove raw from local_irq_save
-Message-ID: <20081001061404.GA13682@elte.hu>
-References: <20081001042951.412019606@goodmis.org> <20081001043908.122153176@goodmis.org> <20081001055235.GA25703@elte.hu> <20081001060809.GA6646@elte.hu>
+	Wed, 1 Oct 2008 02:35:36 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:58262 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739AbYJAGff (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 02:35:35 -0400
+Message-ID: <48E31821.6070004@linux.vnet.ibm.com>
+Date: Wed, 01 Oct 2008 11:56:41 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081001060809.GA6646@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 9/12] memcg allocate all page_cgroup at boot
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com> <20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com> <48E2F6A9.9010607@linux.vnet.ibm.com> <20081001140748.637b9831.kamezawa.hiroyu@jp.fujitsu.com> <48E30B02.3030506@linux.vnet.ibm.com> <20081001144150.3faa92ea.kamezawa.hiroyu@jp.fujitsu.com> <20081001151249.b6d697a5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081001151249.b6d697a5.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > The raw_local_irq_save causes issues with lockdep. We don't need it
-> > > so replace them with local_irq_save.
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 1 Oct 2008 14:41:50 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> the same warning still occurs with your latest fixes - see the log 
-> below. Config attached. You should be able to reproduce it, it happens 
-> on every bootup with this config.
+>>> It will be easier to test/debug as well, we'll know if the problem is because of
+>>> new page_cgroup being outside struct page rather then guessing if it was the
+>>> atomic ops that caused the problem.
+>>>
+>> atomic_ops patch just rewrite exisiting behavior.
+>>
+> please forgive me to post v6 today, which passed 24h+ tests.
+> v5 is a week old.
+> Discussion about patch order is welcome. But please give me hint.
 
-ignore me, my bad ... i messed up the test. The warning is indeed fixed.
+That sounds impressive. I'll test and review v6.
 
-	Ingo
+-- 
+	Balbir
