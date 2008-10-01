@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752467AbYJAEjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751706AbYJAEje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752467AbYJAEjU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 00:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYJAEjL
+	id S1751706AbYJAEje (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 00:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYJAEjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 00:39:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63921 "EHLO
+	Wed, 1 Oct 2008 00:39:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63914 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbYJAEjK (ORCPT
+	with ESMTP id S1750898AbYJAEjK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 1 Oct 2008 00:39:10 -0400
-Message-Id: <20081001043908.122153176@goodmis.org>
-References: <20081001042951.412019606@goodmis.org>
+Message-Id: <20081001042951.412019606@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 01 Oct 2008 00:29:52 -0400
+Date: Wed, 01 Oct 2008 00:29:51 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -22,58 +21,40 @@ Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>,
        Pekka Paalanen <pq@iki.fi>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Martin Bligh <mbligh@google.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/2] ring_buffer: remove raw from local_irq_save
-Content-Disposition: inline; filename=ring-buffer-remove-raw.patch
+       Martin Bligh <mbligh@google.com>
+Subject: [PATCH 0/2] ring_buffer: updates for linux-tip
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The raw_local_irq_save causes issues with lockdep. We don't need it
-so replace them with local_irq_save.
+The first patch is just a lockdep clean up of the ring buffer.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/ring_buffer.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+The next patch is a new locking design. It is not lockless (yet) but
+the locking is a bit cleaner than the original. The basic idea is
+that the reader now has its own page to read from that is not in
+the ring buffer. When the reader (a consumer) finishes a page, it
+then grabs a lock to pull out a new page from the ring buffer and
+replace it with the one that it just finished reading.
 
-Index: linux-tip.git/kernel/trace/ring_buffer.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/ring_buffer.c	2008-10-01 00:04:39.000000000 -0400
-+++ linux-tip.git/kernel/trace/ring_buffer.c	2008-10-01 00:05:07.000000000 -0400
-@@ -847,7 +847,7 @@ ring_buffer_lock_reserve(struct ring_buf
- 	if (atomic_read(&buffer->record_disabled))
- 		return NULL;
- 
--	raw_local_irq_save(*flags);
-+	local_irq_save(*flags);
- 	cpu = raw_smp_processor_id();
- 
- 	if (!cpu_isset(cpu, buffer->cpumask))
-@@ -909,7 +909,7 @@ int ring_buffer_unlock_commit(struct rin
- 	rb_commit(cpu_buffer, event);
- 
- 	spin_unlock(&cpu_buffer->lock);
--	raw_local_irq_restore(flags);
-+	local_irq_restore(flags);
- 
- 	return 0;
- }
-@@ -1583,13 +1583,13 @@ void ring_buffer_reset_cpu(struct ring_b
- 	if (!cpu_isset(cpu, buffer->cpumask))
- 		return;
- 
--	raw_local_irq_save(flags);
-+	local_irq_save(flags);
- 	spin_lock(&cpu_buffer->lock);
- 
- 	rb_reset_cpu(cpu_buffer);
- 
- 	spin_unlock(&cpu_buffer->lock);
--	raw_local_irq_restore(flags);
-+	local_irq_restore(flags);
- }
- 
- /**
+The writer only locks when it needs to go to the next page. We still
+disable interrupts, but it would not be too hard to allow
+interrupts to take place on writes. But I will leave that for
+version 2 (or 1.2)
 
--- 
+The iterator (non consuming read) still expects the tracer to
+be disabled when iterating the loop (no locks taken).
+
+The ring_buffer_{un}lock is now no longer around and not needed.
+
+I ran this with lockdep on and it ran fine.
+
+I did lots of testing of trace_pipe (consuming reader) while running
+the function trace. The function trace with out a doubt will stress
+the consumer/producer reads since the producer is much faster than the
+consumer.
+
+Tomorrow, I'll change the buffer_page from being a page_frame to
+something that is allocated separately.
+
+-- Steve
+
