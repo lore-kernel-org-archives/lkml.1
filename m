@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbYJASR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYJASUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754229AbYJASR2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 14:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYJASRV
+	id S1754121AbYJASUJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 14:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbYJAST4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 14:17:21 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:34645 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753363AbYJASRU (ORCPT
+	Wed, 1 Oct 2008 14:19:56 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51765 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570AbYJASTz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 14:17:20 -0400
-Date: Wed, 01 Oct 2008 14:17:00 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: How to make all of 4GB of memory available?
-To: linux-kernel@vger.kernel.org
-Message-id: <200810011417.00595.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.10
+	Wed, 1 Oct 2008 14:19:55 -0400
+Message-ID: <48E3BE65.2050909@zytor.com>
+Date: Wed, 01 Oct 2008 11:16:05 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: akataria@vmware.com, "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>, Dan Hecht <dhecht@vmware.com>,
+       Zachary Amsden <zach@vmware.com>,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org
+Subject: Re: [RFC] CPUID usage for interaction between Hypervisors and Linux.
+References: <1222881242.9381.17.camel@alok-dev1> <48E3BBC1.2050607@goop.org> <48E3BC47.60900@zytor.com> <48E3BD83.2090801@goop.org>
+In-Reply-To: <48E3BD83.2090801@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings;
+Jeremy Fitzhardinge wrote:
+>>
+>> I suspect we can get a larger number space if we ask Intel & AMD.  In 
+>> fact, I think we should request that the entire 0x40xxxxxx numberspace 
+>> is assigned to virtualization *anyway*.
+> 
+> Yes, that would be good.  In that case I'd revise my proposal to back 
+> each leaf block 256 leaves instead of 16.  But it still needs to be a 
+> proper enumeration with signatures, rather than assigning fixed points 
+> in that space to specific interfaces.
+> 
 
-New mobo, 4 core AMD Phenom cpu & 4 GB of dram.  I cannot find the switch in a 
-make xconfig that will allow use of all of it, I am only seeing 3GB.
+With a sufficiently large block, we could use fixed points, e.g. by 
+having each vendor create interfaces in the 0x40SSSSXX range, where SSSS 
+is the PCI ID they use for PCI devices.
 
-Am I going blind in my dotage?
+Note that I said "create interfaces".  It's important that all about 
+this is who specified the interface -- for "what hypervisor is this" 
+just use 0x40000000 and disambiguate based on that.
 
-Thanks.
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Elliptic paraboloids for sale.
+	-hpa
