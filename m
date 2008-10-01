@@ -1,143 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbYJAORz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYJAOSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753716AbYJAORz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 10:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYJAORq
+	id S1753993AbYJAOSf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 10:18:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYJAOSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 10:17:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42704 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750901AbYJAORp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 10:17:45 -0400
-Date: Wed, 01 Oct 2008 10:14:46 -0400 (EDT)
-Message-Id: <20081001.101446.112628304.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com
-Cc: rusty@rustcorp.com.au, oakad@yahoo.com, adrian@mcmen.demon.co.uk,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: [PATCH 5/5] block: remove end_{queued|dequeued}_request()
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <20081001.100942.74754500.k-ueda@ct.jp.nec.com>
-References: <20081001.100942.74754500.k-ueda@ct.jp.nec.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 1 Oct 2008 10:18:24 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:60924
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752375AbYJAOSX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 10:18:23 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH] sched: add a stacktrace on enqueue_pushable error
+To: Chirag Jog <chirag@linux.vnet.ibm.com>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, dvhltc@us.ibm.com, dino@in.ibm.com
+Date: Wed, 01 Oct 2008 10:22:47 -0400
+Message-ID: <20081001142117.27846.83759.stgit@dev.haskins.net>
+In-Reply-To: <20080930044320.GA4685@linux.vnet.ibm.com>
+References: <20080930044320.GA4685@linux.vnet.ibm.com>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes end_queued_request() and end_dequeued_request(),
-which are no longer used.
+Hi Chirag,
+  Please apply this patch to your 26.5-rt9 tree for ppc64, enable
+  CONFIG_PROVE_LOCKING (which enables CONFIG_STACKTRACE) and give it a whirl.
+  If you get an oops, please post the console output.
 
-As a results, users of __end_request() became only end_request().
-So the actual code in __end_request() is moved to end_request()
-and __end_request() is removed.
+Thanks!
 
+-Greg
 
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
+------------------
+sched: add a stacktrace on enqueue_pushable error
+
+NOT FOR INCLUSION!
+
+This is to help debug an issue discovered by Chirag Jog in the thread
+
+http://lkml.org/lkml/2008/9/25/189
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
- block/blk-core.c       |   58 +++++--------------------------------------------
- include/linux/blkdev.h |    2 -
- 2 files changed, 7 insertions(+), 53 deletions(-)
 
-Index: linux-2.6-block/block/blk-core.c
-===================================================================
---- linux-2.6-block.orig/block/blk-core.c
-+++ linux-2.6-block/block/blk-core.c
-@@ -1788,17 +1788,6 @@ static void end_that_request_last(struct
- 	}
- }
+ include/linux/sched.h |    6 ++++++
+ kernel/sched_rt.c     |   20 +++++++++++++++++++-
+ 2 files changed, 25 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 67da014..53e8a6a 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -87,6 +87,7 @@ struct sched_param {
+ #include <linux/task_io_accounting.h>
+ #include <linux/kobject.h>
+ #include <linux/latencytop.h>
++#include <linux/stacktrace.h>
  
--static inline void __end_request(struct request *rq, int uptodate,
--				 unsigned int nr_bytes)
--{
--	int error = 0;
--
--	if (uptodate <= 0)
--		error = uptodate ? uptodate : -EIO;
--
--	__blk_end_request(rq, error, nr_bytes);
--}
--
- /**
-  * blk_rq_bytes - Returns bytes left to complete in the entire request
-  * @rq: the request being processed
-@@ -1829,41 +1818,6 @@ unsigned int blk_rq_cur_bytes(struct req
- EXPORT_SYMBOL_GPL(blk_rq_cur_bytes);
+ #include <asm/processor.h>
  
- /**
-- * end_queued_request - end all I/O on a queued request
-- * @rq:		the request being processed
-- * @uptodate:	error value or %0/%1 uptodate flag
-- *
-- * Description:
-- *     Ends all I/O on a request, and removes it from the block layer queues.
-- *     Not suitable for normal I/O completion, unless the driver still has
-- *     the request attached to the block layer.
-- *
-- **/
--void end_queued_request(struct request *rq, int uptodate)
--{
--	__end_request(rq, uptodate, blk_rq_bytes(rq));
--}
--EXPORT_SYMBOL(end_queued_request);
--
--/**
-- * end_dequeued_request - end all I/O on a dequeued request
-- * @rq:		the request being processed
-- * @uptodate:	error value or %0/%1 uptodate flag
-- *
-- * Description:
-- *     Ends all I/O on a request. The request must already have been
-- *     dequeued using blkdev_dequeue_request(), as is normally the case
-- *     for most drivers.
-- *
-- **/
--void end_dequeued_request(struct request *rq, int uptodate)
--{
--	__end_request(rq, uptodate, blk_rq_bytes(rq));
--}
--EXPORT_SYMBOL(end_dequeued_request);
--
--
--/**
-  * end_request - end I/O on the current segment of the request
-  * @req:	the request being processed
-  * @uptodate:	error value or %0/%1 uptodate flag
-@@ -1877,14 +1831,16 @@ EXPORT_SYMBOL(end_dequeued_request);
-  *     they have a residual value to account for. For that case this function
-  *     isn't really useful, unless the residual just happens to be the
-  *     full current segment. In other words, don't use this function in new
-- *     code. Use blk_end_request() or __blk_end_request() to end partial parts
-- *     of a request, or end_dequeued_request() and end_queued_request() to
-- *     completely end IO on a dequeued/queued request.
-- *
-+ *     code. Use blk_end_request() or __blk_end_request() to end a request.
-  **/
- void end_request(struct request *req, int uptodate)
+@@ -1170,6 +1171,11 @@ struct task_struct {
+ 
+ 	struct list_head tasks;
+ 	struct plist_node pushable_tasks;
++	struct {
++		unsigned long data[15];
++		struct stack_trace trace;
++		pid_t pid;
++	} pushable_stack;
+ 
+ 	/*
+ 	 * ptrace_list/ptrace_children forms the list of my children
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 57a0c0d..0e6a88c 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -55,7 +55,25 @@ static void update_rt_migration(struct rq *rq)
+ 
+ static void enqueue_pushable_task(struct rq *rq, struct task_struct *p)
  {
--	__end_request(req, uptodate, req->hard_cur_sectors << 9);
-+	int error = 0;
+-	plist_del(&p->pushable_tasks, &rq->rt.pushable_tasks);
++	if (plist_node_empty(&p->pushable_tasks)) {
++		struct stack_trace *trace = &p->pushable_stack.trace;
 +
-+	if (uptodate <= 0)
-+		error = uptodate ? uptodate : -EIO;
++		trace->nr_entries = 0;
++		trace->max_entries = sizeof(p->pushable_stack.data)/sizeof(p->pushable_stack.data[0]);
++		trace->entries = &p->pushable_stack.data[0];
++		trace->skip = 0;
 +
-+	__blk_end_request(req, error, req->hard_cur_sectors << 9);
++		save_stack_trace(trace);
++
++		p->pushable_stack.pid = current->pid;
++	} else {
++		printk(KERN_CRIT "redundant enqueue by %d detected\n",
++		       p->pushable_stack.pid);
++		print_stack_trace(&p->pushable_stack.trace, 5);
++
++		BUG_ON(!plist_node_empty(&p->pushable_tasks));
++	}
++
+ 	plist_node_init(&p->pushable_tasks, p->prio);
+ 	plist_add(&p->pushable_tasks, &rq->rt.pushable_tasks);
  }
- EXPORT_SYMBOL(end_request);
- 
-Index: linux-2.6-block/include/linux/blkdev.h
-===================================================================
---- linux-2.6-block.orig/include/linux/blkdev.h
-+++ linux-2.6-block/include/linux/blkdev.h
-@@ -790,8 +790,6 @@ extern int __blk_end_request(struct requ
- extern int blk_end_bidi_request(struct request *rq, int error,
- 				unsigned int nr_bytes, unsigned int bidi_bytes);
- extern void end_request(struct request *, int);
--extern void end_queued_request(struct request *, int);
--extern void end_dequeued_request(struct request *, int);
- extern int blk_end_request_callback(struct request *rq, int error,
- 				unsigned int nr_bytes,
- 				int (drv_callback)(struct request *));
+
