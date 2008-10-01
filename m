@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbYJALaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbYJALcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbYJALaS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 07:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYJALaF
+	id S1753883AbYJALcW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 07:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbYJALcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 07:30:05 -0400
-Received: from mail.collax.com ([82.194.105.242]:50848 "EHLO mail.collax.com"
+	Wed, 1 Oct 2008 07:32:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57066 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753124AbYJALaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 07:30:02 -0400
-Message-ID: <48E35F36.4030203@collax.com>
-Date: Wed, 01 Oct 2008 13:29:58 +0200
-From: Tilman Baumann <tilman.baumann@collax.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	id S1753212AbYJALcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 07:32:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 1/6] Hibernation: Introduce new system state for the last phase of hibernation
+Date: Wed, 1 Oct 2008 13:36:04 +0200
+User-Agent: KMail/1.9.9
+Cc: Jeff Garzik <jeff@garzik.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
+       Frans Pop <elendil@planet.nl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200808290002.55026.rjw@sisk.pl> <200809300010.39000.rjw@sisk.pl> <48E2EF61.8000104@gmail.com>
+In-Reply-To: <48E2EF61.8000104@gmail.com>
 MIME-Version: 1.0
-To: Casey Schaufler <casey@schaufler-ca.com>
-CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Subject: Re: SMACK netfilter smacklabel socket match
-References: <48DBC9A1.20900@collax.com> <48DC5A45.8020801@schaufler-ca.com> <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com> <48DDBE2E.3010006@schaufler-ca.com> <48E1007F.4000400@collax.com> <48E19D01.9050809@schaufler-ca.com>
-In-Reply-To: <48E19D01.9050809@schaufler-ca.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Filtered: By ProxSMTP
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.33/RELEASE, bases: 01102008 #1142380, status: clean
+Content-Disposition: inline
+Message-Id: <200810011336.05173.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler wrote:
->> Casey Schaufler wrote:
-> If you really want to be abusive you could replace the smack_access()
-> function in security/smack/smack_access.c (of all places) with a no-op
-> returning 0 in all cases.
-
-I thought of that too. :)
-But i would rather like to use the thing in it's intended function 
-sometime in the future.
-
->> What I then to is write iptables OUTPUT chain matches which match for 
->> any of these labels and set some connection marks and firewall marks.
->> Which I then can use in routing rules to give different routing rules 
->> to specific processes. (Like all proxy traffic over a second DSL line)
->>
->> I know, it's totally crazy. But it seems to work. :)
->> I just hope the security part of this all will not break anything. But 
->> it does not look like it would right now.
+On Wednesday, 1 of October 2008, Tejun Heo wrote:
+> Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Hibernation: Introduce new system state for the last phase of hibernation
+> > 
+> > Replace unused SYSTEM_SUSPEND_DISK with a new system_state value
+> > SYSTEM_HIBERNATE_ENTER that can be used by device drivers to check if
+> > the system is in the last phase of hibernation.
+> > 
+> > In particular, some SATA drivers are going to use it for blacklisting
+> > systems in which the disks should not be spun down during the last
+> > phase of hibernation (the BIOS will do that anyway).
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Smack will eventually bite you if you're not careful, but users of
-> MAC systems wouldn't be surprised by that.
-Speaking of the devil...
-This is exactly what happened to me right now. I have problems with 
-_some_ https connects. The problem lies somewhere in openssl.
-I did not yet find any clue with strace.
-Is there some straight forward way to audit/debug LSM interventions?
+> Rafael, may I push this through libata-dev?
 
-I have probably missed something that a labeled process could not do as 
-a '_' process could. Have no idea right now, but it is probably 
-something stupidly simple.
+Sure, please go ahead.
 
-> I don't think it's crazy,
-> I think it's a matter of using what's available in novel ways.
-I like that attitude. :)
-
--- 
-Tilman Baumann
-Software Developer
-Collax GmbH . Boetzinger Strasse 60 . 79111 Freiburg . Germany
-
-p: +49 (0) 89-990157-0
-f: +49 (0) 89-990157-11
-
-Geschaeftsfuehrer: William K. Hite / Boris Nalbach
-AG Muenchen HRB 158898, Ust.-IdNr: DE 814464942
+Thanks,
+Rafael
