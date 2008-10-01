@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbYJAARe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbYJAAW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbYJAARe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 20:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYJAAR0
+	id S1753977AbYJAAW6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 20:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYJAAWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 20:17:26 -0400
-Received: from xenotime.net ([66.160.160.81]:42984 "HELO xenotime.net"
+	Tue, 30 Sep 2008 20:22:50 -0400
+Received: from xenotime.net ([66.160.160.81]:48163 "HELO xenotime.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753466AbYJAARZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 20:17:25 -0400
-Date: Tue, 30 Sep 2008 17:35:46 -0700
+	id S1752444AbYJAAWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 20:22:49 -0400
+Date: Tue, 30 Sep 2008 17:41:17 -0700
 From: Randy Dunlap <rdunlap@xenotime.net>
 To: "Yinghai Lu" <yinghai@kernel.org>
 Cc: "H. Peter Anvin" <hpa@zytor.com>, "Randy Dunlap" <rdunlap@xenotime.net>,
@@ -17,7 +17,7 @@ Cc: "H. Peter Anvin" <hpa@zytor.com>, "Randy Dunlap" <rdunlap@xenotime.net>,
        "Andrew Morton" <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 1/3] x86: mtrr_cleanup update command line
-Message-Id: <20080930173546.2c226fd3.rdunlap@xenotime.net>
+Message-Id: <20080930174117.2e2ef568.rdunlap@xenotime.net>
 In-Reply-To: <86802c440809301659h4ff57a32r28e62b32386752e9@mail.gmail.com>
 References: <1222817380-29481-1-git-send-email-yhlu.kernel@gmail.com>
 	<20080930165739.7847be37.rdunlap@xenotime.net>
@@ -58,9 +58,8 @@ On Tue, 30 Sep 2008 16:59:49 -0700 Yinghai Lu wrote:
 > 2. have one scripts to search early_param and __setup and create that
 > kernel_parameter...
 
-Until that's done, please keep them in alpha order, like they (mostly)
-are now.
-
+Here's a script that can be used as a starting point if someone wants to:
+  http://www.xenotime.net/linux/scripts/module-params
 
 ---
 ~Randy
