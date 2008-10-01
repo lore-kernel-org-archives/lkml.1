@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYJAVct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbYJAVdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbYJAVct (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 17:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYJAVck
+	id S1754444AbYJAVdl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 17:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYJAVdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 17:32:40 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:52620 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753376AbYJAVcj (ORCPT
+	Wed, 1 Oct 2008 17:33:33 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:22117 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752349AbYJAVdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 17:32:39 -0400
-Message-ID: <48E3EC32.4030603@codemonkey.ws>
-Date: Wed, 01 Oct 2008 16:31:30 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 1 Oct 2008 17:33:32 -0400
+Date: Wed, 1 Oct 2008 23:33:28 +0200
+From: Domenico Andreoli <cavokz@gmail.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Typo bug [Re: Linux 2.6.27-rc8]
+Message-ID: <20081001213328.GB7115@tilt.dandreoli.com>
+Mail-Followup-To: Linux-Kernel <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0809291527460.3389@nehalem.linux-foundation.org> <20080930094346.307ef1e5@werewolf.home> <20080930075553.GB20241@elte.hu> <20080930100252.22bb4df5@werewolf.home> <20080930080546.GD20241@elte.hu>
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: akataria@vmware.com, Jeremy Fitzhardinge <jeremy@goop.org>,
-       "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gerd Hoffmann <kraxel@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Daniel Hecht <dhecht@vmware.com>, Zach Amsden <zach@vmware.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Subject: Re: [RFC] CPUID usage for interaction between Hypervisors and Linux.
-References: <1222881242.9381.17.camel@alok-dev1> <48E3BBC1.2050607@goop.org> <1222894878.9381.63.camel@alok-dev1> <48E3E6DF.8060400@codemonkey.ws> <20081001211532.GC634@sequoia.sous-sol.org>
-In-Reply-To: <20081001211532.GC634@sequoia.sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080930080546.GD20241@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> * Anthony Liguori (anthony@codemonkey.ws) wrote:
->   
->> We've already gone down the road of trying to make standard paravirtual  
->> interfaces (via virtio).  No one was sufficiently interested in  
->> collaborating.  I don't see why other paravirtualizations are going to  
->> be much different.
->>     
->
-> The point is to be able to support those interfaces.  Presently a Linux guest
-> will test and find out which HV it's running on, and adapt.  Another
-> guest will fail to enlighten itself, and perf will suffer...yadda, yadda.
->   
+On Tue, Sep 30, 2008 at 10:05:46AM +0200, Ingo Molnar wrote:
+> 
+> * J.A. Magallón <jamagallon@ono.com> wrote:
+> 
+> > > heh. Could you send a patch with a changelog please?
+> > 
+> > Here it goes...I hope its right.
+> 
+> applied to tip/x86/urgent, thanks!
 
-Agreeing on CPUID does not get us close at all to having shared 
-interfaces for paravirtualization.  As I said in another note, there are 
-more fundamental things that we differ on (like hypercall mechanism) 
-that's going to make that challenging.
+Ingo, why did you require a patch? Was not it really more simple and
+easy for everyone to write it yourself? Since I am sure it was not only
+a laziness matter (really?), I am very curious to know the reason.
 
-We already are sharing code, when appropriate (see the Xen/KVM PV clock 
-interface).
+Thank you,
+Domenico
 
-Regards,
-
-Anthony Liguori
-
-> thanks,
-> -chris
->   
-
+-----[ Domenico Andreoli, aka cavok
+ --[ http://www.dandreoli.com/gpgkey.asc
+   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
