@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYJAIhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbYJAIij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbYJAIhJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 04:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYJAIg5
+	id S1754207AbYJAIij (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 04:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbYJAIib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 04:36:57 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:47806 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbYJAIg5 (ORCPT
+	Wed, 1 Oct 2008 04:38:31 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:27303 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752574AbYJAIia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 04:36:57 -0400
-Message-ID: <f488382f0810010136t6280c10dg80458e3e9f02f598@mail.gmail.com>
-Date: Wed, 1 Oct 2008 01:36:55 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH -tip] drivers/serial/8250.c: 'i' may be used uninitialized
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20081001082930.GB31009@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 1 Oct 2008 04:38:30 -0400
+Date: Wed, 1 Oct 2008 10:37:34 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric Olsen" <eolsen@google.com>
+Subject: Re: [PATCH] new hwmon driver adt7462
+Message-ID: <20081001103734.29608fc2@hyperion.delvare>
+In-Reply-To: <20081001065413.GG10750@tree.beaverton.ibm.com>
+References: <20081001065413.GG10750@tree.beaverton.ibm.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081001080150.GC25832@elte.hu>
-	 <1222849017-10896-1-git-send-email-steven@uplinklabs.net>
-	 <20081001082930.GB31009@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 1, 2008 at 1:29 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Steven Noonan <steven@uplinklabs.net> wrote:
->
->> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
->> ---
->>  drivers/serial/8250.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> the change is obvious to you, but it's useful to put an analysis into
-> the changelog. Something like:
->
->  serial_unlink_irq_chain() does not initialize iterator 'i', and that is
->  correct logically because it is always initialized due to XYZ. Gcc does
->  not realize this connection and emits a false warning. Annotate it with
->  uninitialized_var().
->
-> and fill in XYZ.
->
-> Doing such changelogs is useful to maintainers: they'll see that you
-> havent just squashed a warning you noticed, you understood the code and
-> determined it via review that the warning is GCC's fault, not the
-> kernel's.
->
-> with an empty changelog the maintainer will have to do this himself.
-> (and can easily put your patch to the tail of a very long TODO list, or
-> outright skip your patch.)
->
->        Ingo
->
+Hi Darrick,
 
-I was kind of worried about being exceedingly verbose, but I
-understand your point perfectly. I'm going to resend the patch with an
-appropriately verbose comment.
+On Tue, 30 Sep 2008 23:54:14 -0700, Darrick J. Wong wrote:
+> New driver to feed on.  As Jean mentioned a couple of years ago, this
+> chip is a beast with odd combinations of 8 fans, 4 temperatures, and
+> 13 voltage sensors.  This driver has been tested on an IntelliStation
+> Z30.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  Documentation/hwmon/adt7462 |   67 +
+>  drivers/hwmon/Kconfig       |   10 
+>  drivers/hwmon/Makefile      |    1 
+>  drivers/hwmon/adt7462.c     | 1991 +++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 2069 insertions(+), 0 deletions(-)
 
-As always, I appreciate the criticism. Thank you! :)
+Two years ago, Eric Olsen (Cc'd) asked for support for this device and
+even said he would write the driver himself. We didn't hear from him
+since then. Now that we have a driver, maybe Eric can help testing it
+and maybe even reviewing it?
 
-- Steven
+I clearly do not have the time for this myself (not on my free time, at
+least.)
+
+-- 
+Jean Delvare
