@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbYJAHl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbYJAHlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbYJAHl5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 03:41:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYJAHkT
+	id S1754100AbYJAHlm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 03:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYJAHkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 03:40:19 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:22187 "EHLO
+	Wed, 1 Oct 2008 03:40:17 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:22135 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752384AbYJAHkS (ORCPT
+	with ESMTP id S1751873AbYJAHkL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 03:40:18 -0400
+	Wed, 1 Oct 2008 03:40:11 -0400
 From: "Martin K. Petersen" <martin.petersen@oracle.com>
 To: jens.axboe@oracle.com, neilb@suse.de, agk@sourceware.org
 Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
        "Martin K. Petersen" <martin.petersen@oracle.com>
-Subject: [PATCH 3/7] block: Switch blk_integrity_compare from bdev to gendisk
-Date: Wed,  1 Oct 2008 03:38:39 -0400
-Message-Id: <1222846723-18213-4-git-send-email-martin.petersen@oracle.com>
+Subject: [PATCH 6/7] dm: Add support for data integrity to DM
+Date: Wed,  1 Oct 2008 03:38:42 -0400
+Message-Id: <1222846723-18213-7-git-send-email-martin.petersen@oracle.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1222846723-18213-1-git-send-email-martin.petersen@oracle.com>
 References: <1222846723-18213-1-git-send-email-martin.petersen@oracle.com>
@@ -28,102 +28,125 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The DM and MD integrity support now depends on being able to use
-gendisks instead of block_devices when comparing integrity profiles.
-Change function parameters accordingly.
-
-Also update comparison logic so that two NULL profiles are a valid
-configuration.
+If all subdevices support the same protection format the DM device is
+flagged as capable.
 
 Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
 ---
- block/blk-integrity.c  |   28 ++++++++++++++--------------
- include/linux/blkdev.h |    2 +-
- 2 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/md/dm-table.c |   36 ++++++++++++++++++++++++++++++++++++
+ drivers/md/dm.c       |   17 +++++++++++++++++
+ drivers/md/dm.h       |    1 +
+ 3 files changed, 54 insertions(+), 0 deletions(-)
 
-diff --git a/block/blk-integrity.c b/block/blk-integrity.c
-index e3817a0..61a8e2f 100644
---- a/block/blk-integrity.c
-+++ b/block/blk-integrity.c
-@@ -108,51 +108,51 @@ new_segment:
- EXPORT_SYMBOL(blk_rq_map_integrity_sg);
+diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
+index 61f4414..f089404 100644
+--- a/drivers/md/dm-table.c
++++ b/drivers/md/dm-table.c
+@@ -860,7 +860,43 @@ void dm_table_set_restrictions(struct dm_table *t, struct request_queue *q)
+ 		queue_flag_clear_unlocked(QUEUE_FLAG_CLUSTER, q);
+ 	else
+ 		queue_flag_set_unlocked(QUEUE_FLAG_CLUSTER, q);
++}
++
++void dm_table_set_integrity(struct dm_table *t, struct mapped_device *md)
++{
++	struct list_head *devices = dm_table_get_devices(t);
++	struct dm_dev *prev, *cur;
++
++	/*
++	 * Run through all devices to ensure they have matching
++	 * integrity profile
++	 */
++	cur = prev = NULL;
++
++	list_for_each_entry(cur, devices, list) {
++
++		if (prev && blk_integrity_compare(prev->bdev->bd_disk,
++						  cur->bdev->bd_disk) < 0) {
++			printk(KERN_ERR "%s: %s %s Integrity mismatch!\n",
++			       __func__, prev->bdev->bd_disk->disk_name,
++			       cur->bdev->bd_disk->disk_name);
++			return;
++		}
++		prev = cur;
++	}
  
- /**
-- * blk_integrity_compare - Compare integrity profile of two block devices
-- * @bd1:	Device to compare
-- * @bd2:	Device to compare
-+ * blk_integrity_compare - Compare integrity profile of two disks
-+ * @gd1:	Disk to compare
-+ * @gd2:	Disk to compare
-  *
-  * Description: Meta-devices like DM and MD need to verify that all
-  * sub-devices use the same integrity format before advertising to
-  * upper layers that they can send/receive integrity metadata.  This
-- * function can be used to check whether two block devices have
-+ * function can be used to check whether two gendisk devices have
-  * compatible integrity formats.
-  */
--int blk_integrity_compare(struct block_device *bd1, struct block_device *bd2)
-+int blk_integrity_compare(struct gendisk *gd1, struct gendisk *gd2)
- {
--	struct blk_integrity *b1 = bd1->bd_disk->integrity;
--	struct blk_integrity *b2 = bd2->bd_disk->integrity;
-+	struct blk_integrity *b1 = gd1->integrity;
-+	struct blk_integrity *b2 = gd2->integrity;
++	/* Register dm device as being integrity capable */
++	if (prev && bdev_get_integrity(prev->bdev)) {
++		struct gendisk *disk = dm_disk(md);
++
++		if (blk_integrity_register(dm_disk(md),
++					   bdev_get_integrity(prev->bdev)))
++			printk(KERN_ERR "%s: %s Could not register integrity!\n",
++			       __func__, disk->disk_name);
++		else
++			printk(KERN_INFO "Enabling data integrity on %s\n",
++			       disk->disk_name);
++	}
+ }
  
--	BUG_ON(bd1->bd_disk == NULL);
--	BUG_ON(bd2->bd_disk == NULL);
-+	if (!b1 && !b2)
-+		return 0;
+ unsigned int dm_table_get_num_targets(struct dm_table *t)
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index 8d40369..4f65342 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -669,6 +669,13 @@ static struct bio *split_bvec(struct bio *bio, sector_t sector,
+ 	clone->bi_size = to_bytes(len);
+ 	clone->bi_io_vec->bv_offset = offset;
+ 	clone->bi_io_vec->bv_len = clone->bi_size;
++	clone->bi_flags |= 1 << BIO_CLONED;
++
++	if (bio_integrity(bio)) {
++		bio_integrity_clone(clone, bio, bs);
++		bio_integrity_trim(clone,
++				   bio_sector_offset(bio, idx, offset), len);
++	}
  
- 	if (!b1 || !b2)
--		return 0;
-+		return -1;
+ 	return clone;
+ }
+@@ -691,6 +698,14 @@ static struct bio *clone_bio(struct bio *bio, sector_t sector,
+ 	clone->bi_size = to_bytes(len);
+ 	clone->bi_flags &= ~(1 << BIO_SEG_VALID);
  
- 	if (b1->sector_size != b2->sector_size) {
- 		printk(KERN_ERR "%s: %s/%s sector sz %u != %u\n", __func__,
--		       bd1->bd_disk->disk_name, bd2->bd_disk->disk_name,
-+		       gd1->disk_name, gd2->disk_name,
- 		       b1->sector_size, b2->sector_size);
- 		return -1;
- 	}
++	if (bio_integrity(bio)) {
++		bio_integrity_clone(clone, bio, bs);
++
++		if (idx != bio->bi_idx || clone->bi_size < bio->bi_size)
++			bio_integrity_trim(clone,
++					   bio_sector_offset(bio, idx, 0), len);
++	}
++
+ 	return clone;
+ }
  
- 	if (b1->tuple_size != b2->tuple_size) {
- 		printk(KERN_ERR "%s: %s/%s tuple sz %u != %u\n", __func__,
--		       bd1->bd_disk->disk_name, bd2->bd_disk->disk_name,
-+		       gd1->disk_name, gd2->disk_name,
- 		       b1->tuple_size, b2->tuple_size);
- 		return -1;
- 	}
+@@ -1157,6 +1172,7 @@ static void free_dev(struct mapped_device *md)
+ 	mempool_destroy(md->tio_pool);
+ 	mempool_destroy(md->io_pool);
+ 	bioset_free(md->bs);
++	blk_integrity_unregister(md->disk);
+ 	del_gendisk(md->disk);
+ 	free_minor(minor);
  
- 	if (b1->tag_size && b2->tag_size && (b1->tag_size != b2->tag_size)) {
- 		printk(KERN_ERR "%s: %s/%s tag sz %u != %u\n", __func__,
--		       bd1->bd_disk->disk_name, bd2->bd_disk->disk_name,
-+		       gd1->disk_name, gd2->disk_name,
- 		       b1->tag_size, b2->tag_size);
- 		return -1;
- 	}
+@@ -1222,6 +1238,7 @@ static int __bind(struct mapped_device *md, struct dm_table *t)
+ 	write_lock(&md->map_lock);
+ 	md->map = t;
+ 	dm_table_set_restrictions(t, q);
++	dm_table_set_integrity(t, md);
+ 	write_unlock(&md->map_lock);
  
- 	if (strcmp(b1->name, b2->name)) {
- 		printk(KERN_ERR "%s: %s/%s type %s != %s\n", __func__,
--		       bd1->bd_disk->disk_name, bd2->bd_disk->disk_name,
-+		       gd1->disk_name, gd2->disk_name,
- 		       b1->name, b2->name);
- 		return -1;
- 	}
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 30c4292..eec0842 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -1010,7 +1010,7 @@ struct blk_integrity {
- 
- extern int blk_integrity_register(struct gendisk *, struct blk_integrity *);
- extern void blk_integrity_unregister(struct gendisk *);
--extern int blk_integrity_compare(struct block_device *, struct block_device *);
-+extern int blk_integrity_compare(struct gendisk *, struct gendisk *);
- extern int blk_rq_map_integrity_sg(struct request *, struct scatterlist *);
- extern int blk_rq_count_integrity_sg(struct request *);
- 
+ 	return 0;
+diff --git a/drivers/md/dm.h b/drivers/md/dm.h
+index 1e59a0b..cf34b99 100644
+--- a/drivers/md/dm.h
++++ b/drivers/md/dm.h
+@@ -44,6 +44,7 @@ void dm_table_event_callback(struct dm_table *t,
+ struct dm_target *dm_table_get_target(struct dm_table *t, unsigned int index);
+ struct dm_target *dm_table_find_target(struct dm_table *t, sector_t sector);
+ void dm_table_set_restrictions(struct dm_table *t, struct request_queue *q);
++void dm_table_set_integrity(struct dm_table *t, struct mapped_device *md);
+ struct list_head *dm_table_get_devices(struct dm_table *t);
+ void dm_table_presuspend_targets(struct dm_table *t);
+ void dm_table_postsuspend_targets(struct dm_table *t);
 -- 
 1.6.0.2
 
