@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbYJAXYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbYJAXYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753167AbYJAXYf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 19:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYJAXY0
+	id S1753715AbYJAXYs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 19:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYJAXY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 19:24:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60115 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751448AbYJAXY0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 19:24:26 -0400
-Date: Wed, 1 Oct 2008 16:23:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       arjan@infradead.org, benh@kernel.crashing.org, rostedt@goodmis.org,
-       jonathan@jonmasters.org, sdietrich@suse.de
-Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded
- interrupt handlers
-Message-Id: <20081001162333.e1509240.akpm@linux-foundation.org>
-In-Reply-To: <20081001223213.078984344@linutronix.de>
-References: <20081001223213.078984344@linutronix.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Oct 2008 19:24:29 -0400
+Received: from tundra.namei.org ([65.99.196.166]:50897 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752395AbYJAXY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 19:24:27 -0400
+Date: Thu, 2 Oct 2008 09:23:59 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: David Howells <dhowells@redhat.com>
+cc: penguin-kernel@I-love.SAKURA.ne.jp, serue@us.ibm.com, haradats@gmail.com,
+       k.takeda26@gmail.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] CRED: ptrace_attach() should use the target process's
+ mutex
+In-Reply-To: <20081001153823.9930.86648.stgit@warthog.procyon.org.uk>
+Message-ID: <alpine.LRH.1.10.0810020923370.12513@tundra.namei.org>
+References: <200810012000.CGG73421.FQOHtLOJFVMOSF@I-love.SAKURA.ne.jp> <20081001153823.9930.86648.stgit@warthog.procyon.org.uk>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Oct 2008 23:02:08 -0000
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On Wed, 1 Oct 2008, David Howells wrote:
 
-> This patch series implements support for threaded irq handlers for the
-> generic IRQ layer.
+> ptrace_attach() should use the target process's mutex when attaching to it,
+> not the current (tracer) process's mutex.
 > 
-> ...
-> 
-> I hope to have a real converted driver (aside of the dummy module used
-> for testing) ready real soon
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-That would be nice ;)
+Applied to:
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next-creds-subsys
 
 
-I'm a bit surprised to see that there is no facility for per-cpu
-interrupt threads?
-
+-- 
+James Morris
+<jmorris@namei.org>
