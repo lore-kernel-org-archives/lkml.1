@@ -1,30 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400AbYJAJOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbYJAJ3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754400AbYJAJOO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 05:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYJAJN7
+	id S1753611AbYJAJ3j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 05:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYJAJ3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 05:13:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50425 "EHLO mx3.mail.elte.hu"
+	Wed, 1 Oct 2008 05:29:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40116 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753424AbYJAJN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 05:13:58 -0400
-Date: Wed, 1 Oct 2008 11:13:25 +0200
+	id S1752366AbYJAJ3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 05:29:30 -0400
+Date: Wed, 1 Oct 2008 11:29:06 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/31] cpumask: Documentation
-Message-ID: <20081001091325.GA12503@elte.hu>
-References: <20080929180250.111209000@polaris-admin.engr.sgi.com> <20080929180250.287081000@polaris-admin.engr.sgi.com> <200810010849.46874.rusty@rustcorp.com.au>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/2] x86: track memtype for RAM in page struct - v3
+Message-ID: <20081001092906.GA14912@elte.hu>
+References: <20080913000003.732756000@linux-os.sc.intel.com> <48D966AE.1040008@linux-foundation.org> <20080924155332.GA29041@linux-os.sc.intel.com> <200809301728.02269.nickpiggin@yahoo.com.au> <20080930112128.GB21367@elte.hu> <20080930211418.GK15609@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200810010849.46874.rusty@rustcorp.com.au>
+In-Reply-To: <20080930211418.GK15609@linux-os.sc.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,66 +43,57 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
 
-> On Tuesday 30 September 2008 04:02:51 Mike Travis wrote:
-> > +The Changes
-> > +
-> > +Provide new cpumask interface API.  The relevant change is basically
-> > +cpumask_t becomes an opaque object.  This should result in the minimum
-> > +amount of modifications while still allowing the inline cpumask functions,
-> > +and the ability to declare static cpumask objects.
-> > +
-> > +
-> > +    /* raw declaration */
-> > +    struct __cpumask_data_s { DECLARE_BITMAP(bits, NR_CPUS); };
-> > +
-> > +    /* cpumask_map_t used for declaring static cpumask maps */
-> > +    typedef struct __cpumask_data_s cpumask_map_t[1];
-> > +
-> > +    /* cpumask_t used for function args and return pointers */
-> > +    typedef struct __cpumask_data_s *cpumask_t;
-> > +    typedef const struct __cpumask_data_s *const_cpumask_t;
-> > +
-> > +    /* cpumask_var_t used for local variable, definition follows */
-> > +    typedef struct __cpumask_data_s	cpumask_var_t[1]; /* SMALL NR_CPUS */
-> > +    typedef struct __cpumask_data_s	*cpumask_var_t;	  /* LARGE NR_CPUS */
-> > +
-> > +    /* replaces cpumask_t dst = (cpumask_t)src */
-> > +    void cpus_copy(cpumask_t dst, const cpumask_t src);
+> On Tue, Sep 30, 2008 at 04:21:28AM -0700, Ingo Molnar wrote:
+> > 
+> > * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > 
+> > > On Thursday 25 September 2008 01:53, Venki Pallipadi wrote:
+> > >
+> > > >  /*
+> > > > + * RED-PEN:  TODO: Add PageReserved() check as well here,
+> > > > + * once we add SetPageReserved() to all the drivers using
+> > > > + * set_memory_* or set_pages_*.
+> > > > + *
+> > > > + * This will help prevent accidentally freeing pages
+> > > > + * before setting the attribute back to WB.
+> > > > + */
+> > >
+> > > I'd rather we didn't add any more uses of PageReserved without a
+> > > really good reason.
+> > >
+> > > At this point in time (or at least last time I looked, a year or
+> > > two ago), it isn't a whole lot of work to remove PG_reserved
+> > > completely. If the waters get muddied up again, it could require
+> > > another significant rework to remove it in future...
+> > 
+> > agreed.
 > 
-> Hi Mike,
-> 
->     I have several problems with this patch series.  First, it's a flag day 
-> change, which means it isn't bisectable and can't go through linux-next.  
-> Secondly, we still can't hide the definition of the cpumask struct as long as 
-> they're passed as cpumask_t, so it's going to be hard to find assignments 
-> (illegal once we allocate nr_cpu_ids bits rather than NR_CPUS), and on-stack 
-> users.
-> 
->     Finally, we end up with code which is slightly more opaque than the 
-> current code, with two new typedefs.  And that's an ongoing problem.
-> 
->     I took a slightly divergent line with my patch series, and introduced a 
-> parallel cpumask system which always passes and returns masks by pointer:
-> 
-> 	cpumask_t -> struct cpumask
-> 	on-stack cpumask_t -> cpumask_var_t (same as your patch)
-> 	cpus_and(dst, src1, src2) etc -> cpumask_and(&dst, &src1, &src2)
-> 	cpumask_t cpumask_of_cpu(cpu) -> const struct cpumask *cpumask_of(cpu)
-> 	cpumask_t cpu_online_map etc -> const struct cpumask *cpu_online_mask etc.
-> 
-> The old ops are expressed in terms of the new ops, and can be phased out over 
-> time.
+> If a driver by mistake free's a RAM page before changing its memory 
+> attribute back to WB, we want the generic -mm to catch it.
+>
+> Today, free_pages_check() prevents freeing the page with PageReserved 
+> set. We want to use this and make sure that either set_page_uc/wc() or 
+> the driver calling these API's set the PageReserved bit. There are 
+> already some drivers which do SetPageReserved() before changing the 
+> attribute.
 
-that looks very sane to me.
+no, the generic -mm does not 'catch' PageReserved, it simply _ignores_ 
+it. So i agree about having a debug check there, it's just that what you 
+propose does not achieve that.
 
-one small request:
+PageReserved is a legacy thing that should not be used in new code.  
+Using it will only hide bugs and adds quirkiness to the PAT code.
 
-> I'll commit these to my quilt series today.
+> I don't know the history behind PageReserved. But is there a 
+> recommended way to achieve what we want? Either we need to use 
+> PageReserved bit or add some arch specific checks (in the x86 case, 
+> check arch_1) in free_pages_check(). Right?
 
-IMHO, an infrastructure change of this magnitude should absolutely be 
-done via the Git space. This needs a ton of testing and needs bisection, 
-a real Git track record, etc.
+the best way i think would be to add arch_1 to PAGE_FLAGS_CHECK_AT_FREE. 
+That way the mm becomes very noisy if this is ever freed.
+
+Nick, Andrew, any preferences?
 
 	Ingo
