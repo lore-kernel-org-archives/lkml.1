@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbYJAVbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYJAVct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbYJAVbO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 17:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYJAVa5
+	id S1754131AbYJAVct (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 17:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYJAVck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 17:30:57 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:30277 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752349AbYJAVa4 (ORCPT
+	Wed, 1 Oct 2008 17:32:40 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:52620 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753376AbYJAVcj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 17:30:56 -0400
-Message-ID: <48E3EBCC.70502@codemonkey.ws>
-Date: Wed, 01 Oct 2008 16:29:48 -0500
+	Wed, 1 Oct 2008 17:32:39 -0400
+Message-ID: <48E3EC32.4030603@codemonkey.ws>
+Date: Wed, 01 Oct 2008 16:31:30 -0500
 From: Anthony Liguori <anthony@codemonkey.ws>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, "avi@redhat.com" <avi@redhat.com>,
+To: Chris Wright <chrisw@sous-sol.org>
+CC: akataria@vmware.com, Jeremy Fitzhardinge <jeremy@goop.org>,
+       "avi@redhat.com" <avi@redhat.com>,
        Rusty Russell <rusty@rustcorp.com.au>,
        Gerd Hoffmann <kraxel@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
        Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
@@ -27,34 +28,41 @@ CC: Jeremy Fitzhardinge <jeremy@goop.org>, "avi@redhat.com" <avi@redhat.com>,
 	<virtualization@lists.linux-foundation.org>,
        "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 Subject: Re: [RFC] CPUID usage for interaction between Hypervisors and Linux.
-References: <1222881242.9381.17.camel@alok-dev1> <48E3BBC1.2050607@goop.org>	 <1222894878.9381.63.camel@alok-dev1>  <48E3E6DF.8060400@codemonkey.ws> <1222896215.9381.79.camel@alok-dev1>
-In-Reply-To: <1222896215.9381.79.camel@alok-dev1>
+References: <1222881242.9381.17.camel@alok-dev1> <48E3BBC1.2050607@goop.org> <1222894878.9381.63.camel@alok-dev1> <48E3E6DF.8060400@codemonkey.ws> <20081001211532.GC634@sequoia.sous-sol.org>
+In-Reply-To: <20081001211532.GC634@sequoia.sous-sol.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> Your explanation below answers the question you raised, the problem
-> being we need to have support for each of these different hypercall
-> mechanisms in the kernel. 
-> I understand that this was the correct thing to do at that moment. 
-> But do we want to go the same way again for CPUID when we can make it
-> generic (flat enough) for anybody to use it in the same manner and
-> expose a generic interface to the kernel.
+Chris Wright wrote:
+> * Anthony Liguori (anthony@codemonkey.ws) wrote:
+>   
+>> We've already gone down the road of trying to make standard paravirtual  
+>> interfaces (via virtio).  No one was sufficiently interested in  
+>> collaborating.  I don't see why other paravirtualizations are going to  
+>> be much different.
+>>     
+>
+> The point is to be able to support those interfaces.  Presently a Linux guest
+> will test and find out which HV it's running on, and adapt.  Another
+> guest will fail to enlighten itself, and perf will suffer...yadda, yadda.
 >   
 
-But what sort of information can be stored in cpuid that's actually 
-useful?  Right now we just it in KVM for feature bits.  Most of the 
-stuff that's interesting is stored in shared memory because a guest can 
-read that without taking a vmexit or via a hypercall.
+Agreeing on CPUID does not get us close at all to having shared 
+interfaces for paravirtualization.  As I said in another note, there are 
+more fundamental things that we differ on (like hypercall mechanism) 
+that's going to make that challenging.
 
-We can all agree upon a common mechanism for doing something but if no 
-one is using that mechanism to do anything significant, what purpose 
-does it serve?
+We already are sharing code, when appropriate (see the Xen/KVM PV clock 
+interface).
 
 Regards,
 
 Anthony Liguori
+
+> thanks,
+> -chris
+>   
 
