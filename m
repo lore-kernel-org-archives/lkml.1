@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbYJAVR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYJAVWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753610AbYJAVR5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 17:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbYJAVRr
+	id S1754029AbYJAVWQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 17:22:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYJAVWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 17:17:47 -0400
-Received: from sous-sol.org ([216.99.217.87]:51928 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753974AbYJAVRq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 17:17:46 -0400
-Date: Wed, 1 Oct 2008 14:15:32 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: akataria@vmware.com, Jeremy Fitzhardinge <jeremy@goop.org>,
-       "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gerd Hoffmann <kraxel@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Daniel Hecht <dhecht@vmware.com>, Zach Amsden <zach@vmware.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Subject: Re: [RFC] CPUID usage for interaction between Hypervisors and
-	Linux.
-Message-ID: <20081001211532.GC634@sequoia.sous-sol.org>
-References: <1222881242.9381.17.camel@alok-dev1> <48E3BBC1.2050607@goop.org> <1222894878.9381.63.camel@alok-dev1> <48E3E6DF.8060400@codemonkey.ws>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48E3E6DF.8060400@codemonkey.ws>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 1 Oct 2008 17:22:01 -0400
+Received: from ns.suse.de ([195.135.220.2]:48454 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752602AbYJAVWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 17:22:00 -0400
+Subject: patch uio-fix-mapping-of-logical-and-virtual-memory.patch added to gregkh-2.6 tree
+To: agh@cisco.com, gregkh@suse.de, hjk@linutronix.de,
+       linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Wed, 01 Oct 2008 14:15:19 -0700
+In-Reply-To: <20080923230959.GB4066@local>
+Message-ID: <12228957191236@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Anthony Liguori (anthony@codemonkey.ws) wrote:
-> We've already gone down the road of trying to make standard paravirtual  
-> interfaces (via virtio).  No one was sufficiently interested in  
-> collaborating.  I don't see why other paravirtualizations are going to  
-> be much different.
 
-The point is to be able to support those interfaces.  Presently a Linux guest
-will test and find out which HV it's running on, and adapt.  Another
-guest will fail to enlighten itself, and perf will suffer...yadda, yadda.
+This is a note to let you know that I've just added the patch titled
 
-thanks,
--chris
+    Subject: UIO: Fix mapping of logical and virtual memory
+
+to my gregkh-2.6 tree.  Its filename is
+
+    uio-fix-mapping-of-logical-and-virtual-memory.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From hjk@linutronix.de  Wed Oct  1 14:01:23 2008
+From: Andrew Harvey <agh@cisco.com>
+Date: Wed, 24 Sep 2008 01:10:02 +0200
+Subject: UIO: Fix mapping of logical and virtual memory
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg KH <gregkh@suse.de>, "Andrew G. Harvey" <agh@cisco.com>
+Message-ID: <20080923230959.GB4066@local>
+Content-Disposition: inline
+
+From: "Andrew G. Harvey" <agh@cisco.com>
+
+mmap() doesn't work as expected for UIO_MEM_LOGICAL or UIO_MEM_VIRTUAL
+mappings. The offset into the memory needs to be added, otherwise
+uio_vma_fault always returns the first page only. Note that for UIO
+userspace calls mmap() with offset = N * getpagesize() to access
+mapping N. This must be compensated when calculating the offset. A
+comment was added to explain this since it is not obvious.
+
+Signed-off-by: Andrew G. Harvey <agh@cisco.com>
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/uio/uio.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+--- a/drivers/uio/uio.c
++++ b/drivers/uio/uio.c
+@@ -490,15 +490,23 @@ static int uio_vma_fault(struct vm_area_
+ {
+ 	struct uio_device *idev = vma->vm_private_data;
+ 	struct page *page;
++	unsigned long offset;
+ 
+ 	int mi = uio_find_mem_index(vma);
+ 	if (mi < 0)
+ 		return VM_FAULT_SIGBUS;
+ 
++	/*
++	 * We need to subtract mi because userspace uses offset = N*PAGE_SIZE
++	 * to use mem[N].
++	 */
++	offset = (vmf->pgoff - mi) << PAGE_SHIFT;
++
+ 	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
+-		page = virt_to_page(idev->info->mem[mi].addr);
++		page = virt_to_page(idev->info->mem[mi].addr + offset);
+ 	else
+-		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
++		page = vmalloc_to_page((void *)idev->info->mem[mi].addr
++							+ offset);
+ 	get_page(page);
+ 	vmf->page = page;
+ 	return 0;
+
+
+Patches currently in gregkh-2.6 which might be from agh@cisco.com are
+
+driver-core/uio-fix-mapping-of-logical-and-virtual-memory.patch
