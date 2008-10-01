@@ -1,276 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYJALis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbYJALo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbYJALis (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 07:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYJALih
+	id S1753786AbYJALo0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 07:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbYJALoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 07:38:37 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:34754 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752250AbYJALif (ORCPT
+	Wed, 1 Oct 2008 07:44:18 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40712 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752230AbYJALoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 07:38:35 -0400
-Message-ID: <48E3612E.1020607@fr.ibm.com>
-Date: Wed, 01 Oct 2008 13:38:22 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 1 Oct 2008 07:44:17 -0400
+Date: Wed, 1 Oct 2008 06:44:15 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Alan Mayer <ajm@sgi.com>,
+       jeremy@goop.org, rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <Yinghai.lu@amd.com>
+Subject: [PATCH] x86, UV: add uv_setup_irq() and uv_teardown_irq() functions
+Message-ID: <20081001114415.GA3281@sgi.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH 18/30] netvm: INET reserves.
-References: <20080724140042.408642539@chello.nl> <20080724141530.573585429@chello.nl>
-In-Reply-To: <20080724141530.573585429@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Add reserves for INET.
-> 
-> The two big users seem to be the route cache and ip-fragment cache.
-> 
-> Reserve the route cache under generic RX reserve, its usage is bounded by
-> the high reclaim watermark, and thus does not need further accounting.
-> 
-> Reserve the ip-fragement caches under SKB data reserve, these add to the
-> SKB RX limit. By ensuring we can at least receive as much data as fits in
-> the reassmbly line we avoid fragment attack deadlocks.
-> 
-> Adds to the reserve tree:
-> 
->   total network reserve      
->     network TX reserve       
->       protocol TX pages      
->     network RX reserve       
-> +     IPv6 route cache       
-> +     IPv4 route cache       
->       SKB data reserve       
-> +       IPv6 fragment cache  
-> +       IPv4 fragment cache  
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  include/net/inet_frag.h  |    7 +++
->  include/net/netns/ipv6.h |    4 ++
->  net/ipv4/inet_fragment.c |    3 +
->  net/ipv4/ip_fragment.c   |   89 +++++++++++++++++++++++++++++++++++++++++++++--
->  net/ipv4/route.c         |   72 +++++++++++++++++++++++++++++++++++++-
->  net/ipv6/af_inet6.c      |   20 +++++++++-
->  net/ipv6/reassembly.c    |   88 +++++++++++++++++++++++++++++++++++++++++++++-
->  net/ipv6/route.c         |   66 ++++++++++++++++++++++++++++++++++
->  8 files changed, 341 insertions(+), 8 deletions(-)
-> 
+Provide a means for UV interrupt MMRs to be setup with the message to be sent
+when an MSI is raised.
 
-Sorry for the delay ...
+Signed-off-by: Dean Nelson <dcn@sgi.com>
 
-[ cut ]
+---
 
-I removed a big portion of code because the remarks below apply to the 
-rest of the code.
+This functionality is needed by drivers/misc/sgi-xp. And a patch will be
+submitted shortly.
 
-> +static int sysctl_intvec_route(struct ctl_table *table,
-> +		int __user *name, int nlen,
-> +		void __user *oldval, size_t __user *oldlenp,
-> +		void __user *newval, size_t newlen)
-> +{
-> +	struct net *net = current->nsproxy->net_ns;
+ arch/x86/kernel/Makefile    |    2 
+ arch/x86/kernel/io_apic.c   |   95 ++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/uv_irq.c    |   50 +++++++++++++++++++++
+ include/asm-x86/uv/uv_irq.h |   34 ++++++++++++++
+ kernel/irq/chip.c           |    1 
+ 5 files changed, 181 insertions(+), 1 deletion(-)
 
-I think you can use the container_of and get rid of using 
-current->nsproxy->net_ns.
-
-	struct net *net = container_of(table->data, struct net,
-				ipv6.sysctl.ip6_rt_max_size);
-
-Another solution could be to pass directly the sysctl structure pointer 
-in the table data instead of
-".data = &init_net.ipv6.sysctl.ip6_rt_max_size" when initializing the 
-sysctl table below. But you have to set the right field value yourself.
-
-> +	int write = (newval && newlen);
-> +	int new_size, ret;
-> +
-> +	mutex_lock(&net->ipv6.sysctl.ip6_rt_lock);
-> +
-> +	if (write)
-> +		table->data = &new_size;
-> +
-> +	ret = sysctl_intvec(table, name, nlen, oldval, oldlenp, newval, newlen);
-> +
-> +	if (!ret && write) {
-> +		ret = mem_reserve_kmem_cache_set(&net->ipv6.ip6_rt_reserve,
-> +				net->ipv6.ip6_dst_ops.kmem_cachep, new_size);
-> +		if (!ret)
-> +			net->ipv6.sysctl.ip6_rt_max_size = new_size;
-> +	}
-> +
-> +	if (write)
-> +		table->data = &net->ipv6.sysctl.ip6_rt_max_size;
-> +
-> +	mutex_unlock(&net->ipv6.sysctl.ip6_rt_lock);
-> +
-> +	return ret;
-> +}
-
-Dancing with the table->data looks safe but it is not very nice.
-Isn't possible to use a temporary table like in the function 
-"ipv4_sysctl_local_port_range" ?
-
->  ctl_table ipv6_route_table_template[] = {
->  	{
->  		.procname	=	"flush",
-> @@ -2520,7 +2581,8 @@ ctl_table ipv6_route_table_template[] = 
->  		.data		=	&init_net.ipv6.sysctl.ip6_rt_max_size,
->  		.maxlen		=	sizeof(int),
->  		.mode		=	0644,
-> -		.proc_handler	=	&proc_dointvec,
-> +		.proc_handler	=	&proc_dointvec_route,
-> +		.strategy	= 	&sysctl_intvec_route,
->  	},
->  	{
->  		.ctl_name	=	NET_IPV6_ROUTE_GC_MIN_INTERVAL,
-> @@ -2608,6 +2670,8 @@ struct ctl_table *ipv6_route_sysctl_init
->  		table[8].data = &net->ipv6.sysctl.ip6_rt_min_advmss;
->  	}
-> 
-> +	mutex_init(&net->ipv6.sysctl.ip6_rt_lock);
-> +
->  	return table;
->  }
->  #endif
-> Index: linux-2.6/include/net/inet_frag.h
-> ===================================================================
-> --- linux-2.6.orig/include/net/inet_frag.h
-> +++ linux-2.6/include/net/inet_frag.h
-> @@ -1,6 +1,9 @@
->  #ifndef __NET_FRAG_H__
->  #define __NET_FRAG_H__
-> 
-> +#include <linux/reserve.h>
-> +#include <linux/mutex.h>
-> +
->  struct netns_frags {
->  	int			nqueues;
->  	atomic_t		mem;
-> @@ -10,6 +13,10 @@ struct netns_frags {
->  	int			timeout;
->  	int			high_thresh;
->  	int			low_thresh;
-> +
-> +	/* reserves */
-> +	struct mutex		lock;
-> +	struct mem_reserve	reserve;
->  };
-> 
->  struct inet_frag_queue {
-> Index: linux-2.6/net/ipv4/inet_fragment.c
-> ===================================================================
-> --- linux-2.6.orig/net/ipv4/inet_fragment.c
-> +++ linux-2.6/net/ipv4/inet_fragment.c
-> @@ -19,6 +19,7 @@
->  #include <linux/random.h>
->  #include <linux/skbuff.h>
->  #include <linux/rtnetlink.h>
-> +#include <linux/reserve.h>
-> 
->  #include <net/inet_frag.h>
-> 
-> @@ -74,6 +75,8 @@ void inet_frags_init_net(struct netns_fr
->  	nf->nqueues = 0;
->  	atomic_set(&nf->mem, 0);
->  	INIT_LIST_HEAD(&nf->lru_list);
-> +	mutex_init(&nf->lock);
-> +	mem_reserve_init(&nf->reserve, "IP fragement cache", NULL);
->  }
->  EXPORT_SYMBOL(inet_frags_init_net);
-> 
-> Index: linux-2.6/include/net/netns/ipv6.h
-> ===================================================================
-> --- linux-2.6.orig/include/net/netns/ipv6.h
-> +++ linux-2.6/include/net/netns/ipv6.h
-> @@ -24,6 +24,8 @@ struct netns_sysctl_ipv6 {
->  	int ip6_rt_mtu_expires;
->  	int ip6_rt_min_advmss;
->  	int icmpv6_time;
-> +
-> +	struct mutex ip6_rt_lock;
->  };
-> 
->  struct netns_ipv6 {
-> @@ -55,5 +57,7 @@ struct netns_ipv6 {
->  	struct sock             *ndisc_sk;
->  	struct sock             *tcp_sk;
->  	struct sock             *igmp_sk;
-> +
-> +	struct mem_reserve	ip6_rt_reserve;
->  };
->  #endif
-> Index: linux-2.6/net/ipv6/af_inet6.c
-> ===================================================================
-> --- linux-2.6.orig/net/ipv6/af_inet6.c
-> +++ linux-2.6/net/ipv6/af_inet6.c
-> @@ -851,6 +851,20 @@ static int inet6_net_init(struct net *ne
->  	net->ipv6.sysctl.ip6_rt_min_advmss = IPV6_MIN_MTU - 20 - 40;
->  	net->ipv6.sysctl.icmpv6_time = 1*HZ;
-> 
-> +	mem_reserve_init(&net->ipv6.ip6_rt_reserve, "IPv6 route cache",
-> +			 &net_rx_reserve);
-> +	/*
-> +	 * XXX: requires that net->ipv6.ip6_dst_ops is already set-up
-> +	 *      but afaikt its impossible to order the various
-> +	 *      pernet_subsys calls so that this one is done after
-> +	 *      ip6_route_net_init().
-> +	 */
-
-As this code seems related to the routes, is there a particular reason 
-to not put it at the end of "ip6_route_net_init" function ? You will be 
-sure "net->ipv6.ip6_dst_ops is already set-up", no ?
-
-> +	err = mem_reserve_kmem_cache_set(&net->ipv6.ip6_rt_reserve,
-> +			net->ipv6.ip6_dst_ops.kmem_cachep,
-> +			net->ipv6.sysctl.ip6_rt_max_size);
-> +	if (err)
-> +		goto reserve_fail;
-> +
->  #ifdef CONFIG_PROC_FS
->  	err = udp6_proc_init(net);
->  	if (err)
-> @@ -861,8 +875,8 @@ static int inet6_net_init(struct net *ne
->  	err = ac6_proc_init(net);
->  	if (err)
->  		goto proc_ac6_fail;
-> -out:
->  #endif
-> +out:
->  	return err;
-> 
->  #ifdef CONFIG_PROC_FS
-> @@ -870,8 +884,10 @@ proc_ac6_fail:
->  	tcp6_proc_exit(net);
->  proc_tcp6_fail:
->  	udp6_proc_exit(net);
-> -	goto out;
->  #endif
-> +reserve_fail:
-> +	mem_reserve_disconnect(&net->ipv6.ip6_rt_reserve);
-
-Idem.
-
-> +	goto out;
->  }
-> 
->  static void inet6_net_exit(struct net *net)
-
-Isn't "mem_reserve_disconnect" missing here ? (but going to 
-ip6_route_net_exit)
-
-
-I hope this review helped :)
-
-Thanks
-	--Daniel
-
-
+Index: linux/arch/x86/kernel/io_apic.c
+===================================================================
+--- linux.orig/arch/x86/kernel/io_apic.c	2008-09-30 09:07:42.000000000 -0500
++++ linux/arch/x86/kernel/io_apic.c	2008-09-30 12:54:12.000000000 -0500
+@@ -58,6 +58,8 @@
+ #include <asm/setup.h>
+ #include <asm/irq_remapping.h>
+ #include <asm/hpet.h>
++#include <asm/uv/uv_hub.h>
++#include <asm/uv/uv_irq.h>
+ 
+ #include <mach_ipi.h>
+ #include <mach_apic.h>
+@@ -3694,6 +3696,99 @@ int arch_setup_ht_irq(unsigned int irq, 
+ }
+ #endif /* CONFIG_HT_IRQ */
+ 
++#ifdef CONFIG_X86_64
++static void noop(unsigned int irq)
++{
++}
++
++static unsigned int noop_ret(unsigned int irq)
++{
++	return 0;
++}
++
++static void ack_apic(unsigned int irq)
++{
++	ack_APIC_irq();
++}
++
++static struct irq_chip uv_irq_chip = {
++	.name		= "UV_MSI",
++	.startup	= noop_ret,
++	.shutdown	= noop,
++	.enable		= noop,
++	.disable	= noop,
++	.ack		= noop,
++	.mask		= noop,
++	.unmask		= noop,
++	.eoi		= ack_apic,
++	.end		= noop,
++};
++
++/*
++ * Re-target the irq to the specified CPU and enable the specified MMR located
++ * on the specified blade to allow the sending of MSIs to the specified CPU.
++ */
++int arch_enable_uv_irq(char *irq_name, unsigned int irq, int cpu, int mmr_blade,
++		       unsigned long mmr_offset)
++{
++	const cpumask_t *eligible_cpu = get_cpu_mask(cpu);
++	struct irq_cfg *cfg;
++	int mmr_pnode;
++	unsigned long mmr_value;
++	struct uv_IO_APIC_route_entry *entry;
++	unsigned long flags;
++	int err;
++
++	err = assign_irq_vector(irq, *eligible_cpu);
++	if (err != 0)
++		return err;
++
++	spin_lock_irqsave(&vector_lock, flags);
++	set_irq_chip_and_handler_name(irq, &uv_irq_chip, handle_percpu_irq,
++				      irq_name);
++	spin_unlock_irqrestore(&vector_lock, flags);
++
++	cfg = irq_cfg(irq);
++
++	mmr_value = 0;
++	entry = (struct uv_IO_APIC_route_entry *)&mmr_value;
++	BUG_ON(sizeof(struct uv_IO_APIC_route_entry) != sizeof(unsigned long));
++
++	entry->vector = cfg->vector;
++	entry->delivery_mode = INT_DELIVERY_MODE;
++	entry->dest_mode = INT_DEST_MODE;
++	entry->polarity = 0;
++	entry->trigger = 0;
++	entry->mask = 0;
++	entry->dest = cpu_mask_to_apicid(*eligible_cpu);
++
++	mmr_pnode = uv_blade_to_pnode(mmr_blade);
++	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
++
++	return irq;
++}
++
++/*
++ * Disable the specified MMR located on the specified blade so that MSIs are
++ * longer allowed to be sent.
++ */
++void arch_disable_uv_irq(int mmr_blade, unsigned long mmr_offset)
++{
++	unsigned long mmr_value;
++	struct uv_IO_APIC_route_entry *entry;
++	int mmr_pnode;
++
++	mmr_value = 0;
++	entry = (struct uv_IO_APIC_route_entry *)&mmr_value;
++	BUG_ON(sizeof(struct uv_IO_APIC_route_entry) != sizeof(unsigned long));
++
++	entry->mask = 1;
++
++	mmr_pnode = uv_blade_to_pnode(mmr_blade);
++	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
++}
++#endif /* CONFIG_X86_64 */
++
+ int __init io_apic_get_redir_entries (int ioapic)
+ {
+ 	union IO_APIC_reg_01	reg_01;
+Index: linux/kernel/irq/chip.c
+===================================================================
+--- linux.orig/kernel/irq/chip.c	2008-09-30 09:07:42.000000000 -0500
++++ linux/kernel/irq/chip.c	2008-09-30 09:07:44.000000000 -0500
+@@ -79,6 +79,7 @@ void dynamic_irq_cleanup(unsigned int ir
+ 	desc->chip_data = NULL;
+ 	desc->handle_irq = handle_bad_irq;
+ 	desc->chip = &no_irq_chip;
++	desc->name = "none";
+ 	spin_unlock_irqrestore(&desc->lock, flags);
+ }
+ 
+Index: linux/arch/x86/kernel/uv_irq.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/arch/x86/kernel/uv_irq.c	2008-10-01 06:35:31.000000000 -0500
+@@ -0,0 +1,50 @@
++/*
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * SGI UV IRQ functions
++ *
++ * Copyright (C) 2008 Silicon Graphics, Inc. All rights reserved.
++ */
++
++#include <linux/module.h>
++#include <linux/irq.h>
++#include <asm/uv/uv_irq.h>
++
++/*
++ * Set up a mapping of an available irq and vector, and enable the specified
++ * MMR that defines the MSI that is to be sent to the specified CPU when an
++ * interrupt is raised.
++ */
++int uv_setup_irq(char *irq_name, int cpu, int mmr_blade,
++		 unsigned long mmr_offset)
++{
++	int irq;
++	int ret;
++
++	irq = create_irq();
++	if (irq <= 0)
++		return -EBUSY;
++
++	ret = arch_enable_uv_irq(irq_name, irq, cpu, mmr_blade, mmr_offset);
++	if (ret != irq)
++		destroy_irq(irq);
++
++	return ret;
++}
++EXPORT_SYMBOL(uv_setup_irq);
++
++/*
++ * Tear down a mapping of an irq and vector, and disable the specified MMR that
++ * defined the MSI that was to be sent to the specified CPU when an interrupt
++ * was raised.
++ *
++ * Set mmr_blade and mmr_offset to what was passed in on uv_setup_irq().
++ */
++void uv_teardown_irq(unsigned int irq, int mmr_blade, unsigned long mmr_offset)
++{
++	arch_disable_uv_irq(mmr_blade, mmr_offset);
++	destroy_irq(irq);
++}
++EXPORT_SYMBOL(uv_teardown_irq);
+Index: linux/include/asm-x86/uv/uv_irq.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/include/asm-x86/uv/uv_irq.h	2008-09-30 09:07:44.000000000 -0500
+@@ -0,0 +1,34 @@
++/*
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * SGI UV IRQ definitions
++ *
++ * Copyright (C) 2008 Silicon Graphics, Inc. All rights reserved.
++ */
++
++#ifndef ASM_X86__UV__UV_IRQ_H
++#define ASM_X86__UV__UV_IRQ_H
++
++/* If a generic version of this structure gets defined, eliminate this one. */
++struct uv_IO_APIC_route_entry {
++	__u64	vector		:  8,
++		delivery_mode	:  3,
++		dest_mode	:  1,
++		delivery_status	:  1,
++		polarity	:  1,
++		__reserved_1	:  1,
++		trigger		:  1,
++		mask		:  1,
++		__reserved_2	: 15,
++		dest		: 32;
++};
++
++extern int arch_enable_uv_irq(char *, unsigned int, int, int, unsigned long);
++extern void arch_disable_uv_irq(int, unsigned long);
++
++extern int uv_setup_irq(char *, int, int, unsigned long);
++extern void uv_teardown_irq(unsigned int, int, unsigned long);
++
++#endif /* ASM_X86__UV__UV_IRQ_H */
+Index: linux/arch/x86/kernel/Makefile
+===================================================================
+--- linux.orig/arch/x86/kernel/Makefile	2008-09-30 09:07:42.000000000 -0500
++++ linux/arch/x86/kernel/Makefile	2008-09-30 09:07:44.000000000 -0500
+@@ -107,7 +107,7 @@ obj-$(CONFIG_OLPC)		+= olpc.o
+ # 64 bit specific files
+ ifeq ($(CONFIG_X86_64),y)
+         obj-y				+= genapic_64.o genapic_flat_64.o genx2apic_uv_x.o tlb_uv.o
+-	obj-y				+= bios_uv.o uv_sysfs.o
++	obj-y				+= bios_uv.o uv_sysfs.o uv_irq.o
+         obj-y				+= genx2apic_cluster.o
+         obj-y				+= genx2apic_phys.o
+         obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
