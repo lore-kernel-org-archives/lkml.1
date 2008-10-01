@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYJAVEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbYJAVFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbYJAVEm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 17:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbYJAVEe
+	id S1753316AbYJAVFH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 17:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYJAVEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 17:04:34 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:24510 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752541AbYJAVEe (ORCPT
+	Wed, 1 Oct 2008 17:04:54 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:13096 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752576AbYJAVEx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 17:04:34 -0400
-Message-ID: <48E3E59B.8060900@codemonkey.ws>
-Date: Wed, 01 Oct 2008 16:03:23 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 1 Oct 2008 17:04:53 -0400
+Date: Wed, 1 Oct 2008 15:04:51 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Taku Izumi <izumi.taku@jp.fujitsu.com>
+Cc: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx,
+       kaneshige.kenji@jp.fujitsu.com, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 00/14] PCI: let the core manage slot names
+Message-ID: <20081001210451.GA15531@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Taku Izumi <izumi.taku@jp.fujitsu.com>, jbarnes@virtuousgeek.org,
+	kristen.c.accardi@intel.com, matthew@wil.cx,
+	kaneshige.kenji@jp.fujitsu.com, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080923163753.12628.98683.stgit@bob.kio> <48DC9806.9040107@jp.fujitsu.com>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel.virtualization
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: kvm@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Dan Hecht <dhecht@vmware.com>, LKML <linux-kernel@vger.kernel.org>,
-       virtualization@lists.linux-foundation.org,
-       "avi@redhat.com" <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       akataria@vmware.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC] CPUID usage for interaction between Hypervisors and Linux.
-References: <1222881242.9381.17.camel@alok-dev1>	<48E3BBC1.2050607__35819.6151479662$1222884502$gmane$org@goop.org>	<48E3D7A0.3000403@codemonkey.ws> <48E3D8A8.604__13396.6479487301$1222891831$gmane$org@goop.org>
-In-Reply-To: <48E3D8A8.604__13396.6479487301$1222891831$gmane$org@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48DC9806.9040107@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Anthony Liguori wrote:
->> Mmm, cpuid bikeshedding :-)
-> 
-> My shade of blue is better.
-> 
->>> The space 0x40000000-0x400000ff is reserved for hypervisor usage.
->>>
->>> This region is divided into 16 16-leaf blocks.  Each block has the 
->>> structure:
->>>
->>> 0x400000x0:
->>>     eax: max used leaf within the leaf block (max 0x400000xf)
->> Why even bother with this?  It doesn't seem necessary in your proposal.
-> 
-> It allows someone to incrementally add things to their block in a fairly 
-> orderly way.  But more importantly, its the prevailing idiom, and the 
-> existing and proposed cpuid schemes already do this, so they'd fit in as-is.
+Hi Taku-san,
 
-We just leave eax as zero.  It wouldn't be that upsetting to change this 
-as it would only keep new guests from working on older KVMs.
+* Taku Izumi <izumi.taku@jp.fujitsu.com>:
+>> This series applies against linux-next. I've tested this by loading
+>> pci_slot and various hotplug drivers to ensure that the hotplug drivers
+>> can successfully override the pci_slot names.
+>
+>  It seems that there are some bugs. Pciehp and shpchp modules can not
+>  be loaded when the debug option is specified. Segmentation fault occurs
+>  with stack dump.
+>
+>  pciehp_probe() or shpchp_probe()
+>    -> init_slots()
+>     -> get_power_status()
+>      -> slot_name() : This is called when the debug option is specified.
+>       -> hotplug_slot_name()
+>        -> pci_slot_name(slot->pci_slot)
+>                         ~~~~~~~~~~~~~~
+>                        Not initialized yet.
 
-However, I see little incentive to change anything unless there's 
-something compelling that we would get in return.  Since we're only 
-talking about Linux guests, it's just as easy for us to add things to 
-our paravirt_ops implementation as it would be to add things using this 
-new model.
+Thank you for pointing this out. I've fixed this (and the other
+drivers) by make sure that the slot names are initialized before
+we attempt to use them.
 
-If this was something that other guests were all agreeing to support 
-(even if it was just the BSDs and OpenSolaris), then there may be value 
-to it.  Right now, I see no real value in changing the status quo.
+Trying to fix rpaphp was too much work for very little gain, so I
+deleted that patch from my patch series. But the changes to the
+hotplug core still make sense, so it's ok to have just one
+oddball left.
 
-Regards,
+I'll wait until Kenji-san sends out his final review comments
+before sending out v4.
 
-Anthony Liguori
+Thanks.
 
-
->     J
+/ac
 
