@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbYJAFa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYJAFa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752574AbYJAFa1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 01:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYJAFaT
+	id S1753139AbYJAFa5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 01:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYJAFat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 01:30:19 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53266 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbYJAFaR (ORCPT
+	Wed, 1 Oct 2008 01:30:49 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:44319 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751372AbYJAFas (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 01:30:17 -0400
-Date: Tue, 30 Sep 2008 15:30:01 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: Grant Grundler <grundler@parisc-linux.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: introduce users of ioremap_pcibar()
-Message-ID: <20080930153001.1107c0de@infradead.org>
-In-Reply-To: <20081001052450.GB7348@colo.lackof.org>
-References: <20080926163641.288bf868@infradead.org>
-	<20080926163718.32f0867e@infradead.org>
-	<20080929072643.GA28871@colo.lackof.org>
-	<20080929064220.374c68a4@infradead.org>
-	<20080929171049.GA14409@colo.lackof.org>
-	<20080929102325.0ca5c0c9@infradead.org>
-	<20081001052450.GB7348@colo.lackof.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Oct 2008 01:30:48 -0400
+Message-ID: <48E30B02.3030506@linux.vnet.ibm.com>
+Date: Wed, 01 Oct 2008 11:00:42 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Hansen <haveblue@us.ibm.com>,
+       ryov@valinux.co.jp
+Subject: Re: [PATCH 9/12] memcg allocate all page_cgroup at boot
+References: <20080925151124.25898d22.kamezawa.hiroyu@jp.fujitsu.com> <20080925153206.281243dc.kamezawa.hiroyu@jp.fujitsu.com> <48E2F6A9.9010607@linux.vnet.ibm.com> <20081001140748.637b9831.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081001140748.637b9831.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Sep 2008 23:24:50 -0600
-Grant Grundler <grundler@parisc-linux.org> wrote:
-
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 01 Oct 2008 09:33:53 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> > And pci_iomap() takes more parameters than most driver writers want
-> > or need. Most of the time it's "I want the whole bar"; even if my
-> > patch wraps around that, making the API simpler is still worth it
-> > imo
+>> Can we make this patch indepedent of the flags changes and push it in ASAP.
+>>
+> Need much work....Hmm..rewrite all again ? 
 > 
-> You are right about that.
-> Would calling the API "pci_iomap_bar()" to keep the naming consistent
-> help make it more acceptable?
 
-I'm fine with pci_iomap_bar()... it meets my goals
-Would be nice if I'd be allowed to make it only work on MEM bars not IO
-bars (so that drivers don't accidentally end up calling this on an IO
-bar and then using readl() etc)
+I don't think you'll need to do a major rewrite? Will you? My concern is that
+this patch does too much to be a single patch. Consider someone trying to do a
+git-bisect to identify a problem? It is hard to review as well and I think the
+patch that just removes struct page member can go in faster.
 
-
+It will be easier to test/debug as well, we'll know if the problem is because of
+new page_cgroup being outside struct page rather then guessing if it was the
+atomic ops that caused the problem.
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Balbir
