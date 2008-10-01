@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbYJAOuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbYJAOwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753353AbYJAOuz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 10:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYJAOup
+	id S1753503AbYJAOwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 10:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbYJAOwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 10:50:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36925 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750760AbYJAOup (ORCPT
+	Wed, 1 Oct 2008 10:52:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54759 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633AbYJAOwJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 10:50:45 -0400
-Message-ID: <48E38E30.70901@linux-foundation.org>
-Date: Wed, 01 Oct 2008 09:50:24 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 1 Oct 2008 10:52:09 -0400
+Date: Wed, 1 Oct 2008 10:52:06 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 6/6] ftrace: take advantage of variable length entries
+In-Reply-To: <20081001075419.GA24509@elte.hu>
+Message-ID: <alpine.DEB.1.10.0810011049030.30777@gandalf.stny.rr.com>
+References: <20080930030236.230994826@goodmis.org> <20080930030652.883661046@goodmis.org> <20080930203342.5b5ca814@daedalus.pq.iki.fi> <alpine.DEB.1.10.0809301341300.6224@gandalf.stny.rr.com> <20081001075419.GA24509@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: Nicolas Pitre <nico@cam.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: wrong usage of MAX_DMA_ADDRESS in bootmem.h
-References: <1222230419-15661-21-git-send-email-nico@cam.org> <1222230592-15868-1-git-send-email-nico@cam.org> <20080930162809.GD15911@flint.arm.linux.org.uk> <alpine.LFD.2.00.0809301409230.3635@xanadu.home> <20080930184411.GJ15911@flint.arm.linux.org.uk> <alpine.LFD.2.00.0809301513260.3635@xanadu.home> <48E2846A.4030802@linux-foundation.org> <20080930201224.GL15911@flint.arm.linux.org.uk> <48E3680E.6040703@linux-foundation.org> <20081001140607.GA22031@flint.arm.linux.org.uk>
-In-Reply-To: <20081001140607.GA22031@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux wrote:
 
->> Someone screwed around with the basics here. MAX_DMA_ADDRESS is no longer
->> related to MAX_DMA_PFN for the x86_32 case. What is the point of relating
->> MAX_DMA_ADDRESS to PAGE_OFFSET? Looks like we are creating more confusion
->> about the strange DMA zone.
+On Wed, 1 Oct 2008, Ingo Molnar wrote:
 > 
-> Because it is a virtual address.  It has to be.  You're using __pa() on it,
-> and __pa() ONLY takes a virtual address.
-
-Ok. I agree you need to add a __va to it in order to convert it back later.
-That was not really the point. MAX_DMA_PFN can be used as a base to calculate
-MAX_DMA_ADDRESS. Both are related and currently some arches go one way and
-other do vice versa. Its particularly strange that x86_32 and x86_64 go
-different ways. Can we unify that to one way only and put the definition of
-MAX_DMA_ADDRESS in core code?
-
-Also as a result of the long type used for a kernel "virtual" address we have
-the strange situation that all uses of MAX_DMA_ADDRESS require a cast.
-
->> The best would be to rename these variables to make the semantics clearer
->>
->> ZONE_DMA related variables:
->>
->> MAX_DMA_PFN -> MAX_ZONE_DMA_PFN
->> MAX_DMA_ADDRESS -> MAX_ZONE_DMA_ADDRESS
->>
->> MAX_DMA32_PFN -> MAX_ZONE_DMA32_PFN
->> MAX_DMA32_ADDRESS -> MAX_ZONE_DMA32_ADDRESS
->>
->> Then the general DMAability
->>
->> MAX_DMA_ADDRESS -> DMA_LIMIT
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> That's no clearer.  Are they physical addresses?  Or are they virtual
-> addresses?  Can't guess that from the names.
+> > > >  	struct trace_entry *entry = iter->ent;
+> > > > -	struct mmiotrace_map *m	= &entry->field.mmiomap;
+> > > > +	struct mmiotrace_map *m	= (struct mmiotrace_map *)entry;
+> > > 
+> > > This is different style than above, missing the struct
+> > > trace_mmiotrace_map intermediate step. Looks like a bug,
+> > > since struct mmiotrace_map is not the first field in
+> > > struct trace_mmiotrace_map.
+> > 
+> > Crap! yes this is a bug. Thanks for pointing this out.
+> 
+> hm, there's a significant amount of type casts, see the grep below.
 
-It is clearer because the association with ZONE_DMA is in the name now. One no
-longer has the impression that MAX_DMA_ADDRESS is upper bound of any DMA
-transfer in the system.
+Yeah, I don't like that either.
 
-Maybe we should make these physical addresses to avoid the casts? That would
-avoid casts in the bootmem allocator etc etc.
+> 
+> The ringbuffer becoming type-opaque has exactly these kinds of dangers, 
+> and as i suggested a few days ago, please think about a debug mode that 
+> stores the record type in the trace entry and validates it on extraction 
+> or something like that.
+> 
+> That might even be a robustness feature: the tracer should not crash if 
+> the trace buffer gets corrupted. ftrace had that invariant before, i 
+> think we should try to keep as many aspects of it as possible.
+
+Although the ring buffer is type opaque, that isn't the cause of this 
+issue. Ftrace still adds the types as needed. But since we no longer have 
+the big "one type for all" union entry, we need to be a bit more careful. 
+All types start with a one byte type id (giving us 255 types to use for 
+ftrace, zero being saved).
+
+The following patch fixes this bug and addresses the issue.
+
+-- Steve
 
