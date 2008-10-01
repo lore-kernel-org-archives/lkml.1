@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYJAGN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYJAGOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbYJAGN5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 02:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYJAGNr
+	id S1753423AbYJAGOj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 02:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYJAGOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 02:13:47 -0400
-Received: from colo.lackof.org ([198.49.126.79]:47615 "EHLO colo.lackof.org"
+	Wed, 1 Oct 2008 02:14:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58364 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752161AbYJAGNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 02:13:46 -0400
-Date: Wed, 1 Oct 2008 00:13:28 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Rene Herman <rene.herman@keyaccess.nl>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Adam Belay <abelay@mit.edu>, Avuton Olrich <avuton@gmail.com>,
-       Karl Bellve <karl.bellve@umassmed.edu>, Willem Riede <wriede@riede.org>,
-       Matthew Hall <mhall@mhcomputing.net>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [patch 2/2] PNP: don't check disabled PCI BARs for conflicts
-	in quirk_system_pci_resources()
-Message-ID: <20081001061328.GD7348@colo.lackof.org>
-References: <48E11EFA.8010402@keyaccess.nl> <alpine.LFD.2.00.0809291211330.3389@nehalem.linux-foundation.org> <48E1EF0E.8030006@keyaccess.nl> <alpine.LFD.2.00.0809300741320.3389@nehalem.linux-foundation.org> <48E24C6F.3030903@keyaccess.nl> <alpine.LFD.2.00.0809300904530.3389@nehalem.linux-foundation.org> <alpine.LFD.2.00.0809301001280.3389@nehalem.linux-foundation.org> <alpine.LFD.2.00.0809301015210.4651@nehalem.linux-foundation.org> <20080930193819.GA29860@elte.hu> <alpine.LFD.2.00.0809301244290.3262@nehalem.linux-foundation.org>
+	id S1751500AbYJAGOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 02:14:31 -0400
+Date: Wed, 1 Oct 2008 08:14:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Pekka Paalanen <pq@iki.fi>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Martin Bligh <mbligh@google.com>, Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/2] ring_buffer: remove raw from local_irq_save
+Message-ID: <20081001061404.GA13682@elte.hu>
+References: <20081001042951.412019606@goodmis.org> <20081001043908.122153176@goodmis.org> <20081001055235.GA25703@elte.hu> <20081001060809.GA6646@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0809301244290.3262@nehalem.linux-foundation.org>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20081001060809.GA6646@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 12:51:07PM -0700, Linus Torvalds wrote:
-....
-> But I think we could add a separate notion of a dependancy point, and have 
-> a setup where we describe "initcall X needs to happen before point A" and 
-> "initcall Z needs to happen after point A".
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > The raw_local_irq_save causes issues with lockdep. We don't need it
+> > > so replace them with local_irq_save.
 > 
-> And then we can create a separate set of these dependency points, so that 
-> X and Y don't have to know about each other, they just have to have some 
-> knowledge about some common synchronization point - one that exists 
-> regardless of whether X or Y are even compiled in!
+> the same warning still occurs with your latest fixes - see the log 
+> below. Config attached. You should be able to reproduce it, it happens 
+> on every bootup with this config.
 
-We already do this today. :)
-Definitions are in include/linux/init.h.
-Point A would be "early" ("run before initialing SMP")
-The rest could use better definitions and AFAICT aren't that much better
-than being named "Point B".
+ignore me, my bad ... i messed up the test. The warning is indeed fixed.
 
-hth,
-grant
+	Ingo
