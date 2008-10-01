@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYJAKRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYJAKWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbYJAKRu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 06:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYJAKRm
+	id S1753337AbYJAKWg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 06:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYJAKW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 06:17:42 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:16320 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbYJAKRl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 06:17:41 -0400
-Message-ID: <ac3eb2510810010317y774a8a80v4f1817187d8fc3a6@mail.gmail.com>
-Date: Wed, 1 Oct 2008 12:17:39 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Tom Spink" <tspink@gmail.com>
-Subject: Re: CD tray closes spontaneously after opening it
-Cc: "Frans Pop" <elendil@planet.nl>, "Tony Vroon" <tony@vroon.org>,
-       linux-kernel@vger.kernel.org, "Tejun Heo" <tj@kernel.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <7b9198260810010048q170c72f4wfc306505f1a6ac00@mail.gmail.com>
+	Wed, 1 Oct 2008 06:22:28 -0400
+Received: from faui2k3.org ([213.95.10.24]:43278 "EHLO casella.faui2k3.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751337AbYJAKW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 06:22:27 -0400
+Date: Wed, 1 Oct 2008 12:22:20 +0200
+From: Wolfgang Kroener <lkml@azog.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org
+Message-ID: <20081001102220.GA4765@lupus.ipv6.sieglitzhof.net>
+References: <20080930140658.GL10156@casella.faui2k3.org> <1222812610.9006.74.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <200809301247.05367.elendil@planet.nl>
-	 <200809301447.35915.elendil@planet.nl>
-	 <ac3eb2510809300655u319f8a9v58e4825f97ee329c@mail.gmail.com>
-	 <200809302150.38872.elendil@planet.nl>
-	 <ac3eb2510809301302l7d966896tfb0e3d230598974@mail.gmail.com>
-	 <7b9198260810010048q170c72f4wfc306505f1a6ac00@mail.gmail.com>
+In-Reply-To: <1222812610.9006.74.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:a60:f01c:0:70:2:7:10
+X-SA-Exim-Mail-From: lkml@azog.de
+Subject: Re: [PATCH] suspend/resume for ATI Mobility Radeon RV350
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
+X-SA-Exim-Scanned: Yes (on casella.faui2k3.org)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 1, 2008 at 9:48 AM, Tom Spink <tspink@gmail.com> wrote:
-> 2008/9/30 Kay Sievers <kay.sievers@vrfy.org>:
->> On Tue, Sep 30, 2008 at 9:50 PM, Frans Pop <elendil@planet.nl> wrote:
->>> On Tuesday 30 September 2008, Kay Sievers wrote:
->>>> Does:
->>>>   /sbin/udevadm monitor --env
->>>> print something while you see the tray closing?
->>>
->>> I was somewhat lucky to reproduce it with that running and there was no
->>> output during the open or close. I guess that rules out udev?
->>
->> I think so, yes.
->>
->>> I still don't know how to reliably reproduce this. It seems that after it
->>> has occurred once, it will not occur again unless the system is rebooted.
->>> But I'm not 100% sure of that.
->>>
->>> Most times I've seen it was after playing a DVD when ejecting the disc to
->>> put it back in its box, but not when the DVD was inserted earlier.
->>> But I've also seen it shortly after the system is booted when just opening
->>> the tray with no media inserted.
->>>
->>> Just to be clear: until recently the drive has always behaved perfectly in
->>> the same situations.
->>>
->>>> Does this also happen when you set:
->>>>   /proc/sys/dev/cdrom/autoclose
->>>> to 0?
->>>
->>> I'll set that on boot using /etc/sysctl.conf and will report if I can
->>> still reproduce with that setting. I've checked that the "normal" value
->>> is 1.
->>
->> That will prevent the closing, when something tries to open the device
->> in blocking mode. If that solves the issue, you should start looking
->> which process tries to access your drive.
->>
->> Kay
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
-> Hi Kay,
->
-> If you can manage to reproduce this, can you try/have you tried
-> different kernel versions?
+Hi,
 
-I didn't try. I have only slot-in optical drives and manual laptop
-trays, there is no autoclose possible. I also have no box with IDE
-drivers anymore, sorry.
+On Wed, Oct 01, 2008 at 08:10:10, Benjamin Herrenschmidt wrote:
+> Can you resend it with a proper Signed-off-by: line ? Thanks !
 
-Kay
+I hope, that's right.
+Kind regards,
+Wolfgang
+-- 
+
+radeonfb suspend/resume for Acer Travelmate 29X
+
+This patch adds suspend/resume for the Acer Travelmate 290D/292LMi with
+the following graphic-chip:
+01:00.0 VGA compatible controller [0300]: ATI Technologies Inc RV350
+[Mobility Radeon 9600 M10] [1002:4e50] (prog-if 00 [VGA controller])
+	Subsystem: Acer Incorporated [ALI] TravelMate 290 [1025:005a]
+	Flags: bus master, 66MHz, medium devsel, latency 128, IRQ 10
+	Memory at a8000000 (32-bit, prefetchable) [size=128M]
+	I/O ports at c100 [size=256]
+	Memory at e0010000 (32-bit, non-prefetchable) [size=64K]
+	[virtual] Expansion ROM at a0000000 [disabled] [size=128K]
+	Capabilities: [58] AGP version 2.0
+	Capabilities: [50] Power Management version 2
+	Kernel driver in use: radeonfb
+	Kernel modules: radeonfb
+
+Signed-off-by: Wolfgang Kroener <lkml@azog.de>
+---
+ drivers/video/aty/radeon_pm.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+index 675abda..5e4b2da 100644
+--- a/drivers/video/aty/radeon_pm.c
++++ b/drivers/video/aty/radeon_pm.c
+@@ -89,6 +89,9 @@ static struct radeon_device_id radeon_workaround_list[] = {
+ 	BUGFIX("Acer Aspire 2010",
+ 	       PCI_VENDOR_ID_AI, 0x0061,
+ 	       radeon_pm_off, radeon_reinitialize_M10),
++	BUGFIX("Acer Travelmate 290D/292LMi",
++	       PCI_VENDOR_ID_AI, 0x005a,
++	       radeon_pm_off, radeon_reinitialize_M10),
+ 	{ .ident = NULL }
+ };
+ 
