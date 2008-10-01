@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYJAVf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYJAVhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbYJAVf3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 17:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYJAVfS
+	id S1754422AbYJAVhL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 17:37:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbYJAVg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 17:35:18 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:41478 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346AbYJAVfQ (ORCPT
+	Wed, 1 Oct 2008 17:36:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38324 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753612AbYJAVg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 17:35:16 -0400
-Message-ID: <48E3ECD1.30809@codemonkey.ws>
-Date: Wed, 01 Oct 2008 16:34:09 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: akataria@vmware.com, "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gerd Hoffmann <kraxel@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Daniel Hecht <dhecht@vmware.com>, Zach Amsden <zach@vmware.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Subject: Re: [RFC] CPUID usage for interaction between Hypervisors and	Linux.
-References: <1222881242.9381.17.camel@alok-dev1> <48E3BBC1.2050607@goop.org> <1222894878.9381.63.camel@alok-dev1> <48E3E8DE.1080602@goop.org>
-In-Reply-To: <48E3E8DE.1080602@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 1 Oct 2008 17:36:58 -0400
+Date: Wed, 1 Oct 2008 22:36:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Steven Noonan <steven@uplinklabs.net>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Steven Noonan <steven@uplinklabs.net>
+Subject: Re: [PATCH] drivers/serial/8250.c: 'i' may be used uninitialized
+Message-ID: <20081001223645.23ad0e5e@lxorguk.ukuu.org.uk>
+In-Reply-To: <1222850827-30522-1-git-send-email-steven@uplinklabs.net>
+References: <f488382f0810010136t6280c10dg80458e3e9f02f598@mail.gmail.com>
+	<1222850827-30522-1-git-send-email-steven@uplinklabs.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Alok Kataria wrote:
->
-> I guess, but the bulk of the uses of this stuff are going to be 
-> hypervisor-specific.  You're hard-pressed to come up with any other 
-> generic uses beyond tsc.
+On Wed,  1 Oct 2008 01:47:07 -0700
+Steven Noonan <steven@uplinklabs.net> wrote:
 
-And arguably, storing TSC frequency in CPUID is a terrible interface 
-because the TSC frequency can change any time a guest is entered.  It 
-really should be a shared memory area so that a guest doesn't have to 
-vmexit to read it (like it is with the Xen/KVM paravirt clock).
+> serial_unlink_irq_chain() does not initialize iterator 'i', and that is
+> correct logically because it is always initialized, either in the
+> hlist_for_each or in the conditional immediately after (which fires if
+> hlist_for_each comes up empty-handed). GCC does not realize this
+> connection and emits a false warning. Annotate it with uninitialized_var().
+> 
+> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
 
-Regards,
+Ok definitive NAK. gcc 4.3.0 can work this out and doesn't produce a
+warning. Thanks for sending the patch though (and to the gcc folks for
+rendering it unnecessary)
 
-Anthony Liguori
-
->   In general, if a hypervisor is going to put something in a special 
-> cpuid leaf, its because there's no other good way to represent it.  
-> Generic things are generally going to appear as an emulated piece of 
-> the virtualized platform, in ACPI, DMI, a hardware-defined cpuid leaf, 
-> etc...
-
+Alan
