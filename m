@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbYJAHkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbYJAHkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541AbYJAHkb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 03:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYJAHkM
+	id S1753797AbYJAHkr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 03:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYJAHkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 03:40:12 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:22125 "EHLO
+	Wed, 1 Oct 2008 03:40:13 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:22133 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751727AbYJAHkK (ORCPT
+	with ESMTP id S1751571AbYJAHkL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 03:40:10 -0400
+	Wed, 1 Oct 2008 03:40:11 -0400
 From: "Martin K. Petersen" <martin.petersen@oracle.com>
 To: jens.axboe@oracle.com, neilb@suse.de, agk@sourceware.org
 Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
        "Martin K. Petersen" <martin.petersen@oracle.com>
-Subject: [PATCH 5/7] block: Find bio sector offset given idx and offset
-Date: Wed,  1 Oct 2008 03:38:41 -0400
-Message-Id: <1222846723-18213-6-git-send-email-martin.petersen@oracle.com>
+Subject: [PATCH 7/7] md: Add support for data integrity to MD
+Date: Wed,  1 Oct 2008 03:38:43 -0400
+Message-Id: <1222846723-18213-8-git-send-email-martin.petersen@oracle.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1222846723-18213-1-git-send-email-martin.petersen@oracle.com>
 References: <1222846723-18213-1-git-send-email-martin.petersen@oracle.com>
@@ -28,72 +28,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Helper function to find the sector offset in a bio given bvec index
-and page offset.
+If all subdevices support the same protection format the MD device is
+flagged as capable.
 
 Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
 ---
- fs/bio.c            |   34 ++++++++++++++++++++++++++++++++++
- include/linux/bio.h |    1 +
- 2 files changed, 35 insertions(+), 0 deletions(-)
+ drivers/md/md.c |   34 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 34 insertions(+), 0 deletions(-)
 
-diff --git a/fs/bio.c b/fs/bio.c
-index e56e768..55ee2fd 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -1300,6 +1300,40 @@ struct bio_pair *bio_split(struct bio *bi, mempool_t *pool, int first_sectors)
- 	return bp;
- }
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 45521da..35542f2 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -1411,6 +1411,38 @@ static int match_mddev_units(mddev_t *mddev1, mddev_t *mddev2)
  
-+/**
-+ *	bio_sector_offset - Find hardware sector offset in bio
-+ *	@bio:		bio to inspect
-+ *	@index:		bio_vec index
-+ *	@offset:	offset in bv_page
-+ *
-+ *	Return the number of hardware sectors between beginning of bio
-+ *	and an end point indicated by a bio_vec index and an offset
-+ *	within that vector's page.
-+ */
-+sector_t bio_sector_offset(struct bio *bio, unsigned short index,
-+			   unsigned int offset)
+ static LIST_HEAD(pending_raid_disks);
+ 
++static void md_integrity_check(mdk_rdev_t *rdev, mddev_t *mddev)
 +{
-+	struct bio_vec *bv;
-+	unsigned int sector_sz = bio->bi_bdev->bd_disk->queue->hardsect_size;
-+	sector_t sectors;
-+	int i;
++	struct mdk_personality *pers = mddev->pers;
++	struct gendisk *disk = mddev->gendisk;
++	struct blk_integrity *bi_rdev = bdev_get_integrity(rdev->bdev);
++	struct blk_integrity *bi_mddev = blk_get_integrity(disk);
 +
-+	sectors = 0;
++	/* Data integrity passthrough not supported on RAID 4, 5 and 6 */
++	if (pers && pers->level >= 4 && pers->level <= 6)
++		return;
 +
-+	BUG_ON(index >= bio->bi_vcnt);
-+
-+	bio_for_each_segment(bv, bio, i) {
-+		if (i == index) {
-+			if (offset > bv->bv_offset)
-+				sectors += (offset - bv->bv_offset) / sector_sz;
-+			return sectors;
-+		}
-+
-+		sectors += bv->bv_len / sector_sz;
++	/* If rdev is integrity capable, register profile for mddev */
++	if (!bi_mddev && bi_rdev) {
++		if (blk_integrity_register(disk, bi_rdev))
++			printk(KERN_ERR "%s: %s Could not register integrity!\n",
++			       __func__, disk->disk_name);
++		else
++			printk(KERN_NOTICE "Enabling data integrity on %s\n",
++			       disk->disk_name);
++		return;
 +	}
 +
-+	BUG();
++	/* Check that mddev and rdev have matching profiles */
++	if (blk_integrity_compare(disk, rdev->bdev->bd_disk) < 0) {
++		printk(KERN_ERR "%s: %s/%s integrity mismatch!\n", __func__,
++		       disk->disk_name, rdev->bdev->bd_disk->disk_name);
++		printk(KERN_NOTICE "Disabling data integrity on %s\n",
++		       disk->disk_name);
++		blk_integrity_unregister(disk);
++	}
 +}
++
+ static int bind_rdev_to_array(mdk_rdev_t * rdev, mddev_t * mddev)
+ {
+ 	char b[BDEVNAME_SIZE];
+@@ -1471,6 +1503,7 @@ static int bind_rdev_to_array(mdk_rdev_t * rdev, mddev_t * mddev)
+ 	}
+ 	list_add_rcu(&rdev->same_set, &mddev->disks);
+ 	bd_claim_by_disk(rdev->bdev, rdev->bdev->bd_holder, mddev->gendisk);
++	md_integrity_check(rdev, mddev);
+ 	return 0;
  
- /*
-  * create memory pools for biovec's in a bio_set.
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 6aba97d..386a1df 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -327,6 +327,7 @@ extern int bio_add_page(struct bio *, struct page *, unsigned int,unsigned int);
- extern int bio_add_pc_page(struct request_queue *, struct bio *, struct page *,
- 			   unsigned int, unsigned int);
- extern int bio_get_nr_vecs(struct block_device *);
-+extern sector_t bio_sector_offset(struct bio *, unsigned short, unsigned int);
- extern struct bio *bio_map_user(struct request_queue *, struct block_device *,
- 				unsigned long, unsigned int, int, gfp_t);
- struct sg_iovec;
+  fail:
+@@ -3947,6 +3980,7 @@ static int do_md_stop(mddev_t * mddev, int mode, int is_open)
+ 		printk(KERN_INFO "md: %s switched to read-only mode.\n",
+ 			mdname(mddev));
+ 	err = 0;
++	blk_integrity_unregister(disk);
+ 	md_new_event(mddev);
+ 	sysfs_notify(&mddev->kobj, NULL, "array_state");
+ out:
 -- 
 1.6.0.2
 
