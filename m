@@ -1,79 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbYJALDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYJALDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271AbYJALDR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 07:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYJALDF
+	id S1753507AbYJALDy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 07:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYJALDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 07:03:05 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60439 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752739AbYJALDE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 07:03:04 -0400
-Date: Wed, 1 Oct 2008 07:03:01 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Nigel Hislop <hislop_nigel@emc.com>, Hannes Reinecke <hare@suse.de>
-Subject: Re: [patch 21/21] Add ioctl support for EMC Symmetrix Subsystem
-	Control I/O
-Message-ID: <20081001110301.GB6648@infradead.org>
-References: <20081001083317.782967473@de.ibm.com> <20081001084130.599948666@de.ibm.com>
+	Wed, 1 Oct 2008 07:03:44 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:62813 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752868AbYJALDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 07:03:44 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081001084130.599948666@de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
+Message-ID: <18659.21853.41967.715062@harpo.it.uu.se>
+Date: Wed, 1 Oct 2008 12:47:57 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "Steven Noonan" <steven@uplinklabs.net>
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Hugh Dickins" <hugh@veritas.com>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>
+Subject: Re: drivers/pci/probe.c compile warnings on -tip
+In-Reply-To: <f488382f0810010102y551f4a3bs64524fa70ef04ca3@mail.gmail.com>
+References: <f488382f0810010102y551f4a3bs64524fa70ef04ca3@mail.gmail.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static int dasd_symm_io(struct dasd_device *device, void __user *argp)
-> +{
-> +	struct dasd_symmio_parms usrparm;
-> +	char *psf_data, *rssd_result;
-> +	struct dasd_ccw_req *cqr;
-> +	struct ccw1 *ccw;
-> +	int rc;
-> +
-> +	/* Copy parms from caller */
-> +	rc = copy_from_user(&usrparm, argp, sizeof(usrparm)) ? -EFAULT : 0;
-> +	if (rc)
-> +		goto out;
+Steven Noonan writes:
+ > I was hunting down some warnings I got when compiling -tip, and with
+ > one of them, I'm not sure what would be a proper way to handle it.
+ > 
+ > If CONFIG_PHYS_ADDR_T_64BIT is not enabled, these warnings show up:
+ > 
+ > drivers/pci/probe.c: In function '__pci_read_base':
+ > drivers/pci/probe.c:308: warning: format '%llx' expects type 'long
+ > long unsigned int', but argument 4 has type 'resource_size_t'
+ > drivers/pci/probe.c:308: warning: format '%llx' expects type 'long
+ > long unsigned int', but argument 5 has type 'resource_size_t'
+ > drivers/pci/probe.c:320: warning: format '%llx' expects type 'long
+ > long unsigned int', but argument 5 has type 'resource_size_t'
+ > drivers/pci/probe.c:320: warning: format '%llx' expects type 'long
+ > long unsigned int', but argument 6 has type 'resource_size_t'
+ > drivers/pci/probe.c: In function 'pci_read_bridge_bases':
+ > drivers/pci/probe.c:392: warning: format '%llx' expects type 'long
+ > long unsigned int', but argument 3 has type 'resource_size_t'
+ > drivers/pci/probe.c:392: warning: format '%llx' expects type 'long
+ > long unsigned int', but argument 4 has type 'resource_size_t'
+ > drivers/pci/probe.c:405: warning: format '%llx' expects type 'long
+ > long unsigned int', but argument 3 has type 'resource_size_t'
+ > drivers/pci/probe.c:405: warning: format '%llx' expects type 'long
+ > long unsigned int', but argument 4 has type 'resource_size_t'
+ > drivers/pci/probe.c:443: warning: format '%llx' expects type 'long
+ > long unsigned int', but argument 4 has type 'resource_size_t'
+ > drivers/pci/probe.c:443: warning: format '%llx' expects type 'long
+ > long unsigned int', but argument 5 has type 'resource_size_t'
+ > 
+ > 
+ > Each of the lines is something like this:
+ > 
+ > printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
+ > pci_name(dev), pos, res->start, res->end);
+ > 
+ > res->start and res->end are resource_size_t (which is phys_addr_t),
+ > and are sized either 32-bit or 64-bit, based on whether
+ > CONFIG_PHYS_ADDR_T_64BIT is set.
 
-That style is quite odd,  what about the more normal
+Oh not those again. Similar warnings in 27-rc's drivers/pci
+were fixed recently, but apparently someone out there likes
+to create new ones.
 
-	rc = -EFAULT;
-	if (copy_from_user(&usrparm, argp, sizeof(usrparm)))
-		goto out;
+The fix is to cast the resource_size_t arguments to unsigned long long.
+With "%llx" that's the /only/ valid argument type.
 
-instead?
+Also note that these warnings aren't harmless. On 32-bit machines
+with parameters passed on the stack the mismatch in size between
+32-bit resource_size_t and the 64-bit %llx causes undefined
+behaviour as printk mis-enumerates its parameters.
 
-> +	/* alloc I/O data area */
-> +	psf_data = kzalloc(usrparm.psf_data_len, GFP_KERNEL | GFP_DMA);
-> +	rssd_result = kzalloc(usrparm.rssd_result_len, GFP_KERNEL | GFP_DMA);
-> +	if (!psf_data || !rssd_result) {
-> +		rc = -ENOMEM;
-> +		goto out_free;
-> +	}
-
-just check each on individually and do individual unwinding.  Makes the
-code a little more easily readable.
-
-> +	/* get syscall header from user space */
-> +	rc = copy_from_user(psf_data,
-> +			    (void __user *)(unsigned long) usrparm.psf_data,
-> +			    usrparm.psf_data_len) ? -EFAULT : 0;
-> +	if (rc)
-> +		goto out_free;
-
-Same as the first copy_from_user
-
-> +	rc = copy_to_user((void __user *)(unsigned long) usrparm.rssd_result,
-> +			   rssd_result, usrparm.rssd_result_len) ? -EFAULT : 0;
-
-And here again.
-
+/Mikael
