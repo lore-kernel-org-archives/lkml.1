@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbYJAHjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbYJAHkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753504AbYJAHjx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 03:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYJAHjd
+	id S1753541AbYJAHkb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 03:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYJAHkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 03:39:33 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:21639 "EHLO
+	Wed, 1 Oct 2008 03:40:12 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:22125 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751537AbYJAHjc (ORCPT
+	with ESMTP id S1751727AbYJAHkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 03:39:32 -0400
+	Wed, 1 Oct 2008 03:40:10 -0400
 From: "Martin K. Petersen" <martin.petersen@oracle.com>
 To: jens.axboe@oracle.com, neilb@suse.de, agk@sourceware.org
 Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
        "Martin K. Petersen" <martin.petersen@oracle.com>
-Subject: [PATCH 1/7] block: Introduce integrity data ownership flag
-Date: Wed,  1 Oct 2008 03:38:37 -0400
-Message-Id: <1222846723-18213-2-git-send-email-martin.petersen@oracle.com>
+Subject: [PATCH 5/7] block: Find bio sector offset given idx and offset
+Date: Wed,  1 Oct 2008 03:38:41 -0400
+Message-Id: <1222846723-18213-6-git-send-email-martin.petersen@oracle.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1222846723-18213-1-git-send-email-martin.petersen@oracle.com>
 References: <1222846723-18213-1-git-send-email-martin.petersen@oracle.com>
@@ -28,42 +28,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A filesystem might supply its own integrity metadata.  Introduce a
-flag that indicates whether the filesystem or the block layer owns the
-integrity buffer.
+Helper function to find the sector offset in a bio given bvec index
+and page offset.
 
 Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
 ---
- fs/bio-integrity.c  |    3 ++-
+ fs/bio.c            |   34 ++++++++++++++++++++++++++++++++++
  include/linux/bio.h |    1 +
- 2 files changed, 3 insertions(+), 1 deletions(-)
+ 2 files changed, 35 insertions(+), 0 deletions(-)
 
-diff --git a/fs/bio-integrity.c b/fs/bio-integrity.c
-index c3e174b..8e409ff 100644
---- a/fs/bio-integrity.c
-+++ b/fs/bio-integrity.c
-@@ -107,7 +107,8 @@ void bio_integrity_free(struct bio *bio, struct bio_set *bs)
- 	BUG_ON(bip == NULL);
+diff --git a/fs/bio.c b/fs/bio.c
+index e56e768..55ee2fd 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -1300,6 +1300,40 @@ struct bio_pair *bio_split(struct bio *bi, mempool_t *pool, int first_sectors)
+ 	return bp;
+ }
  
- 	/* A cloned bio doesn't own the integrity metadata */
--	if (!bio_flagged(bio, BIO_CLONED) && bip->bip_buf != NULL)
-+	if (!bio_flagged(bio, BIO_CLONED) && !bio_flagged(bio, BIO_FS_INTEGRITY)
-+	    && bip->bip_buf != NULL)
- 		kfree(bip->bip_buf);
- 
- 	mempool_free(bip->bip_vec, bs->bvec_pools[bip->bip_pool]);
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 6520ee1..6aba97d 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -109,6 +109,7 @@ struct bio {
- #define BIO_EOPNOTSUPP	7	/* not supported */
- #define BIO_CPU_AFFINE	8	/* complete bio on same CPU as submitted */
- #define BIO_NULL_MAPPED 9	/* contains invalid user pages */
-+#define BIO_FS_INTEGRITY 10	/* fs owns integrity data, not block layer */
- #define bio_flagged(bio, flag)	((bio)->bi_flags & (1 << (flag)))
++/**
++ *	bio_sector_offset - Find hardware sector offset in bio
++ *	@bio:		bio to inspect
++ *	@index:		bio_vec index
++ *	@offset:	offset in bv_page
++ *
++ *	Return the number of hardware sectors between beginning of bio
++ *	and an end point indicated by a bio_vec index and an offset
++ *	within that vector's page.
++ */
++sector_t bio_sector_offset(struct bio *bio, unsigned short index,
++			   unsigned int offset)
++{
++	struct bio_vec *bv;
++	unsigned int sector_sz = bio->bi_bdev->bd_disk->queue->hardsect_size;
++	sector_t sectors;
++	int i;
++
++	sectors = 0;
++
++	BUG_ON(index >= bio->bi_vcnt);
++
++	bio_for_each_segment(bv, bio, i) {
++		if (i == index) {
++			if (offset > bv->bv_offset)
++				sectors += (offset - bv->bv_offset) / sector_sz;
++			return sectors;
++		}
++
++		sectors += bv->bv_len / sector_sz;
++	}
++
++	BUG();
++}
  
  /*
+  * create memory pools for biovec's in a bio_set.
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index 6aba97d..386a1df 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -327,6 +327,7 @@ extern int bio_add_page(struct bio *, struct page *, unsigned int,unsigned int);
+ extern int bio_add_pc_page(struct request_queue *, struct bio *, struct page *,
+ 			   unsigned int, unsigned int);
+ extern int bio_get_nr_vecs(struct block_device *);
++extern sector_t bio_sector_offset(struct bio *, unsigned short, unsigned int);
+ extern struct bio *bio_map_user(struct request_queue *, struct block_device *,
+ 				unsigned long, unsigned int, int, gfp_t);
+ struct sg_iovec;
 -- 
 1.6.0.2
 
