@@ -1,100 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348AbYJAKCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452AbYJAKCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753348AbYJAKCS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 06:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbYJAKCF
+	id S1752452AbYJAKCa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 06:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbYJAKCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 06:02:05 -0400
-Received: from www.tglx.de ([62.245.132.106]:37615 "EHLO www.tglx.de"
+	Wed, 1 Oct 2008 06:02:06 -0400
+Received: from www.tglx.de ([62.245.132.106]:37618 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752378AbYJAKCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 06:02:04 -0400
-Message-Id: <20081001095412.116951386@linutronix.de>
+	id S1752420AbYJAKCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 06:02:05 -0400
+Message-Id: <20081001095412.217106351@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Wed, 01 Oct 2008 10:01:35 -0000
+Date: Wed, 01 Oct 2008 10:01:39 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
        Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>,
        Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: [RFC patch 1/3] signals: split do_tkill
+Subject: [RFC patch 2/3] signals: implement sys_rt_tgsigqueueinfo
 References: <20081001095204.343984413@linutronix.de>
-Content-Disposition: inline; filename=signals-split-do-tkill.patch
+Content-Disposition: inline; filename=signals-implement-rt-tgsigqueueinfo.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Split out the code from do_tkill to make it reusable by the follow up
-patch which implements sys_rt_tgsigqueueinfo
+sys_kill has the per thread counterpart sys_tgkill. sigqueueinfo is
+missing a thread directed counterpart. Such an interface is important
+for migrating applications from other OSes which have the per thread
+delivery implemented.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- kernel/signal.c |   31 ++++++++++++++++++++-----------
- 1 file changed, 20 insertions(+), 11 deletions(-)
+ include/linux/compat.h |    2 ++
+ include/linux/signal.h |    2 ++
+ kernel/compat.c        |   11 +++++++++++
+ kernel/signal.c        |   26 ++++++++++++++++++++++++++
+ 4 files changed, 41 insertions(+)
 
+Index: linux-2.6-tip/include/linux/compat.h
+===================================================================
+--- linux-2.6-tip.orig/include/linux/compat.h
++++ linux-2.6-tip/include/linux/compat.h
+@@ -209,6 +209,8 @@ int copy_siginfo_from_user32(siginfo_t *
+ int copy_siginfo_to_user32(struct compat_siginfo __user *to, siginfo_t *from);
+ int get_compat_sigevent(struct sigevent *event,
+ 		const struct compat_sigevent __user *u_event);
++long compat_sys_rt_tgsigqueueinfo(compat_pid_t tgid, compat_pid_t pid, int sig,
++				  struct compat_siginfo __user *uinfo);
+ 
+ static inline int compat_timeval_compare(struct compat_timeval *lhs,
+ 					struct compat_timeval *rhs)
+Index: linux-2.6-tip/include/linux/signal.h
+===================================================================
+--- linux-2.6-tip.orig/include/linux/signal.h
++++ linux-2.6-tip/include/linux/signal.h
+@@ -235,6 +235,8 @@ static inline int valid_signal(unsigned 
+ extern int next_signal(struct sigpending *pending, sigset_t *mask);
+ extern int group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p);
+ extern int __group_send_sig_info(int, struct siginfo *, struct task_struct *);
++extern long do_rt_tgsigqueueinfo(pid_t tgid, pid_t pid, int sig,
++				 siginfo_t *info);
+ extern long do_sigpending(void __user *, unsigned long);
+ extern int sigprocmask(int, sigset_t *, sigset_t *);
+ extern int show_unhandled_signals;
+Index: linux-2.6-tip/kernel/compat.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/compat.c
++++ linux-2.6-tip/kernel/compat.c
+@@ -836,6 +836,17 @@ compat_sys_rt_sigtimedwait (compat_sigse
+ 
+ }
+ 
++asmlinkage long
++compat_sys_rt_tgsigqueueinfo(compat_pid_t tgid, compat_pid_t pid, int sig,
++			     struct compat_siginfo __user *uinfo)
++{
++	siginfo_t info;
++
++	if (copy_siginfo_from_user32(&info, uinfo))
++		return -EFAULT;
++	return do_rt_tgsigqueueinfo(tgid, pid, sig, &info);
++}
++
+ #ifdef __ARCH_WANT_COMPAT_SYS_TIME
+ 
+ /* compat_time_t is a 32 bit "long" and needs to get converted. */
 Index: linux-2.6-tip/kernel/signal.c
 ===================================================================
 --- linux-2.6-tip.orig/kernel/signal.c
 +++ linux-2.6-tip/kernel/signal.c
-@@ -2212,24 +2212,20 @@ sys_kill(pid_t pid, int sig)
- 	return kill_something_info(sig, &info, pid);
+@@ -2307,6 +2307,32 @@ sys_rt_sigqueueinfo(pid_t pid, int sig, 
+ 	return kill_proc_info(sig, &info, pid);
  }
  
--static int do_tkill(pid_t tgid, pid_t pid, int sig)
-+static int
-+do_send_specific(pid_t tgid, pid_t pid, int sig, struct siginfo *info)
- {
--	int error;
--	struct siginfo info;
- 	struct task_struct *p;
- 	unsigned long flags;
-+	int error = -ESRCH;
- 
--	error = -ESRCH;
--	info.si_signo = sig;
--	info.si_errno = 0;
--	info.si_code = SI_TKILL;
--	info.si_pid = task_tgid_vnr(current);
--	info.si_uid = current->uid;
-+	info->si_pid = task_tgid_vnr(current);
-+	info->si_uid = current->uid;
- 
- 	rcu_read_lock();
- 	p = find_task_by_vpid(pid);
- 	if (p && (tgid <= 0 || task_tgid_vnr(p) == tgid)) {
--		error = check_kill_permission(sig, &info, p);
-+		error = check_kill_permission(sig, info, p);
- 		/*
- 		 * The null signal is a permissions and process existence
- 		 * probe.  No signal is actually delivered.
-@@ -2239,7 +2235,7 @@ static int do_tkill(pid_t tgid, pid_t pi
- 		 * signal is private anyway.
- 		 */
- 		if (!error && sig && lock_task_sighand(p, &flags)) {
--			error = specific_send_sig_info(sig, &info, p);
-+			error = specific_send_sig_info(sig, info, p);
- 			unlock_task_sighand(p, &flags);
- 		}
- 	}
-@@ -2248,6 +2244,19 @@ static int do_tkill(pid_t tgid, pid_t pi
- 	return error;
- }
- 
-+static int do_tkill(pid_t tgid, pid_t pid, int sig)
++long do_rt_tgsigqueueinfo(pid_t tgid, pid_t pid, int sig, siginfo_t *info)
 +{
-+	struct siginfo info;
++	/* This is only valid for single tasks */
++	if (pid <= 0 || tgid <= 0)
++		return -EINVAL;
 +
-+	info.si_signo = sig;
-+	info.si_errno = 0;
-+	info.si_code = SI_TKILL;
-+	info.si_pid = task_tgid_vnr(current);
-+	info.si_uid = current->uid;
++	/* Not even root can pretend to send signals from the kernel.
++	   Nor can they impersonate a kill(), which adds source info.  */
++	if (info->si_code >= 0)
++		return -EPERM;
++	info->si_signo = sig;
 +
-+	return do_send_specific(tgid, pid, sig, &info);
++	return do_send_specific(tgid, pid, sig, info);
 +}
 +
- /**
-  *  sys_tgkill - send signal to one specific thread
-  *  @tgid: the thread group ID of the thread
++asmlinkage long
++sys_rt_tgsigqueueinfo(pid_t tgid, pid_t pid, int sig, siginfo_t __user *uinfo)
++{
++	siginfo_t info;
++
++	if (copy_from_user(&info, uinfo, sizeof(siginfo_t)))
++		return -EFAULT;
++
++	return do_rt_tgsigqueueinfo(tgid, pid, sig, &info);
++}
++
+ int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
+ {
+ 	struct task_struct *t = current;
 
 
