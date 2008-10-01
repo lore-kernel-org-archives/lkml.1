@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbYJAFGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbYJAFZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752558AbYJAFGO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 01:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYJAFF6
+	id S1752476AbYJAFZS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 01:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYJAFZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 01:05:58 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:36431 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbYJAFF5 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 01:05:57 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       haradats@nttdata.co.jp,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [TOMOYO #9 (2.6.27-rc7-mm1) 1/6] LSM adapter functions.
-In-Reply-To: Your message of "Tue, 30 Sep 2008 19:33:32 PDT."
-             <48E2E17C.3040108@schaufler-ca.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20080924090317.359685535@nttdata.co.jp> <20080924090338.407746083@nttdata.co.jp> <20080925165954.GA25587@us.ibm.com> <48DC7553.8040708@nttdata.co.jp> <20080926130409.GA14055@us.ibm.com> <48E053DB.3010201@nttdata.co.jp> <20080930154553.GA29249@us.ibm.com>
-            <48E2E17C.3040108@schaufler-ca.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1222837526_2952P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 01 Oct 2008 01:05:26 -0400
-Message-ID: <62704.1222837526@turing-police.cc.vt.edu>
+	Wed, 1 Oct 2008 01:25:05 -0400
+Received: from colo.lackof.org ([198.49.126.79]:47057 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751326AbYJAFZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 01:25:03 -0400
+Date: Tue, 30 Sep 2008 23:24:50 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Grant Grundler <grundler@parisc-linux.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: introduce users of ioremap_pcibar()
+Message-ID: <20081001052450.GB7348@colo.lackof.org>
+References: <20080926163641.288bf868@infradead.org> <20080926163718.32f0867e@infradead.org> <20080929072643.GA28871@colo.lackof.org> <20080929064220.374c68a4@infradead.org> <20080929171049.GA14409@colo.lackof.org> <20080929102325.0ca5c0c9@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080929102325.0ca5c0c9@infradead.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1222837526_2952P
-Content-Type: text/plain; charset=us-ascii
+On Mon, Sep 29, 2008 at 10:23:25AM -0700, Arjan van de Ven wrote:
+> On Mon, 29 Sep 2008 11:10:49 -0600
+> Grant Grundler <grundler@parisc-linux.org> wrote:
+> 
+> > And I have to agree with willy/alan, pci_iomap() is already doing
+> > this.
+> 
+> pci_iomap() does "stuff" but it assumes you're using the iomap APIs
+> across the driver. MANY don't.
 
-On Tue, 30 Sep 2008 19:33:32 PDT, Casey Schaufler said:
-> I have always believed that MAC should come first, then DAC, because
-> MAC may care if you can see the mode bits. The current DAC before MAC
-> is an artifact of the desire for the LSM to behave cleanly as a
-> strictly additional mechanism. From an ideal security perspective
-> MAC should be first, but the pragmatic DAC first isn't going to cause
-> too much grief. If Tomoyo wants to do what I think is the right thing,
-> well, it's OK with me.
+pci_iomap() returns a "void __iomem *".
+readl/writel take "void __iomem *" as an argument.
+See build_mmio_read() in include/asm-x86/io.h
 
-I'm OK with the MAC going first as well - but unless/until we convert the
-rest of the kernel to do MAC-before-DAC, somebody better leave a comment:
+I think the assumption is the other way around: use of ioread/iowrite
+assumes use of io_remap(). pci_iomap is the PCI wrapper around io_remap().
+You just want a simpler wrapper (and I agree, it really could without
+the extra arg).
 
-/* Yes, this one spot *is* doing MAC-first intentionally */
+But in any case, we can document pci_iomap() to be whatever you think
+we should be exporting.  pci_iomap() is not currently documented in
+Documentation/. Or at least grep isn't seeing it.
 
-or similar, just so we don't keep getting patches to "fix" it to DAC-first...
 
-(And yes, newbie janitors *will* submit patches like that - how many times
-have we had the 'ndiswrapper-taint-flag' flame war now?)
+> And pci_iomap() takes more parameters than most driver writers want or
+> need. Most of the time it's "I want the whole bar"; even if my patch
+> wraps around that, making the API simpler is still worth it imo
 
---==_Exmh_1222837526_2952P
-Content-Type: application/pgp-signature
+You are right about that.
+Would calling the API "pci_iomap_bar()" to keep the naming consistent help
+make it more acceptable?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+(And adding documentation for both would be good too...I can do
+that if the new API gets accepted.)
 
-iD8DBQFI4wUWcC3lWbTT17ARAhyEAKDSg42eOU/CWvWjQuiXhEslSZxJ0ACbB8DW
-VjW3MTDjWfd3gyc4V0DXm5o=
-=SCbM
------END PGP SIGNATURE-----
-
---==_Exmh_1222837526_2952P--
+hth,
+grant
