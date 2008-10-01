@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbYJAGk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbYJAGlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752781AbYJAGk7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 02:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYJAGkv
+	id S1753322AbYJAGlb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 02:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYJAGlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 02:40:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58517 "EHLO mx1.redhat.com"
+	Wed, 1 Oct 2008 02:41:22 -0400
+Received: from mail.issp.bas.bg ([195.96.236.10]:53932 "EHLO mail.issp.bas.bg"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750898AbYJAGkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 02:40:51 -0400
+	id S1751126AbYJAGlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 02:41:22 -0400
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pci: introduce users of ioremap_pcibar()
+Date: Wed, 1 Oct 2008 09:39:04 +0300
+User-Agent: KMail/1.9.9
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+       Arjan van de Ven <arjan@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-X-Fcc: ~/Mail/linus
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Ulrich Drepper <drepper@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: Re: [RFC patch 0/3] signals: add rt_tgsigqueueinfo syscall
-In-Reply-To: Thomas Gleixner's message of  Tuesday, 30 September 2008 19:48:52 -0000 <20080930194445.978351700@linutronix.de>
-References: <20080930194445.978351700@linutronix.de>
-X-Zippy-Says: I feel partially hydrogenated!
-Message-Id: <20081001063945.0B44D154215@magilla.localdomain>
-Date: Tue, 30 Sep 2008 23:39:45 -0700 (PDT)
+Content-Disposition: inline
+Message-Id: <200810010939.04244.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The core of this looks fine to me.  Presumably this would be expressed in
-userland as pthread_sigqueue.
+Hi,
 
-You are missing compat_sys_rt_tgsigqueueinfo for e.g. the
-arch/x86/ia32/ia32entry.S table.
+Sorry to interfere :-)
 
-The clean way to do that would be a do_rt_tgsigqueueinfo taking
-the siginfo_t * (not __user).  That is, just split out the copy_from_user,
-so compat_sys_rt_tgsigqueueinfo does copy_siginfo_from_user32 instead.
+> I'm fine with pci_iomap_bar()... it meets my goals
+> Would be nice if I'd be allowed to make it only work on MEM bars not IO
+> bars (so that drivers don't accidentally end up calling this on an IO
+> bar and then using readl() etc)
 
+If have understood the APIs correctly, pci_iomap() is supposed to be used
+in conjunction with io{read,write}{8,16,32}(), not with readl() etc.
 
-Thanks,
-Roland
+Regards.
+
+Marin Mitov
 
