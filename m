@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYJAMbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbYJAMbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbYJAMbb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 08:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYJAMbI
+	id S1753896AbYJAMbr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 08:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbYJAMbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 08:31:08 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:41938 "EHLO
+	Wed, 1 Oct 2008 08:31:09 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:41954 "EHLO
 	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752516AbYJAMbG (ORCPT
+	with ESMTP id S1752550AbYJAMbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 1 Oct 2008 08:31:06 -0400
 From: Andy Whitcroft <apw@shadowen.org>
@@ -20,9 +20,9 @@ Cc: linux-kernel@vger.kernel.org,
        Andy Whitcroft <apw@shadowen.org>,
        Nick Piggin <nickpiggin@yahoo.com.au>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/4] pull out zone cpuset and watermark checks for reuse
-Date: Wed,  1 Oct 2008 13:30:59 +0100
-Message-Id: <1222864261-22570-3-git-send-email-apw@shadowen.org>
+Subject: [PATCH 1/4] pull out the page pre-release and sanity check logic for reuse
+Date: Wed,  1 Oct 2008 13:30:58 +0100
+Message-Id: <1222864261-22570-2-git-send-email-apw@shadowen.org>
 X-Mailer: git-send-email 1.6.0.1.451.gc8d31
 In-Reply-To: <1222864261-22570-1-git-send-email-apw@shadowen.org>
 References: <1222864261-22570-1-git-send-email-apw@shadowen.org>
@@ -30,99 +30,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When allocating we need to confirm that the zone we are about to allocate
-from is acceptable to the CPUSET we are in, and that it does not violate
-the zone watermarks.  Pull these checks out so we can reuse them in a
-later patch.
+When we are about to release a page we perform a number of actions
+on that page.  We clear down any anonymous mappings, confirm that
+the page is safe to release, check for freeing locks, before mapping
+the page should that be required.  Pull this processing out into a
+helper function for reuse in a later patch.
+
+Note that we do not convert the similar cleardown in free_hot_cold_page()
+as the optimiser is unable to squash the loops during the inline.
 
 Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Reviewed-by: Rik van Riel <riel@redhat.com>
 ---
- mm/page_alloc.c |   62 ++++++++++++++++++++++++++++++++++++++----------------
- 1 files changed, 43 insertions(+), 19 deletions(-)
+ mm/page_alloc.c |   40 +++++++++++++++++++++++++++-------------
+ 1 files changed, 27 insertions(+), 13 deletions(-)
 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 55d8d9b..921c435 100644
+index f52fcf1..55d8d9b 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -1271,6 +1271,44 @@ int zone_watermark_ok(struct zone *z, int order, unsigned long mark,
- 	return 1;
+@@ -489,6 +489,32 @@ static inline int free_pages_check(struct page *page)
  }
  
-+/*
-+ * Return 1 if this zone is an acceptable source given the cpuset
-+ * constraints.
-+ */
-+static inline int zone_cpuset_permits(struct zone *zone,
-+					int alloc_flags, gfp_t gfp_mask)
-+{
-+	if ((alloc_flags & ALLOC_CPUSET) &&
-+	    !cpuset_zone_allowed_softwall(zone, gfp_mask))
-+		return 0;
-+	return 1;
-+}
-+
-+/*
-+ * Return 1 if this zone is within the watermarks specified by the
-+ * allocation flags.
-+ */
-+static inline int zone_watermark_permits(struct zone *zone, int order,
-+			int classzone_idx, int alloc_flags, gfp_t gfp_mask)
-+{
-+	if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
-+		unsigned long mark;
-+		if (alloc_flags & ALLOC_WMARK_MIN)
-+			mark = zone->pages_min;
-+		else if (alloc_flags & ALLOC_WMARK_LOW)
-+			mark = zone->pages_low;
-+		else
-+			mark = zone->pages_high;
-+		if (!zone_watermark_ok(zone, order, mark,
-+			    classzone_idx, alloc_flags)) {
-+			if (!zone_reclaim_mode ||
-+					!zone_reclaim(zone, gfp_mask, order))
-+				return 0;
-+		}
-+	}
-+	return 1;
-+}
-+
- #ifdef CONFIG_NUMA
  /*
-  * zlc_setup - Setup for "zonelist cache".  Uses cached zone data to
-@@ -1424,25 +1462,11 @@ zonelist_scan:
- 		if (NUMA_BUILD && zlc_active &&
- 			!zlc_zone_worth_trying(zonelist, z, allowednodes))
- 				continue;
--		if ((alloc_flags & ALLOC_CPUSET) &&
--			!cpuset_zone_allowed_softwall(zone, gfp_mask))
--				goto try_next_zone;
--
--		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
--			unsigned long mark;
--			if (alloc_flags & ALLOC_WMARK_MIN)
--				mark = zone->pages_min;
--			else if (alloc_flags & ALLOC_WMARK_LOW)
--				mark = zone->pages_low;
--			else
--				mark = zone->pages_high;
--			if (!zone_watermark_ok(zone, order, mark,
--				    classzone_idx, alloc_flags)) {
--				if (!zone_reclaim_mode ||
--				    !zone_reclaim(zone, gfp_mask, order))
--					goto this_zone_full;
--			}
--		}
-+		if (!zone_cpuset_permits(zone, alloc_flags, gfp_mask))
-+			goto try_next_zone;
-+		if (!zone_watermark_permits(zone, order, classzone_idx,
-+							alloc_flags, gfp_mask))
-+			goto this_zone_full;
++ * Prepare this page for release to the buddy.  Sanity check the page.
++ * Returns 1 if the page is safe to free.
++ */
++static inline int free_page_prepare(struct page *page, int order)
++{
++	int i;
++	int reserved = 0;
++
++	for (i = 0 ; i < (1 << order) ; ++i)
++		reserved += free_pages_check(page + i);
++	if (reserved)
++		return 0;
++
++	if (!PageHighMem(page)) {
++		debug_check_no_locks_freed(page_address(page),
++							PAGE_SIZE << order);
++		debug_check_no_obj_freed(page_address(page),
++					   PAGE_SIZE << order);
++	}
++	arch_free_page(page, order);
++	kernel_map_pages(page, 1 << order, 0);
++
++	return 1;
++}
++
++/*
+  * Frees a list of pages. 
+  * Assumes all pages on list are in same zone, and of same order.
+  * count is the number of pages to free.
+@@ -529,22 +555,10 @@ static void free_one_page(struct zone *zone, struct page *page, int order)
+ static void __free_pages_ok(struct page *page, unsigned int order)
+ {
+ 	unsigned long flags;
+-	int i;
+-	int reserved = 0;
  
- 		page = buffered_rmqueue(preferred_zone, zone, order, gfp_mask);
- 		if (page)
+-	for (i = 0 ; i < (1 << order) ; ++i)
+-		reserved += free_pages_check(page + i);
+-	if (reserved)
++	if (!free_page_prepare(page, order))
+ 		return;
+ 
+-	if (!PageHighMem(page)) {
+-		debug_check_no_locks_freed(page_address(page),PAGE_SIZE<<order);
+-		debug_check_no_obj_freed(page_address(page),
+-					   PAGE_SIZE << order);
+-	}
+-	arch_free_page(page, order);
+-	kernel_map_pages(page, 1 << order, 0);
+-
+ 	local_irq_save(flags);
+ 	__count_vm_events(PGFREE, 1 << order);
+ 	free_one_page(page_zone(page), page, order);
 -- 
 1.6.0.1.451.gc8d31
 
