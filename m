@@ -1,68 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbYJAWvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752906AbYJAXDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150AbYJAWvS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 18:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYJAWvD
+	id S1752906AbYJAXDa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 19:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYJAXDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 18:51:03 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58536 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752964AbYJAWvA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 18:51:00 -0400
-Message-ID: <48E3FDD5.7040106@zytor.com>
-Date: Wed, 01 Oct 2008 15:46:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Daniel Hecht <dhecht@vmware.com>, Zach Amsden <zach@vmware.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Subject: Re: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
-References: <1222881242.9381.17.camel@alok-dev1>	 <48E3B19D.6060905@zytor.com> <1222882431.9381.23.camel@alok-dev1>	 <48E3BC21.4080803@goop.org> <1222895153.9381.69.camel@alok-dev1>
-In-Reply-To: <1222895153.9381.69.camel@alok-dev1>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Oct 2008 19:03:21 -0400
+Received: from www.tglx.de ([62.245.132.106]:56525 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751126AbYJAXDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 19:03:20 -0400
+Message-Id: <20081001223301.900862899@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Wed, 01 Oct 2008 23:02:18 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>
+Subject: [RFC patch 2/5] genirq: add a quick check handler
+References: <20081001223213.078984344@linutronix.de>
+Content-Disposition: inline; filename=genirq-add-quickcheckhandler.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
->> No, that's always a terrible idea.  Sure, its necessary to deal with
->> some backward-compatibility issues, but we should even consider a new
->> interface which assumes this kind of thing.  We want properly enumerable
->> interfaces.
-> 
-> The reason we still have to do this is because, Microsoft has already
-> defined a CPUID format which is way different than what you or I are
-> proposing ( with the current case of 256 leafs being available). And I
-> doubt they would change the way they deal with it on their OS. 
-> Any proposal that we go with, we will have to export different CPUID
-> interface from the hypervisor for the 2 OS in question. 
-> 
-> So i think this is something that we anyways will have to do and not
-> worth binging about in the discussion.
+Preparatory patch for threaded interrupt handlers.
 
-No, that's a good hint that what "you and I" are proposing is utterly 
-broken and exactly underscores what I have been stressing about 
-noncompliant hypervisors.
+Adds a quick check handler which is called before the real handler.
+The quick check handler can decide whether the interrupt was originated
+from the device or not. It can also declare the interrupt as handled
+and subsequently avoid that the real handler is called.
 
-All I have seen out of Microsoft only covers CPUID levels 0x40000000 as 
-an vendor identification leaf and 0x40000001 as a "hypervisor 
-identification leaf", but you might have access to other information.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/interrupt.h |   14 +++++++++++++-
+ include/linux/irqreturn.h |    2 ++
+ kernel/irq/handle.c       |   18 +++++++++++++++---
+ kernel/irq/manage.c       |   19 +++++++++++++------
+ 4 files changed, 43 insertions(+), 10 deletions(-)
 
-This further underscores my belief that using 0x400000xx for anything 
-"standards-based" at all is utterly futile, and that this space should 
-be treated as vendor identification and the rest as vendor-specific. 
-Any hope of creating a standard that's actually usable needs to be 
-outside this space, e.g. in the 0x40SSSSxx space I proposed earlier.
+Index: linux-2.6-tip/include/linux/interrupt.h
+===================================================================
+--- linux-2.6-tip.orig/include/linux/interrupt.h
++++ linux-2.6-tip/include/linux/interrupt.h
+@@ -58,6 +58,7 @@
+ typedef irqreturn_t (*irq_handler_t)(int, void *);
+ 
+ struct irqaction {
++	irq_handler_t quick_check_handler;
+ 	irq_handler_t handler;
+ 	unsigned long flags;
+ 	cpumask_t mask;
+@@ -69,8 +70,19 @@ struct irqaction {
+ };
+ 
+ extern irqreturn_t no_action(int cpl, void *dev_id);
+-extern int __must_check request_irq(unsigned int, irq_handler_t handler,
++
++extern int __must_check
++request_irq_quickcheck(unsigned int, irq_handler_t handler,
++		       irq_handler_t quick_check_handler,
+ 		       unsigned long, const char *, void *);
++
++static inline int __must_check
++request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
++	    const char *name, void *dev)
++{
++	return request_irq_quickcheck(irq, handler, NULL, flags, name, dev);
++}
++
+ extern void free_irq(unsigned int, void *);
+ 
+ struct device;
+Index: linux-2.6-tip/include/linux/irqreturn.h
+===================================================================
+--- linux-2.6-tip.orig/include/linux/irqreturn.h
++++ linux-2.6-tip/include/linux/irqreturn.h
+@@ -5,10 +5,12 @@
+  * enum irqreturn
+  * @IRQ_NONE		interrupt was not from this device
+  * @IRQ_HANDLED		interrupt was handled by this device
++ * @IRQ_NEEDS_HANDLING	quick check handler requests to run real handler
+  */
+ enum irqreturn {
+ 	IRQ_NONE,
+ 	IRQ_HANDLED,
++	IRQ_NEEDS_HANDLING,
+ };
+ 
+ #define irqreturn_t	enum irqreturn
+Index: linux-2.6-tip/kernel/irq/handle.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/irq/handle.c
++++ linux-2.6-tip/kernel/irq/handle.c
+@@ -137,9 +137,21 @@ irqreturn_t handle_IRQ_event(unsigned in
+ 		local_irq_enable_in_hardirq();
+ 
+ 	do {
+-		ret = action->handler(irq, action->dev_id);
+-		if (ret == IRQ_HANDLED)
+-			status |= action->flags;
++		if (action->quick_check_handler)
++			ret = action->quick_check_handler(irq, action->dev_id);
++		else
++			ret = IRQ_NEEDS_HANDLING;
++
++		switch (ret) {
++		default:
++			break;
++
++		case IRQ_NEEDS_HANDLING:
++			ret = action->handler(irq, action->dev_id);
++			if (ret == IRQ_HANDLED)
++				status |= action->flags;
++			break;
++		}
+ 		retval |= ret;
+ 		action = action->next;
+ 	} while (action);
+Index: linux-2.6-tip/kernel/irq/manage.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/irq/manage.c
++++ linux-2.6-tip/kernel/irq/manage.c
+@@ -563,9 +563,14 @@ void free_irq(unsigned int irq, void *de
+ EXPORT_SYMBOL(free_irq);
+ 
+ /**
+- *	request_irq - allocate an interrupt line
++ *	request_irq_quickcheck - allocate an interrupt line
+  *	@irq: Interrupt line to allocate
+- *	@handler: Function to be called when the IRQ occurs
++ *	@handler: Function to be called when the IRQ occurs.
++ *		  Primary handler for threaded interrupts
++ *      @quick_check_handler: Function to be called when the interrupt
++ *			   before the real handler is called to check
++ *                         whether the interrupt originated from the device
++ *                         can be NULL
+  *	@irqflags: Interrupt type flags
+  *	@devname: An ascii name for the claiming device
+  *	@dev_id: A cookie passed back to the handler function
+@@ -589,10 +594,11 @@ EXPORT_SYMBOL(free_irq);
+  *	IRQF_SHARED		Interrupt is shared
+  *	IRQF_DISABLED	Disable local interrupts while processing
+  *	IRQF_SAMPLE_RANDOM	The interrupt can be used for entropy
+- *
+  */
+-int request_irq(unsigned int irq, irq_handler_t handler,
+-		unsigned long irqflags, const char *devname, void *dev_id)
++int request_irq_quickcheck(unsigned int irq, irq_handler_t handler,
++			   irq_handler_t quick_check_handler,
++			   unsigned long irqflags, const char *devname,
++			   void *dev_id)
+ {
+ 	struct irqaction *action;
+ 	int retval;
+@@ -622,6 +628,7 @@ int request_irq(unsigned int irq, irq_ha
+ 	if (!action)
+ 		return -ENOMEM;
+ 
++	action->quick_check_handler = quick_check_handler;
+ 	action->handler = handler;
+ 	action->flags = irqflags;
+ 	cpus_clear(action->mask);
+@@ -651,4 +658,4 @@ int request_irq(unsigned int irq, irq_ha
+ 
+ 	return retval;
+ }
+-EXPORT_SYMBOL(request_irq);
++EXPORT_SYMBOL(request_irq_quickcheck);
 
-	-hpa
+
