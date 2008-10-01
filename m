@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYJAApf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbYJAA7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbYJAApf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 20:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbYJAAp0
+	id S1753820AbYJAA7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 20:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbYJAA7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 20:45:26 -0400
-Received: from ozlabs.org ([203.10.76.45]:43523 "EHLO ozlabs.org"
+	Tue, 30 Sep 2008 20:59:12 -0400
+Received: from gw.goop.org ([64.81.55.164]:38679 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753236AbYJAApZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 20:45:25 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: [RFC 1/1] cpumask: New cpumask API - take 2 - use unsigned longs
-Date: Wed, 1 Oct 2008 10:45:22 +1000
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       David Miller <davem@davemloft.net>, Alan.Brunelle@hp.com,
-       tglx@linutronix.de, rjw@sisk.pl,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kernel-testers@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, arjan@linux.intel.com,
-       Jack Steiner <steiner@sgi.com>
-References: <alpine.LFD.1.10.0808251344250.3363@nehalem.linux-foundation.org> <48E269B6.1080904@sgi.com> <48E2A691.7060407@sgi.com>
-In-Reply-To: <48E2A691.7060407@sgi.com>
+	id S1752812AbYJAA7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Sep 2008 20:59:12 -0400
+Message-ID: <48E2CB5A.1050809@goop.org>
+Date: Tue, 30 Sep 2008 17:59:06 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Pavel Machek <pavel@suse.cz>
+CC: carbonated beverage <ramune@net-ronin.org>, linux-kernel@vger.kernel.org
+Subject: Re: Thinkpad brightness keys kill X on 2.6.26.5
+References: <20080925060244.GA18945@net-ronin.org> <20080930231952.GB15903@ucw.cz>
+In-Reply-To: <20080930231952.GB15903@ucw.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810011045.22859.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 October 2008 08:22:09 Mike Travis wrote:
-> Here's an alternate proposal for the new cpumask API.  I have not yet begun
-...
-> +/* cpumask_t defaults to pointer to constant bit map */
-> +typedef const unsigned long *cpumask_t;
+Pavel Machek wrote:
+> Hi!
+>
+>   
+>> I just upgraded from 2.6.25.17 to 2.6.26.5 on my Thinkpad Z61t, and found
+>> the brightness keys will cause the X server to die.  When using the
+>> brightness up/down keys, the screen will go blank -- Control+Alt+F# will
+>> still switch to a different virtual console, but switching back will not
+>> restore the video state.
+>>
+>> After killing the window manager, I was able to bring up X again without
+>> a problem -- but using the brightness keys still causes it to go blank
+>> again within X, while the brightness does get changed correctly on the
+>> console.
+>>
+>> There were no kernel messages, but this appeared in the Xorg log:
+>>     
+>
+> Yes, I had similar problems... for me it blanked screen on closing
+> lid. Problem disappeared after upgrading X...
+>
+>   
+>> .config attached -- is this a known issue?  In the meantime, I'm starting
+>> a bisection to figure out where the problem crops up.
+>>     
+>
+> For me CONFIG_ACPI_VIDEO never really worked...
+>   
 
-Hiding a const here is not a good idea either, I think :(
+On my shiny new X200 running Fedora Rawhide, I'm finding that the 
+brightness control keys work OK, but the backlight remains stuck off 
+after a resume.  The machine is working fine but the backlight is just 
+off; I can see the display under a bright light.  Switching consoles and 
+poking about in /sys/class/backlight/acpi_video?/ didn't help.
 
-Rusty.
+    J
