@@ -1,196 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbYJBADT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbYJBADw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753035AbYJBADT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 20:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYJBADK
+	id S1753448AbYJBADw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 20:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYJBADn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 20:03:10 -0400
-Received: from kroah.org ([198.145.64.141]:42144 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751284AbYJBADI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 20:03:08 -0400
-Date: Wed, 1 Oct 2008 16:51:11 -0700
-From: Greg KH <greg@kroah.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frank van Maarseveen <frankvm@frankvm.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [stable] [PATCH] rtc: fix deadlock: fixes regression since
-	2.6.24
-Message-ID: <20081001235111.GF31609@kroah.com>
-References: <200808230948.m7N9mUc1016360@harpo.it.uu.se> <20080823160151.GB27974@elte.hu> <20080829114829.GA9510@janus> <20080906183211.GD21872@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080906183211.GD21872@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 1 Oct 2008 20:03:43 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56757 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751939AbYJBADl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 20:03:41 -0400
+Subject: patch x86-fix-smp-alternatives-use-mutex-instead-of-spinlock-text_poke-is-sleepable.patch added to 2.6.26-stable tree
+To: pq@iki.fi, 20080914134233.GE554@elte.hu, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       mingo@elte.hu, raziebe@gmail.com, tglx@linutronix.de,
+       vegard.nossum@gmail.com, x86@kernel.org
+Cc: <stable@kernel.org>, <stable-commits@vger.kernel.org>
+From: <gregkh@suse.de>
+Date: Wed, 01 Oct 2008 16:59:39 -0700
+Message-Id: <20081002000339.6AA0C14543E5@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 06, 2008 at 08:32:11PM +0200, Ingo Molnar wrote:
-> 
-> * Frank van Maarseveen <frankvm@frankvm.com> wrote:
-> 
-> > On Sat, Aug 23, 2008 at 06:01:51PM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Mikael Pettersson <mikpe@it.uu.se> wrote:
-> > > 
-> > > > Since 2.6.27-rc1 my Core2Duo has been getting sporadic oopses
-> > > > from hpet_rtc_interrupt, usually during shutdown or reboot,
-> > > > but occasionally also early in init. Today I finally managed
-> > > > to capture one via a serial cable:
-> > > > 
-> > > > INIT: version 2.86 booting
-> > > > 		Welcome to Fedora Core
-> > > > 		Press 'I' to enter interactive startup.
-> > > > BUG: NMI Watchdog detected LOCKUP on CPU0, ip c0117092, registers:
-> > > > Modules linked in: ehci_hcd uhci_hcd usbcore
-> > > > 
-> > > > Pid: 311, comm: nash-hotplug Not tainted (2.6.27-rc4 #1)
-> > > > EIP: 0060:[<c0117092>] EFLAGS: 00000097 CPU: 0
-> > > > EIP is at hpet_rtc_interrupt+0x2d2/0x310
-> > > > EAX: 00000000 EBX: 00000002 ECX: 00000046 EDX: 00000002
-> > > > ESI: 000000a6 EDI: ffff8e25 EBP: 00000008 ESP: f7bd7f28
-> > > >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > > > Process nash-hotplug (pid: 311, ti=f7bd6000 task=f7b70460 task.ti=f7bd6000)
-> > > > Stack: f7bd7f6c c0139cc0 00000000 c035ba04 00000000 00000000 00000000 00000000 
-> > > >        00000000 00000000 00000000 00000000 00000000 f7b845a0 00000000 00000000 
-> > > >        00000008 c01478a8 c035bf80 f7b845a0 c035bfb0 00000008 c0148f71 00000400 
-> > > > Call Trace:
-> > > >  [<c0139cc0>] hrtimer_run_pending+0x20/0x90
-> > > >  [<c01478a8>] handle_IRQ_event+0x28/0x50
-> > > >  [<c0148f71>] handle_edge_irq+0xa1/0x120
-> > > >  [<c010615b>] do_IRQ+0x3b/0x70
-> > > >  [<c0113225>] smp_apic_timer_interrupt+0x55/0x80
-> > > >  [<c0103c4f>] common_interrupt+0x23/0x28
-> > > >  [<c02c0000>] unix_release_sock+0xc0/0x220
-> > > >  =======================
-> > > > Code: 89 44 24 18 0f b6 c2 e8 5d 74 0c 00 8b 0d d8 9c 3b c0 89 44 24 1c 8b 44 24 0c 48 89 44 24 20 e9 84 fd ff ff 90 8d 74 26 00 f3 90 <a1> 80 ba 35 c0 29 f8 83 f8 01 76 f2 e9 e1 fe ff ff 90 8d 74 26 
-> > > > 
-> > > > This points to the following loop in hpet_rtc_interrupt:
-> > > > 
-> > > > 0xc0117090 <hpet_rtc_interrupt+720>:    pause  
-> > > > 0xc0117092 <hpet_rtc_interrupt+722>:    mov    0xc035ba80,%eax
-> > > > 0xc0117097 <hpet_rtc_interrupt+727>:    sub    %edi,%eax
-> > > > 0xc0117099 <hpet_rtc_interrupt+729>:    cmp    $0x1,%eax
-> > > > 0xc011709c <hpet_rtc_interrupt+732>:    jbe    0xc0117090 <hpet_rtc_interrupt+720>
-> > > > 
-> > > > Note: 0xc035ba80 == &jiffies
-> > > > 
-> > > > This loop originates from asm-generic/rtc.h:get_rtc_time()
-> > > > 
-> > > > 		while (jiffies - uip_watchdog < 2*HZ/100) {
-> > > > 			barrier();
-> > > > 			cpu_relax();
-> > > > 		}
-> > > > 
-> > > > Note: HZ == CONFIG_HZ == 100
-> > > > 
-> > > > The bug may not originate from the 2.6.27-rc series as I only recently 
-> > > > enabled HPET in this machine's kernels (not due to HPET problems, it 
-> > > > inherited its .config way back from an older machine w/o HPET).
-> > > 
-> > > argh, that loop in asm-generic/rtc.h:get_rtc_time looks extremely 
-> > > fragile, we'll lock up if it's ever called with hardirqs off!
-> > > 
-> > > Does the patch below do the trick?
-> > > 
-> > > 	Ingo
-> > > 
-> > > ----------------->
-> > > >From 2273cc870b52a7ed09eb225142a6db97299e4f39 Mon Sep 17 00:00:00 2001
-> > > From: Ingo Molnar <mingo@elte.hu>
-> > > Date: Sat, 23 Aug 2008 17:59:07 +0200
-> > > Subject: [PATCH] rtc: fix deadlock
-> > > 
-> > > if get_rtc_time() is _ever_ called with IRQs off, we deadlock badly
-> > > in it, waiting for jiffies to increment.
-> > > 
-> > > So make the code more robust by doing an explicit mdelay(20).
-> > > 
-> > > This solves a very hard to reproduce/debug hard lockup reported
-> > > by Mikael Pettersson.
-> > > 
-> > > Reported-by: Mikael Pettersson <mikpe@it.uu.se>
-> > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > ---
-> > >  include/asm-generic/rtc.h |   12 ++++--------
-> > >  1 files changed, 4 insertions(+), 8 deletions(-)
-> > > 
-> > > diff --git a/include/asm-generic/rtc.h b/include/asm-generic/rtc.h
-> > > index be4af00..71ef3f0 100644
-> > > --- a/include/asm-generic/rtc.h
-> > > +++ b/include/asm-generic/rtc.h
-> > > @@ -15,6 +15,7 @@
-> > >  #include <linux/mc146818rtc.h>
-> > >  #include <linux/rtc.h>
-> > >  #include <linux/bcd.h>
-> > > +#include <linux/delay.h>
-> > >  
-> > >  #define RTC_PIE 0x40		/* periodic interrupt enable */
-> > >  #define RTC_AIE 0x20		/* alarm interrupt enable */
-> > > @@ -43,7 +44,6 @@ static inline unsigned char rtc_is_updating(void)
-> > >  
-> > >  static inline unsigned int get_rtc_time(struct rtc_time *time)
-> > >  {
-> > > -	unsigned long uip_watchdog = jiffies;
-> > >  	unsigned char ctrl;
-> > >  	unsigned long flags;
-> > >  
-> > > @@ -53,19 +53,15 @@ static inline unsigned int get_rtc_time(struct rtc_time *time)
-> > >  
-> > >  	/*
-> > >  	 * read RTC once any update in progress is done. The update
-> > > -	 * can take just over 2ms. We wait 10 to 20ms. There is no need to
-> > > +	 * can take just over 2ms. We wait 20ms. There is no need to
-> > >  	 * to poll-wait (up to 1s - eeccch) for the falling edge of RTC_UIP.
-> > >  	 * If you need to know *exactly* when a second has started, enable
-> > >  	 * periodic update complete interrupts, (via ioctl) and then 
-> > >  	 * immediately read /dev/rtc which will block until you get the IRQ.
-> > >  	 * Once the read clears, read the RTC time (again via ioctl). Easy.
-> > >  	 */
-> > > -
-> > > -	if (rtc_is_updating() != 0)
-> > > -		while (jiffies - uip_watchdog < 2*HZ/100) {
-> > > -			barrier();
-> > > -			cpu_relax();
-> > > -		}
-> > > +	if (rtc_is_updating())
-> > > +		mdelay(20);
-> > >  
-> > >  	/*
-> > >  	 * Only the values that we read from the RTC are set. We leave
-> > 
-> > This patch fixes a regression since 2.6.24: 2.6.25 and 2.6.26 occasionally
-> > locked up hard here without a trace and even alt-sysrq did not work
-> > anymore. It's easy to reproduce with
-> > 
-> > 	while :; do hwclock; done
-> > 
-> > Others are experiencing this issue too:
-> > - http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=494036
-> > - http://kerneltrap.org/mailarchive/message-id/20080821163920.GA19140@gamma.logic.tuwien.ac.at/linux-kernel
-> > - people (me included) experienced booting problems because of
-> >   this (lockup after initscripts says "Setting the system clock").
-> > 
-> > maybe this is 2.6.25.x and 2.6.26.x material too?
-> 
-> agreed - stable Cc:-ed.
-> 
-> It's about this upstream commit:
-> 
-> | commit 38c052f8cff1bd323ccfa968136a9556652ee420
-> | Author: Ingo Molnar <mingo@elte.hu>
-> | Date:   Sat Aug 23 17:59:07 2008 +0200
-> |
-> |     rtc: fix deadlock
-> 
-> please backport it into -stable .26 and .25. Thanks,
 
-backported.
+This is a note to let you know that we have just queued up the patch titled
 
-thanks,
+    Subject: x86: fix SMP alternatives: use mutex instead of spinlock, text_poke is sleepable
 
-greg k-h
+to the 2.6.26-stable tree.  Its filename is
+
+    x86-fix-smp-alternatives-use-mutex-instead-of-spinlock-text_poke-is-sleepable.patch
+
+A git repo of this tree can be found at 
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+
+>From mingo@elte.hu  Wed Oct  1 16:51:38 2008
+From: Pekka Paalanen <pq@iki.fi>
+Date: Mon, 12 May 2008 21:21:01 +0200
+Subject: x86: fix SMP alternatives: use mutex instead of spinlock, text_poke is sleepable
+To: Raz <raziebe@gmail.com>, stable@kernel.org
+Cc: the arch/x86 maintainers <x86@kernel.org>, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, Vegard Nossum <vegard.nossum@gmail.com>, carlos@strangeworlds.co.uk, Pekka Paalanen <pq@iki.fi>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Message-ID: <20080914134233.GE554@elte.hu>
+Content-Disposition: inline
+
+From: Pekka Paalanen <pq@iki.fi>
+
+commit 2f1dafe50cc4e58a239fd81bd47f87f32042a1ee upstream
+
+text_poke is sleepable.
+The original fix by Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>.
+
+Signed-off-by: Pekka Paalanen <pq@iki.fi>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/x86/kernel/alternative.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -1,6 +1,6 @@
+ #include <linux/module.h>
+ #include <linux/sched.h>
+-#include <linux/spinlock.h>
++#include <linux/mutex.h>
+ #include <linux/list.h>
+ #include <linux/kprobes.h>
+ #include <linux/mm.h>
+@@ -279,7 +279,7 @@ struct smp_alt_module {
+ 	struct list_head next;
+ };
+ static LIST_HEAD(smp_alt_modules);
+-static DEFINE_SPINLOCK(smp_alt);
++static DEFINE_MUTEX(smp_alt);
+ static int smp_mode = 1;	/* protected by smp_alt */
+ 
+ void alternatives_smp_module_add(struct module *mod, char *name,
+@@ -312,12 +312,12 @@ void alternatives_smp_module_add(struct 
+ 		__func__, smp->locks, smp->locks_end,
+ 		smp->text, smp->text_end, smp->name);
+ 
+-	spin_lock(&smp_alt);
++	mutex_lock(&smp_alt);
+ 	list_add_tail(&smp->next, &smp_alt_modules);
+ 	if (boot_cpu_has(X86_FEATURE_UP))
+ 		alternatives_smp_unlock(smp->locks, smp->locks_end,
+ 					smp->text, smp->text_end);
+-	spin_unlock(&smp_alt);
++	mutex_unlock(&smp_alt);
+ }
+ 
+ void alternatives_smp_module_del(struct module *mod)
+@@ -327,17 +327,17 @@ void alternatives_smp_module_del(struct 
+ 	if (smp_alt_once || noreplace_smp)
+ 		return;
+ 
+-	spin_lock(&smp_alt);
++	mutex_lock(&smp_alt);
+ 	list_for_each_entry(item, &smp_alt_modules, next) {
+ 		if (mod != item->mod)
+ 			continue;
+ 		list_del(&item->next);
+-		spin_unlock(&smp_alt);
++		mutex_unlock(&smp_alt);
+ 		DPRINTK("%s: %s\n", __func__, item->name);
+ 		kfree(item);
+ 		return;
+ 	}
+-	spin_unlock(&smp_alt);
++	mutex_unlock(&smp_alt);
+ }
+ 
+ void alternatives_smp_switch(int smp)
+@@ -359,7 +359,7 @@ void alternatives_smp_switch(int smp)
+ 		return;
+ 	BUG_ON(!smp && (num_online_cpus() > 1));
+ 
+-	spin_lock(&smp_alt);
++	mutex_lock(&smp_alt);
+ 
+ 	/*
+ 	 * Avoid unnecessary switches because it forces JIT based VMs to
+@@ -383,7 +383,7 @@ void alternatives_smp_switch(int smp)
+ 						mod->text, mod->text_end);
+ 	}
+ 	smp_mode = smp;
+-	spin_unlock(&smp_alt);
++	mutex_unlock(&smp_alt);
+ }
+ 
+ #endif
+
+
+Patches currently in stable-queue which might be from pq@iki.fi are
+
+queue-2.6.26/x86-fix-smp-alternatives-use-mutex-instead-of-spinlock-text_poke-is-sleepable.patch
