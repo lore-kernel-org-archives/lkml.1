@@ -1,167 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYJAM0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbYJAMbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbYJAM0O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 08:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYJAM0E
+	id S1753556AbYJAMbS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 08:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYJAMbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 08:26:04 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:34639 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752307AbYJAM0D (ORCPT
+	Wed, 1 Oct 2008 08:31:07 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:41943 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087AbYJAMbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 08:26:03 -0400
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <ukleinek@strlen.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ben Dooks <ben-linux@fluff.org>,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@suse.cz>,
-       Randy Dunlap <rdunlap@xenotime.net>, Joe Perches <joe@perches.com>
-Subject: [PATCH] [RFC] Add a script that searched per-file maintainers for a patch.
-Date: Wed,  1 Oct 2008 14:25:54 +0200
-Message-Id: <1222863954-13701-1-git-send-email-ukleinek@strlen.de>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20080929175625.GA3676@ucw.cz>
-References: <20080929175625.GA3676@ucw.cz>
+	Wed, 1 Oct 2008 08:31:06 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 3/4] buddy: explicitly identify buddy field use in struct page
+Date: Wed,  1 Oct 2008 13:31:00 +0100
+Message-Id: <1222864261-22570-4-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.6.0.1.451.gc8d31
+In-Reply-To: <1222864261-22570-1-git-send-email-apw@shadowen.org>
+References: <1222864261-22570-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I assume currently there are no files that have the maintainers noted in
-a source file in a way that is understandable by the script, but for
-testing you can use scripts/genpatchcc.py itself.  It is meant to be
-used with git-send-email --cc-cmd=...
+Explicitly define the struct page fields which buddy uses when it owns
+pages.  Defines a new anonymous struct to allow additional fields to
+be defined in a later patch.
 
-Currently the format to specify a maintainer is
-
-	/*
-	 * TOPIC
-	 * P: M. Aintainer <ma@intai.ner>
-	 * L: some-list@vger.kernel.org
-	 */
-
-similar to the format of the MAINTAINERS file.  This has to be specified
-in the first comment of a file starting at the file's start.  #-like
-comments are supported, too.
-
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Reviewed-by: Rik van Riel <riel@redhat.com>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 ---
-To test it, apply the patch, and modify scripts/genpatchcc.py.  Then you
-can run:
+ include/linux/mm_types.h |    3 +++
+ mm/internal.h            |    2 +-
+ mm/page_alloc.c          |    4 ++--
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
-	git diff | scripts/genpatchcc.py
-
-I havn't tested it yet with git-send-email and there are several things
-to improve as noted in the comments of the script (and probably more).
-And of course some documentation is missing.
-
-Please consider it as a first draft and feel free to comment.
-
-Best regards
-Uwe
----
- scripts/genpatchcc.py |   95 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 95 insertions(+), 0 deletions(-)
- create mode 100755 scripts/genpatchcc.py
-
-diff --git a/scripts/genpatchcc.py b/scripts/genpatchcc.py
-new file mode 100755
-index 0000000..6a757ed
---- /dev/null
-+++ b/scripts/genpatchcc.py
-@@ -0,0 +1,95 @@
-+#! /usr/bin/env python
-+# vim: set fileencoding=utf-8
-+# (c) Uwe Kleine-König <ukleinek@strlen.de>
-+# GPLv2
-+#
-+# GENPATCHCC
-+# P: Uwe Kleine-König <ukleinek@strlen.de>
-+
-+# wishlist:
-+# - support for per-directory '.maintainers' file
-+#   when should it be used?  Assume a/b/c/d/file was changed.  The following
-+#   files could be used:
-+#    * a/b/c/d/.maintainers
-+#    * a/b/c/.maintainers
-+#    * a/b/.maintainers
-+#    * a/.maintainers
-+#    * .maintainers
-+#   maybe only use the first that exists?  only if the changed file doesn't
-+#   have an entry?
-+# - (?) option to specify the srcdir
-+# - (?) parse the patch if the maintainer entry is changed, use both, old and new version
-+# - (?) extract git sha1 sums and parse the objects
-+
-+import fileinput
-+import re
-+
-+def filename(name):
-+    if name[0] == '"':
-+        raise NotImplementedError, 'please teach me how to unquote a filename'
-+
-+    # assume -p1
-+    return name[name.index('/') + 1:]
-+
-+re_changedfile = re.compile(r'(?:---|\+\+\+)\s(?P<file>".*?[^\\]"|[][-^A-Za-z0-9_ !#$%&\'()*+,./:;<=>@?{}~]+)')
-+
-+changed_files = set()
-+
-+for line in fileinput.input():
-+    mo = re_changedfile.match(line)
-+    if mo:
-+        changed_files.add(filename(mo.group('file')))
-+
-+def extract_maintainers(file, compre_dict, dowhile=None):
-+    next = ('start', 'topic')
-+    anyfield = ('person', 'ml', 'otherfield')
-+    next_dict = dict(start=('topic',), topic=anyfield, person=anyfield, ml=anyfield, otherfield=anyfield)
-+
-+    for line in file:
-+        if dowhile is not None:
-+            mo = dowhile.match(line)
-+            if not mo:
-+                break
-+
-+        for possnext in next:
-+            mo = compre_dict[possnext].match(line)
-+            if mo:
-+                for v in mo.groupdict().itervalues():
-+                    print v
-+                next = next_dict[possnext]
-+                break
-+        else:
-+            mo = compre_dict['start'].match(line)
-+            if mo:
-+                next = next_dict['start']
-+            else:
-+                next = ('start',)
-+
-+re_dict = dict(start=r'$',
-+        topic=r'\S[^:].*',
-+        person=r'P:\s*(?P<person>.*)',
-+        ml=r'L:\s*(?P<ml>.*)',
-+        otherfield=r'(?![PL])[A-Z]:')
-+
-+re_comment = r'\s*(?:#|/?\*)'
-+
-+compre_dict = dict((key, re.compile(value)) for key, value in re_dict.iteritems())
-+compre_commented_dict = dict((key, re.compile(re_comment + r'\s*' + value)) for key, value in re_dict.iteritems())
-+compre_comment = re.compile(re_comment)
-+
-+mailto_person = set()
-+mailto_ml = set()
-+
-+for file in changed_files:
-+    # MAINTAINERS [cw]ould result in many false matches, skip it
-+    # alternatively print someone?  who?
-+    if file == 'MAINTAINERS':
-+        continue
-+
-+    try:
-+        of = open(file)
-+    except:
-+        # TODO: try harder (e.g. is the patch really -p1?)
-+        continue
-+
-+    extract_maintainers(of, compre_commented_dict, compre_comment)
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 995c588..906d8e0 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -70,6 +70,9 @@ struct page {
+ #endif
+ 	    struct kmem_cache *slab;	/* SLUB: Pointer to slab */
+ 	    struct page *first_page;	/* Compound tail pages */
++	    struct {
++		unsigned long buddy_order;     /* buddy: free page order */
++	    };
+ 	};
+ 	union {
+ 		pgoff_t index;		/* Our offset within mapping. */
+diff --git a/mm/internal.h b/mm/internal.h
+index c0e4859..fcedcd0 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -58,7 +58,7 @@ extern void __free_pages_bootmem(struct page *page, unsigned int order);
+ static inline unsigned long page_order(struct page *page)
+ {
+ 	VM_BUG_ON(!PageBuddy(page));
+-	return page_private(page);
++	return page->buddy_order;
+ }
+ 
+ extern int mlock_vma_pages_range(struct vm_area_struct *vma,
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 921c435..3a646e3 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -331,7 +331,7 @@ static inline void prep_zero_page(struct page *page, int order, gfp_t gfp_flags)
+ 
+ static inline void set_page_order(struct page *page, int order)
+ {
+-	set_page_private(page, order);
++	page->buddy_order = order;
+ 	__SetPageBuddy(page);
+ #ifdef CONFIG_PAGE_OWNER
+ 		page->order = -1;
+@@ -341,7 +341,7 @@ static inline void set_page_order(struct page *page, int order)
+ static inline void rmv_page_order(struct page *page)
+ {
+ 	__ClearPageBuddy(page);
+-	set_page_private(page, 0);
++	page->buddy_order = 0;
+ }
+ 
+ /*
 -- 
-1.5.6.5
+1.6.0.1.451.gc8d31
 
