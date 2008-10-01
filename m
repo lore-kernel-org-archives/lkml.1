@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbYJAMbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYJAMbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753556AbYJAMbS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 08:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYJAMbH
+	id S1753958AbYJAMbb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 08:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYJAMbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 08:31:07 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:41943 "EHLO
+	Wed, 1 Oct 2008 08:31:08 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:41938 "EHLO
 	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbYJAMbG (ORCPT
+	with ESMTP id S1752516AbYJAMbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 1 Oct 2008 08:31:06 -0400
 From: Andy Whitcroft <apw@shadowen.org>
@@ -20,9 +20,9 @@ Cc: linux-kernel@vger.kernel.org,
        Andy Whitcroft <apw@shadowen.org>,
        Nick Piggin <nickpiggin@yahoo.com.au>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 3/4] buddy: explicitly identify buddy field use in struct page
-Date: Wed,  1 Oct 2008 13:31:00 +0100
-Message-Id: <1222864261-22570-4-git-send-email-apw@shadowen.org>
+Subject: [PATCH 2/4] pull out zone cpuset and watermark checks for reuse
+Date: Wed,  1 Oct 2008 13:30:59 +0100
+Message-Id: <1222864261-22570-3-git-send-email-apw@shadowen.org>
 X-Mailer: git-send-email 1.6.0.1.451.gc8d31
 In-Reply-To: <1222864261-22570-1-git-send-email-apw@shadowen.org>
 References: <1222864261-22570-1-git-send-email-apw@shadowen.org>
@@ -30,70 +30,99 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Explicitly define the struct page fields which buddy uses when it owns
-pages.  Defines a new anonymous struct to allow additional fields to
-be defined in a later patch.
+When allocating we need to confirm that the zone we are about to allocate
+from is acceptable to the CPUSET we are in, and that it does not violate
+the zone watermarks.  Pull these checks out so we can reuse them in a
+later patch.
 
 Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Reviewed-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 ---
- include/linux/mm_types.h |    3 +++
- mm/internal.h            |    2 +-
- mm/page_alloc.c          |    4 ++--
- 3 files changed, 6 insertions(+), 3 deletions(-)
+ mm/page_alloc.c |   62 ++++++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 43 insertions(+), 19 deletions(-)
 
-diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index 995c588..906d8e0 100644
---- a/include/linux/mm_types.h
-+++ b/include/linux/mm_types.h
-@@ -70,6 +70,9 @@ struct page {
- #endif
- 	    struct kmem_cache *slab;	/* SLUB: Pointer to slab */
- 	    struct page *first_page;	/* Compound tail pages */
-+	    struct {
-+		unsigned long buddy_order;     /* buddy: free page order */
-+	    };
- 	};
- 	union {
- 		pgoff_t index;		/* Our offset within mapping. */
-diff --git a/mm/internal.h b/mm/internal.h
-index c0e4859..fcedcd0 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -58,7 +58,7 @@ extern void __free_pages_bootmem(struct page *page, unsigned int order);
- static inline unsigned long page_order(struct page *page)
- {
- 	VM_BUG_ON(!PageBuddy(page));
--	return page_private(page);
-+	return page->buddy_order;
- }
- 
- extern int mlock_vma_pages_range(struct vm_area_struct *vma,
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 921c435..3a646e3 100644
+index 55d8d9b..921c435 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -331,7 +331,7 @@ static inline void prep_zero_page(struct page *page, int order, gfp_t gfp_flags)
- 
- static inline void set_page_order(struct page *page, int order)
- {
--	set_page_private(page, order);
-+	page->buddy_order = order;
- 	__SetPageBuddy(page);
- #ifdef CONFIG_PAGE_OWNER
- 		page->order = -1;
-@@ -341,7 +341,7 @@ static inline void set_page_order(struct page *page, int order)
- static inline void rmv_page_order(struct page *page)
- {
- 	__ClearPageBuddy(page);
--	set_page_private(page, 0);
-+	page->buddy_order = 0;
+@@ -1271,6 +1271,44 @@ int zone_watermark_ok(struct zone *z, int order, unsigned long mark,
+ 	return 1;
  }
  
++/*
++ * Return 1 if this zone is an acceptable source given the cpuset
++ * constraints.
++ */
++static inline int zone_cpuset_permits(struct zone *zone,
++					int alloc_flags, gfp_t gfp_mask)
++{
++	if ((alloc_flags & ALLOC_CPUSET) &&
++	    !cpuset_zone_allowed_softwall(zone, gfp_mask))
++		return 0;
++	return 1;
++}
++
++/*
++ * Return 1 if this zone is within the watermarks specified by the
++ * allocation flags.
++ */
++static inline int zone_watermark_permits(struct zone *zone, int order,
++			int classzone_idx, int alloc_flags, gfp_t gfp_mask)
++{
++	if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
++		unsigned long mark;
++		if (alloc_flags & ALLOC_WMARK_MIN)
++			mark = zone->pages_min;
++		else if (alloc_flags & ALLOC_WMARK_LOW)
++			mark = zone->pages_low;
++		else
++			mark = zone->pages_high;
++		if (!zone_watermark_ok(zone, order, mark,
++			    classzone_idx, alloc_flags)) {
++			if (!zone_reclaim_mode ||
++					!zone_reclaim(zone, gfp_mask, order))
++				return 0;
++		}
++	}
++	return 1;
++}
++
+ #ifdef CONFIG_NUMA
  /*
+  * zlc_setup - Setup for "zonelist cache".  Uses cached zone data to
+@@ -1424,25 +1462,11 @@ zonelist_scan:
+ 		if (NUMA_BUILD && zlc_active &&
+ 			!zlc_zone_worth_trying(zonelist, z, allowednodes))
+ 				continue;
+-		if ((alloc_flags & ALLOC_CPUSET) &&
+-			!cpuset_zone_allowed_softwall(zone, gfp_mask))
+-				goto try_next_zone;
+-
+-		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+-			unsigned long mark;
+-			if (alloc_flags & ALLOC_WMARK_MIN)
+-				mark = zone->pages_min;
+-			else if (alloc_flags & ALLOC_WMARK_LOW)
+-				mark = zone->pages_low;
+-			else
+-				mark = zone->pages_high;
+-			if (!zone_watermark_ok(zone, order, mark,
+-				    classzone_idx, alloc_flags)) {
+-				if (!zone_reclaim_mode ||
+-				    !zone_reclaim(zone, gfp_mask, order))
+-					goto this_zone_full;
+-			}
+-		}
++		if (!zone_cpuset_permits(zone, alloc_flags, gfp_mask))
++			goto try_next_zone;
++		if (!zone_watermark_permits(zone, order, classzone_idx,
++							alloc_flags, gfp_mask))
++			goto this_zone_full;
+ 
+ 		page = buffered_rmqueue(preferred_zone, zone, order, gfp_mask);
+ 		if (page)
 -- 
 1.6.0.1.451.gc8d31
 
