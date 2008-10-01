@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbYJAJEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYJAJE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755150AbYJAJEk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 05:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbYJAI6c
+	id S1756142AbYJAJE5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 05:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbYJAJB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 04:58:32 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:58013 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754551AbYJAI6b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 04:58:31 -0400
-Message-Id: <20081001084126.516224293@de.ibm.com>
-References: <20081001083317.782967473@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 01 Oct 2008 10:33:22 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 05/21] cio: Exorcise cio_msg= from documentation.
-Content-Disposition: inline; filename=104-cio-msg.diff
+	Wed, 1 Oct 2008 05:01:59 -0400
+Received: from styx.suse.cz ([82.119.242.94]:43885 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754977AbYJAJB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 05:01:57 -0400
+Date: Wed, 1 Oct 2008 11:01:56 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Rodolfo Giometti <giometti@enneenne.com>
+cc: Randy Dunlap <rdunlap@xenotime.net>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alessandro Rubini <ar@gnudd.com>,
+       Alessandro Rubini <rubini@vision.unipv.it>
+Subject: Re: About the maintainer of "MOUSE AND MISC DEVICES"
+In-Reply-To: <20081001085509.GG18732@tekkaman>
+Message-ID: <alpine.LNX.1.10.0810011100120.4022@jikos.suse.cz>
+References: <20080930153708.GX18732@tekkaman> <Pine.LNX.4.64.0809302248150.2307@twin.jikos.cz> <20080930230644.107e6428.kristoffer.ericson@gmail.com> <alpine.LNX.1.10.0809302340190.4022@jikos.suse.cz> <20080930154908.aaf80a11.rdunlap@xenotime.net>
+ <20081001085509.GG18732@tekkaman>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+On Wed, 1 Oct 2008, Rodolfo Giometti wrote:
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+> > Ack.  And there is no MISC maintainer, so Jiri's patch to remove the 
+> > entire entry makes sense IMO.
+> However misc devices exist, so no maintaner for them? I'd like to
+> propose a misc device and I'd like to have some suggestions about it,
+> so should I send my questions to the LKML?
 
- Documentation/s390/CommonIO |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+If you have a driver that doesn't fit under any particular subsystem, it 
+therefore probably belongs into drivers/misc, yes.
 
-Index: quilt-2.6/Documentation/s390/CommonIO
-===================================================================
---- quilt-2.6.orig/Documentation/s390/CommonIO
-+++ quilt-2.6/Documentation/s390/CommonIO
-@@ -104,8 +104,7 @@ debugfs entries
-     handling).
- 
-   - /sys/kernel/debug/s390dbf/cio_msg/sprintf
--    Various debug messages from the common I/O-layer, including messages
--    printed when cio_msg=yes.
-+    Various debug messages from the common I/O-layer.
- 
-   - /sys/kernel/debug/s390dbf/cio_trace/hex_ascii
-     Logs the calling of functions in the common I/O-layer and, if applicable, 
+Send them to LKML and CC Andrew Morton and possibly also Greg KH.
+
+Thanks,
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Jiri Kosina
+SUSE Labs
