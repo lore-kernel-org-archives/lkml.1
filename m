@@ -1,444 +1,385 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbYJAVve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbYJAVxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754294AbYJAVve (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 17:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbYJAVvZ
+	id S1754565AbYJAVxt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 17:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYJAVxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 17:51:25 -0400
-Received: from mx1.wp.pl ([212.77.101.5]:41444 "EHLO mx1.wp.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753833AbYJAVvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 17:51:24 -0400
-Date: Wed, 1 Oct 2008 23:51:06 +0200
-From: Marek Szuba <scriptkiddie@wp.pl>
-To: linux-kernel@vger.kernel.org
-Subject: Regular system 'hiccups' with 2.6.25+ on amd64 machines
-Message-ID: <20081001235106.57edede4@ifurita.akmm.lan>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_/Js1jle4Azw9kxbKV1/KBRa8"
-X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
-X-WP-SPAM: NO 0000005 [ARcc]                               
+	Wed, 1 Oct 2008 17:53:34 -0400
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:20131 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754051AbYJAVxc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 17:53:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Nz7gYiMqioa9IkUTvC0Ar6LVQQRo3KCFqcyB/yaTkNrDC5bHvJZw2ZtMrE5Yr0hO9MqyYFdI+xrTglwe4Bb2IRsooQiHM9hnK+lBhrEFTLProLDggwEHgQeYMim+tNRMMkXHrzIckh8r20/Qs/S7wMq2u5w3mbZhXFWvduFNuvk=  ;
+X-YMail-OSG: fU6baqcVM1nPYy_BlAggPgcyP.7rnJYZlLiM34wttJQxyqVUgCMbOOkQMy8JKdJz.vFYbcDV6_4eioG8Our3yMuj.eaBiBOhKnhiugBUPgwJmGqToZHRuLypd6OwxSAbS9nPF5P86y0dA_267KdMHsU77cc18Khoe_pjsxZiAdiWIXfH8w--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Samuel Ortiz <sameo@openedhand.com>
+Subject: Re: [PATCH 2.6.27-rc8 1/2] drivers/mfd/twl4030-core.c
+Date: Wed, 1 Oct 2008 14:53:25 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>, linux-omap@vger.kernel.org
+References: <200810011144.20510.david-b@pacbell.net>
+In-Reply-To: <200810011144.20510.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810011453.26699.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_/Js1jle4Azw9kxbKV1/KBRa8
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Wednesday 01 October 2008, David Brownell wrote:
 
-Hello everyone,
+> NOTE: this is the current code from the linux-omap tree.
 
-While I am not sure whether this is a bug or not, the phenomenon is
-rather peculiar so I have decided to ask here. The problem is, upgrading
-the kernel on any of my two AMD64 boxes from 2.6.24 to 2.6.25 or newer
-causes both systems to get "hiccups", that it every half a second or so
-they briefly freeze. Below you will find two examples of the problem:
+This chip being used on a whole bunch of boards:
 
-1. On both systems, refreshing icons in the system tray takes much more
-time than before: whereas with 2.6.24 the flicker of icons as they get
-updated is barely noticeable, with 2.6.25+ you can see it quite clearly
-and sometimes you can even see blank background of the tray app.
+ - Gumstix Overo
+ - BeagleBoard.org
+ - Omap ZOOM (Labrador)
+ - OMAP 2430 and 3430 SDP,
+ - OMAP2 and OMAP3 EVM
+ - ... more (openpandora.org ?)
 
-2. On the weaker of the two systems (Athlon64 3500+, 2 GB RAM,
-nForce-based motherboard, on-board sound device supported by the
-intel8x0 ALSA driver), one can hear audio playback (tested primarily
-on a Shoutcast stream) stutter on a regular basis even with
-buffering enabled. With 2.6.24 this never happened, even under heavy
-system load.
-
-3. I run an instance of Internet DJ Console (idjc), which used JACK, on
-the stronger of the two systems (Athlon64 4000+, 2 GB RAM, nForce-based
-motherboard, Sound Blaster Audigy 2 PCI card with ALSA driver emu10k1).
-Up to and including 2.6.24 I've never had any problems with streaming
-to the Icecast server I use, even under relatively heavy system load -
-those few xruns, of just a few ms each, that did happen were removed by
-buffering. However, under 2.6.25 and up I start getting xruns as soon
-as idjc starts, even before I connect to the Icecast server or start
-broadcasting anything! These look as follows:
-
-**** alsa_pcm: xrun of at least 1222893019070.464 msecs
-
-(the value is always the same) and appear more-or-less twice per
-second. When I do connect to the server and begin streaming, the sound
-as received by clients is audibly choppy when the system is otherwise
-idle and becomes extremely distorted under load. The problem persists
-after switching to an Icecast server running on the same machine, or indeed
-if instead of running an independent media client I enable (in idjc)
-listening to the stream before it gets sent to the server.
+which will get much closer to "usable with mainline kernels"
+when their power management chip works in mainline!  :)
 
 
-As I mentioned earlier, the problem affects all kernel versions I have
-tried from 2.6.25 up to and including 2.6.26.5 - both vanilla versions
-and with the grsecurity patch applied. Attached you will find my config
-files for 2.6.24.7 and 2.6.26.5. Unfortunately I do not know whether the
-problem affects other architectures than amd64.
+> I expect a few things still need to be updated...
 
-I would greatly appreciate it if you could look into the problem and
-let me know what is wrong - i.e. whether this is a bug, an
-unnecessarily-enabled feature, something that just needs a bit of
-tuning and so on. If you need any more information regarding the issue,
-my set-ups and so on, please don't hesitate to contact me (by
-writing to my e-mail address - I'm not subscribed to LKML at present)!
+... ergo, some comments below.  I'll hope we won't need
+too many more iterations of fixes before we get a baseline
+suitable for a 2.6.28-rc0 merge.
 
-Yours sincerely,
--- 
-MS
+This version was posted since it's a good milestone, with
+a bunch of recent updates from Felipe and me.  I'd think
+most of the comments below can be addressed pretty easily.
 
---MP_/Js1jle4Azw9kxbKV1/KBRa8
-Content-Type: application/x-bzip; name=config.2.6.24.7.bz2
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename=config.2.6.24.7.bz2
+(Except ones related to threaded IRQ handling in mainline.)
 
-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
-u5IpwoSF39noiA==
 
---MP_/Js1jle4Azw9kxbKV1/KBRa8
-Content-Type: application/x-bzip; name=config.2.6.26.5.bz2
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename=config.2.6.26.5.bz2
+>  include/linux/i2c/twl4030-gpio.h   |   76 ++
+>  include/linux/i2c/twl4030-madc.h   |  134 +++
+>  include/linux/i2c/twl4030-pwrirq.h |   37 +
+>  include/linux/i2c/twl4030.h        |  191 +++++
 
-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
-ir/i7kinChIIIxpdwA==
+I suspect that's three headers-too-many, and that the fix
+should (a) move register decls needed for IRQ setup into
+the twl4030.h file, and (b) move other headers into the
+relevant driver(s).
 
---MP_/Js1jle4Azw9kxbKV1/KBRa8--
+ 
+> +config TWL4030_CORE
+> +	bool "Texas Instruments TWL4030/TPS659x0 Support"
+> +	depends on I2C=y && (ARCH_OMAP2 || ARCH_OMAP3)
+
+Hardly any of this code is actually OMAP-specific.  I stuck
+those dependencies in to prevent build breakage related to
+how the current code expects some global IRQ symbols.  When
+that's all fixed I expect those dependencies to vanish.
+
+
+> --- /dev/null
+> +++ b/drivers/mfd/twl4030-core.c
+> @@ -0,0 +1,1255 @@
+> +/*
+> + * twl4030_core.c - driver for TWL4030/TPS659x0 PM and audio CODEC devices
+> + *
+> 	...
+
+It could probably stand a header comment giving a bit more detail
+about the chip and how this driver core supports it.
+
+
+> +/* Slave address */
+> +#define TWL4030_SLAVENUM_NUM0		0x00
+> +#define TWL4030_SLAVENUM_NUM1		0x01
+> +#define TWL4030_SLAVENUM_NUM2		0x02
+> +#define TWL4030_SLAVENUM_NUM3		0x03
+
+I suspect these can/should be replaced with "0", "1", "2", and "3"
+everywhere they get used, referring to the relevant I2C address
+(0x48 + 0/1/2/3) used to access a given function.  :)
+
+NUM_NUM should be reserved for lolcat usage.
+
+
+And while I find the register addressing needlessly (?) confusing,
+it's not a thing I'd suggest changing right away.  It *could* have
+been based on a {slave, register} pairing.  Instead it's based
+mapping {module, offset} to those "real" addresses.  Maybe some
+older chip revisions needed different mappings.
+
+
+> +/* TWL4030 BCI registers */
+> +#define TWL4030_INTERRUPTS_BCIIMR1A	0x2
+> +#define TWL4030_INTERRUPTS_BCIIMR2A	0x3
+> +#define TWL4030_INTERRUPTS_BCIIMR1B	0x6
+> +#define TWL4030_INTERRUPTS_BCIIMR2B	0x7
+> +#define TWL4030_INTERRUPTS_BCIISR1A	0x0
+> +#define TWL4030_INTERRUPTS_BCIISR2A	0x1
+> +#define TWL4030_INTERRUPTS_BCIISR1B	0x4
+> +#define TWL4030_INTERRUPTS_BCIISR2B	0x5
+> +
+> +/* TWL4030 keypad registers */
+> +#define TWL4030_KEYPAD_KEYP_IMR1	0x12
+> +#define TWL4030_KEYPAD_KEYP_IMR2	0x14
+> +#define TWL4030_KEYPAD_KEYP_ISR1	0x11
+> +#define TWL4030_KEYPAD_KEYP_ISR2	0x13
+
+IMO those IRQ registers should be moved into the twl4030.h
+header and shared with the relevant subchip drivers...
+
+
+> +static const u8 __initconst twl4030_keypad_imr_regs[] = {
+> +	TWL4030_KEYPAD_KEYP_IMR1,
+> +	TWL4030_KEYPAD_KEYP_IMR2,
+> +};
+> +
+> +/* TWL4030 keypad module interrupt status registers */
+> +static const u8 __initconst twl4030_keypad_isr_regs[] = {
+> +	TWL4030_KEYPAD_KEYP_ISR1,
+> +	TWL4030_KEYPAD_KEYP_ISR2,
+> +};
+
+This __initconst stuff bothers me a bit.  On one hand
+it's "not strictly correct" because the driver could
+be unbound from the hardware (e.g. sysfs, or rmmod of
+its i2c_adapter) ... and then need this data again if
+it gets re-initialized.
+
+On the other hand, anyone trying to break systems like
+that will succeed and it's only a question of how quickly
+the kablooie happens.  I'd rather just ensure the driver
+can't ever be unbound.
+
+On yet another hand (it's good to have lots of them!),
+keeping that stuff around would let the driver recover
+from certain nastiness (see below)...
+
+
+> +/* Structure to define on TWL4030 Slave ID */
+> +struct twl4030_client {
+> +	struct i2c_client *client;
+> +	u8 address;
+> +	bool inuse;
+
+This "inuse" thing seems wasteful.  Easier to just
+have one flag for the whole driver.
+
+> +
+> +	/* max numb of i2c_msg required is for read =2 */
+> +	struct i2c_msg xfer_msg[2];
+> +
+> +	/* To lock access to xfer_msg */
+> +	struct mutex xfer_lock;
+> +};
+
+
+Now the IRQ handling is important, and is a bit messy.  It can be
+cleaned up a bit ... but since TGLX has threatened to merge some
+threaded IRQ support soonish, I'd propose waiting for that support
+before doing too much work on the IRQ code here.
+
+While various I2C chips have IRQ handlers -- common on embedded
+boards but not for x86 -- I don't know of any others which have
+yet tried to plug into genirq.  This chip has over 50 independent
+IRQ sources, so leveraging genirq seems right.  Now if only the
+genirq support for this were friendlier ... ;)
+
+
+> +/*
+> + * do_twl4030_module_irq() is the desc->handle method for each of the twl4030
+> + * module interrupts.
+
+Well, each one that's not overridden by a chained handler ...
+
+This top-level IRQ handling code, for the "PIH" (think "Primary
+Interrupt Hub"), dispatches to code for the "SIH" ("Secondary...").
+Only SIH can mask/unmask IRQs, control which edge(s) trigger, etc.
+
+SIH modules cover:  GPIOs, USB OTG transceiver, Multichannel ADC,
+Keypad, battery charger, and "Power" (not entirely a grab-bag for
+everything else).
+
+Right now the GPIO and "Power" SIH modules use chained handlers.
+
+(And I'd like to see the "Power" support merged into this core
+as part of the initial mainline merge...)
+
+
+> 				It executes in kernel thread context. 
+> + * On entry, cpu interrupts are disabled.
+> + */
+> +static void do_twl4030_module_irq(unsigned int irq, irq_desc_t *desc)
+> +{
+> +	struct irqaction *action;
+> +	const unsigned int cpu = smp_processor_id();
+> +
+> +	/*
+> +	 * Earlier this was desc->triggered = 1;
+> +	 */
+> +	desc->status |= IRQ_LEVEL;
+
+Clearly incorrect.  I think the intent is what IRQ_INPROGRESS does;
+but maybe not.  Probably IRQ_LEVEL should be set for the PIH
+interrupts when they get set up.
+
+
+> +
+> +	/*
+> +	 * The desc->handle method would normally call the desc->chip->ack
+> +	 * method here, but we won't bother since our ack method is NULL.
+> +	 */
+> +
+> +	if (!desc->depth) {
+> +		kstat_cpu(cpu).irqs[irq]++;
+
+I think statistics are supposed to be recorded whether or not
+the irq is enabled ...
+
+
+> +
+> +		action = desc->action;
+> +		if (action) {
+> +			int ret;
+> +			int status = 0;
+> +			int retval = 0;
+> +
+> +			local_irq_enable();
+
+Which is highly unusual for non-threaded IRQ handlers.  Maybe
+we won't need it when genirq supports threaded ones.   For
+that matter maybe we won't need this routine at all.  ;)
+
+The bits below are messy ... desc->action above was referenced
+without holding desc->lock; ditto action->next below.  Clearly
+this code is racy -- not that systems using these IRQs are
+(yet?) doing anything where that would matter.
+
+
+> +
+> +			do {
+> +				/* Call the ISR with cpu interrupts enabled */
+> +				ret = action->handler(irq, action->dev_id);
+> +				if (ret == IRQ_HANDLED)
+> +					status |= action->flags;
+> +				retval |= ret;
+> +				action = action->next;
+> +			} while (action);
+> +
+> +			if (status & IRQF_SAMPLE_RANDOM)
+> +				add_interrupt_randomness(irq);
+> +
+> +			local_irq_disable();
+> +
+> +			if (retval != IRQ_HANDLED)
+> +				printk(KERN_ERR "ISR for TWL4030 module"
+> +					" irq %d can't handle interrupt\n",
+> +					irq);
+> +
+> +			/*
+> +			 * Here is where we should call the unmask method, but
+> +			 * again we won't bother since it is NULL.
+> +			 */
+> +		} else
+> +			printk(KERN_CRIT "TWL4030 module irq %d has no ISR"
+> +					" but can't be masked!\n", irq);
+> +	} else
+> +		printk(KERN_CRIT "TWL4030 module irq %d is disabled but can't"
+> +				" be masked!\n", irq);
+
+I'd prefer pr_crit(DRIVER_NAME ": ..." ) or similar.  The nastiness
+here could be resolved if the __initconst stuff (noted above) stayed in
+memory ... the "can't be masked" thing could be resolved by masking all
+that module's IRQs, using the data now being discarded.
+
+(On the other hand I heard a recent report of one of those messages
+appearing for a while ... then disappearing.  Unclear what was up.)
+
+
+> +}
+
+
+> +		for (module_irq = twl4030_irq_base; 0 != pih_isr;
+> +			 pih_isr >>= 1, module_irq++) {
+> +			if (pih_isr & 0x1) {
+> +				irq_desc_t *d = irq_desc + module_irq;
+> +
+> +				local_irq_disable();
+> +
+> +				d->handle_irq(module_irq, d);
+> +
+> +				local_irq_enable();
+> +			}
+> +		}
+> +
+> +		desc->chip->unmask(irq);
+
+The local_irq_{en,dis}able() calls could clearly be moved out of
+the loop.  And this whole routine should probably track IRQ_PENDING.
+
+... but again, I'd kind of think genirq support for threaded IRQ
+handling should get rid of many of these problems.  And since that
+is supposed to come "soon", I'm thinking it'd be good to avoid any
+more than minor fixes here...
+
+
+> +static int add_children(struct twl4030_platform_data *pdata)
+> +{
+> +	struct platform_device	*pdev = NULL;
+> +	struct twl4030_client	*twl = NULL;
+> +	int			status = 0;
+> +
+> +	if (twl_has_bci() && pdata->bci) {
+> +		twl = &twl4030_modules[TWL4030_SLAVENUM_NUM3];
+> +
+> +		pdev = platform_device_alloc("twl4030_bci", -1);
+> +		... etc ...
+
+If the "mfd core" stuff were lighter weight, it should be able to
+simplify this code a bunch.  Heck, just having a utility function
+to pass parent, device name, primary and secondary IRQs, and a
+few more bits would be good cleanup, come to think of it.
+
+Sam, you were going to take a look at simplifying mfd-core ... if
+that's going to happen for 2.6.28, I'd as soon leave add_children()
+the way it is until those updates are ready to simplify it.
+
+
+> +/*
+> + * These three functions should be part of Voltage frame work
+> + * added here to complete the functionality for now.
+
+Actually that's not correct.  They configure the clock generation
+module, which is important for things like USB and the audio codec.
+Comments will be updated.
+
+
+> +	/* install an irq handler to demultiplex the TWL4030 interrupt */
+> +	set_irq_data(irq_num, start_twl4030_irq_thread(irq_num));
+> +	set_irq_type(irq_num, IRQ_TYPE_EDGE_FALLING);
+
+Well, not really.  It's level-sensitive.  I'll fix that.
+
+> +	set_irq_chained_handler(irq_num, do_twl4030_irq);
+
+
+> +static const struct i2c_device_id twl4030_ids[] = {
+> +	{ "twl4030", 0 },	/* "Triton 2" */
+> +	{ "tps65950", 0 },	/* catalog version of twl4030 */
+> +	{ "tps65930", 0 },	/* fewer LDOs and DACs; no charger */
+> +	{ "tps65920", 0 },	/* fewer LDOs; no codec or charger */
+
+And "twl5030" it turns out -- minor changes from twl4030.
+
+> +	{ /* end of list */ },
+> +};
+> +MODULE_DEVICE_TABLE(i2c, twl4030_ids);
