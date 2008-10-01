@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYJAL1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbYJALaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753456AbYJAL1S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 07:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYJAL1I
+	id S1753802AbYJALaS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 07:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYJALaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 07:27:08 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:2776 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752884AbYJAL1G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 07:27:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Xoa1gtdUbpm6ihN/nICiG1k+CrS9KZo07TEn3tERuu4J7Bt7yg7lK2TezcZCInh7kE
-         JM+sXDL+z2Zh9lgR1FcDM4Ag+BB+HvDTN28VtCiUMGQNmO+75hwUj57veZgtaPLp/NMy
-         lZs+oy/RIasAK6euF8EbcsOO9ia1etA6aD5MM=
-Message-ID: <48E35E83.9040101@gmail.com>
-Date: Wed, 01 Oct 2008 13:26:59 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Wed, 1 Oct 2008 07:30:05 -0400
+Received: from mail.collax.com ([82.194.105.242]:50848 "EHLO mail.collax.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753124AbYJALaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 07:30:02 -0400
+Message-ID: <48E35F36.4030203@collax.com>
+Date: Wed, 01 Oct 2008 13:29:58 +0200
+From: Tilman Baumann <tilman.baumann@collax.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Vegard Nossum <vegardno@ifi.uio.no>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix virt_addr_valid() with CONFIG_DEBUG_VIRTUAL=y
-References: <20081001104717.GA7925@ben.ifi.uio.no> <48E359B4.7050708@gmail.com> <19f34abd0810010415s405dcd98j187e5c9c20fc2d16@mail.gmail.com>
-In-Reply-To: <19f34abd0810010415s405dcd98j187e5c9c20fc2d16@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+To: Casey Schaufler <casey@schaufler-ca.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+Subject: Re: SMACK netfilter smacklabel socket match
+References: <48DBC9A1.20900@collax.com> <48DC5A45.8020801@schaufler-ca.com> <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com> <48DDBE2E.3010006@schaufler-ca.com> <48E1007F.4000400@collax.com> <48E19D01.9050809@schaufler-ca.com>
+In-Reply-To: <48E19D01.9050809@schaufler-ca.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Filtered: By ProxSMTP
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.33/RELEASE, bases: 01102008 #1142380, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/01/2008 01:15 PM, Vegard Nossum wrote:
-> On Wed, Oct 1, 2008 at 1:06 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
->> x86_64 is screwed in the same way, isn't it?
+Casey Schaufler wrote:
+>> Casey Schaufler wrote:
+> If you really want to be abusive you could replace the smack_access()
+> function in security/smack/smack_access.c (of all places) with a no-op
+> returning 0 in all cases.
+
+I thought of that too. :)
+But i would rather like to use the thing in it's intended function 
+sometime in the future.
+
+>> What I then to is write iptables OUTPUT chain matches which match for 
+>> any of these labels and set some connection marks and firewall marks.
+>> Which I then can use in routing rules to give different routing rules 
+>> to specific processes. (Like all proxy traffic over a second DSL line)
+>>
+>> I know, it's totally crazy. But it seems to work. :)
+>> I just hope the security part of this all will not break anything. But 
+>> it does not look like it would right now.
 > 
-> Hm. I didn't see any #ifdef CONFIG_DEBUG_VIRTUAL in the x86_64 code,
-> so I assumed it wasn't. But it seems that you are right (because the
-> checks, or at least some kind of checks, are _always_ performed on
-> x86_64 regardless of the CONFIG_DEBUG_VIRTUAL setting). Why doesn't
-> the checking in x86_64 code depend on DEBUG_VIRTUAL?
+> Smack will eventually bite you if you're not careful, but users of
+> MAC systems wouldn't be surprised by that.
+Speaking of the devil...
+This is exactly what happened to me right now. I have problems with 
+_some_ https connects. The problem lies somewhere in openssl.
+I did not yet find any clue with strace.
+Is there some straight forward way to audit/debug LSM interventions?
 
-Yeah, it does: VIRTUAL_BUG_ON depends on it...
+I have probably missed something that a labeled process could not do as 
+a '_' process could. Have no idea right now, but it is probably 
+something stupidly simple.
 
-x86_64 just distinguish pointer to kernel image addresses (which are mapped only
-up to kernel image size from phys_base physical address) and whole physical
-memory map at another virtual address.
+> I don't think it's crazy,
+> I think it's a matter of using what's available in novel ways.
+I like that attitude. :)
+
+-- 
+Tilman Baumann
+Software Developer
+Collax GmbH . Boetzinger Strasse 60 . 79111 Freiburg . Germany
+
+p: +49 (0) 89-990157-0
+f: +49 (0) 89-990157-11
+
+Geschaeftsfuehrer: William K. Hite / Boris Nalbach
+AG Muenchen HRB 158898, Ust.-IdNr: DE 814464942
