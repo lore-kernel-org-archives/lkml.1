@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbYJAXEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYJAXEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753190AbYJAXEi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 19:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYJAXD0
+	id S1754628AbYJAXEx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 19:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbYJAXDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 19:03:26 -0400
-Received: from www.tglx.de ([62.245.132.106]:56532 "EHLO www.tglx.de"
+	Wed, 1 Oct 2008 19:03:36 -0400
+Received: from www.tglx.de ([62.245.132.106]:56534 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752466AbYJAXDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 19:03:25 -0400
-Message-Id: <20081001223301.999771125@linutronix.de>
+	id S1753132AbYJAXDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 19:03:35 -0400
+Message-Id: <20081001223302.210089249@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Wed, 01 Oct 2008 23:02:23 -0000
+Date: Wed, 01 Oct 2008 23:02:32 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Linus Torvalds <torvalds@osdl.org>,
@@ -21,259 +21,194 @@ Cc: Linus Torvalds <torvalds@osdl.org>,
        Steven Rostedt <rostedt@goodmis.org>,
        Jon Masters <jonathan@jonmasters.org>,
        Sven Dietrich <sdietrich@suse.de>
-Subject: [RFC patch 3/5] genirq: add threaded interrupt handler support
+Subject: [RFC patch 5/5] genirq: make irq threading robust
 References: <20081001223213.078984344@linutronix.de>
-Content-Disposition: inline; filename=genirq-add-threaded-handler.patch
+Content-Disposition: inline; filename=genirq-make-threading-robust.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for threaded interrupt handlers:
+To make sure that a crashed irq thread does not cause more trouble
+when the irq code tries to wake up a gone thread or the device code
+calling free_irq and trying to kthread_stop the dead thread, we plug a
+pointer to irqaction into task_struct, which is evaluated in
+do_exit(). When the thread crashes the do_exit code marks the thread
+as DIED in irqaction->flags to prevent further wakeups from the
+interrupt handler code.
 
-A device driver can request that its interrupt handler runs in a
-thread. It needs to provide a quick check handler which checks whether
-the interrupt originated from the device. In case the interrupt
-originated from the device, the quick check handler can either return
-IRQ_HANDLED or IRQ_WAKE_THREAD. IRQ_HANDLED is returned when no
-further action is required. IRQ_WAKE_THREAD causes the genirq code to
-invoke the threaded (main) handler.
+On thread creation we get a reference to task_struct so it stays
+around until the free_irq code releases it again.
 
-When IRQ_WAKE_THREAD is returned, then the quick check handler must
-have disabled the interrupt at the device level. This is mandatory for
-shared interrupt handlers, but we need to do it as well for obscure
-x86 hardware where disabling an interrupt on the IO_APIC level
-redirects the interrupt to the legacy PIC interrupt lines.
+The procedure vs. the crashed irq handler thread is slightly racy, but
+we do not want to have additional locking in the hard interrupt code
+path. The worst things which can happen are a warning that we tried to
+wakeup a dead task and a hung kthread_stop in free_irq. I'm not
+worried about that at all, as removing a module which had a crashed
+interrupt handler is critical anyway.
+
+The main purpose of this is to keep the system alive w/o the affected
+device working.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Reviewed-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/interrupt.h |   17 +++++++++++++++
- include/linux/irqreturn.h |    2 +
- kernel/irq/handle.c       |   31 +++++++++++++++++++++++----
- kernel/irq/manage.c       |   51 ++++++++++++++++++++++++++++++++++++++++++++--
- 4 files changed, 94 insertions(+), 7 deletions(-)
+ include/linux/interrupt.h |    3 +++
+ include/linux/sched.h     |    1 +
+ kernel/exit.c             |    2 ++
+ kernel/irq/handle.c       |   13 +++++++++++--
+ kernel/irq/manage.c       |   44 +++++++++++++++++++++++++++++++++++++++++---
+ 5 files changed, 58 insertions(+), 5 deletions(-)
 
 Index: linux-2.6-tip/include/linux/interrupt.h
 ===================================================================
 --- linux-2.6-tip.orig/include/linux/interrupt.h
 +++ linux-2.6-tip/include/linux/interrupt.h
-@@ -45,6 +45,10 @@
-  * IRQF_IRQPOLL - Interrupt is used for polling (only the interrupt that is
-  *                registered first in an shared interrupt is considered for
-  *                performance reasons)
-+ * IRQF_THREADED - request threaded interrupt handler
-+ * IRQF_RUNTHREAD - signals that the interrupt handler thread should run
-+ * IRQF_WARNED_THREADED - warning rate limit when a threaded handler is
-+ *			requested to run in hard interrupt context
-  */
- #define IRQF_DISABLED		0x00000020
- #define IRQF_SAMPLE_RANDOM	0x00000040
-@@ -54,6 +58,9 @@
- #define IRQF_PERCPU		0x00000400
- #define IRQF_NOBALANCING	0x00000800
- #define IRQF_IRQPOLL		0x00001000
-+#define IRQF_THREADED		0x00002000
-+#define IRQF_RUNTHREAD		0x00004000
-+#define IRQF_WARNED_THREADED	0x00008000
+@@ -61,6 +61,7 @@
+ #define IRQF_THREADED		0x00002000
+ #define IRQF_RUNTHREAD		0x00004000
+ #define IRQF_WARNED_THREADED	0x00008000
++#define IRQF_THREAD_DIED	0x00010000
  
  typedef irqreturn_t (*irq_handler_t)(int, void *);
  
-@@ -67,6 +74,7 @@ struct irqaction {
- 	struct irqaction *next;
- 	int irq;
- 	struct proc_dir_entry *dir;
-+	struct task_struct *thread;
- };
- 
- extern irqreturn_t no_action(int cpl, void *dev_id);
-@@ -83,6 +91,15 @@ request_irq(unsigned int irq, irq_handle
- 	return request_irq_quickcheck(irq, handler, NULL, flags, name, dev);
+@@ -114,6 +115,8 @@ static inline int irq_thread_should_run(
+ 	return test_and_clear_bit(IRQF_RUNTHREAD, &action->flags);
  }
  
-+static inline int __must_check
-+request_threaded_irq(unsigned int irq, irq_handler_t handler,
-+		     irq_handler_t quick_check_handler,
-+		     unsigned long flags, const char *name, void *dev)
-+{
-+	return request_irq_quickcheck(irq, handler, quick_check_handler,
-+				    flags | IRQF_THREADED, name, dev);
-+}
++extern void exit_irq_thread(struct task_struct *tsk);
 +
- extern void free_irq(unsigned int, void *);
- 
- struct device;
-Index: linux-2.6-tip/include/linux/irqreturn.h
+ /*
+  * On lockdep we dont want to enable hardirqs in hardirq
+  * context. Use local_irq_enable_in_hardirq() to annotate
+Index: linux-2.6-tip/include/linux/sched.h
 ===================================================================
---- linux-2.6-tip.orig/include/linux/irqreturn.h
-+++ linux-2.6-tip/include/linux/irqreturn.h
-@@ -6,11 +6,13 @@
-  * @IRQ_NONE		interrupt was not from this device
-  * @IRQ_HANDLED		interrupt was handled by this device
-  * @IRQ_NEEDS_HANDLING	quick check handler requests to run real handler
-+ * @IRQ_WAKE_THREAD	quick check handler requests to wake the handker thread
-  */
- enum irqreturn {
- 	IRQ_NONE,
- 	IRQ_HANDLED,
- 	IRQ_NEEDS_HANDLING,
-+	IRQ_WAKE_THREAD,
+--- linux-2.6-tip.orig/include/linux/sched.h
++++ linux-2.6-tip/include/linux/sched.h
+@@ -1301,6 +1301,7 @@ struct task_struct {
+ 	int latency_record_count;
+ 	struct latency_record latency_record[LT_SAVECOUNT];
+ #endif
++	struct irqaction *irqaction;
  };
  
- #define irqreturn_t	enum irqreturn
+ /*
+Index: linux-2.6-tip/kernel/exit.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/exit.c
++++ linux-2.6-tip/kernel/exit.c
+@@ -1030,6 +1030,8 @@ NORET_TYPE void do_exit(long code)
+ 		schedule();
+ 	}
+ 
++	exit_irq_thread(tsk);
++
+ 	exit_signals(tsk);  /* sets PF_EXITING */
+ 	/*
+ 	 * tsk->flags are checked in the futex code to protect against
 Index: linux-2.6-tip/kernel/irq/handle.c
 ===================================================================
 --- linux-2.6-tip.orig/kernel/irq/handle.c
 +++ linux-2.6-tip/kernel/irq/handle.c
-@@ -143,13 +143,34 @@ irqreturn_t handle_IRQ_event(unsigned in
- 			ret = IRQ_NEEDS_HANDLING;
+@@ -161,8 +161,17 @@ irqreturn_t handle_IRQ_event(unsigned in
+ 			set_bit(IRQF_WARNED_THREADED, &action->flags);
  
- 		switch (ret) {
--		default:
-+		case IRQ_NEEDS_HANDLING:
-+			if (!(action->flags & IRQF_THREADED)) {
-+				ret = action->handler(irq, action->dev_id);
-+				if (ret == IRQ_HANDLED)
-+					status |= action->flags;
-+				break;
+ 		case IRQ_WAKE_THREAD:
+-			set_bit(IRQF_RUNTHREAD, &action->flags);
+-			wake_up_process(action->thread);
++			/*
++			 * In case the thread crashed and was killed
++			 * we just pretend that we handled the
++			 * interrupt. The quick check handler has
++			 * disabled the device interrupt, so no irq
++			 * storm is lurking.
++			 */
++			if (likely(!(action->flags & IRQF_THREAD_DIED))) {
++				set_bit(IRQF_RUNTHREAD, &action->flags);
++				wake_up_process(action->thread);
 +			}
-+			/*
-+			 * Warn once when a quick check handler asked
-+			 * for invoking the threaded (main) handler
-+			 * directly
-+			 */
-+			WARN(!(action->flags & IRQF_WARNED_THREADED),
-+			     "IRQ %d requested to run threaded handler "
-+			     "in hard interrupt context\n", irq);
-+			set_bit(IRQF_WARNED_THREADED, &action->flags);
-+
-+		case IRQ_WAKE_THREAD:
-+			set_bit(IRQF_RUNTHREAD, &action->flags);
-+			wake_up_process(action->thread);
-+			/*
-+			 * Set it to handled so the spurious check
-+			 * does not trigger.
-+			 */
-+			ret = IRQ_HANDLED;
- 			break;
- 
--		case IRQ_NEEDS_HANDLING:
--			ret = action->handler(irq, action->dev_id);
--			if (ret == IRQ_HANDLED)
--				status |= action->flags;
-+		default:
- 			break;
- 		}
- 		retval |= ret;
+ 			/*
+ 			 * Set it to handled so the spurious check
+ 			 * does not trigger.
 Index: linux-2.6-tip/kernel/irq/manage.c
 ===================================================================
 --- linux-2.6-tip.orig/kernel/irq/manage.c
 +++ linux-2.6-tip/kernel/irq/manage.c
-@@ -8,6 +8,7 @@
-  */
+@@ -338,6 +338,8 @@ static int irq_thread(void *data)
+ {
+ 	struct irqaction *action = data;
  
- #include <linux/irq.h>
-+#include <linux/kthread.h>
- #include <linux/module.h>
- #include <linux/random.h>
- #include <linux/interrupt.h>
-@@ -331,6 +332,30 @@ static int __irq_set_trigger(struct irq_
++	current->irqaction = action;
++
+ 	set_current_state(TASK_INTERRUPTIBLE);
+ 
+ 	while (!kthread_should_stop()) {
+@@ -351,11 +353,36 @@ static int irq_thread(void *data)
+ 		action->handler(action->irq, action->dev_id);
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 	}
++	/*
++	 * Clear irqaction. Otherwise exit_irq_thread() would make
++	 * fuzz about an active irq thread going into nirvana.
++	 */
++	current->irqaction = NULL;
+ 	__set_current_state(TASK_RUNNING);
+ 	return 0;
  }
  
  /*
-+ * Interrupt handler thread
++ * Called from do_exit()
 + */
-+static int irq_thread(void *data)
++void exit_irq_thread(struct task_struct *tsk)
 +{
-+	struct irqaction *action = data;
++	if (!tsk->irqaction)
++		return;
 +
-+	set_current_state(TASK_INTERRUPTIBLE);
++	printk(KERN_ERR
++	       "exiting task \"%s\" (%d) is an active IRQ thread (irq %d)\n",
++	       tsk->comm ? tsk->comm : "", tsk->pid, tsk->irqaction->irq);
 +
-+	while (!kthread_should_stop()) {
-+		if (!test_and_clear_bit(IRQF_RUNTHREAD, &action->flags)) {
-+			schedule();
-+			/* Avoid running the handler on stop */
-+			if (kthread_should_stop())
-+				break;
-+		}
-+		__set_current_state(TASK_RUNNING);
-+		action->handler(action->irq, action->dev_id);
-+		set_current_state(TASK_INTERRUPTIBLE);
-+	}
-+	__set_current_state(TASK_RUNNING);
-+	return 0;
++	/*
++	 * Set the THREAD DIED flag to prevent further wakeups of the
++	 * soon to be gone threaded handler.
++	 */
++	set_bit(IRQF_THREAD_DIED, &tsk->irqaction->flags);
++	tsk->irqaction = NULL;
 +}
 +
 +/*
   * Internal function to register an irqaction - typically used to
   * allocate special interrupts that are part of the architecture.
   */
-@@ -348,6 +373,11 @@ int setup_irq(unsigned int irq, struct i
- 
- 	if (desc->chip == &no_irq_chip)
- 		return -ENOSYS;
-+
-+	/* Threaded interrupts need a quickcheck handler */
-+	if ((new->flags & IRQF_THREADED) && !new->quick_check_handler)
-+		return -EINVAL;
-+
- 	/*
- 	 * Some drivers like serial.c use request_irq() heavily,
- 	 * so we have to be careful not to interfere with a
-@@ -399,6 +429,20 @@ int setup_irq(unsigned int irq, struct i
- 		shared = 1;
+@@ -439,7 +466,12 @@ int setup_irq(unsigned int irq, struct i
+ 				   new->name);
+ 		if (IS_ERR(t))
+ 			return PTR_ERR(t);
+-
++		/*
++		 * We keep the reference to the task struct even if
++		 * the thread dies to avoid that the interrupt code
++		 * references an already gone task_struct.
++		 */
++		get_task_struct(t);
+ 		new->thread = t;
  	}
  
-+	/*
-+	 * Threaded handler ?
-+	 */
-+	if (new->flags & IRQF_THREADED) {
-+		struct task_struct *t;
-+
-+		t = kthread_create(irq_thread, new, "irq/%d-%s", irq,
-+				   new->name);
-+		if (IS_ERR(t))
-+			return PTR_ERR(t);
-+
-+		new->thread = t;
-+	}
-+
- 	if (!shared) {
- 		irq_chip_set_defaults(desc->chip);
- 
-@@ -521,6 +565,8 @@ void free_irq(unsigned int irq, void *de
+@@ -565,8 +597,14 @@ void free_irq(unsigned int irq, void *de
  			if (desc->chip->release)
  				desc->chip->release(irq, dev_id);
  #endif
-+			if (action->thread)
-+				kthread_stop(action->thread);
+-			if (action->thread)
+-				kthread_stop(action->thread);
++			if (action->thread) {
++				struct task_struct *t = action->thread;
++
++				action->thread = NULL;
++				if (likely(!(action->flags & IRQF_THREAD_DIED)))
++					kthread_stop(t);
++				put_task_struct(t);
++			}
  
  			if (!desc->action) {
  				desc->status |= IRQ_DISABLED;
-@@ -570,7 +616,7 @@ EXPORT_SYMBOL(free_irq);
-  *      @quick_check_handler: Function to be called when the interrupt
-  *			   before the real handler is called to check
-  *                         whether the interrupt originated from the device
-- *                         can be NULL
-+ *                         can be NULL, but is mandatory for threaded handlers
-  *	@irqflags: Interrupt type flags
-  *	@devname: An ascii name for the claiming device
-  *	@dev_id: A cookie passed back to the handler function
-@@ -594,6 +640,7 @@ EXPORT_SYMBOL(free_irq);
-  *	IRQF_SHARED		Interrupt is shared
-  *	IRQF_DISABLED	Disable local interrupts while processing
-  *	IRQF_SAMPLE_RANDOM	The interrupt can be used for entropy
-+ *      IRQF_THREADED           Interrupt is threaded
-  */
- int request_irq_quickcheck(unsigned int irq, irq_handler_t handler,
- 			   irq_handler_t quick_check_handler,
-@@ -624,7 +671,7 @@ int request_irq_quickcheck(unsigned int 
- 	if (!handler)
- 		return -EINVAL;
- 
--	action = kmalloc(sizeof(struct irqaction), GFP_ATOMIC);
-+	action = kzalloc(sizeof(struct irqaction), GFP_ATOMIC);
- 	if (!action)
- 		return -ENOMEM;
- 
 
 
