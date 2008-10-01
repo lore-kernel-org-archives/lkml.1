@@ -1,65 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbYJADf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbYJADtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752863AbYJADf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 23:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYJADfu
+	id S1752627AbYJADtY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 23:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbYJADtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 23:35:50 -0400
-Received: from ti-out-0910.google.com ([209.85.142.188]:36969 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751622AbYJADfs (ORCPT
+	Tue, 30 Sep 2008 23:49:16 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:37964 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751477AbYJADtP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 23:35:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=PUQ8PtQAMHjpZmxh2oxv4jyA5YTa8djemxIfnhKyyHIftNru2wKMouFVdqF0Hyv7Va
-         nqvmVOClX/4+wb9DZPolEwfOtlNSn495zZAq2mTxPbmFRU9sBWFYHYEuPq6wh+KrJpWv
-         uDkwbAS3hbZv4z9YXsxWizjFIsb2JJBgVjkXc=
-Message-ID: <48E2EFB3.1060202@gmail.com>
-Date: Wed, 01 Oct 2008 12:34:11 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Tue, 30 Sep 2008 23:49:15 -0400
+Message-ID: <48E2F336.4030203@linux.vnet.ibm.com>
+Date: Wed, 01 Oct 2008 09:19:10 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Jeff Garzik <jeff@garzik.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/6] SATA: Blacklisting of systems that spin off disks
- during ACPI power off
-References: <200808290002.55026.rjw@sisk.pl> <48D17BBE.5020807@garzik.org> <200809300006.24919.rjw@sisk.pl> <200809300014.28983.rjw@sisk.pl>
-In-Reply-To: <200809300014.28983.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-2
+Subject: Re: [PATCH/stylefix 3/4] memcg: avoid account not-on-LRU pages
+References: <20080929191927.caabec89.kamezawa.hiroyu@jp.fujitsu.com> <20080929192339.327ca142.kamezawa.hiroyu@jp.fujitsu.com> <20080930101705.aec0e59b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080930101705.aec0e59b.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+KAMEZAWA Hiroyuki wrote:
+> This is conding-style fixed version. Thank you, Nishimura-san.
+> -Kmae
+> ==
+> There are not-on-LRU pages which can be mapped and they are not worth to
+> be accounted. (becasue we can't shrink them and need dirty codes to handle
+> specical case) We'd like to make use of usual objrmap/radix-tree's protcol
+> and don't want to account out-of-vm's control pages.
 > 
-> SATA: Blacklisting of systems that spin off disks during ACPI power off
+> When special_mapping_fault() is called, page->mapping is tend to be NULL 
+> and it's charged as Anonymous page.
+> insert_page() also handles some special pages from drivers.
 > 
-> Introduce new libata flags ATA_FLAG_NO_POWEROFF_SPINDOWN and
-> ATA_FLAG_NO_HIBERNATE_SPINDOWN that, if set, will prevent disks from
-> being spun off during system power off and hibernation, respectively
-> (to handle the hibernation case we need the new system state
-> SYSTEM_HIBERNATE_ENTER that can be checked against by libata, in
-> analogy with SYSTEM_POWER_OFF).
+> This patch is for avoiding to account special pages.
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Changlog: v5 -> v6
+>   - modified Documentation.
+>   - fixed to charge only when a page is newly allocated.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
 
-ACK 3-6.  I'll push these through libata-dev after the first two
-prerequsite patches are cleared.
+[snip]
+> @@ -2463,6 +2457,7 @@ static int __do_fault(struct mm_struct *
+>  	struct page *page;
+>  	pte_t entry;
+>  	int anon = 0;
+> +	int charged = 0;
+>  	struct page *dirty_page = NULL;
+>  	struct vm_fault vmf;
+>  	int ret;
+> @@ -2503,6 +2498,12 @@ static int __do_fault(struct mm_struct *
+>  				ret = VM_FAULT_OOM;
+>  				goto out;
+>  			}
+> +			if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
+> +				ret = VM_FAULT_OOM;
+> +				page_cache_release(page);
+> +				goto out;
+> +			}
+> +			charged = 1;
 
-Thanks.
+If I understand this correctly, we now account only when the VMA is not shared?
+Seems reasonable, since we don't allocate a page otherwise.
+
+
+[snip]
+
+
+> Index: mmotm-2.6.27-rc7+/mm/rmap.c
+> ===================================================================
+> --- mmotm-2.6.27-rc7+.orig/mm/rmap.c
+> +++ mmotm-2.6.27-rc7+/mm/rmap.c
+> @@ -725,8 +725,8 @@ void page_remove_rmap(struct page *page,
+>  			page_clear_dirty(page);
+>  			set_page_dirty(page);
+>  		}
+> -
+> -		mem_cgroup_uncharge_page(page);
+> +		if (PageAnon(page))
+> +			mem_cgroup_uncharge_page(page);
+
+Is the change because we expect the page to get directly uncharged when it is
+removed from cache? i.e, page->mapping is set to NULL before uncharge?
+
+Looks good to me, I am yet to test it though.
+
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
 
 -- 
-tejun
+	Balbir
