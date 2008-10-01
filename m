@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYJAVWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbYJAVXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbYJAVWQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 17:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYJAVWB
+	id S1754199AbYJAVXq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 17:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYJAVXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 17:22:01 -0400
-Received: from ns.suse.de ([195.135.220.2]:48454 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752602AbYJAVWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 17:22:00 -0400
-Subject: patch uio-fix-mapping-of-logical-and-virtual-memory.patch added to gregkh-2.6 tree
-To: agh@cisco.com, gregkh@suse.de, hjk@linutronix.de,
-       linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Wed, 01 Oct 2008 14:15:19 -0700
-In-Reply-To: <20080923230959.GB4066@local>
-Message-ID: <12228957191236@kroah.org>
+	Wed, 1 Oct 2008 17:23:37 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:34587 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753212AbYJAVXf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 17:23:35 -0400
+Subject: Re: [RFC] CPUID usage for interaction between Hypervisors and
+	Linux.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gerd Hoffmann <kraxel@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Daniel Hecht <dhecht@vmware.com>, Zach Amsden <zach@vmware.com>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+In-Reply-To: <48E3E6DF.8060400@codemonkey.ws>
+References: <1222881242.9381.17.camel@alok-dev1> <48E3BBC1.2050607@goop.org>
+	 <1222894878.9381.63.camel@alok-dev1>  <48E3E6DF.8060400@codemonkey.ws>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Wed, 01 Oct 2008 14:23:35 -0700
+Message-Id: <1222896215.9381.79.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-10-01 at 14:08 -0700, Anthony Liguori wrote:
+> Alok Kataria wrote:
+> > On Wed, 2008-10-01 at 11:04 -0700, Jeremy Fitzhardinge wrote:
+> >
+> > 2. Divergence in the interface provided by the hypervisors  :
+> >       The reason we brought up a flat hierarchy is because we think we should
+> > be moving towards a approach where the guest code doesn't diverge too
+> > much when running under different hypervisors. That is the guest
+> > essentially does the same thing if its running on say Xen or VMware.
+> >
+> > This design IMO, will take us a step backward to  what we already have
+> > seen with para virt ops. Each hypervisor (mostly) defines its own cpuid
+> > block, the guest correspondingly needs to have code to handle each of
+> > these cpuid blocks, with these blocks will mostly being exclusive.
+> >
+> 
+> What's wrong with what we have in paravirt_ops? 
 
-This is a note to let you know that I've just added the patch titled
+Your explanation below answers the question you raised, the problem
+being we need to have support for each of these different hypercall
+mechanisms in the kernel. 
+I understand that this was the correct thing to do at that moment. 
+But do we want to go the same way again for CPUID when we can make it
+generic (flat enough) for anybody to use it in the same manner and
+expose a generic interface to the kernel.
 
-    Subject: UIO: Fix mapping of logical and virtual memory
+>  Just agreeing on CPUID
+> doesn't help very much. 
+Yeah, nobody is removing any of the paravirt ops support.
 
-to my gregkh-2.6 tree.  Its filename is
+>  You still need a mechanism for doing hypercalls
+> to implement anything meaningful.  We aren't going to agree on a
+> hypercall mechanism.  KVM uses direct hypercall instructions, Xen uses a
+> hypercall page, VMware uses VMI, Hyper-V uses MSR writes.  We all have
+> already defined the hypercall namespace in a certain way.
 
-    uio-fix-mapping-of-logical-and-virtual-memory.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From hjk@linutronix.de  Wed Oct  1 14:01:23 2008
-From: Andrew Harvey <agh@cisco.com>
-Date: Wed, 24 Sep 2008 01:10:02 +0200
-Subject: UIO: Fix mapping of logical and virtual memory
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Greg KH <gregkh@suse.de>, "Andrew G. Harvey" <agh@cisco.com>
-Message-ID: <20080923230959.GB4066@local>
-Content-Disposition: inline
-
-From: "Andrew G. Harvey" <agh@cisco.com>
-
-mmap() doesn't work as expected for UIO_MEM_LOGICAL or UIO_MEM_VIRTUAL
-mappings. The offset into the memory needs to be added, otherwise
-uio_vma_fault always returns the first page only. Note that for UIO
-userspace calls mmap() with offset = N * getpagesize() to access
-mapping N. This must be compensated when calculating the offset. A
-comment was added to explain this since it is not obvious.
-
-Signed-off-by: Andrew G. Harvey <agh@cisco.com>
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/uio/uio.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
---- a/drivers/uio/uio.c
-+++ b/drivers/uio/uio.c
-@@ -490,15 +490,23 @@ static int uio_vma_fault(struct vm_area_
- {
- 	struct uio_device *idev = vma->vm_private_data;
- 	struct page *page;
-+	unsigned long offset;
- 
- 	int mi = uio_find_mem_index(vma);
- 	if (mi < 0)
- 		return VM_FAULT_SIGBUS;
- 
-+	/*
-+	 * We need to subtract mi because userspace uses offset = N*PAGE_SIZE
-+	 * to use mem[N].
-+	 */
-+	offset = (vmf->pgoff - mi) << PAGE_SHIFT;
-+
- 	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
--		page = virt_to_page(idev->info->mem[mi].addr);
-+		page = virt_to_page(idev->info->mem[mi].addr + offset);
- 	else
--		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
-+		page = vmalloc_to_page((void *)idev->info->mem[mi].addr
-+							+ offset);
- 	get_page(page);
- 	vmf->page = page;
- 	return 0;
+Thanks,
+Alok
 
 
-Patches currently in gregkh-2.6 which might be from agh@cisco.com are
-
-driver-core/uio-fix-mapping-of-logical-and-virtual-memory.patch
