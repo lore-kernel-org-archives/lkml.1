@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYJAJAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755031AbYJAI73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbYJAJAE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 05:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbYJAI5Z
+	id S1755031AbYJAI73 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 04:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbYJAI5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 04:57:25 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:50220 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753206AbYJAI5N (ORCPT
+	Wed, 1 Oct 2008 04:57:23 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:35806 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753180AbYJAI5N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 1 Oct 2008 04:57:13 -0400
-Message-Id: <20081001084127.513956461@de.ibm.com>
+Message-Id: <20081001084130.116866217@de.ibm.com>
 References: <20081001083317.782967473@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 01 Oct 2008 10:33:26 +0200
+Date: Wed, 01 Oct 2008 10:33:36 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Carsten Otte <cotte@de.ibm.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stefan Haberland <stefan.haberland@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 09/21] Use s390_root_dev_* in kvm_virtio.
-Content-Disposition: inline; filename=108-cio-busid4.diff
+Subject: [patch 19/21] dasd: fix message flood for unsolicited interrupts
+Content-Disposition: inline; filename=118-dasd-flooding.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Stefan Haberland <stefan.haberland@de.ibm.com>
 
-No need to define a static device for the kvm_s390 root device,
-just use s390_root_dev_register().
+In the unsolicited interupt handler fake IRBs from CIO have to be
+ignored because there is nothing to do. 
+The function dump_sense should not be called if there is no sense 
+data available.
 
-This is needed for the bus_id rework
-
-Acked-by: Carsten Otte <cotte@de.ibm.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Stefan Haberland <stefan.haberland@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/kvm/kvm_virtio.c |   15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+ drivers/s390/block/dasd_eckd.c |   25 ++++++++++++++++++++-----
+ 1 file changed, 20 insertions(+), 5 deletions(-)
 
-Index: quilt-2.6/drivers/s390/kvm/kvm_virtio.c
+Index: quilt-2.6/drivers/s390/block/dasd_eckd.c
 ===================================================================
---- quilt-2.6.orig/drivers/s390/kvm/kvm_virtio.c
-+++ quilt-2.6/drivers/s390/kvm/kvm_virtio.c
-@@ -24,6 +24,7 @@
- #include <asm/kvm_virtio.h>
- #include <asm/setup.h>
- #include <asm/s390_ext.h>
-+#include <asm/s390_rdev.h>
- 
- #define VIRTIO_SUBCODE_64 0x0D00
- 
-@@ -241,10 +242,7 @@ static struct virtio_config_ops kvm_vq_c
-  * The root device for the kvm virtio devices.
-  * This makes them appear as /sys/devices/kvm_s390/0,1,2 not /sys/devices/0,1,2.
-  */
--static struct device kvm_root = {
--	.parent = NULL,
--	.bus_id = "kvm_s390",
--};
-+static struct device *kvm_root;
- 
- /*
-  * adds a new device and register it with virtio
-@@ -261,7 +259,7 @@ static void add_kvm_device(struct kvm_de
+--- quilt-2.6.orig/drivers/s390/block/dasd_eckd.c
++++ quilt-2.6/drivers/s390/block/dasd_eckd.c
+@@ -1501,12 +1501,27 @@ static void dasd_eckd_handle_unsolicited
  		return;
  	}
  
--	kdev->vdev.dev.parent = &kvm_root;
-+	kdev->vdev.dev.parent = kvm_root;
- 	kdev->vdev.id.device = d->type;
- 	kdev->vdev.config = &kvm_vq_configspace_ops;
- 	kdev->desc = d;
-@@ -317,15 +315,16 @@ static int __init kvm_devices_init(void)
- 	if (!MACHINE_IS_KVM)
- 		return -ENODEV;
+-	/* just report other unsolicited interrupts */
+-	DEV_MESSAGE(KERN_DEBUG, device, "%s",
+-		    "unsolicited interrupt received");
+-	device->discipline->dump_sense(device, NULL, irb);
+-	dasd_schedule_device_bh(device);
++	if ((irb->scsw.cmd.cc == 1) &&
++	    (irb->scsw.cmd.fctl & SCSW_FCTL_START_FUNC) &&
++	    (irb->scsw.cmd.actl & SCSW_ACTL_START_PEND) &&
++	    (irb->scsw.cmd.stctl & SCSW_STCTL_STATUS_PEND)) {
++		/* fake irb do nothing, they are handled elsewhere */
++		dasd_schedule_device_bh(device);
++		return;
++	}
  
--	rc = device_register(&kvm_root);
--	if (rc) {
-+	kvm_root = s390_root_dev_register("kvm_s390");
-+	if (IS_ERR(kvm_root)) {
-+		rc = PTR_ERR(kvm_root);
- 		printk(KERN_ERR "Could not register kvm_s390 root device");
- 		return rc;
- 	}
- 
- 	rc = vmem_add_mapping(PFN_PHYS(max_pfn), PAGE_SIZE);
- 	if (rc) {
--		device_unregister(&kvm_root);
-+		s390_root_dev_unregister(kvm_root);
- 		return rc;
- 	}
++	if (!(irb->esw.esw0.erw.cons)) {
++		/* just report other unsolicited interrupts */
++		DEV_MESSAGE(KERN_ERR, device, "%s",
++			    "unsolicited interrupt received");
++	} else {
++		DEV_MESSAGE(KERN_ERR, device, "%s",
++			    "unsolicited interrupt received "
++			    "(sense available)");
++		device->discipline->dump_sense(device, NULL, irb);
++	}
++
++	dasd_schedule_device_bh(device);
+ 	return;
+ };
  
 
 -- 
