@@ -1,86 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbYJAUJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYJAUSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113AbYJAUJO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 16:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYJAUI7
+	id S1754224AbYJAUSX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 16:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYJAUSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 16:08:59 -0400
-Received: from kroah.org ([198.145.64.141]:35421 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751767AbYJAUI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 16:08:59 -0400
-Date: Wed, 1 Oct 2008 13:05:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org, TJ <tj@tjworld.net>,
-       "Casual J. Programmer" <casualprogrammer@googlemail.com>
-Subject: Re: Building two (external) modules from the same sources
-Message-ID: <20081001200548.GA30009@kroah.com>
-References: <200809290949.35749.arvidjaar@mail.ru> <20081001031907.GA19181@kroah.com> <200810011413.17059.arvidjaar@mail.ru>
+	Wed, 1 Oct 2008 16:18:13 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:3087 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752330AbYJAUSM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 16:18:12 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 2/2] PNP: don't check disabled PCI BARs for conflicts in quirk_system_pci_resources()
+Date: Wed, 1 Oct 2008 14:18:06 -0600
+User-Agent: KMail/1.9.9
+Cc: Rene Herman <rene.herman@keyaccess.nl>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Adam Belay <abelay@mit.edu>,
+       Avuton Olrich <avuton@gmail.com>,
+       Karl Bellve <karl.bellve@umassmed.edu>, Willem Riede <wriede@riede.org>,
+       Matthew Hall <mhall@mhcomputing.net>
+References: <200809290953.56565.bjorn.helgaas@hp.com> <alpine.LFD.2.00.0809300904530.3389@nehalem.linux-foundation.org> <200809301312.50712.bjorn.helgaas@hp.com>
+In-Reply-To: <200809301312.50712.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200810011413.17059.arvidjaar@mail.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200810011418.06908.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 01, 2008 at 02:13:10PM +0400, Andrey Borzenkov wrote:
-> On Wednesday 01 October 2008, Greg KH wrote:
-> > On Mon, Sep 29, 2008 at 09:49:34AM +0400, Andrey Borzenkov wrote:
-> > > I have here driver that can be built for two different types of
-> > > hardware from basically the same sources (this is port of old Agere
-> > > drivers for Hermes-I/Hermes-II chipsets).
-> > 
-> > Cool, do you have a link to the code, I'd be glad to add it to
-> > drivers/staging/ if it's not in a fully-mergable state yet to get wider
-> > users for it.
-> > 
-> 
-> You can look at it here: http://arvidjaar.newmail.ru/wlags49.tar.bz
-> 
-> I doubt that it is suitable for inclusion at current state if ever.
-> This is taken directly from Agere 2.4 sources; the only parts that were
-> touched are kernel glue and wireless extensions interface.
+Where are we on this regression?  We got side-tracked with all
+the initcall ordering stuff, but I don't think that leads to
+something appropriate for this late stage of 2.6.27.
 
-It is acceptable for inclusion in drivers/staging/ where we can work on
-cleaning it up from within the kernel environment, and provide access to
-users who are wanting to use these drivers now.
+I think the safest (and already tested) path is the
+"res->start == 0 means disabled" check in the PNP quirk.
 
-Is it ok if I add it there?  I'll take the above tarball and make up the
-proper patch and get it to build.
-
-> And it is not GPL'ed, of course. I attach E-Mail I received a while
-> back with answere from Agere legal department.
-
-It's BSD, which is fine, that works with the GPLv2 license of the rest
-of the kernel.
-
-> > > Build differs only in one define -DHERMES2 and single file with
-> > > different firmware. Unfortunately "if HII" are spread over sources
-> > > which makes splitting of sources rather questionable.
-> > > 
-> > > What is the best way (from kbuild POV) to build two modules - for H-I
-> > > and H-II - from the same set of source files?
-> > 
-> > Not to create two different modules, but rather have one module that
-> > works for both pieces of hardware, with dynamic checks for the different
-> > portions.
-> > 
-> 
-> I can't; one of the reasons being - I have no idea how to do it. Original
-> sources build separate modules for every flavour of driver. It is just that
-> I was recently asked about this driver on Zaurus (which happens to use
-> Hermes-II); so I had to do something about it.
-
-Hm, I'll look at the code and see if I see anything obvious.
-
-> If someone could offer (link to) hermes-1/2 programming manual ...
-
-That would probably help out a lot :)
-
-thanks,
-
-greg k-h
+Bjorn
