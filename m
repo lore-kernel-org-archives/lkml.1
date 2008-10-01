@@ -1,84 +1,643 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbYJAMIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbYJAMN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753485AbYJAMIR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 08:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYJAMIG
+	id S1753451AbYJAMN7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 08:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYJAMNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 08:08:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53311 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752516AbYJAMIF (ORCPT
+	Wed, 1 Oct 2008 08:13:50 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:47807 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751037AbYJAMNs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 08:08:05 -0400
-Message-ID: <48E3680E.6040703@linux-foundation.org>
-Date: Wed, 01 Oct 2008 07:07:42 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 1 Oct 2008 08:13:48 -0400
+Date: Wed, 1 Oct 2008 13:13:44 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: rui.zhang@intel.com, pavel@suse.cz
+Subject: [RFC] thermal: Move trip point handling code from ACPI to generic code
+Message-ID: <20081001121344.GB29479@srcf.ucam.org>
+References: <20081001120420.GA29479@srcf.ucam.org>
 MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: Nicolas Pitre <nico@cam.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: wrong usage of MAX_DMA_ADDRESS in bootmem.h
-References: <1222230419-15661-21-git-send-email-nico@cam.org> <1222230592-15868-1-git-send-email-nico@cam.org> <20080930162809.GD15911@flint.arm.linux.org.uk> <alpine.LFD.2.00.0809301409230.3635@xanadu.home> <20080930184411.GJ15911@flint.arm.linux.org.uk> <alpine.LFD.2.00.0809301513260.3635@xanadu.home> <48E2846A.4030802@linux-foundation.org> <20080930201224.GL15911@flint.arm.linux.org.uk>
-In-Reply-To: <20080930201224.GL15911@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081001120420.GA29479@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux wrote:
+Having trip point handling code in a single central location makes more 
+sense than implementing it per thermal driver. This is a slightly rough 
+prototype that should be pretty much equivalent in functionality to the 
+existing code (at least, my laptop hasn't melted yet). Only thing I can 
+think of off-hand that's missing are the updates for crossing trip
+points (another callback into the specific code?) and hooking up the 
+polling configuration that's currently in /proc. Any comments?
 
-> Not correct.  MAX_DMA_ADDRESS is a virtual address.  ISA_DMA_THRESHOLD
-> is the last byte of _physical_ memory which ISA DMA can transfer:
+Motivation for this is wanting to start hooking DRM drivers into the 
+thermal layer as we get better information on handing their PM 
+functionality. I suspect lack of thermal control in GPUs is one of the 
+things that's causing us to hit thermal limits on some laptops.
 
-> include/asm-x86/scatterlist.h:#define ISA_DMA_THRESHOLD (0x00ffffff)
-> 
-> So what you've just suggested is completely insane.
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 754967f..c106a02 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -549,145 +549,6 @@ static int acpi_thermal_get_trip_points(struct acpi_thermal *tz)
+ 	return acpi_thermal_trips_update(tz, ACPI_TRIPS_INIT);
+ }
+ 
+-static int acpi_thermal_critical(struct acpi_thermal *tz)
+-{
+-	if (!tz || !tz->trips.critical.flags.valid)
+-		return -EINVAL;
+-
+-	if (tz->temperature >= tz->trips.critical.temperature) {
+-		printk(KERN_WARNING PREFIX "Critical trip point\n");
+-		tz->trips.critical.flags.enabled = 1;
+-	} else if (tz->trips.critical.flags.enabled)
+-		tz->trips.critical.flags.enabled = 0;
+-
+-	acpi_bus_generate_proc_event(tz->device, ACPI_THERMAL_NOTIFY_CRITICAL,
+-				tz->trips.critical.flags.enabled);
+-	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
+-					  tz->device->dev.bus_id,
+-					  ACPI_THERMAL_NOTIFY_CRITICAL,
+-					  tz->trips.critical.flags.enabled);
+-
+-	/* take no action if nocrt is set */
+-	if(!nocrt) {
+-		printk(KERN_EMERG
+-			"Critical temperature reached (%ld C), shutting down.\n",
+-			KELVIN_TO_CELSIUS(tz->temperature));
+-		orderly_poweroff(true);
+-	}
+-
+-	return 0;
+-}
+-
+-static int acpi_thermal_hot(struct acpi_thermal *tz)
+-{
+-	if (!tz || !tz->trips.hot.flags.valid)
+-		return -EINVAL;
+-
+-	if (tz->temperature >= tz->trips.hot.temperature) {
+-		printk(KERN_WARNING PREFIX "Hot trip point\n");
+-		tz->trips.hot.flags.enabled = 1;
+-	} else if (tz->trips.hot.flags.enabled)
+-		tz->trips.hot.flags.enabled = 0;
+-
+-	acpi_bus_generate_proc_event(tz->device, ACPI_THERMAL_NOTIFY_HOT,
+-				tz->trips.hot.flags.enabled);
+-	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
+-					  tz->device->dev.bus_id,
+-					  ACPI_THERMAL_NOTIFY_HOT,
+-					  tz->trips.hot.flags.enabled);
+-
+-	/* TBD: Call user-mode "sleep(S4)" function if nocrt is cleared */
+-
+-	return 0;
+-}
+-
+-static void acpi_thermal_passive(struct acpi_thermal *tz)
+-{
+-	int result = 1;
+-	struct acpi_thermal_passive *passive = NULL;
+-	int trend = 0;
+-	int i = 0;
+-
+-
+-	if (!tz || !tz->trips.passive.flags.valid)
+-		return;
+-
+-	passive = &(tz->trips.passive);
+-
+-	/*
+-	 * Above Trip?
+-	 * -----------
+-	 * Calculate the thermal trend (using the passive cooling equation)
+-	 * and modify the performance limit for all passive cooling devices
+-	 * accordingly.  Note that we assume symmetry.
+-	 */
+-	if (tz->temperature >= passive->temperature) {
+-		trend =
+-		    (passive->tc1 * (tz->temperature - tz->last_temperature)) +
+-		    (passive->tc2 * (tz->temperature - passive->temperature));
+-		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+-				  "trend[%d]=(tc1[%lu]*(tmp[%lu]-last[%lu]))+(tc2[%lu]*(tmp[%lu]-psv[%lu]))\n",
+-				  trend, passive->tc1, tz->temperature,
+-				  tz->last_temperature, passive->tc2,
+-				  tz->temperature, passive->temperature));
+-		passive->flags.enabled = 1;
+-		/* Heating up? */
+-		if (trend > 0)
+-			for (i = 0; i < passive->devices.count; i++)
+-				acpi_processor_set_thermal_limit(passive->
+-								 devices.
+-								 handles[i],
+-								 ACPI_PROCESSOR_LIMIT_INCREMENT);
+-		/* Cooling off? */
+-		else if (trend < 0) {
+-			for (i = 0; i < passive->devices.count; i++)
+-				/*
+-				 * assume that we are on highest
+-				 * freq/lowest thrott and can leave
+-				 * passive mode, even in error case
+-				 */
+-				if (!acpi_processor_set_thermal_limit
+-				    (passive->devices.handles[i],
+-				     ACPI_PROCESSOR_LIMIT_DECREMENT))
+-					result = 0;
+-			/*
+-			 * Leave cooling mode, even if the temp might
+-			 * higher than trip point This is because some
+-			 * machines might have long thermal polling
+-			 * frequencies (tsp) defined. We will fall back
+-			 * into passive mode in next cycle (probably quicker)
+-			 */
+-			if (result) {
+-				passive->flags.enabled = 0;
+-				ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+-						  "Disabling passive cooling, still above threshold,"
+-						  " but we are cooling down\n"));
+-			}
+-		}
+-		return;
+-	}
+-
+-	/*
+-	 * Below Trip?
+-	 * -----------
+-	 * Implement passive cooling hysteresis to slowly increase performance
+-	 * and avoid thrashing around the passive trip point.  Note that we
+-	 * assume symmetry.
+-	 */
+-	if (!passive->flags.enabled)
+-		return;
+-	for (i = 0; i < passive->devices.count; i++)
+-		if (!acpi_processor_set_thermal_limit
+-		    (passive->devices.handles[i],
+-		     ACPI_PROCESSOR_LIMIT_DECREMENT))
+-			result = 0;
+-	if (result) {
+-		passive->flags.enabled = 0;
+-		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+-				  "Disabling passive cooling (zone is cool)\n"));
+-	}
+-}
+-
+ static void acpi_thermal_active(struct acpi_thermal *tz)
+ {
+ 	int result = 0;
+@@ -762,13 +623,6 @@ static void acpi_thermal_active(struct acpi_thermal *tz)
+ 
+ static void acpi_thermal_check(void *context);
+ 
+-static void acpi_thermal_run(unsigned long data)
+-{
+-	struct acpi_thermal *tz = (struct acpi_thermal *)data;
+-	if (!tz->zombie)
+-		acpi_os_execute(OSL_GPE_HANDLER, acpi_thermal_check, (void *)data);
+-}
+-
+ static void acpi_thermal_active_off(void *data)
+ {
+ 	int result = 0;
+@@ -812,123 +666,9 @@ static void acpi_thermal_active_off(void *data)
+ 
+ static void acpi_thermal_check(void *data)
+ {
+-	int result = 0;
+ 	struct acpi_thermal *tz = data;
+-	unsigned long sleep_time = 0;
+-	unsigned long timeout_jiffies = 0;
+-	int i = 0;
+-	struct acpi_thermal_state state;
+-
+-
+-	if (!tz) {
+-		printk(KERN_ERR PREFIX "Invalid (NULL) context\n");
+-		return;
+-	}
+-
+-	/* Check if someone else is already running */
+-	if (!mutex_trylock(&tz->lock))
+-		return;
+-
+-	state = tz->state;
+-
+-	result = acpi_thermal_get_temperature(tz);
+-	if (result)
+-		goto unlock;
+-
+-	if (!tz->tz_enabled)
+-		goto unlock;
+-
+-	memset(&tz->state, 0, sizeof(tz->state));
+-
+-	/*
+-	 * Check Trip Points
+-	 * -----------------
+-	 * Compare the current temperature to the trip point values to see
+-	 * if we've entered one of the thermal policy states.  Note that
+-	 * this function determines when a state is entered, but the 
+-	 * individual policy decides when it is exited (e.g. hysteresis).
+-	 */
+-	if (tz->trips.critical.flags.valid)
+-		state.critical |=
+-		    (tz->temperature >= tz->trips.critical.temperature);
+-	if (tz->trips.hot.flags.valid)
+-		state.hot |= (tz->temperature >= tz->trips.hot.temperature);
+-	if (tz->trips.passive.flags.valid)
+-		state.passive |=
+-		    (tz->temperature >= tz->trips.passive.temperature);
+-	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE; i++)
+-		if (tz->trips.active[i].flags.valid)
+-			state.active |=
+-			    (tz->temperature >=
+-			     tz->trips.active[i].temperature);
+-
+-	/*
+-	 * Invoke Policy
+-	 * -------------
+-	 * Separated from the above check to allow individual policy to 
+-	 * determine when to exit a given state.
+-	 */
+-	if (state.critical)
+-		acpi_thermal_critical(tz);
+-	if (state.hot)
+-		acpi_thermal_hot(tz);
+-	if (state.passive)
+-		acpi_thermal_passive(tz);
+-	if (state.active)
+-		acpi_thermal_active(tz);
+-
+-	/*
+-	 * Calculate State
+-	 * ---------------
+-	 * Again, separated from the above two to allow independent policy
+-	 * decisions.
+-	 */
+-	tz->state.critical = tz->trips.critical.flags.enabled;
+-	tz->state.hot = tz->trips.hot.flags.enabled;
+-	tz->state.passive = tz->trips.passive.flags.enabled;
+-	tz->state.active = 0;
+-	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE; i++)
+-		tz->state.active |= tz->trips.active[i].flags.enabled;
+ 
+-	/*
+-	 * Calculate Sleep Time
+-	 * --------------------
+-	 * If we're in the passive state, use _TSP's value.  Otherwise
+-	 * use the default polling frequency (e.g. _TZP).  If no polling
+-	 * frequency is specified then we'll wait forever (at least until
+-	 * a thermal event occurs).  Note that _TSP and _TZD values are
+-	 * given in 1/10th seconds (we must covert to milliseconds).
+-	 */
+-	if (tz->state.passive) {
+-		sleep_time = tz->trips.passive.tsp * 100;
+-		timeout_jiffies =  jiffies + (HZ * sleep_time) / 1000;
+-	} else if (tz->polling_frequency > 0) {
+-		sleep_time = tz->polling_frequency * 100;
+-		timeout_jiffies =  round_jiffies(jiffies + (HZ * sleep_time) / 1000);
+-	}
+-
+-	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "%s: temperature[%lu] sleep[%lu]\n",
+-			  tz->name, tz->temperature, sleep_time));
+-
+-	/*
+-	 * Schedule Next Poll
+-	 * ------------------
+-	 */
+-	if (!sleep_time) {
+-		if (timer_pending(&(tz->timer)))
+-			del_timer(&(tz->timer));
+-	} else {
+-		if (timer_pending(&(tz->timer)))
+-			mod_timer(&(tz->timer), timeout_jiffies);
+-		else {
+-			tz->timer.data = (unsigned long)tz;
+-			tz->timer.function = acpi_thermal_run;
+-			tz->timer.expires = timeout_jiffies;
+-			add_timer(&(tz->timer));
+-		}
+-	}
+-      unlock:
+-	mutex_unlock(&tz->lock);
++	thermal_zone_device_update(tz->thermal_zone);
+ }
+ 
+ /* sys I/F for generic thermal sysfs support */
+@@ -1213,8 +953,21 @@ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
+ 
+ 	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE &&
+ 			tz->trips.active[i].flags.valid; i++, trips++);
+-	tz->thermal_zone = thermal_zone_device_register("acpitz",
+-					trips, tz, &acpi_thermal_zone_ops);
++
++	if (tz->trips.passive.flags.valid)
++		tz->thermal_zone =
++			thermal_zone_device_register("acpitz", trips, tz,
++						     &acpi_thermal_zone_ops,
++						     tz->trips.passive.tc1,
++						     tz->trips.passive.tc2,
++						     tz->trips.passive.tsp*100,
++						     tz->polling_frequency*100);
++	else
++		tz->thermal_zone =
++			thermal_zone_device_register("acpitz", trips, tz,
++						     &acpi_thermal_zone_ops,
++						     0, 0, 0,
++						     tz->polling_frequency);
+ 	if (IS_ERR(tz->thermal_zone))
+ 		return -ENODEV;
+ 
+@@ -1736,10 +1489,6 @@ static int acpi_thermal_remove(struct acpi_device *device, int type)
+ 					    acpi_thermal_notify);
+ 
+ 	/* Terminate policy */
+-	if (tz->trips.passive.flags.valid && tz->trips.passive.flags.enabled) {
+-		tz->trips.passive.flags.enabled = 0;
+-		acpi_thermal_passive(tz);
+-	}
+ 	if (tz->trips.active[0].flags.valid
+ 	    && tz->trips.active[0].flags.enabled) {
+ 		tz->trips.active[0].flags.enabled = 0;
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 8ca2f59..7eff12f 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -30,6 +30,7 @@
+ #include <linux/idr.h>
+ #include <linux/thermal.h>
+ #include <linux/spinlock.h>
++#include <linux/reboot.h>
+ 
+ MODULE_AUTHOR("Zhang Rui");
+ MODULE_DESCRIPTION("Generic thermal management sysfs support");
+@@ -161,7 +162,6 @@ trip_point_type_show(struct device *dev, struct device_attribute *attr,
+ 	if (!sscanf(attr->attr.name, "trip_point_%d_type", &trip))
+ 		return -EINVAL;
+ 
+-
+ 	ret = tz->ops->get_trip_type(tz, trip, &trip_type);
+ 	if (ret)
+ 		return ret;
+@@ -778,12 +778,166 @@ void thermal_cooling_device_unregister(struct
+ 
+ EXPORT_SYMBOL(thermal_cooling_device_unregister);
+ 
++static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
++					    int delay)
++{
++	cancel_delayed_work_sync(&(tz->poll_queue));
++
++	if (!delay)
++		return;
++
++	if (delay > 1000)
++		schedule_delayed_work(&(tz->poll_queue),
++					round_jiffies(delay * HZ));
++	else
++		schedule_delayed_work(&(tz->poll_queue), delay * HZ);
++}
++
++static void thermal_zone_device_passive(struct thermal_zone_device *tz,
++					int temp, int trip_temp, int trip)
++{
++	int trend = 0;
++	struct thermal_cooling_device_instance *instance;
++	struct thermal_cooling_device *cdev;
++	int state, max_state;
++
++	if (tz->passive == false)
++		return;
++
++	/*
++	 * Above Trip?
++	 * -----------
++	 * Calculate the thermal trend (using the passive cooling equation)
++	 * and modify the performance limit for all passive cooling devices
++	 * accordingly.  Note that we assume symmetry.
++	 */
++	if (temp >= trip_temp) {
++		tz->passive = true;
++
++		trend = (tz->tc1 * (temp - tz->last_temperature)) +
++			(tz->tc2 * (temp - trip_temp));
++
++		/* Heating up? */
++		if (trend > 0) {
++			list_for_each_entry(instance, &tz->cooling_devices,
++					    node) {
++				if (instance->trip != trip)
++					continue;
++				cdev = instance->cdev;
++				cdev->ops->get_cur_state(cdev, &state);
++				cdev->ops->get_max_state(cdev, &max_state);
++				if (state++ < max_state)
++					cdev->ops->set_cur_state(cdev, state);
++			}
++		} else if (trend < 0) { /* Cooling off? */
++			list_for_each_entry(instance, &tz->cooling_devices,
++					    node) {
++				if (instance->trip != trip)
++					continue;
++				cdev = instance->cdev;
++				cdev->ops->get_cur_state(cdev, &state);
++				cdev->ops->get_max_state(cdev, &max_state);
++				if (state > 0)
++					cdev->ops->set_cur_state(cdev, --state);
++			}
++			return;
++		}
++	}
++
++	/*
++	 * Below Trip?
++	 * -----------
++	 * Implement passive cooling hysteresis to slowly increase performance
++	 * and avoid thrashing around the passive trip point.  Note that we
++	 * assume symmetry.
++	 */
++	list_for_each_entry(instance, &tz->cooling_devices, node) {
++		if (instance->trip != trip)
++			continue;
++		cdev = instance->cdev;
++		cdev->ops->get_cur_state(cdev, &state);
++		cdev->ops->get_max_state(cdev, &max_state);
++		if (state > 0)
++			cdev->ops->set_cur_state(cdev, --state);
++		if (state == 0)
++			tz->passive = false;
++	}
++}
++
++void thermal_zone_device_update(struct thermal_zone_device *tz)
++{
++	int temp, trip_temp;
++	int count;
++	enum thermal_trip_t trip_type;
++	struct thermal_cooling_device_instance *instance;
++	struct thermal_cooling_device *cdev;
++
++	tz->ops->get_temp(tz, &temp);
++
++	for (count = 0; count < tz->trips; count++) {
++		tz->ops->get_trip_type(tz, count, &trip_type);
++		tz->ops->get_trip_temp(tz, count, &trip_temp);
++
++		switch (trip_type) {
++		case THERMAL_TRIP_CRITICAL:
++			if (temp > trip_temp)
++				/* FIXME: send notification */
++				orderly_poweroff(true);
++			break;
++		case THERMAL_TRIP_HOT:
++			if (temp > trip_temp)
++				/* FIXME: send notification */
++				printk(KERN_WARNING "Hot trip point\n");
++			break;
++		case THERMAL_TRIP_ACTIVE:
++			list_for_each_entry(instance, &tz->cooling_devices,
++					    node) {
++				if (instance->trip != count)
++					continue;
++
++				cdev = instance->cdev;
++
++				if (temp > trip_temp)
++					cdev->ops->set_cur_state(cdev, 1);
++				else
++					cdev->ops->set_cur_state(cdev, 0);
++			}
++			break;
++		case THERMAL_TRIP_PASSIVE:
++			thermal_zone_device_passive(tz, temp, trip_temp, count);
++			break;
++		}
++	}
++	tz->last_temperature = temp;
++	if (tz->passive)
++		thermal_zone_device_set_polling(tz, tz->passive_delay);
++	else if (tz->polling_delay)
++		thermal_zone_device_set_polling(tz, tz->polling_delay);
++}
++
++EXPORT_SYMBOL(thermal_zone_device_update);
++
++static void thermal_zone_device_check(struct work_struct *work)
++{
++	struct thermal_zone_device *tz = container_of(work, struct
++						      thermal_zone_device,
++						      poll_queue.work);
++	thermal_zone_device_update(tz);
++}
++
+ /**
+  * thermal_zone_device_register - register a new thermal zone device
+  * @type:	the thermal zone device type
+  * @trips:	the number of trip points the thermal zone support
+  * @devdata:	private device data
+  * @ops:	standard thermal zone device callbacks
++ * @tc1:	thermal coefficient 1 for passive calculations
++ * @tc2:	thermal coefficient 2 for passive calculations
++ * @passive_delay: number of milliseconds to wait between polls when
++ *		   performing passive cooling
++ * @polling_delay: number of milliseconds to wait between polls when checking
++ *		   whether trip points have been crossed (0 for interrupt
++ *		   driven systems)
+  *
+  * thermal_zone_device_unregister() must be called when the device is no
+  * longer needed.
+@@ -792,7 +946,10 @@ struct thermal_zone_device *thermal_zone_device_register(char *type,
+ 							 int trips,
+ 							 void *devdata, struct
+ 							 thermal_zone_device_ops
+-							 *ops)
++							 *ops, int tc1, int
++							 tc2,
++							 int passive_delay,
++							 int polling_delay)
+ {
+ 	struct thermal_zone_device *tz;
+ 	struct thermal_cooling_device *pos;
+@@ -826,6 +983,11 @@ struct thermal_zone_device *thermal_zone_device_register(char *type,
+ 	tz->device.class = &thermal_class;
+ 	tz->devdata = devdata;
+ 	tz->trips = trips;
++	tz->tc1 = tc1;
++	tz->tc2 = tc2;
++	tz->passive_delay = passive_delay;
++	tz->polling_delay = polling_delay;
++
+ 	sprintf(tz->device.bus_id, "thermal_zone%d", tz->id);
+ 	result = device_register(&tz->device);
+ 	if (result) {
+@@ -871,6 +1033,10 @@ struct thermal_zone_device *thermal_zone_device_register(char *type,
+ 		}
+ 	mutex_unlock(&thermal_list_lock);
+ 
++	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
++
++	thermal_zone_device_set_polling(tz, tz->polling_delay);
++
+ 	if (!result)
+ 		return tz;
+ 
+@@ -910,6 +1076,8 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 		    tz->ops->unbind(tz, cdev);
+ 	mutex_unlock(&thermal_list_lock);
+ 
++	thermal_zone_device_set_polling(tz, 0);
++
+ 	if (tz->type[0])
+ 		device_remove_file(&tz->device, &dev_attr_type);
+ 	device_remove_file(&tz->device, &dev_attr_temp);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 9e3475a..38ac33d 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -94,11 +94,18 @@ struct thermal_zone_device {
+ 	struct device device;
+ 	void *devdata;
+ 	int trips;
++	int tc1;
++	int tc2;
++	int passive_delay;
++	int polling_delay;
++	int last_temperature;
++	bool passive;
+ 	struct thermal_zone_device_ops *ops;
+ 	struct list_head cooling_devices;
+ 	struct idr idr;
+ 	struct mutex lock;	/* protect cooling devices list */
+ 	struct list_head node;
++	struct delayed_work poll_queue;
+ #if defined(CONFIG_THERMAL_HWMON)
+ 	struct list_head hwmon_node;
+ 	struct thermal_hwmon_device *hwmon;
+@@ -110,13 +117,16 @@ struct thermal_zone_device {
+ struct thermal_zone_device *thermal_zone_device_register(char *, int, void *,
+ 							 struct
+ 							 thermal_zone_device_ops
+-							 *);
++							 *, int tc1, int tc2,
++							 int passive_freq,
++							 int polling_freq);
+ void thermal_zone_device_unregister(struct thermal_zone_device *);
+ 
+ int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
+ 				     struct thermal_cooling_device *);
+ int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
+ 				       struct thermal_cooling_device *);
++void thermal_zone_device_update(struct thermal_zone_device *);
+ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+ 							       struct
+ 							       thermal_cooling_device_ops
 
-Someone screwed around with the basics here. MAX_DMA_ADDRESS is no longer
-related to MAX_DMA_PFN for the x86_32 case. What is the point of relating
-MAX_DMA_ADDRESS to PAGE_OFFSET? Looks like we are creating more confusion
-about the strange DMA zone.
-
-The best would be to rename these variables to make the semantics clearer
-
-ZONE_DMA related variables:
-
-MAX_DMA_PFN -> MAX_ZONE_DMA_PFN
-MAX_DMA_ADDRESS -> MAX_ZONE_DMA_ADDRESS
-
-MAX_DMA32_PFN -> MAX_ZONE_DMA32_PFN
-MAX_DMA32_ADDRESS -> MAX_ZONE_DMA32_ADDRESS
-
-Then the general DMAability
-
-MAX_DMA_ADDRESS -> DMA_LIMIT
-
-
-> Incorrect.  MAX_DMA_ADDRESS is the highest possible virtual DMA address:
-
-MAX_DMA_ADDRESS is the highest possible address for the DMA zone. Not the
-highest possible address that any DMA controller can use. And now we have
-special casing that makes the semantics different between 32 bit and 64 bit
-x86? Insane! Please clean up the fuzzy semantics.
-
-> include/asm-x86/dma.h:#define MAX_DMA_ADDRESS      (PAGE_OFFSET + 0x1000000)
-> 
-> Think about what that means on an x86 machine with less than 16MB of RAM.
-
-> As we have already covered in the past, CONFIG_ZONE_DMA has to always
-> be enabled on ARM because ARM always puts all memory in the first zone.
-> To do otherwise introduces lots of special cases, and I steadfastly
-> refuse to make the memory initialisation any more complicated than it
-> already is.
-
-I believe we have been over this. If you just have one zone then the core code
-would expect you to disable CONFIG_ZONE_DMA and have all memory treated equal
-in ZONE_NORMAL.
-
-The naming seems to be the problem here. Maybe renaming ZONE_DMA to
-ZONE_RESTRICTED_DMA or something would help. We are currently creating two
-different paradigms of using these constants.
-
-
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
