@@ -1,116 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbYJAKFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbYJAKGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753731AbYJAKFa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 06:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbYJAKFW
+	id S1753894AbYJAKGb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 06:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbYJAKGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 06:05:22 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53189 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752591AbYJAKFV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 06:05:21 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <4885269.1222855496500.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Wed, 1 Oct 2008 19:04:56 +0900 (JST)
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: Re: [PATCH 3/6] memcg: charge-commit-cancel protocl
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       nishimura@mxp.nes.nec.co.jp, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, balbir@linux.vnet.ibm.com
-In-Reply-To: <20081001173313.69fb8c74.nishimura@mxp.nes.nec.co.jp>
+	Wed, 1 Oct 2008 06:06:23 -0400
+Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:52961 "EHLO
+	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751337AbYJAKGX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 06:06:23 -0400
+Subject: Re: [PATCH] slub: reduce total stack usage of slab_err & object_err
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       penberg <penberg@cs.helsinki.fi>, mpm <mpm@selenic.com>,
+       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080930193318.GA31146@logfs.org>
+References: <1222787736.2995.24.camel@castor.localdomain>
+	 <20080930193318.GA31146@logfs.org>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 01 Oct 2008 11:06:07 +0100
+Message-Id: <1222855567.3052.31.camel@castor.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <20081001173313.69fb8c74.nishimura@mxp.nes.nec.co.jp>
- <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081001165734.e484cfe4.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
->> @@ -531,18 +529,33 @@ static int mem_cgroup_charge_common(stru
->>  
->>  		if (!nr_retries--) {
->>  			mem_cgroup_out_of_memory(mem, gfp_mask);
->> -			goto out;
->> +			goto nomem;
->>  		}
->>  	}
->> +	return 0;
->> +nomem:
->> +	css_put(&mem->css);
->> +	return -ENOMEM;
->> +}
->>  
->> +/*
->> + * commit a charge got by mem_cgroup_try_charge() and makes page_cgroup to
- be
->> + * USED state. If already USED, uncharge and return.
->> + */
->> +
->> +static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
->> +				     struct page_cgroup *pc,
->> +				     enum charge_type ctype)
->> +{
->> +	struct mem_cgroup_per_zone *mz;
->> +	unsigned long flags;
->>  
->>  	lock_page_cgroup(pc);
->>  	if (unlikely(PageCgroupUsed(pc))) {
->>  		unlock_page_cgroup(pc);
->>  		res_counter_uncharge(&mem->res, PAGE_SIZE);
->>  		css_put(&mem->css);
->> -
->> -		goto done;
->> +		return;
->>  	}
->>  	pc->mem_cgroup = mem;
->>  	/*
->
->Hmm, this patch cannot be applied because of this part.
->
->After [2/6], mem_cgroup_charge_common looks like:
->
->---
->                if (!nr_retries--) {
->                        mem_cgroup_out_of_memory(mem, gfp_mask);
->                        goto out;
->                }
->        }
->
->
->        lock_page_cgroup(pc);
->
->        if (unlikely(PageCgroupUsed(pc))) {
->                unlock_page_cgroup(pc);
->                res_counter_uncharge(&mem->res, PAGE_SIZE);
->                css_put(&mem->css);
->
->                goto done;
->        }
->        pc->mem_cgroup = mem;
->        /*
->---
->
->There is an empty line after lock_page_cgroup.
->
->After removing this line, I can appliy this patch(and [4-6/6]).
->
-Ah, sorry. maybe refresh miss..
+On Tue, 2008-09-30 at 21:33 +0200, Jörn Engel wrote:
+> On Tue, 30 September 2008 16:15:36 +0100, Richard Kennedy wrote:
+> > 
+> > I've been trying to build a tool to estimate the maximum stack usage in
+> > the kernel, & noticed that most of the biggest stack users are the error
+> > handling routines.
+> 
+> Cool!  I once did the same, although the code has severely bitrotted by
+> now.  Is the code available somewhere?
+> 
+> Jörn
 
-I'll check it again tomorrow.
+No I haven't made it available as it's really only a proof of concept,
+and I still don't have any sensible ideas how to deal with pointers to
+functions. Plus I'm still testing it to see if the results are anything
+like reasonable.
+Also it's finding lots of potentially recursive code paths and my
+heuristic to deal with them is very basic. I'm just adding a feature so
+that I can ignore some code paths, so maybe that will help.
 
-Thanks,
--Kame
-
-
->
->Thanks,
->Daisuke Nishimura.
->
+Richard
 
