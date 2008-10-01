@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752906AbYJAXDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473AbYJAXDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752906AbYJAXDa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 19:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYJAXDV
+	id S1753473AbYJAXDo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 19:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYJAXDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 1 Oct 2008 19:03:21 -0400
-Received: from www.tglx.de ([62.245.132.106]:56525 "EHLO www.tglx.de"
+Received: from www.tglx.de ([62.245.132.106]:56526 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751126AbYJAXDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751368AbYJAXDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 1 Oct 2008 19:03:20 -0400
-Message-Id: <20081001223301.900862899@linutronix.de>
+Message-Id: <20081001223302.111345767@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Wed, 01 Oct 2008 23:02:18 -0000
+Date: Wed, 01 Oct 2008 23:02:27 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Linus Torvalds <torvalds@osdl.org>,
@@ -21,157 +21,52 @@ Cc: Linus Torvalds <torvalds@osdl.org>,
        Steven Rostedt <rostedt@goodmis.org>,
        Jon Masters <jonathan@jonmasters.org>,
        Sven Dietrich <sdietrich@suse.de>
-Subject: [RFC patch 2/5] genirq: add a quick check handler
+Subject: [RFC patch 4/5] genirq: add a helper to check whether the irq thread
+	should run
 References: <20081001223213.078984344@linutronix.de>
-Content-Disposition: inline; filename=genirq-add-quickcheckhandler.patch
+Content-Disposition: inline; filename=genirq-add-irq-trigger-check.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Preparatory patch for threaded interrupt handlers.
-
-Adds a quick check handler which is called before the real handler.
-The quick check handler can decide whether the interrupt was originated
-from the device or not. It can also declare the interrupt as handled
-and subsequently avoid that the real handler is called.
+The helper allows threaded irq handlers to determine whether another
+interrupt arrived or not while the thread is running.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Reviewed-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/interrupt.h |   14 +++++++++++++-
- include/linux/irqreturn.h |    2 ++
- kernel/irq/handle.c       |   18 +++++++++++++++---
- kernel/irq/manage.c       |   19 +++++++++++++------
- 4 files changed, 43 insertions(+), 10 deletions(-)
+ include/linux/interrupt.h |    5 +++++
+ kernel/irq/manage.c       |    2 +-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
 Index: linux-2.6-tip/include/linux/interrupt.h
 ===================================================================
 --- linux-2.6-tip.orig/include/linux/interrupt.h
 +++ linux-2.6-tip/include/linux/interrupt.h
-@@ -58,6 +58,7 @@
- typedef irqreturn_t (*irq_handler_t)(int, void *);
+@@ -109,6 +109,11 @@ extern int __must_check devm_request_irq
+ 			    const char *devname, void *dev_id);
+ extern void devm_free_irq(struct device *dev, unsigned int irq, void *dev_id);
  
- struct irqaction {
-+	irq_handler_t quick_check_handler;
- 	irq_handler_t handler;
- 	unsigned long flags;
- 	cpumask_t mask;
-@@ -69,8 +70,19 @@ struct irqaction {
- };
- 
- extern irqreturn_t no_action(int cpl, void *dev_id);
--extern int __must_check request_irq(unsigned int, irq_handler_t handler,
-+
-+extern int __must_check
-+request_irq_quickcheck(unsigned int, irq_handler_t handler,
-+		       irq_handler_t quick_check_handler,
- 		       unsigned long, const char *, void *);
-+
-+static inline int __must_check
-+request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
-+	    const char *name, void *dev)
++static inline int irq_thread_should_run(struct irqaction *action)
 +{
-+	return request_irq_quickcheck(irq, handler, NULL, flags, name, dev);
++	return test_and_clear_bit(IRQF_RUNTHREAD, &action->flags);
 +}
 +
- extern void free_irq(unsigned int, void *);
- 
- struct device;
-Index: linux-2.6-tip/include/linux/irqreturn.h
-===================================================================
---- linux-2.6-tip.orig/include/linux/irqreturn.h
-+++ linux-2.6-tip/include/linux/irqreturn.h
-@@ -5,10 +5,12 @@
-  * enum irqreturn
-  * @IRQ_NONE		interrupt was not from this device
-  * @IRQ_HANDLED		interrupt was handled by this device
-+ * @IRQ_NEEDS_HANDLING	quick check handler requests to run real handler
-  */
- enum irqreturn {
- 	IRQ_NONE,
- 	IRQ_HANDLED,
-+	IRQ_NEEDS_HANDLING,
- };
- 
- #define irqreturn_t	enum irqreturn
-Index: linux-2.6-tip/kernel/irq/handle.c
-===================================================================
---- linux-2.6-tip.orig/kernel/irq/handle.c
-+++ linux-2.6-tip/kernel/irq/handle.c
-@@ -137,9 +137,21 @@ irqreturn_t handle_IRQ_event(unsigned in
- 		local_irq_enable_in_hardirq();
- 
- 	do {
--		ret = action->handler(irq, action->dev_id);
--		if (ret == IRQ_HANDLED)
--			status |= action->flags;
-+		if (action->quick_check_handler)
-+			ret = action->quick_check_handler(irq, action->dev_id);
-+		else
-+			ret = IRQ_NEEDS_HANDLING;
-+
-+		switch (ret) {
-+		default:
-+			break;
-+
-+		case IRQ_NEEDS_HANDLING:
-+			ret = action->handler(irq, action->dev_id);
-+			if (ret == IRQ_HANDLED)
-+				status |= action->flags;
-+			break;
-+		}
- 		retval |= ret;
- 		action = action->next;
- 	} while (action);
+ /*
+  * On lockdep we dont want to enable hardirqs in hardirq
+  * context. Use local_irq_enable_in_hardirq() to annotate
 Index: linux-2.6-tip/kernel/irq/manage.c
 ===================================================================
 --- linux-2.6-tip.orig/kernel/irq/manage.c
 +++ linux-2.6-tip/kernel/irq/manage.c
-@@ -563,9 +563,14 @@ void free_irq(unsigned int irq, void *de
- EXPORT_SYMBOL(free_irq);
+@@ -341,7 +341,7 @@ static int irq_thread(void *data)
+ 	set_current_state(TASK_INTERRUPTIBLE);
  
- /**
-- *	request_irq - allocate an interrupt line
-+ *	request_irq_quickcheck - allocate an interrupt line
-  *	@irq: Interrupt line to allocate
-- *	@handler: Function to be called when the IRQ occurs
-+ *	@handler: Function to be called when the IRQ occurs.
-+ *		  Primary handler for threaded interrupts
-+ *      @quick_check_handler: Function to be called when the interrupt
-+ *			   before the real handler is called to check
-+ *                         whether the interrupt originated from the device
-+ *                         can be NULL
-  *	@irqflags: Interrupt type flags
-  *	@devname: An ascii name for the claiming device
-  *	@dev_id: A cookie passed back to the handler function
-@@ -589,10 +594,11 @@ EXPORT_SYMBOL(free_irq);
-  *	IRQF_SHARED		Interrupt is shared
-  *	IRQF_DISABLED	Disable local interrupts while processing
-  *	IRQF_SAMPLE_RANDOM	The interrupt can be used for entropy
-- *
-  */
--int request_irq(unsigned int irq, irq_handler_t handler,
--		unsigned long irqflags, const char *devname, void *dev_id)
-+int request_irq_quickcheck(unsigned int irq, irq_handler_t handler,
-+			   irq_handler_t quick_check_handler,
-+			   unsigned long irqflags, const char *devname,
-+			   void *dev_id)
- {
- 	struct irqaction *action;
- 	int retval;
-@@ -622,6 +628,7 @@ int request_irq(unsigned int irq, irq_ha
- 	if (!action)
- 		return -ENOMEM;
- 
-+	action->quick_check_handler = quick_check_handler;
- 	action->handler = handler;
- 	action->flags = irqflags;
- 	cpus_clear(action->mask);
-@@ -651,4 +658,4 @@ int request_irq(unsigned int irq, irq_ha
- 
- 	return retval;
- }
--EXPORT_SYMBOL(request_irq);
-+EXPORT_SYMBOL(request_irq_quickcheck);
+ 	while (!kthread_should_stop()) {
+-		if (!test_and_clear_bit(IRQF_RUNTHREAD, &action->flags)) {
++		if (!irq_thread_should_run(action)) {
+ 			schedule();
+ 			/* Avoid running the handler on stop */
+ 			if (kthread_should_stop())
 
 
