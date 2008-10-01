@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbYJAOQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbYJAORz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947AbYJAOQZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 10:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYJAOQI
+	id S1753716AbYJAORz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 10:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYJAORq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 10:16:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42648 "EHLO mx2.redhat.com"
+	Wed, 1 Oct 2008 10:17:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42704 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753423AbYJAOQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 10:16:07 -0400
-Date: Wed, 01 Oct 2008 10:13:44 -0400 (EDT)
-Message-Id: <20081001.101344.78703914.k-ueda@ct.jp.nec.com>
+	id S1750901AbYJAORp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 10:17:45 -0400
+Date: Wed, 01 Oct 2008 10:14:46 -0400 (EDT)
+Message-Id: <20081001.101446.112628304.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com
 Cc: rusty@rustcorp.com.au, oakad@yahoo.com, adrian@mcmen.demon.co.uk,
        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: [PATCH 4/5] block: change elevator to use __blk_end_request()
+Subject: [PATCH 5/5] block: remove end_{queued|dequeued}_request()
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 In-Reply-To: <20081001.100942.74754500.k-ueda@ct.jp.nec.com>
 References: <20081001.100942.74754500.k-ueda@ct.jp.nec.com>
@@ -26,46 +26,118 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts elevator to use __blk_end_request() directly
-so that end_{queued|dequeued}_request() can be removed.
-Related 'uptodate' arguments is converted to 'error'.
+This patch removes end_queued_request() and end_dequeued_request(),
+which are no longer used.
+
+As a results, users of __end_request() became only end_request().
+So the actual code in __end_request() is moved to end_request()
+and __end_request() is removed.
 
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>
 ---
- block/elevator.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ block/blk-core.c       |   58 +++++--------------------------------------------
+ include/linux/blkdev.h |    2 -
+ 2 files changed, 7 insertions(+), 53 deletions(-)
 
-Index: linux-2.6-block/block/elevator.c
+Index: linux-2.6-block/block/blk-core.c
 ===================================================================
---- linux-2.6-block.orig/block/elevator.c
-+++ linux-2.6-block/block/elevator.c
-@@ -754,7 +754,7 @@ struct request *elv_next_request(struct 
- 		 * not ever see it.
- 		 */
- 		if (blk_empty_barrier(rq)) {
--			end_queued_request(rq, 1);
-+			__blk_end_request(rq, 0, blk_rq_bytes(rq));
- 			continue;
- 		}
- 		if (!(rq->cmd_flags & REQ_STARTED)) {
-@@ -825,7 +825,7 @@ struct request *elv_next_request(struct 
- 			break;
- 		} else if (ret == BLKPREP_KILL) {
- 			rq->cmd_flags |= REQ_QUIET;
--			end_queued_request(rq, 0);
-+			__blk_end_request(rq, -EIO, blk_rq_bytes(rq));
- 		} else {
- 			printk(KERN_ERR "%s: bad return=%d\n", __func__, ret);
- 			break;
-@@ -922,7 +922,7 @@ void elv_abort_queue(struct request_queu
- 		rq = list_entry_rq(q->queue_head.next);
- 		rq->cmd_flags |= REQ_QUIET;
- 		blk_add_trace_rq(q, rq, BLK_TA_ABORT);
--		end_queued_request(rq, 0);
-+		__blk_end_request(rq, -EIO, blk_rq_bytes(rq));
+--- linux-2.6-block.orig/block/blk-core.c
++++ linux-2.6-block/block/blk-core.c
+@@ -1788,17 +1788,6 @@ static void end_that_request_last(struct
  	}
  }
- EXPORT_SYMBOL(elv_abort_queue);
+ 
+-static inline void __end_request(struct request *rq, int uptodate,
+-				 unsigned int nr_bytes)
+-{
+-	int error = 0;
+-
+-	if (uptodate <= 0)
+-		error = uptodate ? uptodate : -EIO;
+-
+-	__blk_end_request(rq, error, nr_bytes);
+-}
+-
+ /**
+  * blk_rq_bytes - Returns bytes left to complete in the entire request
+  * @rq: the request being processed
+@@ -1829,41 +1818,6 @@ unsigned int blk_rq_cur_bytes(struct req
+ EXPORT_SYMBOL_GPL(blk_rq_cur_bytes);
+ 
+ /**
+- * end_queued_request - end all I/O on a queued request
+- * @rq:		the request being processed
+- * @uptodate:	error value or %0/%1 uptodate flag
+- *
+- * Description:
+- *     Ends all I/O on a request, and removes it from the block layer queues.
+- *     Not suitable for normal I/O completion, unless the driver still has
+- *     the request attached to the block layer.
+- *
+- **/
+-void end_queued_request(struct request *rq, int uptodate)
+-{
+-	__end_request(rq, uptodate, blk_rq_bytes(rq));
+-}
+-EXPORT_SYMBOL(end_queued_request);
+-
+-/**
+- * end_dequeued_request - end all I/O on a dequeued request
+- * @rq:		the request being processed
+- * @uptodate:	error value or %0/%1 uptodate flag
+- *
+- * Description:
+- *     Ends all I/O on a request. The request must already have been
+- *     dequeued using blkdev_dequeue_request(), as is normally the case
+- *     for most drivers.
+- *
+- **/
+-void end_dequeued_request(struct request *rq, int uptodate)
+-{
+-	__end_request(rq, uptodate, blk_rq_bytes(rq));
+-}
+-EXPORT_SYMBOL(end_dequeued_request);
+-
+-
+-/**
+  * end_request - end I/O on the current segment of the request
+  * @req:	the request being processed
+  * @uptodate:	error value or %0/%1 uptodate flag
+@@ -1877,14 +1831,16 @@ EXPORT_SYMBOL(end_dequeued_request);
+  *     they have a residual value to account for. For that case this function
+  *     isn't really useful, unless the residual just happens to be the
+  *     full current segment. In other words, don't use this function in new
+- *     code. Use blk_end_request() or __blk_end_request() to end partial parts
+- *     of a request, or end_dequeued_request() and end_queued_request() to
+- *     completely end IO on a dequeued/queued request.
+- *
++ *     code. Use blk_end_request() or __blk_end_request() to end a request.
+  **/
+ void end_request(struct request *req, int uptodate)
+ {
+-	__end_request(req, uptodate, req->hard_cur_sectors << 9);
++	int error = 0;
++
++	if (uptodate <= 0)
++		error = uptodate ? uptodate : -EIO;
++
++	__blk_end_request(req, error, req->hard_cur_sectors << 9);
+ }
+ EXPORT_SYMBOL(end_request);
+ 
+Index: linux-2.6-block/include/linux/blkdev.h
+===================================================================
+--- linux-2.6-block.orig/include/linux/blkdev.h
++++ linux-2.6-block/include/linux/blkdev.h
+@@ -790,8 +790,6 @@ extern int __blk_end_request(struct requ
+ extern int blk_end_bidi_request(struct request *rq, int error,
+ 				unsigned int nr_bytes, unsigned int bidi_bytes);
+ extern void end_request(struct request *, int);
+-extern void end_queued_request(struct request *, int);
+-extern void end_dequeued_request(struct request *, int);
+ extern int blk_end_request_callback(struct request *rq, int error,
+ 				unsigned int nr_bytes,
+ 				int (drv_callback)(struct request *));
