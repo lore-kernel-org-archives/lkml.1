@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbYJAKDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbYJAKCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753590AbYJAKDA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 06:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbYJAKCN
+	id S1752539AbYJAKCq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 06:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYJAKCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 06:02:13 -0400
-Received: from www.tglx.de ([62.245.132.106]:37627 "EHLO www.tglx.de"
+	Wed, 1 Oct 2008 06:02:07 -0400
+Received: from www.tglx.de ([62.245.132.106]:37621 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752787AbYJAKCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 06:02:12 -0400
-Message-Id: <20081001095412.309614500@linutronix.de>
+	id S1752452AbYJAKCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 06:02:05 -0400
+Message-Id: <20081001095204.343984413@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Wed, 01 Oct 2008 10:01:43 -0000
+Date: Wed, 01 Oct 2008 10:01:30 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
        Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>,
        Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: [RFC patch 3/3] x86: hookup sys_rt_tgsigqueueinfo
-References: <20081001095204.343984413@linutronix.de>
-Content-Disposition: inline; filename=x86-hookup-rt-tgsigqueueinfo.patch
+Subject: [RFC patch 0/3] signals: add rt_tgsigqueueinfo syscall V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the new sys_rt_tgsigqueueinfo available for x86.
+Changes vs. V1: compat_sys_rt_sigqueueinfo implemented. Thanks Roland !
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- arch/x86/ia32/ia32entry.S          |    1 +
- arch/x86/kernel/syscall_table_32.S |    1 +
- include/asm-x86/unistd_32.h        |    1 +
- include/asm-x86/unistd_64.h        |    2 ++
- 4 files changed, 5 insertions(+)
+sys_kill has a counterpart sys_tgkill which allows to send signals to
+a particular thread. sys_rt_sigqueueinfo is lacking such a counterpart.
 
-Index: linux-2.6-tip/arch/x86/ia32/ia32entry.S
-===================================================================
---- linux-2.6-tip.orig/arch/x86/ia32/ia32entry.S
-+++ linux-2.6-tip/arch/x86/ia32/ia32entry.S
-@@ -832,4 +832,5 @@ ia32_sys_call_table:
- 	.quad sys_dup3			/* 330 */
- 	.quad sys_pipe2
- 	.quad sys_inotify_init1
-+	.quad compat_sys_rt_tgsigqueueinfo
- ia32_syscall_end:
-Index: linux-2.6-tip/arch/x86/kernel/syscall_table_32.S
-===================================================================
---- linux-2.6-tip.orig/arch/x86/kernel/syscall_table_32.S
-+++ linux-2.6-tip/arch/x86/kernel/syscall_table_32.S
-@@ -332,3 +332,4 @@ ENTRY(sys_call_table)
- 	.long sys_dup3			/* 330 */
- 	.long sys_pipe2
- 	.long sys_inotify_init1
-+	.long sys_rt_tgsigqueueinfo
-Index: linux-2.6-tip/include/asm-x86/unistd_32.h
-===================================================================
---- linux-2.6-tip.orig/include/asm-x86/unistd_32.h
-+++ linux-2.6-tip/include/asm-x86/unistd_32.h
-@@ -338,6 +338,7 @@
- #define __NR_dup3		330
- #define __NR_pipe2		331
- #define __NR_inotify_init1	332
-+#define __NR_rt_tgsigqueueinfo	333
- 
- #ifdef __KERNEL__
- 
-Index: linux-2.6-tip/include/asm-x86/unistd_64.h
-===================================================================
---- linux-2.6-tip.orig/include/asm-x86/unistd_64.h
-+++ linux-2.6-tip/include/asm-x86/unistd_64.h
-@@ -653,6 +653,8 @@ __SYSCALL(__NR_dup3, sys_dup3)
- __SYSCALL(__NR_pipe2, sys_pipe2)
- #define __NR_inotify_init1			294
- __SYSCALL(__NR_inotify_init1, sys_inotify_init1)
-+#define __NR_rt_tgsigqueueinfo			295
-+__SYSCALL(__NR_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo)
- 
- 
- #ifndef __NO_STUBS
+Aside of the asymetry it is a show stopper for migrating applications
+from other unix-alike RTOSes.
+
+The following patch series implements rt_tgsigqueueinfo and hooks it
+up for x86.
+
+Find below the raw documentation.
+
+Thanks,
+
+	tglx
+
+----
+
+NAME
+       rt_tgsigqueueinfo - Send signal information to a signal to a thread
+
+SYNOPSIS
+       long sys_rt_tgsigqueueinfo (int tgid, int tid, int sig, siginfo_t *uinfo);
+
+DESCRIPTION
+
+       rt_tgsigqueueinfo sends signal sig information uinfo to the
+       thread with the thread ID tid in the thread group tgid.  (By
+       contrast, rt_sigqueueinfo(2) can only be used to send a signal
+       info to a process (i.e., thread group) as a whole, and the
+       signal will be delivered to an arbitrary thread within that
+       process.)
+
+RETURN VALUE
+
+       rt_tgsigqueueinfo returns 0 on success; otherwise,
+       rt_sigqueueinfo returns one of the errors listed in the
+       "Errors" section.
+
+ERRORS
+       -EFAULT
+              An invalid value for uinfo was specified.
+
+       -EINVAL
+	      An invalid TID, TGID or signal was specified.
+
+       -EPERM 
+              Permission denied.  For the required permissions,
+              see rt_sigqueueinfo(2).
+
+       -ESRCH 
+       	      No process with the specified thread ID and thread group
+              ID exists.
 
 
