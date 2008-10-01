@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbYJAK6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbYJALDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753275AbYJAK6M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 06:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYJAK56
+	id S1753271AbYJALDR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 07:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYJALDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 06:57:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49639 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752715AbYJAK55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 06:57:57 -0400
-Date: Wed, 1 Oct 2008 12:57:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Steven Noonan <steven@uplinklabs.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -tip] drivers/serial/8250.c: 'i' may be used
-	uninitialized
-Message-ID: <20081001105741.GA32062@elte.hu>
-References: <1222847847-7127-1-git-send-email-steven@uplinklabs.net> <1222847847-7127-2-git-send-email-steven@uplinklabs.net> <1222847847-7127-3-git-send-email-steven@uplinklabs.net> <20081001080150.GC25832@elte.hu> <20081001113343.4bf25ea5@lxorguk.ukuu.org.uk>
+	Wed, 1 Oct 2008 07:03:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60439 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752739AbYJALDE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 07:03:04 -0400
+Date: Wed, 1 Oct 2008 07:03:01 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Nigel Hislop <hislop_nigel@emc.com>, Hannes Reinecke <hare@suse.de>
+Subject: Re: [patch 21/21] Add ioctl support for EMC Symmetrix Subsystem
+	Control I/O
+Message-ID: <20081001110301.GB6648@infradead.org>
+References: <20081001083317.782967473@de.ibm.com> <20081001084130.599948666@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081001113343.4bf25ea5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081001084130.599948666@de.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> +static int dasd_symm_io(struct dasd_device *device, void __user *argp)
+> +{
+> +	struct dasd_symmio_parms usrparm;
+> +	char *psf_data, *rssd_result;
+> +	struct dasd_ccw_req *cqr;
+> +	struct ccw1 *ccw;
+> +	int rc;
+> +
+> +	/* Copy parms from caller */
+> +	rc = copy_from_user(&usrparm, argp, sizeof(usrparm)) ? -EFAULT : 0;
+> +	if (rc)
+> +		goto out;
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+That style is quite odd,  what about the more normal
 
-> On Wed, 1 Oct 2008 10:01:50 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > ( Alan Cc:-ed. Seems like gcc bogosity - so your solution of using
-> >   uninitialized_var() is the correct way to annotate this. )
-> 
-> Sorry but uninitialized_var() is too ugly to be acceptable. Please use 
-> a proper __foo style notation for consistency with the rest of the 
-> kernel
+	rc = -EFAULT;
+	if (copy_from_user(&usrparm, argp, sizeof(usrparm)))
+		goto out;
 
-it cannot be wrapped like that via __foo style notation (which can be 
-used for section tricks), and uninitialized_var() is the accepted 
-upstream facility for this, it got introduced 1.5 years ago, via commit 
-94909914 ("Add unitialized_var() macro for suppressing gcc warnings").
+instead?
 
-> (Besides which last time I checked current gcc could figure that one 
-> out)
+> +	/* alloc I/O data area */
+> +	psf_data = kzalloc(usrparm.psf_data_len, GFP_KERNEL | GFP_DMA);
+> +	rssd_result = kzalloc(usrparm.rssd_result_len, GFP_KERNEL | GFP_DMA);
+> +	if (!psf_data || !rssd_result) {
+> +		rc = -ENOMEM;
+> +		goto out_free;
+> +	}
 
-that would indeed moot the patch.
+just check each on individually and do individual unwinding.  Makes the
+code a little more easily readable.
 
-	Ingo
+> +	/* get syscall header from user space */
+> +	rc = copy_from_user(psf_data,
+> +			    (void __user *)(unsigned long) usrparm.psf_data,
+> +			    usrparm.psf_data_len) ? -EFAULT : 0;
+> +	if (rc)
+> +		goto out_free;
+
+Same as the first copy_from_user
+
+> +	rc = copy_to_user((void __user *)(unsigned long) usrparm.rssd_result,
+> +			   rssd_result, usrparm.rssd_result_len) ? -EFAULT : 0;
+
+And here again.
+
