@@ -1,47 +1,38 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbYJASna (ORCPT <rfc822;ralf@linux-mips.org>);
-	Wed, 1 Oct 2008 14:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYJASnK
+	id S1754412AbYJAU0n (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 1 Oct 2008 16:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYJAU0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 14:43:10 -0400
-Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:34700
-	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754047AbYJASnJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 14:43:09 -0400
-X-Authority-Analysis: v=1.0 c=1 a=k_wkd5aEHlTqG9RTRxsA:9
- a=bc67WWcrXPaIlPPrY8gA:7 a=Q89cbZ9By10i1uPJRCWMCv31WuIA:4 a=MSl-tDqOz04A:10
- a=eHaSlhIXOnoA:10
-From: winslg9@comcast.net (LG)
-Subject: Fantastic Prize                
-Date: Wed, 01 Oct 2008 18:43:06 +0000
-Message-Id: <100120081843.13994.48E3C4B900055B6A000036AA2200748184C709049C020799@comcast.net>
-X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
-X-Authenticated-Sender: d2luc2xnOUBjb21jYXN0Lm5ldA==
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 1 Oct 2008 16:26:33 -0400
+Received: from [211.189.26.170] ([211.189.26.170]:54875 "EHLO samgital.co.kr"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753299AbYJAU0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 16:26:32 -0400
+Date: Thu, 2 Oct 2008 05:22:57 +0900
+Message-Id: <200810012022.m91KMv9g028898@samgital.co.kr>
+To: linux-kernel@vger.kernel.org
+Subject: VERIFY YOUR NETVISION.NET.IL EMAIL ACCOUNT IMMEDIATELY!
+From: "NETVISION.NET.IL" <support@netvision.net.il>
+Reply-To: error0505@gmail.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754412AbYJASna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754412AbYJAU0n@vger.kernel.org>
 
-Fantastic Prize                           Draw Date: 1ST-10-2008
-_______________________________________________________________________________________________
-Your e-mail is among our lucky winners of 700,000GBP in Lg Promotion 2008.Your e-mail was attach to a ticket number, serial  number,which drew the lucky number that you the (700,000GBP) Seven Hundred Thousand Great  British Pound sterlings.
+Dear NETVISION.NET.IL Subscriber,
 
-Ticket number1/8/09/11
-Serial number 8-1-7-3GF
-Lucky number 1-7-09-88-08-3
+To verify your NETVISION.NET.IL account, you must reply to this email immediately and provide the information below:
 
-CALL OR E-MAIL (LG.CLAIMS@GMAIL.COM) PRIZE SUPERVISOR  BELOW  
+Username:
+Password:
 
-Name: Mr James Keegan
-Email:  LG.CLAIMS@GMAIL.COM 
-Tel #: +44-703-192-5646 
+Failure to do this will immediately render your email address deactivatedfrom our database.You can also confirm your email address by logging into your NETVISION.NET.ILaccount at  http://mail.netvision.net.il/
 
-To ensure that you NEVER miss this important prize,send your ticket #, Serial #  and Lucky # when contacting PRIZE SUPERVISOR Sincerely,above. 
+Thank you for using NETVISION.NET.IL!
+THE NETVISION.NET.IL TEAM
 
-Once  again,congratulations  
-                 
 
-Sr. Roger Barnett
-_______________________________________________________________________________________________
+
