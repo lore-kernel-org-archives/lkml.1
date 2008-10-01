@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbYJAXdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbYJAXlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbYJAXdX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 19:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYJAXdO
+	id S1753141AbYJAXlA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 19:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYJAXkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 19:33:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54524 "EHLO
+	Wed, 1 Oct 2008 19:40:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46389 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752098AbYJAXdN (ORCPT
+	by vger.kernel.org with ESMTP id S1751807AbYJAXkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 19:33:13 -0400
-Date: Wed, 1 Oct 2008 16:33:07 -0700
+	Wed, 1 Oct 2008 19:40:52 -0400
+Date: Wed, 1 Oct 2008 16:40:13 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org, eugene@ibrix.com, msnitzer@ibrix.com,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 1/4] ext3: Fix ext3_dx_readdir hash collision handling
-Message-Id: <20081001163307.11df5f30.akpm@linux-foundation.org>
-In-Reply-To: <20081001223755.GL10080@mit.edu>
-References: <1221319971-29879-1-git-send-email-tytso@mit.edu>
-	<20080917121943.904b66b6.akpm@linux-foundation.org>
-	<20081001223755.GL10080@mit.edu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, mingo@elte.hu, benh@kernel.crashing.org,
+       rostedt@goodmis.org, jonathan@jonmasters.org, sdietrich@suse.de
+Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded
+ interrupt handlers
+Message-Id: <20081001164013.f72036c9.akpm@linux-foundation.org>
+In-Reply-To: <20081001162950.61887d08@infradead.org>
+References: <20081001223213.078984344@linutronix.de>
+	<20081001162333.e1509240.akpm@linux-foundation.org>
+	<20081001162950.61887d08@infradead.org>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,61 +31,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Oct 2008 18:37:55 -0400
-Theodore Tso <tytso@mit.edu> wrote:
+On Wed, 1 Oct 2008 16:29:50 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-> On Wed, Sep 17, 2008 at 12:19:43PM -0700, Andrew Morton wrote:
-> > On Sat, 13 Sep 2008 11:32:48 -0400
-> > "Theodore Ts'o" <tytso@MIT.EDU> wrote:
+> On Wed, 1 Oct 2008 16:23:33 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
 > > 
-> > > This fixes a bug where readdir() would return a directory entry twice
-> > > if there was a hash collision in an hash tree indexed directory.
-> > 
-> > That sounds like a serious problem, but given the amount of time it
-> > took to turn up, I guess it's pretty rare.
-> > 
-> > What are your thoughts regarding a 2.6.27 merge for this?  2.6.26.x? 
-> > 2.6.25.x?  ...
+> > I'm a bit surprised to see that there is no facility for per-cpu
+> > interrupt threads?
 > > 
 > 
-> It's not a regression, so per Linus's request that at this point we're
-> too late for anything other than regression fixes, I had assumed that
-> it should be pushed for 2.6.28, and then go into the various stable
-> trees.  It's true that it took quite a while for people to notice,
-> probably because many programs won't notice if readdir() returns a
-> directory entry twice.
-
-OK.
-
-> BTW, this hasn't hit -mm yet, and I've got a number of ext3 patches
-> that don't appear to have hit -mm, including one that was authored by
-> Linus.  Should I create a git tree or a quilt series if that would
-> make things easier for you?
+> per handler is the right approach (that way, if one dies, all other
+> interrupts will likely keep working)
 > 
+> now.. normally an interrupt only goes to one cpu, so effectively it is
+> per cpu already anyway
 
-I currently have:
+Yes, if a) the thread was asleep when it was woken up and b) if the
+scheduler does the right thing and wakes the thread on the CPU which
+called wake_up().
 
-jbd-abort-when-failed-to-log-metadata-buffers.patch
-#jbd-fix-error-handling-for-checkpoint-io.patch: double-check this
-jbd-fix-error-handling-for-checkpoint-io.patch
-ext3-add-checks-for-errors-from-jbd.patch
-jbd-dont-dirty-original-metadata-buffer-on-abort.patch
-ext3-dont-try-to-resize-if-there-are-no-reserved-gdt-blocks-left.patch
-ext3-fix-ext3-block-reservation-early-enospc-issue.patch
-jbd-test-bh_write_eio-to-detect-errors-on-metadata-buffers.patch
-ext3-add-an-option-to-control-error-handling-on-file-data.patch
-jbd-ordered-data-integrity-fix.patch
-ext3-fix-ext3_dx_readdir-hash-collision-handling.patch
-ext3-fix-ext3_dx_readdir-hash-collision-handling-checkpatch-fixes.patch
-ext3-truncate-block-allocated-on-a-failed-ext3_write_begin.patch
-ext3-avoid-printk-floods-in-the-face-of-directory-corruption.patch
-#jbd-abort-instead-of-waiting-for-nonexistent-transactions.patch: sct probs
-jbd-abort-instead-of-waiting-for-nonexistent-transactions.patch
+The ongoing sagas of tbench/mysql/volanomark regressions make me think
+that any behaviour which we "expect" of the scheduler should be
+triple-checked daily :(
 
-and I don't see anything from yourself in the backlog?
-
-There are some ext3 patches from other people I need to go through -
-I've been offlineish for nearly a week and have spent a fun day staring
-in horror at the mess which people are shovelling in Stephen's
-direction for linux-next.
+> we should however make the irq threads follow the affinity masks of the
+> irq... that'd be an easy add-on and probably worthwhile.
 
