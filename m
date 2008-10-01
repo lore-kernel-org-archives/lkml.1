@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYJADeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbYJADf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbYJADeX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 23:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYJADeN
+	id S1752863AbYJADf7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Sep 2008 23:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYJADfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 23:34:13 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:27847 "EHLO
+	Tue, 30 Sep 2008 23:35:50 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:36969 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbYJADeL (ORCPT
+	with ESMTP id S1751622AbYJADfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 23:34:11 -0400
+	Tue, 30 Sep 2008 23:35:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:x-enigmail-version:content-type
          :content-transfer-encoding;
-        b=q12QXySp7Kk3V8kqSqnB9fZonm50q5R4wU0fTHJP4Kf3qSziTLXmxq/BtnAERV5zNT
-         p5a0Tvh3ufguKNjfMCq+9sVshzpaepo3LMsPKl3A8aA5ga4Hlgw+vGBiNA9zIc8Tdamu
-         404gby32gSCGb3lzoLSO98MS+oI600kF+cHQc=
-Message-ID: <48E2EF61.8000104@gmail.com>
-Date: Wed, 01 Oct 2008 12:32:49 +0900
+        b=PUQ8PtQAMHjpZmxh2oxv4jyA5YTa8djemxIfnhKyyHIftNru2wKMouFVdqF0Hyv7Va
+         nqvmVOClX/4+wb9DZPolEwfOtlNSn495zZAq2mTxPbmFRU9sBWFYHYEuPq6wh+KrJpWv
+         uDkwbAS3hbZv4z9YXsxWizjFIsb2JJBgVjkXc=
+Message-ID: <48E2EFB3.1060202@gmail.com>
+Date: Wed, 01 Oct 2008 12:34:11 +0900
 From: Tejun Heo <htejun@gmail.com>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
@@ -31,10 +31,10 @@ CC: Jeff Garzik <jeff@garzik.org>,
        Frans Pop <elendil@planet.nl>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/6] Hibernation: Introduce new system state for the last
- phase of hibernation
-References: <200808290002.55026.rjw@sisk.pl> <48D17BBE.5020807@garzik.org> <200809300006.24919.rjw@sisk.pl> <200809300010.39000.rjw@sisk.pl>
-In-Reply-To: <200809300010.39000.rjw@sisk.pl>
+Subject: Re: [PATCH 3/6] SATA: Blacklisting of systems that spin off disks
+ during ACPI power off
+References: <200808290002.55026.rjw@sisk.pl> <48D17BBE.5020807@garzik.org> <200809300006.24919.rjw@sisk.pl> <200809300014.28983.rjw@sisk.pl>
+In-Reply-To: <200809300014.28983.rjw@sisk.pl>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -45,19 +45,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Hibernation: Introduce new system state for the last phase of hibernation
+> SATA: Blacklisting of systems that spin off disks during ACPI power off
 > 
-> Replace unused SYSTEM_SUSPEND_DISK with a new system_state value
-> SYSTEM_HIBERNATE_ENTER that can be used by device drivers to check if
-> the system is in the last phase of hibernation.
-> 
-> In particular, some SATA drivers are going to use it for blacklisting
-> systems in which the disks should not be spun down during the last
-> phase of hibernation (the BIOS will do that anyway).
+> Introduce new libata flags ATA_FLAG_NO_POWEROFF_SPINDOWN and
+> ATA_FLAG_NO_HIBERNATE_SPINDOWN that, if set, will prevent disks from
+> being spun off during system power off and hibernation, respectively
+> (to handle the hibernation case we need the new system state
+> SYSTEM_HIBERNATE_ENTER that can be checked against by libata, in
+> analogy with SYSTEM_POWER_OFF).
 > 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Rafael, may I push this through libata-dev?
+ACK 3-6.  I'll push these through libata-dev after the first two
+prerequsite patches are cleared.
 
 Thanks.
 
