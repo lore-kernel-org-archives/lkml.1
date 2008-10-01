@@ -1,93 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbYJAHs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139AbYJAHsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753179AbYJAHs3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 03:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYJAHsV
+	id S1752139AbYJAHsn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 03:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYJAHse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 03:48:21 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:4194 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbYJAHsU (ORCPT
+	Wed, 1 Oct 2008 03:48:34 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55899 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753473AbYJAHsd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 03:48:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dwUthi58DPb5CXDUG2rU2kt/9HSC+i7O8/Oj/Ony9lmtRGfGPvXdEY3jHkvSt12lCx
-         N3WpXTxsspaCJIbadmZ/4m32Rh5Hs8hykRTih6xpyTLeya6kVVRuHSYpAWxfuZP9xOFT
-         eX6cdnlB/nWq2E8mNldhIri0Hg4cRG6sDxLFU=
-Message-ID: <7b9198260810010048q170c72f4wfc306505f1a6ac00@mail.gmail.com>
-Date: Wed, 1 Oct 2008 08:48:19 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Subject: Re: CD tray closes spontaneously after opening it
-Cc: "Frans Pop" <elendil@planet.nl>, "Tony Vroon" <tony@vroon.org>,
-       linux-kernel@vger.kernel.org, "Tejun Heo" <tj@kernel.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <ac3eb2510809301302l7d966896tfb0e3d230598974@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 1 Oct 2008 03:48:33 -0400
+Date: Wed, 1 Oct 2008 16:55:13 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: [PATCH 1/6] atomic page_cgroup flags
+Message-Id: <20081001165513.7633c132.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200809301247.05367.elendil@planet.nl>
-	 <200809301447.35915.elendil@planet.nl>
-	 <ac3eb2510809300655u319f8a9v58e4825f97ee329c@mail.gmail.com>
-	 <200809302150.38872.elendil@planet.nl>
-	 <ac3eb2510809301302l7d966896tfb0e3d230598974@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/30 Kay Sievers <kay.sievers@vrfy.org>:
-> On Tue, Sep 30, 2008 at 9:50 PM, Frans Pop <elendil@planet.nl> wrote:
->> On Tuesday 30 September 2008, Kay Sievers wrote:
->>> Does:
->>>   /sbin/udevadm monitor --env
->>> print something while you see the tray closing?
->>
->> I was somewhat lucky to reproduce it with that running and there was no
->> output during the open or close. I guess that rules out udev?
->
-> I think so, yes.
->
->> I still don't know how to reliably reproduce this. It seems that after it
->> has occurred once, it will not occur again unless the system is rebooted.
->> But I'm not 100% sure of that.
->>
->> Most times I've seen it was after playing a DVD when ejecting the disc to
->> put it back in its box, but not when the DVD was inserted earlier.
->> But I've also seen it shortly after the system is booted when just opening
->> the tray with no media inserted.
->>
->> Just to be clear: until recently the drive has always behaved perfectly in
->> the same situations.
->>
->>> Does this also happen when you set:
->>>   /proc/sys/dev/cdrom/autoclose
->>> to 0?
->>
->> I'll set that on boot using /etc/sysctl.conf and will report if I can
->> still reproduce with that setting. I've checked that the "normal" value
->> is 1.
->
-> That will prevent the closing, when something tries to open the device
-> in blocking mode. If that solves the issue, you should start looking
-> which process tries to access your drive.
->
-> Kay
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+This patch makes page_cgroup->flags to be atomic_ops and define
+functions (and macros) to access it.
 
-Hi Kay,
+Before trying to modify memory resource controller, this atomic operation
+on flags is necessary. Most of flags in this patch is for LRU and modfied
+under mz->lru_lock but we'll add another flags which is not for LRU soon.
+(lock_page_cgroup() will use LOCK bit on page_cgroup->flags)
+So we use atomic version here.
 
-If you can manage to reproduce this, can you try/have you tried
-different kernel versions?
+ 
+Changelog: (v5) -> (v6)
+ - no changes.
 
--- 
-Tom Spink
+Changelog: (v4) -> (v5)
+ - removed unsued operations.
+ - adjusted to new ctype MEM_CGROUP_CHARGE_TYPE_SHMEM
+
+Changelog: (v3) -> (v4)
+ - no changes.
+
+Changelog:  (v2) -> (v3)
+ - renamed macros and flags to be longer name.
+ - added comments.
+ - added "default bit set" for File, Shmem, Anon.
+
+Changelog:  (preview) -> (v1):
+ - patch ordering is changed.
+ - Added macro for defining functions for Test/Set/Clear bit.
+ - made the names of flags shorter.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ mm/memcontrol.c |  122 +++++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 82 insertions(+), 40 deletions(-)
+
+Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+@@ -157,12 +157,46 @@ struct page_cgroup {
+ 	struct list_head lru;		/* per cgroup LRU list */
+ 	struct page *page;
+ 	struct mem_cgroup *mem_cgroup;
+-	int flags;
++	unsigned long flags;
+ };
+-#define PAGE_CGROUP_FLAG_CACHE	   (0x1)	/* charged as cache */
+-#define PAGE_CGROUP_FLAG_ACTIVE    (0x2)	/* page is active in this cgroup */
+-#define PAGE_CGROUP_FLAG_FILE	   (0x4)	/* page is file system backed */
+-#define PAGE_CGROUP_FLAG_UNEVICTABLE (0x8)	/* page is unevictableable */
++
++enum {
++	/* flags for mem_cgroup */
++	PCG_CACHE, /* charged as cache */
++	/* flags for LRU placement */
++	PCG_ACTIVE, /* page is active in this cgroup */
++	PCG_FILE, /* page is file system backed */
++	PCG_UNEVICTABLE, /* page is unevictableable */
++};
++
++#define TESTPCGFLAG(uname, lname)			\
++static inline int PageCgroup##uname(struct page_cgroup *pc)	\
++	{ return test_bit(PCG_##lname, &pc->flags); }
++
++#define SETPCGFLAG(uname, lname)			\
++static inline void SetPageCgroup##uname(struct page_cgroup *pc)\
++	{ set_bit(PCG_##lname, &pc->flags);  }
++
++#define CLEARPCGFLAG(uname, lname)			\
++static inline void ClearPageCgroup##uname(struct page_cgroup *pc)	\
++	{ clear_bit(PCG_##lname, &pc->flags);  }
++
++
++/* Cache flag is set only once (at allocation) */
++TESTPCGFLAG(Cache, CACHE)
++
++/* LRU management flags (from global-lru definition) */
++TESTPCGFLAG(File, FILE)
++SETPCGFLAG(File, FILE)
++CLEARPCGFLAG(File, FILE)
++
++TESTPCGFLAG(Active, ACTIVE)
++SETPCGFLAG(Active, ACTIVE)
++CLEARPCGFLAG(Active, ACTIVE)
++
++TESTPCGFLAG(Unevictable, UNEVICTABLE)
++SETPCGFLAG(Unevictable, UNEVICTABLE)
++CLEARPCGFLAG(Unevictable, UNEVICTABLE)
+ 
+ static int page_cgroup_nid(struct page_cgroup *pc)
+ {
+@@ -177,15 +211,25 @@ static enum zone_type page_cgroup_zid(st
+ enum charge_type {
+ 	MEM_CGROUP_CHARGE_TYPE_CACHE = 0,
+ 	MEM_CGROUP_CHARGE_TYPE_MAPPED,
+-	MEM_CGROUP_CHARGE_TYPE_FORCE,	/* used by force_empty */
+ 	MEM_CGROUP_CHARGE_TYPE_SHMEM,	/* used by page migration of shmem */
++	MEM_CGROUP_CHARGE_TYPE_FORCE,	/* used by force_empty */
++	NR_CHARGE_TYPE,
++};
++
++static const unsigned long
++pcg_default_flags[NR_CHARGE_TYPE] = {
++	((1 << PCG_CACHE) | (1 << PCG_FILE)),
++	((1 << PCG_ACTIVE)),
++	((1 << PCG_ACTIVE) | (1 << PCG_CACHE)),
++	0,
+ };
+ 
+ /*
+  * Always modified under lru lock. Then, not necessary to preempt_disable()
+  */
+-static void mem_cgroup_charge_statistics(struct mem_cgroup *mem, int flags,
+-					bool charge)
++static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
++					 struct page_cgroup *pc,
++					 bool charge)
+ {
+ 	int val = (charge)? 1 : -1;
+ 	struct mem_cgroup_stat *stat = &mem->stat;
+@@ -194,7 +238,7 @@ static void mem_cgroup_charge_statistics
+ 	VM_BUG_ON(!irqs_disabled());
+ 
+ 	cpustat = &stat->cpustat[smp_processor_id()];
+-	if (flags & PAGE_CGROUP_FLAG_CACHE)
++	if (PageCgroupCache(pc))
+ 		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_CACHE, val);
+ 	else
+ 		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_RSS, val);
+@@ -295,18 +339,18 @@ static void __mem_cgroup_remove_list(str
+ {
+ 	int lru = LRU_BASE;
+ 
+-	if (pc->flags & PAGE_CGROUP_FLAG_UNEVICTABLE)
++	if (PageCgroupUnevictable(pc))
+ 		lru = LRU_UNEVICTABLE;
+ 	else {
+-		if (pc->flags & PAGE_CGROUP_FLAG_ACTIVE)
++		if (PageCgroupActive(pc))
+ 			lru += LRU_ACTIVE;
+-		if (pc->flags & PAGE_CGROUP_FLAG_FILE)
++		if (PageCgroupFile(pc))
+ 			lru += LRU_FILE;
+ 	}
+ 
+ 	MEM_CGROUP_ZSTAT(mz, lru) -= 1;
+ 
+-	mem_cgroup_charge_statistics(pc->mem_cgroup, pc->flags, false);
++	mem_cgroup_charge_statistics(pc->mem_cgroup, pc, false);
+ 	list_del(&pc->lru);
+ }
+ 
+@@ -315,27 +359,27 @@ static void __mem_cgroup_add_list(struct
+ {
+ 	int lru = LRU_BASE;
+ 
+-	if (pc->flags & PAGE_CGROUP_FLAG_UNEVICTABLE)
++	if (PageCgroupUnevictable(pc))
+ 		lru = LRU_UNEVICTABLE;
+ 	else {
+-		if (pc->flags & PAGE_CGROUP_FLAG_ACTIVE)
++		if (PageCgroupActive(pc))
+ 			lru += LRU_ACTIVE;
+-		if (pc->flags & PAGE_CGROUP_FLAG_FILE)
++		if (PageCgroupFile(pc))
+ 			lru += LRU_FILE;
+ 	}
+ 
+ 	MEM_CGROUP_ZSTAT(mz, lru) += 1;
+ 	list_add(&pc->lru, &mz->lists[lru]);
+ 
+-	mem_cgroup_charge_statistics(pc->mem_cgroup, pc->flags, true);
++	mem_cgroup_charge_statistics(pc->mem_cgroup, pc, true);
+ }
+ 
+ static void __mem_cgroup_move_lists(struct page_cgroup *pc, enum lru_list lru)
+ {
+ 	struct mem_cgroup_per_zone *mz = page_cgroup_zoneinfo(pc);
+-	int active    = pc->flags & PAGE_CGROUP_FLAG_ACTIVE;
+-	int file      = pc->flags & PAGE_CGROUP_FLAG_FILE;
+-	int unevictable = pc->flags & PAGE_CGROUP_FLAG_UNEVICTABLE;
++	int active    = PageCgroupActive(pc);
++	int file      = PageCgroupFile(pc);
++	int unevictable = PageCgroupUnevictable(pc);
+ 	enum lru_list from = unevictable ? LRU_UNEVICTABLE :
+ 				(LRU_FILE * !!file + !!active);
+ 
+@@ -343,16 +387,20 @@ static void __mem_cgroup_move_lists(stru
+ 		return;
+ 
+ 	MEM_CGROUP_ZSTAT(mz, from) -= 1;
+-
++	/*
++	 * However this is done under mz->lru_lock, another flags, which
++	 * are not related to LRU, will be modified from out-of-lock.
++	 * We have to use atomic set/clear flags.
++	 */
+ 	if (is_unevictable_lru(lru)) {
+-		pc->flags &= ~PAGE_CGROUP_FLAG_ACTIVE;
+-		pc->flags |= PAGE_CGROUP_FLAG_UNEVICTABLE;
++		ClearPageCgroupActive(pc);
++		SetPageCgroupUnevictable(pc);
+ 	} else {
+ 		if (is_active_lru(lru))
+-			pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
++			SetPageCgroupActive(pc);
+ 		else
+-			pc->flags &= ~PAGE_CGROUP_FLAG_ACTIVE;
+-		pc->flags &= ~PAGE_CGROUP_FLAG_UNEVICTABLE;
++			ClearPageCgroupActive(pc);
++		ClearPageCgroupUnevictable(pc);
+ 	}
+ 
+ 	MEM_CGROUP_ZSTAT(mz, lru) += 1;
+@@ -589,16 +637,7 @@ static int mem_cgroup_charge_common(stru
+ 	 * If a page is accounted as a page cache, insert to inactive list.
+ 	 * If anon, insert to active list.
+ 	 */
+-	if (ctype == MEM_CGROUP_CHARGE_TYPE_CACHE) {
+-		pc->flags = PAGE_CGROUP_FLAG_CACHE;
+-		if (page_is_file_cache(page))
+-			pc->flags |= PAGE_CGROUP_FLAG_FILE;
+-		else
+-			pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
+-	} else if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+-		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
+-	else /* MEM_CGROUP_CHARGE_TYPE_SHMEM */
+-		pc->flags = PAGE_CGROUP_FLAG_CACHE | PAGE_CGROUP_FLAG_ACTIVE;
++	pc->flags = pcg_default_flags[ctype];
+ 
+ 	lock_page_cgroup(page);
+ 	if (unlikely(page_get_page_cgroup(page))) {
+@@ -677,8 +716,12 @@ int mem_cgroup_cache_charge(struct page 
+ 	if (unlikely(!mm))
+ 		mm = &init_mm;
+ 
+-	return mem_cgroup_charge_common(page, mm, gfp_mask,
++	if (page_is_file_cache(page))
++		return mem_cgroup_charge_common(page, mm, gfp_mask,
+ 				MEM_CGROUP_CHARGE_TYPE_CACHE, NULL);
++	else
++		return mem_cgroup_charge_common(page, mm, gfp_mask,
++				MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
+ }
+ 
+ /*
+@@ -706,8 +749,7 @@ __mem_cgroup_uncharge_common(struct page
+ 	VM_BUG_ON(pc->page != page);
+ 
+ 	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+-	    && ((pc->flags & PAGE_CGROUP_FLAG_CACHE)
+-		|| page_mapped(page)))
++	    && ((PageCgroupCache(pc) || page_mapped(page))))
+ 		goto unlock;
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+@@ -758,7 +800,7 @@ int mem_cgroup_prepare_migration(struct 
+ 	if (pc) {
+ 		mem = pc->mem_cgroup;
+ 		css_get(&mem->css);
+-		if (pc->flags & PAGE_CGROUP_FLAG_CACHE) {
++		if (PageCgroupCache(pc)) {
+ 			if (page_is_file_cache(page))
+ 				ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
+ 			else
+
