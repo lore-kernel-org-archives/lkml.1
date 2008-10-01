@@ -1,116 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbYJAOel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbYJAOoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753292AbYJAOel (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 10:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbYJAOec
+	id S1753246AbYJAOoz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 10:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbYJAOos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 10:34:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51617 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752307AbYJAOea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 10:34:30 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0809282123100.3635@xanadu.home>
-References: <alpine.LFD.2.00.0809282123100.3635@xanadu.home> <20080924164826.14867.63020.stgit@warthog.procyon.org.uk> <1222426580.16700.258.camel@lappy.programming.kicks-ass.net> <alpine.LFD.2.00.0809260802310.3635@xanadu.home> <1222431635.16700.278.camel@lappy.programming.kicks-ass.net>
-To: Nicolas Pitre <nico@cam.org>
-Cc: dhowells@redhat.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] MN10300: Move asm-arm/cnt32_to_63.h to include/linux/
-Date: Wed, 01 Oct 2008 15:34:10 +0100
-Message-ID: <29968.1222871650@redhat.com>
+	Wed, 1 Oct 2008 10:44:48 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:26832 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752147AbYJAOor (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 10:44:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=LV1bHOE//9//FwDemR1ozzEmx2ph/wYwoTDoAI5oU3wVefN3Bm//eQcjOuIqX2lXhb
+         aBvKikvfRA9Tf9j8m6+EDdjk0OWjdCZmZ3aCH6lruzp+WBoW39xa9L9oqf8vUPVisGNN
+         99rK0NcJdTSUFjCRg+p4Djl3aCAxmM3XUU78Y=
+Message-ID: <48E38CDA.4070201@gmail.com>
+Date: Wed, 01 Oct 2008 16:44:42 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+MIME-Version: 1.0
+To: Frans Pop <elendil@planet.nl>
+CC: Kay Sievers <kay.sievers@vrfy.org>, Tony Vroon <tony@vroon.org>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: CD tray closes spontaneously after opening it
+References: <200809301247.05367.elendil@planet.nl> <200809302150.38872.elendil@planet.nl> <ac3eb2510809301302l7d966896tfb0e3d230598974@mail.gmail.com> <200810011553.05318.elendil@planet.nl>
+In-Reply-To: <200810011553.05318.elendil@planet.nl>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Pitre <nico@cam.org> wrote:
+On 10/01/2008 03:53 PM, Frans Pop wrote:
+> BTW, I have considered a hardware problem like a short in the eject 
+> button, but I don't think that's it.
 
-> Disabling preemption is unneeded.
-
-I think you may be wrong on that.  MEI came up with the following point:
-
-	I think either disable preemption or disable interrupt is really
-	necessary for cnt32_to_63 macro, because there seems to be assumption
-	that the series of the code (1)-(4) must be executed within a half
-	period of the 32-bit counter.
-
-	-------------------------------------------------
-	#define cnt32_to_63(cnt_lo) 
-	({ 
-	       static volatile u32 __m_cnt_hi = 0; 
-	       cnt32_to_63_t __x; 
-	(1)    __x.hi = __m_cnt_hi; 
-	(2)    __x.lo = (cnt_lo); 
-	(3)    if (unlikely((s32)(__x.hi ^ __x.lo) < 0))
-	(4)            __m_cnt_hi = __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31); 
-	       __x.val; 
-	})
-	-------------------------------------------------
-
-	If a task is preempted while executing the series of the code and
-	scheduled again after the half period of the 32-bit counter, the task
-	may destroy __m_cnt_hi.
-
-Their suggested remedy is:
-
-	So I think it's better to disable interrupt the cnt32_to_63 and to
-	ensure that the series of the code are executed within a short period.
-
-I think this is excessive...  If we're sat there with interrupts disabled for
-more than a half period (65s) then we've got other troubles.  I think
-disabling preemption for the duration ought to be enough.  What do you think?
-
-Now, I'm happy to put these in sched_clock() rather then cnt32_to_63() for my
-purposes (see attached patch).
-
-David
----
-MN10300: Prevent cnt32_to_63() from being preempted in sched_clock()
-
-From: David Howells <dhowells@redhat.com>
-
-Prevent cnt32_to_63() from being preempted in sched_clock() because it may
-read its internal counter, get preempted, get delayed for more than the half
-period of the 'TSC' and then write the internal counter, thus corrupting it.
-
-Whilst some callers of sched_clock() have interrupts disabled or hold
-spinlocks, not all do, and so preemption must be held here.
-
-Note that sched_clock() is called from lockdep, but that shouldn't be a problem
-because although preempt_disable() calls into lockdep, lockdep has a recursion
-counter to deal with this.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- arch/mn10300/kernel/time.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-
-diff --git a/arch/mn10300/kernel/time.c b/arch/mn10300/kernel/time.c
-index e460658..38f88bb 100644
---- a/arch/mn10300/kernel/time.c
-+++ b/arch/mn10300/kernel/time.c
-@@ -55,6 +55,9 @@ unsigned long long sched_clock(void)
- 	unsigned long tsc, tmp;
- 	unsigned product[3]; /* 96-bit intermediate value */
- 
-+	/* cnt32_to_63() is not safe with preemption */
-+	preempt_disable();
-+
- 	/* read the TSC value
- 	 */
- 	tsc = 0 - get_cycles(); /* get_cycles() counts down */
-@@ -65,6 +68,8 @@ unsigned long long sched_clock(void)
- 	 */
- 	tsc64.ll = cnt32_to_63(tsc) & 0x7fffffffffffffffULL;
- 
-+	preempt_enable();
-+
- 	/* scale the 64-bit TSC value to a nanosecond value via a 96-bit
- 	 * intermediate
- 	 */
+I have the problem too, I'm following the thread. As far as I can say, HW is not
+involved here. It happens after eject command too. I don't know how to reproduce
+it too, though.
