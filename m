@@ -1,49 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbYJAEmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbYJAEnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752633AbYJAEmT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 00:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbYJAEmL
+	id S1752581AbYJAEnm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 00:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbYJAEne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 00:42:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:54888 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbYJAEmK (ORCPT
+	Wed, 1 Oct 2008 00:43:34 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40698 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbYJAEne (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 00:42:10 -0400
-Date: Wed, 1 Oct 2008 00:42:08 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Pekka Paalanen <pq@iki.fi>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 6/6] ftrace: take advantage of variable length entries
-In-Reply-To: <alpine.DEB.1.10.0809301341300.6224@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0810010040570.14807@gandalf.stny.rr.com>
-References: <20080930030236.230994826@goodmis.org> <20080930030652.883661046@goodmis.org> <20080930203342.5b5ca814@daedalus.pq.iki.fi> <alpine.DEB.1.10.0809301341300.6224@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 1 Oct 2008 00:43:34 -0400
+Date: Wed, 1 Oct 2008 13:50:06 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH/stylefix 3/4] memcg: avoid account not-on-LRU pages
+Message-Id: <20081001135006.3d271c21.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48E2F336.4030203@linux.vnet.ibm.com>
+References: <20080929191927.caabec89.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080929192339.327ca142.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080930101705.aec0e59b.kamezawa.hiroyu@jp.fujitsu.com>
+	<48E2F336.4030203@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 01 Oct 2008 09:19:10 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-On Tue, 30 Sep 2008, Steven Rostedt wrote:
-> > On the mmiotrace part, I don't see anything wrong here apart
-> > from that one bug.
+> KAMEZAWA Hiroyuki wrote:
+> > This is conding-style fixed version. Thank you, Nishimura-san.
+> > -Kmae
+> > ==
+> > There are not-on-LRU pages which can be mapped and they are not worth to
+> > be accounted. (becasue we can't shrink them and need dirty codes to handle
+> > specical case) We'd like to make use of usual objrmap/radix-tree's protcol
+> > and don't want to account out-of-vm's control pages.
+> > 
+> > When special_mapping_fault() is called, page->mapping is tend to be NULL 
+> > and it's charged as Anonymous page.
+> > insert_page() also handles some special pages from drivers.
+> > 
+> > This patch is for avoiding to account special pages.
+> > 
+> > Changlog: v5 -> v6
+> >   - modified Documentation.
+> >   - fixed to charge only when a page is newly allocated.
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
 > 
-> Thanks, I'll add a patch to my coming queue to handle this.
+> [snip]
+> > @@ -2463,6 +2457,7 @@ static int __do_fault(struct mm_struct *
+> >  	struct page *page;
+> >  	pte_t entry;
+> >  	int anon = 0;
+> > +	int charged = 0;
+> >  	struct page *dirty_page = NULL;
+> >  	struct vm_fault vmf;
+> >  	int ret;
+> > @@ -2503,6 +2498,12 @@ static int __do_fault(struct mm_struct *
+> >  				ret = VM_FAULT_OOM;
+> >  				goto out;
+> >  			}
+> > +			if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
+> > +				ret = VM_FAULT_OOM;
+> > +				page_cache_release(page);
+> > +				goto out;
+> > +			}
+> > +			charged = 1;
+> 
+> If I understand this correctly, we now account only when the VMA is not shared?
+> Seems reasonable, since we don't allocate a page otherwise.
+> 
+When we allocate a new page. If in page-cache, it's accounted at radix-tree.
 
-Bah, I lied. The new locking design took a bit more time to do than 
-I expected, and I forgot to add this fix. I'll add it tomorrow.
+> 
+> [snip]
+> 
+> 
+> > Index: mmotm-2.6.27-rc7+/mm/rmap.c
+> > ===================================================================
+> > --- mmotm-2.6.27-rc7+.orig/mm/rmap.c
+> > +++ mmotm-2.6.27-rc7+/mm/rmap.c
+> > @@ -725,8 +725,8 @@ void page_remove_rmap(struct page *page,
+> >  			page_clear_dirty(page);
+> >  			set_page_dirty(page);
+> >  		}
+> > -
+> > -		mem_cgroup_uncharge_page(page);
+> > +		if (PageAnon(page))
+> > +			mem_cgroup_uncharge_page(page);
+> 
+> Is the change because we expect the page to get directly uncharged when it is
+> removed from cache? i.e, page->mapping is set to NULL before uncharge?
+> 
+yes. I expect deletion from radix-tree catch page-cache.
 
+> Looks good to me, I am yet to test it though.
+> 
 Thanks,
+-Kame
 
--- Steve
+> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> 
+> 
+> -- 
+> 	Balbir
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
