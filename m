@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbYJAQWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYJAQ17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbYJAQWI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 12:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYJAQVz
+	id S1753861AbYJAQ17 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 12:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYJAQ1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 12:21:55 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:34540 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752601AbYJAQVy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 12:21:54 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=subject:from:to:cc:in-reply-to:references:content-type:
-	organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=hpBSqiIOJzc41TXy9cAsR30JRnqZSuWiauQI6vLztGgw6snRZappHvdFk41UkEcl5
-	psDbYO65Z/m5Wrsvet8gQ==
-Subject: Re: [PATCH 2.6.27-rc5 incremental re-resubmit] Fix itimer/many
-	thread hang.
-From: Frank Mayhar <fmayhar@google.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <1222792590.18031.9.camel@bobble.smo.corp.google.com>
-References: <1221238479.30136.2.camel@bobble.smo.corp.google.com>
-	 <20080914150651.GK12522@elte.hu> <20080914150923.GB26984@elte.hu>
-	 <1221502142.19012.35.camel@bobble.smo.corp.google.com>
-	 <20080916084143.GC17287@elte.hu>
-	 <1221678187.13420.17.camel@bobble.smo.corp.google.com>
-	 <20080918102353.GD20967@elte.hu>
-	 <1222114936.21579.20.camel@bobble.smo.corp.google.com>
-	 <1222291416.30299.6.camel@bobble.smo.corp.google.com>
-	 <20080930063313.GA23690@elte.hu>
-	 <1222792590.18031.9.camel@bobble.smo.corp.google.com>
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Wed, 01 Oct 2008 09:20:38 -0700
-Message-Id: <1222878038.29322.2.camel@bobble.smo.corp.google.com>
+	Wed, 1 Oct 2008 12:27:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33821 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752331AbYJAQ1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 12:27:51 -0400
+Date: Wed, 1 Oct 2008 17:24:18 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
+       dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Chandra Seetharaman <sekharan@us.ibm.com>
+Subject: [git pull] device-mapper regression fixes for 2.6.27
+Message-ID: <20081001162417.GE5098@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mikulas Patocka <mpatocka@redhat.com>,
+	Milan Broz <mbroz@redhat.com>, dm-devel@redhat.com,
+	linux-kernel@vger.kernel.org,
+	Chandra Seetharaman <sekharan@us.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-30 at 09:36 -0700, Frank Mayhar wrote:
-> I'm picking up tip/master right now and will test your fix for this
-> shortly.
+Please pull from:
 
-Okay, I've put it through its paces and everything appears to be working
-well with Ingo's fix.
+  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git
+
+to get the following device-mapper fixes for 2.6.27:
+
+Chandra Seetharaman (1):
+      dm mpath: add missing path switching locking
+
+Mikulas Patocka (2):
+      dm: always allow one page in dm_merge_bvec
+      dm: cope with access beyond end of device in dm_merge_bvec
+
+ drivers/md/dm-mpath.c |   16 +++++++++++++++-
+ drivers/md/dm.c       |   12 ++++++++----
+ 2 files changed, 23 insertions(+), 5 deletions(-)
+
+Alasdair
 -- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
-
+agk@redhat.com
