@@ -1,94 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbYJBQUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbYJBQVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754755AbYJBQUL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 12:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbYJBQT7
+	id S1754122AbYJBQVO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 12:21:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbYJBQU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 12:19:59 -0400
-Received: from tallyho.bytemark.co.uk ([80.68.81.166]:40131 "EHLO
-	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753716AbYJBQT6 (ORCPT
+	Thu, 2 Oct 2008 12:20:58 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:54964 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753657AbYJBQU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 12:19:58 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH 1/1] handle initialising compound pages at orders greater than MAX_ORDER
-Date: Thu,  2 Oct 2008 17:19:56 +0100
-Message-Id: <1222964396-25031-1-git-send-email-apw@shadowen.org>
-X-Mailer: git-send-email 1.6.0.1.451.gc8d31
+	Thu, 2 Oct 2008 12:20:57 -0400
+Date: Thu, 2 Oct 2008 12:20:56 -0400
+To: Matthew Stoltenberg <d3matt@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: motherboard recommendations?
+Message-ID: <20081002162056.GA13007@csclub.uwaterloo.ca>
+References: <1f276abf0809160657x4264ad5dm74fd2689d804a7ad@mail.gmail.com> <20081002143809.GA22851@csclub.uwaterloo.ca> <3c1bc2140810020803l33207ecbsbd690fa33a21a360@mail.gmail.com> <20081002160933.GM22849@csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081002160933.GM22849@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we initialise a compound page we initialise the page flags and head
-page pointer for all base pages spanned by that page.  When we initialise a
-gigantic page (a page of order greater than or equal to MAX_ORDER) we have
-to initialise more than MAX_ORDER_NR_PAGES pages.  Currently we assume
-that all elements of the mem_map in this page are contigious in memory.
-However this is only guarenteed out to MAX_ORDER_NR_PAGES pages, and with
-SPARSEMEM enabled they will not be contigious.  This leads us to walk off
-the end of the first section and scribble on everything which follows, BAD.
+On Thu, Oct 02, 2008 at 12:09:33PM -0400,  wrote:
+> Atheros?  Hmm, the P5K was using atlantic, so I wonder why they are not
+> using atheros.
 
-When we reach a MAX_ORDER_NR_PAGES boundary we much locate the next section
-of the mem_map.  As gigantic pages can only be maximally aligned we know
-this will occur at exact multiple of MAX_ORDER_NR_PAGES pages from the
-start of the page.
+So I am clueless here.  atl is atheros, which is what I have on my
+P5K, except an older model.  I see mentions that 2.6.27 is supposed to
+suport the new chip on the P5Q.
 
-This is a bug fix for the gigantic page support in hugetlbfs, please
-consider for merging before 2.6.27.
-
-Credit to Mel Gorman for spotting the issue.
-
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- mm/page_alloc.c |   13 ++++++++-----
- 1 files changed, 8 insertions(+), 5 deletions(-)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index e293c58..27b8681 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -268,13 +268,14 @@ void prep_compound_page(struct page *page, unsigned long order)
- {
- 	int i;
- 	int nr_pages = 1 << order;
-+	struct page *p = page + 1;
- 
- 	set_compound_page_dtor(page, free_compound_page);
- 	set_compound_order(page, order);
- 	__SetPageHead(page);
--	for (i = 1; i < nr_pages; i++) {
--		struct page *p = page + i;
--
-+	for (i = 1; i < nr_pages; i++, p++) {
-+		if (unlikely((i & (MAX_ORDER_NR_PAGES - 1)) == 0))
-+			p = pfn_to_page(page_to_pfn(page) + i);
- 		__SetPageTail(p);
- 		p->first_page = page;
- 	}
-@@ -284,6 +285,7 @@ static void destroy_compound_page(struct page *page, unsigned long order)
- {
- 	int i;
- 	int nr_pages = 1 << order;
-+	struct page *p = page + 1;
- 
- 	if (unlikely(compound_order(page) != order))
- 		bad_page(page);
-@@ -291,8 +293,9 @@ static void destroy_compound_page(struct page *page, unsigned long order)
- 	if (unlikely(!PageHead(page)))
- 			bad_page(page);
- 	__ClearPageHead(page);
--	for (i = 1; i < nr_pages; i++) {
--		struct page *p = page + i;
-+	for (i = 1; i < nr_pages; i++, p++) {
-+		if (unlikely((i & (MAX_ORDER_NR_PAGES - 1)) == 0))
-+			p = pfn_to_page(page_to_pfn(page) + i);
- 
- 		if (unlikely(!PageTail(p) |
- 				(p->first_page != page)))
 -- 
-1.6.0.1.451.gc8d31
-
+Len Sorensen
