@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbYJBNWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbYJBNXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbYJBNWh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 09:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbYJBNTW
+	id S1755764AbYJBNXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 09:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbYJBNTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 09:19:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54813 "EHLO
+	Thu, 2 Oct 2008 09:19:25 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54815 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754717AbYJBNS6 (ORCPT
+	with ESMTP id S1754714AbYJBNTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 09:18:58 -0400
-Message-Id: <20081002131608.091390019@chello.nl>
+	Thu, 2 Oct 2008 09:19:01 -0400
+Message-Id: <20081002131608.749239880@chello.nl>
 References: <20081002130504.927878499@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 02 Oct 2008 15:05:12 +0200
+Date: Thu, 02 Oct 2008 15:05:21 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -22,424 +22,302 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>,
        David Miller <davem@davemloft.net>
-Subject: [PATCH 08/32] mm: slb: add knowledge of reserve pages
-Content-Disposition: inline; filename=reserve-slub.patch
+Subject: [PATCH 17/32] net: packet split receive api
+Content-Disposition: inline; filename=net-ps_rx.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
-contexts that are entitled to it. This is done to ensure reserve pages don't
-leak out and get consumed.
+Add some packet-split receive hooks.
 
-The basic pattern used for all # allocators is the following, for each active
-slab page we store if it came from an emergency allocation. When we find it
-did, make sure the current allocation context would have been able to allocate
-page from the emergency reserves as well. In that case allow the allocation. If
-not, force a new slab allocation. When that works the memory pressure has
-lifted enough to allow this context to get an object, otherwise fail the
-allocation.
+For one this allows to do NUMA node affine page allocs. Later on these hooks
+will be extended to do emergency reserve allocations for fragments.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/slub_def.h |    1 
- mm/slab.c                |   60 +++++++++++++++++++++++++++++++++++++++--------
- mm/slob.c                |   14 ++++++++++
- mm/slub.c                |   42 +++++++++++++++++++++++++++-----
- 4 files changed, 101 insertions(+), 16 deletions(-)
+ drivers/net/bnx2.c             |    8 +++-----
+ drivers/net/e1000/e1000_main.c |    8 ++------
+ drivers/net/e1000e/netdev.c    |    7 ++-----
+ drivers/net/igb/igb_main.c     |    9 ++-------
+ drivers/net/ixgbe/ixgbe_main.c |   10 +++-------
+ drivers/net/sky2.c             |   16 ++++++----------
+ include/linux/skbuff.h         |   23 +++++++++++++++++++++++
+ net/core/skbuff.c              |   20 ++++++++++++++++++++
+ 8 files changed, 61 insertions(+), 40 deletions(-)
 
-Index: linux-2.6/mm/slub.c
+Index: linux-2.6/drivers/net/e1000/e1000_main.c
 ===================================================================
---- linux-2.6.orig/mm/slub.c
-+++ linux-2.6/mm/slub.c
-@@ -25,6 +25,7 @@
- #include <linux/math64.h>
- #include <linux/kmemtrace.h>
- #include <linux/kmemcheck.h>
-+#include "internal.h"
+--- linux-2.6.orig/drivers/net/e1000/e1000_main.c
++++ linux-2.6/drivers/net/e1000/e1000_main.c
+@@ -4347,12 +4347,8 @@ static bool e1000_clean_rx_irq_ps(struct
+ 			pci_unmap_page(pdev, ps_page_dma->ps_page_dma[j],
+ 					PAGE_SIZE, PCI_DMA_FROMDEVICE);
+ 			ps_page_dma->ps_page_dma[j] = 0;
+-			skb_fill_page_desc(skb, j, ps_page->ps_page[j], 0,
+-			                   length);
++			skb_add_rx_frag(skb, j, ps_page->ps_page[j], 0, length);
+ 			ps_page->ps_page[j] = NULL;
+-			skb->len += length;
+-			skb->data_len += length;
+-			skb->truesize += length;
+ 		}
  
- /*
-  * Lock order:
-@@ -1118,7 +1119,8 @@ static void setup_object(struct kmem_cac
- 		s->ctor(object);
+ 		/* strip the ethernet crc, problem is we're using pages now so
+@@ -4551,7 +4547,7 @@ static void e1000_alloc_rx_buffers_ps(st
+ 			if (j < adapter->rx_ps_pages) {
+ 				if (likely(!ps_page->ps_page[j])) {
+ 					ps_page->ps_page[j] =
+-						alloc_page(GFP_ATOMIC);
++						netdev_alloc_page(netdev);
+ 					if (unlikely(!ps_page->ps_page[j])) {
+ 						adapter->alloc_rx_buff_failed++;
+ 						goto no_buffers;
+Index: linux-2.6/include/linux/skbuff.h
+===================================================================
+--- linux-2.6.orig/include/linux/skbuff.h
++++ linux-2.6/include/linux/skbuff.h
+@@ -829,6 +829,9 @@ static inline void skb_fill_page_desc(st
+ 	skb_shinfo(skb)->nr_frags = i + 1;
  }
  
--static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
-+static
-+struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node, int *reserve)
- {
- 	struct page *page;
- 	void *start;
-@@ -1132,6 +1134,8 @@ static struct page *new_slab(struct kmem
- 	if (!page)
- 		goto out;
- 
-+	*reserve = page->reserve;
++extern void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page,
++			    int off, int size);
 +
- 	inc_slabs_node(s, page_to_nid(page), page->objects);
- 	page->slab = s;
- 	page->flags |= 1 << PG_slab;
-@@ -1524,10 +1528,20 @@ static void *__slab_alloc(struct kmem_ca
- {
- 	void **object;
- 	struct page *new;
-+	int reserve;
- 
- 	/* We handle __GFP_ZERO in the caller */
- 	gfpflags &= ~__GFP_ZERO;
- 
-+	if (unlikely(c->reserve)) {
-+		/*
-+		 * If the current slab is a reserve slab and the current
-+		 * allocation context does not allow access to the reserves we
-+		 * must force an allocation to test the current levels.
-+		 */
-+		if (!(gfp_to_alloc_flags(gfpflags) & ALLOC_NO_WATERMARKS))
-+			goto grow_slab;
-+	}
- 	if (!c->page)
- 		goto new_slab;
- 
-@@ -1541,8 +1555,8 @@ load_freelist:
- 	object = c->page->freelist;
- 	if (unlikely(!object))
- 		goto another_slab;
--	if (unlikely(SLABDEBUG && PageSlubDebug(c->page)))
--		goto debug;
-+	if (unlikely(PageSlubDebug(c->page) || c->reserve))
-+		goto slow_path;
- 
- 	c->freelist = object[c->offset];
- 	c->page->inuse = c->page->objects;
-@@ -1564,16 +1578,18 @@ new_slab:
- 		goto load_freelist;
- 	}
- 
-+grow_slab:
- 	if (gfpflags & __GFP_WAIT)
- 		local_irq_enable();
- 
--	new = new_slab(s, gfpflags, node);
-+	new = new_slab(s, gfpflags, node, &reserve);
- 
- 	if (gfpflags & __GFP_WAIT)
- 		local_irq_disable();
- 
- 	if (new) {
- 		c = get_cpu_slab(s, smp_processor_id());
-+		c->reserve = reserve;
- 		stat(c, ALLOC_SLAB);
- 		if (c->page)
- 			flush_slab(s, c);
-@@ -1583,10 +1599,21 @@ new_slab:
- 		goto load_freelist;
- 	}
- 	return NULL;
--debug:
--	if (!alloc_debug_processing(s, c->page, object, addr))
-+
-+slow_path:
-+	if (PageSlubDebug(c->page) &&
-+			!alloc_debug_processing(s, c->page, object, addr))
- 		goto another_slab;
- 
-+	/*
-+	 * Avoid the slub fast path in slab_alloc() by not setting
-+	 * c->freelist and the fast path in slab_free() by making
-+	 * node_match() fail by setting c->node to -1.
-+	 *
-+	 * We use this for for debug and reserve checks which need
-+	 * to be done for each allocation.
-+	 */
-+
- 	c->page->inuse++;
- 	c->page->freelist = object[c->offset];
- 	c->node = -1;
-@@ -2130,10 +2157,11 @@ static struct kmem_cache_node *early_kme
- 	struct page *page;
- 	struct kmem_cache_node *n;
- 	unsigned long flags;
-+	int reserve;
- 
- 	BUG_ON(kmalloc_caches->size < sizeof(struct kmem_cache_node));
- 
--	page = new_slab(kmalloc_caches, gfpflags, node);
-+	page = new_slab(kmalloc_caches, gfpflags, node, &reserve);
- 
- 	BUG_ON(!page);
- 	if (page_to_nid(page) != node) {
-Index: linux-2.6/include/linux/slub_def.h
-===================================================================
---- linux-2.6.orig/include/linux/slub_def.h
-+++ linux-2.6/include/linux/slub_def.h
-@@ -45,6 +45,7 @@ struct kmem_cache_cpu {
- 	int node;		/* The node of the page (or -1 for debug) */
- 	unsigned int offset;	/* Freepointer offset (in word units) */
- 	unsigned int objsize;	/* Size of an object (from kmem_cache) */
-+	int reserve;		/* Did the current page come from the reserve */
- #ifdef CONFIG_SLUB_STATS
- 	unsigned stat[NR_SLUB_STAT_ITEMS];
- #endif
-Index: linux-2.6/mm/slab.c
-===================================================================
---- linux-2.6.orig/mm/slab.c
-+++ linux-2.6/mm/slab.c
-@@ -118,6 +118,8 @@
- #include	<asm/tlbflush.h>
- #include	<asm/page.h>
- 
-+#include 	"internal.h"
-+
- /*
-  * DEBUG	- 1 for kmem_cache_create() to honour; SLAB_RED_ZONE & SLAB_POISON.
-  *		  0 for faster, smaller code (especially in the critical paths).
-@@ -267,7 +269,8 @@ struct array_cache {
- 	unsigned int avail;
- 	unsigned int limit;
- 	unsigned int batchcount;
--	unsigned int touched;
-+	unsigned int touched:1,
-+		     reserve:1;
- 	spinlock_t lock;
- 	void *entry[];	/*
- 			 * Must have this definition in here for the proper
-@@ -690,6 +693,27 @@ static inline struct array_cache *cpu_ca
- 	return cachep->array[smp_processor_id()];
+ #define SKB_PAGE_ASSERT(skb) 	BUG_ON(skb_shinfo(skb)->nr_frags)
+ #define SKB_FRAG_ASSERT(skb) 	BUG_ON(skb_shinfo(skb)->frag_list)
+ #define SKB_LINEAR_ASSERT(skb)  BUG_ON(skb_is_nonlinear(skb))
+@@ -1243,6 +1246,26 @@ static inline struct sk_buff *netdev_all
+ 	return __netdev_alloc_skb(dev, length, GFP_ATOMIC);
  }
  
-+/*
-+ * If the last page came from the reserves, and the current allocation context
-+ * does not have access to them, force an allocation to test the watermarks.
++extern struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask);
++
++/**
++ *	netdev_alloc_page - allocate a page for ps-rx on a specific device
++ *	@dev: network device to receive on
++ *
++ * 	Allocate a new page node local to the specified device.
++ *
++ * 	%NULL is returned if there is no free memory.
 + */
-+static inline int slab_force_alloc(struct kmem_cache *cachep, gfp_t flags)
++static inline struct page *netdev_alloc_page(struct net_device *dev)
 +{
-+	if (unlikely(cpu_cache_get(cachep)->reserve) &&
-+			!(gfp_to_alloc_flags(flags) & ALLOC_NO_WATERMARKS))
-+		return 1;
-+
-+	return 0;
++	return __netdev_alloc_page(dev, GFP_ATOMIC);
 +}
 +
-+static inline void slab_set_reserve(struct kmem_cache *cachep, int reserve)
++static inline void netdev_free_page(struct net_device *dev, struct page *page)
 +{
-+	struct array_cache *ac = cpu_cache_get(cachep);
-+
-+	if (unlikely(ac->reserve != reserve))
-+		ac->reserve = reserve;
++	__free_page(page);
 +}
 +
- static inline struct kmem_cache *__find_general_cachep(size_t size,
- 							gfp_t gfpflags)
- {
-@@ -889,6 +913,7 @@ static struct array_cache *alloc_arrayca
- 		nc->limit = entries;
- 		nc->batchcount = batchcount;
- 		nc->touched = 0;
-+		nc->reserve = 0;
- 		spin_lock_init(&nc->lock);
- 	}
- 	return nc;
-@@ -1591,7 +1616,8 @@ __initcall(cpucache_init);
-  * did not request dmaable memory, we might get it, but that
-  * would be relatively rare and ignorable.
-  */
--static void *kmem_getpages(struct kmem_cache *cachep, gfp_t flags, int nodeid)
-+static void *kmem_getpages(struct kmem_cache *cachep, gfp_t flags, int nodeid,
-+		int *reserve)
- {
- 	struct page *page;
- 	int nr_pages;
-@@ -1613,6 +1639,7 @@ static void *kmem_getpages(struct kmem_c
- 	if (!page)
- 		return NULL;
- 
-+	*reserve = page->reserve;
- 	nr_pages = (1 << cachep->gfporder);
- 	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
- 		add_zone_page_state(page_zone(page),
-@@ -2040,6 +2067,7 @@ static int __init_refok setup_cpu_cache(
- 	cpu_cache_get(cachep)->limit = BOOT_CPUCACHE_ENTRIES;
- 	cpu_cache_get(cachep)->batchcount = 1;
- 	cpu_cache_get(cachep)->touched = 0;
-+	cpu_cache_get(cachep)->reserve = 0;
- 	cachep->batchcount = 1;
- 	cachep->limit = BOOT_CPUCACHE_ENTRIES;
- 	return 0;
-@@ -2694,6 +2722,7 @@ static int cache_grow(struct kmem_cache 
- 	size_t offset;
- 	gfp_t local_flags;
- 	struct kmem_list3 *l3;
-+	int reserve;
- 
- 	/*
- 	 * Be lazy and only check for valid flags here,  keeping it out of the
-@@ -2732,7 +2761,7 @@ static int cache_grow(struct kmem_cache 
- 	 * 'nodeid'.
- 	 */
- 	if (!objp)
--		objp = kmem_getpages(cachep, local_flags, nodeid);
-+		objp = kmem_getpages(cachep, local_flags, nodeid, &reserve);
- 	if (!objp)
- 		goto failed;
- 
-@@ -2749,6 +2778,7 @@ static int cache_grow(struct kmem_cache 
- 	if (local_flags & __GFP_WAIT)
- 		local_irq_disable();
- 	check_irq_off();
-+	slab_set_reserve(cachep, reserve);
- 	spin_lock(&l3->list_lock);
- 
- 	/* Make slab active. */
-@@ -2894,7 +2924,8 @@ bad:
- #define check_slabp(x,y) do { } while(0)
- #endif
- 
--static void *cache_alloc_refill(struct kmem_cache *cachep, gfp_t flags)
-+static void *cache_alloc_refill(struct kmem_cache *cachep,
-+		gfp_t flags, int must_refill)
- {
- 	int batchcount;
- 	struct kmem_list3 *l3;
-@@ -2904,6 +2935,8 @@ static void *cache_alloc_refill(struct k
- retry:
- 	check_irq_off();
- 	node = numa_node_id();
-+	if (unlikely(must_refill))
-+		goto force_grow;
- 	ac = cpu_cache_get(cachep);
- 	batchcount = ac->batchcount;
- 	if (!ac->touched && batchcount > BATCHREFILL_LIMIT) {
-@@ -2971,11 +3004,14 @@ alloc_done:
- 
- 	if (unlikely(!ac->avail)) {
- 		int x;
-+force_grow:
- 		x = cache_grow(cachep, flags | GFP_THISNODE, node, NULL);
- 
- 		/* cache_grow can reenable interrupts, then ac could change. */
- 		ac = cpu_cache_get(cachep);
--		if (!x && ac->avail == 0)	/* no objects in sight? abort */
-+
-+		/* no objects in sight? abort */
-+		if (!x && (ac->avail == 0 || must_refill))
- 			return NULL;
- 
- 		if (!ac->avail)		/* objects refilled by interrupt? */
-@@ -3130,17 +3166,18 @@ static inline void *____cache_alloc(stru
- {
- 	void *objp;
- 	struct array_cache *ac;
-+	int must_refill = slab_force_alloc(cachep, flags);
- 
- 	check_irq_off();
- 
- 	ac = cpu_cache_get(cachep);
--	if (likely(ac->avail)) {
-+	if (likely(ac->avail && !must_refill)) {
- 		STATS_INC_ALLOCHIT(cachep);
- 		ac->touched = 1;
- 		objp = ac->entry[--ac->avail];
- 	} else {
- 		STATS_INC_ALLOCMISS(cachep);
--		objp = cache_alloc_refill(cachep, flags);
-+		objp = cache_alloc_refill(cachep, flags, must_refill);
- 	}
- 	return objp;
- }
-@@ -3184,7 +3221,7 @@ static void *fallback_alloc(struct kmem_
- 	struct zone *zone;
- 	enum zone_type high_zoneidx = gfp_zone(flags);
- 	void *obj = NULL;
--	int nid;
-+	int nid, reserve;
- 
- 	if (flags & __GFP_THISNODE)
- 		return NULL;
-@@ -3220,10 +3257,11 @@ retry:
- 		if (local_flags & __GFP_WAIT)
- 			local_irq_enable();
- 		kmem_flagcheck(cache, flags);
--		obj = kmem_getpages(cache, local_flags, -1);
-+		obj = kmem_getpages(cache, local_flags, -1, &reserve);
- 		if (local_flags & __GFP_WAIT)
- 			local_irq_disable();
- 		if (obj) {
-+			slab_set_reserve(cache, reserve);
- 			/*
- 			 * Insert into the appropriate per node queues
- 			 */
-@@ -3262,6 +3300,9 @@ static void *____cache_alloc_node(struct
- 	l3 = cachep->nodelists[nodeid];
- 	BUG_ON(!l3);
- 
-+	if (unlikely(slab_force_alloc(cachep, flags)))
-+		goto force_grow;
-+
- retry:
- 	check_irq_off();
- 	spin_lock(&l3->list_lock);
-@@ -3299,6 +3340,7 @@ retry:
- 
- must_grow:
- 	spin_unlock(&l3->list_lock);
-+force_grow:
- 	x = cache_grow(cachep, flags | GFP_THISNODE, nodeid, NULL);
- 	if (x)
- 		goto retry;
-Index: linux-2.6/mm/slob.c
+ /**
+  *	skb_clone_writable - is the header of a clone writable
+  *	@skb: buffer to check
+Index: linux-2.6/net/core/skbuff.c
 ===================================================================
---- linux-2.6.orig/mm/slob.c
-+++ linux-2.6/mm/slob.c
-@@ -67,6 +67,7 @@
- #include <linux/list.h>
- #include <linux/kmemtrace.h>
- #include <asm/atomic.h>
-+#include "internal.h"
- 
- /*
-  * slob_block has a field 'units', which indicates size of block if +ve,
-@@ -184,6 +185,11 @@ struct slob_rcu {
- static DEFINE_SPINLOCK(slob_lock);
- 
- /*
-+ * tracks the reserve state for the allocator.
-+ */
-+static int slob_reserve;
-+
-+/*
-  * Encode the given size and next info into a free slob block s.
-  */
- static void set_slob(slob_t *s, slobidx_t size, slob_t *next)
-@@ -245,6 +251,8 @@ static void *slob_new_page(gfp_t gfp, in
- 	if (!page)
- 		return NULL;
- 
-+	slob_reserve = page->reserve;
-+
- 	return page_address(page);
+--- linux-2.6.orig/net/core/skbuff.c
++++ linux-2.6/net/core/skbuff.c
+@@ -263,6 +263,26 @@ struct sk_buff *__netdev_alloc_skb(struc
+ 	return skb;
  }
  
-@@ -310,6 +318,11 @@ static void *slob_alloc(size_t size, gfp
- 	slob_t *b = NULL;
- 	unsigned long flags;
- 
-+	if (unlikely(slub_reserve)) {
-+		if (!(gfp_to_alloc_flags(gfp) & ALLOC_NO_WATERMARKS))
-+			goto grow;
-+	}
++struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask)
++{
++	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
++	struct page *page;
 +
- 	if (size < SLOB_BREAK1)
- 		slob_list = &free_slob_small;
- 	else if (size < SLOB_BREAK2)
-@@ -348,6 +361,7 @@ static void *slob_alloc(size_t size, gfp
++	page = alloc_pages_node(node, gfp_mask, 0);
++	return page;
++}
++EXPORT_SYMBOL(__netdev_alloc_page);
++
++void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page, int off,
++		int size)
++{
++	skb_fill_page_desc(skb, i, page, off, size);
++	skb->len += size;
++	skb->data_len += size;
++	skb->truesize += size;
++}
++EXPORT_SYMBOL(skb_add_rx_frag);
++
+ /**
+  *	dev_alloc_skb - allocate an skbuff for receiving
+  *	@length: length to allocate
+Index: linux-2.6/drivers/net/sky2.c
+===================================================================
+--- linux-2.6.orig/drivers/net/sky2.c
++++ linux-2.6/drivers/net/sky2.c
+@@ -1272,7 +1272,7 @@ static struct sk_buff *sky2_rx_alloc(str
  	}
- 	spin_unlock_irqrestore(&slob_lock, flags);
  
-+grow:
- 	/* Not enough space: must allocate a new page */
- 	if (!b) {
- 		b = slob_new_page(gfp & ~__GFP_ZERO, 0, node);
+ 	for (i = 0; i < sky2->rx_nfrags; i++) {
+-		struct page *page = alloc_page(GFP_ATOMIC);
++		struct page *page = netdev_alloc_page(sky2->netdev);
+ 
+ 		if (!page)
+ 			goto free_partial;
+@@ -2141,8 +2141,8 @@ static struct sk_buff *receive_copy(stru
+ }
+ 
+ /* Adjust length of skb with fragments to match received data */
+-static void skb_put_frags(struct sk_buff *skb, unsigned int hdr_space,
+-			  unsigned int length)
++static void skb_put_frags(struct sky2_port *sky2, struct sk_buff *skb,
++			  unsigned int hdr_space, unsigned int length)
+ {
+ 	int i, num_frags;
+ 	unsigned int size;
+@@ -2159,15 +2159,11 @@ static void skb_put_frags(struct sk_buff
+ 
+ 		if (length == 0) {
+ 			/* don't need this page */
+-			__free_page(frag->page);
++			netdev_free_page(sky2->netdev, frag->page);
+ 			--skb_shinfo(skb)->nr_frags;
+ 		} else {
+ 			size = min(length, (unsigned) PAGE_SIZE);
+-
+-			frag->size = size;
+-			skb->data_len += size;
+-			skb->truesize += size;
+-			skb->len += size;
++			skb_add_rx_frag(skb, i, frag->page, 0, size);
+ 			length -= size;
+ 		}
+ 	}
+@@ -2194,7 +2190,7 @@ static struct sk_buff *receive_new(struc
+ 	sky2_rx_map_skb(sky2->hw->pdev, re, hdr_space);
+ 
+ 	if (skb_shinfo(skb)->nr_frags)
+-		skb_put_frags(skb, hdr_space, length);
++		skb_put_frags(sky2, skb, hdr_space, length);
+ 	else
+ 		skb_put(skb, length);
+ 	return skb;
+Index: linux-2.6/drivers/net/bnx2.c
+===================================================================
+--- linux-2.6.orig/drivers/net/bnx2.c
++++ linux-2.6/drivers/net/bnx2.c
+@@ -2472,7 +2472,7 @@ bnx2_alloc_rx_page(struct bnx2 *bp, stru
+ 	struct sw_pg *rx_pg = &rxr->rx_pg_ring[index];
+ 	struct rx_bd *rxbd =
+ 		&rxr->rx_pg_desc_ring[RX_RING(index)][RX_IDX(index)];
+-	struct page *page = alloc_page(GFP_ATOMIC);
++	struct page *page = netdev_alloc_page(bp->dev);
+ 
+ 	if (!page)
+ 		return -ENOMEM;
+@@ -2497,7 +2497,7 @@ bnx2_free_rx_page(struct bnx2 *bp, struc
+ 	pci_unmap_page(bp->pdev, pci_unmap_addr(rx_pg, mapping), PAGE_SIZE,
+ 		       PCI_DMA_FROMDEVICE);
+ 
+-	__free_page(page);
++	netdev_free_page(bp->dev, page);
+ 	rx_pg->page = NULL;
+ }
+ 
+@@ -2828,9 +2828,7 @@ bnx2_rx_skb(struct bnx2 *bp, struct bnx2
+ 			}
+ 
+ 			frag_size -= frag_len;
+-			skb->data_len += frag_len;
+-			skb->truesize += frag_len;
+-			skb->len += frag_len;
++			skb_add_rx_frag(skb, i, rx_pg->page, 0, frag_len);
+ 
+ 			pg_prod = NEXT_RX_BD(pg_prod);
+ 			pg_cons = RX_PG_RING_IDX(NEXT_RX_BD(pg_cons));
+Index: linux-2.6/drivers/net/e1000e/netdev.c
+===================================================================
+--- linux-2.6.orig/drivers/net/e1000e/netdev.c
++++ linux-2.6/drivers/net/e1000e/netdev.c
+@@ -258,7 +258,7 @@ static void e1000_alloc_rx_buffers_ps(st
+ 				continue;
+ 			}
+ 			if (!ps_page->page) {
+-				ps_page->page = alloc_page(GFP_ATOMIC);
++				ps_page->page = netdev_alloc_page(netdev);
+ 				if (!ps_page->page) {
+ 					adapter->alloc_rx_buff_failed++;
+ 					goto no_buffers;
+@@ -818,11 +818,8 @@ static bool e1000_clean_rx_irq_ps(struct
+ 			pci_unmap_page(pdev, ps_page->dma, PAGE_SIZE,
+ 				       PCI_DMA_FROMDEVICE);
+ 			ps_page->dma = 0;
+-			skb_fill_page_desc(skb, j, ps_page->page, 0, length);
++			skb_add_rx_frag(skb, j, ps_page->page, 0, length);
+ 			ps_page->page = NULL;
+-			skb->len += length;
+-			skb->data_len += length;
+-			skb->truesize += length;
+ 		}
+ 
+ copydone:
+Index: linux-2.6/drivers/net/igb/igb_main.c
+===================================================================
+--- linux-2.6.orig/drivers/net/igb/igb_main.c
++++ linux-2.6/drivers/net/igb/igb_main.c
+@@ -3874,7 +3874,7 @@ static bool igb_clean_rx_irq_adv(struct 
+ 				       PAGE_SIZE / 2, PCI_DMA_FROMDEVICE);
+ 			buffer_info->page_dma = 0;
+ 
+-			skb_fill_page_desc(skb, skb_shinfo(skb)->nr_frags++,
++			skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags++,
+ 						buffer_info->page,
+ 						buffer_info->page_offset,
+ 						length);
+@@ -3884,11 +3884,6 @@ static bool igb_clean_rx_irq_adv(struct 
+ 				buffer_info->page = NULL;
+ 			else
+ 				get_page(buffer_info->page);
+-
+-			skb->len += length;
+-			skb->data_len += length;
+-
+-			skb->truesize += length;
+ 		}
+ send_up:
+ 		i++;
+@@ -3982,7 +3977,7 @@ static void igb_alloc_rx_buffers_adv(str
+ 
+ 		if (adapter->rx_ps_hdr_size && !buffer_info->page_dma) {
+ 			if (!buffer_info->page) {
+-				buffer_info->page = alloc_page(GFP_ATOMIC);
++				buffer_info->page = netdev_alloc_page(netdev);
+ 				if (!buffer_info->page) {
+ 					adapter->alloc_rx_buff_failed++;
+ 					goto no_buffers;
+Index: linux-2.6/drivers/net/ixgbe/ixgbe_main.c
+===================================================================
+--- linux-2.6.orig/drivers/net/ixgbe/ixgbe_main.c
++++ linux-2.6/drivers/net/ixgbe/ixgbe_main.c
+@@ -495,7 +495,7 @@ static void ixgbe_alloc_rx_buffers(struc
+ 
+ 		if (!bi->page &&
+ 		    (adapter->flags & IXGBE_FLAG_RX_PS_ENABLED)) {
+-			bi->page = alloc_page(GFP_ATOMIC);
++			bi->page = netdev_alloc_page(netdev);
+ 			if (!bi->page) {
+ 				adapter->alloc_rx_page_failed++;
+ 				goto no_buffers;
+@@ -622,13 +622,9 @@ static bool ixgbe_clean_rx_irq(struct ix
+ 			pci_unmap_page(pdev, rx_buffer_info->page_dma,
+ 				       PAGE_SIZE, PCI_DMA_FROMDEVICE);
+ 			rx_buffer_info->page_dma = 0;
+-			skb_fill_page_desc(skb, skb_shinfo(skb)->nr_frags,
+-					   rx_buffer_info->page, 0, upper_len);
++			skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags,
++					rx_buffer_info->page, 0, upper_len);
+ 			rx_buffer_info->page = NULL;
+-
+-			skb->len += upper_len;
+-			skb->data_len += upper_len;
+-			skb->truesize += upper_len;
+ 		}
+ 
+ 		i++;
 
 -- 
 
