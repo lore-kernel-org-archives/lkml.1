@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbYJBHSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbYJBHY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753583AbYJBHSl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 03:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYJBHS1
+	id S1753061AbYJBHY2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 03:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYJBHYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 03:18:27 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54507 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752700AbYJBHSZ (ORCPT
+	Thu, 2 Oct 2008 03:24:21 -0400
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:59332 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbYJBHYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 03:18:25 -0400
-Date: Thu, 2 Oct 2008 16:24:14 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/4] capture pages freed during direct reclaim for
- allocation by the reclaimer
-Message-Id: <20081002162414.03470f46.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1222864261-22570-5-git-send-email-apw@shadowen.org>
-References: <1222864261-22570-1-git-send-email-apw@shadowen.org>
-	<1222864261-22570-5-git-send-email-apw@shadowen.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Oct 2008 03:24:20 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX183zJRl2pNwpQ6AhuwMF6zw
+Date: Thu, 2 Oct 2008 10:27:09 +0300
+From: Tony Lindgren <tony@atomide.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Samuel Ortiz <sameo@openedhand.com>, lkml <linux-kernel@vger.kernel.org>,
+       Felipe Balbi <felipe.balbi@nokia.com>, linux-omap@vger.kernel.org
+Subject: Re: [PATCH 2.6.27-rc8 1/2] drivers/mfd/twl4030-core.c
+Message-ID: <20081002072704.GC7942@atomide.com>
+References: <200810011144.20510.david-b@pacbell.net> <200810011453.26699.david-b@pacbell.net> <20081002060521.GA7942@atomide.com> <200810012353.57753.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810012353.57753.david-b@pacbell.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  1 Oct 2008 13:31:01 +0100
-Andy Whitcroft <apw@shadowen.org> wrote:
-
-> When a process enters direct reclaim it will expend effort identifying
-> and releasing pages in the hope of obtaining a page.  However as these
-> pages are released asynchronously there is every possibility that the
-> pages will have been consumed by other allocators before the reclaimer
-> gets a look in.  This is particularly problematic where the reclaimer is
-> attempting to allocate a higher order page.  It is highly likely that
-> a parallel allocation will consume lower order constituent pages as we
-> release them preventing them coelescing into the higher order page the
-> reclaimer desires.
+* David Brownell <david-b@pacbell.net> [081002 09:54]:
+> On Wednesday 01 October 2008, Tony Lindgren wrote:
+> > * David Brownell <david-b@pacbell.net> [081002 00:53]:
+> > > On Wednesday 01 October 2008, David Brownell wrote:
+> > > 
+> > > > NOTE: this is the current code from the linux-omap tree.
+> > > 
+> > > This chip being used on a whole bunch of boards:
+> > > 
+> > >  - Gumstix Overo
+> > >  - BeagleBoard.org
+> > >  - Omap ZOOM (Labrador)
+> > >  - OMAP 2430 and 3430 SDP,
+> > >  - OMAP2 and OMAP3 EVM
+> > >  - ... more (openpandora.org ?)
 > 
-> This patch set attempts to address this for allocations above
-> ALLOC_COSTLY_ORDER by temporarily collecting the pages we are releasing
-> onto a local free list.  Instead of freeing them to the main buddy lists,
-> pages are collected and coelesced on this per direct reclaimer free list.
-> Pages which are freed by other processes are also considered, where they
-> coelesce with a page already under capture they will be moved to the
-> capture list.  When pressure has been applied to a zone we then consult
-> the capture list and if there is an appropriatly sized page available
-> it is taken immediatly and the remainder returned to the free pool.
-> Capture is only enabled when the reclaimer's allocation order exceeds
-> ALLOC_COSTLY_ORDER as free pages below this order should naturally occur
-> in large numbers following regular reclaim.
+> My bad.  Openpandora just opened for preorders *today* (PST)
+> and sold out all 3000 units.  I'm sure I mentioned it well
+> after most of them were sold, so it's not my fault their
+> server was killed.  Really ...
 > 
-> Thanks go to Mel Gorman for numerous discussions during the development
-> of this patch and for his repeated reviews.
 > 
+> > > 
+> > > which will get much closer to "usable with mainline kernels"
+> > > when their power management chip works in mainline!  :)
+> > 
+> > Cool. I'll post some patches against mainline kernel
+> > for booting minimal omap3 boards within next few days.
+> > So we should get at least beagle and overo booting
+> > to some extent, maybe with serial and musb.
+> 
+> Sounds like it *should* be a nice, modest, achievable
+> goal, right?  Something tells me it won't be that easy!
+> More power to you.
 
-Hmm.. is this routine better than
-  mm/memory_hotplug.c::do_migrate_range(start_pfn, end_pfn) ?
+Hmm, well it's really the rest of the already posted omap2-upstream
+that RMK already commented on, plus one patch for sram for 34xx,
+then just the board files. So it should be doable yeah.
 
-Thanks,
--Kame
-
+Tony
