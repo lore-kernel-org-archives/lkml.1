@@ -1,125 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbYJBLh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbYJBLoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800AbYJBLh2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 07:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYJBLhK
+	id S1753883AbYJBLoM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 07:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYJBLn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 07:37:10 -0400
-Received: from po-out-1718.google.com ([72.14.252.157]:24233 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079AbYJBLhH (ORCPT
+	Thu, 2 Oct 2008 07:43:57 -0400
+Received: from mail150.ix.emailantidote.com ([89.167.219.150]:4645 "EHLO
+	mail1.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753179AbYJBLn4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 07:37:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=vyfgkRC3gm6Rd5gwlZZwHpT3eN165UlwH40pfIp7ufEEYFfbA01JyzYfgBqRyxbLmj
-         48Kl1Hj7/aeh6wx7AX8MMPObDOKMcO61g20xmIk201l7/e5gE51dN/97r0y0xa5viBS5
-         BTCeT9Bh9XYY61G+qn0IuIBwkdnCQI2EDI/CI=
-Message-ID: <cfd18e0f0810020437o6562ea70pfa96a171b97d530a@mail.gmail.com>
-Date: Thu, 2 Oct 2008 13:37:04 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: ltp getdents syscalls testcases and 2.6.27-rcX
-Cc: "Daniel Gollub" <dgollub@suse.de>, viro@zeniv.linux.org.uk,
-       ltp-list@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, "Petr Gajdos" <pgajdos@suse.cz>
-In-Reply-To: <20080924155015.GA27090@cs181140183.pp.htv.fi>
+	Thu, 2 Oct 2008 07:43:56 -0400
+Message-ID: <48E4B3CD.1090902@draigBrady.com>
+Date: Thu, 2 Oct 2008 12:43:09 +0100
+From: =?UTF-8?B?UMOhZHJhaWcgQnJhZHk=?= <P@draigBrady.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200809161427.36373.dgollub@suse.de>
-	 <20080924155015.GA27090@cs181140183.pp.htv.fi>
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] fastboot: Add a script to visualize the kernel boot process
+ / time
+References: <20080913094219.5d314e5e@infradead.org>	<48CE5C45.2080001@draigBrady.com> <20080915063701.3344e7b7@infradead.org> <48CE70E2.4020009@draigBrady.com>
+In-Reply-To: <48CE70E2.4020009@draigBrady.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 02 Oct 2008 11:43:11.0809 (UTC) FILETIME=[0C572310:01C92484]
+x-MXSweep-CtasdSpam: Unknown
+x-MXSweep-CtasdVirus: Unknown
+x-MXSweep-KeywordsCount: 0
+x-MXPurifier-SpamScore: 0
+x-MXPurifier-VirusScore: 0
+X-MXSweep-Threat: Clean
+X-MXUniqueID: 2123b329-79e1-43ed-942e-4046af1f4555
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 5:50 PM, Adrian Bunk <bunk@stusta.de> wrote:
-> [ kernel people added to Cc ]
->
-> On Tue, Sep 16, 2008 at 02:27:36PM +0200, Daniel Gollub wrote:
->> Hi,
+Pádraig Brady wrote:
+> Arjan van de Ven wrote:
 >>
->> with 2.6.27-rc1(?) linux/dirent.h got removed Kbuild headers_install targe and
->> dirent struct got removed:
+>> http://www.fenrus.org/before.svg
+>> http://www.fenrus.org/after.svg
 >>
->>
->> commit cf6ae8b50e0ee3f764392dadd1970e3f03c40773
->> Author: Adrian Bunk <bunk@kernel.org>
->> Date:   Fri Jul 25 01:46:46 2008 -0700
->>
->>     remove the in-kernel struct dirent{,64}
->>
->>     The kernel struct dirent{,64} were different from the ones in
->>     userspace.
->>
->>     Even worse, we exported the kernel ones to userspace.
->>
->>     But after the fat usages are fixed we can remove the conflicting
->>     kernel versions.
->>
->>
->> This broke the build of some LTP syscalls testcases for "getdents", since the
->> <linux/dirent.h> include is missing and the "internal" dirent struct get/got
->> used in:
->>
->> testcases/kernel/syscalls/getdents/getdents01.c
->> testcases/kernel/syscalls/getdents/getdents03.c
->> testcases/kernel/syscalls/getdents/getdents02.c
->> testcases/kernel/syscalls/getdents/getdents04.c
->>
->> http://ltp.cvs.sourceforge.net/ltp/ltp/testcases/kernel/syscalls/getdents/
->>
->> Is it safe to use the userspace dirent struct from <dirent.h> to fix the build
->> of this? Or what should be used for testing the getdents interface instead?
->
-> Thanks for your report.
->
-> I missed this since the kernel sys_getdents() did not use the
-> "struct dirent" from the header but an own "struct linux_dirent".
->
-> It might be safe since the LTP tests don't seem to care whether
-> getdents() returns nonsense.
->
-> But it is not correct since the reason why I removed this struct from
-> the userspace headers was that the kernel and libc structs are
-> *different*.
->
-> E.g. when I enable the commented out code in getdents01.c I get the
-> expected result that using <dirent.h> instead of <linux/dirent.h>
-> changes a PASS into a FAIL. [1]
->
-> IMHO the solution is something like:
-> - move "struct linux_dirent" from fs/readdir.c to include/linux/dirent.h
-> - re-export linux/dirent.h to userspace
-> - change getdents(2) to consistently use "struct linux_dirent"
->
-> Questions to fsdevel:
-> - Do we need to preserve API compatibility with compatibility #define's
->  for struct dirent{,64} here?
-> - LTP does malloc(sizeof(struct dirent)).
->  Is this considered a valid API usage that must continue to work?
->
->> best regards,
->> Daniel
+>> (before and after another patch ;-)
+> 
+> Nice times :)
+> I guess we'll hear more about this on Thursday morning:
+> http://linuxplumbersconf.org/program/speakers/getspeaker.php?speaker=avandeven.txt
 
-I've made some changes to the readdir(2) and getdents(2) man pages to
-make it clearer that the "dirent" structures used by these to syscalls
-are different from one another (old_linux_dirent vs linux_dirent), and
-also different from that used by glibc's readdir(3). (dirent)  The
-changes are already pushed out to man-pages git.
+For the archives, there is some public info on this now:
+http://lwn.net/Articles/299483/
 
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+cheers,
+Pádraig.
