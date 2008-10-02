@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYJBXCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbYJBXF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbYJBXCw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 19:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYJBXCo
+	id S1754790AbYJBXF7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 19:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYJBXFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 19:02:44 -0400
-Received: from xenotime.net ([66.160.160.81]:53200 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752722AbYJBXCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 19:02:44 -0400
-Date: Thu, 2 Oct 2008 16:02:41 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: linux-kernel@vger.kernel.org
-cc: akpm@linux-foundation.org
-Subject: Re: mmotm 2008-10-02-14-45 uploaded
-In-Reply-To: <200810022145.m92LjihZ028042@imap1.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0810021600230.26309@shark.he.net>
-References: <200810022145.m92LjihZ028042@imap1.linux-foundation.org>
+	Thu, 2 Oct 2008 19:05:48 -0400
+Received: from kroah.org ([198.145.64.141]:41035 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752596AbYJBXFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 19:05:47 -0400
+Date: Thu, 2 Oct 2008 16:02:46 -0700
+From: Greg KH <greg@kroah.com>
+To: xiong.huang@atheros.com, csnook@redhat.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: atl2 network driver status
+Message-ID: <20081002230246.GA11570@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008, akpm@linux-foundation.org wrote:
+Hi,
 
-> The mm-of-the-moment snapshot 2008-10-02-14-45 has been uploaded to
-> 
->    http://userweb.kernel.org/~akpm/mmotm/
-> 
-> It contains the following patches against 2.6.27-rc8:
+In looking for drivers to add to drivers/staging/ I ran across the atl2
+driver that is currently in the Fedora and Ubuntu kernel trees.
 
-I wonder why I have patch FAILs & rejects:
+This driver doesn't look to be scheduled for inclusion in the upstream
+netdev git tree for submission for 2.6.28, is there any reason why it is
+still out-of-the-tree?
 
-mmotm-2008-1002-1445> grep -C 3 FAIL pushall.txt 
+And, if it's not going into 2.6.28, any objection for me adding it to
+the drivers/staging/ tree?  If so, I need a list of reasons why it is
+not merged upstream properly so far so that people know what to work on
+in order to get it there.
 
-Applying patch sky2-fix-recent-wol-regression.patch
-patching file drivers/net/sky2.c
-Hunk #1 FAILED at 3034.
-Hunk #2 succeeded at 3049 with fuzz 2 (offset 3 lines).
-Hunk #3 FAILED at 4172.
-Hunk #4 FAILED at 4232.
-3 out of 4 hunks FAILED -- rejects in file drivers/net/sky2.c
-Patch sky2-fix-recent-wol-regression.patch can be reverse-applied
+thanks,
 
-
--- 
-~Randy
+greg k-h
