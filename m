@@ -1,57 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbYJBFF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbYJBFHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbYJBFF0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 01:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYJBFFP
+	id S1753238AbYJBFHw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 01:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbYJBFHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 01:05:15 -0400
-Received: from ms1.nttdata.co.jp ([163.135.193.232]:48099 "EHLO
-	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbYJBFFO (ORCPT
+	Thu, 2 Oct 2008 01:07:44 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51424 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbYJBFHl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 01:05:14 -0400
-Message-ID: <48E45672.5030606@nttdata.co.jp>
-Date: Thu, 02 Oct 2008 14:04:50 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.17) Gecko/20080914 Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Valdis.Kletnieks@vt.edu, Casey Schaufler <casey@schaufler-ca.com>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       haradats@nttdata.co.jp,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [TOMOYO #9 (2.6.27-rc7-mm1) 1/6] LSM adapter functions.
-References: <20080924090317.359685535@nttdata.co.jp> <20080924090338.407746083@nttdata.co.jp> <20080925165954.GA25587@us.ibm.com> <48DC7553.8040708@nttdata.co.jp> <20080926130409.GA14055@us.ibm.com> <48E053DB.3010201@nttdata.co.jp> <20080930154553.GA29249@us.ibm.com> <48E2E17C.3040108@schaufler-ca.com> <62704.1222837526@turing-police.cc.vt.edu> <48E33397.1030709@nttdata.co.jp> <20081001211507.GA28377@us.ibm.com>
-In-Reply-To: <20081001211507.GA28377@us.ibm.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
+	Thu, 2 Oct 2008 01:07:41 -0400
+Date: Thu, 2 Oct 2008 14:13:13 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 4/6] memcg: new force_empty and move_account
+Message-Id: <20081002141313.0882baba.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081001093804.b392e418.randy.dunlap@oracle.com>
+References: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081001165912.236af3e7.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081001093804.b392e418.randy.dunlap@oracle.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Oct 2008 05:05:10.0815 (UTC) FILETIME=[7228A2F0:01C9244C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> I suppose you could do something like define both _path and _inode,
-> save away your result from the _path hook but always return 0, there,
-> then if you'd saved off an error and you make it to the _inode hook,
-> return the error there...
-You mean do MAC checks in security_path_*() and return error code of 
-security_path_*() in security_inode_*()? Then, method for passing the 
-error code to security_inode_*() is a problem.
+Thank yoy for review!
 
-It was possible to store the error code into current->security->
-something. But now, it is impossible to store the error code into 
-current->cred->security->something because current->cred is shared by 
-multiple processes. To solve this problem, we everytime need to copy 
-current->cred in security_path_*() and we need a new hook called just 
-after returning from vfs_* (like mnt_drop_write()) for clearing the 
-error code. 
+On Wed, 1 Oct 2008 09:38:04 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Or, another way is to pass the error code as a vfs_*() parameter.
+> On Wed, 1 Oct 2008 16:59:12 +0900 KAMEZAWA Hiroyuki wrote:
+> 
+> >  Documentation/controllers/memory.txt |   10 -
+> >  mm/memcontrol.c                      |  267 +++++++++++++++++++++++++++--------
+> >  2 files changed, 216 insertions(+), 61 deletions(-)
+> > 
+> > Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+> > ===================================================================
+> > --- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
+> > +++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+> > @@ -538,6 +533,24 @@ nomem:
+> >  	return -ENOMEM;
+> >  }
+> >  
+> > +/**
+> > + * mem_cgroup_try_charge - get charge of PAGE_SIZE.
+> > + * @mm: an mm_struct which is charged against. (when *memcg is NULL)
+> > + * @gfp_mask: gfp_mask for reclaim.
+> > + * @memcg: a pointer to memory cgroup which is charged against.
+> > + *
+> > + * charge aginst memory cgroup pointed by *memcg. if *memcg == NULL, estimated
+> > + * memory cgroup from @mm is got and stored in *memcg.
+> > + *
+> > + * Retruns 0 if success. -ENOMEM at failure.
+> > + */
+> > +
+> > +int mem_cgroup_try_charge(struct mm_struct *mm,
+> > +			  gfp_t mask, struct mem_cgroup **memcg)
+> > +{
+> > +	return __mem_cgroup_try_charge(mm, mask, memcg, false);
+> > +}
+> > +
+> >  /*
+> >   * commit a charge got by mem_cgroup_try_charge() and makes page_cgroup to be
+> >   * USED state. If already USED, uncharge and return.
+> > @@ -567,11 +580,109 @@ static void __mem_cgroup_commit_charge(s
+> >  	mz = page_cgroup_zoneinfo(pc);
+> >  
+> >  	spin_lock_irqsave(&mz->lru_lock, flags);
+> > -	__mem_cgroup_add_list(mz, pc);
+> > +	__mem_cgroup_add_list(mz, pc, true);
+> >  	spin_unlock_irqrestore(&mz->lru_lock, flags);
+> >  	unlock_page_cgroup(pc);
+> >  }
+> >  
+> > +/**
+> > + * mem_cgroup_move_account - move account of the page
+> > + * @pc   ... page_cgroup of the page.
+> > + * @from ... mem_cgroup which the page is moved from.
+> > + * @to   ... mem_cgroup which the page is moved to. @from != @to.
+> 
+> Bad kernel-doc format.  Use (e.g.)
+>  * @pc: page_cgroup of the page
+> 
+Hmm, sorry.
 
-What do you think these approaches?
+> as was done in the function above.
+> 
+> > + *
+> > + * The caller must confirm following.
+> > + * 1. disable irq.
+> > + * 2. lru_lock of old mem_cgroup(@from) should be held.
+> > + *
+> > + * returns 0 at success,
+> > + * returns -EBUSY when lock is busy or "pc" is unstable.
+> > + *
+> > + * This function do "uncharge" from old cgroup but doesn't do "charge" to
+> 
+>                     does
+> 
+will fix.
 
-Regards,
+> > + * new cgroup. It should be done by a caller.
+> > + */
+> > +
+> > +static int mem_cgroup_move_account(struct page_cgroup *pc,
+> > +	struct mem_cgroup *from, struct mem_cgroup *to)
+> > +{
+> ...
+> > +}
+> > +
+> > Index: mmotm-2.6.27-rc7+/Documentation/controllers/memory.txt
+> > ===================================================================
+> > --- mmotm-2.6.27-rc7+.orig/Documentation/controllers/memory.txt
+> > +++ mmotm-2.6.27-rc7+/Documentation/controllers/memory.txt
+> > @@ -211,7 +211,9 @@ The memory.force_empty gives an interfac
+> >  
+> >  # echo 1 > memory.force_empty
+> >  
+> > -will drop all charges in cgroup. Currently, this is maintained for test.
+> > +Will move account to parent. if parenet is full, will try to free pages.
+> 
+>                                 If parent
+> 
+Ah, sorry.
+
+> > +If both of a parent and a child are busy, return -EBUSY;
+> 
+> maybe:
+>    If both parent and child are busy, return -EBUSY.
+> 
+will fix.
+
+
+> > +This file, memory.force_empty, is just for debug purpose.
+> >  
+> >  4. Testing
+> >  
+> > @@ -242,8 +244,10 @@ reclaimed.
+> >  
+> >  A cgroup can be removed by rmdir, but as discussed in sections 4.1 and 4.2, a
+> >  cgroup might have some charge associated with it, even though all
+> > -tasks have migrated away from it. Such charges are automatically dropped at
+> > -rmdir() if there are no tasks.
+> > +tasks have migrated away from it.
+> > +Such charges are moved to its parent as mush as possible and freed if parent
+> 
+>                                            much
+> 
+will fix
+
+> > +seems to be full. (see force_empty)
+> 
+> seems??  Is it questionable/unsure?
+> 
+
+It's unstable state. If someone frees some page, it's not full.
+But "seems" is not good, I'll remove "seems".
+
+Thanks,
+-Kame
+
 
