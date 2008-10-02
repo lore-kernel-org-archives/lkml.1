@@ -1,71 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbYJBPEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYJBPGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412AbYJBPEu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 11:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbYJBPEj
+	id S1755146AbYJBPGU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 11:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108AbYJBPGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 11:04:39 -0400
-Received: from tallyho.bytemark.co.uk ([80.68.81.166]:38533 "EHLO
-	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755323AbYJBPEi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 11:04:38 -0400
-Date: Thu, 2 Oct 2008 16:04:23 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: MinChan Kim <minchan.kim@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/4] Reclaim page capture v4
-Message-ID: <20081002150423.GG11089@brain>
-References: <1222864261-22570-1-git-send-email-apw@shadowen.org> <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com>
+	Thu, 2 Oct 2008 11:06:06 -0400
+Received: from ns.suse.de ([195.135.220.2]:52194 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753898AbYJBPGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 11:06:04 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] BUG: nr_phys_segments cannot be less than nr_hw_segments
+Date: Thu, 2 Oct 2008 20:35:10 +0530
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+References: <200810021959.33616.knikanth@suse.de>
+In-Reply-To: <200810021959.33616.knikanth@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200810022035.10996.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 02, 2008 at 11:46:12AM +0900, MinChan Kim wrote:
-> Hi, Andy.
+On Thursday 02 October 2008 19:59:33 Nikanth Karthikesan wrote:
+> This is a follow-up to my earlier mail http://lkml.org/lkml/2008/9/23/294
+> ([PATCH] BUG: ll_merge_requests_fn() updates req->nr_phys_segments wrongly)
+>
+> It is possible for the merging code to create lesser no of phys segments
+> than hw segments, but every hw segment needs atleast one new phys segment.
+> This triggers the BUG() on scsi_init_sgtable() as blk_rq_map_sg() returns
+> more no of segments than rq->nr_phys_segments
+>
+> The following blktrace shows a sequence of bio's to trigger such condition
+> on my machine with max_sectors_kb=512 & max_hw_sectors_kb=32767.
+>
+>   8,0    0       12     1.943680621  2261  Q   R 6184075 + 55 [bash]
+>   8,0    0       13     1.943684671  2261  G   R 6184075 + 55 [bash]
+>   8,0    0       14     1.943690189  2261  P   N [bash]
+>   8,0    0       15     1.943692075  2261  I   R 6184075 + 55 [bash]
+>   8,0    0       16     1.943712119  2261  D   R 6184075 + 55 [bash]
+>   8,0    0       17     1.943718684  2261  Q   R 6184130 + 55 [bash]
+>   8,0    0       18     1.943721897  2261  G   R 6184130 + 55 [bash]
+>   8,0    0       19     1.943726576  2261  P   N [bash]
+>   8,0    0       20     1.943727763  2261  I   R 6184130 + 55 [bash]
+>   8,0    0       21     1.943731675  2261  Q   R 6184241 + 56 [bash]
+>   8,0    0       22     1.943735167  2261  G   R 6184241 + 56 [bash]
+>   8,0    0       23     1.943739497  2261  I   R 6184241 + 56 [bash]
+>   8,0    0       24     1.943742081  2261  Q   R 6184185 + 56 [bash]
+>   8,0    0       25     1.943744875  2261  M   R 6184185 + 56 [bash]
+>   8,0    0       26     1.943753535  2261  Q   R 6184352 + 55 [bash]
+>   8,0    0       27     1.943756538  2261  G   R 6184352 + 55 [bash]
+>   8,0    0       28     1.943760868  2261  I   R 6184352 + 55 [bash]
+>   8,0    0       29     1.943763522  2261  Q   R 6184407 + 55 [bash]
+>   8,0    0       30     1.943766316  2261  M   R 6184407 + 55 [bash]
+>   8,0    0       31     1.943770506  2261  Q   R 6184297 + 55 [bash]
+>   8,0    0       32     1.943772951  2261  F   R 6184297 + 55 [bash]
+>   8,0    0       33     1.943780843  2261  Q   R 6184462 + 55 [bash]
+>   8,0    0       34     1.943783776  2261  M   R 6184462 + 55 [bash]
+>   8,0    0       35     1.944444684     0 UT   N [swapper] 2
+>   8,0    0       36     1.944453624    10  U   N [kblockd/0] 2
+>   8,0    0       37     1.944470595    10  D   R 6184130 + 387 [kblockd/0]
+>   8,0    0       38     1.970340853     0  C   R 6184075 + 55 [0]
+>   8,0    0       39     1.973576739     0  C   R 6184130 + 387 [0]
+>
 > 
-> I tested your patch in my desktop.
-> The test is just kernel compile with single thread.
-> My system environment is as follows.
-> 
-> model name	: Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
-> MemTotal:        2065856 kB
-> 
-> When I tested vanilla, compile time is as follows.
-> 
-> 2433.53user 187.96system 42:05.99elapsed 103%CPU (0avgtext+0avgdata
-> 0maxresident)k
-> 588752inputs+4503408outputs (127major+55456246minor)pagefaults 0swaps
-> 
-> When I tested your patch, as follows.
-> 
-> 2489.63user 202.41system 44:47.71elapsed 100%CPU (0avgtext+0avgdata
-> 0maxresident)k
-> 538608inputs+4503928outputs (130major+55531561minor)pagefaults 0swaps
-> 
-> Regresstion almost is above 2 minutes.
-> Do you think It is a trivial?
-> 
-> I know your patch is good to allocate hugepage.
-> But, I think many users don't need it, including embedded system and
-> desktop users yet.
-> 
-> So I suggest you made it enable optionally.
+Oops, that was incomplete information to reproduce the issue.
 
-Hmmm.  I would not expect to see any significant impact for this kind of
-workload as we should not be triggering capture for the lower order
-allocations at all.  Something screwey must be occuring.  I will go and
-reproduce this here and see if I can figure out just what causes this.
+typedef struct {
+	int	IoSize;
+	char	*Mem;
+} DB_MEM_LIST, *pDB_MEM_LIST;
 
--apw
+DB_MEM_LIST	dbMemList[NUM_BIO] = {
+	{ 0x6e00,	NULL },
+	{ 0x6e00,	NULL },
+	{ 0x7000,	NULL },
+	{ 0x7000,	NULL },
+	{ 0x6e00,	NULL },
+	{ 0x6e00,	NULL },
+	{ 0x6e00,	NULL },
+	{ 0x6e00,	NULL },
+};
+
+		
+// Allocate Memory.
+char *Mem0 = kmalloc(dbMemList[0].IoSize, GFP_KERNEL);
+char *Mem1 = kmalloc(dbMemList[1].IoSize, GFP_KERNEL);
+char *Mem2 = kmalloc((dbMemList[2].IoSize + dbMemList[3].IoSize + 
+dbMemList[4].IoSize), GFP_KERNEL);
+char *Mem5 = kmalloc(dbMemList[5].IoSize, GFP_KERNEL);
+char *Mem6 = kmalloc(dbMemList[6].IoSize, GFP_KERNEL);
+char *Mem7 = kmalloc(dbMemList[7].IoSize, GFP_KERNEL);
+
+dbMemList[0].Mem = Mem0;
+dbMemList[1].Mem = Mem1;
+dbMemList[2].Mem = Mem2;
+dbMemList[3].Mem = dbMemList[2].Mem + dbMemList[2].IoSize;
+dbMemList[4].Mem = dbMemList[3].Mem + dbMemList[3].IoSize;
+dbMemList[5].Mem = Mem5;
+dbMemList[6].Mem = Mem6;
+dbMemList[7].Mem = Mem7;
+
+
+int			Loop;
+struct bio		*BioList[NUM_BIO]	= { NULL };
+struct bio		*Bio			= NULL;
+long			Sector;
+
+
+/*
+** Allocate BIOs.
+*/
+for(Loop = 0; Loop < NUM_BIO; Loop++)
+	BioList[Loop] = bio_alloc(GFP_KERNEL, NUMBER_OF_VECS);
+
+for(Loop = 0; Loop < NUM_BIO; Loop++) {
+	Bio = BioList[Loop];
+	Bio->bi_sector			= Sector;
+	Bio->bi_bdev			= Bdev;
+	Bio->bi_end_io			= db_end_io;
+	if (Loop == 0) {
+		if (!bio_add_page(BioList[Loop],
+				virt_to_page(dbMemList[Loop].Mem),
+				0x3000,
+				offset_in_page(dbMemList[Loop].Mem))) {
+			printk("NIK: bio add page failed- %dA\n", Loop);
+		}
+		if (!bio_add_page(BioList[Loop],
+				virt_to_page(dbMemList[7].Mem),
+				0x3e00,
+				offset_in_page(dbMemList[7].Mem))) {
+			printk("NIK: bio add page failed- %dB\n", Loop);
+		}
+	} else if (Loop == 7) {
+		if (!bio_add_page(BioList[Loop],
+				virt_to_page(dbMemList[Loop].Mem),
+				0x2000,
+				offset_in_page(dbMemList[Loop].Mem))) {
+			printk("NIK: bio add page failed- %dA\n", Loop);
+		}
+		if (!bio_add_page(BioList[Loop],
+				virt_to_page(dbMemList[7].Mem),
+				0x4e00,
+				offset_in_page(dbMemList[7].Mem))) {
+			printk("NIK: bio add page failed- %dB\n", Loop);
+		}
+	} else if (!bio_add_page(BioList[Loop],
+				virt_to_page(dbMemList[Loop].Mem),
+				dbMemList[Loop].IoSize,
+				offset_in_page(dbMemList[Loop].Mem))) {
+		printk("NIK: bio add page failed %d\n", Loop);
+	}
+	Sector += (Bio->bi_size / 512);
+}
+
+submit_bio(READ, BioList[0]);	// 1
+submit_bio(READ, BioList[1]);	// 2
+submit_bio(READ, BioList[3]);	// 4
+submit_bio(READ, BioList[2]);	// 3
+submit_bio(READ, BioList[5]);	// 6
+submit_bio(READ, BioList[6]);	// 7
+submit_bio(READ, BioList[4]);	// 5
+submit_bio(READ, BioList[7]);	// 8
+
+Thanks
+Nikanth Karthikesan
