@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYJBSxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYJBS7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbYJBSxv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 14:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYJBSxo
+	id S1754702AbYJBS7M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 14:59:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbYJBS67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 14:53:44 -0400
-Received: from outbound-mail-19.bluehost.com ([69.89.20.234]:58041 "HELO
-	outbound-mail-19.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753197AbYJBSxn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 14:53:43 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=HrpSC1aAMCWt/gmuL/JwiFqHhJyu4//crOO5EZEuXTXcgY+ztD487vyeaEBsY4xLFtbBunowEJQenuRxazJypT3ImMETEDWiYSwZxjnY1a0Gagmsvs4DP4BbkTk9AV1d;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 01/19] pci: introduce an pci_ioremap(pdev, barnr) function
-Date: Thu, 2 Oct 2008 11:53:40 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-References: <20080928163611.3df8a9e0@infradead.org>
-In-Reply-To: <20080928163611.3df8a9e0@infradead.org>
+	Thu, 2 Oct 2008 14:58:59 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46465 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753566AbYJBS66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 14:58:58 -0400
+Date: Thu, 2 Oct 2008 20:55:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [boot crash] Re: [PATCH] ring-buffer: fix build error
+Message-ID: <20081002185509.GA32078@elte.hu>
+References: <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu> <20081002090517.GA8708@elte.hu> <20081002093835.GA17699@elte.hu> <alpine.DEB.1.10.0810020916580.19018@gandalf.stny.rr.com> <20081002155053.GA31953@elte.hu> <alpine.DEB.1.10.0810021426080.2919@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810021153.40722.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <alpine.DEB.1.10.0810021426080.2919@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, September 28, 2008 4:36 pm Arjan van de Ven wrote:
-> The patch below introduces a pci_ioremap() function that should make it
-> easier for driver authors to do the right thing for the simple, common
-> case.
->
-> There's also 18 patches that introduce users of this; to reduce lkml noise
-> I've only stuck them in a git tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-pci_ioremap.g
->it
-> (http://git.kernel.org/?p=linux/kernel/git/arjan/linux-2.6-pci_ioremap.git;
->a=summary)
->
->
-> From fef1dd836bc7dc07962a0ae4019af9efd373c76f Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Fri, 26 Sep 2008 16:34:52 -0700
-> Subject: [PATCH 01/19] pci: introduce an pci_ioremap(pdev, barnr) function
->
-> A common thing in many PCI drivers is to ioremap() an entire bar.
-> This is a slightly fragile thing right now, needing both an address and a
-> size, and many driver writers do.. various things there.
->
-> This patch introduces an pci_ioremap() function taking just a PCI device
-> struct and the bar number as arguments, and figures this all out itself, in
-> one place. In addition, we can add various sanity checks to this function
-> (the patch already checks to make sure that the bar in question really is a
-> MEM bar; few to no drivers do that sort of thing).
->
-> Hopefully with this type of API we get less chance of mistakes in drivers
-> with ioremap() operations.
->
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-Applied to my linux-next branch, thanks.  I assume you'll have Linus pull the 
-driver updates later?
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Thanks,
-Jesse
+> 
+> On Thu, 2 Oct 2008, Ingo Molnar wrote:
+> 
+> > 
+> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > 
+> > > On Thu, 2 Oct 2008, Ingo Molnar wrote:
+> > > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > full serial log and config attached. I'm excluding these latest commits 
+> > > 
+> > >  -ENOATTACHMENT
+> > 
+> > attached.
+> > 
+> > You can get the broken tree by doing this in tip/master:
+> > 
+> >   git-merge tip/tracing/ring-buffer
+> 
+> I've just checked-out tip/tracing/ring-buffer. That tree is still broken 
+> too, right? Or do I need to merge it to get the broken version?
+
+yes, that's very likely broken too in a standalone way as well - but to 
+get the exact tree i tested i'd suggest:
+
+  git checkout tip/master
+  git merge tip/tracing/ring-buffer
+
+	Ingo
