@@ -1,126 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbYJBQq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYJBQr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbYJBQq2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 12:46:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYJBQqU
+	id S1755173AbYJBQr2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 12:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYJBQrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 12:46:20 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:47317 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753766AbYJBQqT (ORCPT
+	Thu, 2 Oct 2008 12:47:14 -0400
+Received: from elasmtp-spurfowl.atl.sa.earthlink.net ([209.86.89.66]:56463
+	"EHLO elasmtp-spurfowl.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754114AbYJBQrM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 12:46:19 -0400
-Date: Thu, 2 Oct 2008 09:41:50 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, mouw@nl.linux.org
-Subject: [PATCH] docbook: update procfs credits
-Message-Id: <20081002094150.715b6216.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 2 Oct 2008 12:47:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=m+uCmixcnnIFiq0rBwS5+MBlIS8/ma4EDrL0U0hKHxrk1OewRSp9dYaOQ2IQvqXG;
+  h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <48E4FB0E.4060608@earthlink.net>
+Date: Thu, 02 Oct 2008 12:47:10 -0400
+From: Stephen Clark <sclark46@earthlink.net>
+Reply-To: sclark46@earthlink.net
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Jacek Poplawski <jacekpoplawski@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: motherboard recommendations?
+References: <1f276abf0809160657x4264ad5dm74fd2689d804a7ad@mail.gmail.com>
+In-Reply-To: <1f276abf0809160657x4264ad5dm74fd2689d804a7ad@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-ELNK-Trace: a437fbc6971e80f61aa676d7e74259b7b3291a7d08dfec79752620c001c9b885abccc4056bdf4211350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 208.118.36.229
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Jacek Poplawski wrote:
+> Could you recommend motherboard which works perfecly stable with Linux?
+> Last time I bought Asus K8V-X SE which was huge mistake - it has
+> serious problems with AGP in Linux.
+> 
+> Now I think about Intel chipset - P35 or P45.
+> I want Asus, Gigabyte or MSI board with heat pipe.
+> But I found another issue with audio and network drivers for Asus
+> boards, so maybe I will skip Asus this time?
+> 
+> Which motherboard works stable for you?
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+Hi,
 
-Update Erik Mouw's email address & affiliation in DocBook.
+I am extremely satisfied with my intel dg33fb MB. Only two issues I have
+is onboard nic won't WOL and iTCO watchdog timer doesn't reboot the system.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Acked-by: Erik Mouw <mouw@nl.linux.org>
----
- Documentation/DocBook/procfs-guide.tmpl |   29 ++++++++++-------------------
- Documentation/DocBook/procfs_example.c  |   20 ++++----------------
- 2 files changed, 14 insertions(+), 35 deletions(-)
+Steve,
+-- 
 
---- linux-2.6.27-rc8-git3.orig/Documentation/DocBook/procfs-guide.tmpl
-+++ linux-2.6.27-rc8-git3/Documentation/DocBook/procfs-guide.tmpl
-@@ -14,17 +14,20 @@
- 	<othername>(J.A.K.)</othername>
- 	<surname>Mouw</surname>
- 	<affiliation>
--	  <orgname>Delft University of Technology</orgname>
--	  <orgdiv>Faculty of Information Technology and Systems</orgdiv>
- 	  <address>
--            <email>J.A.K.Mouw@its.tudelft.nl</email>
--            <pob>PO BOX 5031</pob>
--            <postcode>2600 GA</postcode>
--            <city>Delft</city>
--            <country>The Netherlands</country>
-+            <email>mouw@nl.linux.org</email>
-           </address>
- 	</affiliation>
-       </author>
-+      <othercredit>
-+	<contrib>
-+	This software and documentation were written while working on the
-+	LART computing board
-+	(<ulink url="http://www.lartmaker.nl/">http://www.lartmaker.nl/</ulink>),
-+	which was sponsored by the Delt University of Technology projects
-+	Mobile Multi-media Communications and Ubiquitous Communications.
-+	</contrib>
-+      </othercredit>
-     </authorgroup>
- 
-     <revhistory>
-@@ -109,18 +112,6 @@
-     </para>
- 
-     <para>
--      This documentation was written while working on the LART
--      computing board (<ulink
--      url="http://www.lart.tudelft.nl/">http://www.lart.tudelft.nl/</ulink>),
--      which is sponsored by the Mobile Multi-media Communications
--      (<ulink
--      url="http://www.mmc.tudelft.nl/">http://www.mmc.tudelft.nl/</ulink>)
--      and Ubiquitous Communications (<ulink
--      url="http://www.ubicom.tudelft.nl/">http://www.ubicom.tudelft.nl/</ulink>)
--      projects.
--    </para>
--
--    <para>
-       Erik
-     </para>
-   </preface>
---- linux-2.6.27-rc8-git3.orig/Documentation/DocBook/procfs_example.c
-+++ linux-2.6.27-rc8-git3/Documentation/DocBook/procfs_example.c
-@@ -1,28 +1,16 @@
- /*
-  * procfs_example.c: an example proc interface
-  *
-- * Copyright (C) 2001, Erik Mouw (J.A.K.Mouw@its.tudelft.nl)
-+ * Copyright (C) 2001, Erik Mouw (mouw@nl.linux.org)
-  *
-  * This file accompanies the procfs-guide in the Linux kernel
-  * source. Its main use is to demonstrate the concepts and
-  * functions described in the guide.
-  *
-  * This software has been developed while working on the LART
-- * computing board (http://www.lart.tudelft.nl/), which is
-- * sponsored by the Mobile Multi-media Communications
-- * (http://www.mmc.tudelft.nl/) and Ubiquitous Communications 
-- * (http://www.ubicom.tudelft.nl/) projects.
-- *
-- * The author can be reached at:
-- *
-- *  Erik Mouw
-- *  Information and Communication Theory Group
-- *  Faculty of Information Technology and Systems
-- *  Delft University of Technology
-- *  P.O. Box 5031
-- *  2600 GA Delft
-- *  The Netherlands
-- *
-+ * computing board (http://www.lartmaker.nl), which was sponsored
-+ * by the Delt University of Technology projects Mobile Multi-media
-+ * Communications and Ubiquitous Communications.
-  *
-  * This program is free software; you can redistribute
-  * it and/or modify it under the terms of the GNU General
+"They that give up essential liberty to obtain temporary safety,
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty
+decreases."  (Thomas Jefferson)
+
+
