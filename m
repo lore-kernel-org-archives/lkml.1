@@ -1,82 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbYJBNGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbYJBNGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754238AbYJBNGY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 09:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYJBNGP
+	id S1753791AbYJBNGt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 09:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYJBNGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 09:06:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56447 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753504AbYJBNGO (ORCPT
+	Thu, 2 Oct 2008 09:06:39 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60510 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753595AbYJBNGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 09:06:14 -0400
-Date: Thu, 2 Oct 2008 09:06:11 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
+	Thu, 2 Oct 2008 09:06:39 -0400
+Date: Thu, 2 Oct 2008 06:05:53 -0700
+From: Arjan van de Ven <arjan@infradead.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH] ring_buffer: allocate buffer page pointer
-In-Reply-To: <20081002020615.4840542a.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0810020901400.19018@gandalf.stny.rr.com>
-References: <20080930000307.GA2929@Krystal> <alpine.DEB.1.10.0809292010530.8145@gandalf.stny.rr.com> <20080930034603.GA13801@Krystal> <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com> <20080930092001.69849210@bike.lwn.net> <1222790072.24384.21.camel@twins>
- <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com>
- <20081002085030.GF26084@elte.hu> <20081002020615.4840542a.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-ID: <20081002060553.3cd32c5c@infradead.org>
+In-Reply-To: <20081001215638.3a65134c.akpm@linux-foundation.org>
+References: <20081001200034.65eb67d6@infradead.org>
+	<20081001215638.3a65134c.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 1 Oct 2008 21:56:38 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On Thu, 2 Oct 2008, Andrew Morton wrote:
-> > 
-> > This patch adds a macro to assign all entries of ftrace using the type
-> > of the variable and checking the entry id. The typecasts are now done
-> > in the macro for only those types that it knows about, which should
-> > be all the types that are allowed to be read from the tracer.
-> > 
+> On Wed, 1 Oct 2008 20:00:34 -0700 Arjan van de Ven
+> <arjan@infradead.org> wrote:
 > 
-> I'm somewhat at a loss here because I'm unable to find any version of
-> kernel/trace/trace.c which looks anything like the one which is being
-> patched, but...
-
-As Ingo mentioned, you don't have this yet. And be happy that you don't 
-;-)
-
-This patch is to fix the patch that did this.
-
+> > Subject: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
 > 
-> > --- a/kernel/trace/trace.c
-> > +++ b/kernel/trace/trace.c
-> > @@ -1350,7 +1350,9 @@ print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
-> >  	}
-> >  	switch (entry->type) {
-> >  	case TRACE_FN: {
-> > -		struct ftrace_entry *field = (struct ftrace_entry *)entry;
-> 
-> Why was this code using a cast in the first place?  It should be using
-> entry->some_field_i_dont_have_here?  That was the whole point in using 
-> the anonymous union in struct trace_entry?
+> You proposed this a while back
 
-Because the ring_buffer now allows for variable length entries, having a 
-one size fits all entry is not optimal.
+one year ago to be precise
 
-But because C is not the best for typecasting, we have this macro to help 
-solve the issue. Instead of registering everything into a single union and 
-causing small fields to be large, we have a macro you can register your
-type with instead.
+>and it didn't happen and I forget
+> why and the changelog doesn't mention any of that?
 
--- Steve
+Jens didn't like the APi I used back then.
+Since then the kernel grew (by Jens) a clean API to do the same...
 
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
