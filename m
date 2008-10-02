@@ -1,244 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYJBVqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbYJBVr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbYJBVqV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 17:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbYJBVqM
+	id S1755295AbYJBVr7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 17:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYJBVru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 17:46:12 -0400
-Received: from mga03.intel.com ([143.182.124.21]:48058 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754412AbYJBVqL convert rfc822-to-8bit (ORCPT
+	Thu, 2 Oct 2008 17:47:50 -0400
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:22584 "HELO
+	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754475AbYJBVrt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 17:46:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,353,1220252400"; 
-   d="scan'208";a="54303229"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: "Luck, Tony" <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Avi Kivity <avi@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 2 Oct 2008 17:47:49 -0400
+X-YMail-OSG: D6o0N5UVM1mw1qtnkwk3scKrqHYGNgONF8fiuCf3Vm905z6KKdrr7RI3zE5JfkN6cnbKB6YL5r.Hkk31FCk958V36mOBVndO.SFPAE.0T0Xhc0vu53MU6uzAcucV_jQI758xHccDisAkyGle4ECdRQ_j0Lt3lPgfmveuRvOhDd82rntKr_raSKpKDsySohuq225nyR06xyEAY_jlXjDzanY-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [Scst-devel] [ANNOUNCE]: ConfigFS enabled Generic Target Mode
+	andiSCSI Target	Stack on v2.6.27-rc7
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: "Sufficool, Stanley" <ssufficool@rov.sbcounty.gov>,
+       scst-devel@lists.sourceforge.net,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
        LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Date: Thu, 2 Oct 2008 14:46:06 -0700
-Subject: RE: [PATCH 1/2]Add Variable Page Size and IA64 Support in Intel
- IOMMU: Generic Part
-Thread-Topic: [PATCH 1/2]Add Variable Page Size and IA64 Support in Intel
- IOMMU: Generic Part
-Thread-Index: AckkpAIKzET+L6NnT7OF86YrjuOiaAALHPzw
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB88408ADFF@orsmsx505.amr.corp.intel.com>
-References: <BAE9DCEF64577A439B3A37F36F9B691C0339372B@orsmsx418.amr.corp.intel.com>
- <617E1C2C70743745A92448908E030B2A02AD5AD7@scsmsx411.amr.corp.intel.com>
- <20081001165725.GA21559@linux-os.sc.intel.com>
- <200810020931.48952.bjorn.helgaas@hp.com>
-In-Reply-To: <200810020931.48952.bjorn.helgaas@hp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <48E4FE98.7050409@vlnb.net>
+References: <C2F174F99918D54CA2A96E57C5079B6F9FAC9C@sbc-exmsg2.sbcounty.gov>
+	 <48E4FE98.7050409@vlnb.net>
+Content-Type: text/plain
+Date: Thu, 02 Oct 2008 14:47:46 -0700
+Message-Id: <1222984066.15764.131.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> The current Intel IOMMU code assumes that both host page size and Intel IOMMU page size are 4K. The first patch supports variable page size. This provides support for IA64 which has multiple page sizes.
->>
->> This patch also adds some other code hooks for IA64 platform including DMAR_OPERATION_TIMEOUT definition, .
+On Thu, 2008-10-02 at 21:02 +0400, Vladislav Bolkhovitin wrote:
+> Sufficool, Stanley wrote:
+> > 
+> >> -----Original Message-----
+> >> From: Nicholas A. Bellinger [mailto:nab@linux-iscsi.org] 
+> >> Sent: Monday, September 29, 2008 12:22 PM
+> >> To: LKML; linux-scsi; Linux-iSCSI.org Target Dev; SCST-Devel; iet-dev
+> >> Cc: FUJITA Tomonori; Mike Christie; Vladislav Bolkhovitin; 
+> >> Greg KH; Joel Becker; Jerome Martin; James Bottomley; H. Peter Anvin
+> >> Subject: [Scst-devel] [ANNOUNCE]: ConfigFS enabled Generic 
+> >> Target Mode andiSCSI Target Stack on v2.6.27-rc7
+> >>
+> >>
 
->Can you split this patch up?  It contains several logically separate
-changes:
->  - casting things to unsigned long long
->  - adding stuff under #ifdef CONFIG_IA64
->  - page size changes
->  - whitespace changes
+<SNIP>
 
-Depends on who is picking up the generic patch. If it's needed, I can split it into multiple patches.
+> >>
+> >> target:~# tree $CONFIGFS
+> >> /sys/kernel/config/
+> >> `-- target
+> >>     |-- core
+> >>     |   |-- fileio_0
+> >>     |   |   |-- file_object
+> >>     |   |   |   |-- dev_control
+> >>     |   |   |   |-- dev_enable
+> >>     |   |   |   `-- dev_info
+> >>     |   |   `-- hba_info
+> >>     |   |-- iblock_0
+> >>     |   |   |-- hba_info
+> >>     |   |   `-- lvm_test0
+> >>     |   |       |-- dev_control
+> >>     |   |       |-- dev_enable
+> >>     |   |       `-- dev_info
+> >>     |   |-- pscsi_0
+> >>     |   |   |-- hba_info
+> >>     |   |   `-- sdd
+> >>     |   |       |-- dev_control
+> >>     |   |       |-- dev_enable
+> >>     |   |       `-- dev_info
+> >>     |   |-- rd_dr_0
+> >>     |   |   |-- hba_info
+> >>     |   |   `-- ramdisk0
+> >>     |   |       |-- dev_control
+> >>     |   |       |-- dev_enable
+> >>     |   |       `-- dev_info
+> >>     |   `-- rd_mcp_0
+> >>     |       |-- hba_info
+> >>     |       `-- ramdisk0
+> >>     |           |-- dev_control
+> >>     |           |-- dev_enable
+> >>     |           `-- dev_info
+> >>     |-- iscsi
+> >>     |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0
+> >>     |   |   `-- tpgt_1
+> >>     |   |       |-- lun
+> >>     |   |       |   |-- lun_0
+> >>     |   |       |   |   |-- lio_west_port -> 
+> >> ../../../../../../target/core/iblock_0/lvm_test0
+> >>     |   |       |   |   |-- port_control
+> >>     |   |       |   |   `-- port_info
+> >>     |   |       |   `-- lun_1
+> >>     |   |       |       |-- lio_east_port -> 
+> >> ../../../../../../target/core/pscsi_0/sdd
+> >>     |   |       |       |-- port_control
+> >>     |   |       |       `-- port_info
+> >>     |   |       |-- np
+> >>     |   |       |   `-- 172.16.201.137:3260
+> >>     |   |       |       `-- portal_info
+> >>     |   |       |-- tpg_control
+> >>     |   |       `-- tpg_enable
+> >>     |   `-- lio_version
+> >>     `-- version
+> >>
+> >> 22 directories, 29 files
+> >>
+> >> --nab
+> > 
+> > My 2 cents as a user of the current SCST infrastructure and with no clue
+> > how ConfigFS works:
+> > 
+> > If ConfigFS is able to isolate the settings and "switches" to individual
+> > directories, do we really need the prefixes on the switches? 
+> > 
+> > dev_control/dev_enable/dev_info = control/enable/info since we know we
+> > are in a device config directory. Same for port, hba, etc?
+> > 
+> > This would IMHO enable simpler development of an all in one user tool
+> > for managing all these switches and configs.
+> 
+> Yes, I think, you're right. Additionally, no existing entries in sysfs 
+> has prefixes like that. So, it would be better to remove them.
+> 
 
->> @@ -510,7 +514,7 @@ int alloc_iommu(struct dmar_drhd_unit *drhd)
->>
->>       iommu->seq_id = iommu_allocated++;
->>
->> -     iommu->reg = ioremap(drhd->reg_base_addr, PAGE_SIZE_4K);
->> +     iommu->reg = ioremap(drhd->reg_base_addr, IOMMU_PAGE_SIZE);
->>       if (!iommu->reg) {
->>               printk(KERN_ERR "IOMMU: can't map the region\n");
->
->This printk should include a clue, like the IOMMU ID and/or address
->we tried to map.
+Sounds good. Here is the commit:
 
-This is a good comment. This patch set is mainly for porting IOMMU to IA64. I will add IOMMU ID in a follow-up clean-up patch.
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commit;h=374e8ace84ca58490be22d881f017d48c6742b50
 
->> +#ifdef CONFIG_IA64
->> +static inline void *ia64_get_zeroed_page(gfp_t gfp_mask)
->> +{
->> +     struct page *page;
->> +
->> +     page = alloc_pages(gfp_mask | __GFP_ZERO, 0);
->> +     if (page)
->> +             return (void *)page_address(page);
->> +     return 0;
->> +}
->> +#endif
->>
->>  static inline void *alloc_pgtable_page(void)
->>  {
->> @@ -141,7 +155,11 @@ static inline void *alloc_pgtable_page(void)
->>       /* trying to avoid low memory issues */
->>       flags = current->flags & PF_MEMALLOC;
->>       current->flags |= PF_MEMALLOC;
->> +#ifdef CONFIG_IA64
->> +     vaddr = ia64_get_zeroed_page(GFP_ATOMIC);
->> +#else
->>       vaddr = (void *)get_zeroed_page(GFP_ATOMIC);
->> +#endif
+Thanks for your comments!
 
->Why does ia64 need a special case here?
+--nab
 
-I think old kernel I originally work on doesn't have get_zeroed_page for ia64. Yes, I will remove this change in the updated patch.
-
->> @@ -655,7 +673,8 @@ static int __iommu_flush_iotlb(struct intel_iommu *iommu, u16 did,
->>               printk(KERN_ERR"IOMMU: flush IOTLB failed\n");
->>       if (DMA_TLB_IAIG(val) != DMA_TLB_IIRG(type))
->>               pr_debug("IOMMU: tlb flush request %Lx, actual %Lx\n",
->> -                     DMA_TLB_IIRG(type), DMA_TLB_IAIG(val));
->> +                     (unsigned long long)DMA_TLB_IIRG(type),
->> +                     (unsigned long long) DMA_TLB_IAIG(val));
->
->These printks should include an IOMMU ID also (I assume a system can
->contain multiple IOMMUs).
-
-This patch set is mainly for porting IOMMU to IA64. I will add IOMMU ID in a follow-up clean-up patch.
-
->> @@ -1490,9 +1513,9 @@ static int iommu_prepare_identity_map(struct pci_dev *pdev, u64 start, u64 end)
->>               return -ENOMEM;
->>
->>       /* The address might not be aligned */
->> -     base = start & PAGE_MASK_4K;
->> +     base = start & PAGE_MASK;
->>       size = end - base;
->> -     size = PAGE_ALIGN_4K(size);
->> +     size = PAGE_ALIGN(size);
->>       if (!reserve_iova(&domain->iovad, IOVA_PFN(base),
->>                       IOVA_PFN(base + size) - 1)) {
->>               printk(KERN_ERR "IOMMU: reserve iova failed\n");
->
->This should probably be a "dev_err(&pdev->dev," and include the
->IOMMU ID.
-
-This patch set is mainly for porting IOMMU to IA64. I will add IOMMU ID and dev_err in a follow-up clean-up patch.
-
-
->> @@ -1855,27 +1879,23 @@ intel_map_single(struct device *hwdev, phys_addr_t paddr, size_t size, int dir)
->>        * is not a big problem
->>        */
->>       ret = domain_page_mapping(domain, start_paddr,
->> -             ((u64)paddr) & PAGE_MASK_4K, size, prot);
->> +             ((u64)paddr) & PAGE_MASK, size, prot);
->>       if (ret)
->>               goto error;
->>
->> -     pr_debug("Device %s request: %lx@%llx mapping: %lx@%llx, dir %d\n",
->> -             pci_name(pdev), size, (u64)paddr,
->> -             size, (u64)start_paddr, dir);
->> -
->>       /* it's a non-present to present mapping */
->>       ret = iommu_flush_iotlb_psi(domain->iommu, domain->id,
->> -                     start_paddr, size >> PAGE_SHIFT_4K, 1);
->> +                     start_paddr, size >> IOMMU_PAGE_SHIFT, 1);
->>       if (ret)
->>               iommu_flush_write_buffer(domain->iommu);
->>
->> -     return (start_paddr + ((u64)paddr & (~PAGE_MASK_4K)));
->> +     return start_paddr + ((u64)paddr & (~PAGE_MASK));
->>
->>  error:
->>       if (iova)
->>               __free_iova(&domain->iovad, iova);
->>       printk(KERN_ERR"Device %s request: %lx@%llx dir %d --- failed\n",
->> -             pci_name(pdev), size, (u64)paddr, dir);
->> +             pci_name(pdev), size, (unsigned long long)paddr, dir);
->
->Use dev_err() here and include IOMMU ID.
-
-This patch set is mainly for porting IOMMU to IA64. I will add IOMMU ID and use dev_err() in a follow-up clean-up patch.
-
->> @@ -1953,11 +1974,11 @@ static void intel_unmap_single(struct device *dev, dma_addr_t dev_addr,
->>       if (!iova)
->>               return;
->>
->> -     start_addr = iova->pfn_lo << PAGE_SHIFT_4K;
->> +     start_addr = iova->pfn_lo << PAGE_SHIFT;
->>       size = aligned_size((u64)dev_addr, size);
->>
->>       pr_debug("Device %s unmapping: %lx@%llx\n",
->> -             pci_name(pdev), size, (u64)start_addr);
->> +             pci_name(pdev), size, (unsigned long long)start_addr);
->
->Use dev_dbg() here.
-
-This patch set is mainly for porting IOMMU to IA64. I will change to dev_dbg() in a follow-up patch.
-
->> diff --git a/include/linux/dma_remapping.h b/include/linux/dma_remapping.h
->> index bff5c65..218598d 100644
->> --- a/include/linux/dma_remapping.h
->> +++ b/include/linux/dma_remapping.h
->> @@ -2,15 +2,15 @@
->>  #define _DMA_REMAPPING_H
->>
->>  /*
->> - * We need a fixed PAGE_SIZE of 4K irrespective of
->> - * arch PAGE_SIZE for IOMMU page tables.
->> + * VT-d hardware uses 4K page size regardless host page size.
->>   */
->> -#define PAGE_SHIFT_4K                (12)
->> -#define PAGE_SIZE_4K         (1UL << PAGE_SHIFT_4K)
->> -#define PAGE_MASK_4K         (((u64)-1) << PAGE_SHIFT_4K)
->> -#define PAGE_ALIGN_4K(addr)  (((addr) + PAGE_SIZE_4K - 1) & PAGE_MASK_4K)
->> +#define IOMMU_PAGE_SHIFT     (12)
->> +#define IOMMU_PAGE_SIZE              (1UL << IOMMU_PAGE_SHIFT)
->> +#define IOMMU_PAGE_MASK              (((u64)-1) << IOMMU_PAGE_SHIFT)
->> +#define IOMMU_PAGE_ALIGN(addr)       \
->> +     (((addr) + IOMMU_PAGE_SIZE - 1) & IOMMU_PAGE_MASK)
->>
->> -#define IOVA_PFN(addr)               ((addr) >> PAGE_SHIFT_4K)
->> +#define IOVA_PFN(addr)               ((addr) >> PAGE_SHIFT)
->
->These are pretty generic names (IOMMU_PAGE_SHIFT, IOVA_PFN, etc),
->but the definitions seem to be specific to VT-d.  I can't tell if
->this file is supposed to be sort of generic, or if it's Intel-specific.
-
-I can change IOMMU_PAGE_SHIFT etc to VTD_PAGE_SHIFT etc and change IOVA_PFN to VTD_IOVA_PFN. What do you think?
-
->> diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
->> index e7b196b..d84612a 100644
->> --- a/include/linux/intel-iommu.h
->> +++ b/include/linux/intel-iommu.h
->> @@ -67,6 +67,13 @@
->>               hi = readl(dmar + reg + 4); \
->>               (((u64) hi) << 32) + lo; })
->>  */
->> +#ifdef CONFIG_IA64
->> +#define dmar_readq readq
->> +static inline void dmar_writeq(void __iomem *addr, u64 val)
->> +{
->> +     writeq(val, addr);
->> +}
->> +#else
->>  static inline u64 dmar_readq(void __iomem *addr)
->>  {
->>       u32 lo, hi;
->> @@ -80,6 +87,7 @@ static inline void dmar_writeq(void __iomem *addr, u64 val)
->>       writel((u32)val, addr);
->>       writel((u32)(val >> 32), addr + 4);
->>  }
->> +#endif
->
->What's this all about?  Why do we need #ifdef CONFIG_IA64 here?
->Doesn't x86 provide its own readq/writeq implementation?
-
-Bjorn
