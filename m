@@ -1,55 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbYJBRdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYJBRjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754886AbYJBRdy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 13:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982AbYJBRdo
+	id S1754529AbYJBRjd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 13:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYJBRjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 13:33:44 -0400
-Received: from mta-out.inet.fi ([195.156.147.13]:38229 "EHLO jenni2.inet.fi"
+	Thu, 2 Oct 2008 13:39:25 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:41055 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752669AbYJBRdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 13:33:43 -0400
-Date: Thu, 2 Oct 2008 20:33:30 +0300
-From: "Kim B. Heino" <Kim.Heino@bluegiga.com>
-To: "Bosko Radivojevic" <bosko.radivojevic@gmail.com>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
-       a.zummo@towertech.it
-Subject: Re: [PATCH] add support for ST M41T94 SPI RTC (patch rev. 3)
-Message-ID: <20081002203330.295ad5c0@why.bbbs.net>
-In-Reply-To: <d6c8ef150810010551x174fad1mc788e2f6e97b21c5@mail.gmail.com>
-References: <48315FF6.9070909@bluegiga.com>
-	<d6c8ef150810010551x174fad1mc788e2f6e97b21c5@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752541AbYJBRjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 13:39:24 -0400
+Date: Thu, 2 Oct 2008 10:39:20 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, laijs@cn.fujitsu.com,
+       manfred@colorfullife.com, dipankar@in.ibm.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, josht@linux.vnet.ibm.com
+Subject: Re: [PATCH,RFC] RCU-based detection of stalled CPUs for Classic RCU
+Message-ID: <20081002173920.GA9430@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081002003628.GA7877@linux.vnet.ibm.com> <20081002080726.GB17695@elte.hu> <20081002140507.GB6729@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081002140507.GB6729@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have AT91SAM9260-based board, kernel is 2.6.26.3.
+Hello again!
 
-I'm using my RTC-patch with the same CPU. Custom AT91SAM9260 board,
-external RTC because of AT's errata...
+This patch adds stalled-CPU detection to Classic RCU.  This capability 
+is enabled by a new config variable CONFIG_RCU_CPU_STALL_DETECTOR, 
+which defaults disabled.  This is a debugging feature, not something 
+that non-kernel-hackers would be expected to care about.  This feature 
+can detect looping CPUs in !PREEMPT builds and looping CPUs with 
+preemption disabled in PREEMPT builds.  This is essentially a port of 
+this functionality from the treercu patch.
 
-> M41T94 is connected on SPI channel 1, chip select 0. I've applied
-> Kim's patch and added SPI device in board-sam9260ek.c
+This version uses jiffies rather than get_seconds(), which eliminates
+the spurious boot-time CPU stall warnings seen on some systems with
+the previous patch.
 
-> 	{	/* External RTC */
-> 		.modalias	= "rtc-m41t94",
-> 		.chip_select	= 0,
-> 		.max_speed_hz	= 2 * 1000 * 1000,
-> 		.bus_num	= 1,
-> 	},
+This is still against v2.6.27-rc8 -- I will do a version against tip
+this evening (Pacific Time) when I get back to the combination of better
+bandwidth and AC power.
 
-I'm using it with ".max_speed_hz = 1 * 1000 * 1000," instead of 2 MHz.
-Can you try with slower speed? My patch (rev 3) and this small
-ek_spi_devices[] modification should be enough.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-I have it on bus = 0, chip_select = 1, so I've also removed dataflash
-parts from ek_spi_devices[] (we're using NOR flash). But for you this
-is not needed.
+ include/linux/rcuclassic.h |    9 ++++
+ kernel/rcuclassic.c        |   88 +++++++++++++++++++++++++++++++++++++++++++++
+ lib/Kconfig.debug          |   13 ++++++
+ 3 files changed, 110 insertions(+)
 
-I also have a patch to add support for M41T94's watchdog timer. It's
-not clean enough to be submitted upstreams yet. If you need it I can
-email it to you.
+diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
+index 4ab8436..cab055b 100644
+--- a/include/linux/rcuclassic.h
++++ b/include/linux/rcuclassic.h
+@@ -40,6 +40,10 @@
+ #include <linux/cpumask.h>
+ #include <linux/seqlock.h>
+ 
++#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
++#define RCU_SECONDS_TILL_STALL_CHECK	3 * HZ	/* for rcp->jiffies_stall */
++#define RCU_SECONDS_TILL_STALL_RECHECK	30 * HZ	/* for rcp->jiffies_stall */
++#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+ 
+ /* Global control variables for rcupdate callback mechanism. */
+ struct rcu_ctrlblk {
+@@ -52,6 +56,11 @@ struct rcu_ctrlblk {
+ 	spinlock_t	lock	____cacheline_internodealigned_in_smp;
+ 	cpumask_t	cpumask; /* CPUs that need to switch in order    */
+ 				 /* for current batch to proceed.        */
++#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
++	unsigned long gp_start;	 /* Time at which GP started in jiffies. */
++	unsigned long jiffies_stall;
++				 /* Time at which to check for CPU stalls. */
++#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+ } ____cacheline_internodealigned_in_smp;
+ 
+ /* Is batch a before batch b ? */
+diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+index aad93cd..a299876 100644
+--- a/kernel/rcuclassic.c
++++ b/kernel/rcuclassic.c
+@@ -118,6 +118,87 @@ static inline void force_quiescent_state(struct rcu_data *rdp,
+ }
+ #endif
+ 
++#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
++
++static void record_gp_stall_check_time(struct rcu_ctrlblk *rcp)
++{
++	rcp->gp_start = jiffies;
++	rcp->jiffies_stall = jiffies + RCU_SECONDS_TILL_STALL_CHECK;
++}
++
++static void print_other_cpu_stall(struct rcu_ctrlblk *rcp)
++{
++	int cpu;
++	long delta;
++	unsigned long flags;
++
++	/* Only let one CPU complain about others per time interval. */
++
++	spin_lock_irqsave(&rcp->lock, flags);
++	delta = jiffies - rcp->jiffies_stall;
++	if (delta < 2 || rcp->cur != rcp->completed) {
++		spin_unlock_irqrestore(&rcp->lock, flags);
++		return;
++	}
++	rcp->jiffies_stall = jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
++	spin_unlock_irqrestore(&rcp->lock, flags);
++
++	/* OK, time to rat on our buddy... */
++
++	printk(KERN_ERR "RCU detected CPU stalls:");
++	for_each_possible_cpu(cpu) {
++		if (cpu_isset(cpu, rcp->cpumask))
++			printk(" %d", cpu);
++	}
++	printk(" (detected by %d, t=%ld jiffies)\n",
++	       smp_processor_id(), (long)(jiffies - rcp->gp_start));
++}
++
++static void print_cpu_stall(struct rcu_ctrlblk *rcp)
++{
++	unsigned long flags;
++
++	printk(KERN_ERR "RCU detected CPU %d stall (t=%lu/%lu jiffies)\n",
++			smp_processor_id(), jiffies,
++			jiffies - rcp->gp_start);
++	dump_stack();
++	spin_lock_irqsave(&rcp->lock, flags);
++	if ((long)(jiffies - rcp->jiffies_stall) >= 0)
++		rcp->jiffies_stall =
++			jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
++	spin_unlock_irqrestore(&rcp->lock, flags);
++	set_need_resched();  /* kick ourselves to get things going. */
++}
++
++static void check_cpu_stall(struct rcu_ctrlblk *rcp)
++{
++	long delta;
++
++	delta = jiffies - rcp->jiffies_stall;
++	if (cpu_isset(smp_processor_id(), rcp->cpumask) && delta >= 0) {
++		
++		/* We haven't checked in, so go dump stack. */
++		print_cpu_stall(rcp);
++
++	} else if (rcp->cur != rcp->completed && delta >= 2) {
++
++		/* They had two seconds to dump stack, so complain. */
++		print_other_cpu_stall(rcp);
++	}
++}
++
++#else /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
++
++static void record_gp_stall_check_time(struct rcu_ctrlblk *rcp)
++{
++}
++
++static void check_cpu_stall(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
++{
++}
++
++#endif /* #else #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
++
+ /**
+  * call_rcu - Queue an RCU callback for invocation after a grace period.
+  * @head: structure to be used for queueing the RCU updates.
+@@ -285,6 +366,7 @@ static void rcu_start_batch(struct rcu_ctrlblk *rcp)
+ 		 */
+ 		smp_wmb();
+ 		rcp->cur++;
++		record_gp_stall_check_time(rcp);
+ 
+ 		/*
+ 		 * Accessing nohz_cpu_mask before incrementing rcp->cur needs a
+@@ -468,6 +550,9 @@ static void rcu_process_callbacks(struct softirq_action *unused)
+ 
+ static int __rcu_pending(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
+ {
++	/* Check for CPU stalls, if enabled. */
++	check_cpu_stall(rcp);
++
+ 	/* This cpu has pending rcu entries and the grace period
+ 	 * for them has completed.
+ 	 */
+@@ -558,6 +643,9 @@ void rcu_check_callbacks(int cpu, int user)
+ static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
+ 						struct rcu_data *rdp)
+ {
++#ifdef CONFIG_DEBUG_RCU_STALL
++	printk(KERN_INFO "RCU-based detection of stalled CPUs is enabled.\n");
++#endif /* #ifdef CONFIG_DEBUG_RCU_STALL */
+ 	memset(rdp, 0, sizeof(*rdp));
+ 	rdp->curtail = &rdp->curlist;
+ 	rdp->nxttail = &rdp->nxtlist;
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 0b50481..9fee969 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -597,6 +597,19 @@ config RCU_TORTURE_TEST_RUNNABLE
+ 	  Say N here if you want the RCU torture tests to start only
+ 	  after being manually enabled via /proc.
+ 
++config RCU_CPU_STALL_DETECTOR
++	bool "Check for stalled CPUs delaying RCU grace periods"
++	depends on CLASSIC_RCU
++	default n
++	help
++	  This option causes RCU to printk information on which
++	  CPUs are delaying the current grace period, but only when
++	  the grace period extends for excessive time periods.
++
++	  Say Y if you want RCU to perform such checks.
++
++	  Say N if you are unsure.
++
+ config KPROBES_SANITY_TEST
+ 	bool "Kprobes sanity tests"
+ 	depends on DEBUG_KERNEL
