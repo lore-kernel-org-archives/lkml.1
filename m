@@ -1,158 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752297AbYJBCq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbYJBCuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752297AbYJBCq3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 22:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYJBCqQ
+	id S1752907AbYJBCuW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 22:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYJBCuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 22:46:16 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:58498 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752941AbYJBCqO (ORCPT
+	Wed, 1 Oct 2008 22:50:09 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55206 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbYJBCuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 22:46:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Nj8jOLSTvVan+ojc1FPfDoQSMdkVI4MVHDTmK/o4qHxe5L4ylDWi2vnao9iOM644Bk
-         EnwhzeJtkcvLSpbj9QSkrsCIYxUPfBkY5M5svRzZajbxfVgGl4BZiETrnkmHT+yZOqZA
-         IvBGgbpTvIrgIxTdzkDQAnC9X9UBrB3MoCO+0=
-Message-ID: <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com>
-Date: Thu, 2 Oct 2008 11:46:12 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: [PATCH 0/4] Reclaim page capture v4
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       "Rik van Riel" <riel@redhat.com>, "Mel Gorman" <mel@csn.ul.ie>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <1222864261-22570-1-git-send-email-apw@shadowen.org>
+	Wed, 1 Oct 2008 22:50:08 -0400
+Message-ID: <48E43657.4040006@jp.fujitsu.com>
+Date: Thu, 02 Oct 2008 11:47:51 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
+Subject: Re: [PATCH v3 02/14] PCI: prevent duplicate slot names
+References: <20080923163753.12628.98683.stgit@bob.kio> <20080923164523.12628.69510.stgit@bob.kio> <48E09936.2030905@jp.fujitsu.com> <48E189BF.4020907@jp.fujitsu.com> <20081002010542.GA745@ldl.fc.hp.com>
+In-Reply-To: <20081002010542.GA745@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1222864261-22570-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Andy.
+Alex-san,
 
-I tested your patch in my desktop.
-The test is just kernel compile with single thread.
-My system environment is as follows.
+Alex Chiang wrote:
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>> Kenji Kaneshige wrote:
+>>> Hi Alex-san,
+>>>
+>>> Here is one comment, though I have not finished reviewing/testing
+>>> your patches yet (sorry for the delay).
+>>>
+>>> Alex Chiang wrote:
+>>>
+>>> (snip.)
+>>>
+>>>> diff --git a/drivers/pci/hotplug/pci_hotplug_core.c  
+>>>> b/drivers/pci/hotplug/pci_hotplug_core.c
+>>>> index 3e37d63..46802dc 100644
+>>>> --- a/drivers/pci/hotplug/pci_hotplug_core.c
+>>>> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
+>>>> @@ -570,39 +570,32 @@ int pci_hp_register(struct hotplug_slot *slot,  
+>>>> struct pci_bus *bus, int slot_nr,
+>>>>          return -EINVAL;
+>>>>      }
+>>>>  -    /* Check if we have already registered a slot with the same 
+>>>> name. */
+>>>> -    if (get_slot_from_name(name))
+>>>> -        return -EEXIST;
+>>>> -
+>>>>      /*
+>>>> -     * No problems if we call this interface from both ACPI_PCI_SLOT
+>>>> -     * driver and call it here again. If we've already created the
+>>>> -     * pci_slot, the interface will simply bump the refcount.
+>>>> +     * Look for existing slot. If we find it, and it was created by a
+>>>> +     * slot detection driver (ie, doesn't have a ->hotplug()) then we
+>>>> +     * allow the hotplug driver calling us to rename the slot if  
+>>>> desired.
+>>>> +     *
+>>>> +     * Otherwise, create the slot and carry on with life.
+>>>>       */
+>>>> -    pci_slot = pci_create_slot(bus, slot_nr, name);
+>>>> -    if (IS_ERR(pci_slot))
+>>>> -        return PTR_ERR(pci_slot);
+>>>> -
+>>>> -    if (pci_slot->hotplug) {
+>>>> -        dbg("%s: already claimed\n", __func__);
+>>>> -        pci_destroy_slot(pci_slot);
+>>>> -        return -EBUSY;
+>>>> +    pci_slot = pci_get_pci_slot(bus, slot_nr);
+>>> The pci_get_pci_slot() function refers pci_bus->slots list, so it
+>>> should be called with pci_bus_sem semaphore held as pci_create_slot()
+>>> does, or pci_bus_sem semaphore should be held by pci_get_pci_slot()
+>>> itself.
+> 
+> Yes, I've changed pci_get_pci_slot() to acquire the pci_bus_sem
+> semaphore.
+> 
+> Thank you for pointing this out.
+> 
+> It will be fixed in v4 of this patch series, which I will send
+> out after I receive the rest of your review comments.
+> 
 
-model name	: Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
-MemTotal:        2065856 kB
+I noticed that changing pci_get_pci_slot() to acquire the pci_bus_sem
+might be not enough. If slot was created between pci_get_pci_slot() and
+pci_create_slot() by another thread in the following code, something
+wrong would happen I think.
 
-When I tested vanilla, compile time is as follows.
+        pci_slot = pci_get_pci_slot(bus, slot_nr);
+        if (pci_slot) {
+                if (pci_slot->hotplug) {
+                        result = -EBUSY;
+                        goto err;
+                }
 
-2433.53user 187.96system 42:05.99elapsed 103%CPU (0avgtext+0avgdata
-0maxresident)k
-588752inputs+4503408outputs (127major+55456246minor)pagefaults 0swaps
+                if (strcmp(kobject_name(&pci_slot->kobj), name))
+                        if ((result = pci_rename_slot(pci_slot, name)))
+                                goto err;
+        } else {
+                pci_slot = pci_create_slot(bus, slot_nr, name);
+                if ((result = IS_ERR(pci_slot)))
+                        goto out;
+        }
 
-When I tested your patch, as follows.
+I've finished reviewing and testing your patches. The rest of your
+patch looks good to me. Of course, we must not forget the comment
+from Taku Izumi.
 
-2489.63user 202.41system 44:47.71elapsed 100%CPU (0avgtext+0avgdata
-0maxresident)k
-538608inputs+4503928outputs (130major+55531561minor)pagefaults 0swaps
-
-Regresstion almost is above 2 minutes.
-Do you think It is a trivial?
-
-I know your patch is good to allocate hugepage.
-But, I think many users don't need it, including embedded system and
-desktop users yet.
-
-So I suggest you made it enable optionally.
-
-On Wed, Oct 1, 2008 at 9:30 PM, Andy Whitcroft <apw@shadowen.org> wrote:
-> For sometime we have been looking at mechanisms for improving the availability
-> of larger allocations under load.  One of the options we have explored is
-> the capturing of pages freed under direct reclaim in order to increase the
-> chances of free pages coelescing before they are subject to reallocation
-> by racing allocators.
->
-> Following this email is a patch stack implementing page capture during
-> direct reclaim.  It consits of four patches.  The first two simply pull
-> out existing code into helpers for reuse.  The third makes buddy's use
-> of struct page explicit.  The fourth contains the meat of the changes,
-> and its leader contains a much fuller description of the feature.
->
-> This update represents a rebase to -mm and incorporates feedback from
-> KOSAKI Motohiro.  It also incorporates an accounting fix which was
-> preventing some captures.
->
-> I have done a lot of comparitive testing with and without this patch
-> set and in broad brush I am seeing improvements in hugepage allocations
-> (worst case size) success on all of my test systems.  These tests consist
-> of placing a constant stream of high order allocations on the system,
-> at varying rates.  The results for these various runs are then averaged
-> to give an overall improvement.
->
->                Absolute        Effective
-> x86-64          2.48%            4.58%
-> powerpc         5.55%           25.22%
->
-> x86-64 has a relatively small huge page size and so is always much more
-> effective at allocating huge pages.  Even there we get a measurable
-> improvement.  On powerpc the huge pages are much larger and much harder
-> to recover.  Here we see a full 25% increase in page recovery.
->
-> It should be noted that these are worst case testing, and very agressive
-> taking every possible page in the system.  It would be helpful to get
-> wider testing in -mm.
->
-> Against: 2.6.27-rc1-mm1
->
-> Andrew, please consider for -mm.
->
-> -apw
->
-> Changes since V3:
->  - Incorporates an anon vma fix pointed out by MinChan Kim
->  - switch to using a pagevec for page capture collection
->
-> Changes since V2:
->  - Incorporates review feedback from Christoph Lameter,
->  - Incorporates review feedback from Peter Zijlstra, and
->  - Checkpatch fixes.
->
-> Changes since V1:
->  - Incorporates review feedback from KOSAKI Motohiro,
->  - fixes up accounting when checking watermarks for captured pages,
->  - rebase 2.6.27-rc1-mm1,
->  - Incorporates review feedback from Mel.
->
->
-> Andy Whitcroft (4):
->  pull out the page pre-release and sanity check logic for reuse
->  pull out zone cpuset and watermark checks for reuse
->  buddy: explicitly identify buddy field use in struct page
->  capture pages freed during direct reclaim for allocation by the
->    reclaimer
->
->  include/linux/mm_types.h   |    4 +
->  include/linux/page-flags.h |    4 +
->  include/linux/pagevec.h    |    1 +
->  mm/internal.h              |    7 +-
->  mm/page_alloc.c            |  265 ++++++++++++++++++++++++++++++++++++++------
->  mm/vmscan.c                |  118 ++++++++++++++++----
->  6 files changed, 343 insertions(+), 56 deletions(-)
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Thanks,
+Kenji Kaneshige
 
 
 
--- 
-Kinds regards,
-MinChan Kim
