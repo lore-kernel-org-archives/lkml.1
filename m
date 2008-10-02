@@ -1,107 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbYJBUZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbYJBUeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754732AbYJBUZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 16:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbYJBUZT
+	id S1754790AbYJBUeq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 16:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbYJBUei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 16:25:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50770 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753533AbYJBUZR (ORCPT
+	Thu, 2 Oct 2008 16:34:38 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34018 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754058AbYJBUeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 16:25:17 -0400
-Date: Thu, 2 Oct 2008 13:24:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-Id: <20081002132457.46ad8d05.akpm@linux-foundation.org>
-In-Reply-To: <20081002061236.3c71c877@infradead.org>
-References: <20081001200034.65eb67d6@infradead.org>
-	<20081001215638.3a65134c.akpm@linux-foundation.org>
-	<20081002062736.GR19428@kernel.dk>
-	<20081001235501.2b7f50fe.akpm@linux-foundation.org>
-	<20081002061236.3c71c877@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 2 Oct 2008 16:34:37 -0400
+Date: Thu, 2 Oct 2008 22:40:18 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch x86/core] x86: allow number of additional hotplug CPUs to be set at compile time
+Message-ID: <20081002204018.GD8318@one.firstfloor.org>
+References: <20081001191945.4182d0be@redhat.com> <87bpy3pdgs.fsf@basil.nowhere.org> <20081002152521.16c4835b@redhat.com> <20081002194409.GB8318@one.firstfloor.org> <20081002160907.68d79e0b@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081002160907.68d79e0b@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 06:12:36 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+> The prefix rewriting doesn't happen unless I boot with additional_cpus=0,
+> maxcpus=1, or with this patch applied and the config option set. I think
+> the rules for when/if the rewriting happens changed a while ago to avoid
+> multiple switches and now it's not happening at all on this machine by
+> default.
 
-> On Wed, 1 Oct 2008 23:55:01 -0700
-> > 
-> > I've forgotten where that code is now, but I don't think it was ever
-> > revisited.  It should be.
-> > 
-> > So.  Where are these atime updaters getting blocked?
-> 
-> my reproducer is sadly very simple (claws-mail is my mail client that uses maildir)
-> 
-> Process claws-mail (4896)                  Total: 2829.7 msec 
-> EXT3: Waiting for journal access                  2491.0 msec         88.4 % 
-> Writing back inodes				   160.9 msec          5.7 % 
-> synchronous write                                   78.8 msec          3.0 %
-> 
-> is an example of such a trace (this is with patch, without patch the numbers are about 3x bigger)
-> 
-> Waiting for journal access is "journal_get_write_access"
-> Writing back inodes is "writeback_inodes"
-> synchronous write is "do_sync_write"
-> 
+Well then something is broken, but the fix is not to lower num_possible_cpus(),
+but to fix the root cause.
 
-Right.  Probably the lock_buffer() in do_get_write_access().  kjournald
-is checkpointing the committing transaction (writing metadata buffers
-back into the fs) and a user process operating on the current
-transaction is trying to get access to one of those buffers but has to
-wait for the writeout to complete first.
+Does the appended patch help?
 
-It wasn't always thus.  Back in, umm, 2.5.0 we did
+> Oh, and with NR_CPUS=512 I am seeing 1.6MB per-cpu data (I'll have to
+> check that, but I remember being surprised at how big the number was.)
 
-	/*
-	 * The buffer_locked() || buffer_dirty() tests here are simply an
-	 * optimisation tweak.  If anyone else in the system decides to
-	 * lock this buffer later on, we'll blow up.  There doesn't seem
-	 * to be a good reason why they should do this.
-	 */
-	if (jh->b_cp_transaction &&
-	    (buffer_locked(jh2bh(jh)) || buffer_dirty(jh2bh(jh)))) {
-		unlock_journal(journal);
-		lock_buffer(jh2bh(jh));
+How did you measure? And you mean total right? If it's total
+then it's ~32KB/CPU which is roughly similar to my 40k number
+(probably depends on CONFIG options) 
 
-and I _think_ it was the loss of that which hurt us a lot. 
-773fc4c63442fbd8237b4805627f6906143204a8 or thereabouts in the old git
-tree.
+The standard way is  __per_cpu_start - __per_cpu_end (on 64bit;
+or the other way round on 32bit). That segment is duplicated
+per CPU. Ok there are some dynamic data structures that scale too,
+so it's possible a little more.
 
-It would be very good if we could again decouple the committing and
-current transactions, but I fear that none of us remember sufficiently
-well how it all works (or, more importantly, how it all doesn't work
-when you make a change).
+Single per cpu data should not scale with NR_CPUS, but be constant.
 
-Of course, that could all be wrong and we could be stuck somewhere
-else.  A good way to diagnose this stuff would be
+-Andi
 
---- a/kernel/sched.c~a
-+++ a/kernel/sched.c
-@@ -5567,10 +5567,14 @@ EXPORT_SYMBOL(yield);
- void __sched io_schedule(void)
- {
- 	struct rq *rq = &__raw_get_cpu_var(runqueues);
-+	unsigned long in, out;
+---
+
+Take disabled cpus into account in alternative.c
+
+Otherwise an UP system with one hotplug CPU will not 
+go into UP mode.
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+Index: linux-2.6.27-rc4-misc/arch/x86/kernel/alternative.c
+===================================================================
+--- linux-2.6.27-rc4-misc.orig/arch/x86/kernel/alternative.c
++++ linux-2.6.27-rc4-misc/arch/x86/kernel/alternative.c
+@@ -454,7 +454,7 @@ void __init alternative_instructions(voi
+ 					    _text, _etext);
  
- 	delayacct_blkio_start();
- 	atomic_inc(&rq->nr_iowait);
-+	in = jiffies;
- 	schedule();
-+	out = jiffies;
-+	WARN_ON(time_after(out, in + 1 * HZ));
- 	atomic_dec(&rq->nr_iowait);
- 	delayacct_blkio_end();
+ 		/* Only switch to UP mode if we don't immediately boot others */
+-		if (num_possible_cpus() == 1 || setup_max_cpus <= 1)
++		if (num_possible_cpus() - additional_cpus == 1 || setup_max_cpus <= 1)
+ 			alternatives_smp_switch(0);
+ 	}
+ #endif
+Index: linux-2.6.27-rc4-misc/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.27-rc4-misc.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6.27-rc4-misc/arch/x86/kernel/smpboot.c
+@@ -1276,7 +1276,7 @@ static void remove_siblinginfo(int cpu)
+ 	cpu_clear(cpu, cpu_sibling_setup_map);
  }
-_
-
-perhaps for varying values of "1".
+ 
+-static int additional_cpus __initdata = -1;
++int additional_cpus = -1;
+ 
+ static __init int setup_additional_cpus(char *s)
+ {
+Index: linux-2.6.27-rc4-misc/include/asm-x86/smp.h
+===================================================================
+--- linux-2.6.27-rc4-misc.orig/include/asm-x86/smp.h
++++ linux-2.6.27-rc4-misc/include/asm-x86/smp.h
+@@ -204,5 +204,7 @@ static inline int hard_smp_processor_id(
+ extern void cpu_uninit(void);
+ #endif
+ 
++extern int additional_cpus;
++
+ #endif /* __ASSEMBLY__ */
+ #endif
+-- 
+ak@linux.intel.com
