@@ -1,52 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbYJBQmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbYJBQq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbYJBQmk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 12:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbYJBQmc
+	id S1754751AbYJBQq2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 12:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYJBQqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 12:42:32 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50172 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753933AbYJBQmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 12:42:32 -0400
-Date: Thu, 2 Oct 2008 18:42:11 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Dave Chinner <david@fromorbit.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-ID: <20081002164211.GK19428@kernel.dk>
-References: <20081001215638.3a65134c.akpm@linux-foundation.org> <87fxnfpjqj.fsf@basil.nowhere.org> <20081002075511.GX19428@kernel.dk> <20081002093326.GF30001@disturbed> <20081002094537.GA19428@kernel.dk> <20081002061433.4e995075@infradead.org> <20081002132746.GG19428@kernel.dk> <20081002063606.512decb3@infradead.org> <20081002134736.GH19428@kernel.dk> <20081002072650.248373ea@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081002072650.248373ea@infradead.org>
+	Thu, 2 Oct 2008 12:46:20 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:47317 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753766AbYJBQqT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 12:46:19 -0400
+Date: Thu, 2 Oct 2008 09:41:50 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, mouw@nl.linux.org
+Subject: [PATCH] docbook: update procfs credits
+Message-Id: <20081002094150.715b6216.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 02 2008, Arjan van de Ven wrote:
-> On Thu, 2 Oct 2008 15:47:37 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > Yes, it'll report '0' which means 'not set'. The kernel inteprets 'not
-> > set' as the default values, BE/4. There's a big diffence, since '0'
-> > means that we track CPU nice values where as if it returned be/4 then
-> > that is a strict/fixed setting.
-> 
-> argh. "0" means both "not set" and "highest priority".
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Arjan, please read the interface, it does not...
+Update Erik Mouw's email address & affiliation in DocBook.
 
-0 means not set, period. What matters is the class setting, if that is
-non-zero then it is a valid setting. See
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Erik Mouw <mouw@nl.linux.org>
+---
+ Documentation/DocBook/procfs-guide.tmpl |   29 ++++++++++-------------------
+ Documentation/DocBook/procfs_example.c  |   20 ++++----------------
+ 2 files changed, 14 insertions(+), 35 deletions(-)
 
-#define IOPRIO_PRIO_VALUE(class, data)  (((class) << IOPRIO_CLASS_SHIFT) | data)
-
-So highest priority BE is IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 0), which
-is of course valid.
-
--- 
-Jens Axboe
-
+--- linux-2.6.27-rc8-git3.orig/Documentation/DocBook/procfs-guide.tmpl
++++ linux-2.6.27-rc8-git3/Documentation/DocBook/procfs-guide.tmpl
+@@ -14,17 +14,20 @@
+ 	<othername>(J.A.K.)</othername>
+ 	<surname>Mouw</surname>
+ 	<affiliation>
+-	  <orgname>Delft University of Technology</orgname>
+-	  <orgdiv>Faculty of Information Technology and Systems</orgdiv>
+ 	  <address>
+-            <email>J.A.K.Mouw@its.tudelft.nl</email>
+-            <pob>PO BOX 5031</pob>
+-            <postcode>2600 GA</postcode>
+-            <city>Delft</city>
+-            <country>The Netherlands</country>
++            <email>mouw@nl.linux.org</email>
+           </address>
+ 	</affiliation>
+       </author>
++      <othercredit>
++	<contrib>
++	This software and documentation were written while working on the
++	LART computing board
++	(<ulink url="http://www.lartmaker.nl/">http://www.lartmaker.nl/</ulink>),
++	which was sponsored by the Delt University of Technology projects
++	Mobile Multi-media Communications and Ubiquitous Communications.
++	</contrib>
++      </othercredit>
+     </authorgroup>
+ 
+     <revhistory>
+@@ -109,18 +112,6 @@
+     </para>
+ 
+     <para>
+-      This documentation was written while working on the LART
+-      computing board (<ulink
+-      url="http://www.lart.tudelft.nl/">http://www.lart.tudelft.nl/</ulink>),
+-      which is sponsored by the Mobile Multi-media Communications
+-      (<ulink
+-      url="http://www.mmc.tudelft.nl/">http://www.mmc.tudelft.nl/</ulink>)
+-      and Ubiquitous Communications (<ulink
+-      url="http://www.ubicom.tudelft.nl/">http://www.ubicom.tudelft.nl/</ulink>)
+-      projects.
+-    </para>
+-
+-    <para>
+       Erik
+     </para>
+   </preface>
+--- linux-2.6.27-rc8-git3.orig/Documentation/DocBook/procfs_example.c
++++ linux-2.6.27-rc8-git3/Documentation/DocBook/procfs_example.c
+@@ -1,28 +1,16 @@
+ /*
+  * procfs_example.c: an example proc interface
+  *
+- * Copyright (C) 2001, Erik Mouw (J.A.K.Mouw@its.tudelft.nl)
++ * Copyright (C) 2001, Erik Mouw (mouw@nl.linux.org)
+  *
+  * This file accompanies the procfs-guide in the Linux kernel
+  * source. Its main use is to demonstrate the concepts and
+  * functions described in the guide.
+  *
+  * This software has been developed while working on the LART
+- * computing board (http://www.lart.tudelft.nl/), which is
+- * sponsored by the Mobile Multi-media Communications
+- * (http://www.mmc.tudelft.nl/) and Ubiquitous Communications 
+- * (http://www.ubicom.tudelft.nl/) projects.
+- *
+- * The author can be reached at:
+- *
+- *  Erik Mouw
+- *  Information and Communication Theory Group
+- *  Faculty of Information Technology and Systems
+- *  Delft University of Technology
+- *  P.O. Box 5031
+- *  2600 GA Delft
+- *  The Netherlands
+- *
++ * computing board (http://www.lartmaker.nl), which was sponsored
++ * by the Delt University of Technology projects Mobile Multi-media
++ * Communications and Ubiquitous Communications.
+  *
+  * This program is free software; you can redistribute
+  * it and/or modify it under the terms of the GNU General
