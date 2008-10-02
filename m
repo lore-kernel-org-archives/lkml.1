@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYJBNZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYJBNZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbYJBNZE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 09:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbYJBNTm
+	id S1755471AbYJBNZh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 09:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbYJBNTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 09:19:42 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54835 "EHLO
+	Thu, 2 Oct 2008 09:19:43 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54837 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754857AbYJBNT3 (ORCPT
+	with ESMTP id S1754689AbYJBNTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 09:19:29 -0400
-Message-Id: <20081002131607.731557157@chello.nl>
+	Thu, 2 Oct 2008 09:19:31 -0400
+Message-Id: <20081002131610.015455850@chello.nl>
 References: <20081002130504.927878499@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 02 Oct 2008 15:05:07 +0200
+Date: Thu, 02 Oct 2008 15:05:36 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -22,64 +22,70 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>,
        David Miller <davem@davemloft.net>
-Subject: [PATCH 03/32] net: ipv6: clean up ip6_route_net_init() error handling
-Content-Disposition: inline; filename=net-ipv6-route-cleanup.patch
+Subject: [PATCH 32/32] nfs: fix various memory recursions possible with swap over NFS.
+Content-Disposition: inline; filename=nfs-alloc-recursions.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ip6_route_net_init() error handling looked less than solid, fix 'er up.
+GFP_NOFS is _more_ permissive than GFP_NOIO in that it will initiate IO,
+just not of any filesystem data.
+
+The problem is that previuosly NOFS was correct because that avoids
+recursion into the NFS code, it now is not, because also IO (swap) can
+lead to this recursion.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- net/ipv6/route.c |   19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+ fs/nfs/pagelist.c |    2 +-
+ fs/nfs/write.c    |    6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/net/ipv6/route.c
+Index: linux-2.6/fs/nfs/write.c
 ===================================================================
---- linux-2.6.orig/net/ipv6/route.c
-+++ linux-2.6/net/ipv6/route.c
-@@ -2611,10 +2611,8 @@ static int ip6_route_net_init(struct net
- 	net->ipv6.ip6_prohibit_entry = kmemdup(&ip6_prohibit_entry_template,
- 					       sizeof(*net->ipv6.ip6_prohibit_entry),
- 					       GFP_KERNEL);
--	if (!net->ipv6.ip6_prohibit_entry) {
--		kfree(net->ipv6.ip6_null_entry);
--		goto out;
--	}
-+	if (!net->ipv6.ip6_prohibit_entry)
-+		goto out_ip6_null_entry;
- 	net->ipv6.ip6_prohibit_entry->u.dst.path =
- 		(struct dst_entry *)net->ipv6.ip6_prohibit_entry;
- 	net->ipv6.ip6_prohibit_entry->u.dst.ops = net->ipv6.ip6_dst_ops;
-@@ -2622,11 +2620,8 @@ static int ip6_route_net_init(struct net
- 	net->ipv6.ip6_blk_hole_entry = kmemdup(&ip6_blk_hole_entry_template,
- 					       sizeof(*net->ipv6.ip6_blk_hole_entry),
- 					       GFP_KERNEL);
--	if (!net->ipv6.ip6_blk_hole_entry) {
--		kfree(net->ipv6.ip6_null_entry);
--		kfree(net->ipv6.ip6_prohibit_entry);
--		goto out;
--	}
-+	if (!net->ipv6.ip6_blk_hole_entry)
-+		goto out_ip6_prohibit_entry;
- 	net->ipv6.ip6_blk_hole_entry->u.dst.path =
- 		(struct dst_entry *)net->ipv6.ip6_blk_hole_entry;
- 	net->ipv6.ip6_blk_hole_entry->u.dst.ops = net->ipv6.ip6_dst_ops;
-@@ -2642,6 +2637,12 @@ static int ip6_route_net_init(struct net
- out:
- 	return ret;
+--- linux-2.6.orig/fs/nfs/write.c
++++ linux-2.6/fs/nfs/write.c
+@@ -45,7 +45,7 @@ static struct kmem_cache *nfs_wdata_cach
  
-+#ifdef CONFIG_IPV6_MULTIPLE_TABLES
-+out_ip6_prohibit_entry:
-+	kfree(net->ipv6.ip6_prohibit_entry);
-+out_ip6_null_entry:
-+	kfree(net->ipv6.ip6_null_entry);
-+#endif
- out_ip6_dst_ops:
- 	release_net(net->ipv6.ip6_dst_ops->dst_net);
- 	kfree(net->ipv6.ip6_dst_ops);
+ struct nfs_write_data *nfs_commitdata_alloc(void)
+ {
+-	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
++	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOIO);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -63,7 +63,7 @@ void nfs_commit_free(struct nfs_write_da
+ 
+ struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
+ {
+-	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
++	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOIO);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -72,7 +72,7 @@ struct nfs_write_data *nfs_writedata_all
+ 		if (pagecount <= ARRAY_SIZE(p->page_array))
+ 			p->pagevec = p->page_array;
+ 		else {
+-			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
++			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOIO);
+ 			if (!p->pagevec) {
+ 				kmem_cache_free(nfs_wdata_cachep, p);
+ 				p = NULL;
+Index: linux-2.6/fs/nfs/pagelist.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/pagelist.c
++++ linux-2.6/fs/nfs/pagelist.c
+@@ -27,7 +27,7 @@ static inline struct nfs_page *
+ nfs_page_alloc(void)
+ {
+ 	struct nfs_page	*p;
+-	p = kmem_cache_alloc(nfs_page_cachep, GFP_KERNEL);
++	p = kmem_cache_alloc(nfs_page_cachep, GFP_NOIO);
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+ 		INIT_LIST_HEAD(&p->wb_list);
 
 -- 
 
