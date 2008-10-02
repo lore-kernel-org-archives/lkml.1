@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbYJBHnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYJBHnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753891AbYJBHnS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 03:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYJBHme
+	id S1754131AbYJBHnu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 03:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYJBHmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 03:42:34 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:60908 "EHLO
+	Thu, 2 Oct 2008 03:42:36 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:60907 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752294AbYJBHmd (ORCPT
+	with ESMTP id S1751706AbYJBHme (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 03:42:33 -0400
+	Thu, 2 Oct 2008 03:42:34 -0400
 From: Rodolfo Giometti <giometti@linux.it>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -19,211 +19,311 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Thu,  2 Oct 2008 09:41:49 +0200
-Message-Id: <1222933309-2524-11-git-send-email-giometti@linux.it>
+Date: Thu,  2 Oct 2008 09:41:42 +0200
+Message-Id: <1222933309-2524-4-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1222933309-2524-10-git-send-email-giometti@linux.it>
+In-Reply-To: <1222933309-2524-3-git-send-email-giometti@linux.it>
 References: <>
  <1222933309-2524-1-git-send-email-giometti@linux.it>
  <1222933309-2524-2-git-send-email-giometti@linux.it>
  <1222933309-2524-3-git-send-email-giometti@linux.it>
- <1222933309-2524-4-git-send-email-giometti@linux.it>
- <1222933309-2524-5-git-send-email-giometti@linux.it>
- <1222933309-2524-6-git-send-email-giometti@linux.it>
- <1222933309-2524-7-git-send-email-giometti@linux.it>
- <1222933309-2524-8-git-send-email-giometti@linux.it>
- <1222933309-2524-9-git-send-email-giometti@linux.it>
- <1222933309-2524-10-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.254
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 10/10] PPS: low level IRQ timestamps recording.
+Subject: [PATCH 03/10] PPS: documentation programs and examples.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add low level IRQ timestamps recording for x86 (32 and 64 bits)
-platforms and enable UART clients in order to use it.
+Here some utilities and examples about the PPS API and the LinuxPPS
+support.
 
-This improves PPS precision. :)
+* ppsldisc.c shows how to manage PPS line discipline;
+
+* ppstest.c implements an useful testing program, while
+
+* ppsfind tries to help the user into finding a specific PPS source by
+  using its name or path.
 
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- arch/x86/kernel/irq_32.c    |   17 +++++++++++++++++
- arch/x86/kernel/irq_64.c    |   21 +++++++++++++++++++--
- drivers/pps/Kconfig         |   12 ++++++++++++
- include/linux/pps.h         |    1 +
- include/linux/serial_core.h |    7 ++++++-
- 5 files changed, 55 insertions(+), 3 deletions(-)
+ Documentation/pps/Makefile   |   28 ++++++++
+ Documentation/pps/ppsfind    |   17 +++++
+ Documentation/pps/ppsldisc.c |   46 +++++++++++++
+ Documentation/pps/ppstest.c  |  151 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 242 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/pps/Makefile
+ create mode 100644 Documentation/pps/ppsfind
+ create mode 100644 Documentation/pps/ppsldisc.c
+ create mode 100644 Documentation/pps/ppstest.c
 
-diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
-index 1cf8c1f..85c3182 100644
---- a/arch/x86/kernel/irq_32.c
-+++ b/arch/x86/kernel/irq_32.c
-@@ -15,6 +15,7 @@
- #include <linux/notifier.h>
- #include <linux/cpu.h>
- #include <linux/delay.h>
-+#include <linux/pps.h>
- 
- #include <asm/apic.h>
- #include <asm/uaccess.h>
-@@ -25,6 +26,11 @@ EXPORT_PER_CPU_SYMBOL(irq_stat);
- DEFINE_PER_CPU(struct pt_regs *, irq_regs);
- EXPORT_PER_CPU_SYMBOL(irq_regs);
- 
-+#ifdef CONFIG_PPS_IRQ_EVENTS
-+struct timespec pps_irq_ts[NR_IRQS];
-+EXPORT_SYMBOL(pps_irq_ts);
+diff --git a/Documentation/pps/Makefile b/Documentation/pps/Makefile
+new file mode 100644
+index 0000000..9841e6b
+--- /dev/null
++++ b/Documentation/pps/Makefile
+@@ -0,0 +1,28 @@
++TARGETS = ppstest ppsldisc
++
++CFLAGS += -Wall -O2 -D_GNU_SOURCE
++CFLAGS += -I .
++CFLAGS += -ggdb
++CFLAGS += -D__N_PPS=$(shell awk '/N_PPS/ {print $$3}' ../../include/linux/tty.h)
++
++# -- Actions section --
++
++.PHONY : all depend dep
++
++all : .depend $(TARGETS)
++
++.depend depend dep :
++	$(CC) $(CFLAGS) -M $(TARGETS:=.c) > .depend
++
++ifeq (.depend,$(wildcard .depend))
++include .depend
++endif
++
++
++# -- Clean section --
++
++.PHONY : clean
++
++clean :
++	rm -f *.o *~ core .depend
++	rm -f ${TARGETS}
+diff --git a/Documentation/pps/ppsfind b/Documentation/pps/ppsfind
+new file mode 100644
+index 0000000..93c0e17
+--- /dev/null
++++ b/Documentation/pps/ppsfind
+@@ -0,0 +1,17 @@
++#!/bin/sh
++
++SYS="/sys/class/pps/"
++
++if [ $# -lt 1 ] ; then
++	echo "usage: ppsfind <name>" >&2
++	exit 1
++fi
++
++for d in $(ls $SYS) ; do
++	if grep $1 $SYS/$d/name >& /dev/null || \
++	   grep $1 $SYS/$d/path >& /dev/null ; then
++		echo "$d: name=$(cat $SYS/$d/name) path=$(cat $SYS/$d/path)"
++	fi
++done
++
++exit 0
+diff --git a/Documentation/pps/ppsldisc.c b/Documentation/pps/ppsldisc.c
+new file mode 100644
+index 0000000..036e13b
+--- /dev/null
++++ b/Documentation/pps/ppsldisc.c
+@@ -0,0 +1,46 @@
++#include <stdio.h>
++#include <unistd.h>
++#include <stdlib.h>
++#include <errno.h>
++#include <sys/ioctl.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <string.h>
++
++#ifndef N_PPS
++#define N_PPS __N_PPS
 +#endif
 +
- /*
-  * 'what should we do if we get a hw irq event on an illegal vector'.
-  * each architecture has to answer this themselves.
-@@ -225,6 +231,12 @@ unsigned int do_IRQ(struct pt_regs *regs)
- 	/* high bit used in ret_from_ code */
- 	int overflow, irq = ~regs->orig_ax;
- 	struct irq_desc *desc = irq_desc + irq;
-+#ifdef CONFIG_PPS_IRQ_EVENTS
-+	struct timespec ts;
++void usage(char *name)
++{
++	fprintf(stderr, "usage: %s <ttyS>\n", name);
 +
-+	/* Get IRQ timestamps as soon as possible for the PPS layer */
-+	getnstimeofday(&ts);
-+#endif
- 
- 	if (unlikely((unsigned)irq >= NR_IRQS)) {
- 		printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
-@@ -232,6 +244,11 @@ unsigned int do_IRQ(struct pt_regs *regs)
- 		BUG();
- 	}
- 
-+#ifdef CONFIG_PPS_IRQ_EVENTS
-+	/* Then, after sanity check, store the IRQ timestamp */
-+	pps_irq_ts[irq] = ts;
-+#endif
++	exit(EXIT_FAILURE);
++}
 +
- 	old_regs = set_irq_regs(regs);
- 	irq_enter();
- 
-diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
-index 1f78b23..e9184ce 100644
---- a/arch/x86/kernel/irq_64.c
-+++ b/arch/x86/kernel/irq_64.c
-@@ -17,9 +17,15 @@
- #include <asm/io_apic.h>
- #include <asm/idle.h>
- #include <asm/smp.h>
-+#include <linux/pps.h>
- 
- atomic_t irq_err_count;
- 
-+#ifdef CONFIG_PPS_IRQ_EVENTS
-+struct timespec pps_irq_ts[NR_IRQS];
-+EXPORT_SYMBOL(pps_irq_ts);
-+#endif
++int main(int argc, char *argv[])
++{
++	int fd;
++	int ldisc = N_PPS;
++	int ret;
 +
- /*
-  * 'what should we do if we get a hw irq event on an illegal vector'.
-  * each architecture has to answer this themselves.
-@@ -188,6 +194,12 @@ u64 arch_irq_stat(void)
- asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
-+#ifdef CONFIG_PPS_IRQ_EVENTS
-+	struct timespec ts;
++	if (argc < 2)
++		usage(argv[0]);
 +
-+	/* Get IRQ timestamps as soon as possible for the PPS layer */
-+	getnstimeofday(&ts);
-+#endif
- 
- 	/* high bit used in ret_from_ code  */
- 	unsigned vector = ~regs->orig_ax;
-@@ -201,9 +213,14 @@ asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
- 	stack_overflow_check(regs);
- #endif
- 
--	if (likely(irq < NR_IRQS))
-+	if (likely(irq < NR_IRQS)) {
-+#ifdef CONFIG_PPS_IRQ_EVENTS
-+		/* Then, after sanity check, store the IRQ timestamp */
-+		pps_irq_ts[irq] = ts;
-+#endif
++	fd = open(argv[1], O_RDWR);
++	if (fd < 0) {
++		perror("open");
++		exit(EXIT_FAILURE);
++	}
 +
- 		generic_handle_irq(irq);
--	else {
-+	} else {
- 		if (!disable_apic)
- 			ack_APIC_irq();
- 
-diff --git a/drivers/pps/Kconfig b/drivers/pps/Kconfig
-index 1afe4e0..7c0b094 100644
---- a/drivers/pps/Kconfig
-+++ b/drivers/pps/Kconfig
-@@ -22,6 +22,18 @@ config PPS
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called pps_core.ko.
- 
-+config PPS_IRQ_EVENTS
-+	bool "Use low level IRQ timestamps"
-+	depends on PPS && (X86_32 || X86_64)
-+	default yes
-+	help
-+	  Say Y here if you wish using low level IRQ timestamps to register
-+	  PPS events.
++	ret = ioctl(fd, TIOCSETD, &ldisc);
++	if (ret < 0) {
++		perror("ioctl(TIOCSETD)");
++		exit(EXIT_FAILURE);
++	}
 +
-+	  This should improve PPS resolution but it delays echo functions
-+	  call. Note also that this function is not implemented on all
-+	  platforms and PPS clients!
++	pause();
 +
- config PPS_DEBUG
- 	bool "PPS debugging messages"
- 	depends on PPS
-diff --git a/include/linux/pps.h b/include/linux/pps.h
-index 6695f7c..9a74d06 100644
---- a/include/linux/pps.h
-+++ b/include/linux/pps.h
-@@ -181,6 +181,7 @@ struct pps_device {
- 
- extern spinlock_t pps_idr_lock;
- extern struct idr pps_idr;
-+extern struct timespec pps_irq_ts[];
- 
- extern struct device_attribute pps_attrs[];
- 
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 1aa894c..f4cfc66 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -165,6 +165,7 @@
- #include <linux/tty.h>
- #include <linux/mutex.h>
- #include <linux/sysrq.h>
-+#include <linux/pps.h>
- 
- struct uart_port;
- struct uart_info;
-@@ -492,7 +493,11 @@ uart_handle_dcd_change(struct uart_port *port, unsigned int status)
- 	struct timespec ts;
- 
- 	if (ld->ops->dcd_change)
-+#ifdef CONFIG_PPS_IRQ_EVENTS
-+		ts = pps_irq_ts[port->irq];
-+#else
- 		getnstimeofday(&ts);
-+#endif
- 
- 	port->icount.dcd++;
- #ifdef CONFIG_HARD_PPS
-@@ -508,7 +513,7 @@ uart_handle_dcd_change(struct uart_port *port, unsigned int status)
- 	}
- 
- 	if (ld->ops->dcd_change)
--		ld->ops->dcd_change(port, status, &ts);
-+		ld->ops->dcd_change(info->port.tty, status, &ts);
- 	tty_ldisc_deref(ld);
- }
- 
++	return 0;
++}
+diff --git a/Documentation/pps/ppstest.c b/Documentation/pps/ppstest.c
+new file mode 100644
+index 0000000..d125ffa
+--- /dev/null
++++ b/Documentation/pps/ppstest.c
+@@ -0,0 +1,151 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <errno.h>
++#include <string.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++
++#include <timepps.h>
++
++int find_source(char *path, pps_handle_t *handle, int *avail_mode)
++{
++	pps_params_t params;
++	int ret;
++
++	printf("trying PPS source \"%s\"\n", path);
++
++	/* Try to find the source by using the supplied "path" name */
++	ret = open(path, O_RDWR);
++	if (ret < 0) {
++		fprintf(stderr, "unable to open device \"%s\" (%m)\n", path);
++		return ret;
++	}
++
++	/* Open the PPS source (and check the file descriptor) */
++	ret = time_pps_create(ret, handle);
++	if (ret < 0) {
++		fprintf(stderr, "cannot create a PPS source from device "
++				"\"%s\" (%m)\n", path);
++		return -1;
++	}
++	printf("found PPS source \"%s\"\n", path);
++
++	/* Find out what features are supported */
++	ret = time_pps_getcap(*handle, avail_mode);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get capabilities (%m)\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_CAPTUREASSERT) == 0) {
++		fprintf(stderr, "cannot CAPTUREASSERT\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_OFFSETASSERT) == 0) {
++		fprintf(stderr, "cannot OFFSETASSERT\n");
++		return -1;
++	}
++
++	/* Capture assert timestamps, and compensate for a 675 nsec
++	 * propagation delay */
++	ret = time_pps_getparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get parameters (%m)\n");
++		return -1;
++	}
++	params.assert_offset.tv_sec = 0;
++	params.assert_offset.tv_nsec = 675;
++	params.mode |= PPS_CAPTUREASSERT | PPS_OFFSETASSERT;
++	ret = time_pps_setparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot set parameters (%m)\n");
++		return -1;
++	}
++
++	return 0;
++}
++
++int fetch_source(int i, pps_handle_t *handle, int *avail_mode)
++{
++	struct timespec timeout;
++	pps_info_t infobuf;
++	int ret;
++
++	/* create a zero-valued timeout */
++	timeout.tv_sec = 3;
++	timeout.tv_nsec = 0;
++
++retry:
++	if (*avail_mode & PPS_CANWAIT) /* waits for the next event */
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	else {
++		sleep(1);
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	}
++	if (ret < 0) {
++		if (ret == -EINTR) {
++			fprintf(stderr, "time_pps_fetch() got a signal!\n");
++			goto retry;
++		}
++
++		fprintf(stderr, "time_pps_fetch() error %d (%m)\n", ret);
++		return -1;
++	}
++
++	printf("source %d - "
++	       "assert %ld.%09ld, sequence: %ld - "
++	       "clear  %ld.%09ld, sequence: %ld\n",
++	       i,
++	       infobuf.assert_timestamp.tv_sec,
++	       infobuf.assert_timestamp.tv_nsec,
++	       infobuf.assert_sequence,
++	       infobuf.clear_timestamp.tv_sec,
++	       infobuf.clear_timestamp.tv_nsec, infobuf.clear_sequence);
++
++	return 0;
++}
++
++void usage(char *name)
++{
++	fprintf(stderr, "usage: %s <ppsdev> [<ppsdev> ...]\n", name);
++	exit(EXIT_FAILURE);
++}
++
++int main(int argc, char *argv[])
++{
++	int num;
++	pps_handle_t handle[4];
++	int avail_mode[4];
++	int i = 0;
++	int ret;
++
++	/* Check the command line */
++	if (argc < 2)
++		usage(argv[0]);
++
++	for (i = 1; i < argc && i <= 4; i++) {
++		ret = find_source(argv[i], &handle[i - 1], &avail_mode[i - 1]);
++		if (ret < 0)
++			exit(EXIT_FAILURE);
++	}
++
++	num = i - 1;
++	printf("ok, found %d source(s), now start fetching data...\n", num);
++
++	/* loop, printing the most recent timestamp every second or so */
++	while (1) {
++		for (i = 0; i < num; i++) {
++			ret = fetch_source(i, &handle[i], &avail_mode[i]);
++			if (ret < 0 && errno != ETIMEDOUT)
++				exit(EXIT_FAILURE);
++		}
++	}
++
++	for (; i >= 0; i--)
++		time_pps_destroy(handle[i]);
++
++	return 0;
++}
 -- 
 1.5.4.3
 
