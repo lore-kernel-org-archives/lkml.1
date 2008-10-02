@@ -1,78 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbYJBXaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYJBXaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754683AbYJBXaA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 19:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbYJBX3u
+	id S1755542AbYJBXaj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 19:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYJBXaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 19:29:50 -0400
-Received: from hs-out-0708.google.com ([64.233.178.246]:46240 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753414AbYJBX3t (ORCPT
+	Thu, 2 Oct 2008 19:30:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49734 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753061AbYJBXa2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 19:29:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :face:mime-version:content-type:content-transfer-encoding;
-        b=syFIlRRUqhHMeJxgmHydpAasEaQ58whesMvgA2s2HO60dBB+3HGHptLJg5b1qJ2ge6
-         Jyk7bLImXk3syD/nhhk2u1I0yAuPuS81nrSK+TB4tRPZu5Z7ZtEo6gWc5kbUHuEpBHTu
-         xxnYOAhIoLOMZcG2J+wuFllPeH/hNPvsPkVr4=
-Date: Thu, 2 Oct 2008 18:29:43 -0500
-From: Jay Cliburn <jcliburn@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: xiong.huang@atheros.com, csnook@redhat.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: atl2 network driver status
-Message-ID: <20081002182943.0264f7fa@osprey.hogchain.net>
-In-Reply-To: <20081002232148.GA20003@kroah.com>
-References: <20081002230246.GA11570@kroah.com>
-	<20081002181731.6b8f563d@osprey.hogchain.net>
-	<20081002232148.GA20003@kroah.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEV2dXOAgYNxSD+aemaal42A
- gIBqYV2UU07Ik5GXfoFMRTdbKiVwAAACbUlEQVQ4jXXTzWvbMBQAcG3EZsmt0Owc3pgNPo1oxNFt
- pQnEN3Wrs3UnkdXq5tOwIdq9Pci3gUqJexo55KC/cs9O/dHBRIiMfpb03rNE4v800jxIQRzsXPEP
- jDwndhNelo9/ngE/SFdKmZQnfOT0YSSlQBKLiJBDH6w9SPwlp5evpduDr9biQqkV8Rh7p4NRNSO1
- 4BHhpjLpIK2gWksIgl0LPLCHoBIcX6dp2kGKMYnfGJnjIFungZeuHA6dhSvqLXrA1zJmVKayCu1w
- DKuGAU+WZRRCsLdBFXgLl2Sw3N2ZEJDAn3VwEV9FK12YUGW+yqlIWiD30U5rbSi2efGuhRfxEXRB
- 8e+uJE/AL5z78xrqVg6aBHlMTj9V7x/RJOMGHHI11ItVUW+B0JakkGPcUsJNHuY7/ZA04X4xwQ/D
- 3I0FGgaT8iFponoJ26F+sNbu51O7l7QHHtNTbxMc5o/W+kw0S31Ub5i+pQBq/hjYPVPbJ/ic/aoC
- pbTQtxlAvvnZgNod89Y4D2sFXpMHZWU1yHb6Ft+g2aTJY84iY2iY4ySGmWdvmxlDprHkCgd1yDRV
- bXVfFQiZjyuyaU5p1pZkTbXBbxRagAyU2rZfcH2tTQ7+FpNQ4Ofb7lxdFzTHDGqAvHdEv0cIezi2
- be+0vzdUqawaDSATHfB7itGiIfrQu2p8UQOOooHTh5lUPn6lva/qQrWwQpCUTv08hGe3dkU9KWmJ
- Z2EGpAeDFc3kN8oMNbNJ/AzMFERUhjmehB7ws6XBTTnfeOXT9T/C9dn4HEshpPWIjDvgi5Px2U0G
- Hl7dzaQHg8U4Xn6oa4g3vVnqLz3ribDLdyFmAAAAAElFTkSuQmCC
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Oct 2008 19:30:28 -0400
+Date: Thu, 2 Oct 2008 16:30:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] check mapped ranges on sysfs resource files (for
+ 2.6.27)
+In-Reply-To: <200810021534.38219.jbarnes@virtuousgeek.org>
+Message-ID: <alpine.LFD.2.00.0810021630100.3341@nehalem.linux-foundation.org>
+References: <200810021534.38219.jbarnes@virtuousgeek.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 16:21:48 -0700
-Greg KH <greg@kroah.com> wrote:
 
-> On Thu, Oct 02, 2008 at 06:17:31PM -0500, Jay Cliburn wrote:
-> > On Thu, 2 Oct 2008 16:02:46 -0700
-> > Greg KH <greg@kroah.com> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > In looking for drivers to add to drivers/staging/ I ran across the
-> > > atl2 driver that is currently in the Fedora and Ubuntu kernel
-> > > trees.
-> > > 
-> > > This driver doesn't look to be scheduled for inclusion in the
-> > > upstream netdev git tree for submission for 2.6.28, is there any
-> > > reason why it is still out-of-the-tree?
-> > 
-> > Hi Greg,
-> > 
-> > It's in net-next-2.6.
-> > 
-> > http://marc.info/?l=linux-netdev&m=122144021209242&w=2
-> 
-> Nice, so that means it's going to be in 2.6.28?
 
-I think so.  As I understand it, net-next-2.6 is Dave Miller's git tree
-for stuff destined for 2.6.28.
+On Thu, 2 Oct 2008, Jesse Barnes wrote:
+>
+> +	unsigned long map_len = vma->vm_end - vma->vm_start;
+> +	unsigned long map_offset = vma->vm_pgoff << PAGE_SHIFT;
+
+This seems broken for big vm_pgoff values, where that shift will 
+potentially overflow, no? 
+
+Also, it strikes me that we don't seem to check that the resource start is 
+page-aligned. We just do
+
+	vma->vm_pgoff += start >> PAGE_SHIFT;
+
+without checking if we just dropped low bits from 'start'.
+
+Of course, if the length of the resource is bigger than a page, I guess 
+the resource is guaranteed to be at least page-aligned, so maybe the 
+length check - if it was correct - would be sufficient.
+
+Anyway, it would be *much* better to do the length check in pages rather 
+than in bytes, to avoid the overflow condition.
+
+Can somebody test if something like this works? It also prints the actual 
+name of the device, not just a random BAR number (but it will print 
+everyting in PFN's, I hate potentially losing information).
+
+			Linus
+
+---
+ drivers/pci/pci-sysfs.c |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 9c71858..77baff0 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -16,6 +16,7 @@
+ 
+ 
+ #include <linux/kernel.h>
++#include <linux/sched.h>
+ #include <linux/pci.h>
+ #include <linux/stat.h>
+ #include <linux/topology.h>
+@@ -484,6 +485,21 @@ pci_mmap_legacy_mem(struct kobject *kobj, struct bin_attribute *attr,
+ #endif /* HAVE_PCI_LEGACY */
+ 
+ #ifdef HAVE_PCI_MMAP
++
++static int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vma)
++{
++	unsigned long nr, start, size;
++
++	nr = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
++	start = vma->vm_pgoff;
++	size = pci_resource_len(pdev, resno) >> PAGE_SHIFT;
++	if (start < size && size - start >= nr)
++		return 1;
++	WARN(1, "process \"%s\" tried to map 0x%08lx-0x%08lx on %s BAR %d (size 0x%08lx)\n",
++		current->comm, start, start+nr, pci_name(pdev), resno, size);
++	return 0;
++}
++
+ /**
+  * pci_mmap_resource - map a PCI resource into user memory space
+  * @kobj: kobject for mapping
+@@ -510,6 +526,9 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
+ 	if (i >= PCI_ROM_RESOURCE)
+ 		return -ENODEV;
+ 
++	if (!pci_mmap_fits(pdev, i, vma))
++		return -EINVAL;
++
+ 	/* pci_mmap_page_range() expects the same kind of entry as coming
+ 	 * from /proc/bus/pci/ which is a "user visible" value. If this is
+ 	 * different from the resource itself, arch will do necessary fixup.
