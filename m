@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYJBN1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYJBNZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbYJBN1a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 09:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbYJBNSs
+	id S1756177AbYJBNZx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 09:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbYJBNTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 09:18:48 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53622 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753786AbYJBNSp (ORCPT
+	Thu, 2 Oct 2008 09:19:31 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54824 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754419AbYJBNT0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 09:18:45 -0400
-Message-Id: <20081002131607.662164064@chello.nl>
+	Thu, 2 Oct 2008 09:19:26 -0400
+Message-Id: <20081002131608.162932309@chello.nl>
 References: <20081002130504.927878499@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 02 Oct 2008 15:05:06 +0200
+Date: Thu, 02 Oct 2008 15:05:13 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -22,75 +22,316 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>,
        David Miller <davem@davemloft.net>
-Subject: [PATCH 02/32] mm: serialize access to min_free_kbytes
-Content-Disposition: inline; filename=mm-setup_per_zone_pages_min.patch
+Subject: [PATCH 09/32] mm: kmem_alloc_estimate()
+Content-Disposition: inline; filename=mm-kmem_estimate_pages.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a small race between the procfs caller and the memory hotplug caller
-of setup_per_zone_pages_min(). Not a big deal, but the next patch will add yet
-another caller. Time to close the gap.
+Provide a method to get the upper bound on the pages needed to allocate
+a given number of objects from a given kmem_cache.
+
+This lays the foundation for a generic reserve framework as presented in
+a later patch in this series. This framework needs to convert object demand
+(kmalloc() bytes, kmem_cache_alloc() objects) to pages.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- mm/page_alloc.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+ include/linux/slab.h |    4 ++
+ mm/slab.c            |   75 +++++++++++++++++++++++++++++++++++++++++++
+ mm/slob.c            |   67 +++++++++++++++++++++++++++++++++++++++
+ mm/slub.c            |   87 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 233 insertions(+)
 
-Index: linux-2.6/mm/page_alloc.c
+Index: linux-2.6/include/linux/slab.h
 ===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -118,6 +118,7 @@ static char * const zone_names[MAX_NR_ZO
- 	 "Movable",
- };
+--- linux-2.6.orig/include/linux/slab.h
++++ linux-2.6/include/linux/slab.h
+@@ -72,6 +72,8 @@ void kmem_cache_free(struct kmem_cache *
+ unsigned int kmem_cache_size(struct kmem_cache *);
+ const char *kmem_cache_name(struct kmem_cache *);
+ int kmem_ptr_validate(struct kmem_cache *cachep, const void *ptr);
++unsigned kmem_alloc_estimate(struct kmem_cache *cachep,
++			gfp_t flags, int objects);
  
-+static DEFINE_SPINLOCK(min_free_lock);
- int min_free_kbytes = 1024;
+ /*
+  * Please use this macro to create slab caches. Simply specify the
+@@ -107,6 +109,8 @@ void * __must_check __krealloc(const voi
+ void * __must_check krealloc(const void *, size_t, gfp_t);
+ void kfree(const void *);
+ size_t ksize(const void *);
++unsigned kmalloc_estimate_objs(size_t, gfp_t, int);
++unsigned kmalloc_estimate_bytes(gfp_t, size_t);
  
- unsigned long __meminitdata nr_kernel_pages;
-@@ -4333,12 +4334,12 @@ static void setup_per_zone_lowmem_reserv
+ /*
+  * Function prototypes passed to kmem_cache_defrag() to enable defragmentation
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c
++++ linux-2.6/mm/slub.c
+@@ -2452,6 +2452,42 @@ const char *kmem_cache_name(struct kmem_
  }
+ EXPORT_SYMBOL(kmem_cache_name);
  
- /**
-- * setup_per_zone_pages_min - called when min_free_kbytes changes.
-+ * __setup_per_zone_pages_min - called when min_free_kbytes changes.
-  *
-  * Ensures that the pages_{min,low,high} values for each zone are set correctly
-  * with respect to min_free_kbytes.
-  */
--void setup_per_zone_pages_min(void)
-+static void __setup_per_zone_pages_min(void)
- {
- 	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
- 	unsigned long lowmem_pages = 0;
-@@ -4433,6 +4434,15 @@ void setup_per_zone_inactive_ratio(void)
- 	}
- }
- 
-+void setup_per_zone_pages_min(void)
++/*
++ * Calculate the upper bound of pages required to sequentially allocate
++ * @objects objects from @cachep.
++ *
++ * We should use s->min_objects because those are the least efficient.
++ */
++unsigned kmem_alloc_estimate(struct kmem_cache *s, gfp_t flags, int objects)
 +{
-+	unsigned long flags;
++	unsigned long pages;
++	struct kmem_cache_order_objects x;
 +
-+	spin_lock_irqsave(&min_free_lock, flags);
-+	__setup_per_zone_pages_min();
-+	spin_unlock_irqrestore(&min_free_lock, flags);
++	if (WARN_ON(!s) || WARN_ON(!oo_objects(s->min)))
++		return 0;
++
++	x = s->min;
++	pages = DIV_ROUND_UP(objects, oo_objects(x)) << oo_order(x);
++
++	/*
++	 * Account the possible additional overhead if the slab holds more that
++	 * one object. Use s->max_objects because that's the worst case.
++	 */
++	x = s->oo;
++	if (oo_objects(x) > 1) {
++		/*
++		 * Account the possible additional overhead if per cpu slabs
++		 * are currently empty and have to be allocated. This is very
++		 * unlikely but a possible scenario immediately after
++		 * kmem_cache_shrink.
++		 */
++		pages += num_possible_cpus() << oo_order(x);
++	}
++
++	return pages;
++}
++EXPORT_SYMBOL_GPL(kmem_alloc_estimate);
++
+ static void list_slab_objects(struct kmem_cache *s, struct page *page,
+ 							const char *text)
+ {
+@@ -2852,6 +2888,57 @@ void kfree(const void *x)
+ EXPORT_SYMBOL(kfree);
+ 
+ /*
++ * Calculate the upper bound of pages required to sequentially allocate
++ * @count objects of @size bytes from kmalloc given @flags.
++ */
++unsigned kmalloc_estimate_objs(size_t size, gfp_t flags, int count)
++{
++	struct kmem_cache *s = get_slab(size, flags);
++	if (!s)
++		return 0;
++
++	return kmem_alloc_estimate(s, flags, count);
++
++}
++EXPORT_SYMBOL_GPL(kmalloc_estimate_objs);
++
++/*
++ * Calculate the upper bound of pages requires to sequentially allocate @bytes
++ * from kmalloc in an unspecified number of allocations of nonuniform size.
++ */
++unsigned kmalloc_estimate_bytes(gfp_t flags, size_t bytes)
++{
++	int i;
++	unsigned long pages;
++
++	/*
++	 * multiply by two, in order to account the worst case slack space
++	 * due to the power-of-two allocation sizes.
++	 */
++	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
++
++	/*
++	 * add the kmem_cache overhead of each possible kmalloc cache
++	 */
++	for (i = 1; i < PAGE_SHIFT; i++) {
++		struct kmem_cache *s;
++
++#ifdef CONFIG_ZONE_DMA
++		if (unlikely(flags & SLUB_DMA))
++			s = dma_kmalloc_cache(i, flags);
++		else
++#endif
++			s = &kmalloc_caches[i];
++
++		if (s)
++			pages += kmem_alloc_estimate(s, flags, 0);
++	}
++
++	return pages;
++}
++EXPORT_SYMBOL_GPL(kmalloc_estimate_bytes);
++
++/*
+  * Allocate a slab scratch space that is sufficient to keep at least
+  * max_defrag_slab_objects pointers to individual objects and also a bitmap
+  * for max_defrag_slab_objects.
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c
++++ linux-2.6/mm/slab.c
+@@ -3849,6 +3849,81 @@ const char *kmem_cache_name(struct kmem_
+ EXPORT_SYMBOL_GPL(kmem_cache_name);
+ 
+ /*
++ * Calculate the upper bound of pages required to sequentially allocate
++ * @objects objects from @cachep.
++ */
++unsigned kmem_alloc_estimate(struct kmem_cache *cachep,
++		gfp_t flags, int objects)
++{
++	/*
++	 * (1) memory for objects,
++	 */
++	unsigned nr_slabs = DIV_ROUND_UP(objects, cachep->num);
++	unsigned nr_pages = nr_slabs << cachep->gfporder;
++
++	/*
++	 * (2) memory for each per-cpu queue (nr_cpu_ids),
++	 * (3) memory for each per-node alien queues (nr_cpu_ids), and
++	 * (4) some amount of memory for the slab management structures
++	 *
++	 * XXX: truely account these
++	 */
++	nr_pages += 1 + ilog2(nr_pages);
++
++	return nr_pages;
 +}
 +
- /*
-  * Initialise min_free_kbytes.
-  *
-@@ -4468,7 +4478,7 @@ static int __init init_per_zone_pages_mi
- 		min_free_kbytes = 128;
- 	if (min_free_kbytes > 65536)
- 		min_free_kbytes = 65536;
--	setup_per_zone_pages_min();
-+	__setup_per_zone_pages_min();
- 	setup_per_zone_lowmem_reserve();
- 	setup_per_zone_inactive_ratio();
- 	return 0;
++/*
++ * Calculate the upper bound of pages required to sequentially allocate
++ * @count objects of @size bytes from kmalloc given @flags.
++ */
++unsigned kmalloc_estimate_objs(size_t size, gfp_t flags, int count)
++{
++	struct kmem_cache *s = kmem_find_general_cachep(size, flags);
++	if (!s)
++		return 0;
++
++	return kmem_alloc_estimate(s, flags, count);
++}
++EXPORT_SYMBOL_GPL(kmalloc_estimate_objs);
++
++/*
++ * Calculate the upper bound of pages requires to sequentially allocate @bytes
++ * from kmalloc in an unspecified number of allocations of nonuniform size.
++ */
++unsigned kmalloc_estimate_bytes(gfp_t flags, size_t bytes)
++{
++	unsigned long pages;
++	struct cache_sizes *csizep = malloc_sizes;
++
++	/*
++	 * multiply by two, in order to account the worst case slack space
++	 * due to the power-of-two allocation sizes.
++	 */
++	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
++
++	/*
++	 * add the kmem_cache overhead of each possible kmalloc cache
++	 */
++	for (csizep = malloc_sizes; csizep->cs_cachep; csizep++) {
++		struct kmem_cache *s;
++
++#ifdef CONFIG_ZONE_DMA
++		if (unlikely(flags & __GFP_DMA))
++			s = csizep->cs_dmacachep;
++		else
++#endif
++			s = csizep->cs_cachep;
++
++		if (s)
++			pages += kmem_alloc_estimate(s, flags, 0);
++	}
++
++	return pages;
++}
++EXPORT_SYMBOL_GPL(kmalloc_estimate_bytes);
++
++/*
+  * This initializes kmem_list3 or resizes various caches for all nodes.
+  */
+ static int alloc_kmemlist(struct kmem_cache *cachep)
+Index: linux-2.6/mm/slob.c
+===================================================================
+--- linux-2.6.orig/mm/slob.c
++++ linux-2.6/mm/slob.c
+@@ -682,3 +682,70 @@ void __init kmem_cache_init(void)
+ {
+ 	slob_ready = 1;
+ }
++
++static __slob_estimate(unsigned size, unsigned align, unsigned objects)
++{
++	unsigned nr_pages;
++
++	size = SLOB_UNIT * SLOB_UNITS(size + align - 1);
++
++	if (size <= PAGE_SIZE) {
++		nr_pages = DIV_ROUND_UP(objects, PAGE_SIZE / size);
++	} else {
++		nr_pages = objects << get_order(size);
++	}
++
++	return nr_pages;
++}
++
++/*
++ * Calculate the upper bound of pages required to sequentially allocate
++ * @objects objects from @cachep.
++ */
++unsigned kmem_alloc_estimate(struct kmem_cache *c, gfp_t flags, int objects)
++{
++	unsigned size = c->size;
++
++	if (c->flags & SLAB_DESTROY_BY_RCU)
++		size += sizeof(struct slob_rcu);
++
++	return __slob_estimate(size, c->align, objects);
++}
++
++/*
++ * Calculate the upper bound of pages required to sequentially allocate
++ * @count objects of @size bytes from kmalloc given @flags.
++ */
++unsigned kmalloc_estimate_objs(size_t size, gfp_t flags, int count)
++{
++	unsigned align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
++
++	return __slob_estimate(size, align, count);
++}
++EXPORT_SYMBOL_GPL(kmalloc_estimate_objs);
++
++/*
++ * Calculate the upper bound of pages requires to sequentially allocate @bytes
++ * from kmalloc in an unspecified number of allocations of nonuniform size.
++ */
++unsigned kmalloc_estimate_bytes(gfp_t flags, size_t bytes)
++{
++	unsigned long pages;
++
++	/*
++	 * Multiply by two, in order to account the worst case slack space
++	 * due to the power-of-two allocation sizes.
++	 *
++	 * While not true for slob, it cannot do worse than that for sequential
++	 * allocations.
++	 */
++	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
++
++	/*
++	 * Our power of two series starts at PAGE_SIZE, so add one page.
++	 */
++	pages++;
++
++	return pages;
++}
++EXPORT_SYMBOL_GPL(kmalloc_estimate_bytes);
 
 -- 
 
