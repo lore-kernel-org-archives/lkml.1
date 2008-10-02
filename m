@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbYJBIRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYJBISN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753742AbYJBIRN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 04:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYJBIQ6
+	id S1754019AbYJBISN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 04:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYJBISB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 04:16:58 -0400
-Received: from verein.lst.de ([213.95.11.210]:41267 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752318AbYJBIQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 04:16:56 -0400
-Date: Thu, 2 Oct 2008 10:16:44 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Mark Fasheh <mfasheh@suse.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [Ocfs2-devel] [PATCH 13/39] ocfs2: Add extended attribute support
-Message-ID: <20081002081644.GB24717@lst.de>
-References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-14-git-send-email-mfasheh@suse.com>
+	Thu, 2 Oct 2008 04:18:01 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:41318 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752822AbYJBISA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 04:18:00 -0400
+Date: Thu, 2 Oct 2008 10:17:54 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: SDHCI: timeout during data transfer
+Message-ID: <20081002101754.031d6710@mjolnir.drzeus.cx>
+In-Reply-To: <20080923212459.GA13888@dreamland.darkstar.lan>
+References: <20080923212459.GA13888@dreamland.darkstar.lan>
+X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.0; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222293680-15451-14-git-send-email-mfasheh@suse.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 24, 2008 at 03:00:54PM -0700, Mark Fasheh wrote:
->  	xattr.o			\
-> +	xattr_user.o		\
-> +	xattr_trusted.o
+On Tue, 23 Sep 2008 23:24:59 +0200
+Luca Tettamanti <kronos.it@gmail.com> wrote:
 
-Please don't split this up, it's always been a really stupid idea in
-extN.  The only difference between secure, trusted and user attrs is
-that they go into a different namespace bit (and have different
-permission checking, but that's handled in the VFS).  I have some
-upcoming patches to store a fs private flag in struct xattr_handler
-so that even those flags wrappers can go away, and each of the
-namespaces will just be five lines of code for the xattr_handler
-declaration.
+> Hi,
+> I'm seeing timeout errors when transfering "big" (over 1MB or so) files to a SD
+> card (small files are ok):
+> 
+> [  251.956666] mmcblk0: error -110 transferring data
+> [  251.979810] end_request: I/O error, dev mmcblk0, sector 1572758
 
-> +static inline struct xattr_handler *ocfs2_xattr_handler(int name_index)
-> +{
-> +	struct xattr_handler *handler = NULL;
-> +
-> +	if (name_index > 0 && name_index < OCFS2_XATTR_MAX)
-> +		handler = ocfs2_xattr_handler_map[name_index];
-> +
-> +	return handler;
-> +}
+Looks like the card died on you there. Did you build the kernel
+yourself? If so, it would be helpful if you could enable
+CONFIG_MMC_DEBUG and give me a complete dmesg dump from when this
+happens.
 
-You seem to need the handler mostly for getting back to the prefix
-from the handler.  This is a pretty clear indicator that you don't
-want to use the xattr_handler splitting but deal with the whole
-attr name.  Take a look at the btrfs code after my recent xattr changes
-on how to handle this more nicely.
+> kernel in use is 2.6.27-rc6, and this is the controller:
+> 
+> 09:01.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
+> 09:01.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
+> 09:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 12)
+> 09:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 12)
+> 
+> Googling around I found a patch[1] that introduced a quirk to address an
+> off-by-one issue for the timeout value in certain controllers.
+> 
+> With this patch:
+> 
 
+The patch doubles the timeout, so something is clearly broken if that
+solves the issue. I'd like to identify if it's the driver, controller
+or card first though.
 
-> +
-> +static inline u32 ocfs2_xattr_name_hash(struct inode *inode,
-> +					char *prefix,
-> +					int prefix_len,
-> +					char *name,
-> +					int name_len)
+Are you experiencing this with just this card, or with all?
 
-And I think there's far too much inlining going on in here..
+Rgds
+-- 
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
