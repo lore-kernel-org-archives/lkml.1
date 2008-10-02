@@ -1,126 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYJBJyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbYJBJzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbYJBJyi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 05:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYJBJyb
+	id S1753428AbYJBJzM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 05:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYJBJy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 05:54:31 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:32982 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752429AbYJBJya (ORCPT
+	Thu, 2 Oct 2008 05:54:58 -0400
+Received: from mail.bigtelecom.ru ([87.255.0.61]:50058 "EHLO
+	mail.bigtelecom.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbYJBJy6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 05:54:30 -0400
-Date: Thu, 02 Oct 2008 18:52:22 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Subject: Re: [PATCH] memory hotplug: missing zone->lock in test_pages_isolated()
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <1222882068.4846.31.camel@localhost.localdomain>
-References: <1222882068.4846.31.camel@localhost.localdomain>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20081002184854.5765.E1E9C6FF@jp.fujitsu.com>
+	Thu, 2 Oct 2008 05:54:58 -0400
+Message-ID: <48E49A6C.9020803@bigtelecom.ru>
+Date: Thu, 02 Oct 2008 13:54:52 +0400
+From: Badalian Vyacheslav <slavon@bigtelecom.ru>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080929)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: NMI Watchdog detected LOCKUP on CPU3
+References: <48E4701A.4010508@bigtelecom.ru> <20081002015532.8f132247.akpm@linux-foundation.org>
+In-Reply-To: <20081002015532.8f132247.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Tested-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+>> Hello All. Please help cassify bug to report to bugzilla it!
+>>
+>> Look to my sysctl:
+>>
+>> # sysctl -a | grep panic
+>> kernel.panic = 3
+>> kernel.panic_on_oops = 1
+>> kernel.unknown_nmi_panic = 1
+>> kernel.panic_on_unrecovered_nmi = 1
+>> vm.panic_on_oom = 0
+>> # sysctl -a | grep nmi
+>> kernel.unknown_nmi_panic = 1
+>> kernel.nmi_watchdog = 1
+>> kernel.panic_on_unrecovered_nmi = 1
+>>
+>> # sysctl -a | grep rq
+>> kernel.sysrq = 1
+>>
+>> But computer do not reboot and ALT+SysRQ+B don't work...
+>>     
+>
+> Is it repeatable?
+>
+>   
+
+We have 10 equal server what do Trafiic Shape (tc (htb, u32, sfq) and
+iptables) only. Few of them halt one times in week.
+Timer settings in config:
+HZ=300
+NO_HZ=n
+HIGH_RES_TIMERS = n
+
+>> This i get by netconsole and on the screen:
+>>
+>>
+>> [ 2251.728719] BUG: NMI Watchdog detected LOCKUP on CPU3, ip c01fafd4,
+>> registers:
+>> [ 2251.728719] Modules linked in: netconsole i2c_i801 i2c_core e1000e e1000
+>> [ 2251.728719]
+>> [ 2251.728719] Pid: 0, comm: swapper Not tainted (2.6.26.5-fw #1)
+>> [ 2251.728719] EIP: 0060:[<c01fafd4>] EFLAGS: 00000082 CPU: 3
+>> [ 2251.728719] EIP is at rb_insert_color+0x24/0xc0
+>> [ 2251.728719] EAX: f6c134a4 EBX: f6c134a4 ECX: f6c134a4 EDX: f6c134a4
+>> [ 2251.728719] ESI: f6c134a4 EDI: f6c134a4 EBP: c202d0d4 ESP: f7c5fcac
+>> [ 2251.728719]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+>> [ 2251.728719] Process swapper (pid: 0, ti=f7c5e000 task=f7c32940
+>> task.ti=f7c5e000)
+>> [ 2251.728719] Stack: f6c134a4 00000000 c202d0cc c202d0d4 c013a8ff
+>> f6c134a4 c202d0cc c20230cc
+>> [ 2251.728719]        c04450a0 c013adea 00000000 f7c5fcfc 392e7c00
+>> 0000020c 00000001 00000286
+>> [ 2251.728719]        f6c13000 ffffffff 00000000 00000000 c02d15fe
+>> 00000000 f6c13000 c02d6da6
+>> [ 2251.728719] Call Trace:
+>> [ 2251.728719]  [<c013a8ff>] enqueue_hrtimer+0x5f/0x80
+>> [ 2251.728719]  [<c013adea>] hrtimer_start+0xaa/0x130
+>> [ 2251.728719]  [<c02d15fe>] qdisc_watchdog_schedule+0x1e/0x30
+>> [ 2251.728719]  [<c02d6da6>] htb_dequeue+0x6a6/0x810
+>> [ 2251.728719]  [<c02d047c>] __qdisc_run+0x19c/0x1d0
+>> [ 2251.728719]  [<c02d71c0>] htb_enqueue+0x0/0x1e0
+>> [ 2251.728719]  [<c02c4cb7>] dev_queue_xmit+0x267/0x380
+>> [ 2251.728719]  [<c02e6040>] ip_forward_finish+0x0/0x40
+>> [ 2251.728719]  [<c02e8bef>] ip_finish_output+0x11f/0x280
+>> [ 2251.728719]  [<c02e630f>] ip_forward+0x28f/0x2d0
+>> [ 2251.728719]  [<c02e6065>] ip_forward_finish+0x25/0x40
+>> [ 2251.728719]  [<c02e4ba2>] ip_rcv_finish+0x122/0x360
+>> [ 2251.728719]  [<c016d7e9>] add_partial+0x19/0x60
+>> [ 2251.728719]  [<c016e8d9>] __slab_free+0x169/0x290
+>> [ 2251.728719]  [<c02e5020>] ip_rcv+0x0/0x290
+>> [ 2251.728719]  [<c02c1b4b>] netif_receive_skb+0x26b/0x470
+>> [ 2251.728719]  [<f886c74d>] e1000_receive_skb+0x4d/0x1b0 [e1000e]
+>> [ 2251.728719]  [<f886f9bc>] e1000_clean_rx_irq+0x23c/0x300 [e1000e]
+>> [ 2251.728719]  [<f886bf59>] e1000_clean+0x49/0x1f0 [e1000e]
+>> [ 2251.728719]  [<c02c3f58>] net_rx_action+0xf8/0x1b0
+>> [ 2251.728719]  [<c012a062>] __do_softirq+0x82/0x100
+>> [ 2251.728719]  [<c012a117>] do_softirq+0x37/0x40
+>> [ 2251.728719]  [<c0107120>] do_IRQ+0x40/0x80
+>> [ 2251.728719]  [<c01055a3>] common_interrupt+0x23/0x28
+>> [ 2251.728719]  [<c010a5e2>] mwait_idle+0x32/0x40
+>> [ 2251.728719]  [<c010a5b0>] mwait_idle+0x0/0x40
+>> [ 2251.728719]  [<c01036e8>] cpu_idle+0x48/0xc0
+>> [ 2251.728719]  =======================
+>> [ 2251.728719] Code: 8d bc 27 00 00 00 00 55 89 d5 57 89 c7 56 53 90 8d
+>> b4 26 00 00 00 00 8b 1f 83 e3 fc 74 32 8b 03 89 d9 a8 01 75 2a 89 c6 83
+>> e6 fc <8b> 56 08 39 d3 74 45 85 d2 74 25 8b 02 a8 01 75 1f 83 c8 01 89
+>>     
+>
+> At a guess I'd say that the hrtimer data structures got wrecked.
+>
+> If possible, please see if we fixed it in 2.6.27-rc8.  If so, there
+> might be a patch we need to backport (although is might have been
+> backported into later 2.6.25.x's as well).
+>   
+Ok. I will try. Only one question - iTCO watchdog don't work on this
+platform (but chip have it... ICH9R). How i can reboot server remotely
+if it halt?
 
 Thanks!
-
-
-> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> 
-> __test_page_isolated_in_pageblock() in mm/page_isolation.c has a comment
-> saying that the caller must hold zone->lock. But the only caller of that
-> function, test_pages_isolated(), does not hold zone->lock and the lock is
-> also not acquired anywhere before. This patch adds the missing zone->lock
-> to test_pages_isolated().
-> 
-> We reproducibly run into BUG_ON(!PageBuddy(page)) in __offline_isolated_pages()
-> during memory hotplug stress test, see trace below. This patch fixes that
-> problem, it would be good if we could have it in 2.6.27.
-> 
-> <2>kernel BUG at /home/autobuild/BUILD/linux-2.6.26-20080909/mm/page_alloc.c:4561!
-> <4>illegal operation: 0001 [#1] PREEMPT SMP
-> <4>Modules linked in: dm_multipath sunrpc bonding qeth_l3 dm_mod qeth ccwgroup vmur
-> <4>CPU: 1 Not tainted 2.6.26-29.x.20080909-s390default #1
-> <4>Process memory_loop_all (pid: 10025, task: 2f444028, ksp: 2b10dd28)
-> <4>Krnl PSW : 040c0000 801727ea (__offline_isolated_pages+0x18e/0x1c4)
-> <4> R:0 T:1 IO:0 EX:0 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0
-> <4>Krnl GPRS: 00000000 7e27fc00 00000000 7e27fc00
-> <4> 00000000 00000400 00014000 7e27fc01
-> <4> 00606f00 7e27fc00 00013fe0 2b10dd28
-> <4> 00000005 80172662 801727b2 2b10dd28
-> <4>Krnl Code: 801727de: 5810900c l %r1,12(%r9)
-> <4> 801727e2: a7f4ffb3 brc 15,80172748
-> <4> 801727e6: a7f40001 brc 15,801727e8
-> <4> >801727ea: a7f4ffbc brc 15,80172762
-> <4> 801727ee: a7f40001 brc 15,801727f0
-> <4> 801727f2: a7f4ffaf brc 15,80172750
-> <4> 801727f6: 0707 bcr 0,%r7
-> <4> 801727f8: 0017 unknown
-> <4>Call Trace:
-> <4>([<0000000000172772>] __offline_isolated_pages+0x116/0x1c4)
-> <4> [<00000000001953a2>] offline_isolated_pages_cb+0x22/0x34
-> <4> [<000000000013164c>] walk_memory_resource+0xcc/0x11c
-> <4> [<000000000019520e>] offline_pages+0x36a/0x498
-> <4> [<00000000001004d6>] remove_memory+0x36/0x44
-> <4> [<000000000028fb06>] memory_block_change_state+0x112/0x150
-> <4> [<000000000028ffb8>] store_mem_state+0x90/0xe4
-> <4> [<0000000000289c00>] sysdev_store+0x34/0x40
-> <4> [<00000000001ee048>] sysfs_write_file+0xd0/0x178
-> <4> [<000000000019b1a8>] vfs_write+0x74/0x118
-> <4> [<000000000019b9ae>] sys_write+0x46/0x7c
-> <4> [<000000000011160e>] sysc_do_restart+0x12/0x16
-> <4> [<0000000077f3e8ca>] 0x77f3e8ca
-> 
-> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> 
-> ---
->  mm/page_isolation.c |   12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6/mm/page_isolation.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_isolation.c
-> +++ linux-2.6/mm/page_isolation.c
-> @@ -114,8 +114,10 @@ __test_page_isolated_in_pageblock(unsign
->  
->  int test_pages_isolated(unsigned long start_pfn, unsigned long end_pfn)
->  {
-> -	unsigned long pfn;
-> +	unsigned long pfn, flags;
->  	struct page *page;
-> +	struct zone *zone;
-> +	int ret;
->  
->  	pfn = start_pfn;
->  	/*
-> @@ -131,7 +133,9 @@ int test_pages_isolated(unsigned long st
->  	if (pfn < end_pfn)
->  		return -EBUSY;
->  	/* Check all pages are free or Marked as ISOLATED */
-> -	if (__test_page_isolated_in_pageblock(start_pfn, end_pfn))
-> -		return 0;
-> -	return -EBUSY;
-> +	zone = page_zone(pfn_to_page(pfn));
-> +	spin_lock_irqsave(&zone->lock, flags);
-> +	ret = __test_page_isolated_in_pageblock(start_pfn, end_pfn);
-> +	spin_unlock_irqrestore(&zone->lock, flags);
-> +	return ret ? 0 : -EBUSY;
->  }
-> 
-> 
-
--- 
-Yasunori Goto 
-
-
