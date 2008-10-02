@@ -1,48 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbYJBVZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYJBV3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690AbYJBVZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 17:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYJBVZP
+	id S1755185AbYJBV3v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 17:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbYJBV3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 17:25:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:29113 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754115AbYJBVZO (ORCPT
+	Thu, 2 Oct 2008 17:29:39 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:35373 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754872AbYJBV3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 17:25:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:content-transfer-encoding:user-agent;
-        b=xNWeYCmQ+tM3tTRJn3rtg1Nd5t/4BYZqOoCI76Ij5tUTfFfrL3oL2CoxU2c64C4XW2
-         yN5sM1bYb9MAjuSDJi8B4a6JQK+RGA8ezIChRh6/otBQcdCU/HnzW806kl/R/tkQGBcd
-         m3SHAldqiM/CuM8kJQIMyywGIFosm3Qm4XY0s=
-Date: Fri, 3 Oct 2008 01:26:32 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: sfr@canb.auug.org.au
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       torvalds@osdl.org
-Subject: /proc git tree
-Message-ID: <20081002212632.GA5852@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 2 Oct 2008 17:29:37 -0400
+X-YMail-OSG: k5u1E1QVM1nl9DDy9sI0e.Wml5DXvXE7SgcXGMIm0r6Ref2RdlEZG8VrdtRhyBTH3LayEjRS71873I7DXokH9o7T_UoejSN77bf03apE32EX9M8uSU.Ku76Qw3yrCBR7HyMxWzkM8iHiRNoMcKvryvywq7Z8MXp7jPR0NA08oJEXeNgD_ZTlOYhZhRebP3g_lrXxAVrwKq_wOKQKUneuhD0-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [ANNOUNCE]: ConfigFS enabled Generic Target Mode and iSCSI
+	Target Stack on v2.6.27-rc7
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: linux-iscsi-target-dev@googlegroups.com,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       iet-dev <iscsitarget-devel@lists.sourceforge.net>,
+       Greg KH <greg@kroah.com>, Jerome Martin <tramjoe.merin@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       SCST-Devel <scst-devel@lists.sourceforge.net>,
+       Joel Becker <joel.becker@oracle.com>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <48E4FE3F.2080707@vlnb.net>
+References: <1222716101.4296.41.camel@haakon2.linux-iscsi.org>
+	 <48E3B529.4060406@vlnb.net>
+	 <1222907050.15764.56.camel@haakon2.linux-iscsi.org>
+	 <48E4FE3F.2080707@vlnb.net>
+Content-Type: text/plain
+Date: Thu, 02 Oct 2008 14:29:32 -0700
+Message-Id: <1222982972.15764.118.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please, add the following to the list of poor souls:
+On Thu, 2008-10-02 at 21:00 +0400, Vladislav Bolkhovitin wrote:
+> Nicholas A. Bellinger wrote:
+> >>> # Add some more HBA and storage Objects
+> >>> target:~# mkdir -p $TARGET/fileio_0/file_object
+> >>> target:~# mkdir -p $TARGET/rd_mcp_0/ramdisk0
+> >>> target:~# mkdir -p $TARGET/rd_dr_0/ramdisk0
+> >>>
+> >>> target:~# mkdir -p $TARGET/pscsi_0/sdd
+> >>> target:~# echo scsi_channel_id=0,scsi_target_id=3,scsi_lun_id=0 > $TARGET/pscsi_0/sdd/dev_control   
+> >>> target:~# echo 1 > $TARGET/pscsi_0/sdd/dev_enable 
+> >>>
+> >>> # Now, create LUN 1 and another Port Symlink to a new device on the same $IQN/tpgt_1
+> >>> mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_1"
+> >>> # Create the iSCSI Target Port Mapping for $DEF_IN/tpgt_1 LUN 1
+> >>> # to lvm_test0 and give it the port symbolic name of lio_east_port
+> >>> ln -s $TARGET/pscsi_0/sdd/ "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_1/lio_east_port"
+> >>>
+> >>> target:~# tree $CONFIGFS
+> >>> /sys/kernel/config/
+> >>> `-- target
+> >>>     |-- core
+> >>>     |   |-- fileio_0
+> >>>     |   |   |-- file_object
+> >>>     |   |   |   |-- dev_control
+> >>>     |   |   |   |-- dev_enable
+> >>>     |   |   |   `-- dev_info
+> >>>     |   |   `-- hba_info
+> >>>     |   |-- iblock_0
+> >>>     |   |   |-- hba_info
+> >>>     |   |   `-- lvm_test0
+> >>>     |   |       |-- dev_control
+> >>>     |   |       |-- dev_enable
+> >>>     |   |       `-- dev_info
+> >>>     |   |-- pscsi_0
+> >>>     |   |   |-- hba_info
+> >>>     |   |   `-- sdd
+> >>>     |   |       |-- dev_control
+> >>>     |   |       |-- dev_enable
+> >>>     |   |       `-- dev_info
+> >>>     |   |-- rd_dr_0
+> >>>     |   |   |-- hba_info
+> >>>     |   |   `-- ramdisk0
+> >>>     |   |       |-- dev_control
+> >>>     |   |       |-- dev_enable
+> >>>     |   |       `-- dev_info
+> >>>     |   `-- rd_mcp_0
+> >>>     |       |-- hba_info
+> >>>     |       `-- ramdisk0
+> >>>     |           |-- dev_control
+> >>>     |           |-- dev_enable
+> >>>     |           `-- dev_info
+> >>>     |-- iscsi
+> >>>     |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0
+> >>>     |   |   `-- tpgt_1
+> >>>     |   |       |-- lun
+> >>>     |   |       |   |-- lun_0
+> >>>     |   |       |   |   |-- lio_west_port -> ../../../../../../target/core/iblock_0/lvm_test0
+> >>>     |   |       |   |   |-- port_control
+> >>>     |   |       |   |   `-- port_info
+> >>>     |   |       |   `-- lun_1
+> >>>     |   |       |       |-- lio_east_port -> ../../../../../../target/core/pscsi_0/sdd
+> >>>     |   |       |       |-- port_control
+> >>>     |   |       |       `-- port_info
+> >>>     |   |       |-- np
+> >>>     |   |       |   `-- 172.16.201.137:3260
+> >>>     |   |       |       `-- portal_info
+> >>>     |   |       |-- tpg_control
+> >>>     |   |       `-- tpg_enable
+> >>>     |   `-- lio_version
+> >>>     `-- version
+> >>>
+> >>> 22 directories, 29 files
+> >> It's good, I like it. The only thing concerns me that, considering how 
+> >> much time *I* spent to understand it, for an average user understanding 
+> >> it can be an unbearable nightmare ;)
+> >>
+> > 
+> > Well, the idea is not necessarily making the configfs interface the
+> > easiest to use in the world by user directly through $CONFIGFS, but to
+> > make the CLI scripts that speak $CONFIGFS/target CLI, and of course the
+> > actual UIs for user that interact with generic target core and
+> > $FABRIC_MODs be as simple and elegent as possible.  
+> > 
+> > That is what I believe the balance that a configfs enabled generic
+> > target core provides to both the $CONFIGFS/target API and to $FABRIC_MOD
+> > maintainers looking to port their code to use a generic control
+> > infrastructure.  :-)
+> > 
+> >> In a few days I'll write a proposed configfs hierarchy for existing SCST 
+> >> /proc interface.
+> > 
+> > Sounds good!  Please let me know if you have questions.
+> 
+> There's one unsolved problem. As I've already written, SCST core needs 
+> an ability to provide to user space a large amount of data, which may 
+> not fit to a single page.
+>
+> A list of connected initiators ("sessions" 
+> file in /proc), for instance. Each initiator in that list has a number 
+> of attributes: initiator name, target template name, count of 
+> outstanding commands, etc. The logical way for that would be to create a 
+> subdirectory for each initiator, like:
+> 
+> /sys/kernel/config/
+> `-- target
+>      `-- sessions
+>          `-- session1
+>          |   |-- initiator_name
+>          |   |-- template_name
+>          |   `-- commands
+>          |
+>          `-- session2
+>              |-- initiator_name
+>              `-- template_name
+>              `-- commands
+>
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc.git proc
+The the Initiator Port ACLs need to go
+under /sys/kernel/config/target/$FABRIC because the struct fabric_acl *
+will always contain fabric dependent config items.  For example, Since
+these struct fabric_acl_t do *NOT* symlink directly back to
+target_core_mod under /sys/kernel/config/target/core/$HBA/$DEV, but to
+fabric_lun_t (iscsi_lun_t in my case) to Symlink to
+a /sys/kernel/config/target/core/$HBA/$DEV that has been registered with
+the generic target configfs infrastructure.
 
-So far it consists of 5 trivial patches from -mm, in future there will
-be smallish fs/proc/ reorganization, removing final defense line of ->read_proc()
-users and officially bug-free¹ examples of showing stuff via seq_files.
+Here is what I am thinking wrt /sys/kernel/config/target/iscsi and iSCSI
+Initiator Node ACLs to iSCSI Portal Groups and iSCSI LUNs attached to
+those Portal Groups.  There are two cases:
 
-Hope, nobody minds.
+*) The production case with with user creating those ACLs under $FABRIC
+(which is what I will focus on now).
 
-	Alexey
+* And "Demo Mode" case where any Initiator logging into
+$FABRIC/$ENDPOINT/$PORTAL can have access to all
+$FABRIC/$ENDPOINT/lun/lun_*/*my_ports*
 
-¹ Maximum allowed concentration of bugs is 0.42%/LOC.
+The production ACL case would look like:
+
+export CONFIGFS=/sys/kernel/config/
+export TARGET=/sys/kernel/config/target/core/
+export FABRIC=/sys/kernel/config/target/iscsi/
+
+TARGET_IQN=iqn.2003-01.org.linux-iscsi.ps3-cell.ppc64:sn.f8f651bd5fec
+INITIATOR_IQN=iqn.1993-08.org.debian:01.f82074ca555f
+
+<Setup $STORAGE_OBJECTs under $TARGET>
+
+# Create the LIO-target endpoint
+mkdir -p "$FABRIC/$TARGET_IQN/tpgt_1/np/172.16.201.137:3260"
+mkdir -p "$FABRIC/$TARGET_IQN/tpgt_1/lun/lun_0"
+
+<Setup Port Symlinks from $TARGET to $TARGET_IQN/tpgt_1/lun/lun_0>
+
+# Create the Initiator ACL under $TARGET_IQN/tpgt_1
+mkdir -p $"FABRIC/$TARGET_IQN/tpgt_1/initiators/$INITIATOR_IQN"
+# Allow $INITIATOR_IQN access to tpgt_1/lun/lun_0/
+ln -s "$FABRIC/$TARGET_IQN/tpgt_1/lun/lun_0" \
+	"$FABRIC/$TARGET_IQN/tpgt_1/initiators/$INITIATOR_IQN/lun_0"
+
+>From there, you don't have to worry about PAGE_SIZE limitiations w/o, I
+can simply use use:
+
+cat $FABRIC/iqn*/tpgt*/initiators/*/session
+
+to see which acl'ed iSCSI Initiators are logged in on all iSCSI Target
+Ports.
+
+Also I should add that I am currently using /proc/scsi_target/mib
+and /proc/iscsi_target_mib for READ-ONLY data with target_core_mod.ko
+and iscsi_target_mod.ko respectively.  For the other "Demo Mode" case
+mentioned above, I am currently using /proc/iscsi_target/mib/sess_attr
+to see the active sessions for LIO-Target.
+
+I will be implementing this model over the next days..  I will post the
+commit once its up and you can have a look..
+
+--nab
+
+>
+>
+> But looks like configfs requires each subdirectory to be created 
+> manually by user via, e.g., mkdir command. It would be really strange if 
+> we require user to manually create "sessions" subdirectory to be able to 
+> see a list of connected initiators. Do I miss anything?
+> 
+> Vlad
+> 
+
