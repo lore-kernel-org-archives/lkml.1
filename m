@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbYJBFik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbYJBFp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752878AbYJBFik (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 01:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYJBFid
+	id S1753248AbYJBFp0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 01:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYJBFpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 01:38:33 -0400
-Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:41024 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751277AbYJBFic (ORCPT
+	Thu, 2 Oct 2008 01:45:13 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52974 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751659AbYJBFpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 01:38:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TUmzkNKYRiSKYAftv6Bi+Myrk88vGTJvMF5gZkOYtyW6Lli+/ltlL9C3w26Lf1krcqvsZmz3U5qFG3/BA3rjnn38WEaE58Gfmgt2o3vXHGz1XfyaWdYj1RjwN1DRw6skx2XHqpWo2QD+uWvPOylQ0pEd1Ih8N5E5zs5gZUyTa7k=  ;
-X-YMail-OSG: BU36v9QVM1nv8XdrabpyiH7N0706.ssTQcLDEiwIRvLWW54s5h96g7vBgEUj2j7d1WmqYL9ZG9z9LI9B0VNXcXG9w4keTckZSmraVfH5gZ6xWW5u36KzTgsWQbn3XBIzxJ.iZ.V.eCyhwepuW.d9vDoiC1JIPQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH] mm: unify shmem and tiny-shmem
-Date: Thu, 2 Oct 2008 15:38:25 +1000
-User-Agent: KMail/1.9.5
-Cc: Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       David Howells <dhowells@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1222818570.13453.5.camel@calx> <Pine.LNX.4.64.0810011817060.19654@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0810011817060.19654@blonde.site>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 2 Oct 2008 01:45:11 -0400
+Date: Thu, 2 Oct 2008 14:49:44 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH] setup_per_zone_pages_min(): take zone->lock instead of
+ zone->lru_lock
+Message-Id: <20081002144944.2ddaf350.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1222882772.4846.40.camel@localhost.localdomain>
+References: <1222723206.6791.2.camel@ubuntu>
+	<20080930094017.5ed2938a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080930103748.44A3.E1E9C6FF@jp.fujitsu.com>
+	<1222882772.4846.40.camel@localhost.localdomain>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810021538.25314.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 October 2008 04:39, Hugh Dickins wrote:
-> On Tue, 30 Sep 2008, Matt Mackall wrote:
-> > (This applies on top of Nick's second tiny-shmem patch, which hasn't
-> > made it to mainline yet(!).
->
-> Gosh, thanks for mentioning that, you're right, it hasn't.  I saw
-> git pull updating mm/tiny-shmem.c a few days ago, and took it for
-> granted that that was the #ifndef CONFIG_MMU fixed version; but it
-> was the earlier one without that fix, despite us all knowing that
-> fix was needed.  I'd have pushed it myself for -rc8 if I'd realized
-> it was still missing: Nick, please push it to Linus a.s.a.p. (with
-> Acks from Matt and David and me) - or ask me to do so (I'm not sure
-> when Andrew is back up and running).
+On Wed, 01 Oct 2008 19:39:32 +0200
+Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
 
-Linus must have missed it I guess, because I think I did address it to
-him.
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com> 
+> 
+> This replaces zone->lru_lock in setup_per_zone_pages_min() with zone->lock.
+> There seems to be no need for the lru_lock anymore, but there is a need for
+> zone->lock instead, because that function may call move_freepages() via
+> setup_zone_migrate_reserve().
+> 
+> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> 
+Thank you!.
 
-If you or Matt or Andrew push it up, it might get taken seriously ;)
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+
+> ---
+>  mm/page_alloc.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page_alloc.c
+> +++ linux-2.6/mm/page_alloc.c
+> @@ -4207,7 +4207,7 @@ void setup_per_zone_pages_min(void)
+>  	for_each_zone(zone) {
+>  		u64 tmp;
+>  
+> -		spin_lock_irqsave(&zone->lru_lock, flags);
+> +		spin_lock_irqsave(&zone->lock, flags);
+>  		tmp = (u64)pages_min * zone->present_pages;
+>  		do_div(tmp, lowmem_pages);
+>  		if (is_highmem(zone)) {
+> @@ -4239,7 +4239,7 @@ void setup_per_zone_pages_min(void)
+>  		zone->pages_low   = zone->pages_min + (tmp >> 2);
+>  		zone->pages_high  = zone->pages_min + (tmp >> 1);
+>  		setup_zone_migrate_reserve(zone);
+> -		spin_unlock_irqrestore(&zone->lru_lock, flags);
+> +		spin_unlock_irqrestore(&zone->lock, flags);
+>  	}
+>  
+>  	/* update totalreserve_pages */
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
