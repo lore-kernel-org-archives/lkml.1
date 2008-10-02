@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbYJBGCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbYJBGEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbYJBGCs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 02:02:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYJBGCl
+	id S1753496AbYJBGEQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 02:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYJBGEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 02:02:41 -0400
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:59166 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751764AbYJBGCk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 02:02:40 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+LAKr7vC2hZkhSERK/CvBm
-Date: Thu, 2 Oct 2008 09:05:28 +0300
-From: Tony Lindgren <tony@atomide.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Samuel Ortiz <sameo@openedhand.com>, lkml <linux-kernel@vger.kernel.org>,
-       Felipe Balbi <felipe.balbi@nokia.com>, linux-omap@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc8 1/2] drivers/mfd/twl4030-core.c
-Message-ID: <20081002060521.GA7942@atomide.com>
-References: <200810011144.20510.david-b@pacbell.net> <200810011453.26699.david-b@pacbell.net>
+	Thu, 2 Oct 2008 02:04:05 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57030 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752171AbYJBGEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 02:04:05 -0400
+Date: Thu, 2 Oct 2008 01:03:54 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: Linus Torvalds <torvalds@osdl.org>
+cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: Fix boot hang regression on MPC8544DS
+Message-ID: <Pine.LNX.4.64.0810020102470.4717@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810011453.26699.david-b@pacbell.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Brownell <david-b@pacbell.net> [081002 00:53]:
-> On Wednesday 01 October 2008, David Brownell wrote:
-> 
-> > NOTE: this is the current code from the linux-omap tree.
-> 
-> This chip being used on a whole bunch of boards:
-> 
->  - Gumstix Overo
->  - BeagleBoard.org
->  - Omap ZOOM (Labrador)
->  - OMAP 2430 and 3430 SDP,
->  - OMAP2 and OMAP3 EVM
->  - ... more (openpandora.org ?)
-> 
-> which will get much closer to "usable with mainline kernels"
-> when their power management chip works in mainline!  :)
+Commit 00c5372d37a78990c1530184a9c792ee60a30067 caused the MPC8544DS
+board to hang at boot.  The MPC8544DS is unique in that it doesn't use
+the PCI slots on the ULI (unlike the MPC8572DS or MPC8610HPCD).  So
+the dummy read at the end of the address space causes us to hang.
 
-Cool. I'll post some patches against mainline kernel
-for booting minimal omap3 boards within next few days.
-So we should get at least beagle and overo booting
-to some extent, maybe with serial and musb.
+We can detect the situation by comparing the bridge's BARs versus
+the root complex.
 
-Tony
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+
+This is a fix for 2.6.27 and is also available at:
+
+master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.27
+
+- k
+
+ arch/powerpc/platforms/fsl_uli1575.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/platforms/fsl_uli1575.c b/arch/powerpc/platforms/fsl_uli1575.c
+index ef74a07..8c61996 100644
+--- a/arch/powerpc/platforms/fsl_uli1575.c
++++ b/arch/powerpc/platforms/fsl_uli1575.c
+@@ -219,11 +219,21 @@ static void __devinit quirk_final_uli5249(struct pci_dev *dev)
+ 	int i;
+ 	u8 *dummy;
+ 	struct pci_bus *bus = dev->bus;
++	resource_size_t end = 0;
++
++	for (i = PCI_BRIDGE_RESOURCES; i < PCI_BRIDGE_RESOURCES+3; i++) {
++		unsigned long flags = pci_resource_flags(dev, i);
++		if ((flags & (IORESOURCE_MEM|IORESOURCE_PREFETCH)) == IORESOURCE_MEM)
++			end = pci_resource_end(dev, i);
++	}
+
+ 	for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+ 		if ((bus->resource[i]) &&
+ 			(bus->resource[i]->flags & IORESOURCE_MEM)) {
+-			dummy = ioremap(bus->resource[i]->end - 3, 0x4);
++			if (bus->resource[i]->end == end)
++				dummy = ioremap(bus->resource[i]->start, 0x4);
++			else
++				dummy = ioremap(bus->resource[i]->end - 3, 0x4);
+ 			if (dummy) {
+ 				in_8(dummy);
+ 				iounmap(dummy);
+-- 
+1.5.5.1
+
