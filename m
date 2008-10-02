@@ -1,137 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbYJBFXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbYJBF0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753343AbYJBFXS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 01:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbYJBFXH
+	id S1753328AbYJBF0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 01:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYJBF0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 01:23:07 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52079 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751921AbYJBFXE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 01:23:04 -0400
-Date: Thu, 2 Oct 2008 14:27:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] memory hotplug: missing zone->lock in
- test_pages_isolated()
-Message-Id: <20081002142734.1dfac4c7.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1222882068.4846.31.camel@localhost.localdomain>
-References: <1222882068.4846.31.camel@localhost.localdomain>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Oct 2008 01:26:16 -0400
+Received: from gw-d.mimosa.com ([209.161.207.149]:50633 "EHLO gw-d.mimosa.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751380AbYJBF0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 01:26:15 -0400
+Date: Thu, 2 Oct 2008 01:26:14 -0400 (EDT)
+From: "D. Hugh Redelmeier" <hugh@mimosa.com>
+Reply-To: "D. Hugh Redelmeier" <hugh@mimosa.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: mtrr_cleanup safe to get more spare regs now
+In-Reply-To: <bhxQY-5eL-11@gated-at.bofh.it>
+Message-ID: <alpine.LRH.2.00.0810020047440.4688@redclaw.mimosa.com>
+References: <bhxQY-5eL-11@gated-at.bofh.it>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Oct 2008 19:27:48 +0200
-Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
+On Mon, 29 Sep 2008, Yinghai Lu wrote:
 
-> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> 
-> __test_page_isolated_in_pageblock() in mm/page_isolation.c has a comment
-> saying that the caller must hold zone->lock. But the only caller of that
-> function, test_pages_isolated(), does not hold zone->lock and the lock is
-> also not acquired anywhere before. This patch adds the missing zone->lock
-> to test_pages_isolated().
-> 
-Hmmmm ? my bad..
-Of course, zone->lock is necessary. Thank you for test.
+| results:
 
+Thanks for posting all these examples.  More test cases for
+mtrr-uncover.
 
-> We reproducibly run into BUG_ON(!PageBuddy(page)) in __offline_isolated_pages()
-> during memory hotplug stress test, see trace below. This patch fixes that
-> problem, it would be good if we could have it in 2.6.27.
-> 
+I've made some changes to mtrr-uncover so that it comes up with
+solutions for all of these without any hints (i.e. the user no longer
+has to specify the address range for the MTRR that must be uncovered,
+the program guesses).
 
-I agree to 2.6.27.
+ftp://ftp.cs.utoronto.ca/pub/hugh/mtrr-uncover-2008oct01.tgz
 
-Thanks
--Kame
+| 1. hpa
+| reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+| reg01: base=0x13c000000 (5056MB), size=  64MB: uncachable, count=1
+| reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+| reg03: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+| reg04: base=0xbf700000 (3063MB), size=   1MB: uncachable, count=1
+| reg05: base=0xbf800000 (3064MB), size=   8MB: uncachable, count=1
+| 
+| will get
+| Found optimal setting for mtrr clean up
+| gran_size: 1M   chunk_size: 128M        num_reg: 6      lose RAM: 0M
+| range0: 0000000000000000 - 00000000c0000000
+| Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
+| Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
+| hole: 00000000bf700000 - 00000000c0000000
+| Setting variable MTRR 2, base: 3063MB, range: 1MB, type UC
+| Setting variable MTRR 3, base: 3064MB, range: 8MB, type UC
+| range0: 0000000100000000 - 0000000140000000
+| Setting variable MTRR 4, base: 4096MB, range: 1024MB, type WB
+| hole: 000000013c000000 - 0000000140000000
+| Setting variable MTRR 5, base: 5056MB, range: 64MB, type UC
 
+ 2' 0x000000000-0x07fffffff write-back
+50' 0x080000000-0x0bfffffff write-back
+         4  0x0bf700000-0x0bf7fffff uncachable
+         5  0x0bf800000-0x0bfffffff uncachable
+ 3  0x100000000-0x13fffffff write-back
+         1  0x13c000000-0x13fffffff uncachable
 
-> <2>kernel BUG at /home/autobuild/BUILD/linux-2.6.26-20080909/mm/page_alloc.c:4561!
-> <4>illegal operation: 0001 [#1] PREEMPT SMP
-> <4>Modules linked in: dm_multipath sunrpc bonding qeth_l3 dm_mod qeth ccwgroup vmur
-> <4>CPU: 1 Not tainted 2.6.26-29.x.20080909-s390default #1
-> <4>Process memory_loop_all (pid: 10025, task: 2f444028, ksp: 2b10dd28)
-> <4>Krnl PSW : 040c0000 801727ea (__offline_isolated_pages+0x18e/0x1c4)
-> <4> R:0 T:1 IO:0 EX:0 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0
-> <4>Krnl GPRS: 00000000 7e27fc00 00000000 7e27fc00
-> <4> 00000000 00000400 00014000 7e27fc01
-> <4> 00606f00 7e27fc00 00013fe0 2b10dd28
-> <4> 00000005 80172662 801727b2 2b10dd28
-> <4>Krnl Code: 801727de: 5810900c l %r1,12(%r9)
-> <4> 801727e2: a7f4ffb3 brc 15,80172748
-> <4> 801727e6: a7f40001 brc 15,801727e8
-> <4> >801727ea: a7f4ffbc brc 15,80172762
-> <4> 801727ee: a7f40001 brc 15,801727f0
-> <4> 801727f2: a7f4ffaf brc 15,80172750
-> <4> 801727f6: 0707 bcr 0,%r7
-> <4> 801727f8: 0017 unknown
-> <4>Call Trace:
-> <4>([<0000000000172772>] __offline_isolated_pages+0x116/0x1c4)
-> <4> [<00000000001953a2>] offline_isolated_pages_cb+0x22/0x34
-> <4> [<000000000013164c>] walk_memory_resource+0xcc/0x11c
-> <4> [<000000000019520e>] offline_pages+0x36a/0x498
-> <4> [<00000000001004d6>] remove_memory+0x36/0x44
-> <4> [<000000000028fb06>] memory_block_change_state+0x112/0x150
-> <4> [<000000000028ffb8>] store_mem_state+0x90/0xe4
-> <4> [<0000000000289c00>] sysdev_store+0x34/0x40
-> <4> [<00000000001ee048>] sysfs_write_file+0xd0/0x178
-> <4> [<000000000019b1a8>] vfs_write+0x74/0x118
-> <4> [<000000000019b9ae>] sys_write+0x46/0x7c
-> <4> [<000000000011160e>] sysc_do_restart+0x12/0x16
-> <4> [<0000000077f3e8ca>] 0x77f3e8ca
-> 
-> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> 
-> ---
->  mm/page_isolation.c |   12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6/mm/page_isolation.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_isolation.c
-> +++ linux-2.6/mm/page_isolation.c
-> @@ -114,8 +114,10 @@ __test_page_isolated_in_pageblock(unsign
->  
->  int test_pages_isolated(unsigned long start_pfn, unsigned long end_pfn)
->  {
-> -	unsigned long pfn;
-> +	unsigned long pfn, flags;
->  	struct page *page;
-> +	struct zone *zone;
-> +	int ret;
->  
->  	pfn = start_pfn;
->  	/*
-> @@ -131,7 +133,9 @@ int test_pages_isolated(unsigned long st
->  	if (pfn < end_pfn)
->  		return -EBUSY;
->  	/* Check all pages are free or Marked as ISOLATED */
-> -	if (__test_page_isolated_in_pageblock(start_pfn, end_pfn))
-> -		return 0;
-> -	return -EBUSY;
-> +	zone = page_zone(pfn_to_page(pfn));
-> +	spin_lock_irqsave(&zone->lock, flags);
-> +	ret = __test_page_isolated_in_pageblock(start_pfn, end_pfn);
-> +	spin_unlock_irqrestore(&zone->lock, flags);
-> +	return ret ? 0 : -EBUSY;
->  }
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Solutions identical.
 
+| 2. Dylan Taft
+| reg00: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+| reg01: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
+| reg02: base=0x120000000 (4608MB), size= 256MB: write-back, count=1
+| reg03: base=0xd0000000 (3328MB), size= 256MB: uncachable, count=1
+| reg04: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
+| reg05: base=0xc7e00000 (3198MB), size=   2MB: uncachable, count=1
+| reg06: base=0xc8000000 (3200MB), size= 128MB: uncachable, count=1
+| 
+| will get
+| Found optimal setting for mtrr clean up
+| gran_size: 1M   chunk_size: 4M  num_reg: 6      lose RAM: 0M
+| range0: 0000000000000000 - 00000000c8000000
+| Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
+| Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
+| Setting variable MTRR 2, base: 3072MB, range: 128MB, type WB
+| hole: 00000000c7e00000 - 00000000c8000000
+| Setting variable MTRR 3, base: 3198MB, range: 2MB, type UC
+| rangeX: 0000000100000000 - 0000000130000000
+| Setting variable MTRR 4, base: 4096MB, range: 512MB, type WB
+| Setting variable MTRR 5, base: 4608MB, range: 256MB, type WB
+
+ 0' 0x000000000-0x07fffffff write-back
+50' 0x080000000-0x0bfffffff write-back
+51' 0x0c0000000-0x0c7ffffff write-back
+         5  0x0c7e00000-0x0c7ffffff uncachable
+ 1  0x100000000-0x11fffffff write-back
+ 2  0x120000000-0x12fffffff write-back
+
+Solutions identical.
+
+| 3. Gabriel
+| reg00: base=0xd0000000 (3328MB), size= 256MB: uncachable, count=1
+| reg01: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
+| reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+| reg03: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
+| reg04: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
+| reg05: base=0x128000000 (4736MB), size=  64MB: write-back, count=1
+| reg06: base=0xcf600000 (3318MB), size=   2MB: uncachable, count=1
+| 
+| will get
+| Found optimal setting for mtrr clean up
+| gran_size: 1M   chunk_size: 16M         num_reg: 7      lose RAM: 0M
+| range0: 0000000000000000 - 00000000d0000000
+| Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
+| Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
+| Setting variable MTRR 2, base: 3072MB, range: 256MB, type WB
+| hole: 00000000cf600000 - 00000000cf800000
+| Setting variable MTRR 3, base: 3318MB, range: 2MB, type UC
+| rangeX: 0000000100000000 - 000000012c000000
+| Setting variable MTRR 4, base: 4096MB, range: 512MB, type WB
+| Setting variable MTRR 5, base: 4608MB, range: 128MB, type WB
+| Setting variable MTRR 6, base: 4736MB, range: 64MB, type WB
+
+ 2' 0x000000000-0x07fffffff write-back
+50' 0x080000000-0x0bfffffff write-back
+51' 0x0c0000000-0x0cfffffff write-back
+         6  0x0cf600000-0x0cf7fffff uncachable
+ 3  0x100000000-0x11fffffff write-back
+ 4  0x120000000-0x127ffffff write-back
+ 5  0x128000000-0x12bffffff write-back
+
+Solutions identical.
+
+| 4. Mika Fischer
+| reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+| reg01: base=0x00000000 ( 0MB), size=4096MB: write-back, count=1
+| reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+| reg03: base=0xbf700000 (3063MB), size= 1MB: uncachable, count=1
+| reg04: base=0xbf800000 (3064MB), size= 8MB: uncachable, count=1
+| 
+| will get
+| Found optimal setting for mtrr clean up
+| gran_size: 1M   chunk_size: 16M         num_reg: 5      lose RAM: 0M
+| range0: 0000000000000000 - 00000000c0000000
+| Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
+| Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
+| hole: 00000000bf700000 - 00000000c0000000
+| Setting variable MTRR 2, base: 3063MB, range: 1MB, type UC
+| Setting variable MTRR 3, base: 3064MB, range: 8MB, type UC
+| rangeX: 0000000100000000 - 0000000140000000
+| Setting variable MTRR 4, base: 4096MB, range: 1024MB, type WB
+
+ 1' 0x000000000-0x07fffffff write-back
+50' 0x080000000-0x0bfffffff write-back
+         3  0x0bf700000-0x0bf7fffff uncachable
+         4  0x0bf800000-0x0bfffffff uncachable
+ 2  0x100000000-0x13fffffff write-back
+
+Solutions identical.
+
+It is slightly surprising to me that our two very different codes come
+up with the same solutions.
+
+BTW, the output uses the word "range" where /proc/mtrr uses "size".
+Would it not be good to use the same terminology?
+
+For numbers, I've been using hex, zero padded to 9 digits.  Why 9 and
+not 8?  Because all the problems seem to come with machines that need
+9 digits to express all their addresses.
