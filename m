@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbYJBPMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYJBPMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755708AbYJBPMj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 11:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbYJBPLR
+	id S1755843AbYJBPMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 11:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbYJBPLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 11:11:17 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45106 "EHLO
+	Thu, 2 Oct 2008 11:11:18 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42863 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754887AbYJBPLO (ORCPT
+	with ESMTP id S1754933AbYJBPLR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 11:11:14 -0400
-Message-Id: <20081002150529.087488257@goodmis.org>
+	Thu, 2 Oct 2008 11:11:17 -0400
+Message-Id: <20081002151104.821728138@goodmis.org>
+References: <20081002150529.087488257@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 02 Oct 2008 11:05:29 -0400
+Date: Thu, 02 Oct 2008 11:05:33 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 0/5] Clean up patches
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jaroslav Kysela <perex@perex.cz>, Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 4/5] sound: update snd_assert macro
+Content-Disposition: inline; filename=sound-core-fix-snd-assert-macro.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Like other kernel developers, I compile kernels several times a day
-with various configs. Some are for testing, others are given to me
-by others to debug some code.
+One user of the snd_assert macro calls a goto and the compiler
+complains that the label is not used when the snd_assert is
+not set.
 
-I like to look at any warnings that gcc gives me, and lately
-I've been irritated by the same warnings appearing in the same places
-that has nothing to do with my code.
+This patch makes snd_assert more robust when not defined to
+let the compiler know about arguments when not in use.
 
-The biggest offender is the Xen code. I figured that I'll take a look at
-what these warnings are and if they are trivial, I'll fix them.
+CC: Jaroslav Kysela <perex@perex.cz>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ include/sound/core.h |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-The thing that got me when looking into this, is most of the warnings
-in Xen come from dead code!  Code that is not called by anyone, or
-has references by #if 0 code.
+Index: linux-compile.git/include/sound/core.h
+===================================================================
+--- linux-compile.git.orig/include/sound/core.h	2008-07-27 09:26:33.000000000 -0400
++++ linux-compile.git/include/sound/core.h	2008-10-02 10:00:57.000000000 -0400
+@@ -407,7 +407,13 @@ void snd_verbose_printd(const char *file
+ #else /* !CONFIG_SND_DEBUG */
+ 
+ #define snd_printd(fmt, args...)	/* nothing */
+-#define snd_assert(expr, args...)	(void)(expr)
++/* Keep the compiler happy by showing the expr and args */
++#define snd_assert(expr, args...)	do {	\
++	if (0) {				\
++		(void)(expr);			\
++		args;				\
++	}					\
++} while(0)
+ #define snd_BUG()			/* nothing */
+ 
+ #endif /* CONFIG_SND_DEBUG */
 
-There was one patch from the sound code that only needed a more
-robust macro when the debugging was not configured.
-
-The rest of the patches get rid of most of my warnings. There are a
-few left where gcc complains about discarding qualifier types but
-those are not as trivial to fix, so I'll leave them to those maintainers.
-
--- Steve
-
+-- 
