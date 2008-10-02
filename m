@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbYJBMO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYJBMST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbYJBMO4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 08:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbYJBMOs
+	id S1754205AbYJBMST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 08:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYJBMSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 08:14:48 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:13626 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753078AbYJBMOr (ORCPT
+	Thu, 2 Oct 2008 08:18:11 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:20051 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753319AbYJBMSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 08:14:47 -0400
+	Thu, 2 Oct 2008 08:18:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=UaVOSilpblS98zs6/QV2SAWCtYQuu+9Cq/3/L7qOFaIljb/Mccxc5WLZUXzKPagwx4
-         lGP2DDMU4CSiRPjz/gSNp4pQXCnoi4SaNGBbh2t+TkCLXA5VEx8LBD/tHhM+196ztGOa
-         Hwu7gA8kaRi5U5Rl8G9kueL54fezG8OkHvjNY=
-Message-ID: <5201e28f0810020514g606e3ddbr26c2ed86693ced42@mail.gmail.com>
-Date: Thu, 2 Oct 2008 08:14:46 -0400
-From: "Stefan Bader" <stefan.bader@canonical.com>
+         :references;
+        b=Jk0wyc7QVZx6JZZcRdED68bFL+fwJFTWTEIRcitF1gLML6J+a4QMNLrun+AFYPW3WY
+         1e3gLNzEVJ3RRf+h8BLwfDDVcjZtsNLcWRQxdS4r4EJqd3Bn0EP1knDLfLFo2l8xF4Ff
+         1dyS/8Z9MV/ZDRjhdrVQgPcWFDgKf4AfSAQDo=
+Message-ID: <c62985530810020518t23879bd6r2426e68c867ecb64@mail.gmail.com>
+Date: Thu, 2 Oct 2008 14:18:08 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
 To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Reserve FIRST_DEVICE_VECTOR in used_vectors bitmap.
-Cc: linux-kernel@vger.kernel.org, "Yinghai Lu" <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <48E22165.7040907@canonical.com>
+Subject: Re: [PATCH -tip 2/2] Tracing/fastboot: Get the initcall name before it disappears
+Cc: "Steven Rostedt" <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <20081002120231.GB14322@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <48E0DA7C.5010403@canonical.com> <20080930095149.GA7557@elte.hu>
-	 <48E22165.7040907@canonical.com>
-X-Google-Sender-Auth: fed32e6363b54bcc
+References: <48E4AFCD.9080004@gmail.com> <20081002120231.GB14322@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/30 Stefan Bader <stefan.bader@canonical.com>:
-> Ingo Molnar wrote:
->>> Someone from the community found out, that after repeatedly unloading
->>> and loading a device driver that uses MSI IRQs, the system eventually
->>> assigned the vector initially reserved for IRQ0 to the device driver.
->>
->>> The reason for this is, that although IRQ0 is tied to the
->>> FIRST_DEVICE_VECTOR when declaring the irq_vector table, the
->>> corresponding bit in the used_vectors map is not set. So, if vectors
->>> are released and assigned often enough, the vector will get assigned
->>> to another interrupt. This happens more often with MSI interrupts as
->>> those are exclusively using a vector.
->>>
->>> Fix this by setting the bit for the FIRST_DEVICE_VECTOR in the bitmap.
->>
->> hi, the IO-APIC code got unified in the x86 tree for v2.6.28.
->>
->> So could you please send the fix against tip/master:
->>
->>   http://people.redhat.com/mingo/tip.git/README
->>
->> Thanks,
->>
->>       Ingo
+2008/10/2 Ingo Molnar <mingo@elte.hu>:
 >
-> I can't see this as required for tip. FIRST_DEVICE_VECTOR is there defined
-> distinct to the ISA IRQs (IRQ15_VECTOR+2) while it is defined to be equal to
-> IRQ0_VECTOR on 2.6.27 and before (at least down to 2.6.24).
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+>
+>> After some initcall traces, some initcall names may be inconsistent.
+>> That's because these functions will disappear from the .init section
+>> and also their name from the symbols table.
+>> So we have to copy the name of the function in a buffer large enough
+>> during the trace appending. It is not costly for the ring_buffer because
+>> the number of initcall entries is commonly not really large.
+>>
+>> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+>
+> applied to tip/tracing/fastboot, thanks Frederic,
+>
+>        Ingo
 >
 
-Hi Ingo,
+BTW I forgot to cc Arjan.
+Arjan if you have some time to test it, I would be interested by your
+feeling about it since
+the boot tracer has now an output which is parsable by bootgraph.pl.
 
-I didn't see any follow up, so for clarification: there is nothing to
-fix in tip but the bug is there in kernels between 2.6.24 and 2.6.27.
-Could you push it to 2.6.27 and possibly to the stable trees?
-
-Stefan
+Thanks!
