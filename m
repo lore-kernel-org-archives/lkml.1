@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYJBIM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbYJBINW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753727AbYJBIM5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 04:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbYJBIMn
+	id S1753258AbYJBINW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 04:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbYJBING
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 04:12:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36665 "EHLO mx2.mail.elte.hu"
+	Thu, 2 Oct 2008 04:13:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45407 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752729AbYJBIMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 04:12:41 -0400
-Date: Thu, 2 Oct 2008 10:12:31 +0200
+	id S1753850AbYJBINC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 04:13:02 -0400
+Date: Thu, 2 Oct 2008 10:07:26 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch x86/core] x86: allow number of additional hotplug CPUs
-	to be set at compile time
-Message-ID: <20081002081231.GC17695@elte.hu>
-References: <20081001191945.4182d0be@redhat.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, laijs@cn.fujitsu.com,
+       manfred@colorfullife.com, dipankar@in.ibm.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, josht@linux.vnet.ibm.com
+Subject: Re: [PATCH,RFC] RCU-based detection of stalled CPUs for Classic RCU
+Message-ID: <20081002080726.GB17695@elte.hu>
+References: <20081002003628.GA7877@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081001191945.4182d0be@redhat.com>
+In-Reply-To: <20081002003628.GA7877@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,40 +37,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Chuck Ebbert <cebbert@redhat.com> wrote:
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> From: Chuck Ebbert <cebbert@redhat.com>
+> Hello!
 > 
-> x86: allow number of additional hotplug CPUs to be set at compile time
+> This patch adds stalled-CPU detection to Classic RCU.  This capability 
+> is enabled by a new config variable CONFIG_RCU_CPU_STALL_DETECTOR, 
+> which defaults disabled.  This is a debugging feature, not something 
+> that non-kernel-hackers would be expected to care about.  This feature 
+> can detect looping CPUs in !PREEMPT builds and looping CPUs with 
+> preemption disabled in PREEMPT builds.  This is essentially a port of 
+> this functionality from the treercu patch.
 > 
-> The default number of additional CPU IDs for hotplugging is determined 
-> by asking ACPI or mptables how many "disabled" CPUs there are in the 
-> system, but many systems get this wrong so that e.g. a uniprocessor 
-> machine gets an extra CPU allocated and never switches to single CPU 
-> mode.
-> 
-> And sometimes CPU hotplugging is enabled only for suspend/hibernate 
-> anyway, so the additional CPU IDs are not wanted. Allow the number to 
-> be set to zero at compile time.
-> 
-> Also, force the number of extra CPUs to zero if hotplugging is 
-> disabled which allows removing some conditional code.
-> 
-> Tested on uniprocessor x86_64 that ACPI claims has a disabled 
-> processor, with CPU hotplugging configured.
-> 
-> ("After" has the number of additional CPUs set to 0)
-> Before: NR_CPUS: 512, nr_cpu_ids: 2, nr_node_ids 1
-> After: NR_CPUS: 512, nr_cpu_ids: 1, nr_node_ids 1
-> 
-> Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+> One current shortcoming: on some systems, stalls are detected during 
+> early boot, when we normally would not care about them.  My thought is 
+> to add a call from late initialization to suppress stall detection 
+> until the system is well along its way to being booted, but thought I 
+> should check to see if there might already be something for this 
+> purpose.
 
-hm, wouldnt this option kill 'real' hot-plug CPUs (how rare they might 
-be) which are properly enumerated in the BIOS tables?
+could you be a bit more specific, why do those warnings show up and why 
+dont we care about them? There are things like networking that 
+occasionally do an rcu_sync() and a stall could mean a bootup hang.
 
-i dont mind having a facility to disable real CPU hotplug, but the 
-CONFIG_HOTPLUG_DEFAULT_ADDITIONAL_CPUS does not spell that out clearly 
-IMO. Something like CONFIG_HOTPLUG_RESTRICT_TO_BOOTUP_CPUS=y would be 
-more appropriately named i think?
+> (Currently against 2.6.27-rc8, FYI.)
+> 
+> Thoughts?
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+i think this is a very good idea in general - often the question comes 
+up whether a hang seen in the RCU code is indeed caused by RCU or other 
+factors. Could you perhaps rebase it against tip/core/rcu ? [or 
+tip/master for convenience]
 
 	Ingo
