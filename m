@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYJBQto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYJBQuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbYJBQto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 12:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYJBQtg
+	id S1755292AbYJBQuo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 12:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYJBQug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 12:49:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43175 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753809AbYJBQtf (ORCPT
+	Thu, 2 Oct 2008 12:50:36 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:56347 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753997AbYJBQug (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 12:49:35 -0400
-Message-ID: <48E4FB85.2040204@linux-foundation.org>
-Date: Thu, 02 Oct 2008 11:49:09 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Thu, 2 Oct 2008 12:50:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=pG1Qa2YKYPQYWNAklPRtWGWMmugNtO9LCwmdYPWtoAqHhjMjwLk4F4W6r9bDHyq296
+         roIe9OM39hJAISdDj6MOGVga3n+IxLIelFg6QwnpUqeL9AviksU2cyqqcKcmtkxd/R1z
+         XHhaqOaWGIZ8SXOfw5TZKTeqlzUC+9YG+49fg=
+Message-ID: <1a26b4920810020950p111c3265v687d94becf4f2e21@mail.gmail.com>
+Date: Thu, 2 Oct 2008 18:50:34 +0200
+From: "Pazzo Da Legare" <pazzodalegare@gmail.com>
+To: "Ondrej Zary" <linux@rainbow-software.org>
+Subject: Re: booting uncompressed kernel on x86
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1a26b4920810011514o4d3ecd9egb409871c8ff5a062@mail.gmail.com>
 MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: Nicolas Pitre <nico@cam.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: wrong usage of MAX_DMA_ADDRESS in bootmem.h
-References: <1222230592-15868-1-git-send-email-nico@cam.org> <20080930162809.GD15911@flint.arm.linux.org.uk> <alpine.LFD.2.00.0809301409230.3635@xanadu.home> <20080930184411.GJ15911@flint.arm.linux.org.uk> <alpine.LFD.2.00.0809301513260.3635@xanadu.home> <48E2846A.4030802@linux-foundation.org> <20080930201224.GL15911@flint.arm.linux.org.uk> <48E3680E.6040703@linux-foundation.org> <20081001140607.GA22031@flint.arm.linux.org.uk> <48E38E30.70901@linux-foundation.org> <20081001150258.GB22031@flint.arm.linux.org.uk>
-In-Reply-To: <20081001150258.GB22031@flint.arm.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1a26b4920810011457t4ad93308u2cc0d2781168f332@mail.gmail.com>
+	 <200810020004.28045.linux@rainbow-software.org>
+	 <1a26b4920810011514o4d3ecd9egb409871c8ff5a062@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux wrote:
+It seems there is no way to do that without a specific patch
 
->> Maybe we should make these physical addresses to avoid the casts?
-> 
-> Finally, we agree on something.  Yes, they should be phys addresses.
-> But not for the sake of getting rid of casts, but because that's what
-> the bootmem allocator _actually_ wants to have in the first place.
-> 
-> And, to do this, the following are going to have to be changed:
-> 
-> drivers/block/floppy.c: } else if ((unsigned long)current_req->buffer < MAX_DMA_ADDRESS) {
-> drivers/block/floppy.c:          * Do NOT use minimum() here---MAX_DMA_ADDRESS is 64 bits wide
-> drivers/block/floppy.c:             (MAX_DMA_ADDRESS -
-> drivers/net/3c505.c:    if ((unsigned long)(target + rlen) >= MAX_DMA_ADDRESS) {
-> drivers/net/3c505.c:    if ((unsigned long)(skb->data + nlen) >= MAX_DMA_ADDRESS || nlen != skb->len) {
-> drivers/net/cs89x0.c:                   if ((unsigned long) lp->dma_buff >= MAX_DMA_ADDRESS ||
-> drivers/net/wan/cosa.c: if (b+len >= MAX_DMA_ADDRESS)
-> drivers/parport/parport_pc.c:   if (end < MAX_DMA_ADDRESS) {
-> drivers/scsi/BusLogic.c:        if (HostAdapter->HostAdapterBusType == BusLogic_ISA_Bus && (void *) high_memory > (void *)
-> drivers/scsi/BusLogic.c:        if (HostAdapter->BIOS_Address > 0 && strcmp(HostAdapter->ModelName, "BT-445S") == 0 && strc
-> sound/oss/dmabuf.c:                 || end_addr >= (char *) (MAX_DMA_ADDRESS)) {
-> sound/oss/sscape.c:                 || end_addr >= (char *) (MAX_DMA_ADDRESS)) {
-> 
-> which probably want to do the check in the phys address space anyway.
+pazzo
 
-Right. Lets do it. MAX_DMA32 needs to be changed too.
-
-While you are at it: Could you make the association with the zones clearer?
-
-MAX_ZONE_DMA32_ADDRESS MAX_ZONE_DMA_ADDRESS, MAX_ZONE_DMA_PFN,
-MAX_ZONE_DMA32_PFN ....
+2008/10/2 Pazzo Da Legare <pazzodalegare@gmail.com>:
+> Hi Ondreh,
+>
+> Thank you for your answer.
+>
+> I tried your patch but on my slow i486-like target (on 2.6.25 and
+> 2.6.27-rc6) but it reboots immediatly after few seconds; during this
+> time I can see some random and colored chars on the screen.
+>
+> pazzo
+>
+> 2008/10/2 Ondrej Zary <linux@rainbow-software.org>:
+>> On Wednesday 01 October 2008 23:57:43 Pazzo Da Legare wrote:
+>>> I would like to boot uncompressed linux kernel on a embedded x86,
+>>> should I apply a specific patch for this? I'm using grub boot loader
+>>> which should boot using elf image but I cannot find any clue.
+>>> Should I switch to another bootloader?
+>>
+>> I did something some time ago - but it's only a quick hack to make my really
+>> slow (386DX/25) machine boot faster - see http://lkml.org/lkml/2005/7/1/206
+>>
+>> Ondrej Zary
+>>
+>
