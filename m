@@ -1,81 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbYJBJML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYJBJNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbYJBJML (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 05:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbYJBJL4
+	id S1754643AbYJBJNE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 05:13:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYJBJMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 05:11:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:11459 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753389AbYJBJLz (ORCPT
+	Thu, 2 Oct 2008 05:12:54 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58619 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753014AbYJBJMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 05:11:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=LxC6t1GK7N7I4kGg3knlgTgF4TNcGcHVCNW3Vu3Qn2SE26c4mZTydV8MMufXQql6fZ
-         eCfY0+Ky9zFW1B2hjETpUyG3yvKYK8cohTM+E/qHYNFBOA9ZQ6jErSrnfmO1jGZatRr+
-         3FhmTSxBE7ZcSRnjrpQ4yJhSAqcJoMO0t6v34=
-Message-ID: <68676e00810020211w14cff133h8aa9b60fed007122@mail.gmail.com>
-Date: Thu, 2 Oct 2008 11:11:55 +0200
-From: "Luca Tettamanti" <kronos.it@gmail.com>
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Subject: Re: SDHCI: timeout during data transfer
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081002101754.031d6710@mjolnir.drzeus.cx>
+	Thu, 2 Oct 2008 05:12:54 -0400
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch x86/core] x86: allow number of additional hotplug CPUs to be set at compile time
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081001191945.4182d0be@redhat.com>
+Date: Thu, 02 Oct 2008 11:12:51 +0200
+In-Reply-To: <20081001191945.4182d0be@redhat.com> (Chuck Ebbert's message of "Wed, 1 Oct 2008 19:19:45 -0400")
+Message-ID: <87bpy3pdgs.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080923212459.GA13888@dreamland.darkstar.lan>
-	 <20081002101754.031d6710@mjolnir.drzeus.cx>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 2, 2008 at 10:17 AM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> On Tue, 23 Sep 2008 23:24:59 +0200
-> Luca Tettamanti <kronos.it@gmail.com> wrote:
->
->> Hi,
->> I'm seeing timeout errors when transfering "big" (over 1MB or so) files to a SD
->> card (small files are ok):
->>
->> [  251.956666] mmcblk0: error -110 transferring data
->> [  251.979810] end_request: I/O error, dev mmcblk0, sector 1572758
->
-> Looks like the card died on you there. Did you build the kernel
-> yourself? If so, it would be helpful if you could enable
-> CONFIG_MMC_DEBUG and give me a complete dmesg dump from when this
-> happens.
+Chuck Ebbert <cebbert@redhat.com> writes:
 
-Will do.
+> The default number of additional CPU IDs for hotplugging is determined
+> by asking ACPI or mptables how many "disabled" CPUs there are in the
+> system, but many systems get this wrong so that e.g. a uniprocessor
+> machine gets an extra CPU allocated and never switches to single CPU
+> mode.
 
->> kernel in use is 2.6.27-rc6, and this is the controller:
->>
->> 09:01.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
->> 09:01.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
->> 09:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 12)
->> 09:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 12)
->>
->> Googling around I found a patch[1] that introduced a quirk to address an
->> off-by-one issue for the timeout value in certain controllers.
->>
->> With this patch:
->
-> The patch doubles the timeout, so something is clearly broken if that
-> solves the issue. I'd like to identify if it's the driver, controller
-> or card first though.
+You can set this with additional_cpus=... at boot time.
+I don't think each runtime option needs a CONFIG option too.
 
-I was just shooting in the dark ;-) I found the patch floating around
-and applied it.
-
-> Are you experiencing this with just this card, or with all?
-
-Actually I have only that card... I'll try to borrow another one for
-testing. Btw, that card works fine under windows (on the same machine)
-and my N800 is happy with it too.
-
-Luca
+-Andi
