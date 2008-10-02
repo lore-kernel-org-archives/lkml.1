@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbYJBNjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbYJBNk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbYJBNjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 09:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbYJBNjK
+	id S1754985AbYJBNk1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 09:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYJBNkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 09:39:10 -0400
-Received: from ik-out-1112.google.com ([66.249.90.179]:23203 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbYJBNjI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 09:39:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=toAaI/3UD2/tEXRv2EnLDUo7mcU5QtRYB4Ky2xSzvZnfGTtL71xm3uepn+ueB8KKeg
-         HfWibbg/3u5EwHkABN+cg1T6n6quQmokPpWaMXt1wWOp5+N751oO/nNFg9Zf7G/YIgCP
-         bVbpLxJS0fvsBBKsVWwOhUQKW/dzaeOzCR6ZE=
-Message-ID: <b9df5fa10810020639k1538eb68rd2883f68f4224087@mail.gmail.com>
-Date: Thu, 2 Oct 2008 19:39:06 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: "Michael Buesch" <mb@bu3sch.de>
-Subject: Re: [PATCH] drivers/gpio/bt8xxgpio.c Fix compilation warning.
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200810021022.13252.mb@bu3sch.de>
+	Thu, 2 Oct 2008 09:40:14 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:58001 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752933AbYJBNkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 09:40:12 -0400
+Date: Thu, 2 Oct 2008 08:39:49 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Kentaro Takeda <takedakn@nttdata.co.jp>
+Cc: Valdis.Kletnieks@vt.edu, Casey Schaufler <casey@schaufler-ca.com>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haradats@nttdata.co.jp,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [TOMOYO #9 (2.6.27-rc7-mm1) 1/6] LSM adapter functions.
+Message-ID: <20081002133949.GC11150@us.ibm.com>
+References: <20080925165954.GA25587@us.ibm.com> <48DC7553.8040708@nttdata.co.jp> <20080926130409.GA14055@us.ibm.com> <48E053DB.3010201@nttdata.co.jp> <20080930154553.GA29249@us.ibm.com> <48E2E17C.3040108@schaufler-ca.com> <62704.1222837526@turing-police.cc.vt.edu> <48E33397.1030709@nttdata.co.jp> <20081001211507.GA28377@us.ibm.com> <48E45672.5030606@nttdata.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <b9df5fa10810012359oac41498sf716ce51b39a36ce@mail.gmail.com>
-	 <200810021022.13252.mb@bu3sch.de>
+In-Reply-To: <48E45672.5030606@nttdata.co.jp>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/2/08, Michael Buesch <mb@bu3sch.de> wrote:
-> On Thursday 02 October 2008 08:59:11 Rakib Mullick wrote:
->  > drivers/gpio/bt8xxgpio.c: In function `bt8xxgpio_remove':
->  > drivers/gpio/bt8xxgpio.c:247: warning: ignoring return value of
->  > `gpiochip_remove', declared with attribute warn_unused_result
->  >
->  > Following patch removes the above warning.
->  > Thanks.
->  >
->  > Signed-off-by:        Md.Rakib H. Mullick (rakib.mullick@gmail.com)
->  >
->  > --- linux-2.6.27-rc8.orig/drivers/gpio/bt8xxgpio.c    2008-10-01
->  > 19:20:59.000000000 +0600
->  > +++ linux-2.6.27-rc8/drivers/gpio/bt8xxgpio.c 2008-10-02
->  > 12:30:26.374544032 +0600
->  > @@ -242,9 +242,14 @@ err_freebg:
->  >
->  >  static void bt8xxgpio_remove(struct pci_dev *pdev)
->  >  {
->  > +     int err;
->  >       struct bt8xxgpio *bg = pci_get_drvdata(pdev);
->  >
->  > -     gpiochip_remove(&bg->gpio);
->  > +     err = gpiochip_remove(&bg->gpio);
->  > +     if (err) {
->  > +             printk(KERN_ERR "bt8xxgpio: Resource busy. Failed to remove.\n");
->  > +             return ;
->  > +     }
->  >
->  >       bgwrite(0, BT848_INT_MASK);
->  >       bgwrite(~0x0, BT848_INT_STAT);
->  >
->  >
->
->
-> NACK.
->  gpiolib should be fixed.
->  It is impossible to handle this case. What your patch does is to leave the device
->  in an inconsistent state, if the gpio remove fails.
-Yes, but it will notice through KERN_ERR that something bad has
-happened. And if we don't get out of it then it will continue its
-execution and will finish with a kfree ( I think which
-is bad ). Am I missing anything ?
->
->  gpiolib is broken. It should not allow failure for the remove function, as most
->  callers cannot handle it. gpiolib should force-remove any users of the gpio line,
->  if the chip driver removes the chip. That's really the only way we can fix this.
->  Breaking the driver (to leak resources or leave the device in an inconsistent state)
->  just to get rid of a bogus warning is not the right fix.
->  Please ignore this warning for now.
->
->
->  --
->  Greetings Michael.
->
+Quoting Kentaro Takeda (takedakn@nttdata.co.jp):
+> Serge E. Hallyn wrote:
+> > I suppose you could do something like define both _path and _inode,
+> > save away your result from the _path hook but always return 0, there,
+> > then if you'd saved off an error and you make it to the _inode hook,
+> > return the error there...
+> You mean do MAC checks in security_path_*() and return error code of 
+> security_path_*() in security_inode_*()? Then, method for passing the 
+> error code to security_inode_*() is a problem.
+> 
+> It was possible to store the error code into current->security->
+> something. But now, it is impossible to store the error code into 
+> current->cred->security->something because current->cred is shared by 
+> multiple processes. To solve this problem, we everytime need to copy 
+> current->cred in security_path_*() and we need a new hook called just 
+> after returning from vfs_* (like mnt_drop_write()) for clearing the 
+> error code. 
+> 
+> Or, another way is to pass the error code as a vfs_*() parameter.
+> 
+> What do you think these approaches?
+
+Just keep your own hash table.
+
+-serge
