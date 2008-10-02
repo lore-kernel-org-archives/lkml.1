@@ -1,118 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbYJBPbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYJBPcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbYJBPbi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 11:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYJBPbb
+	id S1754765AbYJBPcN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 11:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbYJBPb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 11:31:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49086 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753655AbYJBPbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 11:31:31 -0400
-Date: Thu, 2 Oct 2008 11:28:51 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, od@novell.com,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: Unified tracing buffer
-Message-ID: <20081002152851.GC3220@redhat.com>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <alpine.DEB.1.10.0809200451420.9362@gandalf.stny.rr.com> <20080920135548.GB23215@Krystal> <20080920071232.46908040@infradead.org> <20080922185209.GC6349@Krystal>
+	Thu, 2 Oct 2008 11:31:56 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:24056 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754566AbYJBPby (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 11:31:54 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Fenghua Yu <fenghua.yu@intel.com>
+Subject: Re: [PATCH 1/2]Add Variable Page Size and IA64 Support in Intel IOMMU: Generic Part
+Date: Thu, 2 Oct 2008 09:31:47 -0600
+User-Agent: KMail/1.9.9
+Cc: "Luck, Tony" <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Avi Kivity <avi@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+References: <BAE9DCEF64577A439B3A37F36F9B691C0339372B@orsmsx418.amr.corp.intel.com> <617E1C2C70743745A92448908E030B2A02AD5AD7@scsmsx411.amr.corp.intel.com> <20081001165725.GA21559@linux-os.sc.intel.com>
+In-Reply-To: <20081001165725.GA21559@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080922185209.GC6349@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810020931.48952.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 22, 2008 at 02:52:09PM -0400, Mathieu Desnoyers wrote:
-> > On Sat, 20 Sep 2008 09:55:48 -0400
-> > Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
-> > 
-> > > How about :
-> > > 
-> > >   trace_mark(ftrace_evname, "size %lu binary %pW",
-> > >     sizeof(mystruct), mystruct);
-> > >   or
-> > >   trace_mark(sched_wakeup, "target_pid %ld", task->pid);
-> > > 
-> > > Note the namespacing with buffers being "ftrace" and "sched" here.
-> > > 
-> > > That would encapsulate the whole
-> > >   - Event ID registration
-> > >   - Event type registration
-> > >   - Sending data out
-> > >   - Enabling the event source directly at the source
-> > > 
-> > > We can then export the markers through a debugfs file and let userland
-> > > enable them one by one and possibly connect systemtap filters on them
-> > > (one table of registered filters, one table for the markers, a command
-> > > file to connect/disconnect filters to/from markers).
-> > 
-> > I would like to ask for the following from the start: have a field for
-> > a longer description of the marker that describes it's usage and
-> > context. Getting this there from the start is critical, because only
-> > when adding the marker point do people still really remember why/what
-> > (and having to type a good description also helps them to realize if
-> > this is the right point or not). This can then be exposed to the user
-> > so he has a standing chance of knowing what the marker is about.
-> > 
-> > It also has a standing chance of being updated when the code changes
-> > this way
-> > 
+On Wednesday 01 October 2008 10:57:25 am Fenghua Yu wrote:
+> The current Intel IOMMU code assumes that both host page size and Intel IOMMU page size are 4K. The first patch supports variable page size. This provides support for IA64 which has multiple page sizes.
 > 
-> I agree, and I think it might be required in both markers and
-> tracepoints.
-> 
-> Given that tracepoints are declared in a global header
-> (DECLARE_TRACE()), I would add this kind of description here. Tracepoint
-> uses within the kernel code (statements like :
->   trace_sched_switch(prev, next);
-> added to the scheduler) would therefore be tied to the description
-> without having to contain it in the core kernel code.
-> 
-> Markers, on the other hand, could become the "event description"
-> interface which is exported to userspace. Considering that, I guess it's
-> as important to let a precise description follow the markers.
-> 
-> Mathieu
-> 
->
+> This patch also adds some other code hooks for IA64 platform including DMAR_OPERATION_TIMEOUT definition, .
 
-hi,
+Can you split this patch up?  It contains several logically separate
+changes:
+  - casting things to unsigned long long
+  - adding stuff under #ifdef CONFIG_IA64
+  - page size changes
+  - whitespace changes
 
-Tracepoints and markers seem to both have their place, with tracepoints
-being integral to kernel users, and markers being important for
-userspace. However, it seems to me like there is overlap in the
-code and an extra level of indirection when markers are layered on
-tracespoints. could they be merged a bit more?
+> @@ -510,7 +514,7 @@ int alloc_iommu(struct dmar_drhd_unit *drhd)
+>  
+>  	iommu->seq_id = iommu_allocated++;
+>  
+> -	iommu->reg = ioremap(drhd->reg_base_addr, PAGE_SIZE_4K);
+> +	iommu->reg = ioremap(drhd->reg_base_addr, IOMMU_PAGE_SIZE);
+>  	if (!iommu->reg) {
+>  		printk(KERN_ERR "IOMMU: can't map the region\n");
 
-What if we extended DEFINE_TRACE() to also create a
-'set_marker(marker_cb)' function where 'marker_cb' has the function signature:
+This printk should include a clue, like the IOMMU ID and/or address
+we tried to map.
 
-marker_cb(<tracepoint prototype>, *marker_probe_func);
+> +#ifdef CONFIG_IA64
+> +static inline void *ia64_get_zeroed_page(gfp_t gfp_mask)
+> +{
+> +	struct page *page;
+> +
+> +	page = alloc_pages(gfp_mask | __GFP_ZERO, 0);
+> +	if (page)
+> +		return (void *)page_address(page);
+> +	return 0;
+> +}
+> +#endif
+>  
+>  static inline void *alloc_pgtable_page(void)
+>  {
+> @@ -141,7 +155,11 @@ static inline void *alloc_pgtable_page(void)
+>  	/* trying to avoid low memory issues */
+>  	flags = current->flags & PF_MEMALLOC;
+>  	current->flags |= PF_MEMALLOC;
+> +#ifdef CONFIG_IA64
+> +	vaddr = ia64_get_zeroed_page(GFP_ATOMIC);
+> +#else
+>  	vaddr = (void *)get_zeroed_page(GFP_ATOMIC);
+> +#endif
 
-We then also create 'register_marker_##name' function in DEFINE_TRACE(),
-which allows one to regiser marker callbacks in the usual way.
+Why does ia64 need a special case here?
 
-Then 'marker_cb' function is then called in '__DO_TRACE' if anybody has
-registered a marker (which can set the tracepoint.state appropriately).
+> @@ -655,7 +673,8 @@ static int __iommu_flush_iotlb(struct intel_iommu *iommu, u16 did,
+>  		printk(KERN_ERR"IOMMU: flush IOTLB failed\n");
+>  	if (DMA_TLB_IAIG(val) != DMA_TLB_IIRG(type))
+>  		pr_debug("IOMMU: tlb flush request %Lx, actual %Lx\n",
+> -			DMA_TLB_IIRG(type), DMA_TLB_IAIG(val));
+> +			(unsigned long long)DMA_TLB_IIRG(type),
+> +			(unsigned long long) DMA_TLB_IAIG(val));
 
-The 'marker_cb' function then marshalls its arguemnts and passes them
-through to the marker functions that were registered.
+These printks should include an IOMMU ID also (I assume a system can
+contain multiple IOMMUs).
 
-I think in this way we can simplify the tracepoints and markers by
-combining them to a large extent.
+> @@ -1490,9 +1513,9 @@ static int iommu_prepare_identity_map(struct pci_dev *pdev, u64 start, u64 end)
+>  		return -ENOMEM;
+>  
+>  	/* The address might not be aligned */
+> -	base = start & PAGE_MASK_4K;
+> +	base = start & PAGE_MASK;
+>  	size = end - base;
+> -	size = PAGE_ALIGN_4K(size);
+> +	size = PAGE_ALIGN(size);
+>  	if (!reserve_iova(&domain->iovad, IOVA_PFN(base),
+>  			IOVA_PFN(base + size) - 1)) {
+>  		printk(KERN_ERR "IOMMU: reserve iova failed\n");
 
-thanks,
+This should probably be a "dev_err(&pdev->dev," and include the
+IOMMU ID.
 
--Jason
+> @@ -1855,27 +1879,23 @@ intel_map_single(struct device *hwdev, phys_addr_t paddr, size_t size, int dir)
+>  	 * is not a big problem
+>  	 */
+>  	ret = domain_page_mapping(domain, start_paddr,
+> -		((u64)paddr) & PAGE_MASK_4K, size, prot);
+> +		((u64)paddr) & PAGE_MASK, size, prot);
+>  	if (ret)
+>  		goto error;
+>  
+> -	pr_debug("Device %s request: %lx@%llx mapping: %lx@%llx, dir %d\n",
+> -		pci_name(pdev), size, (u64)paddr,
+> -		size, (u64)start_paddr, dir);
+> -
+>  	/* it's a non-present to present mapping */
+>  	ret = iommu_flush_iotlb_psi(domain->iommu, domain->id,
+> -			start_paddr, size >> PAGE_SHIFT_4K, 1);
+> +			start_paddr, size >> IOMMU_PAGE_SHIFT, 1);
+>  	if (ret)
+>  		iommu_flush_write_buffer(domain->iommu);
+>  
+> -	return (start_paddr + ((u64)paddr & (~PAGE_MASK_4K)));
+> +	return start_paddr + ((u64)paddr & (~PAGE_MASK));
+>  
+>  error:
+>  	if (iova)
+>  		__free_iova(&domain->iovad, iova);
+>  	printk(KERN_ERR"Device %s request: %lx@%llx dir %d --- failed\n",
+> -		pci_name(pdev), size, (u64)paddr, dir);
+> +		pci_name(pdev), size, (unsigned long long)paddr, dir);
 
+Use dev_err() here and include IOMMU ID.
 
+> @@ -1953,11 +1974,11 @@ static void intel_unmap_single(struct device *dev, dma_addr_t dev_addr,
+>  	if (!iova)
+>  		return;
+>  
+> -	start_addr = iova->pfn_lo << PAGE_SHIFT_4K;
+> +	start_addr = iova->pfn_lo << PAGE_SHIFT;
+>  	size = aligned_size((u64)dev_addr, size);
+>  
+>  	pr_debug("Device %s unmapping: %lx@%llx\n",
+> -		pci_name(pdev), size, (u64)start_addr);
+> +		pci_name(pdev), size, (unsigned long long)start_addr);
 
+Use dev_dbg() here.
 
+> diff --git a/include/linux/dma_remapping.h b/include/linux/dma_remapping.h
+> index bff5c65..218598d 100644
+> --- a/include/linux/dma_remapping.h
+> +++ b/include/linux/dma_remapping.h
+> @@ -2,15 +2,15 @@
+>  #define _DMA_REMAPPING_H
+>  
+>  /*
+> - * We need a fixed PAGE_SIZE of 4K irrespective of
+> - * arch PAGE_SIZE for IOMMU page tables.
+> + * VT-d hardware uses 4K page size regardless host page size.
+>   */
+> -#define PAGE_SHIFT_4K		(12)
+> -#define PAGE_SIZE_4K		(1UL << PAGE_SHIFT_4K)
+> -#define PAGE_MASK_4K		(((u64)-1) << PAGE_SHIFT_4K)
+> -#define PAGE_ALIGN_4K(addr)	(((addr) + PAGE_SIZE_4K - 1) & PAGE_MASK_4K)
+> +#define IOMMU_PAGE_SHIFT	(12)
+> +#define IOMMU_PAGE_SIZE		(1UL << IOMMU_PAGE_SHIFT)
+> +#define IOMMU_PAGE_MASK		(((u64)-1) << IOMMU_PAGE_SHIFT)
+> +#define IOMMU_PAGE_ALIGN(addr)	\
+> +	(((addr) + IOMMU_PAGE_SIZE - 1) & IOMMU_PAGE_MASK)
+>  
+> -#define IOVA_PFN(addr)		((addr) >> PAGE_SHIFT_4K)
+> +#define IOVA_PFN(addr)		((addr) >> PAGE_SHIFT)
+
+These are pretty generic names (IOMMU_PAGE_SHIFT, IOVA_PFN, etc),
+but the definitions seem to be specific to VT-d.  I can't tell if
+this file is supposed to be sort of generic, or if it's Intel-specific.
+
+> diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
+> index e7b196b..d84612a 100644
+> --- a/include/linux/intel-iommu.h
+> +++ b/include/linux/intel-iommu.h
+> @@ -67,6 +67,13 @@
+>  		hi = readl(dmar + reg + 4); \
+>  		(((u64) hi) << 32) + lo; })
+>  */
+> +#ifdef CONFIG_IA64
+> +#define dmar_readq readq
+> +static inline void dmar_writeq(void __iomem *addr, u64 val)
+> +{
+> +	writeq(val, addr);
+> +}
+> +#else
+>  static inline u64 dmar_readq(void __iomem *addr)
+>  {
+>  	u32 lo, hi;
+> @@ -80,6 +87,7 @@ static inline void dmar_writeq(void __iomem *addr, u64 val)
+>  	writel((u32)val, addr);
+>  	writel((u32)(val >> 32), addr + 4);
+>  }
+> +#endif
+
+What's this all about?  Why do we need #ifdef CONFIG_IA64 here?
+Doesn't x86 provide its own readq/writeq implementation?
+
+Bjorn
