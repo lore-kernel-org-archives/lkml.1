@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbYJBOiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYJBOqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbYJBOiU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 10:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYJBOiL
+	id S1754702AbYJBOqU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 10:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYJBOqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 10:38:11 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:46981 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754052AbYJBOiK (ORCPT
+	Thu, 2 Oct 2008 10:46:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33370 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752514AbYJBOqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 10:38:10 -0400
-Date: Thu, 2 Oct 2008 10:38:09 -0400
-To: Jacek Poplawski <jacekpoplawski@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: motherboard recommendations?
-Message-ID: <20081002143809.GA22851@csclub.uwaterloo.ca>
-References: <1f276abf0809160657x4264ad5dm74fd2689d804a7ad@mail.gmail.com>
+	Thu, 2 Oct 2008 10:46:11 -0400
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>
+Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded interrupt handlers
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081001223213.078984344@linutronix.de>
+Date: Thu, 02 Oct 2008 16:46:09 +0200
+In-Reply-To: <20081001223213.078984344@linutronix.de> (Thomas Gleixner's message of "Wed, 01 Oct 2008 23:02:08 -0000")
+Message-ID: <873ajfoy1a.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1f276abf0809160657x4264ad5dm74fd2689d804a7ad@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 03:57:25PM +0200, Jacek Poplawski wrote:
-> Could you recommend motherboard which works perfecly stable with Linux?
-> Last time I bought Asus K8V-X SE which was huge mistake - it has
-> serious problems with AGP in Linux.
+Thomas Gleixner <tglx@linutronix.de> writes:
+>
+>  - move long running handlers out of the hard interrupt context
 
-The A8V on the other hand works flawlessly.  I have been running one for
-about 4 years and AGP works fine on it.
+I'm not sure I'm really looking forward to this brave new world
+of very long running interrupt handlers. e.g. what do you
+do for example when some handler blocks for a very long time?
 
-> Now I think about Intel chipset - P35 or P45.
-> I want Asus, Gigabyte or MSI board with heat pipe.
-> But I found another issue with audio and network drivers for Asus
-> boards, so maybe I will skip Asus this time?
-> 
-> Which motherboard works stable for you?
+>  - improved debugability of the kernel: faulty handlers do not take
+>    down the system.
 
-My mythtv box runs a Q6600 on an Asus P5K which so for works great.  It
-does have the occational odd message abour CRC errors from the network
-port (atl) although networking is working just fine.  No idea what that
-is about, so I am not too concerned about it.
+I had an old patch to handle this without threaded interrupts. 
 
-I have used Asus boards for 15 years now, and I am not switching.
-Enough other boards have given weird problems that should be that I
-don't want to deal with them.  I do avoid certain brands of chipsets
-though, even on Asus boards, becasue even Asus can only do so much with
-the components they are given.  So I have not used SiS since 486 days
-(where they were really good), no longer bother with VIA since they just
-don't seem to be that good when it comes down to the details, and no
-ATI.  So intel and nvidia chipset boards are what I use on Asus boards.
-So far it has worked for me for running Linux.
+What normally happens is when a interrupt oopses it tries to kill the
+idle process which panics.  My fix was to just restart another idle
+process instead of panicing.
+
+But back then it was rejected by Linus with the argument that
+a crashing interrupt handler will typically hold some lock
+and the next time the interrupt happens it will deadlock on that
+lock. 
+
+Has that changed with your threaded interrupts? 
+
+If it has changed I suspect the restart idle change could
+be made to work to be equivalent in debuggability.
+
+> Comments, reviews, flames as usual.
+
+To be honest my opinion is that it will encourage badly written interrupt
+code longer term.
+
+-Andi
 
 -- 
-Len Sorensen
+ak@linux.intel.com
