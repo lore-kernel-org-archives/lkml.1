@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbYJBNXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbYJBNY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbYJBNXz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 09:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbYJBNTd
+	id S1756007AbYJBNY2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 09:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbYJBNTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 09:19:33 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54830 "EHLO
+	Thu, 2 Oct 2008 09:19:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54832 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754847AbYJBNT1 (ORCPT
+	with ESMTP id S1754850AbYJBNT1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Oct 2008 09:19:27 -0400
-Message-Id: <20081002131608.023485199@chello.nl>
+Message-Id: <20081002131609.424438287@chello.nl>
 References: <20081002130504.927878499@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 02 Oct 2008 15:05:11 +0200
+Date: Thu, 02 Oct 2008 15:05:28 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -22,55 +22,39 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>,
        David Miller <davem@davemloft.net>
-Subject: [PATCH 07/32] mm: tag reseve pages
-Content-Disposition: inline; filename=page_alloc-reserve.patch
+Subject: [PATCH 24/32] netfilter: NF_QUEUE vs emergency skbs
+Content-Disposition: inline; filename=emergency-nf_queue.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tag pages allocated from the reserves with a non-zero page->reserve.
-This allows us to distinguish and account reserve pages.
-
-Since low-memory situations are transient, and unrelated the the actual
-page (any page can be on the freelist when we run low), don't mark the
-page in any permanent way - just pass along the information to the
-allocatee.
+Avoid memory getting stuck waiting for userspace, drop all emergency packets.
+This of course requires the regular storage route to not include an NF_QUEUE
+target ;-)
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/mm_types.h |    1 +
- mm/page_alloc.c          |    4 +++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ net/netfilter/core.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-Index: linux-2.6/include/linux/mm_types.h
+Index: linux-2.6/net/netfilter/core.c
 ===================================================================
---- linux-2.6.orig/include/linux/mm_types.h
-+++ linux-2.6/include/linux/mm_types.h
-@@ -70,6 +70,7 @@ struct page {
- 	union {
- 		pgoff_t index;		/* Our offset within mapping. */
- 		void *freelist;		/* SLUB: freelist req. slab lock */
-+		int reserve;		/* page_alloc: page is a reserve page */
- 	};
- 	struct list_head lru;		/* Pageout list, eg. active_list
- 					 * protected by zone->lru_lock !
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1433,8 +1433,10 @@ zonelist_scan:
- 		}
- 
- 		page = buffered_rmqueue(preferred_zone, zone, order, gfp_mask);
--		if (page)
-+		if (page) {
-+			page->reserve = !!(alloc_flags & ALLOC_NO_WATERMARKS);
- 			break;
-+		}
- this_zone_full:
- 		if (NUMA_BUILD)
- 			zlc_mark_zone_full(zonelist, z);
+--- linux-2.6.orig/net/netfilter/core.c
++++ linux-2.6/net/netfilter/core.c
+@@ -176,9 +176,12 @@ next_hook:
+ 		ret = 1;
+ 		goto unlock;
+ 	} else if (verdict == NF_DROP) {
++drop:
+ 		kfree_skb(skb);
+ 		ret = -EPERM;
+ 	} else if ((verdict & NF_VERDICT_MASK) == NF_QUEUE) {
++		if (skb_emergency(*pskb))
++			goto drop;
+ 		if (!nf_queue(skb, elem, pf, hook, indev, outdev, okfn,
+ 			      verdict >> NF_VERDICT_BITS))
+ 			goto next_hook;
 
 -- 
 
