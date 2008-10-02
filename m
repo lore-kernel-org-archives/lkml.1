@@ -1,140 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbYJBEsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbYJBEwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752588AbYJBEsj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 00:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbYJBEsa
+	id S1752675AbYJBEwj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 00:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbYJBEwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 00:48:30 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:34995 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbYJBEs3 (ORCPT
+	Thu, 2 Oct 2008 00:52:30 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:38848 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbYJBEwa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 00:48:29 -0400
-Date: Wed, 1 Oct 2008 22:48:26 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
-Subject: Re: [PATCH v3 02/14] PCI: prevent duplicate slot names
-Message-ID: <20081002044825.GA18063@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-	jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
-	matthew@wil.cx
-References: <20080923163753.12628.98683.stgit@bob.kio> <20080923164523.12628.69510.stgit@bob.kio> <48E09936.2030905@jp.fujitsu.com> <48E189BF.4020907@jp.fujitsu.com> <20081002010542.GA745@ldl.fc.hp.com> <48E43657.4040006@jp.fujitsu.com>
+	Thu, 2 Oct 2008 00:52:30 -0400
+Date: Thu, 2 Oct 2008 00:52:27 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>
+Subject: Re: [RFC patch 2/5] genirq: add a quick check handler
+In-Reply-To: <20081001223301.900862899@linutronix.de>
+Message-ID: <alpine.DEB.1.10.0810020028230.11373@gandalf.stny.rr.com>
+References: <20081001223213.078984344@linutronix.de> <20081001223301.900862899@linutronix.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48E43657.4040006@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kenji-san,
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> Alex Chiang wrote:
->> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->>> Kenji Kaneshige wrote:
->>>> Hi Alex-san,
->>>>
->>>> Here is one comment, though I have not finished reviewing/testing
->>>> your patches yet (sorry for the delay).
->>>>
->>>> Alex Chiang wrote:
->>>>
->>>> (snip.)
->>>>
->>>>> diff --git a/drivers/pci/hotplug/pci_hotplug_core.c   
->>>>> b/drivers/pci/hotplug/pci_hotplug_core.c
->>>>> index 3e37d63..46802dc 100644
->>>>> --- a/drivers/pci/hotplug/pci_hotplug_core.c
->>>>> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
->>>>> @@ -570,39 +570,32 @@ int pci_hp_register(struct hotplug_slot 
->>>>> *slot,  struct pci_bus *bus, int slot_nr,
->>>>>          return -EINVAL;
->>>>>      }
->>>>>  -    /* Check if we have already registered a slot with the same 
->>>>> name. */
->>>>> -    if (get_slot_from_name(name))
->>>>> -        return -EEXIST;
->>>>> -
->>>>>      /*
->>>>> -     * No problems if we call this interface from both ACPI_PCI_SLOT
->>>>> -     * driver and call it here again. If we've already created the
->>>>> -     * pci_slot, the interface will simply bump the refcount.
->>>>> +     * Look for existing slot. If we find it, and it was created by a
->>>>> +     * slot detection driver (ie, doesn't have a ->hotplug()) then we
->>>>> +     * allow the hotplug driver calling us to rename the slot if 
->>>>>  desired.
->>>>> +     *
->>>>> +     * Otherwise, create the slot and carry on with life.
->>>>>       */
->>>>> -    pci_slot = pci_create_slot(bus, slot_nr, name);
->>>>> -    if (IS_ERR(pci_slot))
->>>>> -        return PTR_ERR(pci_slot);
->>>>> -
->>>>> -    if (pci_slot->hotplug) {
->>>>> -        dbg("%s: already claimed\n", __func__);
->>>>> -        pci_destroy_slot(pci_slot);
->>>>> -        return -EBUSY;
->>>>> +    pci_slot = pci_get_pci_slot(bus, slot_nr);
->>>> The pci_get_pci_slot() function refers pci_bus->slots list, so it
->>>> should be called with pci_bus_sem semaphore held as pci_create_slot()
->>>> does, or pci_bus_sem semaphore should be held by pci_get_pci_slot()
->>>> itself.
->>
->> Yes, I've changed pci_get_pci_slot() to acquire the pci_bus_sem
->> semaphore.
->>
->> Thank you for pointing this out.
->>
->> It will be fixed in v4 of this patch series, which I will send
->> out after I receive the rest of your review comments.
->>
->
-> I noticed that changing pci_get_pci_slot() to acquire the pci_bus_sem
-> might be not enough. If slot was created between pci_get_pci_slot() and
-> pci_create_slot() by another thread in the following code, something
-> wrong would happen I think.
->
->        pci_slot = pci_get_pci_slot(bus, slot_nr);
->        if (pci_slot) {
->                if (pci_slot->hotplug) {
->                        result = -EBUSY;
->                        goto err;
->                }
->
->                if (strcmp(kobject_name(&pci_slot->kobj), name))
->                        if ((result = pci_rename_slot(pci_slot, name)))
->                                goto err;
->        } else {
->                pci_slot = pci_create_slot(bus, slot_nr, name);
->                if ((result = IS_ERR(pci_slot)))
->                        goto out;
->        }
+Thomas,
 
-I'm sorry, I don't think I see the problem you are pointing out.
+Nice work, thanks for doing this.
 
-If pci_get_pci_slot() finds a pci_slot, we do not modify
-pci_bus->slots any further, so even if a new slot is created, it
-shouldn't affect the pci_slot that we already found.
+Little comments below.
 
-I must be missing something, but I don't know what. Would you
-mind explaining what you had in mind with your comment?
+On Wed, 1 Oct 2008, Thomas Gleixner wrote:
+>  
+>  extern irqreturn_t no_action(int cpl, void *dev_id);
+> -extern int __must_check request_irq(unsigned int, irq_handler_t handler,
+> +
+> +extern int __must_check
+> +request_irq_quickcheck(unsigned int, irq_handler_t handler,
+> +		       irq_handler_t quick_check_handler,
+>  		       unsigned long, const char *, void *);
 
-> I've finished reviewing and testing your patches. The rest of your
-> patch looks good to me. Of course, we must not forget the comment
-> from Taku Izumi.
+It would be nice to still keep the name of the parameters here.
+	unsigned long flags, const char *name, void *dev
 
-Yes, I've modified my patch series to take into account the bugs
-that Taku-san found.
+> +
+> +static inline int __must_check
+> +request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
+> +	    const char *name, void *dev)
+> +{
+> +	return request_irq_quickcheck(irq, handler, NULL, flags, name, dev);
+> +}
+> +
+>  extern void free_irq(unsigned int, void *);
+>  
+>  struct device;
+> Index: linux-2.6-tip/include/linux/irqreturn.h
+> ===================================================================
+> --- linux-2.6-tip.orig/include/linux/irqreturn.h
+> +++ linux-2.6-tip/include/linux/irqreturn.h
+> @@ -5,10 +5,12 @@
+>   * enum irqreturn
+>   * @IRQ_NONE		interrupt was not from this device
+>   * @IRQ_HANDLED		interrupt was handled by this device
+> + * @IRQ_NEEDS_HANDLING	quick check handler requests to run real handler
+>   */
+>  enum irqreturn {
+>  	IRQ_NONE,
+>  	IRQ_HANDLED,
+> +	IRQ_NEEDS_HANDLING,
+>  };
+>  
+>  #define irqreturn_t	enum irqreturn
+> Index: linux-2.6-tip/kernel/irq/handle.c
+> ===================================================================
+> --- linux-2.6-tip.orig/kernel/irq/handle.c
+> +++ linux-2.6-tip/kernel/irq/handle.c
+> @@ -137,9 +137,21 @@ irqreturn_t handle_IRQ_event(unsigned in
+>  		local_irq_enable_in_hardirq();
+>  
+>  	do {
+> -		ret = action->handler(irq, action->dev_id);
+> -		if (ret == IRQ_HANDLED)
+> -			status |= action->flags;
+> +		if (action->quick_check_handler)
+> +			ret = action->quick_check_handler(irq, action->dev_id);
+> +		else
+> +			ret = IRQ_NEEDS_HANDLING;
+> +
+> +		switch (ret) {
+> +		default:
+> +			break;
+> +
+> +		case IRQ_NEEDS_HANDLING:
+> +			ret = action->handler(irq, action->dev_id);
+> +			if (ret == IRQ_HANDLED)
+> +				status |= action->flags;
+> +			break;
+> +		}
+>  		retval |= ret;
+>  		action = action->next;
+>  	} while (action);
+> Index: linux-2.6-tip/kernel/irq/manage.c
+> ===================================================================
+> --- linux-2.6-tip.orig/kernel/irq/manage.c
+> +++ linux-2.6-tip/kernel/irq/manage.c
+> @@ -563,9 +563,14 @@ void free_irq(unsigned int irq, void *de
+>  EXPORT_SYMBOL(free_irq);
+>  
+>  /**
+> - *	request_irq - allocate an interrupt line
+> + *	request_irq_quickcheck - allocate an interrupt line
+>   *	@irq: Interrupt line to allocate
+> - *	@handler: Function to be called when the IRQ occurs
+> + *	@handler: Function to be called when the IRQ occurs.
+> + *		  Primary handler for threaded interrupts
+> + *      @quick_check_handler: Function to be called when the interrupt
+> + *			   before the real handler is called to check
+> + *                         whether the interrupt originated from the device
+> + *                         can be NULL
 
-Thank you both for your reviews.
 
-/ac
+The above reads funny. How about something like:
 
+	@quick_check_handler: Function called before the real interrupt
+			handler. It checks if the interrupt originated
+			from the device. This can be NULL.
+
+-- Steve
+
+
+>   *	@irqflags: Interrupt type flags
+>   *	@devname: An ascii name for the claiming device
+>   *	@dev_id: A cookie passed back to the handler function
+> @@ -589,10 +594,11 @@ EXPORT_SYMBOL(free_irq);
+>   *	IRQF_SHARED		Interrupt is shared
+>   *	IRQF_DISABLED	Disable local interrupts while processing
+>   *	IRQF_SAMPLE_RANDOM	The interrupt can be used for entropy
+> - *
+>   */
+> -int request_irq(unsigned int irq, irq_handler_t handler,
+> -		unsigned long irqflags, const char *devname, void *dev_id)
+> +int request_irq_quickcheck(unsigned int irq, irq_handler_t handler,
+> +			   irq_handler_t quick_check_handler,
+> +			   unsigned long irqflags, const char *devname,
+> +			   void *dev_id)
+>  {
+>  	struct irqaction *action;
+>  	int retval;
+> @@ -622,6 +628,7 @@ int request_irq(unsigned int irq, irq_ha
+>  	if (!action)
+>  		return -ENOMEM;
+>  
+> +	action->quick_check_handler = quick_check_handler;
+>  	action->handler = handler;
+>  	action->flags = irqflags;
+>  	cpus_clear(action->mask);
+> @@ -651,4 +658,4 @@ int request_irq(unsigned int irq, irq_ha
+>  
+>  	return retval;
+>  }
+> -EXPORT_SYMBOL(request_irq);
+> +EXPORT_SYMBOL(request_irq_quickcheck);
+> 
+> 
+> 
