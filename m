@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbYJBG7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYJBHAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753942AbYJBG7W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 02:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYJBG7O
+	id S1754031AbYJBHAT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 03:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYJBHAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 02:59:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:64505 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751552AbYJBG7N (ORCPT
+	Thu, 2 Oct 2008 03:00:06 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56378 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751914AbYJBHAE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 02:59:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=aPsowuNkEeZmbZ4SzF1fI7g4RIohwdHWi1pZpqz4Zsj8Yam+IWuAXP/R/rEm4ABtF/
-         0roPzfEaNKu6FSyCuHrLege8IG7lEM3TE7J0pcC7Uncdf18EeWvj6unUp5z9NQN8Bp5v
-         PGF+8k81iXaQ9DzZYqp2NM00bWIAXDDNtCLyI=
-Message-ID: <b9df5fa10810012359oac41498sf716ce51b39a36ce@mail.gmail.com>
-Date: Thu, 2 Oct 2008 12:59:11 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: mb@bu3sch.de
-Subject: [PATCH] drivers/gpio/bt8xxgpio.c Fix compilation warning.
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 2 Oct 2008 03:00:04 -0400
+Date: Thu, 2 Oct 2008 16:05:12 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/4] pull out the page pre-release and sanity check
+ logic for reuse
+Message-Id: <20081002160512.b87c3440.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1222864261-22570-2-git-send-email-apw@shadowen.org>
+References: <1222864261-22570-1-git-send-email-apw@shadowen.org>
+	<1222864261-22570-2-git-send-email-apw@shadowen.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/gpio/bt8xxgpio.c: In function `bt8xxgpio_remove':
-drivers/gpio/bt8xxgpio.c:247: warning: ignoring return value of
-`gpiochip_remove', declared with attribute warn_unused_result
+On Wed,  1 Oct 2008 13:30:58 +0100
+Andy Whitcroft <apw@shadowen.org> wrote:
 
-Following patch removes the above warning.
-Thanks.
+> When we are about to release a page we perform a number of actions
+> on that page.  We clear down any anonymous mappings, confirm that
+> the page is safe to release, check for freeing locks, before mapping
+> the page should that be required.  Pull this processing out into a
+> helper function for reuse in a later patch.
+> 
+> Note that we do not convert the similar cleardown in free_hot_cold_page()
+> as the optimiser is unable to squash the loops during the inline.
+> 
+> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
 
-Signed-off-by:	Md.Rakib H. Mullick (rakib.mullick@gmail.com)
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiruyo@jp.fujitsu.com>
 
---- linux-2.6.27-rc8.orig/drivers/gpio/bt8xxgpio.c	2008-10-01
-19:20:59.000000000 +0600
-+++ linux-2.6.27-rc8/drivers/gpio/bt8xxgpio.c	2008-10-02
-12:30:26.374544032 +0600
-@@ -242,9 +242,14 @@ err_freebg:
-
- static void bt8xxgpio_remove(struct pci_dev *pdev)
- {
-+	int err;
- 	struct bt8xxgpio *bg = pci_get_drvdata(pdev);
-
--	gpiochip_remove(&bg->gpio);
-+	err = gpiochip_remove(&bg->gpio);
-+	if (err) {
-+		printk(KERN_ERR "bt8xxgpio: Resource busy. Failed to remove.\n");
-+		return ;
-+	}
-
- 	bgwrite(0, BT848_INT_MASK);
- 	bgwrite(~0x0, BT848_INT_STAT);
