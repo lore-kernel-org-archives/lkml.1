@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYJBQN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYJBQP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbYJBQN2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 12:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYJBQNT
+	id S1754829AbYJBQP2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 12:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbYJBQPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 12:13:19 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:24194 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752982AbYJBQNT (ORCPT
+	Thu, 2 Oct 2008 12:15:21 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:26131 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753556AbYJBQPU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 12:13:19 -0400
-Subject: Re: [PATCH] Improve buffered streaming write ordering
-From: Chris Mason <chris.mason@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <1222950054.6745.18.camel@think.oraclecorp.com>
-References: <1222886451.9158.34.camel@think.oraclecorp.com>
-	 <20081001215239.ee2ae63f.akpm@linux-foundation.org>
-	 <1222950054.6745.18.camel@think.oraclecorp.com>
-Content-Type: text/plain
-Date: Thu, 02 Oct 2008 12:12:35 -0400
-Message-Id: <1222963955.12099.12.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Thu, 2 Oct 2008 12:15:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wmMzPLQ0J7gADKPNPkcRNX/Caa7NDR7YDuU/VjW//InTdTQT1GfPyMM9vW+9JUvNVu
+         VAPciDlxgZmJlLLZ4ncQhMP+PL9qWdllcGkJJJaN1gT4yWt6Sgy72XQBm2OjRTWoZnIB
+         HqQB873lpejzMox3NHwhhNZeybHOy6tt1P7Vg=
+Message-ID: <c384c5ea0810020915r3023bapecc99b7fcd67b81c@mail.gmail.com>
+Date: Thu, 2 Oct 2008 18:15:18 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: disk IO directly from PCI memory to block device sectors
+Cc: "Leisner, Martin" <Martin.Leisner@xerox.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, marty <martyleisner@yahoo.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081001190546.GQ19428@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <247018.46515.qm@web50603.mail.re2.yahoo.com>
+	 <20080926094653.1e0a9260@lxorguk.ukuu.org.uk>
+	 <20080926091135.GV2677@kernel.dk>
+	 <556445368AFA1C438794ABDA8901891C0999203A@USA0300MS03.na.xerox.net>
+	 <20080929130222.GX2677@kernel.dk> <20081001190546.GQ19428@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-02 at 08:20 -0400, Chris Mason wrote:
-> On Wed, 2008-10-01 at 21:52 -0700, Andrew Morton wrote:
-> > On Wed, 01 Oct 2008 14:40:51 -0400 Chris Mason <chris.mason@oracle.com> wrote:
-> > 
-> > > The patch below changes write_cache_pages to only use writeback_index
-> > > when current_is_pdflush().  The basic idea is that pdflush is the only
-> > > one who has concurrency control against the bdi, so it is the only one
-> > > who can safely use and update writeback_index.
-> > 
-> > Another approach would be to only update mapping->writeback_index if
-> > nobody else altered it meanwhile.
-> > 
-> 
-> Ok, I can give that a short.
-> 
+Hello Jens,
 
-I tried a few variations on letting anyone update writeback_index if it
-hadn't changed, including always letting pdflush update it, and only
-letting non-pdflush update it when walking forward in the file.
+On Wed, Oct 1, 2008 at 9:05 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Sep 29 2008, Jens Axboe wrote:
+>> On Fri, Sep 26 2008, Leisner, Martin wrote:
+>> IMHO, this interface totally rocks. It's really async like splice was
+>
+> Alright, so this one actually works :-)
+> Apart from fixing the bugs in it, it's also more clever in using the bio
+> for the write part. It'll reuse the same bio in the splice actor until
+> it's full, only then submitting it and allocating a new one. The read
+> part works the same way.
+>
+I have been following this thread trying to grasp a very nifty use
+case (high speed acquisition and storage of data) of splice.
 
-They all performed badly for both xfs and ext4, making me think the real
-benefit from my patch comes with making non-pdflush writers start at 0.
+I think it would make a perfect example of splice functionality.
 
-So I'm a bit conflicted on this one.  The filesystems could be doing
-better, but the current logic in write_cache_pages isn't very
-predictable.
+What would the user space part look like to exercise this interface?
 
--chris
+And whoever writes Linux Device Drivers 4th edition or one of the
+kernel books; make sure this topic in is :-)
 
-
+Regards,
+-- 
+Leon
