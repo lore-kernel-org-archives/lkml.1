@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbYJBApj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYJBAr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753757AbYJBApj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 20:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYJBApa
+	id S1753528AbYJBAr5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 20:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYJBArt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 20:45:30 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38047 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752124AbYJBAp3 (ORCPT
+	Wed, 1 Oct 2008 20:47:49 -0400
+Received: from dallas.jonmasters.org ([72.29.103.172]:48951 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752094AbYJBArs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 20:45:29 -0400
-Message-ID: <48E4183A.7090208@zytor.com>
-Date: Wed, 01 Oct 2008 17:39:22 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Alok Kataria <akataria@vmware.com>, "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Daniel Hecht <dhecht@vmware.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Subject: Re: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
-References: <1222881242.9381.17.camel@alok-dev1> <48E3BBC1.2050607@goop.org>	 <1222894878.9381.63.camel@alok-dev1> <48E3E8DE.1080602@goop.org>	 <48E3ECD1.30809@codemonkey.ws> <1222904824.7330.83.camel@bodhitayantram.eng.vmware.com>
-In-Reply-To: <1222904824.7330.83.camel@bodhitayantram.eng.vmware.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 1 Oct 2008 20:47:48 -0400
+X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Oct 2008 20:47:48 EDT
+Subject: Re: [RFC patch 2/5] genirq: add a quick check handler
+From: Jon Masters <jonathan@jonmasters.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Sven Dietrich <sdietrich@suse.de>
+In-Reply-To: <20081001223301.900862899@linutronix.de>
+References: <20081001223213.078984344@linutronix.de>
+	 <20081001223301.900862899@linutronix.de>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Wed, 01 Oct 2008 20:47:39 -0400
+Message-Id: <1222908459.31183.73.camel@perihelion.int.jonmasters.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> 
-> Jun, you work at Intel.  Can you ask for a new architecturally defined
-> MSR that returns the TSC frequency?  Not a virtualization specific MSR.
-> A real MSR that would exist on physical processors.  The TSC started as
-> an MSR anyway.  There should be another MSR that tells the frequency.
-> If it's hard to do in hardware, it can be a write-once MSR that gets
-> initialized by the BIOS.  It's really a very simple solution to a very
-> common problem.  Other MSRs are dedicated to bus speed and so on, this
-> seems remarkably similar.
-> 
+On Wed, 2008-10-01 at 23:02 +0000, Thomas Gleixner wrote:
 
-Ah, if it was only that simple.  Transmeta actually did this, but it's 
-not as useful as you think.
+>  struct irqaction {
+> +	irq_handler_t quick_check_handler;
+>  	irq_handler_t handler;
 
-There are at least three crystals in modern PCs: one at 32.768 kHz (for 
-the RTC), one at 14.31818 MHz (PIT, PMTMR and HPET), and one at a higher 
-frequency (often 200 MHz.)
+When we originally discussed this, there was an idea to modify the
+request_irq API to take this handler and an IRQF_THREADED type to mark
+the interrupt accordingly. I understand why it's a separate function in
+this implementation for ease of migration, but what do you think should
+happen in the end? Also, I suggest calling this something like
+"quiesce_device" because the quickcheck also needs to do that.
 
-All the main data distribution clocks in the system are derived from the 
-third, which is subject to spread-spectrum modulation due to RFI 
-concerns.  Therefore, relying on the *nominal* frequency of this clock 
-is vastly incorrect; often by as much as 2%.  Spread-spectrum modulation 
-is supposed to vary around zero enough that the spreading averages out, 
-but the only way to know what the center frequency actually is is to 
-average.  Furthermore, this high-frequency clock is generally not 
-calibrated anywhere near as well as the 14 MHz clock; in good designs 
-the 14 MHz is actually a TCXO (temperature compensated crystal 
-oscillator), which is accurate to something like ±2 ppm.
+We probably need some documentation eventually so people realize what
+this "quickcheck" handler is for and what it's not for - under no
+circumstances should anything more than the bare minimum be done.
+Otherwise it breaks the benefit of deferred threaded handling. It's hard
+to enforce that - but this is *not* a return of top/bottom half handling
+where you can do whatever crap you like in the quickcheck bit.
 
-	-hpa
+Jon.
+
+
