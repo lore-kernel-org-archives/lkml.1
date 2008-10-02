@@ -1,107 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYJBXaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbYJBXcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbYJBXaj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 19:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYJBXaa
+	id S1754942AbYJBXcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 19:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYJBXcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 19:30:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49734 "EHLO
+	Thu, 2 Oct 2008 19:32:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56933 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753061AbYJBXa2 (ORCPT
+	by vger.kernel.org with ESMTP id S1753328AbYJBXcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 19:30:28 -0400
-Date: Thu, 2 Oct 2008 16:30:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] check mapped ranges on sysfs resource files (for
- 2.6.27)
-In-Reply-To: <200810021534.38219.jbarnes@virtuousgeek.org>
-Message-ID: <alpine.LFD.2.00.0810021630100.3341@nehalem.linux-foundation.org>
-References: <200810021534.38219.jbarnes@virtuousgeek.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Oct 2008 19:32:11 -0400
+Date: Thu, 2 Oct 2008 16:31:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] printk.caller
+Message-Id: <20081002163154.fd5f2a10.akpm@linux-foundation.org>
+In-Reply-To: <20081002232115.8D2BB154212@magilla.localdomain>
+References: <20081002232115.8D2BB154212@magilla.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu,  2 Oct 2008 16:21:15 -0700 (PDT)
+Roland McGrath <roland@redhat.com> wrote:
 
+> This adds the printk.caller=[0|1] boot parameter, default setting
+> controlled by CONFIG_PRINTK_CALLER.  (This is modelled on printk.time
+> and CONFIG_PRINTK_TIME.)
+> 
+> When this is set, each printk line is automagically prefixed with
+> "{0x123abc} " giving the PC address of that printk call (actually
+> the PC address just after the call).
+> 
+> As a kernel hacker, I always hate having to grep for some fragment
+> of a message to find the code that generated it.  But I always have
+> my -g vmlinux handy, so:
+> 	(gdb) info line *(0x123abc - 1)
+> is real handy (it pops the source up in an Emacs buffer).
+> 
 
-On Thu, 2 Oct 2008, Jesse Barnes wrote:
+hm.  What do others think?
+
 >
-> +	unsigned long map_len = vma->vm_end - vma->vm_start;
-> +	unsigned long map_offset = vma->vm_pgoff << PAGE_SHIFT;
+> ...
+>
+> +config PRINTK_CALLER
+> +	bool "Show caller PC on printks"
+> +	depends on PRINTK
+> +	help
+> +	  Selecting this option causes printk output to include
+> +	  the PC address of the printk call.  This is useful for
+> +	  kernels hackers to quickly locate the source code that
+> +	  produced the message.
+> +
 
-This seems broken for big vm_pgoff values, where that shift will 
-potentially overflow, no? 
+This is quite misleading.  The config help implies that
+CONFIG_PRINTK_CALLER will enable the feature at compile time.  But it
+doesn't - it just sets the boot-time enable/disable default.
 
-Also, it strikes me that we don't seem to check that the resource start is 
-page-aligned. We just do
+If you do this:
 
-	vma->vm_pgoff += start >> PAGE_SHIFT;
+#ifdef CONFIG_PRINTK_CALLER
+static int printk_caller = 1;
+#else
+#define printk_caller 0
+#endif
 
-without checking if we just dropped low bits from 'start'.
+then the implementation would somewhat reflect the config option.
 
-Of course, if the length of the resource is bigger than a page, I guess 
-the resource is guaranteed to be at least page-aligned, so maybe the 
-length check - if it was correct - would be sufficient.
 
-Anyway, it would be *much* better to do the length check in pages rather 
-than in bytes, to avoid the overflow condition.
+But I'd suggest that this thing is so small that it doesn't need a
+config option to enable the presence of the code - just make it
+unconditional.
 
-Can somebody test if something like this works? It also prints the actual 
-name of the device, not just a random BAR number (but it will print 
-everyting in PFN's, I hate potentially losing information).
+Also, I guess that the boot-time option is useful, but a runtime /proc
+knob might also be needed?
 
-			Linus
-
----
- drivers/pci/pci-sysfs.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 9c71858..77baff0 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -16,6 +16,7 @@
- 
- 
- #include <linux/kernel.h>
-+#include <linux/sched.h>
- #include <linux/pci.h>
- #include <linux/stat.h>
- #include <linux/topology.h>
-@@ -484,6 +485,21 @@ pci_mmap_legacy_mem(struct kobject *kobj, struct bin_attribute *attr,
- #endif /* HAVE_PCI_LEGACY */
- 
- #ifdef HAVE_PCI_MMAP
-+
-+static int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vma)
-+{
-+	unsigned long nr, start, size;
-+
-+	nr = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-+	start = vma->vm_pgoff;
-+	size = pci_resource_len(pdev, resno) >> PAGE_SHIFT;
-+	if (start < size && size - start >= nr)
-+		return 1;
-+	WARN(1, "process \"%s\" tried to map 0x%08lx-0x%08lx on %s BAR %d (size 0x%08lx)\n",
-+		current->comm, start, start+nr, pci_name(pdev), resno, size);
-+	return 0;
-+}
-+
- /**
-  * pci_mmap_resource - map a PCI resource into user memory space
-  * @kobj: kobject for mapping
-@@ -510,6 +526,9 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
- 	if (i >= PCI_ROM_RESOURCE)
- 		return -ENODEV;
- 
-+	if (!pci_mmap_fits(pdev, i, vma))
-+		return -EINVAL;
-+
- 	/* pci_mmap_page_range() expects the same kind of entry as coming
- 	 * from /proc/bus/pci/ which is a "user visible" value. If this is
- 	 * different from the resource itself, arch will do necessary fixup.
