@@ -1,79 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbYJBD5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbYJBEsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752871AbYJBD5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 23:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYJBD5F
+	id S1752588AbYJBEsj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 00:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbYJBEsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 23:57:05 -0400
-Received: from brain.cel.usyd.edu.au ([129.78.24.68]:58140 "EHLO
-	brain.cel.usyd.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbYJBD5E (ORCPT
+	Thu, 2 Oct 2008 00:48:30 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:34995 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbYJBEs3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 23:57:04 -0400
-Message-Id: <5.1.1.5.2.20081002034828.021ee6b0@brain.cel.usyd.edu.au>
-X-Mailer: QUALCOMM Windows Eudora Version 5.1.1
-Date: Thu, 02 Oct 2008 03:56:22 +1000
-To: Arjan van de Ven <arjan@infradead.org>
-From: sena seneviratne <auntvini@cel.usyd.edu.au>
-Subject: Re: Division of Load Average
-Cc: linux-kernel@vger.kernel.org, balbir@in.ibm.com
-In-Reply-To: <20081001204311.241e04e5@infradead.org>
-References: <7971648.51222945125819.JavaMail.root@wombat.diezmil.com>
- <7971648.51222945125819.JavaMail.root@wombat.diezmil.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+	Thu, 2 Oct 2008 00:48:29 -0400
+Date: Wed, 1 Oct 2008 22:48:26 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
+Subject: Re: [PATCH v3 02/14] PCI: prevent duplicate slot names
+Message-ID: <20081002044825.GA18063@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+	jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
+	matthew@wil.cx
+References: <20080923163753.12628.98683.stgit@bob.kio> <20080923164523.12628.69510.stgit@bob.kio> <48E09936.2030905@jp.fujitsu.com> <48E189BF.4020907@jp.fujitsu.com> <20081002010542.GA745@ldl.fc.hp.com> <48E43657.4040006@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48E43657.4040006@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan and Balbir,
+Hi Kenji-san,
 
-Yes as discussed and agreed upon with Nagar and balbir  4 years ago this is 
-how they are listed
-
-Loadavg(1), Loadavg(5), Loadavg(15)
-rootloadavg
-uid_1    CPUload_1   DiskLoad_1
-uid_2   CPUload_2   DiskLoad_2
-uid_3   CPUload_3   DiskLoad_3
-
------------------------------------------------
-
-uid_n    CPUload_n   DiskLoad_n
-
-Thanks
-Sena Seneviratne
-
-
-
-At 08:43 PM 10/1/2008 -0700, you wrote:
->On Thu, 2 Oct 2008 06:58:45 -0400
->auntvini@cel.usyd.edu.au wrote:
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Alex Chiang wrote:
+>> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>>> Kenji Kaneshige wrote:
+>>>> Hi Alex-san,
+>>>>
+>>>> Here is one comment, though I have not finished reviewing/testing
+>>>> your patches yet (sorry for the delay).
+>>>>
+>>>> Alex Chiang wrote:
+>>>>
+>>>> (snip.)
+>>>>
+>>>>> diff --git a/drivers/pci/hotplug/pci_hotplug_core.c   
+>>>>> b/drivers/pci/hotplug/pci_hotplug_core.c
+>>>>> index 3e37d63..46802dc 100644
+>>>>> --- a/drivers/pci/hotplug/pci_hotplug_core.c
+>>>>> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
+>>>>> @@ -570,39 +570,32 @@ int pci_hp_register(struct hotplug_slot 
+>>>>> *slot,  struct pci_bus *bus, int slot_nr,
+>>>>>          return -EINVAL;
+>>>>>      }
+>>>>>  -    /* Check if we have already registered a slot with the same 
+>>>>> name. */
+>>>>> -    if (get_slot_from_name(name))
+>>>>> -        return -EEXIST;
+>>>>> -
+>>>>>      /*
+>>>>> -     * No problems if we call this interface from both ACPI_PCI_SLOT
+>>>>> -     * driver and call it here again. If we've already created the
+>>>>> -     * pci_slot, the interface will simply bump the refcount.
+>>>>> +     * Look for existing slot. If we find it, and it was created by a
+>>>>> +     * slot detection driver (ie, doesn't have a ->hotplug()) then we
+>>>>> +     * allow the hotplug driver calling us to rename the slot if 
+>>>>>  desired.
+>>>>> +     *
+>>>>> +     * Otherwise, create the slot and carry on with life.
+>>>>>       */
+>>>>> -    pci_slot = pci_create_slot(bus, slot_nr, name);
+>>>>> -    if (IS_ERR(pci_slot))
+>>>>> -        return PTR_ERR(pci_slot);
+>>>>> -
+>>>>> -    if (pci_slot->hotplug) {
+>>>>> -        dbg("%s: already claimed\n", __func__);
+>>>>> -        pci_destroy_slot(pci_slot);
+>>>>> -        return -EBUSY;
+>>>>> +    pci_slot = pci_get_pci_slot(bus, slot_nr);
+>>>> The pci_get_pci_slot() function refers pci_bus->slots list, so it
+>>>> should be called with pci_bus_sem semaphore held as pci_create_slot()
+>>>> does, or pci_bus_sem semaphore should be held by pci_get_pci_slot()
+>>>> itself.
+>>
+>> Yes, I've changed pci_get_pci_slot() to acquire the pci_bus_sem
+>> semaphore.
+>>
+>> Thank you for pointing this out.
+>>
+>> It will be fixed in v4 of this patch series, which I will send
+>> out after I receive the rest of your review comments.
+>>
 >
-> > My self and my superviosr Dr David Levy have been working on
-> > introduction of new kernel code to correct the inherent problem of
-> > calculating load avarage by the current kernel. We have posted many
-> > e-mails in this regard since 2003 and kernel has been updated under
-> > the supervision of Rusty Russel.
-> >
-> > Also we had interactions with IBM group(balbir@in.ibm.com)  who was
-> > engaged in delayed stat calculations.
-> >
-> > We emphasise the following facts
-> > (1) seperation of Disk IO load from CPU load
-> >
-> > This comes as a correction to the existing kernel as the calculation
-> > of the existing kernel load average is based on the arithmatic
-> > addition of Disk IO and CPU loads
+> I noticed that changing pci_get_pci_slot() to acquire the pci_bus_sem
+> might be not enough. If slot was created between pci_get_pci_slot() and
+> pci_create_slot() by another thread in the following code, something
+> wrong would happen I think.
 >
->while you can argue if including disk makes sense or not, it's 20+
->years of tradition on Linux, and more on Unix.
+>        pci_slot = pci_get_pci_slot(bus, slot_nr);
+>        if (pci_slot) {
+>                if (pci_slot->hotplug) {
+>                        result = -EBUSY;
+>                        goto err;
+>                }
 >
->So.. whatever you do (and I think there's some sense in splitting
->things out).. please only *add* stats, don't replace the existing ones.
->
->--
->Arjan van de Ven        Intel Open Source Technology Centre
->For development, discussion and tips for power savings,
->visit http://www.lesswatts.org
+>                if (strcmp(kobject_name(&pci_slot->kobj), name))
+>                        if ((result = pci_rename_slot(pci_slot, name)))
+>                                goto err;
+>        } else {
+>                pci_slot = pci_create_slot(bus, slot_nr, name);
+>                if ((result = IS_ERR(pci_slot)))
+>                        goto out;
+>        }
+
+I'm sorry, I don't think I see the problem you are pointing out.
+
+If pci_get_pci_slot() finds a pci_slot, we do not modify
+pci_bus->slots any further, so even if a new slot is created, it
+shouldn't affect the pci_slot that we already found.
+
+I must be missing something, but I don't know what. Would you
+mind explaining what you had in mind with your comment?
+
+> I've finished reviewing and testing your patches. The rest of your
+> patch looks good to me. Of course, we must not forget the comment
+> from Taku Izumi.
+
+Yes, I've modified my patch series to take into account the bugs
+that Taku-san found.
+
+Thank you both for your reviews.
+
+/ac
 
