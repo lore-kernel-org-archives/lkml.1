@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbYJBWew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbYJBWjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755690AbYJBWew (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 18:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYJBWem
+	id S1755144AbYJBWjo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 18:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYJBWjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 18:34:42 -0400
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:59906 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752788AbYJBWel (ORCPT
+	Thu, 2 Oct 2008 18:39:36 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:15768 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752923AbYJBWjf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 18:34:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=qwqW7CfFOu4DGDCplKidvO84A/Kksp1Xahj96ZjEaxb3Jw8Fy7KO0MiTsZbfB5vHrJiYmY0UQwJpWp2V/YK984p4kOQtE7LtoDEF7v3wcu2kT4kDqImewRF5ISR3Ve5e;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] check mapped ranges on sysfs resource files (for 2.6.27)
-Date: Thu, 2 Oct 2008 15:34:37 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+	Thu, 2 Oct 2008 18:39:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=FelmHBvMOfwlDi3HXPX+Ib15un4XX57IVJReRzWssbAMO94NIysvuNpFLsJHABqFjZ
+         XBr03g5uFdXKc/u9bpuzuGSW/LIGiJUv0Q+ooz6UJlDyvaeXkJqTfVJb0nl9EaYx6CX0
+         cGKRJ71Ozrql5dqaZwmEbyV3jgG6pqI31LGDs=
+Message-ID: <86802c440810021539y6cdff33dh9df3e04eba85a9df@mail.gmail.com>
+Date: Thu, 2 Oct 2008 15:39:34 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "=?ISO-8859-1?Q?J.A._Magall=F3n?=" <jamagallon@ono.com>
+Subject: Re: [PATCH 2/2] x86: mtrr_cleanup try gran_size to less than 1M
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081003003237.04469201@werewolf.home>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200810021534.38219.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+References: <1222739652-17169-1-git-send-email-yhlu.kernel@gmail.com>
+	 <1222739652-17169-2-git-send-email-yhlu.kernel@gmail.com>
+	 <20081003003237.04469201@werewolf.home>
+X-Google-Sender-Auth: af3d3876f18d9b27
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm sending a patch rather than a pull request since it's just this.
-Totally up to you (obviously) whether we stuff this into 2.6.27 or hold
-off on it until 2.6.28.
+On Thu, Oct 2, 2008 at 3:32 PM, J.A. Magallón <jamagallon@ono.com> wrote:
+> On Mon, 29 Sep 2008 18:54:12 -0700, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+> Also, on a 64 bit box with 4Gb, it gives this:
+>
+> cicely:~# cat /proc/mtrr
+> reg00: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+> reg01: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+> reg02: base=0x140000000 (5120MB), size= 512MB: write-back, count=1
+> reg03: base=0x160000000 (5632MB), size= 256MB: write-back, count=1
+> reg04: base=0x80000000 (2048MB), size=2048MB: uncachable, count=1
+>
+boundary handling may have problem...
 
-It's fairly common for applications to map PCI resources through sysfs.
-However, with the current implementation, it's possible for an application
-to map far more than the range corresponding to the resourceN file it
-opened.  This patch plugs that hole by checking the range at mmap time,
-similar to what is done on platforms like sparc64 in their lower level
-PCI remapping routines.
+should have
+> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+> reg01: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+> reg02: base=0x140000000 (5120MB), size= 512MB: write-back, count=1
+> reg03: base=0x160000000 (5632MB), size= 256MB: write-back, count=1
 
-It was initially put together to help debug the e1000e NVRAM corruption
-problem, since we initially thought an X driver might be walking past the
-end of one of its mappings and clobbering the NVRAM.  It now looks like
-that's not the case, but doing the check is still important for obvious
-reasons.
+can you post /proc/mtrr with disable_mtrr_cleanup?
 
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-
-
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 9c71858..4d1aa6e 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -16,6 +16,7 @@
- 
- 
- #include <linux/kernel.h>
-+#include <linux/sched.h>
- #include <linux/pci.h>
- #include <linux/stat.h>
- #include <linux/topology.h>
-@@ -502,6 +503,8 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
- 	struct resource *res = (struct resource *)attr->private;
- 	enum pci_mmap_state mmap_type;
- 	resource_size_t start, end;
-+	unsigned long map_len = vma->vm_end - vma->vm_start;
-+	unsigned long map_offset = vma->vm_pgoff << PAGE_SHIFT;
- 	int i;
- 
- 	for (i = 0; i < PCI_ROM_RESOURCE; i++)
-@@ -510,6 +513,17 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
- 	if (i >= PCI_ROM_RESOURCE)
- 		return -ENODEV;
- 
-+	/*
-+	 * Make sure the range the user is trying to map falls within
-+	 * the resource
-+	 */
-+	if (map_offset + map_len > pci_resource_len(pdev, i)) {
-+		WARN(1, "process \"%s\" tried to map 0x%08lx-0x%08lx on BAR %d (size 0x%08lx)\n",
-+		     current->comm, map_offset, map_offset + map_len, i,
-+		     (unsigned long)pci_resource_len(pdev, i));
-+		return -EINVAL;
-+	}
-+
- 	/* pci_mmap_page_range() expects the same kind of entry as coming
- 	 * from /proc/bus/pci/ which is a "user visible" value. If this is
- 	 * different from the resource itself, arch will do necessary fixup.
+YH
