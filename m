@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbYJBTFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYJBTGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755358AbYJBTFg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 15:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYJBTF1
+	id S1755345AbYJBTGe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 15:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYJBTGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 15:05:27 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55375 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753669AbYJBTF1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 15:05:27 -0400
-Date: Thu, 2 Oct 2008 12:05:21 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 01/19] pci: introduce an pci_ioremap(pdev, barnr)
- function
-Message-ID: <20081002120521.13053dfa@infradead.org>
-In-Reply-To: <200810021153.40722.jbarnes@virtuousgeek.org>
-References: <20080928163611.3df8a9e0@infradead.org>
-	<200810021153.40722.jbarnes@virtuousgeek.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 2 Oct 2008 15:06:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55591 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753813AbYJBTGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 15:06:23 -0400
+Date: Thu, 2 Oct 2008 21:06:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Noonan <steven@uplinklabs.net>
+Cc: linux-kernel@vger.kernel.org, srostedt@redhat.com
+Subject: Re: [PATCH -tip] ftrace: ktime.h not included in ftrace.h
+Message-ID: <20081002190615.GA1685@elte.hu>
+References: <1222974007-3745-1-git-send-email-steven@uplinklabs.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222974007-3745-1-git-send-email-steven@uplinklabs.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0179]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 11:53:40 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-> >
-> > Hopefully with this type of API we get less chance of mistakes in
-> > drivers with ioremap() operations.
-> >
-> > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+* Steven Noonan <steven@uplinklabs.net> wrote:
+
+> Including <linux/ktime.h> eliminates the following error:
 > 
-> Applied to my linux-next branch, thanks.  I assume you'll have Linus
-> pull the driver updates later?
+> include/linux/ftrace.h:220: error: expected specifier-qualifier-list
+> before 'ktime_t'
+> 
+> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
 
-yeah I either need to do an akpm-like "spray the maintainers" or just
-do one big pull, haven't figure it out yet
-(would be nice if I could just dump the patches on Andrew who then does
-the bombard-the-maintainers thing)
+applied to tip/tracing/ftrace, thanks Steven!
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Ingo
