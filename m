@@ -1,139 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbYJBXeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbYJBXei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754160AbYJBXeV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 19:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbYJBXd1
+	id S1755705AbYJBXei (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 19:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755643AbYJBXdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 19:33:27 -0400
-Received: from mga09.intel.com ([134.134.136.24]:14561 "EHLO mga09.intel.com"
+	Thu, 2 Oct 2008 19:33:38 -0400
+Received: from mga01.intel.com ([192.55.52.88]:57967 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754159AbYJBXd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 19:33:26 -0400
+	id S1755524AbYJBXdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 19:33:36 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,353,1220252400"; 
-   d="scan'208";a="446393133"
+   d="scan'208";a="386973946"
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: [PATCH 2.6.27-rc8 2/6] e1000e: do not ever sleep in interrupt context
+Subject: [PATCH 2.6.27-rc8 4/6] e1000e: drop stats lock
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de,
        arjan@linux.intel.com, airlied@gmail.com, davem@davemloft.net,
        jeff@garzik.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
        Thomas Gleixner <tglx@linutronix.de>
-Date: Thu, 02 Oct 2008 16:33:25 -0700
-Message-ID: <20081002233325.12556.74382.stgit@jbrandeb-bw.jf.intel.com>
+Date: Thu, 02 Oct 2008 16:33:35 -0700
+Message-ID: <20081002233335.12556.10042.stgit@jbrandeb-bw.jf.intel.com>
 In-Reply-To: <20081002233314.12556.49143.stgit@jbrandeb-bw.jf.intel.com>
 References: <20081002233314.12556.49143.stgit@jbrandeb-bw.jf.intel.com>
 User-Agent: StGIT/0.14.3.163.g06f9.dirty
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Oct 2008 23:33:25.0155 (UTC) FILETIME=[43DFB730:01C924E7]
+X-OriginalArrivalTime: 02 Oct 2008 23:33:35.0343 (UTC) FILETIME=[49F247F0:01C924E7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-e1000e was apparently calling two functions that attempted to reserve
-the SWFLAG bit for exclusive (to hardware and firmware) access to
-the PHY and NVM (aka eeprom).  These accesses could possibly call
-msleep to wait for the resource which is not allowed from interrupt
-context.
+the stats lock is left over from e1000, e1000e no longer
+has the adjust tbi stats function that required the addition
+of the stats lock to begin with.
+
+adding a mutex to acquire_swflag helped catch this one too.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 CC: Thomas Gleixner <tglx@linutronix.de>
 ---
 
- drivers/net/e1000e/e1000.h  |    2 ++
- drivers/net/e1000e/netdev.c |   31 ++++++++++++++++++++++++++++---
- 2 files changed, 30 insertions(+), 3 deletions(-)
+ drivers/net/e1000e/e1000.h  |    1 -
+ drivers/net/e1000e/netdev.c |   18 ------------------
+ 2 files changed, 0 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
-index f0c48a2..8087bda 100644
+index 8087bda..5ea6b60 100644
 --- a/drivers/net/e1000e/e1000.h
 +++ b/drivers/net/e1000e/e1000.h
-@@ -284,6 +284,8 @@ struct e1000_adapter {
- 	unsigned long led_status;
+@@ -257,7 +257,6 @@ struct e1000_adapter {
+ 	struct net_device *netdev;
+ 	struct pci_dev *pdev;
+ 	struct net_device_stats net_stats;
+-	spinlock_t stats_lock;      /* prevent concurrent stats updates */
  
- 	unsigned int flags;
-+	struct work_struct downshift_task;
-+	struct work_struct update_phy_task;
- };
- 
- struct e1000_info {
+ 	/* structs defined in e1000_hw.h */
+ 	struct e1000_hw hw;
 diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index 1f767fe..803545b 100644
+index 835b692..01e9558 100644
 --- a/drivers/net/e1000e/netdev.c
 +++ b/drivers/net/e1000e/netdev.c
-@@ -1115,6 +1115,14 @@ static void e1000_clean_rx_ring(struct e1000_adapter *adapter)
- 	writel(0, adapter->hw.hw_addr + rx_ring->tail);
- }
+@@ -2600,8 +2600,6 @@ static int __devinit e1000_sw_init(struct e1000_adapter *adapter)
+ 	/* Explicitly disable IRQ since the NIC can be in any state. */
+ 	e1000_irq_disable(adapter);
  
-+static void e1000e_downshift_workaround(struct work_struct *work)
-+{
-+	struct e1000_adapter *adapter = container_of(work,
-+					struct e1000_adapter, downshift_task);
-+
-+	e1000e_gig_downshift_workaround_ich8lan(&adapter->hw);
-+}
-+
- /**
-  * e1000_intr_msi - Interrupt Handler
-  * @irq: interrupt number
-@@ -1139,7 +1147,7 @@ static irqreturn_t e1000_intr_msi(int irq, void *data)
- 		 */
- 		if ((adapter->flags & FLAG_LSC_GIG_SPEED_DROP) &&
- 		    (!(er32(STATUS) & E1000_STATUS_LU)))
--			e1000e_gig_downshift_workaround_ich8lan(hw);
-+			schedule_work(&adapter->downshift_task);
- 
- 		/*
- 		 * 80003ES2LAN workaround-- For packet buffer work-around on
-@@ -1205,7 +1213,7 @@ static irqreturn_t e1000_intr(int irq, void *data)
- 		 */
- 		if ((adapter->flags & FLAG_LSC_GIG_SPEED_DROP) &&
- 		    (!(er32(STATUS) & E1000_STATUS_LU)))
--			e1000e_gig_downshift_workaround_ich8lan(hw);
-+			schedule_work(&adapter->downshift_task);
- 
- 		/*
- 		 * 80003ES2LAN workaround--
-@@ -2912,6 +2920,21 @@ static int e1000_set_mac(struct net_device *netdev, void *p)
+-	spin_lock_init(&adapter->stats_lock);
+-
+ 	set_bit(__E1000_DOWN, &adapter->state);
  	return 0;
- }
  
-+/**
-+ * e1000e_update_phy_task - work thread to update phy
-+ * @work: pointer to our work struct
-+ *
-+ * this worker thread exists because we must acquire a
-+ * semaphore to read the phy, which we could msleep while
-+ * waiting for it, and we can't msleep in a timer.
-+ **/
-+static void e1000e_update_phy_task(struct work_struct *work)
-+{
-+	struct e1000_adapter *adapter = container_of(work,
-+					struct e1000_adapter, update_phy_task);
-+	e1000_get_phy_info(&adapter->hw);
-+}
-+
- /*
-  * Need to wait a few seconds after link up to get diagnostic information from
-  * the phy
-@@ -2919,7 +2942,7 @@ static int e1000_set_mac(struct net_device *netdev, void *p)
- static void e1000_update_phy_info(unsigned long data)
+@@ -2953,7 +2951,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
  {
- 	struct e1000_adapter *adapter = (struct e1000_adapter *) data;
--	e1000_get_phy_info(&adapter->hw);
-+	schedule_work(&adapter->update_phy_task);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	struct pci_dev *pdev = adapter->pdev;
+-	unsigned long irq_flags;
+ 
+ 	/*
+ 	 * Prevent stats update while adapter is being reset, or if the pci
+@@ -2964,14 +2961,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
+ 	if (pci_channel_offline(pdev))
+ 		return;
+ 
+-	spin_lock_irqsave(&adapter->stats_lock, irq_flags);
+-
+-	/*
+-	 * these counters are modified from e1000_adjust_tbi_stats,
+-	 * called from the interrupt context, so they must only
+-	 * be written while holding adapter->stats_lock
+-	 */
+-
+ 	adapter->stats.crcerrs += er32(CRCERRS);
+ 	adapter->stats.gprc += er32(GPRC);
+ 	adapter->stats.gorc += er32(GORCL);
+@@ -3046,8 +3035,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
+ 	adapter->stats.mgptc += er32(MGTPTC);
+ 	adapter->stats.mgprc += er32(MGTPRC);
+ 	adapter->stats.mgpdc += er32(MGTPDC);
+-
+-	spin_unlock_irqrestore(&adapter->stats_lock, irq_flags);
  }
  
  /**
-@@ -4578,6 +4601,8 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
+@@ -3059,9 +3046,6 @@ static void e1000_phy_read_status(struct e1000_adapter *adapter)
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	struct e1000_phy_regs *phy = &adapter->phy_regs;
+ 	int ret_val;
+-	unsigned long irq_flags;
+-
+-	spin_lock_irqsave(&adapter->stats_lock, irq_flags);
  
- 	INIT_WORK(&adapter->reset_task, e1000_reset_task);
- 	INIT_WORK(&adapter->watchdog_task, e1000_watchdog_task);
-+	INIT_WORK(&adapter->downshift_task, e1000e_downshift_workaround);
-+	INIT_WORK(&adapter->update_phy_task, e1000e_update_phy_task);
+ 	if ((er32(STATUS) & E1000_STATUS_LU) &&
+ 	    (adapter->hw.phy.media_type == e1000_media_type_copper)) {
+@@ -3092,8 +3076,6 @@ static void e1000_phy_read_status(struct e1000_adapter *adapter)
+ 		phy->stat1000 = 0;
+ 		phy->estatus = (ESTATUS_1000_TFULL | ESTATUS_1000_THALF);
+ 	}
+-
+-	spin_unlock_irqrestore(&adapter->stats_lock, irq_flags);
+ }
  
- 	/* Initialize link parameters. User can change them with ethtool */
- 	adapter->hw.mac.autoneg = 1;
+ static void e1000_print_link_info(struct e1000_adapter *adapter)
 
