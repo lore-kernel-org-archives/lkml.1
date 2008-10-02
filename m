@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYJBPEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbYJBPEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYJBPEg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 11:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbYJBPEG
+	id S1755412AbYJBPEu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 11:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbYJBPEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 11:04:06 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41586 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755085AbYJBPEF (ORCPT
+	Thu, 2 Oct 2008 11:04:39 -0400
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:38533 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755323AbYJBPEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 11:04:05 -0400
-Subject: Re: [PATCH] BUG: nr_phys_segments cannot be less than
-	nr_hw_segments
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <200810021959.33616.knikanth@suse.de>
-References: <200810021959.33616.knikanth@suse.de>
-Content-Type: text/plain
-Date: Thu, 02 Oct 2008 10:03:33 -0500
-Message-Id: <1222959814.3222.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Oct 2008 11:04:38 -0400
+Date: Thu, 2 Oct 2008 16:04:23 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: MinChan Kim <minchan.kim@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] Reclaim page capture v4
+Message-ID: <20081002150423.GG11089@brain>
+References: <1222864261-22570-1-git-send-email-apw@shadowen.org> <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-02 at 19:59 +0530, Nikanth Karthikesan wrote:
-> This is a follow-up to my earlier mail http://lkml.org/lkml/2008/9/23/294 
-> ([PATCH] BUG: ll_merge_requests_fn() updates req->nr_phys_segments wrongly)
+On Thu, Oct 02, 2008 at 11:46:12AM +0900, MinChan Kim wrote:
+> Hi, Andy.
 > 
-> It is possible for the merging code to create lesser no of phys segments than 
-> hw segments, but every hw segment needs atleast one new phys segment. This 
-> triggers the BUG() on scsi_init_sgtable() as blk_rq_map_sg() returns more no 
-> of segments than rq->nr_phys_segments
+> I tested your patch in my desktop.
+> The test is just kernel compile with single thread.
+> My system environment is as follows.
 > 
-> The following blktrace shows a sequence of bio's to trigger such condition on 
-> my machine with max_sectors_kb=512 & max_hw_sectors_kb=32767.
+> model name	: Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
+> MemTotal:        2065856 kB
+> 
+> When I tested vanilla, compile time is as follows.
+> 
+> 2433.53user 187.96system 42:05.99elapsed 103%CPU (0avgtext+0avgdata
+> 0maxresident)k
+> 588752inputs+4503408outputs (127major+55456246minor)pagefaults 0swaps
+> 
+> When I tested your patch, as follows.
+> 
+> 2489.63user 202.41system 44:47.71elapsed 100%CPU (0avgtext+0avgdata
+> 0maxresident)k
+> 538608inputs+4503928outputs (130major+55531561minor)pagefaults 0swaps
+> 
+> Regresstion almost is above 2 minutes.
+> Do you think It is a trivial?
+> 
+> I know your patch is good to allocate hugepage.
+> But, I think many users don't need it, including embedded system and
+> desktop users yet.
+> 
+> So I suggest you made it enable optionally.
 
-Um, don't you mean this the other way around?  I can see this problem
-occurring if the block layer gets tricked into doing a physical merge
-where sector limits forbid a virtual merge.
+Hmmm.  I would not expect to see any significant impact for this kind of
+workload as we should not be triggering capture for the lower order
+allocations at all.  Something screwey must be occuring.  I will go and
+reproduce this here and see if I can figure out just what causes this.
 
-The bug would appear to be that we sometimes only look at q->max_sectors
-when deciding on mergability.  Either we have to insist on max_sectors
-<= hw_max_sectors, or we have to start using min(q->max_sectors,
-q->max_hw_sectors) for this.
-
-James
-
-
+-apw
