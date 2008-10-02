@@ -1,119 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbYJBJpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYJBJrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbYJBJpr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 05:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbYJBJpX
+	id S1754224AbYJBJrL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 05:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYJBJq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 05:45:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56832 "EHLO mx2.mail.elte.hu"
+	Thu, 2 Oct 2008 05:46:58 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53267 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753390AbYJBJpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 05:45:21 -0400
-Date: Thu, 2 Oct 2008 11:41:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH] ring_buffer: allocate buffer page pointer
-Message-ID: <20081002094144.GA20569@elte.hu>
-References: <20080930034603.GA13801@Krystal> <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com> <20080930092001.69849210@bike.lwn.net> <1222790072.24384.21.camel@twins> <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002020615.4840542a.akpm@linux-foundation.org>
+	id S1753325AbYJBJq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 05:46:57 -0400
+Date: Thu, 2 Oct 2008 11:45:37 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-ID: <20081002094537.GA19428@kernel.dk>
+References: <20081001200034.65eb67d6@infradead.org> <20081001215638.3a65134c.akpm@linux-foundation.org> <87fxnfpjqj.fsf@basil.nowhere.org> <20081002075511.GX19428@kernel.dk> <20081002093326.GF30001@disturbed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081002020615.4840542a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20081002093326.GF30001@disturbed>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Thu, 2 Oct 2008 10:50:30 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
+On Thu, Oct 02 2008, Dave Chinner wrote:
+> On Thu, Oct 02, 2008 at 09:55:11AM +0200, Jens Axboe wrote:
+> > On Thu, Oct 02 2008, Andi Kleen wrote:
+> > > Andrew Morton <akpm@linux-foundation.org> writes:
 > > > 
-> > > The current method of overlaying the page frame as the buffer page pointer
-> > > can be very dangerous and limits our ability to do other things with
-> > > a page from the buffer, like send it off to disk.
+> > > > On Wed, 1 Oct 2008 20:00:34 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+> > > >
+> > > >> Subject: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+> > > >
+> > > > You proposed this a while back and it didn't happen and I forget
+> > > > why and the changelog doesn't mention any of that?
 > > > 
-> > > This patch allocates the buffer_page instead of overlaying the page's
-> > > page frame. The use of the buffer_page has hardly changed due to this.
+> > > XFS tried this some time ago too.
 > > > 
-> > > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> > > ---
-> > >  kernel/trace/ring_buffer.c |   54 ++++++++++++++++++++++++++-------------------
-> > >  1 file changed, 32 insertions(+), 22 deletions(-)
+> > > I think the issue was that real user supplied RT applications don't want to 
+> > > compete with a "pseudo RT" kjournald.
+> > > 
+> > > So it would really need a new priority class between RT and normal priority.
 > > 
-> > applied to tip/tracing/ftrace, with the extended changlog below - i 
-> > think this commit warrants that extra mention.
-> > 
-> > 	Ingo
-> > 
-> > --------------->
-> > >From da78331b4ced2763322d732ac5ba275965853bde Mon Sep 17 00:00:00 2001
-> > From: Steven Rostedt <rostedt@goodmis.org>
-> > Date: Wed, 1 Oct 2008 10:52:51 -0400
-> > Subject: [PATCH] ftrace: type cast filter+verifier
-> > 
-> > The mmiotrace map had a bug that would typecast the entry from
-> > the trace to the wrong type. That is a known danger of C typecasts,
-> > there's absolutely zero checking done on them.
-> > 
-> > Help that problem a bit by using a GCC extension to implement a
-> > type filter that restricts the types that a trace record can be
-> > cast into, and by adding a dynamic check (in debug mode) to verify
-> > the type of the entry.
-> > 
-> > This patch adds a macro to assign all entries of ftrace using the type
-> > of the variable and checking the entry id. The typecasts are now done
-> > in the macro for only those types that it knows about, which should
-> > be all the types that are allowed to be read from the tracer.
-> > 
+> > Good point. I think we should mark the IO as sync, and maintain the same
+> > priority level. Any IO that ends up being waited on is sync by
+> > definition, we just need to expand the coverage a bit.
 > 
-> I'm somewhat at a loss here because I'm unable to find any version of 
-> kernel/trace/trace.c which looks anything like the one which is being 
-> patched, but...
+> That's what XFS has always done - mark the journal I/O as sync.
+> Still, once you load up the elevator, the sync I/O can still get
+> delayed for hundreds of milliseconds before dispatch, which was
+> why I started looking at boosting the priority of the log I/O.
+> It proved to be much more effective at getting the log I/O
+> dispatched than the existing "mark it sync" technique....
 
-it's in tip/tracing/ring-buffer (also tip/master), but we are still 
-working on it (i just triggered a crash with it) so i havent pushed it 
-out into the auto-ftrace-next branch yet.
+Sure, just marking it as sync is not a magic bullet. It'll be in the
+first priority for that class, but it'll share bandwidth with other
+processes. So if you have lots of IO going on, it can take hundreds of
+miliseconds before being dispatched.
 
-> > --- a/kernel/trace/trace.c
-> > +++ b/kernel/trace/trace.c
-> > @@ -1350,7 +1350,9 @@ print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
-> >  	}
-> >  	switch (entry->type) {
-> >  	case TRACE_FN: {
-> > -		struct ftrace_entry *field = (struct ftrace_entry *)entry;
-> 
-> Why was this code using a cast in the first place?  It should be using 
-> entry->some_field_i_dont_have_here?  That was the whole point in using 
-> the anonymous union in struct trace_entry?
+RT will always be faster, but mainly by virtue of there being no RT IO
+in the first place. And of course preferential treatment is given to
+this higher priority scheduling class.
 
-this whole mega-thread was about removing that union and turning the 
-tracer into a type-opaque entity. I warned about the inevitable 
-fragility - but with this type filter approach the risks should be 
-substantially lower.
+> The RT folk were happy with the idea of journal I/O using the
+> highest non-RT priority for the journal, but I never got around
+> to testing that out as I had a bunnch of other stuff to fix at
+> the time.
 
-	Ingo
+That's a good idea, just bump the priority a little bit. Arjan, did you
+test that out? I'd suggest just trying prio level 0 and still using
+best-effort scheduling. Probably still need the sync marking, would be
+interesting to experiment with though.
+
+-- 
+Jens Axboe
+
