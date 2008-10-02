@@ -1,80 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbYJBTYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbYJBT0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752941AbYJBTYR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 15:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbYJBTYD
+	id S1754667AbYJBT0R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 15:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYJBT0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 15:24:03 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37203 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754047AbYJBTYC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 15:24:02 -0400
-Date: Thu, 2 Oct 2008 15:23:59 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Daniel Walker <dwalker@mvista.com>
-cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>
-Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded interrupt
- handlers
-In-Reply-To: <1222974254.2995.144.camel@laptop-eth>
-Message-ID: <alpine.DEB.1.10.0810021520560.2919@gandalf.stny.rr.com>
-References: <20081001223213.078984344@linutronix.de>  <1222912413.2995.80.camel@laptop-eth.lan>  <alpine.DEB.1.10.0810021052010.19018@gandalf.stny.rr.com>  <1222962525.2995.100.camel@laptop-eth>  <alpine.LFD.1.10.0810022004520.5549@apollo.tec.linutronix.de>
- <1222974254.2995.144.camel@laptop-eth>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Oct 2008 15:26:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55346 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753982AbYJBT0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 15:26:02 -0400
+Subject: Re: [RFC] 0/11 fanotify: fscking all notifiction and file access
+	system (intended for antivirus scanning and file indexers)
+From: Eric Paris <eparis@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       arjan@infradead.org, bunk@kernel.org, tytso@mit.edu,
+       tvrtko.ursulin@sophos.com, david@lang.hm, hch@infradead.org,
+       andi@firstfloor.org, viro@ZenIV.linux.org.uk, peterz@infradead.org,
+       Jonathan.Press@ca.com, riel@redhat.com, greg@kroah.com
+In-Reply-To: <20080926223404.7c4894df@lxorguk.ukuu.org.uk>
+References: <1222463220.2872.193.camel@localhost.localdomain>
+	 <20080926223404.7c4894df@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Thu, 02 Oct 2008 15:24:51 -0400
+Message-Id: <1222975491.28251.202.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-09-26 at 22:34 +0100, Alan Cox wrote:
 
-On Thu, 2 Oct 2008, Daniel Walker wrote:
+> The two discussions are fortunately orthogonal. Is there any reason you
+> can't use the socket based notification model - that gives you a much
+> more natural way to express the thing
+> 
+> 
+> 		socket
+> 		bind(AF_FAN, group=foo+flags etc, PF_FAN);
+> 
+> 		fd = accept(old_fd, &addr[returned info])
+> 
+> 		close(fd);
+> 
+> as well as fairly natural and importantly standards defined semantics for
+> poll including polling for a new file handles, for reconfiguration of
+> stuff via get/setsockopt (which do pass stuff like object sizes unlike
+> ioctls) and for reading/writing data.
 
-> On Thu, 2008-10-02 at 20:42 +0200, Thomas Gleixner wrote:
-> 
-> > Clearly you have neither clue about real time nor about operating
-> > systems in general. 
-> 
-> Here we go again Thomas.. You think you can have a conversation without
-> the insults for once?
-> 
-> > Solaris, some BSDs and MacOSX use interrupt threads. Where exactly is
-> > the relation to realtime?
-> 
-> The very fact that you mention it in your release notes .. You mention
-> the type of system in "preempt-rt" and the advantage of your system..
-> 
-> > The concept of interrupt threads is nothing which is in any way
-> > related to real time. It is a well known and pretty old concept in
-> > operating system design.
-> > 
-> > The fact that real time operating systems benefit from interrupt
-> > threads is a totally different topic.
-> > 
-> 
-> The fact that a direct relationship exists means that any threaded
-> interrupt system needs to take into account the inevitable connection to
-> real time since it will be used in that system as a core component.. If
-> you can't effectively achieve real time with your system , than that's a
-> problem that needs to be addressed. 
+An hour, a whiteboard, 3 other hackers and I think I have a handle on
+something you might like a little more.
 
-Daniel, what kind of logic is this? I was already accused of being on 
-crack today (but was just too much coffee). Perhaps you might be the one 
-that's on crack.
+groups will be 'created' when you call bind().  the struct sockaddr will
+include a priority and an event mask.  Group names will be eliminated
+since priorities must be unique.  Two processes will be allowed to
+bind() to the same priority if the mask is the same.  Those will be
+considered to be in the same 'group.'
 
-I build a pipe. There exists a relationship between a pipe and crap 
-running through it from my toilet. Does this mean that every time I need a 
-pipe, that I need to take into account the inevitable connection to crap 
-to run through it?
+groups will be destroy when ALL fd's associated with that group are
+closed.
 
-God, I can see the problems with my gas lines.
+calling accept() on the socket from bind will return a new fd.  This fd
+will be created in the kernel using dentry_open() (just like i do it
+today) only I will then try to overload and bastardize the new file to
+add additional support so that this it will allow sendmsg() with flags =
+MSG_OOB or setsockopt().  I'll also present an alternative below.
 
--- Steve
+the struct sockaddr from the accept() will be filled with a something
+like
+
+struct fan_sockaddr {
+	int version;
+	unsigned int mask;
+	pid_t pid;
+	pid_t tgid;
+	int f_flags;
+}
+
+so this will be a binary interface for metadata.  Sending the metadata
+about the open fd up the sockaddrs is very slick, but not easily
+extended that I can see.  Guess we need to get the metadata right the
+first time.
+
+One way to do responses from the listeners (like access decisions and
+fastpath entries) would be by sending a message back down the new fd
+using sendmsg(MSG_OOB).  The PF_FAN 'stuff' should be able to get this
+message and do its magic.  I don't have a format for this message
+thought up.  Maybe __u32 len, __u32 version, do whatever.  Maybe people
+would prefer I bastardize on setsockopts() for this new fd send to the
+listener?  Alternative still to come...
+
+Some operations a listener program might want to do may not be
+associated with an event.  This might include flushing all fastpaths on
+a definitions update or preemptively adding a fastpath entry for an fd.
+I suggest calling connect() on the bound fd to connect to the kernel
+PF_FAN system.  This new fd from connect can then take commands using
+either sendmsg() or setsockopt() or really anything since it doesn't
+have a 'real file' on the backend.
+
+Is this reasonable?  I don't even know the technical hurdles I'm going
+to get trying to take a regular file that would pass S_ISREG and adding
+on sendmesg() or setsockopt().
+
+So the alternative would be that I could make ALL listener->kernel
+communication go over the fd that came from connect().  Setting a
+fastpath would be something like
+
+setsockopt(connect_fd, FAN_LEVEL, fastpath_val, fastpath_struct, len);
+
+with fastpath_struct something like
+
+struct fastpath {
+	int fd;
+	unsigned int mask
+}
+
+Where fd was a currently open fd in the listener process that the
+fastpath was intended to be applied to.  If I'm using a fd from connect
+I can really use any method I want but setsockopt() seems nice since it
+includes types and lens.  Is is it bad to have a fd whose only
+implemented function is setsockopt?
+
+-Eric
 
