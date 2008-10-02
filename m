@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbYJBJGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbYJBJGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753032AbYJBJGA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 05:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYJBJFx
+	id S1754523AbYJBJGl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 05:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbYJBJG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 05:05:53 -0400
-Received: from lirone.symas.net ([64.71.152.235]:52674 "EHLO lirone.symas.net"
+	Thu, 2 Oct 2008 05:06:28 -0400
+Received: from www.tglx.de ([62.245.132.106]:49447 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674AbYJBJFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 05:05:52 -0400
-Message-ID: <48E48EE9.9090900@symas.com>
-Date: Thu, 02 Oct 2008 02:05:45 -0700
-From: Howard Chu <hyc@symas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; rv:1.9.1b1pre) Gecko/20080917130338 SeaMonkey/2.0a1pre
+	id S1752649AbYJBJG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 05:06:26 -0400
+Date: Thu, 2 Oct 2008 11:05:59 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>, jeff@garzik.org,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Bruce Allan <bruce.w.allan@intel.com>
+Subject: Re: [PATCH] e1000e: write protect ICHx NVM to prevent malicious
+ write/erase
+In-Reply-To: <48E424EB.1000204@linux.intel.com>
+Message-ID: <alpine.LFD.1.10.0810021102000.5549@apollo.tec.linutronix.de>
+References: <20081002001830.5951.3123.stgit@jbrandeb-bw.jf.intel.com> <20081002001835.5951.82533.stgit@jbrandeb-bw.jf.intel.com> <alpine.LFD.2.00.0810011731350.3341@nehalem.linux-foundation.org> <48E424EB.1000204@linux.intel.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: APIC frequency too slow on HP dv5z
-References: <48E28443.7060708@symas.com> <alpine.LFD.1.10.0810021052410.5549@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0810021052410.5549@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Tue, 30 Sep 2008, Howard Chu wrote:
->
->> More often than not, on a warm boot I see something like this
->>
->> msg.new:[    1.940031] Using local APIC timer interrupts.
->> msg.new:[    1.944031] APIC timer calibration result 466046
->> msg.new:[    1.944031] Detected 0.466 MHz APIC timer.
->> msg.new:[    1.944031] APIC frequency too slow, disabling apic timer
->>
->> On cold boots it may see 12.5MHz, or may not...
->>
->> [    2.000584] Using local APIC timer interrupts.
->> [    2.004067] APIC timer calibration result 12500236
->> [    2.004080] Detected 12.500 MHz APIC timer.
->>
->> I haven't figured out yet what the pattern is behind the behavior. Has anyone
->> else seen this kind of problem before?
->
-> Hmm, strange. Which kernel version ?
+On Wed, 1 Oct 2008, Arjan van de Ven wrote:
 
-I only started paying attention recently. 2.6.27-rc4 thru rc7 for sure. I'm 
-running rc7 right now, that's what those log snippets are from.
+> Linus Torvalds wrote:
+> > 
+> > On Wed, 1 Oct 2008, Jesse Brandeburg wrote:
+> > > From: Bruce Allan <bruce.w.allan@intel.com>
+> > > 
+> > > Set the hardware to ignore all write/erase cycles to the GbE region in
+> > > the ICHx NVM.  This feature can be disabled by the WriteProtectNVM module
+> > > parameter (enabled by default) only after a hardware reset, but
+> > > the machine must be power cycled before trying to enable writes.
+> > 
+> > Thanks, applied.
+> > 
+> > One thing that I did notice when I looked at the driver is that I don't see
+> > any serialization what-so-ever around a lot of the special accesses.
+> > 
+> 
+> there's quite a few of that yes.
+> These are all fixed afaik but these fixes are being queued for 2.6.28 rather
+> than being snuck in late into .27
+> (the patches have been posted to lkml a few times the last week)
 
--- 
-   -- Howard Chu
-   CTO, Symas Corp.           http://www.symas.com
-   Director, Highland Sun     http://highlandsun.com/hyc/
-   Chief Architect, OpenLDAP  http://www.openldap.org/project/
+Hmm. The mutex around the nvram acquire catched at least a couple of
+problems and IMHO they are serious enough to go into .27. At least to
+make sure that we do not accidentaly reenter the nvram functions under
+any circumstances.
+
+Thanks,
+
+	tglx
