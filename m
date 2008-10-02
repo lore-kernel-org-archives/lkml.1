@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbYJBG5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbYJBG7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753723AbYJBG5j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 02:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYJBG5a
+	id S1753942AbYJBG7W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 02:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYJBG7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 02:57:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60802 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbYJBG53 (ORCPT
+	Thu, 2 Oct 2008 02:59:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:64505 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751552AbYJBG7N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 02:57:29 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081001200034.65eb67d6@infradead.org>
-	<20081001215638.3a65134c.akpm@linux-foundation.org>
-Date: Thu, 02 Oct 2008 08:57:24 +0200
-In-Reply-To: <20081001215638.3a65134c.akpm@linux-foundation.org> (Andrew Morton's message of "Wed, 1 Oct 2008 21:56:38 -0700")
-Message-ID: <87fxnfpjqj.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Thu, 2 Oct 2008 02:59:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=aPsowuNkEeZmbZ4SzF1fI7g4RIohwdHWi1pZpqz4Zsj8Yam+IWuAXP/R/rEm4ABtF/
+         0roPzfEaNKu6FSyCuHrLege8IG7lEM3TE7J0pcC7Uncdf18EeWvj6unUp5z9NQN8Bp5v
+         PGF+8k81iXaQ9DzZYqp2NM00bWIAXDDNtCLyI=
+Message-ID: <b9df5fa10810012359oac41498sf716ce51b39a36ce@mail.gmail.com>
+Date: Thu, 2 Oct 2008 12:59:11 +0600
+From: "Rakib Mullick" <rakib.mullick@gmail.com>
+To: mb@bu3sch.de
+Subject: [PATCH] drivers/gpio/bt8xxgpio.c Fix compilation warning.
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+drivers/gpio/bt8xxgpio.c: In function `bt8xxgpio_remove':
+drivers/gpio/bt8xxgpio.c:247: warning: ignoring return value of
+`gpiochip_remove', declared with attribute warn_unused_result
 
-> On Wed, 1 Oct 2008 20:00:34 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
->
->> Subject: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
->
-> You proposed this a while back and it didn't happen and I forget
-> why and the changelog doesn't mention any of that?
+Following patch removes the above warning.
+Thanks.
 
-XFS tried this some time ago too.
+Signed-off-by:	Md.Rakib H. Mullick (rakib.mullick@gmail.com)
 
-I think the issue was that real user supplied RT applications don't want to 
-compete with a "pseudo RT" kjournald.
+--- linux-2.6.27-rc8.orig/drivers/gpio/bt8xxgpio.c	2008-10-01
+19:20:59.000000000 +0600
++++ linux-2.6.27-rc8/drivers/gpio/bt8xxgpio.c	2008-10-02
+12:30:26.374544032 +0600
+@@ -242,9 +242,14 @@ err_freebg:
 
-So it would really need a new priority class between RT and normal priority.
+ static void bt8xxgpio_remove(struct pci_dev *pdev)
+ {
++	int err;
+ 	struct bt8xxgpio *bg = pci_get_drvdata(pdev);
 
--Andi
+-	gpiochip_remove(&bg->gpio);
++	err = gpiochip_remove(&bg->gpio);
++	if (err) {
++		printk(KERN_ERR "bt8xxgpio: Resource busy. Failed to remove.\n");
++		return ;
++	}
 
--- 
-ak@linux.intel.com
+ 	bgwrite(0, BT848_INT_MASK);
+ 	bgwrite(~0x0, BT848_INT_STAT);
