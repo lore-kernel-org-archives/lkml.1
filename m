@@ -1,77 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbYJBFUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbYJBFXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753065AbYJBFUZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 01:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbYJBFUL
+	id S1753343AbYJBFXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 01:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbYJBFXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 01:20:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:60237 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbYJBFUK (ORCPT
+	Thu, 2 Oct 2008 01:23:07 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52079 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751921AbYJBFXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 01:20:10 -0400
-Date: Thu, 2 Oct 2008 01:20:08 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jon Masters <jonathan@jonmasters.org>
-cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Sven Dietrich <sdietrich@suse.de>
-Subject: Re: [RFC patch 5/5] genirq: make irq threading robust
-In-Reply-To: <1222908751.31183.79.camel@perihelion.int.jonmasters.org>
-Message-ID: <alpine.DEB.1.10.0810020111450.11373@gandalf.stny.rr.com>
-References: <20081001223213.078984344@linutronix.de>  <20081001223302.210089249@linutronix.de> <1222908751.31183.79.camel@perihelion.int.jonmasters.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Oct 2008 01:23:04 -0400
+Date: Thu, 2 Oct 2008 14:27:34 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] memory hotplug: missing zone->lock in
+ test_pages_isolated()
+Message-Id: <20081002142734.1dfac4c7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1222882068.4846.31.camel@localhost.localdomain>
+References: <1222882068.4846.31.camel@localhost.localdomain>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 01 Oct 2008 19:27:48 +0200
+Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
 
-On Wed, 1 Oct 2008, Jon Masters wrote:
-
-> On Wed, 2008-10-01 at 23:02 +0000, Thomas Gleixner wrote:
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 > 
-> > To make sure that a crashed irq thread does not cause more trouble
-> > when the irq code tries to wake up a gone thread or the device code
-> > calling free_irq and trying to kthread_stop the dead thread, we plug a
-> > pointer to irqaction into task_struct, which is evaluated in
-> > do_exit(). When the thread crashes the do_exit code marks the thread
-> > as DIED in irqaction->flags to prevent further wakeups from the
-> > interrupt handler code.
+> __test_page_isolated_in_pageblock() in mm/page_isolation.c has a comment
+> saying that the caller must hold zone->lock. But the only caller of that
+> function, test_pages_isolated(), does not hold zone->lock and the lock is
+> also not acquired anywhere before. This patch adds the missing zone->lock
+> to test_pages_isolated().
 > 
-> > @@ -1301,6 +1301,7 @@ struct task_struct {
-> >  	int latency_record_count;
-> >  	struct latency_record latency_record[LT_SAVECOUNT];
-> >  #endif
-> > +	struct irqaction *irqaction;
-> >  };
+Hmmmm ? my bad..
+Of course, zone->lock is necessary. Thank you for test.
+
+
+> We reproducibly run into BUG_ON(!PageBuddy(page)) in __offline_isolated_pages()
+> during memory hotplug stress test, see trace below. This patch fixes that
+> problem, it would be good if we could have it in 2.6.27.
 > 
-> Is that going to fly? For the vast majority of task_structs this is now
-> a wasted 4/8 bytes that won't be used.
 
-Perhaps we could convert parts of the task_struct into a union.
-There is quite a lot of things that I'm not sure kernel threads use.
+I agree to 2.6.27.
 
-fpu_counter? well, it is only one byte.
-binfmt?
+Thanks
+-Kame
 
-Do kernel threads use group_leader?
 
-What about the ptraced items?
+> <2>kernel BUG at /home/autobuild/BUILD/linux-2.6.26-20080909/mm/page_alloc.c:4561!
+> <4>illegal operation: 0001 [#1] PREEMPT SMP
+> <4>Modules linked in: dm_multipath sunrpc bonding qeth_l3 dm_mod qeth ccwgroup vmur
+> <4>CPU: 1 Not tainted 2.6.26-29.x.20080909-s390default #1
+> <4>Process memory_loop_all (pid: 10025, task: 2f444028, ksp: 2b10dd28)
+> <4>Krnl PSW : 040c0000 801727ea (__offline_isolated_pages+0x18e/0x1c4)
+> <4> R:0 T:1 IO:0 EX:0 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0
+> <4>Krnl GPRS: 00000000 7e27fc00 00000000 7e27fc00
+> <4> 00000000 00000400 00014000 7e27fc01
+> <4> 00606f00 7e27fc00 00013fe0 2b10dd28
+> <4> 00000005 80172662 801727b2 2b10dd28
+> <4>Krnl Code: 801727de: 5810900c l %r1,12(%r9)
+> <4> 801727e2: a7f4ffb3 brc 15,80172748
+> <4> 801727e6: a7f40001 brc 15,801727e8
+> <4> >801727ea: a7f4ffbc brc 15,80172762
+> <4> 801727ee: a7f40001 brc 15,801727f0
+> <4> 801727f2: a7f4ffaf brc 15,80172750
+> <4> 801727f6: 0707 bcr 0,%r7
+> <4> 801727f8: 0017 unknown
+> <4>Call Trace:
+> <4>([<0000000000172772>] __offline_isolated_pages+0x116/0x1c4)
+> <4> [<00000000001953a2>] offline_isolated_pages_cb+0x22/0x34
+> <4> [<000000000013164c>] walk_memory_resource+0xcc/0x11c
+> <4> [<000000000019520e>] offline_pages+0x36a/0x498
+> <4> [<00000000001004d6>] remove_memory+0x36/0x44
+> <4> [<000000000028fb06>] memory_block_change_state+0x112/0x150
+> <4> [<000000000028ffb8>] store_mem_state+0x90/0xe4
+> <4> [<0000000000289c00>] sysdev_store+0x34/0x40
+> <4> [<00000000001ee048>] sysfs_write_file+0xd0/0x178
+> <4> [<000000000019b1a8>] vfs_write+0x74/0x118
+> <4> [<000000000019b9ae>] sys_write+0x46/0x7c
+> <4> [<000000000011160e>] sysc_do_restart+0x12/0x16
+> <4> [<0000000077f3e8ca>] 0x77f3e8ca
+> 
+> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> 
+> ---
+>  mm/page_isolation.c |   12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/mm/page_isolation.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page_isolation.c
+> +++ linux-2.6/mm/page_isolation.c
+> @@ -114,8 +114,10 @@ __test_page_isolated_in_pageblock(unsign
+>  
+>  int test_pages_isolated(unsigned long start_pfn, unsigned long end_pfn)
+>  {
+> -	unsigned long pfn;
+> +	unsigned long pfn, flags;
+>  	struct page *page;
+> +	struct zone *zone;
+> +	int ret;
+>  
+>  	pfn = start_pfn;
+>  	/*
+> @@ -131,7 +133,9 @@ int test_pages_isolated(unsigned long st
+>  	if (pfn < end_pfn)
+>  		return -EBUSY;
+>  	/* Check all pages are free or Marked as ISOLATED */
+> -	if (__test_page_isolated_in_pageblock(start_pfn, end_pfn))
+> -		return 0;
+> -	return -EBUSY;
+> +	zone = page_zone(pfn_to_page(pfn));
+> +	spin_lock_irqsave(&zone->lock, flags);
+> +	ret = __test_page_isolated_in_pageblock(start_pfn, end_pfn);
+> +	spin_unlock_irqrestore(&zone->lock, flags);
+> +	return ret ? 0 : -EBUSY;
+>  }
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-group ids/info on kernel threads?
-
-do kernel threads need robust futex info?
-
-This was just a quick look at the task struct. Perhaps we could separate
-out kernel only and user space only info and bring the total size down?
-
-Although I'm not sure how much is there that is kernel_thread only :-/
-Of course this irqaction will be.
-
--- Steve
