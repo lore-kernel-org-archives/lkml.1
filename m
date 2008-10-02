@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYJBTpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbYJBTpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbYJBTpT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 15:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYJBTpH
+	id S1755184AbYJBTpj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 15:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbYJBTpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 15:45:07 -0400
-Received: from ik-out-1112.google.com ([66.249.90.177]:5208 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753801AbYJBTpF (ORCPT
+	Thu, 2 Oct 2008 15:45:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35332 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754829AbYJBTpV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 15:45:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:content-disposition:from:date:cc:mime-version
-         :content-type:content-transfer-encoding:message-id;
-        b=MXuMr5onXNS/pIwmOfYr4Mqe/K61gOaiKxtJQI1CAUbF6dYZWL7od5q8ga/096wlTw
-         Oxru9bdTjF3wZe0juEu+ZI5Muv/2vDIRQyQoPNCI1XSgHKuNRZbAFWpRmGTdUFD1CNIz
-         RS/QwCYo/nSWU0n10gWxJ0L92vhRoMg7DISfw=
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Sigmatel stac92hd71b7 low HP volume
-Content-Disposition: inline
-From: Klaas De Craemer <klaasdc@gmail.com>
-Date: Thu, 2 Oct 2008 21:45:03 +0200
-Cc: perex@perex.cz
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 2 Oct 2008 15:45:21 -0400
+Date: Thu, 2 Oct 2008 12:44:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH] Improve buffered streaming write ordering
+Message-Id: <20081002124433.f6612036.akpm@linux-foundation.org>
+In-Reply-To: <20081002181856.GB29613@skywalker>
+References: <1222886451.9158.34.camel@think.oraclecorp.com>
+	<20081001215239.ee2ae63f.akpm@linux-foundation.org>
+	<1222950054.6745.18.camel@think.oraclecorp.com>
+	<20081002181856.GB29613@skywalker>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200810022145.03535.klaasdc@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, 2 Oct 2008 23:48:56 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-Below is my patch for an issue on Dell E6500 notebooks with the Sigmatel stac92hd71b7 codec. In the default snd-hda-intel configuration, the sound going to the headphone jack goes comes directly from the DAC, resulting in very low volume output. The patch changes the codec's widget connections so that the internal mixer is put in between and sets its input amplifiers to the maximum value. The output to the internal speaker port has been left untouched.
-I have tested this and it gives a much better output.
+> > 
+> > For a 4.5GB streaming buffered write, this printk inside
+> > ext4_da_writepage shows up 37,2429 times in /var/log/messages.
+> > 
+> 
+> Part of that can happen due to shrink_page_list -> pageout -> writepagee
+> call back with lots of unallocated buffer_heads(blocks).
 
-Klaas De Craemer
+That workload shouldn't be using that code path much at all.  It's
+supposed to be the case that pdflush and balance_dirty_pages() do most
+of the writeback work.
 
+And that _used_ to be the case, but we broke it.  It happened several
+years ago and I wasn't able to provoke anyone into finding out why. 
+iirc the XFS guys noticed it because their throughput was fairly badly
+affected.
 
-diff -uNr linux-2.6.26.5/sound/pci/hda/patch_sigmatel.c linux-2.6.26.5.new/sound/pci/hda/patch_sigmatel.c
---- linux-2.6.26.5/sound/pci/hda/patch_sigmatel.c	2008-09-08 19:40:20.000000000 +0200
-+++ linux-2.6.26.5.new/sound/pci/hda/patch_sigmatel.c	2008-10-02 20:08:51.000000000 +0200
-@@ -624,6 +624,22 @@
- 	{}
- };
- 
-+static struct hda_verb stac92hd71b7_core_init[] = {
-+	/* set master volume and direct control */
-+	{ 0x28, AC_VERB_SET_VOLUME_KNOB_CONTROL, 0xff},
-+	/* connect headphone jack to mixer */
-+	{ 0x0a, AC_VERB_SET_CONNECT_SEL, 0x02},
-+	/* unmute right and left channels for nodes 0x0a, 0xd, 0x0f */
-+	{ 0x0a, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
-+	{ 0x0d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
-+	{ 0x0f, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
-+
-+	/* Increase mixer volume for the two dac's */
-+	{ 0x17, 0x370, 0x7f },
-+	{ 0x17, 0x371, 0x7f },
-+	{}
-+};
-+
- static struct hda_verb stac92hd71bxx_core_init[] = {
- 	/* set master volume and direct control */
- 	{ 0x28, AC_VERB_SET_VOLUME_KNOB_CONTROL, 0xff},
-@@ -3642,6 +3658,10 @@
- 		spec->mixer = stac92hd71bxx_mixer;
- 		spec->init = stac92hd71bxx_core_init;
- 		break;
-+	case 0x111d76b2: /* Dell E6500 stac92hd71b7 configuration */
-+		spec->mixer = stac92hd71bxx_mixer;
-+		spec->init = stac92hd71b7_core_init;
-+		break;
- 	default:
- 		spec->mixer = stac92hd71bxx_analog_mixer;
- 		spec->init = stac92hd71bxx_analog_core_init;
