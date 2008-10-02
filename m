@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYJBJC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbYJBJGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYJBJC7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 05:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYJBJCw
+	id S1753032AbYJBJGA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 05:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYJBJFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 05:02:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43786 "EHLO mx3.mail.elte.hu"
+	Thu, 2 Oct 2008 05:05:53 -0400
+Received: from lirone.symas.net ([64.71.152.235]:52674 "EHLO lirone.symas.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752875AbYJBJCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 05:02:51 -0400
-Date: Thu, 2 Oct 2008 11:02:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Steven Noonan <steven@uplinklabs.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/serial/8250.c: 'i' may be used uninitialized
-Message-ID: <20081002090246.GD3550@elte.hu>
-References: <f488382f0810010136t6280c10dg80458e3e9f02f598@mail.gmail.com> <1222850827-30522-1-git-send-email-steven@uplinklabs.net> <20081001223645.23ad0e5e@lxorguk.ukuu.org.uk>
+	id S1752674AbYJBJFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 05:05:52 -0400
+Message-ID: <48E48EE9.9090900@symas.com>
+Date: Thu, 02 Oct 2008 02:05:45 -0700
+From: Howard Chu <hyc@symas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; rv:1.9.1b1pre) Gecko/20080917130338 SeaMonkey/2.0a1pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081001223645.23ad0e5e@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: APIC frequency too slow on HP dv5z
+References: <48E28443.7060708@symas.com> <alpine.LFD.1.10.0810021052410.5549@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0810021052410.5549@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas Gleixner wrote:
+> On Tue, 30 Sep 2008, Howard Chu wrote:
+>
+>> More often than not, on a warm boot I see something like this
+>>
+>> msg.new:[    1.940031] Using local APIC timer interrupts.
+>> msg.new:[    1.944031] APIC timer calibration result 466046
+>> msg.new:[    1.944031] Detected 0.466 MHz APIC timer.
+>> msg.new:[    1.944031] APIC frequency too slow, disabling apic timer
+>>
+>> On cold boots it may see 12.5MHz, or may not...
+>>
+>> [    2.000584] Using local APIC timer interrupts.
+>> [    2.004067] APIC timer calibration result 12500236
+>> [    2.004080] Detected 12.500 MHz APIC timer.
+>>
+>> I haven't figured out yet what the pattern is behind the behavior. Has anyone
+>> else seen this kind of problem before?
+>
+> Hmm, strange. Which kernel version ?
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+I only started paying attention recently. 2.6.27-rc4 thru rc7 for sure. I'm 
+running rc7 right now, that's what those log snippets are from.
 
-> On Wed,  1 Oct 2008 01:47:07 -0700
-> Steven Noonan <steven@uplinklabs.net> wrote:
-> 
-> > serial_unlink_irq_chain() does not initialize iterator 'i', and that is
-> > correct logically because it is always initialized, either in the
-> > hlist_for_each or in the conditional immediately after (which fires if
-> > hlist_for_each comes up empty-handed). GCC does not realize this
-> > connection and emits a false warning. Annotate it with uninitialized_var().
-> > 
-> > Signed-off-by: Steven Noonan <steven@uplinklabs.net>
-> 
-> Ok definitive NAK. gcc 4.3.0 can work this out and doesn't produce a 
-> warning. Thanks for sending the patch though (and to the gcc folks for 
-> rendering it unnecessary)
-
-thanks for sorting it out! A CONFIG_CC_DISABLE_WARNING_ANNOTATIONS=y 
-might be useful as well, which could be used periodically (by gcc folks) 
-to check which warnings are hidden by annotations?
-
-	Ingo
+-- 
+   -- Howard Chu
+   CTO, Symas Corp.           http://www.symas.com
+   Director, Highland Sun     http://highlandsun.com/hyc/
+   Chief Architect, OpenLDAP  http://www.openldap.org/project/
