@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbYJBRHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYJBRMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbYJBRHi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 13:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbYJBRHb
+	id S1754658AbYJBRMY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 13:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbYJBRMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 13:07:31 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:54721 "EHLO pasmtpA.tele.dk"
+	Thu, 2 Oct 2008 13:12:17 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:38210 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753169AbYJBRHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 13:07:30 -0400
-Date: Thu, 2 Oct 2008 19:07:10 +0200
+	id S1754020AbYJBRMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 13:12:16 -0400
+Date: Thu, 2 Oct 2008 19:11:56 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: neilb@suse.de, agk@sourceware.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: Re: [PATCH 5/7] block: Find bio sector offset given idx and offset
-Message-ID: <20081002170709.GM19428@kernel.dk>
-References: <1222846723-18213-1-git-send-email-martin.petersen@oracle.com> <1222846723-18213-6-git-send-email-martin.petersen@oracle.com> <20081001081056.GB19428@kernel.dk> <yq163obiuoi.fsf@sermon.lab.mkp.net>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-ID: <20081002171155.GN19428@kernel.dk>
+References: <20081001200034.65eb67d6@infradead.org> <20081001215638.3a65134c.akpm@linux-foundation.org> <20081002060553.3cd32c5c@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <yq163obiuoi.fsf@sermon.lab.mkp.net>
+In-Reply-To: <20081002060553.3cd32c5c@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 01 2008, Martin K. Petersen wrote:
-> >>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
+On Thu, Oct 02 2008, Arjan van de Ven wrote:
+> On Wed, 1 Oct 2008 21:56:38 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Jens> Too may BUG's there, me thinks, and the interface looks
-> Jens> fragile. What if the bio is alreday done (bi_idx == bi_vcnt)?
+> > On Wed, 1 Oct 2008 20:00:34 -0700 Arjan van de Ven
+> > <arjan@infradead.org> wrote:
+> > 
+> > > Subject: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+> > 
+> > You proposed this a while back
 > 
-> Good point!  Obviously I've only used the function for bio splitting
-> and not at completion time.  Updated patch below.
+> one year ago to be precise
 > 
+> >and it didn't happen and I forget
+> > why and the changelog doesn't mention any of that?
 > 
-> block: Find bio sector offset given idx and offset
-> 
-> Helper function to find the sector offset in a bio given bvec index
-> and page offset.
+> Jens didn't like the APi I used back then.
+> Since then the kernel grew (by Jens) a clean API to do the same...
 
-Looks good, I've applied patches 1-5.
+Actually I don't think I changed anything, did I? IIRC, I just pointed
+you at the API :-)
 
 -- 
 Jens Axboe
