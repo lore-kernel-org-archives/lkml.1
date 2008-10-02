@@ -1,89 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbYJBVi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbYJBVnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755090AbYJBVi6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 17:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbYJBViu
+	id S1755087AbYJBVnh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 17:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbYJBVna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 17:38:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51977 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754349AbYJBVit (ORCPT
+	Thu, 2 Oct 2008 17:43:30 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:39076 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754332AbYJBVn3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 17:38:49 -0400
-Date: Thu, 2 Oct 2008 14:37:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: arjan@infradead.org, david@fromorbit.com, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-Id: <20081002143713.2f8ebc04.akpm@linux-foundation.org>
-In-Reply-To: <20081002192223.GP19428@kernel.dk>
-References: <20081001200034.65eb67d6@infradead.org>
-	<20081001215638.3a65134c.akpm@linux-foundation.org>
-	<87fxnfpjqj.fsf@basil.nowhere.org>
-	<20081002075511.GX19428@kernel.dk>
-	<20081002093326.GF30001@disturbed>
-	<20081002094537.GA19428@kernel.dk>
-	<20081002120408.21585949@infradead.org>
-	<20081002192223.GP19428@kernel.dk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Oct 2008 17:43:29 -0400
+Date: Thu, 2 Oct 2008 15:43:08 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Remove completion from struct klist_node
+Message-ID: <20081002214308.GP13822@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 21:22:23 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> > @@ -131,6 +132,17 @@ static int kjournald(void *arg)
-> >  			journal->j_commit_interval / HZ);
-> >  
-> >  	/*
-> > +	 * kjournald is the process on which most other processes depend on
-> > +	 * for doing the filesystem portion of their IO. As such, there exists
-> > +	 * the equivalent of a priority inversion situation, where kjournald
-> > +	 * would get less priority as it should.
-> > +	 *
-> > +	 * For this reason we set to "medium real time priority", which is higher
-> > +	 * than regular tasks, but not infinitely powerful.
-> > +	 */
-> > +	set_task_ioprio(current, IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 0));
-> > +
-> > +	/*
-> >  	 * And now, wait forever for commit wakeup events.
-> >  	 */
-> >  	spin_lock(&journal->j_state_lock);
-> > diff --git a/include/linux/ioprio.h b/include/linux/ioprio.h
-> > index f98a656..76dad48 100644
-> > --- a/include/linux/ioprio.h
-> > +++ b/include/linux/ioprio.h
-> > @@ -86,4 +86,6 @@ static inline int task_nice_ioclass(struct task_struct *task)
-> >   */
-> >  extern int ioprio_best(unsigned short aprio, unsigned short bprio);
-> >  
-> > +extern int set_task_ioprio(struct task_struct *task, int ioprio);
-> > +
-> >  #endif
-> > -- 
-> > 1.5.5.1
-> 
-> Can we agree on this patch?
+Removing the completion from klist_node reduces its size from 64 bytes
+to 28 on x86-64.  To maintain the semantics of klist_remove(), we add
+a single list of klist nodes which are pending deletion and scan them.
 
-This change will cause _all_ kjournald writeout to have elevated
-priority.  The majority of that writeout (in data=ordered mode) is file
-data, which we didn't intend to change.
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
-The risk here is that this will *worsen* latency for plain old read(),
-because now kjournald writeout will be favoured.
+ include/linux/klist.h |    2 --
+ lib/klist.c           |   48 ++++++++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 44 insertions(+), 6 deletions(-)
 
-There is in fact a good argument for _reducing_ kjournald's IO
-priority, not increasing it!
-
-A better approach might be to mark the relevant buffers/bios as needing
-higher priority at submit_bh() time (if that's possible).  At least
-that way we don't accidentally elevate the priority of the bulk data.
-
-
-It's a bit of a hack, sorry :(
+diff --git a/include/linux/klist.h b/include/linux/klist.h
+index 06c338e..989a335 100644
+--- a/include/linux/klist.h
++++ b/include/linux/klist.h
+@@ -13,7 +13,6 @@
+ #define _LINUX_KLIST_H
+ 
+ #include <linux/spinlock.h>
+-#include <linux/completion.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ 
+@@ -41,7 +40,6 @@ struct klist_node {
+ 	struct klist		*n_klist;
+ 	struct list_head	n_node;
+ 	struct kref		n_ref;
+-	struct completion	n_removed;
+ };
+ 
+ extern void klist_add_tail(struct klist_node *n, struct klist *k);
+diff --git a/lib/klist.c b/lib/klist.c
+index cca37f9..2b609ee 100644
+--- a/lib/klist.c
++++ b/lib/klist.c
+@@ -36,7 +36,7 @@
+ 
+ #include <linux/klist.h>
+ #include <linux/module.h>
+-
++#include <linux/sched.h>
+ 
+ /**
+  * klist_init - Initialize a klist structure.
+@@ -77,7 +77,6 @@ static void add_tail(struct klist *k, struct klist_node *n)
+ static void klist_node_init(struct klist *k, struct klist_node *n)
+ {
+ 	INIT_LIST_HEAD(&n->n_node);
+-	init_completion(&n->n_removed);
+ 	kref_init(&n->n_ref);
+ 	n->n_klist = k;
+ 	if (k->get)
+@@ -140,12 +139,36 @@ void klist_add_before(struct klist_node *n, struct klist_node *pos)
+ }
+ EXPORT_SYMBOL_GPL(klist_add_before);
+ 
++struct klist_waiter {
++	struct klist_waiter *next;
++	struct klist_node *node;
++	struct task_struct *process;
++	int woken;
++};
++
++static DEFINE_SPINLOCK(klist_remove_lock);
++static struct klist_waiter *klist_remove_waiters;
++
+ static void klist_release(struct kref *kref)
+ {
++	struct klist_waiter **pprev, *this;
+ 	struct klist_node *n = container_of(kref, struct klist_node, n_ref);
+ 
+ 	list_del(&n->n_node);
+-	complete(&n->n_removed);
++	spin_lock(&klist_remove_lock);
++	pprev = &klist_remove_waiters;
++	while ((this = *pprev)) {
++		if (this->node != n) {
++			pprev = &this->next;
++			continue;
++		}
++
++		this->woken = 1;
++		mb();
++		wake_up_process(this->process);
++		*pprev = this->next;
++	}
++	spin_unlock(&klist_remove_lock);
+ 	n->n_klist = NULL;
+ }
+ 
+@@ -178,8 +201,25 @@ EXPORT_SYMBOL_GPL(klist_del);
+  */
+ void klist_remove(struct klist_node *n)
+ {
++	struct klist_waiter waiter;
++
++	waiter.node = n;
++	waiter.process = current;
++	waiter.woken = 0;
++	spin_lock(&klist_remove_lock);
++	waiter.next = klist_remove_waiters;
++	klist_remove_waiters = &waiter;
++	spin_unlock(&klist_remove_lock);
++
+ 	klist_del(n);
+-	wait_for_completion(&n->n_removed);
++
++	for (;;) {
++		set_current_state(TASK_UNINTERRUPTIBLE);
++		if (waiter.woken)
++			break;
++		schedule();
++	}
++	__set_current_state(TASK_RUNNING);
+ }
+ EXPORT_SYMBOL_GPL(klist_remove);
+ 
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
