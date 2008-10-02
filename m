@@ -1,47 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbYJBJeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbYJBJmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444AbYJBJeX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 05:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbYJBJeP
+	id S1753781AbYJBJmb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 05:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYJBJmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 05:34:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46371 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753310AbYJBJeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 05:34:13 -0400
-Date: Thu, 2 Oct 2008 11:34:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] AMD IOMMU: use iommu_device_max_index
-Message-ID: <20081002093405.GC4190@elte.hu>
-References: <20080929000525E.fujita.tomonori@lab.ntt.co.jp> <20081001163008.GC30173@amd.com>
+	Thu, 2 Oct 2008 05:42:23 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:51137 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752662AbYJBJmW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 05:42:22 -0400
+Message-ID: <48E49772.10103@bull.net>
+Date: Thu, 02 Oct 2008 11:42:10 +0200
+From: Gilles Carry <Gilles.Carry@bull.net>
+User-Agent: Mozilla Thunderbird 1.0 (X11/20041206)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081001163008.GC30173@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Chirag Jog <chirag@linux.vnet.ibm.com>, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rostedt@goodmis.org, dvhltc@us.ibm.com,
+       dino@in.ibm.com, Jean-Pierre Dion <jean-pierre.dion@bull.net>,
+       =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>,
+       Tim Chavez <tinytim@us.ibm.com>
+Subject: Re: [PATCH] sched: add a stacktrace on enqueue_pushable error
+References: <20080930044320.GA4685@linux.vnet.ibm.com> <20081001142117.27846.83759.stgit@dev.haskins.net>
+In-Reply-To: <20081001142117.27846.83759.stgit@dev.haskins.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
+I could reproduce the bug on an intel architecture.
+I found where the problem is.
+I'll post the patch in a few hours.
 
-> Ingo,
+Gilles.
+
+Gregory Haskins wrote:
+> Hi Chirag,
+>   Please apply this patch to your 26.5-rt9 tree for ppc64, enable
+>   CONFIG_PROVE_LOCKING (which enables CONFIG_STACKTRACE) and give it a whirl.
+>   If you get an oops, please post the console output.
 > 
-> can you please apply this patch to your x86/iommu directly? For a 
-> single patch it makes no sense to go through my tree.
+> Thanks!
+> 
+> -Greg
+> 
+> ------------------
+> sched: add a stacktrace on enqueue_pushable error
+> 
+> NOT FOR INCLUSION!
+> 
+> This is to help debug an issue discovered by Chirag Jog in the thread
+> 
+> http://lkml.org/lkml/2008/9/25/189
+> 
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> ---
+> 
+>  include/linux/sched.h |    6 ++++++
+>  kernel/sched_rt.c     |   20 +++++++++++++++++++-
+>  2 files changed, 25 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 67da014..53e8a6a 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -87,6 +87,7 @@ struct sched_param {
+>  #include <linux/task_io_accounting.h>
+>  #include <linux/kobject.h>
+>  #include <linux/latencytop.h>
+> +#include <linux/stacktrace.h>
+>  
+>  #include <asm/processor.h>
+>  
+> @@ -1170,6 +1171,11 @@ struct task_struct {
+>  
+>  	struct list_head tasks;
+>  	struct plist_node pushable_tasks;
+> +	struct {
+> +		unsigned long data[15];
+> +		struct stack_trace trace;
+> +		pid_t pid;
+> +	} pushable_stack;
+>  
+>  	/*
+>  	 * ptrace_list/ptrace_children forms the list of my children
+> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+> index 57a0c0d..0e6a88c 100644
+> --- a/kernel/sched_rt.c
+> +++ b/kernel/sched_rt.c
+> @@ -55,7 +55,25 @@ static void update_rt_migration(struct rq *rq)
+>  
+>  static void enqueue_pushable_task(struct rq *rq, struct task_struct *p)
+>  {
+> -	plist_del(&p->pushable_tasks, &rq->rt.pushable_tasks);
+> +	if (plist_node_empty(&p->pushable_tasks)) {
+> +		struct stack_trace *trace = &p->pushable_stack.trace;
+> +
+> +		trace->nr_entries = 0;
+> +		trace->max_entries = sizeof(p->pushable_stack.data)/sizeof(p->pushable_stack.data[0]);
+> +		trace->entries = &p->pushable_stack.data[0];
+> +		trace->skip = 0;
+> +
+> +		save_stack_trace(trace);
+> +
+> +		p->pushable_stack.pid = current->pid;
+> +	} else {
+> +		printk(KERN_CRIT "redundant enqueue by %d detected\n",
+> +		       p->pushable_stack.pid);
+> +		print_stack_trace(&p->pushable_stack.trace, 5);
+> +
+> +		BUG_ON(!plist_node_empty(&p->pushable_tasks));
+> +	}
+> +
+>  	plist_node_init(&p->pushable_tasks, p->prio);
+>  	plist_add(&p->pushable_tasks, &rq->rt.pushable_tasks);
+>  }
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
 
-sure - applied to tip/x86/iommu, thanks guys.
-
-	Ingo
+-- 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Gilles.Carry
+Linux Project team
+mailto: gilles.carry@bull.net
+Phone: +33 (0)4 76 29 74 27
+Addr.: BULL S.A.  1 rue de Provence, B.P. 208 38432 Echirolles Cedex
+http://www.bull.com
+http://www.bullopensource.org/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
