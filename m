@@ -1,99 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbYJBXUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbYJBXWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbYJBXUt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 19:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYJBXUj
+	id S1753789AbYJBXWf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 19:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYJBXW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 19:20:39 -0400
-Received: from smtp3.ono.com ([62.42.230.176]:53901 "EHLO resmaa06.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753019AbYJBXUi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 19:20:38 -0400
-Date: Fri, 3 Oct 2008 01:20:36 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] x86: mtrr_cleanup try gran_size to less than 1M
-Message-ID: <20081003012036.28c00fd7@werewolf.home>
-In-Reply-To: <86802c440810021539y6cdff33dh9df3e04eba85a9df@mail.gmail.com>
-References: <1222739652-17169-1-git-send-email-yhlu.kernel@gmail.com>
-	<1222739652-17169-2-git-send-email-yhlu.kernel@gmail.com>
-	<20081003003237.04469201@werewolf.home>
-	<86802c440810021539y6cdff33dh9df3e04eba85a9df@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0cvs144 (GTK+ 2.14.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 2 Oct 2008 19:22:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47780 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753054AbYJBXW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 19:22:26 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] printk.caller
+X-Fcc: ~/Mail/linus
+X-Shopping-List: (1) Melodic winter gumption
+   (2) Burrowing charismatic baskets
+   (3) Enigmatic flake exclamations
+Message-Id: <20081002232115.8D2BB154212@magilla.localdomain>
+Date: Thu,  2 Oct 2008 16:21:15 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 15:39:34 -0700, "Yinghai Lu" <yinghai@kernel.org> wrote:
+This adds the printk.caller=[0|1] boot parameter, default setting
+controlled by CONFIG_PRINTK_CALLER.  (This is modelled on printk.time
+and CONFIG_PRINTK_TIME.)
 
-> On Thu, Oct 2, 2008 at 3:32 PM, J.A. Magallón <jamagallon@ono.com> wrote:
-> > On Mon, 29 Sep 2008 18:54:12 -0700, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> > Also, on a 64 bit box with 4Gb, it gives this:
-> >
-> > cicely:~# cat /proc/mtrr
-> > reg00: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
-> > reg01: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
-> > reg02: base=0x140000000 (5120MB), size= 512MB: write-back, count=1
-> > reg03: base=0x160000000 (5632MB), size= 256MB: write-back, count=1
-> > reg04: base=0x80000000 (2048MB), size=2048MB: uncachable, count=1
-> >
-> boundary handling may have problem...
-> 
-> should have
-> > reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+When this is set, each printk line is automagically prefixed with
+"{0x123abc} " giving the PC address of that printk call (actually
+the PC address just after the call).
 
-should not this                           ^^^^^  be 4096MB ??
+As a kernel hacker, I always hate having to grep for some fragment
+of a message to find the code that generated it.  But I always have
+my -g vmlinux handy, so:
+	(gdb) info line *(0x123abc - 1)
+is real handy (it pops the source up in an Emacs buffer).
 
-> > reg01: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
-> > reg02: base=0x140000000 (5120MB), size= 512MB: write-back, count=1
-> > reg03: base=0x160000000 (5632MB), size= 256MB: write-back, count=1
-> 
-> can you post /proc/mtrr with disable_mtrr_cleanup?
-> 
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ Documentation/kernel-parameters.txt |    3 ++
+ include/linux/kernel.h              |    4 ++-
+ kernel/printk.c                     |   38 +++++++++++++++++++++++++++++-----
+ lib/Kconfig.debug                   |    9 ++++++++
+ 4 files changed, 47 insertions(+), 7 deletions(-)
 
-Oops, sorry, this is without cleanup. This is a distro kernel and is built
-but not enable by deafult. As it is rc7, I will use 'enble_mtrr_cleanup' ;):
-
-cicely:~# cat /proc/mtrr
-reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-reg01: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
-reg02: base=0x140000000 (5120MB), size= 512MB: write-back, count=1
-reg03: base=0x160000000 (5632MB), size= 256MB: write-back, count=1
-
-I have lost 2Gb ?
-
-cicely:~# free
-             total       used       free     shared    buffers     cached
-Mem:       3755568     182348    3573220          0      14024      72716
--/+ buffers/cache:      95608    3659960
-
-I can't easily try your patch, this is a distro kernel.
-I will get the src.rpm...
-
-Ahhhhh....
-
-This is a dual opteron board. dmidecode says:
-
-Handle 0x0026, DMI type 16, 15 bytes
-Physical Memory Array
-    Location: System Board Or Motherboard
-    Use: System Memory
-    Error Correction Type: Single-bit ECC
-    Maximum Capacity: 8 GB
-    Error Information Handle: Not Provided
-    Number Of Devices: 8
-
-So it maps one Opteron memory in first 4Gb and the other on the second 4Gb.
-So I should have 2Gb@0 and 2Gb@4Gb.
-What I don't know is why the bios eats up 256Mb.
-
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2009.0 (Cooker) for i586
-Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 1150444..9f1e1b9 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1689,6 +1689,9 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	printk.time=	Show timing data prefixed to each printk message line
+ 			Format: <bool>  (1/Y/y=enable, 0/N/n=disable)
+ 
++	printk.caller=	Show caller PC prefixed to each printk message line
++			Format: <bool>  (1/Y/y=enable, 0/N/n=disable)
++
+ 	profile=	[KNL] Enable kernel profiling via /proc/profile
+ 			Format: [schedule,]<number>
+ 			Param: "schedule" - profile schedule points.
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 2651f80..e03b475 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -191,7 +191,9 @@ struct pid;
+ extern struct pid *session_of_pgrp(struct pid *pgrp);
+ 
+ #ifdef CONFIG_PRINTK
+-asmlinkage int vprintk(const char *fmt, va_list args)
++# define vprintk(fmt, args) \
++	vprintk_caller(fmt, args, __builtin_return_address(0))
++asmlinkage int vprintk_caller(const char *fmt, va_list args, void *caller)
+ 	__attribute__ ((format (printf, 1, 0)));
+ asmlinkage int printk(const char * fmt, ...)
+ 	__attribute__ ((format (printf, 1, 2))) __cold;
+diff --git a/kernel/printk.c b/kernel/printk.c
+index b51b156..e4294c8 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -532,6 +532,12 @@ static void emit_log_char(char c)
+ 		logged_chars++;
+ }
+ 
++static void emit_log_chars(const char *p, unsigned n)
++{
++	while (n-- > 0)
++		emit_log_char(*p++);
++}
++
+ /*
+  * Zap console related locks when oopsing. Only zap at most once
+  * every 10 seconds, to leave time for slow consoles to print a
+@@ -560,6 +566,13 @@ static int printk_time = 0;
+ #endif
+ module_param_named(time, printk_time, bool, S_IRUGO | S_IWUSR);
+ 
++#if defined(CONFIG_PRINTK_CALLER)
++static int printk_caller = 1;
++#else
++static int printk_caller = 0;
++#endif
++module_param_named(caller, printk_caller, bool, S_IRUGO | S_IWUSR);
++
+ /* Check if we have any console registered that can be called early in boot. */
+ static int have_callable_console(void)
+ {
+@@ -662,7 +675,7 @@ static int recursion_bug;
+ 	static int new_text_line = 1;
+ static char printk_buf[1024];
+ 
+-asmlinkage int vprintk(const char *fmt, va_list args)
++asmlinkage int vprintk_caller(const char *fmt, va_list args, void *caller)
+ {
+ 	int printed_len = 0;
+ 	int current_log_level = default_message_loglevel;
+@@ -708,7 +721,6 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+ 	printed_len += vscnprintf(printk_buf + printed_len,
+ 				  sizeof(printk_buf) - printed_len, fmt, args);
+ 
+-
+ 	/*
+ 	 * Copy the output into log_buf.  If the caller didn't provide
+ 	 * appropriate log level tags, we insert them here
+@@ -732,7 +744,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+ 
+ 			if (printk_time) {
+ 				/* Follow the token with the time */
+-				char tbuf[50], *tp;
++				char tbuf[50];
+ 				unsigned tlen;
+ 				unsigned long long t;
+ 				unsigned long nanosec_rem;
+@@ -743,11 +755,25 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+ 						(unsigned long) t,
+ 						nanosec_rem / 1000);
+ 
+-				for (tp = tbuf; tp < tbuf + tlen; tp++)
+-					emit_log_char(*tp);
++				emit_log_chars(tbuf, tlen);
+ 				printed_len += tlen;
+ 			}
+ 
++			if (caller && printk_caller) {
++				char pbuf[sizeof caller * 2 + sizeof "{0x} "];
++				unsigned plen;
++
++				if (sizeof caller > 4)
++					plen = sprintf(pbuf, "{0x%016lx} ",
++						       (unsigned long) caller);
++				else
++					plen = sprintf(pbuf, "{0x%08lx} ",
++						       (unsigned long) caller);
++
++				emit_log_chars(pbuf, plen);
++				printed_len += plen;
++			}
++
+ 			if (!*p)
+ 				break;
+ 		}
+@@ -778,7 +804,7 @@ out_restore_irqs:
+ 	return printed_len;
+ }
+ EXPORT_SYMBOL(printk);
+-EXPORT_SYMBOL(vprintk);
++EXPORT_SYMBOL(vprintk_caller);
+ 
+ #else
+ 
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 0b50481..b90134e 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -9,6 +9,15 @@ config PRINTK_TIME
+ 	  operations.  This is useful for identifying long delays
+ 	  in kernel startup.
+ 
++config PRINTK_CALLER
++	bool "Show caller PC on printks"
++	depends on PRINTK
++	help
++	  Selecting this option causes printk output to include
++	  the PC address of the printk call.  This is useful for
++	  kernels hackers to quickly locate the source code that
++	  produced the message.
++
+ config ENABLE_WARN_DEPRECATED
+ 	bool "Enable __deprecated logic"
+ 	default y
