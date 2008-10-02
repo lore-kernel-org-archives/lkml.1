@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbYJBRFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbYJBRHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755116AbYJBRFJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 13:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYJBRE6
+	id S1754955AbYJBRHi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 13:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbYJBRHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 13:04:58 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41967 "EHLO pasmtpB.tele.dk"
+	Thu, 2 Oct 2008 13:07:31 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:54721 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753946AbYJBRE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 13:04:57 -0400
-Subject: re: motherboard recommendations?
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Jacek Poplawski <jacekpoplawski@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1f276abf0809160657x4264ad5dm74fd2689d804a7ad@mail.gmail.com>
-References: <1f276abf0809160657x4264ad5dm74fd2689d804a7ad@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 02 Oct 2008 19:04:56 +0200
-Message-Id: <1222967096.25858.8.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+	id S1753169AbYJBRHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 13:07:30 -0400
+Date: Thu, 2 Oct 2008 19:07:10 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: neilb@suse.de, agk@sourceware.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com
+Subject: Re: [PATCH 5/7] block: Find bio sector offset given idx and offset
+Message-ID: <20081002170709.GM19428@kernel.dk>
+References: <1222846723-18213-1-git-send-email-martin.petersen@oracle.com> <1222846723-18213-6-git-send-email-martin.petersen@oracle.com> <20081001081056.GB19428@kernel.dk> <yq163obiuoi.fsf@sermon.lab.mkp.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq163obiuoi.fsf@sermon.lab.mkp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-16 at 15:57 +0200, Jacek Poplawski wrote:
-> Could you recommend motherboard which works perfecly stable with Linux?
-> Last time I bought Asus K8V-X SE which was huge mistake - it has
-> serious problems with AGP in Linux.
-
-Appears to work fine for me on my K8V Deluxe and K8V SE Deluxe..
-
-anyway, i have a gigabyte X48 DQ6 board.
-
-the two realtek NIC's initially had problems, but fixes have been merged
-and it works excellent. Audio works(not the two separate channels for
-front), usb works, sensors work, ahci on both the jmicron and ICH works.
-pata_jmicron works aswell.
-
+On Wed, Oct 01 2008, Martin K. Petersen wrote:
+> >>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
 > 
-> Now I think about Intel chipset - P35 or P45.
-> I want Asus, Gigabyte or MSI board with heat pipe.
-> But I found another issue with audio and network drivers for Asus
-> boards, so maybe I will skip Asus this time?
+> Jens> Too may BUG's there, me thinks, and the interface looks
+> Jens> fragile. What if the bio is alreday done (bi_idx == bi_vcnt)?
 > 
-> Which motherboard works stable for you?
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Good point!  Obviously I've only used the function for bio splitting
+> and not at completion time.  Updated patch below.
+> 
+> 
+> block: Find bio sector offset given idx and offset
+> 
+> Helper function to find the sector offset in a bio given bvec index
+> and page offset.
+
+Looks good, I've applied patches 1-5.
+
+-- 
+Jens Axboe
 
