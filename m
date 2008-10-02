@@ -1,80 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYJBPs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYJBPvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbYJBPs6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 11:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYJBPsu
+	id S1754625AbYJBPvX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 11:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYJBPvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 11:48:50 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:51645 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752851AbYJBPsu (ORCPT
+	Thu, 2 Oct 2008 11:51:14 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:30527 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753011AbYJBPvN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 11:48:50 -0400
-Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded
-	interrupt handlers
-From: Daniel Walker <dwalker@mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>
-In-Reply-To: <alpine.DEB.1.10.0810021052010.19018@gandalf.stny.rr.com>
-References: <20081001223213.078984344@linutronix.de>
-	 <1222912413.2995.80.camel@laptop-eth.lan>
-	 <alpine.DEB.1.10.0810021052010.19018@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Thu, 02 Oct 2008 08:48:45 -0700
-Message-Id: <1222962525.2995.100.camel@laptop-eth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 2 Oct 2008 11:51:13 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Fenghua Yu <fenghua.yu@intel.com>
+Subject: Re: [PATCH 2/2]Add Variable Page Size and IA64 Support in Intel IOMMU: IA64 Specific Part
+Date: Thu, 2 Oct 2008 09:51:07 -0600
+User-Agent: KMail/1.9.9
+Cc: "Luck, Tony" <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Avi Kivity <avi@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+References: <20081001165750.GA21272@linux-os.sc.intel.com>
+In-Reply-To: <20081001165750.GA21272@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810020951.08408.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-02 at 11:02 -0400, Steven Rostedt wrote:
-> On Wed, 1 Oct 2008, Daniel Walker wrote:
-> > > 
-> > > Converting an interrupt to threaded makes only sense when the handler
-> > > code takes advantage of it by integrating tasklet/softirq
-> > > functionality and simplifying the locking.
-> > 
-> > I'm not clear on your direction here.. I don't have a problem with a
-> > mass driver audit, which I think is what your suggesting with this patch
-> > set .. However, a mass audit like that would push a fully real time
-> > system out for quite some time..
-> 
-> This has nothing to do with real time, although it helps.
+On Wednesday 01 October 2008 10:57:50 am Fenghua Yu wrote:
+> --- a/arch/ia64/include/asm/cacheflush.h
+> +++ b/arch/ia64/include/asm/cacheflush.h
+> @@ -34,6 +34,8 @@ do {						\
+>  #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+>  
+>  extern void flush_icache_range (unsigned long start, unsigned long end);
+> +extern void clflush_cache_range(void *addr, int size);
 
-Clearly threading irq handlers does have something to do with real time,
-unless this patch isn't actually threading anything ..
+This patch adds clflush_cache_range(), but it's not used anywhere.
 
-> > 
-> > I also don't see a clear connection between these changes and ultimately
-> > removing spinlock level latency in the kernel. I realize you don't
-> > address that in your comments, but this is part of the initiative to
-> > remove spinlock level latency..
-> 
-> This is a completely different topic.
+If you do need it, it'd be nice if the arguments were the same types
+as for flush_icache_range(), and if there were a comment describing
+why it is necessary for VT-d.  And maybe the name could be more like
+the other cache flushing functions.
 
-It's all connected to the removal of latency .. One part depending on
-the other parts, so you can't disconnect this from the rest of it.
+> +#ifdef CONFIG_PCI
+> +/* Many VIA bridges seem to corrupt data for DAC. Disable it here */
+> +
+> +static __devinit void via_no_dac(struct pci_dev *dev)
+> +{
+> +	if ((dev->class >> 8) == PCI_CLASS_BRIDGE_PCI && forbid_dac == 0) {
+> +		printk(KERN_INFO "PCI: VIA PCI bridge detected. Disabling DAC.\n");
 
-> > 
-> > So with this set of changes and in terms of real time, I'm wonder your
-> > going with this ?
-> 
-> This helps with latencies and locking. With the current scheme of hardirq, 
-> softirq/tasklets, there are a lot of craziness with spin_locks and 
-> spin_lock_irqs and mutexes.
-> 
-> By creating an interrupt thread, we can skip the softirq/tasklet 
-> altogether, and this simplifies locking.
+Please use dev_info() here.  I see you just copied this from x86, but
+we should fix x86, too.  Or better, since this doesn't appear to be
+arch-specific, maybe this should be moved to drivers/pci/quirks.c
+alongside all the other VIA quirks.
 
-How does this simplify locking ?
+> +		forbid_dac = 1;
 
-Daniel
+Shouldn't forbid_dac be a per-device or at least a per-bridge
+property rather than a global?
+
+> +	}
+> +}
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_ANY_ID, via_no_dac);
+> +#endif
+> +/* Must execute after PCI subsystem */
+> +fs_initcall(pci_iommu_init);
+> +
+> +struct dma_mapping_ops *dma_ops;
+> +EXPORT_SYMBOL(dma_ops);
+> +
+> +int iommu_dma_supported(struct device *dev, u64 mask)
+> +{
+> +	struct dma_mapping_ops *ops = get_dma_ops(dev);
+> +
+> +#ifdef CONFIG_PCI
+> +	if (mask > 0xffffffff && forbid_dac > 0) {
+> +		dev_info(dev, "PCI: Disallowing DAC for device\n");
+
+The "PCI: " should be removed since dev_info() will add the driver
+name and device ID.
+
+Bjorn
+
 
