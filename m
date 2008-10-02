@@ -1,266 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbYJBATG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYJBATY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752781AbYJBATG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 20:19:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYJBASj
+	id S1753958AbYJBATY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 20:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYJBASs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 20:18:39 -0400
-Received: from mga11.intel.com ([192.55.52.93]:56968 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752807AbYJBASh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 20:18:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,346,1220252400"; 
-   d="scan'208";a="622433249"
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: [PATCH] e1000e: write protect ICHx NVM to prevent malicious
-	write/erase
-To: torvalds@linux-foundation.org, jeff@garzik.org, davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       arjan@linux.intel.com, Bruce Allan <bruce.w.allan@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>, arjan@linux.intel.com
-Date: Wed, 01 Oct 2008 17:18:35 -0700
-Message-ID: <20081002001835.5951.82533.stgit@jbrandeb-bw.jf.intel.com>
-In-Reply-To: <20081002001830.5951.3123.stgit@jbrandeb-bw.jf.intel.com>
-References: <20081002001830.5951.3123.stgit@jbrandeb-bw.jf.intel.com>
-User-Agent: StGIT/0.14.3.163.g06f9.dirty
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 1 Oct 2008 20:18:48 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:27611 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753448AbYJBASp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 20:18:45 -0400
+X-YMail-OSG: hc1S5zkVM1nEFw4b5o5eaEQW40vBwQqhbcuBJ1cmwbZatsGHb7Ym.ItpZF8bu4R3Vtc46.zGv8ZKwsBjdJn5Mtd3K8EK7sZxsBx.HeQMX7yepXGK0bdUlTs2g7uInVjYwtEFHEW8V07KOnx2yEEyQ40_2qq7SxZAHvBWOffKHObdIETH0JtJiPghbP4t1Az3y5iOmPA6Qnu87edZaYWyGs8-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [ANNOUNCE]: ConfigFS enabled Generic Target Mode and iSCSI
+	Target Stack on v2.6.27-rc7
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: linux-iscsi-target-dev@googlegroups.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       SCST-Devel <scst-devel@lists.sourceforge.net>,
+       iet-dev <iscsitarget-devel@lists.sourceforge.net>
+Cc: Joel Becker <joel.becker@oracle.com>,
+       Jerome Martin <tramjoe.merin@gmail.com>, Greg KH <greg@kroah.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ming Zhang <blackmagic02881@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <1222716101.4296.41.camel@haakon2.linux-iscsi.org>
+References: <1222716101.4296.41.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain
+Date: Wed, 01 Oct 2008 17:18:40 -0700
+Message-Id: <1222906720.15764.49.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Oct 2008 00:18:35.0772 (UTC) FILETIME=[691D4BC0:01C92424]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+On Mon, 2008-09-29 at 12:21 -0700, Nicholas A. Bellinger wrote:
+> Greetings all,
+> 
+> I am happy to announce that the first ConfigFS configurable generic
+> target engine (target_core_mod) and iSCSI Target Stack
+> (iscsi_target_mod) are now able to use ConfigFS symlinks for the
+> creation of Linux Storage Objects from drivers/scsi, block, or fs/
+> storage objects to iSCSI Target Port Endpoints.
+> 
+> The code is available currently running on v2.6.27-rc7 and has been
+> broken up into a number of commits at:
+> http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+> 
+> Now that the primary configfs functionality is up and allowing iSCSI
+> Initiator Traffic to the symlinked storage objects from a generic target
+> engine, I will be continuing work on the complete logic for configfs
+> enabled iscsi_target_mod, as well as removing the legacy IOCTL control
+> path as equivalent functionality is added with ConfigFS.  
+> 
 
-Set the hardware to ignore all write/erase cycles to the GbE region in
-the ICHx NVM.  This feature can be disabled by the WriteProtectNVM module
-parameter (enabled by default) only after a hardware reset, but
-the machine must be power cycled before trying to enable writes.
+Ok, just added new commits to make target_core_mod be able to run
+independently of iscsi_target_mod.  This means that all mkdir(2) calls
+under $TARGET do not require iscsi_target_mod to be loaded.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-CC: arjan@linux.intel.com
----
+Next, following Joel's advice from LPC, I made
+target_core_configfs.c:target_core_register_fabric(),  call
+request_module() to load $FABRIC_MOD instead of using
+do_configfs_mkdir() to kick off the registration process.  This means
+that $FABRIC_MOD's init_module() is responsible for calling
+target_fabric_configfs_init() and target_fabric_configfs_register() to
+complete $FABRIC_MOD's registration with the configfs generic target
+core.  This means that startup now looks like:
 
- drivers/net/e1000e/e1000.h   |    2 +
- drivers/net/e1000e/ethtool.c |    3 ++
- drivers/net/e1000e/ich8lan.c |   58 ++++++++++++++++++++++++++++++++++++++++++
- drivers/net/e1000e/netdev.c  |   10 +++++--
- drivers/net/e1000e/param.c   |   30 ++++++++++++++++++++++
- 5 files changed, 100 insertions(+), 3 deletions(-)
+modprobe target_core_mod
 
-diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
-index ac4e506..f0c48a2 100644
---- a/drivers/net/e1000e/e1000.h
-+++ b/drivers/net/e1000e/e1000.h
-@@ -305,6 +305,7 @@ struct e1000_info {
- #define FLAG_HAS_CTRLEXT_ON_LOAD          (1 << 5)
- #define FLAG_HAS_SWSM_ON_LOAD             (1 << 6)
- #define FLAG_HAS_JUMBO_FRAMES             (1 << 7)
-+#define FLAG_READ_ONLY_NVM                (1 << 8)
- #define FLAG_IS_ICH                       (1 << 9)
- #define FLAG_HAS_SMART_POWER_DOWN         (1 << 11)
- #define FLAG_IS_QUAD_PORT_A               (1 << 12)
-@@ -385,6 +386,7 @@ extern bool e1000e_enable_mng_pass_thru(struct e1000_hw *hw);
- extern bool e1000e_get_laa_state_82571(struct e1000_hw *hw);
- extern void e1000e_set_laa_state_82571(struct e1000_hw *hw, bool state);
- 
-+extern void e1000e_write_protect_nvm_ich8lan(struct e1000_hw *hw);
- extern void e1000e_set_kmrn_lock_loss_workaround_ich8lan(struct e1000_hw *hw,
- 						 bool state);
- extern void e1000e_igp3_phy_powerdown_workaround_ich8lan(struct e1000_hw *hw);
-diff --git a/drivers/net/e1000e/ethtool.c b/drivers/net/e1000e/ethtool.c
-index e21c9e0..5ed8e13 100644
---- a/drivers/net/e1000e/ethtool.c
-+++ b/drivers/net/e1000e/ethtool.c
-@@ -529,6 +529,9 @@ static int e1000_set_eeprom(struct net_device *netdev,
- 	if (eeprom->magic != (adapter->pdev->vendor | (adapter->pdev->device << 16)))
- 		return -EFAULT;
- 
-+	if (adapter->flags & FLAG_READ_ONLY_NVM)
-+		return -EINVAL;
-+
- 	max_len = hw->nvm.word_size * 2;
- 
- 	first_word = eeprom->offset >> 1;
-diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
-index 9e38452..d8efba8 100644
---- a/drivers/net/e1000e/ich8lan.c
-+++ b/drivers/net/e1000e/ich8lan.c
-@@ -58,6 +58,7 @@
- #define ICH_FLASH_HSFCTL		0x0006
- #define ICH_FLASH_FADDR			0x0008
- #define ICH_FLASH_FDATA0		0x0010
-+#define ICH_FLASH_PR0			0x0074
- 
- #define ICH_FLASH_READ_COMMAND_TIMEOUT	500
- #define ICH_FLASH_WRITE_COMMAND_TIMEOUT	500
-@@ -150,6 +151,19 @@ union ich8_hws_flash_regacc {
- 	u16 regval;
- };
- 
-+/* ICH Flash Protected Region */
-+union ich8_flash_protected_range {
-+	struct ich8_pr {
-+		u32 base:13;     /* 0:12 Protected Range Base */
-+		u32 reserved1:2; /* 13:14 Reserved */
-+		u32 rpe:1;       /* 15 Read Protection Enable */
-+		u32 limit:13;    /* 16:28 Protected Range Limit */
-+		u32 reserved2:2; /* 29:30 Reserved */
-+		u32 wpe:1;       /* 31 Write Protection Enable */
-+	} range;
-+	u32 regval;
-+};
-+
- static s32 e1000_setup_link_ich8lan(struct e1000_hw *hw);
- static void e1000_clear_hw_cntrs_ich8lan(struct e1000_hw *hw);
- static void e1000_initialize_hw_bits_ich8lan(struct e1000_hw *hw);
-@@ -1284,6 +1298,7 @@ static s32 e1000_update_nvm_checksum_ich8lan(struct e1000_hw *hw)
- 	 * programming failed.
- 	 */
- 	if (ret_val) {
-+		/* Possibly read-only, see e1000e_write_protect_nvm_ich8lan() */
- 		hw_dbg(hw, "Flash commit failed.\n");
- 		e1000_release_swflag_ich8lan(hw);
- 		return ret_val;
-@@ -1374,6 +1389,49 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
- }
- 
- /**
-+ *  e1000e_write_protect_nvm_ich8lan - Make the NVM read-only
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  To prevent malicious write/erase of the NVM, set it to be read-only
-+ *  so that the hardware ignores all write/erase cycles of the NVM via
-+ *  the flash control registers.  The shadow-ram copy of the NVM will
-+ *  still be updated, however any updates to this copy will not stick
-+ *  across driver reloads.
-+ **/
-+void e1000e_write_protect_nvm_ich8lan(struct e1000_hw *hw)
-+{
-+	union ich8_flash_protected_range pr0;
-+	union ich8_hws_flash_status hsfsts;
-+	u32 gfpreg;
-+	s32 ret_val;
-+
-+	ret_val = e1000_acquire_swflag_ich8lan(hw);
-+	if (ret_val)
-+		return;
-+
-+	gfpreg = er32flash(ICH_FLASH_GFPREG);
-+
-+	/* Write-protect GbE Sector of NVM */
-+	pr0.regval = er32flash(ICH_FLASH_PR0);
-+	pr0.range.base = gfpreg & FLASH_GFPREG_BASE_MASK;
-+	pr0.range.limit = ((gfpreg >> 16) & FLASH_GFPREG_BASE_MASK);
-+	pr0.range.wpe = true;
-+	ew32flash(ICH_FLASH_PR0, pr0.regval);
-+
-+	/*
-+	 * Lock down a subset of GbE Flash Control Registers, e.g.
-+	 * PR0 to prevent the write-protection from being lifted.
-+	 * Once FLOCKDN is set, the registers protected by it cannot
-+	 * be written until FLOCKDN is cleared by a hardware reset.
-+	 */
-+	hsfsts.regval = er16flash(ICH_FLASH_HSFSTS);
-+	hsfsts.hsf_status.flockdn = true;
-+	ew32flash(ICH_FLASH_HSFSTS, hsfsts.regval);
-+
-+	e1000_release_swflag_ich8lan(hw);
-+}
-+
-+/**
-  *  e1000_write_flash_data_ich8lan - Writes bytes to the NVM
-  *  @hw: pointer to the HW structure
-  *  @offset: The offset (in bytes) of the byte/word to read.
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index d266510..1f767fe 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -47,7 +47,7 @@
- 
- #include "e1000.h"
- 
--#define DRV_VERSION "0.3.3.3-k2"
-+#define DRV_VERSION "0.3.3.3-k4"
- char e1000e_driver_name[] = "e1000e";
- const char e1000e_driver_version[] = DRV_VERSION;
- 
-@@ -4467,6 +4467,8 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
- 
- 	adapter->bd_number = cards_found++;
- 
-+	e1000e_check_options(adapter);
-+
- 	/* setup adapter struct */
- 	err = e1000_sw_init(adapter);
- 	if (err)
-@@ -4482,6 +4484,10 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
- 	if (err)
- 		goto err_hw_init;
- 
-+	if ((adapter->flags & FLAG_IS_ICH) &&
-+	    (adapter->flags & FLAG_READ_ONLY_NVM))
-+		e1000e_write_protect_nvm_ich8lan(&adapter->hw);
-+
- 	hw->mac.ops.get_bus_info(&adapter->hw);
- 
- 	adapter->hw.phy.autoneg_wait_to_complete = 0;
-@@ -4573,8 +4579,6 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
- 	INIT_WORK(&adapter->reset_task, e1000_reset_task);
- 	INIT_WORK(&adapter->watchdog_task, e1000_watchdog_task);
- 
--	e1000e_check_options(adapter);
--
- 	/* Initialize link parameters. User can change them with ethtool */
- 	adapter->hw.mac.autoneg = 1;
- 	adapter->fc_autoneg = 1;
-diff --git a/drivers/net/e1000e/param.c b/drivers/net/e1000e/param.c
-index ed912e0..d91dbf7 100644
---- a/drivers/net/e1000e/param.c
-+++ b/drivers/net/e1000e/param.c
-@@ -133,6 +133,15 @@ E1000_PARAM(SmartPowerDownEnable, "Enable PHY smart power down");
-  */
- E1000_PARAM(KumeranLockLoss, "Enable Kumeran lock loss workaround");
- 
-+/*
-+ * Write Protect NVM
-+ *
-+ * Valid Range: 0, 1
-+ *
-+ * Default Value: 1 (enabled)
-+ */
-+E1000_PARAM(WriteProtectNVM, "Write-protect NVM [WARNING: disabling this can lead to corrupted NVM]");
-+
- struct e1000_option {
- 	enum { enable_option, range_option, list_option } type;
- 	const char *name;
-@@ -388,4 +397,25 @@ void __devinit e1000e_check_options(struct e1000_adapter *adapter)
- 								       opt.def);
- 		}
- 	}
-+	{ /* Write-protect NVM */
-+		const struct e1000_option opt = {
-+			.type = enable_option,
-+			.name = "Write-protect NVM",
-+			.err  = "defaulting to Enabled",
-+			.def  = OPTION_ENABLED
-+		};
-+
-+		if (adapter->flags & FLAG_IS_ICH) {
-+			if (num_WriteProtectNVM > bd) {
-+				unsigned int write_protect_nvm = WriteProtectNVM[bd];
-+				e1000_validate_option(&write_protect_nvm, &opt,
-+						      adapter);
-+				if (write_protect_nvm)
-+					adapter->flags |= FLAG_READ_ONLY_NVM;
-+			} else {
-+				if (opt.def)
-+					adapter->flags |= FLAG_READ_ONLY_NVM;
-+			}
-+		}
-+	}
- }
+export CONFIGFS=/sys/kernel/config/
+export TARGET=/sys/kernel/config/target/core/
+export FABRIC=/sys/kernel/config/target/iscsi/
+
+mkdir -p $TARGET/iblock_0/lvm_test0
+echo iblock_major=254,iblock_minor=2 >
+$TARGET/iblock_0/lvm_test0/dev_control
+echo 1 > $TARGET/iblock_0/lvm_test0/dev_enable
+
+mkdir -p $TARGET/pscsi_0/sdd
+echo scsi_channel_id=0,scsi_target_id=3,scsi_lun_id=0 >
+$TARGET/pscsi_0/sdd/dev_control
+echo 1 > $TARGET/pscsi_0/sdd/dev_enable
+
+DEF_IQN="iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0"
+
+# The first mkdir(2) to $FABRIC will load iscsi_target_mod
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/np/172.16.201.137:3260"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+<snip>
+
+This line will modprobe iscsi_target_mod, create iscsi_tiqn_t,
+iscsi_portal_group_t, and iscsi_tpg_np_t objects with a single mkdir(2)
+call.
+
+Many thanks to Joel Becker for recommending the request_module() usage!
+
+> Also, one of the next major steps for the upstream generic target engine
+> and iSCSI target stack is to include SCST's target mode API between
+> Engine / Fabric to give target_core_mod a proper Fabric API to allow
+> other SCST fabric modules to access target_core_mod's configfs enabled
+> storage objects.  Also, allowing STGT to use the configfs interface to
+> allow for userspace fabrics to the same target_core_mod storage objects
+> is also on the list, but I imagine interest from those communities will
+> certainly help drive those efforts.  
+> 
+
+So at this point, I believe all (or very close to all) iSCSI target
+related functions are now outside of target_core_mod.  There are a few
+more file and function names that need to have their prefixes changed,
+but other that a handful of this minor bits, things are getting close
+installing the SCST Target API between $FABRIC_MOD <->
+$TARGET_CORE_MOD. 
+
+Also, I was thinking a bit more about how things show up under $TARGET,
+which is /sys/kernel/config/target/core.  With the current code,
+parameters are passed it for all target_core_mod subsystem plugins (eg:
+the ones to drivers/scsi, block/ or fs/.  One thing I was thinking about
+for struct scsi_device and struct block_device storage objects that
+appear under /sys/block (or any SysFS location that eventually leads
+back to a struct scsi_device) would be to create a symbolic link from
+say /sys/block/sdd to ConfigFS at say $TARGET/core/pscsi_0/sdd, so we
+could drop the echo scsi_channel_id=0,scsi_target_id=0,scsi_lun_id=0 >
+$TARGET/pscsi/sdd/dev_control stuff..
+
+I know that ConfigFS today does not allow symlinks to non ConfigFS
+filesystems, but perhaps this would be a special case between ConfigFS
+<-> SysFS to order to deliver struct scsi_device for $TARGET/pscsi_* and
+struct block_device to $TARGET/iblock_* generic storage objects..?
+
+What do you think..? Joel or Greg KH..?
+
+--nab
+
+> Here are the shell variables required to make it all go:
+> 
+> export CONFIGFS=/sys/kernel/config/
+> export TARGET=/sys/kernel/config/target/core/
+> export FABRIC=/sys/kernel/config/target/iscsi/
+> 
+> The storage objects registered with target_core_mod via $TARGET may be
+> mapped from $TARGET/$HBA/$STORAGE_OBJECT any number of times to:
+> 
+> $FABRIC/$IQN/tpgt_1/lun/lun_0/$PORT_LINK
+> $FABRIC/$IQN/tpgt_1/lun/lun_1/$PORT_LINK
+> $FABRIC/$IQN/tpgt_2/lun/lun_0/$PORT_LINK
+> $FABRIC/$ANOTHER_IQN/tpgt_1/lun_0/$PORT_LINK
+> ....
+> ....
+> 
+> Here are the shell commands to bring storage objects online..
+> 
+> # Create a IBLOCK HBA and virtual storage object
+> mkdir -p $TARGET/iblock_0/lvm_test0
+> # Tell the virtual storage object what struct block_device we want
+> echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/dev_control
+> # Enable the virtual storage object and call bd_claim()
+> echo 1 > $TARGET/iblock_0/lvm_test0/dev_enable
+> 
+> DEF_IQN="iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0"
+> 
+> # Create the network portal on $DEF_IQN/tpgt_1
+> mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/np/172.16.201.137:3260"
+> # Create LUN 0 on $DEF_IQN/tpgt_1
+> mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_0"
+> # Create the iSCSI Target Port Mapping for $DEF_IN/tpgt_1 LUN 0
+> # to lvm_test0 and give it the port symbolic name of lio_west_port
+> ln -s $TARGET/iblock_0/lvm_test0 "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_0/lio_west_port"
+> 
+> # Allow iSCSI Initiators to login to $DEF_IQN/tpgt_1
+> #warning Currently uses generate_node_acls=1,cache_dynamic_acls=1,demo_mode_lun_access=1
+> echo 1 > $FABRIC/$DEF_IQN/tpgt_1/tpg_enable
+> 
+> target:~# tree $CONFIGFS
+> /sys/kernel/config/
+> `-- target
+>     |-- core
+>     |   `-- iblock_0
+>     |       |-- hba_info
+>     |       `-- lvm_test0
+>     |           |-- dev_control
+>     |           |-- dev_enable
+>     |           `-- dev_info
+>     |-- iscsi
+>     |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0
+>     |   |   `-- tpgt_1
+>     |   |       |-- lun
+>     |   |       |   `-- lun_0
+>     |   |       |       |-- lio_west_port -> ../../../../../../target/core/iblock_0/lvm_test0
+>     |   |       |       |-- port_control
+>     |   |       |       `-- port_info
+>     |   |       |-- np
+>     |   |       |   `-- 172.16.201.137:3260
+>     |   |       |       `-- portal_info
+>     |   |       |-- tpg_control
+>     |   |       `-- tpg_enable
+>     |   `-- lio_version
+>     `-- version
+> 
+> 
+> ----------------------------------------------------------
+> 
+> # Add some more HBA and storage Objects
+> target:~# mkdir -p $TARGET/fileio_0/file_object
+> target:~# mkdir -p $TARGET/rd_mcp_0/ramdisk0
+> target:~# mkdir -p $TARGET/rd_dr_0/ramdisk0
+> 
+> target:~# mkdir -p $TARGET/pscsi_0/sdd
+> target:~# echo scsi_channel_id=0,scsi_target_id=3,scsi_lun_id=0 > $TARGET/pscsi_0/sdd/dev_control   
+> target:~# echo 1 > $TARGET/pscsi_0/sdd/dev_enable 
+> 
+> # Now, create LUN 1 and another Port Symlink to a new device on the same $IQN/tpgt_1
+> mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_1"
+> # Create the iSCSI Target Port Mapping for $DEF_IN/tpgt_1 LUN 1
+> # to lvm_test0 and give it the port symbolic name of lio_east_port
+> ln -s $TARGET/pscsi_0/sdd/ "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_1/lio_east_port"
+> 
+> target:~# tree $CONFIGFS
+> /sys/kernel/config/
+> `-- target
+>     |-- core
+>     |   |-- fileio_0
+>     |   |   |-- file_object
+>     |   |   |   |-- dev_control
+>     |   |   |   |-- dev_enable
+>     |   |   |   `-- dev_info
+>     |   |   `-- hba_info
+>     |   |-- iblock_0
+>     |   |   |-- hba_info
+>     |   |   `-- lvm_test0
+>     |   |       |-- dev_control
+>     |   |       |-- dev_enable
+>     |   |       `-- dev_info
+>     |   |-- pscsi_0
+>     |   |   |-- hba_info
+>     |   |   `-- sdd
+>     |   |       |-- dev_control
+>     |   |       |-- dev_enable
+>     |   |       `-- dev_info
+>     |   |-- rd_dr_0
+>     |   |   |-- hba_info
+>     |   |   `-- ramdisk0
+>     |   |       |-- dev_control
+>     |   |       |-- dev_enable
+>     |   |       `-- dev_info
+>     |   `-- rd_mcp_0
+>     |       |-- hba_info
+>     |       `-- ramdisk0
+>     |           |-- dev_control
+>     |           |-- dev_enable
+>     |           `-- dev_info
+>     |-- iscsi
+>     |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0
+>     |   |   `-- tpgt_1
+>     |   |       |-- lun
+>     |   |       |   |-- lun_0
+>     |   |       |   |   |-- lio_west_port -> ../../../../../../target/core/iblock_0/lvm_test0
+>     |   |       |   |   |-- port_control
+>     |   |       |   |   `-- port_info
+>     |   |       |   `-- lun_1
+>     |   |       |       |-- lio_east_port -> ../../../../../../target/core/pscsi_0/sdd
+>     |   |       |       |-- port_control
+>     |   |       |       `-- port_info
+>     |   |       |-- np
+>     |   |       |   `-- 172.16.201.137:3260
+>     |   |       |       `-- portal_info
+>     |   |       |-- tpg_control
+>     |   |       `-- tpg_enable
+>     |   `-- lio_version
+>     `-- version
+> 
+> 22 directories, 29 files
+> 
+> --nab
+> 
+> 
+> 
+> --~--~---------~--~----~------------~-------~--~----~
+> You received this message because you are subscribed to the Google Groups "Linux-iSCSI.org Target Development" group.
+> To post to this group, send email to linux-iscsi-target-dev@googlegroups.com
+> To unsubscribe from this group, send email to linux-iscsi-target-dev+unsubscribe@googlegroups.com
+> For more options, visit this group at http://groups.google.com/group/linux-iscsi-target-dev?hl=en
+> -~----------~----~----~----~------~----~------~--~---
+> 
 
