@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYJBS7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbYJBS71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbYJBS7M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 14:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbYJBS67
+	id S1755152AbYJBS71 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 14:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbYJBS7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 14:58:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46465 "EHLO mx3.mail.elte.hu"
+	Thu, 2 Oct 2008 14:59:07 -0400
+Received: from www.tglx.de ([62.245.132.106]:60127 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753566AbYJBS66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 14:58:58 -0400
-Date: Thu, 2 Oct 2008 20:55:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [boot crash] Re: [PATCH] ring-buffer: fix build error
-Message-ID: <20081002185509.GA32078@elte.hu>
-References: <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu> <20081002090517.GA8708@elte.hu> <20081002093835.GA17699@elte.hu> <alpine.DEB.1.10.0810020916580.19018@gandalf.stny.rr.com> <20081002155053.GA31953@elte.hu> <alpine.DEB.1.10.0810021426080.2919@gandalf.stny.rr.com>
+	id S1754206AbYJBS7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 14:59:06 -0400
+Date: Thu, 2 Oct 2008 20:58:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Olaf Kirch <okir@suse.de>
+cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-netdev@vger.kernel.org, kkeil@suse.de, agospoda@redhat.com,
+       arjan@linux.intel.com, "Graham, David" <david.graham@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>, chris.jones@canonical.com,
+       tim.gardner@intel.com, airlied@gmail.com
+Subject: Re: [RFC PATCH 07/12] e1000e: debug contention on NVM SWFLAG
+In-Reply-To: <200810021933.23677.okir@suse.de>
+Message-ID: <alpine.LFD.1.10.0810022057530.5549@apollo.tec.linutronix.de>
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com> <200810021703.43770.okir@suse.de> <36D9DB17C6DE9E40B059440DB8D95F52064FB25C@orsmsx418.amr.corp.intel.com> <200810021933.23677.okir@suse.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810021426080.2919@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2 Oct 2008, Olaf Kirch wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
+> On Thursday 02 October 2008 18:27:12 Brandeburg, Jesse wrote:
+> > so, why now?  Drivers since before the e1000/e1000e split had this same
+> > code, with no reports of problems.  This code has been heavily tested,
+> > and one of the platforms easily reproducing this has been available for
+> > 3 years now (ich8), with code that is basically unchanged in the driver.
 > 
-> On Thu, 2 Oct 2008, Ingo Molnar wrote:
-> 
-> > 
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > 
-> > > On Thu, 2 Oct 2008, Ingo Molnar wrote:
-> > > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > full serial log and config attached. I'm excluding these latest commits 
-> > > 
-> > >  -ENOATTACHMENT
-> > 
-> > attached.
-> > 
-> > You can get the broken tree by doing this in tip/master:
-> > 
-> >   git-merge tip/tracing/ring-buffer
-> 
-> I've just checked-out tip/tracing/ring-buffer. That tree is still broken 
-> too, right? Or do I need to merge it to get the broken version?
+> Possibly the dhcp client is doing something differently, or at a much higher
+> frequency. At any rate, it seems we're seeing this now even when we just
+> use init level 3, without X involvement. Karsten reports NVM corruption
+> after 34 reboots into init level 3.
 
-yes, that's very likely broken too in a standalone way as well - but to 
-get the exact tree i tested i'd suggest:
+Had Karsten the mutex patch applied or not ?
 
-  git checkout tip/master
-  git merge tip/tracing/ring-buffer
-
-	Ingo
+    tglx
