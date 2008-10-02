@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYJBQP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYJBQR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbYJBQP2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 12:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbYJBQPV
+	id S1754670AbYJBQR2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 12:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbYJBQRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 12:15:21 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:26131 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753556AbYJBQPU (ORCPT
+	Thu, 2 Oct 2008 12:17:19 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:60797 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753601AbYJBQRS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 12:15:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=wmMzPLQ0J7gADKPNPkcRNX/Caa7NDR7YDuU/VjW//InTdTQT1GfPyMM9vW+9JUvNVu
-         VAPciDlxgZmJlLLZ4ncQhMP+PL9qWdllcGkJJJaN1gT4yWt6Sgy72XQBm2OjRTWoZnIB
-         HqQB873lpejzMox3NHwhhNZeybHOy6tt1P7Vg=
-Message-ID: <c384c5ea0810020915r3023bapecc99b7fcd67b81c@mail.gmail.com>
-Date: Thu, 2 Oct 2008 18:15:18 +0200
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: disk IO directly from PCI memory to block device sectors
-Cc: "Leisner, Martin" <Martin.Leisner@xerox.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, marty <martyleisner@yahoo.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081001190546.GQ19428@kernel.dk>
+	Thu, 2 Oct 2008 12:17:18 -0400
+Date: Thu, 2 Oct 2008 10:17:01 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Zhao, Yu" <yu.zhao@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Alex Chiang <achiang@hp.com>, Roland Dreier <rdreier@cisco.com>,
+       Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 3/6 v3] PCI: support ARI capability
+Message-ID: <20081002161701.GO13822@parisc-linux.org>
+References: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5F3@pdsmsx502.ccr.corp.intel.com> <200810020903.16385.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <247018.46515.qm@web50603.mail.re2.yahoo.com>
-	 <20080926094653.1e0a9260@lxorguk.ukuu.org.uk>
-	 <20080926091135.GV2677@kernel.dk>
-	 <556445368AFA1C438794ABDA8901891C0999203A@USA0300MS03.na.xerox.net>
-	 <20080929130222.GX2677@kernel.dk> <20081001190546.GQ19428@kernel.dk>
+In-Reply-To: <200810020903.16385.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Jens,
+On Thu, Oct 02, 2008 at 09:03:15AM -0700, Jesse Barnes wrote:
+> Maybe we should be consistent with the other APIs and call it pci_enable_ari 
+> (like we do for wake & msi).  Looks pretty good otherwise.
 
-On Wed, Oct 1, 2008 at 9:05 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Mon, Sep 29 2008, Jens Axboe wrote:
->> On Fri, Sep 26 2008, Leisner, Martin wrote:
->> IMHO, this interface totally rocks. It's really async like splice was
->
-> Alright, so this one actually works :-)
-> Apart from fixing the bugs in it, it's also more clever in using the bio
-> for the write part. It'll reuse the same bio in the splice actor until
-> it's full, only then submitting it and allocating a new one. The read
-> part works the same way.
->
-I have been following this thread trying to grasp a very nifty use
-case (high speed acquisition and storage of data) of splice.
+Those APIs are for drivers ... this is internal.  I don't have any
+objection of my own, though I agree with Alex's remark that the printk
+is unnecessary and just adds clutter to the boot process.
 
-I think it would make a perfect example of splice functionality.
-
-What would the user space part look like to exercise this interface?
-
-And whoever writes Linux Device Drivers 4th edition or one of the
-kernel books; make sure this topic in is :-)
-
-Regards,
 -- 
-Leon
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
