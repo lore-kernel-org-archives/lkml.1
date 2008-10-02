@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbYJBXcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbYJBXdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754942AbYJBXcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 19:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYJBXcL
+	id S1755299AbYJBXdd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 19:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbYJBXdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 19:32:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56933 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753328AbYJBXcL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 19:32:11 -0400
-Date: Thu, 2 Oct 2008 16:31:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] printk.caller
-Message-Id: <20081002163154.fd5f2a10.akpm@linux-foundation.org>
-In-Reply-To: <20081002232115.8D2BB154212@magilla.localdomain>
-References: <20081002232115.8D2BB154212@magilla.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 2 Oct 2008 19:33:17 -0400
+Received: from mga02.intel.com ([134.134.136.20]:30429 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752596AbYJBXdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 19:33:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,353,1220252400"; 
+   d="scan'208";a="446393111"
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: [PATCH 2.6.27-rc8 0/6] e1000e mutex protection
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de,
+       arjan@linux.intel.com, airlied@gmail.com, davem@davemloft.net,
+       jeff@garzik.org
+Date: Thu, 02 Oct 2008 16:33:14 -0700
+Message-ID: <20081002233314.12556.49143.stgit@jbrandeb-bw.jf.intel.com>
+User-Agent: StGIT/0.14.3.163.g06f9.dirty
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Oct 2008 23:33:14.0952 (UTC) FILETIME=[3DCADC80:01C924E7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  2 Oct 2008 16:21:15 -0700 (PDT)
-Roland McGrath <roland@redhat.com> wrote:
+This series of patches fixes several bugs found by putting a
+mutex inside e1000_acquire_swfw_flag, and then the patch from
+Thomas actually adds this mutex to help find any further bugs.
 
-> This adds the printk.caller=[0|1] boot parameter, default setting
-> controlled by CONFIG_PRINTK_CALLER.  (This is modelled on printk.time
-> and CONFIG_PRINTK_TIME.)
-> 
-> When this is set, each printk line is automagically prefixed with
-> "{0x123abc} " giving the PC address of that printk call (actually
-> the PC address just after the call).
-> 
-> As a kernel hacker, I always hate having to grep for some fragment
-> of a message to find the code that generated it.  But I always have
-> my -g vmlinux handy, so:
-> 	(gdb) info line *(0x123abc - 1)
-> is real handy (it pops the source up in an Emacs buffer).
-> 
+Like Jesse Barnes said, "totally up to you (obviously) whether we
+stuff this into 2.6.27 or hold on it until 2.6.28."
 
-hm.  What do others think?
+Linus, since you mentioned this exact same issue that Thomas (and
+Dave Airlie) spotted I figured I should just send these.
+Testing will continue over the next couple of days and I'll let
+you know immediately if we find something.
 
->
-> ...
->
-> +config PRINTK_CALLER
-> +	bool "Show caller PC on printks"
-> +	depends on PRINTK
-> +	help
-> +	  Selecting this option causes printk output to include
-> +	  the PC address of the printk call.  This is useful for
-> +	  kernels hackers to quickly locate the source code that
-> +	  produced the message.
-> +
+The patches are pretty straight forward and each one fixed a
+separate bug we found using the mutex patch.  It is possible that
+these fix the actual corruption issue but we haven't verified
+that yet.
 
-This is quite misleading.  The config help implies that
-CONFIG_PRINTK_CALLER will enable the feature at compile time.  But it
-doesn't - it just sets the boot-time enable/disable default.
+---
 
-If you do this:
+Jesse Brandeburg (5):
+      e1000e: update version from k4 to k6
+      e1000e: drop stats lock
+      e1000e: remove phy read from inside spinlock
+      e1000e: do not ever sleep in interrupt context
+      e1000e: reset swflag after resetting hardware
 
-#ifdef CONFIG_PRINTK_CALLER
-static int printk_caller = 1;
-#else
-#define printk_caller 0
-#endif
-
-then the implementation would somewhat reflect the config option.
+Thomas Gleixner (1):
+      e1000e: debug contention on NVM SWFLAG
 
 
-But I'd suggest that this thing is so small that it doesn't need a
-config option to enable the presence of the code - just make it
-unconditional.
+ drivers/net/e1000e/e1000.h   |    3 +-
+ drivers/net/e1000e/ethtool.c |    6 +++-
+ drivers/net/e1000e/ich8lan.c |   20 +++++++++++++
+ drivers/net/e1000e/netdev.c  |   64 +++++++++++++++++++-----------------------
+ 4 files changed, 56 insertions(+), 37 deletions(-)
 
-Also, I guess that the boot-time option is useful, but a runtime /proc
-knob might also be needed?
-
+-- 
+Jesse Brandeburg
