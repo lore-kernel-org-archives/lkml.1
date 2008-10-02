@@ -1,74 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbYJBGyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752911AbYJBGyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752546AbYJBGyX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 02:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYJBGyB
+	id S1752911AbYJBGyf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 02:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbYJBGyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 02:54:01 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:31799 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753418AbYJBGyA (ORCPT
+	Thu, 2 Oct 2008 02:54:22 -0400
+Received: from mail.bigtelecom.ru ([87.255.0.61]:49882 "EHLO
+	mail.bigtelecom.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752546AbYJBGyV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 02:54:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=kHup2cAYE4gLPY50tpQo9fA4hn0erQjR61WuC5TzDiU/sCwTS2Xk/VJjA5RHplxjIKr2F7sWdTIkVQY/1K/x7IUNQzzu1+9PM7Ii8JVydSIlyo7utLLWOjzJ7qdPwI0bOqCQmrCaX1y14dApVKjy9cMUhoOq41EXO2aHDjd0xxA=  ;
-X-YMail-OSG: HBYazJYVM1n1aJTBRaZbQy8_A_U.aLZfeCEx1_O9dPKnxVF9pWYzplRcFNRjmUv_PghpbFdptP6N_jCyUq16H65pGLboV_N65x8XKSIkpNOKCCTJ4hKLREASnLxNG84o0ONpNVIuC1ma.DgLIBuQWn2y
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 2.6.27-rc8 1/2] drivers/mfd/twl4030-core.c
-Date: Wed, 1 Oct 2008 23:53:57 -0700
-User-Agent: KMail/1.9.9
-Cc: Samuel Ortiz <sameo@openedhand.com>, lkml <linux-kernel@vger.kernel.org>,
-       Felipe Balbi <felipe.balbi@nokia.com>, linux-omap@vger.kernel.org
-References: <200810011144.20510.david-b@pacbell.net> <200810011453.26699.david-b@pacbell.net> <20081002060521.GA7942@atomide.com>
-In-Reply-To: <20081002060521.GA7942@atomide.com>
+	Thu, 2 Oct 2008 02:54:21 -0400
+Message-ID: <48E4701A.4010508@bigtelecom.ru>
+Date: Thu, 02 Oct 2008 10:54:18 +0400
+From: Badalian Vyacheslav <slavon@bigtelecom.ru>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080929)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+Subject: NMI Watchdog detected LOCKUP on CPU3
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810012353.57753.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 October 2008, Tony Lindgren wrote:
-> * David Brownell <david-b@pacbell.net> [081002 00:53]:
-> > On Wednesday 01 October 2008, David Brownell wrote:
-> > 
-> > > NOTE: this is the current code from the linux-omap tree.
-> > 
-> > This chip being used on a whole bunch of boards:
-> > 
-> >  - Gumstix Overo
-> >  - BeagleBoard.org
-> >  - Omap ZOOM (Labrador)
-> >  - OMAP 2430 and 3430 SDP,
-> >  - OMAP2 and OMAP3 EVM
-> >  - ... more (openpandora.org ?)
+Hello All. Please help cassify bug to report to bugzilla it!
 
-My bad.  Openpandora just opened for preorders *today* (PST)
-and sold out all 3000 units.  I'm sure I mentioned it well
-after most of them were sold, so it's not my fault their
-server was killed.  Really ...
+Look to my sysctl:
+
+# sysctl -a | grep panic
+kernel.panic = 3
+kernel.panic_on_oops = 1
+kernel.unknown_nmi_panic = 1
+kernel.panic_on_unrecovered_nmi = 1
+vm.panic_on_oom = 0
+# sysctl -a | grep nmi
+kernel.unknown_nmi_panic = 1
+kernel.nmi_watchdog = 1
+kernel.panic_on_unrecovered_nmi = 1
+
+# sysctl -a | grep rq
+kernel.sysrq = 1
+
+But computer do not reboot and ALT+SysRQ+B don't work...
+
+This i get by netconsole and on the screen:
 
 
-> > 
-> > which will get much closer to "usable with mainline kernels"
-> > when their power management chip works in mainline!  :)
-> 
-> Cool. I'll post some patches against mainline kernel
-> for booting minimal omap3 boards within next few days.
-> So we should get at least beagle and overo booting
-> to some extent, maybe with serial and musb.
+[ 2251.728719] BUG: NMI Watchdog detected LOCKUP on CPU3, ip c01fafd4,
+registers:
+[ 2251.728719] Modules linked in: netconsole i2c_i801 i2c_core e1000e e1000
+[ 2251.728719]
+[ 2251.728719] Pid: 0, comm: swapper Not tainted (2.6.26.5-fw #1)
+[ 2251.728719] EIP: 0060:[<c01fafd4>] EFLAGS: 00000082 CPU: 3
+[ 2251.728719] EIP is at rb_insert_color+0x24/0xc0
+[ 2251.728719] EAX: f6c134a4 EBX: f6c134a4 ECX: f6c134a4 EDX: f6c134a4
+[ 2251.728719] ESI: f6c134a4 EDI: f6c134a4 EBP: c202d0d4 ESP: f7c5fcac
+[ 2251.728719]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[ 2251.728719] Process swapper (pid: 0, ti=f7c5e000 task=f7c32940
+task.ti=f7c5e000)
+[ 2251.728719] Stack: f6c134a4 00000000 c202d0cc c202d0d4 c013a8ff
+f6c134a4 c202d0cc c20230cc
+[ 2251.728719]        c04450a0 c013adea 00000000 f7c5fcfc 392e7c00
+0000020c 00000001 00000286
+[ 2251.728719]        f6c13000 ffffffff 00000000 00000000 c02d15fe
+00000000 f6c13000 c02d6da6
+[ 2251.728719] Call Trace:
+[ 2251.728719]  [<c013a8ff>] enqueue_hrtimer+0x5f/0x80
+[ 2251.728719]  [<c013adea>] hrtimer_start+0xaa/0x130
+[ 2251.728719]  [<c02d15fe>] qdisc_watchdog_schedule+0x1e/0x30
+[ 2251.728719]  [<c02d6da6>] htb_dequeue+0x6a6/0x810
+[ 2251.728719]  [<c02d047c>] __qdisc_run+0x19c/0x1d0
+[ 2251.728719]  [<c02d71c0>] htb_enqueue+0x0/0x1e0
+[ 2251.728719]  [<c02c4cb7>] dev_queue_xmit+0x267/0x380
+[ 2251.728719]  [<c02e6040>] ip_forward_finish+0x0/0x40
+[ 2251.728719]  [<c02e8bef>] ip_finish_output+0x11f/0x280
+[ 2251.728719]  [<c02e630f>] ip_forward+0x28f/0x2d0
+[ 2251.728719]  [<c02e6065>] ip_forward_finish+0x25/0x40
+[ 2251.728719]  [<c02e4ba2>] ip_rcv_finish+0x122/0x360
+[ 2251.728719]  [<c016d7e9>] add_partial+0x19/0x60
+[ 2251.728719]  [<c016e8d9>] __slab_free+0x169/0x290
+[ 2251.728719]  [<c02e5020>] ip_rcv+0x0/0x290
+[ 2251.728719]  [<c02c1b4b>] netif_receive_skb+0x26b/0x470
+[ 2251.728719]  [<f886c74d>] e1000_receive_skb+0x4d/0x1b0 [e1000e]
+[ 2251.728719]  [<f886f9bc>] e1000_clean_rx_irq+0x23c/0x300 [e1000e]
+[ 2251.728719]  [<f886bf59>] e1000_clean+0x49/0x1f0 [e1000e]
+[ 2251.728719]  [<c02c3f58>] net_rx_action+0xf8/0x1b0
+[ 2251.728719]  [<c012a062>] __do_softirq+0x82/0x100
+[ 2251.728719]  [<c012a117>] do_softirq+0x37/0x40
+[ 2251.728719]  [<c0107120>] do_IRQ+0x40/0x80
+[ 2251.728719]  [<c01055a3>] common_interrupt+0x23/0x28
+[ 2251.728719]  [<c010a5e2>] mwait_idle+0x32/0x40
+[ 2251.728719]  [<c010a5b0>] mwait_idle+0x0/0x40
+[ 2251.728719]  [<c01036e8>] cpu_idle+0x48/0xc0
+[ 2251.728719]  =======================
+[ 2251.728719] Code: 8d bc 27 00 00 00 00 55 89 d5 57 89 c7 56 53 90 8d
+b4 26 00 00 00 00 8b 1f 83 e3 fc 74 32 8b 03 89 d9 a8 01 75 2a 89 c6 83
+e6 fc <8b> 56 08 39 d3 74 45 85 d2 74 25 8b 02 a8 01 75 1f 83 c8 01 89
 
-Sounds like it *should* be a nice, modest, achievable
-goal, right?  Something tells me it won't be that easy!
-More power to you.
 
-- Dave
 
-  
