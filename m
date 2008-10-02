@@ -1,109 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbYJBX5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbYJBX5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754903AbYJBX5T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 19:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbYJBX5F
+	id S1755465AbYJBX5l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 19:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505AbYJBX5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 19:57:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33109 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753203AbYJBX5E (ORCPT
+	Thu, 2 Oct 2008 19:57:31 -0400
+Received: from zrtps0kn.nortel.com ([47.140.192.55]:49587 "EHLO
+	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753580AbYJBX5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 19:57:04 -0400
-Date: Thu, 2 Oct 2008 16:56:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: yi.y.yang@intel.com
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       gregkh@suse.de, linux-usb@vger.kernel.org
-Subject: Re: [PATCH] USB: improve ehci_watchdog's side effect in CPU power
- management
-Message-Id: <20081002165649.00d021db.akpm@linux-foundation.org>
-In-Reply-To: <1222334744.9267.41.camel@yangyi-dev>
-References: <1222334744.9267.41.camel@yangyi-dev>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 2 Oct 2008 19:57:30 -0400
+Message-ID: <48E55FE5.40108@nortel.com>
+Date: Thu, 02 Oct 2008 17:57:25 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [bug report] sched: stop_machine() usage causes load balancer to
+ misbehave
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Oct 2008 23:57:26.0540 (UTC) FILETIME=[9F019CC0:01C924EA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Sep 2008 17:25:44 +0800
-Yi Yang <yi.y.yang@intel.com> wrote:
+I mentioned before that ftrace (specifically the ftraced daemon) seems 
+to be interfering with the load balancer.  After some experimenting, it 
+appears that any regular calls to stop_machine() will end up confusing 
+the load balancer.
 
-> ehci_watchdog will wake up CPU very frequently so that CPU
-> stays at C3 very short, average residence time is about 50
-> ms on Aspire One, but we expect it should be about 1 second
-> or more, so this kind of periodic timer is very bad for power
-> saving.
-> 
-> We can't remove this timer because of some bad USB controller
-> chipset, but at least we should reduce its side effect to as
-> possible as low.
-> 
-> This patch can make CPU stay at C3 longer, average residence time
-> is about twice as long as original. 
-> 
-> Please consider to apply it, thanks
-> 
-> Signed-off-by: Yi Yang <yi.y.yang@intel.com>
-> ---
->  ehci.h |   12 +++++++-----
->  1 file changed, 7 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
-> index 5799298..9d530d9 100644
-> --- a/drivers/usb/host/ehci.h
-> +++ b/drivers/usb/host/ehci.h
-> @@ -181,14 +181,16 @@ timer_action (struct ehci_hcd *ehci, enum ehci_timer_action action)
->  	 * the async ring; just the I/O watchdog.  Note that if a
->  	 * SHRINK were pending, OFF would never be requested.
->  	 */
-> -	if (timer_pending(&ehci->watchdog)
-> -			&& ((BIT(TIMER_ASYNC_SHRINK) | BIT(TIMER_ASYNC_OFF))
-> -				& ehci->actions))
-> -		return;
-> +	enum ehci_timer_action oldactions = ehci->actions;
->  
->  	if (!test_and_set_bit (action, &ehci->actions)) {
->  		unsigned long t;
->  
-> +		if (timer_pending(&ehci->watchdog)
-> +			&& ((BIT(TIMER_ASYNC_SHRINK) | BIT(TIMER_ASYNC_OFF))
-> +				& oldactions))
-> +			return;
-> +
->  		switch (action) {
->  		case TIMER_IO_WATCHDOG:
->  			t = EHCI_IO_JIFFIES;
-> @@ -204,7 +206,7 @@ timer_action (struct ehci_hcd *ehci, enum ehci_timer_action action)
->  			t = DIV_ROUND_UP(EHCI_SHRINK_FRAMES * HZ, 1000) + 1;
->  			break;
->  		}
-> -		mod_timer(&ehci->watchdog, t + jiffies);
-> +		mod_timer(&ehci->watchdog, round_jiffies(t + jiffies));
->  	}
->  }
->  
+As an experiment, I disabled ftraced (which would normally result in 
+correct load balancing) but added a single kernel thread which simply 
+runs the following loop, where "chrisd2" is a dummy function.
 
-<looks>
+while(1) {
+	set_current_state(TASK_INTERRUPTIBLE);
+	schedule_timeout(HZ);
+	stop_machine(chrisd2, NULL, NULL);
+}
 
-<regrets it>
+With the modified kernel, my testcase shows that the load balancer 
+doesn't balance--all tasks remain on one cpu while the other one stays idle.
 
+Most of the users of stop_machine() (kprobes on s390, cpu hotplug, 
+module load/unload, numa_zonelist_order, etc.) don't seem to be called 
+on a regular basis.  Only ftrace behaves this way, which is why it 
+appeared to be the source of the problem.
 
-Why does this:
+I haven't tracked down the specific reasons for the misbehaviour, but it 
+seems undesirable.
 
-	t = DIV_ROUND_UP(EHCI_SHRINK_FRAMES * HZ, 1000) + 1;
+Anyone have any ideas what might be causing this?  Is it a problem with 
+the load balancer, or an unavoidable consequence of what stop_machine() 
+is doing?
 
-add "1000" to a jiffies value when it doesn't know what HZ is?  It'll
-be adding anywhere from one second up to ten seconds to the timeout
-interval depending upon compile-time options.
+Thanks,
 
-I suspect s/1000/HZ/ would improve things here.  Or just delete it -
-doesn't the subsequent round_jiffies() do the same thing, only better? 
-This code needs help, I suspect.
-
-
-Also, do we really need to inline this large function into at least
-five callsites?
-
+Chris
