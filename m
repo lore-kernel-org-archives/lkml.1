@@ -1,148 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbYJBVnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYJBVoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755087AbYJBVnh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 17:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbYJBVna
+	id S1755325AbYJBVoR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 17:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbYJBVoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 17:43:30 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:39076 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754332AbYJBVn3 (ORCPT
+	Thu, 2 Oct 2008 17:44:04 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:61220 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754361AbYJBVoB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 17:43:29 -0400
-Date: Thu, 2 Oct 2008 15:43:08 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Remove completion from struct klist_node
-Message-ID: <20081002214308.GP13822@parisc-linux.org>
-MIME-Version: 1.0
+	Thu, 2 Oct 2008 17:44:01 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAEPd5EhMQWq+/2dsb2JhbACBZ7xPgWo
+Date: Thu, 2 Oct 2008 17:43:59 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       mbligh@google.com, Jiaying Zhang <jiayingz@google.com>
+Subject: [TEST] LTTng relay-alloc cache tests
+Message-ID: <20081002214359.GA24693@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:38:25 up 120 days,  2:18, 10 users,  load average: 0.26, 0.36,
+	0.38
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+With these tests, I come to the surprising conclusion that it is faster
+to keep the buffer pages as write-back than to set them to
+write-combined or uncached. I would have thought that keeping the
+cachelines free for kernel or userspace cache lines would have improved
+performance, but for some reason it doesn't.
 
-Removing the completion from klist_node reduces its size from 64 bytes
-to 28 on x86-64.  To maintain the semantics of klist_remove(), we add
-a single list of klist nodes which are pending deletion and scan them.
+Doing these tests under a webserver-like workload would however be
+interesting. Feel free to play with this. :-)
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+Mathieu
 
- include/linux/klist.h |    2 --
- lib/klist.c           |   48 ++++++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 44 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/klist.h b/include/linux/klist.h
-index 06c338e..989a335 100644
---- a/include/linux/klist.h
-+++ b/include/linux/klist.h
-@@ -13,7 +13,6 @@
- #define _LINUX_KLIST_H
+LTTng trace buffer memory cache behavior comparison
+Tracing in flight recorder mode with default size buffers
+LTTng 0.31, kernel 2.6.27-rc8
+Dual quad-core x86_64 with 16GB ram
+
+** tbench (MB/s) **
+
+tracing disabled :         1862.24
+
+tracing flight recorder default buffer size :
+cache WB :                  942.72
+cache WC (write-combined) : 755.94
+uncached :                  780.03
+
+
+** kernel compilation **
+
+make clean
+sync
+sync
+echo 3 > /proc/sys/vm/drop_caches
+time make -j10
+[timing 1, cache cold]
+make clean
+make -j10
+[timing 2, cache hot]
+
+
+Tracing disabled :
+
+[timing 1, cache cold]
+real    1m24.729s
+user    7m22.952s
+sys     0m48.943s
+
+[timing 2, cache hot]
+real    1m10.639s
+user    7m25.864s
+sys     0m49.235s
+
+
+cache WB :
+
+[timing 1, cache cold]
+real    1m33.408s
+user    7m27.852s
+sys     1m47.623s
+
+[timing 2, cache hot]
+real    1m20.429s
+user    7m30.668s
+sys     1m46.895s
+
+
+cache WC (write-combined) :
+
+[timing 1, cache cold]
+real    1m38.971s
+user    7m27.800s
+sys     2m18.241s
+
+[timing 2, cache hot]
+real    1m25.200s
+user    7m30.040s
+sys     2m18.201s
+
+uncached :
+
+[timing 1, cache cold]
+real    1m37.237s
+user    7m28.352s
+sys     2m13.312s
+
+[timing 2, cache hot]
+real    1m24.303s
+user    7m29.420s
+sys     2m14.756s
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ ltt/ltt-relay-alloc.c |   40 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+
+Index: linux-2.6-lttng/ltt/ltt-relay-alloc.c
+===================================================================
+--- linux-2.6-lttng.orig/ltt/ltt-relay-alloc.c	2008-10-02 17:02:42.000000000 -0400
++++ linux-2.6-lttng/ltt/ltt-relay-alloc.c	2008-10-02 17:07:48.000000000 -0400
+@@ -26,6 +26,38 @@
+ static DEFINE_MUTEX(relay_channels_mutex);
+ static LIST_HEAD(relay_channels);
  
- #include <linux/spinlock.h>
--#include <linux/completion.h>
- #include <linux/kref.h>
- #include <linux/list.h>
- 
-@@ -41,7 +40,6 @@ struct klist_node {
- 	struct klist		*n_klist;
- 	struct list_head	n_node;
- 	struct kref		n_ref;
--	struct completion	n_removed;
- };
- 
- extern void klist_add_tail(struct klist_node *n, struct klist *k);
-diff --git a/lib/klist.c b/lib/klist.c
-index cca37f9..2b609ee 100644
---- a/lib/klist.c
-+++ b/lib/klist.c
-@@ -36,7 +36,7 @@
- 
- #include <linux/klist.h>
- #include <linux/module.h>
--
-+#include <linux/sched.h>
- 
++#ifdef CONFIG_X86
++#include <asm/cacheflush.h>
++#include <asm/pat.h>
++
++/*
++ * TODO : create an abstraction in arch/x86
++ * Use write-combined pages if PAT is supported. Else, use uncached pages to
++ * make sure we don't evince really useful cachelines.
++ */
++static int arch_buffer_page_attr_set(struct page *page, int numpages)
++{
++	return set_memory_wc((unsigned long)page_address(page), numpages);
++	//return set_memory_uc((unsigned long)page_address(page), numpages);
++}
++
++static int arch_buffer_page_attr_clear(struct page *page, int numpages)
++{
++	return set_memory_wb((unsigned long)page_address(page), numpages);
++}
++#else
++static int arch_buffer_page_attr_set(struct page *page)
++{
++	return 0;
++}
++
++static int arch_buffer_page_attr_clear(struct page *page)
++{
++	return 0;
++}
++#endif
++
++
  /**
-  * klist_init - Initialize a klist structure.
-@@ -77,7 +77,6 @@ static void add_tail(struct klist *k, struct klist_node *n)
- static void klist_node_init(struct klist *k, struct klist_node *n)
+  *	relay_alloc_buf - allocate a channel buffer
+  *	@buf: the buffer struct
+@@ -35,6 +67,7 @@ static int relay_alloc_buf(struct rchan_
  {
- 	INIT_LIST_HEAD(&n->n_node);
--	init_completion(&n->n_removed);
- 	kref_init(&n->n_ref);
- 	n->n_klist = k;
- 	if (k->get)
-@@ -140,12 +139,36 @@ void klist_add_before(struct klist_node *n, struct klist_node *pos)
- }
- EXPORT_SYMBOL_GPL(klist_add_before);
+ 	unsigned int i, n_pages;
+ 	struct buf_page *buf_page, *n;
++	int ret;
  
-+struct klist_waiter {
-+	struct klist_waiter *next;
-+	struct klist_node *node;
-+	struct task_struct *process;
-+	int woken;
-+};
-+
-+static DEFINE_SPINLOCK(klist_remove_lock);
-+static struct klist_waiter *klist_remove_waiters;
-+
- static void klist_release(struct kref *kref)
+ 	*size = PAGE_ALIGN(*size);
+ 	n_pages = *size >> PAGE_SHIFT;
+@@ -56,6 +89,8 @@ static int relay_alloc_buf(struct rchan_
+ 		buf_page->offset = (size_t)i << PAGE_SHIFT;
+ 		buf_page->buf = buf;
+ 		set_page_private(buf_page->page, (unsigned long)buf_page);
++		ret = arch_buffer_page_attr_set(buf_page->page, 1);
++		WARN_ON(ret);
+ 		if (i == 0) {
+ 			buf->wpage = buf_page;
+ 			buf->hpage[0] = buf_page;
+@@ -69,6 +104,8 @@ static int relay_alloc_buf(struct rchan_
+ depopulate:
+ 	list_for_each_entry_safe(buf_page, n, &buf->pages, list) {
+ 		list_del_init(&buf_page->list);
++		ret = arch_buffer_page_attr_clear(buf_page->page, 1);
++		WARN_ON(ret);
+ 		__free_page(buf_page->page);
+ 		kfree(buf_page);
+ 	}
+@@ -123,9 +160,12 @@ static void relay_destroy_buf(struct rch
  {
-+	struct klist_waiter **pprev, *this;
- 	struct klist_node *n = container_of(kref, struct klist_node, n_ref);
+ 	struct rchan *chan = buf->chan;
+ 	struct buf_page *buf_page, *n;
++	int ret;
  
- 	list_del(&n->n_node);
--	complete(&n->n_removed);
-+	spin_lock(&klist_remove_lock);
-+	pprev = &klist_remove_waiters;
-+	while ((this = *pprev)) {
-+		if (this->node != n) {
-+			pprev = &this->next;
-+			continue;
-+		}
-+
-+		this->woken = 1;
-+		mb();
-+		wake_up_process(this->process);
-+		*pprev = this->next;
-+	}
-+	spin_unlock(&klist_remove_lock);
- 	n->n_klist = NULL;
- }
- 
-@@ -178,8 +201,25 @@ EXPORT_SYMBOL_GPL(klist_del);
-  */
- void klist_remove(struct klist_node *n)
- {
-+	struct klist_waiter waiter;
-+
-+	waiter.node = n;
-+	waiter.process = current;
-+	waiter.woken = 0;
-+	spin_lock(&klist_remove_lock);
-+	waiter.next = klist_remove_waiters;
-+	klist_remove_waiters = &waiter;
-+	spin_unlock(&klist_remove_lock);
-+
- 	klist_del(n);
--	wait_for_completion(&n->n_removed);
-+
-+	for (;;) {
-+		set_current_state(TASK_UNINTERRUPTIBLE);
-+		if (waiter.woken)
-+			break;
-+		schedule();
-+	}
-+	__set_current_state(TASK_RUNNING);
- }
- EXPORT_SYMBOL_GPL(klist_remove);
- 
+ 	list_for_each_entry_safe(buf_page, n, &buf->pages, list) {
+ 		list_del_init(&buf_page->list);
++		ret = arch_buffer_page_attr_clear(buf_page->page, 1);
++		WARN_ON(ret);
+ 		__free_page(buf_page->page);
+ 		kfree(buf_page);
+ 	}
+
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
