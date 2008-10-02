@@ -1,49 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYJBW4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbYJBW6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755886AbYJBW4y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 18:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbYJBW4c
+	id S1755501AbYJBW6Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 18:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbYJBW6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 18:56:32 -0400
-Received: from mylar.outflux.net ([69.93.193.226]:51325 "EHLO
-	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753492AbYJBW4c (ORCPT
+	Thu, 2 Oct 2008 18:58:16 -0400
+Received: from smtp.ono.com ([62.42.230.12]:34341 "EHLO resmaa01.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752544AbYJBW6Q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 18:56:32 -0400
-Date: Thu, 2 Oct 2008 15:56:24 -0700
-From: Kees Cook <kees.cook@canonical.com>
-To: "Randy.Dunlap" <rdunlap@xenotime.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] proc: add "personality" to process status file
-Message-ID: <20081002225624.GK10632@outflux.net>
-References: <20081002211424.GJ10632@outflux.net> <Pine.LNX.4.64.0810021544070.26309@shark.he.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810021544070.26309@shark.he.net>
-Organization: Canonical
-X-HELO: www.outflux.net
+	Thu, 2 Oct 2008 18:58:16 -0400
+Date: Fri, 3 Oct 2008 00:58:07 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] x86: mtrr_cleanup try gran_size to less than 1M
+Message-ID: <20081003005807.7d2b2b43@werewolf.home>
+In-Reply-To: <86802c440810021533v572975e8n40e55009cc2b2d8a@mail.gmail.com>
+References: <1222739652-17169-1-git-send-email-yhlu.kernel@gmail.com>
+	<1222739652-17169-2-git-send-email-yhlu.kernel@gmail.com>
+	<20081003000314.771b2f68@werewolf.home>
+	<86802c440810021533v572975e8n40e55009cc2b2d8a@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0cvs144 (GTK+ 2.14.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heya Randy,
+On Thu, 2 Oct 2008 15:33:10 -0700, "Yinghai Lu" <yinghai@kernel.org> wrote:
 
-On Thu, Oct 02, 2008 at 03:46:31PM -0700, Randy.Dunlap wrote:
-> On Thu, 2 Oct 2008, Kees Cook wrote:
-> > There is no sane way to query the personality flags of arbitrary process
-> > from userspace.  This adds the flags to the /proc/$pid/status file.
+> On Thu, Oct 2, 2008 at 3:03 PM, J.A. Magallón <jamagallon@ono.com> wrote:
+> > On Mon, 29 Sep 2008 18:54:12 -0700, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> >
+> >>
+> >> so start from 64k instead of 1M
+> >>
+> >
+> > Or there is something I don't catch about mtrrs, or it still does silly
+> > things.
+> >
+> > I have an ASUS PCDL, dual xeon, 2Gb of memory. Mtrrs after cleanup are:
+> >
+> > werewolf:/proc> cat mtrr
+> > reg00: base=0x00000000 (   0MB), size=1024MB: write-back, count=1
+> > reg01: base=0x40000000 (1024MB), size= 512MB: write-back, count=1
+> > reg02: base=0x60000000 (1536MB), size= 256MB: write-back, count=1
+> > reg03: base=0x70000000 (1792MB), size= 128MB: write-back, count=1
+> > reg04: base=0x78000000 (1920MB), size=  64MB: write-back, count=1
+> > reg05: base=0x7c000000 (1984MB), size=  64MB: write-back, count=1
+> > reg06: base=0x7ff00000 (2047MB), size=   1MB: uncachable, count=1
+> >
+> > So it adds a last WB zone, but substracts the last 1Mb. (Why do
+> > I have that stupid uncacheable mb ? probably a bios issue...)
+> > But those two 64 mb zones could be add to a 128Mb, that new one
+> > with previous to 256Mb and so on, giving something like:
+> >
+> > reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+> > reg01: base=0x7ff00000 (2047MB), size=   1MB: uncachable, count=1
+> >
+> > Is this incorrect ?
+> >
 > 
-> The patch seems to be missing an update to Documentation/filesystems/proc.txt !
-> Please add that.  TIA.
+> can you boot with mtrr_cleanup_debug?
+> 
 
-The /proc/pid/status file is "self documenting" (in theory), and doesn't
-have separate documentation in proc.txt yet.  If I had touched the
-"stat" file, I would have included and update, since I was the last to
-document that file.  ;)
+I don't have such option in my kernel, this is -rc8-git3.
 
--Kees
+> also what is /proc/mtrr with disable_mtrr_cleanup?
+> 
+>
+Yeah, it goes right on the Xeon:
+
+reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+reg01: base=0x7ff00000 (2047MB), size=   1MB: uncachable, count=1
+
+Will try your patch now.
 
 -- 
-Kees Cook
-Ubuntu Security Team
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.0 (Cooker) for i586
+Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
