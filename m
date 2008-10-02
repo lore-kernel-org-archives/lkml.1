@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473AbYJBAow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbYJBApj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753473AbYJBAow (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 20:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYJBAom
+	id S1753757AbYJBApj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 20:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYJBApa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 20:44:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47613 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751846AbYJBAol (ORCPT
+	Wed, 1 Oct 2008 20:45:30 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38047 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752124AbYJBAp3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 20:44:41 -0400
-Date: Wed, 1 Oct 2008 17:42:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>
-cc: jeff@garzik.org, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, arjan@linux.intel.com,
-       Bruce Allan <bruce.w.allan@intel.com>, arjan@linux.intel.com
-Subject: Re: [PATCH] e1000e: write protect ICHx NVM to prevent malicious
- write/erase
-In-Reply-To: <20081002001835.5951.82533.stgit@jbrandeb-bw.jf.intel.com>
-Message-ID: <alpine.LFD.2.00.0810011731350.3341@nehalem.linux-foundation.org>
-References: <20081002001830.5951.3123.stgit@jbrandeb-bw.jf.intel.com> <20081002001835.5951.82533.stgit@jbrandeb-bw.jf.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 1 Oct 2008 20:45:29 -0400
+Message-ID: <48E4183A.7090208@zytor.com>
+Date: Wed, 01 Oct 2008 17:39:22 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Zachary Amsden <zach@vmware.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Alok Kataria <akataria@vmware.com>, "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Daniel Hecht <dhecht@vmware.com>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Subject: Re: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
+References: <1222881242.9381.17.camel@alok-dev1> <48E3BBC1.2050607@goop.org>	 <1222894878.9381.63.camel@alok-dev1> <48E3E8DE.1080602@goop.org>	 <48E3ECD1.30809@codemonkey.ws> <1222904824.7330.83.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1222904824.7330.83.camel@bodhitayantram.eng.vmware.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 1 Oct 2008, Jesse Brandeburg wrote:
->
-> From: Bruce Allan <bruce.w.allan@intel.com>
+Zachary Amsden wrote:
 > 
-> Set the hardware to ignore all write/erase cycles to the GbE region in
-> the ICHx NVM.  This feature can be disabled by the WriteProtectNVM module
-> parameter (enabled by default) only after a hardware reset, but
-> the machine must be power cycled before trying to enable writes.
+> Jun, you work at Intel.  Can you ask for a new architecturally defined
+> MSR that returns the TSC frequency?  Not a virtualization specific MSR.
+> A real MSR that would exist on physical processors.  The TSC started as
+> an MSR anyway.  There should be another MSR that tells the frequency.
+> If it's hard to do in hardware, it can be a write-once MSR that gets
+> initialized by the BIOS.  It's really a very simple solution to a very
+> common problem.  Other MSRs are dedicated to bus speed and so on, this
+> seems remarkably similar.
+> 
 
-Thanks, applied.
+Ah, if it was only that simple.  Transmeta actually did this, but it's 
+not as useful as you think.
 
-One thing that I did notice when I looked at the driver is that I don't 
-see any serialization what-so-ever around a lot of the special accesses.
+There are at least three crystals in modern PCs: one at 32.768 kHz (for 
+the RTC), one at 14.31818 MHz (PIT, PMTMR and HPET), and one at a higher 
+frequency (often 200 MHz.)
 
-There's all these different routines that do
+All the main data distribution clocks in the system are derived from the 
+third, which is subject to spread-spectrum modulation due to RFI 
+concerns.  Therefore, relying on the *nominal* frequency of this clock 
+is vastly incorrect; often by as much as 2%.  Spread-spectrum modulation 
+is supposed to vary around zero enough that the spreading averages out, 
+but the only way to know what the center frequency actually is is to 
+average.  Furthermore, this high-frequency clock is generally not 
+calibrated anywhere near as well as the 14 MHz clock; in good designs 
+the 14 MHz is actually a TCXO (temperature compensated crystal 
+oscillator), which is accurate to something like ±2 ppm.
 
-	ret_val = e1000_acquire_swflag_ich8lan(hw);
-	if (ret_val)
-		return retval;
-	...
-	e1000_release_swflag_ich8lan(hw);
-
-
-but as far as I can tell, there is absolutely _nothing_ that prevents 
-these from being done concurrently by software. 
-
-Yeah, yeah, I'm sure most of them end up being single-threaded and only 
-called over the probe sequence (well, at least I _hope_ so), but it sure 
-isn't obvious. People call e1000_read_nvm() from various different 
-contexts, and I'm not seeing what - if anything - protects two concurrent 
-ethtool queries, for example.
-
-Imagine that you run ethtool concurrently (even on a UP machine with 
-preemption of just a sleeping op), and tell me that having two 
-e1000_acquire_swflag_ich8lan/e1000_release_swflag_ich8lan sequences nest 
-(or overlap) works. I don't think it does.
-
-That E1000_EXTCNF_CTRL_SWFLAG is _not_ a lock against other threads, it's 
-purely a lock against the hardware itself. And maybe I'm missing some 
-locking, but I can't see it.
-
-Same goes for the PHY accesses etc afaik. Hmm?
-
-		Linus
+	-hpa
