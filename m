@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbYJBINW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbYJBIRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbYJBINW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 04:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbYJBING
+	id S1753742AbYJBIRN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 04:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYJBIQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 04:13:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45407 "EHLO mx3.mail.elte.hu"
+	Thu, 2 Oct 2008 04:16:58 -0400
+Received: from verein.lst.de ([213.95.11.210]:41267 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753850AbYJBINC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 04:13:02 -0400
-Date: Thu, 2 Oct 2008 10:07:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, laijs@cn.fujitsu.com,
-       manfred@colorfullife.com, dipankar@in.ibm.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, josht@linux.vnet.ibm.com
-Subject: Re: [PATCH,RFC] RCU-based detection of stalled CPUs for Classic RCU
-Message-ID: <20081002080726.GB17695@elte.hu>
-References: <20081002003628.GA7877@linux.vnet.ibm.com>
-MIME-Version: 1.0
+	id S1752318AbYJBIQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 04:16:56 -0400
+Date: Thu, 2 Oct 2008 10:16:44 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Mark Fasheh <mfasheh@suse.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [Ocfs2-devel] [PATCH 13/39] ocfs2: Add extended attribute support
+Message-ID: <20081002081644.GB24717@lst.de>
+References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-14-git-send-email-mfasheh@suse.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081002003628.GA7877@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1222293680-15451-14-git-send-email-mfasheh@suse.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 24, 2008 at 03:00:54PM -0700, Mark Fasheh wrote:
+>  	xattr.o			\
+> +	xattr_user.o		\
+> +	xattr_trusted.o
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+Please don't split this up, it's always been a really stupid idea in
+extN.  The only difference between secure, trusted and user attrs is
+that they go into a different namespace bit (and have different
+permission checking, but that's handled in the VFS).  I have some
+upcoming patches to store a fs private flag in struct xattr_handler
+so that even those flags wrappers can go away, and each of the
+namespaces will just be five lines of code for the xattr_handler
+declaration.
 
-> Hello!
-> 
-> This patch adds stalled-CPU detection to Classic RCU.  This capability 
-> is enabled by a new config variable CONFIG_RCU_CPU_STALL_DETECTOR, 
-> which defaults disabled.  This is a debugging feature, not something 
-> that non-kernel-hackers would be expected to care about.  This feature 
-> can detect looping CPUs in !PREEMPT builds and looping CPUs with 
-> preemption disabled in PREEMPT builds.  This is essentially a port of 
-> this functionality from the treercu patch.
-> 
-> One current shortcoming: on some systems, stalls are detected during 
-> early boot, when we normally would not care about them.  My thought is 
-> to add a call from late initialization to suppress stall detection 
-> until the system is well along its way to being booted, but thought I 
-> should check to see if there might already be something for this 
-> purpose.
+> +static inline struct xattr_handler *ocfs2_xattr_handler(int name_index)
+> +{
+> +	struct xattr_handler *handler = NULL;
+> +
+> +	if (name_index > 0 && name_index < OCFS2_XATTR_MAX)
+> +		handler = ocfs2_xattr_handler_map[name_index];
+> +
+> +	return handler;
+> +}
 
-could you be a bit more specific, why do those warnings show up and why 
-dont we care about them? There are things like networking that 
-occasionally do an rcu_sync() and a stall could mean a bootup hang.
+You seem to need the handler mostly for getting back to the prefix
+from the handler.  This is a pretty clear indicator that you don't
+want to use the xattr_handler splitting but deal with the whole
+attr name.  Take a look at the btrfs code after my recent xattr changes
+on how to handle this more nicely.
 
-> (Currently against 2.6.27-rc8, FYI.)
-> 
-> Thoughts?
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-i think this is a very good idea in general - often the question comes 
-up whether a hang seen in the RCU code is indeed caused by RCU or other 
-factors. Could you perhaps rebase it against tip/core/rcu ? [or 
-tip/master for convenience]
+> +
+> +static inline u32 ocfs2_xattr_name_hash(struct inode *inode,
+> +					char *prefix,
+> +					int prefix_len,
+> +					char *name,
+> +					int name_len)
 
-	Ingo
+And I think there's far too much inlining going on in here..
+
