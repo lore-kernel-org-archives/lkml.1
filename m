@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbYJBWSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYJBWTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbYJBWSf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 18:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYJBWS1
+	id S1754694AbYJBWTi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 18:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYJBWTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 18:18:27 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49115 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752143AbYJBWS0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 18:18:26 -0400
-Date: Fri, 3 Oct 2008 00:20:03 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Steven Noonan <steven@uplinklabs.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: make MAINTAINERS slightly easier to search
-Message-ID: <20081002222003.GA1857@elf.ucw.cz>
-References: <20081002081428.GA2022@elf.ucw.cz> <f488382f0810020208u5761a84p5cac040503f55917@mail.gmail.com> <20081002085820.3568934d.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081002085820.3568934d.randy.dunlap@oracle.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 2 Oct 2008 18:19:30 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:45325 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752235AbYJBWT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 18:19:29 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Oct 2008 18:19:29 EDT
+Date: Fri, 3 Oct 2008 00:12:38 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org,
+       dbrownell@users.sourceforge.net, rtc-linux@googlegroups.com,
+       stable@kernel.org
+Subject: Re: [PATCH] rtc: fix kernel panic on second use of SIGIO
+ nofitication
+Message-ID: <20081003001238.7030c151@i1501.lan.towertech.it>
+In-Reply-To: <20081002144941.18211dbb.akpm@linux-foundation.org>
+References: <20080914181122.GA32250@joi>
+	<20081002144941.18211dbb.akpm@linux-foundation.org>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-10-02 08:58:20, Randy Dunlap wrote:
-> On Thu, 2 Oct 2008 02:08:20 -0700 Steven Noonan wrote:
+On Thu, 2 Oct 2008 14:49:41 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Sun, 14 Sep 2008 20:11:27 +0200
+> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 > 
-> > On Thu, Oct 2, 2008 at 1:14 AM, Pavel Machek <pavel@suse.cz> wrote:
-> > > ...shall we add rule that subsystems will have "subsystem" in the name
-> > > so that search does not list all the drivers, first?
-> > >
-> > > Signed-off-by: Pavel Machek <pavel@suse.cz>
-> > > Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > >
-> > >
-> > > diff --git a/MAINTAINERS b/MAINTAINERS
-> > > index 3596d17..7345707 100644
-> > > --- a/MAINTAINERS
-> > > +++ b/MAINTAINERS
-> > > @@ -3825,7 +3825,7 @@ L:        linux-kernel@vger.kernel.org
-> > >  W:     http://tifmxx.berlios.de/
-> > >  S:     Maintained
-> > >
-> > > -SOUND
-> > > +SOUND SUBSYSTEM (ADVANCED LINUX SOUND SYSTEM, ALSA)
+> > When user space uses SIGIO notification and forgets to disable it before
+> > closing file descriptor, rtc->async_queue contains stale pointer to struct
+> > file. When user space enables again SIGIO notification in different process,
+> > kernel dereferences this (poisoned) pointer and crashes.
 > > 
-> > Advanced Linux Sound System = ALSS? How about switching it to
-> > 'ADVANCED LINUX SOUND ARCHITECTURE', which fits the original acronym?
-> > :)
+> > So disable SIGIO notification on close.
+> > 
 > 
-> Yes, concur.  Thanks.
+> David, Alessandro: can we please have a review-n-ack of this one for
+> 2.6.27 and earlier?  
+> 
+> Thanks.
+> 
+> From: Marcin Slusarz <marcin.slusarz@gmail.com>
+> 
+> When userspace uses SIGIO notification and forgets to disable it before
+> closing file descriptor, rtc->async_queue contains stale pointer to struct
+> file.  When user space enables again SIGIO notification in different
+> process, kernel dereferences this (poisoned) pointer and crashes.
+> 
+> So disable SIGIO notification on close.
 
-Fixed in my tree. Who is maintainer of MAINTAINERS file? ;-).
+ [...]
+> 
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Alessandro Zummo <alessandro.zummo@towertech.it>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> Cc: <stable@kernel.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-								Pavel   
+ 
+ Acked-by: Alessandro Zummo <a.zummo@towertech.it>
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
