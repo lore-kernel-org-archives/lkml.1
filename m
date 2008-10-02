@@ -1,105 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbYJBUeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYJBUs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754790AbYJBUeq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 16:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbYJBUei
+	id S1754661AbYJBUs1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 16:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYJBUsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 16:34:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34018 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754058AbYJBUeh (ORCPT
+	Thu, 2 Oct 2008 16:48:19 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:30096 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753897AbYJBUsS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 16:34:37 -0400
-Date: Thu, 2 Oct 2008 22:40:18 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch x86/core] x86: allow number of additional hotplug CPUs to be set at compile time
-Message-ID: <20081002204018.GD8318@one.firstfloor.org>
-References: <20081001191945.4182d0be@redhat.com> <87bpy3pdgs.fsf@basil.nowhere.org> <20081002152521.16c4835b@redhat.com> <20081002194409.GB8318@one.firstfloor.org> <20081002160907.68d79e0b@redhat.com>
+	Thu, 2 Oct 2008 16:48:18 -0400
+Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded
+	interrupt handlers
+From: Daniel Walker <dwalker@mvista.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>
+In-Reply-To: <alpine.DEB.1.10.0810021612280.2919@gandalf.stny.rr.com>
+References: <20081001223213.078984344@linutronix.de>
+	 <1222912413.2995.80.camel@laptop-eth.lan>
+	 <alpine.DEB.1.10.0810021052010.19018@gandalf.stny.rr.com>
+	 <1222962525.2995.100.camel@laptop-eth>
+	 <alpine.LFD.1.10.0810022004520.5549@apollo.tec.linutronix.de>
+	 <1222974254.2995.144.camel@laptop-eth>  <20081002192827.GA2950@elte.hu>
+	 <1222978145.2995.172.camel@laptop-eth>
+	 <alpine.DEB.1.10.0810021612280.2919@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Thu, 02 Oct 2008 13:48:05 -0700
+Message-Id: <1222980485.2995.186.camel@laptop-eth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081002160907.68d79e0b@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The prefix rewriting doesn't happen unless I boot with additional_cpus=0,
-> maxcpus=1, or with this patch applied and the config option set. I think
-> the rules for when/if the rewriting happens changed a while ago to avoid
-> multiple switches and now it's not happening at all on this machine by
-> default.
+On Thu, 2008-10-02 at 16:14 -0400, Steven Rostedt wrote:
+> On Thu, 2 Oct 2008, Daniel Walker wrote:
+> 
+> > On Thu, 2008-10-02 at 21:28 +0200, Ingo Molnar wrote:
+> > > * Daniel Walker <dwalker@mvista.com> wrote:
+> > > 
+> > > > > > Clearly threading irq handlers does have something to do with real 
+> > > > > > time, unless this patch isn't actually threading anything ..
+> > > 
+> > > Well, that's clearly wrong: threaded IRQ handlers are not tied to 
+> > > real-time in any way. Yes, they can be used for RT too but as far as the 
+> > > upstream kernel is involved that's at most an afterthought.
+> > 
+> > You contradict yourself .. I said "Clearly threading irq handlers does
+> 
+> No he did not.
 
-Well then something is broken, but the fix is not to lower num_possible_cpus(),
-but to fix the root cause.
+Yes, he did.
 
-Does the appended patch help?
+> > have something to do with real time" then you say "they can be used for 
+> > RT too" .. So my comments are clearly correct , they have "something" to
+> > do with real time. There exists a relationship of some kind or type.
+> 
+> 
+> What Ingo is telling you is:
+> 
+>   - RT needs threaded interrupts.
+> 
+>   - Threaded interrupts do not need RT
+> 
+> My dog is an Italian Greyhound.
+> 
+> Italian Greyhound is a dog, but
+> a dog is not an Italian Greyhound.
 
-> Oh, and with NR_CPUS=512 I am seeing 1.6MB per-cpu data (I'll have to
-> check that, but I remember being surprised at how big the number was.)
+My comments are basically bidirectional , so what your saying doesn't
+make any sense .. I said basically, that dogs and "Italian Greyhounds"
+have _some_ connection .. Why are we even debating this.
 
-How did you measure? And you mean total right? If it's total
-then it's ~32KB/CPU which is roughly similar to my 40k number
-(probably depends on CONFIG options) 
+Daniel
 
-The standard way is  __per_cpu_start - __per_cpu_end (on 64bit;
-or the other way round on 32bit). That segment is duplicated
-per CPU. Ok there are some dynamic data structures that scale too,
-so it's possible a little more.
-
-Single per cpu data should not scale with NR_CPUS, but be constant.
-
--Andi
-
----
-
-Take disabled cpus into account in alternative.c
-
-Otherwise an UP system with one hotplug CPU will not 
-go into UP mode.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
-Index: linux-2.6.27-rc4-misc/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6.27-rc4-misc.orig/arch/x86/kernel/alternative.c
-+++ linux-2.6.27-rc4-misc/arch/x86/kernel/alternative.c
-@@ -454,7 +454,7 @@ void __init alternative_instructions(voi
- 					    _text, _etext);
- 
- 		/* Only switch to UP mode if we don't immediately boot others */
--		if (num_possible_cpus() == 1 || setup_max_cpus <= 1)
-+		if (num_possible_cpus() - additional_cpus == 1 || setup_max_cpus <= 1)
- 			alternatives_smp_switch(0);
- 	}
- #endif
-Index: linux-2.6.27-rc4-misc/arch/x86/kernel/smpboot.c
-===================================================================
---- linux-2.6.27-rc4-misc.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6.27-rc4-misc/arch/x86/kernel/smpboot.c
-@@ -1276,7 +1276,7 @@ static void remove_siblinginfo(int cpu)
- 	cpu_clear(cpu, cpu_sibling_setup_map);
- }
- 
--static int additional_cpus __initdata = -1;
-+int additional_cpus = -1;
- 
- static __init int setup_additional_cpus(char *s)
- {
-Index: linux-2.6.27-rc4-misc/include/asm-x86/smp.h
-===================================================================
---- linux-2.6.27-rc4-misc.orig/include/asm-x86/smp.h
-+++ linux-2.6.27-rc4-misc/include/asm-x86/smp.h
-@@ -204,5 +204,7 @@ static inline int hard_smp_processor_id(
- extern void cpu_uninit(void);
- #endif
- 
-+extern int additional_cpus;
-+
- #endif /* __ASSEMBLY__ */
- #endif
--- 
-ak@linux.intel.com
