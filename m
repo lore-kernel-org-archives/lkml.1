@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbYJBSoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYJBSqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517AbYJBSoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 14:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYJBSoE
+	id S1754730AbYJBSqn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 14:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYJBSqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 14:44:04 -0400
-Received: from www.tglx.de ([62.245.132.106]:44652 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106AbYJBSoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 14:44:02 -0400
-Date: Thu, 2 Oct 2008 20:42:08 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Daniel Walker <dwalker@mvista.com>
-cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>
-Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded interrupt
- handlers
-In-Reply-To: <1222962525.2995.100.camel@laptop-eth>
-Message-ID: <alpine.LFD.1.10.0810022004520.5549@apollo.tec.linutronix.de>
-References: <20081001223213.078984344@linutronix.de>  <1222912413.2995.80.camel@laptop-eth.lan>  <alpine.DEB.1.10.0810021052010.19018@gandalf.stny.rr.com> <1222962525.2995.100.camel@laptop-eth>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 2 Oct 2008 14:46:34 -0400
+Received: from outbound-mail-145.bluehost.com ([67.222.38.35]:60658 "HELO
+	outbound-mail-145.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753188AbYJBSqd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 14:46:33 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=DS8MibEttCvq5EB8O/Si8Pxt55KmkOA8WK3NIWlKqPqh/DOQlmRQBVxhYdH/G7sjATCk8EYAWdh4Cs54lATH1vHv9Nv0abQOjrR/FhxrGhUOw8beqXsmmSwPu1rVoJCZ;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Vincent Legoll" <vincent.legoll@gmail.com>
+Subject: Re: [PATCH] PCI probing debug message uniformization
+Date: Thu, 2 Oct 2008 11:46:28 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+References: <4727185d0809291403w38422338p3ffe2a1c27c39939@mail.gmail.com>
+In-Reply-To: <4727185d0809291403w38422338p3ffe2a1c27c39939@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810021146.28704.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008, Daniel Walker wrote:
-> On Thu, 2008-10-02 at 11:02 -0400, Steven Rostedt wrote:
-> > On Wed, 1 Oct 2008, Daniel Walker wrote:
-> > > > 
-> > > > Converting an interrupt to threaded makes only sense when the handler
-> > > > code takes advantage of it by integrating tasklet/softirq
-> > > > functionality and simplifying the locking.
-> > > 
-> > > I'm not clear on your direction here.. I don't have a problem with a
-> > > mass driver audit, which I think is what your suggesting with this patch
-> > > set .. However, a mass audit like that would push a fully real time
-> > > system out for quite some time..
-> > 
-> > This has nothing to do with real time, although it helps.
-> 
-> Clearly threading irq handlers does have something to do with real time,
-> unless this patch isn't actually threading anything ..
+On Monday, September 29, 2008 2:03 pm Vincent Legoll wrote:
+> Hello,
+>
+> Here is a patch to uniformize PCI probing debug messages at
+> boot with dev_printk() intead of manual printk()
+>
+> for example, it goes from the mixed-style:
+>
+> PCI: 0000:00:1b.0 reg 10 64bit mmio: [f4280000, f4283fff]
+> pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
+>
+> to uniform:
+>
+> pci 0000:00:1b.0: reg 10 64bit mmio: [f4280000, f4283fff]
+> pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
+>
+> If people prefer the UPPERCASE "PCI:" prefix from dev_printk(),
+> that would be matter for another patch...
+>
+> I'm currently running the kernel with that patch applied, and
+> diffed bootlog, everything looks OK
+>
+> Signed-off-by: Vincent Legoll <vincent.legoll@gmail.com>
 
-Clearly you have neither clue about real time nor about operating
-systems in general. 
+Bjorn, how does this jive with the various other debug harmonization patches 
+you've been putting together & reviewing?
 
-Solaris, some BSDs and MacOSX use interrupt threads. Where exactly is
-the relation to realtime?
+Thanks,
+Jesse
 
-The concept of interrupt threads is nothing which is in any way
-related to real time. It is a well known and pretty old concept in
-operating system design.
-
-The fact that real time operating systems benefit from interrupt
-threads is a totally different topic.
-
-	tglx
-	
+-- 
+Jesse Barnes, Intel Open Source Technology Center
