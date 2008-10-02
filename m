@@ -1,89 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbYJBICZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYJBIDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753767AbYJBICZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 04:02:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYJBICF
+	id S1753371AbYJBIDy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 04:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYJBIDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 04:02:05 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:7451 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771AbYJBICC (ORCPT
+	Thu, 2 Oct 2008 04:03:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32881 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752475AbYJBIDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 04:02:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=inCaGl5KcWJbZ+qc0J1pHSSF6HaL/707beoY3A2EqtIxahnDRKgE3ul4bFaLvSTY5N
-         cO6N9w7LFkyZwpyGUAqcKEBiKAIdPBgb6lNKqvPboUOENWZ9kjEsnVe2q9J0+9+M+dL2
-         zawLy6eN9vmqk6tRyzUWK0VkynO2toJQRw8xc=
-Message-ID: <851fc09e0810020102j7c4f8896vd384f79617480317@mail.gmail.com>
-Date: Thu, 2 Oct 2008 16:02:00 +0800
-From: "huang ying" <huang.ying.caritas@gmail.com>
-To: "Russ Anderson" <rja@sgi.com>
-Subject: Re: [PATCH 2/4] x86: Add UV bios call infrastructure v2
-Cc: "Huang Ying" <ying.huang@intel.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, "H. Peter Anvin" <hpa@zytor.com>,
-       "Jack Steiner" <steiner@sgi.com>
-In-Reply-To: <20080928150106.GA204845@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 2 Oct 2008 04:03:37 -0400
+Date: Thu, 2 Oct 2008 01:03:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-Id: <20081002010315.1cda8147.akpm@linux-foundation.org>
+In-Reply-To: <20081002074523.GW19428@kernel.dk>
+References: <20081001200034.65eb67d6@infradead.org>
+	<20081001215638.3a65134c.akpm@linux-foundation.org>
+	<20081002062736.GR19428@kernel.dk>
+	<20081001235501.2b7f50fe.akpm@linux-foundation.org>
+	<20081002074523.GW19428@kernel.dk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080926200242.GC138671@sgi.com>
-	 <1222478495.28661.19.camel@yhuang-dev.sh.intel.com>
-	 <20080928150106.GA204845@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Russ,
+On Thu, 2 Oct 2008 09:45:24 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 
-On Sun, Sep 28, 2008 at 11:01 PM, Russ Anderson <rja@sgi.com> wrote:
-> On Sat, Sep 27, 2008 at 09:21:35AM +0800, Huang Ying wrote:
->> On Fri, 2008-09-26 at 15:02 -0500, Russ Anderson wrote:
->> > Index: linux/include/asm-x86/efi.h
->> > ===================================================================
->> > --- linux.orig/include/asm-x86/efi.h        2008-09-26 14:13:24.000000000 -0500
->> > +++ linux/include/asm-x86/efi.h     2008-09-26 14:13:36.000000000 -0500
->> > @@ -49,6 +49,20 @@ extern u64 efi_call5(void *fp, u64 arg1,
->> >  extern u64 efi_call6(void *fp, u64 arg1, u64 arg2, u64 arg3,
->> >                  u64 arg4, u64 arg5, u64 arg6);
->> >
->> > +
->> > +#ifndef CONFIG_EFI
->> > +/*
->> > + * IF EFI is not configured, have the EFI calls return -ENOSYS.
->> > + */
->> > +#define efi_call0(_f)                                      (-ENOSYS)
->> > +#define efi_call1(_f, _a1)                         (-ENOSYS)
->> > +#define efi_call2(_f, _a1, _a2)                            (-ENOSYS)
->> > +#define efi_call3(_f, _a1, _a2, _a3)                       (-ENOSYS)
->> > +#define efi_call4(_f, _a1, _a2, _a3, _a4)          (-ENOSYS)
->> > +#define efi_call5(_f, _a1, _a2, _a3, _a4, _a5)             (-ENOSYS)
->> > +#define efi_call6(_f, _a1, _a2, _a3, _a4, _a5, _a6)        (-ENOSYS)
->> > +#endif /* CONFIG_EFI */
->> > +
->> >  #define efi_call_phys0(f)                  \
->> >     efi_call0((void *)(f))
->> >  #define efi_call_phys1(f, a1)                      \
->>
->> efi_call_virt<n> and efi_call_phys<n> is the API instead of efi_call<n>.
->
-> #define efi_call_virt6(f, a1, a2, a3, a4, a5, a6)                       \
->        efi_call6((void *)(efi.systab->runtime->f), (u64)(a1), (u64)(a2), \
->                  (u64)(a3), (u64)(a4), (u64)(a5), (u64)(a6))
->
-> efi_call_virt6() uses efi.systab->runtime->f.
-> My call needs to use uv_systab, not efi.systab.
+> > So.  Where are these atime updaters getting blocked?
+> 
+> Behind other IO activity I suppose, since it's marked async. A more
+> appropriate fix may be to mark atime updates as sync IO.
 
-Yes. efi_call_virt6() is tied with standard EFI runtime services, so
-it may be not suitable for your need. What you need is just to do
-calling convention converting, like efi_call6 does. So I think it is
-better to just use your current implementation.
+No, they might be getting blocked at a higher level.
 
-Acked-by: Huang Ying <ying.huang@intel.com>
+An async atime update gets recorded into the current transaction. 
+kjournald is working on the committing transaction.  We try to keep
+those separated, to prevent user processes from getting blocked behind
+kjournald activity.
 
-Best Regards,
-Huang Ying
+But sometimes that doesn't work (including the place where I knowingly
+broke it).  If we can find and fix the offending piece of jbd logic (a
+big if) then all is peachy.
+
+If the above theory turns out to be true then diddling IO priorities
+is but a workaround.
