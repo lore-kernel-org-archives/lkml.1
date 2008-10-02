@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbYJBN1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYJBN1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbYJBN1J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 09:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbYJBNUa
+	id S1756661AbYJBN1a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 09:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbYJBNSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 09:20:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53644 "EHLO
+	Thu, 2 Oct 2008 09:18:48 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53622 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754792AbYJBNTJ (ORCPT
+	with ESMTP id S1753786AbYJBNSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 09:19:09 -0400
-Message-Id: <20081002131608.595165971@chello.nl>
+	Thu, 2 Oct 2008 09:18:45 -0400
+Message-Id: <20081002131607.662164064@chello.nl>
 References: <20081002130504.927878499@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 02 Oct 2008 15:05:19 +0200
+Date: Thu, 02 Oct 2008 15:05:06 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -22,36 +22,75 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>,
        David Miller <davem@davemloft.net>
-Cc: James Morris <jmorris@namei.org>
-Subject: [PATCH 15/32] selinux: tag avc cache alloc as non-critical
-Content-Disposition: inline; filename=mm-selinux-emergency.patch
+Subject: [PATCH 02/32] mm: serialize access to min_free_kbytes
+Content-Disposition: inline; filename=mm-setup_per_zone_pages_min.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Failing to allocate a cache entry will only harm performance not correctness.
-Do not consume valuable reserve pages for something like that.
+There is a small race between the procfs caller and the memory hotplug caller
+of setup_per_zone_pages_min(). Not a big deal, but the next patch will add yet
+another caller. Time to close the gap.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: James Morris <jmorris@namei.org>
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- security/selinux/avc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/page_alloc.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/security/selinux/avc.c
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/security/selinux/avc.c
-+++ linux-2.6/security/selinux/avc.c
-@@ -334,7 +334,7 @@ static struct avc_node *avc_alloc_node(v
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -118,6 +118,7 @@ static char * const zone_names[MAX_NR_ZO
+ 	 "Movable",
+ };
+ 
++static DEFINE_SPINLOCK(min_free_lock);
+ int min_free_kbytes = 1024;
+ 
+ unsigned long __meminitdata nr_kernel_pages;
+@@ -4333,12 +4334,12 @@ static void setup_per_zone_lowmem_reserv
+ }
+ 
+ /**
+- * setup_per_zone_pages_min - called when min_free_kbytes changes.
++ * __setup_per_zone_pages_min - called when min_free_kbytes changes.
+  *
+  * Ensures that the pages_{min,low,high} values for each zone are set correctly
+  * with respect to min_free_kbytes.
+  */
+-void setup_per_zone_pages_min(void)
++static void __setup_per_zone_pages_min(void)
  {
- 	struct avc_node *node;
+ 	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
+ 	unsigned long lowmem_pages = 0;
+@@ -4433,6 +4434,15 @@ void setup_per_zone_inactive_ratio(void)
+ 	}
+ }
  
--	node = kmem_cache_zalloc(avc_node_cachep, GFP_ATOMIC);
-+	node = kmem_cache_zalloc(avc_node_cachep, GFP_ATOMIC|__GFP_NOMEMALLOC);
- 	if (!node)
- 		goto out;
- 
++void setup_per_zone_pages_min(void)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&min_free_lock, flags);
++	__setup_per_zone_pages_min();
++	spin_unlock_irqrestore(&min_free_lock, flags);
++}
++
+ /*
+  * Initialise min_free_kbytes.
+  *
+@@ -4468,7 +4478,7 @@ static int __init init_per_zone_pages_mi
+ 		min_free_kbytes = 128;
+ 	if (min_free_kbytes > 65536)
+ 		min_free_kbytes = 65536;
+-	setup_per_zone_pages_min();
++	__setup_per_zone_pages_min();
+ 	setup_per_zone_lowmem_reserve();
+ 	setup_per_zone_inactive_ratio();
+ 	return 0;
 
 -- 
 
