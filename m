@@ -1,66 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYJBT3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYJBTbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbYJBT3g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 15:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbYJBT31
+	id S1754829AbYJBTbY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 15:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbYJBTbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 15:29:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36864 "EHLO mx3.mail.elte.hu"
+	Thu, 2 Oct 2008 15:31:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43416 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753264AbYJBT31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 15:29:27 -0400
-Date: Thu, 2 Oct 2008 21:28:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>
-Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded
-	interrupt handlers
-Message-ID: <20081002192827.GA2950@elte.hu>
-References: <20081001223213.078984344@linutronix.de> <1222912413.2995.80.camel@laptop-eth.lan> <alpine.DEB.1.10.0810021052010.19018@gandalf.stny.rr.com> <1222962525.2995.100.camel@laptop-eth> <alpine.LFD.1.10.0810022004520.5549@apollo.tec.linutronix.de> <1222974254.2995.144.camel@laptop-eth>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222974254.2995.144.camel@laptop-eth>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754047AbYJBTbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 15:31:16 -0400
+Date: Thu, 2 Oct 2008 15:30:07 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch x86/core] x86: allow number of additional hotplug CPUs to be
+ set at compile time, V2
+Message-ID: <20081002153007.2e031232@redhat.com>
+In-Reply-To: <20081002081231.GC17695@elte.hu>
+References: <20081001191945.4182d0be@redhat.com>
+	<20081002081231.GC17695@elte.hu>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Chuck Ebbert <cebbert@redhat.com>
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+x86: allow number of additional hotplug CPUs to be set at compile time, V2
 
-> > > Clearly threading irq handlers does have something to do with real 
-> > > time, unless this patch isn't actually threading anything ..
+The default number of additional CPU IDs for hotplugging is determined
+by asking ACPI or mptables how many "disabled" CPUs there are in the
+system, but many systems get this wrong so that e.g. a uniprocessor
+machine gets an extra CPU allocated and never switches to single CPU
+mode.
 
-Well, that's clearly wrong: threaded IRQ handlers are not tied to 
-real-time in any way. Yes, they can be used for RT too but as far as the 
-upstream kernel is involved that's at most an afterthought.
+And sometimes CPU hotplugging is enabled only for suspend/hibernate
+anyway, so the additional CPU IDs are not wanted. Allow the number
+to be set to zero at compile time.
 
-and the "unless this patch isn't actually threading anything" bit does 
-not parse at all. The patches execute hard-IRQ handlers from special 
-kernel threads.
+Also, force the number of extra CPUs to zero if hotplugging is disabled
+which allows removing some conditional code.
 
-> > Clearly you have neither clue about real time nor about operating 
-> > systems in general.
-> 
-> Here we go again Thomas.. You think you can have a conversation 
-> without the insults for once?
+Tested on uniprocessor x86_64 that ACPI claims has a disabled processor,
+with CPU hotplugging configured.
 
-what Thomas said was a strong but fair reaction to your obviously 
-incorrect statement. What reaction did you expect?
+("After" has the number of additional CPUs set to 0)
+Before: NR_CPUS: 512, nr_cpu_ids: 2, nr_node_ids 1
+After: NR_CPUS: 512, nr_cpu_ids: 1, nr_node_ids 1
 
-	Ingo
+[Changed the name of the option and the prompt according to Ingo's
+ suggestion.]
+
+---
+
+Index: linux-2.6.26.noarch/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.26.noarch.orig/arch/x86/Kconfig
++++ linux-2.6.26.noarch/arch/x86/Kconfig
+@@ -1366,6 +1366,24 @@ config HOTPLUG_CPU
+ 	  Say N if you want to disable CPU hotplug and don't need to
+ 	  suspend.
+ 
++config HOTPLUG_RESTRICT_TO_BOOTUP_CPUS
++	def_bool n
++	prompt "Restrict CPU hotplugging to processors found during boot" if HOTPLUG_CPU
++	---help---
++	  Say no here to use the default, which allows as many CPUs as are marked
++	  "disabled" by ACPI or MPTABLES to be hotplugged after bootup.
++
++	  Say yes if you do not want to allow CPUs to be added after booting, for
++	  example if you only need CPU hotplugging enabled for suspend/resume.
++
++	  If CPU_HOTPLUG is enabled this value may be overridden at boot time
++	  with the "additional_cpus" kernel parameter.
++
++config HOTPLUG_ADDITIONAL_CPUS
++	int
++	default  0 if !HOTPLUG_CPU || HOTPLUG_RESTRICT_TO_BOOTUP_CPUS
++	default -1
++
+ config COMPAT_VDSO
+ 	def_bool y
+ 	prompt "Compat VDSO support"
+Index: linux-2.6.26.noarch/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.26.noarch.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6.26.noarch/arch/x86/kernel/smpboot.c
+@@ -1254,7 +1254,7 @@ void __init native_smp_cpus_done(unsigne
+ 	check_nmi_watchdog();
+ }
+ 
+-static int additional_cpus __initdata = -1;
++static int additional_cpus __initdata = CONFIG_HOTPLUG_ADDITIONAL_CPUS;
+ 
+ /*
+  * cpu_possible_map should be static, it cannot change as cpu's
+@@ -1282,16 +1282,13 @@ __init void prefill_possible_map(void)
+ 	if (!num_processors)
+ 		num_processors = 1;
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+ 	if (additional_cpus == -1) {
+ 		if (disabled_cpus > 0)
+ 			additional_cpus = disabled_cpus;
+ 		else
+ 			additional_cpus = 0;
+ 	}
+-#else
+-	additional_cpus = 0;
+-#endif
++
+ 	possible = num_processors + additional_cpus;
+ 	if (possible > NR_CPUS)
+ 		possible = NR_CPUS;
