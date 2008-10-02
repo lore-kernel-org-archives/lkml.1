@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbYJBWqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbYJBWqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbYJBWqa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 18:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYJBWqV
+	id S1753370AbYJBWqq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 18:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYJBWqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 18:46:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:17711 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752906AbYJBWqU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 18:46:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=H1VYgakvbuMaKC8mZx0cHMm4vlDhu+BKtGpC/MiUa2iIeSs26b+N37Il2JySIkcl4X
-         lbCrowgtu1I+syPO7ejvwaLQrbRDduR7sl10imLqXphMmgMk6dWIyMl3xEYuPKfosMVE
-         HcnmkrMwj0KSwBObf71/Cmds/wrZ8bDaKwFag=
-Message-ID: <86802c440810021546r6182a0c2id3566c1eb6ab7410@mail.gmail.com>
-Date: Thu, 2 Oct 2008 15:46:20 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "=?ISO-8859-1?Q?J.A._Magall=F3n?=" <jamagallon@ono.com>
-Subject: Re: [PATCH 2/2] x86: mtrr_cleanup try gran_size to less than 1M
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440810021539y6cdff33dh9df3e04eba85a9df@mail.gmail.com>
+	Thu, 2 Oct 2008 18:46:34 -0400
+Received: from xenotime.net ([66.160.160.81]:56473 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752906AbYJBWqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 18:46:33 -0400
+Date: Thu, 2 Oct 2008 15:46:31 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Kees Cook <kees.cook@canonical.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: add "personality" to process status file
+In-Reply-To: <20081002211424.GJ10632@outflux.net>
+Message-ID: <Pine.LNX.4.64.0810021544070.26309@shark.he.net>
+References: <20081002211424.GJ10632@outflux.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <1222739652-17169-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1222739652-17169-2-git-send-email-yhlu.kernel@gmail.com>
-	 <20081003003237.04469201@werewolf.home>
-	 <86802c440810021539y6cdff33dh9df3e04eba85a9df@mail.gmail.com>
-X-Google-Sender-Auth: 677b416bbb862ba4
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 2, 2008 at 3:39 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> On Thu, Oct 2, 2008 at 3:32 PM, J.A. Magallón <jamagallon@ono.com> wrote:
->> On Mon, 29 Sep 2008 18:54:12 -0700, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->>
->> Also, on a 64 bit box with 4Gb, it gives this:
->>
->> cicely:~# cat /proc/mtrr
->> reg00: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
->> reg01: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
->> reg02: base=0x140000000 (5120MB), size= 512MB: write-back, count=1
->> reg03: base=0x160000000 (5632MB), size= 256MB: write-back, count=1
->> reg04: base=0x80000000 (2048MB), size=2048MB: uncachable, count=1
->>
-> boundary handling may have problem...
+On Thu, 2 Oct 2008, Kees Cook wrote:
 
-can you try
+> There is no sane way to query the personality flags of arbitrary process
+> from userspace.  This adds the flags to the /proc/$pid/status file.
+> For example, to detect READ_IMPLIES_EXEC:
+> 
+> $ ./32bit-sleeper &
+> [1] 6732
+> $ grep ^Pers /proc/6732/status
+> Personality:    00000000
+> $ execstack -s 32bit-sleeper
+> $ ./32bit-slepper &
+> [2] 6735
+> $ grep ^Pers /proc/6735/status
+> Personality:    00040000
+> 
+> Signed-off-by: Kees Cook <kees.cook@canonical.com>
+> ---
+>  fs/proc/array.c       |    6 ++++--
+>  include/linux/sched.h |    3 +--
+>  2 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-index ef64128..70beb13 100644
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -1044,7 +1044,7 @@ second_try:
-                hole_sizek = range0_sizek - state->range_sizek - second_sizek;
+Hey you,
 
-                /* hole size should be less than half of range0 size */
--               if (hole_sizek > (range0_sizek >> 1) &&
-+               if (hole_sizek >= (range0_sizek >> 1) &&
-                    range0_sizek >= chunk_sizek) {
-                        range0_sizek -= chunk_sizek;
-                        second_sizek = 0;
+The patch seems to be missing an update to Documentation/filesystems/proc.txt !
+Please add that.  TIA.
 
-YH
+> diff --git a/fs/proc/array.c b/fs/proc/array.c
+> index 71c9be5..1235fab 100644
+> --- a/fs/proc/array.c
+> +++ b/fs/proc/array.c
+> @@ -182,13 +182,15 @@ static inline void task_state(struct seq_file *m, struct pid_namespace *ns,
+>  		"PPid:\t%d\n"
+>  		"TracerPid:\t%d\n"
+>  		"Uid:\t%d\t%d\t%d\t%d\n"
+> -		"Gid:\t%d\t%d\t%d\t%d\n",
+> +		"Gid:\t%d\t%d\t%d\t%d\n"
+> +		"Personality:\t%08x\n",
+>  		get_task_state(p),
+>  		task_tgid_nr_ns(p, ns),
+>  		pid_nr_ns(pid, ns),
+>  		ppid, tpid,
+>  		p->uid, p->euid, p->suid, p->fsuid,
+> -		p->gid, p->egid, p->sgid, p->fsgid);
+> +		p->gid, p->egid, p->sgid, p->fsgid,
+> +		p->personality);
+>  
+>  	task_lock(p);
+>  	if (p->files)
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 3d9120c..f2fc441 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1085,8 +1085,7 @@ struct task_struct {
+>  	int exit_state;
+>  	int exit_code, exit_signal;
+>  	int pdeath_signal;  /*  The signal sent when the parent dies  */
+> -	/* ??? */
+> -	unsigned int personality;
+> +	unsigned int personality; /* Special-case bits (linux/personality.h) */
+>  	unsigned did_exec:1;
+>  	pid_t pid;
+>  	pid_t tgid;
+> 
+
+-- 
+~Randy
