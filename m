@@ -1,115 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYJBXmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbYJBXn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbYJBXmv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 19:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYJBXmn
+	id S1755674AbYJBXn1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 19:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYJBXnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 19:42:43 -0400
-Received: from gw.goop.org ([64.81.55.164]:32769 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752516AbYJBXmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 19:42:43 -0400
-Message-ID: <48E55C6B.5070805@goop.org>
-Date: Thu, 02 Oct 2008 16:42:35 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
+	Thu, 2 Oct 2008 19:43:16 -0400
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:52536 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753370AbYJBXnP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 19:43:15 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgkDAN/25Eh5LF82iGdsb2JhbACTWgEBARUiqVSBag
+X-IronPort-AV: E=Sophos;i="4.33,353,1220193000"; 
+   d="scan'208";a="219301218"
+Date: Fri, 3 Oct 2008 09:43:09 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH] Improve buffered streaming write ordering
+Message-ID: <20081002234309.GH30001@disturbed>
+Mail-Followup-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	Chris Mason <chris.mason@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+	ext4 <linux-ext4@vger.kernel.org>
+References: <1222886451.9158.34.camel@think.oraclecorp.com> <20081001215239.ee2ae63f.akpm@linux-foundation.org> <1222950054.6745.18.camel@think.oraclecorp.com> <20081002181856.GB29613@skywalker>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <srostedt@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] xen: remove unused balloon.h
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081002181856.GB29613@skywalker>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The balloon driver doesn't have any externally callable functions at
-the moment, so remove the (effectively empty) header.  We can add it
-back if we need to.
+On Thu, Oct 02, 2008 at 11:48:56PM +0530, Aneesh Kumar K.V wrote:
+> On Thu, Oct 02, 2008 at 08:20:54AM -0400, Chris Mason wrote:
+> > On Wed, 2008-10-01 at 21:52 -0700, Andrew Morton wrote:
+> > For a 4.5GB streaming buffered write, this printk inside
+> > ext4_da_writepage shows up 37,2429 times in /var/log/messages.
+> > 
+> 
+> Part of that can happen due to shrink_page_list -> pageout -> writepagee
+> call back with lots of unallocated buffer_heads(blocks).
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- drivers/xen/balloon.c |    1 
- include/xen/balloon.h |   61 -------------------------------------------------
- 2 files changed, 62 deletions(-)
+Quite frankly, a simple streaming buffered write should *never*
+trigger writeback from the LRU in memory reclaim. That indicates
+that some feedback loop has broken down and we are not cleaning
+pages fast enough or perhaps in the correct order. Page reclaim in
+this case should be reclaiming clean pages (those that have already
+been written back), not writing back random dirty pages.
 
-===================================================================
---- a/drivers/xen/balloon.c
-+++ b/drivers/xen/balloon.c
-@@ -53,7 +53,6 @@
- #include <asm/tlb.h>
- 
- #include <xen/interface/memory.h>
--#include <xen/balloon.h>
- #include <xen/xenbus.h>
- #include <xen/features.h>
- #include <xen/page.h>
-===================================================================
---- a/include/xen/balloon.h
-+++ /dev/null
-@@ -1,61 +0,0 @@
--/******************************************************************************
-- * balloon.h
-- *
-- * Xen balloon driver - enables returning/claiming memory to/from Xen.
-- *
-- * Copyright (c) 2003, B Dragovic
-- * Copyright (c) 2003-2004, M Williamson, K Fraser
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License version 2
-- * as published by the Free Software Foundation; or, when distributed
-- * separately from the Linux kernel or incorporated into other
-- * software packages, subject to the following license:
-- *
-- * Permission is hereby granted, free of charge, to any person obtaining a copy
-- * of this source file (the "Software"), to deal in the Software without
-- * restriction, including without limitation the rights to use, copy, modify,
-- * merge, publish, distribute, sublicense, and/or sell copies of the Software,
-- * and to permit persons to whom the Software is furnished to do so, subject to
-- * the following conditions:
-- *
-- * The above copyright notice and this permission notice shall be included in
-- * all copies or substantial portions of the Software.
-- *
-- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-- * IN THE SOFTWARE.
-- */
--
--#ifndef __XEN_BALLOON_H__
--#define __XEN_BALLOON_H__
--
--#include <linux/spinlock.h>
--
--#if 0
--/*
-- * Inform the balloon driver that it should allow some slop for device-driver
-- * memory activities.
-- */
--void balloon_update_driver_allowance(long delta);
--
--/* Allocate/free a set of empty pages in low memory (i.e., no RAM mapped). */
--struct page **alloc_empty_pages_and_pagevec(int nr_pages);
--void free_empty_pages_and_pagevec(struct page **pagevec, int nr_pages);
--
--void balloon_release_driver_page(struct page *page);
--
--/*
-- * Prevent the balloon driver from changing the memory reservation during
-- * a driver critical region.
-- */
--extern spinlock_t balloon_lock;
--#define balloon_lock(__flags)   spin_lock_irqsave(&balloon_lock, __flags)
--#define balloon_unlock(__flags) spin_unlock_irqrestore(&balloon_lock, __flags)
--#endif
--
--#endif /* __XEN_BALLOON_H__ */
+Cheers,
 
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
