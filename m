@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbYJBSgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbYJBSoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbYJBSgn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 14:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbYJBSgd
+	id S1754517AbYJBSoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 14:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYJBSoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 14:36:33 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:49576 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752502AbYJBSgc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 14:36:32 -0400
-Date: Fri, 3 Oct 2008 00:06:13 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Quentin Godfroy <godfroy@clipper.ens.fr>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David.Madore@ens.fr
-Subject: Re: possible (ext4 related?) memory leak in kernel 2.6.26
-Message-ID: <20081002183613.GC29613@skywalker>
-References: <20080930202728.GA6358@goelette.ens.fr>
+	Thu, 2 Oct 2008 14:44:04 -0400
+Received: from www.tglx.de ([62.245.132.106]:44652 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753106AbYJBSoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 14:44:02 -0400
+Date: Thu, 2 Oct 2008 20:42:08 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@mvista.com>
+cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>
+Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded interrupt
+ handlers
+In-Reply-To: <1222962525.2995.100.camel@laptop-eth>
+Message-ID: <alpine.LFD.1.10.0810022004520.5549@apollo.tec.linutronix.de>
+References: <20081001223213.078984344@linutronix.de>  <1222912413.2995.80.camel@laptop-eth.lan>  <alpine.DEB.1.10.0810021052010.19018@gandalf.stny.rr.com> <1222962525.2995.100.camel@laptop-eth>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080930202728.GA6358@goelette.ens.fr>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2008 at 10:27:29PM +0200, Quentin Godfroy wrote:
-> Hi lists,
+On Thu, 2 Oct 2008, Daniel Walker wrote:
+> On Thu, 2008-10-02 at 11:02 -0400, Steven Rostedt wrote:
+> > On Wed, 1 Oct 2008, Daniel Walker wrote:
+> > > > 
+> > > > Converting an interrupt to threaded makes only sense when the handler
+> > > > code takes advantage of it by integrating tasklet/softirq
+> > > > functionality and simplifying the locking.
+> > > 
+> > > I'm not clear on your direction here.. I don't have a problem with a
+> > > mass driver audit, which I think is what your suggesting with this patch
+> > > set .. However, a mass audit like that would push a fully real time
+> > > system out for quite some time..
+> > 
+> > This has nothing to do with real time, although it helps.
 > 
-> I'd like to report the following problem : after ~ 10 days' uptime on a
-> Debian 2.6.26-1-686 kernel, my system becomes extremely sluggish and
-> unresponsive and the OOM-killer starts targeting even innocent processes like
-> identd or rsync (when the swap is disabled). The machine is low on RAM (192
-> MB) but this has never been a problem before. As for the slowness, strace
-> shows that the brk() syscall takes ages to complete; the blocking processes
-> are in the D state (and for some reason the kernel gives no wchan info).
-> 
-> Free reports a large and constantly growing 'buffers' figure (more than
-> 50% of the available memory). No userland processes seems to be consuming
-> lare amounts of memory (sum of RSS in 'ps aux' is about 30 megs), and the
-> overall system is mostly idle.
-> 
+> Clearly threading irq handlers does have something to do with real time,
+> unless this patch isn't actually threading anything ..
 
-We actually fixed one in 6be2ded1d7c51b39144b9f07d2c839e1bd8707f1.
-It is not really a memory leak. But yes it was not releasing some
-the prealloc space memory.
+Clearly you have neither clue about real time nor about operating
+systems in general. 
 
--aneesh
+Solaris, some BSDs and MacOSX use interrupt threads. Where exactly is
+the relation to realtime?
+
+The concept of interrupt threads is nothing which is in any way
+related to real time. It is a well known and pretty old concept in
+operating system design.
+
+The fact that real time operating systems benefit from interrupt
+threads is a totally different topic.
+
+	tglx
+	
