@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYJBOqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYJBPCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbYJBOqU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 10:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYJBOqM
+	id S1754597AbYJBPCt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 11:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbYJBPCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 10:46:12 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:33370 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752514AbYJBOqL (ORCPT
+	Thu, 2 Oct 2008 11:02:40 -0400
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:38492 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882AbYJBPCj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 10:46:11 -0400
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>
-Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded interrupt handlers
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081001223213.078984344@linutronix.de>
-Date: Thu, 02 Oct 2008 16:46:09 +0200
-In-Reply-To: <20081001223213.078984344@linutronix.de> (Thomas Gleixner's message of "Wed, 01 Oct 2008 23:02:08 -0000")
-Message-ID: <873ajfoy1a.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Thu, 2 Oct 2008 11:02:39 -0400
+Date: Thu, 2 Oct 2008 16:02:21 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/4] capture pages freed during direct reclaim for
+	allocation by the reclaimer
+Message-ID: <20081002150221.GF11089@brain>
+References: <1222864261-22570-1-git-send-email-apw@shadowen.org> <1222864261-22570-5-git-send-email-apw@shadowen.org> <20081002162414.03470f46.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081002162414.03470f46.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de> writes:
->
->  - move long running handlers out of the hard interrupt context
+On Thu, Oct 02, 2008 at 04:24:14PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed,  1 Oct 2008 13:31:01 +0100
+> Andy Whitcroft <apw@shadowen.org> wrote:
+> 
+> > When a process enters direct reclaim it will expend effort identifying
+> > and releasing pages in the hope of obtaining a page.  However as these
+> > pages are released asynchronously there is every possibility that the
+> > pages will have been consumed by other allocators before the reclaimer
+> > gets a look in.  This is particularly problematic where the reclaimer is
+> > attempting to allocate a higher order page.  It is highly likely that
+> > a parallel allocation will consume lower order constituent pages as we
+> > release them preventing them coelescing into the higher order page the
+> > reclaimer desires.
+> > 
+> > This patch set attempts to address this for allocations above
+> > ALLOC_COSTLY_ORDER by temporarily collecting the pages we are releasing
+> > onto a local free list.  Instead of freeing them to the main buddy lists,
+> > pages are collected and coelesced on this per direct reclaimer free list.
+> > Pages which are freed by other processes are also considered, where they
+> > coelesce with a page already under capture they will be moved to the
+> > capture list.  When pressure has been applied to a zone we then consult
+> > the capture list and if there is an appropriatly sized page available
+> > it is taken immediatly and the remainder returned to the free pool.
+> > Capture is only enabled when the reclaimer's allocation order exceeds
+> > ALLOC_COSTLY_ORDER as free pages below this order should naturally occur
+> > in large numbers following regular reclaim.
+> > 
+> > Thanks go to Mel Gorman for numerous discussions during the development
+> > of this patch and for his repeated reviews.
+> > 
+> 
+> Hmm.. is this routine better than
+>   mm/memory_hotplug.c::do_migrate_range(start_pfn, end_pfn) ?
 
-I'm not sure I'm really looking forward to this brave new world
-of very long running interrupt handlers. e.g. what do you
-do for example when some handler blocks for a very long time?
+Are you suggesting that it might be more adventageous to try and migrate
+things out of this area as part of reclaim?  If so then I tend to agree,
+though that would be a good idea generally with or without capture.
 
->  - improved debugability of the kernel: faulty handlers do not take
->    down the system.
+/me adds it to his todo list to test that out.
 
-I had an old patch to handle this without threaded interrupts. 
-
-What normally happens is when a interrupt oopses it tries to kill the
-idle process which panics.  My fix was to just restart another idle
-process instead of panicing.
-
-But back then it was rejected by Linus with the argument that
-a crashing interrupt handler will typically hold some lock
-and the next time the interrupt happens it will deadlock on that
-lock. 
-
-Has that changed with your threaded interrupts? 
-
-If it has changed I suspect the restart idle change could
-be made to work to be equivalent in debuggability.
-
-> Comments, reviews, flames as usual.
-
-To be honest my opinion is that it will encourage badly written interrupt
-code longer term.
-
--Andi
-
--- 
-ak@linux.intel.com
+-apw
