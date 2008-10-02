@@ -1,113 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYJBTmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYJBTpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbYJBTmq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 15:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYJBTmg
+	id S1754809AbYJBTpT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 15:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYJBTpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 15:42:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51489 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753551AbYJBTmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 15:42:36 -0400
-Date: Thu, 2 Oct 2008 21:42:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [patch x86/core] x86: allow number of additional hotplug CPUs
-	to be set at compile time, V2
-Message-ID: <20081002194215.GA8078@elte.hu>
-References: <20081001191945.4182d0be@redhat.com> <20081002081231.GC17695@elte.hu> <20081002153007.2e031232@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 2 Oct 2008 15:45:07 -0400
+Received: from ik-out-1112.google.com ([66.249.90.177]:5208 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753801AbYJBTpF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 15:45:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:content-disposition:from:date:cc:mime-version
+         :content-type:content-transfer-encoding:message-id;
+        b=MXuMr5onXNS/pIwmOfYr4Mqe/K61gOaiKxtJQI1CAUbF6dYZWL7od5q8ga/096wlTw
+         Oxru9bdTjF3wZe0juEu+ZI5Muv/2vDIRQyQoPNCI1XSgHKuNRZbAFWpRmGTdUFD1CNIz
+         RS/QwCYo/nSWU0n10gWxJ0L92vhRoMg7DISfw=
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Sigmatel stac92hd71b7 low HP volume
 Content-Disposition: inline
-In-Reply-To: <20081002153007.2e031232@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: Klaas De Craemer <klaasdc@gmail.com>
+Date: Thu, 2 Oct 2008 21:45:03 +0200
+Cc: perex@perex.cz
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200810022145.03535.klaasdc@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Chuck Ebbert <cebbert@redhat.com> wrote:
+Below is my patch for an issue on Dell E6500 notebooks with the Sigmatel stac92hd71b7 codec. In the default snd-hda-intel configuration, the sound going to the headphone jack goes comes directly from the DAC, resulting in very low volume output. The patch changes the codec's widget connections so that the internal mixer is put in between and sets its input amplifiers to the maximum value. The output to the internal speaker port has been left untouched.
+I have tested this and it gives a much better output.
 
-> From: Chuck Ebbert <cebbert@redhat.com>
-> 
-> x86: allow number of additional hotplug CPUs to be set at compile time, V2
-> 
-> The default number of additional CPU IDs for hotplugging is determined 
-> by asking ACPI or mptables how many "disabled" CPUs there are in the 
-> system, but many systems get this wrong so that e.g. a uniprocessor 
-> machine gets an extra CPU allocated and never switches to single CPU 
-> mode.
-> 
-> And sometimes CPU hotplugging is enabled only for suspend/hibernate 
-> anyway, so the additional CPU IDs are not wanted. Allow the number to 
-> be set to zero at compile time.
-> 
-> Also, force the number of extra CPUs to zero if hotplugging is disabled
-> which allows removing some conditional code.
-> 
-> Tested on uniprocessor x86_64 that ACPI claims has a disabled processor,
-> with CPU hotplugging configured.
-> 
-> ("After" has the number of additional CPUs set to 0)
-> Before: NR_CPUS: 512, nr_cpu_ids: 2, nr_node_ids 1
-> After: NR_CPUS: 512, nr_cpu_ids: 1, nr_node_ids 1
-> 
-> [Changed the name of the option and the prompt according to Ingo's
->  suggestion.]
+Klaas De Craemer
 
-> +config HOTPLUG_RESTRICT_TO_BOOTUP_CPUS
-> +	def_bool n
-> +	prompt "Restrict CPU hotplugging to processors found during boot" if HOTPLUG_CPU
 
-ok, that description and naming makes the purpose much clearer, and it's 
-default-disabled as well.
-
-Applied to tip/x86/core, thanks Chuck!
-
-note that this chunk:
-
-> @@ -1282,16 +1282,13 @@ __init void prefill_possible_map(void)
->  	if (!num_processors)
->  		num_processors = 1;
->  
-> -#ifdef CONFIG_HOTPLUG_CPU
->  	if (additional_cpus == -1) {
->  		if (disabled_cpus > 0)
->  			additional_cpus = disabled_cpus;
->  		else
->  			additional_cpus = 0;
->  	}
-> -#else
-> -	additional_cpus = 0;
-> -#endif
-> +
-
-was already in -tip, by virtue of:
-
-| commit 2bd455dbfebfd632a8dcf1d3d1612737986fde0a
-| Author: Li Zefan <lizf@cn.fujitsu.com>
-| Date:   Mon Aug 4 11:26:38 2008 +0800
-|
-|     x86: remove nesting CONFIG_HOTPLUG_CPU
-
-please double-check latest tip/master nevertheless:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-to make sure i merged your patch correctly and that it plays well with 
-other changes.
-
-Thanks,
-
-	Ingo
+diff -uNr linux-2.6.26.5/sound/pci/hda/patch_sigmatel.c linux-2.6.26.5.new/sound/pci/hda/patch_sigmatel.c
+--- linux-2.6.26.5/sound/pci/hda/patch_sigmatel.c	2008-09-08 19:40:20.000000000 +0200
++++ linux-2.6.26.5.new/sound/pci/hda/patch_sigmatel.c	2008-10-02 20:08:51.000000000 +0200
+@@ -624,6 +624,22 @@
+ 	{}
+ };
+ 
++static struct hda_verb stac92hd71b7_core_init[] = {
++	/* set master volume and direct control */
++	{ 0x28, AC_VERB_SET_VOLUME_KNOB_CONTROL, 0xff},
++	/* connect headphone jack to mixer */
++	{ 0x0a, AC_VERB_SET_CONNECT_SEL, 0x02},
++	/* unmute right and left channels for nodes 0x0a, 0xd, 0x0f */
++	{ 0x0a, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
++	{ 0x0d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
++	{ 0x0f, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
++
++	/* Increase mixer volume for the two dac's */
++	{ 0x17, 0x370, 0x7f },
++	{ 0x17, 0x371, 0x7f },
++	{}
++};
++
+ static struct hda_verb stac92hd71bxx_core_init[] = {
+ 	/* set master volume and direct control */
+ 	{ 0x28, AC_VERB_SET_VOLUME_KNOB_CONTROL, 0xff},
+@@ -3642,6 +3658,10 @@
+ 		spec->mixer = stac92hd71bxx_mixer;
+ 		spec->init = stac92hd71bxx_core_init;
+ 		break;
++	case 0x111d76b2: /* Dell E6500 stac92hd71b7 configuration */
++		spec->mixer = stac92hd71bxx_mixer;
++		spec->init = stac92hd71b7_core_init;
++		break;
+ 	default:
+ 		spec->mixer = stac92hd71bxx_analog_mixer;
+ 		spec->init = stac92hd71bxx_analog_core_init;
