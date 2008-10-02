@@ -1,50 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbYJBNRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbYJBNTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754755AbYJBNRm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 09:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbYJBNRd
+	id S1754788AbYJBNTI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 09:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbYJBNSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 09:17:33 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63727 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753611AbYJBNRc (ORCPT
+	Thu, 2 Oct 2008 09:18:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53611 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669AbYJBNSn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 09:17:32 -0400
-Date: Thu, 2 Oct 2008 09:17:30 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [boot crash] Re: [PATCH] ring-buffer: fix build error
-In-Reply-To: <20081002093835.GA17699@elte.hu>
-Message-ID: <alpine.DEB.1.10.0810020916580.19018@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com> <20080930092001.69849210@bike.lwn.net> <1222790072.24384.21.camel@twins> <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com>
- <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu> <20081002090517.GA8708@elte.hu> <20081002093835.GA17699@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Oct 2008 09:18:43 -0400
+Message-Id: <20081002131609.350956725@chello.nl>
+References: <20081002130504.927878499@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Thu, 02 Oct 2008 15:05:27 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>,
+       David Miller <davem@davemloft.net>
+Subject: [PATCH 23/32] netvm: prevent a stream specific deadlock
+Content-Disposition: inline; filename=netvm-tcp-deadlock.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It could happen that all !SOCK_MEMALLOC sockets have buffered so much data
+that we're over the global rmem limit. This will prevent SOCK_MEMALLOC buffers
+from receiving data, which will prevent userspace from running, which is needed
+to reduce the buffered data.
 
-On Thu, 2 Oct 2008, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+Fix this by exempting the SOCK_MEMALLOC sockets from the rmem limit.
 
-> full serial log and config attached. I'm excluding these latest commits 
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/net/sock.h   |    7 ++++---
+ net/core/sock.c      |    2 +-
+ net/ipv4/tcp_input.c |   12 ++++++------
+ net/sctp/ulpevent.c  |    2 +-
+ 4 files changed, 12 insertions(+), 11 deletions(-)
 
- -ENOATTACHMENT
+Index: linux-2.6/include/net/sock.h
+===================================================================
+--- linux-2.6.orig/include/net/sock.h
++++ linux-2.6/include/net/sock.h
+@@ -788,12 +788,13 @@ static inline int sk_wmem_schedule(struc
+ 		__sk_mem_schedule(sk, size, SK_MEM_SEND);
+ }
+ 
+-static inline int sk_rmem_schedule(struct sock *sk, int size)
++static inline int sk_rmem_schedule(struct sock *sk, struct sk_buff *skb)
+ {
+ 	if (!sk_has_account(sk))
+ 		return 1;
+-	return size <= sk->sk_forward_alloc ||
+-		__sk_mem_schedule(sk, size, SK_MEM_RECV);
++	return skb->truesize <= sk->sk_forward_alloc ||
++		__sk_mem_schedule(sk, skb->truesize, SK_MEM_RECV) ||
++		skb_emergency(skb);
+ }
+ 
+ static inline void sk_mem_reclaim(struct sock *sk)
+Index: linux-2.6/net/core/sock.c
+===================================================================
+--- linux-2.6.orig/net/core/sock.c
++++ linux-2.6/net/core/sock.c
+@@ -383,7 +383,7 @@ int sock_queue_rcv_skb(struct sock *sk, 
+ 	if (err)
+ 		goto out;
+ 
+-	if (!sk_rmem_schedule(sk, skb->truesize)) {
++	if (!sk_rmem_schedule(sk, skb)) {
+ 		err = -ENOBUFS;
+ 		goto out;
+ 	}
+Index: linux-2.6/net/ipv4/tcp_input.c
+===================================================================
+--- linux-2.6.orig/net/ipv4/tcp_input.c
++++ linux-2.6/net/ipv4/tcp_input.c
+@@ -3877,19 +3877,19 @@ static void tcp_ofo_queue(struct sock *s
+ static int tcp_prune_ofo_queue(struct sock *sk);
+ static int tcp_prune_queue(struct sock *sk);
+ 
+-static inline int tcp_try_rmem_schedule(struct sock *sk, unsigned int size)
++static inline int tcp_try_rmem_schedule(struct sock *sk, struct sk_buff *skb)
+ {
+ 	if (atomic_read(&sk->sk_rmem_alloc) > sk->sk_rcvbuf ||
+-	    !sk_rmem_schedule(sk, size)) {
++	    !sk_rmem_schedule(sk, skb)) {
+ 
+ 		if (tcp_prune_queue(sk) < 0)
+ 			return -1;
+ 
+-		if (!sk_rmem_schedule(sk, size)) {
++		if (!sk_rmem_schedule(sk, skb)) {
+ 			if (!tcp_prune_ofo_queue(sk))
+ 				return -1;
+ 
+-			if (!sk_rmem_schedule(sk, size))
++			if (!sk_rmem_schedule(sk, skb))
+ 				return -1;
+ 		}
+ 	}
+@@ -3945,7 +3945,7 @@ static void tcp_data_queue(struct sock *
+ 		if (eaten <= 0) {
+ queue_and_out:
+ 			if (eaten < 0 &&
+-			    tcp_try_rmem_schedule(sk, skb->truesize))
++			    tcp_try_rmem_schedule(sk, skb))
+ 				goto drop;
+ 
+ 			skb_set_owner_r(skb, sk);
+@@ -4016,7 +4016,7 @@ drop:
+ 
+ 	TCP_ECN_check_ce(tp, skb);
+ 
+-	if (tcp_try_rmem_schedule(sk, skb->truesize))
++	if (tcp_try_rmem_schedule(sk, skb))
+ 		goto drop;
+ 
+ 	/* Disable header prediction. */
+Index: linux-2.6/net/sctp/ulpevent.c
+===================================================================
+--- linux-2.6.orig/net/sctp/ulpevent.c
++++ linux-2.6/net/sctp/ulpevent.c
+@@ -701,7 +701,7 @@ struct sctp_ulpevent *sctp_ulpevent_make
+ 	if (rx_count >= asoc->base.sk->sk_rcvbuf) {
+ 
+ 		if ((asoc->base.sk->sk_userlocks & SOCK_RCVBUF_LOCK) ||
+-		    (!sk_rmem_schedule(asoc->base.sk, chunk->skb->truesize)))
++		    (!sk_rmem_schedule(asoc->base.sk, chunk->skb)))
+ 			goto fail;
+ 	}
+ 
 
--- Steve
+-- 
 
