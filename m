@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbYJBPr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYJBPs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbYJBPr1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 11:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYJBPrR
+	id S1754529AbYJBPs6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 11:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYJBPsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 11:47:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57343 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752558AbYJBPrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 11:47:17 -0400
-Date: Thu, 2 Oct 2008 17:47:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] tracing/fastboot: build fix
-Message-ID: <20081002154711.GA20885@elte.hu>
-References: <48E4AFCD.9080004@gmail.com> <20081002120231.GB14322@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081002120231.GB14322@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 2 Oct 2008 11:48:50 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:51645 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752851AbYJBPsu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 11:48:50 -0400
+Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded
+	interrupt handlers
+From: Daniel Walker <dwalker@mvista.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>
+In-Reply-To: <alpine.DEB.1.10.0810021052010.19018@gandalf.stny.rr.com>
+References: <20081001223213.078984344@linutronix.de>
+	 <1222912413.2995.80.camel@laptop-eth.lan>
+	 <alpine.DEB.1.10.0810021052010.19018@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Thu, 02 Oct 2008 08:48:45 -0700
+Message-Id: <1222962525.2995.100.camel@laptop-eth>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-10-02 at 11:02 -0400, Steven Rostedt wrote:
+> On Wed, 1 Oct 2008, Daniel Walker wrote:
+> > > 
+> > > Converting an interrupt to threaded makes only sense when the handler
+> > > code takes advantage of it by integrating tasklet/softirq
+> > > functionality and simplifying the locking.
+> > 
+> > I'm not clear on your direction here.. I don't have a problem with a
+> > mass driver audit, which I think is what your suggesting with this patch
+> > set .. However, a mass audit like that would push a fully real time
+> > system out for quite some time..
+> 
+> This has nothing to do with real time, although it helps.
 
->From 7d14307eeaa710427436c09c6f77dde1974621cf Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 2 Oct 2008 17:45:47 +0200
-Subject: [PATCH] tracing/fastboot: build fix
+Clearly threading irq handlers does have something to do with real time,
+unless this patch isn't actually threading anything ..
 
-fix:
+> > 
+> > I also don't see a clear connection between these changes and ultimately
+> > removing spinlock level latency in the kernel. I realize you don't
+> > address that in your comments, but this is part of the initiative to
+> > remove spinlock level latency..
+> 
+> This is a completely different topic.
 
- In file included from kernel/sysctl.c:52:
- include/linux/ftrace.h:217: error: 'KSYM_NAME_LEN' undeclared here (not in a function)
+It's all connected to the removal of latency .. One part depending on
+the other parts, so you can't disconnect this from the rest of it.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/ftrace.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > So with this set of changes and in terms of real time, I'm wonder your
+> > going with this ?
+> 
+> This helps with latencies and locking. With the current scheme of hardirq, 
+> softirq/tasklets, there are a lot of craziness with spin_locks and 
+> spin_lock_irqs and mutexes.
+> 
+> By creating an interrupt thread, we can skip the softirq/tasklet 
+> altogether, and this simplifies locking.
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index e672e51..deded11 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -1,14 +1,14 @@
- #ifndef _LINUX_FTRACE_H
- #define _LINUX_FTRACE_H
- 
--#ifdef CONFIG_FTRACE
--
- #include <linux/linkage.h>
- #include <linux/fs.h>
- #include <linux/init.h>
- #include <linux/types.h>
- #include <linux/kallsyms.h>
- 
-+#ifdef CONFIG_FTRACE
-+
- extern int ftrace_enabled;
- extern int
- ftrace_enable_sysctl(struct ctl_table *table, int write,
+How does this simplify locking ?
+
+Daniel
+
