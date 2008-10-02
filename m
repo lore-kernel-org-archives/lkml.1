@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbYJBIWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYJBIXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753330AbYJBIWl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 04:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYJBIWd
+	id S1753727AbYJBIXG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 04:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYJBIWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 04:22:33 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50864 "EHLO pasmtpA.tele.dk"
+	Thu, 2 Oct 2008 04:22:51 -0400
+Received: from bu3sch.de ([62.75.166.246]:55714 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752323AbYJBIWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 04:22:32 -0400
-Date: Thu, 2 Oct 2008 10:22:13 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-ID: <20081002082212.GY19428@kernel.dk>
-References: <20081001200034.65eb67d6@infradead.org> <20081001215638.3a65134c.akpm@linux-foundation.org> <20081002062736.GR19428@kernel.dk> <20081001235501.2b7f50fe.akpm@linux-foundation.org> <20081002074523.GW19428@kernel.dk> <20081002010315.1cda8147.akpm@linux-foundation.org>
+	id S1752075AbYJBIWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 04:22:51 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: "Rakib Mullick" <rakib.mullick@gmail.com>
+Subject: Re: [PATCH] drivers/gpio/bt8xxgpio.c Fix compilation warning.
+Date: Thu, 2 Oct 2008 10:22:12 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org
+References: <b9df5fa10810012359oac41498sf716ce51b39a36ce@mail.gmail.com>
+In-Reply-To: <b9df5fa10810012359oac41498sf716ce51b39a36ce@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081002010315.1cda8147.akpm@linux-foundation.org>
+Message-Id: <200810021022.13252.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 02 2008, Andrew Morton wrote:
-> On Thu, 2 Oct 2008 09:45:24 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+On Thursday 02 October 2008 08:59:11 Rakib Mullick wrote:
+> drivers/gpio/bt8xxgpio.c: In function `bt8xxgpio_remove':
+> drivers/gpio/bt8xxgpio.c:247: warning: ignoring return value of
+> `gpiochip_remove', declared with attribute warn_unused_result
 > 
-> > > So.  Where are these atime updaters getting blocked?
-> > 
-> > Behind other IO activity I suppose, since it's marked async. A more
-> > appropriate fix may be to mark atime updates as sync IO.
+> Following patch removes the above warning.
+> Thanks.
 > 
-> No, they might be getting blocked at a higher level.
+> Signed-off-by:	Md.Rakib H. Mullick (rakib.mullick@gmail.com)
 > 
-> An async atime update gets recorded into the current transaction. 
-> kjournald is working on the committing transaction.  We try to keep
-> those separated, to prevent user processes from getting blocked behind
-> kjournald activity.
+> --- linux-2.6.27-rc8.orig/drivers/gpio/bt8xxgpio.c	2008-10-01
+> 19:20:59.000000000 +0600
+> +++ linux-2.6.27-rc8/drivers/gpio/bt8xxgpio.c	2008-10-02
+> 12:30:26.374544032 +0600
+> @@ -242,9 +242,14 @@ err_freebg:
 > 
-> But sometimes that doesn't work (including the place where I knowingly
-> broke it).  If we can find and fix the offending piece of jbd logic (a
-> big if) then all is peachy.
+>  static void bt8xxgpio_remove(struct pci_dev *pdev)
+>  {
+> +	int err;
+>  	struct bt8xxgpio *bg = pci_get_drvdata(pdev);
 > 
-> If the above theory turns out to be true then diddling IO priorities
-> is but a workaround.
+> -	gpiochip_remove(&bg->gpio);
+> +	err = gpiochip_remove(&bg->gpio);
+> +	if (err) {
+> +		printk(KERN_ERR "bt8xxgpio: Resource busy. Failed to remove.\n");
+> +		return ;
+> +	}
+> 
+>  	bgwrite(0, BT848_INT_MASK);
+>  	bgwrite(~0x0, BT848_INT_STAT);
+> 
+> 
 
-If diddling with io priorities makes a big difference (and Arjan said it
-does), it's clearly stuck inside the io scheduler waiting to be
-dispatched. If it was marked sync, it would be going through much
-faster. As async, it'll get mixed in with other async writeout and that
-doesn't get a lot of attention in case of sync activity.
+NACK.
+gpiolib should be fixed.
+It is impossible to handle this case. What your patch does is to leave the device
+in an inconsistent state, if the gpio remove fails.
+
+gpiolib is broken. It should not allow failure for the remove function, as most
+callers cannot handle it. gpiolib should force-remove any users of the gpio line,
+if the chip driver removes the chip. That's really the only way we can fix this.
+Breaking the driver (to leak resources or leave the device in an inconsistent state)
+just to get rid of a bogus warning is not the right fix.
+Please ignore this warning for now.
 
 -- 
-Jens Axboe
-
+Greetings Michael.
