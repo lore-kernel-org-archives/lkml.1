@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYJBJJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbYJBJML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625AbYJBJJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 05:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYJBJJI
+	id S1754338AbYJBJML (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 05:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbYJBJL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 05:09:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51171 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753310AbYJBJJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 05:09:07 -0400
-Date: Thu, 2 Oct 2008 11:05:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: [PATCH] ring-buffer: fix build error
-Message-ID: <20081002090517.GA8708@elte.hu>
-References: <20080930034603.GA13801@Krystal> <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com> <20080930092001.69849210@bike.lwn.net> <1222790072.24384.21.camel@twins> <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu>
+	Thu, 2 Oct 2008 05:11:56 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:11459 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753389AbYJBJLz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 05:11:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=LxC6t1GK7N7I4kGg3knlgTgF4TNcGcHVCNW3Vu3Qn2SE26c4mZTydV8MMufXQql6fZ
+         eCfY0+Ky9zFW1B2hjETpUyG3yvKYK8cohTM+E/qHYNFBOA9ZQ6jErSrnfmO1jGZatRr+
+         3FhmTSxBE7ZcSRnjrpQ4yJhSAqcJoMO0t6v34=
+Message-ID: <68676e00810020211w14cff133h8aa9b60fed007122@mail.gmail.com>
+Date: Thu, 2 Oct 2008 11:11:55 +0200
+From: "Luca Tettamanti" <kronos.it@gmail.com>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
+Subject: Re: SDHCI: timeout during data transfer
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081002101754.031d6710@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081002085145.GA3202@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080923212459.GA13888@dreamland.darkstar.lan>
+	 <20081002101754.031d6710@mjolnir.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 2, 2008 at 10:17 AM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+> On Tue, 23 Sep 2008 23:24:59 +0200
+> Luca Tettamanti <kronos.it@gmail.com> wrote:
+>
+>> Hi,
+>> I'm seeing timeout errors when transfering "big" (over 1MB or so) files to a SD
+>> card (small files are ok):
+>>
+>> [  251.956666] mmcblk0: error -110 transferring data
+>> [  251.979810] end_request: I/O error, dev mmcblk0, sector 1572758
+>
+> Looks like the card died on you there. Did you build the kernel
+> yourself? If so, it would be helpful if you could enable
+> CONFIG_MMC_DEBUG and give me a complete dmesg dump from when this
+> happens.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Will do.
 
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > applied to tip/tracing/ftrace, with the extended changlog below - i 
-> > think this commit warrants that extra mention.
-> 
-> that was for the type filter commit. The 3 patches i've picked up into 
-> tip/tracing/ring-buffer are:
-> 
->  b6eeea4: ftrace: preempt disable over interrupt disable
->  52abc82: ring_buffer: allocate buffer page pointer
->  da78331: ftrace: type cast filter+verifier
+>> kernel in use is 2.6.27-rc6, and this is the controller:
+>>
+>> 09:01.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
+>> 09:01.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
+>> 09:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 12)
+>> 09:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 12)
+>>
+>> Googling around I found a patch[1] that introduced a quirk to address an
+>> off-by-one issue for the timeout value in certain controllers.
+>>
+>> With this patch:
+>
+> The patch doubles the timeout, so something is clearly broken if that
+> solves the issue. I'd like to identify if it's the driver, controller
+> or card first though.
 
-trivial build fix below.
+I was just shooting in the dark ;-) I found the patch floating around
+and applied it.
 
-	Ingo
+> Are you experiencing this with just this card, or with all?
 
->From 339ce9af3e6cbc02442b0b356c1ecb80a8ae92fb Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 2 Oct 2008 11:04:14 +0200
-Subject: [PATCH] ring-buffer: fix build error
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Actually I have only that card... I'll try to borrow another one for
+testing. Btw, that card works fine under windows (on the same machine)
+and my N800 is happy with it too.
 
-fix:
-
- kernel/trace/ring_buffer.c: In function ‘rb_allocate_pages’:
- kernel/trace/ring_buffer.c:235: error: ‘cpu’ undeclared (first use in this function)
- kernel/trace/ring_buffer.c:235: error: (Each undeclared identifier is reported only once
- kernel/trace/ring_buffer.c:235: error: for each function it appears in.)
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/trace/ring_buffer.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 9814571..54a3098 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -232,7 +232,7 @@ static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
- 
- 	for (i = 0; i < nr_pages; i++) {
- 		page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
--				    GFP_KERNEL, cpu_to_node(cpu));
-+				    GFP_KERNEL, cpu_to_node(i));
- 		if (!page)
- 			goto free_pages;
- 		list_add(&page->list, &pages);
+Luca
