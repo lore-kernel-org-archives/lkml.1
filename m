@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbYJBGNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbYJBGN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754472AbYJBGNn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 02:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYJBGM3
+	id S1754569AbYJBGN6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 02:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbYJBGMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 02:12:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33026 "EHLO
+	Thu, 2 Oct 2008 02:12:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40065 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753952AbYJBGM1 (ORCPT
+	by vger.kernel.org with ESMTP id S1753963AbYJBGMa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 02:12:27 -0400
-Date: Wed, 1 Oct 2008 23:12:01 -0700
+	Thu, 2 Oct 2008 02:12:30 -0400
+Date: Wed, 1 Oct 2008 23:12:05 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Mark Fasheh <mfasheh@suse.com>
 Cc: linux-kernel@vger.kernel.org, joel.becker@oracle.com,
@@ -18,7 +18,7 @@ Cc: linux-kernel@vger.kernel.org, joel.becker@oracle.com,
        tao.ma@oracle.com, mfasheh@suse.com
 Subject: Re: [PATCH 11/39] ocfs2: Add extent tree operation for xattr value
  btrees
-Message-Id: <20081001231201.ece971cf.akpm@linux-foundation.org>
+Message-Id: <20081001231205.1652365b.akpm@linux-foundation.org>
 In-Reply-To: <1222293680-15451-12-git-send-email-mfasheh@suse.com>
 References: <1222293680-15451-1-git-send-email-mfasheh@suse.com>
 	<1222293680-15451-12-git-send-email-mfasheh@suse.com>
@@ -31,28 +31,9 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 > On Wed, 24 Sep 2008 15:00:52 -0700 Mark Fasheh <mfasheh@suse.com> wrote:
-> +	void *private;
->  };
->  
->  static void ocfs2_dinode_set_last_eb_blk(struct ocfs2_extent_tree *et,
-> @@ -136,9 +137,50 @@ static struct ocfs2_extent_tree_operations ocfs2_dinode_et_ops = {
->  	.sanity_check		= ocfs2_dinode_sanity_check,
->  };
->  
-> +static void ocfs2_xattr_value_set_last_eb_blk(struct ocfs2_extent_tree *et,
-> +					      u64 blkno)
-> +{
-> +	struct ocfs2_xattr_value_root *xv =
-> +		(struct ocfs2_xattr_value_root *)et->private;
+> +	if (eb_bh)
+> +		brelse(eb_bh);
 
-unneeded and undesirable cast of void*
+brelse(0) is legal.  Please do an fs-wide review for this.
 
-> +	xv->xr_last_eb_blk = cpu_to_le64(blkno);
-> +}
-> +
-> +static u64 ocfs2_xattr_value_get_last_eb_blk(struct ocfs2_extent_tree *et)
-> +{
-> +	struct ocfs2_xattr_value_root *xv =
-> +		(struct ocfs2_xattr_value_root *) et->private;
-
-many etceteras.
+It shouldn't affect code generation because brelse() is inlined.
