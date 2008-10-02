@@ -1,113 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYJBSTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYJBS1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbYJBSTb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 14:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYJBSTT
+	id S1754543AbYJBS1t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 14:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbYJBS1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 14:19:19 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:45759 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753666AbYJBSTS (ORCPT
+	Thu, 2 Oct 2008 14:27:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:39774 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753106AbYJBS1i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 14:19:18 -0400
-Date: Thu, 2 Oct 2008 23:48:56 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       ext4 <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH] Improve buffered streaming write ordering
-Message-ID: <20081002181856.GB29613@skywalker>
-References: <1222886451.9158.34.camel@think.oraclecorp.com> <20081001215239.ee2ae63f.akpm@linux-foundation.org> <1222950054.6745.18.camel@think.oraclecorp.com>
+	Thu, 2 Oct 2008 14:27:38 -0400
+Date: Thu, 2 Oct 2008 14:27:35 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [boot crash] Re: [PATCH] ring-buffer: fix build error
+In-Reply-To: <20081002155053.GA31953@elte.hu>
+Message-ID: <alpine.DEB.1.10.0810021426080.2919@gandalf.stny.rr.com>
+References: <1222790072.24384.21.camel@twins> <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org>
+ <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu> <20081002090517.GA8708@elte.hu> <20081002093835.GA17699@elte.hu> <alpine.DEB.1.10.0810020916580.19018@gandalf.stny.rr.com>
+ <20081002155053.GA31953@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222950054.6745.18.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 02, 2008 at 08:20:54AM -0400, Chris Mason wrote:
-> On Wed, 2008-10-01 at 21:52 -0700, Andrew Morton wrote:
-> > On Wed, 01 Oct 2008 14:40:51 -0400 Chris Mason <chris.mason@oracle.com> wrote:
+
+On Thu, 2 Oct 2008, Ingo Molnar wrote:
+
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
 > > 
-> > > The patch below changes write_cache_pages to only use writeback_index
-> > > when current_is_pdflush().  The basic idea is that pdflush is the only
-> > > one who has concurrency control against the bdi, so it is the only one
-> > > who can safely use and update writeback_index.
+> > On Thu, 2 Oct 2008, Ingo Molnar wrote:
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
 > > 
-> > Another approach would be to only update mapping->writeback_index if
-> > nobody else altered it meanwhile.
+> > > full serial log and config attached. I'm excluding these latest commits 
 > > 
+> >  -ENOATTACHMENT
 > 
-> Ok, I can give that a short.
+> attached.
 > 
-> > That being said, I don't really see why we get lots of seekiness when
-> > two threads start their writing the file from the same offset.
+> You can get the broken tree by doing this in tip/master:
 > 
-> For metadata, it makes sense.  Pages get dirtied in strange order, and
-> if writeback_index is jumping around, we'll get the seeky metadata
-> writeback.
-> 
-> Data makes less sense, especially the very high extent count from ext4.
-> An extra printk shows that ext4 is calling redirty_page_for_writepage
-> quite a bit in ext4_da_writepage.  This should be enough to make us jump
-> around in the file.
+>   git-merge tip/tracing/ring-buffer
 
+I've just checked-out tip/tracing/ring-buffer. That tree is still broken 
+too, right? Or do I need to merge it to get the broken version?
 
-We need to do  start the journal before locking the page with jbd2.
-That prevent us from doing any block allocation in writepage() call
-back. So with ext4/jbd2 we do block allocation only in writepages()
-call back where we start the journal with credit needed to write
-a single extent. Then we look for contiguous unallocated logical
-block and request the block allocator for 'x' blocks. If we get
-less than that. The rest of the pages which we iterated in
-writepages  are redirtied so that we try to allocate them again.
-We loop inside ext4_da_writepages itself looking at wbc->pages_skipped
+-- Steve
 
-2481         if (wbc->range_cont && (pages_skipped != wbc->pages_skipped)) {
-2482                 /* We skipped pages in this loop */
-2483                 wbc->range_start = range_start;
-2484                 wbc->nr_to_write = to_write +
-
-
-> 
-> For a 4.5GB streaming buffered write, this printk inside
-> ext4_da_writepage shows up 37,2429 times in /var/log/messages.
-> 
-
-Part of that can happen due to shrink_page_list -> pageout -> writepagee
-call back with lots of unallocated buffer_heads(blocks). Also a journal
-commit with jbd2 looks at the inode and all the dirty pages, rather than
-the buffer_heads (journal_submit_data_buffers). We don't force commit
-pages that doesn't have blocks allocated with the ext4. The consistency
-is only with i_size and data.
-
-> 	if (page_has_buffers(page)) {
-> 		page_bufs = page_buffers(page);
-> 		if (walk_page_buffers(NULL, page_bufs, 0, len, NULL,
-> 					ext4_bh_unmapped_or_delay)) {
-> 			/*
-> 			 * We don't want to do  block allocation
-> 			 * So redirty the page and return
-> 			 * We may reach here when we do a journal commit
-> 			 * via journal_submit_inode_data_buffers.
-> 			 * If we don't have mapping block we just ignore
-> 			 * them. We can also reach here via shrink_page_list
-> 			 */
-> 			redirty_page_for_writepage(wbc, page);
-> 
-> printk("redirty page %Lu\n", page_offset(page));
-> 
-> 			unlock_page(page);
-> 			return 0;
-> 		}
-> 	} else {
-> 
-> -chris
-> 
-> 
-
--aneesh
