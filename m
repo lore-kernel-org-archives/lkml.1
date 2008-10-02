@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbYJBXRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYJBXSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbYJBXRw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 19:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYJBXRl
+	id S1755192AbYJBXSX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 19:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYJBXSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 19:17:41 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:15886 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752748AbYJBXRk (ORCPT
+	Thu, 2 Oct 2008 19:18:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:43466 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753203AbYJBXSL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 19:17:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :face:mime-version:content-type:content-transfer-encoding;
-        b=HQH7hro63PwCCtNYACWjVJYrY8Iy2D/5q6JB6r4a8eJzWs7urNiXL1gj5H5slUsVao
-         Q74jLn9mOr8xy+iKlKm+E5XSX7iVEIIO/HymhC+UxelbLgiflO6ircxe4CGmaupxpUQu
-         CJUwsGSrB1JusL4IcGayAHJaIoy1Ahfj/XVpQ=
-Date: Thu, 2 Oct 2008 18:17:31 -0500
-From: Jay Cliburn <jcliburn@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: xiong.huang@atheros.com, csnook@redhat.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: atl2 network driver status
-Message-ID: <20081002181731.6b8f563d@osprey.hogchain.net>
-In-Reply-To: <20081002230246.GA11570@kroah.com>
-References: <20081002230246.GA11570@kroah.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEV2dXOAgYNxSD+aemaal42A
- gIBqYV2UU07Ik5GXfoFMRTdbKiVwAAACbUlEQVQ4jXXTzWvbMBQAcG3EZsmt0Owc3pgNPo1oxNFt
- pQnEN3Wrs3UnkdXq5tOwIdq9Pci3gUqJexo55KC/cs9O/dHBRIiMfpb03rNE4v800jxIQRzsXPEP
- jDwndhNelo9/ngE/SFdKmZQnfOT0YSSlQBKLiJBDH6w9SPwlp5evpduDr9biQqkV8Rh7p4NRNSO1
- 4BHhpjLpIK2gWksIgl0LPLCHoBIcX6dp2kGKMYnfGJnjIFungZeuHA6dhSvqLXrA1zJmVKayCu1w
- DKuGAU+WZRRCsLdBFXgLl2Sw3N2ZEJDAn3VwEV9FK12YUGW+yqlIWiD30U5rbSi2efGuhRfxEXRB
- 8e+uJE/AL5z78xrqVg6aBHlMTj9V7x/RJOMGHHI11ItVUW+B0JakkGPcUsJNHuY7/ZA04X4xwQ/D
- 3I0FGgaT8iFponoJ26F+sNbu51O7l7QHHtNTbxMc5o/W+kw0S31Ub5i+pQBq/hjYPVPbJ/ic/aoC
- pbTQtxlAvvnZgNod89Y4D2sFXpMHZWU1yHb6Ft+g2aTJY84iY2iY4ySGmWdvmxlDprHkCgd1yDRV
- bXVfFQiZjyuyaU5p1pZkTbXBbxRagAyU2rZfcH2tTQ7+FpNQ4Ofb7lxdFzTHDGqAvHdEv0cIezi2
- be+0vzdUqawaDSATHfB7itGiIfrQu2p8UQOOooHTh5lUPn6lva/qQrWwQpCUTv08hGe3dkU9KWmJ
- Z2EGpAeDFc3kN8oMNbNJ/AzMFERUhjmehB7ws6XBTTnfeOXT9T/C9dn4HEshpPWIjDvgi5Px2U0G
- Hl7dzaQHg8U4Xn6oa4g3vVnqLz3ribDLdyFmAAAAAElFTkSuQmCC
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Oct 2008 19:18:11 -0400
+Date: Thu, 2 Oct 2008 19:18:09 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: [PATCH] ring_buffer: map to cpu not page
+In-Reply-To: <20081002093835.GA17699@elte.hu>
+Message-ID: <alpine.DEB.1.10.0810021917030.26504@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0809292359030.19533@gandalf.stny.rr.com> <20080930092001.69849210@bike.lwn.net> <1222790072.24384.21.camel@twins> <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com>
+ <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu> <20081002090517.GA8708@elte.hu> <20081002093835.GA17699@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 16:02:46 -0700
-Greg KH <greg@kroah.com> wrote:
 
-> Hi,
-> 
-> In looking for drivers to add to drivers/staging/ I ran across the
-> atl2 driver that is currently in the Fedora and Ubuntu kernel trees.
-> 
-> This driver doesn't look to be scheduled for inclusion in the upstream
-> netdev git tree for submission for 2.6.28, is there any reason why it
-> is still out-of-the-tree?
+My original patch had a compile bug when NUMA was configured. I
+referenced cpu when it should have been cpu_buffer->cpu.
 
-Hi Greg,
+Ingo quickly fixed this bug by replacing cpu with 'i' because that
+was the loop counter. Unfortunately, the 'i' was the counter of
+pages, not CPUs. This caused a crash when the number of pages allocated
+for the buffers exceeded the number of pages, which would usually
+be the case.
 
-It's in net-next-2.6.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/ring_buffer.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-http://marc.info/?l=linux-netdev&m=122144021209242&w=2
+Index: linux-tip.git/kernel/trace/ring_buffer.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/ring_buffer.c	2008-10-02 09:09:01.000000000 -0400
++++ linux-tip.git/kernel/trace/ring_buffer.c	2008-10-02 18:58:44.000000000 -0400
+@@ -232,7 +232,7 @@ static int rb_allocate_pages(struct ring
+ 
+ 	for (i = 0; i < nr_pages; i++) {
+ 		page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
+-				    GFP_KERNEL, cpu_to_node(i));
++				    GFP_KERNEL, cpu_to_node(cpu_buffer->cpu));
+ 		if (!page)
+ 			goto free_pages;
+ 		list_add(&page->list, &pages);
 
-Best,
-Jay
+
