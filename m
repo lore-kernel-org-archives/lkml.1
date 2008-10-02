@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbYJBQxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbYJBQ6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754994AbYJBQxr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 12:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYJBQxk
+	id S1754696AbYJBQ6S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 12:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYJBQ6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 12:53:40 -0400
-Received: from elasmtp-banded.atl.sa.earthlink.net ([209.86.89.70]:37849 "EHLO
-	elasmtp-banded.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753987AbYJBQxj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 12:53:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=ZBhGj4PL+AEj5Qna8nyC2e3coCF+JCjS1iJn6APh8fawahYiWy0/o2ciYndmLqb0;
-  h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <48E4FC91.5010300@earthlink.net>
-Date: Thu, 02 Oct 2008 12:53:37 -0400
-From: Stephen Clark <sclark46@earthlink.net>
-Reply-To: sclark46@earthlink.net
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 2 Oct 2008 12:58:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:50655 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753742AbYJBQ6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 12:58:08 -0400
+Message-ID: <48E4FD98.7020203@goop.org>
+Date: Thu, 02 Oct 2008 09:58:00 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Automatic config file generator
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Gregor Rebel <linux@mailbarrier.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Anybody interested in a kernel memory manager?
+References: <48E46214.2090108@mailbarrier.de>
+In-Reply-To: <48E46214.2090108@mailbarrier.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: a437fbc6971e80f61aa676d7e74259b7b3291a7d08dfec79b92127bd9bcd0625af498c874edcb65f350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 208.118.36.229
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello List,
+Gregor Rebel wrote:
+> I'm currently writing two modules related to XEN.
 
-Is there a utility that will examine your system and generate a tailored config 
-file so I don't have to compile a zillion modules.
+What are you working on, out of curiosity?
 
-Currently when I want to build the latest kernel I take the config file from
-my distro, (fedora), but it has every module in the world. So on my
-1.8ghz core 2 duo laptop it takes about 30 min to build a new kernel.
+> Both modules need to
+> acquire dynamic memory (via __get_free_pages() and kmalloc() ).
+> In order to reuse some code, I wrote a third module which can provide
+> simple memory-services to other modules:
+> * Allocated pages and memories of each client-module gets tracked
+> * When a module is about to exit, it can issue one function call to
+> release all of its memories
+> * Before first using the memory manager, each module has to obtain a
+> unique owner id number by calling a registration function
+> * by loading the memory manager with a debug argument, memory
+> allocations automatically get logged into syslog facility
+>
+> I know, that currently each module keeps track of its memory allocations
+> on its own.
+>
+> Is there a general interest to have such a memory manager in the kernel?
 
-Thanks,
-Steve
--- 
+The best way to get a useful response is to post the patches and see 
+what happens.  There's no way to really evaluate what you're proposing 
+in the abstract.
 
-"They that give up essential liberty to obtain temporary safety,
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty
-decreases."  (Thomas Jefferson)
-
-
+    J
