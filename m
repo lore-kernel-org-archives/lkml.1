@@ -1,99 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbYJBBFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYJBBLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753168AbYJBBFy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 21:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYJBBFp
+	id S1753245AbYJBBLr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 21:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYJBBLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 21:05:45 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:15902 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbYJBBFo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 21:05:44 -0400
-Date: Wed, 1 Oct 2008 19:05:42 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
-Subject: Re: [PATCH v3 02/14] PCI: prevent duplicate slot names
-Message-ID: <20081002010542.GA745@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-	jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
-	matthew@wil.cx
-References: <20080923163753.12628.98683.stgit@bob.kio> <20080923164523.12628.69510.stgit@bob.kio> <48E09936.2030905@jp.fujitsu.com> <48E189BF.4020907@jp.fujitsu.com>
+	Wed, 1 Oct 2008 21:11:37 -0400
+Received: from mga02.intel.com ([134.134.136.20]:12074 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751642AbYJBBLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Oct 2008 21:11:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,347,1220252400"; 
+   d="scan'208";a="342802909"
+From: "Nakajima, Jun" <jun.nakajima@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "akataria@vmware.com" <akataria@vmware.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
+       Zach Amsden <zach@vmware.com>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Date: Wed, 1 Oct 2008 18:11:11 -0700
+Subject: RE: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
+Thread-Topic: [RFC] CPUID usage for interaction between Hypervisors	and
+	Linux.
+Thread-Index: AckkGBE4TXNYZkinTcGGS4pMLh4WkAADaueQ
+Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A15D927EA4@orsmsx505.amr.corp.intel.com>
+References: <1222881242.9381.17.camel@alok-dev1>
+	 <48E3B19D.6060905@zytor.com> <1222882431.9381.23.camel@alok-dev1>
+	 <48E3BC21.4080803@goop.org> <1222895153.9381.69.camel@alok-dev1>
+ <48E3FDD5.7040106@zytor.com>
+In-Reply-To: <48E3FDD5.7040106@zytor.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48E189BF.4020907@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m921Bpdq024490
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> Kenji Kaneshige wrote:
->> Hi Alex-san,
->>
->> Here is one comment, though I have not finished reviewing/testing
->> your patches yet (sorry for the delay).
->>
->> Alex Chiang wrote:
->>
->> (snip.)
->>
->>> diff --git a/drivers/pci/hotplug/pci_hotplug_core.c  
->>> b/drivers/pci/hotplug/pci_hotplug_core.c
->>> index 3e37d63..46802dc 100644
->>> --- a/drivers/pci/hotplug/pci_hotplug_core.c
->>> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
->>> @@ -570,39 +570,32 @@ int pci_hp_register(struct hotplug_slot *slot,  
->>> struct pci_bus *bus, int slot_nr,
->>>          return -EINVAL;
->>>      }
->>>  -    /* Check if we have already registered a slot with the same 
->>> name. */
->>> -    if (get_slot_from_name(name))
->>> -        return -EEXIST;
->>> -
->>>      /*
->>> -     * No problems if we call this interface from both ACPI_PCI_SLOT
->>> -     * driver and call it here again. If we've already created the
->>> -     * pci_slot, the interface will simply bump the refcount.
->>> +     * Look for existing slot. If we find it, and it was created by a
->>> +     * slot detection driver (ie, doesn't have a ->hotplug()) then we
->>> +     * allow the hotplug driver calling us to rename the slot if  
->>> desired.
->>> +     *
->>> +     * Otherwise, create the slot and carry on with life.
->>>       */
->>> -    pci_slot = pci_create_slot(bus, slot_nr, name);
->>> -    if (IS_ERR(pci_slot))
->>> -        return PTR_ERR(pci_slot);
->>> -
->>> -    if (pci_slot->hotplug) {
->>> -        dbg("%s: already claimed\n", __func__);
->>> -        pci_destroy_slot(pci_slot);
->>> -        return -EBUSY;
->>> +    pci_slot = pci_get_pci_slot(bus, slot_nr);
->>
->> The pci_get_pci_slot() function refers pci_bus->slots list, so it
->> should be called with pci_bus_sem semaphore held as pci_create_slot()
->> does, or pci_bus_sem semaphore should be held by pci_get_pci_slot()
->> itself.
+On 10/1/2008 3:46:45 PM, H. Peter Anvin wrote:
+> Alok Kataria wrote:
+> > > No, that's always a terrible idea.  Sure, its necessary to deal
+> > > with some backward-compatibility issues, but we should even
+> > > consider a new interface which assumes this kind of thing.  We
+> > > want properly enumerable interfaces.
+> >
+> > The reason we still have to do this is because, Microsoft has
+> > already defined a CPUID format which is way different than what you
+> > or I are proposing ( with the current case of 256 leafs being
+> > available). And I doubt they would change the way they deal with it on their OS.
+> > Any proposal that we go with, we will have to export different CPUID
+> > interface from the hypervisor for the 2 OS in question.
+> >
+> > So i think this is something that we anyways will have to do and not
+> > worth binging about in the discussion.
+>
+> No, that's a good hint that what "you and I" are proposing is utterly
+> broken and exactly underscores what I have been stressing about
+> noncompliant hypervisors.
+>
+> All I have seen out of Microsoft only covers CPUID levels 0x40000000
+> as an vendor identification leaf and 0x40000001 as a "hypervisor
+> identification leaf", but you might have access to other information.
 
-Yes, I've changed pci_get_pci_slot() to acquire the pci_bus_sem
-semaphore.
+No, it says "Leaf 0x40000001 as hypervisor vendor-neutral interface identification, which determines the semantics of leaves from 0x40000002 through 0x400000FF." The Leaf 0x40000000 returns vendor identifier signature (i.e. hypervisor identification) and the hypervisor CPUID leaf range, as in the proposal.
 
-Thank you for pointing this out.
+>
+> This further underscores my belief that using 0x400000xx for anything
+> "standards-based" at all is utterly futile, and that this space should
+> be treated as vendor identification and the rest as vendor-specific.
+> Any hope of creating a standard that's actually usable needs to be
+> outside this space, e.g. in the 0x40SSSSxx space I proposed earlier.
+>
 
-It will be fixed in v4 of this patch series, which I will send
-out after I receive the rest of your review comments.
+Actually I'm not sure I'm following your logic. Are you saying using that 0x400000xx for anything "standards-based" is utterly futile because Microsoft said "the range is hypervisor vendor-neutral"? Or you were not sure what they meant there. If we are not clear, we can ask them.
 
-Thanks!
 
-/ac
-
+>         -hpa
+             .
+Jun Nakajima | Intel Open Source Technology Center
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
