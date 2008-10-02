@@ -1,140 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbYJBJmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYJBJok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753781AbYJBJmb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 05:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYJBJmX
+	id S1754015AbYJBJok (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 05:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbYJBJoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 05:42:23 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:51137 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752662AbYJBJmW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 05:42:22 -0400
-Message-ID: <48E49772.10103@bull.net>
-Date: Thu, 02 Oct 2008 11:42:10 +0200
-From: Gilles Carry <Gilles.Carry@bull.net>
-User-Agent: Mozilla Thunderbird 1.0 (X11/20041206)
-X-Accept-Language: en-us, en
+	Thu, 2 Oct 2008 05:44:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56683 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752623AbYJBJoc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 05:44:32 -0400
+Date: Thu, 2 Oct 2008 11:43:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frank Mayhar <fmayhar@google.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH 2.6.27-rc5 incremental re-resubmit] Fix itimer/many
+	thread hang.
+Message-ID: <20081002094352.GB20569@elte.hu>
+References: <20080914150923.GB26984@elte.hu> <1221502142.19012.35.camel@bobble.smo.corp.google.com> <20080916084143.GC17287@elte.hu> <1221678187.13420.17.camel@bobble.smo.corp.google.com> <20080918102353.GD20967@elte.hu> <1222114936.21579.20.camel@bobble.smo.corp.google.com> <1222291416.30299.6.camel@bobble.smo.corp.google.com> <20080930063313.GA23690@elte.hu> <1222792590.18031.9.camel@bobble.smo.corp.google.com> <1222878038.29322.2.camel@bobble.smo.corp.google.com>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Chirag Jog <chirag@linux.vnet.ibm.com>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rostedt@goodmis.org, dvhltc@us.ibm.com,
-       dino@in.ibm.com, Jean-Pierre Dion <jean-pierre.dion@bull.net>,
-       =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>,
-       Tim Chavez <tinytim@us.ibm.com>
-Subject: Re: [PATCH] sched: add a stacktrace on enqueue_pushable error
-References: <20080930044320.GA4685@linux.vnet.ibm.com> <20081001142117.27846.83759.stgit@dev.haskins.net>
-In-Reply-To: <20081001142117.27846.83759.stgit@dev.haskins.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222878038.29322.2.camel@bobble.smo.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I could reproduce the bug on an intel architecture.
-I found where the problem is.
-I'll post the patch in a few hours.
+* Frank Mayhar <fmayhar@google.com> wrote:
 
-Gilles.
+> On Tue, 2008-09-30 at 09:36 -0700, Frank Mayhar wrote:
+> > I'm picking up tip/master right now and will test your fix for this
+> > shortly.
+> 
+> Okay, I've put it through its paces and everything appears to be 
+> working well with Ingo's fix.
 
-Gregory Haskins wrote:
-> Hi Chirag,
->   Please apply this patch to your 26.5-rt9 tree for ppc64, enable
->   CONFIG_PROVE_LOCKING (which enables CONFIG_STACKTRACE) and give it a whirl.
->   If you get an oops, please post the console output.
-> 
-> Thanks!
-> 
-> -Greg
-> 
-> ------------------
-> sched: add a stacktrace on enqueue_pushable error
-> 
-> NOT FOR INCLUSION!
-> 
-> This is to help debug an issue discovered by Chirag Jog in the thread
-> 
-> http://lkml.org/lkml/2008/9/25/189
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> ---
-> 
->  include/linux/sched.h |    6 ++++++
->  kernel/sched_rt.c     |   20 +++++++++++++++++++-
->  2 files changed, 25 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 67da014..53e8a6a 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -87,6 +87,7 @@ struct sched_param {
->  #include <linux/task_io_accounting.h>
->  #include <linux/kobject.h>
->  #include <linux/latencytop.h>
-> +#include <linux/stacktrace.h>
->  
->  #include <asm/processor.h>
->  
-> @@ -1170,6 +1171,11 @@ struct task_struct {
->  
->  	struct list_head tasks;
->  	struct plist_node pushable_tasks;
-> +	struct {
-> +		unsigned long data[15];
-> +		struct stack_trace trace;
-> +		pid_t pid;
-> +	} pushable_stack;
->  
->  	/*
->  	 * ptrace_list/ptrace_children forms the list of my children
-> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> index 57a0c0d..0e6a88c 100644
-> --- a/kernel/sched_rt.c
-> +++ b/kernel/sched_rt.c
-> @@ -55,7 +55,25 @@ static void update_rt_migration(struct rq *rq)
->  
->  static void enqueue_pushable_task(struct rq *rq, struct task_struct *p)
->  {
-> -	plist_del(&p->pushable_tasks, &rq->rt.pushable_tasks);
-> +	if (plist_node_empty(&p->pushable_tasks)) {
-> +		struct stack_trace *trace = &p->pushable_stack.trace;
-> +
-> +		trace->nr_entries = 0;
-> +		trace->max_entries = sizeof(p->pushable_stack.data)/sizeof(p->pushable_stack.data[0]);
-> +		trace->entries = &p->pushable_stack.data[0];
-> +		trace->skip = 0;
-> +
-> +		save_stack_trace(trace);
-> +
-> +		p->pushable_stack.pid = current->pid;
-> +	} else {
-> +		printk(KERN_CRIT "redundant enqueue by %d detected\n",
-> +		       p->pushable_stack.pid);
-> +		print_stack_trace(&p->pushable_stack.trace, 5);
-> +
-> +		BUG_ON(!plist_node_empty(&p->pushable_tasks));
-> +	}
-> +
->  	plist_node_init(&p->pushable_tasks, p->prio);
->  	plist_add(&p->pushable_tasks, &rq->rt.pushable_tasks);
->  }
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+great, thanks for checking!
 
--- 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Gilles.Carry
-Linux Project team
-mailto: gilles.carry@bull.net
-Phone: +33 (0)4 76 29 74 27
-Addr.: BULL S.A.  1 rue de Provence, B.P. 208 38432 Echirolles Cedex
-http://www.bull.com
-http://www.bullopensource.org/
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+it has not caused any new problems in -tip testing either, and that 
+means a couple of thousand test builds and test boots so far in the past 
+week, so we've got the usual codepaths covered pretty well. With your 
+test of the less common codepaths we should be pretty good in general.
+
+	Ingo
