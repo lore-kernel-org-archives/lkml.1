@@ -1,35 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbYJBE5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbYJBFBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753120AbYJBE5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 00:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbYJBE52
+	id S1752880AbYJBFBp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 01:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYJBFBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 00:57:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37064 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750904AbYJBE52 (ORCPT
+	Thu, 2 Oct 2008 01:01:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40412 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbYJBFBh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 00:57:28 -0400
-Date: Wed, 1 Oct 2008 21:56:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-Id: <20081001215638.3a65134c.akpm@linux-foundation.org>
-In-Reply-To: <20081001200034.65eb67d6@infradead.org>
-References: <20081001200034.65eb67d6@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Oct 2008 01:01:37 -0400
+Date: Thu, 2 Oct 2008 01:01:35 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>
+Subject: Re: [RFC patch 3/5] genirq: add threaded interrupt handler support
+In-Reply-To: <20081001223301.999771125@linutronix.de>
+Message-ID: <alpine.DEB.1.10.0810020058020.11373@gandalf.stny.rr.com>
+References: <20081001223213.078984344@linutronix.de> <20081001223301.999771125@linutronix.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Oct 2008 20:00:34 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
 
-> Subject: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+On Wed, 1 Oct 2008, Thomas Gleixner wrote:
+>  #define irqreturn_t	enum irqreturn
+> Index: linux-2.6-tip/kernel/irq/handle.c
+> ===================================================================
+> --- linux-2.6-tip.orig/kernel/irq/handle.c
+> +++ linux-2.6-tip/kernel/irq/handle.c
+> @@ -143,13 +143,34 @@ irqreturn_t handle_IRQ_event(unsigned in
+>  			ret = IRQ_NEEDS_HANDLING;
+>  
+>  		switch (ret) {
+> -		default:
+> +		case IRQ_NEEDS_HANDLING:
+> +			if (!(action->flags & IRQF_THREADED)) {
+> +				ret = action->handler(irq, action->dev_id);
+> +				if (ret == IRQ_HANDLED)
+> +					status |= action->flags;
+> +				break;
+> +			}
+> +			/*
+> +			 * Warn once when a quick check handler asked
+> +			 * for invoking the threaded (main) handler
+> +			 * directly
+> +			 */
+> +			WARN(!(action->flags & IRQF_WARNED_THREADED),
+> +			     "IRQ %d requested to run threaded handler "
+> +			     "in hard interrupt context\n", irq);
+> +			set_bit(IRQF_WARNED_THREADED, &action->flags);
 
-You proposed this a while back and it didn't happen and I forget
-why and the changelog doesn't mention any of that?
+Do you purposely fall through to the next case statement here?
+If so, could you please add a comment.
+
+			/* fall through */
+
+or something similar so we know it's not a bug.
+
+> +
+> +		case IRQ_WAKE_THREAD:
+> +			set_bit(IRQF_RUNTHREAD, &action->flags);
+> +			wake_up_process(action->thread);
+> +			/*
+> +			 * Set it to handled so the spurious check
+> +			 * does not trigger.
+> +			 */
+> +			ret = IRQ_HANDLED;
+>  			break;
+>  
+> -		case IRQ_NEEDS_HANDLING:
+> -			ret = action->handler(irq, action->dev_id);
+> -			if (ret == IRQ_HANDLED)
+> -				status |= action->flags;
+> +		default:
+>  			break;
+>  		}
+>  		retval |= ret;
+
+
+-- Steve
+
