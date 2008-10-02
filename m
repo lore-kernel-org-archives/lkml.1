@@ -1,130 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbYJBDAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbYJBDcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752863AbYJBDAt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Oct 2008 23:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYJBDAl
+	id S1752952AbYJBDcU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Oct 2008 23:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYJBDcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Oct 2008 23:00:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46294 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751067AbYJBDAk (ORCPT
+	Wed, 1 Oct 2008 23:32:12 -0400
+Received: from aa.81.b6.static.xlhost.com ([207.182.129.170]:51228 "EHLO
+	wombat.diezmil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbYJBDcM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Oct 2008 23:00:40 -0400
-Date: Wed, 1 Oct 2008 20:00:34 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-ID: <20081001200034.65eb67d6@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Oct 2008 23:32:12 -0400
+X-Greylist: delayed 478 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Oct 2008 23:32:11 EDT
+Date: Thu, 2 Oct 2008 06:58:45 -0400
+From: auntvini@cel.usyd.edu.au
+Reply-To: auntvini@cel.usyd.edu.au
+To: linux-kernel@vger.kernel.org
+Message-ID: <7971648.51222945125819.JavaMail.root@wombat.diezmil.com>
+Subject: Division of Load Average
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+My self and my superviosr Dr David Levy have been working on introduction of new kernel code to correct the inherent problem of calculating load avarage by the current kernel. We have posted many e-mails in this regard since 2003 and kernel has been updated under the supervision of Rusty Russel.
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Wed, 1 Oct 2008 19:58:18 -0700
-Subject: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+Also we had interactions with IBM group(balbir@in.ibm.com)  who was engaged in delayed stat calculations.
 
-With latencytop, I noticed that the (in memory) atime updates during a
-kernel build had latencies of 6 seconds or longer; this is obviously not so
-nice behavior. Other EXT3 journal related operations had similar or even
-longer latencies.
+We emphasise the following facts
+(1) seperation of Disk IO load from CPU load
 
-Digging into this a bit more, it appears to be an interaction between EXT3
-and CFQ in that CFQ tries to be fair to everyone, including kjournald.
-However, in reality, kjournald is "special" in that it does a lot of journal
-work on behalf of other processes and effectively this leads to a twisted 
-kind of "mass priority inversion" type of behavior.
+This comes as a correction to the existing kernel as the calculation of the existing kernel load average is based on the arithmatic addition of Disk IO and CPU loads
 
-The good news is that CFQ already has the infrastructure to make certain
-processes special... JBD just wasn't using that quite yet.
+(2) In addition to that calculation of load averages for each current user
+This is an extention we would like to suggest. For Grid and Cluster computing service providers can use the collection of user load profiles (CPU and Disk IO) for future predictions.
 
-The patch below makes kjournald of the IOPRIO_CLASS_RT priority to break
-this priority inversion behavior. With this patch, the latencies for atime
-updates (and similar operation) go down by a factor of 3x to 4x !
+Thanks
+Sena Seneviratne
+Computer Engineering Lab
+Sydney University
+Australia
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- fs/ioprio.c            |    3 ++-
- fs/jbd/journal.c       |   12 ++++++++++++
- include/linux/ioprio.h |    2 ++
- 3 files changed, 16 insertions(+), 1 deletions(-)
-
-diff --git a/fs/ioprio.c b/fs/ioprio.c
-index da3cc46..3bd95dc 100644
---- a/fs/ioprio.c
-+++ b/fs/ioprio.c
-@@ -27,7 +27,7 @@
- #include <linux/security.h>
- #include <linux/pid_namespace.h>
- 
--static int set_task_ioprio(struct task_struct *task, int ioprio)
-+int set_task_ioprio(struct task_struct *task, int ioprio)
- {
- 	int err;
- 	struct io_context *ioc;
-@@ -64,6 +64,7 @@ static int set_task_ioprio(struct task_struct *task, int ioprio)
- 	task_unlock(task);
- 	return err;
- }
-+EXPORT_SYMBOL_GPL(set_task_ioprio);
- 
- asmlinkage long sys_ioprio_set(int which, int who, int ioprio)
- {
-diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-index aa7143a..2ed3d8f 100644
---- a/fs/jbd/journal.c
-+++ b/fs/jbd/journal.c
-@@ -36,6 +36,7 @@
- #include <linux/poison.h>
- #include <linux/proc_fs.h>
- #include <linux/debugfs.h>
-+#include <linux/ioprio.h>
- 
- #include <asm/uaccess.h>
- #include <asm/page.h>
-@@ -131,6 +132,17 @@ static int kjournald(void *arg)
- 			journal->j_commit_interval / HZ);
- 
- 	/*
-+	 * kjournald is the process on which most other processes depend on
-+	 * for doing the filesystem portion of their IO. As such, there exists
-+	 * the equivalent of a priority inversion situation, where kjournald
-+	 * would get less priority as it should.
-+	 *
-+	 * For this reason we set to "medium real time priority", which is higher
-+	 * than regular tasks, but not infinitely powerful.
-+	 */
-+	set_task_ioprio(current, IOPRIO_PRIO_VALUE(IOPRIO_CLASS_RT, 4));
-+
-+	/*
- 	 * And now, wait forever for commit wakeup events.
- 	 */
- 	spin_lock(&journal->j_state_lock);
-diff --git a/include/linux/ioprio.h b/include/linux/ioprio.h
-index f98a656..76dad48 100644
---- a/include/linux/ioprio.h
-+++ b/include/linux/ioprio.h
-@@ -86,4 +86,6 @@ static inline int task_nice_ioclass(struct task_struct *task)
-  */
- extern int ioprio_best(unsigned short aprio, unsigned short bprio);
- 
-+extern int set_task_ioprio(struct task_struct *task, int ioprio);
-+
- #endif
--- 
-1.5.5.1
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+--
+This message was sent on behalf of auntvini@cel.usyd.edu.au at openSubscriber.com
+http://www.opensubscriber.com/messages/linux-kernel@vger.kernel.org/topic.html
