@@ -1,115 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYJBRqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbYJBR7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbYJBRqX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 13:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbYJBRqP
+	id S1754440AbYJBR7y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 13:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYJBR7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 13:46:15 -0400
-Received: from mga09.intel.com ([134.134.136.24]:40180 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752508AbYJBRqN convert rfc822-to-8bit (ORCPT
+	Thu, 2 Oct 2008 13:59:46 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50999 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753589AbYJBR7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 13:46:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,352,1220252400"; 
-   d="scan'208";a="446274182"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: "Luck, Tony" <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Avi Kivity <avi@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Date: Thu, 2 Oct 2008 10:46:04 -0700
-Subject: RE: [PATCH 2/2]Add Variable Page Size and IA64 Support in Intel
- IOMMU: IA64 Specific Part
-Thread-Topic: [PATCH 2/2]Add Variable Page Size and IA64 Support in Intel
- IOMMU: IA64 Specific Part
-Thread-Index: Ackkpri0hgK7prZWQuWvidNHQFNkRQADjXSQ
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB88408AA3E@orsmsx505.amr.corp.intel.com>
-References: <20081001165750.GA21272@linux-os.sc.intel.com>
- <200810020951.08408.bjorn.helgaas@hp.com>
-In-Reply-To: <200810020951.08408.bjorn.helgaas@hp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 2 Oct 2008 13:59:46 -0400
+Date: Thu, 2 Oct 2008 13:59:40 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 5/5] xen: nuke the ballon files
+In-Reply-To: <48E4EA1C.2090808@goop.org>
+Message-ID: <alpine.DEB.1.10.0810021357360.2919@gandalf.stny.rr.com>
+References: <20081002150529.087488257@goodmis.org> <20081002151105.025170721@goodmis.org> <48E4EA1C.2090808@goop.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> --- a/arch/ia64/include/asm/cacheflush.h
->> +++ b/arch/ia64/include/asm/cacheflush.h
->> @@ -34,6 +34,8 @@ do {                                                \
->>  #define flush_dcache_mmap_unlock(mapping)    do { } while (0)
->>
->>  extern void flush_icache_range (unsigned long start, unsigned long end);
->> +extern void clflush_cache_range(void *addr, int size);
->
->This patch adds clflush_cache_range(), but it's not used anywhere.
-Clflush_cache_range() is used in __iommu_flush_cache() in include/linux/intel-iommu.h.
 
->If you do need it, it'd be nice if the arguments were the same types
->as for flush_icache_range(), and if there were a comment describing
->why it is necessary for VT-d.  And maybe the name could be more like
->the other cache flushing functions.
-Since clflush_cache_range(start, size) is defined in x86, I just want to keep the same definition. So this patch set won't change __iommu_flush_cache(). Otherwise, the patch set will have #ifdef CONFIG_IA64 in __iommu_flush_cache() which is not desired.
+On Thu, 2 Oct 2008, Jeremy Fitzhardinge wrote:
 
-Does this make sense?
+> Steven Rostedt wrote:
+> > Investigating the unused static files in the balloon code, I discovered
+> > that the balloon code is not used at all.
+> > 
+> > The header file is one big #if 0 and all the functions in the C file
+> > is static. There is no caller like init_module to hook to any of
+> > these functions. Basically, this code is one big patch of dead code
+> > wasting space on my hard drive.
+> > 
+> > This patch removes the balloon code altogether since there are no
+> > users.
+> >   
+> 
+> Er, I think you should back away from that crack pipe.
 
->> +#ifdef CONFIG_PCI
->> +/* Many VIA bridges seem to corrupt data for DAC. Disable it here */
->> +
->> +static __devinit void via_no_dac(struct pci_dev *dev)
->> +{
->> +     if ((dev->class >> 8) == PCI_CLASS_BRIDGE_PCI && forbid_dac == 0) {
->> +             printk(KERN_INFO "PCI: VIA PCI bridge detected. Disabling DAC.\n");
+No, coffee is my drug of choice. I did have a bit of overdose today ;-)
 
->Please use dev_info() here.  I see you just copied this from x86, but
->we should fix x86, too.  Or better, since this doesn't appear to be
->arch-specific, maybe this should be moved to drivers/pci/quirks.c
->alongside all the other VIA quirks.
+> 
+> > -subsys_initcall(balloon_init);
 
-I'll move this to drivers/pci/quirks.c and use dev_info().
+Ouch! How did I miss that.
 
->> +             forbid_dac = 1;
->
->Shouldn't forbid_dac be a per-device or at least a per-bridge
->property rather than a global?
-This patch set is mainly for IA64 porting purpose. I will use the same forbid dac code as x86-64 and will send a follow-up patch to deal with forbid dac.
+Anyway, there are still a bunch of functions in that code that are not 
+referenced.  OK, nack this patch, but could you please supply one that 
+cleans that code up.
 
->> +     }
->> +}
->> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_ANY_ID, via_no_dac);
->> +#endif
->> +/* Must execute after PCI subsystem */
->> +fs_initcall(pci_iommu_init);
->> +
->> +struct dma_mapping_ops *dma_ops;
->> +EXPORT_SYMBOL(dma_ops);
->> +
->> +int iommu_dma_supported(struct device *dev, u64 mask)
->> +{
->> +     struct dma_mapping_ops *ops = get_dma_ops(dev);
->> +
->> +#ifdef CONFIG_PCI
->> +     if (mask > 0xffffffff && forbid_dac > 0) {
->> +             dev_info(dev, "PCI: Disallowing DAC for device\n");
->
->The "PCI: " should be removed since dev_info() will add the driver
->name and device ID.
-Will change this.
+Thanks,
 
-Bjorn
+-- Steve
 
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
