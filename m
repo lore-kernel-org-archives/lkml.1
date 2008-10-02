@@ -1,90 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbYJBVvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbYJBVv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbYJBVvm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 17:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbYJBVve
+	id S1755608AbYJBVv7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 17:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbYJBVvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 17:51:34 -0400
-Received: from mylar.outflux.net ([69.93.193.226]:46377 "EHLO
-	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754404AbYJBVvd (ORCPT
+	Thu, 2 Oct 2008 17:51:49 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:45112 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754500AbYJBVvs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 17:51:33 -0400
-X-Greylist: delayed 2222 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Oct 2008 17:51:33 EDT
-Date: Thu, 2 Oct 2008 14:14:24 -0700
-From: Kees Cook <kees.cook@canonical.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] proc: add "personality" to process status file
-Message-ID: <20081002211424.GJ10632@outflux.net>
+	Thu, 2 Oct 2008 17:51:48 -0400
+Message-ID: <48E5428E.8080402@linux.vnet.ibm.com>
+Date: Thu, 02 Oct 2008 16:52:14 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Canonical
-X-HELO: www.outflux.net
+To: Adam Litke <agl@us.ibm.com>
+CC: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adam Litke <agl@linux.vnet.ibm.com>
+Subject: Re: [PATCH] properly reserve in bootmem the lmb reserved regions
+ that cross numa nodes
+References: <48E23D6C.4030406@linux.vnet.ibm.com> <1222789675.13978.14.camel@localhost.localdomain>
+In-Reply-To: <1222789675.13978.14.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no sane way to query the personality flags of arbitrary process
-from userspace.  This adds the flags to the /proc/$pid/status file.
-For example, to detect READ_IMPLIES_EXEC:
+Adam Litke wrote:
+> This seems like the right approach to me.  I have pointed out a few
+> stylistic issues below.
+>   
+Thanks.  I'll make those changes.  I assume by __mminit you meant __meminit
 
-$ ./32bit-sleeper &
-[1] 6732
-$ grep ^Pers /proc/6732/status
-Personality:    00000000
-$ execstack -s 32bit-sleeper
-$ ./32bit-slepper &
-[2] 6735
-$ grep ^Pers /proc/6735/status
-Personality:    00040000
+Jon
 
-Signed-off-by: Kees Cook <kees.cook@canonical.com>
----
- fs/proc/array.c       |    6 ++++--
- include/linux/sched.h |    3 +--
- 2 files changed, 5 insertions(+), 4 deletions(-)
+> On Tue, 2008-09-30 at 09:53 -0500, Jon Tollefson wrote:
+> <snip>
+>   
+>> +	/* Mark reserved regions */
+>> +	for (i = 0; i < lmb.reserved.cnt; i++) {
+>> +		unsigned long physbase = lmb.reserved.region[i].base;
+>> +		unsigned long size = lmb.reserved.region[i].size;
+>> +		unsigned long start_pfn = physbase >> PAGE_SHIFT;
+>> +		unsigned long end_pfn = ((physbase+size-1) >> PAGE_SHIFT);
+>>     
+>
+> CodingStyle dictates that this should be:
+> unsigned long end_pfn = ((physbase + size - 1) >> PAGE_SHIFT);
+>
+> <snip>
+>
+>   
+>> +/**
+>> + * get_node_active_region - Return active region containing start_pfn
+>> + * @start_pfn The page to return the region for.
+>> + *
+>> + * It will return NULL if active region is not found.
+>> + */
+>> +struct node_active_region *get_node_active_region(
+>> +							unsigned long start_pfn)
+>>     
+>
+> Bad style.  I think the convention would be to write it like this:
+>
+> struct node_active_region *
+> get_node_active_region(unsigned long start_pfn)
+>
+>   
+>> +{
+>> +	int i;
+>> +	for (i = 0; i < nr_nodemap_entries; i++) {
+>> +		unsigned long node_start_pfn = early_node_map[i].start_pfn;
+>> +		unsigned long node_end_pfn = early_node_map[i].end_pfn;
+>> +
+>> +		if (node_start_pfn <= start_pfn && node_end_pfn > start_pfn)
+>> +			return &early_node_map[i];
+>> +	}
+>> +	return NULL;
+>> +}
+>>     
+>
+> Since this is using the early_node_map[], should we mark the function
+> __mminit?  
+>
+>   
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 71c9be5..1235fab 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -182,13 +182,15 @@ static inline void task_state(struct seq_file *m, struct pid_namespace *ns,
- 		"PPid:\t%d\n"
- 		"TracerPid:\t%d\n"
- 		"Uid:\t%d\t%d\t%d\t%d\n"
--		"Gid:\t%d\t%d\t%d\t%d\n",
-+		"Gid:\t%d\t%d\t%d\t%d\n"
-+		"Personality:\t%08x\n",
- 		get_task_state(p),
- 		task_tgid_nr_ns(p, ns),
- 		pid_nr_ns(pid, ns),
- 		ppid, tpid,
- 		p->uid, p->euid, p->suid, p->fsuid,
--		p->gid, p->egid, p->sgid, p->fsgid);
-+		p->gid, p->egid, p->sgid, p->fsgid,
-+		p->personality);
- 
- 	task_lock(p);
- 	if (p->files)
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 3d9120c..f2fc441 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1085,8 +1085,7 @@ struct task_struct {
- 	int exit_state;
- 	int exit_code, exit_signal;
- 	int pdeath_signal;  /*  The signal sent when the parent dies  */
--	/* ??? */
--	unsigned int personality;
-+	unsigned int personality; /* Special-case bits (linux/personality.h) */
- 	unsigned did_exec:1;
- 	pid_t pid;
- 	pid_t tgid;
--- 
-1.5.6.3
-
-
--- 
-Kees Cook
-Ubuntu Security Team
