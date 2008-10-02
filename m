@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752911AbYJBGyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbYJBGzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752911AbYJBGyf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 02:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbYJBGyW
+	id S1753845AbYJBGzh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 02:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYJBGzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 02:54:22 -0400
-Received: from mail.bigtelecom.ru ([87.255.0.61]:49882 "EHLO
-	mail.bigtelecom.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752546AbYJBGyV (ORCPT
+	Thu, 2 Oct 2008 02:55:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50276 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752199AbYJBGzX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 02:54:21 -0400
-Message-ID: <48E4701A.4010508@bigtelecom.ru>
-Date: Thu, 02 Oct 2008 10:54:18 +0400
-From: Badalian Vyacheslav <slavon@bigtelecom.ru>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080929)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: NMI Watchdog detected LOCKUP on CPU3
-Content-Type: text/plain; charset=UTF-8
+	Thu, 2 Oct 2008 02:55:23 -0400
+Date: Wed, 1 Oct 2008 23:55:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-Id: <20081001235501.2b7f50fe.akpm@linux-foundation.org>
+In-Reply-To: <20081002062736.GR19428@kernel.dk>
+References: <20081001200034.65eb67d6@infradead.org>
+	<20081001215638.3a65134c.akpm@linux-foundation.org>
+	<20081002062736.GR19428@kernel.dk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All. Please help cassify bug to report to bugzilla it!
+On Thu, 2 Oct 2008 08:27:37 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Look to my sysctl:
+> On Wed, Oct 01 2008, Andrew Morton wrote:
+> > On Wed, 1 Oct 2008 20:00:34 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+> > 
+> > > Subject: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+> > 
+> > You proposed this a while back and it didn't happen and I forget
+> > why and the changelog doesn't mention any of that?
+> 
+> I think you called for benchmark results, which I don't think happened.
+> The patch definitely makes sense, so we should just make sure that we
+> don't regress elsewhere. Honestly, I'd be surprised if we did...
 
-# sysctl -a | grep panic
-kernel.panic = 3
-kernel.panic_on_oops = 1
-kernel.unknown_nmi_panic = 1
-kernel.panic_on_unrecovered_nmi = 1
-vm.panic_on_oom = 0
-# sysctl -a | grep nmi
-kernel.unknown_nmi_panic = 1
-kernel.nmi_watchdog = 1
-kernel.panic_on_unrecovered_nmi = 1
+Now I think about it, didn't the earlier patch tweak CPU priority and
+not IO priority?  I forget.  <kicks the changelog again>
 
-# sysctl -a | grep rq
-kernel.sysrq = 1
+> How about I just toss it into the 2.6.28 testing mix, plenty of time for
+> testing and such?
 
-But computer do not reboot and ALT+SysRQ+B don't work...
+Many performance regressions don't get noticed for six or twelve
+months, by which time everyone is suffering from them (see
+kernel/sched.c).
 
-This i get by netconsole and on the screen:
-
-
-[ 2251.728719] BUG: NMI Watchdog detected LOCKUP on CPU3, ip c01fafd4,
-registers:
-[ 2251.728719] Modules linked in: netconsole i2c_i801 i2c_core e1000e e1000
-[ 2251.728719]
-[ 2251.728719] Pid: 0, comm: swapper Not tainted (2.6.26.5-fw #1)
-[ 2251.728719] EIP: 0060:[<c01fafd4>] EFLAGS: 00000082 CPU: 3
-[ 2251.728719] EIP is at rb_insert_color+0x24/0xc0
-[ 2251.728719] EAX: f6c134a4 EBX: f6c134a4 ECX: f6c134a4 EDX: f6c134a4
-[ 2251.728719] ESI: f6c134a4 EDI: f6c134a4 EBP: c202d0d4 ESP: f7c5fcac
-[ 2251.728719]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-[ 2251.728719] Process swapper (pid: 0, ti=f7c5e000 task=f7c32940
-task.ti=f7c5e000)
-[ 2251.728719] Stack: f6c134a4 00000000 c202d0cc c202d0d4 c013a8ff
-f6c134a4 c202d0cc c20230cc
-[ 2251.728719]        c04450a0 c013adea 00000000 f7c5fcfc 392e7c00
-0000020c 00000001 00000286
-[ 2251.728719]        f6c13000 ffffffff 00000000 00000000 c02d15fe
-00000000 f6c13000 c02d6da6
-[ 2251.728719] Call Trace:
-[ 2251.728719]  [<c013a8ff>] enqueue_hrtimer+0x5f/0x80
-[ 2251.728719]  [<c013adea>] hrtimer_start+0xaa/0x130
-[ 2251.728719]  [<c02d15fe>] qdisc_watchdog_schedule+0x1e/0x30
-[ 2251.728719]  [<c02d6da6>] htb_dequeue+0x6a6/0x810
-[ 2251.728719]  [<c02d047c>] __qdisc_run+0x19c/0x1d0
-[ 2251.728719]  [<c02d71c0>] htb_enqueue+0x0/0x1e0
-[ 2251.728719]  [<c02c4cb7>] dev_queue_xmit+0x267/0x380
-[ 2251.728719]  [<c02e6040>] ip_forward_finish+0x0/0x40
-[ 2251.728719]  [<c02e8bef>] ip_finish_output+0x11f/0x280
-[ 2251.728719]  [<c02e630f>] ip_forward+0x28f/0x2d0
-[ 2251.728719]  [<c02e6065>] ip_forward_finish+0x25/0x40
-[ 2251.728719]  [<c02e4ba2>] ip_rcv_finish+0x122/0x360
-[ 2251.728719]  [<c016d7e9>] add_partial+0x19/0x60
-[ 2251.728719]  [<c016e8d9>] __slab_free+0x169/0x290
-[ 2251.728719]  [<c02e5020>] ip_rcv+0x0/0x290
-[ 2251.728719]  [<c02c1b4b>] netif_receive_skb+0x26b/0x470
-[ 2251.728719]  [<f886c74d>] e1000_receive_skb+0x4d/0x1b0 [e1000e]
-[ 2251.728719]  [<f886f9bc>] e1000_clean_rx_irq+0x23c/0x300 [e1000e]
-[ 2251.728719]  [<f886bf59>] e1000_clean+0x49/0x1f0 [e1000e]
-[ 2251.728719]  [<c02c3f58>] net_rx_action+0xf8/0x1b0
-[ 2251.728719]  [<c012a062>] __do_softirq+0x82/0x100
-[ 2251.728719]  [<c012a117>] do_softirq+0x37/0x40
-[ 2251.728719]  [<c0107120>] do_IRQ+0x40/0x80
-[ 2251.728719]  [<c01055a3>] common_interrupt+0x23/0x28
-[ 2251.728719]  [<c010a5e2>] mwait_idle+0x32/0x40
-[ 2251.728719]  [<c010a5b0>] mwait_idle+0x0/0x40
-[ 2251.728719]  [<c01036e8>] cpu_idle+0x48/0xc0
-[ 2251.728719]  =======================
-[ 2251.728719] Code: 8d bc 27 00 00 00 00 55 89 d5 57 89 c7 56 53 90 8d
-b4 26 00 00 00 00 8b 1f 83 e3 fc 74 32 8b 03 89 d9 a8 01 75 2a 89 c6 83
-e6 fc <8b> 56 08 39 d3 74 45 85 d2 74 25 8b 02 a8 01 75 1f 83 c8 01 89
+kjournald does huge amounts of not-terribly-important writeback.  One
+obvious risk is that by making all that bulk writeback high-priority,
+read-latency-sensitive applications might suffer latency spikes.
 
 
 
+Now, kjournald is _supposed_ to be mostly asynchronous wrt foreground
+operations.  And once upon a time (seven years ago) it mostly was.  But
+there was some horrid race which I ended up fixing by introducing one
+point where synchronous userspace actions had to block behind kjournald
+activity.  I spent quite some time on it but couldn't come up with
+anything better.  It had fairly bad effects on some workloads.
+
+I've forgotten where that code is now, but I don't think it was ever
+revisited.  It should be.
+
+So.  Where are these atime updaters getting blocked?
