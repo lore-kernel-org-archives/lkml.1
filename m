@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754895AbYJBRo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754709AbYJBUEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbYJBRo2 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 2 Oct 2008 13:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbYJBRoR
+	id S1754709AbYJBUEO (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 2 Oct 2008 16:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbYJBUD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 13:44:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:20603 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752687AbYJBRoQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 13:44:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references
-         :in-reply-to:content-type:content-transfer-encoding:from;
-        b=TPk7Vifll1qTwonCTkh6UbWTHxJzmVReyii8CEwPcDg2gbjqMwxaSfVyhqpgXHiMC5
-         Iv6Ib23isdqFlGRAIlxjbp+paq9S6+fE2DPWpuCqCwF91T+ENfi0NSZ7dOeomF1LAUYa
-         0aa1yfYD5UbOG+aHLNSnjJkp8n+93ZDP55/Oo=
-Message-ID: <48E50862.3030205@gmail.com>
-Date: Thu, 02 Oct 2008 18:44:02 +0100
-User-Agent: Thunderbird 2.0.0.16 (X11/20080810)
-MIME-Version: 1.0
+	Thu, 2 Oct 2008 16:03:56 -0400
+Received: from kroah.org ([198.145.64.141]:60561 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754276AbYJBUDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 16:03:55 -0400
+Date: Thu, 2 Oct 2008 13:00:23 -0700
+From: Greg KH <greg@kroah.com>
 To: Andrey Borzenkov <arvidjaar@mail.ru>
-CC: Dave <kilroyd@googlemail.com>, Greg KH <greg@kroah.com>,
-        TJ <linux@tjworld.net>,
+Cc: Dave <kilroyd@googlemail.com>, TJ <linux@tjworld.net>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         "Casual J. Programmer" <casualprogrammer@googlemail.com>,
         linux-wireless@vger.kernel.org,
         Alexander Shirshikov <alexander.shirshikov@gmail.com>
 Subject: Re: Agere Hermes source-code: copyright situation
+Message-ID: <20081002200023.GC20902@kroah.com>
 References: <200809290949.35749.arvidjaar@mail.ru> <20081001200039.GA29874@kroah.com> <48E400FA.2090305@gmail.com> <200810020637.27321.arvidjaar@mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <200810020637.27321.arvidjaar@mail.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Dave <kilroyd@googlemail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
->> FYI, Hermes I hardware is already covered by the orinoco driver. WPA and firmware download functionality (which is supported by the Agere driver, but not orinoco in 2.6.27) is already in the wireless queue for 2.6.28.
->>
+On Thu, Oct 02, 2008 at 06:37:18AM +0400, Andrey Borzenkov wrote:
+> TJ you can answer me using arvidjaar (at) newmail dot ru. Hopefully
+> one of them works. Re WPA2 - there is no information how to setup
+> CCMP/AES (even if firmware supports it); so no WPA2.
 > 
-> Yes, I discovered this yesterday as well. Thank you!
+> On Thursday 02 October 2008, Dave wrote:
+> > Greg KH wrote:
+> > > On Wed, Oct 01, 2008 at 05:40:29PM +0100, TJ wrote:
+> > >> On Wed, 2008-10-01 at 14:13 +0400, Andrey Borzenkov wrote:
+> > >>>On Wednesday 01 October 2008, Greg KH wrote:
+> > >>>> On Mon, Sep 29, 2008 at 09:49:34AM +0400, Andrey Borzenkov wrote:
+> > >>>>> I have here driver that can be built for two different types of
+> > >>>>> hardware from basically the same sources (this is port of old Agere
+> > >>>>> drivers for Hermes-I/Hermes-II chipsets).
+> > >>>> 
+> > >>>> Cool, do you have a link to the code, I'd be glad to add it to
+> > >>>> drivers/staging/ if it's not in a fully-mergable state yet to get wider
+> > >>>> users for it.
+> > >>>
+> > >>> You can look at it here: http://arvidjaar.newmail.ru/wlags49.tar.bz
+> > >>>
+> > >>> I doubt that it is suitable for inclusion at current state if ever.
+> > >>> This is taken directly from Agere 2.4 sources; the only parts that were
+> > >>> touched are kernel glue and wireless extensions interface.
+> > >>>
+> > >>> And it is not GPL'ed, of course. I attach E-Mail I received a while
+> > >>> back with answere from Agere legal department.
+> > >>
+> > >> I'm attaching the original email I sent to Agere and their response for
+> > >> the record, hoping it helps clarify the legal position.
+> > > 
+> > > Very nice, thanks for forwarding this on.
+> > > 
+> > > As the license is BSD, that means we can place it in the kernel tree.
+> > > Do you all mind if I add it to the drivers/staging/ directory so you can
+> > > work on cleaning it up within the main kernel tree infrastructure?
+> >
 > 
-> How are you going to distribute firmware? You will need 9.x firmware from
-> original Agere driver; do I understand it correctly that it will come
-> with orinoco in binary form?
+> I do not mind but it is likely makes no sense for H-I now; and
+> I do not own H-II myself so cannot work on it. If we are focusing on
+> H-2/2.5, it would make more sense to make similar modifications to
+> 7.22 driver set from Agere to avoid overlap with Orinoco.
 
-I was hoping we could get it into David Woodhouses firmware tree. However I haven't had a response to my original message. I'll try again with a patch.
+Ok, let me know what you think is the best thing to do, and I'll be glad
+to help you out with it.
 
+thanks,
 
-Dave.
+greg k-h
