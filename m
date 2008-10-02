@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYJBIgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbYJBIgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551AbYJBIgS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 04:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbYJBIgJ
+	id S1754162AbYJBIgc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 04:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYJBIgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 04:36:09 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58666 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752796AbYJBIgI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 04:36:08 -0400
-Date: Thu, 2 Oct 2008 10:14:28 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       randy.dunlap@oracle.com
-Subject: make MAINTAINERS slightly easier to search
-Message-ID: <20081002081428.GA2022@elf.ucw.cz>
+	Thu, 2 Oct 2008 04:36:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60728 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753325AbYJBIgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 04:36:16 -0400
+Date: Thu, 2 Oct 2008 10:36:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/5] Markers fixes
+Message-ID: <20081002083609.GB26084@elte.hu>
+References: <20081001160324.889716972@polymtl.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20081001160324.889716972@polymtl.ca>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0988]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-...shall we add rule that subsystems will have "subsystem" in the name
-so that search does not list all the drivers, first?
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
+> Hi Ingo,
+> 
+> Here are the marker fixes which reenable batch markers
+> registration/unregistration. They apply to -tip.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3596d17..7345707 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3825,7 +3825,7 @@ L:	linux-kernel@vger.kernel.org
- W:	http://tifmxx.berlios.de/
- S:	Maintained
- 
--SOUND
-+SOUND SUBSYSTEM (ADVANCED LINUX SOUND SYSTEM, ALSA)
- P:	Jaroslav Kysela
- M:	perex@perex.cz
- L:	alsa-devel@alsa-project.org (subscribers-only)
-@@ -3855,7 +3855,7 @@ L:	cbe-oss-dev@ozlabs.org
- W:	http://www.ibm.com/developerworks/power/cell/
- S:	Supported
- 
--STABLE BRANCH:
-+STABLE BRANCH
- P:	Greg Kroah-Hartman
- M:	greg@kroah.com
- P:	Chris Wright
+hm, only the first patch applies to tip/master - the rest is already 
+applied. So i applied the first patch to tip/tracing/markers:
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+  # a2b4a6c: markers: re-enable fast batch registration
+
+Could you please check latest tip/master:
+
+  http://people.redhat.com/mingo/tip.git/README
+
+to make sure that i sorted them out correctly. Thanks,
+
+	Ingo
