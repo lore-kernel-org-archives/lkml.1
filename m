@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYJCBbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbYJCBbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbYJCBbf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 21:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbYJCBbO
+	id S1754190AbYJCBbu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 21:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754422AbYJCBbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 21:31:14 -0400
-Received: from ozlabs.org ([203.10.76.45]:60463 "EHLO ozlabs.org"
+	Thu, 2 Oct 2008 21:31:20 -0400
+Received: from ozlabs.org ([203.10.76.45]:60470 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754029AbYJCBbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 21:31:12 -0400
+	id S1754344AbYJCBbT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 21:31:19 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: clean up speedctep-centrino and reduce cpumask_t usage
-Date: Thu, 2 Oct 2008 15:05:21 +1000
+To: Boaz Harrosh <bharrosh@panasas.com>
+Subject: Re: [PATCH 5/5 ver2] debug: BUILD_BUG_ON: error on non-const expressions
+Date: Thu, 2 Oct 2008 15:35:35 +1000
 User-Agent: KMail/1.9.9
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>, Dave Jones <davej@redhat.com>
-References: <200810010901.55127.rusty@rustcorp.com.au> <20081001064401.GA31855@elte.hu>
-In-Reply-To: <20081001064401.GA31855@elte.hu>
+Cc: Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com> <48BD626B.6070705@panasas.com>
+In-Reply-To: <48BD626B.6070705@panasas.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200810021505.21946.rusty@rustcorp.com.au>
+Message-Id: <200810021535.36302.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 October 2008 16:44:01 Ingo Molnar wrote:
-> * Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > 1) The #ifdef CONFIG_HOTPLUG_CPU seems unnecessary these days.
-> > 2) The loop can simply skip over offline cpus, rather than creating a tmp
-> > mask. 3) set_mask is set to either a single cpu or all online cpus in a
-> > policy. Since it's just used for set_cpus_allowed(), any offline cpus in
-> > a policy don't matter, so we can just use cpumask_of_cpu() or the
-> > policy->cpus.
-> >
-> > Note: untested, since I don't have such a system.
-> >
-> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->
-> nice cleanup! (Dave Jones Cc:-ed)
+On Wednesday 03 September 2008 01:57:31 Boaz Harrosh wrote:
+> +#define BUILD_BUG_ON(e) \
+> +       do { struct {int:-!!(e); } x __maybe_unused;} while(0)
 
-One interesting side effect of making onstack cpumasks harder to use is that 
-people will put effort into avoiding them.  So far many have been an 
-arbitrary implementation choice rather than a fundamental requirement for a 
-mask.
+Why did you hate the void cast again?  Simplest should 
+be "(void)BUILD_BUG_ON_ZERO(e)".  But if not, it seems to me that it's 
+cleaner to do:
 
-> maybe it's better to keep this in the cpumask_t series though, to not
-> complicate logistics?
+#define BUILD_BUG_ON(e) \
+	do { } while(BUILD_BUG_ON_ZERO(e))
 
-Yeah, I'll keep it for the moment for simplicity; it's really orthogonal, so 
-don't really mind.
+No chance of the compiler emitting unused vars.
 
-> > diff -r dc205c205c8a arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-> > --- a/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c	Sun Sep 28
-> > 18:04:20 2008 +1000 +++
-> > b/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c	Sun Sep 28 18:05:58
-> > 2008 +1000
->
-> ( minor technical request: could you please change your patch scripts to
->   include the diffstat too? )
-
-Oops, my bad.  They do, but this patch was manual :)
-
-Thanks,
+Cheers,
 Rusty.
+
