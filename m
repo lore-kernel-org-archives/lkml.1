@@ -1,97 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbYJBP7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYJBQD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbYJBP7n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 11:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbYJBP7Y
+	id S1754566AbYJBQD6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 12:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbYJBQDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 11:59:24 -0400
-Received: from nebensachen.de ([195.34.83.29]:34519 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754028AbYJBP7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 11:59:23 -0400
-X-Hashcash: 1:20:081002:jens.axboe@oracle.com::+FKURLWennqJ8PTH:00000000000000000000000000000000000000001iZ/
-X-Hashcash: 1:20:081002:linux-kernel@vger.kernel.org::ONAKJB8AUQBwrC3V:000000000000000000000000000000000J7DV
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Block: Fix handling of stopped queues and a plugging issue
-Date: Thu, 02 Oct 2008 17:59:18 +0200
-Message-ID: <87zllnound.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Thu, 2 Oct 2008 12:03:48 -0400
+Received: from outbound-mail-117.bluehost.com ([69.89.22.17]:57854 "HELO
+	outbound-mail-117.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752558AbYJBQDs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 12:03:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Content-Type:Content-Transfer-Encoding:Message-Id:X-Identified-User;
+	b=lZO3xJVs3k9m52rkWxaZ/D1EHPjfawJEKD3GbHAMSMrDIaoHaHsOw2BbrdO1FI9T8RDHMsLWX1Mz3RyIUQT7stRR3M7dAJoC9fdQ240/pLLzLl7e+9rtFEsr/ipAIUj+;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Zhao, Yu" <yu.zhao@intel.com>
+Subject: Re: [PATCH 3/6 v3] PCI: support ARI capability
+Date: Thu, 2 Oct 2008 09:03:15 -0700
+User-Agent: KMail/1.9.10
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Alex Chiang <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
+       Roland Dreier <rdreier@cisco.com>, Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+References: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5F3@pdsmsx502.ccr.corp.intel.com>
+In-Reply-To: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5F3@pdsmsx502.ccr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200810020903.16385.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sure that ->request_fn() really isn't called on queues that are
-supposed to be stopped. While at it, don't remove the plug in
-__blk_run_queue() unconditionally since this might lead to system hangs.
+On Saturday, September 27, 2008 1:28 am Zhao, Yu wrote:
+> Add Alternative Routing-ID Interpretation (ARI) support.
+>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Grant Grundler <grundler@parisc-linux.org>
+> Cc: Alex Chiang <achiang@hp.com>
+> Cc: Matthew Wilcox <matthew@wil.cx>
+> Cc: Roland Dreier <rdreier@cisco.com>
+> Cc: Greg KH <greg@kroah.com>
+> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+>
+> ---
+>  drivers/pci/pci.c        |   31 +++++++++++++++++++++++++++++++
+>  drivers/pci/pci.h        |   12 ++++++++++++
+>  drivers/pci/probe.c      |    3 +++
+>  include/linux/pci.h      |    1 +
+>  include/linux/pci_regs.h |   14 ++++++++++++++
+>  5 files changed, 61 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 400d3b3..fe9efc4 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -1260,6 +1260,37 @@ void pci_pm_init(struct pci_dev *dev)
+>         }
+>  }
+>
+> +/**
+> + * pci_ari_init - turn on ARI forwarding if it's supported
+> + * @dev: the PCI device
+> + */
+> +void pci_ari_init(struct pci_dev *dev)
+> +{
+> +       int pos;
+> +       u32 cap;
+> +       u16 ctrl;
+> +
+> +       if (!dev->is_pcie || (dev->pcie_type != PCI_EXP_TYPE_ROOT_PORT &&
+> +                               dev->pcie_type != PCI_EXP_TYPE_DOWNSTREAM))
+> +               return;
+> +
+> +       pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
+> +       if (!pos)
+> +               return;
+> +
+> +       pci_read_config_dword(dev, pos + PCI_EXP_DEVCAP2, &cap);
+> +
+> +       if (!(cap & PCI_EXP_DEVCAP2_ARI))
+> +               return;
+> +
+> +       pci_read_config_word(dev, pos + PCI_EXP_DEVCTL2, &ctrl);
+> +       ctrl |= PCI_EXP_DEVCTL2_ARI;
+> +       pci_write_config_word(dev, pos + PCI_EXP_DEVCTL2, ctrl);
+> +
+> +       dev->ari_enabled = 1;
+> +       dev_info(&dev->dev, "ARI forwarding enabled.\n");
+> +}
+> +
 
-Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
----
-Applies to your devel tree.
+Maybe we should be consistent with the other APIs and call it pci_enable_ari 
+(like we do for wake & msi).  Looks pretty good otherwise.
 
- block/blk-core.c |    6 +++---
- block/elevator.c |   12 +++++++-----
- 2 files changed, 10 insertions(+), 8 deletions(-)
-
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 2d053b5..ecc5443 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -404,14 +404,14 @@ EXPORT_SYMBOL(blk_sync_queue);
-  */
- void __blk_run_queue(struct request_queue *q)
- {
--	blk_remove_plug(q);
--
- 	/*
- 	 * Only recurse once to avoid overrunning the stack, let the unplug
- 	 * handling reinvoke the handler shortly if we already got there.
- 	 */
--	if (!elv_queue_empty(q))
-+	if (!elv_queue_empty(q) && likely(!blk_queue_stopped(q))) {
-+		blk_remove_plug(q);
- 		blk_invoke_request_fn(q);
-+	}
- }
- EXPORT_SYMBOL(__blk_run_queue);
- 
-diff --git a/block/elevator.c b/block/elevator.c
-index 0451892..43a4257 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -611,8 +611,10 @@ void elv_insert(struct request_queue *q, struct request *rq, int where)
- 		 *   with anything.  There's no point in delaying queue
- 		 *   processing.
- 		 */
--		blk_remove_plug(q);
--		q->request_fn(q);
-+		if (likely(!blk_queue_stopped(q))) {
-+			blk_remove_plug(q);
-+			q->request_fn(q);
-+		}
- 		break;
- 
- 	case ELEVATOR_INSERT_SORT:
-@@ -950,7 +952,8 @@ void elv_completed_request(struct request_queue *q, struct request *rq)
- 		    blk_ordered_cur_seq(q) == QUEUE_ORDSEQ_DRAIN &&
- 		    blk_ordered_req_seq(first_rq) > QUEUE_ORDSEQ_DRAIN) {
- 			blk_ordered_complete_seq(q, QUEUE_ORDSEQ_DRAIN, 0);
--			q->request_fn(q);
-+			if (likely(!blk_queue_stopped(q)))
-+				q->request_fn(q);
- 		}
- 	}
- }
-@@ -1109,8 +1112,7 @@ static int elevator_switch(struct request_queue *q, struct elevator_type *new_e)
- 	elv_drain_elevator(q);
- 
- 	while (q->rq.elvpriv) {
--		blk_remove_plug(q);
--		q->request_fn(q);
-+		blk_start_queueing(q);
- 		spin_unlock_irq(q->queue_lock);
- 		msleep(10);
- 		spin_lock_irq(q->queue_lock);
+Jesse
