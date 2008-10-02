@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbYJBMyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYJBNBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbYJBMyZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 08:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYJBMyQ
+	id S1753958AbYJBNBS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 09:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYJBNBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 08:54:16 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:43250 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753249AbYJBMyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 08:54:15 -0400
-Message-ID: <48E4C488.9020408@sgi.com>
-Date: Thu, 02 Oct 2008 05:54:32 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/31] cpumask: Documentation
-References: <20080929180250.111209000@polaris-admin.engr.sgi.com> <200810010849.46874.rusty@rustcorp.com.au> <20081001091325.GA12503@elte.hu> <200810021036.29054.rusty@rustcorp.com.au>
-In-Reply-To: <200810021036.29054.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 2 Oct 2008 09:01:06 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:17686 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753515AbYJBNBE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 09:01:04 -0400
+Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded
+	interrupt handlers
+From: Daniel Walker <dwalker@mvista.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>
+In-Reply-To: <20081001223213.078984344@linutronix.de>
+References: <20081001223213.078984344@linutronix.de>
+Content-Type: text/plain
+Date: Wed, 01 Oct 2008 18:53:33 -0700
+Message-Id: <1222912413.2995.80.camel@laptop-eth.lan>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Wednesday 01 October 2008 19:13:25 Ingo Molnar wrote:
->> that looks very sane to me.
+On Wed, 2008-10-01 at 23:02 +0000, Thomas Gleixner wrote:
+> The implementation provides an opt-in mechanism to convert drivers to
+> the threaded interrupt handler model contrary to the preempt-rt patch
+> where the threaded handlers are enabled by a brute force switch. The
+> brute force switch is suboptimal as it does not change the interrupt
+> handler -> tasklet/softirq interaction problems, but was the only way
+> which was possible for the limited man power of the preempt-rt
+> developers.
 > 
-> Thanks, it's reasonably nice.  The task of hitting all those cpumask_t users 
-> is big, and I don't think we can do it in one hit.
-> 
->> one small request:
->>> I'll commit these to my quilt series today.
->> IMHO, an infrastructure change of this magnitude should absolutely be
->> done via the Git space. This needs a ton of testing and needs bisection,
->> a real Git track record, etc.
-> 
-> Not yet.  Committing untested patches into git is the enemy of bisection; if 
-> one of my patches breaks an architecture, they lose the ability to bisect 
-> until its fixed.  If it's a series of patches, we can go back and fix it.
-> 
-> Now, once it's been tested a little, it's better for you to git-ize it and 
-> I'll send you patches instead.  But I want some more people banging on it, 
-> and a run through linux-next first...
-> 
-> If Mike's happy to work on these as a basis, we should be able to get there 
-> soon; the patches are sitting in my tree at http://ozlabs.org/~rusty/kernel/ 
-> (see rr-latest symlink).
+> Converting an interrupt to threaded makes only sense when the handler
+> code takes advantage of it by integrating tasklet/softirq
+> functionality and simplifying the locking.
 
-Absolutely!  I may have my own concerns and preferences but the end goal is
-far more important.  I'll take a look at it today.  [My only other pressing
-matter is convincing Ingo to accept the SCIR driver (or tell me how I need
-to change it so it is acceptable), so my management is happy... ;-)]
+I'm not clear on your direction here.. I don't have a problem with a
+mass driver audit, which I think is what your suggesting with this patch
+set .. However, a mass audit like that would push a fully real time
+system out for quite some time..
 
-> 
-> Thanks,
-> Rusty.
-> PS.  To emphasize, I haven't actually *booted* this kernel.  My test machines 
-> are still in transit as I move (and ADSL not connected yet... Grr...)
+I also don't see a clear connection between these changes and ultimately
+removing spinlock level latency in the kernel. I realize you don't
+address that in your comments, but this is part of the initiative to
+remove spinlock level latency..
 
-Since our approaches are not different in concept, I can assure you that it
-works... ;-)  And as Ingo and others have noted, the infrastructure is easy
-to verify, it's the allocation of the temporary cpumasks that will be more
-difficult to test.
+So with this set of changes and in terms of real time, I'm wonder your
+going with this ?
 
-Cheers,
-Mike
+Daniel
 
