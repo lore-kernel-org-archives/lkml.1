@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYJBQuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbYJBQxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbYJBQuo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 12:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYJBQug
+	id S1754994AbYJBQxr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 12:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYJBQxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 12:50:36 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:56347 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753997AbYJBQug (ORCPT
+	Thu, 2 Oct 2008 12:53:40 -0400
+Received: from elasmtp-banded.atl.sa.earthlink.net ([209.86.89.70]:37849 "EHLO
+	elasmtp-banded.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753987AbYJBQxj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 12:50:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=pG1Qa2YKYPQYWNAklPRtWGWMmugNtO9LCwmdYPWtoAqHhjMjwLk4F4W6r9bDHyq296
-         roIe9OM39hJAISdDj6MOGVga3n+IxLIelFg6QwnpUqeL9AviksU2cyqqcKcmtkxd/R1z
-         XHhaqOaWGIZ8SXOfw5TZKTeqlzUC+9YG+49fg=
-Message-ID: <1a26b4920810020950p111c3265v687d94becf4f2e21@mail.gmail.com>
-Date: Thu, 2 Oct 2008 18:50:34 +0200
-From: "Pazzo Da Legare" <pazzodalegare@gmail.com>
-To: "Ondrej Zary" <linux@rainbow-software.org>
-Subject: Re: booting uncompressed kernel on x86
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1a26b4920810011514o4d3ecd9egb409871c8ff5a062@mail.gmail.com>
+	Thu, 2 Oct 2008 12:53:39 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=ZBhGj4PL+AEj5Qna8nyC2e3coCF+JCjS1iJn6APh8fawahYiWy0/o2ciYndmLqb0;
+  h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <48E4FC91.5010300@earthlink.net>
+Date: Thu, 02 Oct 2008 12:53:37 -0400
+From: Stephen Clark <sclark46@earthlink.net>
+Reply-To: sclark46@earthlink.net
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Automatic config file generator
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1a26b4920810011457t4ad93308u2cc0d2781168f332@mail.gmail.com>
-	 <200810020004.28045.linux@rainbow-software.org>
-	 <1a26b4920810011514o4d3ecd9egb409871c8ff5a062@mail.gmail.com>
+X-ELNK-Trace: a437fbc6971e80f61aa676d7e74259b7b3291a7d08dfec79b92127bd9bcd0625af498c874edcb65f350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 208.118.36.229
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems there is no way to do that without a specific patch
+Hello List,
 
-pazzo
+Is there a utility that will examine your system and generate a tailored config 
+file so I don't have to compile a zillion modules.
 
-2008/10/2 Pazzo Da Legare <pazzodalegare@gmail.com>:
-> Hi Ondreh,
->
-> Thank you for your answer.
->
-> I tried your patch but on my slow i486-like target (on 2.6.25 and
-> 2.6.27-rc6) but it reboots immediatly after few seconds; during this
-> time I can see some random and colored chars on the screen.
->
-> pazzo
->
-> 2008/10/2 Ondrej Zary <linux@rainbow-software.org>:
->> On Wednesday 01 October 2008 23:57:43 Pazzo Da Legare wrote:
->>> I would like to boot uncompressed linux kernel on a embedded x86,
->>> should I apply a specific patch for this? I'm using grub boot loader
->>> which should boot using elf image but I cannot find any clue.
->>> Should I switch to another bootloader?
->>
->> I did something some time ago - but it's only a quick hack to make my really
->> slow (386DX/25) machine boot faster - see http://lkml.org/lkml/2005/7/1/206
->>
->> Ondrej Zary
->>
->
+Currently when I want to build the latest kernel I take the config file from
+my distro, (fedora), but it has every module in the world. So on my
+1.8ghz core 2 duo laptop it takes about 30 min to build a new kernel.
+
+Thanks,
+Steve
+-- 
+
+"They that give up essential liberty to obtain temporary safety,
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty
+decreases."  (Thomas Jefferson)
+
+
