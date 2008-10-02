@@ -1,125 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbYJBIYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYJBI0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753503AbYJBIYb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 04:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbYJBIYX
+	id S1753423AbYJBI0y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 04:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYJBI0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 04:24:23 -0400
-Received: from mail.ku-gbr.de ([81.3.11.18]:54489 "EHLO ku-gbr.de"
+	Thu, 2 Oct 2008 04:26:46 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:50896 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751939AbYJBIYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 04:24:22 -0400
-X-Greylist: delayed 2943 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Oct 2008 04:24:21 EDT
-Date: Wed, 1 Oct 2008 21:30:13 +0200
-From: Konstantin Kletschke <lists@ku-gbr.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-Message-ID: <20081001193013.GA6565@anita.doom>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <48DA0A2C.8010008@kernel.org> <20080924105943.GB2094@anita> <20080925081848.GB2305@anita> <48DEA40D.40709@kernel.org> <20080930081257.GB18961@anita.doom> <48E232FC.1090902@kernel.org> <20080930151622.GC18961@anita.doom> <48E25831.4030505@kernel.org> <20081001073817.GA3098@anita.doom> <48E32C93.8060201@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48E32C93.8060201@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752294AbYJBI0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 04:26:46 -0400
+Date: Thu, 2 Oct 2008 10:26:43 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Matt Fleming" <mattjfleming@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] MMC: Use write timeout value as read from CSR
+Message-ID: <20081002102643.1d980a1f@mjolnir.drzeus.cx>
+In-Reply-To: <5ff4a1e50809240416p3c51587fs320bc9ebff7733c7@mail.gmail.com>
+References: <5ff4a1e50809010812i32168136qea538ba177b81446@mail.gmail.com>
+	<5ff4a1e50809090059i2bcdb7ber8cae07128eea5a77@mail.gmail.com>
+	<20080909105513.5b8ceaaf@mjolnir.drzeus.cx>
+	<5ff4a1e50809090207o5846f5udf709eeda81653eb@mail.gmail.com>
+	<5ff4a1e50809090242ha576dcdmf82d1e9ec2204178@mail.gmail.com>
+	<20080914154817.3d618e67@mjolnir.drzeus.cx>
+	<5ff4a1e50809150103v1e250e0x4192e2fe901750a6@mail.gmail.com>
+	<20080915103821.2b618bba@mjolnir.drzeus.cx>
+	<5ff4a1e50809150224o600fd9fhb29e986bdb618464@mail.gmail.com>
+	<20080920130652.05f3da6d@mjolnir.drzeus.cx>
+	<5ff4a1e50809240416p3c51587fs320bc9ebff7733c7@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.0; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, this way the Situation is the following:
+On Wed, 24 Sep 2008 12:16:02 +0100
+"Matt Fleming" <mattjfleming@googlemail.com> wrote:
 
-TCP: Hash tables configured (established 131072 bind 65536)
-TCP reno registered
-NET: Registered protocol family 1
-SGI XFS with ACLs, security attributes, realtime, large block/inode numbers, no debug enabled
-SGI XFS Quota Management subsystem
-msgmni has been set to 2008
-io scheduler noop registered
-io scheduler cfq registered (default)
-pci 0000:01:00.0: Boot video device
-Linux agpgart interface v0.103
-forcedeth: Reverse Engineered nForce ethernet driver. Version 0.61.
-ACPI: PCI Interrupt Link [LKLN] enabled at IRQ 22
-forcedeth 0000:00:05.0: PCI INT A -> Link[LKLN] -> GSI 22 (level, low) -> IRQ 22
-forcedeth 0000:00:05.0: setting latency timer to 64
-nv_probe: set workaround bit for reversed mac addr
-Switched to high resolution mode on CPU 0
-forcedeth 0000:00:05.0: ifname eth0, PHY OUI 0x732 @ 1, addr 00:13:8f:fd:f9:26
-forcedeth 0000:00:05.0: csum timirq lnktim desc-v2
-netconsole: local port 6665
-netconsole: local IP 10.10.0.1
-netconsole: interface eth0
-netconsole: remote port 6666
-netconsole: remote IP 10.10.0.18
-netconsole: remote ethernet address 00:22:15:68:2c:eb
-netconsole: device eth0 not up yet, forcing it
-eth0: no link during initialization.
-eth0: link up.
-console [netcon0] enabled
-netconsole: network logging started
-Driver 'sd' needs updating - please use bus_type methods
-sata_nv 0000:00:0a.0: version 3.5
-ACPI: PCI Interrupt Link [LTID] enabled at IRQ 21
-sata_nv 0000:00:0a.0: PCI INT A -> Link[LTID] -> GSI 21 (level, low) -> IRQ 21
-sata_nv 0000:00:0a.0: setting latency timer to 64
-scsi0 : sata_nv
-scsi1 : sata_nv
-ata1: SATA max UDMA/133 cmd 0xf80 ctl 0xf00 bmdma 0xd800 irq 21
-ata2: SATA max UDMA/133 cmd 0xe80 ctl 0xe00 bmdma 0xd808 irq 21
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: ATA-7: SAMSUNG HD753LJ, 1AA01106, max UDMA7
-ata1.00: 1465149168 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata1.00: configured for UDMA/133
-isa bounce pool size: 16 pages
-scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD753LJ  1AA0 PQ: 0 ANSI: 5
-sd 0:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 0:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 sda9 >
-sd 0:0:0:0: [sda] Attached SCSI disk
-PNP: No PS/2 controller found. Probing ports directly.
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-TCP cubic registered
-NET: Registered protocol family 17
-XFS mounting filesystem sda1
-Ending clean XFS mount for filesystem: sda1
-VFS: Mounted root (xfs filesystem) readonly.
-Freeing unused kernel memory: 220k freed
+> 2008/9/20 Pierre Ossman <drzeus-mmc@drzeus.cx>:
+> >
+> > It shouldn't take that long to write the more proper solution, so get
+> > to it and it should be possible to get in even for .27.
+> >
+> 
+> OK, attached is the latest attempt at this patch. Because a lot of
+> host drivers manipulate timeout_ns and timeout_clks I decided not
+> touch them at all. So, I created a new member of the mmc_data struct
+> that has the timeout value as a ktime_t.
 
-Then this continues:
+Hmm... What do you mean manipulate? They all just read it, so I don't
+see a need for a new member.
 
-ata2: EH pending after 5 tries, giving up
-ata2: EH complete
-ata2: EH pending after 5 tries, giving up
-ata2: EH complete
-ata2: EH complete
-ata2: EH complete
-ata2: EH complete
-ata2: EH complete
-ata2: EH complete
-ata2: EH complete
-ata2: EH complete
-ata2: EH complete
-ata2: EH complete
+> I'm still unsure of how
+> exactly to tackle the mmc_send_cid and mmc_send_csd() cases, the
+> timeout value used in the spec is Ncr, where can I find this value?
 
+Right, they left that out of the simplified spec. Sneaky bastards. It's
+defined as 64 clock cycles.
 
-Rebooting is not possible (seldom it is possible though), most often it
-yields into the BIOS not recognizing the disk after the reset anymore. 
-The shutdown (the system is headless regularly and I wait for hearing the
-BIOS beep) lasts very long (before it waits for the disk or finds no OS).
+> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+> index 044d84e..b5c6f5f 100644
+> --- a/drivers/mmc/core/core.c
+> +++ b/drivers/mmc/core/core.c
+> @@ -249,8 +249,10 @@ void mmc_set_data_timeout(struct mmc_data *data,
+> const struct mmc_card *card)
+>          * SDIO cards only define an upper 1 s limit on access.
+>          */
+>         if (mmc_card_sdio(card)) {
+> -               data->timeout_ns = 1000000000;
+> -               data->timeout_clks = 0;
+> +               if (data->timeout_ns > 1000000000) {
+> +                       data->timeout_ns = 1000000000;
+> +                       data->timeout_clks = 0;
+> +               }
+>                 return;
+>         }
+> 
 
-Sadly I have no time to put a monitor onto it, if further investigations
-are required I can take care of this friday.
+data->timeout_* is undefined when this function is invoked, so this
+code is wrong. It is also unnecessary, so just leave it out.
 
-Kind Regards and happy hacking, Konsti
+> @@ -269,6 +271,11 @@ void mmc_set_data_timeout(struct mmc_data *data,
+> const struct mmc_card *card)
+>         data->timeout_ns = card->csd.tacc_ns * mult;
+>         data->timeout_clks = card->csd.tacc_clks * mult;
+> 
+> +       data->ktimeout = ktime_set(0, 0);
+> +       data->ktimeout = ktime_add_ns(data->ktimeout, data->timeout_ns);
+> +       data->ktimeout = ktime_add_ns(data->ktimeout,
+> +               data->timeout_clks * 1000000 / card->host->ios.clock);
+> +
+>         /*
+>          * SD cards also have an upper limit on the timeout.
+>          */
 
+card->host->ios.clock is just the upper bound on the clock, it might be
+running slower. This is why the host driver needs to calculate it (well
+that, and the fact that different controllers treat timeouts in
+different ways so it's not one-size-fits-all).
 
+> @@ -832,9 +832,11 @@ mmc_spi_data_do(struct mmc_spi_host *host, struct
+> mmc_command *cmd,
+>                                 t->len);
+> 
+>                         if (direction == DMA_TO_DEVICE)
+> -                               status = mmc_spi_writeblock(host, t);
+> +                               status = mmc_spi_writeblock(host, t,
+> +                                               data->ktimeout);
+>                         else
+> -                               status = mmc_spi_readblock(host, t);
+> +                               status = mmc_spi_readblock(host, t,
+> +                                               data->ktimeout);
+>                         if (status < 0)
+>                                 break;
+> 
+
+If you put the calculation somewhere before this chunk instead,
+everything should be peachy.
+
+Rgds
 -- 
-GPG KeyID EF62FCEF
-Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
