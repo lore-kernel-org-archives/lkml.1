@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYJCQXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbYJCQZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753487AbYJCQXX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 12:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYJCQXQ
+	id S1753807AbYJCQZk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 12:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYJCQZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 12:23:16 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:59353 "EHLO mail.screens.ru"
+	Fri, 3 Oct 2008 12:25:32 -0400
+Received: from mga02.intel.com ([134.134.136.20]:20561 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752461AbYJCQXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 12:23:15 -0400
-Date: Fri, 3 Oct 2008 20:29:15 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH] signal, procfs: lock_task_sighand() do not need rcu_read_lock()
-Message-ID: <20081003162915.GA624@tv-sign.ru>
-References: <48E5ED4D.4030102@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48E5ED4D.4030102@cn.fujitsu.com>
-User-Agent: Mutt/1.5.11
+	id S1752645AbYJCQZ2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 12:25:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,357,1220252400"; 
+   d="scan'208";a="343509848"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [regression] Latest git has WARN_ON storm with e1000e driver
+Date: Fri, 3 Oct 2008 09:25:06 -0700
+Message-ID: <36D9DB17C6DE9E40B059440DB8D95F520655F9A0@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <alpine.LFD.2.00.0810030901170.3185@nehalem.linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [regression] Latest git has WARN_ON storm with e1000e driver
+Thread-Index: AcklclV1sMtMG7WzQQWNjqGz5mRJMQAASPtg
+References: <200810031041.49350.borntraeger@de.ibm.com> <200810031720.53923.borntraeger@de.ibm.com> <alpine.LFD.2.00.0810030825190.3262@nehalem.linux-foundation.org> <200810031755.55931.borntraeger@de.ibm.com> <alpine.LFD.2.00.0810030901170.3185@nehalem.linux-foundation.org>
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Christian Borntraeger" <borntraeger@de.ibm.com>
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Arjan van de Ven" <arjan@infradead.org>
+X-OriginalArrivalTime: 03 Oct 2008 16:25:26.0177 (UTC) FILETIME=[A46C6110:01C92574]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/03, Lai Jiangshan wrote:
->
-> lock_task_sighand() make sure task->sighand is being protected,
-> so we do not need rcu_read_lock().
-> [ exec() will get task->sighand->siglock before change task->sighand! ]
->
-> But code using rcu_read_lock() _just_ to protect lock_task_sighand()
-> only appear in procfs. (and some code in procfs use lock_task_sighand()
-> without such redundant protection.)
+Linus Torvalds wrote:
+> So this whole bug is actually because that debug test is just
+> _broken_. It shouldn't be WARN_ON(preempt_count()), it should be
+> 'might_sleep()', which does it right.
+> 
+> The right thing to check is "in_atomic() || irqs_disabled()".
 
-Yes, the patch looks correct.
+okay, do you want me to post a patch?  I think Thomas is probably
+offline due to fridaynightitis.  Change the code to:?
 
-The initial implementaion of lock_task_sighand() did not take RCU lock,
-that is why we still have the callers which call rcu_read_lock().
-See 1406f2d321bae5ac5ff729dcb773336d9c05ec74.
+WARN_ON(in_atomic() || irqs_disabled);
+ 
+> Duh. That was wasted effort for a buggy test.
 
-Thanks!
-
-Oleg.
-
+Apologies for not catching it.
