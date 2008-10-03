@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYJCMIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYJCMLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754413AbYJCMIV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 08:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYJCMIL
+	id S1754130AbYJCMLS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 08:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYJCMLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 08:08:11 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:26217 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753356AbYJCMIJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 08:08:09 -0400
-Subject: Re: [PATCH] Improve buffered streaming write ordering
-From: Chris Mason <chris.mason@oracle.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       ext4 <linux-ext4@vger.kernel.org>
-In-Reply-To: <200810031243.51277.nickpiggin@yahoo.com.au>
-References: <1222886451.9158.34.camel@think.oraclecorp.com>
-	 <20081002181856.GB29613@skywalker>
-	 <1222996262.12099.42.camel@think.oraclecorp.com>
-	 <200810031243.51277.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 08:07:49 -0400
-Message-Id: <1223035669.6836.5.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 3 Oct 2008 08:11:08 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:45357 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753070AbYJCMLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 08:11:07 -0400
+Date: Fri, 3 Oct 2008 14:11:01 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Vit Kudrle <kudrle@sci.muni.cz>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Kernel Oops in USB HID
+In-Reply-To: <200810031134.m93BYDqQ025308@elanor.sci.muni.cz>
+Message-ID: <Pine.LNX.4.64.0810031409240.1532@twin.jikos.cz>
+References: <200810031134.m93BYDqQ025308@elanor.sci.muni.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-03 at 12:43 +1000, Nick Piggin wrote:
-> On Friday 03 October 2008 11:11, Chris Mason wrote:
+On Fri, 3 Oct 2008, Vit Kudrle wrote:
 
-> > > Part of that can happen due to shrink_page_list -> pageout -> writepagee
-> > > call back with lots of unallocated buffer_heads(blocks). Also a journal
-> > > commit with jbd2 looks at the inode and all the dirty pages, rather than
-> > > the buffer_heads (journal_submit_data_buffers). We don't force commit
-> > > pages that doesn't have blocks allocated with the ext4. The consistency
-> > > is only with i_size and data.
-> >
-> > In general, I don't think pdflush or the VM expect
-> > redirty_pages_for_writepage to be used this aggressively.
-> 
-> BTW. redirty_page_for_writepage and the whole model of cleaning the page's
-> dirty bit *before* calling into the filesystem is really nasty IMO. For
-> one thing it opens races that mean a filesystem can't keep metadata about
-> the pagecache properly in synch with the page's dirty bit.
-> 
-> I have a patch in my fsblock series that fixes this and has the writepage()
-> function itself clear the page's dirty bit. This basically makes
-> redirty_page_for_writepages go away completely (at least the uses I looked
-> at, I didn't look at ext4 though).
-> 
-> Shall I break it out and submit it?
+> Oct  3 01:16:58 kernel: hub 2-0:1.0: port 7 disabled by hub (EMI?), re-enabling...
+> Oct  3 01:16:58 kernel: usb 2-7: USB disconnect, address 39
+> Oct  3 01:16:58 kernel: drivers/hid/usbhid/hid-core.c: usb_submit_urb(ctrl) failed
+> Oct  3 01:16:58 kernel: BUG: unable to handle kernel NULL pointer dereference at 00000000000000c8
+> Oct  3 01:16:58 kernel: IP: [<ffffffff803b0755>] hiddev_ioctl+0x39/0x552
 
-It's a fair amount of churn in the FS code, and the part I'm not sure of
-is if the bigger problem is lock ordering around the page lock and the
-FS locks or just the dirty bit.
+Hi,
 
-Personally I'd rather see writepages used everywhere, giving the FS the
-chance to do more efficient IO.
+could you please use 'addr2line' utility on address 0xffffffff803b0755 to 
+identify the line on which the NULL pointer dereference happened?
 
--chris
+Obviously there is some missing handling of error conditions from usbhid 
+code after the URB submission has failed.
 
+Thanks,
 
+-- 
+Jiri Kosina
+SUSE Labs
 
