@@ -1,87 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbYJCRX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbYJCR1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbYJCRX1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 13:23:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYJCRXR
+	id S1754075AbYJCR1a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 13:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYJCR1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 13:23:17 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:50944 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752332AbYJCRXQ (ORCPT
+	Fri, 3 Oct 2008 13:27:21 -0400
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:55395 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753152AbYJCR1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 13:23:16 -0400
-Message-ID: <48E65606.6040409@novell.com>
-Date: Fri, 03 Oct 2008 13:27:34 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Gilles Carry <Gilles.Carry@bull.net>,
-       Gregory Haskins <ghaskins@novell.com>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rostedt@goodmis.org, dvhltc@us.ibm.com,
-       dino@in.ibm.com
-Subject: Re: [PATCH 2/2] RT: remove "paranoid" limit in push_rt_task
-References: <20081003123745.17387.61782.stgit@dev.haskins.net> <20081003124305.17387.90233.stgit@dev.haskins.net> <48E62253.1090000@bull.net> <20081003154501.GB5032@linux.vnet.ibm.com>
-In-Reply-To: <20081003154501.GB5032@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig2E2421D04FB8E75D32C66AE1"
+	Fri, 3 Oct 2008 13:27:21 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqAEANjt5UhMQWq+/2dsb2JhbACBcbpWgWg
+Date: Fri, 3 Oct 2008 13:21:43 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>, colpatch@us.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH] x86 Topology cpu_to_node parameter check
+Message-ID: <20081003172143.GA7733@Krystal>
+References: <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu> <20081002090517.GA8708@elte.hu> <20081002093835.GA17699@elte.hu> <alpine.DEB.1.10.0810021917030.26504@gandalf.stny.rr.com> <20081003045607.GA5940@Krystal> <alpine.DEB.1.10.0810030117280.26504@gandalf.stny.rr.com> <20081003155605.GC1607@Krystal> <alpine.DEB.1.10.0810031223060.26504@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0810031223060.26504@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:15:17 up 120 days, 21:55,  5 users,  load average: 0.39, 0.45,
+	0.41
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2E2421D04FB8E75D32C66AE1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Fri, 3 Oct 2008, Mathieu Desnoyers wrote:
+> > 
+> > That's how I did it first, but then I looked at asm-generic/topology.h
+> > and have seen it uses #defines. Should we change them too ?
+> > 
+> 
+> The old way of doing this is with defines. But all new code should be 
+> static inline functions when feasible. This way we can get typechecking 
+> on the parameters even when the configuration is disabled.
+> 
+> Even if the rest of the file uses defines, the new code should be
+> static inlines. Eventually, even the old defines will be converted.
+> 
+> -- Steve
+> 
 
-Chirag Jog wrote:
-> * Gilles Carry <Gilles.Carry@bull.net> [2008-10-03 15:46:59]:
->
->  =20
->> Sorry Greg,
->>
->> Neither PPC64 nor Intel64 make it with this patch.
->> At boot time, it stops at the BUG_ON you added:
->> 0xc00000000004eca4 is in push_rt_task (kernel/sched_rt.c:1102)
->>    =20
-> I am also confirming this issue gilles reported.
->
-> Although, i have a question:
-> When we enable group scheduling (CONFIG_RT_GROUP_SCHED),
-> all the problems disappear.
-> After skimming through the rt scheduler code, I don't feel group=20
-> scheduling alters the behavior of push/pull strategies in any way.
->
-> So I am wonder whether enabling group scheduling
-> actually solves the problem or just makes it tough=20
-> to recreate?
->  =20
-Hi Chirag,
+Argh, I think topology.h is utterly broken :-(
 
+Have you noticed the subtile interaction between the
 
-The issue that Gilles pointed me at is a race condition.  I do not
-suspect GROUP_SCHED itself has anything to do with the problem other
-than it changes the timing.  HTH!
+include/asm-x86/topology.h :
 
--Greg
+#define numa_node_id()          0
+#define cpu_to_node(cpu)        0
+#define early_cpu_to_node(cpu)  0
+...
+#include <asm-generic/topology.h>
 
 
+and
+include/asm-generic/topology.h :
+#ifndef cpu_to_node
+#define cpu_to_node(cpu)        ((void)(cpu),0)
+#endif
 
+If any architecture decide for some reason to use a static inline rather
+than a define, as currently done with node_to_first_cpu :
 
---------------enig2E2421D04FB8E75D32C66AE1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+include/asm-x86/topology.h :
+static inline int node_to_first_cpu(int node)
+{
+        return first_cpu(cpu_online_map);
+}
+...
+#include <asm-generic/topology.h>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+include/asm-generic/topology.h :
+#ifndef node_to_first_cpu
+#define node_to_first_cpu(node) ((void)(node),0)
+#endif
 
-iEYEARECAAYFAkjmVgYACgkQlOSOBdgZUxmCHwCeON4kWz3qBkueaSNOsVLdNDQY
-xVIAn1+tRmWW1t2s9gD3ceWrIiBC5h0a
-=ywZW
------END PGP SIGNATURE-----
+(which will override the static inline !)
 
---------------enig2E2421D04FB8E75D32C66AE1--
+It results in an override of the arch-specific version. Nice eh ?
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
