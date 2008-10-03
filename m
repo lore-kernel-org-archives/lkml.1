@@ -1,288 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYJCK6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbYJCK7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbYJCK6c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 06:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYJCK6E
+	id S1753583AbYJCK7H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 06:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYJCK6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 06:58:04 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:33265 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbYJCK6B (ORCPT
+	Fri, 3 Oct 2008 06:58:15 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:39090 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753053AbYJCK6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 06:58:01 -0400
-Message-Id: <20081003105754.455319656@de.ibm.com>
-References: <20081003105632.357231142@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 03 Oct 2008 12:56:36 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: rusty@rustcorp.com.au, jens.axboe@oracle.com, schwidefsky@de.ibm.com
-Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH/RFC 4/4] s390: convert to generic IPI infrstructure
-Content-Disposition: inline; filename=generic_ipi.diff
+	Fri, 3 Oct 2008 06:58:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=fKrlsxwXDEwqt6LWsnVkddSuJZ3j1giK9yb8JcbtcETwbdiB/batweMdQVx2mh1wR2
+         kNnKJzcJvSXBGmRPDFqrxMpGT3LQULfgP+zNujb7AY++He/KS3qO72LlzOorancjCrj4
+         NG2LM/F5VxtO8nMxWaN4HVCXwmqi1cy0sA36g=
+Message-ID: <7c86c4470810030358m1a0fdcc5i5512a1c2a6696457@mail.gmail.com>
+Date: Fri, 3 Oct 2008 12:58:12 +0200
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "David Gibson" <david@gibson.dropbear.id.au>, eranian@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: perfmon3 interface overview
+Cc: perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+In-Reply-To: <7c86c4470810030354x6984372akfe18761da7504a0c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com>
+	 <7c86c4470809251448j65fb99f1nfdb3980e0716149a@mail.gmail.com>
+	 <20081003061713.GL3002@yookeroo.seuss>
+	 <7c86c4470810030354x6984372akfe18761da7504a0c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+David,
 
-Since etr/stp don't need the old smp_call_function semantics anymore
-we can convert s390 to the generic IPI infrastructure.
+On Fri, Oct 3, 2008 at 8:17 AM, David Gibson
+<david@gibson.dropbear.id.au> wrote:
+>
+> > The new API now has 8 system calls in its fully-featured
+> > version. Many data structures shared with user level have been
+> > abandoned in favor of explicit syscall parameters.  Each syscall has
+>
+> Ah, excellent, big structures passed through an interface are often a
+> pain to deal with, so I'm glad these are going.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- arch/s390/Kconfig            |    1 
- arch/s390/include/asm/sigp.h |    1 
- arch/s390/include/asm/smp.h  |    5 -
- arch/s390/kernel/smp.c       |  175 ++++---------------------------------------
- 4 files changed, 24 insertions(+), 158 deletions(-)
+ Thanks.
 
-Index: linux-2.6/arch/s390/include/asm/sigp.h
-===================================================================
---- linux-2.6.orig/arch/s390/include/asm/sigp.h
-+++ linux-2.6/arch/s390/include/asm/sigp.h
-@@ -61,6 +61,7 @@ typedef enum
- {
- 	ec_schedule=0,
- 	ec_call_function,
-+	ec_call_function_single,
- 	ec_bit_last
- } ec_bit_sig;
- 
-Index: linux-2.6/arch/s390/include/asm/smp.h
-===================================================================
---- linux-2.6.orig/arch/s390/include/asm/smp.h
-+++ linux-2.6/arch/s390/include/asm/smp.h
-@@ -91,8 +91,9 @@ extern int __cpu_up (unsigned int cpu);
- extern struct mutex smp_cpu_state_mutex;
- extern int smp_cpu_polarization[];
- 
--extern int smp_call_function_mask(cpumask_t mask, void (*func)(void *),
--	void *info, int wait);
-+extern void arch_send_call_function_single_ipi(int cpu);
-+extern void arch_send_call_function_ipi(cpumask_t mask);
-+
- #endif
- 
- #ifndef CONFIG_SMP
-Index: linux-2.6/arch/s390/Kconfig
-===================================================================
---- linux-2.6.orig/arch/s390/Kconfig
-+++ linux-2.6/arch/s390/Kconfig
-@@ -74,6 +74,7 @@ config S390
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
- 	select HAVE_KVM if 64BIT
-+	select USE_GENERIC_SMP_HELPERS if SMP
- 
- source "init/Kconfig"
- 
-Index: linux-2.6/arch/s390/kernel/smp.c
-===================================================================
---- linux-2.6.orig/arch/s390/kernel/smp.c
-+++ linux-2.6/arch/s390/kernel/smp.c
-@@ -77,159 +77,6 @@ static DEFINE_PER_CPU(struct cpu, cpu_de
- 
- static void smp_ext_bitcall(int, ec_bit_sig);
- 
--/*
-- * Structure and data for __smp_call_function_map(). This is designed to
-- * minimise static memory requirements. It also looks cleaner.
-- */
--static DEFINE_SPINLOCK(call_lock);
--
--struct call_data_struct {
--	void (*func) (void *info);
--	void *info;
--	cpumask_t started;
--	cpumask_t finished;
--	int wait;
--};
--
--static struct call_data_struct *call_data;
--
--/*
-- * 'Call function' interrupt callback
-- */
--static void do_call_function(void)
--{
--	void (*func) (void *info) = call_data->func;
--	void *info = call_data->info;
--	int wait = call_data->wait;
--
--	cpu_set(smp_processor_id(), call_data->started);
--	(*func)(info);
--	if (wait)
--		cpu_set(smp_processor_id(), call_data->finished);;
--}
--
--static void __smp_call_function_map(void (*func) (void *info), void *info,
--				    int wait, cpumask_t map)
--{
--	struct call_data_struct data;
--	int cpu, local = 0;
--
--	/*
--	 * Can deadlock when interrupts are disabled or if in wrong context.
--	 */
--	WARN_ON(irqs_disabled() || in_irq());
--
--	/*
--	 * Check for local function call. We have to have the same call order
--	 * as in on_each_cpu() because of machine_restart_smp().
--	 */
--	if (cpu_isset(smp_processor_id(), map)) {
--		local = 1;
--		cpu_clear(smp_processor_id(), map);
--	}
--
--	cpus_and(map, map, cpu_online_map);
--	if (cpus_empty(map))
--		goto out;
--
--	data.func = func;
--	data.info = info;
--	data.started = CPU_MASK_NONE;
--	data.wait = wait;
--	if (wait)
--		data.finished = CPU_MASK_NONE;
--
--	call_data = &data;
--
--	for_each_cpu_mask(cpu, map)
--		smp_ext_bitcall(cpu, ec_call_function);
--
--	/* Wait for response */
--	while (!cpus_equal(map, data.started))
--		cpu_relax();
--	if (wait)
--		while (!cpus_equal(map, data.finished))
--			cpu_relax();
--out:
--	if (local) {
--		local_irq_disable();
--		func(info);
--		local_irq_enable();
--	}
--}
--
--/*
-- * smp_call_function:
-- * @func: the function to run; this must be fast and non-blocking
-- * @info: an arbitrary pointer to pass to the function
-- * @wait: if true, wait (atomically) until function has completed on other CPUs
-- *
-- * Run a function on all other CPUs.
-- *
-- * You must not call this function with disabled interrupts, from a
-- * hardware interrupt handler or from a bottom half.
-- */
--int smp_call_function(void (*func) (void *info), void *info, int wait)
--{
--	cpumask_t map;
--
--	spin_lock(&call_lock);
--	map = cpu_online_map;
--	cpu_clear(smp_processor_id(), map);
--	__smp_call_function_map(func, info, wait, map);
--	spin_unlock(&call_lock);
--	return 0;
--}
--EXPORT_SYMBOL(smp_call_function);
--
--/*
-- * smp_call_function_single:
-- * @cpu: the CPU where func should run
-- * @func: the function to run; this must be fast and non-blocking
-- * @info: an arbitrary pointer to pass to the function
-- * @wait: if true, wait (atomically) until function has completed on other CPUs
-- *
-- * Run a function on one processor.
-- *
-- * You must not call this function with disabled interrupts, from a
-- * hardware interrupt handler or from a bottom half.
-- */
--int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
--			     int wait)
--{
--	spin_lock(&call_lock);
--	__smp_call_function_map(func, info, wait, cpumask_of_cpu(cpu));
--	spin_unlock(&call_lock);
--	return 0;
--}
--EXPORT_SYMBOL(smp_call_function_single);
--
--/**
-- * smp_call_function_mask(): Run a function on a set of other CPUs.
-- * @mask: The set of cpus to run on.  Must not include the current cpu.
-- * @func: The function to run. This must be fast and non-blocking.
-- * @info: An arbitrary pointer to pass to the function.
-- * @wait: If true, wait (atomically) until function has completed on other CPUs.
-- *
-- * Returns 0 on success, else a negative status code.
-- *
-- * If @wait is true, then returns once @func has returned; otherwise
-- * it returns just before the target cpu calls @func.
-- *
-- * You must not call this function with disabled interrupts or from a
-- * hardware interrupt handler or from a bottom half handler.
-- */
--int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
--			   int wait)
--{
--	spin_lock(&call_lock);
--	cpu_clear(smp_processor_id(), mask);
--	__smp_call_function_map(func, info, wait, mask);
--	spin_unlock(&call_lock);
--	return 0;
--}
--EXPORT_SYMBOL(smp_call_function_mask);
--
- void smp_send_stop(void)
- {
- 	int cpu, rc;
-@@ -271,7 +118,10 @@ static void do_ext_call_interrupt(__u16 
- 	bits = xchg(&S390_lowcore.ext_call_fast, 0);
- 
- 	if (test_bit(ec_call_function, &bits))
--		do_call_function();
-+		generic_smp_call_function_interrupt();
-+
-+	if (test_bit(ec_call_function_single, &bits))
-+		generic_smp_call_function_single_interrupt();
- }
- 
- /*
-@@ -288,6 +138,19 @@ static void smp_ext_bitcall(int cpu, ec_
- 		udelay(10);
- }
- 
-+void arch_send_call_function_ipi(cpumask_t mask)
-+{
-+	int cpu;
-+
-+	for_each_cpu_mask(cpu, mask)
-+		smp_ext_bitcall(cpu, ec_call_function);
-+}
-+
-+void arch_send_call_function_single_ipi(int cpu)
-+{
-+	smp_ext_bitcall(cpu, ec_call_function_single);
-+}
-+
- #ifndef CONFIG_64BIT
- /*
-  * this function sends a 'purge tlb' signal to another CPU.
-@@ -586,9 +449,9 @@ int __cpuinit start_secondary(void *cpuv
- 	pfault_init();
- 
- 	/* Mark this cpu as online */
--	spin_lock(&call_lock);
-+	ipi_call_lock();
- 	cpu_set(smp_processor_id(), cpu_online_map);
--	spin_unlock(&call_lock);
-+	ipi_call_unlock();
- 	/* Switch on interrupts */
- 	local_irq_enable();
- 	/* Print info about this processor */
+>
+>
+> I, at least, like the changes that have been made here.  I do have a
+> few suggestions for further simplifications along the same lines
+> though, see below.
+>
+> [snip]
+> >  II) programming the registers
+> >
+> >  With v2.81:
+> >       int pfm_write_pmcs(int fd, pfarg_pmc_t *pmds, int  n);
+> >       int pfm_write_pmds(int fd, pfarg_pmd_t *pmcs, int n);
+> >       int pfm_read_pmds(int fd, parg_pmd_t *pmds, int n);
+> >
+> >  With v3.0:
+> >       int pfm_write_pmrs(int fd, int flags, pfarg_pmr_t *pmrs, int n);
+> >       int pfm_write_pmrs(int fd, int flags, pfarg_pmr_t *pmrs, int n,
+> >                                       pfarg_pmd_attr_t *pmas);
+> >
+> >       int pfm_read_pmrs(int fd, int flags, pfarg_pmr_t *pmrs, int n);
+> >       int pfm_read_pmrs(int fd, int flags, parg_pmr_t *pmrs, int n,
+> >                                      pfarg_pmd_attr_t *pmas);
+>
+> I would suggest adding 'type' and 'size' (int) parameters, and folding
+> the pmrs and pmas arrays into one freeform array.  'size' gives the
+> size in bytes of the array elements, 'type' selects the structure of
+> each array element.  This means:
+>        - if you ever have some sort of registers to access that are
+> neither PMCs nor PMDs, you can access those two, using a new type
+> value.
+>        - if a new method of operation wants to supply different
+> information for PMCs or PMDs, you can define a new structure and type
+> value (one obvious example would be a minimal (num,value) only
+> structure for minimum latency on simple applications).
+>        - an explicit size value means things can marshal / copy /
+> whatnot the parameters without having to know what size each type
+> implies -  the code will stay valid when new types / structures are
+> defined.
 
--- 
+ So you are suggesting something along the lines:
+
+   int pfm_read_pmrs(int fd, int flags, int type, void *tab, size_t sz);
+   int pfm_write_pmrs(int fd, int flags, int type, void *tab, size_t sz);
+
+ I have already introduced a type flag (PFM_RWFL_PMD, PFM_RWFL_PMC).
+ Why separate the type into its own parameter?
+
+ As for the freeform array, isn't that what people do not like because
+of  void *
+ and thus weak type checking?
+
+ I will look at switching to size instead of count. I think it does make sense.
+
+>
+> [snip]
+> > III) attaching and detaching
+> >
+> >   With v2.81:
+> >      int pfm_load_context(int fd, pfarg_load_t *load);
+> >      int pfm_unload_context(int fd);
+> >
+> >   With v3.0:
+> >      int pfm_attach_session(int fd, int flags, int target);
+> >      int pfm_detach_session(int fd, int flags);
+>
+> Couldn't you get rid of one more syscall here by making detach a
+> special case of attach with a special "null" value for target, or a
+> special flag?
+
+
+ We could combine the two and use the flag field to indicate attach/detach.
+ The target is not a pointer but an int. Some people suggested I use an
+ unsigned long instead. In anycase, we could not use 0 to indicate "detach"
+ because CPU0 is a valid choice for system-wide. Thus we would have to
+ pick another value to mean "nothing", e.g, -1.
+
+ >  IV) starting and stopping
+ >
+ >    With v2.81:
+ >       int pfm_start(int fd, pfarg_start_t *st);
+ >       int pfm_stop(int fd);
+ >       int pfm_restart(int fd);
+ >
+ >    With v3.0:
+ >       int pfm_start_session(int fd, int flags);
+ >       int pfm_stop_session(int fd, int flags);
+
+> Likewise, couldn't you cut this down by one more syscall by making it
+>        int pfm_set_session_state(int fd, int flags);
+> and having a 'RUNNING' flag, which selects start or stop behaviour?
+
+ That one we can certainly do. That's a good idea.
+
+ Thanks for your feedback, keep it coming.
