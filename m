@@ -1,146 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbYJCQc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbYJCQhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754526AbYJCQc2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 12:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYJCQbk
+	id S1753967AbYJCQhm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 12:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYJCQhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 12:31:40 -0400
-Received: from igw3.br.ibm.com ([32.104.18.26]:49312 "EHLO igw3.br.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752966AbYJCQbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 12:31:38 -0400
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: serue@us.ibm.com, zohar@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       jmorris@namei.org
-Subject: [PATCH 4/5] TPM: addition of pnp_remove()
-Date: Fri,  3 Oct 2008 13:30:09 -0300
-Message-Id: <8e75ba3e9a38cba61b8627c92a5164903e255b17.1223042186.git.srajiv@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
-References: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
-In-Reply-To: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
-References: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
+	Fri, 3 Oct 2008 12:37:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57826 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752564AbYJCQhe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 12:37:34 -0400
+Date: Fri, 3 Oct 2008 09:36:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: RE: [regression] Latest git has WARN_ON storm with e1000e driver
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F520655F9A0@orsmsx418.amr.corp.intel.com>
+Message-ID: <alpine.LFD.2.00.0810030935390.3208@nehalem.linux-foundation.org>
+References: <200810031041.49350.borntraeger@de.ibm.com> <200810031720.53923.borntraeger@de.ibm.com> <alpine.LFD.2.00.0810030825190.3262@nehalem.linux-foundation.org> <200810031755.55931.borntraeger@de.ibm.com> <alpine.LFD.2.00.0810030901170.3185@nehalem.linux-foundation.org>
+ <36D9DB17C6DE9E40B059440DB8D95F520655F9A0@orsmsx418.amr.corp.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The tpm_dev_release function is only called for platform devices, not pnp devices, so we
-implemented the .remove function for pnp ones.
-Since it's code is very similar to the one inside tpm_dev_release, we've created a helper
-function tpm_dev_vendor_release, which is called by both.
 
-Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
----
- drivers/char/tpm/tpm.c     |   22 ++++++++++++++++------
- drivers/char/tpm/tpm.h     |    1 +
- drivers/char/tpm/tpm_tis.c |   14 +++++++++++++-
- 3 files changed, 30 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-index 24fb7ab..ab03b4d 100644
---- a/drivers/char/tpm/tpm.c
-+++ b/drivers/char/tpm/tpm.c
-@@ -1133,23 +1133,33 @@ int tpm_pm_resume(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(tpm_pm_resume);
- 
-+/* In case vendor provided release function, call it too.*/
-+
-+void tpm_dev_vendor_release(struct tpm_chip *chip)
-+{
-+	if (chip->vendor.release)
-+	 	chip->vendor.release(chip->dev);
-+	
-+	clear_bit(chip->dev_num, dev_mask);
-+	kfree(chip->vendor.miscdev.name);
-+}
-+EXPORT_SYMBOL_GPL(tpm_dev_vendor_release);
-+
-+
- /*
-  * Once all references to platform device are down to 0,
-  * release all allocated structures.
-- * In case vendor provided release function, call it too.
-  */
- static void tpm_dev_release(struct device *dev)
- {
- 	struct tpm_chip *chip = dev_get_drvdata(dev);
- 
--	if (chip->vendor.release)
--		chip->vendor.release(dev);
--	chip->release(dev);
-+	tpm_dev_vendor_release(chip);
- 
--	clear_bit(chip->dev_num, dev_mask);
--	kfree(chip->vendor.miscdev.name);
-+	chip->release(dev);
- 	kfree(chip);
- }
-+EXPORT_SYMBOL_GPL(tpm_dev_release);
- 
- /*
-  * Called from tpm_<specific>.c probe function only for devices 
-diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-index 2756cab..8e30df4 100644
---- a/drivers/char/tpm/tpm.h
-+++ b/drivers/char/tpm/tpm.h
-@@ -132,6 +132,7 @@ extern struct tpm_chip* tpm_register_hardware(struct device *,
- 				 const struct tpm_vendor_specific *);
- extern int tpm_open(struct inode *, struct file *);
- extern int tpm_release(struct inode *, struct file *);
-+extern void tpm_dev_vendor_release(struct tpm_chip *);
- extern ssize_t tpm_write(struct file *, const char __user *, size_t,
- 			 loff_t *);
- extern ssize_t tpm_read(struct file *, char __user *, size_t, loff_t *);
-diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-index ed1879c..3491d70 100644
---- a/drivers/char/tpm/tpm_tis.c
-+++ b/drivers/char/tpm/tpm_tis.c
-@@ -630,12 +630,23 @@ static struct pnp_device_id tpm_pnp_tbl[] __devinitdata = {
- 	{"", 0}			/* Terminator */
- };
- 
-+static __devexit void tpm_tis_pnp_remove(struct pnp_dev *dev)
-+{
-+	struct tpm_chip *chip = pnp_get_drvdata(dev);
-+	
-+	tpm_dev_vendor_release(chip);
-+
-+	kfree(chip);
-+}
-+
-+
- static struct pnp_driver tis_pnp_driver = {
- 	.name = "tpm_tis",
- 	.id_table = tpm_pnp_tbl,
- 	.probe = tpm_tis_pnp_init,
- 	.suspend = tpm_tis_pnp_suspend,
- 	.resume = tpm_tis_pnp_resume,
-+	.remove = tpm_tis_pnp_remove,
- };
- 
- #define TIS_HID_USR_IDX sizeof(tpm_pnp_tbl)/sizeof(struct pnp_device_id) -2
-@@ -683,6 +694,7 @@ static void __exit cleanup_tis(void)
- 	spin_lock(&tis_lock);
- 	list_for_each_entry_safe(i, j, &tis_chips, list) {
- 		chip = to_tpm_chip(i);
-+		tpm_remove_hardware(chip->dev);
- 		iowrite32(~TPM_GLOBAL_INT_ENABLE &
- 			  ioread32(chip->vendor.iobase +
- 				   TPM_INT_ENABLE(chip->vendor.
-@@ -694,9 +706,9 @@ static void __exit cleanup_tis(void)
- 			free_irq(chip->vendor.irq, chip);
- 		iounmap(i->iobase);
- 		list_del(&i->list);
--		tpm_remove_hardware(chip->dev);
- 	}
- 	spin_unlock(&tis_lock);
-+	
- 	if (force) {
- 		platform_device_unregister(pdev);
- 		driver_unregister(&tis_drv);
--- 
-1.5.6.3
+On Fri, 3 Oct 2008, Brandeburg, Jesse wrote:
+>
+> Linus Torvalds wrote:
+> > So this whole bug is actually because that debug test is just
+> > _broken_. It shouldn't be WARN_ON(preempt_count()), it should be
+> > 'might_sleep()', which does it right.
+> > 
+> > The right thing to check is "in_atomic() || irqs_disabled()".
+> 
+> okay, do you want me to post a patch?  I think Thomas is probably
+> offline due to fridaynightitis.  Change the code to:?
+> 
+> WARN_ON(in_atomic() || irqs_disabled);
 
+No, literally just "might_sleep()". It then does everything right, 
+including taking into account that we allow certain behavior during bootup 
+that we don't allow later.
+
+			Linus
