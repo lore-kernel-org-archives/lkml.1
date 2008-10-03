@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbYJCXqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbYJCXrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbYJCXqp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 19:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbYJCXqg
+	id S1754890AbYJCXrA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 19:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbYJCXqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 19:46:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48591 "EHLO
+	Fri, 3 Oct 2008 19:46:49 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48612 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753307AbYJCXqg (ORCPT
+	with ESMTP id S1754768AbYJCXqs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 19:46:36 -0400
-Date: Fri, 3 Oct 2008 14:59:23 -0700
+	Fri, 3 Oct 2008 19:46:48 -0400
+Date: Fri, 3 Oct 2008 15:00:31 -0700
 From: Greg KH <greg@kroah.com>
-To: Rodolfo Giometti <giometti@linux.it>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] Add c2 port support.
-Message-ID: <20081003215923.GA14890@kroah.com>
-References: <1223044589-31741-1-git-send-email-giometti@linux.it> <1223044589-31741-2-git-send-email-giometti@linux.it>
+To: Jay Cliburn <jcliburn@gmail.com>
+Cc: xiong.huang@atheros.com, csnook@redhat.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: atl2 network driver status
+Message-ID: <20081003220031.GC14890@kroah.com>
+References: <20081002230246.GA11570@kroah.com> <20081002181731.6b8f563d@osprey.hogchain.net> <20081002232148.GA20003@kroah.com> <20081002182943.0264f7fa@osprey.hogchain.net> <20081002183503.73674682@osprey.hogchain.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1223044589-31741-2-git-send-email-giometti@linux.it>
+In-Reply-To: <20081002183503.73674682@osprey.hogchain.net>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 04:36:29PM +0200, Rodolfo Giometti wrote:
-> C2port implements a two wire serial communication protocol (bit
-> banging) designed to enable in-system programming, debugging, and
-> boundary-scan testing on low pin-count Silicon Labs devices.
+On Thu, Oct 02, 2008 at 06:35:03PM -0500, Jay Cliburn wrote:
+> On Thu, 2 Oct 2008 18:29:43 -0500
+> Jay Cliburn <jcliburn@gmail.com> wrote:
 > 
-> Currently this code supports only flash programming through sysfs
-> interface but extensions shoud be easy to add.
+> > On Thu, 2 Oct 2008 16:21:48 -0700
+> > Greg KH <greg@kroah.com> wrote:
+> > 
+> > > On Thu, Oct 02, 2008 at 06:17:31PM -0500, Jay Cliburn wrote:
+> > > > On Thu, 2 Oct 2008 16:02:46 -0700
+> > > > Greg KH <greg@kroah.com> wrote:
+> > > > 
+> > > > > Hi,
+> > > > > 
+> > > > > In looking for drivers to add to drivers/staging/ I ran across
+> > > > > the atl2 driver that is currently in the Fedora and Ubuntu
+> > > > > kernel trees.
+> > > > > 
+> > > > > This driver doesn't look to be scheduled for inclusion in the
+> > > > > upstream netdev git tree for submission for 2.6.28, is there any
+> > > > > reason why it is still out-of-the-tree?
+> > > > 
+> > > > Hi Greg,
+> > > > 
+> > > > It's in net-next-2.6.
+> > > > 
+> > > > http://marc.info/?l=linux-netdev&m=122144021209242&w=2
+> > > 
+> > > Nice, so that means it's going to be in 2.6.28?
+> > 
+> > I think so.  As I understand it, net-next-2.6 is Dave Miller's git
+> > tree for stuff destined for 2.6.28.
 > 
-> Signed-off-by: Rodolfo Giometti <giometti@linux.it>
-> ---
->  drivers/misc/Kconfig       |   13 +
->  drivers/misc/Makefile      |    1 +
->  drivers/misc/c2port_core.c |  996 ++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/c2port.h     |   65 +++
+> Yep, here it is: Dave's description of his two main trees.
+> 
+> So atl2 will be in 2.6.28.
 
-Why does this file have to be in include/linux?  I don't think this
-exports any structures to userspace, and no other code calls this
-driver, so it should all fit into the .c file just fine.
-
-Also, please create the needed Documentation/ABI/ files for these new
-sysfs entries, describing how they are used, and what the format of them
-are.
-
-Is there any way to detect automatically if this hardware is present in
-the system or not?
-
-Otherwise, how will it be loaded by a distro automatically?
-
-thanks,
+Ah, sorry for the noise, I should have remembered this.  Thanks for
+pointing it out.
 
 greg k-h
