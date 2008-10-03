@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYJCJdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbYJCJj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219AbYJCJdV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 05:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYJCJdD
+	id S1754639AbYJCJj6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 05:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbYJCJju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 05:33:03 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:27410 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753457AbYJCJdB (ORCPT
+	Fri, 3 Oct 2008 05:39:50 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:13628 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbYJCJjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 05:33:01 -0400
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH 08/32] mm: slb: add knowledge of reserve pages
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <20081002131608.091390019@chello.nl>
-References: <20081002130504.927878499@chello.nl>
-	 <20081002131608.091390019@chello.nl>
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 11:32:38 +0200
-Message-Id: <1223026358.28938.2.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Oct 2008 05:39:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=p8RVC8T91G/f3T8jp+frBowx+rm3HMdWfdzc0fG/HVuaeh9JxTCtxPzafkjDSRj1EX
+         WlobBGbihPFn4lIIOldNKzT1xLXiZjXhvfeWcjf7wO0/FPiHFmEBwHIX3dR89foHI132
+         pSc/upnhjkIss7Kput8/ptPScjblDQ5gZtQJ8=
+Message-ID: <48E5E862.1070504@gmail.com>
+Date: Fri, 03 Oct 2008 11:39:46 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH -tip] Trivial fix: correct a format to avoid a warning
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because I'm a dork and forgot to refresh...
+Last -tip gives this warning:
 
+kernel/softirq.c: Dans la fonction «__do_softirq» :
+kernel/softirq.c:216: attention : format «%ld» expects type «long int», but argument 2 has type «int»
+
+This patch corrects the format type, and a small mistake in the "softirq" word.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
-Index: linux-2.6/mm/slob.c
-===================================================================
---- linux-2.6.orig/mm/slob.c
-+++ linux-2.6/mm/slob.c
-@@ -239,7 +239,7 @@ static int slob_last(slob_t *s)
- 
- static void *slob_new_page(gfp_t gfp, int order, int node)
- {
--	void *page;
-+	struct page *page;
- 
- #ifdef CONFIG_NUMA
- 	if (node != -1)
-@@ -318,7 +318,7 @@ static void *slob_alloc(size_t size, gfp
- 	slob_t *b = NULL;
- 	unsigned long flags;
- 
--	if (unlikely(slub_reserve)) {
-+	if (unlikely(slob_reserve)) {
- 		if (!(gfp_to_alloc_flags(gfp) & ALLOC_NO_WATERMARKS))
- 			goto grow;
- 	}
+ kernel/softirq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 2df0b36..19f14a3 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -210,7 +210,7 @@ restart:
+ 			h->action(h);
+ 
+ 			if (unlikely(prev_count != preempt_count())) {
+-				printk(KERN_ERR "huh, entered sotfirq %ld %p"
++				printk(KERN_ERR "huh, entered softirq %d %p"
+ 				       "with preempt_count %08x,"
+ 				       " exited with %08x?\n", h - softirq_vec,
+ 				       h->action, prev_count, preempt_count());
