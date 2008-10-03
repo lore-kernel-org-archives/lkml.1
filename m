@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379AbYJCMjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbYJCMo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752379AbYJCMjS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 08:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYJCMih
+	id S1753322AbYJCMo0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 08:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbYJCMoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 08:38:37 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:42919
-	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751764AbYJCMig (ORCPT
+	Fri, 3 Oct 2008 08:44:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40510 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751474AbYJCMoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 08:38:36 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 2/2] RT: remove "paranoid" limit in push_rt_task
-To: Chirag Jog <chirag@linux.vnet.ibm.com>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, dvhltc@us.ibm.com, dino@in.ibm.com,
-       Gilles.Carry@bull.net
-Date: Fri, 03 Oct 2008 08:43:06 -0400
-Message-ID: <20081003124305.17387.90233.stgit@dev.haskins.net>
-In-Reply-To: <20081003123745.17387.61782.stgit@dev.haskins.net>
-References: <20081003123745.17387.61782.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Fri, 3 Oct 2008 08:44:12 -0400
+Date: Fri, 3 Oct 2008 05:43:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
+       Frans Pop <elendil@planet.nl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: [PATCH 1/6] Hibernation: Introduce new system state for the
+ last phase of hibernation
+Message-Id: <20081003054355.e3a3ac79.akpm@linux-foundation.org>
+In-Reply-To: <200810031327.19293.rjw@sisk.pl>
+References: <200808290002.55026.rjw@sisk.pl>
+	<200809300010.39000.rjw@sisk.pl>
+	<20081003013557.42ce685d.akpm@linux-foundation.org>
+	<200810031327.19293.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A panic was discovered by Chirag Jog and investigated by Gilles Carry
-to be originating in the fact that a task being pushed away
-may get migrated away during a double_lock_balance.  The result was
-that the pushable_tasks list may become corrupted.
+On Fri, 3 Oct 2008 13:27:18 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-The root cause is that the "paranoid" retry limit could cause us to
-bail out of a retry, but still try to remove the item from the (now
-potentially incorrect) list.  There are numerous ways to correct the
-condition, but the paranoid feature is no longer relevant with the new
-pushable logic (since pushable naturally limits the loop anyway), so
-lets just remove it.
+> > Can we just create a new global?
+> > 
+> > 	extern bool system_entering_hibernation_or_whatever;
+> 
+> Yes, we can, but what about:
+> 
+> extern bool system_entering_hibernation(void);
+> 
+> that will become a static inline in case of !CONFIG_HIBERNATION,
+> and using a static variable?
 
-Reported By: Chirag Jog <chirag@linux.vnet.ibm.com>
-Found-by: Gilles Carry <gilles.carry@bull.net>
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
-
- kernel/sched_rt.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 59ead84..5a754fe 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1056,7 +1056,6 @@ static int push_rt_task(struct rq *rq)
- {
- 	struct task_struct *next_task;
- 	struct rq *lowest_rq;
--	int paranoid = RT_MAX_TRIES;
- 
- 	if (!rq->rt.overloaded)
- 		return 0;
-@@ -1094,12 +1093,14 @@ static int push_rt_task(struct rq *rq)
- 		 * If it has, then try again.
- 		 */
- 		task = pick_next_pushable_task(rq);
--		if (unlikely(task != next_task) && task && paranoid--) {
-+		if (unlikely(task != next_task) && task) {
- 			put_task_struct(next_task);
- 			next_task = task;
- 			goto retry;
- 		}
- 
-+		BUG_ON(task_cpu(next_task) != rq->cpu);
-+
- 		/*
- 		 * Once we have failed to push this task, we will not
- 		 * try again, since the other cpus will pull from us
-
+Sure, even better.
