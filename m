@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYJCHTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYJCH37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbYJCHTZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 03:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbYJCHTP
+	id S1754585AbYJCH37 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 03:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbYJCH3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 03:19:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51902 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751179AbYJCHTO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 03:19:14 -0400
-Date: Fri, 3 Oct 2008 00:18:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] Btrfs mainline plans
-Message-Id: <20081003001859.e30af6a5.akpm@linux-foundation.org>
-In-Reply-To: <1222717460.30627.56.camel@think.oraclecorp.com>
-References: <1222717460.30627.56.camel@think.oraclecorp.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Oct 2008 03:29:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48625 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752703AbYJCH3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 03:29:49 -0400
+Date: Fri, 3 Oct 2008 09:27:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH] ring_buffer: map to cpu not page
+Message-ID: <20081003072722.GB4950@elte.hu>
+References: <1222790072.24384.21.camel@twins> <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu> <20081002090517.GA8708@elte.hu> <20081002093835.GA17699@elte.hu> <alpine.DEB.1.10.0810021917030.26504@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0810021917030.26504@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008 15:44:20 -0400 Chris Mason <chris.mason@oracle.com> wrote:
 
-> But, the code is very actively developed, and I believe the best way to
-> develop Btrfs from here is to get it into the mainline kernel (with a
-> large warning label about the disk format) and attract more extensive
-> review of both the disk format and underlying code.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-For the record...  I have been encouraging Chris to get btrfs into
-mainline soon.  Get it into linux-next asap and merge it into 2.6.29.
+> My original patch had a compile bug when NUMA was configured. I 
+> referenced cpu when it should have been cpu_buffer->cpu.
+> 
+> Ingo quickly fixed this bug by replacing cpu with 'i' because that was 
+> the loop counter. Unfortunately, the 'i' was the counter of pages, not 
+> CPUs. This caused a crash when the number of pages allocated for the 
+> buffers exceeded the number of pages, which would usually be the case.
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 
-And do this even though the on-disk format is still changing - we emit a
-loud printk at mount time and if someone comes to depend upon some
-intermediate format, well, that's their tough luck.
+>  	for (i = 0; i < nr_pages; i++) {
+>  		page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
+> -				    GFP_KERNEL, cpu_to_node(i));
+> +				    GFP_KERNEL, cpu_to_node(cpu_buffer->cpu));
 
-My thinking here is that btrfs probably has a future, and that an early
-merge will accelerate its development and will broaden its developer base. 
-If it ends up failing for some reason, well, we can just delete it
-again.
+oh, stupid typo of the year :-)
 
+applied to tip/tracing/ring-buffer, thanks for tracking it down! I've 
+reactivated the topic branch for tip/master and i'm running a few tests 
+before pushing it out for wider testing.
 
-For various reasons this approach often isn't appropriate as a general
-policy thing, but I do think that Linux has needed a new local
-filesystem for some time, and btrfs might be The One, and hence is
-worth a bit of special-case treatment.
-
+	Ingo
