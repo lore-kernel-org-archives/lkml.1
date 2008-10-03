@@ -1,75 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbYJCPMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbYJCPM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753875AbYJCPMH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYJCPL5
+	id S1754061AbYJCPM1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 11:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYJCPMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:11:57 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:34314 "EHLO bagnes.atmel.com"
+	Fri, 3 Oct 2008 11:12:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34739 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752313AbYJCPL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:11:57 -0400
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: kernel@avr32linux.org, Hein_Tibosch <hein_tibosch@yahoo.es>,
-       linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: [PATCH] atmel-mci: Initialize BLKR before sending data transfer command
-Date: Fri,  3 Oct 2008 17:07:38 +0200
-Message-Id: <1223046458-10851-1-git-send-email-haavard.skinnemoen@atmel.com>
-X-Mailer: git-send-email 1.5.6.5
-X-OriginalArrivalTime: 03 Oct 2008 15:07:23.0266 (UTC) FILETIME=[BD30DE20:01C92569]
+	id S1752680AbYJCPL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 11:11:58 -0400
+Date: Fri, 03 Oct 2008 11:09:42 -0400 (EDT)
+Message-Id: <20081003.110942.41628922.k-ueda@ct.jp.nec.com>
+To: agk@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, mbroz@redhat.com, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com
+Subject: [PATCH 1/8] dm core: remove unused DM_WQ_FLUSH_ALL
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20081003.110825.74754936.k-ueda@ct.jp.nec.com>
+References: <20081003.110825.74754936.k-ueda@ct.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The atmel-mci driver sometimes fails data transfers like this:
+This patch removes dead codes for the noflush suspend.
+No functional change.
 
-   mmcblk0: error -5 transferring data
-   end_request: I/O error, dev mmcblk0, sector 2749769
-   end_request: I/O error, dev mmcblk0, sector 2749777
+This patch is just a clean up of the codes and not functionally
+related to request-based dm.  But included here due to literal
+dependency.
 
-It turns out that this might be caused by the BLKR register (which
-contains the block size and the number of blocks being transfered) being
-initialized too late. This patch moves the initialization of BLKR so
-that it contains the correct value before the block transfer command is
-sent.
+The dm_queue_flush(md, DM_WQ_FLUSH_ALL, NULL) in dm_suspend()
+is never invoked because:
+  - The 'goto flush_and_out' is same as 'goto out', because
+    the 'goto flush_and_out' is called only when '!noflush'
+  - If the 'r && noflush' is true, the interrupt check code above
+    is invoked and 'goto out'
 
-This error is difficult to reproduce, but if you insert a long delay
-(mdelay(10) or thereabouts) between the calls to atmci_start_command()
-and atmci_submit_data(), all transfers seem to fail without this patch,
-while I haven't seen any failures with this patch.
-
-Reported-by: Hein_Tibosch <hein_tibosch@yahoo.es>
-Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+Cc: Alasdair G Kergon <agk@redhat.com>
 ---
- drivers/mmc/host/atmel-mci.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/md/dm.c |   14 +-------------
+ 1 files changed, 1 insertion(+), 13 deletions(-)
 
-diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-index 917035e..0000896 100644
---- a/drivers/mmc/host/atmel-mci.c
-+++ b/drivers/mmc/host/atmel-mci.c
-@@ -426,8 +426,6 @@ static u32 atmci_submit_data(struct mmc_host *mmc, struct mmc_data *data)
- 	host->sg = NULL;
- 	host->data = data;
+Index: 2.6.27-rc8/drivers/md/dm.c
+===================================================================
+--- 2.6.27-rc8.orig/drivers/md/dm.c
++++ 2.6.27-rc8/drivers/md/dm.c
+@@ -76,7 +76,6 @@ union map_info *dm_get_mapinfo(struct bi
+  */
+ struct dm_wq_req {
+ 	enum {
+-		DM_WQ_FLUSH_ALL,
+ 		DM_WQ_FLUSH_DEFERRED,
+ 	} type;
+ 	struct work_struct work;
+@@ -1388,9 +1387,6 @@ static void dm_wq_work(struct work_struc
  
--	mci_writel(host, BLKR, MCI_BCNT(data->blocks)
--			| MCI_BLKLEN(data->blksz));
- 	dev_vdbg(&mmc->class_dev, "BLKR=0x%08x\n",
- 			MCI_BCNT(data->blocks) | MCI_BLKLEN(data->blksz));
+ 	down_write(&md->io_lock);
+ 	switch (req->type) {
+-	case DM_WQ_FLUSH_ALL:
+-		__merge_pushback_list(md);
+-		/* pass through */
+ 	case DM_WQ_FLUSH_DEFERRED:
+ 		__flush_deferred_io(md);
+ 		break;
+@@ -1520,7 +1516,7 @@ int dm_suspend(struct mapped_device *md,
+ 		if (!md->suspended_bdev) {
+ 			DMWARN("bdget failed in dm_suspend");
+ 			r = -ENOMEM;
+-			goto flush_and_out;
++			goto out;
+ 		}
  
-@@ -483,6 +481,10 @@ static void atmci_request(struct mmc_host *mmc, struct mmc_request *mrq)
- 		if (data->blocks > 1 && data->blksz & 3)
- 			goto fail;
- 		atmci_set_timeout(host, data);
-+
-+		/* Must set block count/size before sending command */
-+		mci_writel(host, BLKR, MCI_BCNT(data->blocks)
-+				| MCI_BLKLEN(data->blksz));
- 	}
+ 		/*
+@@ -1571,14 +1567,6 @@ int dm_suspend(struct mapped_device *md,
  
- 	iflags = MCI_CMDRDY;
--- 
-1.5.6.5
-
+ 	set_bit(DMF_SUSPENDED, &md->flags);
+ 
+-flush_and_out:
+-	if (r && noflush)
+-		/*
+-		 * Because there may be already I/Os in the pushback list,
+-		 * flush them before return.
+-		 */
+-		dm_queue_flush(md, DM_WQ_FLUSH_ALL, NULL);
+-
+ out:
+ 	if (r && md->suspended_bdev) {
+ 		bdput(md->suspended_bdev);
