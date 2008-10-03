@@ -1,54 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752061AbYJCK6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYJCK6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752061AbYJCK6S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 06:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYJCK6C
+	id S1753904AbYJCK6c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 06:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYJCK6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 06:58:02 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:56529 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752409AbYJCK6B (ORCPT
+	Fri, 3 Oct 2008 06:58:04 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:33265 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbYJCK6B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Oct 2008 06:58:01 -0400
-Message-Id: <20081003105632.357231142@de.ibm.com>
+Message-Id: <20081003105754.455319656@de.ibm.com>
+References: <20081003105632.357231142@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 03 Oct 2008 12:56:32 +0200
+Date: Fri, 03 Oct 2008 12:56:36 +0200
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 To: rusty@rustcorp.com.au, jens.axboe@oracle.com, schwidefsky@de.ibm.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH/RFC 0/4] Add stop_machine_get/put_threads to stop_machine infrastructrue.
+Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [PATCH/RFC 4/4] s390: convert to generic IPI infrstructure
+Content-Disposition: inline; filename=generic_ipi.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series would allow to convert s390 to the generic IPI interface.
-We can't to that currently since our etr/stp code relies on the old semantics
-of smp_call_function that guarantee that the function only returns after all
-receiving cpus have acknowledged the IPI. That way it is known that all other
-cpus are running in an interrupt handler with interrupts disabled.
-This is not true anymore with the generic IPI infrastructure.
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-So one idea was to use stop_machine in order to synchronize all cpus. Rusty
-was kind enough to extend it so that it is now possible to run a function
-on several cpus, instead of just one.
-However we need to be able to do that without allocating any memory. That's
-what this patch set is about. It introduces two new interfaces which allow
-to create the kstop threads in advance so that a subsequent stop_machine call
-will be able to run without the need to create any threads and therefore
-avoids the need to allocate any memory.
+Since etr/stp don't need the old smp_call_function semantics anymore
+we can convert s390 to the generic IPI infrastructure.
 
-The two interfaces (see patch 2) are:
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ arch/s390/Kconfig            |    1 
+ arch/s390/include/asm/sigp.h |    1 
+ arch/s390/include/asm/smp.h  |    5 -
+ arch/s390/kernel/smp.c       |  175 ++++---------------------------------------
+ 4 files changed, 24 insertions(+), 158 deletions(-)
 
-stop_machine_get_threads() - create all needed kstop threads in advance.
-If it is called multiple times it will just increase an internal usecount.
+Index: linux-2.6/arch/s390/include/asm/sigp.h
+===================================================================
+--- linux-2.6.orig/arch/s390/include/asm/sigp.h
++++ linux-2.6/arch/s390/include/asm/sigp.h
+@@ -61,6 +61,7 @@ typedef enum
+ {
+ 	ec_schedule=0,
+ 	ec_call_function,
++	ec_call_function_single,
+ 	ec_bit_last
+ } ec_bit_sig;
+ 
+Index: linux-2.6/arch/s390/include/asm/smp.h
+===================================================================
+--- linux-2.6.orig/arch/s390/include/asm/smp.h
++++ linux-2.6/arch/s390/include/asm/smp.h
+@@ -91,8 +91,9 @@ extern int __cpu_up (unsigned int cpu);
+ extern struct mutex smp_cpu_state_mutex;
+ extern int smp_cpu_polarization[];
+ 
+-extern int smp_call_function_mask(cpumask_t mask, void (*func)(void *),
+-	void *info, int wait);
++extern void arch_send_call_function_single_ipi(int cpu);
++extern void arch_send_call_function_ipi(cpumask_t mask);
++
+ #endif
+ 
+ #ifndef CONFIG_SMP
+Index: linux-2.6/arch/s390/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/s390/Kconfig
++++ linux-2.6/arch/s390/Kconfig
+@@ -74,6 +74,7 @@ config S390
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
+ 	select HAVE_KVM if 64BIT
++	select USE_GENERIC_SMP_HELPERS if SMP
+ 
+ source "init/Kconfig"
+ 
+Index: linux-2.6/arch/s390/kernel/smp.c
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/smp.c
++++ linux-2.6/arch/s390/kernel/smp.c
+@@ -77,159 +77,6 @@ static DEFINE_PER_CPU(struct cpu, cpu_de
+ 
+ static void smp_ext_bitcall(int, ec_bit_sig);
+ 
+-/*
+- * Structure and data for __smp_call_function_map(). This is designed to
+- * minimise static memory requirements. It also looks cleaner.
+- */
+-static DEFINE_SPINLOCK(call_lock);
+-
+-struct call_data_struct {
+-	void (*func) (void *info);
+-	void *info;
+-	cpumask_t started;
+-	cpumask_t finished;
+-	int wait;
+-};
+-
+-static struct call_data_struct *call_data;
+-
+-/*
+- * 'Call function' interrupt callback
+- */
+-static void do_call_function(void)
+-{
+-	void (*func) (void *info) = call_data->func;
+-	void *info = call_data->info;
+-	int wait = call_data->wait;
+-
+-	cpu_set(smp_processor_id(), call_data->started);
+-	(*func)(info);
+-	if (wait)
+-		cpu_set(smp_processor_id(), call_data->finished);;
+-}
+-
+-static void __smp_call_function_map(void (*func) (void *info), void *info,
+-				    int wait, cpumask_t map)
+-{
+-	struct call_data_struct data;
+-	int cpu, local = 0;
+-
+-	/*
+-	 * Can deadlock when interrupts are disabled or if in wrong context.
+-	 */
+-	WARN_ON(irqs_disabled() || in_irq());
+-
+-	/*
+-	 * Check for local function call. We have to have the same call order
+-	 * as in on_each_cpu() because of machine_restart_smp().
+-	 */
+-	if (cpu_isset(smp_processor_id(), map)) {
+-		local = 1;
+-		cpu_clear(smp_processor_id(), map);
+-	}
+-
+-	cpus_and(map, map, cpu_online_map);
+-	if (cpus_empty(map))
+-		goto out;
+-
+-	data.func = func;
+-	data.info = info;
+-	data.started = CPU_MASK_NONE;
+-	data.wait = wait;
+-	if (wait)
+-		data.finished = CPU_MASK_NONE;
+-
+-	call_data = &data;
+-
+-	for_each_cpu_mask(cpu, map)
+-		smp_ext_bitcall(cpu, ec_call_function);
+-
+-	/* Wait for response */
+-	while (!cpus_equal(map, data.started))
+-		cpu_relax();
+-	if (wait)
+-		while (!cpus_equal(map, data.finished))
+-			cpu_relax();
+-out:
+-	if (local) {
+-		local_irq_disable();
+-		func(info);
+-		local_irq_enable();
+-	}
+-}
+-
+-/*
+- * smp_call_function:
+- * @func: the function to run; this must be fast and non-blocking
+- * @info: an arbitrary pointer to pass to the function
+- * @wait: if true, wait (atomically) until function has completed on other CPUs
+- *
+- * Run a function on all other CPUs.
+- *
+- * You must not call this function with disabled interrupts, from a
+- * hardware interrupt handler or from a bottom half.
+- */
+-int smp_call_function(void (*func) (void *info), void *info, int wait)
+-{
+-	cpumask_t map;
+-
+-	spin_lock(&call_lock);
+-	map = cpu_online_map;
+-	cpu_clear(smp_processor_id(), map);
+-	__smp_call_function_map(func, info, wait, map);
+-	spin_unlock(&call_lock);
+-	return 0;
+-}
+-EXPORT_SYMBOL(smp_call_function);
+-
+-/*
+- * smp_call_function_single:
+- * @cpu: the CPU where func should run
+- * @func: the function to run; this must be fast and non-blocking
+- * @info: an arbitrary pointer to pass to the function
+- * @wait: if true, wait (atomically) until function has completed on other CPUs
+- *
+- * Run a function on one processor.
+- *
+- * You must not call this function with disabled interrupts, from a
+- * hardware interrupt handler or from a bottom half.
+- */
+-int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+-			     int wait)
+-{
+-	spin_lock(&call_lock);
+-	__smp_call_function_map(func, info, wait, cpumask_of_cpu(cpu));
+-	spin_unlock(&call_lock);
+-	return 0;
+-}
+-EXPORT_SYMBOL(smp_call_function_single);
+-
+-/**
+- * smp_call_function_mask(): Run a function on a set of other CPUs.
+- * @mask: The set of cpus to run on.  Must not include the current cpu.
+- * @func: The function to run. This must be fast and non-blocking.
+- * @info: An arbitrary pointer to pass to the function.
+- * @wait: If true, wait (atomically) until function has completed on other CPUs.
+- *
+- * Returns 0 on success, else a negative status code.
+- *
+- * If @wait is true, then returns once @func has returned; otherwise
+- * it returns just before the target cpu calls @func.
+- *
+- * You must not call this function with disabled interrupts or from a
+- * hardware interrupt handler or from a bottom half handler.
+- */
+-int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
+-			   int wait)
+-{
+-	spin_lock(&call_lock);
+-	cpu_clear(smp_processor_id(), mask);
+-	__smp_call_function_map(func, info, wait, mask);
+-	spin_unlock(&call_lock);
+-	return 0;
+-}
+-EXPORT_SYMBOL(smp_call_function_mask);
+-
+ void smp_send_stop(void)
+ {
+ 	int cpu, rc;
+@@ -271,7 +118,10 @@ static void do_ext_call_interrupt(__u16 
+ 	bits = xchg(&S390_lowcore.ext_call_fast, 0);
+ 
+ 	if (test_bit(ec_call_function, &bits))
+-		do_call_function();
++		generic_smp_call_function_interrupt();
++
++	if (test_bit(ec_call_function_single, &bits))
++		generic_smp_call_function_single_interrupt();
+ }
+ 
+ /*
+@@ -288,6 +138,19 @@ static void smp_ext_bitcall(int cpu, ec_
+ 		udelay(10);
+ }
+ 
++void arch_send_call_function_ipi(cpumask_t mask)
++{
++	int cpu;
++
++	for_each_cpu_mask(cpu, mask)
++		smp_ext_bitcall(cpu, ec_call_function);
++}
++
++void arch_send_call_function_single_ipi(int cpu)
++{
++	smp_ext_bitcall(cpu, ec_call_function_single);
++}
++
+ #ifndef CONFIG_64BIT
+ /*
+  * this function sends a 'purge tlb' signal to another CPU.
+@@ -586,9 +449,9 @@ int __cpuinit start_secondary(void *cpuv
+ 	pfault_init();
+ 
+ 	/* Mark this cpu as online */
+-	spin_lock(&call_lock);
++	ipi_call_lock();
+ 	cpu_set(smp_processor_id(), cpu_online_map);
+-	spin_unlock(&call_lock);
++	ipi_call_unlock();
+ 	/* Switch on interrupts */
+ 	local_irq_enable();
+ 	/* Print info about this processor */
 
-stop_machine_put_threads() - kill all previously created kstop threads,
-if the internal usecount drops to zero.
-
-Patch 1 is a stop_machine bugfix and is independent of the rest
-Patch 2 introduces the new proposed interface
-Patch 3 converts the s390 etr and stp code to the new API
-Patch 4 converts s390 to the generic IPI interface
-
-Thanks,
-Heiko
+-- 
