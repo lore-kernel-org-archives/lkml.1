@@ -1,53 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbYJCBbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYJCBf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754190AbYJCBbu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 21:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754422AbYJCBbU
+	id S1754729AbYJCBf6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 21:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbYJCBfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 21:31:20 -0400
-Received: from ozlabs.org ([203.10.76.45]:60470 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754344AbYJCBbT convert rfc822-to-8bit (ORCPT
+	Thu, 2 Oct 2008 21:35:50 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51711 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753642AbYJCBfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 21:31:19 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Subject: Re: [PATCH 5/5 ver2] debug: BUILD_BUG_ON: error on non-const expressions
-Date: Thu, 2 Oct 2008 15:35:35 +1000
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com> <48BD626B.6070705@panasas.com>
-In-Reply-To: <48BD626B.6070705@panasas.com>
+	Thu, 2 Oct 2008 21:35:48 -0400
+Message-ID: <48E57680.5050807@jp.fujitsu.com>
+Date: Fri, 03 Oct 2008 10:33:52 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200810021535.36302.rusty@rustcorp.com.au>
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
+Subject: Re: [PATCH v3 02/14] PCI: prevent duplicate slot names
+References: <20080923163753.12628.98683.stgit@bob.kio> <20080923164523.12628.69510.stgit@bob.kio> <48E09936.2030905@jp.fujitsu.com> <48E189BF.4020907@jp.fujitsu.com> <20081002010542.GA745@ldl.fc.hp.com> <48E43657.4040006@jp.fujitsu.com> <20081002044825.GA18063@ldl.fc.hp.com>
+In-Reply-To: <20081002044825.GA18063@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 September 2008 01:57:31 Boaz Harrosh wrote:
-> +#define BUILD_BUG_ON(e) \
-> +       do { struct {int:-!!(e); } x __maybe_unused;} while(0)
+Alex Chiang wrote:
+> Hi Kenji-san,
+> 
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>> Alex Chiang wrote:
+>>> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>>>> Kenji Kaneshige wrote:
+>>>>> Hi Alex-san,
+>>>>>
+>>>>> Here is one comment, though I have not finished reviewing/testing
+>>>>> your patches yet (sorry for the delay).
+>>>>>
+>>>>> Alex Chiang wrote:
+>>>>>
+>>>>> (snip.)
+>>>>>
+>>>>>> diff --git a/drivers/pci/hotplug/pci_hotplug_core.c   
+>>>>>> b/drivers/pci/hotplug/pci_hotplug_core.c
+>>>>>> index 3e37d63..46802dc 100644
+>>>>>> --- a/drivers/pci/hotplug/pci_hotplug_core.c
+>>>>>> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
+>>>>>> @@ -570,39 +570,32 @@ int pci_hp_register(struct hotplug_slot 
+>>>>>> *slot,  struct pci_bus *bus, int slot_nr,
+>>>>>>          return -EINVAL;
+>>>>>>      }
+>>>>>>  -    /* Check if we have already registered a slot with the same 
+>>>>>> name. */
+>>>>>> -    if (get_slot_from_name(name))
+>>>>>> -        return -EEXIST;
+>>>>>> -
+>>>>>>      /*
+>>>>>> -     * No problems if we call this interface from both ACPI_PCI_SLOT
+>>>>>> -     * driver and call it here again. If we've already created the
+>>>>>> -     * pci_slot, the interface will simply bump the refcount.
+>>>>>> +     * Look for existing slot. If we find it, and it was created by a
+>>>>>> +     * slot detection driver (ie, doesn't have a ->hotplug()) then we
+>>>>>> +     * allow the hotplug driver calling us to rename the slot if 
+>>>>>>  desired.
+>>>>>> +     *
+>>>>>> +     * Otherwise, create the slot and carry on with life.
+>>>>>>       */
+>>>>>> -    pci_slot = pci_create_slot(bus, slot_nr, name);
+>>>>>> -    if (IS_ERR(pci_slot))
+>>>>>> -        return PTR_ERR(pci_slot);
+>>>>>> -
+>>>>>> -    if (pci_slot->hotplug) {
+>>>>>> -        dbg("%s: already claimed\n", __func__);
+>>>>>> -        pci_destroy_slot(pci_slot);
+>>>>>> -        return -EBUSY;
+>>>>>> +    pci_slot = pci_get_pci_slot(bus, slot_nr);
+>>>>> The pci_get_pci_slot() function refers pci_bus->slots list, so it
+>>>>> should be called with pci_bus_sem semaphore held as pci_create_slot()
+>>>>> does, or pci_bus_sem semaphore should be held by pci_get_pci_slot()
+>>>>> itself.
+>>> Yes, I've changed pci_get_pci_slot() to acquire the pci_bus_sem
+>>> semaphore.
+>>>
+>>> Thank you for pointing this out.
+>>>
+>>> It will be fixed in v4 of this patch series, which I will send
+>>> out after I receive the rest of your review comments.
+>>>
+>> I noticed that changing pci_get_pci_slot() to acquire the pci_bus_sem
+>> might be not enough. If slot was created between pci_get_pci_slot() and
+>> pci_create_slot() by another thread in the following code, something
+>> wrong would happen I think.
+>>
+>>        pci_slot = pci_get_pci_slot(bus, slot_nr);
+>>        if (pci_slot) {
+>>                if (pci_slot->hotplug) {
+>>                        result = -EBUSY;
+>>                        goto err;
+>>                }
+>>
+>>                if (strcmp(kobject_name(&pci_slot->kobj), name))
+>>                        if ((result = pci_rename_slot(pci_slot, name)))
+>>                                goto err;
+>>        } else {
+>>                pci_slot = pci_create_slot(bus, slot_nr, name);
+>>                if ((result = IS_ERR(pci_slot)))
+>>                        goto out;
+>>        }
+> 
+> I'm sorry, I don't think I see the problem you are pointing out.
+> 
+> If pci_get_pci_slot() finds a pci_slot, we do not modify
+> pci_bus->slots any further, so even if a new slot is created, it
+> shouldn't affect the pci_slot that we already found.
+> 
+> I must be missing something, but I don't know what. Would you
+> mind explaining what you had in mind with your comment?
+> 
 
-Why did you hate the void cast again?  Simplest should 
-be "(void)BUILD_BUG_ON_ZERO(e)".  But if not, it seems to me that it's 
-cleaner to do:
+Here is one of the example of the problem I imagine.
 
-#define BUILD_BUG_ON(e) \
-	do { } while(BUILD_BUG_ON_ZERO(e))
+When pci_get_pci_slot() does NOT find a pci_slot, pci_hp_register()
+calls pci_create_slot(). If another hotplug driver creates slot
+between pci_get_pci_slot() and pci_create_slot(), hotplug member of
+pci_slot returned from pci_create_slot() is not NULL in the following
+code.
 
-No chance of the compiler emitting unused vars.
+>>                pci_slot = pci_create_slot(bus, slot_nr, name);
+>>                if ((result = IS_ERR(pci_slot)))
+>>                        goto out;
 
-Cheers,
-Rusty.
+
+In this case, we should return with -EBUSY. But because there is no
+check to see if pci->slot is NULL, pci_slot->hotplug will be overwritten
+with the new value.
+
+Thanks,
+Kenji Kaneshige
 
