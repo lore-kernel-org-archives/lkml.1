@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYJCOwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbYJCOzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbYJCOwt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 10:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbYJCOwb
+	id S1753168AbYJCOzA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 10:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYJCOyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 10:52:31 -0400
-Received: from kroah.org ([198.145.64.141]:43285 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753210AbYJCOwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 10:52:30 -0400
-Date: Fri, 3 Oct 2008 07:49:24 -0700
-From: Greg KH <greg@kroah.com>
-To: Rodolfo Giometti <giometti@linux.it>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Support for Silicon C2 Interface.
-Message-ID: <20081003144924.GA5050@kroah.com>
-References: <1223044589-31741-1-git-send-email-giometti@linux.it>
+	Fri, 3 Oct 2008 10:54:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60600 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751092AbYJCOyw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 10:54:52 -0400
+Date: Fri, 3 Oct 2008 07:52:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: Re: [regression] Latest git has WARN_ON storm with e1000e driver
+In-Reply-To: <200810031041.49350.borntraeger@de.ibm.com>
+Message-ID: <alpine.LFD.2.00.0810030746430.3230@nehalem.linux-foundation.org>
+References: <200810031041.49350.borntraeger@de.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223044589-31741-1-git-send-email-giometti@linux.it>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 04:36:28PM +0200, Rodolfo Giometti wrote:
-> C2 port implements a two wire serial communication protocol (bit
-> banging) designed to enable in-system programming, debugging, and
-> boundary-scan testing on low pin-count Silicon Labs devices.
-> 
-> Main references are at Silicon Laboratories site:
-> 
-> * AN127: FLASH Programming via the C2 Interface
->      http://www.silabs.com/public/documents/tpub_doc/anote/Microcontrollers/Small_Form_Factor/en/an127.pdf
-> 
-> * C2 Specification
->      http://www.silabs.com/public/documents/tpub_doc/spec/Microcontrollers/en/C2spec.pdf
-> 
-> Currently this code supports only flash programming through sysfs
-> interface but extensions shoud be easy to add.
-> 
-> I know that this (proposal) patch may be incomplete but I'd like to
-> know what you are thinking about it before continuing further. For example
-> I'd like to know if should I put the C2 port core here or into proper
-> subdirectory of linux/drivers/misc/ where clients can be placed also.
 
-Hm, I seem to be missing the patch here :(
 
-thanks,
+On Fri, 3 Oct 2008, Christian Borntraeger wrote:
+> 
+> This is caused by holding a spinlock (__driver_attach) and checking for 
+> preempt_count (e1000_acquire_swflag_ich8lan).
 
-greg k-h
+Which spinlock is it? It sure shouldn't be anything in the generic drievr 
+layer: __driver_attach takes a lock, but it's a semaphore (dev->sem), not 
+a spinlock. In fact, al lot of drivers will sleep or do allocations, so if 
+the driver layer were to call the probe function with a spinlock held, 
+things would be really broken.
+
+The callchain has "spin_lock_irqsave" in it, but that's stale stack data. 
+
+			Linus
