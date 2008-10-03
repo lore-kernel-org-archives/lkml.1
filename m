@@ -1,156 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYJCHfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbYJCHfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbYJCHfT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 03:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbYJCHfB
+	id S1754960AbYJCHfn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 03:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbYJCHf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 03:35:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48340 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753537AbYJCHfB (ORCPT
+	Fri, 3 Oct 2008 03:35:27 -0400
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:49570 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753774AbYJCHfY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 03:35:01 -0400
-Date: Fri, 3 Oct 2008 00:33:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rusty@rustcorp.com.au,
-       jeremy@goop.org, ebiederm@xmission.com, travis@sgi.com,
-       herbert@gondor.apana.org.au, xemul@openvz.org, penberg@cs.helsinki.fi
-Subject: Re: [patch 3/4] cpu alloc: The allocator
-Message-Id: <20081003003342.4d592c1f.akpm@linux-foundation.org>
-In-Reply-To: <20080929193516.278278446@quilx.com>
-References: <20080929193500.470295078@quilx.com>
-	<20080929193516.278278446@quilx.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Oct 2008 03:35:24 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX18sKJpmxXrUk/rvnF3qS1QZ
+Date: Fri, 3 Oct 2008 10:38:19 +0300
+From: Tony Lindgren <tony@atomide.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Victor <linux@maxim.org.za>,
+       Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH/RFC] hardware irq debouncing support
+Message-ID: <20081003073816.GB25482@atomide.com>
+References: <200809241251.32606.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809241251.32606.david-b@pacbell.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008 12:35:03 -0700 Christoph Lameter <cl@linux-foundation.org> wrote:
-
-> The per cpu allocator allows dynamic allocation of memory on all
-> processors simultaneously. A bitmap is used to track used areas.
-> The allocator implements tight packing to reduce the cache footprint
-> and increase speed since cacheline contention is typically not a concern
-> for memory mainly used by a single cpu. Small objects will fill up gaps
-> left by larger allocations that required alignments.
+* David Brownell <david-b@pacbell.net> [080924 22:51]:
+> Hardware IRQ debouncing is common for IRQ controllers which are
+> part of GPIO modules ... they often deal with mechanical switches,
+> buttons, and so forth.  This patch:
 > 
-> The size of the cpu_alloc area can be changed via the percpu=xxx
-> kernel parameter.
+>  - Provides simple support for that in genirq
 > 
+>  - Includes sample implementations for some Linux systems
+>    which already include non-generic support for this:
+> 
+>      * Atmel SOCs (AT91, AT32 -- the same GPIO module)
+>      * OMAP2/OMAP3 (not quite as simple)
 >
-> ...
->
-> +static void set_map(int start, int length)
+> Control over how long to debounce is less common, and often applies
+> to banks of GPIOs not individual signals ... not addressed here.
+> 
+> Drivers can request this (where available) with a new IRQF_DEBOUNCED
+> flag/hint passed to request_irq():
+> 
+>     IF that flag is set when a handler is registered
+> 	AND the relevant irq_chip supports debouncing
+> 	AND the IRQ isn't already flagged as being debounced
+>     THEN the irq_chip is asked to enable debouncing for this IRQ
+> 	UNTIL the IRQ's last handler is unregistered.
+>     ELSE
+>         nothing is done ... the hint is ignored
+>     FI
+> 
+> Comments?
+> 
+> Having this mechanism in genirq would let boards remove a bunch of
+> nonportable code, and would let drivers like gpio_keys, gpio_mouse,
+> and various touchscreens work more reliably.  It'd also let various
+> SOC-specific MMC and CF card drivers switch over to more standard
+> (and widely understandable) mechanisms.
+
+Yeah this would nuke bunch of omap specific code for dealing with
+battery covers, MMC slot open etc..
+
+> I'd like to submit such updates for the 2.6.28 merge window, in
+> part to let mainline avoid needing yet another driver-specific
+> programming interface for IRQ debouncing.  (For TWL4030/TPS659x0,
+> as used in most OMAP3 boards including the Gumstix Overo and the
+> BeagleBoard.)
+
+What's the plan for sysfs_notify event for these switches? Are you
+planning to add something like that to gpiolib?
+
+Tony
+
+
+> p.s. Tony and Kevin:  note the locking bugfix in the OMAP2/3 bit.
+
+Here's my ack for that:
+
+Acked-by: Tony Lindgren <tony@atomide.com>
+
+> 
+> ---
+>  arch/arm/mach-at91/gpio.c    |   13 +++++++++++++
+>  arch/arm/plat-omap/gpio.c    |   15 ++++++++++++++-
+>  arch/avr32/mach-at32ap/pio.c |   14 ++++++++++++++
+>  include/linux/interrupt.h    |    2 ++
+>  include/linux/irq.h          |    3 +++
+>  kernel/irq/manage.c          |   27 +++++++++++++++++++++++++++
+>  6 files changed, 73 insertions(+), 1 deletion(-)
+> 
+> --- a/arch/arm/mach-at91/gpio.c
+> +++ b/arch/arm/mach-at91/gpio.c
+> @@ -368,12 +368,25 @@ static int gpio_irq_type(unsigned pin, u
+>  	}
+>  }
+>  
+> +static int gpio_irq_debounce(unsigned pin, bool is_on)
 > +{
-> +	while (length-- > 0)
-> +		__set_bit(start++, cpu_alloc_map);
+> +	void __iomem	*pio = pin_to_controller(pin);
+> +	unsigned	mask = pin_to_mask(pin);
+> +
+> +	if (is_on)
+> +		__raw_writel(mask, pio + PIO_IFER);
+> +	else
+> +		__raw_writel(mask, pio + PIO_IFDR);
+> +	return 0;
 > +}
-
-Can we use bitmap_fill() here?
-
-> +/*
-> + * Mark an area as freed.
-> + *
-> + * Must hold cpu_alloc_map_lock
-> + */
-> +static void clear_map(int start, int length)
-> +{
-> +	while (length-- > 0)
-> +		__clear_bit(start++, cpu_alloc_map);
-> +}
-
-And bitmap_etc().  We have a pretty complete suite there.
-
-> +/*
-> + * Allocate an object of a certain size
-> + *
-> + * Returns a special pointer that can be used with CPU_PTR to find the
-> + * address of the object for a certain cpu.
-> + */
-> +void *cpu_alloc(unsigned long size, gfp_t gfpflags, unsigned long align)
-> +{
-> +	unsigned long start;
-> +	int units = size_to_units(size);
-> +	void *ptr;
-> +	int first;
+> +
+>  static struct irq_chip gpio_irqchip = {
+>  	.name		= "GPIO",
+>  	.mask		= gpio_irq_mask,
+>  	.unmask		= gpio_irq_unmask,
+>  	.set_type	= gpio_irq_type,
+>  	.set_wake	= gpio_irq_set_wake,
+> +	.debounce	= gpio_irq_debounce,
+>  };
+>  
+>  static void gpio_irq_handler(unsigned irq, struct irq_desc *desc)
+> --- a/arch/arm/plat-omap/gpio.c
+> +++ b/arch/arm/plat-omap/gpio.c
+> @@ -472,6 +472,7 @@ void omap_set_gpio_debounce(int gpio, in
+>  {
+>  	struct gpio_bank *bank;
+>  	void __iomem *reg;
 > +	unsigned long flags;
+>  	u32 val, l = 1 << get_gpio_index(gpio);
+>  
+>  	if (cpu_class_is_omap1())
+> @@ -479,8 +480,9 @@ void omap_set_gpio_debounce(int gpio, in
+>  
+>  	bank = get_gpio_bank(gpio);
+>  	reg = bank->base;
+> -
+>  	reg += OMAP24XX_GPIO_DEBOUNCE_EN;
 > +
-> +	if (!size)
-> +		return ZERO_SIZE_PTR;
-> +
-> +	WARN_ON(align > PAGE_SIZE);
-> +
-> +	if (align < UNIT_SIZE)
-> +		align = UNIT_SIZE;
-> +
-> +	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
-> +
-> +	first = 1;
-> +	start = first_free;
-> +
-> +	for ( ; ; ) {
-> +
-> +		start = find_next_zero_bit(cpu_alloc_map, nr_units, start);
-> +		if (start >= nr_units)
-> +			goto out_of_memory;
-> +
-> +		if (first)
-> +			first_free = start;
-> +
-> +		/*
-> +		 * Check alignment and that there is enough space after
-> +		 * the starting unit.
-> +		 */
-> +		if (start % (align / UNIT_SIZE) == 0 &&
-> +			find_next_bit(cpu_alloc_map, nr_units, start + 1)
-> +					>= start + units)
-> +				break;
-> +		start++;
-> +		first = 0;
-> +	}
-
-Might be able to use bitmap_find_free_region() here, if we try hard enough.
-
-But as a general thing, it would be better to add any missing
-functionality to the bitmap API and then to use the bitmap API
-consistently, rather than partly using it, or ignoring it altogether.
-
-> +	if (first)
-> +		first_free = start + units;
-> +
-> +	if (start + units > nr_units)
-> +		goto out_of_memory;
-> +
-> +	set_map(start, units);
-> +	__count_vm_events(CPU_BYTES, units * UNIT_SIZE);
-> +
-> +	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
-> +
-> +	ptr = (int *)__per_cpu_end + start;
-> +
-> +	if (gfpflags & __GFP_ZERO) {
-> +		int cpu;
-> +
-> +		for_each_possible_cpu(cpu)
-> +			memset(CPU_PTR(ptr, cpu), 0, size);
-> +	}
-> +
-> +	return ptr;
-> +
-> +out_of_memory:
-> +	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
-> +	return NULL;
+> +	spin_lock_irqsave(&bank->lock, flags);
+>  	val = __raw_readl(reg);
+>  
+>  	if (enable)
+> @@ -489,6 +491,7 @@ void omap_set_gpio_debounce(int gpio, in
+>  		val &= ~l;
+>  
+>  	__raw_writel(val, reg);
+> +	spin_unlock_irqrestore(&bank->lock, flags);
+>  }
+>  EXPORT_SYMBOL(omap_set_gpio_debounce);
+>  
+> @@ -1109,6 +1112,12 @@ static void gpio_unmask_irq(unsigned int
+>  	_set_gpio_irqenable(bank, gpio, 1);
+>  }
+>  
+> +static int gpio_irq_debounce(unsigned int irq, bool is_on)
+> +{
+> +	omap_set_gpio_debounce(irq - IH_GPIO_BASE, is_on);
+> +	return 0;
 > +}
-> +EXPORT_SYMBOL(cpu_alloc);
 > +
-
-Apart from that the interface, intent and implementation seem reasonable.
-
-But I'd have though that it would be possible to only allocate the
-storage for online CPUs.  That would be a pretty significant win for
-some system configurations?
-
+>  static struct irq_chip gpio_irq_chip = {
+>  	.name		= "GPIO",
+>  	.shutdown	= gpio_irq_shutdown,
+> @@ -1437,6 +1446,10 @@ static int __init _omap_gpio_init(void)
+>  			(rev >> 4) & 0x0f, rev & 0x0f);
+>  	}
+>  #endif
+> +
+> +	if (cpu_is_omap242x() || cpu_is_omap243x() || cpu_is_omap34xx())
+> +		gpio_irq_chip.debounce = gpio_irq_debounce;
+> +
+>  	for (i = 0; i < gpio_bank_count; i++) {
+>  		int j, gpio_count = 16;
+>  
+> --- a/arch/avr32/mach-at32ap/pio.c
+> +++ b/arch/avr32/mach-at32ap/pio.c
+> @@ -234,11 +234,25 @@ static int gpio_irq_type(unsigned irq, u
+>  	return 0;
+>  }
+>  
+> +static int gpio_irq_debounce(unsigned irq, bool is_on)
+> +{
+> +	unsigned		gpio = irq_to_gpio(irq);
+> +	struct pio_device	*pio = &pio_dev[gpio >> 5];
+> +	u32			mask = 1 << (gpio & 0x1f);
+> +
+> +	if (is_on)
+> +		pio_writel(pio, IFER, mask);
+> +	else
+> +		pio_writel(pio, IFDR, mask);
+> +	return 0;
+> +}
+> +
+>  static struct irq_chip gpio_irqchip = {
+>  	.name		= "gpio",
+>  	.mask		= gpio_irq_mask,
+>  	.unmask		= gpio_irq_unmask,
+>  	.set_type	= gpio_irq_type,
+> +	.debounce	= gpio_irq_debounce,
+>  };
+>  
+>  static void gpio_irq_handler(unsigned irq, struct irq_desc *desc)
+> --- a/include/linux/interrupt.h
+> +++ b/include/linux/interrupt.h
+> @@ -45,6 +45,7 @@
+>   * IRQF_IRQPOLL - Interrupt is used for polling (only the interrupt that is
+>   *                registered first in an shared interrupt is considered for
+>   *                performance reasons)
+> + * IRQF_DEBOUNCED - Interrupt should use hardware debouncing where possible
+>   */
+>  #define IRQF_DISABLED		0x00000020
+>  #define IRQF_SAMPLE_RANDOM	0x00000040
+> @@ -54,6 +55,7 @@
+>  #define IRQF_PERCPU		0x00000400
+>  #define IRQF_NOBALANCING	0x00000800
+>  #define IRQF_IRQPOLL		0x00001000
+> +#define IRQF_DEBOUNCED		0x00002000
+>  
+>  typedef irqreturn_t (*irq_handler_t)(int, void *);
+>  
+> --- a/include/linux/irq.h
+> +++ b/include/linux/irq.h
+> @@ -44,6 +44,7 @@ typedef	void (*irq_flow_handler_t)(unsig
+>  #define IRQ_TYPE_LEVEL_LOW	0x00000008	/* Level low type */
+>  #define IRQ_TYPE_SENSE_MASK	0x0000000f	/* Mask of the above */
+>  #define IRQ_TYPE_PROBE		0x00000010	/* Probing in progress */
+> +#define IRQ_TYPE_DEBOUNCED	0x00000020	/* Hardware debouncing enabled */
+>  
+>  /* Internal flags */
+>  #define IRQ_INPROGRESS		0x00000100	/* IRQ handler active - do not enter! */
+> @@ -92,6 +93,7 @@ struct msi_desc;
+>   * @retrigger:		resend an IRQ to the CPU
+>   * @set_type:		set the flow type (IRQ_TYPE_LEVEL/etc.) of an IRQ
+>   * @set_wake:		enable/disable power-management wake-on of an IRQ
+> + * @debounce:		enable/disable hardware debouncing of an IRQ
+>   *
+>   * @release:		release function solely used by UML
+>   * @typename:		obsoleted by name, kept as migration helper
+> @@ -114,6 +116,7 @@ struct irq_chip {
+>  	int		(*retrigger)(unsigned int irq);
+>  	int		(*set_type)(unsigned int irq, unsigned int flow_type);
+>  	int		(*set_wake)(unsigned int irq, unsigned int on);
+> +	int		(*debounce)(unsigned int irq, bool is_on);
+>  
+>  	/* Currently used only by UML, might disappear one day.*/
+>  #ifdef CONFIG_IRQ_RELEASE_METHOD
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -445,6 +445,18 @@ int setup_irq(unsigned int irq, struct i
+>  	desc->irq_count = 0;
+>  	desc->irqs_unhandled = 0;
+>  
+> +	/* Maybe enable hardware debouncing */
+> +	if ((new->flags & IRQF_DEBOUNCED)
+> +			&& desc->chip->debounce
+> +			&& !(desc->status & IRQ_TYPE_DEBOUNCED)) {
+> +		ret = desc->chip->debounce(irq, true);
+> +		if (ret < 0)
+> +			pr_debug("IRQ: can't debounce irq %d, err %d\n",
+> +					irq, ret);
+> +		else
+> +			desc->status |= IRQ_TYPE_DEBOUNCED;
+> +	}
+> +
+>  	/*
+>  	 * Check whether we disabled the irq via the spurious handler
+>  	 * before. Reenable it and give it another chance.
+> @@ -524,6 +536,21 @@ void free_irq(unsigned int irq, void *de
+>  
+>  			if (!desc->action) {
+>  				desc->status |= IRQ_DISABLED;
+> +
+> +				/* Maybe disable hardware debouncing */
+> +				if ((desc->status & IRQ_TYPE_DEBOUNCED)
+> +						&& desc->chip->debounce) {
+> +					int status;
+> +
+> +					status = desc->chip->debounce(irq, false);
+> +					if (status < 0)
+> +						pr_debug("IRQ: irq %d still "
+> +							"being debounced, err %d\n",
+> +							irq, status);
+> +					else
+> +						desc->status &= ~IRQ_TYPE_DEBOUNCED;
+> +				}
+> +
+>  				if (desc->chip->shutdown)
+>  					desc->chip->shutdown(irq);
+>  				else
