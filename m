@@ -1,98 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYJCImH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYJCIpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625AbYJCImH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 04:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYJCIlz
+	id S1754538AbYJCIpV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 04:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYJCIpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 04:41:55 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:33328 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751477AbYJCIly (ORCPT
+	Fri, 3 Oct 2008 04:45:08 -0400
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:31625 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751640AbYJCIpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 04:41:54 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [regression] Latest git has WARN_ON storm with e1000e driver
-Date: Fri, 3 Oct 2008 10:41:49 +0200
+	Fri, 3 Oct 2008 04:45:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=zW4Fy5IjFD3EgBXeKggJKvhzcxmXiUNicslguUXZMCREV7a9MjF+YM2RDTNVRhcYSOf+FNdH/YGPLwu/poUpP966owJ2iXgCx0LGaUHHDv0+II+HVwg6IfLYpoGCHNbJ9xRJoZuznwdNXiwlyF39VMQnpwK5KulTNIf5UMvw0CU=  ;
+X-YMail-OSG: pCpwnrMVM1m5ngdGlbuFl_vhRJhuBIWhdsve_XNEMAlRvrXcrZYexCLKCy1dB5mBPbC1EY4HFqFPUPdnfk_R4iB8LVxJLz0MwxJz4G2JO4TKtBKonA8rw9NL30xbsJkX6_PT7dC3DST_eM3lEfEot1QrfkDry8rBtCXKzUS7xZE_fwrzLQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH/RFC] hardware irq debouncing support
+Date: Fri, 3 Oct 2008 01:45:01 -0700
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Victor <linux@maxim.org.za>,
+       Kevin Hilman <khilman@deeprootsystems.com>
+References: <200809241251.32606.david-b@pacbell.net> <20081003073816.GB25482@atomide.com>
+In-Reply-To: <20081003073816.GB25482@atomide.com>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200810031041.49350.borntraeger@de.ibm.com>
+Content-Disposition: inline
+Message-Id: <200810030145.02779.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Thomas,
+On Friday 03 October 2008, Tony Lindgren wrote:
+> * David Brownell <david-b@pacbell.net> [080924 22:51]:
+> > Hardware IRQ debouncing is common for IRQ controllers which are
+> > part of GPIO modules ... they often deal with mechanical switches,
+> > buttons, and so forth.  This patch:
+> > 
+> >  - Provides simple support for that in genirq
+> > 
+> >  - Includes sample implementations for some Linux systems
+> >    which already include non-generic support for this:
+> > 
+> >      * Atmel SOCs (AT91, AT32 -- the same GPIO module)
+> >      * OMAP2/OMAP3 (not quite as simple)
+> >
+> > 		...
+> > Comments?
+> > 
+> > Having this mechanism in genirq would let boards remove a bunch of
+> > nonportable code, and would let drivers like gpio_keys, gpio_mouse,
+> > and various touchscreens work more reliably.  It'd also let various
+> > SOC-specific MMC and CF card drivers switch over to more standard
+> > (and widely understandable) mechanisms.
+> 
+> Yeah this would nuke bunch of omap specific code for dealing with
+> battery covers, MMC slot open etc..
 
-I have e1000e compiled into my kernel and 
+It would be hidden away behind IRQF_DEBOUNCE ... not so much
+making the code vanish, as making hardware-specific interfaces
+vanish in favor of what seems to be the most popular idiom.
 
-commit 717d438d1fde94decef874b9808379d1f4523453
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Thu Oct 2 16:33:40 2008 -0700
-
-    e1000e: debug contention on NVM SWFLAG
-
-
-Causes a storm of 
-
-[   15.600387] ------------[ cut here ]------------
-[   15.600388] WARNING: at drivers/net/e1000e/ich8lan.c:399 
-e1000_acquire_swflag_ich8lan+0xde/0xf0()
-[   15.600389] Modules linked in:
-[   15.600390] Pid: 1, comm: swapper Tainted: G        W 
-2.6.27-rc8-00055-gb5ff7df #26
-[   15.600391]  [<c01421cf>] warn_on_slowpath+0x5f/0xa0
-[   15.600394]  [<c0464999>] __devinet_sysctl_register+0xc9/0x100
-[   15.600396]  [<c015bf0e>] sched_clock_cpu+0xde/0x180
-[   15.600399]  [<c015ae98>] down_trylock+0x28/0x40
-[   15.600400]  [<c04df645>] _spin_unlock+0x5/0x20
-[   15.600402]  [<c02944a4>] delay_tsc+0x84/0xb0
-[   15.600404]  [<c031bd6e>] e1000_acquire_swflag_ich8lan+0xde/0xf0
-[   15.600406]  [<c031b716>] e1000_read_flash_word_ich8lan+0x76/0xb0
-[   15.600408]  [<c031c05b>] e1000_read_nvm_ich8lan+0x5b/0xf0
-[   15.600410]  [<c031ecb4>] e1000e_read_pba_num+0x64/0x80
-[   15.600412]  [<c04d2158>] e1000_probe+0xb98/0xc20
-[   15.600414]  [<c02a4f0e>] pci_device_probe+0x5e/0x80
-[   15.600416]  [<c030d416>] driver_probe_device+0x86/0x1a0
-[   15.600418]  [<c04df373>] _spin_lock_irqsave+0x33/0x50
-[   15.600420]  [<c030d5a1>] __driver_attach+0x71/0x80
-[   15.600422]  [<c02a4e50>] pci_device_remove+0x0/0x40
-[   15.600424]  [<c030cd44>] bus_for_each_dev+0x44/0x70
-[   15.600426]  [<c02a4e50>] pci_device_remove+0x0/0x40
-[   15.600427]  [<c030d2a6>] driver_attach+0x16/0x20
-[   15.600430]  [<c030d530>] __driver_attach+0x0/0x80
-[   15.600432]  [<c030c70f>] bus_add_driver+0x19f/0x220
-[   15.600434]  [<c02a4e50>] pci_device_remove+0x0/0x40
-[   15.600435]  [<c030d73c>] driver_register+0x5c/0x130
-[   15.600437]  [<c06aa88f>] thinkpad_acpi_module_init+0x7b2/0x983
-[   15.600439]  [<c06aaa60>] e1000_init_module+0x0/0x70
-[   15.600441]  [<c02a5157>] __pci_register_driver+0x47/0x90
-[   15.600443]  [<c06aaaa5>] e1000_init_module+0x45/0x70
-[   15.600445]  [<c01012ea>] do_one_initcall+0x2a/0x190
-[   15.600446]  [<c01defb4>] create_proc_entry+0x54/0xa0
-[   15.600449]  [<c0175411>] register_irq_proc+0xc1/0xe0
-[   15.600451]  [<c0175478>] init_irq_proc+0x48/0x60
-[   15.600452]  [<c068e85d>] kernel_init+0x11a/0x17d
-[   15.600454]  [<c068e743>] kernel_init+0x0/0x17d
-[   15.600456]  [<c011d48b>] kernel_thread_helper+0x7/0x1c
-[   15.600458]  =======================
-[   15.600459] ---[ end trace 1caa30bae2a6fa92 ]---
+(Regular input GPIOs could be debounced too, but every time
+I've noticed debouncing in use, it's coupled to an IRQ.)
 
 
-This is caused by holding a spinlock (__driver_attach) and checking for 
-preempt_count (e1000_acquire_swflag_ich8lan).
+> > I'd like to submit such updates for the 2.6.28 merge window, in
+> > part to let mainline avoid needing yet another driver-specific
+> > programming interface for IRQ debouncing.  (For TWL4030/TPS659x0,
+> > as used in most OMAP3 boards including the Gumstix Overo and the
+> > BeagleBoard.)
+> 
+> What's the plan for sysfs_notify event for these switches? Are you
+> planning to add something like that to gpiolib?
 
-I suggest to revert this commit, since we cannot take a mutex while holding a 
-spinlock.
-The simple solution of replacing the mutex with a spinlock does not work, 
-since we call msleep on several places in the code. Replacing all that code 
-doesnt look like 2.6.27 material.
+I'm not sure what you mean -- which particular switches?
+If the issue is the MMC card detect switches, that seems
+more like an MMC question...
 
-Christian
+There was discussion of having the gpio_export() code
+support notification that way, triggered by interrupts
+on IRQ-capable GPIOs, but nobody seems to have wanted
+it enough to translate from talk to code.  ;)
 
+- Dave
+
+ 
+> Tony
+> 
+> 
+> > p.s. Tony and Kevin:  note the locking bugfix in the OMAP2/3 bit.
+> 
+> Here's my ack for that:
+> 
+> Acked-by: Tony Lindgren <tony@atomide.com>
+
+For the whole patch, I'll presume, not just that locking fix.  ;)
+
+> 
+> > 
+> > ---
+> >  arch/arm/mach-at91/gpio.c    |   13 +++++++++++++
+> >  arch/arm/plat-omap/gpio.c    |   15 ++++++++++++++-
+> >  arch/avr32/mach-at32ap/pio.c |   14 ++++++++++++++
+> >  include/linux/interrupt.h    |    2 ++
+> >  include/linux/irq.h          |    3 +++
+> >  kernel/irq/manage.c          |   27 +++++++++++++++++++++++++++
+> >  6 files changed, 73 insertions(+), 1 deletion(-)
+> > 
