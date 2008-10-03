@@ -1,118 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYJCJZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYJCJ0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbYJCJZD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 05:25:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbYJCJYx
+	id S1754801AbYJCJ0w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 05:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYJCJ0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 05:24:53 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:37090 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752393AbYJCJYw (ORCPT
+	Fri, 3 Oct 2008 05:26:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46426 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752503AbYJCJ0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 05:24:52 -0400
-Date: Fri, 3 Oct 2008 12:25:52 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86_64: Implement personality ADDR_LIMIT_32BIT
-Message-ID: <20081003092550.GA8669@localhost.localdomain>
-References: <1223017469-5158-1-git-send-email-kirill@shutemov.name> <20081003080244.GC25408@elte.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="X1bOJ3K7DJ5YkBrT"
-Content-Disposition: inline
-In-Reply-To: <20081003080244.GC25408@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-29)
+	Fri, 3 Oct 2008 05:26:44 -0400
+Date: Fri, 3 Oct 2008 02:26:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: dan.j.williams@intel.com, maciej.sosnowski@intel.com,
+       linux-kernel@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [PATCH] dw_dmac: Fix copy/paste bug in tasklet
+Message-Id: <20081003022638.788307fd.akpm@linux-foundation.org>
+In-Reply-To: <1222784879-14160-1-git-send-email-haavard.skinnemoen@atmel.com>
+References: <1222784879-14160-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 30 Sep 2008 16:27:59 +0200 Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
 
---X1bOJ3K7DJ5YkBrT
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> The tasklet checks RAW.BLOCK twice, and does not check RAW.XFER. This is
+> obviously wrong, and could theoretically cause the driver to hang.
+> 
+> Reported-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+> ---
+>  drivers/dma/dw_dmac.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/dma/dw_dmac.c b/drivers/dma/dw_dmac.c
+> index 94df917..0778d99 100644
+> --- a/drivers/dma/dw_dmac.c
+> +++ b/drivers/dma/dw_dmac.c
+> @@ -364,7 +364,7 @@ static void dw_dma_tasklet(unsigned long data)
+>  	int i;
+>  
+>  	status_block = dma_readl(dw, RAW.BLOCK);
+> -	status_xfer = dma_readl(dw, RAW.BLOCK);
+> +	status_xfer = dma_readl(dw, RAW.XFER);
+>  	status_err = dma_readl(dw, RAW.ERROR);
+>  
+>  	dev_vdbg(dw->dma.dev, "tasklet: status_block=%x status_err=%x\n",
 
-On Fri, Oct 03, 2008 at 10:02:44AM +0200, Ingo Molnar wrote:
->=20
-> * Kirill A. Shutemov <kirill@shutemov.name> wrote:
->=20
-> > -	/* for MAP_32BIT mappings we force the legact mmap base */
-> > -	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT))
-> > +	/* for MAP_32BIT mappings and ADDR_LIMIT_32BIT personality we force t=
-he
-> > +	 * legact mmap base
-> > +	 */
->=20
-> please use the customary multi-line comment style:
->=20
->   /*
->    * Comment .....
->    * ...... goes here:
->    */
->=20
-> and you might use the opportunity to fix the s/legact/legacy typo as=20
-> well.
+We haven't heard from Dan for a week and this still wasn't in his tree
+yesterday.
 
-Ok, I'll fix it.
-
->=20
-> but more generally, we already have ADDR_LIMIT_3GB support on x86.
-
-Does ADDR_LIMIT_3GB really work?
-
-$ cat 1.c
-#include <stdio.h>
-#include <sys/personality.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-
-#define ADDR_LIMIT_3GB 0x8000000
-
-int main(void)
-{
-        int id;
-        void *shm;
-
-        personality(ADDR_LIMIT_3GB);
-
-        id =3D shmget(0x123456, 1, IPC_CREAT | 0600);
-        shm =3D shmat(id, NULL, 0);
-        printf("shm: %p\n", shm);
-        shmdt(shm);
-
-        return 0;
-}
-$ gcc -Wall 1.c
-$ sudo ./a.out=20
-shm: 0x7f4fca755000
-
-> Why=20
-> should support for ADDR_LIMIT_32BIT be added?
-
-It's useful for user mode qemu when you try emulate 32-bit target on=20
-x86_64. For example, if shmat(2) return addres above 32-bit, target will
-get SIGSEGV on access to it.
-
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.com/
-
---X1bOJ3K7DJ5YkBrT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjl5R4ACgkQbWYnhzC5v6phHgCfUVMJE9tqR47xaAQXaw1z4W9R
-jZkAn1y1ty3SgfLEgaG+E0h2+SPUEdAZ
-=vsUG
------END PGP SIGNATURE-----
-
---X1bOJ3K7DJ5YkBrT--
+I think I'll cheerily send it in to Linus for 2.6.27.
