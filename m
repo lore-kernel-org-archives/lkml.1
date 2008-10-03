@@ -1,55 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbYJCHDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYJCHDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755134AbYJCHDJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 03:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbYJCHCv
+	id S1755378AbYJCHDl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 03:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYJCHDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 03:02:51 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:35690 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754142AbYJCHCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 03:02:50 -0400
-Date: Fri, 3 Oct 2008 09:02:43 +0200
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Tino Keitel <tino.keitel@gmx.de>, netdev@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] sky2: Fix recent WOL regression
-Message-ID: <20081003090243.724cf79c@speedy>
-In-Reply-To: <200810022339.34025.rjw@sisk.pl>
-References: <200810022339.34025.rjw@sisk.pl>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Oct 2008 03:03:30 -0400
+Received: from qb-out-0506.google.com ([72.14.204.239]:24294 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754219AbYJCHD3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 03:03:29 -0400
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] x86_64: Implement personality ADDR_LIMIT_32BIT
+Date: Fri,  3 Oct 2008 10:04:29 +0300
+Message-Id: <1223017469-5158-1-git-send-email-kirill@shutemov.name>
+X-Mailer: git-send-email 1.5.6.5.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 23:39:33 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ arch/x86/kernel/sys_x86_64.c |   15 +++++++++++----
+ include/asm-x86/elf.h        |    4 +++-
+ include/asm-x86/processor.h  |    6 ++++--
+ 3 files changed, 18 insertions(+), 7 deletions(-)
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> sky2: Fix recent WOL regression
-> 
-> Since dev->power.should_wakeup bit is used by the PCI core to
-> decide whether the device should wake up the system from sleep
-> states, set/unset this bit whenever WOL is enabled/disabled using
-> sky2_set_wol() (this fixes a regression from 2.6.26 on the Tino's
-> machine).
-> 
-> Remove an open-coded reference to the standard PCI PM registers that
-> is not used any more.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Reported-by: Tino Keitel <tino.keitel@gmx.de>
-> ---
+diff --git a/arch/x86/kernel/sys_x86_64.c b/arch/x86/kernel/sys_x86_64.c
+index 3b360ef..d6ac928 100644
+--- a/arch/x86/kernel/sys_x86_64.c
++++ b/arch/x86/kernel/sys_x86_64.c
+@@ -48,7 +48,9 @@ out:
+ static void find_start_end(unsigned long flags, unsigned long *begin,
+ 			   unsigned long *end)
+ {
+-	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT)) {
++	if (!test_thread_flag(TIF_IA32) &&
++	    ((flags & MAP_32BIT) ||
++	     (current->personality & ADDR_LIMIT_32BIT))) {
+ 		unsigned long new_begin;
+ 		/* This is usually used needed to map code in small
+ 		   model, so it needs to be in the first 31bit. Limit
+@@ -94,7 +96,8 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 		    (!vma || addr + len <= vma->vm_start))
+ 			return addr;
+ 	}
+-	if (((flags & MAP_32BIT) || test_thread_flag(TIF_IA32))
++	if (((flags & MAP_32BIT) || test_thread_flag(TIF_IA32) ||
++	     (current->personality & ADDR_LIMIT_32BIT))
+ 	    && len <= mm->cached_hole_size) {
+ 	        mm->cached_hole_size = 0;
+ 		mm->free_area_cache = begin;
+@@ -150,8 +153,12 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
+ 	if (flags & MAP_FIXED)
+ 		return addr;
+ 
+-	/* for MAP_32BIT mappings we force the legact mmap base */
+-	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT))
++	/* for MAP_32BIT mappings and ADDR_LIMIT_32BIT personality we force the
++	 * legact mmap base
++	 */
++	if (!test_thread_flag(TIF_IA32) &&
++	    ((flags & MAP_32BIT) ||
++	     (current->personality & ADDR_LIMIT_32BIT)))
+ 		goto bottomup;
+ 
+ 	/* requesting a specific address */
+diff --git a/include/asm-x86/elf.h b/include/asm-x86/elf.h
+index 7be4733..fa39e10 100644
+--- a/include/asm-x86/elf.h
++++ b/include/asm-x86/elf.h
+@@ -298,7 +298,9 @@ do {									\
+ #define VDSO_HIGH_BASE		0xffffe000U /* CONFIG_COMPAT_VDSO address */
+ 
+ /* 1GB for 64bit, 8MB for 32bit */
+-#define STACK_RND_MASK (test_thread_flag(TIF_IA32) ? 0x7ff : 0x3fffff)
++#define STACK_RND_MASK ((test_thread_flag(TIF_IA32) || \
++			 current->personality & ADDR_LIMIT_32BIT ) ? \
++			0x7ff : 0x3fffff)
+ 
+ #define ARCH_DLINFO							\
+ do {									\
+diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
+index 4df3e2f..6d7f2f9 100644
+--- a/include/asm-x86/processor.h
++++ b/include/asm-x86/processor.h
+@@ -904,7 +904,8 @@ extern unsigned long thread_saved_pc(struct task_struct *tsk);
+ #define TASK_SIZE_OF(child)	((test_tsk_thread_flag(child, TIF_IA32)) ? \
+ 					IA32_PAGE_OFFSET : TASK_SIZE64)
+ 
+-#define STACK_TOP		TASK_SIZE
++#define STACK_TOP		(current->personality & ADDR_LIMIT_32BIT ? \
++					 0x80000000 : TASK_SIZE)
+ #define STACK_TOP_MAX		TASK_SIZE64
+ 
+ #define INIT_THREAD  { \
+@@ -932,7 +933,8 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
+  * This decides where the kernel will search for a free chunk of vm
+  * space during mmap's.
+  */
+-#define TASK_UNMAPPED_BASE	(PAGE_ALIGN(TASK_SIZE / 3))
++#define TASK_UNMAPPED_BASE	(current->personality & ADDR_LIMIT_32BIT ? \
++					0x40000000 : PAGE_ALIGN(TASK_SIZE / 3))
+ 
+ #define KSTK_EIP(task)		(task_pt_regs(task)->ip)
+ 
+-- 
+1.5.6.5.GIT
 
-Acked-by: Stephen Hemminger <shemminger@vyatta.com>
-
-Thanks for fixing this.
