@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbYJCNTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbYJCNVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752444AbYJCNTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 09:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbYJCNTN
+	id S1752623AbYJCNVc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 09:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYJCNVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 09:19:13 -0400
-Received: from 184-111-204-62-static.cable.fcom.ch ([62.204.111.184]:53608
-	"EHLO blinkeye.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbYJCNTM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 09:19:12 -0400
-Message-ID: <1b770184b5cfdc7638dd863f415bfaf0.squirrel@blinkeye.ch>
-Date: Fri, 3 Oct 2008 15:19:06 +0200 (CEST)
-Subject: BUG: processes hang indefinitely
-From: "Reto Glauser" <linux@blinkeye.ch>
-To: "Mailing List" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Fri, 3 Oct 2008 09:21:24 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:45839 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750721AbYJCNVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 09:21:23 -0400
+Date: Fri, 3 Oct 2008 15:21:17 +0200
+From: Jan Kasprzak <kas@fi.muni.cz>
+To: arjan@linux.intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: IRQ balancing on a router
+Message-ID: <20081003132117.GM16624@fi.muni.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.2i
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Muni-Envelope-From: kas@fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Fri, 03 Oct 2008 15:21:18 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+	Hello,
 
-I'm having a repeatable bug, namely that arbitrarily processes claim a CPU and hang
-indefinitely. They recover sometimes, be it after 5 minutes or after 30 minutes, and
-sometimes not.
+I have a dual-CPU router/firewall with five gigabit NICs. Recently I have
+found that irqbalance (0.55 from Fedora 9/x86_64) gives a suboptimal
+IRQ to CPU mapping on this box:
 
-Latest example was libtool-wrap while compiling the jpeg library:
+	During traffic spikes, it assings two NICs to one CPU, and the
+other three to the second CPU. However, this does not account for
+the fact that packets coming from the uplink interface are way more
+expensive to handle than the rest of the traffic: most iptables rules
+apply to the packets received from the uplink interface. The result is
+that the CPU which receives IRQs for the uplink interface
+is 100 % busy (softirq mostly), while the other one is 90% idle.
 
-# emerge media-libs/jpeg
-...
+	Setting the IRQ mapping by hand (uplink to one CPU, all the other
+NICs to the other CPU) makes a well balanced system (both CPUs 30-60 % busy).
+I am not sure whether my configuration is too special, but it might be
+worth trying to make irqbalance daemon cope also with this usage pattern.
 
-# top
-16973 root      39  19 10860  608  444 R  100  0.0 113:59.68 libtool-wrap
+	Another problem is that with one CPU 100 % busy in the kernel
+the system latency of user-space programs is _way_ too high. For example,
+MRTG graphs from my router used to have blank stripes (i.e.  snmpd
+has failed to respond in time). Also the shell response time was bad,
+even though I was logged in using SSH over the interface, which at that
+time had its IRQ routed to the other CPU.
 
-# while true; do cat /proc/16973/stat; sleep 1; done
-16973 (libtool-wrap) R 15444 30375 6434 34816 30375 4194304 178 0 0 0 10604 1 0 0 39
-19 1 0 6722416 11120640 152 18446744073709551615 4194304 4906172 140734787246416
-18446744073709551615 47039760684325 0 0 16777216 0 0 0 0 17 3 0 0 0 0 0
-16973 (libtool-wrap) R 15444 30375 6434 34816 30375 4194304 178 0 0 0 10704 1 0 0 39
-19 1 0 6722416 11120640 152 18446744073709551615 4194304 4906172 140734787246416
-18446744073709551615 47039760684325 0 0 16777216 0 0 0 0 17 3 0 0 0 0 0
-16973 (libtool-wrap) R 15444 30375 6434 34816 30375 4194304 178 0 0 0 10805 1 0 0 39
-19 1 0 6722416 11120640 152 18446744073709551615 4194304 4906172 140734787246416
-18446744073709551615 47039760684325 0 0 16777216 0 0 0 0 17 3 0 0 0 0 0
-...
-16973 (libtool-wrap) R 15444 30375 6434 34816 30375 4194304 178 0 0 0 431667 65 0 0
-39 19 1 0 6722416 11120640 152 18446744073709551615 4194304 4906172 140734787246416
-18446744073709551615 47039760684325 0 0 16777216 0 0 0 0 17 3 0 0 0 0 0
-16973 (libtool-wrap) R 15444 30375 6434 34816 30375 4194304 178 0 0 0 431767 65 0 0
-39 19 1 0 6722416 11120640 152 18446744073709551615 4194304 4906172 140734787246416
-18446744073709551615 47039760684325 0 0 16777216 0 0 0 0 17 3 0 0 0 0 0
-16973 (libtool-wrap) R 15444 30375 6434 34816 30375 4194304 178 0 0 0 431868 65 0 0
-39 19 1 0 6722416 11120640 152 18446744073709551615 4194304 4906172 140734787246416
-18446744073709551615 47039760684325 0 0 16777216 0 0 0 0 17 3 0 0 0 0 0
+	With the same network load and manual IRQ to CPU assignment,
+MRTG works well and both snmpd and shell response time is good.
 
-I tried different kernels (gentoo-2.6.25, gentoo-2.6.26, git-2.6.27-rc8) and tried
-all three preemption models without noticing any difference (except that on
-git-2.6.27-rc8 processes seem never to recover). Processes which I noticed hanging
-are: sed, awk, rm, touch, libtool-wrap, ... It's not happening instantly, but it
-doesn't take long to force it to happen.
+-Yenya
 
-It's happening on:
-
-# /usr/src/linux/scripts/ver_linux
-
-Linux quadux 2.6.27-rc8-git1 #1 SMP Wed Oct 1 08:53:31 CEST 2008 x86_64 Intel(R)
-Core(TM)2 Quad CPU Q6600 @ 2.40GHz GenuineIntel GNU/Linux
-
-Gnu C                  4.1.2
-Gnu make               3.81
-binutils               2.18
-util-linux             2.13.1.1
-mount                  2.13.1.1
-module-init-tools      3.4
-e2fsprogs              1.40.9
-reiserfsprogs          3.6.19
-Linux C Library        2.6.1
-Dynamic linker (ldd)   2.6.1
-Procps                 3.2.7
-Net-tools              1.60
-Kbd                    1.13
-Sh-utils               6.10
-udev                   124
-Modules Loaded
-
-I was *not* yet able to observe this behaviour on a x86_64 Intel(R) Core(TM)2 Duo CPU.
-
-What can I do to get down to this issue?
-
-Thanks,
-Reto
-
-
-
+-- 
+| Jan "Yenya" Kasprzak  <kas at {fi.muni.cz - work | yenya.net - private}> |
+| GPG: ID 1024/D3498839      Fingerprint 0D99A7FB206605D7 8B35FCDE05B18A5E |
+| http://www.fi.muni.cz/~kas/    Journal: http://www.fi.muni.cz/~kas/blog/ |
+>>  If you find yourself arguing with Alan Cox, you’re _probably_ wrong.  <<
+>>     --James Morris in "How and Why You Should Become a Kernel Hacker"  <<
