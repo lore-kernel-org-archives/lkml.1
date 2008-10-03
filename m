@@ -1,78 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbYJCSKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbYJCSLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088AbYJCSKZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 14:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYJCSKL
+	id S1754504AbYJCSLU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 14:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYJCSLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 14:10:11 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:50928 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752933AbYJCSKK (ORCPT
+	Fri, 3 Oct 2008 14:11:08 -0400
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:32799 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752817AbYJCSLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 14:10:10 -0400
-Date: Fri, 3 Oct 2008 14:09:31 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Noonan <steven@uplinklabs.net>, linux-kernel@vger.kernel.org,
-       ath9k-devel@venema.h4ckr.net, lrodriguez@atheros.com,
-       linux-wireless@vger.kernel.org
-Subject: Re: ath9k: panic on tip/master
-Message-ID: <20081003180930.GD3368@tuxdriver.com>
-References: <f488382f0810030256x2859fbf6j3f657621c567287f@mail.gmail.com> <20081003100211.GA29841@elte.hu> <20081003153523.GC3368@tuxdriver.com>
+	Fri, 3 Oct 2008 14:11:07 -0400
+Date: Fri, 3 Oct 2008 19:11:00 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kniht@linux.vnet.ibm.com, mel@csn.ul.ie
+Subject: Re: [PATCH 1/1] handle initialising compound pages at orders
+	greater than MAX_ORDER
+Message-ID: <20081003181100.GB8809@brain>
+References: <1222964396-25031-1-git-send-email-apw@shadowen.org> <20081002143004.5fec3952.akpm@linux-foundation.org> <200810031643.28731.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081003153523.GC3368@tuxdriver.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200810031643.28731.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 11:35:23AM -0400, John W. Linville wrote:
-> On Fri, Oct 03, 2008 at 12:02:11PM +0200, Ingo Molnar wrote:
-> > 
-> > * Steven Noonan <steven@uplinklabs.net> wrote:
-> > 
-> > > Hey folks,
-> > > 
-> > > Just got a panic on tip. According to the stack trace, ath9k is what 
-> > > decided to bomb.
-> > > 
-> > > http://www.uplinklabs.net/~tycho/linux/ath9k_panic_tip_10.3.2008.jpg
-> > > 
-> > > Note: Although it says 'sudo modprobe radeon' on the bash prompt above 
-> > > the panic, I never got to hit 'enter' on that command before the panic 
-> > > occurred.
-> > 
-> > it appears to me that ath9k's eth_rx_input() takes a spinlock that is 
-> > not initialized (or already destroyed by the allocator).
->  
-> Seems reasonable...
+On Fri, Oct 03, 2008 at 04:43:28PM +1000, Nick Piggin wrote:
+> On Friday 03 October 2008 07:30, Andrew Morton wrote:
+> > On Thu,  2 Oct 2008 17:19:56 +0100
+> >
+> > Andy Whitcroft <apw@shadowen.org> wrote:
+> > > --- a/mm/page_alloc.c
+> > > +++ b/mm/page_alloc.c
+> > > @@ -268,13 +268,14 @@ void prep_compound_page(struct page *page, unsigned
+> > > long order) {
+> > >  	int i;
+> > >  	int nr_pages = 1 << order;
+> > > +	struct page *p = page + 1;
+> > >
+> > >  	set_compound_page_dtor(page, free_compound_page);
+> > >  	set_compound_order(page, order);
+> > >  	__SetPageHead(page);
+> > > -	for (i = 1; i < nr_pages; i++) {
+> > > -		struct page *p = page + i;
+> > > -
+> > > +	for (i = 1; i < nr_pages; i++, p++) {
+> > > +		if (unlikely((i & (MAX_ORDER_NR_PAGES - 1)) == 0))
+> > > +			p = pfn_to_page(page_to_pfn(page) + i);
+> > >  		__SetPageTail(p);
+> > >  		p->first_page = page;
+> > >  	}
+> >
+> > gad.  Wouldn't it be clearer to do
+> >
+> > 	for (i = 1; i < nr_pages; i++) {
+> > 		struct page *p = pfn_to_page(i);
+> > 		__SetPageTail(p);
+> > 		p->first_page = page;
+> > 	}
+> >
+> > Oh well, I guess we can go with the obfuscated, uncommented version for
+> > now :(
+> >
+> > This patch applies to 2.6.26 (and possibly earlier) but I don't think
+> > those kernels can trigger the bug?
 > 
-> > this would be consistent with an IRQ storm hitting some race in the 
-> > ath9k driver init sequence. For example if request_irq() is done before 
-> > all structures that the IRQ handler relies on are properly initialized.
-> > 
-> > i.e. this has the signature of a genuine ath9k bug.
-> 
-> Agreed, although I don't see anything specifically relating to
-> request_irq or the like.
-> 
-> I think the spin_lock call may actually be in ath_ampdu_input (called
-> from ath_rx_input), which perhaps is getting called simultaneous
-> with ath_rx_node_init still running?  With no locks in between them,
-> it seems like this could be the culprit?
-> 
-> Sorry to not be more immediately helpful, but I'm going to have to
-> run in a few minutes.  Perhaps this insight is helpful for someone
-> more familiar with the internals of this driver?
+> I think the problem is that pfn_to_page isn't always trivial. I would
+> prefer to have seen a new function for hugetlb to use, and keep the
+> branch-less version for the page allocator itself.
 
-This is probably a dead-end...I don't think the ath_node_find
-in ath__rx_indicate will be able to find the ath_node used
-in ath_ampdu_input unless ath_rx_node_init had already complete.
-Back to square one...
+Yes that would probabally be a better way forward overall.  I see that
+the current one has gone upstream which at least pluggs the hole we have
+right now.  We are still testing and when that is done we will know if
+there are any other issues.  As part of that I will look at pulling out
+a gigantic page specific version of the destructor on top of this one.
 
-John
--- 
-John W. Linville		Linux should be at the core
-linville@tuxdriver.com			of your literate lifestyle.
+-apw
