@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbYJCXS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYJCXTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754443AbYJCXS7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 19:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbYJCXRu
+	id S1754866AbYJCXTV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 19:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbYJCXRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 19:17:50 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:33207 "EHLO
+	Fri, 3 Oct 2008 19:17:55 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:33234 "EHLO
 	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754372AbYJCXRs (ORCPT
+	with ESMTP id S1754463AbYJCXRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 19:17:48 -0400
+	Fri, 3 Oct 2008 19:17:53 -0400
 From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH v4 04/15] PCI, PCI Hotplug: introduce slot_name helpers
+Subject: [PATCH v4 05/15] PCI: acpiphp: remove 'name' parameter
 To: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx,
+Cc: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
        kaneshige.kenji@jp.fujitsu.com, Alex Chiang <achiang@hp.com>
-Date: Fri, 03 Oct 2008 17:17:47 -0600
-Message-ID: <20081003231747.9989.26517.stgit@bob.kio>
+Date: Fri, 03 Oct 2008 17:17:52 -0600
+Message-ID: <20081003231752.9989.42490.stgit@bob.kio>
 In-Reply-To: <20081003230125.9989.31145.stgit@bob.kio>
 References: <20081003230125.9989.31145.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -27,56 +27,193 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In preparation for cleaning up the various hotplug drivers
-such that they don't have to manage their own 'name' parameters
-anymore, we provide the following convenience functions:
+We do not need to manage our own name parameter, especially since
+the PCI core can change it on our behalf, in the case of duplicate
+slot names.
 
-	pci_slot_name()
-	hotplug_slot_name()
-
-These helpers will be used by individual hotplug drivers.
+Remove 'name' from acpiphp's version of struct slot.
 
 Cc: jbarnes@virtuousgeek.org
 Cc: kristen.c.accardi@intel.com
-Cc: matthew@wil.cx
 Cc: kaneshige.kenji@jp.fujitsu.com
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- include/linux/pci.h         |    5 +++++
- include/linux/pci_hotplug.h |    5 +++++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+ drivers/pci/hotplug/acpiphp.h      |    9 +++++----
+ drivers/pci/hotplug/acpiphp_core.c |   31 ++++++++++++++++---------------
+ 2 files changed, 21 insertions(+), 19 deletions(-)
 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 5617a4d..8674257 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -64,6 +64,11 @@ struct pci_slot {
- 	struct kobject kobj;
+diff --git a/drivers/pci/hotplug/acpiphp.h b/drivers/pci/hotplug/acpiphp.h
+index 5a58b07..f9e244d 100644
+--- a/drivers/pci/hotplug/acpiphp.h
++++ b/drivers/pci/hotplug/acpiphp.h
+@@ -50,9 +50,6 @@
+ #define info(format, arg...) printk(KERN_INFO "%s: " format, MY_NAME , ## arg)
+ #define warn(format, arg...) printk(KERN_WARNING "%s: " format, MY_NAME , ## arg)
+ 
+-/* name size which is used for entries in pcihpfs */
+-#define SLOT_NAME_SIZE	20		/* {_SUN} */
+-
+ struct acpiphp_bridge;
+ struct acpiphp_slot;
+ 
+@@ -63,9 +60,13 @@ struct slot {
+ 	struct hotplug_slot	*hotplug_slot;
+ 	struct acpiphp_slot	*acpi_slot;
+ 	struct hotplug_slot_info info;
+-	char name[SLOT_NAME_SIZE];
  };
  
-+static inline const char *pci_slot_name(const struct pci_slot *slot)
++static inline const char *slot_name(struct slot *slot)
 +{
-+	return kobject_name(&slot->kobj);
++	return hotplug_slot_name(slot->hotplug_slot);
 +}
 +
- /* File state for mmap()s on /proc/bus/pci/X/Y */
- enum pci_mmap_state {
- 	pci_mmap_io,
-diff --git a/include/linux/pci_hotplug.h b/include/linux/pci_hotplug.h
-index 5efba66..a3a3245 100644
---- a/include/linux/pci_hotplug.h
-+++ b/include/linux/pci_hotplug.h
-@@ -165,6 +165,11 @@ struct hotplug_slot {
- };
- #define to_hotplug_slot(n) container_of(n, struct hotplug_slot, kobj)
+ /*
+  * struct acpiphp_bridge - PCI bridge information
+  *
+diff --git a/drivers/pci/hotplug/acpiphp_core.c b/drivers/pci/hotplug/acpiphp_core.c
+index e984176..95b536a 100644
+--- a/drivers/pci/hotplug/acpiphp_core.c
++++ b/drivers/pci/hotplug/acpiphp_core.c
+@@ -44,6 +44,9 @@
  
-+static inline const char *hotplug_slot_name(const struct hotplug_slot *slot)
-+{
-+	return pci_slot_name(slot->pci_slot);
-+}
+ #define MY_NAME	"acpiphp"
+ 
++/* name size which is used for entries in pcihpfs */
++#define SLOT_NAME_SIZE  21              /* {_SUN} */
 +
- extern int pci_hp_register(struct hotplug_slot *, struct pci_bus *, int nr,
- 			   const char *name);
- extern int pci_hp_deregister(struct hotplug_slot *slot);
+ static int debug;
+ int acpiphp_debug;
+ 
+@@ -84,7 +87,6 @@ static struct hotplug_slot_ops acpi_hotplug_slot_ops = {
+ 	.get_adapter_status	= get_adapter_status,
+ };
+ 
+-
+ /**
+  * acpiphp_register_attention - set attention LED callback
+  * @info: must be completely filled with LED callbacks
+@@ -136,7 +138,7 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+ 
+ 	/* enable the specified slot */
+ 	return acpiphp_enable_slot(slot->acpi_slot);
+@@ -154,7 +156,7 @@ static int disable_slot(struct hotplug_slot *hotplug_slot)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+ 
+ 	/* disable the specified slot */
+ 	retval = acpiphp_disable_slot(slot->acpi_slot);
+@@ -177,7 +179,7 @@ static int disable_slot(struct hotplug_slot *hotplug_slot)
+  {
+ 	int retval = -ENODEV;
+ 
+- 	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot_name(hotplug_slot));
+  
+ 	if (attention_info && try_module_get(attention_info->owner)) {
+ 		retval = attention_info->set_attn(hotplug_slot, status);
+@@ -200,7 +202,7 @@ static int get_power_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+ 
+ 	*value = acpiphp_get_power_status(slot->acpi_slot);
+ 
+@@ -222,7 +224,7 @@ static int get_attention_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ {
+ 	int retval = -EINVAL;
+ 
+-	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot_name(hotplug_slot));
+ 
+ 	if (attention_info && try_module_get(attention_info->owner)) {
+ 		retval = attention_info->get_attn(hotplug_slot, value);
+@@ -245,7 +247,7 @@ static int get_latch_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+ 
+ 	*value = acpiphp_get_latch_status(slot->acpi_slot);
+ 
+@@ -265,7 +267,7 @@ static int get_adapter_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+ 
+ 	*value = acpiphp_get_adapter_status(slot->acpi_slot);
+ 
+@@ -299,7 +301,7 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+ 
+ 	kfree(slot->hotplug_slot);
+ 	kfree(slot);
+@@ -310,6 +312,7 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot *acpiphp_slot)
+ {
+ 	struct slot *slot;
+ 	int retval = -ENOMEM;
++	char name[SLOT_NAME_SIZE];
+ 
+ 	slot = kzalloc(sizeof(*slot), GFP_KERNEL);
+ 	if (!slot)
+@@ -321,8 +324,6 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot *acpiphp_slot)
+ 
+ 	slot->hotplug_slot->info = &slot->info;
+ 
+-	slot->hotplug_slot->name = slot->name;
+-
+ 	slot->hotplug_slot->private = slot;
+ 	slot->hotplug_slot->release = &release_slot;
+ 	slot->hotplug_slot->ops = &acpi_hotplug_slot_ops;
+@@ -336,12 +337,12 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot *acpiphp_slot)
+ 	slot->hotplug_slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
+ 
+ 	acpiphp_slot->slot = slot;
+-	snprintf(slot->name, sizeof(slot->name), "%u", slot->acpi_slot->sun);
++	snprintf(name, SLOT_NAME_SIZE, "%u", slot->acpi_slot->sun);
+ 
+ 	retval = pci_hp_register(slot->hotplug_slot,
+ 					acpiphp_slot->bridge->pci_bus,
+ 					acpiphp_slot->device,
+-					slot->name);
++					name);
+ 	if (retval == -EBUSY)
+ 		goto error_hpslot;
+ 	if (retval) {
+@@ -349,7 +350,7 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot *acpiphp_slot)
+ 		goto error_hpslot;
+  	}
+ 
+-	info("Slot [%s] registered\n", slot->hotplug_slot->name);
++	info("Slot [%s] registered\n", slot_name(slot));
+ 
+ 	return 0;
+ error_hpslot:
+@@ -366,7 +367,7 @@ void acpiphp_unregister_hotplug_slot(struct acpiphp_slot *acpiphp_slot)
+ 	struct slot *slot = acpiphp_slot->slot;
+ 	int retval = 0;
+ 
+-	info ("Slot [%s] unregistered\n", slot->hotplug_slot->name);
++	info("Slot [%s] unregistered\n", slot_name(slot));
+ 
+ 	retval = pci_hp_deregister(slot->hotplug_slot);
+ 	if (retval)
 
