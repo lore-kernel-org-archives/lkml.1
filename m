@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYJCPgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYJCPir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754278AbYJCPgT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYJCPgG
+	id S1753882AbYJCPir (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 11:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYJCPij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:36:06 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:36612 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751941AbYJCPgE (ORCPT
+	Fri, 3 Oct 2008 11:38:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38980 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751759AbYJCPii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:36:04 -0400
-Date: Fri, 3 Oct 2008 11:35:23 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Noonan <steven@uplinklabs.net>, linux-kernel@vger.kernel.org,
-       ath9k-devel@venema.h4ckr.net, lrodriguez@atheros.com,
-       linux-wireless@vger.kernel.org
-Subject: Re: ath9k: panic on tip/master
-Message-ID: <20081003153523.GC3368@tuxdriver.com>
-References: <f488382f0810030256x2859fbf6j3f657621c567287f@mail.gmail.com> <20081003100211.GA29841@elte.hu>
+	Fri, 3 Oct 2008 11:38:38 -0400
+Date: Fri, 3 Oct 2008 08:36:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [regression] Latest git has WARN_ON storm with e1000e driver
+In-Reply-To: <200810031720.53923.borntraeger@de.ibm.com>
+Message-ID: <alpine.LFD.2.00.0810030825190.3262@nehalem.linux-foundation.org>
+References: <200810031041.49350.borntraeger@de.ibm.com> <alpine.LFD.2.00.0810030746430.3230@nehalem.linux-foundation.org> <200810031720.53923.borntraeger@de.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081003100211.GA29841@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 12:02:11PM +0200, Ingo Molnar wrote:
+
+
+On Fri, 3 Oct 2008, Christian Borntraeger wrote:
 > 
-> * Steven Noonan <steven@uplinklabs.net> wrote:
-> 
-> > Hey folks,
-> > 
-> > Just got a panic on tip. According to the stack trace, ath9k is what 
-> > decided to bomb.
-> > 
-> > http://www.uplinklabs.net/~tycho/linux/ath9k_panic_tip_10.3.2008.jpg
-> > 
-> > Note: Although it says 'sudo modprobe radeon' on the bash prompt above 
-> > the panic, I never got to hit 'enter' on that command before the panic 
-> > occurred.
-> 
-> it appears to me that ath9k's eth_rx_input() takes a spinlock that is 
-> not initialized (or already destroyed by the allocator).
- 
-Seems reasonable...
+> Very good point indeed. Seems my analysis was wrong. I made a short test and 
+> preempt_count() returns 1 when the WARN_ON triggers. So its either a spinlock 
+> or something else that increased my preempt_count.
 
-> this would be consistent with an IRQ storm hitting some race in the 
-> ath9k driver init sequence. For example if request_irq() is done before 
-> all structures that the IRQ handler relies on are properly initialized.
-> 
-> i.e. this has the signature of a genuine ath9k bug.
+Ok, I can repro it. I couldn't see it before because I usually don't have 
+PREEMPT even enabled.  Enabling PREEMPT and PREEMPT_DEBUG gets me the 
+messages too. Jesse?
 
-Agreed, although I don't see anything specifically relating to
-request_irq or the like.
+The call trace is much better with frame pointers enabled, loke so (with
+the '?' entries removed as stale):
 
-I think the spin_lock call may actually be in ath_ampdu_input (called
-from ath_rx_input), which perhaps is getting called simultaneous
-with ath_rx_node_init still running?  With no locks in between them,
-it seems like this could be the culprit?
+   Call Trace:
+	warn_on_slowpath+0x53/0x7a
+	e1000_acquire_swflag_ich8lan+0x2d/0xe1
+	e1000_read_nvm_ich8lan+0x4f/0xee
+	e1000e_read_pba_num+0x4e/0x69
+	e1000_probe+0xa32/0xb71
+	pci_device_probe+0x4c/0x72
+	driver_probe_device+0xc0/0x16e
+	__driver_attach+0x4f/0x79
+	bus_for_each_dev+0x4f/0x89
+	driver_attach+0x1c/0x1e
+	bus_add_driver+0xb7/0x1f4
+	driver_register+0xa8/0x128
+	__pci_register_driver+0x66/0x9d
+	e1000_init_module+0x4f/0x6b
+	_stext+0x47/0x13f
+	kernel_init+0x127/0x17b
+	child_rip+0xa/0x11
 
-Sorry to not be more immediately helpful, but I'm going to have to
-run in a few minutes.  Perhaps this insight is helpful for someone
-more familiar with the internals of this driver?
+and yes, there's quite a lot of them.  I'm not seeing what disables
+preemption, though.  I'll look at it some more, but I decided I should
+post that cleaned-up call chain so that others can do so too..
 
-John
--- 
-John W. Linville		Linux should be at the core
-linville@tuxdriver.com			of your literate lifestyle.
+		Linus
+
