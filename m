@@ -1,66 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYJCURd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbYJCUW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbYJCURd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 16:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbYJCURJ
+	id S1754145AbYJCUW1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 16:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYJCUWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 16:17:09 -0400
-Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:14367 "EHLO
-	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752748AbYJCURH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 16:17:07 -0400
-From: Alexander van Heukelum <heukelum@fastmail.fm>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH 4/9] traps: x86_64: make io_check_error equal to the one on i386
-Date: Fri,  3 Oct 2008 22:00:35 +0200
-Message-Id: <1223064040-23170-5-git-send-email-heukelum@fastmail.fm>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1223064040-23170-4-git-send-email-heukelum@fastmail.fm>
-References: <1223064040-23170-1-git-send-email-heukelum@fastmail.fm>
- <1223064040-23170-2-git-send-email-heukelum@fastmail.fm>
- <1223064040-23170-3-git-send-email-heukelum@fastmail.fm>
- <1223064040-23170-4-git-send-email-heukelum@fastmail.fm>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Fri, 03 Oct 2008 22:16:50 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.34; VDF: 7.0.6.242; host: AntiVir2)
+	Fri, 3 Oct 2008 16:22:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45930 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752633AbYJCUWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 16:22:18 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Kees Cook <kees.cook@canonical.com>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org, Jakub Jelinek <jakub@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>, libc-alpha@sourceware.org
+Subject: Re: [PATCH] ELF: implement AT_RANDOM for future glibc use
+In-Reply-To: Kees Cook's message of  Thursday, 2 October 2008 22:15:43 -0700 <20081003051543.GQ10632@outflux.net>
+References: <20081001201116.GD12527@outflux.net>
+	<48E3EFD6.2010704@redhat.com>
+	<20081001215657.GH12527@outflux.net>
+	<20081001220948.GC32107@sunsite.ms.mff.cuni.cz>
+	<20081001222706.68E7E1544B4@magilla.localdomain>
+	<20081003001616.GN10632@outflux.net>
+	<20081003005258.7FEDE154212@magilla.localdomain>
+	<20081003051543.GQ10632@outflux.net>
+Emacs: because one operating system isn't enough.
+Message-Id: <20081003202213.4AF7E154242@magilla.localdomain>
+Date: Fri,  3 Oct 2008 13:22:13 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make io_check_error equal to the one on i386.
+> Out of curiosity, why are there gaps?  I figure I can include some
+> comments in that header to explain the gaps for future AT_* creations.
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
- arch/x86/kernel/traps_64.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index a7aef2d..6bce291 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -253,13 +253,19 @@ mem_parity_error(unsigned char reason, struct pt_regs *regs)
- static notrace __kprobes void
- io_check_error(unsigned char reason, struct pt_regs *regs)
- {
--	printk("NMI: IOCK error (debug interrupt?)\n");
-+	unsigned long i;
-+
-+	printk(KERN_EMERG "NMI: IOCK error (debug interrupt?)\n");
- 	show_registers(regs);
- 
- 	/* Re-enable the IOCK line, wait for a few seconds */
- 	reason = (reason & 0xf) | 8;
- 	outb(reason, 0x61);
--	mdelay(2000);
-+
-+	i = 2000;
-+	while (--i)
-+		udelay(1000);
-+
- 	reason &= ~8;
- 	outb(reason, 0x61);
- }
--- 
-1.5.4.3
-
+There are some values defined only on one particular arch.
