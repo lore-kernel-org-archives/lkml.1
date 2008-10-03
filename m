@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbYJCWXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYJCWZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbYJCWXH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 18:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYJCWWz
+	id S1753974AbYJCWZS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 18:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYJCWZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 18:22:55 -0400
-Received: from www.tglx.de ([62.245.132.106]:41324 "EHLO www.tglx.de"
+	Fri, 3 Oct 2008 18:25:04 -0400
+Received: from www.tglx.de ([62.245.132.106]:46542 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752509AbYJCWWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 18:22:54 -0400
-Date: Sat, 4 Oct 2008 00:22:44 +0200 (CEST)
+	id S1752156AbYJCWZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 18:25:02 -0400
+Date: Sat, 4 Oct 2008 00:24:40 +0200 (CEST)
 From: Thomas Gleixner <tglx@linutronix.de>
-To: Hugh Dickins <hugh@veritas.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc8 doubled times
-In-Reply-To: <Pine.LNX.4.64.0810031104080.28598@blonde.site>
-Message-ID: <alpine.LFD.2.00.0810040020300.4404@apollo>
-References: <Pine.LNX.4.64.0810031104080.28598@blonde.site>
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: Dave Hansen <dave@sr71.net>, gregkh <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: USB disconnects every 30 seconds (2.6.27-rc8)
+In-Reply-To: <Pine.LNX.4.44L0.0810031608000.6462-100000@iolanthe.rowland.org>
+Message-ID: <alpine.LFD.2.00.0810040018200.4404@apollo>
+References: <Pine.LNX.4.44L0.0810031608000.6462-100000@iolanthe.rowland.org>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -24,21 +26,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008, Hugh Dickins wrote:
-> Hi Thomas,
+On Fri, 3 Oct 2008, Alan Stern wrote:
+> On Fri, 3 Oct 2008, Dave Hansen wrote:
+> There are a number of other places in the trace where delays are
+> shorter than they should be.  This is out of my area of expertise, so 
+> I'm CC'ing Thomas Gleixner.  With luck he'll be able to help.
 > 
-> Please would you take another look at your -rc8 commit
-> 302745699c1b675b5d2a1af87271de10e4d96b6a clockevents:
-> check broadcast device not tick device.
+> Thomas, the background for this problem is available here:
+> 
+> 	http://marc.info/?l=linux-kernel&m=122305738430115&w=2
 
-Bummer. I can swear that I had a fix for this in the quilt queue
-before I applied it to the git tree.
+Is NOHZ and HIGHRES disabled on those kernels? Hugh spotted a typo in
+that code today. Fix is below. It causes jiffies to increment too fast
+which explains your short delays.
 
-The correct fix is below.
+Thanks,
 
-Thanks for spotting this.
-
-       tglx
+	tglx
 ---
 diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
 index bd70345..cb01cd8 100644
@@ -64,3 +68,5 @@ index bd70345..cb01cd8 100644
  				tick_setup_periodic(dev, 0);
  		}
  		break;
+
+
