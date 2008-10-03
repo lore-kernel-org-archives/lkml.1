@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbYJCPaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbYJCP2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753408AbYJCPaU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYJCP07
+	id S1755418AbYJCP2z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 11:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbYJCP0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:26:59 -0400
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:36486 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754061AbYJCP05 (ORCPT
+	Fri, 3 Oct 2008 11:26:09 -0400
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:57526 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751659AbYJCP0B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:26:57 -0400
-Message-Id: <20081003152459.747408808@quilx.com>
-References: <20081003152436.089811999@quilx.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 03 Oct 2008 08:24:37 -0700
-From: Christoph Lameter <cl@linux-foundation.org>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-CC: linux-mm@kvack.org
-Cc: jeremy@goop.org
-Cc: ebiederm@xmission.com
-Cc: travis@sgi.com
-Cc: herbert@gondor.apana.org.au
-Cc: xemul@openvz.org
-Cc: penberg@cs.helsinki.fi
-Subject: [patch 1/3] Increase default reserve percpu area
-Content-Disposition: inline; filename=cpu_alloc_increase_percpu_default
+	Fri, 3 Oct 2008 11:26:01 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 09/13] checkpatch: DEFINE_ macros are real definitions for exports
+Date: Fri,  3 Oct 2008 16:25:50 +0100
+Message-Id: <1223047554-31111-10-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.6.0.1.451.gc8d31
+In-Reply-To: <1223047554-31111-1-git-send-email-apw@shadowen.org>
+References: <1223047554-31111-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SLUB now requires a portion of the per cpu reserve. There are on average
-about 70 real slabs on a system (aliases do not count) and each needs 12 bytes
-of per cpu space. Thats 840 bytes. In debug mode all slabs will be real slabs
-which will make us end up with 150 -> 1800.
+When we want to confirm an export is directly after its definition we need
+to allow for DEFINE_ style macros.  Add these to the execeptions.  Refactor
+the exceptions.
 
-Things work fine without this patch but then slub will reduce the percpu reserve
-for modules.
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ scripts/checkpatch.pl |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-Percpu data must be available regardless if modules are in use or not. So get
-rid of the #ifdef CONFIG_MODULES.
-
-Make the size of the percpu area dependant on the size of a machine word. That
-way we have larger sizes for 64 bit machines. 64 bit machines need more percpu
-memory since the pointer and counters may have double the size. Plus there is
-lots of memory available on 64 bit.
-
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
-Index: linux-2.6/include/linux/percpu.h
-===================================================================
---- linux-2.6.orig/include/linux/percpu.h	2008-09-29 13:10:33.000000000 -0500
-+++ linux-2.6/include/linux/percpu.h	2008-09-29 13:13:21.000000000 -0500
-@@ -37,11 +37,7 @@
- extern unsigned int percpu_reserve;
- /* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
- #ifndef PERCPU_AREA_SIZE
--#ifdef CONFIG_MODULES
--#define PERCPU_RESERVE_SIZE	8192
--#else
--#define PERCPU_RESERVE_SIZE	0
--#endif
-+#define PERCPU_RESERVE_SIZE	(sizeof(unsigned long) * 2500)
- 
- #define PERCPU_AREA_SIZE						\
- 	(__per_cpu_end - __per_cpu_start + percpu_reserve)
-
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 54dfa2b..a675f06 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1573,13 +1573,14 @@ sub process {
+ 		if (($line =~ /EXPORT_SYMBOL.*\((.*)\)/) ||
+ 		    ($line =~ /EXPORT_UNUSED_SYMBOL.*\((.*)\)/)) {
+ 			my $name = $1;
+-			if (($prevline !~ /^}/) &&
+-			   ($prevline !~ /^\+}/) &&
+-			   ($prevline !~ /^ }/) &&
+-			   ($prevline !~ /^.DECLARE_$Ident\(\Q$name\E\)/) &&
+-			   ($prevline !~ /^.LIST_HEAD\(\Q$name\E\)/) &&
+-			   ($prevline !~ /^.$Type\s*\(\s*\*\s*\Q$name\E\s*\)\s*\(/) &&
+-			   ($prevline !~ /\b\Q$name\E(?:\s+$Attribute)?\s*(?:;|=|\[)/)) {
++			if ($prevline !~ /(?:
++				^.}|
++				^.DEFINE_$Ident\(\Q$name\E\)|
++				^.DECLARE_$Ident\(\Q$name\E\)|
++				^.LIST_HEAD\(\Q$name\E\)|
++				^.$Type\s*\(\s*\*\s*\Q$name\E\s*\)\s*\(|
++				\b\Q$name\E(?:\s+$Attribute)?\s*(?:;|=|\[)
++			    )/x) {
+ 				WARN("EXPORT_SYMBOL(foo); should immediately follow its function/variable\n" . $herecurr);
+ 			}
+ 		}
 -- 
+1.6.0.1.451.gc8d31
+
