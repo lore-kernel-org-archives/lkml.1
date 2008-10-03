@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbYJCTPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYJCTQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753741AbYJCTPp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 15:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYJCTPh
+	id S1753972AbYJCTQj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 15:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYJCTQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 15:15:37 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:24329 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbYJCTPg (ORCPT
+	Fri, 3 Oct 2008 15:16:30 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:39188 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752235AbYJCTQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 15:15:36 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Fri, 03 Oct 2008 15:15:24 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: David Howells <dhowells@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-am33-list@redhat.com,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] MN10300: Move asm-arm/cnt32_to_63.h to include/linux/
-In-reply-to: <1703.1222986215@redhat.com>
-Message-id: <alpine.LFD.2.00.0810031512420.3045@xanadu.home>
-References: <alpine.LFD.2.00.0810011110440.3635@xanadu.home>
- <alpine.LFD.2.00.0809282123100.3635@xanadu.home>
- <20080924164826.14867.63020.stgit@warthog.procyon.org.uk>
- <1222426580.16700.258.camel@lappy.programming.kicks-ass.net>
- <alpine.LFD.2.00.0809260802310.3635@xanadu.home>
- <1222431635.16700.278.camel@lappy.programming.kicks-ass.net>
- <29968.1222871650@redhat.com> <1703.1222986215@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 3 Oct 2008 15:16:30 -0400
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: linux-kernel@vger.kernel.org
+Subject: Markers in (non-module) kernel code?
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1Klq8Z-0003Vd-L6@closure.thunk.org>
+Date: Fri, 03 Oct 2008 15:16:27 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008, David Howells wrote:
 
-> Nicolas Pitre <nico@cam.org> wrote:
-> 
-> > Oh, that's a possibility.  In that case __m_cnt_hi will be reverted to a 
-> > previous state just like if cnt32_to_63() has not been called yet since 
-> > the new half period.  And a subsequent call will fix that again.
-> 
-> Surely that's not good enough.  There's a 50% chance that reversion to a
-> previous state will result in an extra increment of the __m_cnt_hi on the next
-> call.
+I've been playing with adding some markers into ext4 to see if they
+could be useful in solving some problems along with Systemtap.  It
+appears, though, that as of 2.6.27-rc8, markers defined in code which is
+compiled directly into the kernel (i.e., not as modules) don't show up
+in Module.markers:
 
-If so then you're using this interface in an inappropriate way.
+kvm_trace_entryexit	arch/x86/kvm/kvm-intel	%u %p %u %u %u %u %u %u
+kvm_trace_handler	arch/x86/kvm/kvm-intel	%u %p %u %u %u %u %u %u
+kvm_trace_entryexit	arch/x86/kvm/kvm-amd	%u %p %u %u %u %u %u %u
+kvm_trace_handler	arch/x86/kvm/kvm-amd	%u %p %u %u %u %u %u %u
 
-The _absolute_ minimum frequency with which this should be fully 
-executed is once per half period of the base counter.  I hope that in 
-practice it happens far more often than that.
+(Note the lack of any of the kernel_sched_* markers, and the markers I
+added for ext4_* and jbd2_* are missing as wel.)
 
+Systemtap apparently depends on in-kernel trace_mark being recorded in
+Module.markers, and apparently it's been claimed that it used to be
+there.  Is this a bug in systemtap, or in how Module.markers is getting
+built?   And is there a file that contains the equivalent information
+for markers located in non-modules code?
 
-Nicolas
+Thanks, regards,
+
+						- Ted
+
