@@ -1,145 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbYJCGRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbYJCG0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbYJCGRY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 02:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbYJCGRR
+	id S1754525AbYJCG0T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 02:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbYJCG0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 02:17:17 -0400
-Received: from ozlabs.org ([203.10.76.45]:42061 "EHLO ozlabs.org"
+	Fri, 3 Oct 2008 02:26:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57932 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639AbYJCGRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 02:17:16 -0400
-Date: Fri, 3 Oct 2008 16:17:13 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: eranian@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: perfmon3 interface overview
-Message-ID: <20081003061713.GL3002@yookeroo.seuss>
-Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
-	eranian@gmail.com, linux-kernel@vger.kernel.org
-References: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com> <7c86c4470809251448j65fb99f1nfdb3980e0716149a@mail.gmail.com>
+	id S1752915AbYJCG0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 02:26:07 -0400
+Message-ID: <48E5BAC6.9070007@redhat.com>
+Date: Thu, 02 Oct 2008 23:25:10 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7c86c4470809251448j65fb99f1nfdb3980e0716149a@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Kees Cook <kees.cook@canonical.com>, Jakub Jelinek <jakub@redhat.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       libc-alpha@sourceware.org
+Subject: Re: [PATCH] ELF: implement AT_RANDOM for future glibc use
+References: <20081001201116.GD12527@outflux.net>	<48E3EFD6.2010704@redhat.com>	<20081001215657.GH12527@outflux.net>	<20081001220948.GC32107@sunsite.ms.mff.cuni.cz>	<20081001222706.68E7E1544B4@magilla.localdomain>	<20081003001616.GN10632@outflux.net>	<20081003004340.GF32682@tyan-ft48-01.lab.bos.redhat.com>	<20081003052938.GS10632@outflux.net> <20081002225718.6a0d803a@infradead.org>
+In-Reply-To: <20081002225718.6a0d803a@infradead.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 25, 2008 at 11:48:27PM +0200, stephane eranian wrote:
-> Hello,
-> 
-> A few months ago, I started posting on this list a highly simplified version
-> of the perfmon2 version which was providing only per-thread counting on X86
-> processors.
-> 
-> The feedback I got was generally positive but people raised two more issues:
-> 
->     - too many system calls for a single subsystem (12 calls)
-> 
->     - how to ensure syscalls could be extended without necessarily
->       adding new ones.
-> 
-> 
-> Since then, I have been working hard on addressing those two issues,
-> in other words redesign of the perfmon2 syscall API. This message is
-> to announce that I now have a new proposal for the API. As expected
-> it is called perfmon3 and it addresses the two issues above while
-> allowing backward compatibility with the existing v2.81 version
-> through a user level glue layer which could be implemented by a
-> library such as libpfm.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> The new API now has 8 system calls in its fully-featured
-> version. Many data structures shared with user level have been
-> abandoned in favor of explicit syscall parameters.  Each syscall has
+Arjan van de Ven wrote:
+> 16 bytes (say 4 vectors) is easier than "variable number of" both on the
+> kernel and on the glibc side, and nobody other than maybe Ulrich
+> and Jakub wouldn't know what to answer to the KConfig question anyway.
 
-Ah, excellent, big structures passed through an interface are often a
-pain to deal with, so I'm glad these are going.
+As Roland already wrote, I consider 16 bytes sufficient.  Everything
+else will then be served via a PRNG which is seeded through the 16 bytes.
 
-> a flags parameters which allows the syscalls to be extended with new
-> parameters when we need them. Most structures passed to the kernel
-> have reserved fields for future extensions.
-> 
-> The initial patchset will only support per-thread counting as I did
-> previously. However, here I am presenting the details for the fully
-> featured version so people can get a feel for it. For each call I
-> show the old way and the new way.
-> 
-> Note that when the syscall is shown twice with a different number of
-> parameters, this variation is handled by the user library. The
-> kernel implements the full call. This is the same technique used for
-> the open(2) syscall.
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-I, at least, like the changes that have been made here.  I do have a
-few suggestions for further simplifications along the same lines
-though, see below.
-
-[snip]
->  II) programming the registers
-> 
->  With v2.81:
->       int pfm_write_pmcs(int fd, pfarg_pmc_t *pmds, int  n);
->       int pfm_write_pmds(int fd, pfarg_pmd_t *pmcs, int n);
->       int pfm_read_pmds(int fd, parg_pmd_t *pmds, int n);
-> 
->  With v3.0:
->       int pfm_write_pmrs(int fd, int flags, pfarg_pmr_t *pmrs, int n);
->       int pfm_write_pmrs(int fd, int flags, pfarg_pmr_t *pmrs, int n,
->                                       pfarg_pmd_attr_t *pmas);
-> 
->       int pfm_read_pmrs(int fd, int flags, pfarg_pmr_t *pmrs, int n);
->       int pfm_read_pmrs(int fd, int flags, parg_pmr_t *pmrs, int n,
->                                      pfarg_pmd_attr_t *pmas);
-
-I would suggest adding 'type' and 'size' (int) parameters, and folding
-the pmrs and pmas arrays into one freeform array.  'size' gives the
-size in bytes of the array elements, 'type' selects the structure of
-each array element.  This means:
-	- if you ever have some sort of registers to access that are
-neither PMCs nor PMDs, you can access those two, using a new type
-value.
-	- if a new method of operation wants to supply different
-information for PMCs or PMDs, you can define a new structure and type
-value (one obvious example would be a minimal (num,value) only
-structure for minimum latency on simple applications).
-	- an explicit size value means things can marshal / copy /
-whatnot the parameters without having to know what size each type
-implies -  the code will stay valid when new types / structures are
-defined.
-
-[snip]
-> III) attaching and detaching
-> 
->   With v2.81:
->      int pfm_load_context(int fd, pfarg_load_t *load);
->      int pfm_unload_context(int fd);
-> 
->   With v3.0:
->      int pfm_attach_session(int fd, int flags, int target);
->      int pfm_detach_session(int fd, int flags);
-
-Couldn't you get rid of one more syscall here by making detach a
-special case of attach with a special "null" value for target, or a
-special flag?
-
->  IV) starting and stopping
-> 
->    With v2.81:
->       int pfm_start(int fd, pfarg_start_t *st);
->       int pfm_stop(int fd);
->       int pfm_restart(int fd);
-> 
->    With v3.0:
->       int pfm_start_session(int fd, int flags);
->       int pfm_stop_session(int fd, int flags);
-
-Likewise, couldn't you cut this down by one more syscall by making it
-	int pfm_set_session_state(int fd, int flags);
-and having a 'RUNNING' flag, which selects start or stop behaviour?
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+iEYEARECAAYFAkjlusYACgkQ2ijCOnn/RHTOqwCghULjVoA+bZVlqv8eFhSHRPOt
+jUYAoMNM+IXtS3HkVTZdFsH3kooSWFk2
+=Z6f0
+-----END PGP SIGNATURE-----
