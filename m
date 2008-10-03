@@ -1,62 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYJCRWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbYJCRWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbYJCRWD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 13:22:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYJCRVk
+	id S1754345AbYJCRWj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 13:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYJCRVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 13:21:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44995 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752871AbYJCRVi (ORCPT
+	Fri, 3 Oct 2008 13:21:49 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:48797
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753878AbYJCRVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 13:21:38 -0400
-Date: Fri, 3 Oct 2008 10:21:17 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-ID: <20081003102117.7db22b09@infradead.org>
-In-Reply-To: <20081002222438.8f9f90a2.akpm@linux-foundation.org>
-References: <20081001200034.65eb67d6@infradead.org>
-	<20081001215638.3a65134c.akpm@linux-foundation.org>
-	<20081002062736.GR19428@kernel.dk>
-	<20081001235501.2b7f50fe.akpm@linux-foundation.org>
-	<20081002061236.3c71c877@infradead.org>
-	<20081002132457.46ad8d05.akpm@linux-foundation.org>
-	<20081002210117.0f5062f7@infradead.org>
-	<20081002212355.621a4fb6@infradead.org>
-	<20081002214000.89420bb3.akpm@linux-foundation.org>
-	<20081002214353.30873f98@infradead.org>
-	<20081002215026.a63ba0d0.akpm@linux-foundation.org>
-	<20081002220040.7963596c@infradead.org>
-	<20081002222438.8f9f90a2.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 3 Oct 2008 13:21:48 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RT PATCH v2 2/2] RT: remove "paranoid" limit in push_rt_task
+To: Chirag Jog <chirag@linux.vnet.ibm.com>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, dvhltc@us.ibm.com, dino@in.ibm.com,
+       Gilles.Carry@bull.net
+Date: Fri, 03 Oct 2008 13:26:18 -0400
+Message-ID: <20081003172618.23714.55546.stgit@dev.haskins.net>
+In-Reply-To: <20081003172221.23714.71575.stgit@dev.haskins.net>
+References: <20081003172221.23714.71575.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 22:24:38 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+A panic was discovered by Chirag Jog and investigated by Gilles Carry
+to be originating in the fact that a task being pushed away
+may get migrated away during a double_lock_balance.  The result was
+that the pushable_tasks list may become corrupted.
 
-> 
-> Mount a junk partition with `-oakpm' and run some benchmarks.  If the
-> results are "wow" then it's worth spending time on.  If the results
-> are "meh" then we can not bother..
-> 
+The root cause is that the "paranoid" retry limit could cause us to
+bail out of a retry, but still try to remove the item from the (now
+potentially incorrect) list.  There are numerous ways to correct the
+condition, but the paranoid feature is no longer relevant with the new
+pushable logic (since pushable naturally limits the loop anyway), so
+lets just remove it.
 
-I've been running with this for a few hours now
-while I can't see IO is perfectly smooth now, it does feel a lot better
-and latencytop isn't showing me the huge spikes in latency either in
-the mail client.
-(there's a lot of little stuff, but not the 4+ seconds)
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Reported By: Chirag Jog <chirag@linux.vnet.ibm.com>
+Found-by: Gilles Carry <gilles.carry@bull.net>
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
+
+ kernel/sched_rt.c |   34 ++++++++++++++++++++++------------
+ 1 files changed, 22 insertions(+), 12 deletions(-)
+
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 59ead84..201bd97 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1056,7 +1056,6 @@ static int push_rt_task(struct rq *rq)
+ {
+ 	struct task_struct *next_task;
+ 	struct rq *lowest_rq;
+-	int paranoid = RT_MAX_TRIES;
+ 
+ 	if (!rq->rt.overloaded)
+ 		return 0;
+@@ -1090,23 +1089,34 @@ static int push_rt_task(struct rq *rq)
+ 		struct task_struct *task;
+ 		/*
+ 		 * find lock_lowest_rq releases rq->lock
+-		 * so it is possible that next_task has changed.
+-		 * If it has, then try again.
++		 * so it is possible that next_task has migrated.
++		 *
++		 * We need to make sure that the task is still on the same
++		 * run-queue and is also still the next task eligible for
++		 * pushing.
+ 		 */
+ 		task = pick_next_pushable_task(rq);
+-		if (unlikely(task != next_task) && task && paranoid--) {
+-			put_task_struct(next_task);
+-			next_task = task;
+-			goto retry;
++		if (task_cpu(next_task) == rq->cpu && task == next_task) {
++			/*
++			 * If we get here, the task hasnt moved it all, but
++			 * it has failed to push.  We will not try again,
++			 * since the other cpus will pull from us when they
++			 * are ready.
++			 */
++			dequeue_pushable_task(rq, next_task);
++			goto out;
+ 		}
++		
++		if (!task)
++			/* No more tasks, just exit */
++			goto out;
+ 
+ 		/*
+-		 * Once we have failed to push this task, we will not
+-		 * try again, since the other cpus will pull from us
+-		 * when they are ready
++		 * Something has shifted, try again.
+ 		 */
+-		dequeue_pushable_task(rq, next_task);
+-		goto out;
++		put_task_struct(next_task);
++		next_task = task;
++		goto retry;
+ 	}
+ 
+ 	deactivate_task(rq, next_task, 0);
+
