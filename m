@@ -1,71 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYJCH37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYJCHfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbYJCH37 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 03:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbYJCH3u
+	id S1754699AbYJCHfT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 03:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbYJCHfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 03:29:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48625 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752703AbYJCH3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 03:29:49 -0400
-Date: Fri, 3 Oct 2008 09:27:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH] ring_buffer: map to cpu not page
-Message-ID: <20081003072722.GB4950@elte.hu>
-References: <1222790072.24384.21.camel@twins> <alpine.LFD.2.00.0809300930090.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu> <20081002090517.GA8708@elte.hu> <20081002093835.GA17699@elte.hu> <alpine.DEB.1.10.0810021917030.26504@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810021917030.26504@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 3 Oct 2008 03:35:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48340 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753537AbYJCHfB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 03:35:01 -0400
+Date: Fri, 3 Oct 2008 00:33:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rusty@rustcorp.com.au,
+       jeremy@goop.org, ebiederm@xmission.com, travis@sgi.com,
+       herbert@gondor.apana.org.au, xemul@openvz.org, penberg@cs.helsinki.fi
+Subject: Re: [patch 3/4] cpu alloc: The allocator
+Message-Id: <20081003003342.4d592c1f.akpm@linux-foundation.org>
+In-Reply-To: <20080929193516.278278446@quilx.com>
+References: <20080929193500.470295078@quilx.com>
+	<20080929193516.278278446@quilx.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 29 Sep 2008 12:35:03 -0700 Christoph Lameter <cl@linux-foundation.org> wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> My original patch had a compile bug when NUMA was configured. I 
-> referenced cpu when it should have been cpu_buffer->cpu.
+> The per cpu allocator allows dynamic allocation of memory on all
+> processors simultaneously. A bitmap is used to track used areas.
+> The allocator implements tight packing to reduce the cache footprint
+> and increase speed since cacheline contention is typically not a concern
+> for memory mainly used by a single cpu. Small objects will fill up gaps
+> left by larger allocations that required alignments.
 > 
-> Ingo quickly fixed this bug by replacing cpu with 'i' because that was 
-> the loop counter. Unfortunately, the 'i' was the counter of pages, not 
-> CPUs. This caused a crash when the number of pages allocated for the 
-> buffers exceeded the number of pages, which would usually be the case.
+> The size of the cpu_alloc area can be changed via the percpu=xxx
+> kernel parameter.
 > 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+>
+> ...
+>
+> +static void set_map(int start, int length)
+> +{
+> +	while (length-- > 0)
+> +		__set_bit(start++, cpu_alloc_map);
+> +}
 
->  	for (i = 0; i < nr_pages; i++) {
->  		page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
-> -				    GFP_KERNEL, cpu_to_node(i));
-> +				    GFP_KERNEL, cpu_to_node(cpu_buffer->cpu));
+Can we use bitmap_fill() here?
 
-oh, stupid typo of the year :-)
+> +/*
+> + * Mark an area as freed.
+> + *
+> + * Must hold cpu_alloc_map_lock
+> + */
+> +static void clear_map(int start, int length)
+> +{
+> +	while (length-- > 0)
+> +		__clear_bit(start++, cpu_alloc_map);
+> +}
 
-applied to tip/tracing/ring-buffer, thanks for tracking it down! I've 
-reactivated the topic branch for tip/master and i'm running a few tests 
-before pushing it out for wider testing.
+And bitmap_etc().  We have a pretty complete suite there.
 
-	Ingo
+> +/*
+> + * Allocate an object of a certain size
+> + *
+> + * Returns a special pointer that can be used with CPU_PTR to find the
+> + * address of the object for a certain cpu.
+> + */
+> +void *cpu_alloc(unsigned long size, gfp_t gfpflags, unsigned long align)
+> +{
+> +	unsigned long start;
+> +	int units = size_to_units(size);
+> +	void *ptr;
+> +	int first;
+> +	unsigned long flags;
+> +
+> +	if (!size)
+> +		return ZERO_SIZE_PTR;
+> +
+> +	WARN_ON(align > PAGE_SIZE);
+> +
+> +	if (align < UNIT_SIZE)
+> +		align = UNIT_SIZE;
+> +
+> +	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
+> +
+> +	first = 1;
+> +	start = first_free;
+> +
+> +	for ( ; ; ) {
+> +
+> +		start = find_next_zero_bit(cpu_alloc_map, nr_units, start);
+> +		if (start >= nr_units)
+> +			goto out_of_memory;
+> +
+> +		if (first)
+> +			first_free = start;
+> +
+> +		/*
+> +		 * Check alignment and that there is enough space after
+> +		 * the starting unit.
+> +		 */
+> +		if (start % (align / UNIT_SIZE) == 0 &&
+> +			find_next_bit(cpu_alloc_map, nr_units, start + 1)
+> +					>= start + units)
+> +				break;
+> +		start++;
+> +		first = 0;
+> +	}
+
+Might be able to use bitmap_find_free_region() here, if we try hard enough.
+
+But as a general thing, it would be better to add any missing
+functionality to the bitmap API and then to use the bitmap API
+consistently, rather than partly using it, or ignoring it altogether.
+
+> +	if (first)
+> +		first_free = start + units;
+> +
+> +	if (start + units > nr_units)
+> +		goto out_of_memory;
+> +
+> +	set_map(start, units);
+> +	__count_vm_events(CPU_BYTES, units * UNIT_SIZE);
+> +
+> +	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
+> +
+> +	ptr = (int *)__per_cpu_end + start;
+> +
+> +	if (gfpflags & __GFP_ZERO) {
+> +		int cpu;
+> +
+> +		for_each_possible_cpu(cpu)
+> +			memset(CPU_PTR(ptr, cpu), 0, size);
+> +	}
+> +
+> +	return ptr;
+> +
+> +out_of_memory:
+> +	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
+> +	return NULL;
+> +}
+> +EXPORT_SYMBOL(cpu_alloc);
+> +
+
+Apart from that the interface, intent and implementation seem reasonable.
+
+But I'd have though that it would be possible to only allocate the
+storage for online CPUs.  That would be a pretty significant win for
+some system configurations?
+
