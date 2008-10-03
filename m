@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYJCPP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbYJCPRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYJCPP4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYJCPPs
+	id S1753866AbYJCPRW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 11:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYJCPRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:15:48 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36670 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbYJCPPr (ORCPT
+	Fri, 3 Oct 2008 11:17:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43846 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752294AbYJCPRO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:15:47 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <2964081.1223046917168.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Sat, 4 Oct 2008 00:15:17 +0900 (JST)
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: Re: [PATCH 3/6] memcg: charge-commit-cancel protocl
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       nishimura@mxp.nes.nec.co.jp, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, balbir@linux.vnet.ibm.com
-In-Reply-To: <20081003190509.e33a3843.nishimura@mxp.nes.nec.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <20081003190509.e33a3843.nishimura@mxp.nes.nec.co.jp>
- <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081001165734.e484cfe4.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 3 Oct 2008 11:17:14 -0400
+Date: Fri, 3 Oct 2008 08:16:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jiri Kosina <jkosina@suse.cz>
+cc: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, arjan@linux.intel.com, airlied@gmail.com,
+       davem@davemloft.net, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 2.6.27-rc8 5/6] e1000e: debug contention on NVM SWFLAG
+In-Reply-To: <Pine.LNX.4.64.0810031346100.1532@twin.jikos.cz>
+Message-ID: <alpine.LFD.2.00.0810030812570.3230@nehalem.linux-foundation.org>
+References: <20081002233314.12556.49143.stgit@jbrandeb-bw.jf.intel.com> <20081002233340.12556.33137.stgit@jbrandeb-bw.jf.intel.com> <Pine.LNX.4.64.0810031346100.1532@twin.jikos.cz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
->> precharge/commit/cancel can be used for other places,
->>  - shmem, (and other places need precharge.)
->>  - move_account(force_empty) etc...
->> we'll revisit later.
->> 
->> Changelog v5 -> v6:
->>  - added newpage_charge() and migrate_fixup().
->>  - renamed  functions for swap-in from "swap" to "swapin"
->>  - add more precise description.
->> 
->
->I don't have any objection to this direction now, but I have one quiestion.
->
->Does mem_cgroup_charge_migrate_fixup need to charge a newpage,
->while mem_cgroup_prepare_migration has charged it already?
-In migration-is-failed case, we have to charge *old page* here.
-
->
->I agree adding I/F would be good for future, but I think
->mem_cgroup_charge_migration_fixup can be no-op function for now.
->
-Hmm, handling failure case in explicit way may be better. Ok,
-I'll try some.
-
-Thanks,
--Kame
 
 
+On Fri, 3 Oct 2008, Jiri Kosina wrote:
+> 
+> The debugging message is racy anyway with respect to accessing nvm_owner, 
+> right? It should be done after the mutex has been succesfully acquired.
+
+It's done that way on purpose - to see who _could_ be racing.
+
+After the mutex, it could never trigger, because the mutex is the thing 
+that guarantees non-racy-ness.
+
+IOW, it's a debugging message just to see that the old bug (the "before 
+the fix") really did happen. We can/will remove it, but I think people are 
+still looking at the e1000e driver and probably want to see the paths that 
+can cause problems.
+
+Of course, it's entirely possible that we should remove it in mainline 
+already, and just let the people inside intel/suse/xyzzy who are trying to 
+reproduce it have it.
+
+Jesse? Thomas?
+
+			Linus
