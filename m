@@ -1,81 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbYJCSLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbYJCSMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbYJCSLU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 14:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYJCSLI
+	id S1754613AbYJCSMA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 14:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYJCSLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 14:11:08 -0400
-Received: from tallyho.bytemark.co.uk ([80.68.81.166]:32799 "EHLO
-	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752817AbYJCSLH (ORCPT
+	Fri, 3 Oct 2008 14:11:52 -0400
+Received: from gv-out-0910.google.com ([216.239.58.184]:36044 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753088AbYJCSLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 14:11:07 -0400
-Date: Fri, 3 Oct 2008 19:11:00 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kniht@linux.vnet.ibm.com, mel@csn.ul.ie
-Subject: Re: [PATCH 1/1] handle initialising compound pages at orders
-	greater than MAX_ORDER
-Message-ID: <20081003181100.GB8809@brain>
-References: <1222964396-25031-1-git-send-email-apw@shadowen.org> <20081002143004.5fec3952.akpm@linux-foundation.org> <200810031643.28731.nickpiggin@yahoo.com.au>
+	Fri, 3 Oct 2008 14:11:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=EZOGfbXNqmGLQMG3gyy87fAijD3tREbE5rQBLULj25EeYN8aq8KbGES2XZGS4CKI6q
+         ttksUhe5ob++pYV5IAT3UXNbA1v25bWhc+HqGsgizzhaT49AKKPnoz9cqGkWfKVe6bz4
+         wKC8RWU17OZgfcLM1JBFqBdI/bpEhN0pc41us=
+Message-ID: <48E6604F.8000404@gmail.com>
+Date: Fri, 03 Oct 2008 20:11:27 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810031643.28731.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] x86: fix virt_addr_valid() with CONFIG_DEBUG_VIRTUAL=y
+ (try 2)
+References: <20081003155425.GA6112@localhost.localdomain>
+In-Reply-To: <20081003155425.GA6112@localhost.localdomain>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 04:43:28PM +1000, Nick Piggin wrote:
-> On Friday 03 October 2008 07:30, Andrew Morton wrote:
-> > On Thu,  2 Oct 2008 17:19:56 +0100
-> >
-> > Andy Whitcroft <apw@shadowen.org> wrote:
-> > > --- a/mm/page_alloc.c
-> > > +++ b/mm/page_alloc.c
-> > > @@ -268,13 +268,14 @@ void prep_compound_page(struct page *page, unsigned
-> > > long order) {
-> > >  	int i;
-> > >  	int nr_pages = 1 << order;
-> > > +	struct page *p = page + 1;
-> > >
-> > >  	set_compound_page_dtor(page, free_compound_page);
-> > >  	set_compound_order(page, order);
-> > >  	__SetPageHead(page);
-> > > -	for (i = 1; i < nr_pages; i++) {
-> > > -		struct page *p = page + i;
-> > > -
-> > > +	for (i = 1; i < nr_pages; i++, p++) {
-> > > +		if (unlikely((i & (MAX_ORDER_NR_PAGES - 1)) == 0))
-> > > +			p = pfn_to_page(page_to_pfn(page) + i);
-> > >  		__SetPageTail(p);
-> > >  		p->first_page = page;
-> > >  	}
-> >
-> > gad.  Wouldn't it be clearer to do
-> >
-> > 	for (i = 1; i < nr_pages; i++) {
-> > 		struct page *p = pfn_to_page(i);
-> > 		__SetPageTail(p);
-> > 		p->first_page = page;
-> > 	}
-> >
-> > Oh well, I guess we can go with the obfuscated, uncommented version for
-> > now :(
-> >
-> > This patch applies to 2.6.26 (and possibly earlier) but I don't think
-> > those kernels can trigger the bug?
-> 
-> I think the problem is that pfn_to_page isn't always trivial. I would
-> prefer to have seen a new function for hugetlb to use, and keep the
-> branch-less version for the page allocator itself.
+Vegard Nossum napsal(a):
+> Is this what you had in mind? If not, then I don't know how to do it :-)
 
-Yes that would probabally be a better way forward overall.  I see that
-the current one has gone upstream which at least pluggs the hole we have
-right now.  We are still testing and when that is done we will know if
-there are any other issues.  As part of that I will look at pulling out
-a gigantic page specific version of the destructor on top of this one.
+Yeah, something like that, but I am not the one you need ACK from ;).
 
--apw
+Few notes below.
+
+> diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+> index 835e062..b20389d 100644
+> --- a/arch/x86/mm/ioremap.c
+> +++ b/arch/x86/mm/ioremap.c
+> @@ -45,6 +45,28 @@ unsigned long __phys_addr(unsigned long x)
+>  }
+>  EXPORT_SYMBOL(__phys_addr);
+>  
+> +bool __virt_addr_valid(unsigned long x)
+> +{
+> +	if (x >= __START_KERNEL_map) {
+> +		x -= __START_KERNEL_map;
+> +		if (x >= KERNEL_IMAGE_SIZE)
+> +			return false;
+> +		x += phys_base;
+> +	} else {
+> +		if (x < PAGE_OFFSET)
+> +			return false;
+> +		x -= PAGE_OFFSET;
+> +		if (system_state == SYSTEM_BOOTING
+> +			? x > MAXMEM : !phys_addr_valid(x))
+> +		{
+> +			return false;
+> +		}
+> +	}
+> +
+> +	return pfn_valid(x >> PAGE_SHIFT);
+> +}
+> +EXPORT_SYMBOL(__virt_addr_valid);
+
+Just an implementation note. Still don't expect address for which
+__virt_addr_valid() returns true to not cause a page fault. If it is called
+e.g. for address between __START_KERNEL_map and
+__START_KERNEL_map+KERNEL_IMAGE_SIZE and its pte entry has present bit
+unset, it will crash when dereferenced -- unused pages above kernel image
+are unmapped during boot.
+
+> +
+>  #else
+[...]
+> +bool __virt_addr_valid(unsigned long x)
+> +{
+> +	if (x < PAGE_OFFSET)
+> +		return false;
+> +	if (system_state != SYSTEM_BOOTING && is_vmalloc_addr((void *) x))
+> +		return false;
+> +	return pfn_valid((x - PAGE_OFFSET) >> PAGE_SHIFT);
+> +}
+
+Here too, the mappings at the top are probably returned as true? Absolutely
+not sure about this (what returns pfn_valid on those corresponding physical
+addresses).
+
+>  #endif
+>  
+>  int page_is_ram(unsigned long pagenr)
