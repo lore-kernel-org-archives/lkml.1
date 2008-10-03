@@ -1,36 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYJCXWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbYJCXWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754926AbYJCXWR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 19:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYJCXSl
+	id S1755630AbYJCXWi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 19:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbYJCXSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 19:18:41 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:42955 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754315AbYJCXSj (ORCPT
+	Fri, 3 Oct 2008 19:18:46 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:3067 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754694AbYJCXSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 19:18:39 -0400
+	Fri, 3 Oct 2008 19:18:44 -0400
 From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH v4 14/15] PCI: Hotplug core: remove 'name'
+Subject: [PATCH v4 15/15] PCI Hotplug: fakephp: add duplicate slot name
+	debugging
 To: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx,
        kaneshige.kenji@jp.fujitsu.com, Alex Chiang <achiang@hp.com>
-Date: Fri, 03 Oct 2008 17:18:38 -0600
-Message-ID: <20081003231838.9989.80699.stgit@bob.kio>
+Date: Fri, 03 Oct 2008 17:18:43 -0600
+Message-ID: <20081003231843.9989.6373.stgit@bob.kio>
 In-Reply-To: <20081003230125.9989.31145.stgit@bob.kio>
 References: <20081003230125.9989.31145.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that the PCI core manages the 'name' for each individual
-hotplug driver, and all drivers (except rpaphp) have been converted
-to use hotplug_slot_name(), there is no need for the PCI hotplug
-core to drag around its own copy of name either.
+The PCI core now manages slot names on behalf of slot detection
+and slot hotplug drivers, including the handling of duplicate
+slot names.
+
+We can use the fakephp driver to help test the new functionality.
+Add a 'dup_slots' module param to force fakephp to create multiple
+slots with the same name. We can then verify that the PCI core
+correctly renamed the slots.
+
+	sapphire:/sys/bus/pci/slots # modprobe fakephp dup_slots
+	sapphire:/sys/bus/pci/slots # ls
+	fake    fake-10  fake-3  fake-5  fake-7  fake-9
+	fake-1  fake-2   fake-4  fake-6  fake-8
 
 Cc: jbarnes@virtuousgeek.org
 Cc: kristen.c.accardi@intel.com
@@ -39,60 +51,39 @@ Cc: kaneshige.kenji@jp.fujitsu.com
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/hotplug/pci_hotplug_core.c |    6 +++---
- include/linux/pci_hotplug.h            |    3 ---
- 2 files changed, 3 insertions(+), 6 deletions(-)
+ drivers/pci/hotplug/fakephp.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
-index b196ea1..49dd28f 100644
---- a/drivers/pci/hotplug/pci_hotplug_core.c
-+++ b/drivers/pci/hotplug/pci_hotplug_core.c
-@@ -534,7 +534,7 @@ static struct hotplug_slot *get_slot_from_name (const char *name)
- 	spin_lock(&pci_hotplug_slot_list_lock);
- 	list_for_each (tmp, &pci_hotplug_slot_list) {
- 		slot = list_entry (tmp, struct hotplug_slot, slot_list);
--		if (strcmp(slot->name, name) == 0)
-+		if (strcmp(hotplug_slot_name(slot), name) == 0)
- 			goto out;
- 	}
- 	slot = NULL;
-@@ -632,7 +632,7 @@ int pci_hp_deregister(struct hotplug_slot *hotplug)
- 	if (!hotplug)
- 		return -ENODEV;
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+index 24dcbf1..3a2637a 100644
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -69,6 +69,7 @@ struct dummy_slot {
+ };
  
--	temp = get_slot_from_name(hotplug->name);
-+	temp = get_slot_from_name(hotplug_slot_name(hotplug));
- 	if (temp != hotplug)
- 		return -ENODEV;
+ static int debug;
++static int dup_slots;
+ static LIST_HEAD(slot_list);
+ static struct workqueue_struct *dummyphp_wq;
  
-@@ -643,7 +643,7 @@ int pci_hp_deregister(struct hotplug_slot *hotplug)
+@@ -121,7 +122,11 @@ static int add_slot(struct pci_dev *dev)
+ 	if (!dslot)
+ 		goto error_info;
  
- 	slot = hotplug->pci_slot;
- 	fs_remove_slot(slot);
--	dbg("Removed slot %s from the list\n", hotplug->name);
-+	dbg("Removed slot %s from the list\n", hotplug_slot_name(hotplug));
- 
- 	hotplug->release(hotplug);
- 	slot->hotplug = NULL;
-diff --git a/include/linux/pci_hotplug.h b/include/linux/pci_hotplug.h
-index a3a3245..a00bd1a 100644
---- a/include/linux/pci_hotplug.h
-+++ b/include/linux/pci_hotplug.h
-@@ -142,8 +142,6 @@ struct hotplug_slot_info {
- 
- /**
-  * struct hotplug_slot - used to register a physical slot with the hotplug pci core
-- * @name: the name of the slot being registered.  This string must
-- * be unique amoung slots registered on this system.
-  * @ops: pointer to the &struct hotplug_slot_ops to be used for this slot
-  * @info: pointer to the &struct hotplug_slot_info for the initial values for
-  * this slot.
-@@ -153,7 +151,6 @@ struct hotplug_slot_info {
-  * needs.
-  */
- struct hotplug_slot {
--	char				*name;
- 	struct hotplug_slot_ops		*ops;
- 	struct hotplug_slot_info	*info;
- 	void (*release) (struct hotplug_slot *slot);
+-	snprintf(name, SLOT_NAME_SIZE, "fake%d", count++);
++	if (dup_slots)
++		snprintf(name, SLOT_NAME_SIZE, "fake");
++	else
++		snprintf(name, SLOT_NAME_SIZE, "fake%d", count++);
++	dbg("slot->name = %s\n", name);
+ 	slot->ops = &dummy_hotplug_slot_ops;
+ 	slot->release = &dummy_release;
+ 	slot->private = dslot;
+@@ -375,4 +380,5 @@ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
+ module_param(debug, bool, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(debug, "Debugging mode enabled or not");
+-
++module_param(dup_slots, bool, S_IRUGO | S_IWUSR);
++MODULE_PARM_DESC(dup_slots, "Force duplicate slot names for debugging");
 
