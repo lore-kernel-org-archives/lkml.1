@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYJCATS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbYJCAV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbYJCATS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 20:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYJCATI
+	id S1754704AbYJCAV1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 20:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbYJCAVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 20:19:08 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:26036 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753542AbYJCATH (ORCPT
+	Thu, 2 Oct 2008 20:21:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36018 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753519AbYJCAVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 20:19:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=iT8yXYhbTdFXRVazUxIq+xrLePD6WXNRLq33yv9I939je1mMPgrALk1+DPN1B+ara8
-         /wsgGWenYLfk5JwXfOcgUUxxCDILVwI6J2HF1Dc07eo4+jRVGgi1+hnrg7fkkF6tnZvL
-         jjo3v5EdqwK1EUXDKGy1zqOVMkwo34fRRWoe0=
-Message-ID: <4807377b0810021719m164e734cndaddb7006508cabc@mail.gmail.com>
-Date: Thu, 2 Oct 2008 17:19:06 -0700
-From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] e1000e: prevent concurrent access to NVRAM
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Olaf Kirch" <okir@suse.de>,
-       "Jiri Kosina" <jkosina@suse.cz>,
-       "Jesse Brandeburg" <jesse.brandeburg@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-netdev@vger.kernel.org,
-       kkeil@suse.de, agospoda@redhat.com, arjan@linux.intel.com,
-       david.graham@intel.com, bruce.w.allan@intel.com, john.ronciak@intel.com,
-       chris.jones@canonical.com, tim.gardner@intel.com, airlied@gmail.com,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.1.10.0810030041060.5549@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 2 Oct 2008 20:21:19 -0400
+Date: Thu, 2 Oct 2008 17:20:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: david@fromorbit.com, jens.axboe@oracle.com, arjan@infradead.org,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-Id: <20081002172023.b0fa3cdb.akpm@linux-foundation.org>
+In-Reply-To: <20081002170646.2a532680.akpm@linux-foundation.org>
+References: <20081001200034.65eb67d6@infradead.org>
+	<20081001215638.3a65134c.akpm@linux-foundation.org>
+	<87fxnfpjqj.fsf@basil.nowhere.org>
+	<20081002075511.GX19428@kernel.dk>
+	<20081002093326.GF30001@disturbed>
+	<20081002094537.GA19428@kernel.dk>
+	<20081002120408.21585949@infradead.org>
+	<20081002192223.GP19428@kernel.dk>
+	<20081002143713.2f8ebc04.akpm@linux-foundation.org>
+	<20081002235849.GJ30001@disturbed>
+	<20081002170646.2a532680.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
-	 <20080930031952.22950.45228.stgit@jbrandeb-bw.jf.intel.com>
-	 <Pine.LNX.4.64.0810021624380.1887@twin.jikos.cz>
-	 <200810021703.43770.okir@suse.de>
-	 <alpine.LFD.1.10.0810030041060.5549@apollo.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 2, 2008 at 4:42 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> The confirmed bugs where the nvram acquire code was called
-> concurrently are still in your tree and the prevention patch along
-> with the resulting bugfixes are stuck in some obscure intel QA
-> process.
->
-> Please apply at least the bug prevention patch below.
+On Thu, 2 Oct 2008 17:06:46 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-This is the same patch I posted 7 minutes ago, except that this patch
-without the e1000e changes applied before it will cause all sorts of
-WARN's to be printed during normal operation.  If at all possible I
-think they should stay together as a group to prevent un-necessary
-noise in the logs.
+> On Fri, 3 Oct 2008 09:58:49 +1000
+> Dave Chinner <david@fromorbit.com> wrote:
+> 
+> > On Thu, Oct 02, 2008 at 02:37:13PM -0700, Andrew Morton wrote:
+> > > On Thu, 2 Oct 2008 21:22:23 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > Can we agree on this patch?
+> > > 
+> > > This change will cause _all_ kjournald writeout to have elevated
+> > > priority.  The majority of that writeout (in data=ordered mode) is file
+> > > data, which we didn't intend to change.
+> > > 
+> > > The risk here is that this will *worsen* latency for plain old read(),
+> > > because now kjournald writeout will be favoured.
+> > > 
+> > > There is in fact a good argument for _reducing_ kjournald's IO
+> > > priority, not increasing it!
+> > > 
+> > > A better approach might be to mark the relevant buffers/bios as needing
+> > > higher priority at submit_bh() time (if that's possible).  At least
+> > > that way we don't accidentally elevate the priority of the bulk data.
+> > 
+> > You can do that for submit_bio() by calling bio_set_prio() before
+> > submision - I did that for elevating only the XFS journal I/O.
+> > submit_bh() doesn't have any way of passing a priority through to it
+> > right now...
+> 
+> Yup.  There are plenty of spare bits in buffer_head.b_state. 
+> set_buffer_kludge()?
+> 
+
+And if we do decide to run set_buffer_kludge() against these blocks
+then it should be done at the time when they are marked dirty, when JBD
+refiles them for checkpoint writeback.
+
+This is because kjournald isn't the only process which writes these
+buffers.  Pretty often (usually?) it is pdflush.  The increased IO
+prioritisation is a property of the buffer, not of the task which
+submits it for IO.  I suspect.
