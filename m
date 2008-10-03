@@ -1,119 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYJCHDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYJCHTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbYJCHDl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 03:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYJCHDa
+	id S1754591AbYJCHTZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 03:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbYJCHTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 03:03:30 -0400
-Received: from qb-out-0506.google.com ([72.14.204.239]:24294 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754219AbYJCHD3 (ORCPT
+	Fri, 3 Oct 2008 03:19:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51902 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751179AbYJCHTO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 03:03:29 -0400
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] x86_64: Implement personality ADDR_LIMIT_32BIT
-Date: Fri,  3 Oct 2008 10:04:29 +0300
-Message-Id: <1223017469-5158-1-git-send-email-kirill@shutemov.name>
-X-Mailer: git-send-email 1.5.6.5.GIT
+	Fri, 3 Oct 2008 03:19:14 -0400
+Date: Fri, 3 Oct 2008 00:18:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] Btrfs mainline plans
+Message-Id: <20081003001859.e30af6a5.akpm@linux-foundation.org>
+In-Reply-To: <1222717460.30627.56.camel@think.oraclecorp.com>
+References: <1222717460.30627.56.camel@think.oraclecorp.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- arch/x86/kernel/sys_x86_64.c |   15 +++++++++++----
- include/asm-x86/elf.h        |    4 +++-
- include/asm-x86/processor.h  |    6 ++++--
- 3 files changed, 18 insertions(+), 7 deletions(-)
+On Mon, 29 Sep 2008 15:44:20 -0400 Chris Mason <chris.mason@oracle.com> wrote:
 
-diff --git a/arch/x86/kernel/sys_x86_64.c b/arch/x86/kernel/sys_x86_64.c
-index 3b360ef..d6ac928 100644
---- a/arch/x86/kernel/sys_x86_64.c
-+++ b/arch/x86/kernel/sys_x86_64.c
-@@ -48,7 +48,9 @@ out:
- static void find_start_end(unsigned long flags, unsigned long *begin,
- 			   unsigned long *end)
- {
--	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT)) {
-+	if (!test_thread_flag(TIF_IA32) &&
-+	    ((flags & MAP_32BIT) ||
-+	     (current->personality & ADDR_LIMIT_32BIT))) {
- 		unsigned long new_begin;
- 		/* This is usually used needed to map code in small
- 		   model, so it needs to be in the first 31bit. Limit
-@@ -94,7 +96,8 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 		    (!vma || addr + len <= vma->vm_start))
- 			return addr;
- 	}
--	if (((flags & MAP_32BIT) || test_thread_flag(TIF_IA32))
-+	if (((flags & MAP_32BIT) || test_thread_flag(TIF_IA32) ||
-+	     (current->personality & ADDR_LIMIT_32BIT))
- 	    && len <= mm->cached_hole_size) {
- 	        mm->cached_hole_size = 0;
- 		mm->free_area_cache = begin;
-@@ -150,8 +153,12 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 	if (flags & MAP_FIXED)
- 		return addr;
- 
--	/* for MAP_32BIT mappings we force the legact mmap base */
--	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT))
-+	/* for MAP_32BIT mappings and ADDR_LIMIT_32BIT personality we force the
-+	 * legact mmap base
-+	 */
-+	if (!test_thread_flag(TIF_IA32) &&
-+	    ((flags & MAP_32BIT) ||
-+	     (current->personality & ADDR_LIMIT_32BIT)))
- 		goto bottomup;
- 
- 	/* requesting a specific address */
-diff --git a/include/asm-x86/elf.h b/include/asm-x86/elf.h
-index 7be4733..fa39e10 100644
---- a/include/asm-x86/elf.h
-+++ b/include/asm-x86/elf.h
-@@ -298,7 +298,9 @@ do {									\
- #define VDSO_HIGH_BASE		0xffffe000U /* CONFIG_COMPAT_VDSO address */
- 
- /* 1GB for 64bit, 8MB for 32bit */
--#define STACK_RND_MASK (test_thread_flag(TIF_IA32) ? 0x7ff : 0x3fffff)
-+#define STACK_RND_MASK ((test_thread_flag(TIF_IA32) || \
-+			 current->personality & ADDR_LIMIT_32BIT ) ? \
-+			0x7ff : 0x3fffff)
- 
- #define ARCH_DLINFO							\
- do {									\
-diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
-index 4df3e2f..6d7f2f9 100644
---- a/include/asm-x86/processor.h
-+++ b/include/asm-x86/processor.h
-@@ -904,7 +904,8 @@ extern unsigned long thread_saved_pc(struct task_struct *tsk);
- #define TASK_SIZE_OF(child)	((test_tsk_thread_flag(child, TIF_IA32)) ? \
- 					IA32_PAGE_OFFSET : TASK_SIZE64)
- 
--#define STACK_TOP		TASK_SIZE
-+#define STACK_TOP		(current->personality & ADDR_LIMIT_32BIT ? \
-+					 0x80000000 : TASK_SIZE)
- #define STACK_TOP_MAX		TASK_SIZE64
- 
- #define INIT_THREAD  { \
-@@ -932,7 +933,8 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
-  * This decides where the kernel will search for a free chunk of vm
-  * space during mmap's.
-  */
--#define TASK_UNMAPPED_BASE	(PAGE_ALIGN(TASK_SIZE / 3))
-+#define TASK_UNMAPPED_BASE	(current->personality & ADDR_LIMIT_32BIT ? \
-+					0x40000000 : PAGE_ALIGN(TASK_SIZE / 3))
- 
- #define KSTK_EIP(task)		(task_pt_regs(task)->ip)
- 
--- 
-1.5.6.5.GIT
+> But, the code is very actively developed, and I believe the best way to
+> develop Btrfs from here is to get it into the mainline kernel (with a
+> large warning label about the disk format) and attract more extensive
+> review of both the disk format and underlying code.
+
+For the record...  I have been encouraging Chris to get btrfs into
+mainline soon.  Get it into linux-next asap and merge it into 2.6.29.
+
+And do this even though the on-disk format is still changing - we emit a
+loud printk at mount time and if someone comes to depend upon some
+intermediate format, well, that's their tough luck.
+
+My thinking here is that btrfs probably has a future, and that an early
+merge will accelerate its development and will broaden its developer base. 
+If it ends up failing for some reason, well, we can just delete it
+again.
+
+
+For various reasons this approach often isn't appropriate as a general
+policy thing, but I do think that Linux has needed a new local
+filesystem for some time, and btrfs might be The One, and hence is
+worth a bit of special-case treatment.
 
