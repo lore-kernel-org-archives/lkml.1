@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbYJCJAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYJCJEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754797AbYJCJAT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 05:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYJCJAG
+	id S1754566AbYJCJEp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 05:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYJCJEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 05:00:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36274 "EHLO mx2.mail.elte.hu"
+	Fri, 3 Oct 2008 05:04:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54190 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752453AbYJCJAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 05:00:05 -0400
-Date: Fri, 3 Oct 2008 10:59:43 +0200
+	id S1752400AbYJCJEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 05:04:36 -0400
+Date: Fri, 3 Oct 2008 11:04:16 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Dean Nelson <dcn@sgi.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Alan Mayer <ajm@sgi.com>,
-       jeremy@goop.org, rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <Yinghai.lu@amd.com>
-Subject: Re: [PATCH] x86, UV: add uv_setup_irq() and uv_teardown_irq()
-	functions v.3
-Message-ID: <20081003085943.GC27551@elte.hu>
-References: <20081001114415.GA3281@sgi.com> <86802c440810020919p4391cbebva0eaa5591e7915be@mail.gmail.com> <48E4FA53.7050401@zytor.com> <20081002171821.GA31601@sgi.com>
+To: Mike Travis <travis@sgi.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 01/31] cpumask: Documentation
+Message-ID: <20081003090416.GE27551@elte.hu>
+References: <20080929180250.111209000@polaris-admin.engr.sgi.com> <200810010849.46874.rusty@rustcorp.com.au> <20081001091325.GA12503@elte.hu> <200810021036.29054.rusty@rustcorp.com.au> <48E4C488.9020408@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081002171821.GA31601@sgi.com>
+In-Reply-To: <48E4C488.9020408@sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,19 +40,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dean Nelson <dcn@sgi.com> wrote:
+* Mike Travis <travis@sgi.com> wrote:
 
-> Provide a means for UV interrupt MMRs to be setup with the message to be sent
-> when an MSI is raised.
-> 
-> Signed-off-by: Dean Nelson <dcn@sgi.com>
+> Absolutely!  I may have my own concerns and preferences but the end 
+> goal is far more important.  I'll take a look at it today.  [My only 
+> other pressing matter is convincing Ingo to accept the SCIR driver (or 
+> tell me how I need to change it so it is acceptable), so my management 
+> is happy... ;-)]
 
-v3 looks good - applied to tip/x86/uv, thanks Dean!
+it's getting off topic, but i really dont get it why you cannot go via 
+the standard LEDS framework, and why you have to hook into the x86 idle 
+notifiers. (which we are hoping to get rid of)
 
-changed one small detail:
-
-> +EXPORT_SYMBOL(uv_setup_irq);
-
-changed that to a _GPL export. This is rather lowlevel functionality.
+RAS does not need that precise accounting. It just needs a heartbeat 
+timer that tells it how to do the pretty lights and to report whether 
+the CPU is still alive. Something that seems to be fully within the 
+scope of LEDS. What am i missing?
 
 	Ingo
