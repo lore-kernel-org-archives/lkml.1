@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbYJCRGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbYJCRIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbYJCRGb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 13:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYJCRGV
+	id S1753985AbYJCRIv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 13:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYJCRIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 13:06:21 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:53786 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752311AbYJCRGU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 13:06:20 -0400
-Date: Fri, 3 Oct 2008 13:06:18 -0400 (EDT)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Chris Mason <chris.mason@oracle.com>
-cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] Btrfs mainline plans
-In-Reply-To: <1222717460.30627.56.camel@think.oraclecorp.com>
-Message-ID: <alpine.LNX.1.10.0810031303520.13861@fbirervta.pbzchgretzou.qr>
-References: <1222717460.30627.56.camel@think.oraclecorp.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Fri, 3 Oct 2008 13:08:42 -0400
+Received: from ns1.suse.de ([195.135.220.2]:36191 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751614AbYJCRIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 13:08:41 -0400
+From: Thomas Renninger <trenn@suse.de>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH v2] thermal: Make it simpler to use the thermal layer inside the kernel
+Date: Fri, 3 Oct 2008 19:08:36 +0200
+User-Agent: KMail/1.9.10
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rui.zhang@intel.com, pavel@suse.cz
+References: <20081001120420.GA29479@srcf.ucam.org> <20081001184111.GA3330@srcf.ucam.org>
+In-Reply-To: <20081001184111.GA3330@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200810031908.37618.trenn@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 01 October 2008 08:41:11 pm Matthew Garrett wrote:
+> The thermal layer passes temperatures and trip point types around as
+> strings. This is fine for sysfs, but makes it hard to use them for other
+> purposes in-kernel. Move the string conversion to the sysfs-specific
+> code.
+I went through your very first version and I also like the string to 
+int conversion very much.
+I wanted to move the polling from acpi/thermal.c to the new thermal
+layer to have the thermal polling in the architecture independent part
+and started on top of your first version, but I got stuck and run out of time, 
+otherwise I'd also sent this.
 
-On Monday 2008-09-29 15:44, Chris Mason wrote:
->[...]
->But, the code is very actively developed, and I believe the best way to
->develop Btrfs from here is to get it into the mainline kernel (with a
->large warning label about the disk format) and attract more extensive
->review of both the disk format and underlying code.
+>  struct thermal_cooling_device_ops {
+> -	int (*get_max_state) (struct thermal_cooling_device *, char *);
+> -	int (*get_cur_state) (struct thermal_cooling_device *, char *);
+> +	int (*get_max_state) (struct thermal_cooling_device *, unsigned int *);
+> +	int (*get_cur_state) (struct thermal_cooling_device *, unsigned int *);
+>  	int (*set_cur_state) (struct thermal_cooling_device *, unsigned int);
+>  };
+Looks like you forgot the menlow driver again which also makes use of this:
 
-Definitely. While, due to the changing disk format, long-term storage
-is not really an option yet, the filesystem can be really useful in
-network-booted hybrid clients that have a local disk in an unionfs
-compound mount as a COW rw storage device (because RAM *is* limited
-after all). Keep up the work.
+grep get_max_state drivers/misc/intel_menlow.c
+        .get_max_state = memory_get_max_bandwidth,
 
+It would be great to see the conversion in .28.
 
-Jan
+        Thomas
