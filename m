@@ -1,145 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYJCPdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYJCPe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbYJCPdn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYJCPdb
+	id S1754773AbYJCPe0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 11:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYJCPeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:33:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58549 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754096AbYJCPda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:33:30 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200810030356.m933uYeX005874@www262.sakura.ne.jp>
-References: <200810030356.m933uYeX005874@www262.sakura.ne.jp> <200810012000.CGG73421.FQOHtLOJFVMOSF@I-love.SAKURA.ne.jp> <20081001153823.9930.86648.stgit@warthog.procyon.org.uk> <200810021952.GFJ87098.VQFtMOHJOFFLSO@I-love.SAKURA.ne.jp>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: dhowells@redhat.com, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] CRED: ptrace_attach() should use the target process\'s mutex
-Date: Fri, 03 Oct 2008 16:33:24 +0100
-Message-ID: <25964.1223048004@redhat.com>
+	Fri, 3 Oct 2008 11:34:17 -0400
+Received: from outbound-mail-155.bluehost.com ([67.222.39.35]:44605 "HELO
+	outbound-mail-155.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751941AbYJCPeQ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 11:34:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=Il8mYfw7E6FCbpVN9MeLQkWByoOZ5PqFq0mvmohqyPzMUrF96VOvAIEIHDsRLFpRsEmXcAI03n6cmW82kLKGWDIfZn7+A8w2LAjKcr89cycFeoLPY6/spOWS/h7EzAFa;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] pci-e: ignore unknown capability and continue searching
+Date: Fri, 3 Oct 2008 08:34:08 -0700
+User-Agent: KMail/1.9.10
+Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+       czernecki@gmail.com, linux-pci@vger.kernel.org
+References: <1222748945.3887.7.camel@ymzhang> <1223022104.16351.2.camel@ymzhang>
+In-Reply-To: <1223022104.16351.2.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200810030834.09088.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'd rather get rid of this function altogether.  Can you check out my "use 
+pci_find_ext_capability everywhere" patch and see if you can do something 
+similar for the port driver?  I mainly just want to avoid having duplicated 
+find_capability code everywhere...
 
-Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> wrote:
+Thanks,
+Jesse
 
-> Subject: Add in_execve flag into task_struct.
-> 
-> This patch allows LSM modules determine whether current process is in an
-> execve operation or not so that they can behave differently while an execve
-> operation is in progress.
+On Friday, October 3, 2008 1:21 am Zhang, Yanmin wrote:
+> Greg, Jesse,
+>
+> Is there any issue with the patch? Tomasz need kernel to have the patch to
+> work on his machine.
+>
+> Thanks,
+> Yanmin
+>
+> On Tue, 2008-09-30 at 12:29 +0800, Zhang, Yanmin wrote:
+> > ﻿Subject: pci-e: ignore unknown capability and continue searching
+> > ﻿From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+> >
+> >
+> > Tomasz reported AER driver couldn't work on his machine. With the output
+> > of "lcpsi -vvv", I found the root port's extended capabilities are
+> >          Capabilities: [100] Unknown (11)
+> >          Capabilities: [150] Advanced Error Reporting
+> >          Capabilities: [190] Unknown (13)
+> > Such Unknown capability is not expected. During pci-e
+> > initialization,function get_port_device_capability just returns if it
+> > hits an unknown capability when searching the AER capability.
+> >
+> > I worked out a patch against 2.6.27-rc7. When hitting an unkown
+> > capability, function get_port_device_capability continues the searching.
+> >
+> > Tomasz tested it and the patch does work well.
+> >
+> > Signed-off-by Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> > Reported-by Tomasz Czernecki <czernecki@gmail.com>
+> >
+> > ---
+> >
+> > --- linux-2.6.27-rc7/drivers/pci/pcie/portdrv_core.c	2008-09-27
+> > 09:35:32.000000000 +0800 +++
+> > linux-2.6.27-rc7_aer/drivers/pci/pcie/portdrv_core.c	2008-09-27
+> > 10:10:39.000000000 +0800 @@ -195,23 +195,25 @@ static int
+> > get_port_device_capability(st
+> >  	/* PME Capable - root port capability */
+> >  	if (((reg16 >> 4) & PORT_TYPE_MASK) == PCIE_RC_PORT)
+> >  		services |= PCIE_PORT_SERVICE_PME;
+> > -
+> > +
+> >  	pos = PCI_CFG_SPACE_SIZE;
+> >  	while (pos) {
+> > -		pci_read_config_dword(dev, pos, &reg32);
+> > -		switch (reg32 & 0xffff) {
+> > +		if (pci_read_config_dword(dev, pos, &reg32))
+> > +			break;
+> > +
+> > +		/* some broken boards return ~0 */
+> > +		if (reg32 == 0xffffffff)
+> > +			break;
+> > +
+> > +		switch (PCI_EXT_CAP_ID(reg32)) {
+> >  		case PCI_EXT_CAP_ID_ERR:
+> >  			services |= PCIE_PORT_SERVICE_AER;
+> > -			pos = reg32 >> 20;
+> >  			break;
+> >  		case PCI_EXT_CAP_ID_VC:
+> >  			services |= PCIE_PORT_SERVICE_VC;
+> > -			pos = reg32 >> 20;
+> > -			break;
+> > -		default:
+> > -			pos = 0;
+> >  			break;
+> >  		}
+> > +		pos = PCI_EXT_CAP_NEXT(reg32);
+> >  	}
+> >
+> >  	return services;
+> >
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+> > in the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
 
-This doesn't apply on top of my patches.  How about the attached variant?
-
-I've also:
-
- (1) Extended the patch description.  Please check that I've summed up TOMOYA's
-     process correctly.
-
- (2) Used current directly rather than caching it in a variable.  I don't
-     think it's worth doing that, given the amount you make use of it, but I
-     can revert this change if you'd really prefer.
-
-David
----
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-
-CRED: Add in_execve flag into task_struct.
-
-This patch allows LSM modules to determine whether current process is in an
-execve operation or not so that they can behave differently while an execve
-operation is in progress.
-
-This allows TOMOYA to dispense with a readability check on a file to be
-executed under the process's current credentials, and to do it instead under
-the proposed credentials.
-
-This is required with the new COW credentials because TOMOYA is no longer
-allowed to mark the state temporarily in the security struct attached to the
-task_struct.
-
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/compat.c           |    3 +++
- fs/exec.c             |    3 +++
- include/linux/sched.h |    2 ++
- 3 files changed, 8 insertions(+), 0 deletions(-)
 
 
-diff --git a/fs/compat.c b/fs/compat.c
-index 0c400ad..9e0dc12 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1355,6 +1355,7 @@ int compat_do_execve(char * filename,
- 	struct file *file;
- 	int retval;
- 
-+	current->in_execve = 1;
- 	retval = -ENOMEM;
- 	bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
- 	if (!bprm)
-@@ -1418,6 +1419,7 @@ int compat_do_execve(char * filename,
- 	mutex_unlock(&current->cred_exec_mutex);
- 	acct_update_integrals(current);
- 	free_bprm(bprm);
-+	current->in_execve = 0;
- 	return retval;
- 
- out:
-@@ -1437,6 +1439,7 @@ out_free:
- 	free_bprm(bprm);
- 
- out_ret:
-+	current->in_execve = 0;
- 	return retval;
- }
- 
-diff --git a/fs/exec.c b/fs/exec.c
-index a03a435..c1aab0c 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1296,6 +1296,7 @@ int do_execve(char * filename,
- 	struct files_struct *displaced;
- 	int retval;
- 
-+	current->in_execve = 1;
- 	retval = unshare_files(&displaced);
- 	if (retval)
- 		goto out_ret;
-@@ -1366,6 +1367,7 @@ int do_execve(char * filename,
- 	free_bprm(bprm);
- 	if (displaced)
- 		put_files_struct(displaced);
-+	current->in_execve = 0;
- 	return retval;
- 
- out:
-@@ -1388,6 +1390,7 @@ out_files:
- 	if (displaced)
- 		reset_files_struct(displaced);
- out_ret:
-+	current->in_execve = 0;
- 	return retval;
- }
- 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 2ae6ef8..2648559 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1052,6 +1052,8 @@ struct task_struct {
- 	/* ??? */
- 	unsigned int personality;
- 	unsigned did_exec:1;
-+	unsigned in_execve:1;	/* Tell the LSMs that the process is doing an
-+				 * execve */
- 	pid_t pid;
- 	pid_t tgid;
- 
+-- 
+Jesse Barnes, Intel Open Source Technology Center
