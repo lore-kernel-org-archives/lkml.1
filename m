@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbYJCOQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbYJCOYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbYJCOQs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 10:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbYJCOQj
+	id S1752602AbYJCOYL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 10:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYJCOX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 10:16:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56667 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750967AbYJCOQi (ORCPT
+	Fri, 3 Oct 2008 10:23:58 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:48723 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbYJCOX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 10:16:38 -0400
-Message-ID: <48E62906.3030506@linux-foundation.org>
-Date: Fri, 03 Oct 2008 09:15:34 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 3 Oct 2008 10:23:57 -0400
+Date: Fri, 3 Oct 2008 15:23:42 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+Cc: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
+       sds@tycho.nsa.gov, matthew.dodd@sparta.com, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov, labeled-nfs@linux-nfs.org
+Subject: Re: [PATCH 11/14] NFS/RPC: Add the auth_seclabel security flavor
+	to allow the process label to be sent to the server.
+Message-ID: <20081003142342.GA9774@brain>
+References: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov> <1222707986-26606-12-git-send-email-dpquigl@tycho.nsa.gov>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rusty@rustcorp.com.au, jeremy@goop.org,
-       ebiederm@xmission.com, travis@sgi.com, herbert@gondor.apana.org.au,
-       xemul@openvz.org
-Subject: Re: [patch 3/4] cpu alloc: The allocator
-References: <20080929193500.470295078@quilx.com>	<20080929193516.278278446@quilx.com>	<20081003003342.4d592c1f.akpm@linux-foundation.org>	<1223019811.30285.12.camel@penberg-laptop> <20081003012003.f1f84937.akpm@linux-foundation.org>
-In-Reply-To: <20081003012003.f1f84937.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1222707986-26606-12-git-send-email-dpquigl@tycho.nsa.gov>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->
-> umm, yeah, the whole bitmap interface is busted from that POV.
+On Mon, Sep 29, 2008 at 01:06:23PM -0400, David P. Quigley wrote:
+[...]
+>  
+> +	if (dom->flavour != &svcauth_unix
+> +#ifdef CONFIG_SECURITY
+> +	    && dom->flavour != &svcauth_seclabel
+> +#endif
+> +	   )
+>  	if (dom->flavour != &svcauth_unix)
+>  		return -EINVAL;
+>  	udom = container_of(dom, struct unix_domain, h);
+> @@ -873,3 +889,80 @@ struct auth_ops svcauth_unix = {
+>  	.set_client	= svcauth_unix_set_client,
+>  };
 
+checkpatch picked up on a suspect code indent for this hunk.  It is
+unhappy about the second if expecting it to be indented.  By the looks
+of this I am suspecting a miss-merge of the change in this function and
+the second if should have been removed.  To my reading it actually still
+does the right thing but ...
 
-Yup cannot find equivalent bitmap operations for cpu_alloc.
-
-Also the search operations already use find_next_zero_bit() and
-find_next_bit(). So this should be okay.
-
-We could define new bitops:
-
-bitmap_set_range(dst, start, end)
-bitmap_clear_range(dst, start, end)
-
-int find_zero_bits(dst, start, end, nr_of_zero_bits)
-
-but then there are additional alignment requirements that such a generic
-function would not be able to check for.
-
-
+-apw
