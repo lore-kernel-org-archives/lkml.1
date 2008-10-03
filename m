@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbYJCVwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354AbYJCVxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbYJCVwo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 17:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbYJCVwa
+	id S1754354AbYJCVxr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 17:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYJCVxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 17:52:30 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:51250 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753570AbYJCVwa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 17:52:30 -0400
-Subject: Re: kexec with vmware esx 3.0.2
-From: Zachary Amsden <zach@vmware.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Alok Kataria <akataria@vmware.com>,
+	Fri, 3 Oct 2008 17:53:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34155 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753353AbYJCVxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 17:53:37 -0400
+Date: Fri, 3 Oct 2008 17:52:54 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Jason Baron <jbaron@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>
-In-Reply-To: <86802c440810031440o59359f30ka72230b4b0ff73e@mail.gmail.com>
-References: <86802c440810031408i60e2036ax805bfd997092cd86@mail.gmail.com>
-	 <1223068893.7330.117.camel@bodhitayantram.eng.vmware.com>
-	 <86802c440810031440o59359f30ka72230b4b0ff73e@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 14:48:41 -0700
-Message-Id: <1223070521.7330.122.camel@bodhitayantram.eng.vmware.com>
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, od@novell.com
+Subject: Re: Unified tracing buffer
+Message-ID: <20081003215254.GA1504@redhat.com>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <alpine.DEB.1.10.0809200451420.9362@gandalf.stny.rr.com> <20080920135548.GB23215@Krystal> <20080920071232.46908040@infradead.org> <20080922185209.GC6349@Krystal> <20081002152851.GC3220@redhat.com> <20081003161154.GA4139@Krystal> <20081003183737.GD3167@redhat.com> <20081003191026.GC9626@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081003191026.GC9626@Krystal>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-03 at 14:40 -0700, Yinghai Lu wrote:
-> On Fri, Oct 3, 2008 at 2:21 PM, Zachary Amsden <zach@vmware.com> wrote:
-> > On Fri, 2008-10-03 at 14:08 -0700, Yinghai Lu wrote:
-> >> anyone tried to use linux kernel to kexec vmware esx?
-> >
-> > That would not be a recommended practice.  It might work.  It should not
-> > be very useful.
-> >
-> 
-> esx 3.0.2 relys on correct mps table,
-> could boot linux with update_mptable or alloc_mptable, and then load
-> vmware with kexec.
+Hi -
 
-And end up running ESX on hardware where it is not supported and you
-already have a buggy BIOS?  Yeah, it might work, but it should not be
-very useful.
+On Fri, Oct 03, 2008 at 03:10:26PM -0400, Mathieu Desnoyers wrote:
+> [...]
+> I don't want the tracepoints to be coupled with markers (which are a
+> userspace API). [...]
 
-Zach
+I'm glad the discussion seems to be slowly turning toward the event
+layering issues, but ... "markers being a userspace API"?  That seems
+to be grossly misleading terminology.  It's a kernel API like anything
+else being discussed here.  What's different about it
+(vs. tracepoints) is that it could be one of the first clients of the
+unified ring buffer widget that concretely addresses the issue of
+encoding abstract traceworthy events into serialized data.
 
+(Of course, merging the lower level aspects of the marker/tracepoint
+implementations is all well and good.)
+
+- FChE
