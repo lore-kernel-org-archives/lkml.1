@@ -1,97 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYJCLMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbYJCLXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753552AbYJCLMU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 07:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYJCLMN
+	id S1753608AbYJCLXa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 07:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYJCLXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 07:12:13 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:48613 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbYJCLML (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 07:12:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=VUhqQ2i+TeqD+0YRzFBqAjnxUMK/LJ0rrsDS9S+MubJUoz3neaLuO2U/rOu9WZj/IT
-         eptFfhIh5YuB50Km6LqS9Dh91ngUH3XrZKgZfMZjhcHfoGHdPYiFS/2gyT5F8r8Msqm+
-         9qS2swPlJRHGMxCwoSymCTebML1MvoRmntkRA=
-Message-ID: <7c86c4470810030412l34d3dc13mef10c9320884d635@mail.gmail.com>
-Date: Fri, 3 Oct 2008 13:12:09 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "David Gibson" <david@gibson.dropbear.id.au>, eranian@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: perfmon3 interface overview
-Cc: perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-In-Reply-To: <7c86c4470810030358m1a0fdcc5i5512a1c2a6696457@mail.gmail.com>
+	Fri, 3 Oct 2008 07:23:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39054 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752240AbYJCLXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 07:23:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/6] Hibernation: Introduce new system state for the last phase of hibernation
+Date: Fri, 3 Oct 2008 13:27:18 +0200
+User-Agent: KMail/1.9.9
+Cc: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
+       Frans Pop <elendil@planet.nl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>
+References: <200808290002.55026.rjw@sisk.pl> <200809300010.39000.rjw@sisk.pl> <20081003013557.42ce685d.akpm@linux-foundation.org>
+In-Reply-To: <20081003013557.42ce685d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com>
-	 <7c86c4470809251448j65fb99f1nfdb3980e0716149a@mail.gmail.com>
-	 <20081003061713.GL3002@yookeroo.seuss>
-	 <7c86c4470810030354x6984372akfe18761da7504a0c@mail.gmail.com>
-	 <7c86c4470810030358m1a0fdcc5i5512a1c2a6696457@mail.gmail.com>
+Message-Id: <200810031327.19293.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
->> [snip]
->> > III) attaching and detaching
->> >
->> >   With v2.81:
->> >      int pfm_load_context(int fd, pfarg_load_t *load);
->> >      int pfm_unload_context(int fd);
->> >
->> >   With v3.0:
->> >      int pfm_attach_session(int fd, int flags, int target);
->> >      int pfm_detach_session(int fd, int flags);
->>
->> Couldn't you get rid of one more syscall here by making detach a
->> special case of attach with a special "null" value for target, or a
->> special flag?
->
->
->  We could combine the two and use the flag field to indicate attach/detach.
->  The target is not a pointer but an int. Some people suggested I use an
->  unsigned long instead. In anycase, we could not use 0 to indicate "detach"
->  because CPU0 is a valid choice for system-wide. Thus we would have to
->  pick another value to mean "nothing", e.g, -1.
->
->  >  IV) starting and stopping
->  >
->  >    With v2.81:
->  >       int pfm_start(int fd, pfarg_start_t *st);
->  >       int pfm_stop(int fd);
->  >       int pfm_restart(int fd);
->  >
->  >    With v3.0:
->  >       int pfm_start_session(int fd, int flags);
->  >       int pfm_stop_session(int fd, int flags);
->
->> Likewise, couldn't you cut this down by one more syscall by making it
->>        int pfm_set_session_state(int fd, int flags);
->> and having a 'RUNNING' flag, which selects start or stop behaviour?
->
->  That one we can certainly do. That's a good idea.
+On Friday, 3 of October 2008, Andrew Morton wrote:
+> On Tue, 30 Sep 2008 00:10:37 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > Hibernation: Introduce new system state for the last phase of hibernation
+> > 
+> > Replace unused SYSTEM_SUSPEND_DISK with a new system_state value
+> > SYSTEM_HIBERNATE_ENTER that can be used by device drivers to check if
+> > the system is in the last phase of hibernation.
+> 
+> Violent objections.
+> 
+> We just don't know what this change will do.  It potentially affects
+> every code site in the kernel which looks at system_state.
 
-Some more thoughts on this.
+Do you mean anyone checking 'system_state != SOMETHING' ?  Oh well.
 
-If we wanted to go even further, we could combine start/stop, attach/detach
-into  a single syscall:
+> We've had problems in the past with this thing and the more complex we make it,
+> the worse any future problems will be.  It's Just Bad.
+> 
+> Can we just create a new global?
+> 
+> 	extern bool system_entering_hibernation_or_whatever;
 
-   int pfm_control_session(int fd, int flags, int target);
-   With flags:
-       PFM_CTFL_START  : start monitoring
-       PFM_CTFL_STOP    : stop monitoring
-       PFM_CTFL_RESTART: resume after overflow notification
+Yes, we can, but what about:
 
-       PFM_CTFL_ATTACH: attach to thread or cpu designated by 'target'
-       PFM_CTFL_DETACH: detach session
+extern bool system_entering_hibernation(void);
 
-But then, this is a form of ioctl() which people don't like....
+that will become a static inline in case of !CONFIG_HIBERNATION,
+and using a static variable?
