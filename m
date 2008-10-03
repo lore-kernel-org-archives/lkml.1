@@ -1,130 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754587AbYJCQrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbYJCQ5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754587AbYJCQrn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 12:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbYJCQrA
+	id S1753438AbYJCQ5s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 12:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbYJCQ5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 12:47:00 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:53000 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752982AbYJCQq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 12:46:59 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@linux-foundation.org
-Cc: Mel Gorman <mel@csn.ul.ie>, kosaki.motohiro@jp.fujitsu.com,
-       dave@linux.vnet.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] Report the pagesize backing a VMA in /proc/pid/maps
-Date: Fri,  3 Oct 2008 17:46:55 +0100
-Message-Id: <1223052415-18956-3-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1223052415-18956-1-git-send-email-mel@csn.ul.ie>
-References: <1223052415-18956-1-git-send-email-mel@csn.ul.ie>
+	Fri, 3 Oct 2008 12:57:40 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:38351 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbYJCQ5j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 12:57:39 -0400
+Date: Fri, 3 Oct 2008 11:57:38 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, zohar@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, jmorris@namei.org
+Subject: Re: [PATCH 3/5] TPM rcu locking
+Message-ID: <20081003165738.GA28375@us.ibm.com>
+References: <cover.1223042186.git.srajiv@linux.vnet.ibm.com> <ddf7749dc8dbf65d02cc395ccdc85b7f5b37083f.1223042186.git.srajiv@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ddf7749dc8dbf65d02cc395ccdc85b7f5b37083f.1223042186.git.srajiv@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a new field for hugepage-backed memory regions to show the
-pagesize in /proc/pid/maps.  While the information is available in smaps,
-maps is more human-readable and does not incur the cost of calculating Pss. An
-example of a /proc/self/maps output for an application using hugepages with
-this patch applied is;
+Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
+> Protects tpm_chip_list when transversing it.
+> 
+> Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+> Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+> ---
+>  drivers/char/tpm/tpm.c |   57 +++++++++++++++++------------------------------
+>  1 files changed, 21 insertions(+), 36 deletions(-)
+> 
+> diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
+> index dfd4e7f..24fb7ab 100644
+> --- a/drivers/char/tpm/tpm.c
+> +++ b/drivers/char/tpm/tpm.c
+> @@ -961,33 +961,28 @@ EXPORT_SYMBOL_GPL(tpm_store_cancel);
+>   */
+>  int tpm_open(struct inode *inode, struct file *file)
+>  {
+> -	int rc = 0, minor = iminor(inode);
+> +	int minor = iminor(inode);
+>  	struct tpm_chip *chip = NULL, *pos;
+> 
+> -	spin_lock(&driver_lock);
+> -
+> -	list_for_each_entry(pos, &tpm_chip_list, list) {
+> +	rcu_read_lock();
+> +	list_for_each_entry_rcu(pos, &tpm_chip_list, list) {
+>  		if (pos->vendor.miscdev.minor == minor) {
+>  			chip = pos;
+> +			get_device(chip->dev);
+>  			break;
+>  		}
+>  	}
+> +	rcu_read_unlock();
+> 
+> -	if (chip == NULL) {
+> -		rc = -ENODEV;
+> -		goto err_out;
+> -	}
+> +	if (!chip)
+> +		return -ENODEV;
+> 
+>  	if (test_and_set_bit(0, &chip->is_open)) {
+>  		dev_dbg(chip->dev, "Another process owns this TPM\n");
+> -		rc = -EBUSY;
+> -		goto err_out;
+> +		put_device(chip->dev);
+> +		return -EBUSY;
+>  	}
+> 
+> -	get_device(chip->dev);
+> -
+> -	spin_unlock(&driver_lock);
+> -
+>  	chip->data_buffer = kmalloc(TPM_BUFSIZE * sizeof(u8), GFP_KERNEL);
+>  	if (chip->data_buffer == NULL) {
+>  		clear_bit(0, &chip->is_open);
+> @@ -999,26 +994,23 @@ int tpm_open(struct inode *inode, struct file *file)
+> 
+>  	file->private_data = chip;
+>  	return 0;
+> -
+> -err_out:
+> -	spin_unlock(&driver_lock);
+> -	return rc;
+>  }
+>  EXPORT_SYMBOL_GPL(tpm_open);
+> 
+> +/*
+> + * Called on file close
+> + */
+>  int tpm_release(struct inode *inode, struct file *file)
+>  {
+>  	struct tpm_chip *chip = file->private_data;
+> 
+>  	flush_scheduled_work();
+> -	spin_lock(&driver_lock);
+>  	file->private_data = NULL;
+>  	del_singleshot_timer_sync(&chip->user_read_timer);
+>  	atomic_set(&chip->data_pending, 0);
+> +	kfree(chip->data_buffer);
+>  	clear_bit(0, &chip->is_open);
+>  	put_device(chip->dev);
+> -	kfree(chip->data_buffer);
+> -	spin_unlock(&driver_lock);
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(tpm_release);
+> @@ -1092,13 +1084,11 @@ void tpm_remove_hardware(struct device *dev)
+>  	}
+> 
+>  	spin_lock(&driver_lock);
+> -
+> -	list_del(&chip->list);
+> -
+> +	list_del_rcu(&chip->list);
+>  	spin_unlock(&driver_lock);
+> +	synchronize_rcu();
+> 
+>  	misc_deregister(&chip->vendor.miscdev);
+> -
+>  	sysfs_remove_group(&dev->kobj, chip->vendor.attr_group);
+>  	tpm_bios_log_teardown(chip->bios_dir);
+> 
+> @@ -1146,8 +1136,7 @@ EXPORT_SYMBOL_GPL(tpm_pm_resume);
+>  /*
+>   * Once all references to platform device are down to 0,
+>   * release all allocated structures.
+> - * In case vendor provided release function,
+> - * call it too.
+> + * In case vendor provided release function, call it too.
+>   */
+>  static void tpm_dev_release(struct device *dev)
+>  {
+> @@ -1155,7 +1144,6 @@ static void tpm_dev_release(struct device *dev)
+> 
+>  	if (chip->vendor.release)
+>  		chip->vendor.release(dev);
+> -
+>  	chip->release(dev);
+> 
+>  	clear_bit(chip->dev_num, dev_mask);
+> @@ -1170,8 +1158,8 @@ static void tpm_dev_release(struct device *dev)
+>   * upon errant exit from this function specific probe function should call
+>   * pci_disable_device
+>   */
+> -struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vendor_specific
+> -				       *entry)
+> +struct tpm_chip *tpm_register_hardware(struct device *dev,
+> +		const struct tpm_vendor_specific *entry)
+>  {
+>  #define DEVNAME_SIZE 7
+> 
+> @@ -1230,12 +1218,6 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
+>  		return NULL;
+>  	}
+> 
+> -	spin_lock(&driver_lock);
+> -
+> -	list_add(&chip->list, &tpm_chip_list);
+> -
+> -	spin_unlock(&driver_lock);
+> -
+>  	if (sysfs_create_group(&dev->kobj, chip->vendor.attr_group)) {
+>  		list_del(&chip->list);
+>  		misc_deregister(&chip->vendor.miscdev);
+> @@ -1245,6 +1227,9 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
+> 
+>  	chip->bios_dir = tpm_bios_log_setup(devname);
+> 
+> +	/* Make chip available */
+> +	list_add_rcu(&chip->list, &tpm_chip_list);
 
-08048000-0804c000 r-xp 00000000 03:01 49135      /bin/cat
-0804c000-0804d000 rw-p 00003000 03:01 49135      /bin/cat
-08400000-08800000 rw-p 00000000 00:10 4055       /mnt/libhugetlbfs.tmp.QzPPTJ (deleted) (hpagesize=4096kB)
-b7daa000-b7dab000 rw-p b7daa000 00:00 0
-b7dab000-b7ed2000 r-xp 00000000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-b7ed2000-b7ed7000 r--p 00127000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-b7ed7000-b7ed9000 rw-p 0012c000 03:01 116846     /lib/tls/i686/cmov/libc-2.3.6.so
-b7ed9000-b7edd000 rw-p b7ed9000 00:00 0
-b7ee1000-b7ee8000 r-xp 00000000 03:01 49262      /root/libhugetlbfs-git/obj32/libhugetlbfs.so
-b7ee8000-b7ee9000 rw-p 00006000 03:01 49262      /root/libhugetlbfs-git/obj32/libhugetlbfs.so
-b7ee9000-b7eed000 rw-p b7ee9000 00:00 0
-b7eed000-b7f02000 r-xp 00000000 03:01 119345     /lib/ld-2.3.6.so
-b7f02000-b7f04000 rw-p 00014000 03:01 119345     /lib/ld-2.3.6.so
-bf8ef000-bf903000 rwxp bffeb000 00:00 0          [stack]
-bf903000-bf904000 rw-p bffff000 00:00 0
-ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
+Why don't you need the spinlock here?
 
-To be predictable for parsers, the patch adds the notion of reporting on VMA
-attributes by appending one or more fields that look like "(attribute)". This
-already happens when a file is deleted and the user sees (deleted) after the
-filename. The expectation is that existing parsers will not break as those
-that read the filename should be reading forward after the inode number
-and stopping when it sees something that is not part of the filename.
-Parsers that assume everything after / is a filename will get confused by
-(hpagesize=XkB) but are already broken due to (deleted).
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- fs/proc/task_mmu.c |   21 ++++++++++++++-------
- 1 files changed, 14 insertions(+), 7 deletions(-)
-
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index beb884d..793633b 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -198,7 +198,8 @@ static int do_maps_open(struct inode *inode, struct file *file,
- 	return ret;
- }
- 
--static void show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
-+static void show_map_vma(struct seq_file *m, struct vm_area_struct *vma,
-+				int showattributes)
- {
- 	struct mm_struct *mm = vma->vm_mm;
- 	struct file *file = vma->vm_file;
-@@ -227,8 +228,8 @@ static void show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
- 	 * Print the dentry name for named mappings, and a
- 	 * special [heap] marker for the heap:
- 	 */
-+	pad_len_spaces(m, len);
- 	if (file) {
--		pad_len_spaces(m, len);
- 		seq_path(m, &file->f_path, "\n");
- 	} else {
- 		const char *name = arch_vma_name(vma);
-@@ -245,11 +246,17 @@ static void show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
- 				name = "[vdso]";
- 			}
- 		}
--		if (name) {
--			pad_len_spaces(m, len);
-+		if (name)
- 			seq_puts(m, name);
--		}
- 	}
-+
-+	/*
-+	 * Print additional attributes of the VMA of interest
-+	 * - hugepage size if hugepage-backed
-+	 */
-+	if (showattributes && vma->vm_flags & VM_HUGETLB)
-+		seq_printf(m, " (hpagesize=%lukB)",
-+			vma_kernel_pagesize(vma) >> 10);
- 	seq_putc(m, '\n');
- }
- 
-@@ -262,7 +269,7 @@ static int show_map(struct seq_file *m, void *v)
- 	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
- 		return -EACCES;
- 
--	show_map_vma(m, vma);
-+	show_map_vma(m, vma, 1);
- 
- 	if (m->count < m->size)  /* vma is copied successfully */
- 		m->version = (vma != get_gate_vma(task)) ? vma->vm_start : 0;
-@@ -391,7 +398,7 @@ static int show_smap(struct seq_file *m, void *v)
- 	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
- 		return -EACCES;
- 
--	show_map_vma(m, vma);
-+	show_map_vma(m, vma, 0);
- 
- 	seq_printf(m,
- 		   "Size:           %8lu kB\n"
--- 
-1.5.6.5
-
+> +
+>  	return chip;
+>  }
+>  EXPORT_SYMBOL_GPL(tpm_register_hardware);
+> -- 
+> 1.5.6.3
