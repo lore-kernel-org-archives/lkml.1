@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYJCPId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbYJCPKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbYJCPId (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYJCPIY
+	id S1753561AbYJCPKy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 11:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYJCPKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:08:24 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59123 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623AbYJCPIX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:08:23 -0400
-Date: Fri, 3 Oct 2008 08:08:07 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [regression] Latest git has WARN_ON storm with e1000e driver
-Message-ID: <20081003080807.28349678@infradead.org>
-In-Reply-To: <200810031041.49350.borntraeger@de.ibm.com>
-References: <200810031041.49350.borntraeger@de.ibm.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Fri, 3 Oct 2008 11:10:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34691 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752400AbYJCPKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 11:10:43 -0400
+Date: Fri, 03 Oct 2008 11:08:25 -0400 (EDT)
+Message-Id: <20081003.110825.74754936.k-ueda@ct.jp.nec.com>
+To: agk@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, mbroz@redhat.com, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com
+Subject: [PATCH 0/8] dm: request-based dm-multipath
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008 10:41:49 +0200
-Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+Hi Alasdair,
 
-> This is caused by holding a spinlock (__driver_attach) and checking
-> for preempt_count (e1000_acquire_swflag_ich8lan).
-> 
-> I suggest to revert this commit, since we cannot take a mutex while
-> holding a spinlock.
-> The simple solution of replacing the mutex with a spinlock does not
-> work, since we call msleep on several places in the code. Replacing
-> all that code doesnt look like 2.6.27 material.
+This patch-set is the updated version of request-based dm-multipath.
+The changes from the previous version (*) are to follow up the change
+of the interface to export lld's busy state (PATCH 5).
 
-hi,
+(*) http://lkml.org/lkml/2008/9/12/100
 
-could you do a run with frame pointers enabled?
-that should clear up the stack noise....
+All necessary interfaces to support request stacking drivers are now
+in the for-2.6.28 branch of the Jens' linux-2.6-block git repository.
+This patch-set depends on those interfaces.
+
+This patch-set is created on top of 2.6.27-rc8 + your patches shown
+between "NEXT_PATCHES_START" and "NEXT_PATCHES_END" of the series file:
+  ftp://sources.redhat.com/pub/dm/patches/2.6-unstable/editing-quilt/patches/series.html
+
+Please review and apply.
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Summary of the patches:
+  1/8: dm core: remove unused DM_WQ_FLUSH_ALL
+  2/8: dm core: tidy local_init
+  3/8: dm core: add kmem_cache for request-based dm
+  4/8: dm core: add target interfaces for request-based dm
+  5/8: dm core: add core functions for request-based dm
+  6/8: dm core: enable request-based dm
+  7/8: dm core: reject I/O violating new queue limits
+  8/8: dm-mpath: convert to request-based
+  (PATCH 1 is also included in the Milan's barrier support patch-set)
+
+ drivers/md/dm-ioctl.c         |   13
+ drivers/md/dm-mpath.c         |  192 +++++---
+ drivers/md/dm-table.c         |   82 +++
+ drivers/md/dm.c               |  956 +++++++++++++++++++++++++++++++++++++++--- drivers/md/dm.h               |   17
+ include/linux/device-mapper.h |   24 +
+ 6 files changed, 1161 insertions(+), 123 deletions(-)
+
+Thanks,
+Kiyoshi Ueda
