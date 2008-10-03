@@ -1,121 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbYJCTIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbYJCTKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229AbYJCTIV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 15:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbYJCTIL
+	id S1753549AbYJCTKi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 15:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYJCTKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 15:08:11 -0400
-Received: from www.sr71.net ([198.145.64.142]:54997 "EHLO blackbird.sr71.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbYJCTIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 15:08:10 -0400
-Subject: Re: USB disconnects every 30 seconds (2.6.27-rc8)
-From: Dave Hansen <dave@sr71.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: gregkh <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.44L0.0810031429250.6462-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0810031429250.6462-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 12:08:06 -0700
-Message-Id: <1223060886.7944.55.camel@nimitz>
+	Fri, 3 Oct 2008 15:10:30 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:60967 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750951AbYJCTK3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 15:10:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqAEAAYK5khMQWq+/2dsb2JhbACBcbsWgWg
+Date: Fri, 3 Oct 2008 15:10:26 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Jason Baron <jbaron@redhat.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: Unified tracing buffer
+Message-ID: <20081003191026.GC9626@Krystal>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <alpine.DEB.1.10.0809200451420.9362@gandalf.stny.rr.com> <20080920135548.GB23215@Krystal> <20080920071232.46908040@infradead.org> <20080922185209.GC6349@Krystal> <20081002152851.GC3220@redhat.com> <20081003161154.GA4139@Krystal> <20081003183737.GD3167@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081003183737.GD3167@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:04:38 up 120 days, 23:45,  8 users,  load average: 0.25, 0.34,
+	0.29
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-03 at 14:40 -0400, Alan Stern wrote:
-> On Fri, 3 Oct 2008, Dave Hansen wrote:
-> > I'm seeing some odd USB behavior with newer kernels
-> > (2.6.27-rc8-00062-g330f647 to be exact).  Almost exactly, every 30
-> > seconds, one of my USB hubs disconnects.
-> 
-> Actually two of the hubs disconnect: 3-4.1 and 3-4.4.4.  Neither is 
-> beneath the other.
-
-Yeah, it's a "7-port hub".  I assume that means that it's a pair of
-4-porters plugged together somehow.  
-
-It is this exact model:
-
-	http://store.pchcables.com/usb7posepohu.html
-
-> >  At first, I thought it was a
-> > hardware issue, and started swapping cables.  Then, I realized that I'd
-> > *just* rebooted into a new kernel.  So, I booted back to the distro
-> > kernel and these went away.
+* Jason Baron (jbaron@redhat.com) wrote:
+> On Fri, Oct 03, 2008 at 12:11:54PM -0400, Mathieu Desnoyers wrote:
+> > > > > > How about :
+> > > > > > 
+> > > > > >   trace_mark(ftrace_evname, "size %lu binary %pW",
+> > > > > >     sizeof(mystruct), mystruct);
+> > > > > >   or
+> > > > > >   trace_mark(sched_wakeup, "target_pid %ld", task->pid);
+> > > > > > 
+> > > > > > Note the namespacing with buffers being "ftrace" and "sched" here.
+> > > > > > 
+> > > > > > That would encapsulate the whole
+> > > > > >   - Event ID registration
+> > > > > >   - Event type registration
+> > > > > >   - Sending data out
+> > > > > >   - Enabling the event source directly at the source
+> > > > > > 
+> > > > > > We can then export the markers through a debugfs file and let userland
+> > > > > > enable them one by one and possibly connect systemtap filters on them
+> > > > > > (one table of registered filters, one table for the markers, a command
+> > > > > > file to connect/disconnect filters to/from markers).
+> > > > > 
+> > > > > I would like to ask for the following from the start: have a field for
+> > > > > a longer description of the marker that describes it's usage and
+> > > > > context. Getting this there from the start is critical, because only
+> > > > > when adding the marker point do people still really remember why/what
+> > > > > (and having to type a good description also helps them to realize if
+> > > > > this is the right point or not). This can then be exposed to the user
+> > > > > so he has a standing chance of knowing what the marker is about.
+> > > > > 
+> > > > > It also has a standing chance of being updated when the code changes
+> > > > > this way
+> > > > > 
+> > > > 
+> > > > I agree, and I think it might be required in both markers and
+> > > > tracepoints.
+> > > > 
+> > > > Given that tracepoints are declared in a global header
+> > > > (DECLARE_TRACE()), I would add this kind of description here. Tracepoint
+> > > > uses within the kernel code (statements like :
+> > > >   trace_sched_switch(prev, next);
+> > > > added to the scheduler) would therefore be tied to the description
+> > > > without having to contain it in the core kernel code.
+> > > > 
+> > > > Markers, on the other hand, could become the "event description"
+> > > > interface which is exported to userspace. Considering that, I guess it's
+> > > > as important to let a precise description follow the markers.
+> > > > 
+> > > > Mathieu
+> > > > 
+> > > >
+> > > 
+> > > hi,
+> > > 
+> > > Tracepoints and markers seem to both have their place, with tracepoints
+> > > being integral to kernel users, and markers being important for
+> > > userspace. However, it seems to me like there is overlap in the
+> > > code and an extra level of indirection when markers are layered on
+> > > tracespoints. could they be merged a bit more?
+> > > 
+> > > What if we extended DEFINE_TRACE() to also create a
+> > > 'set_marker(marker_cb)' function where 'marker_cb' has the function signature:
+> > > 
+> > > marker_cb(<tracepoint prototype>, *marker_probe_func);
+> > > 
+> > > We then also create 'register_marker_##name' function in DEFINE_TRACE(),
+> > > which allows one to regiser marker callbacks in the usual way.
+> > > 
+> > > Then 'marker_cb' function is then called in '__DO_TRACE' if anybody has
+> > > registered a marker (which can set the tracepoint.state appropriately).
+> > > 
+> > > The 'marker_cb' function then marshalls its arguemnts and passes them
+> > > through to the marker functions that were registered.
+> > > 
+> > > I think in this way we can simplify the tracepoints and markers by
+> > > combining them to a large extent.
+> > > 
+> > > thanks,
+> > > 
+> > > -Jason
+> > > 
 > > 
-> > Even though my mouse is hanging off that hub,
+> > I think what you propose here is already in y LTTng tree in a different
+> > form. It's a patch to markers to allow declaring a marker which enables
+> > an associated tracepoint when enabled. This way, we can have a marker
+> > (exposed to userspace) connecting itself automatically to a tracepoint
+> > when enabled.
+> > 
+> > It's here :
+> > http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=d52ea7c48f47a1179aee01636d515cfea4ff6ede;hp=0a7b5c02209f3582ed1369ec818a1b389bd45a09
+> > 
+> > Note that locking depends on the psrwlock patch so we can have nested
+> > module list readers. Otherwise locking becomes _really_ messy. :-(
+> > 
+> > Mathieu
+> > 
 > 
-> No it isn't.  The mouse is 3-4.4.1, which is not below either 3-4.1 or 
-> 3-4.4.4.
-
-Huh, that's odd.
-
-The T61 has two (empty) USB ports on the left, one on the right, and 4
-on the dock.  The configuration I've had so far is the 7-port hub
-plugged into one of the four ports on the back of the T61.
-
-> > The machine is a Lenovo T61 plugged into the Lenovo dock.  At this
-> > point, the only thing plugged into the suspect hub is my mouse.
+> That patch simplifies using markers with tracepoints and couples
+> markers and tracepoints much more closely. But I was proposing to make
+> the coupling tighter...
 > 
-> In fact, nothing is plugged into either of the hubs.
+> Couldn't 'marker_probe_register()' register the marker directly with
+> the tracepoint callsite? Have DEFINE_TRACE() take an additional argument
+> which references a marker callback funtion. That function would look 
+> like (very loose C code):
 > 
-> In theory this could be caused by a problem in the dock.  But it would 
-> be better to get more information before trying to pin down the cause.
+> marker_blah_callback(TPPROTO(arg1, arg2), marker_probe_func *probe,
+
+I don't want the tracepoints to be coupled with markers (which are a
+userspace API). The other way around is fine : letting a marker
+automatically enable a tracepoint makes sense, but the opposite would
+tie the in-kernel API (tracepoint) to the external marker
+representation, and I would like to avoid that.
+
+And how do you plan to deal with :
+
+TPPROTO(arg1, arg2) == void ?
+
+C won't let you define stuff like :
+
+blah(void, marker_probe_func *probe, void *private_data)
+
+The devil is in the details.... ;)
+
+Mathieu
+
+> private_data)
+> {
+> 	probe(private_data, "%arg1 %arg2", arg1->a, arg2->b);
+> }
 > 
-> You should use usbmon (see Documentation/usb/usbmon.txt) to record a 
-> trace of everything happening on bus 3.  And to keep things simple, you 
-> should unplug all the USB devices except for one of the magical 
-> disappearing hubs.
+> The 'marker_blah_callback()' would be invoked from within DO_TRACE() for
+> each marker that has been registered with the associated tracepoint, in
+> a similar way to how we iterate over the tracepoint callbacks, we can
+> iterate over the registered markers and pass them to the
+> 'marker_blah_callback()' function. 
+> 
+> By associating the marker_blah_callback() in DEFINE_TRACE(), we only
+> need to look in one file to understand what is associated with a
+> particular tracepoint. I think marker.c and tracepoint.c could also be
+> consolidated at that point.
+> 
+> thanks,
+> 
+> -Jason
+> 
+> 
+> 
+> 
+> 
+> 
+> 
 
-Unfortunately, the disconnects don't happen unless both my 7-port hub
-and the mouse are connected.  So, I've disconnected everything but those
-two things.  I also plugged the mouse into the single port on the right
-side of the T61 instead of the dock.
-
-usbmon output: http://sr71.net/~dave/linux/1.mon.out
-
-I've also attached appended the corresponding dmesg with annotations of
-what I did when.
-
-plug in mouse:
-Oct  3 11:53:51 nimitz kernel: [ 8253.306987] usb 2-1: new low speed USB device using uhci_hcd and address 4
-Oct  3 11:53:51 nimitz kernel: [ 8253.420284] usb 2-1: configuration #1 chosen from 1 choice
-Oct  3 11:53:52 nimitz kernel: [ 8253.476663] input: Logitech USB Receiver as /devices/pci0000:00/0000:00:1a.1/usb2/2-1/2-1:1.0/input/input13
-Oct  3 11:53:52 nimitz kernel: [ 8253.493970] input: USB HID v1.10 Mouse [Logitech USB Receiver] on usb-0000:00:1a.1-1
-plug in '7 port' hub:
-Oct  3 11:54:26 nimitz kernel: [ 8288.132987] usb 3-4.3: new high speed USB device using ehci_hcd and address 47
-Oct  3 11:54:26 nimitz kernel: [ 8288.188960] usb 3-4.3: configuration #1 chosen from 1 choice
-Oct  3 11:54:26 nimitz kernel: [ 8288.189371] hub 3-4.3:1.0: USB hub found
-Oct  3 11:54:26 nimitz kernel: [ 8288.189669] hub 3-4.3:1.0: 4 ports detected
-Oct  3 11:54:26 nimitz kernel: [ 8288.339300] usb 3-4.3.4: new high speed USB device using ehci_hcd and address 48
-Oct  3 11:54:26 nimitz kernel: [ 8288.395323] usb 3-4.3.4: configuration #1 chosen from 1 choice
-Oct  3 11:54:26 nimitz kernel: [ 8288.395611] hub 3-4.3.4:1.0: USB hub found
-Oct  3 11:54:26 nimitz kernel: [ 8288.395928] hub 3-4.3.4:1.0: 4 ports detected
-'hub disconnects:' (I didn't do anything physically here)
-Oct  3 11:54:52 nimitz kernel: [ 8313.567487] usb 3-4.3: USB disconnect, address 47
-Oct  3 11:54:52 nimitz kernel: [ 8313.567492] usb 3-4.3.4: USB disconnect, address 48
-Oct  3 11:54:52 nimitz kernel: [ 8313.619115] usb 3-4.3: new high speed USB device using ehci_hcd and address 49
-Oct  3 11:54:52 nimitz kernel: [ 8313.675618] usb 3-4.3: configuration #1 chosen from 1 choice
-Oct  3 11:54:52 nimitz kernel: [ 8313.675887] hub 3-4.3:1.0: USB hub found
-Oct  3 11:54:52 nimitz kernel: [ 8313.676232] hub 3-4.3:1.0: 4 ports detected
-Oct  3 11:54:52 nimitz kernel: [ 8313.823367] usb 3-4.3.4: new high speed USB device using ehci_hcd and address 50
-Oct  3 11:54:52 nimitz kernel: [ 8313.880913] usb 3-4.3.4: configuration #1 chosen from 1 choice
-Oct  3 11:54:52 nimitz kernel: [ 8313.881140] hub 3-4.3.4:1.0: USB hub found
-Oct  3 11:54:52 nimitz kernel: [ 8313.881485] hub 3-4.3.4:1.0: 4 ports detected
-Oct  3 11:55:22 nimitz kernel: [ 8343.572344] usb 3-4.3: USB disconnect, address 49
-Oct  3 11:55:22 nimitz kernel: [ 8343.572355] usb 3-4.3.4: USB disconnect, address 50
-Oct  3 11:55:22 nimitz kernel: [ 8343.695579] usb 3-4.3: new high speed USB device using ehci_hcd and address 51
-Oct  3 11:55:22 nimitz kernel: [ 8343.754283] usb 3-4.3: configuration #1 chosen from 1 choice
-Oct  3 11:55:22 nimitz kernel: [ 8343.754598] hub 3-4.3:1.0: USB hub found
-Oct  3 11:55:22 nimitz kernel: [ 8343.754923] hub 3-4.3:1.0: 4 ports detected
-Oct  3 11:55:22 nimitz kernel: [ 8343.908841] usb 3-4.3.4: new high speed USB device using ehci_hcd and address 52
-Oct  3 11:55:22 nimitz kernel: [ 8343.964966] usb 3-4.3.4: configuration #1 chosen from 1 choice
-Oct  3 11:55:22 nimitz kernel: [ 8343.965247] hub 3-4.3.4:1.0: USB hub found
-
--- Dave
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
