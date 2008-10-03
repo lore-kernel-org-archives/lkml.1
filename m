@@ -1,96 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYJCAR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbYJCARo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbYJCAR1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 20:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYJCART
+	id S1753305AbYJCARo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 20:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbYJCARc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 20:17:19 -0400
-Received: from xenotime.net ([66.160.160.81]:59046 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753484AbYJCARS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 20:17:18 -0400
-Date: Thu, 2 Oct 2008 17:17:16 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: linux-kernel@vger.kernel.org
-cc: akpm@linux-foundation.org
-Subject: Re: mmotm 2008-10-02-16-17 uploaded
-In-Reply-To: <200810022318.m92NI14X031834@imap1.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0810021705460.26309@shark.he.net>
-References: <200810022318.m92NI14X031834@imap1.linux-foundation.org>
+	Thu, 2 Oct 2008 20:17:32 -0400
+Received: from mylar.outflux.net ([69.93.193.226]:48288 "EHLO
+	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754666AbYJCARb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 20:17:31 -0400
+Date: Thu, 2 Oct 2008 17:16:16 -0700
+From: Kees Cook <kees.cook@canonical.com>
+To: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Cc: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       libc-alpha@sourceware.org
+Subject: [PATCH] ELF: implement AT_RANDOM for future glibc use
+Message-ID: <20081003001616.GN10632@outflux.net>
+References: <20081001201116.GD12527@outflux.net> <48E3EFD6.2010704@redhat.com> <20081001215657.GH12527@outflux.net> <20081001220948.GC32107@sunsite.ms.mff.cuni.cz> <20081001222706.68E7E1544B4@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081001222706.68E7E1544B4@magilla.localdomain>
+Organization: Canonical
+X-HELO: www.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008, akpm@linux-foundation.org wrote:
+While discussing[1] the need for glibc to have access to random bytes
+during program load, it seems that an earlier attempt to implement
+AT_RANDOM got stalled.  This implements a configurable number of random
+bytes available to every ELF program via a new auxv AT_RANDOM vector.
 
-> The mm-of-the-moment snapshot 2008-10-02-16-17 has been uploaded to
-> 
->    http://userweb.kernel.org/~akpm/mmotm/
-> 
-> It contains the following patches against 2.6.27-rc8:
+[1] http://sourceware.org/ml/libc-alpha/2008-10/msg00006.html
 
-10 out of 10 build randconfig failures on i386;
-10 out of 10 build randconfig failures on x86_64.
+Signed-off-by: Kees Cook <kees.cook@canonical.com>
+---
+ fs/binfmt_elf.c        |   20 ++++++++++++++++++++
+ include/linux/auxvec.h |    4 +++-
+ security/Kconfig       |    9 +++++++++
+ 3 files changed, 32 insertions(+), 1 deletions(-)
 
-Summary for i386:
-
-build-r9491.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/include/linux/stacktrace.h:13: warning:
- 'struct task_struct' declared inside parameter list
-build-r9491.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/include/linux/stacktrace.h:13: warning:
- its scope is only this definition or declaration, which is probably not what you want
-build-r9491.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/fs/autofs4/dev-ioctl.c:310: error: too 
-many arguments to function 'dentry_open'
-
-~~~ Lots of these:
-
-build-r9494.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/arch/x86/kernel/process_32.c:87: error:
- implicit declaration of function 'cpu_uninit'
-build-r9494.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/arch/x86/kernel/process_32.c:99: error:
- redefinition of 'play_dead'
-build-r9494.out:include2/asm/smp.h:112: error: previous definition of 'play_dead' was here
-
-~~~ (with copy-and-paste line breaks)
-
-build-r9502.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/arch/x86/kernel/io_apic_32.c:1539: warn
-ing: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
-build-r9502.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/arch/x86/kernel/io_apic_32.c:1540: warn
-ing: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
-build-r9502.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/include/linux/stacktrace.h:13: warning:
- 'struct task_struct' declared inside parameter list
-build-r9502.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/include/linux/stacktrace.h:13: warning:
- its scope is only this definition or declaration, which is probably not what you want
-build-r9502.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/drivers/char/stallion.c:615: error: imp
-licit declaration of function 'tty_port_tty_get'
-build-r9502.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/drivers/char/stallion.c:739: error: imp
-licit declaration of function 'tty_port_tty_set'
-
-
-Summary for x86_64:
-
-(several of these)
-build-r9492.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/arch/x86/kernel/process_64.c:95: error:
- redefinition of 'play_dead'
-build-r9492.out:include2/asm/smp.h:112: error: previous definition of 'play_dead' was here
-
-~~~
-
-(lots of these)
-build-r9493.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/arch/x86/kernel/io_apic_64.c:1284: warn
-ing: format '%08x' expects type 'unsigned int', but argument 2 has type 'long unsigned int'
-build-r9493.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/arch/x86/kernel/io_apic_64.c:1285: warn
-ing: format '%08x' expects type 'unsigned int', but argument 2 has type 'long unsigned int'
-build-r9493.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/arch/x86/kernel/k8.c:20: error: 'PCI_DE
-VICE_ID_AMD_10H_NB_MISC' undeclared here (not in a function)
-build-r9493.out:/home/rdunlap/linsrc/mmotm-2008-1002-1617/fs/autofs4/dev-ioctl.c:310: error: too 
-many arguments to function 'dentry_open'
-
-~~~
-
-I'll work on some patches for them as time permits...
-or you could drop them, push them back to their submitters...
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 655ed8d..9b2ea62 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -152,6 +152,8 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 	elf_addr_t __user *sp;
+ 	elf_addr_t __user *u_platform;
+ 	elf_addr_t __user *u_base_platform;
++	elf_addr_t __user *u_rand_bytes;
++	unsigned int rand_size;
+ 	const char *k_platform = ELF_PLATFORM;
+ 	const char *k_base_platform = ELF_BASE_PLATFORM;
+ 	int items;
+@@ -196,6 +198,18 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 			return -EFAULT;
+ 	}
+ 
++	rand_size = CONFIG_SECURITY_AUXV_RANDOM_SIZE * sizeof(unsigned long);
++	u_rand_bytes = NULL;
++	if (rand_size) {
++		unsigned char k_rand_bytes[CONFIG_SECURITY_AUXV_RANDOM_SIZE *
++					   sizeof(unsigned long)];
++		get_random_bytes(k_rand_bytes, rand_size);
++
++		u_rand_bytes = (elf_addr_t __user *)STACK_ALLOC(p, rand_size);
++		if (__copy_to_user(u_rand_bytes, k_rand_bytes, rand_size))
++			return -EFAULT;
++	}
++
+ 	/* Create the ELF interpreter info */
+ 	elf_info = (elf_addr_t *)current->mm->saved_auxv;
+ 	/* update AT_VECTOR_SIZE_BASE if the number of NEW_AUX_ENT() changes */
+@@ -228,6 +242,12 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 	NEW_AUX_ENT(AT_GID, tsk->gid);
+ 	NEW_AUX_ENT(AT_EGID, tsk->egid);
+  	NEW_AUX_ENT(AT_SECURE, security_bprm_secureexec(bprm));
++	if (rand_size) {
++		NEW_AUX_ENT(AT_RANDOM_SIZE,
++			    (elf_addr_t)(unsigned long)rand_size);
++		NEW_AUX_ENT(AT_RANDOM,
++			    (elf_addr_t)(unsigned long)u_rand_bytes);
++	}
+ 	NEW_AUX_ENT(AT_EXECFN, bprm->exec);
+ 	if (k_platform) {
+ 		NEW_AUX_ENT(AT_PLATFORM,
+diff --git a/include/linux/auxvec.h b/include/linux/auxvec.h
+index d7afa9d..df4ff65 100644
+--- a/include/linux/auxvec.h
++++ b/include/linux/auxvec.h
+@@ -23,6 +23,8 @@
+ #define AT_PLATFORM 15  /* string identifying CPU for optimizations */
+ #define AT_HWCAP  16    /* arch dependent hints at CPU capabilities */
+ #define AT_CLKTCK 17	/* frequency at which times() increments */
++#define AT_RANDOM 18    /* address of random bytes */
++#define AT_RANDOM_SIZE 19   /* number of random bytes at AT_RANDOM */
+ 
+ #define AT_SECURE 23   /* secure mode boolean */
+ 
+@@ -32,7 +34,7 @@
+ #define AT_EXECFN  31	/* filename of program */
+ 
+ #ifdef __KERNEL__
+-#define AT_VECTOR_SIZE_BASE 18 /* NEW_AUX_ENT entries in auxiliary table */
++#define AT_VECTOR_SIZE_BASE 20 /* NEW_AUX_ENT entries in auxiliary table */
+   /* number of "#define AT_.*" above, minus {AT_NULL, AT_IGNORE, AT_NOTELF} */
+ #endif
+ 
+diff --git a/security/Kconfig b/security/Kconfig
+index f6c0429..8d9d49d 100644
+--- a/security/Kconfig
++++ b/security/Kconfig
+@@ -114,6 +114,15 @@ config SECURITY_DEFAULT_MMAP_MIN_ADDR
+ 	  This value can be changed after boot using the
+ 	  /proc/sys/vm/mmap_min_addr tunable.
+ 
++config SECURITY_AUXV_RANDOM_SIZE
++	int "Number of random longs to store in AT_RANDOM on every exec"
++	default 4
++	help
++	  This value determines the size of the random longs provided
++	  to programs via the auxv AT_RANDOM vector.  It can be used
++	  to initialize random values needed during program load.
++
++	  If you are unsure how many longs to use, answer 4.
+ 
+ source security/selinux/Kconfig
+ source security/smack/Kconfig
+-- 
+1.5.6.3
 
 -- 
-~Randy
+Kees Cook
+Ubuntu Security Team
