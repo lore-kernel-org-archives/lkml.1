@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbYJCLXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYJCL0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753608AbYJCLXa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 07:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYJCLXV
+	id S1753827AbYJCL0k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 07:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYJCL0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 07:23:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39054 "EHLO ogre.sisk.pl"
+	Fri, 3 Oct 2008 07:26:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56891 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752240AbYJCLXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 07:23:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/6] Hibernation: Introduce new system state for the last phase of hibernation
-Date: Fri, 3 Oct 2008 13:27:18 +0200
-User-Agent: KMail/1.9.9
-Cc: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>
-References: <200808290002.55026.rjw@sisk.pl> <200809300010.39000.rjw@sisk.pl> <20081003013557.42ce685d.akpm@linux-foundation.org>
-In-Reply-To: <20081003013557.42ce685d.akpm@linux-foundation.org>
+	id S1752061AbYJCL0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 07:26:31 -0400
+Date: Fri, 3 Oct 2008 07:26:07 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org, agk@redhat.com, mbroz@redhat.com,
+       chris@arachsys.com
+Subject: Re: [PATCH] Memory management livelock
+In-Reply-To: <200810031254.29121.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0810030716310.4875@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+ <20080923154905.50d4b0fa.akpm@linux-foundation.org> <200810031232.23836.nickpiggin@yahoo.com.au>
+ <200810031254.29121.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810031327.19293.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 3 of October 2008, Andrew Morton wrote:
-> On Tue, 30 Sep 2008 00:10:37 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > *What* is, forever? Data integrity syncs should have pages operated on
+> > in-order, until we get to the end of the range. Circular writeback could
+> > go through again, possibly, but no more than once.
 > 
-> > Hibernation: Introduce new system state for the last phase of hibernation
-> > 
-> > Replace unused SYSTEM_SUSPEND_DISK with a new system_state value
-> > SYSTEM_HIBERNATE_ENTER that can be used by device drivers to check if
-> > the system is in the last phase of hibernation.
+> OK, I have been able to reproduce it somewhat. It is not a livelock,
+> but what is happening is that direct IO read basically does an fsync
+> on the file before performing the IO. The fsync gets stuck behind the
+> dd that is dirtying the pages, and ends up following behind it and
+> doing all its IO for it.
 > 
-> Violent objections.
+> The following patch avoids the issue for direct IO, by using the range
+> syncs rather than trying to sync the whole file.
 > 
-> We just don't know what this change will do.  It potentially affects
-> every code site in the kernel which looks at system_state.
-
-Do you mean anyone checking 'system_state != SOMETHING' ?  Oh well.
-
-> We've had problems in the past with this thing and the more complex we make it,
-> the worse any future problems will be.  It's Just Bad.
+> The underlying problem I guess is unchanged. Is it really a problem,
+> though? The way I'd love to solve it is actually by adding another bit
+> or two to the pagecache radix tree,  that can be used to transiently tag
+> the tree for future operations. That way we could record the dirty and
+> writeback pages up front, and then only bother with operating on them.
 > 
-> Can we just create a new global?
-> 
-> 	extern bool system_entering_hibernation_or_whatever;
+> That's *if* it really is a problem. I don't have much pity for someone
+> doing buffered IO and direct IO to the same pages of the same file :)
 
-Yes, we can, but what about:
+LVM does (that is where the bug was discovered). Basically, it scans all 
+the block devices with direct IO and if someone else does buffered IO on 
+any device simultaneously, it locks up.
 
-extern bool system_entering_hibernation(void);
+That fsync-vs-write livelock is quite improbably (why would some 
+application do it?) --- although it could be used as a DoS --- getting 
+unkillable process.
 
-that will become a static inline in case of !CONFIG_HIBERNATION,
-and using a static variable?
+But there is another possible real-world problem --- sync-vs-write --- 
+i.e. admin plugs in two disks and copies data from one to the other. 
+Meanwhile, some unrelated server process executes sync(). The server goes 
+into coma until the copy finishes.
+
+Mikulas
