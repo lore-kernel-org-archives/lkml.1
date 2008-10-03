@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbYJCRaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYJCRcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbYJCRaw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 13:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYJCRan
+	id S1753982AbYJCRcS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 13:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYJCRcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 13:30:43 -0400
-Received: from xenotime.net ([66.160.160.81]:54162 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751614AbYJCRam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 13:30:42 -0400
-Date: Fri, 3 Oct 2008 10:30:33 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Uwe Hermann <uwe@hermann-uwe.de>
-cc: linux-kernel@vger.kernel.org, mtk.manpages@gmail.com, rdunlap@xenotime.net,
-       linux-doc@vger.kernel.org
-Subject: Re: [PATCH] doc: Fix broken references to Documentation/x86 files
-In-Reply-To: <20081003160825.GA26167@greenwood>
-Message-ID: <Pine.LNX.4.64.0810031027070.18240@shark.he.net>
-References: <20081003160825.GA26167@greenwood>
+	Fri, 3 Oct 2008 13:32:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45639 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751795AbYJCRcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 13:32:05 -0400
+Date: Fri, 3 Oct 2008 19:31:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Markers synchronize unregister static inline
+Message-ID: <20081003173144.GC15583@elte.hu>
+References: <48E08B05.7030802@cn.fujitsu.com> <20080929082722.GB18663@elte.hu> <20080929150513.GC11245@Krystal> <20081002235650.43ca075c.akpm@linux-foundation.org> <20081003155254.GB1607@Krystal>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081003155254.GB1607@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0304]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008, Uwe Hermann wrote:
 
-> The Documentation/i386 and Documentation/x86_64 directories and their
-> contents have been moved into Documentation/x86. Fix references to
-> those files accordingly.
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+
+> Turn marker synchronize unregister into a static inline. There is no reason to
+> keep it as a macro over a static inline.
 > 
-> Signed-off-by: Uwe Hermann <uwe@hermann-uwe.de>
-> 
-> diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
-> index b0c7b6c..1b1512f 100644
-> --- a/Documentation/x86/x86_64/boot-options.txt
-> +++ b/Documentation/x86/x86_64/boot-options.txt
-> @@ -143,7 +143,7 @@ Non Executable Mappings
->  SMP
->  
->    additional_cpus=NUM Allow NUM more CPUs for hotplug
-> -		 (defaults are specified by the BIOS, see Documentation/x86_64/cpu-hotplug-spec)
-> +		 (defaults are specified by the BIOS, see Documentation/x86/x86_64/cpu-hotplug-spec)
+> Ingo, can you pull this into -tip on top of the previous "Markers
+> synchronize unregister" patch ?
 
-This file needs one more line patched.  It still contains this:
+applied to tip/tracing/markers, thanks Mathieu!
 
-   pirq=...	 See Documentation/i386/IO-APIC.txt
-
-so change that one also and then you can add
-  Acked-by: Randy Dunlap <rdunlap@xenotime.net>
-to it if you want to.
-
-Thanks.
--- 
-~Randy
+	Ingo
