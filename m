@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYJCTnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbYJCTng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbYJCTnU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 15:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYJCTmd
+	id S1753934AbYJCTng (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 15:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbYJCTmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 15:42:33 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58317 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752880AbYJCTmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 15:42:33 -0400
-Date: Fri, 3 Oct 2008 21:40:40 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Jeffrey W. Baker" <jwbaker@gmail.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
-Subject: Re: Put unused PCI devices in D3
-Message-ID: <20081003194040.GC1497@ucw.cz>
-References: <1222719064.19236.129.camel@squeak.gghcwest.com> <20080930000923.GA29775@srcf.ucam.org> <1222736147.21516.12.camel@stinkpad>
+	Fri, 3 Oct 2008 15:42:46 -0400
+Received: from www.tglx.de ([62.245.132.106]:47765 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752996AbYJCTmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 15:42:44 -0400
+Date: Fri, 3 Oct 2008 21:41:06 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [regression] Latest git has WARN_ON storm with e1000e driver
+In-Reply-To: <alpine.LFD.2.00.0810030901170.3185@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0810032139100.4573@apollo>
+References: <200810031041.49350.borntraeger@de.ibm.com> <200810031720.53923.borntraeger@de.ibm.com> <alpine.LFD.2.00.0810030825190.3262@nehalem.linux-foundation.org> <200810031755.55931.borntraeger@de.ibm.com>
+ <alpine.LFD.2.00.0810030901170.3185@nehalem.linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1222736147.21516.12.camel@stinkpad>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > * If the device is a bridge or hub with no downstream device
+On Fri, 3 Oct 2008, Linus Torvalds wrote:
+> On Fri, 3 Oct 2008, Christian Borntraeger wrote:
 > > 
-> > Potential problems with hotplugging? But sure, this kind of thing is 
-> > being implemented in USB and SCSI.
-> > 
-> > > * Whenever userspace requests D3 via sysfs
-> > 
-> > This functionality was explicitly removed a few years back.
+> > kernel_init does lock_kernel (which does preempt_disable).
+> > The kernel_unlock is done in init_post. As far as I can see, this happens 
+> > after the driver init calls.
 > 
-> I sure would like to have it back, if only just for experimentation.
+> Yes. I just came to the same conclusion: preempt_count is 1 already in 
+> do_one_initcall().
+> 
+> So this whole bug is actually because that debug test is just _broken_. It 
+> shouldn't be WARN_ON(preempt_count()), it should be 'might_sleep()', which 
+> does it right.
+> 
+> The right thing to check is "in_atomic() || irqs_disabled()".
+> 
+> Duh. That was wasted effort for a buggy test.
 
-Feel free to find it and reapply for your experiments. The file was in
-sysfs was called power/state, just grep git logs for that.
+Stupid me. Yes I should have used might_sleep. It just did not trigger
+here as I did not have the driver compiled into the kernel.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Sorry,
+
+	tglx
