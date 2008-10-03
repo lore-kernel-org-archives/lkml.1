@@ -1,326 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYJCFCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbYJCFKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbYJCFCh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 01:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYJCFC0
+	id S1754657AbYJCFKA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 01:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYJCFJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 01:02:26 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40028 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752672AbYJCFC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 01:02:26 -0400
-Date: Thu, 2 Oct 2008 22:02:05 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, laijs@cn.fujitsu.com,
-       manfred@colorfullife.com, dipankar@in.ibm.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, josht@linux.vnet.ibm.com,
-       ltt-dev@lists.casi.polymtl.ca
-Subject: Re: [PATCH tip/master] RCU-based detection of stalled CPUs for
-	Classic RCU
-Message-ID: <20081003050205.GA6340@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081002003628.GA7877@linux.vnet.ibm.com> <20081002080726.GB17695@elte.hu> <20081002140507.GB6729@linux.vnet.ibm.com> <20081002151046.GB2473@Krystal> <20081002174318.GB7324@linux.vnet.ibm.com> <20081002185115.GA11047@Krystal> <20081002225537.GA6706@linux.vnet.ibm.com> <20081002230639.GA7522@linux.vnet.ibm.com> <20081003044127.GB5331@Krystal>
+	Fri, 3 Oct 2008 01:09:52 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:45300 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbYJCFJw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 01:09:52 -0400
+Message-ID: <48E5A900.6090308@ct.jp.nec.com>
+Date: Thu, 02 Oct 2008 22:09:20 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081003044127.GB5331@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] x86: signal: move macros out from restore_sigcontext()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 12:41:27AM -0400, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > Hello!
-> > 
-> > This patch adds stalled-CPU detection to Classic RCU.  This capability
-> > is enabled by a new config variable CONFIG_RCU_CPU_STALL_DETECTOR, which
-> > defaults disabled.  This is a debugging feature to detect infinite loops
-> > in kernel code, not something that non-kernel-hackers would be expected
-> > to care about.  This feature can detect looping CPUs in !PREEMPT builds
-> > and looping CPUs with preemption disabled in PREEMPT builds.  This is
-> > essentially a port of this functionality from the treercu patch, replacing
-> > the stall debug patch that is already in tip/core/rcu (commit 67182ae1c4).
-> > 
-> > The changes from the patch in tip/core/rcu include making the config
-> > variable name match that in treercu, changing from seconds to jiffies to
-> > avoid spurious warnings, and printing a boot message when this feature
-> > is enabled.
-> > 
-> 
-> Hi Paul,
-> 
-> Thanks for the previous explanations. Out of curiosity, what can this
-> patch do that the nmi watchdog can't do ?
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Hello, Mathieu,
+move macros, COPY, COPY_SEG*, GET_SEG, out from restore_sigcontext().
+x86_64: introduce COPY_SEG_STRICT for cs.
 
-Operate on architectures that don't have NMIs.  Possibly allow shorter
-timeouts than the NMI watchdog.  Operate on a per-CPU basis (or does
-the NMI watchdog do that these days?).
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/kernel/signal_32.c |   38 +++++++++++++++++++++-----------------
+ arch/x86/kernel/signal_64.c |   18 +++++++++++-------
+ 2 files changed, 32 insertions(+), 24 deletions(-)
 
-							Thanx, Paul
-
-> Mathieu
-> 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  include/linux/rcuclassic.h |   12 ++-
-> >  kernel/rcuclassic.c        |  166 +++++++++++++++++++++++----------------------
-> >  lib/Kconfig.debug          |    2 
-> >  3 files changed, 96 insertions(+), 84 deletions(-)
-> > 
-> > diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
-> > index 29bf528..2d72d20 100644
-> > --- a/include/linux/rcuclassic.h
-> > +++ b/include/linux/rcuclassic.h
-> > @@ -40,15 +40,21 @@
-> >  #include <linux/cpumask.h>
-> >  #include <linux/seqlock.h>
-> >  
-> > +#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
-> > +#define RCU_SECONDS_TILL_STALL_CHECK	3 * HZ	/* for rcp->jiffies_stall */
-> > +#define RCU_SECONDS_TILL_STALL_RECHECK	30 * HZ	/* for rcp->jiffies_stall */
-> > +#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
-> >  
-> >  /* Global control variables for rcupdate callback mechanism. */
-> >  struct rcu_ctrlblk {
-> >  	long	cur;		/* Current batch number.                      */
-> >  	long	completed;	/* Number of the last completed batch         */
-> >  	long	pending;	/* Number of the last pending batch           */
-> > -#ifdef CONFIG_DEBUG_RCU_STALL
-> > -	unsigned long gp_check;	/* Time grace period should end, in seconds.  */
-> > -#endif /* #ifdef CONFIG_DEBUG_RCU_STALL */
-> > +#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
-> > +	unsigned long gp_start;	/* Time at which GP started in jiffies. */
-> > +	unsigned long jiffies_stall;
-> > +				/* Time at which to check for CPU stalls. */
-> > +#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
-> >  
-> >  	int	signaled;
-> >  
-> > diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-> > index ed15128..eae2fb6 100644
-> > --- a/kernel/rcuclassic.c
-> > +++ b/kernel/rcuclassic.c
-> > @@ -164,6 +164,87 @@ static void __call_rcu(struct rcu_head *head, struct rcu_ctrlblk *rcp,
-> >  	}
-> >  }
-> >  
-> > +#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
-> > +
-> > +static void record_gp_stall_check_time(struct rcu_ctrlblk *rcp)
-> > +{
-> > +	rcp->gp_start = jiffies;
-> > +	rcp->jiffies_stall = jiffies + RCU_SECONDS_TILL_STALL_CHECK;
-> > +}
-> > +
-> > +static void print_other_cpu_stall(struct rcu_ctrlblk *rcp)
-> > +{
-> > +	int cpu;
-> > +	long delta;
-> > +	unsigned long flags;
-> > +
-> > +	/* Only let one CPU complain about others per time interval. */
-> > +
-> > +	spin_lock_irqsave(&rcp->lock, flags);
-> > +	delta = jiffies - rcp->jiffies_stall;
-> > +	if (delta < 2 || rcp->cur != rcp->completed) {
-> > +		spin_unlock_irqrestore(&rcp->lock, flags);
-> > +		return;
-> > +	}
-> > +	rcp->jiffies_stall = jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
-> > +	spin_unlock_irqrestore(&rcp->lock, flags);
-> > +
-> > +	/* OK, time to rat on our buddy... */
-> > +
-> > +	printk(KERN_ERR "RCU detected CPU stalls:");
-> > +	for_each_possible_cpu(cpu) {
-> > +		if (cpu_isset(cpu, rcp->cpumask))
-> > +			printk(" %d", cpu);
-> > +	}
-> > +	printk(" (detected by %d, t=%ld jiffies)\n",
-> > +	       smp_processor_id(), (long)(jiffies - rcp->gp_start));
-> > +}
-> > +
-> > +static void print_cpu_stall(struct rcu_ctrlblk *rcp)
-> > +{
-> > +	unsigned long flags;
-> > +
-> > +	printk(KERN_ERR "RCU detected CPU %d stall (t=%lu/%lu jiffies)\n",
-> > +			smp_processor_id(), jiffies,
-> > +			jiffies - rcp->gp_start);
-> > +	dump_stack();
-> > +	spin_lock_irqsave(&rcp->lock, flags);
-> > +	if ((long)(jiffies - rcp->jiffies_stall) >= 0)
-> > +		rcp->jiffies_stall =
-> > +			jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
-> > +	spin_unlock_irqrestore(&rcp->lock, flags);
-> > +	set_need_resched();  /* kick ourselves to get things going. */
-> > +}
-> > +
-> > +static void check_cpu_stall(struct rcu_ctrlblk *rcp)
-> > +{
-> > +	long delta;
-> > +
-> > +	delta = jiffies - rcp->jiffies_stall;
-> > +	if (cpu_isset(smp_processor_id(), rcp->cpumask) && delta >= 0) {
-> > +		
-> > +		/* We haven't checked in, so go dump stack. */
-> > +		print_cpu_stall(rcp);
-> > +
-> > +	} else if (rcp->cur != rcp->completed && delta >= 2) {
-> > +
-> > +		/* They had two seconds to dump stack, so complain. */
-> > +		print_other_cpu_stall(rcp);
-> > +	}
-> > +}
-> > +
-> > +#else /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
-> > +
-> > +static void record_gp_stall_check_time(struct rcu_ctrlblk *rcp)
-> > +{
-> > +}
-> > +
-> > +static void check_cpu_stall(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
-> > +{
-> > +}
-> > +
-> > +#endif /* #else #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
-> > +
-> >  /**
-> >   * call_rcu - Queue an RCU callback for invocation after a grace period.
-> >   * @head: structure to be used for queueing the RCU updates.
-> > @@ -293,84 +374,6 @@ static void rcu_do_batch(struct rcu_data *rdp)
-> >   *   period (if necessary).
-> >   */
-> >  
-> > -#ifdef CONFIG_DEBUG_RCU_STALL
-> > -
-> > -static inline void record_gp_check_time(struct rcu_ctrlblk *rcp)
-> > -{
-> > -	rcp->gp_check = get_seconds() + 3;
-> > -}
-> > -
-> > -static void print_other_cpu_stall(struct rcu_ctrlblk *rcp)
-> > -{
-> > -	int cpu;
-> > -	long delta;
-> > -	unsigned long flags;
-> > -
-> > -	/* Only let one CPU complain about others per time interval. */
-> > -
-> > -	spin_lock_irqsave(&rcp->lock, flags);
-> > -	delta = get_seconds() - rcp->gp_check;
-> > -	if (delta < 2L || cpus_empty(rcp->cpumask)) {
-> > -		spin_unlock(&rcp->lock);
-> > -		return;
-> > -	}
-> > -	rcp->gp_check = get_seconds() + 30;
-> > -	spin_unlock_irqrestore(&rcp->lock, flags);
-> > -
-> > -	/* OK, time to rat on our buddy... */
-> > -
-> > -	printk(KERN_ERR "RCU detected CPU stalls:");
-> > -	for_each_cpu_mask(cpu, rcp->cpumask)
-> > -		printk(" %d", cpu);
-> > -	printk(" (detected by %d, t=%lu/%lu)\n",
-> > -	       smp_processor_id(), get_seconds(), rcp->gp_check);
-> > -}
-> > -
-> > -static void print_cpu_stall(struct rcu_ctrlblk *rcp)
-> > -{
-> > -	unsigned long flags;
-> > -
-> > -	printk(KERN_ERR "RCU detected CPU %d stall (t=%lu/%lu)\n",
-> > -			smp_processor_id(), get_seconds(), rcp->gp_check);
-> > -	dump_stack();
-> > -	spin_lock_irqsave(&rcp->lock, flags);
-> > -	if ((long)(get_seconds() - rcp->gp_check) >= 0L)
-> > -		rcp->gp_check = get_seconds() + 30;
-> > -	spin_unlock_irqrestore(&rcp->lock, flags);
-> > -}
-> > -
-> > -static void check_cpu_stall(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
-> > -{
-> > -	long delta;
-> > -
-> > -	delta = get_seconds() - rcp->gp_check;
-> > -	if (cpu_isset(smp_processor_id(), rcp->cpumask) && delta >= 0L) {
-> > -
-> > -		/* We haven't checked in, so go dump stack. */
-> > -
-> > -		print_cpu_stall(rcp);
-> > -
-> > -	} else {
-> > -		if (!cpus_empty(rcp->cpumask) && delta >= 2L) {
-> > -			/* They had two seconds to dump stack, so complain. */
-> > -			print_other_cpu_stall(rcp);
-> > -		}
-> > -	}
-> > -}
-> > -
-> > -#else /* #ifdef CONFIG_DEBUG_RCU_STALL */
-> > -
-> > -static inline void record_gp_check_time(struct rcu_ctrlblk *rcp)
-> > -{
-> > -}
-> > -
-> > -static inline void
-> > -check_cpu_stall(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
-> > -{
-> > -}
-> > -
-> > -#endif /* #else #ifdef CONFIG_DEBUG_RCU_STALL */
-> > -
-> >  /*
-> >   * Register a new batch of callbacks, and start it up if there is currently no
-> >   * active batch and the batch to be registered has not already occurred.
-> > @@ -381,7 +384,7 @@ static void rcu_start_batch(struct rcu_ctrlblk *rcp)
-> >  	if (rcp->cur != rcp->pending &&
-> >  			rcp->completed == rcp->cur) {
-> >  		rcp->cur++;
-> > -		record_gp_check_time(rcp);
-> > +		record_gp_stall_check_time(rcp);
-> >  
-> >  		/*
-> >  		 * Accessing nohz_cpu_mask before incrementing rcp->cur needs a
-> > @@ -603,7 +606,7 @@ static void rcu_process_callbacks(struct softirq_action *unused)
-> >  static int __rcu_pending(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
-> >  {
-> >  	/* Check for CPU stalls, if enabled. */
-> > -	check_cpu_stall(rcp, rdp);
-> > +	check_cpu_stall(rcp);
-> >  
-> >  	if (rdp->nxtlist) {
-> >  		long completed_snap = ACCESS_ONCE(rcp->completed);
-> > @@ -769,6 +772,9 @@ static struct notifier_block __cpuinitdata rcu_nb = {
-> >   */
-> >  void __init __rcu_init(void)
-> >  {
-> > +#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
-> > +	printk(KERN_INFO "RCU-based detection of stalled CPUs is enabled.\n");
-> > +#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
-> >  	rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE,
-> >  			(void *)(long)smp_processor_id());
-> >  	/* Register notifier for non-boot CPUs */
-> > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> > index 4e921a8..e0e0582 100644
-> > --- a/lib/Kconfig.debug
-> > +++ b/lib/Kconfig.debug
-> > @@ -616,7 +616,7 @@ config RCU_TORTURE_TEST_RUNNABLE
-> >  	  Say N here if you want the RCU torture tests to start only
-> >  	  after being manually enabled via /proc.
-> >  
-> > -config RCU_CPU_STALL
-> > +config RCU_CPU_STALL_DETECTOR
-> >  	bool "Check for stalled CPUs delaying RCU grace periods"
-> >  	depends on CLASSIC_RCU
-> >  	default n
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
+index 4337cd5..545448b 100644
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -113,6 +113,27 @@ asmlinkage int sys_sigaltstack(unsigned long bx)
+ 	return do_sigaltstack(uss, uoss, regs->sp);
+ }
+ 
++#define COPY(x)			{		\
++	err |= __get_user(regs->x, &sc->x);	\
++}
++
++#define COPY_SEG(seg)		{			\
++		unsigned short tmp;			\
++		err |= __get_user(tmp, &sc->seg);	\
++		regs->seg = tmp;			\
++}
++
++#define COPY_SEG_STRICT(seg)	{			\
++		unsigned short tmp;			\
++		err |= __get_user(tmp, &sc->seg);	\
++		regs->seg = tmp | 3;			\
++}
++
++#define GET_SEG(seg)		{			\
++		unsigned short tmp;			\
++		err |= __get_user(tmp, &sc->seg);	\
++		loadsegment(seg, tmp);			\
++}
+ 
+ /*
+  * Do a signal return; undo the signal stack.
+@@ -126,23 +147,6 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 	/* Always make any pending restarted system calls return -EINTR */
+ 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+ 
+-#define COPY(x)		err |= __get_user(regs->x, &sc->x)
+-
+-#define COPY_SEG(seg)							\
+-	{ unsigned short tmp;						\
+-	  err |= __get_user(tmp, &sc->seg);				\
+-	  regs->seg = tmp; }
+-
+-#define COPY_SEG_STRICT(seg)						\
+-	{ unsigned short tmp;						\
+-	  err |= __get_user(tmp, &sc->seg);				\
+-	  regs->seg = tmp|3; }
+-
+-#define GET_SEG(seg)							\
+-	{ unsigned short tmp;						\
+-	  err |= __get_user(tmp, &sc->seg);				\
+-	  loadsegment(seg, tmp); }
+-
+ 	GET_SEG(gs);
+ 	COPY_SEG(fs);
+ 	COPY_SEG(es);
+diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+index 53f86d9..feff4a9 100644
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -52,6 +52,16 @@ sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
+ 	return do_sigaltstack(uss, uoss, regs->sp);
+ }
+ 
++#define COPY(x)			{		\
++	err |= __get_user(regs->x, &sc->x);	\
++}
++
++#define COPY_SEG_STRICT(seg)	{			\
++		unsigned short tmp;			\
++		err |= __get_user(tmp, &sc->seg);	\
++		regs->seg = tmp | 3;			\
++}
++
+ /*
+  * Do a signal return; undo the signal stack.
+  */
+@@ -64,8 +74,6 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 	/* Always make any pending restarted system calls return -EINTR */
+ 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+ 
+-#define COPY(x)		(err |= __get_user(regs->x, &sc->x))
+-
+ 	COPY(di); COPY(si); COPY(bp); COPY(sp); COPY(bx);
+ 	COPY(dx); COPY(cx); COPY(ip);
+ 	COPY(r8);
+@@ -80,11 +88,7 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 	/* Kernel saves and restores only the CS segment register on signals,
+ 	 * which is the bare minimum needed to allow mixed 32/64-bit code.
+ 	 * App's signal handler can save/restore other segments if needed. */
+-	{
+-		unsigned cs;
+-		err |= __get_user(cs, &sc->cs);
+-		regs->cs = cs | 3;	/* Force into user mode */
+-	}
++	COPY_SEG_STRICT(cs);
+ 
+ 	{
+ 		unsigned int tmpflags;
