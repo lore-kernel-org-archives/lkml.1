@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbYJCMuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbYJCM6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042AbYJCMuy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 08:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYJCMub
+	id S1752995AbYJCM6Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 08:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYJCM6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 08:50:31 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:48054 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbYJCMu3 (ORCPT
+	Fri, 3 Oct 2008 08:58:00 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:50978 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbYJCM57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 08:50:29 -0400
-Message-ID: <48E61618.10102@novell.com>
-Date: Fri, 03 Oct 2008 08:54:48 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Fri, 3 Oct 2008 08:57:59 -0400
+Date: Fri, 3 Oct 2008 15:58:48 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86_64: Implement personality ADDR_LIMIT_32BIT
+Message-ID: <20081003125847.GA9809@localhost.localdomain>
+References: <1223017469-5158-1-git-send-email-kirill@shutemov.name> <20081003080244.GC25408@elte.hu> <20081003092550.GA8669@localhost.localdomain> <20081003054431.33e19339@infradead.org>
 MIME-Version: 1.0
-To: Chirag Jog <chirag@linux.vnet.ibm.com>
-CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, dvhltc@us.ibm.com, dino@in.ibm.com,
-       Gilles.Carry@bull.net
-Subject: Re: [RT PATCH 0/2] fix for BUG_ON crash in 26.5-rt9
-References: <20080925123235.GA27916@linux.vnet.ibm.com> <20081003123745.17387.61782.stgit@dev.haskins.net>
-In-Reply-To: <20081003123745.17387.61782.stgit@dev.haskins.net>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig5A43C008F7C2B8CBF73C0A44"
+	protocol="application/pgp-signature"; boundary="bg08WKrSYDhXBjb5"
+Content-Disposition: inline
+In-Reply-To: <20081003054431.33e19339@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-29)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig5A43C008F7C2B8CBF73C0A44
-Content-Type: text/plain; charset=utf-8
+
+--bg08WKrSYDhXBjb5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Gregory Haskins wrote:
-> Hi Chirag,
->
->  Please try the following patches applied to 26.5-rt9 and let me know w=
-hat you
->  find.
->
-> Hi Steve,
->   If these look good to everyone, please consider them for inclusion in=
- -rt10.=20
->
->  =20
+On Fri, Oct 03, 2008 at 05:44:31AM -0700, Arjan van de Ven wrote:
+> On Fri, 3 Oct 2008 12:25:52 +0300
+> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+>=20
+> > On Fri, Oct 03, 2008 at 10:02:44AM +0200, Ingo Molnar wrote:
+> > >=20
+> > > * Kirill A. Shutemov <kirill@shutemov.name> wrote:
+> > >=20
+> > > > -	/* for MAP_32BIT mappings we force the legact mmap base
+> > > > */
+> > > > -	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT))
+> > > > +	/* for MAP_32BIT mappings and ADDR_LIMIT_32BIT
+> > > > personality we force the
+> > > > +	 * legact mmap base
+> > > > +	 */
+> > >=20
+> > > please use the customary multi-line comment style:
+> > >=20
+> > >   /*
+> > >    * Comment .....
+> > >    * ...... goes here:
+> > >    */
+> > >=20
+> > > and you might use the opportunity to fix the s/legact/legacy typo
+> > > as well.
+> >=20
+> > Ok, I'll fix it.
+> >=20
+> > >=20
+> > > but more generally, we already have ADDR_LIMIT_3GB support on x86.
+> >=20
+> > Does ADDR_LIMIT_3GB really work?
+>=20
+> if it's broken we should fix it.... not invent a new one.
+> Also, traditionally often personalities only start at exec() time iirc.
+> (but I could be wrong on that)
 
-I meant to add: this are build-tested only (now back to vacation time
-for me, which means slave labor in the garage!).
+What is difference beetween ADDR_LIMIT_3GB and ADDR_LIMIT_32BIT? Probably,
+I implement ADDR_LIMIT_3GB, not ADDR_LIMIT_32BIT...
 
-I will catch up with you guys on Monday.
+--=20
+Regards,  Kirill A. Shutemov
+ + Belarus, Minsk
+ + ALT Linux Team, http://www.altlinux.com/
 
--Greg
-
-
-
---------------enig5A43C008F7C2B8CBF73C0A44
+--bg08WKrSYDhXBjb5
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkjmFhgACgkQlOSOBdgZUxlcUwCbBGKY4kUFg1wcwwk9ONl3IoWd
-laoAoIZJ7sdpG7+qE5VNRgd0812LExd0
-=H3dA
+iEYEARECAAYFAkjmFwcACgkQbWYnhzC5v6r6bgCglPzVDYS7Gd39Fi8PObMbKTFp
+bxAAnj3qsoDFpFteMNdni8jjWpqohHmq
+=2ZxL
 -----END PGP SIGNATURE-----
 
---------------enig5A43C008F7C2B8CBF73C0A44--
+--bg08WKrSYDhXBjb5--
