@@ -1,52 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbYJCFSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbYJCFTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755656AbYJCFSc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 01:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYJCFSJ
+	id S1755520AbYJCFTV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 01:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbYJCFTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 01:18:09 -0400
-Received: from mylar.outflux.net ([69.93.193.226]:46670 "EHLO
-	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752398AbYJCFSI (ORCPT
+	Fri, 3 Oct 2008 01:19:13 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36811 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402AbYJCFTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 01:18:08 -0400
-Date: Thu, 2 Oct 2008 22:15:43 -0700
-From: Kees Cook <kees.cook@canonical.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Jakub Jelinek <jakub@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>, libc-alpha@sourceware.org
-Subject: Re: [PATCH] ELF: implement AT_RANDOM for future glibc use
-Message-ID: <20081003051543.GQ10632@outflux.net>
-References: <20081001201116.GD12527@outflux.net> <48E3EFD6.2010704@redhat.com> <20081001215657.GH12527@outflux.net> <20081001220948.GC32107@sunsite.ms.mff.cuni.cz> <20081001222706.68E7E1544B4@magilla.localdomain> <20081003001616.GN10632@outflux.net> <20081003005258.7FEDE154212@magilla.localdomain>
+	Fri, 3 Oct 2008 01:19:12 -0400
+Message-ID: <48E5AB37.30109@ct.jp.nec.com>
+Date: Thu, 02 Oct 2008 22:18:47 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081003005258.7FEDE154212@magilla.localdomain>
-Organization: Canonical
-X-HELO: www.outflux.net
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] x86: signal: remove indent in restore_sigcontext()
+References: <48E5A900.6090308@ct.jp.nec.com>
+In-Reply-To: <48E5A900.6090308@ct.jp.nec.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 02, 2008 at 05:52:58PM -0700, Roland McGrath wrote:
-> I think the safe available AT_* values to use are 25, 26.
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Out of curiosity, why are there gaps?  I figure I can include some
-comments in that header to explain the gaps for future AT_* creations.
+remove braces and indent for flags and fpstate in restore_sigcontext().
 
-> I would configure the size in bytes.  Ulrich suggested it be 16 bytes on
-> both 32-bit and 64-bit machines.
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/kernel/signal_32.c |   21 +++++++--------------
+ arch/x86/kernel/signal_64.c |   19 +++++++------------
+ 2 files changed, 14 insertions(+), 26 deletions(-)
 
-I was trying to make the size compile-time static so I could avoid
-kmalloc'ing a buffer for get_random_bytes().  But maybe avoid that isn't
-sensible?
-
-As for 16 bytes on both 32bit and 64bit, I was aiming to have 4
-pointer-sized random values.  16 works for 32bit, but I was hoping to
-have 32 on 64bit.  Perhaps I am over-estimating?
-
--Kees
-
--- 
-Kees Cook
-Ubuntu Security Team
+diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
+index 545448b..d6dd057 100644
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -142,6 +142,8 @@ static int
+ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 		   unsigned long *pax)
+ {
++	void __user *buf;
++	unsigned int tmpflags;
+ 	unsigned int err = 0;
+ 
+ 	/* Always make any pending restarted system calls return -EINTR */
+@@ -156,21 +158,12 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 	COPY_SEG_STRICT(cs);
+ 	COPY_SEG_STRICT(ss);
+ 
+-	{
+-		unsigned int tmpflags;
++	err |= __get_user(tmpflags, &sc->flags);
++	regs->flags = (regs->flags & ~FIX_EFLAGS) | (tmpflags & FIX_EFLAGS);
++	regs->orig_ax = -1;		/* disable syscall checks */
+ 
+-		err |= __get_user(tmpflags, &sc->flags);
+-		regs->flags = (regs->flags & ~FIX_EFLAGS) |
+-						(tmpflags & FIX_EFLAGS);
+-		regs->orig_ax = -1;		/* disable syscall checks */
+-	}
+-
+-	{
+-		void __user *buf;
+-
+-		err |= __get_user(buf, &sc->fpstate);
+-		err |= restore_i387_xstate(buf);
+-	}
++	err |= __get_user(buf, &sc->fpstate);
++	err |= restore_i387_xstate(buf);
+ 
+ 	err |= __get_user(*pax, &sc->ax);
+ 	return err;
+diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+index feff4a9..a5c9627 100644
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -69,6 +69,8 @@ static int
+ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 		   unsigned long *pax)
+ {
++	void __user *buf;
++	unsigned int tmpflags;
+ 	unsigned int err = 0;
+ 
+ 	/* Always make any pending restarted system calls return -EINTR */
+@@ -90,19 +92,12 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 	 * App's signal handler can save/restore other segments if needed. */
+ 	COPY_SEG_STRICT(cs);
+ 
+-	{
+-		unsigned int tmpflags;
+-		err |= __get_user(tmpflags, &sc->flags);
+-		regs->flags = (regs->flags & ~FIX_EFLAGS) | (tmpflags & FIX_EFLAGS);
+-		regs->orig_ax = -1;		/* disable syscall checks */
+-	}
+-
+-	{
+-		void __user *buf;
++	err |= __get_user(tmpflags, &sc->flags);
++	regs->flags = (regs->flags & ~FIX_EFLAGS) | (tmpflags & FIX_EFLAGS);
++	regs->orig_ax = -1;		/* disable syscall checks */
+ 
+-		err |= __get_user(buf, &sc->fpstate);
+-		err |= restore_i387_xstate(buf);
+-	}
++	err |= __get_user(buf, &sc->fpstate);
++	err |= restore_i387_xstate(buf);
+ 
+ 	err |= __get_user(*pax, &sc->ax);
+ 	return err;
