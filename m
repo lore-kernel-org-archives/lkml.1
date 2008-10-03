@@ -1,105 +1,325 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYJCElT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbYJCElm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbYJCElT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 00:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYJCElJ
+	id S1755181AbYJCElm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 00:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbYJCEla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 00:41:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45098 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750873AbYJCElH (ORCPT
+	Fri, 3 Oct 2008 00:41:30 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:50998 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751229AbYJCEl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 00:41:07 -0400
-Date: Thu, 2 Oct 2008 21:40:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-Id: <20081002214000.89420bb3.akpm@linux-foundation.org>
-In-Reply-To: <20081002212355.621a4fb6@infradead.org>
-References: <20081001200034.65eb67d6@infradead.org>
-	<20081001215638.3a65134c.akpm@linux-foundation.org>
-	<20081002062736.GR19428@kernel.dk>
-	<20081001235501.2b7f50fe.akpm@linux-foundation.org>
-	<20081002061236.3c71c877@infradead.org>
-	<20081002132457.46ad8d05.akpm@linux-foundation.org>
-	<20081002210117.0f5062f7@infradead.org>
-	<20081002212355.621a4fb6@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 3 Oct 2008 00:41:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqAEAHg/5UhMQWq+/2dsb2JhbACBcbo0gWg
+Date: Fri, 3 Oct 2008 00:41:27 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, laijs@cn.fujitsu.com,
+       manfred@colorfullife.com, dipankar@in.ibm.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, josht@linux.vnet.ibm.com,
+       ltt-dev@lists.casi.polymtl.ca
+Subject: Re: [PATCH tip/master] RCU-based detection of stalled CPUs for
+	Classic RCU
+Message-ID: <20081003044127.GB5331@Krystal>
+References: <20081002003628.GA7877@linux.vnet.ibm.com> <20081002080726.GB17695@elte.hu> <20081002140507.GB6729@linux.vnet.ibm.com> <20081002151046.GB2473@Krystal> <20081002174318.GB7324@linux.vnet.ibm.com> <20081002185115.GA11047@Krystal> <20081002225537.GA6706@linux.vnet.ibm.com> <20081002230639.GA7522@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081002230639.GA7522@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 00:40:33 up 120 days,  9:20,  8 users,  load average: 0.06, 0.12,
+	0.13
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 21:23:55 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
-
-> On Thu, 2 Oct 2008 21:01:17 -0700
-> Arjan van de Ven <arjan@infradead.org> wrote:
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> Hello!
 > 
-> > > _
-> > > 
-> > > perhaps for varying values of "1".
-> > 
+> This patch adds stalled-CPU detection to Classic RCU.  This capability
+> is enabled by a new config variable CONFIG_RCU_CPU_STALL_DETECTOR, which
+> defaults disabled.  This is a debugging feature to detect infinite loops
+> in kernel code, not something that non-kernel-hackers would be expected
+> to care about.  This feature can detect looping CPUs in !PREEMPT builds
+> and looping CPUs with preemption disabled in PREEMPT builds.  This is
+> essentially a port of this functionality from the treercu patch, replacing
+> the stall debug patch that is already in tip/core/rcu (commit 67182ae1c4).
 > 
-> caught a few, a few were over 3 1/2 seconds in stall time 
-> (specifically I know this for the last one)
+> The changes from the patch in tip/core/rcu include making the config
+> variable name match that in treercu, changing from seconds to jiffies to
+> avoid spurious warnings, and printing a boot message when this feature
+> is enabled.
 > 
-> (I've stripped out the ? entries to keep them reasonable)
+
+Hi Paul,
+
+Thanks for the previous explanations. Out of curiosity, what can this
+patch do that the nmi watchdog can't do ?
+
+Mathieu
+
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
 > 
-> [  410.168277] WARNING: at kernel/sched.c:5652 io_schedule+0x77/0xb0()
-> [  410.168347] Pid: 699, comm: kjournald Not tainted 2.6.27-rc8-tip #50
-> [  410.168366]  [<c042ee64>] warn_on_slowpath+0x41/0x65
-> [  410.168414]  [<c070ec83>] io_schedule+0x77/0xb0
-> [  410.168421]  [<c04abc72>] sync_buffer+0x33/0x37
-> [  410.168429]  [<c070f123>] __wait_on_bit+0x36/0x5d
-> [  410.168445]  [<c070f1f5>] out_of_line_wait_on_bit+0xab/0xb3
-> [  410.168471]  [<c04abbd1>] __wait_on_buffer+0x19/0x1c
-> [  410.168478]  [<c04de796>] journal_commit_transaction+0x484/0xcb2
-> [  410.168519]  [<c04e14ae>] kjournald+0xc7/0x1ea
-> [  410.168544]  [<c043fb87>] kthread+0x3b/0x61
-> [  410.168559]  [<c040499f>] kernel_thread_helper+0x7/0x10
-> [  410.168567]  =======================
-> [  410.168572] ---[ end trace de523043f88bd9a7 ]---
-> [  451.605034] ------------[ cut here ]------------
-> [  451.605041] WARNING: at kernel/sched.c:5652 io_schedule+0x77/0xb0()
-> [  451.605114] Pid: 699, comm: kjournald Tainted: G        W 2.6.27-rc8-tip #50
->
-> ...
->
+>  include/linux/rcuclassic.h |   12 ++-
+>  kernel/rcuclassic.c        |  166 +++++++++++++++++++++++----------------------
+>  lib/Kconfig.debug          |    2 
+>  3 files changed, 96 insertions(+), 84 deletions(-)
+> 
+> diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
+> index 29bf528..2d72d20 100644
+> --- a/include/linux/rcuclassic.h
+> +++ b/include/linux/rcuclassic.h
+> @@ -40,15 +40,21 @@
+>  #include <linux/cpumask.h>
+>  #include <linux/seqlock.h>
+>  
+> +#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+> +#define RCU_SECONDS_TILL_STALL_CHECK	3 * HZ	/* for rcp->jiffies_stall */
+> +#define RCU_SECONDS_TILL_STALL_RECHECK	30 * HZ	/* for rcp->jiffies_stall */
+> +#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+>  
+>  /* Global control variables for rcupdate callback mechanism. */
+>  struct rcu_ctrlblk {
+>  	long	cur;		/* Current batch number.                      */
+>  	long	completed;	/* Number of the last completed batch         */
+>  	long	pending;	/* Number of the last pending batch           */
+> -#ifdef CONFIG_DEBUG_RCU_STALL
+> -	unsigned long gp_check;	/* Time grace period should end, in seconds.  */
+> -#endif /* #ifdef CONFIG_DEBUG_RCU_STALL */
+> +#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+> +	unsigned long gp_start;	/* Time at which GP started in jiffies. */
+> +	unsigned long jiffies_stall;
+> +				/* Time at which to check for CPU stalls. */
+> +#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+>  
+>  	int	signaled;
+>  
+> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+> index ed15128..eae2fb6 100644
+> --- a/kernel/rcuclassic.c
+> +++ b/kernel/rcuclassic.c
+> @@ -164,6 +164,87 @@ static void __call_rcu(struct rcu_head *head, struct rcu_ctrlblk *rcp,
+>  	}
+>  }
+>  
+> +#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+> +
+> +static void record_gp_stall_check_time(struct rcu_ctrlblk *rcp)
+> +{
+> +	rcp->gp_start = jiffies;
+> +	rcp->jiffies_stall = jiffies + RCU_SECONDS_TILL_STALL_CHECK;
+> +}
+> +
+> +static void print_other_cpu_stall(struct rcu_ctrlblk *rcp)
+> +{
+> +	int cpu;
+> +	long delta;
+> +	unsigned long flags;
+> +
+> +	/* Only let one CPU complain about others per time interval. */
+> +
+> +	spin_lock_irqsave(&rcp->lock, flags);
+> +	delta = jiffies - rcp->jiffies_stall;
+> +	if (delta < 2 || rcp->cur != rcp->completed) {
+> +		spin_unlock_irqrestore(&rcp->lock, flags);
+> +		return;
+> +	}
+> +	rcp->jiffies_stall = jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
+> +	spin_unlock_irqrestore(&rcp->lock, flags);
+> +
+> +	/* OK, time to rat on our buddy... */
+> +
+> +	printk(KERN_ERR "RCU detected CPU stalls:");
+> +	for_each_possible_cpu(cpu) {
+> +		if (cpu_isset(cpu, rcp->cpumask))
+> +			printk(" %d", cpu);
+> +	}
+> +	printk(" (detected by %d, t=%ld jiffies)\n",
+> +	       smp_processor_id(), (long)(jiffies - rcp->gp_start));
+> +}
+> +
+> +static void print_cpu_stall(struct rcu_ctrlblk *rcp)
+> +{
+> +	unsigned long flags;
+> +
+> +	printk(KERN_ERR "RCU detected CPU %d stall (t=%lu/%lu jiffies)\n",
+> +			smp_processor_id(), jiffies,
+> +			jiffies - rcp->gp_start);
+> +	dump_stack();
+> +	spin_lock_irqsave(&rcp->lock, flags);
+> +	if ((long)(jiffies - rcp->jiffies_stall) >= 0)
+> +		rcp->jiffies_stall =
+> +			jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
+> +	spin_unlock_irqrestore(&rcp->lock, flags);
+> +	set_need_resched();  /* kick ourselves to get things going. */
+> +}
+> +
+> +static void check_cpu_stall(struct rcu_ctrlblk *rcp)
+> +{
+> +	long delta;
+> +
+> +	delta = jiffies - rcp->jiffies_stall;
+> +	if (cpu_isset(smp_processor_id(), rcp->cpumask) && delta >= 0) {
+> +		
+> +		/* We haven't checked in, so go dump stack. */
+> +		print_cpu_stall(rcp);
+> +
+> +	} else if (rcp->cur != rcp->completed && delta >= 2) {
+> +
+> +		/* They had two seconds to dump stack, so complain. */
+> +		print_other_cpu_stall(rcp);
+> +	}
+> +}
+> +
+> +#else /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+> +
+> +static void record_gp_stall_check_time(struct rcu_ctrlblk *rcp)
+> +{
+> +}
+> +
+> +static void check_cpu_stall(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
+> +{
+> +}
+> +
+> +#endif /* #else #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+> +
+>  /**
+>   * call_rcu - Queue an RCU callback for invocation after a grace period.
+>   * @head: structure to be used for queueing the RCU updates.
+> @@ -293,84 +374,6 @@ static void rcu_do_batch(struct rcu_data *rdp)
+>   *   period (if necessary).
+>   */
+>  
+> -#ifdef CONFIG_DEBUG_RCU_STALL
+> -
+> -static inline void record_gp_check_time(struct rcu_ctrlblk *rcp)
+> -{
+> -	rcp->gp_check = get_seconds() + 3;
+> -}
+> -
+> -static void print_other_cpu_stall(struct rcu_ctrlblk *rcp)
+> -{
+> -	int cpu;
+> -	long delta;
+> -	unsigned long flags;
+> -
+> -	/* Only let one CPU complain about others per time interval. */
+> -
+> -	spin_lock_irqsave(&rcp->lock, flags);
+> -	delta = get_seconds() - rcp->gp_check;
+> -	if (delta < 2L || cpus_empty(rcp->cpumask)) {
+> -		spin_unlock(&rcp->lock);
+> -		return;
+> -	}
+> -	rcp->gp_check = get_seconds() + 30;
+> -	spin_unlock_irqrestore(&rcp->lock, flags);
+> -
+> -	/* OK, time to rat on our buddy... */
+> -
+> -	printk(KERN_ERR "RCU detected CPU stalls:");
+> -	for_each_cpu_mask(cpu, rcp->cpumask)
+> -		printk(" %d", cpu);
+> -	printk(" (detected by %d, t=%lu/%lu)\n",
+> -	       smp_processor_id(), get_seconds(), rcp->gp_check);
+> -}
+> -
+> -static void print_cpu_stall(struct rcu_ctrlblk *rcp)
+> -{
+> -	unsigned long flags;
+> -
+> -	printk(KERN_ERR "RCU detected CPU %d stall (t=%lu/%lu)\n",
+> -			smp_processor_id(), get_seconds(), rcp->gp_check);
+> -	dump_stack();
+> -	spin_lock_irqsave(&rcp->lock, flags);
+> -	if ((long)(get_seconds() - rcp->gp_check) >= 0L)
+> -		rcp->gp_check = get_seconds() + 30;
+> -	spin_unlock_irqrestore(&rcp->lock, flags);
+> -}
+> -
+> -static void check_cpu_stall(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
+> -{
+> -	long delta;
+> -
+> -	delta = get_seconds() - rcp->gp_check;
+> -	if (cpu_isset(smp_processor_id(), rcp->cpumask) && delta >= 0L) {
+> -
+> -		/* We haven't checked in, so go dump stack. */
+> -
+> -		print_cpu_stall(rcp);
+> -
+> -	} else {
+> -		if (!cpus_empty(rcp->cpumask) && delta >= 2L) {
+> -			/* They had two seconds to dump stack, so complain. */
+> -			print_other_cpu_stall(rcp);
+> -		}
+> -	}
+> -}
+> -
+> -#else /* #ifdef CONFIG_DEBUG_RCU_STALL */
+> -
+> -static inline void record_gp_check_time(struct rcu_ctrlblk *rcp)
+> -{
+> -}
+> -
+> -static inline void
+> -check_cpu_stall(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
+> -{
+> -}
+> -
+> -#endif /* #else #ifdef CONFIG_DEBUG_RCU_STALL */
+> -
+>  /*
+>   * Register a new batch of callbacks, and start it up if there is currently no
+>   * active batch and the batch to be registered has not already occurred.
+> @@ -381,7 +384,7 @@ static void rcu_start_batch(struct rcu_ctrlblk *rcp)
+>  	if (rcp->cur != rcp->pending &&
+>  			rcp->completed == rcp->cur) {
+>  		rcp->cur++;
+> -		record_gp_check_time(rcp);
+> +		record_gp_stall_check_time(rcp);
+>  
+>  		/*
+>  		 * Accessing nohz_cpu_mask before incrementing rcp->cur needs a
+> @@ -603,7 +606,7 @@ static void rcu_process_callbacks(struct softirq_action *unused)
+>  static int __rcu_pending(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
+>  {
+>  	/* Check for CPU stalls, if enabled. */
+> -	check_cpu_stall(rcp, rdp);
+> +	check_cpu_stall(rcp);
+>  
+>  	if (rdp->nxtlist) {
+>  		long completed_snap = ACCESS_ONCE(rcp->completed);
+> @@ -769,6 +772,9 @@ static struct notifier_block __cpuinitdata rcu_nb = {
+>   */
+>  void __init __rcu_init(void)
+>  {
+> +#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+> +	printk(KERN_INFO "RCU-based detection of stalled CPUs is enabled.\n");
+> +#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+>  	rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE,
+>  			(void *)(long)smp_processor_id());
+>  	/* Register notifier for non-boot CPUs */
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index 4e921a8..e0e0582 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -616,7 +616,7 @@ config RCU_TORTURE_TEST_RUNNABLE
+>  	  Say N here if you want the RCU torture tests to start only
+>  	  after being manually enabled via /proc.
+>  
+> -config RCU_CPU_STALL
+> +config RCU_CPU_STALL_DETECTOR
+>  	bool "Check for stalled CPUs delaying RCU grace periods"
+>  	depends on CLASSIC_RCU
+>  	default n
 
-hm, they're all kjournald getting stuck on lock_buffer().  That _may_
-be related to the one we care about, but it doesn't seem likely.
-
-
-> [  517.067556] Pid: 4320, comm: claws-mail Tainted: G        W 2.6.27-rc8-tip #50
-> [  517.067572]  [<c042ee64>] warn_on_slowpath+0x41/0x65
-> [  517.067652]  [<c070ec83>] io_schedule+0x77/0xb0
-> [  517.067659]  [<c04abc72>] sync_buffer+0x33/0x37
-> [  517.067666]  [<c070f010>] __wait_on_bit_lock+0x34/0x5e
-> [  517.067682]  [<c070f0e5>] out_of_line_wait_on_bit_lock+0xab/0xb3
-> [  517.067707]  [<c04abfa1>] __lock_buffer+0x24/0x2a
-> [  517.067715]  [<c04dd7fc>] do_get_write_access+0x64/0x3b1
-> [  517.067743]  [<c04ddb64>] journal_get_write_access+0x1b/0x2a
-> [  517.067752]  [<c04da374>] __ext3_journal_get_write_access+0x19/0x3c
-> [  517.067761]  [<c04cf672>] ext3_reserve_inode_write+0x34/0x68
-> [  517.067769]  [<c04cf6d5>] ext3_mark_inode_dirty+0x2f/0x46
-> [  517.067777]  [<c04cf7f7>] ext3_dirty_inode+0x53/0x67
-> [  517.067784]  [<c04a7bed>] __mark_inode_dirty+0x29/0x144
-> [  517.067794]  [<c049e60f>] file_update_time+0x80/0xa9
-> [  517.067803]  [<c046b66c>] __generic_file_aio_write_nolock+0x2f0/0x41b
-> [  517.067842]  [<c046bf0d>] generic_file_aio_write+0x5a/0xb7
-> [  517.067850]  [<c04cdc65>] ext3_file_write+0x1a/0x89
-> [  517.067858]  [<c048da41>] do_sync_write+0xab/0xe9
-> [  517.067896]  [<c048e302>] vfs_write+0x8a/0x12e
-> [  517.067903]  [<c048e43f>] sys_write+0x3b/0x60
-> [  517.067910]  [<c0403b0b>] sysenter_do_call+0x12/0x2f
-> [  517.067919]  =======================
-> [  517.067923] ---[ end trace de523043f88bd9a7 ]---
-
-That's the one - the lock_buffer() in do_get_write_access().  It's a
-major contention site and it'd be a major win if we could fix it.  Even
-if we resorted to some nasty thing like taking a temp copy of the
-buffer's contents.
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
