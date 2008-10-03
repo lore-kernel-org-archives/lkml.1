@@ -1,197 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbYJCTKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914AbYJCTMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753549AbYJCTKi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 15:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYJCTKa
+	id S1751914AbYJCTMd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 15:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYJCTMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 15:10:30 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:60967 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750951AbYJCTK3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 15:10:29 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqAEAAYK5khMQWq+/2dsb2JhbACBcbsWgWg
-Date: Fri, 3 Oct 2008 15:10:26 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, od@novell.com,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: Unified tracing buffer
-Message-ID: <20081003191026.GC9626@Krystal>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <alpine.DEB.1.10.0809200451420.9362@gandalf.stny.rr.com> <20080920135548.GB23215@Krystal> <20080920071232.46908040@infradead.org> <20080922185209.GC6349@Krystal> <20081002152851.GC3220@redhat.com> <20081003161154.GA4139@Krystal> <20081003183737.GD3167@redhat.com>
+	Fri, 3 Oct 2008 15:12:24 -0400
+Received: from igw1.br.ibm.com ([32.104.18.24]:45471 "EHLO igw1.br.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751754AbYJCTMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 15:12:24 -0400
+Subject: [PATCH 3/5][resubmit] TPM: rcu locking
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, zohar@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, jmorris@namei.org
+In-Reply-To: <20081003165738.GA28375@us.ibm.com>
+References: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
+	 <ddf7749dc8dbf65d02cc395ccdc85b7f5b37083f.1223042186.git.srajiv@linux.vnet.ibm.com>
+	 <20081003165738.GA28375@us.ibm.com>
+Content-Type: text/plain
+Date: Fri, 03 Oct 2008 16:12:13 -0300
+Message-Id: <1223061133.7639.23.camel@blackbox>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20081003183737.GD3167@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:04:38 up 120 days, 23:45,  8 users,  load average: 0.25, 0.34,
-	0.29
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jason Baron (jbaron@redhat.com) wrote:
-> On Fri, Oct 03, 2008 at 12:11:54PM -0400, Mathieu Desnoyers wrote:
-> > > > > > How about :
-> > > > > > 
-> > > > > >   trace_mark(ftrace_evname, "size %lu binary %pW",
-> > > > > >     sizeof(mystruct), mystruct);
-> > > > > >   or
-> > > > > >   trace_mark(sched_wakeup, "target_pid %ld", task->pid);
-> > > > > > 
-> > > > > > Note the namespacing with buffers being "ftrace" and "sched" here.
-> > > > > > 
-> > > > > > That would encapsulate the whole
-> > > > > >   - Event ID registration
-> > > > > >   - Event type registration
-> > > > > >   - Sending data out
-> > > > > >   - Enabling the event source directly at the source
-> > > > > > 
-> > > > > > We can then export the markers through a debugfs file and let userland
-> > > > > > enable them one by one and possibly connect systemtap filters on them
-> > > > > > (one table of registered filters, one table for the markers, a command
-> > > > > > file to connect/disconnect filters to/from markers).
-> > > > > 
-> > > > > I would like to ask for the following from the start: have a field for
-> > > > > a longer description of the marker that describes it's usage and
-> > > > > context. Getting this there from the start is critical, because only
-> > > > > when adding the marker point do people still really remember why/what
-> > > > > (and having to type a good description also helps them to realize if
-> > > > > this is the right point or not). This can then be exposed to the user
-> > > > > so he has a standing chance of knowing what the marker is about.
-> > > > > 
-> > > > > It also has a standing chance of being updated when the code changes
-> > > > > this way
-> > > > > 
-> > > > 
-> > > > I agree, and I think it might be required in both markers and
-> > > > tracepoints.
-> > > > 
-> > > > Given that tracepoints are declared in a global header
-> > > > (DECLARE_TRACE()), I would add this kind of description here. Tracepoint
-> > > > uses within the kernel code (statements like :
-> > > >   trace_sched_switch(prev, next);
-> > > > added to the scheduler) would therefore be tied to the description
-> > > > without having to contain it in the core kernel code.
-> > > > 
-> > > > Markers, on the other hand, could become the "event description"
-> > > > interface which is exported to userspace. Considering that, I guess it's
-> > > > as important to let a precise description follow the markers.
-> > > > 
-> > > > Mathieu
-> > > > 
-> > > >
-> > > 
-> > > hi,
-> > > 
-> > > Tracepoints and markers seem to both have their place, with tracepoints
-> > > being integral to kernel users, and markers being important for
-> > > userspace. However, it seems to me like there is overlap in the
-> > > code and an extra level of indirection when markers are layered on
-> > > tracespoints. could they be merged a bit more?
-> > > 
-> > > What if we extended DEFINE_TRACE() to also create a
-> > > 'set_marker(marker_cb)' function where 'marker_cb' has the function signature:
-> > > 
-> > > marker_cb(<tracepoint prototype>, *marker_probe_func);
-> > > 
-> > > We then also create 'register_marker_##name' function in DEFINE_TRACE(),
-> > > which allows one to regiser marker callbacks in the usual way.
-> > > 
-> > > Then 'marker_cb' function is then called in '__DO_TRACE' if anybody has
-> > > registered a marker (which can set the tracepoint.state appropriately).
-> > > 
-> > > The 'marker_cb' function then marshalls its arguemnts and passes them
-> > > through to the marker functions that were registered.
-> > > 
-> > > I think in this way we can simplify the tracepoints and markers by
-> > > combining them to a large extent.
-> > > 
-> > > thanks,
-> > > 
-> > > -Jason
-> > > 
-> > 
-> > I think what you propose here is already in y LTTng tree in a different
-> > form. It's a patch to markers to allow declaring a marker which enables
-> > an associated tracepoint when enabled. This way, we can have a marker
-> > (exposed to userspace) connecting itself automatically to a tracepoint
-> > when enabled.
-> > 
-> > It's here :
-> > http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=d52ea7c48f47a1179aee01636d515cfea4ff6ede;hp=0a7b5c02209f3582ed1369ec818a1b389bd45a09
-> > 
-> > Note that locking depends on the psrwlock patch so we can have nested
-> > module list readers. Otherwise locking becomes _really_ messy. :-(
-> > 
-> > Mathieu
-> > 
-> 
-> That patch simplifies using markers with tracepoints and couples
-> markers and tracepoints much more closely. But I was proposing to make
-> the coupling tighter...
-> 
-> Couldn't 'marker_probe_register()' register the marker directly with
-> the tracepoint callsite? Have DEFINE_TRACE() take an additional argument
-> which references a marker callback funtion. That function would look 
-> like (very loose C code):
-> 
-> marker_blah_callback(TPPROTO(arg1, arg2), marker_probe_func *probe,
+This is a resubmission of rcu locking patch, posted some hours ago, addressing Serge Hallyn's comment.
+In the previous patch there was missing the spin_lock/unlock protecting list_add_rcu() 
+in tpm_register_hardware(). There were also an unnecessary list_del() inside the same function, 
+that is now being removed.
 
-I don't want the tracepoints to be coupled with markers (which are a
-userspace API). The other way around is fine : letting a marker
-automatically enable a tracepoint makes sense, but the opposite would
-tie the in-kernel API (tracepoint) to the external marker
-representation, and I would like to avoid that.
+Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+---
+ drivers/char/tpm/tpm.c |   61 +++++++++++++++++++-----------------------------
+ 1 files changed, 24 insertions(+), 37 deletions(-)
 
-And how do you plan to deal with :
-
-TPPROTO(arg1, arg2) == void ?
-
-C won't let you define stuff like :
-
-blah(void, marker_probe_func *probe, void *private_data)
-
-The devil is in the details.... ;)
-
-Mathieu
-
-> private_data)
-> {
-> 	probe(private_data, "%arg1 %arg2", arg1->a, arg2->b);
-> }
-> 
-> The 'marker_blah_callback()' would be invoked from within DO_TRACE() for
-> each marker that has been registered with the associated tracepoint, in
-> a similar way to how we iterate over the tracepoint callbacks, we can
-> iterate over the registered markers and pass them to the
-> 'marker_blah_callback()' function. 
-> 
-> By associating the marker_blah_callback() in DEFINE_TRACE(), we only
-> need to look in one file to understand what is associated with a
-> particular tracepoint. I think marker.c and tracepoint.c could also be
-> consolidated at that point.
-> 
-> thanks,
-> 
-> -Jason
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-
+diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
+index dfd4e7f..e96ca5a 100644
+--- a/drivers/char/tpm/tpm.c
++++ b/drivers/char/tpm/tpm.c
+@@ -961,33 +961,28 @@ EXPORT_SYMBOL_GPL(tpm_store_cancel);
+  */
+ int tpm_open(struct inode *inode, struct file *file)
+ {
+-	int rc = 0, minor = iminor(inode);
++	int minor = iminor(inode);
+ 	struct tpm_chip *chip = NULL, *pos;
+ 
+-	spin_lock(&driver_lock);
+-
+-	list_for_each_entry(pos, &tpm_chip_list, list) {
++	rcu_read_lock();
++	list_for_each_entry_rcu(pos, &tpm_chip_list, list) {
+ 		if (pos->vendor.miscdev.minor == minor) {
+ 			chip = pos;
++			get_device(chip->dev);
+ 			break;
+ 		}
+ 	}
++	rcu_read_unlock();
+ 
+-	if (chip == NULL) {
+-		rc = -ENODEV;
+-		goto err_out;
+-	}
++	if (!chip)
++		return -ENODEV;
+ 
+ 	if (test_and_set_bit(0, &chip->is_open)) {
+ 		dev_dbg(chip->dev, "Another process owns this TPM\n");
+-		rc = -EBUSY;
+-		goto err_out;
++		put_device(chip->dev);
++		return -EBUSY;
+ 	}
+ 
+-	get_device(chip->dev);
+-
+-	spin_unlock(&driver_lock);
+-
+ 	chip->data_buffer = kmalloc(TPM_BUFSIZE * sizeof(u8), GFP_KERNEL);
+ 	if (chip->data_buffer == NULL) {
+ 		clear_bit(0, &chip->is_open);
+@@ -999,26 +994,23 @@ int tpm_open(struct inode *inode, struct file *file)
+ 
+ 	file->private_data = chip;
+ 	return 0;
+-
+-err_out:
+-	spin_unlock(&driver_lock);
+-	return rc;
+ }
+ EXPORT_SYMBOL_GPL(tpm_open);
+ 
++/*
++ * Called on file close
++ */
+ int tpm_release(struct inode *inode, struct file *file)
+ {
+ 	struct tpm_chip *chip = file->private_data;
+ 
+ 	flush_scheduled_work();
+-	spin_lock(&driver_lock);
+ 	file->private_data = NULL;
+ 	del_singleshot_timer_sync(&chip->user_read_timer);
+ 	atomic_set(&chip->data_pending, 0);
++	kfree(chip->data_buffer);
+ 	clear_bit(0, &chip->is_open);
+ 	put_device(chip->dev);
+-	kfree(chip->data_buffer);
+-	spin_unlock(&driver_lock);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(tpm_release);
+@@ -1092,13 +1084,11 @@ void tpm_remove_hardware(struct device *dev)
+ 	}
+ 
+ 	spin_lock(&driver_lock);
+-
+-	list_del(&chip->list);
+-
++	list_del_rcu(&chip->list);
+ 	spin_unlock(&driver_lock);
++	synchronize_rcu();
+ 
+ 	misc_deregister(&chip->vendor.miscdev);
+-
+ 	sysfs_remove_group(&dev->kobj, chip->vendor.attr_group);
+ 	tpm_bios_log_teardown(chip->bios_dir);
+ 
+@@ -1146,8 +1136,7 @@ EXPORT_SYMBOL_GPL(tpm_pm_resume);
+ /*
+  * Once all references to platform device are down to 0,
+  * release all allocated structures.
+- * In case vendor provided release function,
+- * call it too.
++ * In case vendor provided release function, call it too.
+  */
+ static void tpm_dev_release(struct device *dev)
+ {
+@@ -1155,7 +1144,6 @@ static void tpm_dev_release(struct device *dev)
+ 
+ 	if (chip->vendor.release)
+ 		chip->vendor.release(dev);
+-
+ 	chip->release(dev);
+ 
+ 	clear_bit(chip->dev_num, dev_mask);
+@@ -1170,8 +1158,8 @@ static void tpm_dev_release(struct device *dev)
+  * upon errant exit from this function specific probe function should call
+  * pci_disable_device
+  */
+-struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vendor_specific
+-				       *entry)
++struct tpm_chip *tpm_register_hardware(struct device *dev,
++					const struct tpm_vendor_specific *entry)
+ {
+ #define DEVNAME_SIZE 7
+ 
+@@ -1230,21 +1218,20 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
+ 		return NULL;
+ 	}
+ 
+-	spin_lock(&driver_lock);
+-
+-	list_add(&chip->list, &tpm_chip_list);
+-
+-	spin_unlock(&driver_lock);
+-
+ 	if (sysfs_create_group(&dev->kobj, chip->vendor.attr_group)) {
+-		list_del(&chip->list);
+ 		misc_deregister(&chip->vendor.miscdev);
+ 		put_device(chip->dev);
++
+ 		return NULL;
+ 	}
+ 
+ 	chip->bios_dir = tpm_bios_log_setup(devname);
+ 
++	/* Make chip available */
++	spin_lock(&driver_lock);
++	list_add_rcu(&chip->list, &tpm_chip_list);
++	spin_lock(&driver_lock);
++
+ 	return chip;
+ }
+ EXPORT_SYMBOL_GPL(tpm_register_hardware);
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+1.5.6.3
+
+
+
