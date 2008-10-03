@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbYJCWBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbYJCWGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754795AbYJCWBp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 18:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbYJCWBh
+	id S1754198AbYJCWGc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 18:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYJCWGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 18:01:37 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:25612 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753275AbYJCWBh (ORCPT
+	Fri, 3 Oct 2008 18:06:24 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54024 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752674AbYJCWGX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 18:01:37 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: char/tpm: tpm_infineon no longer loaded for HP 2510p laptop
-Date: Fri, 3 Oct 2008 16:01:30 -0600
-User-Agent: KMail/1.9.9
-Cc: ambx1@neo.rr.com, elendil@planet.nl, trenn@suse.de,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       tpm@selhorst.net, rjw@sisk.pl, greg@kroah.com
-References: <24565067.73831219353513508.JavaMail.servlet@kundenserver> <200808220606.39722.bjorn.helgaas@hp.com> <1219408985.20723.66.camel@lgn.site>
-In-Reply-To: <1219408985.20723.66.camel@lgn.site>
+	Fri, 3 Oct 2008 18:06:23 -0400
+Date: Fri, 3 Oct 2008 18:06:21 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Daniel Rosenthal <danielrosenthal@acm.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, sct@redhat.com,
+       akpm@linux-foundation.org, adilger@sun.com
+Subject: Re: copy of "The Extended 3 Filesystem" paper?
+Message-ID: <20081003220621.GD11442@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Daniel Rosenthal <danielrosenthal@acm.org>,
+	LKML <linux-kernel@vger.kernel.org>, sct@redhat.com,
+	akpm@linux-foundation.org, adilger@sun.com
+References: <4b6fba110810031427s5296511cx135616cff632790b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810031601.31322.bjorn.helgaas@hp.com>
+In-Reply-To: <4b6fba110810031427s5296511cx135616cff632790b@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 August 2008 06:43:05 am Kay Sievers wrote:
-> On Fri, 2008-08-22 at 06:06 -0600, Bjorn Helgaas wrote:
-> > Since PNP currently doesn't generate any uevents or modalias files,
-> > I expect that a non-ACPI system will be unable to autoload modules
-> > for ISAPNP or PNPBIOS devices.  Right?
+On Fri, Oct 03, 2008 at 05:27:53PM -0400, Daniel Rosenthal wrote:
+> Does anybody have a copy of "The Extended 3 Filesystem" or the rest of
+> the proceedings from 2000 Ottawa Linux Symposium Proceedings?  I'm
+> working on some journalling research using jbd and having that paper
+> would help.
 > 
-> They do create events, but without modalias. The shell script hack,
-> which udev runs, will make the event behave like it contained one.
+> I've looked on google scholar and citeseer but I can't find it
+> anywhere.  If somebody sends it to me, I can post it on my website if
+> that's ok with whoever has the authority to give me permission, so the
+> paper's available to others in the future.
 
-I'm finally looking at this again; sorry for the long hiatus.  I'm
-working on a patch to add PNP uevent support, modalias sysfs files
-for PNP, and file2alias.c changes to match, and I just want to
-make sure I'm understanding this correctly.
+I don't have a copy of that paper paper myself, but most of the
+information is probably contained in the 1998 Linux Expo paper, which
+is available here:
 
-Before your file2alias.c changes[1], I think we generated this:
-    alias pnp:dPNP0500* 8250_pnp
+   http://ext4.wiki.kernel.org/index.php/Publications
 
-We relied on the udev shell hack to run "modprobe -a pnp:dPNP0500"
-based on the contents of /sys/bus/pnp/devices/00:05/id.
+If you come across other ext4 papers, please feel free to add it to
+the wiki.
 
-With your file2alias.c changes, we now generate this:
-    alias acpi*:PNP0500:* 8250_pnp
-    alias pnp:dPNP0500* 8250_pnp
-
-On ACPI systems, this works fine because "acpi*:PNP0500:*" matches
-the ACPI-generated uevents like:
-    MODALIAS=acpi:PNP0501:PNP0500:
-
-We can load 8250_pnp without relying on the udev shell hack
-*on ACPI systems*.
-
-I thought the object of your file2alias.c changes was to remove the
-need for the udev shell hack, but don't we still require it on
-non-ACPI systems because they won't emit the ACPI uevents?
-
-Bjorn
-
-[1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=22454cb99fc39f2629ad06a7eccb3df312f8830e
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=5e4c6564c95ce127beeefe75e15cd11c93487436
+						- Ted
