@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbYJCG2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYJCGhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667AbYJCG2V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 02:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbYJCG2N
+	id S1754648AbYJCGhh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 02:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbYJCGh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 02:28:13 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:28649 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753282AbYJCG2M (ORCPT
+	Fri, 3 Oct 2008 02:37:28 -0400
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:41424 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753363AbYJCGh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 02:28:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=jSlgDlMQzpyZhJeN+CmdacTgbVr/qx8H6IYIEUKCdVnkHpTp9R1/tSUBl+84Va2dgX
-         J8XKgFLPS9itLe6WgoJBc+iEyIpJh2Sgbocc0psOKP7Y0r5KSFUTL+l/wE1tU3Mw0RrA
-         FDF+FzRQW8IRNuEmTY7zPJJjP1lf3VB9O3Ogs=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: mtrr_cleanup print out var mtrr before change it
-Date: Thu,  2 Oct 2008 23:26:59 -0700
-Message-Id: <1223015219-25223-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.6
+	Fri, 3 Oct 2008 02:37:27 -0400
+Message-ID: <48E5BDAB.3010107@nttdata.co.jp>
+Date: Fri, 03 Oct 2008 15:37:31 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.17) Gecko/20080914 Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Valdis.Kletnieks@vt.edu, Casey Schaufler <casey@schaufler-ca.com>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haradats@nttdata.co.jp,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [TOMOYO #9 (2.6.27-rc7-mm1) 1/6] LSM adapter functions.
+References: <20080925165954.GA25587@us.ibm.com> <48DC7553.8040708@nttdata.co.jp> <20080926130409.GA14055@us.ibm.com> <48E053DB.3010201@nttdata.co.jp> <20080930154553.GA29249@us.ibm.com> <48E2E17C.3040108@schaufler-ca.com> <62704.1222837526@turing-police.cc.vt.edu> <48E33397.1030709@nttdata.co.jp> <20081001211507.GA28377@us.ibm.com> <48E45672.5030606@nttdata.co.jp> <20081002133949.GC11150@us.ibm.com>
+In-Reply-To: <20081002133949.GC11150@us.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Oct 2008 06:37:22.0735 (UTC) FILETIME=[7DDA63F0:01C92522]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Serge E. Hallyn wrote:
+> Just keep your own hash table.
+I see, then we want one more LSM hook for clearing the hash table 
+after returing from vfs_*().
 
----
- arch/x86/kernel/cpu/mtrr/main.c |   25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
+foo() {
+	error = security_path_foo(); /* save result in the hash table */
+	error = vfs_foo(); /* fetch from the hash table in security_inode_*() */
+	security_path_clear(); /* clear the hash table */
+}
 
-Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
-+++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
-@@ -1211,13 +1211,14 @@ static unsigned long __initdata min_loss
- static int __init mtrr_cleanup(unsigned address_bits)
- {
- 	unsigned long extra_remove_base, extra_remove_size;
--	unsigned long i, base, size, def, dummy;
-+	unsigned long base, size, def, dummy;
- 	mtrr_type type;
- 	int nr_range, nr_range_new;
- 	u64 chunk_size, gran_size;
- 	unsigned long range_sums, range_sums_new;
- 	int index_good;
- 	int num_reg_good;
-+	int i;
- 
- 	/* extra one for all 0 */
- 	int num[MTRR_NUM_TYPES + 1];
-@@ -1259,6 +1260,28 @@ static int __init mtrr_cleanup(unsigned
- 		num_var_ranges - num[MTRR_NUM_TYPES])
- 		return 0;
- 
-+	/* print orignal var mtrr at first */
-+	printk(KERN_DEBUG "original variable MTRRs\n");
-+	for (i = 0; i < num_var_ranges; i++) {
-+		char start_factor = 'K', size_factor = 'K';
-+		unsigned long start_base, size_base;
-+
-+		size_base = range_state[i].size_pfn<<(PAGE_SHIFT - 10);
-+		if (!size_base)
-+			continue;
-+
-+		size_base = to_size_factor(size_base, &size_factor),
-+		start_base = range_state[i].base_pfn<<(PAGE_SHIFT - 10);
-+		start_base = to_size_factor(start_base, &start_factor),
-+
-+		printk(KERN_DEBUG "reg %d, base: %ld%cB, range: %ld%cB, type %s\n",
-+			i, start_base, start_factor,
-+			size_base, size_factor,
-+			(type == MTRR_TYPE_UNCACHABLE)?"UC":
-+			    ((type == MTRR_TYPE_WRBACK)?"WB":"Other")
-+			);
-+	}
-+
- 	memset(range, 0, sizeof(range));
- 	extra_remove_size = 0;
- 	extra_remove_base = 1 << (32 - PAGE_SHIFT);
+Is it acceptable?
+
+Regards,
+
+
