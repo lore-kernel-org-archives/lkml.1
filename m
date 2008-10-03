@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYJCMje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379AbYJCMjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbYJCMje (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 08:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYJCMjQ
+	id S1752379AbYJCMjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 08:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYJCMih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 08:39:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45109 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752374AbYJCMjO (ORCPT
+	Fri, 3 Oct 2008 08:38:37 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:42919
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751764AbYJCMig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 08:39:14 -0400
-Message-ID: <48E6121E.8050100@linux-foundation.org>
-Date: Fri, 03 Oct 2008 07:37:50 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 3 Oct 2008 08:38:36 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 2/2] RT: remove "paranoid" limit in push_rt_task
+To: Chirag Jog <chirag@linux.vnet.ibm.com>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, dvhltc@us.ibm.com, dino@in.ibm.com,
+       Gilles.Carry@bull.net
+Date: Fri, 03 Oct 2008 08:43:06 -0400
+Message-ID: <20081003124305.17387.90233.stgit@dev.haskins.net>
+In-Reply-To: <20081003123745.17387.61782.stgit@dev.haskins.net>
+References: <20081003123745.17387.61782.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/4] capture pages freed during direct reclaim for	allocation
- by the reclaimer
-References: <20081002143508.GE11089@brain> <48E4F6EC.7010500@linux-foundation.org> <20081003123545.EF5B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20081003123545.EF5B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
+A panic was discovered by Chirag Jog and investigated by Gilles Carry
+to be originating in the fact that a task being pushed away
+may get migrated away during a double_lock_balance.  The result was
+that the pushable_tasks list may become corrupted.
 
->> Parallel allocations are less a problem if the freed order 0 pages get merged
->> immediately into the order 1 freelist. Of course that will only work 50% of
->> the time but it will have a similar effect to this patch.
-> 
-> Ah, Right.
-> Could we hear why you like pcp disabling than Andy's patch?
+The root cause is that the "paranoid" retry limit could cause us to
+bail out of a retry, but still try to remove the item from the (now
+potentially incorrect) list.  There are numerous ways to correct the
+condition, but the paranoid feature is no longer relevant with the new
+pushable logic (since pushable naturally limits the loop anyway), so
+lets just remove it.
 
-Its simpler code wise.
+Reported By: Chirag Jog <chirag@linux.vnet.ibm.com>
+Found-by: Gilles Carry <gilles.carry@bull.net>
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
+ kernel/sched_rt.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-> Honestly, I think pcp has some problem.
-
-pcps are a particular problem on NUMA because the lists are replicated per
-zone and per processor.
-
-> But I avoid to change pcp because I don't understand its design.
-
-In the worst case we see that pcps cause a 5% performance drop (sequential
-alloc w/o free followed by sequential free w/o allocs). See my page allocator
-tests in my git tree.
-
-> Maybe, we should discuss currect pcp behavior?
-
-pcps need improvement. The performance issues with the page allocator fastpath
-are likely due to bloating of the fastpaths (antifrag did not do much good on
-that level). Plus current crops of processors are sensitive to cache footprint
-issues (seems that the tbench regression in the network stack also are due to
-the same effect). Doubly linked lists are not good  today because they touch
-multiple cachelines.
-
-
-
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 59ead84..5a754fe 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1056,7 +1056,6 @@ static int push_rt_task(struct rq *rq)
+ {
+ 	struct task_struct *next_task;
+ 	struct rq *lowest_rq;
+-	int paranoid = RT_MAX_TRIES;
+ 
+ 	if (!rq->rt.overloaded)
+ 		return 0;
+@@ -1094,12 +1093,14 @@ static int push_rt_task(struct rq *rq)
+ 		 * If it has, then try again.
+ 		 */
+ 		task = pick_next_pushable_task(rq);
+-		if (unlikely(task != next_task) && task && paranoid--) {
++		if (unlikely(task != next_task) && task) {
+ 			put_task_struct(next_task);
+ 			next_task = task;
+ 			goto retry;
+ 		}
+ 
++		BUG_ON(task_cpu(next_task) != rq->cpu);
++
+ 		/*
+ 		 * Once we have failed to push this task, we will not
+ 		 * try again, since the other cpus will pull from us
 
