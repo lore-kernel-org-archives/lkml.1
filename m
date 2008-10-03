@@ -1,109 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbYJCCoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYJCCyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754933AbYJCCoO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 22:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbYJCCoD
+	id S1754827AbYJCCyq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 22:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYJCCyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 22:44:03 -0400
-Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:41065 "HELO
-	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754056AbYJCCoA (ORCPT
+	Thu, 2 Oct 2008 22:54:39 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:23153 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753005AbYJCCyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 22:44:00 -0400
+	Thu, 2 Oct 2008 22:54:38 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=DAROx1i6DlFR++77yNAYgws2QxpVqgM6iiMNUE28BijTBRNDWbWDQx8rrIxr2qxLO/C9jHDVVxmvp8jBuDD19vwTwIin0mCKAU1qVBXCNbI4v0FcRMtQHoh7aaGfQhA+7vy7y6C/O3P8yyp+tXeOqDG5ZTTyzxBP/sFb7dUyY3c=  ;
-X-YMail-OSG: l8Gj8uQVM1mTRE41tYb.KO6v4YGDTrPYtZcHI6dX4QsJqFhzpQ8durQJ_eo2F2y91LcGtOQEtPvDej2gLcZS5FCWUrSxX9a9HkRYOb.Y4ZwdxfC5MdowhVFhO0XmmVRBbYcn1JX.ZMSki2kQDx2gNm3e7bYM3Q74RuoYE2Z3qtGk.pQ_O94-
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
+  b=znTcUqxCKUIBdftbjvdu6pfz00j1IGeAl21X270NI33QFei2HyauNKLqhJj2xvPFyXaTTzSqA2XSHa0xM25eCb7FX1KbluTYCY6YKtnaVneSpn1QklfulKqyTs7Q2/nWHhrfLnSF4RHJ6cqigJooKe82ETvC0gKYoy+ygEdkP64=  ;
+X-YMail-OSG: AXITEogVM1l3SFE24Zhvx2a27RIcfw_Ct4ezY1o6jcmhYlFotIGlKUz6HwoXu1BlG7Rvv5Z06Ejgdxb5swWlFLZOJM.JNY4s_vs01f4csauAuu6ZIhL_0v8LuIiVLMuZ3XMaj_4q63DbiX76if38vE_hAbzELsZ7zAnGFF3LHFBcP6oCF3A-
 X-Yahoo-Newman-Property: ymail-3
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Chris Mason <chris.mason@oracle.com>
-Subject: Re: [PATCH] Improve buffered streaming write ordering
-Date: Fri, 3 Oct 2008 12:43:51 +1000
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Memory management livelock
+Date: Fri, 3 Oct 2008 12:54:28 +1000
 User-Agent: KMail/1.9.5
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       ext4 <linux-ext4@vger.kernel.org>
-References: <1222886451.9158.34.camel@think.oraclecorp.com> <20081002181856.GB29613@skywalker> <1222996262.12099.42.camel@think.oraclecorp.com>
-In-Reply-To: <1222996262.12099.42.camel@think.oraclecorp.com>
+Cc: Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org, agk@redhat.com, mbroz@redhat.com,
+       chris@arachsys.com
+References: <20080911101616.GA24064@agk.fab.redhat.com> <20080923154905.50d4b0fa.akpm@linux-foundation.org> <200810031232.23836.nickpiggin@yahoo.com.au>
+In-Reply-To: <200810031232.23836.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810031243.51277.nickpiggin@yahoo.com.au>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_llY5I7yhSie1L7M"
+Message-Id: <200810031254.29121.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 October 2008 11:11, Chris Mason wrote:
-> On Thu, 2008-10-02 at 23:48 +0530, Aneesh Kumar K.V wrote:
-> > On Thu, Oct 02, 2008 at 08:20:54AM -0400, Chris Mason wrote:
-> > > On Wed, 2008-10-01 at 21:52 -0700, Andrew Morton wrote:
-> > > > On Wed, 01 Oct 2008 14:40:51 -0400 Chris Mason 
-<chris.mason@oracle.com> wrote:
-> > > > > The patch below changes write_cache_pages to only use
-> > > > > writeback_index when current_is_pdflush().  The basic idea is that
-> > > > > pdflush is the only one who has concurrency control against the
-> > > > > bdi, so it is the only one who can safely use and update
-> > > > > writeback_index.
+--Boundary-00=_llY5I7yhSie1L7M
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+On Friday 03 October 2008 12:32, Nick Piggin wrote:
+> On Wednesday 24 September 2008 08:49, Andrew Morton wrote:
+> > On Tue, 23 Sep 2008 18:34:20 -0400 (EDT)
+> >
+> > Mikulas Patocka <mpatocka@redhat.com> wrote:
+> > > > On Mon, 22 Sep 2008 17:10:04 -0400 (EDT)
 > > > >
-> > > > Another approach would be to only update mapping->writeback_index if
-> > > > nobody else altered it meanwhile.
-> > >
-> > > Ok, I can give that a short.
-> > >
-> > > > That being said, I don't really see why we get lots of seekiness when
-> > > > two threads start their writing the file from the same offset.
-> > >
-> > > For metadata, it makes sense.  Pages get dirtied in strange order, and
-> > > if writeback_index is jumping around, we'll get the seeky metadata
-> > > writeback.
-> > >
-> > > Data makes less sense, especially the very high extent count from ext4.
-> > > An extra printk shows that ext4 is calling redirty_page_for_writepage
-> > > quite a bit in ext4_da_writepage.  This should be enough to make us
-> > > jump around in the file.
-> >
-> > We need to do  start the journal before locking the page with jbd2.
-> > That prevent us from doing any block allocation in writepage() call
-> > back. So with ext4/jbd2 we do block allocation only in writepages()
-> > call back where we start the journal with credit needed to write
-> > a single extent. Then we look for contiguous unallocated logical
-> > block and request the block allocator for 'x' blocks. If we get
-> > less than that. The rest of the pages which we iterated in
-> > writepages  are redirtied so that we try to allocate them again.
-> > We loop inside ext4_da_writepages itself looking at wbc->pages_skipped
-> >
-> > 2481         if (wbc->range_cont && (pages_skipped !=
-> > wbc->pages_skipped)) { 2482                 /* We skipped pages in this
-> > loop */
-> > 2483                 wbc->range_start = range_start;
-> > 2484                 wbc->nr_to_write = to_write +
-> >
-> > > For a 4.5GB streaming buffered write, this printk inside
-> > > ext4_da_writepage shows up 37,2429 times in /var/log/messages.
-> >
-> > Part of that can happen due to shrink_page_list -> pageout -> writepagee
-> > call back with lots of unallocated buffer_heads(blocks). Also a journal
-> > commit with jbd2 looks at the inode and all the dirty pages, rather than
-> > the buffer_heads (journal_submit_data_buffers). We don't force commit
-> > pages that doesn't have blocks allocated with the ext4. The consistency
-> > is only with i_size and data.
+> > > > Mikulas Patocka <mpatocka@xxxxxxxxxx> wrote:
+> > > > > The bug happens when one process is doing sequential buffered
+> > > > > writes to a block device (or file) and another process is
+> > > > > attempting to execute sync(), fsync() or direct-IO on that device
+> > > > > (or file). This syncing process will wait indefinitelly, until the
+> > > > > first writing process finishes.
+> > > > >
+> > > > > For example, run these two commands:
+> > > > > dd if=/dev/zero of=/dev/sda1 bs=65536 &
+> > > > > dd if=/dev/sda1 of=/dev/null bs=4096 count=1 iflag=direct
+> > > > >
+> > > > > The bug is caused by sequential walking of address space in
+> > > > > write_cache_pages and wait_on_page_writeback_range: if some other
+> > > > > process is constantly making dirty and writeback pages while these
+> > > > > functions run, the functions will wait on every new page, resulting
+> > > > > in indefinite wait.
 >
-> In general, I don't think pdflush or the VM expect
-> redirty_pages_for_writepage to be used this aggressively.
+> I think the problem has been misidentified, or else I have misread the
+> code. See below. I hope I'm right, because I think the patches are pretty
+> heavy on complexity in these already complex paths...
+>
+> It would help if you explicitly identify the exact livelock. Ie. give a
+> sequence of behaviour that leads to our progress rate falling to zero.
+>
+> > > > Shouldn't happen. All the data-syncing functions should have an upper
+> > > > bound on the number of pages which they attempt to write. In the
+> > > > example above, we end up in here:
+> > > >
+> > > > int __filemap_fdatawrite_range(struct address_space *mapping, loff_t
+> > > > start,
+> > > > loff_t end, int sync_mode)
+> > > > {
+> > > > int ret;
+> > > > struct writeback_control wbc = {
+> > > > .sync_mode = sync_mode,
+> > > > .nr_to_write = mapping->nrpages * 2, <<--
+> > > > .range_start = start,
+> > > > .range_end = end,
+> > > > };
+> > > >
+> > > > so generic_file_direct_write()'s filemap_write_and_wait() will
+> > > > attempt to write at most 2* the number of pages which are in cache
+> > > > for that inode.
+> > >
+> > > See write_cache_pages:
+> > >
+> > > if (wbc->sync_mode != WB_SYNC_NONE)
+> > >         wait_on_page_writeback(page);	(1)
+> > > if (PageWriteback(page) ||
+> > >     !clear_page_dirty_for_io(page)) {
+> > >         unlock_page(page);		(2)
+> > >         continue;
+> > > }
+> > > ret = (*writepage)(page, wbc, data);
+> > > if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
+> > >         unlock_page(page);
+> > >         ret = 0;
+> > > }
+> > > if (ret || (--(wbc->nr_to_write) <= 0))
+> > >         done = 1;
+> > >
+> > > --- so if it goes by points (1) and (2), the counter is not
+> > > decremented, yet the function waits for the page. If there is constant
+> > > stream of writeback pages being generated, it waits on each on them ---
+> > > that is, forever.
+>
+> *What* is, forever? Data integrity syncs should have pages operated on
+> in-order, until we get to the end of the range. Circular writeback could
+> go through again, possibly, but no more than once.
 
-BTW. redirty_page_for_writepage and the whole model of cleaning the page's
-dirty bit *before* calling into the filesystem is really nasty IMO. For
-one thing it opens races that mean a filesystem can't keep metadata about
-the pagecache properly in synch with the page's dirty bit.
+OK, I have been able to reproduce it somewhat. It is not a livelock,
+but what is happening is that direct IO read basically does an fsync
+on the file before performing the IO. The fsync gets stuck behind the
+dd that is dirtying the pages, and ends up following behind it and
+doing all its IO for it.
 
-I have a patch in my fsblock series that fixes this and has the writepage()
-function itself clear the page's dirty bit. This basically makes
-redirty_page_for_writepages go away completely (at least the uses I looked
-at, I didn't look at ext4 though).
+The following patch avoids the issue for direct IO, by using the range
+syncs rather than trying to sync the whole file.
 
-Shall I break it out and submit it?
+The underlying problem I guess is unchanged. Is it really a problem,
+though? The way I'd love to solve it is actually by adding another bit
+or two to the pagecache radix tree,  that can be used to transiently tag
+the tree for future operations. That way we could record the dirty and
+writeback pages up front, and then only bother with operating on them.
+
+That's *if* it really is a problem. I don't have much pity for someone
+doing buffered IO and direct IO to the same pages of the same file :)
+
+--Boundary-00=_llY5I7yhSie1L7M
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="mm-starve-fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="mm-starve-fix.patch"
+
+Index: linux-2.6/mm/filemap.c
+===================================================================
+--- linux-2.6.orig/mm/filemap.c	2008-10-03 11:21:31.000000000 +1000
++++ linux-2.6/mm/filemap.c	2008-10-03 12:00:17.000000000 +1000
+@@ -1304,11 +1304,8 @@ generic_file_aio_read(struct kiocb *iocb
+ 			goto out; /* skip atime */
+ 		size = i_size_read(inode);
+ 		if (pos < size) {
+-			retval = filemap_write_and_wait(mapping);
+-			if (!retval) {
+-				retval = mapping->a_ops->direct_IO(READ, iocb,
++			retval = mapping->a_ops->direct_IO(READ, iocb,
+ 							iov, pos, nr_segs);
+-			}
+ 			if (retval > 0)
+ 				*ppos = pos + retval;
+ 			if (retval) {
+@@ -2110,18 +2107,10 @@ generic_file_direct_write(struct kiocb *
+ 	if (count != ocount)
+ 		*nr_segs = iov_shorten((struct iovec *)iov, *nr_segs, count);
+ 
+-	/*
+-	 * Unmap all mmappings of the file up-front.
+-	 *
+-	 * This will cause any pte dirty bits to be propagated into the
+-	 * pageframes for the subsequent filemap_write_and_wait().
+-	 */
+ 	write_len = iov_length(iov, *nr_segs);
+ 	end = (pos + write_len - 1) >> PAGE_CACHE_SHIFT;
+-	if (mapping_mapped(mapping))
+-		unmap_mapping_range(mapping, pos, write_len, 0);
+ 
+-	written = filemap_write_and_wait(mapping);
++	written = filemap_write_and_wait_range(mapping, pos, pos + write_len - 1);
+ 	if (written)
+ 		goto out;
+ 
+@@ -2507,7 +2496,8 @@ generic_file_buffered_write(struct kiocb
+ 	 * the file data here, to try to honour O_DIRECT expectations.
+ 	 */
+ 	if (unlikely(file->f_flags & O_DIRECT) && written)
+-		status = filemap_write_and_wait(mapping);
++		status = filemap_write_and_wait_range(mapping,
++					pos, pos + written - 1);
+ 
+ 	return written ? written : status;
+ }
+
+--Boundary-00=_llY5I7yhSie1L7M--
