@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYJCHhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbYJCHi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbYJCHhq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 03:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbYJCHhi
+	id S1755089AbYJCHi6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 03:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbYJCHit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 03:37:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46381 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Oct 2008 03:38:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48561 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751997AbYJCHhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 03:37:38 -0400
-Date: Fri, 3 Oct 2008 09:37:27 +0200
+	id S1753915AbYJCHis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 03:38:48 -0400
+Date: Fri, 3 Oct 2008 09:38:35 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH 2/2] x86: mtrr_cleanup try gran_size to less than 1M
-Message-ID: <20081003073727.GC4950@elte.hu>
-References: <1222739652-17169-1-git-send-email-yhlu.kernel@gmail.com> <1222739652-17169-2-git-send-email-yhlu.kernel@gmail.com> <20081003003237.04469201@werewolf.home>
+Message-ID: <20081003073835.GD4950@elte.hu>
+References: <1222739652-17169-1-git-send-email-yhlu.kernel@gmail.com> <1222739652-17169-2-git-send-email-yhlu.kernel@gmail.com> <20081003003237.04469201@werewolf.home> <86802c440810021539y6cdff33dh9df3e04eba85a9df@mail.gmail.com> <86802c440810021546r6182a0c2id3566c1eb6ab7410@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081003003237.04469201@werewolf.home>
+In-Reply-To: <86802c440810021546r6182a0c2id3566c1eb6ab7410@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -31,37 +29,30 @@ X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
 X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	[score: 0.0006]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* J.A. Magallón <jamagallon@ono.com> wrote:
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-> Also, on a 64 bit box with 4Gb, it gives this:
+> > boundary handling may have problem...
 > 
-> cicely:~# cat /proc/mtrr
-> reg00: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
-> reg01: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
-> reg02: base=0x140000000 (5120MB), size= 512MB: write-back, count=1
-> reg03: base=0x160000000 (5632MB), size= 256MB: write-back, count=1
-> reg04: base=0x80000000 (2048MB), size=2048MB: uncachable, count=1
+> can you try
 > 
-> Patch below cleans up formatting, with space for big bases and sizes (64 Gb).
+> diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+> index ef64128..70beb13 100644
+> --- a/arch/x86/kernel/cpu/mtrr/main.c
+> +++ b/arch/x86/kernel/cpu/mtrr/main.c
+> @@ -1044,7 +1044,7 @@ second_try:
+>                 hole_sizek = range0_sizek - state->range_sizek - second_sizek;
+> 
+>                 /* hole size should be less than half of range0 size */
+> -               if (hole_sizek > (range0_sizek >> 1) &&
+> +               if (hole_sizek >= (range0_sizek >> 1) &&
+>                     range0_sizek >= chunk_sizek) {
 
-applied to tip/x86/mtrr, thanks!
-
-> +++ arch/x86/kernel/cpu/mtrr/if.c     2008-10-03 00:22:34.000000000 +0200
-> @@ -16,7 +16,7 @@
->  static const char *const mtrr_strings[MTRR_NUM_TYPES] =
->  {
->      "uncachable",               /* 0 */
-> -    "write-combining",          /* 1 */
-> +    "write-combine",            /* 1 */
-
-hm, maybe this bit could confuse versions of Xorg that modifies 
-/proc/mtrr - i.e. this could be part of the ABI towards user-space. 
-We'll see.
+applied to tip/x86/mtrr, thanks Yinghai!
 
 	Ingo
