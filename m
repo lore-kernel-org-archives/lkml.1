@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYJCMLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbYJCMVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbYJCMLS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 08:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYJCMLI
+	id S1753995AbYJCMVZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 08:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbYJCMVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 08:11:08 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:45357 "EHLO twin.jikos.cz"
+	Fri, 3 Oct 2008 08:21:18 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58753 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753070AbYJCMLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 08:11:07 -0400
-Date: Fri, 3 Oct 2008 14:11:01 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Vit Kudrle <kudrle@sci.muni.cz>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel Oops in USB HID
-In-Reply-To: <200810031134.m93BYDqQ025308@elanor.sci.muni.cz>
-Message-ID: <Pine.LNX.4.64.0810031409240.1532@twin.jikos.cz>
-References: <200810031134.m93BYDqQ025308@elanor.sci.muni.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753163AbYJCMVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 08:21:17 -0400
+Subject: Re: [RFC/PATCH] Block device for the ISS simulator
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <20081003120305.GA2229@yoda.jdub.homelinux.org>
+References: <20081003000904.0A812DDEEE@ozlabs.org>
+	 <20081003120305.GA2229@yoda.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Fri, 03 Oct 2008 22:21:04 +1000
+Message-Id: <1223036464.12264.183.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008, Vit Kudrle wrote:
+On Fri, 2008-10-03 at 08:03 -0400, Josh Boyer wrote:
+> On Fri, Oct 03, 2008 at 10:08:42AM +1000, Benjamin Herrenschmidt wrote:
+> >+static void iss_blk_setup(struct iss_blk *ib)
+> >+{
+> >+	unsigned long flags;
+> >+	u32 stat;
+> >+
+> >+	pr_debug("iss_blk_setup %d\n", ib->devno);
+> >+
+> >+	spin_lock_irqsave(&iss_blk_reglock, flags);
+> >+	out_8(iss_blk_regs->data, 0);
+> >+	out_be32(&iss_blk_regs->devno, ib->devno);
+> >+	out_8(&iss_blk_regs->cmd, ISS_BD_CMD_OPEN);
+> >+	stat = in_be32(&iss_blk_regs->stat);
+> 
+> Should probably use the ioread/iowrite functions instead of raw out/in.
+> Same comment throughout.
 
-> Oct  3 01:16:58 kernel: hub 2-0:1.0: port 7 disabled by hub (EMI?), re-enabling...
-> Oct  3 01:16:58 kernel: usb 2-7: USB disconnect, address 39
-> Oct  3 01:16:58 kernel: drivers/hid/usbhid/hid-core.c: usb_submit_urb(ctrl) failed
-> Oct  3 01:16:58 kernel: BUG: unable to handle kernel NULL pointer dereference at 00000000000000c8
-> Oct  3 01:16:58 kernel: IP: [<ffffffff803b0755>] hiddev_ioctl+0x39/0x552
+Yeah well, old habits :-)
 
-Hi,
+> >+		pr_debug(" -> ending request, rc = %d\n", rc);
+> >+		if (rc)
+> >+			end_request(req, 0);	/* failure */
+> >+		else
+> >+			end_request(req, 1);	/* success */
+> 
+> Could possibly just do:
+> 
+> end_request(req, (!rc));
 
-could you please use 'addr2line' utility on address 0xffffffff803b0755 to 
-identify the line on which the NULL pointer dereference happened?
+I knew copy/pasting from a crap driver was going to come back and bite
+me :)
 
-Obviously there is some missing handling of error conditions from usbhid 
-code after the URB submission has failed.
+> of_find_node_by_path increments the refcount for that node.  Need to
+> do an of_node_put when you are done.
 
-Thanks,
+Yup, suppose so.
 
--- 
-Jiri Kosina
-SUSE Labs
+> Shouldn't you unmap iss_blk_regs at this point?
+
+Might be a good idea yeah.
+
+Ben.
+
 
