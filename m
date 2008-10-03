@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYJCL0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbYJCL2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbYJCL0k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 07:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYJCL0c
+	id S1753929AbYJCL2D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 07:28:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYJCL1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 07:26:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56891 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752061AbYJCL0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 07:26:31 -0400
-Date: Fri, 3 Oct 2008 07:26:07 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@vger.kernel.org, agk@redhat.com, mbroz@redhat.com,
-       chris@arachsys.com
-Subject: Re: [PATCH] Memory management livelock
-In-Reply-To: <200810031254.29121.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0810030716310.4875@hs20-bc2-1.build.redhat.com>
-References: <20080911101616.GA24064@agk.fab.redhat.com>
- <20080923154905.50d4b0fa.akpm@linux-foundation.org> <200810031232.23836.nickpiggin@yahoo.com.au>
- <200810031254.29121.nickpiggin@yahoo.com.au>
+	Fri, 3 Oct 2008 07:27:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:36328 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbYJCL1x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 07:27:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UzDiFJR6MbTd1F/IWVCshNM7V08x8BYrsPArHea9Hymn3I2C4DnaCFeUmTNgrn6tYP
+         gM8EE7WKbzJrBwYmMtmWo1QnNLqbNCZwpjAg0baaiq90IrnsC/Bvuix7pxbaln4WEi5G
+         gVSRSgajQ6tq5W2g2V1bwWclQyV1M2nIuyudU=
+Message-ID: <68676e00810030427g63c07643rf637ca894df795b2@mail.gmail.com>
+Date: Fri, 3 Oct 2008 13:27:52 +0200
+From: "Luca Tettamanti" <kronos.it@gmail.com>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
+Subject: Re: SDHCI: timeout during data transfer
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081002101754.031d6710@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080923212459.GA13888@dreamland.darkstar.lan>
+	 <20081002101754.031d6710@mjolnir.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > *What* is, forever? Data integrity syncs should have pages operated on
-> > in-order, until we get to the end of the range. Circular writeback could
-> > go through again, possibly, but no more than once.
-> 
-> OK, I have been able to reproduce it somewhat. It is not a livelock,
-> but what is happening is that direct IO read basically does an fsync
-> on the file before performing the IO. The fsync gets stuck behind the
-> dd that is dirtying the pages, and ends up following behind it and
-> doing all its IO for it.
-> 
-> The following patch avoids the issue for direct IO, by using the range
-> syncs rather than trying to sync the whole file.
-> 
-> The underlying problem I guess is unchanged. Is it really a problem,
-> though? The way I'd love to solve it is actually by adding another bit
-> or two to the pagecache radix tree,  that can be used to transiently tag
-> the tree for future operations. That way we could record the dirty and
-> writeback pages up front, and then only bother with operating on them.
-> 
-> That's *if* it really is a problem. I don't have much pity for someone
-> doing buffered IO and direct IO to the same pages of the same file :)
+On Thu, Oct 2, 2008 at 10:17 AM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+> On Tue, 23 Sep 2008 23:24:59 +0200
+> Luca Tettamanti <kronos.it@gmail.com> wrote:
+>
+>> Hi,
+>> I'm seeing timeout errors when transfering "big" (over 1MB or so) files to a SD
+>> card (small files are ok):
+>>
+>> [  251.956666] mmcblk0: error -110 transferring data
+>> [  251.979810] end_request: I/O error, dev mmcblk0, sector 1572758
+>
+> Looks like the card died on you there. Did you build the kernel
+> yourself? If so, it would be helpful if you could enable
+> CONFIG_MMC_DEBUG and give me a complete dmesg dump from when this
+> happens.
 
-LVM does (that is where the bug was discovered). Basically, it scans all 
-the block devices with direct IO and if someone else does buffered IO on 
-any device simultaneously, it locks up.
+Hum, cannot reproduce (but it was consistently failing when I tested
+the patch... the only difference is a mkfs in between). I just got a
+few retries:
 
-That fsync-vs-write livelock is quite improbably (why would some 
-application do it?) --- although it could be used as a DoS --- getting 
-unkillable process.
+[  187.158063] sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000040
+[  187.656190] mmc0: clock 0Hz busmode 1 powermode 1 cs 0 Vdd 21 width
+0 timing 0
+[  187.658366] mmc0: clock 128906Hz busmode 1 powermode 2 cs 0 Vdd 21
+width 0 timing 0
+[  187.660500] mmc0: clock 128906Hz busmode 1 powermode 2 cs 1 Vdd 21
+width 0 timing 0
+[  187.661634] mmc0: starting CMD0 arg 00000000 flags 000000c0
+[  187.662265] sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
+[  187.662283] mmc0: req done (CMD0): 0: 00000000 00000000 00000000 00000000
+[  187.663461] mmc0: clock 128906Hz busmode 1 powermode 2 cs 0 Vdd 21
+width 0 timing 0
+[  187.664473] mmc0: starting CMD8 arg 000001aa flags 000002f5
+[  187.665423] sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
+[  187.665439] mmc0: req done (CMD8): 0: 000001aa 00000000 00000000 00000000
+[  187.665474] mmc0: starting CMD5 arg 00000000 flags 000002e1
+[  187.666423] sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00018000
+[  187.668435] mmc0: req failed (CMD5): -110, retrying...
+[  187.669423] sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00018000
+[  187.671424] mmc0: req failed (CMD5): -110, retrying...
+[  187.672422] sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00018000
+[  187.674423] mmc0: req failed (CMD5): -110, retrying...
+[  187.675425] sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00018000
+[  187.677436] mmc0: req done (CMD5): -110: 00000000 00000000 00000000 00000000
+[  187.677683] mmc0: starting CMD55 arg 00000000 flags 000000f5
+[  187.678754] sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
+[  187.678770] mmc0: req done (CMD55): 0: 00000120 00000000 00000000 00000000
+[  187.678808] mmc0: starting CMD41 arg 00000000 flags 000000e1
+[  187.679877] sdhci [sdhci_irq()]: *** mmc0 got interrupt: 0x00000001
+[  187.679893] mmc0: req done (CMD41): 0: 00ff8000 00000000 00000000 00000000
+[  187.679995] mmc0: clock 128906Hz busmode 1 powermode 2 cs 0 Vdd 20
+width 0 timing 0
+[  187.680021] mmc0: clock 128906Hz busmode 1 powermode 2 cs 1 Vdd 20
+width 0 timing 0
+[cut 80MB of logs]
 
-But there is another possible real-world problem --- sync-vs-write --- 
-i.e. admin plugs in two disks and copies data from one to the other. 
-Meanwhile, some unrelated server process executes sync(). The server goes 
-into coma until the copy finishes.
+Is it possible that the error was generated by a faulty flash block?
 
-Mikulas
+Luca
