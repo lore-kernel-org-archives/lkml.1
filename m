@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYJCTQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbYJCTXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753972AbYJCTQj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 15:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYJCTQa
+	id S1753691AbYJCTXS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 15:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYJCTXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 15:16:30 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:39188 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752235AbYJCTQa (ORCPT
+	Fri, 3 Oct 2008 15:23:04 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:41674 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752087AbYJCTXB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 15:16:30 -0400
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: linux-kernel@vger.kernel.org
-Subject: Markers in (non-module) kernel code?
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1Klq8Z-0003Vd-L6@closure.thunk.org>
-Date: Fri, 03 Oct 2008 15:16:27 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 3 Oct 2008 15:23:01 -0400
+Date: Fri, 3 Oct 2008 15:23:00 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Dave Hansen <dave@sr71.net>
+cc: gregkh <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: USB disconnects every 30 seconds (2.6.27-rc8)
+In-Reply-To: <Pine.LNX.4.44L0.0810031429250.6462-100000@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.44L0.0810031522280.6462-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 3 Oct 2008, Alan Stern wrote:
 
-I've been playing with adding some markers into ext4 to see if they
-could be useful in solving some problems along with Systemtap.  It
-appears, though, that as of 2.6.27-rc8, markers defined in code which is
-compiled directly into the kernel (i.e., not as modules) don't show up
-in Module.markers:
+> You should use usbmon (see Documentation/usb/usbmon.txt) to record a 
+> trace of everything happening on bus 3.  And to keep things simple, you 
+> should unplug all the USB devices except for one of the magical 
+> disappearing hubs.
 
-kvm_trace_entryexit	arch/x86/kvm/kvm-intel	%u %p %u %u %u %u %u %u
-kvm_trace_handler	arch/x86/kvm/kvm-intel	%u %p %u %u %u %u %u %u
-kvm_trace_entryexit	arch/x86/kvm/kvm-amd	%u %p %u %u %u %u %u %u
-kvm_trace_handler	arch/x86/kvm/kvm-amd	%u %p %u %u %u %u %u %u
+Better still, get two traces: one from each kernel.  Then they can be 
+compared.
 
-(Note the lack of any of the kernel_sched_* markers, and the markers I
-added for ext4_* and jbd2_* are missing as wel.)
-
-Systemtap apparently depends on in-kernel trace_mark being recorded in
-Module.markers, and apparently it's been claimed that it used to be
-there.  Is this a bug in systemtap, or in how Module.markers is getting
-built?   And is there a file that contains the equivalent information
-for markers located in non-modules code?
-
-Thanks, regards,
-
-						- Ted
+Alan Stern
 
