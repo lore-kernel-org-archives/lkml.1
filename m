@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbYJCI3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbYJCIbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540AbYJCI3m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 04:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYJCI3c
+	id S1754621AbYJCIbw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 04:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbYJCIbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 04:29:32 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50842 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751684AbYJCI3b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 04:29:31 -0400
-Date: Fri, 3 Oct 2008 04:29:27 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>
-Subject: Re: [RFC patch 2/5] genirq: add a quick check handler
-Message-ID: <20081003082927.GA25683@infradead.org>
-References: <20081001223213.078984344@linutronix.de> <20081001223301.900862899@linutronix.de>
-MIME-Version: 1.0
+	Fri, 3 Oct 2008 04:31:44 -0400
+Received: from fire.netis.ru ([193.233.48.99]:60695 "EHLO fire.netis.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752230AbYJCIbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 04:31:43 -0400
+X-Greylist: delayed 1117 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Oct 2008 04:31:42 EDT
+Date: Fri, 3 Oct 2008 12:11:47 +0400
+From: "Alexander V. Lukyanov" <lav@netis.ru>
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Cc: Ncurses Developers <ncurses-dev@gnu.org>
+Subject: linux 2.6.26 vt back_color_erase
+Message-ID: <20081003081147.GA16414@night.netis.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081001223301.900862899@linutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+User-Agent: Mutt/1.5.11
+X-NETIS-MailScanner-Information: Please contact NETIS Telecom for more information <info@netis.ru> (+7 4852 797797)
+X-NETIS-MailScanner-ID: m938BmYm016576
+X-NETIS-MailScanner: Found to be clean
+X-NETIS-MailScanner-SpamCheck: not spam, SpamAssassin (not cached, score=0,
+	required 6, autolearn=disabled)
+X-NETIS-MailScanner-From: lav@netis.ru
+X-NETIS-MailScanner-To: linux-kernel@vger.kernel.org, ncurses-dev@gnu.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 01, 2008 at 11:02:18PM -0000, Thomas Gleixner wrote:
-> Preparatory patch for threaded interrupt handlers.
-> 
-> Adds a quick check handler which is called before the real handler.
-> The quick check handler can decide whether the interrupt was originated
-> from the device or not. It can also declare the interrupt as handled
-> and subsequently avoid that the real handler is called.
+Hello!
 
-I'd rather leave the handler as a handle which could return
-IRQ_NEEDS_HANDLING to get a separate thread_fn called.  This seems more
-intuitive and means less mess in the fastpath.
+Current linux kernel has broken bce semantics. Now insert_line and
+delete_line clear the new lines with default color and not with the current
+background as they should, and what is expected by ncurses.
 
-Maybe IRQ_NEEDS_HANDLING might better be named IRQ_THREADED os similar,
-but that's really getting into nitpicking..
+vc->vc_scrl_erase_char was introduced in 2.6.26 for some reason. I beleave
+this change should be backed out.
 
+-- 
+   Alexander.
