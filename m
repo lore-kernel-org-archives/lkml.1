@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbYJCDTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbYJCD0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbYJCDTa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 23:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYJCDTW
+	id S1754720AbYJCD0Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 23:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYJCD0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 23:19:22 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46890 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754160AbYJCDTV (ORCPT
+	Thu, 2 Oct 2008 23:26:00 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56655 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753368AbYJCDZ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 23:19:21 -0400
-Date: Fri, 3 Oct 2008 05:25:04 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Greg KH <greg@kroah.com>, Andi Kleen <andi@firstfloor.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>
-Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded interrupt handlers
-Message-ID: <20081003032504.GF8318@one.firstfloor.org>
-References: <20081001223213.078984344@linutronix.de> <873ajfoy1a.fsf@basil.nowhere.org> <20081002213146.GA9201@kroah.com> <20081002153305.057cf6d9@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081002153305.057cf6d9@infradead.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 2 Oct 2008 23:25:59 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH 0/4] Reclaim page capture v4
+Cc: kosaki.motohiro@jp.fujitsu.com, MinChan Kim <minchan.kim@gmail.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20081002150423.GG11089@brain>
+References: <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com> <20081002150423.GG11089@brain>
+Message-Id: <20081003122332.EF58.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Fri,  3 Oct 2008 12:25:56 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 02, 2008 at 03:33:05PM -0700, Arjan van de Ven wrote:
-> On Thu, 2 Oct 2008 14:31:46 -0700
-> Greg KH <greg@kroah.com> wrote:
+> > I tested your patch in my desktop.
+> > The test is just kernel compile with single thread.
+> > My system environment is as follows.
+> > 
+> > model name	: Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
+> > MemTotal:        2065856 kB
+> > 
+> > When I tested vanilla, compile time is as follows.
+> > 
+> > 2433.53user 187.96system 42:05.99elapsed 103%CPU (0avgtext+0avgdata
+> > 0maxresident)k
+> > 588752inputs+4503408outputs (127major+55456246minor)pagefaults 0swaps
+> > 
+> > When I tested your patch, as follows.
+> > 
+> > 2489.63user 202.41system 44:47.71elapsed 100%CPU (0avgtext+0avgdata
+> > 0maxresident)k
+> > 538608inputs+4503928outputs (130major+55531561minor)pagefaults 0swaps
+> > 
+> > Regresstion almost is above 2 minutes.
+> > Do you think It is a trivial?
+> > 
+> > I know your patch is good to allocate hugepage.
+> > But, I think many users don't need it, including embedded system and
+> > desktop users yet.
+> > 
+> > So I suggest you made it enable optionally.
 > 
-> > On Thu, Oct 02, 2008 at 04:46:09PM +0200, Andi Kleen wrote:
-> > > Thomas Gleixner <tglx@linutronix.de> writes:
-> > > >
-> > > >  - move long running handlers out of the hard interrupt context
-> > > 
-> > > I'm not sure I'm really looking forward to this brave new world
-> > > of very long running interrupt handlers. e.g. what do you
-> > > do for example when some handler blocks for a very long time?
-> > 
-> > We have this issue today with some irqs (USB is known for issue
-> > here...)
-> > 
-> > So I don't think this is a big issue, and in the end, a better idea as
-> > it might force us to confront some of the big abusers and fix them.
-> > 
-> 
-> one of the things irq threads gives you is that 'top' will show you
-> which ones are eating cpu ;-)
+> Hmmm.  I would not expect to see any significant impact for this kind of
+> workload as we should not be triggering capture for the lower order
+> allocations at all.  Something screwey must be occuring.  I will go and
+> reproduce this here and see if I can figure out just what causes this.
 
-oprofile does that job fine already and is imho any time preferable
-for detailed analysis.
+yup.
+I also think this is significant regression.
 
--andi
+if this is reproduced, that patch shouldn't be merged to -mm, IMHO.
 
--- 
-ak@linux.intel.com
+
+
+
