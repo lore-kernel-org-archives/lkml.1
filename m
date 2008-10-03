@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbYJCQa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbYJCQbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754571AbYJCQa6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 12:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYJCQaZ
+	id S1754273AbYJCQbw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 12:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYJCQbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 12:30:25 -0400
-Received: from igw2.br.ibm.com ([32.104.18.25]:35339 "EHLO igw2.br.ibm.com"
+	Fri, 3 Oct 2008 12:31:38 -0400
+Received: from igw3.br.ibm.com ([32.104.18.26]:49290 "EHLO igw3.br.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752834AbYJCQaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 12:30:24 -0400
+	id S1752602AbYJCQbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 12:31:36 -0400
 From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: serue@us.ibm.com, zohar@linux.vnet.ibm.com, akpm@linux-foundation.org,
        jmorris@namei.org
-Subject: [PATCH 5/5] TPM: Fixed tpm_release() timing
-Date: Fri,  3 Oct 2008 13:30:10 -0300
-Message-Id: <8c2433aaa7856591c06d1168a30e109d2183519f.1223042186.git.srajiv@linux.vnet.ibm.com>
+Subject: [PATCH 0/5] TPM: Locking update
+Date: Fri,  3 Oct 2008 13:30:05 -0300
+Message-Id: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
-References: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
-In-Reply-To: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
-References: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As pointed out by Jonathan Corbet, the timer must be deleted before flushing
-the work queue in order to avoid a job being submitted after 
-the chip had been released.
 
-Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
-CC: Jonathan Corbet <corbet@lwn.net>
----
- drivers/char/tpm/tpm.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+1) Removes unnecessary BKL from tpm.c
+2) Changes the num_opens variable name to is_open since it's a binary
+state
+3) Implements the use of RCU to protect tpm_chip_list
+4) Insert .remove function in tis_pnp_driver structure
+5) Puts the timer deletion before the flushing of unfinished jobs
 
-diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-index ab03b4d..8d090d3 100644
---- a/drivers/char/tpm/tpm.c
-+++ b/drivers/char/tpm/tpm.c
-@@ -1004,9 +1004,9 @@ int tpm_release(struct inode *inode, struct file *file)
- {
- 	struct tpm_chip *chip = file->private_data;
- 
-+	del_singleshot_timer_sync(&chip->user_read_timer);
- 	flush_scheduled_work();
- 	file->private_data = NULL;
--	del_singleshot_timer_sync(&chip->user_read_timer);
- 	atomic_set(&chip->data_pending, 0);
- 	kfree(chip->data_buffer);
- 	clear_bit(0, &chip->is_open);
--- 
-1.5.6.3
+TPM: update char dev BKL pushdown
+TPM: num_opens to is_open variable change
+TPM: rcu locking
+TPM: pnp remove
+TPM: tpm_release() timing
+
+ drivers/char/tpm/tpm.c     |   92 ++++++++++++++++++++-----------------------
+ drivers/char/tpm/tpm.h     |    3 +-
+ drivers/char/tpm/tpm_tis.c |   14 ++++++-
+ 3 files changed, 58 insertions(+), 51 deletions(-)
 
