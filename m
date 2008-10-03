@@ -1,111 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbYJCLsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbYJCLuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753835AbYJCLsR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 07:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbYJCLsG
+	id S1753965AbYJCLuq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 07:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYJCLui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 07:48:06 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:43611 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752743AbYJCLsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 07:48:04 -0400
-Date: Fri, 3 Oct 2008 13:47:25 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       arjan@linux.intel.com, airlied@gmail.com, davem@davemloft.net,
-       Jeff Garzik <jeff@garzik.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2.6.27-rc8 5/6] e1000e: debug contention on NVM SWFLAG
-In-Reply-To: <20081002233340.12556.33137.stgit@jbrandeb-bw.jf.intel.com>
-Message-ID: <Pine.LNX.4.64.0810031346100.1532@twin.jikos.cz>
-References: <20081002233314.12556.49143.stgit@jbrandeb-bw.jf.intel.com>
- <20081002233340.12556.33137.stgit@jbrandeb-bw.jf.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 3 Oct 2008 07:50:38 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:26983 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752599AbYJCLuh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 07:50:37 -0400
+Subject: [RFC][PATCH 0/5] OMAP Synchronous Serial Interface (SSI) driver
+From: Carlos Chinea <carlos.chinea@nokia.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-omap@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 03 Oct 2008 14:50:06 +0300
+Message-Id: <1223034606.32631.156.camel@groo.research.nokia.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Oct 2008 11:50:33.0801 (UTC) FILETIME=[3E338390:01C9254E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008, Jesse Brandeburg wrote:
+Hi guys !
 
-> From: Thomas Gleixner <tglx@linutronix.de>
-> 
-> This patch adds a mutex to the e1000e driver that would help
-> catch any collisions of two e1000e threads accessing hardware
-> at the same time.
+I'm working on adding support for Nokia HSPA modems to OMAP.
 
-Apparently this has some bug wrt suspend, see
-https://bugzilla.novell.com/show_bug.cgi?id=431914
+Please consider integrating the following patch set into the
+linux-omap tree. The patch set implements a generic device driver
+for the OMAP Synchronous Serial Interface. 
 
-WARNING: at drivers/net/e1000e/ich8lan.c:424
-e1000_acquire_swflag_ich8lan+0x56/0xcb [e1000e]()
-e1000e mutex contention. Owned by pid -1
-Modules linked in: xt_tcpudp xt_pkttype tun ipt_ULOG xt_limit aes_i586
-aes_generic i915 drm af_packet snd_pcm_oss snd_mixer_oss snd_seq
-snd_seq_device ipt_REJECT xt_state cpufreq_conservative iptable_mangle
-cpufreq_userspace iptable_nat cpufreq_powersave nf_nat acpi_cpufreq
-iptable_filter speedstep_lib nf_conntrack_ipv4 nf_conntrack ip_tables
-ip6_tables x_tables microcode loop arc4 ecb crypto_blkcipher snd_hda_intel
-iwl3945 pcmcia thinkpad_acpi snd_pcm snd_timer sdhci_pci snd_page_alloc
-rfkill sdhci snd_hwdep mac80211 yenta_socket rsrc_nonstatic video rtc_cmos
-led_class ohci1394 snd ieee1394 output mmc_core i2c_i801 ac battery
-pcmcia_core iTCO_wdt button intel_agp rtc_core cfg80211 nvram soundcore
-iTCO_vendor_support agpgart e1000e rtc_lib i2c_core pcspkr uinput sg
-sd_mod ehci_hcd uhci_hcd crc_t10dif usbcore edd ext3 mbcache jbd fan
-ata_piix ahci libata scsi_mod dock thermal processor
-Pid: 23153, comm: events/1 Tainted: G        W 
-2.6.27-rc8-HEAD_20081001123454-pae #1
- [<c0105590>] dump_trace+0x6b/0x249
- [<c01060c5>] show_trace+0x20/0x39
- [<c033b52d>] dump_stack+0x71/0x76
- [<c012ba12>] warn_slowpath+0x6f/0x90
- [<f91cfb9b>] e1000_acquire_swflag_ich8lan+0x56/0xcb [e1000e]
- [<f91d3db4>] e1000e_read_phy_reg_igp+0x10/0x4f [e1000e]
- [<f91d3f83>] e1000e_phy_has_link_generic+0x32/0x99 [e1000e]
- [<f91d2e35>] e1000e_check_for_copper_link+0x26/0x80 [e1000e]
- [<f91d8f3a>] e1000_watchdog_task+0x5b/0x5eb [e1000e]
- [<c013a1b4>] run_workqueue+0x9f/0x13e
- [<c013a309>] worker_thread+0xb6/0xc2
- [<c013cdff>] kthread+0x38/0x5d
- [<c01050e7>] kernel_thread_helper+0x7/0x10
+The Synchronous Serial Interface (SSI) is a high speed communication
+interface that is used for connecting OMAP to a cellular modem engine.
 
-> +	WARN_ON(preempt_count());
-> +
-> +	if (!mutex_trylock(&nvm_mutex)) {
-> +		WARN(1, KERN_ERR "e1000e mutex contention. Owned by pid %d\n",
-> +		     nvm_owner);
-> +		mutex_lock(&nvm_mutex);
-> +	}
-> +	nvm_owner = current->pid;
-> +
->  	while (timeout) {
->  		extcnf_ctrl = er32(EXTCNF_CTRL);
->  		extcnf_ctrl |= E1000_EXTCNF_CTRL_SWFLAG;
-> @@ -407,6 +419,8 @@ static s32 e1000_acquire_swflag_ich8lan(struct e1000_hw *hw)
->  
->  	if (!timeout) {
->  		hw_dbg(hw, "FW or HW has locked the resource for too long.\n");
-> +		nvm_owner = -1;
-> +		mutex_unlock(&nvm_mutex);
->  		return -E1000_ERR_CONFIG;
->  	}
->  
-> @@ -428,6 +442,9 @@ static void e1000_release_swflag_ich8lan(struct e1000_hw *hw)
->  	extcnf_ctrl = er32(EXTCNF_CTRL);
->  	extcnf_ctrl &= ~E1000_EXTCNF_CTRL_SWFLAG;
->  	ew32(EXTCNF_CTRL, extcnf_ctrl);
-> +
-> +	nvm_owner = -1;
-> +	mutex_unlock(&nvm_mutex);
->  }
+The patch set is based on linux-omap 2.6.27-rc7.
 
-The debugging message is racy anyway with respect to accessing nvm_owner, 
-right? It should be done after the mutex has been succesfully acquired.
+Any comments will be appreciated.
 
--- 
-Jiri Kosina
-SUSE Labs
+Br,
+Carlos
+
+
+
+ Documentation/arm/OMAP/ssi/board-ssi.c.example     |  216 ++++++++
+ Documentation/arm/OMAP/ssi/ssi                     |  232 +++++++++
+ arch/arm/plat-omap/include/mach/ssi/ssi_gdd_reg.h  |  145 ++++++
+ .../plat-omap/include/mach/ssi/ssi_reg_common.h    |   73 +++
+ arch/arm/plat-omap/include/mach/ssi/ssi_ssr_reg.h  |   56 +++
+ arch/arm/plat-omap/include/mach/ssi/ssi_sst_reg.h  |   65 +++
+ arch/arm/plat-omap/include/mach/ssi/ssi_sys_reg.h  |  107 ++++
+ drivers/misc/Kconfig                               |    2 +
+ drivers/misc/Makefile                              |    1 +
+ drivers/misc/ssi/Kconfig                           |   11 +
+ drivers/misc/ssi/Makefile                          |    7 +
+ drivers/misc/ssi/ssi_driver.c                      |  513 ++++++++++++++++++++
+ drivers/misc/ssi/ssi_driver.h                      |  211 ++++++++
+ drivers/misc/ssi/ssi_driver_bus.c                  |  192 ++++++++
+ drivers/misc/ssi/ssi_driver_dma.c                  |  406 ++++++++++++++++
+ drivers/misc/ssi/ssi_driver_if.c                   |  335 +++++++++++++
+ drivers/misc/ssi/ssi_driver_int.c                  |  232 +++++++++
+ include/linux/ssi_driver_if.h                      |  137 ++++++
+ 18 files changed, 2941 insertions(+), 0 deletions(-)
+
 
