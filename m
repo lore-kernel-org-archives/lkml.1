@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYJCPir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYJCPjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbYJCPir (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYJCPij
+	id S1753358AbYJCPjb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 11:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYJCPjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:38:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38980 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751759AbYJCPii (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:38:38 -0400
-Date: Fri, 3 Oct 2008 08:36:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [regression] Latest git has WARN_ON storm with e1000e driver
-In-Reply-To: <200810031720.53923.borntraeger@de.ibm.com>
-Message-ID: <alpine.LFD.2.00.0810030825190.3262@nehalem.linux-foundation.org>
-References: <200810031041.49350.borntraeger@de.ibm.com> <alpine.LFD.2.00.0810030746430.3230@nehalem.linux-foundation.org> <200810031720.53923.borntraeger@de.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 3 Oct 2008 11:39:20 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42563 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751623AbYJCPjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 11:39:19 -0400
+Date: Fri, 3 Oct 2008 17:39:17 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, arjan@linux.intel.com, airlied@gmail.com,
+       davem@davemloft.net, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 2.6.27-rc8 5/6] e1000e: debug contention on NVM SWFLAG
+In-Reply-To: <alpine.LFD.2.00.0810030812570.3230@nehalem.linux-foundation.org>
+Message-ID: <alpine.LNX.1.10.0810031736150.26779@jikos.suse.cz>
+References: <20081002233314.12556.49143.stgit@jbrandeb-bw.jf.intel.com> <20081002233340.12556.33137.stgit@jbrandeb-bw.jf.intel.com> <Pine.LNX.4.64.0810031346100.1532@twin.jikos.cz> <alpine.LFD.2.00.0810030812570.3230@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 3 Oct 2008, Linus Torvalds wrote:
 
+> > The debugging message is racy anyway with respect to accessing 
+> > nvm_owner, right? It should be done after the mutex has been 
+> > succesfully acquired.
+> It's done that way on purpose - to see who _could_ be racing.
 
-On Fri, 3 Oct 2008, Christian Borntraeger wrote:
-> 
-> Very good point indeed. Seems my analysis was wrong. I made a short test and 
-> preempt_count() returns 1 when the WARN_ON triggers. So its either a spinlock 
-> or something else that increased my preempt_count.
+I know. I just wanted to point out that we probably don't want the patch 
+in 2.6.27 in this form, users wouldn't like to have warning in their logs 
+every time mutex is not acquired on a first attempt :)
 
-Ok, I can repro it. I couldn't see it before because I usually don't have 
-PREEMPT even enabled.  Enabling PREEMPT and PREEMPT_DEBUG gets me the 
-messages too. Jesse?
+We are currently running reproduction tests on affected machines to verify 
+that this patch really fixes the root cause of this whole e1000e saga.
 
-The call trace is much better with frame pointers enabled, loke so (with
-the '?' entries removed as stale):
-
-   Call Trace:
-	warn_on_slowpath+0x53/0x7a
-	e1000_acquire_swflag_ich8lan+0x2d/0xe1
-	e1000_read_nvm_ich8lan+0x4f/0xee
-	e1000e_read_pba_num+0x4e/0x69
-	e1000_probe+0xa32/0xb71
-	pci_device_probe+0x4c/0x72
-	driver_probe_device+0xc0/0x16e
-	__driver_attach+0x4f/0x79
-	bus_for_each_dev+0x4f/0x89
-	driver_attach+0x1c/0x1e
-	bus_add_driver+0xb7/0x1f4
-	driver_register+0xa8/0x128
-	__pci_register_driver+0x66/0x9d
-	e1000_init_module+0x4f/0x6b
-	_stext+0x47/0x13f
-	kernel_init+0x127/0x17b
-	child_rip+0xa/0x11
-
-and yes, there's quite a lot of them.  I'm not seeing what disables
-preemption, though.  I'll look at it some more, but I decided I should
-post that cleaned-up call chain so that others can do so too..
-
-		Linus
-
+-- 
+Jiri Kosina
+SUSE Labs
