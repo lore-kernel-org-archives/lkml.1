@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbYJCQpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYJCQrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbYJCQpa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 12:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYJCQpW
+	id S1753897AbYJCQrP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 12:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbYJCQq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 12:45:22 -0400
-Received: from mail.uscreen.net ([62.67.233.10]:34374 "EHLO mail.uscreen.net"
+	Fri, 3 Oct 2008 12:46:59 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:52968 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752793AbYJCQpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 12:45:21 -0400
-X-Greylist: delayed 2203 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Oct 2008 12:45:21 EDT
-Message-ID: <48E64382.2050209@u-club.de>
-Date: Fri, 03 Oct 2008 18:08:34 +0200
-From: Christoph <cr2005@u-club.de>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080925)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	id S1752796AbYJCQq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 12:46:58 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: akpm@linux-foundation.org
+Cc: Mel Gorman <mel@csn.ul.ie>, kosaki.motohiro@jp.fujitsu.com,
+       dave@linux.vnet.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] Report the size of pages backing VMAs in /proc V3
+Date: Fri,  3 Oct 2008 17:46:53 +0100
+Message-Id: <1223052415-18956-1-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello list!
+The following two patches add support for printing the size of pages used
+by the kernel to back VMAs in maps and smaps. This can be used by a user
+to verify that a hugepage-aware application is using the expected page sizes.
+In one case the pagesize used by the MMU differs from the size used by the
+kernel. This is on PPC64 using 64K as a base page size running on a processor
+that does not support 64K in the MMU. In this case, the kernel uses 64K pages
+but the MMU is still using 4K.
 
-This is a follow up of
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-08/msg08509.html
+The first patch prints the size of page used by the kernel when allocating
+pages for a VMA in /proc/pid/smaps and should not be considered too
+contentious as it is highly unlikely to break any parsers.  The second patch
+reports the size of page used by hugetlbfs regions in /proc/pid/maps. There is
+a possibility that the final patch will break parsers but they are arguably
+already broken. More details are in the patches themselves.
 
-Summary:
-resizing a terminal emulator window results in a lot of misaligned text
-on the screen. SIGWINCH signal defective.
+Thanks to KOSAKI Motohiro for rebasing the patches onto mmotm, reviewing
+and testing.
 
-It ends with this question and I'd like to contribute some confusion:
+Changelog since V2
+  o Drop printing of MMUPageSize (mel)
+  o Rebase onto mmotm (KOSAKI Motohiro)
 
-> > 2.6.25.9: good
-> > 2.6.26-rc1 bad ( +/- 10% of the resizes)
-> > 2.6.26.2: still bad ( +/- 10% of the resizes )
-> > 2.6.27-rc3: ugly bad ( > 75% of the resizes )
-> > linux-next good
+Changelog since V1
+  o Fix build failure on !CONFIG_HUGETLB_PAGE
+  o Uninline helper functions
+  o Distinguish between base pagesize and MMU pagesize
 
-> Any other versions to test ?
-
-I got this bug after kernel upgrade from 2.6.25.25 to 2.6.26.5 on my ppc
-notebook. That made me wonder. On my x86 desktop I don't had that bug.
-I tested:
-
-ppc, notebook
-2.6.25.25 ok
-2.6.26.5 bug
-2.6.26.4 bug
-
-x86, desktop
-2.6.26.1 ok
-2.6.26.2 ok
-2.6.26.3 ok
-2.6.26.4 ok !
-
-So I diffed the config of .4 and there is an eye catcher:
-
-ppc: CONFIG_PREEMPT (=> CONFIG_LOCK_KERNEL)
-x86: CONFIG_PREEMPT_VOLUNTARY
-
-So, recompiled and tested:
-
-2.6.26.4, x86, CONFIG_PREEMPT => bug
-2.6.26.5, ppc, CONFIG_PREEMPT_VOLUNTARY => ok
-
-Hope, this information helps you hunting the bug.
-
-greets
-
-chr
+ fs/proc/task_mmu.c      |   27 ++++++++++++++++++---------
+ include/linux/hugetlb.h |    3 +++
+ mm/hugetlb.c            |   17 +++++++++++++++++
+ 3 files changed, 38 insertions(+), 9 deletions(-)
 
