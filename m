@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbYJCOuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbYJCOwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752817AbYJCOuw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 10:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbYJCOun
+	id S1753151AbYJCOwA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 10:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbYJCOvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 10:50:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46320 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750775AbYJCOun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 10:50:43 -0400
-Date: Fri, 3 Oct 2008 15:50:29 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
-Subject: Re: [PATCH] Memory management livelock
-Message-ID: <20081003145029.GE18542@agk.fab.redhat.com>
-Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
-	Mikulas Patocka <mpatocka@redhat.com>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, mbroz@redhat.com, chris@arachsys.com
-References: <20080911101616.GA24064@agk.fab.redhat.com> <200810031254.29121.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0810030716310.4875@hs20-bc2-1.build.redhat.com> <200810032231.03985.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0810030941480.27239@hs20-bc2-1.build.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810030941480.27239@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+	Fri, 3 Oct 2008 10:51:52 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54805 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750785AbYJCOvv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 10:51:51 -0400
+Date: Fri, 3 Oct 2008 10:51:49 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: yi.y.yang@intel.com, <linux-kernel@vger.kernel.org>,
+       <dbrownell@users.sourceforge.net>, <gregkh@suse.de>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] USB: improve ehci_watchdog's side effect in CPU power
+ management
+In-Reply-To: <20081002165649.00d021db.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0810031043590.2500-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 09:50:17AM -0400, Mikulas Patocka wrote:
-> > > LVM does (that is where the bug was discovered). Basically, it scans all
-> > > the block devices with direct IO and if someone else does buffered IO on
-> > > any device simultaneously, it locks up.
-> > Scans all block devices with direct IO? Hmm, why, I wonder? Should
-> > really consider using buffered (posix_fadvise to readahead/dropbehind).
-> LVM must not allocate any memory when doing IO because it suspends the 
-> block device and memory allocation could trigger writeback on the 
-> suspended device and deadlock.
-> So it preallocates heap and stack, mlockall()s itself and does direct IO.
- 
-True, but unrelated to the scanning, which LVM performs *prior* to
-entering such a state.
+Responding just Andrew's comments, disregarding whether or not the 
+patch itself is worthwhile...
 
-We use direct IO while scanning because it's essential all nodes in a
-cluster see the same updated version of the data after any node updated
-it.
+On Thu, 2 Oct 2008, Andrew Morton wrote:
 
-Alasdair
--- 
-agk@redhat.com
+> <looks>
+> 
+> <regrets it>
+> 
+> 
+> Why does this:
+> 
+> 	t = DIV_ROUND_UP(EHCI_SHRINK_FRAMES * HZ, 1000) + 1;
+> 
+> add "1000" to a jiffies value when it doesn't know what HZ is?  It'll
+> be adding anywhere from one second up to ten seconds to the timeout
+> interval depending upon compile-time options.
+
+Look again.  The macro doesn't _add_ 1000 to a jiffies value; it 
+_divides_ the value by 1000.  This is because EHCI_SHRINK_FRAMES is in 
+milliseconds.
+
+However this could be changed to
+
+	t = msecs_to_jiffies(EHCI_SHRINK_FRAMES) + 1;
+
+even though that would involve more runtime code.
+
+> I suspect s/1000/HZ/ would improve things here.  Or just delete it -
+> doesn't the subsequent round_jiffies() do the same thing, only better? 
+> This code needs help, I suspect.
+
+That subsequent round_jiffies() is most likely a mistake.
+
+> Also, do we really need to inline this large function into at least
+> five callsites?
+
+I agree; this function should not be inline.
+
+Alan Stern
+
