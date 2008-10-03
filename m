@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYJCMuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbYJCMuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbYJCMuk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 08:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbYJCMuX
+	id S1754042AbYJCMuy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 08:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYJCMub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 08:50:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:34612 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751597AbYJCMuV (ORCPT
+	Fri, 3 Oct 2008 08:50:31 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:48054 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752219AbYJCMu3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 08:50:21 -0400
-Date: Fri, 3 Oct 2008 05:49:21 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
-       Tejun Heo <htejun@gmail.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: [PATCH 1/6] Hibernation: Introduce new system state for the
- last phase of hibernation
-Message-ID: <20081003054921.376a41ec@infradead.org>
-In-Reply-To: <200810031327.19293.rjw@sisk.pl>
-References: <200808290002.55026.rjw@sisk.pl>
-	<200809300010.39000.rjw@sisk.pl>
-	<20081003013557.42ce685d.akpm@linux-foundation.org>
-	<200810031327.19293.rjw@sisk.pl>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 3 Oct 2008 08:50:29 -0400
+Message-ID: <48E61618.10102@novell.com>
+Date: Fri, 03 Oct 2008 08:54:48 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Chirag Jog <chirag@linux.vnet.ibm.com>
+CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, dvhltc@us.ibm.com, dino@in.ibm.com,
+       Gilles.Carry@bull.net
+Subject: Re: [RT PATCH 0/2] fix for BUG_ON crash in 26.5-rt9
+References: <20080925123235.GA27916@linux.vnet.ibm.com> <20081003123745.17387.61782.stgit@dev.haskins.net>
+In-Reply-To: <20081003123745.17387.61782.stgit@dev.haskins.net>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig5A43C008F7C2B8CBF73C0A44"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008 13:27:18 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig5A43C008F7C2B8CBF73C0A44
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-> On Friday, 3 of October 2008, Andrew Morton wrote:
-> > On Tue, 30 Sep 2008 00:10:37 +0200 "Rafael J. Wysocki"
-> > <rjw@sisk.pl> wrote:
-> > 
-> > > Hibernation: Introduce new system state for the last phase of
-> > > hibernation
-> > > 
-> > > Replace unused SYSTEM_SUSPEND_DISK with a new system_state value
-> > > SYSTEM_HIBERNATE_ENTER that can be used by device drivers to
-> > > check if the system is in the last phase of hibernation.
-> > 
-> > Violent objections.
-> > 
-> > We just don't know what this change will do.  It potentially affects
-> > every code site in the kernel which looks at system_state.
-> 
-> Do you mean anyone checking 'system_state != SOMETHING' ?  Oh well.
+Gregory Haskins wrote:
+> Hi Chirag,
+>
+>  Please try the following patches applied to 26.5-rt9 and let me know w=
+hat you
+>  find.
+>
+> Hi Steve,
+>   If these look good to everyone, please consider them for inclusion in=
+ -rt10.=20
+>
+>  =20
 
-I think Andrew also means things looking for system_state > something
-like
+I meant to add: this are build-tested only (now back to vacation time
+for me, which means slave labor in the garage!).
 
-arch/powerpc/platforms/cell/smp.c:      if (system_state < SYSTEM_RUNNING &&
-arch/powerpc/kernel/smp.c:      if (system_state < SYSTEM_RUNNING)
-arch/powerpc/kernel/smp.c:      if (system_state > SYSTEM_BOOTING)
-drivers/xen/xenbus/xenbus_probe.c:      if (system_state > SYSTEM_RUNNING) {
+I will catch up with you guys on Monday.
+
+-Greg
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+
+--------------enig5A43C008F7C2B8CBF73C0A44
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkjmFhgACgkQlOSOBdgZUxlcUwCbBGKY4kUFg1wcwwk9ONl3IoWd
+laoAoIZJ7sdpG7+qE5VNRgd0812LExd0
+=H3dA
+-----END PGP SIGNATURE-----
+
+--------------enig5A43C008F7C2B8CBF73C0A44--
