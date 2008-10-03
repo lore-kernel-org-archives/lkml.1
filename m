@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbYJCKik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbYJCKku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbYJCKik (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 06:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYJCKic
+	id S1754722AbYJCKku (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 06:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYJCKkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 06:38:32 -0400
-Received: from www.tglx.de ([62.245.132.106]:37441 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751821AbYJCKib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 06:38:31 -0400
-Date: Fri, 3 Oct 2008 12:37:28 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Christoph Hellwig <hch@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>
-Subject: Re: [RFC patch 2/5] genirq: add a quick check handler
-In-Reply-To: <20081003082927.GA25683@infradead.org>
-Message-ID: <alpine.LFD.1.10.0810031235220.5549@apollo.tec.linutronix.de>
-References: <20081001223213.078984344@linutronix.de> <20081001223301.900862899@linutronix.de> <20081003082927.GA25683@infradead.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 3 Oct 2008 06:40:43 -0400
+Received: from casper.infradead.org ([85.118.1.10]:34924 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbYJCKkn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 06:40:43 -0400
+Subject: Re: [PATCH] printk.caller
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081002163154.fd5f2a10.akpm@linux-foundation.org>
+References: <20081002232115.8D2BB154212@magilla.localdomain>
+	 <20081002163154.fd5f2a10.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 03 Oct 2008 12:40:41 +0200
+Message-Id: <1223030441.28938.11.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008, Christoph Hellwig wrote:
-
-> On Wed, Oct 01, 2008 at 11:02:18PM -0000, Thomas Gleixner wrote:
-> > Preparatory patch for threaded interrupt handlers.
-> > 
-> > Adds a quick check handler which is called before the real handler.
-> > The quick check handler can decide whether the interrupt was originated
-> > from the device or not. It can also declare the interrupt as handled
-> > and subsequently avoid that the real handler is called.
+On Thu, 2008-10-02 at 16:31 -0700, Andrew Morton wrote:
+> On Thu,  2 Oct 2008 16:21:15 -0700 (PDT)
+> Roland McGrath <roland@redhat.com> wrote:
 > 
-> I'd rather leave the handler as a handle which could return
-> IRQ_NEEDS_HANDLING to get a separate thread_fn called.  This seems more
-> intuitive and means less mess in the fastpath.
+> > This adds the printk.caller=[0|1] boot parameter, default setting
+> > controlled by CONFIG_PRINTK_CALLER.  (This is modelled on printk.time
+> > and CONFIG_PRINTK_TIME.)
+> > 
+> > When this is set, each printk line is automagically prefixed with
+> > "{0x123abc} " giving the PC address of that printk call (actually
+> > the PC address just after the call).
+> > 
+> > As a kernel hacker, I always hate having to grep for some fragment
+> > of a message to find the code that generated it.  But I always have
+> > my -g vmlinux handy, so:
+> > 	(gdb) info line *(0x123abc - 1)
+> > is real handy (it pops the source up in an Emacs buffer).
+> > 
+> 
+> hm.  What do others think?
 
-see patch 3/5 :)
- 
-> Maybe IRQ_NEEDS_HANDLING might better be named IRQ_THREADED os similar,
-> but that's really getting into nitpicking..
+git grep is usually plenty fast for me, but I guess different people,
+different tastes.
 
-The reason why I split this out is: when you start to convert your
-driver, then you can split out the quick check handler first w/o
-making the real handler threaded in the first place. Once you got that
-right you can work on moving the real handler into a thread.
+Also, I always use addr2line instead of gdb,.. another not-to-the-point
+difference ;-)
 
-Thanks,
+The only real downside to this patch for me is that it potentially
+increases the length of lines which means I;d have to stretch my serial
+console window, but I guess others might object to the puny increase in
+object size.
 
-	tglx
+Flip a coin.
+
+One tiny nit though:
+
+> +                               char pbuf[sizeof caller * 2 + sizeof "{0x} "];
+
+I thought we did sizeof() in-kernel.
 
