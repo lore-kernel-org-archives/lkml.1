@@ -1,197 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914AbYJCTMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbYJCTPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751914AbYJCTMd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 15:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYJCTMY
+	id S1753741AbYJCTPp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 15:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYJCTPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 15:12:24 -0400
-Received: from igw1.br.ibm.com ([32.104.18.24]:45471 "EHLO igw1.br.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751754AbYJCTMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 15:12:24 -0400
-Subject: [PATCH 3/5][resubmit] TPM: rcu locking
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, zohar@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, jmorris@namei.org
-In-Reply-To: <20081003165738.GA28375@us.ibm.com>
-References: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
-	 <ddf7749dc8dbf65d02cc395ccdc85b7f5b37083f.1223042186.git.srajiv@linux.vnet.ibm.com>
-	 <20081003165738.GA28375@us.ibm.com>
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 16:12:13 -0300
-Message-Id: <1223061133.7639.23.camel@blackbox>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Oct 2008 15:15:37 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:24329 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbYJCTPg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 15:15:36 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 03 Oct 2008 15:15:24 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: David Howells <dhowells@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-am33-list@redhat.com,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] MN10300: Move asm-arm/cnt32_to_63.h to include/linux/
+In-reply-to: <1703.1222986215@redhat.com>
+Message-id: <alpine.LFD.2.00.0810031512420.3045@xanadu.home>
+References: <alpine.LFD.2.00.0810011110440.3635@xanadu.home>
+ <alpine.LFD.2.00.0809282123100.3635@xanadu.home>
+ <20080924164826.14867.63020.stgit@warthog.procyon.org.uk>
+ <1222426580.16700.258.camel@lappy.programming.kicks-ass.net>
+ <alpine.LFD.2.00.0809260802310.3635@xanadu.home>
+ <1222431635.16700.278.camel@lappy.programming.kicks-ass.net>
+ <29968.1222871650@redhat.com> <1703.1222986215@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a resubmission of rcu locking patch, posted some hours ago, addressing Serge Hallyn's comment.
-In the previous patch there was missing the spin_lock/unlock protecting list_add_rcu() 
-in tpm_register_hardware(). There were also an unnecessary list_del() inside the same function, 
-that is now being removed.
+On Thu, 2 Oct 2008, David Howells wrote:
 
-Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
----
- drivers/char/tpm/tpm.c |   61 +++++++++++++++++++-----------------------------
- 1 files changed, 24 insertions(+), 37 deletions(-)
+> Nicolas Pitre <nico@cam.org> wrote:
+> 
+> > Oh, that's a possibility.  In that case __m_cnt_hi will be reverted to a 
+> > previous state just like if cnt32_to_63() has not been called yet since 
+> > the new half period.  And a subsequent call will fix that again.
+> 
+> Surely that's not good enough.  There's a 50% chance that reversion to a
+> previous state will result in an extra increment of the __m_cnt_hi on the next
+> call.
 
-diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-index dfd4e7f..e96ca5a 100644
---- a/drivers/char/tpm/tpm.c
-+++ b/drivers/char/tpm/tpm.c
-@@ -961,33 +961,28 @@ EXPORT_SYMBOL_GPL(tpm_store_cancel);
-  */
- int tpm_open(struct inode *inode, struct file *file)
- {
--	int rc = 0, minor = iminor(inode);
-+	int minor = iminor(inode);
- 	struct tpm_chip *chip = NULL, *pos;
- 
--	spin_lock(&driver_lock);
--
--	list_for_each_entry(pos, &tpm_chip_list, list) {
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(pos, &tpm_chip_list, list) {
- 		if (pos->vendor.miscdev.minor == minor) {
- 			chip = pos;
-+			get_device(chip->dev);
- 			break;
- 		}
- 	}
-+	rcu_read_unlock();
- 
--	if (chip == NULL) {
--		rc = -ENODEV;
--		goto err_out;
--	}
-+	if (!chip)
-+		return -ENODEV;
- 
- 	if (test_and_set_bit(0, &chip->is_open)) {
- 		dev_dbg(chip->dev, "Another process owns this TPM\n");
--		rc = -EBUSY;
--		goto err_out;
-+		put_device(chip->dev);
-+		return -EBUSY;
- 	}
- 
--	get_device(chip->dev);
--
--	spin_unlock(&driver_lock);
--
- 	chip->data_buffer = kmalloc(TPM_BUFSIZE * sizeof(u8), GFP_KERNEL);
- 	if (chip->data_buffer == NULL) {
- 		clear_bit(0, &chip->is_open);
-@@ -999,26 +994,23 @@ int tpm_open(struct inode *inode, struct file *file)
- 
- 	file->private_data = chip;
- 	return 0;
--
--err_out:
--	spin_unlock(&driver_lock);
--	return rc;
- }
- EXPORT_SYMBOL_GPL(tpm_open);
- 
-+/*
-+ * Called on file close
-+ */
- int tpm_release(struct inode *inode, struct file *file)
- {
- 	struct tpm_chip *chip = file->private_data;
- 
- 	flush_scheduled_work();
--	spin_lock(&driver_lock);
- 	file->private_data = NULL;
- 	del_singleshot_timer_sync(&chip->user_read_timer);
- 	atomic_set(&chip->data_pending, 0);
-+	kfree(chip->data_buffer);
- 	clear_bit(0, &chip->is_open);
- 	put_device(chip->dev);
--	kfree(chip->data_buffer);
--	spin_unlock(&driver_lock);
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(tpm_release);
-@@ -1092,13 +1084,11 @@ void tpm_remove_hardware(struct device *dev)
- 	}
- 
- 	spin_lock(&driver_lock);
--
--	list_del(&chip->list);
--
-+	list_del_rcu(&chip->list);
- 	spin_unlock(&driver_lock);
-+	synchronize_rcu();
- 
- 	misc_deregister(&chip->vendor.miscdev);
--
- 	sysfs_remove_group(&dev->kobj, chip->vendor.attr_group);
- 	tpm_bios_log_teardown(chip->bios_dir);
- 
-@@ -1146,8 +1136,7 @@ EXPORT_SYMBOL_GPL(tpm_pm_resume);
- /*
-  * Once all references to platform device are down to 0,
-  * release all allocated structures.
-- * In case vendor provided release function,
-- * call it too.
-+ * In case vendor provided release function, call it too.
-  */
- static void tpm_dev_release(struct device *dev)
- {
-@@ -1155,7 +1144,6 @@ static void tpm_dev_release(struct device *dev)
- 
- 	if (chip->vendor.release)
- 		chip->vendor.release(dev);
--
- 	chip->release(dev);
- 
- 	clear_bit(chip->dev_num, dev_mask);
-@@ -1170,8 +1158,8 @@ static void tpm_dev_release(struct device *dev)
-  * upon errant exit from this function specific probe function should call
-  * pci_disable_device
-  */
--struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vendor_specific
--				       *entry)
-+struct tpm_chip *tpm_register_hardware(struct device *dev,
-+					const struct tpm_vendor_specific *entry)
- {
- #define DEVNAME_SIZE 7
- 
-@@ -1230,21 +1218,20 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
- 		return NULL;
- 	}
- 
--	spin_lock(&driver_lock);
--
--	list_add(&chip->list, &tpm_chip_list);
--
--	spin_unlock(&driver_lock);
--
- 	if (sysfs_create_group(&dev->kobj, chip->vendor.attr_group)) {
--		list_del(&chip->list);
- 		misc_deregister(&chip->vendor.miscdev);
- 		put_device(chip->dev);
-+
- 		return NULL;
- 	}
- 
- 	chip->bios_dir = tpm_bios_log_setup(devname);
- 
-+	/* Make chip available */
-+	spin_lock(&driver_lock);
-+	list_add_rcu(&chip->list, &tpm_chip_list);
-+	spin_lock(&driver_lock);
-+
- 	return chip;
- }
- EXPORT_SYMBOL_GPL(tpm_register_hardware);
--- 
-1.5.6.3
+If so then you're using this interface in an inappropriate way.
+
+The _absolute_ minimum frequency with which this should be fully 
+executed is once per half period of the base counter.  I hope that in 
+practice it happens far more often than that.
 
 
-
+Nicolas
