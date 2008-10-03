@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYJCXaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbYJCXeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbYJCXaX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 19:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbYJCXaG
+	id S1754294AbYJCXeo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 19:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYJCXee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 19:30:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:6683 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753390AbYJCXaE (ORCPT
+	Fri, 3 Oct 2008 19:34:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60313 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752796AbYJCXed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 19:30:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ssZRw8h/fJ4VCKpIIDBD1QmB/MMNAzRnIe7O6CzrGXv5QgFyWuYYtdmTnYZXnkHOK9
-         ZkTI0EgXJl3Lq9jTIEfAAPM9Hk0v2CqU8Td6yCTAoYYJB6lVIEqBKufBnR8It7BN2cDG
-         8kVAUxvWCf0B2ArcL69I5VFjNNUlwK8nfgUeQ=
-Message-ID: <4807377b0810031630t54e4bb46y87fe7e34f3be60ac@mail.gmail.com>
-Date: Fri, 3 Oct 2008 16:30:04 -0700
-From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
-Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "David Miller" <davem@davemloft.net>, jesse.brandeburg@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kkeil@suse.de,
-       agospoda@redhat.com, arjan@linux.intel.com, david.graham@intel.com,
-       bruce.w.allan@intel.com, john.ronciak@intel.com,
-       "Thomas Gleixner" <tglx@linutronix.de>, chris.jones@canonical.com,
-       tim.gardner@canonical.com, airlied@gmail.com,
-       "Olaf Kirch" <okir@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com>
+	Fri, 3 Oct 2008 19:34:33 -0400
+Message-ID: <48E6AB15.8060405@zytor.com>
+Date: Fri, 03 Oct 2008 16:30:29 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+CC: "akataria@vmware.com" <akataria@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
+       Zach Amsden <zach@vmware.com>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Subject: Re: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
+References: <1222881242.9381.17.camel@alok-dev1>	 <48E3B19D.6060905@zytor.com> <1222882431.9381.23.camel@alok-dev1>	 <48E3BC21.4080803@goop.org> <1222895153.9381.69.camel@alok-dev1> <48E3FDD5.7040106@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15D927EA4@orsmsx505.amr.corp.intel.com> <48E422CA.2010606@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA221@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <0B53E02A2965CE4F9ADB38B34501A3A15DCBA221@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
-	 <200810021523.45884.jbarnes@virtuousgeek.org>
-	 <20081003.134634.240211201.davem@davemloft.net>
-	 <200810031429.22598.jbarnes@virtuousgeek.org>
-	 <alpine.LNX.1.10.0810032338140.26779@jikos.suse.cz>
-	 <4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 3, 2008 at 4:28 PM, Jesse Brandeburg
-<jesse.brandeburg@gmail.com> wrote:
-> On Fri, Oct 3, 2008 at 2:45 PM, Jiri Kosina <jkosina@suse.cz> wrote:
->> Karsten has been testing kernel with these three patches from the series
->> applied:
->>
->>        e1000e: reset swflag after resetting hardware
->>        e1000e: fix lockdep issues
->>        e1000e: debug contention on NVM SWFLAG
->>
->> This was done on a hardware which previously triggered the bug in just a
->> few test iterations in quite a reliable way. Now, with these patches
->> applied, the EEPROM corruption didn't happen after several tens of
->> iterations.
->>
->> Please note, that the patch that disables the writes to EEPROM on hardware
->> level was *not* involved in this testing.
->>
->> Therefore it currently seems that these three patches really address the
->> race condition issue that was present in the e1000e driver.
->
-> Our experience is different.  We are also testing with the "protection
-> patch" reverted.
->
-> We see that the problem specifically comes and goes when
-> removing/adding the use of set_memory_ro/set_memory_rw to the driver.
->
-> I'm working to catch the bad element in the act with a hardware
-> breakpoint or an ITP (we're trying both)
->
->> It is still not clear why the bug started triggering all of a sudden for
->> so many people though.
->
-> we plan to keep on working on this until we understand what is going on.
+Nakajima, Jun wrote:
+> What it means their hypervisor returns the interface signature (i.e. "Hv#1"), and that defines the interface. If we use "Lv_1", for example, we can define the interface 0x40000002 through 0x400000FF for Linux. Since leaf 0x40000000 and 0x40000001 are separate, we can decouple the hypervisor vender from the interface it supports.
 
-I removed the bad addresses from the cc: list
+Right so far.
+
+> This also allows a hypervisor to support multiple interfaces.
+
+Wrong.
+
+This isn't a two-way interface.  It's a one-way interface, and it 
+*SHOULD BE*; exposing different information depending on what is running 
+is a hack that is utterly tortorous at best.
+
+> 
+> In fact, both Xen and KVM are using the leaf 0x40000001 for different purposes today (Xen: Xen version number, KVM: KVM para-virtualization features). But I don't think this would break their existing binaries mainly because they would need to expose the interface explicitly now.
+> 
+>>>> This further underscores my belief that using 0x400000xx for
+>>>> anything "standards-based" at all is utterly futile, and that this
+>>>> space should be treated as vendor identification and the rest as
+>>>> vendor-specific. Any hope of creating a standard that's actually
+>>>> usable needs to be outside this space, e.g. in the 0x40SSSSxx
+>>>> space I proposed earlier.
+>>> Actually I'm not sure I'm following your logic. Are you saying using
+>>> that 0x400000xx for anything "standards-based" is utterly futile
+>>> because Microsoft said "the range is hypervisor vendor-neutral"? Or
+>>> you were not sure what they meant there. If we are not clear, we can
+>>> ask them.
+>>>
+>> What I'm saying is that Microsoft is effectively squatting on the
+>> 0x400000xx space with their definition.  As written, it's not even
+>> clear that it will remain consistent between *their own* hypervisors,
+>> even less anyone else's.
+> 
+> I hope the above clarified your concern. You can google-search a more detailed public spec. Let me know if you want to know a specific URL.
+> 
+
+No, it hasn't "clarified my concern" in any way.  It's exactly 
+*underscoring* it.  In other words, I consider 0x400000xx unusable for 
+anything that is standards-based.  The interfaces everyone is currently 
+using aren't designed to export multiple interfaces; they're designed to 
+tell the guest which *one* interface is exported.  That is fine, we just 
+need to go elsewhere.
+
+	-hpa
