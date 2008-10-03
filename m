@@ -1,97 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbYJCM6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753055AbYJCNBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752995AbYJCM6Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 08:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYJCM6A
+	id S1753055AbYJCNBv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 09:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYJCNBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 08:58:00 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:50978 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbYJCM57 (ORCPT
+	Fri, 3 Oct 2008 09:01:40 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:16296 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbYJCNBi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 08:57:59 -0400
-Date: Fri, 3 Oct 2008 15:58:48 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86_64: Implement personality ADDR_LIMIT_32BIT
-Message-ID: <20081003125847.GA9809@localhost.localdomain>
-References: <1223017469-5158-1-git-send-email-kirill@shutemov.name> <20081003080244.GC25408@elte.hu> <20081003092550.GA8669@localhost.localdomain> <20081003054431.33e19339@infradead.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bg08WKrSYDhXBjb5"
-Content-Disposition: inline
-In-Reply-To: <20081003054431.33e19339@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-29)
+	Fri, 3 Oct 2008 09:01:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=jMKZSRA7aFnmcIHXMjZyY1b2jtx5At+TlAx9n33My6VD3ZlTlALszuDaGw0cpTf31L
+         riNk1H4TGFxG2F0i9FX5pf/fSnJNYvz7o737//OfeNIBD9B3wury0w6RXFCD11bvUghi
+         rU4znnJIGMIQ8MVzoqMSodByMuRP1h106Ciko=
+From: Denis ChengRq <crquan@gmail.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       Peter Osterlund <petero2@telia.com>, NeilBrown <neilb@suse.de>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [VFS] mark bio_split_pool static
+Date: Fri,  3 Oct 2008 21:01:18 +0800
+Message-Id: <1223038878-8038-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Since all bio_split calls refer the same single bio_split_pool, the bio_split
+function can use bio_split_pool directly instead of the mempool_t parameter;
 
---bg08WKrSYDhXBjb5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+then the mempool_t parameter can be removed from bio_split param list, and
+bio_split_pool is only referred in fs/bio.c file, can be marked static.
 
-On Fri, Oct 03, 2008 at 05:44:31AM -0700, Arjan van de Ven wrote:
-> On Fri, 3 Oct 2008 12:25:52 +0300
-> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
->=20
-> > On Fri, Oct 03, 2008 at 10:02:44AM +0200, Ingo Molnar wrote:
-> > >=20
-> > > * Kirill A. Shutemov <kirill@shutemov.name> wrote:
-> > >=20
-> > > > -	/* for MAP_32BIT mappings we force the legact mmap base
-> > > > */
-> > > > -	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT))
-> > > > +	/* for MAP_32BIT mappings and ADDR_LIMIT_32BIT
-> > > > personality we force the
-> > > > +	 * legact mmap base
-> > > > +	 */
-> > >=20
-> > > please use the customary multi-line comment style:
-> > >=20
-> > >   /*
-> > >    * Comment .....
-> > >    * ...... goes here:
-> > >    */
-> > >=20
-> > > and you might use the opportunity to fix the s/legact/legacy typo
-> > > as well.
-> >=20
-> > Ok, I'll fix it.
-> >=20
-> > >=20
-> > > but more generally, we already have ADDR_LIMIT_3GB support on x86.
-> >=20
-> > Does ADDR_LIMIT_3GB really work?
->=20
-> if it's broken we should fix it.... not invent a new one.
-> Also, traditionally often personalities only start at exec() time iirc.
-> (but I could be wrong on that)
+Signed-off-by: Denis ChengRq <crquan@gmail.com>
+---
+ drivers/block/pktcdvd.c |    2 +-
+ drivers/md/linear.c     |    2 +-
+ drivers/md/raid0.c      |    2 +-
+ drivers/md/raid10.c     |    2 +-
+ fs/bio.c                |    9 ++++-----
+ include/linux/bio.h     |    4 +---
+ 6 files changed, 9 insertions(+), 12 deletions(-)
 
-What is difference beetween ADDR_LIMIT_3GB and ADDR_LIMIT_32BIT? Probably,
-I implement ADDR_LIMIT_3GB, not ADDR_LIMIT_32BIT...
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index 29b7a64..df8775a 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -2544,7 +2544,7 @@ static int pkt_make_request(struct request_queue *q, struct bio *bio)
+ 		if (last_zone != zone) {
+ 			BUG_ON(last_zone != zone + pd->settings.size);
+ 			first_sectors = last_zone - bio->bi_sector;
+-			bp = bio_split(bio, bio_split_pool, first_sectors);
++			bp = bio_split(bio, first_sectors);
+ 			BUG_ON(!bp);
+ 			pkt_make_request(q, &bp->bio1);
+ 			pkt_make_request(q, &bp->bio2);
+diff --git a/drivers/md/linear.c b/drivers/md/linear.c
+index b1eebf8..38e7890 100644
+--- a/drivers/md/linear.c
++++ b/drivers/md/linear.c
+@@ -349,7 +349,7 @@ static int linear_make_request (struct request_queue *q, struct bio *bio)
+ 		 * split it.
+ 		 */
+ 		struct bio_pair *bp;
+-		bp = bio_split(bio, bio_split_pool,
++		bp = bio_split(bio,
+ 			       ((tmp_dev->offset + tmp_dev->size)<<1) - bio->bi_sector);
+ 		if (linear_make_request(q, &bp->bio1))
+ 			generic_make_request(&bp->bio1);
+diff --git a/drivers/md/raid0.c b/drivers/md/raid0.c
+index 1836106..b493729 100644
+--- a/drivers/md/raid0.c
++++ b/drivers/md/raid0.c
+@@ -423,7 +423,7 @@ static int raid0_make_request (struct request_queue *q, struct bio *bio)
+ 		/* This is a one page bio that upper layers
+ 		 * refuse to split for us, so we need to split it.
+ 		 */
+-		bp = bio_split(bio, bio_split_pool, chunk_sects - (bio->bi_sector & (chunk_sects - 1)) );
++		bp = bio_split(bio, chunk_sects - (bio->bi_sector & (chunk_sects - 1)));
+ 		if (raid0_make_request(q, &bp->bio1))
+ 			generic_make_request(&bp->bio1);
+ 		if (raid0_make_request(q, &bp->bio2))
+diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
+index e34cd0e..bc1f782 100644
+--- a/drivers/md/raid10.c
++++ b/drivers/md/raid10.c
+@@ -816,7 +816,7 @@ static int make_request(struct request_queue *q, struct bio * bio)
+ 		/* This is a one page bio that upper layers
+ 		 * refuse to split for us, so we need to split it.
+ 		 */
+-		bp = bio_split(bio, bio_split_pool,
++		bp = bio_split(bio,
+ 			       chunk_sects - (bio->bi_sector & (chunk_sects - 1)) );
+ 		if (make_request(q, &bp->bio1))
+ 			generic_make_request(&bp->bio1);
+diff --git a/fs/bio.c b/fs/bio.c
+index 3cba7ae..22ce5fb 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -30,7 +30,7 @@
+ 
+ static struct kmem_cache *bio_slab __read_mostly;
+ 
+-mempool_t *bio_split_pool __read_mostly;
++static mempool_t *bio_split_pool __read_mostly;
+ 
+ /*
+  * if you change this list, also change bvec_alloc or things will
+@@ -1230,9 +1230,9 @@ static void bio_pair_end_2(struct bio *bi, int err)
+  * split a bio - only worry about a bio with a single page
+  * in it's iovec
+  */
+-struct bio_pair *bio_split(struct bio *bi, mempool_t *pool, int first_sectors)
++struct bio_pair *bio_split(struct bio *bi, int first_sectors)
+ {
+-	struct bio_pair *bp = mempool_alloc(pool, GFP_NOIO);
++	struct bio_pair *bp = mempool_alloc(bio_split_pool, GFP_NOIO);
+ 
+ 	if (!bp)
+ 		return bp;
+@@ -1266,7 +1266,7 @@ struct bio_pair *bio_split(struct bio *bi, mempool_t *pool, int first_sectors)
+ 	bp->bio2.bi_end_io = bio_pair_end_2;
+ 
+ 	bp->bio1.bi_private = bi;
+-	bp->bio2.bi_private = pool;
++	bp->bio2.bi_private = bio_split_pool;
+ 
+ 	if (bio_integrity(bi))
+ 		bio_integrity_split(bi, bp, first_sectors);
+@@ -1393,7 +1393,6 @@ EXPORT_SYMBOL(bio_map_kern);
+ EXPORT_SYMBOL(bio_copy_kern);
+ EXPORT_SYMBOL(bio_pair_release);
+ EXPORT_SYMBOL(bio_split);
+-EXPORT_SYMBOL(bio_split_pool);
+ EXPORT_SYMBOL(bio_copy_user);
+ EXPORT_SYMBOL(bio_uncopy_user);
+ EXPORT_SYMBOL(bioset_create);
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index 0933a14..90d621c 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -319,9 +319,7 @@ struct bio_pair {
+ 	atomic_t			cnt;
+ 	int				error;
+ };
+-extern struct bio_pair *bio_split(struct bio *bi, mempool_t *pool,
+-				  int first_sectors);
+-extern mempool_t *bio_split_pool;
++extern struct bio_pair *bio_split(struct bio *bi, int first_sectors);
+ extern void bio_pair_release(struct bio_pair *dbio);
+ 
+ extern struct bio_set *bioset_create(int, int);
+-- 
+1.6.0.2
 
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.com/
-
---bg08WKrSYDhXBjb5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjmFwcACgkQbWYnhzC5v6r6bgCglPzVDYS7Gd39Fi8PObMbKTFp
-bxAAnj3qsoDFpFteMNdni8jjWpqohHmq
-=2ZxL
------END PGP SIGNATURE-----
-
---bg08WKrSYDhXBjb5--
