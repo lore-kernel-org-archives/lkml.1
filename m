@@ -1,96 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbYJCIUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbYJCIVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753408AbYJCIUc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 04:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYJCIUP
+	id S1754032AbYJCIVl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 04:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYJCIVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 04:20:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34382 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751744AbYJCIUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 04:20:13 -0400
-Date: Fri, 3 Oct 2008 10:19:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Russ Anderson <rja@sgi.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch] x86: Trivial printk fix in efi.c
-Message-ID: <20081003081958.GE32195@elte.hu>
-References: <20081002223206.GA122667@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081002223206.GA122667@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 3 Oct 2008 04:21:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56113 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751949AbYJCIVY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 04:21:24 -0400
+Date: Fri, 3 Oct 2008 01:20:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, rusty@rustcorp.com.au, jeremy@goop.org,
+       ebiederm@xmission.com, travis@sgi.com, herbert@gondor.apana.org.au,
+       xemul@openvz.org
+Subject: Re: [patch 3/4] cpu alloc: The allocator
+Message-Id: <20081003012003.f1f84937.akpm@linux-foundation.org>
+In-Reply-To: <1223019811.30285.12.camel@penberg-laptop>
+References: <20080929193500.470295078@quilx.com>
+	<20080929193516.278278446@quilx.com>
+	<20081003003342.4d592c1f.akpm@linux-foundation.org>
+	<1223019811.30285.12.camel@penberg-laptop>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 03 Oct 2008 10:43:31 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-* Russ Anderson <rja@sgi.com> wrote:
-
-> [patch] x86: Trivial printk fix in efi.c
+> Hi Andrew,
 > 
-> The following line is lacking a space between "memdesc" and "doesn't".
+> On Fri, 2008-10-03 at 00:33 -0700, Andrew Morton wrote:
+> > > +static void set_map(int start, int length)
+> > > +{
+> > > +	while (length-- > 0)
+> > > +		__set_bit(start++, cpu_alloc_map);
+> > > +}
+> > 
+> > Can we use bitmap_fill() here?
 > 
->   "Kernel-defined memdescdoesn't match the one from EFI!"
+> But bitmap_fill() assumes that the starting offset is aligned to
+> unsigned long (which is not the case here), doesn't it?
+
+umm, yeah, the whole bitmap interface is busted from that POV.
+
+> ___On Fri, 2008-10-03 at 00:33 -0700, Andrew Morton wrote:
+> > But I'd have though that it would be possible to only allocate the
+> > storage for online CPUs.  That would be a pretty significant win for
+> > some system configurations?
 > 
-> Fixed the printk by adding a space.
+> Maybe, but then you'd have to deal with CPU hotplug... iik.
 
-> -		printk(KERN_WARNING "Kernel-defined memdesc"
-> +		printk(KERN_WARNING "Kernel-defined memdesc "
->  		       "doesn't match the one from EFI!\n");
-
-the dangers of breaking a string in the middle.
-
-applied your fix in the form below to tip/x86/cleanups - thanks Russ!
-
-	Ingo
-
-------------------->
->From 175e438f7a2de9d94110046be48697969569736a Mon Sep 17 00:00:00 2001
-From: Russ Anderson <rja@sgi.com>
-Date: Thu, 2 Oct 2008 17:32:06 -0500
-Subject: [PATCH] x86: trivial printk fix in efi.c
-
-[patch] x86: Trivial printk fix in efi.c
-
-The following line is lacking a space between "memdesc" and "doesn't".
-
-  "Kernel-defined memdescdoesn't match the one from EFI!"
-
-Fixed the printk by adding a space.
-
-Signed-off-by: Russ Anderson <rja@sgi.com>
-Cc: Russ Anderson <rja@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/efi.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/efi.c b/arch/x86/kernel/efi.c
-index 06cc8d4..945a31c 100644
---- a/arch/x86/kernel/efi.c
-+++ b/arch/x86/kernel/efi.c
-@@ -414,9 +414,11 @@ void __init efi_init(void)
- 	if (memmap.map == NULL)
- 		printk(KERN_ERR "Could not map the EFI memory map!\n");
- 	memmap.map_end = memmap.map + (memmap.nr_map * memmap.desc_size);
-+
- 	if (memmap.desc_size != sizeof(efi_memory_desc_t))
--		printk(KERN_WARNING "Kernel-defined memdesc"
--		       "doesn't match the one from EFI!\n");
-+		printk(KERN_WARNING
-+		  "Kernel-defined memdesc doesn't match the one from EFI!\n");
-+
- 	if (add_efi_memmap)
- 		do_add_efi_memmap();
- 
+Of course.
