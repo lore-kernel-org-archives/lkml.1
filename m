@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbYJCUzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbYJCVId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754294AbYJCUzt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 16:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYJCUzj
+	id S1753737AbYJCVId (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 17:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYJCVIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 16:55:39 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:59603 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752966AbYJCUzi (ORCPT
+	Fri, 3 Oct 2008 17:08:24 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:52525 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752970AbYJCVIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 16:55:38 -0400
-Date: Fri, 3 Oct 2008 16:55:37 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Dave Hansen <dave@sr71.net>
-cc: gregkh <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: USB disconnects every 30 seconds (2.6.27-rc8)
-In-Reply-To: <1223063800.7944.62.camel@nimitz>
-Message-ID: <Pine.LNX.4.44L0.0810031655130.6462-100000@iolanthe.rowland.org>
+	Fri, 3 Oct 2008 17:08:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=P7qjgqtr6USky3cxWkYpmhv3tpRbuPOJCXfVCeHfehvjbcEieiB5/vyW6N8yfsDUHL
+         Yc5wUCm1jIuVrG8oZDx0StCtxXQ1rPFaNZSzFyQdY15wuMEC3ohMUcoCSSNDXRtMdyRj
+         alJ3ojOAy47GLskUEmolH4GKnniReRmQ5s7ss=
+Message-ID: <86802c440810031408i60e2036ax805bfd997092cd86@mail.gmail.com>
+Date: Fri, 3 Oct 2008 14:08:23 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Vivek Goyal" <vgoyal@redhat.com>, "Zachary Amsden" <zach@vmware.com>,
+       "Alok Kataria" <akataria@vmware.com>
+Subject: kexec with vmware esx 3.0.2
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 35034d2c102dd02d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008, Dave Hansen wrote:
+anyone tried to use linux kernel to kexec vmware esx?
 
-> On Fri, 2008-10-03 at 15:23 -0400, Alan Stern wrote:
-> > On Fri, 3 Oct 2008, Alan Stern wrote:
-> > > You should use usbmon (see Documentation/usb/usbmon.txt) to record a 
-> > > trace of everything happening on bus 3.  And to keep things simple, you 
-> > > should unplug all the USB devices except for one of the magical 
-> > > disappearing hubs.
-> > 
-> > Better still, get two traces: one from each kernel.  Then they can be 
-> > compared.
-> 
-> What should I record on the good kernel?  Just the devices being
-> connected?
-
-Never mind; the first trace was good enough.
-
-Alan Stern
-
+YH
