@@ -1,89 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbYJCSkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbYJCStn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949AbYJCSkf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 14:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbYJCSk0
+	id S1753815AbYJCStn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 14:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYJCSte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 14:40:26 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38149 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752214AbYJCSkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 14:40:25 -0400
-Date: Fri, 3 Oct 2008 14:40:24 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Dave Hansen <dave@sr71.net>
-cc: gregkh <gregkh@suse.de>,
+	Fri, 3 Oct 2008 14:49:34 -0400
+Received: from mail.atheros.com ([12.36.123.2]:48217 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752061AbYJCStd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 14:49:33 -0400
+Date: Fri, 3 Oct 2008 04:49:21 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Noonan <steven@uplinklabs.net>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: USB disconnects every 30 seconds (2.6.27-rc8)
-In-Reply-To: <1223055939.7944.32.camel@nimitz>
-Message-ID: <Pine.LNX.4.44L0.0810031429250.6462-100000@iolanthe.rowland.org>
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Subject: Re: ath9k: panic on tip/master
+Message-ID: <20081003114921.GG5964@tesla>
+References: <f488382f0810030256x2859fbf6j3f657621c567287f@mail.gmail.com> <20081003100211.GA29841@elte.hu> <20081003153523.GC3368@tuxdriver.com> <20081003180930.GD3368@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20081003180930.GD3368@tuxdriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008, Dave Hansen wrote:
-
-> I'm seeing some odd USB behavior with newer kernels
-> (2.6.27-rc8-00062-g330f647 to be exact).  Almost exactly, every 30
-> seconds, one of my USB hubs disconnects.
-
-Actually two of the hubs disconnect: 3-4.1 and 3-4.4.4.  Neither is 
-beneath the other.
-
->  At first, I thought it was a
-> hardware issue, and started swapping cables.  Then, I realized that I'd
-> *just* rebooted into a new kernel.  So, I booted back to the distro
-> kernel and these went away.
+On Fri, Oct 03, 2008 at 11:09:31AM -0700, John W. Linville wrote:
+> On Fri, Oct 03, 2008 at 11:35:23AM -0400, John W. Linville wrote:
+> > On Fri, Oct 03, 2008 at 12:02:11PM +0200, Ingo Molnar wrote:
+> > >
+> > > * Steven Noonan <steven@uplinklabs.net> wrote:
+> > >
+> > > > Hey folks,
+> > > >
+> > > > Just got a panic on tip. According to the stack trace, ath9k is what
+> > > > decided to bomb.
+> > > >
+> > > > http://www.uplinklabs.net/~tycho/linux/ath9k_panic_tip_10.3.2008.jpg
+> > > >
+> > > > Note: Although it says 'sudo modprobe radeon' on the bash prompt above
+> > > > the panic, I never got to hit 'enter' on that command before the panic
+> > > > occurred.
+> > >
+> > > it appears to me that ath9k's eth_rx_input() takes a spinlock that is
+> > > not initialized (or already destroyed by the allocator).
+> >
+> > Seems reasonable...
+> >
+> > > this would be consistent with an IRQ storm hitting some race in the
+> > > ath9k driver init sequence. For example if request_irq() is done before
+> > > all structures that the IRQ handler relies on are properly initialized.
+> > >
+> > > i.e. this has the signature of a genuine ath9k bug.
+> >
+> > Agreed, although I don't see anything specifically relating to
+> > request_irq or the like.
+> >
+> > I think the spin_lock call may actually be in ath_ampdu_input (called
+> > from ath_rx_input), which perhaps is getting called simultaneous
+> > with ath_rx_node_init still running?  With no locks in between them,
+> > it seems like this could be the culprit?
+> >
+> > Sorry to not be more immediately helpful, but I'm going to have to
+> > run in a few minutes.  Perhaps this insight is helpful for someone
+> > more familiar with the internals of this driver?
 > 
-> Even though my mouse is hanging off that hub,
+> This is probably a dead-end...I don't think the ath_node_find
+> in ath__rx_indicate will be able to find the ath_node used
+> in ath_ampdu_input unless ath_rx_node_init had already complete.
+> Back to square one...
 
-No it isn't.  The mouse is 3-4.4.1, which is not below either 3-4.1 or 
-3-4.4.4.
+Well Steven, please give this a shot, we think this is the culprit.
 
-> I don't seem to notice the
-> disconnects.
-> 
-> $ dmesg | grep disconnect
-> [ 3599.496217] usb 3-4.4.4: USB disconnect, address 122
-> [ 3599.677346] usb 3-4.1: USB disconnect, address 121
-> [ 3627.804621] usb 3-4.1: USB disconnect, address 124
-> [ 3628.004400] usb 3-4.4.4: USB disconnect, address 123
-> [ 3659.496421] usb 3-4.4.4: USB disconnect, address 126
-> [ 3659.676186] usb 3-4.1: USB disconnect, address 125
-> [ 3689.493763] usb 3-4.1: USB disconnect, address 3
-> [ 3689.708916] usb 3-4.4.4: USB disconnect, address 127
-> [ 3719.497221] usb 3-4.4.4: USB disconnect, address 7
-> [ 3719.684965] usb 3-4.1: USB disconnect, address 6
-> [ 3749.496323] usb 3-4.1: USB disconnect, address 9
-> [ 3749.691180] usb 3-4.4.4: USB disconnect, address 8
-> 
-> Full dmesg and .config:
-> 
-> http://sr71.net/~dave/linux/config-10-03-2008.1.txt
-> http://sr71.net/~dave/linux/dmesg-10-03-2008.1.log
-> 
-> The last one I tried before this was -rc3, and it appears to be OK.  The
-> Ubuntu 2.6.24-19-generic kernel also appears not to have this issue.
-> 
-> A quick scan of LKML and linux-usb didn't turn up anything similar.
-> 
-> The machine is a Lenovo T61 plugged into the Lenovo dock.  At this
-> point, the only thing plugged into the suspect hub is my mouse.
+[PATCH] ath9k: fix oops on trying to hold the wrong spinlock
 
-In fact, nothing is plugged into either of the hubs.
+We were trying to hold the wrong spinlock due to a typo
+on IEEE80211_BAR_CTL_TID_S's definition. We use this to
+compute the tid number and then hold this this tid number's
+spinlock during ath_bar_rx().
 
-In theory this could be caused by a problem in the dock.  But it would 
-be better to get more information before trying to pin down the cause.
+Signed-off-by: Vasanthakumar Thiagarajan <vasanth@atheros.com>
+Signed-off-by: Sujith <Sujith.Manoharan@atheros.com>
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+---
+ drivers/net/wireless/ath9k/core.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-You should use usbmon (see Documentation/usb/usbmon.txt) to record a 
-trace of everything happening on bus 3.  And to keep things simple, you 
-should unplug all the USB devices except for one of the magical 
-disappearing hubs.
-
-Alan Stern
+diff --git a/drivers/net/wireless/ath9k/core.h b/drivers/net/wireless/ath9k/core.h
+index 2f84093..88f4cc3 100644
+--- a/drivers/net/wireless/ath9k/core.h
++++ b/drivers/net/wireless/ath9k/core.h
+@@ -316,7 +316,7 @@ void ath_descdma_cleanup(struct ath_softc *sc,
+ #define ATH_RX_TIMEOUT           40      /* 40 milliseconds */
+ #define WME_NUM_TID              16
+ #define IEEE80211_BAR_CTL_TID_M  0xF000  /* tid mask */
+-#define IEEE80211_BAR_CTL_TID_S  2       /* tid shift */
++#define IEEE80211_BAR_CTL_TID_S  12      /* tid shift */
+ 
+ enum ATH_RX_TYPE {
+ 	ATH_RX_NON_CONSUMED = 0,
+-- 
+1.5.6.3
 
