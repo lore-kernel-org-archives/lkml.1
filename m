@@ -1,41 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbYJCP4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYJCP4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbYJCP4S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbYJCP4E
+	id S1754541AbYJCP4e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 11:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbYJCP4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:56:04 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:34944 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752398AbYJCP4D (ORCPT
+	Fri, 3 Oct 2008 11:56:09 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:53945 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753635AbYJCP4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:56:03 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [regression] Latest git has WARN_ON storm with e1000e driver
-Date: Fri, 3 Oct 2008 17:55:55 +0200
-User-Agent: KMail/1.9.9
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>
-References: <200810031041.49350.borntraeger@de.ibm.com> <200810031720.53923.borntraeger@de.ibm.com> <alpine.LFD.2.00.0810030825190.3262@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0810030825190.3262@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 3 Oct 2008 11:56:08 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqAEAPvY5UhMQWq+/2dsb2JhbACBcbpMgWg
+Date: Fri, 3 Oct 2008 11:56:05 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
+       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
+       hch@lst.de, Martin Bligh <mbligh@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH] x86 Topology cpu_to_node parameter check
+Message-ID: <20081003155605.GC1607@Krystal>
+References: <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu> <20081002090517.GA8708@elte.hu> <20081002093835.GA17699@elte.hu> <alpine.DEB.1.10.0810021917030.26504@gandalf.stny.rr.com> <20081003045607.GA5940@Krystal> <alpine.DEB.1.10.0810030117280.26504@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810031755.55931.borntraeger@de.ibm.com>
+In-Reply-To: <alpine.DEB.1.10.0810030117280.26504@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:55:24 up 120 days, 20:35,  8 users,  load average: 0.20, 0.29,
+	0.67
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got an idea,
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Fri, 3 Oct 2008, Mathieu Desnoyers wrote:
+> 
+> > ---
+> >  include/asm-x86/topology.h |    6 +++---
+> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> > 
+> > Index: linux-2.6-lttng/include/asm-x86/topology.h
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/include/asm-x86/topology.h	2008-10-03 00:37:05.000000000 -0400
+> > +++ linux-2.6-lttng/include/asm-x86/topology.h	2008-10-03 00:45:52.000000000 -0400
+> > @@ -182,9 +182,9 @@ extern int __node_distance(int, int);
+> >  
+> >  #else /* !CONFIG_NUMA */
+> >  
+> > -#define numa_node_id()		0
+> > -#define	cpu_to_node(cpu)	0
+> > -#define	early_cpu_to_node(cpu)	0
+> > +#define	numa_node_id()		0
+> > +#define	cpu_to_node(cpu)	((void)(cpu),0)
+> > +#define	early_cpu_to_node(cpu)	cpu_to_node(cpu)
+> 
+> Actually the proper way would be to have:
+> 
+> static inline int cpu_to_node(int cpu)
+> {
+> 	return 0;
+> }
+> 
+> static inline int early_cpu_to_node(int cpu)
+> {
+> 	return 0;
+> }
+> 
+> This way you also get typechecks.
+> 
 
+That's how I did it first, but then I looked at asm-generic/topology.h
+and have seen it uses #defines. Should we change them too ?
 
-kernel_init does lock_kernel (which does preempt_disable).
-The kernel_unlock is done in init_post. As far as I can see, this happens 
-after the driver init calls.
+Mathieu
 
-Christian
+> -- Steve
+> 
+> >  
+> >  static inline const cpumask_t *_node_to_cpumask_ptr(int node)
+> >  {
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > 
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
