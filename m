@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYJCClT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYJCClq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbYJCClT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 22:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbYJCClK
+	id S1755186AbYJCClq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 22:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYJCClg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 22:41:10 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:53765 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752816AbYJCClJ (ORCPT
+	Thu, 2 Oct 2008 22:41:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49125 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754014AbYJCClf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 22:41:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=p8KvQa6wvgorQhb+uJuooi2Xu1B+gOWEY8XaOmPMRyRx2FfdjdqSMMOL3PbP1ZguDo
-         j1YNnsHdFJIod6sWL9N2B+tIZu5xsSPrn+7PdY/r67qcR4vRpIY+PSjdWgc8UBx149mp
-         UGPL0CApTyEgAv0JinXZR+cjDn7IjeAYv0i2Y=
-Message-ID: <3c1bc2140810021941p5c00acdcs4e3cf10a40c89b7d@mail.gmail.com>
-Date: Thu, 2 Oct 2008 21:41:08 -0500
-From: "Matthew Stoltenberg" <d3matt@gmail.com>
-To: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
-Subject: Re: motherboard recommendations?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081002162056.GA13007@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 2 Oct 2008 22:41:35 -0400
+Date: Thu, 2 Oct 2008 19:40:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org, agk@redhat.com, mbroz@redhat.com,
+       chris@arachsys.com
+Subject: Re: [PATCH] Memory management livelock
+Message-Id: <20081002194034.7957bccb.akpm@linux-foundation.org>
+In-Reply-To: <200810031232.23836.nickpiggin@yahoo.com.au>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+	<Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+	<20080923154905.50d4b0fa.akpm@linux-foundation.org>
+	<200810031232.23836.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1f276abf0809160657x4264ad5dm74fd2689d804a7ad@mail.gmail.com>
-	 <20081002143809.GA22851@csclub.uwaterloo.ca>
-	 <3c1bc2140810020803l33207ecbsbd690fa33a21a360@mail.gmail.com>
-	 <20081002160933.GM22849@csclub.uwaterloo.ca>
-	 <20081002162056.GA13007@csclub.uwaterloo.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 2, 2008 at 11:20 AM, Lennart Sorensen
-<lsorense@csclub.uwaterloo.ca> wrote:
-> On Thu, Oct 02, 2008 at 12:09:33PM -0400,  wrote:
->> Atheros?  Hmm, the P5K was using atlantic, so I wonder why they are not
->> using atheros.
->
-> So I am clueless here.  atl is atheros, which is what I have on my
-> P5K, except an older model.  I see mentions that 2.6.27 is supposed to
-> suport the new chip on the P5Q.
+On Fri, 3 Oct 2008 12:32:23 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Well... That's what I get for not doing make oldconfig :)  Voila...
-It works in rc7.
+> > yup, that's pretty much unfixable, really, unless new locks are added
+> > which block threads which are writing to unrelated sections of the
+> > file, and that could hurt some workloads quite a lot, I expect.
+> 
+> Why is it unfixable? Just ignore nr_to_write, and write out everything
+> properly, I would have thought.
+
+That can cause fsync to wait arbitrarily long if some other process is
+writing the file.  This happens.
