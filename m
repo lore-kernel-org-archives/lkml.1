@@ -1,173 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYJCUAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbYJCUBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbYJCUAi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 16:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYJCUAG
+	id S1754434AbYJCUBx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 16:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYJCUBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 16:00:06 -0400
-Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:24638 "EHLO
-	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752943AbYJCUAE (ORCPT
+	Fri, 3 Oct 2008 16:01:44 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:64496 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753049AbYJCUBn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 16:00:04 -0400
-From: Alexander van Heukelum <heukelum@fastmail.fm>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH 1/9] traps: x86: converge trap_init functions
-Date: Fri,  3 Oct 2008 22:00:32 +0200
-Message-Id: <1223064040-23170-2-git-send-email-heukelum@fastmail.fm>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1223064040-23170-1-git-send-email-heukelum@fastmail.fm>
-References: <1223064040-23170-1-git-send-email-heukelum@fastmail.fm>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Fri, 03 Oct 2008 21:59:43 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.34; VDF: 7.0.6.242; host: AntiVir2)
+	Fri, 3 Oct 2008 16:01:43 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqAEAKMS5khMQWq+/2dsb2JhbACBcbpqgWg
+Date: Fri, 3 Oct 2008 15:56:40 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Jason Baron <jbaron@redhat.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, od@novell.com,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: Unified tracing buffer
+Message-ID: <20081003195640.GA15639@Krystal>
+References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <alpine.DEB.1.10.0809200451420.9362@gandalf.stny.rr.com> <20080920135548.GB23215@Krystal> <20080920071232.46908040@infradead.org> <20080922185209.GC6349@Krystal> <20081002152851.GC3220@redhat.com> <20081003161154.GA4139@Krystal> <20081003183737.GD3167@redhat.com> <20081003191026.GC9626@Krystal> <20081003192536.GE3167@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081003192536.GE3167@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:55:35 up 121 days, 36 min,  5 users,  load average: 0.64,
+	0.64, 0.42
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- - set_system_gate on i386 is really set_system_trap_gate
- - set_system_gate on x86_64 is really set_system_intr_gate
- - ist=0 means no special stack switch is done:
-	- introduce STACKFAULT_STACK, DOUBLEFAULT_STACK, NMI_STACK,
-		DEBUG_STACK and MCE_STACK as on x86_64.
-	- use the _ist variants with XXX_STACK set to zero
- - remove set_system_gate
+* Jason Baron (jbaron@redhat.com) wrote:
+> On Fri, Oct 03, 2008 at 03:10:26PM -0400, Mathieu Desnoyers wrote:
+> > * Jason Baron (jbaron@redhat.com) wrote:
+> > > On Fri, Oct 03, 2008 at 12:11:54PM -0400, Mathieu Desnoyers wrote:
+> > > > > > > > How about :
+> > > > > > > > 
+> > > > > > > >   trace_mark(ftrace_evname, "size %lu binary %pW",
+> > > > > > > >     sizeof(mystruct), mystruct);
+> > > > > > > >   or
+> > > > > > > >   trace_mark(sched_wakeup, "target_pid %ld", task->pid);
+> > > > > > > > 
+> > > > > > > > Note the namespacing with buffers being "ftrace" and "sched" here.
+> > > > > > > > 
+> > > > > > > > That would encapsulate the whole
+> > > > > > > >   - Event ID registration
+> > > > > > > >   - Event type registration
+> > > > > > > >   - Sending data out
+> > > > > > > >   - Enabling the event source directly at the source
+> > > > > > > > 
+> > > > > > > > We can then export the markers through a debugfs file and let userland
+> > > > > > > > enable them one by one and possibly connect systemtap filters on them
+> > > > > > > > (one table of registered filters, one table for the markers, a command
+> > > > > > > > file to connect/disconnect filters to/from markers).
+> > > > > > > 
+> > > > > > > I would like to ask for the following from the start: have a field for
+> > > > > > > a longer description of the marker that describes it's usage and
+> > > > > > > context. Getting this there from the start is critical, because only
+> > > > > > > when adding the marker point do people still really remember why/what
+> > > > > > > (and having to type a good description also helps them to realize if
+> > > > > > > this is the right point or not). This can then be exposed to the user
+> > > > > > > so he has a standing chance of knowing what the marker is about.
+> > > > > > > 
+> > > > > > > It also has a standing chance of being updated when the code changes
+> > > > > > > this way
+> > > > > > > 
+> > > > > > 
+> > > > > > I agree, and I think it might be required in both markers and
+> > > > > > tracepoints.
+> > > > > > 
+> > > > > > Given that tracepoints are declared in a global header
+> > > > > > (DECLARE_TRACE()), I would add this kind of description here. Tracepoint
+> > > > > > uses within the kernel code (statements like :
+> > > > > >   trace_sched_switch(prev, next);
+> > > > > > added to the scheduler) would therefore be tied to the description
+> > > > > > without having to contain it in the core kernel code.
+> > > > > > 
+> > > > > > Markers, on the other hand, could become the "event description"
+> > > > > > interface which is exported to userspace. Considering that, I guess it's
+> > > > > > as important to let a precise description follow the markers.
+> > > > > > 
+> > > > > > Mathieu
+> > > > > > 
+> > > > > >
+> > > > > 
+> > > > > hi,
+> > > > > 
+> > > > > Tracepoints and markers seem to both have their place, with tracepoints
+> > > > > being integral to kernel users, and markers being important for
+> > > > > userspace. However, it seems to me like there is overlap in the
+> > > > > code and an extra level of indirection when markers are layered on
+> > > > > tracespoints. could they be merged a bit more?
+> > > > > 
+> > > > > What if we extended DEFINE_TRACE() to also create a
+> > > > > 'set_marker(marker_cb)' function where 'marker_cb' has the function signature:
+> > > > > 
+> > > > > marker_cb(<tracepoint prototype>, *marker_probe_func);
+> > > > > 
+> > > > > We then also create 'register_marker_##name' function in DEFINE_TRACE(),
+> > > > > which allows one to regiser marker callbacks in the usual way.
+> > > > > 
+> > > > > Then 'marker_cb' function is then called in '__DO_TRACE' if anybody has
+> > > > > registered a marker (which can set the tracepoint.state appropriately).
+> > > > > 
+> > > > > The 'marker_cb' function then marshalls its arguemnts and passes them
+> > > > > through to the marker functions that were registered.
+> > > > > 
+> > > > > I think in this way we can simplify the tracepoints and markers by
+> > > > > combining them to a large extent.
+> > > > > 
+> > > > > thanks,
+> > > > > 
+> > > > > -Jason
+> > > > > 
+> > > > 
+> > > > I think what you propose here is already in y LTTng tree in a different
+> > > > form. It's a patch to markers to allow declaring a marker which enables
+> > > > an associated tracepoint when enabled. This way, we can have a marker
+> > > > (exposed to userspace) connecting itself automatically to a tracepoint
+> > > > when enabled.
+> > > > 
+> > > > It's here :
+> > > > http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=d52ea7c48f47a1179aee01636d515cfea4ff6ede;hp=0a7b5c02209f3582ed1369ec818a1b389bd45a09
+> > > > 
+> > > > Note that locking depends on the psrwlock patch so we can have nested
+> > > > module list readers. Otherwise locking becomes _really_ messy. :-(
+> > > > 
+> > > > Mathieu
+> > > > 
+> > > 
+> > > That patch simplifies using markers with tracepoints and couples
+> > > markers and tracepoints much more closely. But I was proposing to make
+> > > the coupling tighter...
+> > > 
+> > > Couldn't 'marker_probe_register()' register the marker directly with
+> > > the tracepoint callsite? Have DEFINE_TRACE() take an additional argument
+> > > which references a marker callback funtion. That function would look 
+> > > like (very loose C code):
+> > > 
+> > > marker_blah_callback(TPPROTO(arg1, arg2), marker_probe_func *probe,
+> > 
+> > I don't want the tracepoints to be coupled with markers (which are a
+> > userspace API). The other way around is fine : letting a marker
+> > automatically enable a tracepoint makes sense, but the opposite would
+> > tie the in-kernel API (tracepoint) to the external marker
+> > representation, and I would like to avoid that.
+> > 
+> 
+> The interface to markers is still marker_probe_register() and
+> marker_probe_unregister(). I don't see how that changes with this
+> proposal?
+> 
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
- arch/x86/kernel/traps_32.c |   16 +++++++++-------
- arch/x86/kernel/traps_64.c |    6 +++---
- include/asm-x86/desc.h     |   14 +++++---------
- include/asm-x86/page_32.h  |    6 ++++++
- 4 files changed, 23 insertions(+), 19 deletions(-)
+"Have DEFINE_TRACE() take an additional argument which references a
+marker callback funtion." -> it would tie the tracepoint definition to a
+marker. Or am I misunderstanding something ?
 
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index da97cd2..c17fcc8 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -852,10 +852,12 @@ void __init trap_init(void)
- #endif
- 
- 	set_intr_gate(0, &divide_error);
--	set_intr_gate(1, &debug);
--	set_intr_gate(2, &nmi);
--	set_system_intr_gate(3, &int3); /* int3 can be called from all */
--	set_system_intr_gate(4, &overflow); /* int4 can be called from all */
-+	set_intr_gate_ist(1, &debug, DEBUG_STACK);
-+	set_intr_gate_ist(2, &nmi, NMI_STACK);
-+	/* int3 can be called from all */
-+	set_system_intr_gate_ist(3, &int3, DEBUG_STACK);
-+	/* int4 can be called from all */
-+	set_system_intr_gate(4, &overflow);
- 	set_intr_gate(5, &bounds);
- 	set_intr_gate(6, &invalid_op);
- 	set_intr_gate(7, &device_not_available);
-@@ -863,14 +865,14 @@ void __init trap_init(void)
- 	set_intr_gate(9, &coprocessor_segment_overrun);
- 	set_intr_gate(10, &invalid_TSS);
- 	set_intr_gate(11, &segment_not_present);
--	set_intr_gate(12, &stack_segment);
-+	set_intr_gate_ist(12, &stack_segment, STACKFAULT_STACK);
- 	set_intr_gate(13, &general_protection);
- 	set_intr_gate(14, &page_fault);
- 	set_intr_gate(15, &spurious_interrupt_bug);
- 	set_intr_gate(16, &coprocessor_error);
- 	set_intr_gate(17, &alignment_check);
- #ifdef CONFIG_X86_MCE
--	set_intr_gate(18, &machine_check);
-+	set_intr_gate_ist(18, &machine_check, MCE_STACK);
- #endif
- 	set_intr_gate(19, &simd_coprocessor_error);
- 
-@@ -886,7 +888,7 @@ void __init trap_init(void)
- 		printk("done.\n");
- 	}
- 
--	set_system_gate(SYSCALL_VECTOR, &system_call);
-+	set_system_trap_gate(SYSCALL_VECTOR, &system_call);
- 
- 	/* Reserve all the builtin and the syscall vector: */
- 	for (i = 0; i < FIRST_EXTERNAL_VECTOR; i++)
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index 80dbbc7..8cf590b 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -652,9 +652,9 @@ void __init trap_init(void)
- 	set_intr_gate_ist(1, &debug, DEBUG_STACK);
- 	set_intr_gate_ist(2, &nmi, NMI_STACK);
- 	/* int3 can be called from all */
--	set_system_gate_ist(3, &int3, DEBUG_STACK);
-+	set_system_intr_gate_ist(3, &int3, DEBUG_STACK);
- 	/* int4 can be called from all */
--	set_system_gate(4, &overflow);
-+	set_system_intr_gate(4, &overflow);
- 	set_intr_gate(5, &bounds);
- 	set_intr_gate(6, &invalid_op);
- 	set_intr_gate(7, &device_not_available);
-@@ -674,7 +674,7 @@ void __init trap_init(void)
- 	set_intr_gate(19, &simd_coprocessor_error);
- 
- #ifdef CONFIG_IA32_EMULATION
--	set_system_gate(IA32_SYSCALL_VECTOR, ia32_syscall);
-+	set_system_intr_gate(IA32_SYSCALL_VECTOR, ia32_syscall);
- #endif
- 	/*
- 	 * Should be a barrier for any external CPU state:
-diff --git a/include/asm-x86/desc.h b/include/asm-x86/desc.h
-index ebc3078..168c5cc 100644
---- a/include/asm-x86/desc.h
-+++ b/include/asm-x86/desc.h
-@@ -351,20 +351,16 @@ static inline void set_system_intr_gate(unsigned int n, void *addr)
- 	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
- }
- 
--static inline void set_trap_gate(unsigned int n, void *addr)
-+static inline void set_system_trap_gate(unsigned int n, void *addr)
- {
- 	BUG_ON((unsigned)n > 0xFF);
--	_set_gate(n, GATE_TRAP, addr, 0, 0, __KERNEL_CS);
-+	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
- }
- 
--static inline void set_system_gate(unsigned int n, void *addr)
-+static inline void set_trap_gate(unsigned int n, void *addr)
- {
- 	BUG_ON((unsigned)n > 0xFF);
--#ifdef CONFIG_X86_32
--	_set_gate(n, GATE_TRAP, addr, 0x3, 0, __KERNEL_CS);
--#else
--	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
--#endif
-+	_set_gate(n, GATE_TRAP, addr, 0, 0, __KERNEL_CS);
- }
- 
- static inline void set_task_gate(unsigned int n, unsigned int gdt_entry)
-@@ -379,7 +375,7 @@ static inline void set_intr_gate_ist(int n, void *addr, unsigned ist)
- 	_set_gate(n, GATE_INTERRUPT, addr, 0, ist, __KERNEL_CS);
- }
- 
--static inline void set_system_gate_ist(int n, void *addr, unsigned ist)
-+static inline void set_system_intr_gate_ist(int n, void *addr, unsigned ist)
- {
- 	BUG_ON((unsigned)n > 0xFF);
- 	_set_gate(n, GATE_INTERRUPT, addr, 0x3, ist, __KERNEL_CS);
-diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
-index 82b0109..fd33556 100644
---- a/include/asm-x86/page_32.h
-+++ b/include/asm-x86/page_32.h
-@@ -20,6 +20,12 @@
- #endif
- #define THREAD_SIZE 	(PAGE_SIZE << THREAD_ORDER)
- 
-+#define STACKFAULT_STACK 0
-+#define DOUBLEFAULT_STACK 1
-+#define NMI_STACK 0
-+#define DEBUG_STACK 0
-+#define MCE_STACK 0
-+#define N_EXCEPTION_STACKS 1
- 
- #ifdef CONFIG_X86_PAE
- /* 44=32+12, the limit we can fit into an unsigned long pfn */
+Mathieu
+
+> 
+> > And how do you plan to deal with :
+> > 
+> > TPPROTO(arg1, arg2) == void ?
+> > 
+> > C won't let you define stuff like :
+> > 
+> > blah(void, marker_probe_func *probe, void *private_data)
+> > 
+> 
+> it'd be simple enough to pass the the noargs requirement down as an
+> extra argument to DO_TRACE(), and then invoke the callback with no arguments.
+> 
+> thanks,
+> 
+> -Jason
+> 
+> 
+
 -- 
-1.5.4.3
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
