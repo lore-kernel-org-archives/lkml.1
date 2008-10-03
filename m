@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbYJCADO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbYJCAHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754371AbYJCADO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 20:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbYJCAC7
+	id S1754542AbYJCAHb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 20:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYJCAHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 20:02:59 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:60224 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753337AbYJCAC7 (ORCPT
+	Thu, 2 Oct 2008 20:07:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52881 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753370AbYJCAHW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 20:02:59 -0400
-Date: Thu, 2 Oct 2008 20:02:57 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Chris Friesen <cfriesen@nortel.com>
-cc: Ingo Molnar <mingo@elte.hu>, Linux kernel <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [bug report] sched: stop_machine() usage causes load balancer
- to misbehave
-In-Reply-To: <48E55FE5.40108@nortel.com>
-Message-ID: <alpine.DEB.1.10.0810022001250.26504@gandalf.stny.rr.com>
-References: <48E55FE5.40108@nortel.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Oct 2008 20:07:22 -0400
+Date: Thu, 2 Oct 2008 17:06:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Chinner <david@fromorbit.com>
+Cc: jens.axboe@oracle.com, arjan@infradead.org, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-Id: <20081002170646.2a532680.akpm@linux-foundation.org>
+In-Reply-To: <20081002235849.GJ30001@disturbed>
+References: <20081001200034.65eb67d6@infradead.org>
+	<20081001215638.3a65134c.akpm@linux-foundation.org>
+	<87fxnfpjqj.fsf@basil.nowhere.org>
+	<20081002075511.GX19428@kernel.dk>
+	<20081002093326.GF30001@disturbed>
+	<20081002094537.GA19428@kernel.dk>
+	<20081002120408.21585949@infradead.org>
+	<20081002192223.GP19428@kernel.dk>
+	<20081002143713.2f8ebc04.akpm@linux-foundation.org>
+	<20081002235849.GJ30001@disturbed>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 3 Oct 2008 09:58:49 +1000
+Dave Chinner <david@fromorbit.com> wrote:
 
-On Thu, 2 Oct 2008, Chris Friesen wrote:
-
-> I mentioned before that ftrace (specifically the ftraced daemon) seems to be
-> interfering with the load balancer.  After some experimenting, it appears that
-> any regular calls to stop_machine() will end up confusing the load balancer.
+> On Thu, Oct 02, 2008 at 02:37:13PM -0700, Andrew Morton wrote:
+> > On Thu, 2 Oct 2008 21:22:23 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > Can we agree on this patch?
+> > 
+> > This change will cause _all_ kjournald writeout to have elevated
+> > priority.  The majority of that writeout (in data=ordered mode) is file
+> > data, which we didn't intend to change.
+> > 
+> > The risk here is that this will *worsen* latency for plain old read(),
+> > because now kjournald writeout will be favoured.
+> > 
+> > There is in fact a good argument for _reducing_ kjournald's IO
+> > priority, not increasing it!
+> > 
+> > A better approach might be to mark the relevant buffers/bios as needing
+> > higher priority at submit_bh() time (if that's possible).  At least
+> > that way we don't accidentally elevate the priority of the bulk data.
 > 
-> As an experiment, I disabled ftraced (which would normally result in correct
-> load balancing) but added a single kernel thread which simply runs the
-> following loop, where "chrisd2" is a dummy function.
+> You can do that for submit_bio() by calling bio_set_prio() before
+> submision - I did that for elevating only the XFS journal I/O.
+> submit_bh() doesn't have any way of passing a priority through to it
+> right now...
 
+Yup.  There are plenty of spare bits in buffer_head.b_state. 
+set_buffer_kludge()?
 
-Chris,
-
-Thanks for looking into this. I don't have an answer for your question, 
-but I'll work harder to get the MCOUNT_REC working in PPC.
-
-Does this happen with x86 too?
-
--- Steve
