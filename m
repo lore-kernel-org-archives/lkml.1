@@ -1,52 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbYJCJbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754973AbYJCJco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbYJCJbw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 05:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYJCJbn
+	id S1754973AbYJCJco (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 05:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbYJCJcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 05:31:43 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53475 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752311AbYJCJbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 05:31:43 -0400
-Subject: Re: [RFC/PATCH] Block device for the ISS simulator
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081003083522.GB25683@infradead.org>
-References: <20081003000904.0A812DDEEE@ozlabs.org>
-	 <20081003083522.GB25683@infradead.org>
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 19:29:40 +1000
-Message-Id: <1223026180.12264.174.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Oct 2008 05:32:36 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:60709 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752539AbYJCJcf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 05:32:35 -0400
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] x86_64: Implement personality ADDR_LIMIT_32BIT
+Date: Fri,  3 Oct 2008 12:33:34 +0300
+Message-Id: <1223026414-9500-1-git-send-email-kirill@shutemov.name>
+X-Mailer: git-send-email 1.5.6.5.GIT
+In-Reply-To: <20081003080244.GC25408@elte.hu>
+References: <20081003080244.GC25408@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-03 at 04:35 -0400, Christoph Hellwig wrote:
-> On Fri, Oct 03, 2008 at 10:08:42AM +1000, Benjamin Herrenschmidt wrote:
-> > The ISS simulator is a simple powerpc simulator used among other things
-> > for hardware bringup. It implements a simple memory mapped block device
-> > interface.
-> > 
-> > This is a simple block driver that attaches to it. Note that the choice
-> > of a major device number is fishy, though because it's a simulator and
-> > not real hardware, it's not necessarily a big deal.
-> 
-> Please don't put in more block devices for every bloody simulator in the
-> world.  Just emulated some simpler enough existing hardware.
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ arch/x86/kernel/sys_x86_64.c |   16 ++++++++++++----
+ include/asm-x86/elf.h        |    4 +++-
+ include/asm-x86/processor.h  |    6 ++++--
+ 3 files changed, 19 insertions(+), 7 deletions(-)
 
-I'm not sure I want it merged, but having it on the list "for the
-record" is useful and it might be useful to get comments in case it's
-terminally busted :-)
-
-I'm trying to get ISS to implement an IDE interface in fact.
-
-Cheers,
-Ben.
+diff --git a/arch/x86/kernel/sys_x86_64.c b/arch/x86/kernel/sys_x86_64.c
+index 3b360ef..7f8672d 100644
+--- a/arch/x86/kernel/sys_x86_64.c
++++ b/arch/x86/kernel/sys_x86_64.c
+@@ -48,7 +48,9 @@ out:
+ static void find_start_end(unsigned long flags, unsigned long *begin,
+ 			   unsigned long *end)
+ {
+-	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT)) {
++	if (!test_thread_flag(TIF_IA32) &&
++	    ((flags & MAP_32BIT) ||
++	     (current->personality & ADDR_LIMIT_32BIT))) {
+ 		unsigned long new_begin;
+ 		/* This is usually used needed to map code in small
+ 		   model, so it needs to be in the first 31bit. Limit
+@@ -94,7 +96,8 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
+ 		    (!vma || addr + len <= vma->vm_start))
+ 			return addr;
+ 	}
+-	if (((flags & MAP_32BIT) || test_thread_flag(TIF_IA32))
++	if (((flags & MAP_32BIT) || test_thread_flag(TIF_IA32) ||
++	     (current->personality & ADDR_LIMIT_32BIT))
+ 	    && len <= mm->cached_hole_size) {
+ 	        mm->cached_hole_size = 0;
+ 		mm->free_area_cache = begin;
+@@ -150,8 +153,13 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
+ 	if (flags & MAP_FIXED)
+ 		return addr;
+ 
+-	/* for MAP_32BIT mappings we force the legact mmap base */
+-	if (!test_thread_flag(TIF_IA32) && (flags & MAP_32BIT))
++	/*
++	 * for MAP_32BIT mappings and ADDR_LIMIT_32BIT personality we force the
++	 * legacy mmap base
++	 */
++	if (!test_thread_flag(TIF_IA32) &&
++	    ((flags & MAP_32BIT) ||
++	     (current->personality & ADDR_LIMIT_32BIT)))
+ 		goto bottomup;
+ 
+ 	/* requesting a specific address */
+diff --git a/include/asm-x86/elf.h b/include/asm-x86/elf.h
+index 7be4733..fa39e10 100644
+--- a/include/asm-x86/elf.h
++++ b/include/asm-x86/elf.h
+@@ -298,7 +298,9 @@ do {									\
+ #define VDSO_HIGH_BASE		0xffffe000U /* CONFIG_COMPAT_VDSO address */
+ 
+ /* 1GB for 64bit, 8MB for 32bit */
+-#define STACK_RND_MASK (test_thread_flag(TIF_IA32) ? 0x7ff : 0x3fffff)
++#define STACK_RND_MASK ((test_thread_flag(TIF_IA32) || \
++			 current->personality & ADDR_LIMIT_32BIT ) ? \
++			0x7ff : 0x3fffff)
+ 
+ #define ARCH_DLINFO							\
+ do {									\
+diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
+index 4df3e2f..6d7f2f9 100644
+--- a/include/asm-x86/processor.h
++++ b/include/asm-x86/processor.h
+@@ -904,7 +904,8 @@ extern unsigned long thread_saved_pc(struct task_struct *tsk);
+ #define TASK_SIZE_OF(child)	((test_tsk_thread_flag(child, TIF_IA32)) ? \
+ 					IA32_PAGE_OFFSET : TASK_SIZE64)
+ 
+-#define STACK_TOP		TASK_SIZE
++#define STACK_TOP		(current->personality & ADDR_LIMIT_32BIT ? \
++					 0x80000000 : TASK_SIZE)
+ #define STACK_TOP_MAX		TASK_SIZE64
+ 
+ #define INIT_THREAD  { \
+@@ -932,7 +933,8 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
+  * This decides where the kernel will search for a free chunk of vm
+  * space during mmap's.
+  */
+-#define TASK_UNMAPPED_BASE	(PAGE_ALIGN(TASK_SIZE / 3))
++#define TASK_UNMAPPED_BASE	(current->personality & ADDR_LIMIT_32BIT ? \
++					0x40000000 : PAGE_ALIGN(TASK_SIZE / 3))
+ 
+ #define KSTK_EIP(task)		(task_pt_regs(task)->ip)
+ 
+-- 
+1.5.6.5.GIT
 
