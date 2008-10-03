@@ -1,104 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYJCP4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbYJCQCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbYJCP4e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbYJCP4J
+	id S1753526AbYJCQCw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 12:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYJCQCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:56:09 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:53945 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753635AbYJCP4I (ORCPT
+	Fri, 3 Oct 2008 12:02:44 -0400
+Received: from rcpt-mqugw.biglobe.ne.jp ([133.205.19.69]:53054 "EHLO
+	rcpt-mqugw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbYJCQCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:56:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqAEAPvY5UhMQWq+/2dsb2JhbACBcbpMgWg
-Date: Fri, 3 Oct 2008 11:56:05 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, prasad@linux.vnet.ibm.com,
-       "Frank Ch. Eigler" <fche@redhat.com>, David Wilder <dwilder@us.ibm.com>,
-       hch@lst.de, Martin Bligh <mbligh@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH] x86 Topology cpu_to_node parameter check
-Message-ID: <20081003155605.GC1607@Krystal>
-References: <alpine.DEB.1.10.0809301242550.1984@gandalf.stny.rr.com> <alpine.LFD.2.00.0809300958120.3389@nehalem.linux-foundation.org> <alpine.DEB.1.10.0810011114000.30777@gandalf.stny.rr.com> <20081002085030.GF26084@elte.hu> <20081002085145.GA3202@elte.hu> <20081002090517.GA8708@elte.hu> <20081002093835.GA17699@elte.hu> <alpine.DEB.1.10.0810021917030.26504@gandalf.stny.rr.com> <20081003045607.GA5940@Krystal> <alpine.DEB.1.10.0810030117280.26504@gandalf.stny.rr.com>
+	Fri, 3 Oct 2008 12:02:43 -0400
+X-Greylist: delayed 2131 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Oct 2008 12:02:43 EDT
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Sat, 4 Oct 2008 00:25:30 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: d-nishimura@mtf.biglobe.ne.jp,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/6] memcg: charge-commit-cancel protocl
+Message-Id: <20081004002530.776d4592.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <2964081.1223046917168.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081003190509.e33a3843.nishimura@mxp.nes.nec.co.jp>
+	<20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081001165734.e484cfe4.kamezawa.hiroyu@jp.fujitsu.com>
+	<2964081.1223046917168.kamezawa.hiroyu@jp.fujitsu.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810030117280.26504@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:55:24 up 120 days, 20:35,  8 users,  load average: 0.20, 0.29,
-	0.67
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
+On Sat, 4 Oct 2008 00:15:17 +0900 (JST)
+kamezawa.hiroyu@jp.fujitsu.com wrote:
+
+> ----- Original Message -----
+> >> precharge/commit/cancel can be used for other places,
+> >>  - shmem, (and other places need precharge.)
+> >>  - move_account(force_empty) etc...
+> >> we'll revisit later.
+> >> 
+> >> Changelog v5 -> v6:
+> >>  - added newpage_charge() and migrate_fixup().
+> >>  - renamed  functions for swap-in from "swap" to "swapin"
+> >>  - add more precise description.
+> >> 
+> >
+> >I don't have any objection to this direction now, but I have one quiestion.
+> >
+> >Does mem_cgroup_charge_migrate_fixup need to charge a newpage,
+> >while mem_cgroup_prepare_migration has charged it already?
+> In migration-is-failed case, we have to charge *old page* here.
 > 
-> On Fri, 3 Oct 2008, Mathieu Desnoyers wrote:
+Ah... you are right.
+Sorry for noise.
+
+
+Daisuke Nishimura.
+
+> >
+> >I agree adding I/F would be good for future, but I think
+> >mem_cgroup_charge_migration_fixup can be no-op function for now.
+> >
+> Hmm, handling failure case in explicit way may be better. Ok,
+> I'll try some.
 > 
-> > ---
-> >  include/asm-x86/topology.h |    6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > 
-> > Index: linux-2.6-lttng/include/asm-x86/topology.h
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/include/asm-x86/topology.h	2008-10-03 00:37:05.000000000 -0400
-> > +++ linux-2.6-lttng/include/asm-x86/topology.h	2008-10-03 00:45:52.000000000 -0400
-> > @@ -182,9 +182,9 @@ extern int __node_distance(int, int);
-> >  
-> >  #else /* !CONFIG_NUMA */
-> >  
-> > -#define numa_node_id()		0
-> > -#define	cpu_to_node(cpu)	0
-> > -#define	early_cpu_to_node(cpu)	0
-> > +#define	numa_node_id()		0
-> > +#define	cpu_to_node(cpu)	((void)(cpu),0)
-> > +#define	early_cpu_to_node(cpu)	cpu_to_node(cpu)
+> Thanks,
+> -Kame
 > 
-> Actually the proper way would be to have:
 > 
-> static inline int cpu_to_node(int cpu)
-> {
-> 	return 0;
-> }
-> 
-> static inline int early_cpu_to_node(int cpu)
-> {
-> 	return 0;
-> }
-> 
-> This way you also get typechecks.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
 
-That's how I did it first, but then I looked at asm-generic/topology.h
-and have seen it uses #defines. Should we change them too ?
 
-Mathieu
 
-> -- Steve
-> 
-> >  
-> >  static inline const cpumask_t *_node_to_cpumask_ptr(int node)
-> >  {
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > 
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
