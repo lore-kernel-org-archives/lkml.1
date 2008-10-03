@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbYJCXp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbYJCXqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754136AbYJCXp3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 19:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbYJCXpT
+	id S1754562AbYJCXqO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 19:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbYJCXp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 19:45:19 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:62871 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753300AbYJCXpR (ORCPT
+	Fri, 3 Oct 2008 19:45:58 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48547 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753045AbYJCXp6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 19:45:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=TLJ2EO1uPRdMM9xechX5D58VXyKNP9gWFpB13aiNoGqGV5bRqCbzzhulgydK2DTEWK
-         sTbRMaI8Te0QrkiJGdJr3vNFdq3ru3D7KRxVJScbVO3xpdPRiKEiczOhvA6yGDYmNAr+
-         xhOrJIfCltOkcNO+xwlJuhkuKihPs6Rni1sxk=
-Message-ID: <86802c440810031645m5a09c243se072cbcc6f2a151d@mail.gmail.com>
-Date: Fri, 3 Oct 2008 16:45:16 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Zachary Amsden" <zach@vmware.com>
-Subject: Re: kexec with vmware esx 3.0.2
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Vivek Goyal" <vgoyal@redhat.com>, "Alok Kataria" <akataria@vmware.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>
-In-Reply-To: <1223074735.7330.138.camel@bodhitayantram.eng.vmware.com>
+	Fri, 3 Oct 2008 19:45:58 -0400
+Date: Fri, 3 Oct 2008 13:41:24 -0700
+From: Greg KH <greg@kroah.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Remove completion from struct klist_node
+Message-ID: <20081003204124.GA3269@kroah.com>
+References: <20081002214308.GP13822@parisc-linux.org> <20081002221745.GC10485@kroah.com> <20081003140618.GQ13822@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <86802c440810031408i60e2036ax805bfd997092cd86@mail.gmail.com>
-	 <1223068893.7330.117.camel@bodhitayantram.eng.vmware.com>
-	 <86802c440810031440o59359f30ka72230b4b0ff73e@mail.gmail.com>
-	 <1223070521.7330.122.camel@bodhitayantram.eng.vmware.com>
-	 <86802c440810031458s1ce79589s2448aa0869a74e21@mail.gmail.com>
-	 <1223071731.7330.127.camel@bodhitayantram.eng.vmware.com>
-	 <86802c440810031551g246232c9n520ef43c6881b8af@mail.gmail.com>
-	 <1223074735.7330.138.camel@bodhitayantram.eng.vmware.com>
-X-Google-Sender-Auth: 14a607d4e72947a1
+In-Reply-To: <20081003140618.GQ13822@parisc-linux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 3, 2008 at 3:58 PM, Zachary Amsden <zach@vmware.com> wrote:
-> On Fri, 2008-10-03 at 15:51 -0700, Yinghai Lu wrote:
->
->> ok, my question is: anyone tried to use kexec with vmware?
->
-> Do you mean has anyone tried to use kexec in Linux running under VMware,
+On Fri, Oct 03, 2008 at 08:06:19AM -0600, Matthew Wilcox wrote:
+> On Thu, Oct 02, 2008 at 03:17:45PM -0700, Greg KH wrote:
+> > > +struct klist_waiter {
+> > > +	struct klist_waiter *next;
+> > > +	struct klist_node *node;
+> > > +	struct task_struct *process;
+> > > +	int woken;
+> > > +};
+> > 
+> > Why not use the built-in list.h functions here?
+> 
+> I'm somewhat averse to using data structures when they do more than I
+> need them to.
 
-that should work
+But part of the point is that if you use them, no one has to audit your
+logic to make sure you got it all correct.
 
-> or do you mean has anyone tried to use kexec to start ESX?
+> list_heads are great for when you need to remove an entry
+> from the middle of a list, but there are no advantages to using a
+> doubly-linked list here -- we always walk it from the start to the end,
+> and a singly linked list is fine for this purpose.  Maybe we need a set
+> of 'slist' macros so we can use singly-linked-lists without thinking
+> terribly hard, but I'd hate to see this patch get stuck behind
+> infrastructure improvements.
 
-yeah, that is strange request. hope it work..
+Is size an issue here?  I don't think so and I'd prefer it to be changed
+to use the standard list implementation and not roll your own.  You
+never know who will cut-and-paste you code these days :)
 
-YH
+Care to respin this?
+
+thanks,
+
+greg k-h
