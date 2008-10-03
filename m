@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbYJCPOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYJCPP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823AbYJCPOn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYJCPOg
+	id S1753960AbYJCPP4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 11:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYJCPPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:14:36 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:37883 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752180AbYJCPOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:14:35 -0400
-Date: Fri, 3 Oct 2008 08:14:31 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       akpm@linux-foundation.org, laijs@cn.fujitsu.com,
-       manfred@colorfullife.com, dipankar@in.ibm.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, josht@linux.vnet.ibm.com,
-       ltt-dev@lists.casi.polymtl.ca
-Subject: Re: [PATCH] rcu: RCU-based detection of stalled CPUs for Classic
-	RCU, fix
-Message-ID: <20081003151431.GC6246@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081002003628.GA7877@linux.vnet.ibm.com> <20081002080726.GB17695@elte.hu> <20081002140507.GB6729@linux.vnet.ibm.com> <20081002151046.GB2473@Krystal> <20081002174318.GB7324@linux.vnet.ibm.com> <20081002185115.GA11047@Krystal> <20081002225537.GA6706@linux.vnet.ibm.com> <20081002230639.GA7522@linux.vnet.ibm.com> <20081003083947.GB7636@elte.hu> <20081003084233.GA15637@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081003084233.GA15637@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 3 Oct 2008 11:15:48 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36670 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752156AbYJCPPr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 11:15:47 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <2964081.1223046917168.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Sat, 4 Oct 2008 00:15:17 +0900 (JST)
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: Re: [PATCH 3/6] memcg: charge-commit-cancel protocl
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       nishimura@mxp.nes.nec.co.jp, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, balbir@linux.vnet.ibm.com
+In-Reply-To: <20081003190509.e33a3843.nishimura@mxp.nes.nec.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <20081003190509.e33a3843.nishimura@mxp.nes.nec.co.jp>
+ <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081001165734.e484cfe4.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 10:42:33AM +0200, Ingo Molnar wrote:
-> 
-> -tip testing found a minor build bug - find the fix below.
-> 
-> 	Ingo
-> 
-> -------------------->
-> >From 2ec2b482b10a1ed3493c224f1893cddd3d33833b Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Fri, 3 Oct 2008 10:41:00 +0200
-> Subject: [PATCH] rcu: RCU-based detection of stalled CPUs for Classic RCU, fix
-> 
-> fix the !CONFIG_RCU_CPU_STALL_DETECTOR path:
-> 
->  kernel/rcuclassic.c: In function '__rcu_pending':
->  kernel/rcuclassic.c:609: error: too few arguments to function 'check_cpu_stall'
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/rcuclassic.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-> index 0d07e6e..37f72e5 100644
-> --- a/kernel/rcuclassic.c
-> +++ b/kernel/rcuclassic.c
-> @@ -239,7 +239,7 @@ static void record_gp_stall_check_time(struct rcu_ctrlblk *rcp)
->  {
->  }
-> 
-> -static void check_cpu_stall(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
-> +static inline void check_cpu_stall(struct rcu_ctrlblk *rcp)
->  {
->  }
+----- Original Message -----
+>> precharge/commit/cancel can be used for other places,
+>>  - shmem, (and other places need precharge.)
+>>  - move_account(force_empty) etc...
+>> we'll revisit later.
+>> 
+>> Changelog v5 -> v6:
+>>  - added newpage_charge() and migrate_fixup().
+>>  - renamed  functions for swap-in from "swap" to "swapin"
+>>  - add more precise description.
+>> 
+>
+>I don't have any objection to this direction now, but I have one quiestion.
+>
+>Does mem_cgroup_charge_migrate_fixup need to charge a newpage,
+>while mem_cgroup_prepare_migration has charged it already?
+In migration-is-failed case, we have to charge *old page* here.
 
-I should have learned by now to test with all relevant config parameter
-combinations...  My apologies for the hassle!!!
+>
+>I agree adding I/F would be good for future, but I think
+>mem_cgroup_charge_migration_fixup can be no-op function for now.
+>
+Hmm, handling failure case in explicit way may be better. Ok,
+I'll try some.
 
-							Thanx, Paul
+Thanks,
+-Kame
+
+
