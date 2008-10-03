@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbYJCSIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbYJCSKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbYJCSIg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 14:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbYJCSI1
+	id S1754088AbYJCSKZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 14:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYJCSKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 14:08:27 -0400
-Received: from www.sr71.net ([198.145.64.142]:47050 "EHLO blackbird.sr71.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751659AbYJCSI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 14:08:26 -0400
-X-Greylist: delayed 1362 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Oct 2008 14:08:26 EDT
-Subject: USB disconnects every 30 seconds (2.6.27-rc8)
-From: Dave Hansen <dave@sr71.net>
-To: gregkh <gregkh@suse.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 10:45:39 -0700
-Message-Id: <1223055939.7944.32.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Oct 2008 14:10:11 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:50928 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752933AbYJCSKK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 14:10:10 -0400
+Date: Fri, 3 Oct 2008 14:09:31 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Noonan <steven@uplinklabs.net>, linux-kernel@vger.kernel.org,
+       ath9k-devel@venema.h4ckr.net, lrodriguez@atheros.com,
+       linux-wireless@vger.kernel.org
+Subject: Re: ath9k: panic on tip/master
+Message-ID: <20081003180930.GD3368@tuxdriver.com>
+References: <f488382f0810030256x2859fbf6j3f657621c567287f@mail.gmail.com> <20081003100211.GA29841@elte.hu> <20081003153523.GC3368@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081003153523.GC3368@tuxdriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm seeing some odd USB behavior with newer kernels
-(2.6.27-rc8-00062-g330f647 to be exact).  Almost exactly, every 30
-seconds, one of my USB hubs disconnects.  At first, I thought it was a
-hardware issue, and started swapping cables.  Then, I realized that I'd
-*just* rebooted into a new kernel.  So, I booted back to the distro
-kernel and these went away.
+On Fri, Oct 03, 2008 at 11:35:23AM -0400, John W. Linville wrote:
+> On Fri, Oct 03, 2008 at 12:02:11PM +0200, Ingo Molnar wrote:
+> > 
+> > * Steven Noonan <steven@uplinklabs.net> wrote:
+> > 
+> > > Hey folks,
+> > > 
+> > > Just got a panic on tip. According to the stack trace, ath9k is what 
+> > > decided to bomb.
+> > > 
+> > > http://www.uplinklabs.net/~tycho/linux/ath9k_panic_tip_10.3.2008.jpg
+> > > 
+> > > Note: Although it says 'sudo modprobe radeon' on the bash prompt above 
+> > > the panic, I never got to hit 'enter' on that command before the panic 
+> > > occurred.
+> > 
+> > it appears to me that ath9k's eth_rx_input() takes a spinlock that is 
+> > not initialized (or already destroyed by the allocator).
+>  
+> Seems reasonable...
+> 
+> > this would be consistent with an IRQ storm hitting some race in the 
+> > ath9k driver init sequence. For example if request_irq() is done before 
+> > all structures that the IRQ handler relies on are properly initialized.
+> > 
+> > i.e. this has the signature of a genuine ath9k bug.
+> 
+> Agreed, although I don't see anything specifically relating to
+> request_irq or the like.
+> 
+> I think the spin_lock call may actually be in ath_ampdu_input (called
+> from ath_rx_input), which perhaps is getting called simultaneous
+> with ath_rx_node_init still running?  With no locks in between them,
+> it seems like this could be the culprit?
+> 
+> Sorry to not be more immediately helpful, but I'm going to have to
+> run in a few minutes.  Perhaps this insight is helpful for someone
+> more familiar with the internals of this driver?
 
-Even though my mouse is hanging off that hub, I don't seem to notice the
-disconnects.
+This is probably a dead-end...I don't think the ath_node_find
+in ath__rx_indicate will be able to find the ath_node used
+in ath_ampdu_input unless ath_rx_node_init had already complete.
+Back to square one...
 
-$ dmesg | grep disconnect
-[ 3599.496217] usb 3-4.4.4: USB disconnect, address 122
-[ 3599.677346] usb 3-4.1: USB disconnect, address 121
-[ 3627.804621] usb 3-4.1: USB disconnect, address 124
-[ 3628.004400] usb 3-4.4.4: USB disconnect, address 123
-[ 3659.496421] usb 3-4.4.4: USB disconnect, address 126
-[ 3659.676186] usb 3-4.1: USB disconnect, address 125
-[ 3689.493763] usb 3-4.1: USB disconnect, address 3
-[ 3689.708916] usb 3-4.4.4: USB disconnect, address 127
-[ 3719.497221] usb 3-4.4.4: USB disconnect, address 7
-[ 3719.684965] usb 3-4.1: USB disconnect, address 6
-[ 3749.496323] usb 3-4.1: USB disconnect, address 9
-[ 3749.691180] usb 3-4.4.4: USB disconnect, address 8
-
-Full dmesg and .config:
-
-http://sr71.net/~dave/linux/config-10-03-2008.1.txt
-http://sr71.net/~dave/linux/dmesg-10-03-2008.1.log
-
-The last one I tried before this was -rc3, and it appears to be OK.  The
-Ubuntu 2.6.24-19-generic kernel also appears not to have this issue.
-
-A quick scan of LKML and linux-usb didn't turn up anything similar.
-
-The machine is a Lenovo T61 plugged into the Lenovo dock.  At this
-point, the only thing plugged into the suspect hub is my mouse.
-
--- Dave
-
+John
+-- 
+John W. Linville		Linux should be at the core
+linville@tuxdriver.com			of your literate lifestyle.
