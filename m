@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbYJCXTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbYJCXTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154AbYJCXTv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 19:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYJCXSH
+	id S1755002AbYJCXTh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 19:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYJCXSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 19:18:07 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:20808 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500AbYJCXSE (ORCPT
+	Fri, 3 Oct 2008 19:18:03 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:3417 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753480AbYJCXR7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 19:18:04 -0400
+	Fri, 3 Oct 2008 19:17:59 -0400
 From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH v4 07/15] PCI: cpqphp: stop managing hotplug_slot->name
+Subject: [PATCH v4 06/15] PCI: cpci_hotplug: stop managing hotplug_slot->name
 To: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
-       Alex Chiang <achiang@hp.com>
-Date: Fri, 03 Oct 2008 17:18:02 -0600
-Message-ID: <20081003231802.9989.40155.stgit@bob.kio>
+       scottm@somanetworks.com, Alex Chiang <achiang@hp.com>
+Date: Fri, 03 Oct 2008 17:17:57 -0600
+Message-ID: <20081003231757.9989.9590.stgit@bob.kio>
 In-Reply-To: <20081003230125.9989.31145.stgit@bob.kio>
 References: <20081003230125.9989.31145.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -35,214 +35,292 @@ like, and let the core take care of the rest.
 
 Cc: jbarnes@virtuousgeek.org
 Cc: kristen.c.accardi@intel.com
+Cc: scottm@somanetworks.com
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/hotplug/cpqphp.h      |   13 ++++-------
- drivers/pci/hotplug/cpqphp_core.c |   42 +++++++++++++++++--------------------
- 2 files changed, 24 insertions(+), 31 deletions(-)
+ drivers/pci/hotplug/cpci_hotplug.h      |    6 ++
+ drivers/pci/hotplug/cpci_hotplug_core.c |   76 ++++++++++++-------------------
+ drivers/pci/hotplug/cpci_hotplug_pci.c  |    4 +-
+ 3 files changed, 37 insertions(+), 49 deletions(-)
 
-diff --git a/drivers/pci/hotplug/cpqphp.h b/drivers/pci/hotplug/cpqphp.h
-index b1decfa..afaf8f6 100644
---- a/drivers/pci/hotplug/cpqphp.h
-+++ b/drivers/pci/hotplug/cpqphp.h
-@@ -449,6 +449,11 @@ extern u8 cpqhp_disk_irq;
+diff --git a/drivers/pci/hotplug/cpci_hotplug.h b/drivers/pci/hotplug/cpci_hotplug.h
+index d9769b3..9fff878 100644
+--- a/drivers/pci/hotplug/cpci_hotplug.h
++++ b/drivers/pci/hotplug/cpci_hotplug.h
+@@ -30,6 +30,7 @@
  
- /* inline functions */
+ #include <linux/types.h>
+ #include <linux/pci.h>
++#include <linux/pci_hotplug.h>
  
-+static inline char *slot_name(struct slot *slot)
+ /* PICMG 2.1 R2.0 HS CSR bits: */
+ #define HS_CSR_INS	0x0080
+@@ -69,6 +70,11 @@ struct cpci_hp_controller {
+ 	struct cpci_hp_controller_ops *ops;
+ };
+ 
++static inline const char *slot_name(struct slot *slot)
 +{
 +	return hotplug_slot_name(slot->hotplug_slot);
 +}
 +
- /*
-  * return_resource
-  *
-@@ -696,14 +701,6 @@ static inline int get_presence_status(struct controller *ctrl, struct slot *slot
- 	return presence_save;
- }
- 
--#define SLOT_NAME_SIZE 10
--
--static inline void make_slot_name(char *buffer, int buffer_size, struct slot *slot)
--{
--	snprintf(buffer, buffer_size, "%d", slot->number);
--}
--
--
- static inline int wait_for_ctrl_irq(struct controller *ctrl)
- {
-         DECLARE_WAITQUEUE(wait, current);
-diff --git a/drivers/pci/hotplug/cpqphp_core.c b/drivers/pci/hotplug/cpqphp_core.c
-index a7fe458..724d42c 100644
---- a/drivers/pci/hotplug/cpqphp_core.c
-+++ b/drivers/pci/hotplug/cpqphp_core.c
-@@ -315,14 +315,15 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
- {
+ extern int cpci_hp_register_controller(struct cpci_hp_controller *controller);
+ extern int cpci_hp_unregister_controller(struct cpci_hp_controller *controller);
+ extern int cpci_hp_register_bus(struct pci_bus *bus, u8 first, u8 last);
+diff --git a/drivers/pci/hotplug/cpci_hotplug_core.c b/drivers/pci/hotplug/cpci_hotplug_core.c
+index 5e5dee8..de94f4f 100644
+--- a/drivers/pci/hotplug/cpci_hotplug_core.c
++++ b/drivers/pci/hotplug/cpci_hotplug_core.c
+@@ -108,7 +108,7 @@ enable_slot(struct hotplug_slot *hotplug_slot)
  	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
  
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+-	dbg("%s - physical_slot = %s", __func__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s", __func__, slot_name(slot));
+ 
+ 	if (controller->ops->set_power)
+ 		retval = controller->ops->set_power(slot, 1);
+@@ -121,25 +121,23 @@ disable_slot(struct hotplug_slot *hotplug_slot)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s", __func__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s", __func__, slot_name(slot));
+ 
+ 	down_write(&list_rwsem);
+ 
+ 	/* Unconfigure device */
+-	dbg("%s - unconfiguring slot %s",
+-	    __func__, slot->hotplug_slot->name);
++	dbg("%s - unconfiguring slot %s", __func__, slot_name(slot));
+ 	if ((retval = cpci_unconfigure_slot(slot))) {
+ 		err("%s - could not unconfigure slot %s",
+-		    __func__, slot->hotplug_slot->name);
++		    __func__, slot_name(slot));
+ 		goto disable_error;
+ 	}
+-	dbg("%s - finished unconfiguring slot %s",
+-	    __func__, slot->hotplug_slot->name);
++	dbg("%s - finished unconfiguring slot %s", __func__, slot_name(slot));
+ 
+ 	/* Clear EXT (by setting it) */
+ 	if (cpci_clear_ext(slot)) {
+ 		err("%s - could not clear EXT for slot %s",
+-		    __func__, slot->hotplug_slot->name);
++		    __func__, slot_name(slot));
+ 		retval = -ENODEV;
+ 		goto disable_error;
+ 	}
+@@ -214,7 +212,6 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+ 	struct slot *slot = hotplug_slot->private;
  
  	kfree(slot->hotplug_slot->info);
 -	kfree(slot->hotplug_slot->name);
  	kfree(slot->hotplug_slot);
- 	kfree(slot);
+ 	if (slot->dev)
+ 		pci_dev_put(slot->dev);
+@@ -222,12 +219,6 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
  }
  
-+#define SLOT_NAME_SIZE 10
-+
- static int ctrl_slot_setup(struct controller *ctrl,
- 			void __iomem *smbios_start,
- 			void __iomem *smbios_table)
-@@ -335,6 +336,7 @@ static int ctrl_slot_setup(struct controller *ctrl,
- 	u8 slot_number;
- 	u8 ctrl_slot;
- 	u32 tempdword;
+ #define SLOT_NAME_SIZE	6
+-static void
+-make_slot_name(struct slot *slot)
+-{
+-	snprintf(slot->hotplug_slot->name,
+-		 SLOT_NAME_SIZE, "%02x:%02x", slot->bus->number, slot->number);
+-}
+ 
+ int
+ cpci_hp_register_bus(struct pci_bus *bus, u8 first, u8 last)
+@@ -235,7 +226,7 @@ cpci_hp_register_bus(struct pci_bus *bus, u8 first, u8 last)
+ 	struct slot *slot;
+ 	struct hotplug_slot *hotplug_slot;
+ 	struct hotplug_slot_info *info;
+-	char *name;
 +	char name[SLOT_NAME_SIZE];
- 	void __iomem *slot_entry= NULL;
- 	int result = -ENOMEM;
+ 	int status = -ENOMEM;
+ 	int i;
  
-@@ -363,16 +365,12 @@ static int ctrl_slot_setup(struct controller *ctrl,
- 		if (!hotplug_slot->info)
+@@ -262,35 +253,31 @@ cpci_hp_register_bus(struct pci_bus *bus, u8 first, u8 last)
  			goto error_hpslot;
- 		hotplug_slot_info = hotplug_slot->info;
--		hotplug_slot->name = kmalloc(SLOT_NAME_SIZE, GFP_KERNEL);
--
--		if (!hotplug_slot->name)
+ 		hotplug_slot->info = info;
+ 
+-		name = kmalloc(SLOT_NAME_SIZE, GFP_KERNEL);
+-		if (!name)
 -			goto error_info;
+-		hotplug_slot->name = name;
+-
+ 		slot->bus = bus;
+ 		slot->number = i;
+ 		slot->devfn = PCI_DEVFN(i, 0);
  
- 		slot->ctrl = ctrl;
- 		slot->bus = ctrl->bus;
- 		slot->device = slot_device;
- 		slot->number = slot_number;
--		dbg("slot->number = %d\n", slot->number);
-+		dbg("slot->number = %u\n", slot->number);
- 
- 		slot_entry = get_SMBIOS_entry(smbios_start, smbios_table, 9,
- 					slot_entry);
-@@ -418,9 +416,9 @@ static int ctrl_slot_setup(struct controller *ctrl,
- 		/* register this slot with the hotplug pci core */
- 		hotplug_slot->release = &release_slot;
- 		hotplug_slot->private = slot;
--		make_slot_name(hotplug_slot->name, SLOT_NAME_SIZE, slot);
-+		snprintf(name, SLOT_NAME_SIZE, "%u", slot->number);
- 		hotplug_slot->ops = &cpqphp_hotplug_slot_ops;
--		
++		snprintf(name, SLOT_NAME_SIZE, "%02x:%02x", bus->number, i);
 +
- 		hotplug_slot_info->power_status = get_slot_enabled(ctrl, slot);
- 		hotplug_slot_info->attention_status =
- 			cpq_get_attention_status(ctrl, slot);
-@@ -437,10 +435,10 @@ static int ctrl_slot_setup(struct controller *ctrl,
- 		result = pci_hp_register(hotplug_slot,
- 					 ctrl->pci_dev->subordinate,
- 					 slot->device,
--					 hotplug_slot->name);
-+					 name);
- 		if (result) {
- 			err("pci_hp_register failed with error %d\n", result);
+ 		hotplug_slot->private = slot;
+ 		hotplug_slot->release = &release_slot;
+-		make_slot_name(slot);
+ 		hotplug_slot->ops = &cpci_hotplug_slot_ops;
+ 
+ 		/*
+ 		 * Initialize the slot info structure with some known
+ 		 * good values.
+ 		 */
+-		dbg("initializing slot %s", slot->hotplug_slot->name);
++		dbg("initializing slot %s", name);
+ 		info->power_status = cpci_get_power_status(slot);
+ 		info->attention_status = cpci_get_attention_status(slot);
+ 
+-		dbg("registering slot %s", slot->hotplug_slot->name);
+-		status = pci_hp_register(slot->hotplug_slot, bus, i,
+-					 slot->hotplug_slot->name);
++		dbg("registering slot %s", name);
++		status = pci_hp_register(slot->hotplug_slot, bus, i, name);
+ 		if (status) {
+ 			err("pci_hp_register failed with error %d", status);
 -			goto error_name;
 +			goto error_info;
  		}
- 		
- 		slot->next = ctrl->slot;
-@@ -452,8 +450,6 @@ static int ctrl_slot_setup(struct controller *ctrl,
- 	}
++		dbg("slot registered with name: %s", slot_name(slot));
  
+ 		/* Add slot to our internal list */
+ 		down_write(&list_rwsem);
+@@ -299,8 +286,6 @@ cpci_hp_register_bus(struct pci_bus *bus, u8 first, u8 last)
+ 		up_write(&list_rwsem);
+ 	}
  	return 0;
 -error_name:
--	kfree(hotplug_slot->name);
+-	kfree(name);
  error_info:
- 	kfree(hotplug_slot_info);
+ 	kfree(info);
  error_hpslot:
-@@ -639,7 +635,7 @@ static int set_attention_status (struct hotplug_slot *hotplug_slot, u8 status)
- 	u8 device;
- 	u8 function;
+@@ -328,7 +313,7 @@ cpci_hp_unregister_bus(struct pci_bus *bus)
+ 			list_del(&slot->slot_list);
+ 			slots--;
  
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+-			dbg("deregistering slot %s", slot->hotplug_slot->name);
++			dbg("deregistering slot %s", slot_name(slot));
+ 			status = pci_hp_deregister(slot->hotplug_slot);
+ 			if (status) {
+ 				err("pci_hp_deregister failed with error %d",
+@@ -380,11 +365,10 @@ init_slots(int clear_ins)
+ 		return -1;
+ 	}
+ 	list_for_each_entry(slot, &slot_list, slot_list) {
+-		dbg("%s - looking at slot %s",
+-		    __func__, slot->hotplug_slot->name);
++		dbg("%s - looking at slot %s", __func__, slot_name(slot));
+ 		if (clear_ins && cpci_check_and_clear_ins(slot))
+ 			dbg("%s - cleared INS for slot %s",
+-			    __func__, slot->hotplug_slot->name);
++			    __func__, slot_name(slot));
+ 		dev = pci_get_slot(slot->bus, PCI_DEVFN(slot->number, 0));
+ 		if (dev) {
+ 			if (update_adapter_status(slot->hotplug_slot, 1))
+@@ -415,8 +399,7 @@ check_slots(void)
+ 	}
+ 	extracted = inserted = 0;
+ 	list_for_each_entry(slot, &slot_list, slot_list) {
+-		dbg("%s - looking at slot %s",
+-		    __func__, slot->hotplug_slot->name);
++		dbg("%s - looking at slot %s", __func__, slot_name(slot));
+ 		if (cpci_check_and_clear_ins(slot)) {
+ 			/*
+ 			 * Some broken hardware (e.g. PLX 9054AB) asserts
+@@ -424,35 +407,34 @@ check_slots(void)
+ 			 */
+ 			if (slot->dev) {
+ 				warn("slot %s already inserted",
+-				     slot->hotplug_slot->name);
++				     slot_name(slot));
+ 				inserted++;
+ 				continue;
+ 			}
  
- 	if (cpqhp_get_bus_dev(ctrl, &bus, &devfn, slot->number) == -1)
- 		return -ENODEV;
-@@ -666,7 +662,7 @@ static int process_SI(struct hotplug_slot *hotplug_slot)
- 	u8 device;
- 	u8 function;
+ 			/* Process insertion */
+-			dbg("%s - slot %s inserted",
+-			    __func__, slot->hotplug_slot->name);
++			dbg("%s - slot %s inserted", __func__, slot_name(slot));
  
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+ 			/* GSM, debug */
+ 			hs_csr = cpci_get_hs_csr(slot);
+ 			dbg("%s - slot %s HS_CSR (1) = %04x",
+-			    __func__, slot->hotplug_slot->name, hs_csr);
++			    __func__, slot_name(slot), hs_csr);
  
- 	if (cpqhp_get_bus_dev(ctrl, &bus, &devfn, slot->number) == -1)
- 		return -ENODEV;
-@@ -698,7 +694,7 @@ static int process_SS(struct hotplug_slot *hotplug_slot)
- 	u8 device;
- 	u8 function;
+ 			/* Configure device */
+ 			dbg("%s - configuring slot %s",
+-			    __func__, slot->hotplug_slot->name);
++			    __func__, slot_name(slot));
+ 			if (cpci_configure_slot(slot)) {
+ 				err("%s - could not configure slot %s",
+-				    __func__, slot->hotplug_slot->name);
++				    __func__, slot_name(slot));
+ 				continue;
+ 			}
+ 			dbg("%s - finished configuring slot %s",
+-			    __func__, slot->hotplug_slot->name);
++			    __func__, slot_name(slot));
  
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+ 			/* GSM, debug */
+ 			hs_csr = cpci_get_hs_csr(slot);
+ 			dbg("%s - slot %s HS_CSR (2) = %04x",
+-			    __func__, slot->hotplug_slot->name, hs_csr);
++			    __func__, slot_name(slot), hs_csr);
  
- 	if (cpqhp_get_bus_dev(ctrl, &bus, &devfn, slot->number) == -1)
- 		return -ENODEV;
-@@ -721,7 +717,7 @@ static int hardware_test(struct hotplug_slot *hotplug_slot, u32 value)
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
+ 			if (update_latch_status(slot->hotplug_slot, 1))
+ 				warn("failure to update latch file");
+@@ -465,18 +447,18 @@ check_slots(void)
+ 			/* GSM, debug */
+ 			hs_csr = cpci_get_hs_csr(slot);
+ 			dbg("%s - slot %s HS_CSR (3) = %04x",
+-			    __func__, slot->hotplug_slot->name, hs_csr);
++			    __func__, slot_name(slot), hs_csr);
  
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+ 			inserted++;
+ 		} else if (cpci_check_ext(slot)) {
+ 			/* Process extraction request */
+ 			dbg("%s - slot %s extracted",
+-			    __func__, slot->hotplug_slot->name);
++			    __func__, slot_name(slot));
  
- 	return cpqhp_hardware_test(ctrl, value);	
- }
-@@ -732,7 +728,7 @@ static int get_power_status(struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
+ 			/* GSM, debug */
+ 			hs_csr = cpci_get_hs_csr(slot);
+ 			dbg("%s - slot %s HS_CSR = %04x",
+-			    __func__, slot->hotplug_slot->name, hs_csr);
++			    __func__, slot_name(slot), hs_csr);
  
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	*value = get_slot_enabled(ctrl, slot);
- 	return 0;
-@@ -743,7 +739,7 @@ static int get_attention_status(struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 	
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	*value = cpq_get_attention_status(ctrl, slot);
- 	return 0;
-@@ -754,7 +750,7 @@ static int get_latch_status(struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	*value = cpq_get_latch_status(ctrl, slot);
- 
-@@ -766,7 +762,7 @@ static int get_adapter_status(struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	*value = get_presence_status(ctrl, slot);
- 
-@@ -778,7 +774,7 @@ static int get_max_bus_speed (struct hotplug_slot *hotplug_slot, enum pci_bus_sp
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	*value = ctrl->speed_capability;
- 
-@@ -790,7 +786,7 @@ static int get_cur_bus_speed (struct hotplug_slot *hotplug_slot, enum pci_bus_sp
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	*value = ctrl->speed;
- 
+ 			if (!slot->extracting) {
+ 				if (update_latch_status(slot->hotplug_slot, 0)) {
+@@ -494,7 +476,7 @@ check_slots(void)
+ 				 * bother trying to tell the driver or not?
+ 				 */
+ 				err("card in slot %s was improperly removed",
+-				    slot->hotplug_slot->name);
++				    slot_name(slot));
+ 				if (update_adapter_status(slot->hotplug_slot, 0))
+ 					warn("failure to update adapter file");
+ 				slot->extracting = 0;
+diff --git a/drivers/pci/hotplug/cpci_hotplug_pci.c b/drivers/pci/hotplug/cpci_hotplug_pci.c
+index df82b95..829c327 100644
+--- a/drivers/pci/hotplug/cpci_hotplug_pci.c
++++ b/drivers/pci/hotplug/cpci_hotplug_pci.c
+@@ -209,7 +209,7 @@ int cpci_led_on(struct slot* slot)
+ 					      hs_cap + 2,
+ 					      hs_csr)) {
+ 			err("Could not set LOO for slot %s",
+-			    slot->hotplug_slot->name);
++			    hotplug_slot_name(slot->hotplug_slot));
+ 			return -ENODEV;
+ 		}
+ 	}
+@@ -238,7 +238,7 @@ int cpci_led_off(struct slot* slot)
+ 					      hs_cap + 2,
+ 					      hs_csr)) {
+ 			err("Could not clear LOO for slot %s",
+-			    slot->hotplug_slot->name);
++			    hotplug_slot_name(slot->hotplug_slot));
+ 			return -ENODEV;
+ 		}
+ 	}
 
