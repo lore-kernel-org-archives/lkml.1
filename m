@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYJCGso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbYJCGuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbYJCGso (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 02:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYJCGsg
+	id S1755204AbYJCGuI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 02:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYJCGt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 02:48:36 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38012 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753327AbYJCGsf (ORCPT
+	Fri, 3 Oct 2008 02:49:57 -0400
+Received: from smtp120.mail.mud.yahoo.com ([209.191.84.77]:38413 "HELO
+	smtp120.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753327AbYJCGt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 02:48:35 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "MinChan Kim" <minchan.kim@gmail.com>
-Subject: Re: [PATCH 0/4] Reclaim page capture v4
-Cc: kosaki.motohiro@jp.fujitsu.com, "Andy Whitcroft" <apw@shadowen.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       "Rik van Riel" <riel@redhat.com>, "Mel Gorman" <mel@csn.ul.ie>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com>
-References: <1222864261-22570-1-git-send-email-apw@shadowen.org> <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com>
-Message-Id: <20081003154616.EF74.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Fri, 3 Oct 2008 02:49:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=s2CqUT7mKdvX8k08sokKyYgA3a3j4lIarQbqnVY5X3fzPT4+GQ3rNxbn0D+NnG5GaAHjWbeKyes3fGpj7614BG0VwwwtXO3CI1vnilqGQ3l2fZz1TibzatlJXwU/1RWfCsZeu8ZsOS1JCp/fFf7X7cEcbTO2FwRKC6M13r+1LSI=  ;
+X-YMail-OSG: mtQPl7QVM1kp4UTThU9_afa4xOn6VyQsqY12diLkgoMS1bNcKma7mnfM61ZrxWCJrHT4bky9KrIqyhKqyfnsCpAlRG9TUizQ_5nzkrxsCtbkV4NdtB6qw2It3mdufta_NeEP2.a5LsmLp14St4neB2.1ZDSsVQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 00/32] Swap over NFS - v19
+Date: Fri, 3 Oct 2008 16:49:47 +1000
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>,
+       David Miller <davem@davemloft.net>
+References: <20081002130504.927878499@chello.nl>
+In-Reply-To: <20081002130504.927878499@chello.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Fri,  3 Oct 2008 15:48:28 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <200810031649.47800.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi, Andy.
-> 
-> I tested your patch in my desktop.
-> The test is just kernel compile with single thread.
-> My system environment is as follows.
-> 
-> model name	: Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
-> MemTotal:        2065856 kB
-> 
-> When I tested vanilla, compile time is as follows.
-> 
-> 2433.53user 187.96system 42:05.99elapsed 103%CPU (0avgtext+0avgdata
-> 0maxresident)k
-> 588752inputs+4503408outputs (127major+55456246minor)pagefaults 0swaps
-> 
-> When I tested your patch, as follows.
-> 
-> 2489.63user 202.41system 44:47.71elapsed 100%CPU (0avgtext+0avgdata
-> 0maxresident)k
-> 538608inputs+4503928outputs (130major+55531561minor)pagefaults 0swaps
-> 
-> Regresstion almost is above 2 minutes.
-> Do you think It is a trivial?
+On Thursday 02 October 2008 23:05, Peter Zijlstra wrote:
+> Patches are against: v2.6.27-rc5-mm1
+>
+> This release features more comments and (hopefully) better Changelogs.
+> Also the netns stuff got sorted and ipv6 will now build and not oops
+> on boot ;-)
+>
+> The first 4 patches are cleanups and can go in if the respective
+> maintainers agree.
+>
+> The code is lightly tested but seems to work on my default config.
+>
+> Let's get this ball rolling...
 
-Ooops.
-this is definitly significant regression.
-
-
-> I know your patch is good to allocate hugepage.
-> But, I think many users don't need it, including embedded system and
-> desktop users yet.
-> 
-> So I suggest you made it enable optionally.
-
-No.
-if the patch has this significant regression,
-nobody turn on its option.
-
-We should fix that.
-
-
+I know it's not too helpful for me to say this, but I am spending
+time looking at this stuff. I have commented on it in the past,
+but I want to get a good handle on the code before I chime in again.
