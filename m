@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbYJCGnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYJCGso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755049AbYJCGnq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 02:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYJCGni
+	id S1754845AbYJCGso (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 02:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYJCGsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 02:43:38 -0400
-Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:42833 "HELO
-	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753331AbYJCGnh (ORCPT
+	Fri, 3 Oct 2008 02:48:36 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38012 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753327AbYJCGsf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 02:43:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=M340TZeu4UWw79+EUTp+j5ZW7BHkQaeb2PoMmdyVjYhn6HYeoifIrKkCgkZEibXvyJy6fcIsBSSYjQGDvRQ3ys8hMra2/5L4jS6Hn50PKW8I5ctiZ/nrmiMJ/V7lgQIVKxLcOe3J00xkquJrc9QFBrkLySohjh5jjdsY1mV3wIg=  ;
-X-YMail-OSG: CDcqPhkVM1mwBaNDgfPgEWSVHE2fmeALowU3_50QiGjnz97Bk8OV7x9KfZZmoJbF4m2HlI.8_Iu70y1Ui9o6SEQcUwnXzcMZXworpLFD9Qvj7cl9saXledrbukBr7ixb4zIrUAv6KNgDM2yvj_qbSwDMyYHZyC5Bguc_fsjmEkYzxepDuS0-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] handle initialising compound pages at orders greater than MAX_ORDER
-Date: Fri, 3 Oct 2008 16:43:28 +1000
-User-Agent: KMail/1.9.5
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kniht@linux.vnet.ibm.com, mel@csn.ul.ie
-References: <1222964396-25031-1-git-send-email-apw@shadowen.org> <20081002143004.5fec3952.akpm@linux-foundation.org>
-In-Reply-To: <20081002143004.5fec3952.akpm@linux-foundation.org>
+	Fri, 3 Oct 2008 02:48:35 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "MinChan Kim" <minchan.kim@gmail.com>
+Subject: Re: [PATCH 0/4] Reclaim page capture v4
+Cc: kosaki.motohiro@jp.fujitsu.com, "Andy Whitcroft" <apw@shadowen.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>, "Mel Gorman" <mel@csn.ul.ie>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com>
+References: <1222864261-22570-1-git-send-email-apw@shadowen.org> <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com>
+Message-Id: <20081003154616.EF74.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810031643.28731.nickpiggin@yahoo.com.au>
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Fri,  3 Oct 2008 15:48:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 October 2008 07:30, Andrew Morton wrote:
-> On Thu,  2 Oct 2008 17:19:56 +0100
->
-> Andy Whitcroft <apw@shadowen.org> wrote:
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -268,13 +268,14 @@ void prep_compound_page(struct page *page, unsigned
-> > long order) {
-> >  	int i;
-> >  	int nr_pages = 1 << order;
-> > +	struct page *p = page + 1;
-> >
-> >  	set_compound_page_dtor(page, free_compound_page);
-> >  	set_compound_order(page, order);
-> >  	__SetPageHead(page);
-> > -	for (i = 1; i < nr_pages; i++) {
-> > -		struct page *p = page + i;
-> > -
-> > +	for (i = 1; i < nr_pages; i++, p++) {
-> > +		if (unlikely((i & (MAX_ORDER_NR_PAGES - 1)) == 0))
-> > +			p = pfn_to_page(page_to_pfn(page) + i);
-> >  		__SetPageTail(p);
-> >  		p->first_page = page;
-> >  	}
->
-> gad.  Wouldn't it be clearer to do
->
-> 	for (i = 1; i < nr_pages; i++) {
-> 		struct page *p = pfn_to_page(i);
-> 		__SetPageTail(p);
-> 		p->first_page = page;
-> 	}
->
-> Oh well, I guess we can go with the obfuscated, uncommented version for
-> now :(
->
-> This patch applies to 2.6.26 (and possibly earlier) but I don't think
-> those kernels can trigger the bug?
+> Hi, Andy.
+> 
+> I tested your patch in my desktop.
+> The test is just kernel compile with single thread.
+> My system environment is as follows.
+> 
+> model name	: Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
+> MemTotal:        2065856 kB
+> 
+> When I tested vanilla, compile time is as follows.
+> 
+> 2433.53user 187.96system 42:05.99elapsed 103%CPU (0avgtext+0avgdata
+> 0maxresident)k
+> 588752inputs+4503408outputs (127major+55456246minor)pagefaults 0swaps
+> 
+> When I tested your patch, as follows.
+> 
+> 2489.63user 202.41system 44:47.71elapsed 100%CPU (0avgtext+0avgdata
+> 0maxresident)k
+> 538608inputs+4503928outputs (130major+55531561minor)pagefaults 0swaps
+> 
+> Regresstion almost is above 2 minutes.
+> Do you think It is a trivial?
 
-I think the problem is that pfn_to_page isn't always trivial. I would
-prefer to have seen a new function for hugetlb to use, and keep the
-branch-less version for the page allocator itself.
+Ooops.
+this is definitly significant regression.
+
+
+> I know your patch is good to allocate hugepage.
+> But, I think many users don't need it, including embedded system and
+> desktop users yet.
+> 
+> So I suggest you made it enable optionally.
+
+No.
+if the patch has this significant regression,
+nobody turn on its option.
+
+We should fix that.
+
+
