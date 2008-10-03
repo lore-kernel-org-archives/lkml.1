@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbYJCO6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbYJCO7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753927AbYJCO6w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 10:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYJCO6k
+	id S1753729AbYJCO7r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 10:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYJCO7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 10:58:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36269 "EHLO mx1.redhat.com"
+	Fri, 3 Oct 2008 10:59:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39938 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752305AbYJCO6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 10:58:40 -0400
-Date: Fri, 3 Oct 2008 16:57:54 +0200
-From: Jakub Jelinek <jakub@redhat.com>
-To: Kees Cook <kees.cook@canonical.com>
-Cc: Ulrich Drepper <drepper@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org
-Subject: Re: [PATCH] ELF: implement AT_RANDOM for glibc PRNG seeding
-Message-ID: <20081003145754.GH32682@tyan-ft48-01.lab.bos.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <48E3EFD6.2010704@redhat.com> <20081001215657.GH12527@outflux.net> <20081001220948.GC32107@sunsite.ms.mff.cuni.cz> <20081001222706.68E7E1544B4@magilla.localdomain> <20081003001616.GN10632@outflux.net> <20081003004340.GF32682@tyan-ft48-01.lab.bos.redhat.com> <20081003052938.GS10632@outflux.net> <20081002225718.6a0d803a@infradead.org> <48E5BAC6.9070007@redhat.com> <20081003145054.GU10632@outflux.net>
+	id S1750904AbYJCO7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 10:59:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/6] Hibernation: Introduce new system state for the last phase of hibernation
+Date: Fri, 3 Oct 2008 17:03:31 +0200
+User-Agent: KMail/1.9.9
+Cc: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
+       Frans Pop <elendil@planet.nl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>
+References: <200808290002.55026.rjw@sisk.pl> <200810031327.19293.rjw@sisk.pl> <20081003054355.e3a3ac79.akpm@linux-foundation.org>
+In-Reply-To: <20081003054355.e3a3ac79.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081003145054.GU10632@outflux.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810031703.32114.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 07:50:54AM -0700, Kees Cook wrote:
-> @@ -152,6 +160,8 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
->  	elf_addr_t __user *sp;
->  	elf_addr_t __user *u_platform;
->  	elf_addr_t __user *u_base_platform;
-> +	elf_addr_t __user *u_rand_bytes;
-> +	unsigned int rand_size;
->  	const char *k_platform = ELF_PLATFORM;
->  	const char *k_base_platform = ELF_BASE_PLATFORM;
->  	int items;
+On Friday, 3 of October 2008, Andrew Morton wrote:
+> On Fri, 3 Oct 2008 13:27:18 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > > Can we just create a new global?
+> > > 
+> > > 	extern bool system_entering_hibernation_or_whatever;
+> > 
+> > Yes, we can, but what about:
+> > 
+> > extern bool system_entering_hibernation(void);
+> > 
+> > that will become a static inline in case of !CONFIG_HIBERNATION,
+> > and using a static variable?
+> 
+> Sure, even better.
 
-Why are you introducing the rand_size variable at all?  The only thing it
-can cause is confuse somebody to change it, which might do bad things as
-k_rand_bytes var uses ELF_AUXV_RANDOM_SIZE directly.  Just use
-ELF_AUXV_RANDOM_SIZE in all places you use rand_size ATM (except the
-assignment and declaration of course).
-
-	Jakub
+OK, I'll respin the entire series, then.
