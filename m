@@ -1,60 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbYJCIVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYJCI03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032AbYJCIVl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 04:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYJCIVZ
+	id S1753543AbYJCI03 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 04:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbYJCI0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 04:21:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56113 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751949AbYJCIVY (ORCPT
+	Fri, 3 Oct 2008 04:26:21 -0400
+Received: from mga07.intel.com ([143.182.124.22]:41507 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750785AbYJCI0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 04:21:24 -0400
-Date: Fri, 3 Oct 2008 01:20:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rusty@rustcorp.com.au, jeremy@goop.org,
-       ebiederm@xmission.com, travis@sgi.com, herbert@gondor.apana.org.au,
-       xemul@openvz.org
-Subject: Re: [patch 3/4] cpu alloc: The allocator
-Message-Id: <20081003012003.f1f84937.akpm@linux-foundation.org>
-In-Reply-To: <1223019811.30285.12.camel@penberg-laptop>
-References: <20080929193500.470295078@quilx.com>
-	<20080929193516.278278446@quilx.com>
-	<20081003003342.4d592c1f.akpm@linux-foundation.org>
-	<1223019811.30285.12.camel@penberg-laptop>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 3 Oct 2008 04:26:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,355,1220252400"; 
+   d="scan'208";a="54548819"
+Subject: Re: [PATCH] pci-e: ignore unknown capability and continue searching
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Greg KH <greg@kroah.com>
+Cc: jbarnes@virtuousgeek.org, LKML <linux-kernel@vger.kernel.org>,
+       czernecki@gmail.com
+In-Reply-To: <1222748945.3887.7.camel@ymzhang>
+References: <1222748945.3887.7.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 03 Oct 2008 16:21:43 +0800
+Message-Id: <1223022104.16351.2.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 03 Oct 2008 10:43:31 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+Greg, Jesse,
 
-> Hi Andrew,
+Is there any issue with the patch? Tomasz need kernel to have the patch to work
+on his machine.
+
+Thanks,
+Yanmin
+
+On Tue, 2008-09-30 at 12:29 +0800, Zhang, Yanmin wrote:
+> ﻿Subject: pci-e: ignore unknown capability and continue searching
+> ﻿From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 > 
-> On Fri, 2008-10-03 at 00:33 -0700, Andrew Morton wrote:
-> > > +static void set_map(int start, int length)
-> > > +{
-> > > +	while (length-- > 0)
-> > > +		__set_bit(start++, cpu_alloc_map);
-> > > +}
-> > 
-> > Can we use bitmap_fill() here?
 > 
-> But bitmap_fill() assumes that the starting offset is aligned to
-> unsigned long (which is not the case here), doesn't it?
-
-umm, yeah, the whole bitmap interface is busted from that POV.
-
-> ___On Fri, 2008-10-03 at 00:33 -0700, Andrew Morton wrote:
-> > But I'd have though that it would be possible to only allocate the
-> > storage for online CPUs.  That would be a pretty significant win for
-> > some system configurations?
+> Tomasz reported AER driver couldn't work on his machine. With the output
+> of "lcpsi -vvv", I found the root port's extended capabilities are
+>          Capabilities: [100] Unknown (11)
+>          Capabilities: [150] Advanced Error Reporting
+>          Capabilities: [190] Unknown (13)
+> Such Unknown capability is not expected. During pci-e initialization,function
+> get_port_device_capability just returns if it hits an unknown capability when
+> searching the AER capability.
 > 
-> Maybe, but then you'd have to deal with CPU hotplug... iik.
+> I worked out a patch against 2.6.27-rc7. When hitting an unkown capability,
+> function get_port_device_capability continues the searching.
+> 
+> Tomasz tested it and the patch does work well.
+> 
+> Signed-off-by Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> Reported-by Tomasz Czernecki <czernecki@gmail.com>
+> 
+> ---
+> 
+> --- linux-2.6.27-rc7/drivers/pci/pcie/portdrv_core.c	2008-09-27 09:35:32.000000000 +0800
+> +++ linux-2.6.27-rc7_aer/drivers/pci/pcie/portdrv_core.c	2008-09-27 10:10:39.000000000 +0800
+> @@ -195,23 +195,25 @@ static int get_port_device_capability(st
+>  	/* PME Capable - root port capability */
+>  	if (((reg16 >> 4) & PORT_TYPE_MASK) == PCIE_RC_PORT)
+>  		services |= PCIE_PORT_SERVICE_PME;
+> -	
+> +
+>  	pos = PCI_CFG_SPACE_SIZE;
+>  	while (pos) {
+> -		pci_read_config_dword(dev, pos, &reg32);
+> -		switch (reg32 & 0xffff) {
+> +		if (pci_read_config_dword(dev, pos, &reg32))
+> +			break;
+> +
+> +		/* some broken boards return ~0 */
+> +		if (reg32 == 0xffffffff)
+> +			break;
+> +
+> +		switch (PCI_EXT_CAP_ID(reg32)) {
+>  		case PCI_EXT_CAP_ID_ERR:
+>  			services |= PCIE_PORT_SERVICE_AER;
+> -			pos = reg32 >> 20;
+>  			break;
+>  		case PCI_EXT_CAP_ID_VC:
+>  			services |= PCIE_PORT_SERVICE_VC;
+> -			pos = reg32 >> 20;
+> -			break;
+> -		default:
+> -			pos = 0;
+>  			break;
+>  		}
+> +		pos = PCI_EXT_CAP_NEXT(reg32);
+>  	}
+>  
+>  	return services;
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Of course.
