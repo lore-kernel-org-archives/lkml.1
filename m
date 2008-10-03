@@ -1,44 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbYJCT4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbYJCUAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbYJCT4w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 15:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYJCT4m
+	id S1753891AbYJCUAR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 16:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYJCUAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 15:56:42 -0400
-Received: from www.sr71.net ([198.145.64.142]:53938 "EHLO blackbird.sr71.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752875AbYJCT4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 15:56:42 -0400
-Subject: Re: USB disconnects every 30 seconds (2.6.27-rc8)
-From: Dave Hansen <dave@sr71.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: gregkh <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.44L0.0810031522280.6462-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0810031522280.6462-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 12:56:40 -0700
-Message-Id: <1223063800.7944.62.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Oct 2008 16:00:05 -0400
+Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:24639 "EHLO
+	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752796AbYJCUAE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 16:00:04 -0400
+From: Alexander van Heukelum <heukelum@fastmail.fm>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH 0/9] traps: x86: finalize unification of traps.c
+Date: Fri,  3 Oct 2008 22:00:31 +0200
+Message-Id: <1223064040-23170-1-git-send-email-heukelum@fastmail.fm>
+X-Mailer: git-send-email 1.5.4.3
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Fri, 03 Oct 2008 21:59:43 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.34; VDF: 7.0.6.242; host: AntiVir2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-03 at 15:23 -0400, Alan Stern wrote:
-> On Fri, 3 Oct 2008, Alan Stern wrote:
-> > You should use usbmon (see Documentation/usb/usbmon.txt) to record a 
-> > trace of everything happening on bus 3.  And to keep things simple, you 
-> > should unplug all the USB devices except for one of the magical 
-> > disappearing hubs.
-> 
-> Better still, get two traces: one from each kernel.  Then they can be 
-> compared.
+Hi Ingo,
 
-What should I record on the good kernel?  Just the devices being
-connected?
+This series unifies traps_32.c and traps_64.c.
 
--- Dave
-
+Greetings,
+    Alexander
