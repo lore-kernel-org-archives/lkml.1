@@ -1,102 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbYJCOo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbYJCOoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752871AbYJCOo1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 10:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYJCOoS
+	id S1753282AbYJCOoz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 10:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYJCOoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 10:44:18 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:43172 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbYJCOoS (ORCPT
+	Fri, 3 Oct 2008 10:44:46 -0400
+Received: from gv-out-0910.google.com ([216.239.58.189]:18132 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752075AbYJCOop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 10:44:18 -0400
-Subject: Re: [RFC patch 0/5] genirq: add infrastructure for threaded
-	interrupt handlers
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>
-In-Reply-To: <alpine.LFD.1.10.0810030215190.5549@apollo.tec.linutronix.de>
-References: <20081001223213.078984344@linutronix.de>
-	 <1222912413.2995.80.camel@laptop-eth.lan>
-	 <alpine.DEB.1.10.0810021052010.19018@gandalf.stny.rr.com>
-	 <1222962525.2995.100.camel@laptop-eth>
-	 <alpine.LFD.1.10.0810022004520.5549@apollo.tec.linutronix.de>
-	 <1222974254.2995.144.camel@laptop-eth>  <20081002192827.GA2950@elte.hu>
-	 <1222978145.2995.172.camel@laptop-eth>
-	 <alpine.DEB.1.10.0810021612280.2919@gandalf.stny.rr.com>
-	 <1222980485.2995.186.camel@laptop-eth>
-	 <alpine.DEB.1.10.0810021652370.24442@gandalf.stny.rr.com>
-	 <1222983008.2995.205.camel@laptop-eth>
-	 <alpine.DEB.1.10.0810021749230.24442@gandalf.stny.rr.com>
-	 <1222989842.2995.240.camel@laptop-eth>
-	 <alpine.LFD.1.10.0810030215190.5549@apollo.tec.linutronix.de>
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 07:44:13 -0700
-Message-Id: <1223045053.2995.251.camel@laptop-eth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Fri, 3 Oct 2008 10:44:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=bSJNhVAGnM8or/YlmcfuFJK2Kq3z+sjcD31unoYObq8WJ5CloQcP5CylZ6eMht0RAO
+         BqDj9wxzJoyzFSyKNTPtz3i6BZcsnzH70b6o2kyVtqdcUwauiLeq1zyR7FqijwrbsuIa
+         O+l/XTS6t07ytCD2j0X1w30DWGaZxRvtNhGLg=
+Message-ID: <7c86c4470810030744m3bf79e96ud6b387ba3cb5c484@mail.gmail.com>
+Date: Fri, 3 Oct 2008 16:44:41 +0200
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: perfmon3 interface overview
+Cc: linux-kernel@vger.kernel.org, "David Gibson" <david@gibson.dropbear.id.au>
+In-Reply-To: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-03 at 02:26 +0200, Thomas Gleixner wrote:
-> On Thu, 2 Oct 2008, Daniel Walker wrote:
-> > On Thu, 2008-10-02 at 18:28 -0400, Steven Rostedt wrote:
-> > > > > Why are you bringing up real time in this thread?? The thread has
-> > > > > absolutely nothing to do with real time. This thread is about a better
-> > > > > way to handle interrupt handlers.
-> > > > 
-> > > > I'm concerned about the connection between the two, which is what I'm
-> > > > commenting on.
-> > > 
-> > > Well, please take that up separately. Do you see these patches going
-> > > into the -rt tree?  No, they are going in mainline. We will deal with
-> > > them for -rt when the time comes.
-> > 
-> > It's an RFC after all, it's not going into anything at this point..
-> 
-> Because you are deciding what's going into mainline, right ?
+Hello,
 
-You flagged this as an RFC, typically that means it's a work in
-progress .. Usually a work in progress does go into mainline.
+Based on the comments from David Gibson, here is another version of
+the v3.0 API. This one
+collapses the system calls to the maximum while still providing a lot
+of flexbility. We are down
+to  5 system calls from 12. Of course, each syscall has more of an
+ioctl()-style to it but types of
+actions are still well separated.
 
-> > > You are bringing up concerns about mainline changes with something that
-> > > is maintained outside the mainline tree.  Changes to mainline have never
-> > > been influenced by changes maintained outside of mainline.
-> > 
-> > Again it's an RFC .. It's not going into mainline.. 
-> 
-> You made such a statement vs. hrtimers some time ago. 
+I) session creation
 
-hrtimers didn't go RFC then straight to mainline either.
+  With v2.81:
+    int pfm_create_context(pfarg_ctx_t *ctx,
+                           char *smpl_name,
+                           void *smpl_arg,
+                           size_t smpl_size);
+ With v3.0:
+    int pfm_create_session(int flags, pfarg_sinfo_t *sif);
 
-> > > Yes Daniel, I know. But this is not a conversation. This is a email thread
-> > > that is talking about changes to mainline. The mainline kernel developers
-> > > really don't care about any issues that these changes will do to the
-> > > real time project. The real time project is a niche, and is currently
-> > > outside the mainline tree. Hence, lets stop bothering mainline 
-> > > developers with our issues.
-> > 
-> > Your speaking for a lot of developers.. It's an RFC, it's coming from
-> > real time developers, it's real time connected, and this is the real
-> > time development list ..
-> 
-> This RFC patch is from a mainline developer/ maintainer who happens to
-> be a real time developer as well.
+    int pfm_create_session(int flags, pfarg_sinfo_t *sif,
+                           char *smpl_name,
+                           void *smpl_arg,
+                           size_t smpl_size);
 
-And is submitting a real time core features.
+    Flags:
+        PFM_FL_SMPL_FMT    : using sampling format (3 extra params passed)
+        PFM_FL_SYSTEM_WIDE : create a system-wide (cpu-wide) session
+        PFM_FL_OVFL_NO_MSG  : do not send overflow message (just signal)
 
-> Welcome to my real time incoherent nonsense filter
+    typedef {
+        __u64 sif_avail_pmcs[PFM_PMC_BV];/* out: available PMCs */
+        __u64 sif_avail_pmds[PFM_PMD_BV];/* out: available PMDs */
+        __u64 sif_reserved1[4];          /* for future use */
+    } pfarg_sinfo_t;
 
-You ask for comments, than get upset when you get some .. If anyone
-needs to be filtered it's you.
+    The sinfo structure is systematically returned. It contains bitmasks
+    showing which registers are available to the session. The PMU may be
+    shared with other subsystems, so tools cannot assume they have access
+    to all registers. Furthermore, some registers may not be available to
+    both types of sessions (per-thread, system-wide).
 
-Daniel
+    If PFM_FL_SMPL_FMT is present, then the kernel expects the extra 3
+    paramters to describe which kernel sampling format to use, and its
+    optional parameters.
 
+ II) programming the registers
+
+ With v2.81:
+      int pfm_write_pmcs(int fd, pfarg_pmc_t *pmds, int  n);
+      int pfm_write_pmds(int fd, pfarg_pmd_t *pmcs, int n);
+      int pfm_read_pmds(int fd, parg_pmd_t *pmds, int n);
+ With v3.0:
+      int pfm_write_pmrs(int fd, int flags, void *pmrs, size_t sz);
+      int pfm_read_pmrs(int fd, int flags, void **pmrs, size_t sz);
+
+ New structures:
+
+   typedef struct {
+       u16 reg_num;
+       u16 reg_set;
+       u32 reg_flags;
+       u64 reg_value;
+   } pfarg_pmr_t;
+
+   typedef struct {
+       u16 reg_num;
+       u16 reg_set;
+       u32 reg_flags;
+       u64 reg_value;
+       u64 reg_long_reset;
+       u64 reg_short_reset;
+       u64 reg_random_mask;
+       u64 reg_smpl_pmds[PFM_PMD_BV];
+       u64 reg_reset_pmds[PFM_PMD_BV];
+       u64 reg_ovfl_swcnt;
+       u64 reg_smpl_eventid;
+       u64 reg_last_value;
+       u64 reg_reserved[8];
+   } pfarg_pmd_attr_t;
+
+ New flags:
+    PFM_RWFL_PMD  : passing simplified PMD registers in pfarg_pmr_t
+    PFM_RWFL_PMC  : passing PMD registers in pfarg_pmr_t
+    PFM_RWFL_PMD_ATTR: passing full PMD registers in pfarg_pmd_attr_t
+
+ We now use only 2 system calls to read and write the PMU registers.
+
+ The vector is now void *. That gives us the ability to pass new types
+ of structure in the future if we have to. Also we now use size instead
+ of count.
+
+ The calls provides two modes for passing PMD registers. A simplified mode
+ used mostly for counting where no attributes are passed. A full mode, where
+ extended attributes are passed for kernel-level sampling and multiplexing.
+ That way, counting sessions do not pay the price of copying in/out the
+ large set of attributes.
+
+  There is only one mode to pass PMC registers.
+
+III) attaching/detaching, starting/stopping
+
+  With v2.81:
+     int pfm_load_context(int fd, pfarg_load_t *load);
+     int pfm_unload_context(int fd);
+     int pfm_start(int fd, pfarg_start_t *st);
+     int pfm_stop(int fd);
+     int pfm_restart(int fd);
+
+  With v3.0:
+     int pfm_control_session(int fd, int flags, int target);
+
+     New flags:
+       PFM_CTFL_START: start monitoring
+       PFM_CTFL_STOP : stop monitoring
+       PFM_CTFL_RESTART: resume monitoring after a notification
+       PFM_CTFL_ATTACH: attach to thread or CPU designated by 'target'
+       PFM_CTFL_DETACH: detach from thread or CPU (target not used)
+
+   This is a combined syscall, because all those operations have something
+   in common, they control the state of the session.
+
+
+  V) event set and multiplexing
+     With v2.81:
+        int pfm_create_evtsets(int fd, pfarg_setdesc_t *s, int n);
+        int pfm_getinfo_evtsets(int fd, pfarg_setinfo_t *s, int n);
+        int pfm_delete_evtsets(int fd, pfarg_setdesc_t *s, int n);
+
+    With v3.0:
+        int pfm_control_sets(int fd, int flags, void *s, size_t sz;
+
+        typedef struct {
+        __u16 set_id;             /* which set */
+        __u16 set_reserved1;      /* for future use */
+        __u32 set_flags;          /* SETFL flags  */
+        __u64 set_timeout;        /* switch timeout in nsecs */
+        __u64 reserved[6];        /* for future use */
+        } pfarg_set_desc;
+
+        typedef struct {
+        __u16 set_id;                   /* which set */
+        __u16 set_reserved1;            /* for future use */
+        __u32 set_reserved2;            /* for future use */
+        __u64 set_ovfl_pmds[PFM_PMD_BV];/* out: last ovfl PMDs */
+        __u64 set_runs;         /* out: #times the set was active */
+        __u64 set_timeout;      /* out: leftover timeout (nsecs) */
+        __u64 set_duration;     /* out: time set was active in nsecs */
+        __u64 set_reserved3[4]; /* for future use */
+        } pfarg_set_info;
+
+    New flags:
+      PFM_STFL_CREAT : create new event sets using pfarg_set_desc_t
+      PFM_STFL_INFO  : get info about event sets using pfarg_set_info_t
+
+
+   Here again we combine syscall because they all control events sets.
+   The pfm_delete_evtsets() has no equivalent, but it could easily be added
+   if we have a strong need for it.
+
+
+Any opinions on this revised v3.0 interface?
+
+Thanks
