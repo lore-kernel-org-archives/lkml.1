@@ -1,137 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbYJCARo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYJCATS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbYJCARo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 20:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbYJCARc
+	id S1754794AbYJCATS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 20:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYJCATI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 20:17:32 -0400
-Received: from mylar.outflux.net ([69.93.193.226]:48288 "EHLO
-	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754666AbYJCARb (ORCPT
+	Thu, 2 Oct 2008 20:19:08 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:26036 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753542AbYJCATH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 20:17:31 -0400
-Date: Thu, 2 Oct 2008 17:16:16 -0700
-From: Kees Cook <kees.cook@canonical.com>
-To: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Cc: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       libc-alpha@sourceware.org
-Subject: [PATCH] ELF: implement AT_RANDOM for future glibc use
-Message-ID: <20081003001616.GN10632@outflux.net>
-References: <20081001201116.GD12527@outflux.net> <48E3EFD6.2010704@redhat.com> <20081001215657.GH12527@outflux.net> <20081001220948.GC32107@sunsite.ms.mff.cuni.cz> <20081001222706.68E7E1544B4@magilla.localdomain>
+	Thu, 2 Oct 2008 20:19:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=iT8yXYhbTdFXRVazUxIq+xrLePD6WXNRLq33yv9I939je1mMPgrALk1+DPN1B+ara8
+         /wsgGWenYLfk5JwXfOcgUUxxCDILVwI6J2HF1Dc07eo4+jRVGgi1+hnrg7fkkF6tnZvL
+         jjo3v5EdqwK1EUXDKGy1zqOVMkwo34fRRWoe0=
+Message-ID: <4807377b0810021719m164e734cndaddb7006508cabc@mail.gmail.com>
+Date: Thu, 2 Oct 2008 17:19:06 -0700
+From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] e1000e: prevent concurrent access to NVRAM
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Olaf Kirch" <okir@suse.de>,
+       "Jiri Kosina" <jkosina@suse.cz>,
+       "Jesse Brandeburg" <jesse.brandeburg@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-netdev@vger.kernel.org,
+       kkeil@suse.de, agospoda@redhat.com, arjan@linux.intel.com,
+       david.graham@intel.com, bruce.w.allan@intel.com, john.ronciak@intel.com,
+       chris.jones@canonical.com, tim.gardner@intel.com, airlied@gmail.com,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.1.10.0810030041060.5549@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081001222706.68E7E1544B4@magilla.localdomain>
-Organization: Canonical
-X-HELO: www.outflux.net
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
+	 <20080930031952.22950.45228.stgit@jbrandeb-bw.jf.intel.com>
+	 <Pine.LNX.4.64.0810021624380.1887@twin.jikos.cz>
+	 <200810021703.43770.okir@suse.de>
+	 <alpine.LFD.1.10.0810030041060.5549@apollo.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While discussing[1] the need for glibc to have access to random bytes
-during program load, it seems that an earlier attempt to implement
-AT_RANDOM got stalled.  This implements a configurable number of random
-bytes available to every ELF program via a new auxv AT_RANDOM vector.
+On Thu, Oct 2, 2008 at 4:42 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> The confirmed bugs where the nvram acquire code was called
+> concurrently are still in your tree and the prevention patch along
+> with the resulting bugfixes are stuck in some obscure intel QA
+> process.
+>
+> Please apply at least the bug prevention patch below.
 
-[1] http://sourceware.org/ml/libc-alpha/2008-10/msg00006.html
-
-Signed-off-by: Kees Cook <kees.cook@canonical.com>
----
- fs/binfmt_elf.c        |   20 ++++++++++++++++++++
- include/linux/auxvec.h |    4 +++-
- security/Kconfig       |    9 +++++++++
- 3 files changed, 32 insertions(+), 1 deletions(-)
-
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 655ed8d..9b2ea62 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -152,6 +152,8 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 	elf_addr_t __user *sp;
- 	elf_addr_t __user *u_platform;
- 	elf_addr_t __user *u_base_platform;
-+	elf_addr_t __user *u_rand_bytes;
-+	unsigned int rand_size;
- 	const char *k_platform = ELF_PLATFORM;
- 	const char *k_base_platform = ELF_BASE_PLATFORM;
- 	int items;
-@@ -196,6 +198,18 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 			return -EFAULT;
- 	}
- 
-+	rand_size = CONFIG_SECURITY_AUXV_RANDOM_SIZE * sizeof(unsigned long);
-+	u_rand_bytes = NULL;
-+	if (rand_size) {
-+		unsigned char k_rand_bytes[CONFIG_SECURITY_AUXV_RANDOM_SIZE *
-+					   sizeof(unsigned long)];
-+		get_random_bytes(k_rand_bytes, rand_size);
-+
-+		u_rand_bytes = (elf_addr_t __user *)STACK_ALLOC(p, rand_size);
-+		if (__copy_to_user(u_rand_bytes, k_rand_bytes, rand_size))
-+			return -EFAULT;
-+	}
-+
- 	/* Create the ELF interpreter info */
- 	elf_info = (elf_addr_t *)current->mm->saved_auxv;
- 	/* update AT_VECTOR_SIZE_BASE if the number of NEW_AUX_ENT() changes */
-@@ -228,6 +242,12 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 	NEW_AUX_ENT(AT_GID, tsk->gid);
- 	NEW_AUX_ENT(AT_EGID, tsk->egid);
-  	NEW_AUX_ENT(AT_SECURE, security_bprm_secureexec(bprm));
-+	if (rand_size) {
-+		NEW_AUX_ENT(AT_RANDOM_SIZE,
-+			    (elf_addr_t)(unsigned long)rand_size);
-+		NEW_AUX_ENT(AT_RANDOM,
-+			    (elf_addr_t)(unsigned long)u_rand_bytes);
-+	}
- 	NEW_AUX_ENT(AT_EXECFN, bprm->exec);
- 	if (k_platform) {
- 		NEW_AUX_ENT(AT_PLATFORM,
-diff --git a/include/linux/auxvec.h b/include/linux/auxvec.h
-index d7afa9d..df4ff65 100644
---- a/include/linux/auxvec.h
-+++ b/include/linux/auxvec.h
-@@ -23,6 +23,8 @@
- #define AT_PLATFORM 15  /* string identifying CPU for optimizations */
- #define AT_HWCAP  16    /* arch dependent hints at CPU capabilities */
- #define AT_CLKTCK 17	/* frequency at which times() increments */
-+#define AT_RANDOM 18    /* address of random bytes */
-+#define AT_RANDOM_SIZE 19   /* number of random bytes at AT_RANDOM */
- 
- #define AT_SECURE 23   /* secure mode boolean */
- 
-@@ -32,7 +34,7 @@
- #define AT_EXECFN  31	/* filename of program */
- 
- #ifdef __KERNEL__
--#define AT_VECTOR_SIZE_BASE 18 /* NEW_AUX_ENT entries in auxiliary table */
-+#define AT_VECTOR_SIZE_BASE 20 /* NEW_AUX_ENT entries in auxiliary table */
-   /* number of "#define AT_.*" above, minus {AT_NULL, AT_IGNORE, AT_NOTELF} */
- #endif
- 
-diff --git a/security/Kconfig b/security/Kconfig
-index f6c0429..8d9d49d 100644
---- a/security/Kconfig
-+++ b/security/Kconfig
-@@ -114,6 +114,15 @@ config SECURITY_DEFAULT_MMAP_MIN_ADDR
- 	  This value can be changed after boot using the
- 	  /proc/sys/vm/mmap_min_addr tunable.
- 
-+config SECURITY_AUXV_RANDOM_SIZE
-+	int "Number of random longs to store in AT_RANDOM on every exec"
-+	default 4
-+	help
-+	  This value determines the size of the random longs provided
-+	  to programs via the auxv AT_RANDOM vector.  It can be used
-+	  to initialize random values needed during program load.
-+
-+	  If you are unsure how many longs to use, answer 4.
- 
- source security/selinux/Kconfig
- source security/smack/Kconfig
--- 
-1.5.6.3
-
--- 
-Kees Cook
-Ubuntu Security Team
+This is the same patch I posted 7 minutes ago, except that this patch
+without the e1000e changes applied before it will cause all sorts of
+WARN's to be printed during normal operation.  If at all possible I
+think they should stay together as a group to prevent un-necessary
+noise in the logs.
