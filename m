@@ -1,147 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbYJCQMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbYJCQTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbYJCQMJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 12:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbYJCQL5
+	id S1753380AbYJCQTW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 12:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYJCQTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 12:11:57 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:46830 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752292AbYJCQL5 (ORCPT
+	Fri, 3 Oct 2008 12:19:13 -0400
+Received: from vs162167.vserver.de ([62.75.162.167]:57513 "EHLO
+	unmaintained-free-software.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752297AbYJCQTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 12:11:57 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqAEAC/h5UhMQWq+/2dsb2JhbACBcbpCgWg
-Date: Fri, 3 Oct 2008 12:11:54 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Martin Bligh <mbligh@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, od@novell.com,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: Unified tracing buffer
-Message-ID: <20081003161154.GA4139@Krystal>
-References: <33307c790809191433w246c0283l55a57c196664ce77@mail.gmail.com> <alpine.DEB.1.10.0809200451420.9362@gandalf.stny.rr.com> <20080920135548.GB23215@Krystal> <20080920071232.46908040@infradead.org> <20080922185209.GC6349@Krystal> <20081002152851.GC3220@redhat.com>
-Mime-Version: 1.0
+	Fri, 3 Oct 2008 12:19:12 -0400
+X-Greylist: delayed 643 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Oct 2008 12:19:11 EDT
+Date: Fri, 3 Oct 2008 18:08:25 +0200
+From: Uwe Hermann <uwe@hermann-uwe.de>
+To: linux-kernel@vger.kernel.org
+Cc: mtk.manpages@gmail.com, rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: [PATCH] doc: Fix broken references to Documentation/x86 files
+Message-ID: <20081003160825.GA26167@greenwood>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081002152851.GC3220@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:08:25 up 120 days, 20:48,  8 users,  load average: 3.66, 1.66,
-	0.94
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jason Baron (jbaron@redhat.com) wrote:
-> On Mon, Sep 22, 2008 at 02:52:09PM -0400, Mathieu Desnoyers wrote:
-> > > On Sat, 20 Sep 2008 09:55:48 -0400
-> > > Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
-> > > 
-> > > > How about :
-> > > > 
-> > > >   trace_mark(ftrace_evname, "size %lu binary %pW",
-> > > >     sizeof(mystruct), mystruct);
-> > > >   or
-> > > >   trace_mark(sched_wakeup, "target_pid %ld", task->pid);
-> > > > 
-> > > > Note the namespacing with buffers being "ftrace" and "sched" here.
-> > > > 
-> > > > That would encapsulate the whole
-> > > >   - Event ID registration
-> > > >   - Event type registration
-> > > >   - Sending data out
-> > > >   - Enabling the event source directly at the source
-> > > > 
-> > > > We can then export the markers through a debugfs file and let userland
-> > > > enable them one by one and possibly connect systemtap filters on them
-> > > > (one table of registered filters, one table for the markers, a command
-> > > > file to connect/disconnect filters to/from markers).
-> > > 
-> > > I would like to ask for the following from the start: have a field for
-> > > a longer description of the marker that describes it's usage and
-> > > context. Getting this there from the start is critical, because only
-> > > when adding the marker point do people still really remember why/what
-> > > (and having to type a good description also helps them to realize if
-> > > this is the right point or not). This can then be exposed to the user
-> > > so he has a standing chance of knowing what the marker is about.
-> > > 
-> > > It also has a standing chance of being updated when the code changes
-> > > this way
-> > > 
-> > 
-> > I agree, and I think it might be required in both markers and
-> > tracepoints.
-> > 
-> > Given that tracepoints are declared in a global header
-> > (DECLARE_TRACE()), I would add this kind of description here. Tracepoint
-> > uses within the kernel code (statements like :
-> >   trace_sched_switch(prev, next);
-> > added to the scheduler) would therefore be tied to the description
-> > without having to contain it in the core kernel code.
-> > 
-> > Markers, on the other hand, could become the "event description"
-> > interface which is exported to userspace. Considering that, I guess it's
-> > as important to let a precise description follow the markers.
-> > 
-> > Mathieu
-> > 
-> >
-> 
-> hi,
-> 
-> Tracepoints and markers seem to both have their place, with tracepoints
-> being integral to kernel users, and markers being important for
-> userspace. However, it seems to me like there is overlap in the
-> code and an extra level of indirection when markers are layered on
-> tracespoints. could they be merged a bit more?
-> 
-> What if we extended DEFINE_TRACE() to also create a
-> 'set_marker(marker_cb)' function where 'marker_cb' has the function signature:
-> 
-> marker_cb(<tracepoint prototype>, *marker_probe_func);
-> 
-> We then also create 'register_marker_##name' function in DEFINE_TRACE(),
-> which allows one to regiser marker callbacks in the usual way.
-> 
-> Then 'marker_cb' function is then called in '__DO_TRACE' if anybody has
-> registered a marker (which can set the tracepoint.state appropriately).
-> 
-> The 'marker_cb' function then marshalls its arguemnts and passes them
-> through to the marker functions that were registered.
-> 
-> I think in this way we can simplify the tracepoints and markers by
-> combining them to a large extent.
-> 
-> thanks,
-> 
-> -Jason
-> 
+The Documentation/i386 and Documentation/x86_64 directories and their
+contents have been moved into Documentation/x86. Fix references to
+those files accordingly.
 
-I think what you propose here is already in y LTTng tree in a different
-form. It's a patch to markers to allow declaring a marker which enables
-an associated tracepoint when enabled. This way, we can have a marker
-(exposed to userspace) connecting itself automatically to a tracepoint
-when enabled.
+Signed-off-by: Uwe Hermann <uwe@hermann-uwe.de>
 
-It's here :
-http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=d52ea7c48f47a1179aee01636d515cfea4ff6ede;hp=0a7b5c02209f3582ed1369ec818a1b389bd45a09
+diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
+index 5b5aba4..84ae622 100644
+--- a/Documentation/00-INDEX
++++ b/Documentation/00-INDEX
+@@ -171,7 +171,7 @@ i2c/
+ 	- directory with info about the I2C bus/protocol (2 wire, kHz speed).
+ i2o/
+ 	- directory with info about the Linux I2O subsystem.
+-i386/
++x86/i386/
+ 	- directory with info about Linux on Intel 32 bit architecture.
+ ia64/
+ 	- directory with info about Linux on Intel 64 bit architecture.
+@@ -383,7 +383,7 @@ w1/
+ 	- directory with documents regarding the 1-wire (w1) subsystem.
+ watchdog/
+ 	- how to auto-reboot Linux if it has "fallen and can't get up". ;-)
+-x86_64/
++x86/x86_64/
+ 	- directory with info on Linux support for AMD x86-64 (Hammer) machines.
+ zorro.txt
+ 	- info on writing drivers for Zorro bus devices found on Amigas.
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 1150444..5af144c 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -100,7 +100,7 @@ parameter is applicable:
+ 	X86-32	X86-32, aka i386 architecture is enabled.
+ 	X86-64	X86-64 architecture is enabled.
+ 			More X86-64 boot options can be found in
+-			Documentation/x86_64/boot-options.txt .
++			Documentation/x86/x86_64/boot-options.txt .
+ 
+ In addition, the following text indicates that the option:
+ 
+@@ -111,10 +111,10 @@ In addition, the following text indicates that the option:
+ Parameters denoted with BOOT are actually interpreted by the boot
+ loader, and have no meaning to the kernel directly.
+ Do not modify the syntax of boot loader parameters without extreme
+-need or coordination with <Documentation/i386/boot.txt>.
++need or coordination with <Documentation/x86/i386/boot.txt>.
+ 
+ There are also arch-specific kernel-parameters not documented here.
+-See for example <Documentation/x86_64/boot-options.txt>.
++See for example <Documentation/x86/x86_64/boot-options.txt>.
+ 
+ Note that ALL kernel parameters listed below are CASE SENSITIVE, and that
+ a trailing = on the name of any parameter states that that parameter will
+@@ -1187,7 +1187,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 
+ 	mce		[X86-32] Machine Check Exception
+ 
+-	mce=option	[X86-64] See Documentation/x86_64/boot-options.txt
++	mce=option	[X86-64] See Documentation/x86/x86_64/boot-options.txt
+ 
+ 	md=		[HW] RAID subsystems devices and level
+ 			See Documentation/md.txt.
+@@ -1650,7 +1650,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			See Documentation/paride.txt.
+ 
+ 	pirq=		[SMP,APIC] Manual mp-table setup
+-			See Documentation/i386/IO-APIC.txt.
++			See Documentation/x86/i386/IO-APIC.txt.
+ 
+ 	plip=		[PPT,NET] Parallel port network link
+ 			Format: { parport<nr> | timid | 0 }
+@@ -2231,7 +2231,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			See Documentation/fb/modedb.txt.
+ 
+ 	vga=		[BOOT,X86-32] Select a particular video mode
+-			See Documentation/i386/boot.txt and
++			See Documentation/x86/i386/boot.txt and
+ 			Documentation/svga.txt.
+ 			Use vga=ask for menu.
+ 			This is actually a boot loader parameter; the value is
+diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
+index 7228369..da86fd5 100644
+--- a/Documentation/lguest/lguest.c
++++ b/Documentation/lguest/lguest.c
+@@ -402,7 +402,7 @@ static unsigned long load_bzimage(int fd)
+ 	void *p = from_guest_phys(0x100000);
+ 
+ 	/* Go back to the start of the file and read the header.  It should be
+-	 * a Linux boot header (see Documentation/i386/boot.txt) */
++	 * a Linux boot header (see Documentation/x86/i386/boot.txt) */
+ 	lseek(fd, 0, SEEK_SET);
+ 	read(fd, &boot, sizeof(boot));
+ 
+diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
+index b0c7b6c..1b1512f 100644
+--- a/Documentation/x86/x86_64/boot-options.txt
++++ b/Documentation/x86/x86_64/boot-options.txt
+@@ -143,7 +143,7 @@ Non Executable Mappings
+ SMP
+ 
+   additional_cpus=NUM Allow NUM more CPUs for hotplug
+-		 (defaults are specified by the BIOS, see Documentation/x86_64/cpu-hotplug-spec)
++		 (defaults are specified by the BIOS, see Documentation/x86/x86_64/cpu-hotplug-spec)
+ 
+ NUMA
+ 
+diff --git a/Documentation/x86/x86_64/fake-numa-for-cpusets b/Documentation/x86/x86_64/fake-numa-for-cpusets
+index d1a985c..33bb566 100644
+--- a/Documentation/x86/x86_64/fake-numa-for-cpusets
++++ b/Documentation/x86/x86_64/fake-numa-for-cpusets
+@@ -10,7 +10,7 @@ amount of system memory that are available to a certain class of tasks.
+ For more information on the features of cpusets, see Documentation/cpusets.txt.
+ There are a number of different configurations you can use for your needs.  For
+ more information on the numa=fake command line option and its various ways of
+-configuring fake nodes, see Documentation/x86_64/boot-options.txt.
++configuring fake nodes, see Documentation/x86/x86_64/boot-options.txt.
+ 
+ For the purposes of this introduction, we'll assume a very primitive NUMA
+ emulation setup of "numa=fake=4*512,".  This will split our system memory into
 
-Note that locking depends on the psrwlock patch so we can have nested
-module list readers. Otherwise locking becomes _really_ messy. :-(
 
-Mathieu
-
-> 
-> 
-> 
-
+Uwe.
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+http://www.hermann-uwe.de  | http://www.holsham-traders.de
+http://www.crazy-hacks.org | http://www.unmaintained-free-software.org
