@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYJCPjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755031AbYJCPjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358AbYJCPjb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 11:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYJCPjU
+	id S1755031AbYJCPjo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 11:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYJCPjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 11:39:20 -0400
-Received: from styx.suse.cz ([82.119.242.94]:42563 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751623AbYJCPjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 11:39:19 -0400
-Date: Fri, 3 Oct 2008 17:39:17 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, arjan@linux.intel.com, airlied@gmail.com,
-       davem@davemloft.net, Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 2.6.27-rc8 5/6] e1000e: debug contention on NVM SWFLAG
-In-Reply-To: <alpine.LFD.2.00.0810030812570.3230@nehalem.linux-foundation.org>
-Message-ID: <alpine.LNX.1.10.0810031736150.26779@jikos.suse.cz>
-References: <20081002233314.12556.49143.stgit@jbrandeb-bw.jf.intel.com> <20081002233340.12556.33137.stgit@jbrandeb-bw.jf.intel.com> <Pine.LNX.4.64.0810031346100.1532@twin.jikos.cz> <alpine.LFD.2.00.0810030812570.3230@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Fri, 3 Oct 2008 11:39:25 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:11715 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753383AbYJCPjY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 11:39:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=MaKNs1KkDqUpogQ9Y0lwD73xWSgfGTha4pYuAl/8mMVH4vbSOXjEOfKYLyawN5hpr2
+         ++rZqv6xn7Z1K1fFLwOkjRCQx5MowrAhPOxgQSAOuelfOrIiaPVEzPJ/7itADtiBeike
+         aspMK7FyxlQK6T8QMdGYysroaDrbOv3uXEy88=
+Message-ID: <e9c3a7c20810030839n4757574eo1ec7473075c74013@mail.gmail.com>
+Date: Fri, 3 Oct 2008 08:39:20 -0700
+From: "Dan Williams" <dan.j.williams@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] dw_dmac: Fix copy/paste bug in tasklet
+Cc: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
+       maciej.sosnowski@intel.com, linux-kernel@vger.kernel.org,
+       "Nicolas Ferre" <nicolas.ferre@atmel.com>
+In-Reply-To: <20081003022638.788307fd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1222784879-14160-1-git-send-email-haavard.skinnemoen@atmel.com>
+	 <20081003022638.788307fd.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008, Linus Torvalds wrote:
+On Fri, Oct 3, 2008 at 2:26 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> We haven't heard from Dan for a week and this still wasn't in his tree
+> yesterday.
 
-> > The debugging message is racy anyway with respect to accessing 
-> > nvm_owner, right? It should be done after the mutex has been 
-> > succesfully acquired.
-> It's done that way on purpose - to see who _could_ be racing.
+Sorry for the non-response, I'll continue to be on vacation until the
+13th with intermittent access to lkml.
 
-I know. I just wanted to point out that we probably don't want the patch 
-in 2.6.27 in this form, users wouldn't like to have warning in their logs 
-every time mutex is not acquired on a first attempt :)
+>
+> I think I'll cheerily send it in to Linus for 2.6.27.
 
-We are currently running reproduction tests on affected machines to verify 
-that this patch really fixes the root cause of this whole e1000e saga.
-
--- 
-Jiri Kosina
-SUSE Labs
+Acked-by: Dan Williams <dan.j.williams@intel.com>
