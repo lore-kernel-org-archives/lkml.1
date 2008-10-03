@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbYJCAiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbYJCAiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347AbYJCAiB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Oct 2008 20:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYJCAhu
+	id S1755468AbYJCAiw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Oct 2008 20:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYJCAik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 20:37:50 -0400
-Received: from www.tglx.de ([62.245.132.106]:58443 "EHLO www.tglx.de"
+	Thu, 2 Oct 2008 20:38:40 -0400
+Received: from www.tglx.de ([62.245.132.106]:45325 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753665AbYJCAhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 20:37:50 -0400
-Date: Fri, 3 Oct 2008 02:37:25 +0200 (CEST)
+	id S1753891AbYJCAij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Oct 2008 20:38:39 -0400
+Date: Fri, 3 Oct 2008 02:38:14 +0200 (CEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Jesse Brandeburg <jesse.brandeburg@intel.com>
 cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
        netdev@vger.kernel.org, arjan@linux.intel.com, airlied@gmail.com,
        davem@davemloft.net, jeff@garzik.org
-Subject: Re: [PATCH 2.6.27-rc8 3/6] e1000e: remove phy read from inside
- spinlock
-In-Reply-To: <20081002233330.12556.79763.stgit@jbrandeb-bw.jf.intel.com>
-Message-ID: <alpine.LFD.1.10.0810030236590.5549@apollo.tec.linutronix.de>
-References: <20081002233314.12556.49143.stgit@jbrandeb-bw.jf.intel.com> <20081002233330.12556.79763.stgit@jbrandeb-bw.jf.intel.com>
+Subject: Re: [PATCH 2.6.27-rc8 4/6] e1000e: drop stats lock
+In-Reply-To: <20081002233335.12556.10042.stgit@jbrandeb-bw.jf.intel.com>
+Message-ID: <alpine.LFD.1.10.0810030237550.5549@apollo.tec.linutronix.de>
+References: <20081002233314.12556.49143.stgit@jbrandeb-bw.jf.intel.com> <20081002233335.12556.10042.stgit@jbrandeb-bw.jf.intel.com>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -27,84 +26,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
+
 On Thu, 2 Oct 2008, Jesse Brandeburg wrote:
 
-> thanks to tglx, we're finding some interesting reentrancy issues.
-> this patch removes the phy read from inside a spinlock, paving
-> the way for removing the spinlock completely.  The phy read was
-> only feeding a statistic that wasn't used.
+> the stats lock is left over from e1000, e1000e no longer
+> has the adjust tbi stats function that required the addition
+> of the stats lock to begin with.
+> 
+> adding a mutex to acquire_swflag helped catch this one too.
 > 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > CC: Thomas Gleixner <tglx@linutronix.de>
 
 Acked-by: Thomas Gleixner <tglx@linutronix.de>
 
+
 > ---
 > 
->  drivers/net/e1000e/ethtool.c |    6 +++++-
->  drivers/net/e1000e/netdev.c  |   13 -------------
->  2 files changed, 5 insertions(+), 14 deletions(-)
+>  drivers/net/e1000e/e1000.h  |    1 -
+>  drivers/net/e1000e/netdev.c |   18 ------------------
+>  2 files changed, 0 insertions(+), 19 deletions(-)
 > 
-> diff --git a/drivers/net/e1000e/ethtool.c b/drivers/net/e1000e/ethtool.c
-> index 5ed8e13..33a3ff1 100644
-> --- a/drivers/net/e1000e/ethtool.c
-> +++ b/drivers/net/e1000e/ethtool.c
-> @@ -432,6 +432,10 @@ static void e1000_get_regs(struct net_device *netdev,
->  	regs_buff[11] = er32(TIDV);
+> diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
+> index 8087bda..5ea6b60 100644
+> --- a/drivers/net/e1000e/e1000.h
+> +++ b/drivers/net/e1000e/e1000.h
+> @@ -257,7 +257,6 @@ struct e1000_adapter {
+>  	struct net_device *netdev;
+>  	struct pci_dev *pdev;
+>  	struct net_device_stats net_stats;
+> -	spinlock_t stats_lock;      /* prevent concurrent stats updates */
 >  
->  	regs_buff[12] = adapter->hw.phy.type;  /* PHY type (IGP=1, M88=0) */
-> +
-> +	/* ethtool doesn't use anything past this point, so all this
-> +	 * code is likely legacy junk for apps that may or may not
-> +	 * exist */
->  	if (hw->phy.type == e1000_phy_m88) {
->  		e1e_rphy(hw, M88E1000_PHY_SPEC_STATUS, &phy_data);
->  		regs_buff[13] = (u32)phy_data; /* cable length */
-> @@ -447,7 +451,7 @@ static void e1000_get_regs(struct net_device *netdev,
->  		regs_buff[22] = adapter->phy_stats.receive_errors;
->  		regs_buff[23] = regs_buff[13]; /* mdix mode */
->  	}
-> -	regs_buff[21] = adapter->phy_stats.idle_errors;  /* phy idle errors */
-> +	regs_buff[21] = 0; /* was idle_errors */
->  	e1e_rphy(hw, PHY_1000T_STATUS, &phy_data);
->  	regs_buff[24] = (u32)phy_data;  /* phy local receiver status */
->  	regs_buff[25] = regs_buff[24];  /* phy remote receiver status */
+>  	/* structs defined in e1000_hw.h */
+>  	struct e1000_hw hw;
 > diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-> index 803545b..835b692 100644
+> index 835b692..01e9558 100644
 > --- a/drivers/net/e1000e/netdev.c
 > +++ b/drivers/net/e1000e/netdev.c
-> @@ -2954,9 +2954,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
+> @@ -2600,8 +2600,6 @@ static int __devinit e1000_sw_init(struct e1000_adapter *adapter)
+>  	/* Explicitly disable IRQ since the NIC can be in any state. */
+>  	e1000_irq_disable(adapter);
+>  
+> -	spin_lock_init(&adapter->stats_lock);
+> -
+>  	set_bit(__E1000_DOWN, &adapter->state);
+>  	return 0;
+>  
+> @@ -2953,7 +2951,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
+>  {
 >  	struct e1000_hw *hw = &adapter->hw;
 >  	struct pci_dev *pdev = adapter->pdev;
->  	unsigned long irq_flags;
-> -	u16 phy_tmp;
-> -
-> -#define PHY_IDLE_ERROR_COUNT_MASK 0x00FF
+> -	unsigned long irq_flags;
 >  
 >  	/*
 >  	 * Prevent stats update while adapter is being reset, or if the pci
-> @@ -3045,15 +3042,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
+> @@ -2964,14 +2961,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
+>  	if (pci_channel_offline(pdev))
+>  		return;
 >  
->  	/* Tx Dropped needs to be maintained elsewhere */
->  
-> -	/* Phy Stats */
-> -	if (hw->phy.media_type == e1000_media_type_copper) {
-> -		if ((adapter->link_speed == SPEED_1000) &&
-> -		   (!e1e_rphy(hw, PHY_1000T_STATUS, &phy_tmp))) {
-> -			phy_tmp &= PHY_IDLE_ERROR_COUNT_MASK;
-> -			adapter->phy_stats.idle_errors += phy_tmp;
-> -		}
-> -	}
+> -	spin_lock_irqsave(&adapter->stats_lock, irq_flags);
 > -
->  	/* Management Stats */
+> -	/*
+> -	 * these counters are modified from e1000_adjust_tbi_stats,
+> -	 * called from the interrupt context, so they must only
+> -	 * be written while holding adapter->stats_lock
+> -	 */
+> -
+>  	adapter->stats.crcerrs += er32(CRCERRS);
+>  	adapter->stats.gprc += er32(GPRC);
+>  	adapter->stats.gorc += er32(GORCL);
+> @@ -3046,8 +3035,6 @@ void e1000e_update_stats(struct e1000_adapter *adapter)
 >  	adapter->stats.mgptc += er32(MGTPTC);
 >  	adapter->stats.mgprc += er32(MGTPRC);
-> @@ -3073,7 +3061,6 @@ static void e1000_phy_read_status(struct e1000_adapter *adapter)
->  	int ret_val;
->  	unsigned long irq_flags;
->  
+>  	adapter->stats.mgpdc += er32(MGTPDC);
 > -
->  	spin_lock_irqsave(&adapter->stats_lock, irq_flags);
+> -	spin_unlock_irqrestore(&adapter->stats_lock, irq_flags);
+>  }
+>  
+>  /**
+> @@ -3059,9 +3046,6 @@ static void e1000_phy_read_status(struct e1000_adapter *adapter)
+>  	struct e1000_hw *hw = &adapter->hw;
+>  	struct e1000_phy_regs *phy = &adapter->phy_regs;
+>  	int ret_val;
+> -	unsigned long irq_flags;
+> -
+> -	spin_lock_irqsave(&adapter->stats_lock, irq_flags);
 >  
 >  	if ((er32(STATUS) & E1000_STATUS_LU) &&
+>  	    (adapter->hw.phy.media_type == e1000_media_type_copper)) {
+> @@ -3092,8 +3076,6 @@ static void e1000_phy_read_status(struct e1000_adapter *adapter)
+>  		phy->stat1000 = 0;
+>  		phy->estatus = (ESTATUS_1000_TFULL | ESTATUS_1000_THALF);
+>  	}
+> -
+> -	spin_unlock_irqrestore(&adapter->stats_lock, irq_flags);
+>  }
+>  
+>  static void e1000_print_link_info(struct e1000_adapter *adapter)
 > 
