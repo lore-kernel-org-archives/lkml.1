@@ -1,94 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbYJCEvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbYJCEye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754584AbYJCEvn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 00:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYJCEvf
+	id S1754876AbYJCEye (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 00:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYJCEyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 00:51:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41562 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751247AbYJCEve (ORCPT
+	Fri, 3 Oct 2008 00:54:25 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:50807 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612AbYJCEyZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 00:51:34 -0400
-Date: Thu, 2 Oct 2008 21:50:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-Id: <20081002215026.a63ba0d0.akpm@linux-foundation.org>
-In-Reply-To: <20081002214353.30873f98@infradead.org>
-References: <20081001200034.65eb67d6@infradead.org>
-	<20081001215638.3a65134c.akpm@linux-foundation.org>
-	<20081002062736.GR19428@kernel.dk>
-	<20081001235501.2b7f50fe.akpm@linux-foundation.org>
-	<20081002061236.3c71c877@infradead.org>
-	<20081002132457.46ad8d05.akpm@linux-foundation.org>
-	<20081002210117.0f5062f7@infradead.org>
-	<20081002212355.621a4fb6@infradead.org>
-	<20081002214000.89420bb3.akpm@linux-foundation.org>
-	<20081002214353.30873f98@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 3 Oct 2008 00:54:25 -0400
+X-Greylist: delayed 3439 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Oct 2008 00:54:24 EDT
+Message-Id: <200810030356.m933uYeX005874@www262.sakura.ne.jp>
+Subject: Re: [PATCH] CRED: ptrace_attach() should use the target process\'s mutex
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: dhowells@redhat.com
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Date: Fri, 03 Oct 2008 12:56:34 +0900
+References: <200810012000.CGG73421.FQOHtLOJFVMOSF@I-love.SAKURA.ne.jp> <20081001153823.9930.86648.stgit@warthog.procyon.org.uk> <200810021952.GFJ87098.VQFtMOHJOFFLSO@I-love.SAKURA.ne.jp>
+In-Reply-To: <200810021952.GFJ87098.VQFtMOHJOFFLSO@I-love.SAKURA.ne.jp>
+Content-Type: text/plain; charset="ISO-2022-JP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 21:43:53 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+Hello.
 
-> > [  517.067572]  [<c042ee64>] warn_on_slowpath+0x41/0x65
-> > [  517.067652]  [<c070ec83>] io_schedule+0x77/0xb0
-> > [  517.067659]  [<c04abc72>] sync_buffer+0x33/0x37
-> > [  517.067666]  [<c070f010>] __wait_on_bit_lock+0x34/0x5e
-> > [  517.067682]  [<c070f0e5>] out_of_line_wait_on_bit_lock+0xab/0xb3
-> > [  517.067707]  [<c04abfa1>] __lock_buffer+0x24/0x2a
-> > [  517.067715]  [<c04dd7fc>] do_get_write_access+0x64/0x3b1
-> > [  517.067743]  [<c04ddb64>] journal_get_write_access+0x1b/0x2a
-> > [  517.067752]  [<c04da374>] __ext3_journal_get_write_access+0x19/0x3c
-> > [  517.067761]  [<c04cf672>] ext3_reserve_inode_write+0x34/0x68
-> > [  517.067769]  [<c04cf6d5>] ext3_mark_inode_dirty+0x2f/0x46
-> > [  517.067777]  [<c04cf7f7>] ext3_dirty_inode+0x53/0x67
-> > [  517.067784]  [<c04a7bed>] __mark_inode_dirty+0x29/0x144
-> > [  517.067794]  [<c049e60f>] file_update_time+0x80/0xa9
-> > [  517.067803]  [<c046b66c>] __generic_file_aio_write_nolock+0x2f0/0x41b
-> > [  517.067842]  [<c046bf0d>] generic_file_aio_write+0x5a/0xb7
-> > [  517.067850]  [<c04cdc65>] ext3_file_write+0x1a/0x89
-> > [  517.067858]  [<c048da41>] do_sync_write+0xab/0xe9
-> > [  517.067896]  [<c048e302>] vfs_write+0x8a/0x12e
-> > [  517.067903]  [<c048e43f>] sys_write+0x3b/0x60
-> > [  517.067910]  [<c0403b0b>] sysenter_do_call+0x12/0x2f
-> > [  517.067919]  =======================
-> > [  517.067923] ---[ end trace de523043f88bd9a7 ]---  
+David Howells wrote:
+> Tetsuo Handa wrote:
 > 
-> > That's the one - the lock_buffer() in do_get_write_access().  It's a
-> > major contention site and it'd be a major win if we could fix it.
-> > Even if we resorted to some nasty thing like taking a temp copy of the
-> > buffer's contents.
+> > Thus, I'm trying to use
+> > 
+> >   struct execve_entry {
+> >          struct list_head list;
+> >          struct task_struct *task;
+> >   };
+> > ...
 > 
-> I also notice it's part of "file_update_time". Do we really need to go all the way 
-> down to this level of synchronicity for that?
+> It might be better to see about setting a flag in the task_struct.  All you
+> need is a single bit, and since it's process-local it doesn't need any funny
+> locking stuff.
 
-Well, we've tossed that around many times but never implemented it. 
-Once you get into the details it gets a bit nasty.  Need to keep the
-dirtiness state in the VFS (or fs) inode, and going backwards from a
-plain old buffer_head at commit time isn't possible.  We usually
-tempfixed the problem by adding increasingly fancy ways of not doing the
-atime update at all.
+Indeed. If I can use one bit in the task_struct, I don't need to add
+security_start_execve() / security_finish_execve() hooks.
 
-Of course, fixing this running-vs-committing contention point would fix
-a lot more things than just atime updates.
+Now, I cancel the previous patch and propose this patch.
 
-> (I also randomly wonder if we, in the write path, dirty the inode twice, once for size once for item, and
-> if we then also reserve two slots in the journal for that.....
+Thanks.
+----------
+Subject: Add in_execve flag into task_struct.
 
-That shouldn't be the case - once we have write access to the buffer it
-remains freely modifiable for the rest of the transaction period.  I
-think.
+This patch allows LSM modules determine whether current process is in an execve
+operation or not so that they can behave differently while an execve operation
+is in progress.
 
-> but I'm showing
-> my total ignorance of JBD internals here)
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ fs/compat.c           |    4 ++++
+ fs/exec.c             |    4 ++++
+ include/linux/sched.h |    1 +
+ 3 files changed, 9 insertions(+)
 
-I'm going on senile memories of JDB five years ago, but the concepts
-didn't change much.
+--- linux-2.6.27-rc8-mm1.orig/fs/compat.c
++++ linux-2.6.27-rc8-mm1/fs/compat.c
+@@ -1387,6 +1387,8 @@ int compat_do_execve(char * filename,
+ 	struct linux_binprm *bprm;
+ 	struct file *file;
+ 	int retval;
++	struct task_struct *task = current;
++	task->in_execve = 1;
+ 
+ 	retval = -ENOMEM;
+ 	bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
+@@ -1443,6 +1445,7 @@ int compat_do_execve(char * filename,
+ 		security_bprm_free(bprm);
+ 		acct_update_integrals(current);
+ 		free_bprm(bprm);
++		task->in_execve = 0;
+ 		return retval;
+ 	}
+ 
+@@ -1464,6 +1467,7 @@ out_kfree:
+ 	free_bprm(bprm);
+ 
+ out_ret:
++	task->in_execve = 0;
+ 	return retval;
+ }
+ 
+--- linux-2.6.27-rc8-mm1.orig/fs/exec.c
++++ linux-2.6.27-rc8-mm1/fs/exec.c
+@@ -1275,6 +1275,8 @@ int do_execve(char * filename,
+ 	struct file *file;
+ 	struct files_struct *displaced;
+ 	int retval;
++	struct task_struct *task = current;
++	task->in_execve = 1;
+ 
+ 	retval = unshare_files(&displaced);
+ 	if (retval)
+@@ -1338,6 +1340,7 @@ int do_execve(char * filename,
+ 		free_bprm(bprm);
+ 		if (displaced)
+ 			put_files_struct(displaced);
++		task->in_execve = 0;
+ 		return retval;
+ 	}
+ 
+@@ -1361,6 +1364,7 @@ out_files:
+ 	if (displaced)
+ 		reset_files_struct(displaced);
+ out_ret:
++	task->in_execve = 0;
+ 	return retval;
+ }
+ 
+--- linux-2.6.27-rc8-mm1.orig/include/linux/sched.h
++++ linux-2.6.27-rc8-mm1/include/linux/sched.h
+@@ -1088,6 +1088,7 @@ struct task_struct {
+ 	/* ??? */
+ 	unsigned int personality;
+ 	unsigned did_exec:1;
++	unsigned in_execve:1;
+ 	pid_t pid;
+ 	pid_t tgid;
+ 
