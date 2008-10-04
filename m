@@ -1,111 +1,112 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754863AbYJBV3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752781AbYJDIYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYJBV3g (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 2 Oct 2008 17:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbYJBV3Z
+	id S1752781AbYJDIYc (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Sat, 4 Oct 2008 04:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYJDIYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Oct 2008 17:29:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36351 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754314AbYJBV3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Oct 2008 17:29:24 -0400
-Subject: Re: Agere Hermes source-code: copyright situation
-From: Dan Williams <dcbw@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, Dave <kilroyd@googlemail.com>,
-        TJ <linux@tjworld.net>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "Casual J. Programmer" <casualprogrammer@googlemail.com>,
-        linux-wireless@vger.kernel.org,
-        Alexander Shirshikov <alexander.shirshikov@gmail.com>
-In-Reply-To: <20081002203731.GA25314@kroah.com>
-References: <200809290949.35749.arvidjaar@mail.ru>
-	 <20081001200039.GA29874@kroah.com> <48E400FA.2090305@gmail.com>
-	 <200810020637.27321.arvidjaar@mail.ru> <20081002200023.GC20902@kroah.com>
-	 <1222979517.12505.33.camel@72-58-93-37.area3.spcsdns.net>
-	 <20081002203731.GA25314@kroah.com>
-Content-Type: text/plain
-Date: Thu, 02 Oct 2008 17:28:34 -0400
-Message-Id: <1222982914.12505.37.camel@72-58-93-37.area3.spcsdns.net>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Sat, 4 Oct 2008 04:24:22 -0400
+Received: from avas-mr15.fibertel.com.ar ([24.232.0.247]:53357 "EHLO
+	avas-mr15.fibertel.com.ar" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751427AbYJDIYV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 04:24:21 -0400
+X-Greylist: delayed 531 seconds by postgrey-1.27 at vger.kernel.org; Sat, 04 Oct 2008 04:24:21 EDT
+Message-ID: <4114-22008106481525546@pc>
+Organization: Hardware
+From: "Olivos" <olivoshard@fibertel.com.ar>
+To: linux-kernel@vger.kernel.org
+Subject: hardware Ocz Memos
+Date: Sat, 4 Oct 2008 05:15:25 -0300
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-Fib-Al-Info: Al
+X-Fib-Al-MRId: a31971fb93143ae77c097759f410a582
+X-Fib-Al: noav
+X-Fib-Al-SA: analyzed
+X-Fib-Al-From: olivoshard@fibertel.com.ar
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-02 at 13:37 -0700, Greg KH wrote:
-> On Thu, Oct 02, 2008 at 04:31:57PM -0400, Dan Williams wrote:
-> > On Thu, 2008-10-02 at 13:00 -0700, Greg KH wrote:
-> > > On Thu, Oct 02, 2008 at 06:37:18AM +0400, Andrey Borzenkov wrote:
-> > > > TJ you can answer me using arvidjaar (at) newmail dot ru. Hopefully
-> > > > one of them works. Re WPA2 - there is no information how to setup
-> > > > CCMP/AES (even if firmware supports it); so no WPA2.
-> > > > 
-> > > > On Thursday 02 October 2008, Dave wrote:
-> > > > > Greg KH wrote:
-> > > > > > On Wed, Oct 01, 2008 at 05:40:29PM +0100, TJ wrote:
-> > > > > >> On Wed, 2008-10-01 at 14:13 +0400, Andrey Borzenkov wrote:
-> > > > > >>>On Wednesday 01 October 2008, Greg KH wrote:
-> > > > > >>>> On Mon, Sep 29, 2008 at 09:49:34AM +0400, Andrey Borzenkov wrote:
-> > > > > >>>>> I have here driver that can be built for two different types of
-> > > > > >>>>> hardware from basically the same sources (this is port of old Agere
-> > > > > >>>>> drivers for Hermes-I/Hermes-II chipsets).
-> > > > > >>>> 
-> > > > > >>>> Cool, do you have a link to the code, I'd be glad to add it to
-> > > > > >>>> drivers/staging/ if it's not in a fully-mergable state yet to get wider
-> > > > > >>>> users for it.
-> > > > > >>>
-> > > > > >>> You can look at it here: http://arvidjaar.newmail.ru/wlags49.tar.bz
-> > > > > >>>
-> > > > > >>> I doubt that it is suitable for inclusion at current state if ever.
-> > > > > >>> This is taken directly from Agere 2.4 sources; the only parts that were
-> > > > > >>> touched are kernel glue and wireless extensions interface.
-> > > > > >>>
-> > > > > >>> And it is not GPL'ed, of course. I attach E-Mail I received a while
-> > > > > >>> back with answere from Agere legal department.
-> > > > > >>
-> > > > > >> I'm attaching the original email I sent to Agere and their response for
-> > > > > >> the record, hoping it helps clarify the legal position.
-> > > > > > 
-> > > > > > Very nice, thanks for forwarding this on.
-> > > > > > 
-> > > > > > As the license is BSD, that means we can place it in the kernel tree.
-> > > > > > Do you all mind if I add it to the drivers/staging/ directory so you can
-> > > > > > work on cleaning it up within the main kernel tree infrastructure?
-> > > > >
-> > > > 
-> > > > I do not mind but it is likely makes no sense for H-I now; and
-> > > > I do not own H-II myself so cannot work on it. If we are focusing on
-> > > > H-2/2.5, it would make more sense to make similar modifications to
-> > > > 7.22 driver set from Agere to avoid overlap with Orinoco.
-> > > 
-> > > Ok, let me know what you think is the best thing to do, and I'll be glad
-> > > to help you out with it.
-> > 
-> > I tend to think that only for USB hardware do we need a new driver, and
-> > that driver can share some things with both hostap and orinoco.  If at
-> > all possible, lets integrate missing hardware support into _existing_
-> > drivers instead of importing drivers of questionable quality.  I've seen
-> > wlags49 before and it's not great.  Right now we don't have any viable
-> > Orinoco USB driver, and while linux-wlan-ng was proposed, there's no way
-> > we're taking a third 802.11 "stack" or the bits in those drivers that
-> > overlap with existing drivers' hardware support.
-> 
-> I just added the wlan-ng usb driver (and stack) to the drivers/staging/
-> tree a few hours ago :)
-> 
-> So yes, we do need to do this kind of migration, at the moment I am
-> trying to track down all out-of-tree drivers that distros and users are
-> relying on to get them into staging/ and then we can work on cleaning
-> them up and moving them to the proper place in the kernel tree.
-> 
-> Sound good?
-> 
-> So, for this driver, should I do the same thing, as I don't think these
-> devices are covered by any other driver at the moment, right?
 
-Prism II USB devices are only covered by linux-wlan-ng, yes.
 
-Dan
+ 
+
+Solicite Lista de Precios Completa !!
+
+HDD 320 SataII 16MB Western Digital + Disipador Cobre + Doble Cooler HDD u$s 85,00
+HDD 500 SataII Samsung 16MB + Disipador Cobre + Doble Cooler HDD u$s 99,00
+HDD 500 SataII Seagate 32MB 7200.11 Barracuda + Disipador Cobre + Doble Cooler HDD u$s 105,00
+Disco Rigido Portatil 80GB Externo USB + Funda Cuero ( se alimentan unicamente de USB ) u$s 95,00
+Disco Rigido Portatil 120GB Externo USB + Funda Cuero ( se alimentan unicamente de USB ) u$s 105,00
+DISCO EXTERNO USB + TRAFO IMICRO 160GB u$s 99,00
+DISCO EXTERNO USB + TRAFO IMICRO 250GB u$s 118,00
+DISCO EXTERNO USB + TRAFO IMICRO 320GB u$s 135,00
+DISCO EXTERNO USB + TRAFO IMICRO 500GB u$s 159,00
+KIT BACKUP Disco Externo SATA 500GB 16MB + Interface Car Reader E-SATA u$s 169,00
+
+
+Notebook !!! 
+Disco Rigido 80gb Samsung IDE u$s 82,00
+Disco Rigido 120gb Hitachi IDE u$s 89,00
+Disco Rigido 120gb Western Digital IDE u$s 95,00
+Disco Rigido 120gb Samsung IDE u$s 95,00
+Disco Rigido 80gb Seagate Barracuda Momentus SATA u$s 59,00
+Disco Rigido 60gb Toshiba SATA u$s 57,00
+Memoria Sodimm DDR2 1024MB 667 mhz 5300 Kingston u$s 26,50
+Memoria Sodimm DDR2 2048MB 667 mhz 5300 Kingston u$s 49,00
+Memoria DDR1 Sodimm DDR 1024mb 333 mhz AVANT u$s 59,00
+Computadoras a medida									
+CPU PROMO									
+Asus M2N-MX Video Geforce 6100 + Sonido 3D + Placa de Red 10/100 + 6 Puertos USB + SATA 									
+Procesador AM2 Sempron LE 1100 + Memoria DDR2 1GB + Disco Rigido 40gb SATA 									
+Regrabadora DVD Gabinete ATX Teclado Mouse Optico u$s 249 									
+									
+									
+*+ Vendidos Pentium									
+Asus P5SD2-VM Video 3D Sonido 5.1 Sound Max Red DDRII + Dual Core / Core2 Duo									
+PCI EXPRESS + SATAII + Procesador Intel Dual Core 2160 64 Bits 775 - Memoria DDRII 1GB									
+HDD 160gb Regrabadora DVD Gabinete ATX Teclado Mouse Optico									
+u$s 315.00									
+									
+* + Vendidos Athlon 									
+Asus M2N-MX SE Video PCIEXPRESS 16x 6 USB 2.0 Procesador AM2 Athlon 5000 x2 DUAL CORE 									
+Nvidia GeForce 6100/nForce 405 LAN SATAII Dual Channel DDR800 									
+Sonido 6.1 Memoria DDRII 1GB HHD 100gb 7200 rpm									
+Regrabadora DVD Gabinete ATX Teclado Mouse Optico									
+u$s 315									
+									
+AMD VIEW									
+Asus M2N-MX SE Video GEFORCE PCIEXPRESS 16x 6 USB 2.0 Procesador AM2 Athlon 5000 									
+Nvidia GeForce 6100/nForce 405 LAN SATAII Dual Channel DDR800 									
+Sonido 6.1 Memoria DDRII 1GB HHD 100gb 7200 rpm									
+Regrabadora DVD Gabinete ATX Teclado Mouse Optico WebCam 300K									
+AGOTADO									
+									
+INTELVIEW									
+Asus P5SD2-VM/P5VD2-VM Video PCIEXPRESS 16x 6 USB 2.0 Procesador Intel Dual Core 2160									
+LAN SATAII Dual Channel DDR800 Sonido 6.1 									
+Memoria DDRII 1GB HHD 100gb 7200 rpm USB Frontales									
+Regrabadora DVD Gabinete ATX Teclado Mouse Optico WebCam 300K									
+u$s 335 									
+									
+INTEL TOWER// PANDA ANTIVIRUS 2008 ORIGINAL CON LICENCIA DE REGALO!!									
+Asus P5LD2 SE INTEL 945 PCIEXPRESS 16x 6 USB 2.0 Procesador Intel Core2 DUO 7200 									
+PCI EXPRESS + Memoria DDRII 2048MB HDD 250gb SATA RADEON X550 S512MB									
+Regrabadora DVD Gabinete ATX Teclado Mouse Optico WebCam Estabilizador de Tension 1000VA									
+u$s 535 									
+									
+AMD TOWER // PANDA ANTIVIRUS 2008 ORIGINAL CON LICENCIA DE REGALO!!									
+Asus M2N-MX SE Video 64MB PCIEXPRESS 16x 6 USB 2.0 Proc, AM2 Athlon 5200 X2 Dual Core 									
+Nvidia GeForce 6100/nForce 405 LAN SATAII Dual Channel DDR800 									
+Sonido 6.1 Memoria DDRII 2048MB HHD 250gb 7200 rpm									
+Regrabadora DVD Gabinete ATX Teclado Mouse Optico WebCam Estabilizador de Tension 1000VA									
+u$s 415									
+
+E-mail: olivoshard@fibertel.com.ar <mailto:a@fibertel.com.ar>
+Msn: olivoshard@hotmail.com <mailto:olivoshard@hotmail.com> 
+Tel: (54) (011) 4792-1031 
+Av. Parana 2865 Martinez Pcia de Bs As
 
 
