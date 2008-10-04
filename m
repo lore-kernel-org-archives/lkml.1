@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbYJDQxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYJDRO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068AbYJDQxS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 12:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYJDQxJ
+	id S1753918AbYJDRO7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 13:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYJDROv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 12:53:09 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58028 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbYJDQxI (ORCPT
+	Sat, 4 Oct 2008 13:14:51 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:27994 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751810AbYJDROu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 12:53:08 -0400
-Date: Sat, 4 Oct 2008 09:52:57 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ftrace: Add a C-state tracer to help power optimization
-Message-ID: <20081004095257.41ba3703@infradead.org>
-In-Reply-To: <alpine.DEB.1.10.0810032003140.17863@gandalf.stny.rr.com>
-References: <20081003165533.249261b1@infradead.org>
-	<alpine.DEB.1.10.0810032003140.17863@gandalf.stny.rr.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 4 Oct 2008 13:14:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=UXgM1k/8Dz1Uetz0mDVeP2QyZ7S1F7XbkKxLgfULed3TYuNsdG5OlBgY4MGGpxAj7R
+         OxiilJoeA7JEYxBhlJymgHTegQAIvFbooLrDBk3gOX7myPT6NLAqSq9cm/5+HdyN9sSn
+         6f9VtQVw6lMnEDMm7kB/5NFAFccxuXT3fw8xU=
+Date: Sat, 4 Oct 2008 13:14:45 -0400
+From: Joseph Fannin <jfannin@gmail.com>
+To: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
+Message-ID: <20081004171445.GA31780@nineveh.local>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <20081001215638.3a65134c.akpm@linux-foundation.org> <20081002062736.GR19428@kernel.dk> <20081001235501.2b7f50fe.akpm@linux-foundation.org> <20081002074523.GW19428@kernel.dk> <20081002010315.1cda8147.akpm@linux-foundation.org> <20081002120444.GA25164@mit.edu> <20081002061629.39d5e115@infradead.org> <20081002134659.GC25164@mit.edu> <20081002073304.7f027f52@infradead.org> <20081004141252.GA23398@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081004141252.GA23398@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008 20:32:51 -0400 (EDT)
-Steven Rostedt <rostedt@goodmis.org> wrote:
-> > +struct trace_cstate {
-> > +	struct trace_entry	ent;
-> > +	struct cstate_trace	state_data;
-> > +};
-> > +
-> 
-> Can you please register this in the trace_assign_type macro.
-> 
-> 	IF_ASSIGN(var, ent, struct trace_cstate, TRACE_BOOT); \
+On Sat, Oct 04, 2008 at 10:12:52AM -0400, Theodore Tso wrote:
 
-I don't see this anywhere in the kernel ;(
+> Anyway, here's the patch (against ext4, although could pretty easily
+> move this to ext3 --- but you can mount an ext3 filesystem as ext4,
+> although for the moment you do have to run the command "tune2fs -E
+> test_fs /dev/hdXX" first) [...]
 
-> And here, do not typecast. Use the trace_assign_type macro below.
+Shouldn't he also be sure to mount the FS with the "noextents" option,
+or has ext4 learned not to to enable extents if they're not already
+enabled?
 
-nor that guy
+--
+Joseph Fannin
+jfannin@gmail.com
 
-
-> 
-> > +	struct cstate_trace *it = &field->state_data;
-> > +	struct trace_seq *s = &iter->seq;
-> > +	struct timespec stamp = ktime_to_timespec(it->stamp);
-> 
-> Also note that iter->ts holds a timestamp counter from bootup in
-> nanosecs. It currently uses the sched_clock to record, but may change
-> later to something a bit better.
-
-given that some of these clocks stop during idle... I really do care
-about which timestamp is used, tracing idle with a clock that stops
-during idle won't work too well.
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
