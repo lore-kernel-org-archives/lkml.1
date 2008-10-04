@@ -1,53 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYJDTpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbYJDTvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbYJDTpp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 15:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYJDTpf
+	id S1754234AbYJDTvh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 15:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYJDTv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 15:45:35 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:35391 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752301AbYJDTpe (ORCPT
+	Sat, 4 Oct 2008 15:51:28 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:34330 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751724AbYJDTv2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 15:45:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bdmAAN5RWXfssYAk0ZTpKjqVN+kS7BpnwipDGyRsQvHWH6rM1nY0ZgfPyFRJ3DPL4c
-         nvaTbfQ/4fBVSRuhIMmex24GgStvX4opf25RUideo8NugZWqrnSCqE1E03NOnNvOH8Fw
-         cUXEo5HgcdM280YhOr/CbP+7kZcfvjlLwOZws=
-Message-ID: <5d9b736f0810041245g4f05326sdf98e9d86472f874@mail.gmail.com>
-Date: Sat, 4 Oct 2008 21:45:31 +0200
-From: "Michal Januszewski" <michalj@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH v3] fbdev: ignore VESA modes if framebuffer does not support them
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       krzysztof.h1@poczta.fm, bonbons@linux-vserver.org, hpa@zytor.com
-In-Reply-To: <20081002234011.51ad28b1.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Sat, 4 Oct 2008 15:51:28 -0400
+Date: Sat, 4 Oct 2008 21:51:22 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
+Cc: linux-kernel@vger.kernel.org, Alex Dubov <oakad@yahoo.com>
+Subject: Re: RFC: Driver for CB710/720 memory card reader (MMC part) - v2
+Message-ID: <20081004215122.0626cd7b@mjolnir.drzeus.cx>
+In-Reply-To: <20080925062924.GA32105@rere.qmqm.pl>
+References: <20080907215228.GA19193@rere.qmqm.pl>
+	<20080909091800.37eccc0f@mjolnir.drzeus.cx>
+	<20080909090613.GA22158@rere.qmqm.pl>
+	<20080911201307.GA31730@rere.qmqm.pl>
+	<20080912234302.GA19230@rere.qmqm.pl>
+	<20080920130006.69d50cbb@mjolnir.drzeus.cx>
+	<20080925062924.GA32105@rere.qmqm.pl>
+X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080928125414.GA27703@spock.one.pl>
-	 <20081002234011.51ad28b1.akpm@linux-foundation.org>
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 3, 2008 at 08:40, Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thu, 25 Sep 2008 08:29:24 +0200
+Michał Mirosław <mirq-linux@rere.qmqm.pl> wrote:
 
-> -mm's efifb-imacfb-consolidation-hardware-support.patch removed FB_IMAC
-> and moved it into FB_EDD.  But your patch changes FB_IMAC and not
-> FB_EDD, so I don't know what needs to be done here.
+> 
+> This should be almost ready. mmc-test passes up to a point where it
+> tries non-sector-size writes to the card - I didn't have time to look
+> into this further, yet.
+> 
 
-I had a look at that patch and it looks like simply dropping the FB_IMAC
-part from my patch is correct (i.e. the version of
-fbdev-ignore-vesa-modes-if-framebuffer-does-not-support-them
-that is currently in -mm is fine).
+If you can't figure it out, just make sure the driver fails the
+requests with -EINVAL.
 
-Best regards,
+> > > +/* sg-to-PIO buffer */
+> [and its API]
+> > Why this complex system? Can't you use the handlers the kernel already
+> > provides? You also get a lot of special handling with those, e.g.
+> > highmem.
+> 
+> I looked at linux/lib/scatterlist.c and found nothing really useful. If
+> there were some preconditions always met for scatterlists - like that block
+> does not span multiple pages, or at least 16-byte block don't, then most
+> of this code can go away. It looks complicated, because it implements
+> a special iterator interface that always returns multiple-of-16-byte blocks
+> for reading or writing. This makes the PIO loops very simple and fast
+> (the bounce_buffer case was never triggered by mmc-block in my tests).
+> 
+
+The buffers leave no alignment guarantees unfortunately. 
+
+Have a look at the current sdhci.c PIO routines though. It uses the sg
+iterator helpers and keeps track of four byte chunks (as opposed to the
+16 byte ones you need).
+
+> > > +static void cb710_mmc_enable_irq(struct cb710_chip *chip, int enable)
+> > > +{
+> > > +	unsigned long flags;
+> > > +
+> > > +	spin_lock_irqsave(&chip->irq_lock, flags);
+> > > +	__cb710_mmc_enable_irq(chip, enable);
+> > > +	spin_unlock_irqrestore(&chip->irq_lock, flags);
+> > > +}
+> > This is a fairly useless wrapper. Look over how it is called instead.
+> 
+> Can you expand on this? Right now irq handler doesn't call
+> __cb710_mmc_enable_irq() but modifies registers itself. This will
+> change eventually.
+> 
+
+Just require that the lock must be held by the caller when invoking
+cb710_mmc_enable_irq(). It's usually easier to keep track of locks by
+keeping the lock handling at entry points into the driver.
+
+Rgds
 -- 
-Michal Januszewski, Gentoo Linux Developer
-http://people.gentoo.org/spock
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
