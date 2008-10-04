@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbYJDMKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbYJDMOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753819AbYJDMKb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 08:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYJDMKX
+	id S1753596AbYJDMOF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 08:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYJDMNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 08:10:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45336 "EHLO mx3.mail.elte.hu"
+	Sat, 4 Oct 2008 08:13:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36545 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752741AbYJDMKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 08:10:22 -0400
-Date: Sat, 4 Oct 2008 14:10:12 +0200
+	id S1752561AbYJDMNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 08:13:54 -0400
+Date: Sat, 4 Oct 2008 14:13:33 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [mmotm 02/Oct] fix buid error of autodetect_raid()
-Message-ID: <20081004121012.GA582@elte.hu>
-References: <20081004190725.CE3E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH FIX] traps: x86: correct copy/paste bug: a trap is a
+	GATE_TRAP
+Message-ID: <20081004121333.GB582@elte.hu>
+References: <1223114224.25951.1277482279@webmail.messagingengine.com> <20081004100608.GA7659@mailshack.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081004190725.CE3E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20081004100608.GA7659@mailshack.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,41 +37,71 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+* Alexander van Heukelum <heukelum@mailshack.com> wrote:
 
-> Patch against: mmotm 02 Oct
-> Applied after: git-fastboot.patch
+> > > > This series unifies traps_32.c and traps_64.c.
+> > > 
+> > > wow, very nice! I've applied them to tip/x86/traps:
+> > > 
+> > > f58f3d5: traps: x86: finalize unification of traps.c
+> > > bf395d6: traps: x86: make traps_32.c and traps_64.c equal
+> > > f156f35: traps: x86: various noop-changes preparing for unification of traps_xx.c
+> > > 70cfe30: traps: x86_64: use task_pid_nr(tsk) instead of tsk->pid in do_general_protection
+> > > dc89ce0: traps: i386: expand clear_mem_error and remove from mach_traps.h
+> > > 6f8063f: traps: x86_64: make io_check_error equal to the one on i386
+> > > d025445: traps: i386: use preempt_conditional_sti/cli in do_int3
+> > > 2180afa: traps: x86_64: make math_state_restore more like i386
+> > > 686cc4a: traps: x86: converge trap_init functions
+> > 
+> > -tip testing found a spontaneus reboot bug on two 32-bit systems (one 
+> > Intel and one AMD testbox), and i've bisected it down to:
+> > 
+> > | 686cc4a0c1ca92bffbc22a897c3b433dadbbf444 is first bad commit
+> > | commit 686cc4a0c1ca92bffbc22a897c3b433dadbbf444
+> > | Author: Alexander van Heukelum <heukelum@fastmail.fm>
+> > | Date:   Fri Oct 3 22:00:32 2008 +0200
+> > |
+> > |     traps: x86: converge trap_init functions
+> > 
+> > config attached. The bisection log:
+> > 
+> >  # bad:  [a229a9da] Merge branch 'timers/urgent'
+> >  # good: [27de5e39] Merge branch 'out-of-tree'
+> >  # good: [8e9cb9db] Merge branch 'tracing/ring-buffer'
+> >  # bad:  [70cfe30f] traps: x86_64: use task_pid_nr(tsk) instead of tsk
+> >  # bad:  [d0254456] traps: i386: use preempt_conditional_sti/cli in do
+> >  # bad:  [2180afaf] traps: x86_64: make math_state_restore more like i
+> >  # bad:  [686cc4a0] traps: x86: converge trap_init functions
+> > 
+> > so i've excluded these commits from tip/master for now.
+> > 
+> > there's no serial log entry visible - the spontaneous reboot happens at 
+> > around when we hit user-space.
+> > 
+> > I suspect syscall entry setup might be borked - the stack frames of call 
+> > gates versus interrupt gates are different and it's easy to make a small 
+> > mistake there with such effects.
+> > 
+> > 	Ingo
 > 
+> *blush*
 > 
-> fix following build error
-> 
-> >  CC      init/do_mounts_md.o
-> >init/do_mounts_md.c: In function 'autodetect_raid':
-> >init/do_mounts_md.c:278: error: implicit declaration of function 'msleep'
-> >make[1]: *** [init/do_mounts_md.o] Error 1
-> >make: *** [init] Error 2
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Arjan van de Ven <arjan@linux.intel.com>
-> CC: Ingo Molnar <mingo@elte.hu>
-> ---
->  init/do_mounts_md.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: b/init/do_mounts_md.c
-> ===================================================================
-> --- a/init/do_mounts_md.c
-> +++ b/init/do_mounts_md.c
-> @@ -1,5 +1,6 @@
->  
->  #include <linux/raid/md.h>
-> +#include <linux/delay.h>
+> You were so right. I have no idea how this has slipped
+> through testing. Could you see if this on top of the
+> traps branch makes things go again? I'll get you some
+> replacement patches to make the whole thing bisectable
+> again.
 
-hm, linux/raid/md.h already has:
+>  static inline void set_system_trap_gate(unsigned int n, void *addr)
+>  {
+>  	BUG_ON((unsigned)n > 0xFF);
+> -	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
+> +	_set_gate(n, GATE_TRAP, addr, 0x3, 0, __KERNEL_CS);
+>  }
 
-  #include <linux/delay.h>
+indeed, that would explain it :)
 
-what config triggers this build failure, and does your version of 
-include/linux/raid/md.h have a linux/delay.h #include?
+i've added your delta fix, and will propagate/squash it back to 1/9 if 
+it tests out fine. (it's worth having this series fully bisectable)
 
 	Ingo
