@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbYJDUFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbYJDUFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbYJDUFH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 16:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbYJDUE4
+	id S1754872AbYJDUFd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 16:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYJDUFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 16:04:56 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:17323 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753033AbYJDUEz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 16:04:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=uepXskw9hqyQHz9/+Og7LH8N6maDuLWmuf0342ziUwIPkHIqn56tRTw8jpMKsQMaDH
-         7xKPYr/Mca4wahSY8OOw8Z5FUyYUwrAE7bInsursCaoBD2Qy+kD2JlFXxoeKYfT9eVDd
-         70vQdG9tLZnCIH4zoYV3xbcq1hRIHr0tmM1Yk=
-Message-ID: <48E7CC5C.7080306@gmail.com>
-Date: Sat, 04 Oct 2008 22:04:44 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Sat, 4 Oct 2008 16:05:14 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:58270 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753033AbYJDUFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 16:05:12 -0400
+Date: Sat, 4 Oct 2008 22:05:08 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: ben-linux@fluff.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/2] drivers/i2c/busses/i2c-s3c2410.c: Correct use of ! and
+ &
+Message-ID: <Pine.LNX.4.64.0810042203520.19286@ask.diku.dk>
 MIME-Version: 1.0
-To: mingo@elte.hu
-CC: linux-kernel@vger.kernel.org, rostedt@goodmis.org
-Subject: [PATCH -tip] Return an error when setting a nonexistent tracer
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When one try to set a nonexistent tracer, no error is returned
-as if the name of the tracer was correct.
-We should return -EINVAL.
+From: Julia Lawall <julia@diku.dk>
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+In commit e6bafba5b4765a5a252f1b8d31cbf6d2459da337, a bug was fixed that
+involved converting !x & y to !(x & y).  The code below shows the same
+pattern, and thus should perhaps be fixed in the same way.  In particular,
+the result of !readl(i2c->regs + S3C2410_IICCON) & S3C2410_IICCON_IRQEN is
+always 0.
+
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@ expression E; constant C; @@
+(
+  !E & !C
+|
+- !E & C
++ !(E & C)
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
- kernel/trace/trace.c |   13 ++++++++++---
- 1 files changed, 10 insertions(+), 3 deletions(-)
+ drivers/i2c/busses/i2c-s3c2410.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 1cd2e81..9b30473 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2384,9 +2384,11 @@ tracing_set_trace_write(struct file *filp, const char __user *ubuf,
- 	struct tracer *t;
- 	char buf[max_tracer_type_len+1];
- 	int i;
-+	size_t ret;
+diff -u -p a/drivers/i2c/busses/i2c-s3c2410.c b/drivers/i2c/busses/i2c-s3c2410.c
+--- a/drivers/i2c/busses/i2c-s3c2410.c
++++ b/drivers/i2c/busses/i2c-s3c2410.c
+@@ -507,7 +507,7 @@ static int s3c24xx_i2c_doxfer(struct s3c
+ 	unsigned long timeout;
+ 	int ret;
  
- 	if (cnt > max_tracer_type_len)
- 		cnt = max_tracer_type_len;
-+	ret = cnt;
+-	if (!readl(i2c->regs + S3C2410_IICCON) & S3C2410_IICCON_IRQEN)
++	if (!(readl(i2c->regs + S3C2410_IICCON) & S3C2410_IICCON_IRQEN))
+ 		return -EIO;
  
- 	if (copy_from_user(&buf, ubuf, cnt))
- 		return -EFAULT;
-@@ -2402,7 +2404,11 @@ tracing_set_trace_write(struct file *filp, const char __user *ubuf,
- 		if (strcmp(t->name, buf) == 0)
- 			break;
- 	}
--	if (!t || t == current_trace)
-+	if (!t) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+	if (t == current_trace)
- 		goto out;
- 
- 	if (current_trace && current_trace->reset)
-@@ -2415,9 +2421,10 @@ tracing_set_trace_write(struct file *filp, const char __user *ubuf,
-  out:
- 	mutex_unlock(&trace_types_lock);
- 
--	filp->f_pos += cnt;
-+	if (ret == cnt)
-+		filp->f_pos += cnt;
- 
--	return cnt;
-+	return ret;
- }
- 
- static ssize_t
+ 	ret = s3c24xx_i2c_set_master(i2c);
