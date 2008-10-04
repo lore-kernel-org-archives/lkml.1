@@ -1,106 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYJDWbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYJDWiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbYJDWbf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 18:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbYJDWb1
+	id S1755357AbYJDWiq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 18:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYJDWii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 18:31:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45098 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753938AbYJDWb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 18:31:27 -0400
-Date: Sat, 4 Oct 2008 18:30:14 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: <PING> Re: [patch x86/core] x86: allow number of additional
- hotplug CPUs to be set at compile time
-Message-ID: <20081004183014.769836ff@redhat.com>
-In-Reply-To: <87ljx4nw09.fsf_-_@basil.nowhere.org>
-References: <20081001191945.4182d0be@redhat.com>
-	<87bpy3pdgs.fsf@basil.nowhere.org>
-	<20081002152521.16c4835b@redhat.com>
-	<20081002194409.GB8318@one.firstfloor.org>
-	<20081002160907.68d79e0b@redhat.com>
-	<20081002204018.GD8318@one.firstfloor.org>
-	<87ljx4nw09.fsf_-_@basil.nowhere.org>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 4 Oct 2008 18:38:38 -0400
+Received: from smtp.outflux.net ([198.145.64.163]:48797 "EHLO
+	vinyl.outflux.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754210AbYJDWih (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 18:38:37 -0400
+X-Greylist: delayed 2167 seconds by postgrey-1.27 at vger.kernel.org; Sat, 04 Oct 2008 18:38:37 EDT
+Date: Sat, 4 Oct 2008 15:02:20 -0700
+From: Kees Cook <kees.cook@canonical.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: add "personality" to process status file
+Message-ID: <20081004220220.GK10632@outflux.net>
+References: <20081002211424.GJ10632@outflux.net> <20081004145149.52c34ee7@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081004145149.52c34ee7@infradead.org>
+Organization: Canonical
+X-HELO: www.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 04 Oct 2008 18:52:06 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
-
+On Sat, Oct 04, 2008 at 02:51:49PM -0700, Arjan van de Ven wrote:
+> On Thu, 2 Oct 2008 14:14:24 -0700
+> Kees Cook <kees.cook@canonical.com> wrote:
 > 
-> Ping? Can you please test the patch?  I think that's the correct fix.
->  
-> I see Ingo unfortunately merged your initial broken hack, but it's wrong
-> and when actually used on a distribution will break real CPU hotplug there.
-> Please don't enable that CONFIG option in Fedora. Ideally drop
-> the CONFIG patch completely because it cannot do much good.
+> > There is no sane way to query the personality flags of arbitrary
+> > process from userspace.  This adds the flags to the /proc/$pid/status
+> > file. For example, to detect READ_IMPLIES_EXEC:
+> > 
 > 
-> It should be replaced with the appended patch, which should go into 2.6.27
-> after it is confirmed to fix the problem.
-> 
+> .. I'm sure local exploit writers will love this to find out which
+> processes to attack.
+> Realistically, this probably shouldn't be in a world-readable file.
 
-Yes, it works and I don't see how it could cause any problems.
+Nothing else seemed appropriate, but I could make a brand new proc file,
+if that's sensible.  "status_private" ?
 
-Ingo, can we get this in 2.6.27? You can drop my original patch.
+-Kees
 
-Tested-by: Chuck Ebbert <cebbert@redhat.com>
-
-> > ---
-> >
-> > Take disabled cpus into account in alternative.c
-> >
-> > Otherwise an UP system with one hotplug CPU will not 
-> > go into UP mode.
-> >
-> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> >
-> > Index: linux-2.6.27-rc4-misc/arch/x86/kernel/alternative.c
-> > ===================================================================
-> > --- linux-2.6.27-rc4-misc.orig/arch/x86/kernel/alternative.c
-> > +++ linux-2.6.27-rc4-misc/arch/x86/kernel/alternative.c
-> > @@ -454,7 +454,7 @@ void __init alternative_instructions(voi
-> >  					    _text, _etext);
-> >  
-> >  		/* Only switch to UP mode if we don't immediately boot others */
-> > -		if (num_possible_cpus() == 1 || setup_max_cpus <= 1)
-> > +		if (num_possible_cpus() - additional_cpus == 1 || setup_max_cpus <= 1)
-> >  			alternatives_smp_switch(0);
-> >  	}
-> >  #endif
-> > Index: linux-2.6.27-rc4-misc/arch/x86/kernel/smpboot.c
-> > ===================================================================
-> > --- linux-2.6.27-rc4-misc.orig/arch/x86/kernel/smpboot.c
-> > +++ linux-2.6.27-rc4-misc/arch/x86/kernel/smpboot.c
-> > @@ -1276,7 +1276,7 @@ static void remove_siblinginfo(int cpu)
-> >  	cpu_clear(cpu, cpu_sibling_setup_map);
-> >  }
-> >  
-> > -static int additional_cpus __initdata = -1;
-> > +int additional_cpus = -1;
-> >  
-> >  static __init int setup_additional_cpus(char *s)
-> >  {
-> > Index: linux-2.6.27-rc4-misc/include/asm-x86/smp.h
-> > ===================================================================
-> > --- linux-2.6.27-rc4-misc.orig/include/asm-x86/smp.h
-> > +++ linux-2.6.27-rc4-misc/include/asm-x86/smp.h
-> > @@ -204,5 +204,7 @@ static inline int hard_smp_processor_id(
-> >  extern void cpu_uninit(void);
-> >  #endif
-> >  
-> > +extern int additional_cpus;
-> > +
-> >  #endif /* __ASSEMBLY__ */
-> >  #endif
-> > -- 
-> > ak@linux.intel.com
-> 
+-- 
+Kees Cook
+Ubuntu Security Team
