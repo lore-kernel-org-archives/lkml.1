@@ -1,52 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbYJDUBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbYJDUFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbYJDUBd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 16:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbYJDUBZ
+	id S1754719AbYJDUFH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 16:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbYJDUE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 16:01:25 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:59969 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752089AbYJDUBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 16:01:25 -0400
-Date: Sat, 4 Oct 2008 22:01:19 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: "Matt Fleming" <mattjfleming@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] MMC: CSD and CID timeout values
-Message-ID: <20081004220119.6cdf37df@mjolnir.drzeus.cx>
-In-Reply-To: <5ff4a1e50810020457m13bd38d3i72609171ff0dcc4f@mail.gmail.com>
-References: <5ff4a1e50810020457m13bd38d3i72609171ff0dcc4f@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 4 Oct 2008 16:04:56 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:17323 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753033AbYJDUEz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 16:04:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=uepXskw9hqyQHz9/+Og7LH8N6maDuLWmuf0342ziUwIPkHIqn56tRTw8jpMKsQMaDH
+         7xKPYr/Mca4wahSY8OOw8Z5FUyYUwrAE7bInsursCaoBD2Qy+kD2JlFXxoeKYfT9eVDd
+         70vQdG9tLZnCIH4zoYV3xbcq1hRIHr0tmM1Yk=
+Message-ID: <48E7CC5C.7080306@gmail.com>
+Date: Sat, 04 Oct 2008 22:04:44 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: mingo@elte.hu
+CC: linux-kernel@vger.kernel.org, rostedt@goodmis.org
+Subject: [PATCH -tip] Return an error when setting a nonexistent tracer
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 12:57:14 +0100
-"Matt Fleming" <mattjfleming@googlemail.com> wrote:
+When one try to set a nonexistent tracer, no error is returned
+as if the name of the tracer was correct.
+We should return -EINVAL.
 
-> From 9a083f0e9a81f5bc31ea49f37112f1945830fc7c Mon Sep 17 00:00:00 2001
-> From: Matthew Fleming <matthew.fleming@imgtec.com>
-> Date: Thu, 2 Oct 2008 12:24:05 +0100
-> Subject: [PATCH 2/2] MMC: CSD and CID timeout values
-> 
-> The MMC spec states that the timeout for accessing the CSD and CID
-> registers is 64 clock cycles.
-> 
-> Signed-off-by: Matthew Fleming <matthew.fleming@imgtec.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/trace/trace.c |   13 ++++++++++---
+ 1 files changed, 10 insertions(+), 3 deletions(-)
 
-Applied both patches. Thanks. :)
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 1cd2e81..9b30473 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2384,9 +2384,11 @@ tracing_set_trace_write(struct file *filp, const char __user *ubuf,
+ 	struct tracer *t;
+ 	char buf[max_tracer_type_len+1];
+ 	int i;
++	size_t ret;
+ 
+ 	if (cnt > max_tracer_type_len)
+ 		cnt = max_tracer_type_len;
++	ret = cnt;
+ 
+ 	if (copy_from_user(&buf, ubuf, cnt))
+ 		return -EFAULT;
+@@ -2402,7 +2404,11 @@ tracing_set_trace_write(struct file *filp, const char __user *ubuf,
+ 		if (strcmp(t->name, buf) == 0)
+ 			break;
+ 	}
+-	if (!t || t == current_trace)
++	if (!t) {
++		ret = -EINVAL;
++		goto out;
++	}
++	if (t == current_trace)
+ 		goto out;
+ 
+ 	if (current_trace && current_trace->reset)
+@@ -2415,9 +2421,10 @@ tracing_set_trace_write(struct file *filp, const char __user *ubuf,
+  out:
+ 	mutex_unlock(&trace_types_lock);
+ 
+-	filp->f_pos += cnt;
++	if (ret == cnt)
++		filp->f_pos += cnt;
+ 
+-	return cnt;
++	return ret;
+ }
+ 
+ static ssize_t
