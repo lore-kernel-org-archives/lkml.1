@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYJDOzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYJDO4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbYJDOzd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 10:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbYJDOzZ
+	id S1753974AbYJDO4d (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 10:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYJDO4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 10:55:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51155 "EHLO mx3.mail.elte.hu"
+	Sat, 4 Oct 2008 10:56:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51250 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752935AbYJDOzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 10:55:24 -0400
-Date: Sat, 4 Oct 2008 16:55:10 +0200
+	id S1752935AbYJDO4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 10:56:24 -0400
+Date: Sat, 4 Oct 2008 16:56:18 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86 fix
-Message-ID: <20081004145510.GA28185@elte.hu>
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [git pull] timers fixes
+Message-ID: <20081004145618.GA28623@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,32 +34,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest x86-fixes-for-linus git tree from:
+Please pull the latest timers-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-H. Peter Anvin (1):
-      x86 setup: correct segfault in generation of 32-bit reloc kernel
+Thomas Gleixner (1):
+      clockevents: check broadcast tick device not the clock events device
 
 
- arch/x86/boot/compressed/relocs.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/time/tick-broadcast.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/boot/compressed/relocs.c b/arch/x86/boot/compressed/relocs.c
-index a1310c5..857e492 100644
---- a/arch/x86/boot/compressed/relocs.c
-+++ b/arch/x86/boot/compressed/relocs.c
-@@ -492,7 +492,7 @@ static void walk_relocs(void (*visit)(Elf32_Rel *rel, Elf32_Sym *sym))
- 			continue;
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index bd70345..cb01cd8 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -235,7 +235,8 @@ static void tick_do_broadcast_on_off(void *why)
+ 	case CLOCK_EVT_NOTIFY_BROADCAST_FORCE:
+ 		if (!cpu_isset(cpu, tick_broadcast_mask)) {
+ 			cpu_set(cpu, tick_broadcast_mask);
+-			if (bc->mode == TICKDEV_MODE_PERIODIC)
++			if (tick_broadcast_device.mode ==
++			    TICKDEV_MODE_PERIODIC)
+ 				clockevents_shutdown(dev);
  		}
- 		sh_symtab = sec_symtab->symtab;
--		sym_strtab = sec->link->strtab;
-+		sym_strtab = sec_symtab->link->strtab;
- 		for (j = 0; j < sec->shdr.sh_size/sizeof(Elf32_Rel); j++) {
- 			Elf32_Rel *rel;
- 			Elf32_Sym *sym;
+ 		if (*reason == CLOCK_EVT_NOTIFY_BROADCAST_FORCE)
+@@ -245,7 +246,8 @@ static void tick_do_broadcast_on_off(void *why)
+ 		if (!tick_broadcast_force &&
+ 		    cpu_isset(cpu, tick_broadcast_mask)) {
+ 			cpu_clear(cpu, tick_broadcast_mask);
+-			if (bc->mode == TICKDEV_MODE_PERIODIC)
++			if (tick_broadcast_device.mode ==
++			    TICKDEV_MODE_PERIODIC)
+ 				tick_setup_periodic(dev, 0);
+ 		}
+ 		break;
