@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbYJDIxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbYJDIyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753004AbYJDIxU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 04:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYJDIxM
+	id S1753248AbYJDIyP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 04:54:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbYJDIx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 04:53:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53507 "EHLO mx3.mail.elte.hu"
+	Sat, 4 Oct 2008 04:53:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59886 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751913AbYJDIxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 04:53:11 -0400
-Date: Sat, 4 Oct 2008 10:52:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 0/9] traps: x86: finalize unification of traps.c
-Message-ID: <20081004085251.GA8080@elte.hu>
-References: <1223064040-23170-1-git-send-email-heukelum@fastmail.fm>
+	id S1751939AbYJDIx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 04:53:57 -0400
+Message-ID: <48E72EFF.5040101@redhat.com>
+Date: Sat, 04 Oct 2008 11:53:19 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223064040-23170-1-git-send-email-heukelum@fastmail.fm>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       "akataria@vmware.com" <akataria@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
+       Zach Amsden <zach@vmware.com>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Subject: Re: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
+References: <1222881242.9381.17.camel@alok-dev1>	 <48E3B19D.6060905@zytor.com> <1222882431.9381.23.camel@alok-dev1>	 <48E3BC21.4080803@goop.org> <1222895153.9381.69.camel@alok-dev1> <48E3FDD5.7040106@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15D927EA4@orsmsx505.amr.corp.intel.com> <48E422CA.2010606@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA221@orsmsx505.amr.corp.intel.com> <48E6AB15.8060405@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA325@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <0B53E02A2965CE4F9ADB38B34501A3A15DCBA325@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nakajima, Jun wrote:
+> What's the significance of supporting multiple interfaces to the same guest simultaneously, i.e. _runtime_? We don't want the guests to run on such a literarily Frankenstein machine. And practically, such testing/debugging would be good only for Halloween :-).
+>
+>   
 
-* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+If you can only expose one interface, you need to have the user choose.
 
-> Hi Ingo,
-> 
-> This series unifies traps_32.c and traps_64.c.
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
-wow, very nice! I've applied them to tip/x86/traps:
-
-f58f3d5: traps: x86: finalize unification of traps.c
-bf395d6: traps: x86: make traps_32.c and traps_64.c equal
-f156f35: traps: x86: various noop-changes preparing for unification of traps_xx.c
-70cfe30: traps: x86_64: use task_pid_nr(tsk) instead of tsk->pid in do_general_protection
-dc89ce0: traps: i386: expand clear_mem_error and remove from mach_traps.h
-6f8063f: traps: x86_64: make io_check_error equal to the one on i386
-d025445: traps: i386: use preempt_conditional_sti/cli in do_int3
-2180afa: traps: x86_64: make math_state_restore more like i386
-686cc4a: traps: x86: converge trap_init functions
-
-thanks Alexander!
-
-	Ingo
