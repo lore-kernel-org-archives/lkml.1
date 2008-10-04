@@ -1,179 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbYJDXLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYJDXSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510AbYJDXLP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 19:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbYJDXK7
+	id S1755723AbYJDXSA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 19:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbYJDXRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 19:10:59 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:31475 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754756AbYJDXK6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 19:10:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=hMEOOKA8WsdR8PrUvkdY9TjmP2pN2KhI4D4SIOfZTyo9+6GzMLrGu/FwbRPL4VPXqz
-         WGzADo2zsy5B2uyZipF0QkKS+Jlcv+fJFK96nS0TcwMaPJVZKaq+IX2q3ONk+zWTI7/3
-         +QB/+Gw3CmwUrQ5ggICOHT34Z5zm4IPCtddMs=
-Message-ID: <86802c440810041610r74cdde33ld14ae3e92f54ab4e@mail.gmail.com>
-Date: Sat, 4 Oct 2008 16:10:57 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "=?ISO-8859-1?Q?J.A._Magall=F3n?=" <jamagallon@ono.com>
-Subject: Re: Strange mtrrs in Aspire One
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081005010210.5a0835ff@werewolf.home>
+	Sat, 4 Oct 2008 19:17:51 -0400
+Received: from nebensachen.de ([195.34.83.29]:44888 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754632AbYJDXRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 19:17:50 -0400
+X-Hashcash: 1:20:081004:bzolnier@gmail.com::0ewqGbf9YqOhYkBC:00000000000000000000000000000000000000000005dvS
+X-Hashcash: 1:20:081004:linux-ide@vger.kernel.org::G1MXF2EaPYjptIuD:0000000000000000000000000000000000005u55
+X-Hashcash: 1:20:081004:linux-kernel@vger.kernel.org::rDnbc+2raVVAG/0u:0000000000000000000000000000000001Mm+
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4 v2] ide: Implement disk shock protection support
+References: <87d4j2n3dn.fsf@denkblock.local>
+	<20080917163144.9870.59732.stgit@denkblock.local>
+	<200809181624.54248.bzolnier@gmail.com>
+	<87fxnczocc.fsf@denkblock.local> <87d4igqxlm.fsf@denkblock.local>
+Date: Sun, 05 Oct 2008 01:16:16 +0200
+In-Reply-To: <87d4igqxlm.fsf@denkblock.local> (Elias Oltmanns's message of
+	"Sat, 04 Oct 2008 15:49:25 +0200")
+Message-ID: <873ajcar3z.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20080930015733.5c6ea984@werewolf.home>
-	 <86802c440809291805r71877ad1wc68525c1ca0603e1@mail.gmail.com>
-	 <20081004152235.387a6f61@werewolf.home>
-	 <86802c440810041055w17c42136l6884880acdb40e98@mail.gmail.com>
-	 <86802c440810041454s500b66e8w165c0115a2284363@mail.gmail.com>
-	 <20081005010210.5a0835ff@werewolf.home>
-X-Google-Sender-Auth: ff623a3bfa85e1df
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 4, 2008 at 4:02 PM, J.A. Magallón <jamagallon@ono.com> wrote:
-> On Sat, 4 Oct 2008 14:54:24 -0700, "Yinghai Lu" <yinghai@kernel.org> wrote:
->
->> On Sat, Oct 4, 2008 at 10:55 AM, Yinghai Lu <yinghai@kernel.org> wrote:
->> > On Sat, Oct 4, 2008 at 6:22 AM, J.A. Magallón <jamagallon@ono.com> wrote:
->> >> On Mon, 29 Sep 2008 18:05:51 -0700, "Yinghai Lu" <yinghai@kernel.org> wrote:
->> >>
->> >>> On Mon, Sep 29, 2008 at 4:57 PM, J.A. Magallón <jamagallon@ono.com> wrote:
->> >>> > Hi all...
->> >>> >
->> >>> > My aspire one is giving some strange MTRR settings with rc7-git5 (and
->> >>> > prevous kernels, but that is what I run now...):
->> >>> >
->> >>> > one:~> cat /proc/mtrr
->> >>> > reg00: base=0xfffe0000 (4095MB), size= 128KB: write-protect, count=1
->> >>> > reg01: base=0xfffc0000 (4095MB), size= 128KB: uncachable, count=1
->> >>>
->> >>> could make mtrr_cleanup to support 128K gran_size
->> >>>
->> >>> > reg02: base=0x00000000 (   0MB), size= 256MB: write-back, count=1
->> >>> > reg03: base=0x10000000 ( 256MB), size= 256MB: write-back, count=1
->> >>> > reg04: base=0x1f800000 ( 504MB), size=   8MB: uncachable, count=1
->> >>> > reg05: base=0x1f600000 ( 502MB), size=   2MB: uncachable, count=1
->> >>> > reg06: base=0x1f500000 ( 501MB), size=   1MB: uncachable, count=1
->> >>>
->> >>> > reg07: base=0x00000000 (   0MB), size= 128KB: uncachable, count=1
->> >>> ..
->> >>> >  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
->> >>>
->> >>> last entry is really sick...
->> >>>
->> >>
->> >> I have applied the patches you have posted in other threads, and this
->> >> give a very strange result. The mtrr cleanup did nothing, and I had to put
->> >> some printk's all around.
->> >
->> > will have one patch to assume the [0, 1M) to be coverred by var mtrrs.
->> >
+Elias Oltmanns <eo@nebensachen.de> wrote:
+> Elias Oltmanns <eo@nebensachen.de> wrote:
+>> Hi Bart,
 >>
->> please check other three patches.
+>> may I ask you to apply yet another inter-diff? This is in order to
+>> address three issues:
 >>
->> [PATCH 1/3] x86: mtrr_cleanup: print out correct type
->> [PATCH 2/3] x86: mtrr_cleanup: first 1M should be coverred in var mtrrs
->> [PATCH 3/3] x86: mtrr_cleanup: treat WRPROT as UNCACHEABLE
->>
+>> 1. Make sure that no negative value is being passed to
+>>    jiffies_to_msecs() in ide_park_show().
+>> 2. Drop the superfluous variable hwif in ide_special_rq().
+>> 3. Skip initialisation of task and tf in ide_special_rq() if we are not
+>>    handling a (un)park request.
 >
-> Thanks, will try.
->
->> you may need to boot with "mtrr_gran_size=64k mtrr_chunk_size=64k"
->>
->
-> This makes me think about a question.
-> In the dual xeon box, the 'cleanup' ends with this setup:
->
-> werewolf:~> cat /proc/mtrr
-> reg00: base=0x00000000 (   0MB), size=1024MB: write-back, count=1
-> reg01: base=0x40000000 (1024MB), size= 512MB: write-back, count=1
-> reg02: base=0x60000000 (1536MB), size= 256MB: write-back, count=1
-> reg03: base=0x70000000 (1792MB), size= 128MB: write-back, count=1
-> reg04: base=0x78000000 (1920MB), size=  64MB: write-back, count=1
-> reg05: base=0x7c000000 (1984MB), size=  64MB: write-back, count=1
-> reg06: base=0x7ff00000 (2047MB), size=   1MB: uncachable, count=1
->
-> Ths options with 0 me loose were:
->
->  gran_size: 64K     chunk_size: 32M     num_reg: 8      lose cover RAM: 0G
->  gran_size: 64K     chunk_size: 64M     num_reg: 7      lose cover RAM: 0G
->  gran_size: 64K     chunk_size: 128M    num_reg: 6      lose cover RAM: 0G
->  gran_size: 64K     chunk_size: 256M    num_reg: 5      lose cover RAM: 0G
->  gran_size: 64K     chunk_size: 512M    num_reg: 4      lose cover RAM: 0G
->  gran_size: 64K     chunk_size: 1G  num_reg: 3      lose cover RAM: 0G
->  gran_size: 64K     chunk_size: 2G  num_reg: 2      lose cover RAM: 0G
->  ...
->  gran_size: 128K    chunk_size: 32M     num_reg: 8      lose cover RAM: 0G
->  gran_size: 128K    chunk_size: 64M     num_reg: 7      lose cover RAM: 0G
->  gran_size: 128K    chunk_size: 128M    num_reg: 6      lose cover RAM: 0G
->  gran_size: 128K    chunk_size: 256M    num_reg: 5      lose cover RAM: 0G
->  gran_size: 128K    chunk_size: 512M    num_reg: 4      lose cover RAM: 0G
->  gran_size: 128K    chunk_size: 1G  num_reg: 3      lose cover RAM: 0G
->  gran_size: 128K    chunk_size: 2G  num_reg: 2      lose cover RAM: 0G
->  ...
->  gran_size: 256K    chunk_size: 32M     num_reg: 8      lose cover RAM: 0G
->  gran_size: 256K    chunk_size: 64M     num_reg: 7      lose cover RAM: 0G
->  gran_size: 256K    chunk_size: 128M    num_reg: 6      lose cover RAM: 0G
->  gran_size: 256K    chunk_size: 256M    num_reg: 5      lose cover RAM: 0G
->  gran_size: 256K    chunk_size: 512M    num_reg: 4      lose cover RAM: 0G
->  gran_size: 256K    chunk_size: 1G  num_reg: 3      lose cover RAM: 0G
->  gran_size: 256K    chunk_size: 2G  num_reg: 2      lose cover RAM: 0G
-> ...
->  gran_size: 512K    chunk_size: 32M     num_reg: 8      lose cover RAM: 0G
->  gran_size: 512K    chunk_size: 64M     num_reg: 7      lose cover RAM: 0G
->  gran_size: 512K    chunk_size: 128M    num_reg: 6      lose cover RAM: 0G
->  gran_size: 512K    chunk_size: 256M    num_reg: 5      lose cover RAM: 0G
->  gran_size: 512K    chunk_size: 512M    num_reg: 4      lose cover RAM: 0G
->  gran_size: 512K    chunk_size: 1G  num_reg: 3      lose cover RAM: 0G
->  gran_size: 512K    chunk_size: 2G  num_reg: 2      lose cover RAM: 0G
-> ...
->  gran_size: 1M  chunk_size: 32M     num_reg: 8      lose cover RAM: 0G
->  gran_size: 1M  chunk_size: 64M     num_reg: 7      lose cover RAM: 0G
->  gran_size: 1M  chunk_size: 128M    num_reg: 6      lose cover RAM: 0G
->  gran_size: 1M  chunk_size: 256M    num_reg: 5      lose cover RAM: 0G
->  gran_size: 1M  chunk_size: 512M    num_reg: 4      lose cover RAM: 0G
->  gran_size: 1M  chunk_size: 1G  num_reg: 3      lose cover RAM: 0G
->  gran_size: 1M  chunk_size: 2G  num_reg: 2      lose cover RAM: 0G
->  ...
-> Found optimal setting for mtrr clean up
-> gran_size: 64K  chunk_size: 64M     num_reg: 7      lose RAM: 0G
->
-> Why did it choose that using 7 registers ? Should'n it get that with the
-> smallest number of used registers, and from those the bigger gran_size ?
-> If the purpose is to leave space for more mtrrs (from X or other...).
-> In short, what is the purpose of having this:
->
-> reg00: base=0x00000000 (   0MB), size=1024MB: write-back, count=1
-> reg01: base=0x40000000 (1024MB), size= 512MB: write-back, count=1
-> reg02: base=0x60000000 (1536MB), size= 256MB: write-back, count=1
-> reg03: base=0x70000000 (1792MB), size= 128MB: write-back, count=1
-> reg04: base=0x78000000 (1920MB), size=  64MB: write-back, count=1
-> reg05: base=0x7c000000 (1984MB), size=  64MB: write-back, count=1
-> reg06: base=0x7ff00000 (2047MB), size=   1MB: uncachable, count=1
->
-> instead of this:
->
-> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-> reg01: base=0x7ff00000 (2047MB), size=   1MB: uncachable, count=1
->
-> If both set a hole, not a set of valid zones without holes ?
->
-> ??
+> Well, #3 should have been done differently because we donn't want to
+> check for REQ_(UN)?PARK_HEADS more often than is necessary.
 
-please do check with tip/master.
-http://people.redhat.com/mingo/tip.git/readme.txt
+While preparing the backport to 2.6.27, it has just occurred to me that
+we need to clear the IDE_DFLAG_PARKED flag in ide_disk_pre_reset()
+because this flag must not be set after *any* sort of access to the
+device.
 
-please boot with mtrr_cleanup_debug to find out right mtrr_gran_size
-and mtrr_chunk_size...
+So, here is yet another revised version of the inter-diff. Just don't
+hurry to apply in case I have an enlightening dream tonight and want to
+change something more ;-).
 
-YH
+Regards,
+
+Elias
+
+Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+---
+
+ ide-io.c   |   47 +++++++++++++++++++++++++----------------------
+ ide-iops.c |    1 +
+ ide-park.c |    6 ++++--
+ 3 files changed, 30 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+index 09d10a5..77c6eae 100644
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -672,25 +672,32 @@ EXPORT_SYMBOL_GPL(ide_devset_execute);
+ 
+ static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
+ {
+-	ide_hwif_t *hwif = drive->hwif;
+-	ide_task_t task;
+-	struct ide_taskfile *tf = &task.tf;
++	u8 cmd = rq->cmd[0];
++
++	if (cmd == REQ_PARK_HEADS || cmd == REQ_UNPARK_HEADS) {
++		ide_task_t task;
++		struct ide_taskfile *tf = &task.tf;
++
++		memset(&task, 0, sizeof(task));
++		if (cmd == REQ_PARK_HEADS) {
++			drive->sleep = *(unsigned long *)rq->special;
++			drive->dev_flags |= IDE_DFLAG_SLEEPING;
++			tf->command = ATA_CMD_IDLEIMMEDIATE;
++			tf->feature = 0x44;
++			tf->lbal = 0x4c;
++			tf->lbam = 0x4e;
++			tf->lbah = 0x55;
++			task.tf_flags |= IDE_TFLAG_CUSTOM_HANDLER;
++		} else		/* cmd == REQ_UNPARK_HEADS */
++			tf->command = ATA_CMD_CHK_POWER;
++
++		task.tf_flags |= IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
++		task.rq = rq;
++		drive->hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
++		return do_rw_taskfile(drive, &task);
++	}
+ 
+-	memset(&task, 0, sizeof(task));
+-	switch (rq->cmd[0]) {
+-	case REQ_PARK_HEADS:
+-		drive->sleep = *(unsigned long *)rq->special;
+-		drive->dev_flags |= IDE_DFLAG_SLEEPING;
+-		tf->command = ATA_CMD_IDLEIMMEDIATE;
+-		tf->feature = 0x44;
+-		tf->lbal = 0x4c;
+-		tf->lbam = 0x4e;
+-		tf->lbah = 0x55;
+-		task.tf_flags |= IDE_TFLAG_CUSTOM_HANDLER;
+-		break;
+-	case REQ_UNPARK_HEADS:
+-		tf->command = ATA_CMD_CHK_POWER;
+-		break;
++	switch (cmd) {
+ 	case REQ_DEVSET_EXEC:
+ 	{
+ 		int err, (*setfunc)(ide_drive_t *, int) = rq->special;
+@@ -710,10 +717,6 @@ static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
+ 		ide_end_request(drive, 0, 0);
+ 		return ide_stopped;
+ 	}
+-	task.tf_flags |= IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
+-	task.rq = rq;
+-	hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
+-	return do_rw_taskfile(drive, &task);
+ }
+ 
+ static void ide_check_pm_state(ide_drive_t *drive, struct request *rq)
+diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
+index 0eb6284..b762deb 100644
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -1020,6 +1020,7 @@ static void ide_disk_pre_reset(ide_drive_t *drive)
+ 	drive->special.b.recalibrate  = legacy;
+ 
+ 	drive->mult_count = 0;
++	drive->dev_flags &= ~IDE_DFLAG_PARKED;
+ 
+ 	if ((drive->dev_flags & IDE_DFLAG_KEEP_SETTINGS) == 0 &&
+ 	    (drive->dev_flags & IDE_DFLAG_USING_DMA) == 0)
+diff --git a/drivers/ide/ide-park.c b/drivers/ide/ide-park.c
+index 35fc3ee..02d7e35 100644
+--- a/drivers/ide/ide-park.c
++++ b/drivers/ide/ide-park.c
+@@ -61,15 +61,17 @@ ssize_t ide_park_show(struct device *dev, struct device_attribute *attr,
+ 		      char *buf)
+ {
+ 	ide_drive_t *drive = to_ide_device(dev);
++	unsigned long now;
+ 	unsigned int msecs;
+ 
+ 	if (drive->dev_flags & IDE_DFLAG_NO_UNLOAD)
+ 		return -EOPNOTSUPP;
+ 
+ 	spin_lock_irq(&ide_lock);
++	now = jiffies;
+ 	if (drive->dev_flags & IDE_DFLAG_PARKED &&
+-	    time_after(drive->sleep, jiffies))
+-		msecs = jiffies_to_msecs(drive->sleep - jiffies);
++	    time_after(drive->sleep, now))
++		msecs = jiffies_to_msecs(drive->sleep - now);
+ 	else
+ 		msecs = 0;
+ 	spin_unlock_irq(&ide_lock);
