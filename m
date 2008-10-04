@@ -1,248 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbYJDHqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbYJDILy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752684AbYJDHqh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 03:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYJDHq1
+	id S1752540AbYJDILy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 04:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYJDILh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 03:46:27 -0400
-Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:39413 "EHLO
-	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751836AbYJDHq0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 03:46:26 -0400
-From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-To: david@fromorbit.com
-Date: Sat, 04 Oct 2008 17:45:00 +1000
-Message-ID: <48E71EFC.7040403@gelato.unsw.edu.au>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080618)
+	Sat, 4 Oct 2008 04:11:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39064 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751285AbYJDILg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 04:11:36 -0400
+Date: Sat, 4 Oct 2008 10:11:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <yinghai@kernel.org>, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH -tip] x86: fix virt_addr_valid() with
+	CONFIG_DEBUG_VIRTUAL=y (try 2)
+Message-ID: <20081004081122.GA27624@elte.hu>
+References: <20081003155425.GA6112@localhost.localdomain> <48E6604F.8000404@gmail.com>
 MIME-Version: 1.0
-CC: Bodo Eggert <7eggert@gmx.de>, Jens Axboe <jens.axboe@oracle.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-References: <bimJN-4cO-5@gated-at.bofh.it> <biosl-6bq-9@gated-at.bofh.it> <biqkw-aK-3@gated-at.bofh.it> <birgx-1pQ-9@gated-at.bofh.it> <bisPe-3xx-9@gated-at.bofh.it> <bisYW-3HQ-13@gated-at.bofh.it> <E1KlQ9s-0003Oh-Cz@be1.7eggert.dyndns.org> <20081002233426.GG30001@disturbed>
-In-Reply-To: <20081002233426.GG30001@disturbed>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48E6604F.8000404@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Chinner wrote:
-> On Thu, Oct 02, 2008 at 05:32:04PM +0200, Bodo Eggert wrote:
->> Sounds like you need a priority class besides sync and async.
+
+* Jiri Slaby <jirislaby@gmail.com> wrote:
+
+> Vegard Nossum napsal(a):
+> > Is this what you had in mind? If not, then I don't know how to do it :-)
 > 
-> There's BIO_META now as well, which I was testing at the same time
-> as RT priority. Marking all the metadata I/O as BIO_META did help,
-> but once again I never got to determining if that was a result of
-> the different tagging or the priority increase.
+> Yeah, something like that, but I am not the one you need ACK from ;).
 
-What exactly do you want META to mean?  Strict prioritisation over
-all other non-META requests, or just more frequent and/or larger
-dispatches?  Should META requests be sorted?
+ok - i've applied the commit below to tip/x86/core to get some testing 
+of it.
 
-> However, given that only CFQ understand BIO_META, I suspect that
-> changing the way XFS uses BIO_SYNC to be a combination of BIO_META
-> and BIO_SYNC would cause significant regressions on other
-> schedulers.....
+	Ingo
 
-That shouldn't be a problem.  noop doesn't care about any of that stuff,
-and deadline doesn't care about BIO_SYNC (more on that below).  If the
-bios that use META are a subset of those that currently use SYNC, then
-we can temporarily change AS to treat META and SYNC equally.  Only CFQ
-would change in behaviour.
+------------>
+>From fe45d9c75945698006a608a8fcccf39d161b0669 Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Fri, 3 Oct 2008 17:54:25 +0200
+Subject: [PATCH] x86: fix virt_addr_valid() with CONFIG_DEBUG_VIRTUAL=y, v2
 
-So deadline should probably support BIO_SYNC... below is a patch to do
-that.  It doesn't have much of an effect on postmark or compilebench on
-a single spindle, but I'm guessing that's not the workload or hardware
-that is expected to benefit.
+virt_addr_valid() calls __pa(), which calls __phys_addr(). With
+CONFIG_DEBUG_VIRTUAL=y, __phys_addr() will kill the kernel if the
+address *isn't* valid. That's clearly wrong for virt_addr_valid().
 
+We also incorporate the debugging checks into virt_addr_valid().
 
+Signed-off-by: Vegard Nossum <vegardno@ben.ifi.uio.no>
+Acked-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ arch/x86/kernel/doublefault_32.c |    2 +-
+ arch/x86/mm/ioremap.c            |   36 ++++++++++++++++++++++++++++++++++--
+ include/asm-x86/page.h           |    8 +++++++-
+ include/asm-x86/page_32.h        |    4 ++--
+ 4 files changed, 44 insertions(+), 6 deletions(-)
 
-Subject: [PATCH] deadline-iosched: support SYNC bio/request flag
-
-Support sync/async requests in deadline rather than read/write, as is
-done in AS and CFQ.
-
-Signed-off-by: Aaron Carroll <aaronc@gelato.unsw.edu.au>
----
- block/deadline-iosched.c |   63 ++++++++++++++++++++++++---------------------
- 1 files changed, 34 insertions(+), 29 deletions(-)
-
-diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
-index 342448c..b2cfd47 100644
---- a/block/deadline-iosched.c
-+++ b/block/deadline-iosched.c
-@@ -23,6 +23,11 @@ static const int writes_starved = 2;    /* max times reads can starve a write */
- static const int fifo_batch = 16;       /* # of sequential requests treated as one
- 				     by the above parameters. For throughput. */
+diff --git a/arch/x86/kernel/doublefault_32.c b/arch/x86/kernel/doublefault_32.c
+index 395acb1..b4f14c6 100644
+--- a/arch/x86/kernel/doublefault_32.c
++++ b/arch/x86/kernel/doublefault_32.c
+@@ -66,6 +66,6 @@ struct tss_struct doublefault_tss __cacheline_aligned = {
+ 		.ds		= __USER_DS,
+ 		.fs		= __KERNEL_PERCPU,
  
-+enum {
-+	REQ_ASYNC,
-+	REQ_SYNC,
-+};
+-		.__cr3		= __phys_addr_const((unsigned long)swapper_pg_dir)
++		.__cr3		= __pa_nodebug(swapper_pg_dir),
+ 	}
+ };
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 7955a5a..e6e57fe 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -45,6 +45,27 @@ unsigned long __phys_addr(unsigned long x)
+ }
+ EXPORT_SYMBOL(__phys_addr);
+ 
++bool __virt_addr_valid(unsigned long x)
++{
++	if (x >= __START_KERNEL_map) {
++		x -= __START_KERNEL_map;
++		if (x >= KERNEL_IMAGE_SIZE)
++			return false;
++		x += phys_base;
++	} else {
++		if (x < PAGE_OFFSET)
++			return false;
++		x -= PAGE_OFFSET;
++		if (system_state == SYSTEM_BOOTING ?
++				x > MAXMEM : !phys_addr_valid(x)) {
++			return false;
++		}
++	}
 +
- struct deadline_data {
- 	/*
- 	 * run time data
-@@ -53,7 +58,7 @@ struct deadline_data {
++	return pfn_valid(x >> PAGE_SHIFT);
++}
++EXPORT_SYMBOL(__virt_addr_valid);
++
+ #else
  
- static void deadline_move_request(struct deadline_data *, struct request *);
- 
--#define RQ_RB_ROOT(dd, rq)	(&(dd)->sort_list[rq_data_dir((rq))])
-+#define RQ_RB_ROOT(dd, rq)	(&(dd)->sort_list[rq_is_sync((rq))])
- 
- /*
-  * get the request after `rq' in sector-sorted order
-@@ -86,7 +91,7 @@ retry:
- static inline void
- deadline_del_rq_rb(struct deadline_data *dd, struct request *rq)
+ static inline int phys_addr_valid(unsigned long addr)
+@@ -56,13 +77,24 @@ static inline int phys_addr_valid(unsigned long addr)
+ unsigned long __phys_addr(unsigned long x)
  {
--	const int data_dir = rq_data_dir(rq);
-+	const int data_dir = rq_is_sync(rq);
- 
- 	if (dd->next_rq[data_dir] == rq)
- 		dd->next_rq[data_dir] = deadline_latter_request(rq);
-@@ -101,7 +106,7 @@ static void
- deadline_add_request(struct request_queue *q, struct request *rq)
- {
- 	struct deadline_data *dd = q->elevator->elevator_data;
--	const int data_dir = rq_data_dir(rq);
-+	const int data_dir = rq_is_sync(rq);
- 
- 	deadline_add_rq_rb(dd, rq);
- 
-@@ -206,10 +211,10 @@ deadline_move_to_dispatch(struct deadline_data *dd, struct request *rq)
- static void
- deadline_move_request(struct deadline_data *dd, struct request *rq)
- {
--	const int data_dir = rq_data_dir(rq);
-+	const int data_dir = rq_is_sync(rq);
- 
--	dd->next_rq[READ] = NULL;
--	dd->next_rq[WRITE] = NULL;
-+	dd->next_rq[REQ_SYNC] = NULL;
-+	dd->next_rq[REQ_ASYNC] = NULL;
- 	dd->next_rq[data_dir] = deadline_latter_request(rq);
- 
- 	dd->last_sector = rq->sector + rq->nr_sectors;
-@@ -245,18 +250,18 @@ static inline int deadline_check_fifo(struct deadline_data *dd, int ddir)
- static int deadline_dispatch_requests(struct request_queue *q, int force)
- {
- 	struct deadline_data *dd = q->elevator->elevator_data;
--	const int reads = !list_empty(&dd->fifo_list[READ]);
--	const int writes = !list_empty(&dd->fifo_list[WRITE]);
-+	const int reads = !list_empty(&dd->fifo_list[REQ_SYNC]);
-+	const int writes = !list_empty(&dd->fifo_list[REQ_ASYNC]);
- 	struct request *rq;
- 	int data_dir;
- 
- 	/*
- 	 * batches are currently reads XOR writes
- 	 */
--	if (dd->next_rq[WRITE])
--		rq = dd->next_rq[WRITE];
-+	if (dd->next_rq[REQ_ASYNC])
-+		rq = dd->next_rq[REQ_ASYNC];
- 	else
--		rq = dd->next_rq[READ];
-+		rq = dd->next_rq[REQ_SYNC];
- 
- 	if (rq) {
- 		/* we have a "next request" */
-@@ -276,12 +281,12 @@ static int deadline_dispatch_requests(struct request_queue *q, int force)
- 	 */
- 
- 	if (reads) {
--		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[READ]));
-+		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[REQ_SYNC]));
- 
- 		if (writes && (dd->starved++ >= dd->writes_starved))
- 			goto dispatch_writes;
- 
--		data_dir = READ;
-+		data_dir = REQ_SYNC;
- 
- 		goto dispatch_find_request;
- 	}
-@@ -292,11 +297,11 @@ static int deadline_dispatch_requests(struct request_queue *q, int force)
- 
- 	if (writes) {
- dispatch_writes:
--		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[WRITE]));
-+		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[REQ_ASYNC]));
- 
- 		dd->starved = 0;
- 
--		data_dir = WRITE;
-+		data_dir = REQ_ASYNC;
- 
- 		goto dispatch_find_request;
- 	}
-@@ -338,16 +343,16 @@ static int deadline_queue_empty(struct request_queue *q)
- {
- 	struct deadline_data *dd = q->elevator->elevator_data;
- 
--	return list_empty(&dd->fifo_list[WRITE])
--		&& list_empty(&dd->fifo_list[READ]);
-+	return list_empty(&dd->fifo_list[REQ_ASYNC])
-+		&& list_empty(&dd->fifo_list[REQ_SYNC]);
+ 	/* VMALLOC_* aren't constants; not available at the boot time */
+-	VIRTUAL_BUG_ON(x < PAGE_OFFSET || (system_state != SYSTEM_BOOTING &&
+-					is_vmalloc_addr((void *)x)));
++	VIRTUAL_BUG_ON(x < PAGE_OFFSET);
++	VIRTUAL_BUG_ON(system_state != SYSTEM_BOOTING &&
++		is_vmalloc_addr((void *) x));
+ 	return x - PAGE_OFFSET;
  }
+ EXPORT_SYMBOL(__phys_addr);
+ #endif
  
- static void deadline_exit_queue(elevator_t *e)
- {
- 	struct deadline_data *dd = e->elevator_data;
++bool __virt_addr_valid(unsigned long x)
++{
++	if (x < PAGE_OFFSET)
++		return false;
++	if (system_state != SYSTEM_BOOTING && is_vmalloc_addr((void *) x))
++		return false;
++	return pfn_valid((x - PAGE_OFFSET) >> PAGE_SHIFT);
++}
++EXPORT_SYMBOL(__virt_addr_valid);
++
+ #endif
  
--	BUG_ON(!list_empty(&dd->fifo_list[READ]));
--	BUG_ON(!list_empty(&dd->fifo_list[WRITE]));
-+	BUG_ON(!list_empty(&dd->fifo_list[REQ_SYNC]));
-+	BUG_ON(!list_empty(&dd->fifo_list[REQ_ASYNC]));
+ int page_is_ram(unsigned long pagenr)
+diff --git a/include/asm-x86/page.h b/include/asm-x86/page.h
+index 79544e6..0495171 100644
+--- a/include/asm-x86/page.h
++++ b/include/asm-x86/page.h
+@@ -178,6 +178,7 @@ static inline pteval_t native_pte_flags(pte_t pte)
+ #endif	/* CONFIG_PARAVIRT */
  
- 	kfree(dd);
- }
-@@ -363,12 +368,12 @@ static void *deadline_init_queue(struct request_queue *q)
- 	if (!dd)
- 		return NULL;
+ #define __pa(x)		__phys_addr((unsigned long)(x))
++#define __pa_nodebug(x)	__phys_addr_nodebug((unsigned long)(x))
+ /* __pa_symbol should be used for C visible symbols.
+    This seems to be the official gcc blessed way to do such arithmetic. */
+ #define __pa_symbol(x)	__pa(__phys_reloc_hide((unsigned long)(x)))
+@@ -187,9 +188,14 @@ static inline pteval_t native_pte_flags(pte_t pte)
+ #define __boot_va(x)		__va(x)
+ #define __boot_pa(x)		__pa(x)
  
--	INIT_LIST_HEAD(&dd->fifo_list[READ]);
--	INIT_LIST_HEAD(&dd->fifo_list[WRITE]);
--	dd->sort_list[READ] = RB_ROOT;
--	dd->sort_list[WRITE] = RB_ROOT;
--	dd->fifo_expire[READ] = read_expire;
--	dd->fifo_expire[WRITE] = write_expire;
-+	INIT_LIST_HEAD(&dd->fifo_list[REQ_SYNC]);
-+	INIT_LIST_HEAD(&dd->fifo_list[REQ_ASYNC]);
-+	dd->sort_list[REQ_SYNC] = RB_ROOT;
-+	dd->sort_list[REQ_ASYNC] = RB_ROOT;
-+	dd->fifo_expire[REQ_SYNC] = read_expire;
-+	dd->fifo_expire[REQ_ASYNC] = write_expire;
- 	dd->writes_starved = writes_starved;
- 	dd->front_merges = 1;
- 	dd->fifo_batch = fifo_batch;
-@@ -403,8 +408,8 @@ static ssize_t __FUNC(elevator_t *e, char *page)			\
- 		__data = jiffies_to_msecs(__data);			\
- 	return deadline_var_show(__data, (page));			\
- }
--SHOW_FUNCTION(deadline_read_expire_show, dd->fifo_expire[READ], 1);
--SHOW_FUNCTION(deadline_write_expire_show, dd->fifo_expire[WRITE], 1);
-+SHOW_FUNCTION(deadline_read_expire_show, dd->fifo_expire[REQ_SYNC], 1);
-+SHOW_FUNCTION(deadline_write_expire_show, dd->fifo_expire[REQ_ASYNC], 1);
- SHOW_FUNCTION(deadline_writes_starved_show, dd->writes_starved, 0);
- SHOW_FUNCTION(deadline_front_merges_show, dd->front_merges, 0);
- SHOW_FUNCTION(deadline_fifo_batch_show, dd->fifo_batch, 0);
-@@ -426,8 +431,8 @@ static ssize_t __FUNC(elevator_t *e, const char *page, size_t count)	\
- 		*(__PTR) = __data;					\
- 	return ret;							\
- }
--STORE_FUNCTION(deadline_read_expire_store, &dd->fifo_expire[READ], 0, INT_MAX, 1);
--STORE_FUNCTION(deadline_write_expire_store, &dd->fifo_expire[WRITE], 0, INT_MAX, 1);
-+STORE_FUNCTION(deadline_read_expire_store, &dd->fifo_expire[REQ_SYNC], 0, INT_MAX, 1);
-+STORE_FUNCTION(deadline_write_expire_store, &dd->fifo_expire[REQ_ASYNC], 0, INT_MAX, 1);
- STORE_FUNCTION(deadline_writes_starved_store, &dd->writes_starved, INT_MIN, INT_MAX, 0);
- STORE_FUNCTION(deadline_front_merges_store, &dd->front_merges, 0, 1, 0);
- STORE_FUNCTION(deadline_fifo_batch_store, &dd->fifo_batch, 0, INT_MAX, 0);
--- 
-1.6.0.2
++/*
++ * virt_to_page(kaddr) returns a valid pointer if and only if
++ * virt_addr_valid(kaddr) returns true.
++ */
+ #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+ #define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
+-#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
++extern bool __virt_addr_valid(unsigned long kaddr);
++#define virt_addr_valid(kaddr)	__virt_addr_valid((unsigned long) (kaddr))
+ 
+ #endif	/* __ASSEMBLY__ */
+ 
+diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
+index fe86ee2..3a3e4b7 100644
+--- a/include/asm-x86/page_32.h
++++ b/include/asm-x86/page_32.h
+@@ -73,11 +73,11 @@ typedef struct page *pgtable_t;
+ #endif
+ 
+ #ifndef __ASSEMBLY__
+-#define __phys_addr_const(x)	((x) - PAGE_OFFSET)
++#define __phys_addr_nodebug(x)	((x) - PAGE_OFFSET)
+ #ifdef CONFIG_DEBUG_VIRTUAL
+ extern unsigned long __phys_addr(unsigned long);
+ #else
+-#define __phys_addr(x)		((x) - PAGE_OFFSET)
++#define __phys_addr(x)		__phys_addr_nodebug(x)
+ #endif
+ #define __phys_reloc_hide(x)	RELOC_HIDE((x), 0)
+ 
