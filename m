@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbYJDVyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbYJDVyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbYJDVyd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 17:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbYJDVy0
+	id S1754077AbYJDVyx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 17:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbYJDVyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 17:54:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:31881 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753421AbYJDVyZ convert rfc822-to-8bit (ORCPT
+	Sat, 4 Oct 2008 17:54:41 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:40873 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755063AbYJDVyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 17:54:25 -0400
+	Sat, 4 Oct 2008 17:54:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=bdnRQiSlpIgfrbpmpFk4mHAcqw5avTeNzfWai4s0+Q9W+MNucXogl6fIfJSJw2xDqH
-         D8sF24vs21UIfB/hVZ/xyhfkzM5aU8zaeWqDhXzbklhfEEzTmslp5bIm1yf9lWRh7TLe
-         2YO6rHlHnVbDfbtY6hGf7/BW5MnAlxjXzOyfg=
-Message-ID: <86802c440810041454s500b66e8w165c0115a2284363@mail.gmail.com>
-Date: Sat, 4 Oct 2008 14:54:24 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "=?ISO-8859-1?Q?J.A._Magall=F3n?=" <jamagallon@ono.com>
-Subject: Re: Strange mtrrs in Aspire One
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440810041055w17c42136l6884880acdb40e98@mail.gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=eUG7+PHbJRz2DT1sgtIjO86sypqN4JJj0xOjTNqCJz8G5C0mhDmVwrvneGZU4QNPBe
+         4S/2vJddHnHmuEIOn8rSXUM7dD40gENUVrSqvH6a6WTAtl7o37vGgjMEuNgUHKBpgQg3
+         aYNP85MI9zOB8M9mqFux6Ehkx09z2tXSf7hh0=
+Message-ID: <48E7E5B1.8010101@gmail.com>
+Date: Sun, 05 Oct 2008 06:52:49 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
+       Frans Pop <elendil@planet.nl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: [PATCH 1/6] Hibernation: Introduce system_entering_hibernation
+References: <200808290002.55026.rjw@sisk.pl>	<200810032351.46869.rjw@sisk.pl>	<20081004002724.47fab174@lxorguk.ukuu.org.uk>	<200810041213.22249.rjw@sisk.pl> <20081004225008.2cc08201@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081004225008.2cc08201@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20080930015733.5c6ea984@werewolf.home>
-	 <86802c440809291805r71877ad1wc68525c1ca0603e1@mail.gmail.com>
-	 <20081004152235.387a6f61@werewolf.home>
-	 <86802c440810041055w17c42136l6884880acdb40e98@mail.gmail.com>
-X-Google-Sender-Auth: fbd98f592dc0af78
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 4, 2008 at 10:55 AM, Yinghai Lu <yinghai@kernel.org> wrote:
-> On Sat, Oct 4, 2008 at 6:22 AM, J.A. Magallón <jamagallon@ono.com> wrote:
->> On Mon, 29 Sep 2008 18:05:51 -0700, "Yinghai Lu" <yinghai@kernel.org> wrote:
->>
->>> On Mon, Sep 29, 2008 at 4:57 PM, J.A. Magallón <jamagallon@ono.com> wrote:
->>> > Hi all...
->>> >
->>> > My aspire one is giving some strange MTRR settings with rc7-git5 (and
->>> > prevous kernels, but that is what I run now...):
->>> >
->>> > one:~> cat /proc/mtrr
->>> > reg00: base=0xfffe0000 (4095MB), size= 128KB: write-protect, count=1
->>> > reg01: base=0xfffc0000 (4095MB), size= 128KB: uncachable, count=1
->>>
->>> could make mtrr_cleanup to support 128K gran_size
->>>
->>> > reg02: base=0x00000000 (   0MB), size= 256MB: write-back, count=1
->>> > reg03: base=0x10000000 ( 256MB), size= 256MB: write-back, count=1
->>> > reg04: base=0x1f800000 ( 504MB), size=   8MB: uncachable, count=1
->>> > reg05: base=0x1f600000 ( 502MB), size=   2MB: uncachable, count=1
->>> > reg06: base=0x1f500000 ( 501MB), size=   1MB: uncachable, count=1
->>>
->>> > reg07: base=0x00000000 (   0MB), size= 128KB: uncachable, count=1
->>> ..
->>> >  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
->>>
->>> last entry is really sick...
->>>
->>
->> I have applied the patches you have posted in other threads, and this
->> give a very strange result. The mtrr cleanup did nothing, and I had to put
->> some printk's all around.
->
-> will have one patch to assume the [0, 1M) to be coverred by var mtrrs.
->
+Alan Cox wrote:
+>> Hm, I'm not sure what you mean exactly, but the point is to blacklist the
+>> on-board controllers only and a devfn of the controller is needed for that,
+>> or a part of it (like the slot number I'm using).  Could that be done above
+>> the driver level?
+> 
+> It can be done in one place via the libata core code I think rather than
+> in each driver. Might need to be a helper function but you'd at least
+> remove all the duplication.
 
-please check other three patches.
+I think it's better to keep the list in each LLD but having a helper in
+libata-core would be nice.
 
-[PATCH 1/3] x86: mtrr_cleanup: print out correct type
-[PATCH 2/3] x86: mtrr_cleanup: first 1M should be coverred in var mtrrs
-[PATCH 3/3] x86: mtrr_cleanup: treat WRPROT as UNCACHEABLE
+Thanks.
 
-you may need to boot with "mtrr_gran_size=64k mtrr_chunk_size=64k"
-
-YH
+-- 
+tejun
