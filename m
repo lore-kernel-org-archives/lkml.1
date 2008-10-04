@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbYJDC3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbYJDF1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752582AbYJDC3v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 22:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYJDC3j
+	id S1752344AbYJDF1j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 01:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbYJDF1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 22:29:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43945 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751939AbYJDC3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 22:29:37 -0400
-Message-ID: <48E6D481.7050407@kernel.org>
-Date: Sat, 04 Oct 2008 11:27:13 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Sat, 4 Oct 2008 01:27:31 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:54874 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751008AbYJDF1a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 01:27:30 -0400
+Message-ID: <48E6FEB9.8070603@nortel.com>
+Date: Fri, 03 Oct 2008 23:27:21 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Tom Mortensen <tmmlkml@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
-       Gwendal Grignou <gwendal@google.com>,
-       Brian Rademacher <rad@radfiles.net>, linux-ide@vger.kernel.org,
-       linux-raid maillist <linux-raid@vger.kernel.org>,
-       Linux Kernel Maillist <linux-kernel@vger.kernel.org>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>
-Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
-References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA>  <alpine.DEB.1.10.0809220828490.23159@p34.internal.lan>  <5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>  <alpine.DEB.1.10.0809220903400.23159@p34.internal.lan>  <4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA>  <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>  <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan>  <e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com>  <48DBAB81.8050900@tmr.com> <48E08E2D.6050905@kernel.org> <a52a95e30809301347s70b57ebfh280a6871329afd72@mail.gmail.com> <alpine.DEB.1.10.0809301715280.14600@p34.internal.lan> <alpine.LNX.2.00.0809301946020.16014@filesrv1.baby-dragons.com> <alpine.DEB.1.10.0810010403500.16900@p34.internal.lan> <alpine.DEB.1.10.0810010710520.22435@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0810010710520.22435@p34.internal.lan>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, Linux kernel <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [bug report] sched: stop_machine() usage causes load balancer
+ to misbehave
+References: <48E55FE5.40108@nortel.com> <alpine.DEB.1.10.0810022001250.26504@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0810022001250.26504@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 04 Oct 2008 02:29:00 +0000 (UTC)
+X-OriginalArrivalTime: 04 Oct 2008 05:27:26.0291 (UTC) FILETIME=[E2FD9A30:01C925E1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> [469680.004654] ata2.00: status: { DRDY }
-> [469680.004660] ata2: hard resetting link
-> [469680.309567] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> [469680.333461] ata2.00: configured for UDMA/133
-> [469680.333477] ata2: EH complete
-> [469680.333461] sd 1:0:0:0: [sdb] 586072368 512-byte hardware sectors
-> (300069 MB)
-> [469680.340461] sd 1:0:0:0: [sdb] Write Protect is off
-> [469680.340461] sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-> [469680.345461] sd 1:0:0:0: [sdb] Write cache: enabled, read cache:
-> enabled, doesn't support DPO or FUA
+Steven Rostedt wrote:
+> On Thu, 2 Oct 2008, Chris Friesen wrote:
+> 
+> 
+>>I mentioned before that ftrace (specifically the ftraced daemon) seems to be
+>>interfering with the load balancer.  After some experimenting, it appears that
+>>any regular calls to stop_machine() will end up confusing the load balancer.
+>>
+>>As an experiment, I disabled ftraced (which would normally result in correct
+>>load balancing) but added a single kernel thread which simply runs the
+>>following loop, where "chrisd2" is a dummy function.
+> 
+> 
+> 
+> Chris,
+> 
+> Thanks for looking into this. I don't have an answer for your question, 
+> but I'll work harder to get the MCOUNT_REC working in PPC.
+> 
+> Does this happen with x86 too?
 
-You're leaving the good part out.  Please always attach full kernel
-log.
+Unfortunately I don't have an x86 box handy for testing...I could 
+probably get some time on a lab machine next week.
 
-Thanks.
-
--- 
-tejun
+Chris
