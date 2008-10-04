@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYJDWu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYJDWxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbYJDWu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 18:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbYJDWuV
+	id S1755543AbYJDWxG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 18:53:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbYJDWwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 18:50:21 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:50636 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754000AbYJDWuU (ORCPT
+	Sat, 4 Oct 2008 18:52:55 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:32444 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753860AbYJDWwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 18:50:20 -0400
-Date: Sat, 4 Oct 2008 23:50:11 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dmitry.torokhov@gmail.com, IvDoorn@gmail.com, hmh@hmh.eng.br,
-       sitsofe@yahoo.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rfkill-input doesn't work until 5 minutes after boot
-Message-ID: <20081004225011.GA30886@srcf.ucam.org>
-References: <20081004204342.GA29620@srcf.ucam.org> <20081004153929.846a0bde.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081004153929.846a0bde.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Sat, 4 Oct 2008 18:52:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ORoqrA7JqwLkZ2xGIadb3x/hM2XnGIGsFvfccLQr3LNCFDd4YSYNSt8CemsGgZdVBZ
+         u2kS+crk4QJnv+Y21gu0FnEWtHsa9YlWmCFTwI3WjmWKY3NfVz2oHZFziNSj9T/NCFQc
+         LbxQ+y1fDABcvoPI2yKEigq8fANg0KRYRN8QE=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: sparse_irq: fix typo in debug print out
+Date: Sat,  4 Oct 2008 15:52:15 -0700
+Message-Id: <1223160735-4782-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 04, 2008 at 03:39:29PM -0700, Andrew Morton wrote:
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+---
+ arch/x86/kernel/io_apic.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> That'll only work as intended if CONFIG_RFKILL_INPUT=y?  If the module
-> is loaded 10 minutes after boot, the timestamp is still wrong.  It might
-> happily happen to work, but will still fail after 2^31 jiffies (or something
-> like that).
-
-Mm. True. I'll fix it up to do it at load time.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Index: linux-2.6/arch/x86/kernel/io_apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/io_apic.c
++++ linux-2.6/arch/x86/kernel/io_apic.c
+@@ -257,7 +257,7 @@ static struct irq_cfg *irq_cfg_alloc(uns
+ 			panic("please boot with nr_irq_cfg= %d\n", count * 2);
+ 
+ 		phys = __pa(cfg);
+-		printk(KERN_DEBUG "irq_irq ==> [%#lx - %#lx]\n", phys, phys + total_bytes);
++		printk(KERN_DEBUG "irq_cfg ==> [%#lx - %#lx]\n", phys, phys + total_bytes);
+ 
+ 		for (i = 0; i < nr_irq_cfg; i++)
+ 			init_one_irq_cfg(&cfg[i]);
