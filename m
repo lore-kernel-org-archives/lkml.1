@@ -1,187 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbYJDKdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYJDKup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753238AbYJDKdR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 06:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYJDKdA
+	id S1753254AbYJDKup (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 06:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYJDKuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 06:33:00 -0400
-Received: from triton.rz.uni-saarland.de ([134.96.7.25]:15002 "EHLO
-	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752295AbYJDKdA (ORCPT
+	Sat, 4 Oct 2008 06:50:37 -0400
+Received: from pih-relay05.plus.net ([212.159.14.18]:57860 "EHLO
+	pih-relay05.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752246AbYJDKug (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 06:33:00 -0400
-Date: Sat, 4 Oct 2008 12:30:53 +0200
-From: Alexander van Heukelum <heukelum@mailshack.com>
+	Sat, 4 Oct 2008 06:50:36 -0400
+Message-ID: <48E74A88.50904@yahoo.com>
+Date: Sat, 04 Oct 2008 11:50:48 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 1/9 v2] traps: x86: converge trap_init functions
-Message-ID: <20081004103053.GA7803@mailshack.com>
-References: <1223114224.25951.1277482279@webmail.messagingengine.com> <20081004100608.GA7659@mailshack.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081004100608.GA7659@mailshack.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Sat, 04 Oct 2008 12:32:27 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.34; VDF: 7.0.6.242; host: AntiVir3)
+CC: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Reading EeePC900 battery info causes stalls when using SLUB (was
+ Re: How how   latent should non-preemptive scheduling be?)
+References: <20080922115749.GE14301@elte.hu> <48D88DB4.9020003@yahoo.com> <20080923115323.GA27240@elte.hu> <48D919A9.5000708@yahoo.com> <48D9460C.5040504@yahoo.com> <48D96725.1080909@yahoo.com> <20080927204834.GA31650@elte.hu> <48DFEF8A.3000502@yahoo.com> <20080929083709.GD18663@elte.hu> <48E16097.8060905@yahoo.com> <20080930112241.GC21367@elte.hu> <48E22720.9030603@yahoo.com>
+In-Reply-To: <48E22720.9030603@yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Plusnet-Relay: b85fb3b4067f4733e09588780a2fa90f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- - set_system_gate on i386 is really set_system_trap_gate
- - set_system_gate on x86_64 is really set_system_intr_gate
- - ist=0 means no special stack switch is done:
-    - introduce STACKFAULT_STACK, DOUBLEFAULT_STACK, NMI_STACK,
-      DEBUG_STACK and MCE_STACK as on x86_64.
- - use the _ist variants with XXX_STACK set to zero
- - remove set_system_gate
-                                    
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+Sitsofe Wheeler wrote:
+> I have an EeePC 900 (Intel Celeron 900Mhz) and it seems to be
+> skipping while playing sound through various desktop apps with a
+> 2.6.27rc6 kernel. It is running off an SD card which really shows up
 
----
- arch/x86/kernel/traps_32.c |   16 +++++++++-------
- arch/x86/kernel/traps_64.c |    6 +++---
- include/asm-x86/desc.h     |   14 +++++---------
- include/asm-x86/page_32.h  |    6 ++++++
- 4 files changed, 23 insertions(+), 19 deletions(-)
+After weeks of head scratching as to why these latencies didn't occur
+using the xandros 2.6.21.4 kernel (but keeping the same userspace) when
+my own kernels would always show this problem I finally found the answer
+after reading
+http://tservice.net.ru/~s0mbre/blog/devel/other/2008_10_01 on kernel
+planet - SLUB can cause regressions compared to SLAB. Switching from 
+SLUB to SLAB made the problem more or less disappear (which I guess 
+makes sense given the large number of kmem_* calls that are made when 
+reading the battery).
 
-Hi Ingo,
+My understanding with the memory allocators is that SLOB is the smallest 
+and simplest. Its forté is that it uses very little memory which makes 
+it ideal for embedded systems and is the easiest allocator to 
+understand. The downside is that it might tend towards memory 
+fragmentation the longer a system runs and is apparently a little bit 
+slower than SLAB. The SLAB allocator is something that the linux kernel 
+has had for many years and was a good performer until the pressures to 
+perform with large SMP systems started to come in to play (at which 
+point lots of memory would be used up on fixed structures - 
+http://lwn.net/Articles/229984/ ). SLUB is the newest allocator, scales 
+up well and has finer grained diagnostics that SLAB.
 
-Here is the replacement patch for [PATCH 1/9] traps: x86: converge
-trap_init functions. The others did not touch desc.h.
+Prior to today my understanding was that SLUB would be able to replace 
+SLAB in all scenarios and perform just as well or better. However now 
+I'm not so sure (SLAB appears to be less latent than SLUB). Other than 
+SLUB's newness are there cases where SLAB should be chosen instead of 
+SLUB (e.g. uniprocessor desktop systems with hundreds of megabytes of 
+RAM)? Will SLAB exist as an alternative to SLUB for certain setups?
 
-Greetings,
-    Alexander
-
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index da97cd2..c17fcc8 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -852,10 +852,12 @@ void __init trap_init(void)
- #endif
- 
- 	set_intr_gate(0, &divide_error);
--	set_intr_gate(1, &debug);
--	set_intr_gate(2, &nmi);
--	set_system_intr_gate(3, &int3); /* int3 can be called from all */
--	set_system_intr_gate(4, &overflow); /* int4 can be called from all */
-+	set_intr_gate_ist(1, &debug, DEBUG_STACK);
-+	set_intr_gate_ist(2, &nmi, NMI_STACK);
-+	/* int3 can be called from all */
-+	set_system_intr_gate_ist(3, &int3, DEBUG_STACK);
-+	/* int4 can be called from all */
-+	set_system_intr_gate(4, &overflow);
- 	set_intr_gate(5, &bounds);
- 	set_intr_gate(6, &invalid_op);
- 	set_intr_gate(7, &device_not_available);
-@@ -863,14 +865,14 @@ void __init trap_init(void)
- 	set_intr_gate(9, &coprocessor_segment_overrun);
- 	set_intr_gate(10, &invalid_TSS);
- 	set_intr_gate(11, &segment_not_present);
--	set_intr_gate(12, &stack_segment);
-+	set_intr_gate_ist(12, &stack_segment, STACKFAULT_STACK);
- 	set_intr_gate(13, &general_protection);
- 	set_intr_gate(14, &page_fault);
- 	set_intr_gate(15, &spurious_interrupt_bug);
- 	set_intr_gate(16, &coprocessor_error);
- 	set_intr_gate(17, &alignment_check);
- #ifdef CONFIG_X86_MCE
--	set_intr_gate(18, &machine_check);
-+	set_intr_gate_ist(18, &machine_check, MCE_STACK);
- #endif
- 	set_intr_gate(19, &simd_coprocessor_error);
- 
-@@ -886,7 +888,7 @@ void __init trap_init(void)
- 		printk("done.\n");
- 	}
- 
--	set_system_gate(SYSCALL_VECTOR, &system_call);
-+	set_system_trap_gate(SYSCALL_VECTOR, &system_call);
- 
- 	/* Reserve all the builtin and the syscall vector: */
- 	for (i = 0; i < FIRST_EXTERNAL_VECTOR; i++)
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index 80dbbc7..8cf590b 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -652,9 +652,9 @@ void __init trap_init(void)
- 	set_intr_gate_ist(1, &debug, DEBUG_STACK);
- 	set_intr_gate_ist(2, &nmi, NMI_STACK);
- 	/* int3 can be called from all */
--	set_system_gate_ist(3, &int3, DEBUG_STACK);
-+	set_system_intr_gate_ist(3, &int3, DEBUG_STACK);
- 	/* int4 can be called from all */
--	set_system_gate(4, &overflow);
-+	set_system_intr_gate(4, &overflow);
- 	set_intr_gate(5, &bounds);
- 	set_intr_gate(6, &invalid_op);
- 	set_intr_gate(7, &device_not_available);
-@@ -674,7 +674,7 @@ void __init trap_init(void)
- 	set_intr_gate(19, &simd_coprocessor_error);
- 
- #ifdef CONFIG_IA32_EMULATION
--	set_system_gate(IA32_SYSCALL_VECTOR, ia32_syscall);
-+	set_system_intr_gate(IA32_SYSCALL_VECTOR, ia32_syscall);
- #endif
- 	/*
- 	 * Should be a barrier for any external CPU state:
-diff --git a/include/asm-x86/desc.h b/include/asm-x86/desc.h
-index ebc3078..f06adac 100644
---- a/include/asm-x86/desc.h
-+++ b/include/asm-x86/desc.h
-@@ -351,20 +351,16 @@ static inline void set_system_intr_gate(unsigned int n, void *addr)
- 	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
- }
- 
--static inline void set_trap_gate(unsigned int n, void *addr)
-+static inline void set_system_trap_gate(unsigned int n, void *addr)
- {
- 	BUG_ON((unsigned)n > 0xFF);
--	_set_gate(n, GATE_TRAP, addr, 0, 0, __KERNEL_CS);
-+	_set_gate(n, GATE_TRAP, addr, 0x3, 0, __KERNEL_CS);
- }
- 
--static inline void set_system_gate(unsigned int n, void *addr)
-+static inline void set_trap_gate(unsigned int n, void *addr)
- {
- 	BUG_ON((unsigned)n > 0xFF);
--#ifdef CONFIG_X86_32
--	_set_gate(n, GATE_TRAP, addr, 0x3, 0, __KERNEL_CS);
--#else
--	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
--#endif
-+	_set_gate(n, GATE_TRAP, addr, 0, 0, __KERNEL_CS);
- }
- 
- static inline void set_task_gate(unsigned int n, unsigned int gdt_entry)
-@@ -379,7 +375,7 @@ static inline void set_intr_gate_ist(int n, void *addr, unsigned ist)
- 	_set_gate(n, GATE_INTERRUPT, addr, 0, ist, __KERNEL_CS);
- }
- 
--static inline void set_system_gate_ist(int n, void *addr, unsigned ist)
-+static inline void set_system_intr_gate_ist(int n, void *addr, unsigned ist)
- {
- 	BUG_ON((unsigned)n > 0xFF);
- 	_set_gate(n, GATE_INTERRUPT, addr, 0x3, ist, __KERNEL_CS);
-diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
-index fe86ee2..9eef433 100644
---- a/include/asm-x86/page_32.h
-+++ b/include/asm-x86/page_32.h
-@@ -20,6 +20,12 @@
- #endif
- #define THREAD_SIZE 	(PAGE_SIZE << THREAD_ORDER)
- 
-+#define STACKFAULT_STACK 0
-+#define DOUBLEFAULT_STACK 1
-+#define NMI_STACK 0
-+#define DEBUG_STACK 0
-+#define MCE_STACK 0
-+#define N_EXCEPTION_STACKS 1
- 
- #ifdef CONFIG_X86_PAE
- /* 44=32+12, the limit we can fit into an unsigned long pfn */
 -- 
-1.5.4.3
-
+Sitsofe | http://sucs.org/~sits
