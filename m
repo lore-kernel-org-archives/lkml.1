@@ -1,51 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbYJDKVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbYJDKdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753353AbYJDKVu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 06:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbYJDKVm
+	id S1753238AbYJDKdR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 06:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYJDKdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 06:21:42 -0400
-Received: from styx.suse.cz ([82.119.242.94]:40505 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752214AbYJDKVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 06:21:41 -0400
-Date: Sat, 4 Oct 2008 12:21:39 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>, jesse.brandeburg@intel.com,
-       linux-kernel@vger.kernel.org, linux-netdev@vger.kernel.org,
-       kkeil@suse.de, agospoda@redhat.com, arjan@linux.intel.com,
-       david.graham@intel.com, bruce.w.allan@intel.com, john.ronciak@intel.com,
-       Thomas Gleixner <tglx@linutronix.de>, chris.jones@canonical.com,
-       tim.gardner@intel.com, airlied@gmail.com, Olaf Kirch <okir@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
-In-Reply-To: <4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com>
-Message-ID: <alpine.LNX.1.10.0810041219130.26779@jikos.suse.cz>
-References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>  <200810021523.45884.jbarnes@virtuousgeek.org>  <20081003.134634.240211201.davem@davemloft.net>  <200810031429.22598.jbarnes@virtuousgeek.org>  <alpine.LNX.1.10.0810032338140.26779@jikos.suse.cz>
- <4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 4 Oct 2008 06:33:00 -0400
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:15002 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752295AbYJDKdA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 06:33:00 -0400
+Date: Sat, 4 Oct 2008 12:30:53 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH 1/9 v2] traps: x86: converge trap_init functions
+Message-ID: <20081004103053.GA7803@mailshack.com>
+References: <1223114224.25951.1277482279@webmail.messagingengine.com> <20081004100608.GA7659@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081004100608.GA7659@mailshack.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Sat, 04 Oct 2008 12:32:27 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.34; VDF: 7.0.6.242; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008, Jesse Brandeburg wrote:
+ - set_system_gate on i386 is really set_system_trap_gate
+ - set_system_gate on x86_64 is really set_system_intr_gate
+ - ist=0 means no special stack switch is done:
+    - introduce STACKFAULT_STACK, DOUBLEFAULT_STACK, NMI_STACK,
+      DEBUG_STACK and MCE_STACK as on x86_64.
+ - use the _ist variants with XXX_STACK set to zero
+ - remove set_system_gate
+                                    
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-> Our experience is different.  We are also testing with the "protection 
-> patch" reverted.
-> We see that the problem specifically comes and goes when
-> removing/adding the use of set_memory_ro/set_memory_rw to the driver.
+---
+ arch/x86/kernel/traps_32.c |   16 +++++++++-------
+ arch/x86/kernel/traps_64.c |    6 +++---
+ include/asm-x86/desc.h     |   14 +++++---------
+ include/asm-x86/page_32.h  |    6 ++++++
+ 4 files changed, 23 insertions(+), 19 deletions(-)
 
-But if this patch (which is an obvious workaround, compared to the other 
-patches which fix real bugs, right?) would be catching some malicious 
-accessess to the mapped EEPROM, there should be stacktraces present in the 
-kernel log, right?
+Hi Ingo,
 
-Thanks,
+Here is the replacement patch for [PATCH 1/9] traps: x86: converge
+trap_init functions. The others did not touch desc.h.
 
+Greetings,
+    Alexander
+
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index da97cd2..c17fcc8 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -852,10 +852,12 @@ void __init trap_init(void)
+ #endif
+ 
+ 	set_intr_gate(0, &divide_error);
+-	set_intr_gate(1, &debug);
+-	set_intr_gate(2, &nmi);
+-	set_system_intr_gate(3, &int3); /* int3 can be called from all */
+-	set_system_intr_gate(4, &overflow); /* int4 can be called from all */
++	set_intr_gate_ist(1, &debug, DEBUG_STACK);
++	set_intr_gate_ist(2, &nmi, NMI_STACK);
++	/* int3 can be called from all */
++	set_system_intr_gate_ist(3, &int3, DEBUG_STACK);
++	/* int4 can be called from all */
++	set_system_intr_gate(4, &overflow);
+ 	set_intr_gate(5, &bounds);
+ 	set_intr_gate(6, &invalid_op);
+ 	set_intr_gate(7, &device_not_available);
+@@ -863,14 +865,14 @@ void __init trap_init(void)
+ 	set_intr_gate(9, &coprocessor_segment_overrun);
+ 	set_intr_gate(10, &invalid_TSS);
+ 	set_intr_gate(11, &segment_not_present);
+-	set_intr_gate(12, &stack_segment);
++	set_intr_gate_ist(12, &stack_segment, STACKFAULT_STACK);
+ 	set_intr_gate(13, &general_protection);
+ 	set_intr_gate(14, &page_fault);
+ 	set_intr_gate(15, &spurious_interrupt_bug);
+ 	set_intr_gate(16, &coprocessor_error);
+ 	set_intr_gate(17, &alignment_check);
+ #ifdef CONFIG_X86_MCE
+-	set_intr_gate(18, &machine_check);
++	set_intr_gate_ist(18, &machine_check, MCE_STACK);
+ #endif
+ 	set_intr_gate(19, &simd_coprocessor_error);
+ 
+@@ -886,7 +888,7 @@ void __init trap_init(void)
+ 		printk("done.\n");
+ 	}
+ 
+-	set_system_gate(SYSCALL_VECTOR, &system_call);
++	set_system_trap_gate(SYSCALL_VECTOR, &system_call);
+ 
+ 	/* Reserve all the builtin and the syscall vector: */
+ 	for (i = 0; i < FIRST_EXTERNAL_VECTOR; i++)
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index 80dbbc7..8cf590b 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -652,9 +652,9 @@ void __init trap_init(void)
+ 	set_intr_gate_ist(1, &debug, DEBUG_STACK);
+ 	set_intr_gate_ist(2, &nmi, NMI_STACK);
+ 	/* int3 can be called from all */
+-	set_system_gate_ist(3, &int3, DEBUG_STACK);
++	set_system_intr_gate_ist(3, &int3, DEBUG_STACK);
+ 	/* int4 can be called from all */
+-	set_system_gate(4, &overflow);
++	set_system_intr_gate(4, &overflow);
+ 	set_intr_gate(5, &bounds);
+ 	set_intr_gate(6, &invalid_op);
+ 	set_intr_gate(7, &device_not_available);
+@@ -674,7 +674,7 @@ void __init trap_init(void)
+ 	set_intr_gate(19, &simd_coprocessor_error);
+ 
+ #ifdef CONFIG_IA32_EMULATION
+-	set_system_gate(IA32_SYSCALL_VECTOR, ia32_syscall);
++	set_system_intr_gate(IA32_SYSCALL_VECTOR, ia32_syscall);
+ #endif
+ 	/*
+ 	 * Should be a barrier for any external CPU state:
+diff --git a/include/asm-x86/desc.h b/include/asm-x86/desc.h
+index ebc3078..f06adac 100644
+--- a/include/asm-x86/desc.h
++++ b/include/asm-x86/desc.h
+@@ -351,20 +351,16 @@ static inline void set_system_intr_gate(unsigned int n, void *addr)
+ 	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
+ }
+ 
+-static inline void set_trap_gate(unsigned int n, void *addr)
++static inline void set_system_trap_gate(unsigned int n, void *addr)
+ {
+ 	BUG_ON((unsigned)n > 0xFF);
+-	_set_gate(n, GATE_TRAP, addr, 0, 0, __KERNEL_CS);
++	_set_gate(n, GATE_TRAP, addr, 0x3, 0, __KERNEL_CS);
+ }
+ 
+-static inline void set_system_gate(unsigned int n, void *addr)
++static inline void set_trap_gate(unsigned int n, void *addr)
+ {
+ 	BUG_ON((unsigned)n > 0xFF);
+-#ifdef CONFIG_X86_32
+-	_set_gate(n, GATE_TRAP, addr, 0x3, 0, __KERNEL_CS);
+-#else
+-	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
+-#endif
++	_set_gate(n, GATE_TRAP, addr, 0, 0, __KERNEL_CS);
+ }
+ 
+ static inline void set_task_gate(unsigned int n, unsigned int gdt_entry)
+@@ -379,7 +375,7 @@ static inline void set_intr_gate_ist(int n, void *addr, unsigned ist)
+ 	_set_gate(n, GATE_INTERRUPT, addr, 0, ist, __KERNEL_CS);
+ }
+ 
+-static inline void set_system_gate_ist(int n, void *addr, unsigned ist)
++static inline void set_system_intr_gate_ist(int n, void *addr, unsigned ist)
+ {
+ 	BUG_ON((unsigned)n > 0xFF);
+ 	_set_gate(n, GATE_INTERRUPT, addr, 0x3, ist, __KERNEL_CS);
+diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
+index fe86ee2..9eef433 100644
+--- a/include/asm-x86/page_32.h
++++ b/include/asm-x86/page_32.h
+@@ -20,6 +20,12 @@
+ #endif
+ #define THREAD_SIZE 	(PAGE_SIZE << THREAD_ORDER)
+ 
++#define STACKFAULT_STACK 0
++#define DOUBLEFAULT_STACK 1
++#define NMI_STACK 0
++#define DEBUG_STACK 0
++#define MCE_STACK 0
++#define N_EXCEPTION_STACKS 1
+ 
+ #ifdef CONFIG_X86_PAE
+ /* 44=32+12, the limit we can fit into an unsigned long pfn */
 -- 
-Jiri Kosina
-SUSE Labs
+1.5.4.3
+
