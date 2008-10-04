@@ -1,19 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbYJDTZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbYJDTZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753816AbYJDTZX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 15:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYJDTSk
+	id S1754963AbYJDTZr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 15:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbYJDTTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 15:18:40 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44679 "EHLO ogre.sisk.pl"
+	Sat, 4 Oct 2008 15:19:04 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44705 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754649AbYJDTSg convert rfc822-to-8bit (ORCPT
+	id S1754583AbYJDTTB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 15:18:36 -0400
+	Sat, 4 Oct 2008 15:19:01 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Gregory Haskins" <ghaskins@novell.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Lin Ming" <ming.m.lin@intel.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+       "John Daiker" <daikerjohn@gmail.com>
 References: <0pOgGB.A.uLG.E475IB@wind>
 In-Reply-To: <0pOgGB.A.uLG.E475IB@wind>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <yWwteD.A.qH.r575IB@wind>
-Subject: [Bug #11505] oltp ~10% regression with 2.6.27-rc5 on stoakley machine
+Message-ID: <yWwteD.A.sLH.z475IB@wind>
+Subject: [Bug #11608] 2.6.27-rc6 BUG: unable to handle kernel paging request
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat,  4 Oct 2008 19:32:52 +0200 (CEST)
+Date: Sat,  4 Oct 2008 19:32:54 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,15 +35,10 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11505
-Subject		: oltp ~10% regression with 2.6.27-rc5 on stoakley machine
-Submitter	: Lin Ming <ming.m.lin@intel.com>
-Date		: 2008-09-04 7:06 (31 days old)
-References	: http://marc.info/?l=linux-kernel&m=122051202202373&w=4
-		  http://marc.info/?t=122089704700005&r=1&w=4
-Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
-		  Gregory Haskins <ghaskins@novell.com>
-		  Ingo Molnar <mingo@elte.hu>
-Patch		: http://marc.info/?l=linux-kernel&m=122194673932703&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11608
+Subject		: 2.6.27-rc6 BUG: unable to handle kernel paging request
+Submitter	: John Daiker <daikerjohn@gmail.com>
+Date		: 2008-09-16 23:00 (19 days old)
+References	: http://marc.info/?l=linux-kernel&m=122160611517267&w=4
 
 
