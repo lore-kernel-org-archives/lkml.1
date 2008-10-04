@@ -1,83 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbYJDJgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbYJDJox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753151AbYJDJgO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 05:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYJDJf6
+	id S1753132AbYJDJox (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 05:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYJDJom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 05:35:58 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:10641 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751833AbYJDJf5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 05:35:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=wU3MCaTMhYmPXUMS+C0sNb0PYAz6cRtdEQbvK7lz9yFY1grD7A0ihnJNHdjfwHmqM1
-         UfslmOpPGgwxQyRmEKxpcDidn43/KlQlmHu9b7wb0dyD0oRjU+LrJ10Axki5h7+V07BE
-         2GELVW6PYsX5Q+OxnfosbkONgpHNRreEUJxRo=
-Message-ID: <851fc09e0810040235g2ab97bdai612c0a2829f83f5c@mail.gmail.com>
-Date: Sat, 4 Oct 2008 17:35:56 +0800
-From: "huang ying" <huang.ying.caritas@gmail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [RFC PATCH] x86: make 64bit efi to use ioremap_cache for efi_ioremap
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Huang Ying" <ying.huang@intel.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1223101400-8819-1-git-send-email-yhlu.kernel@gmail.com>
+	Sat, 4 Oct 2008 05:44:42 -0400
+Received: from nebensachen.de ([195.34.83.29]:41497 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752173AbYJDJol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 05:44:41 -0400
+X-Hashcash: 1:20:081004:bzolnier@gmail.com::JIrlV7AKVK8+ztOd:00000000000000000000000000000000000000000001f/W
+X-Hashcash: 1:20:081004:linux-ide@vger.kernel.org::fSw1yKAUmLtd3fmD:00000000000000000000000000000000000024sG
+X-Hashcash: 1:20:081004:linux-kernel@vger.kernel.org::lR6VB+ZMOjpPVQEq:000000000000000000000000000000000JGnv
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4 v2] ide: Implement disk shock protection support
+References: <87d4j2n3dn.fsf@denkblock.local>
+	<20080917163144.9870.59732.stgit@denkblock.local>
+	<200809181624.54248.bzolnier@gmail.com>
+Date: Sat, 04 Oct 2008 11:44:35 +0200
+Message-ID: <87fxnczocc.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1223101400-8819-1-git-send-email-yhlu.kernel@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Yinghai,
-
-On Sat, Oct 4, 2008 at 2:23 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-[...]
-> --- linux-2.6.orig/arch/x86/kernel/efi.c
-> +++ linux-2.6/arch/x86/kernel/efi.c
-> @@ -475,10 +475,7 @@ void __init efi_enter_virtual_mode(void)
->                size = md->num_pages << EFI_PAGE_SHIFT;
->                end = md->phys_addr + size;
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> On Wednesday 17 September 2008 09:38:37 Elias Oltmanns wrote:
+>> On user request (through sysfs), the IDLE IMMEDIATE command with UNLOAD
 >
-> -               if (PFN_UP(end) <= max_low_pfn_mapped)
-> -                       va = __va(md->phys_addr);
-> -               else
-> -                       va = efi_ioremap(md->phys_addr, size);
-> +               va = efi_ioremap(md->phys_addr, size);
-
-Using __va and efi_ioremap() here is to make EFI support compatible
-with kexec. Because EFI provide only efi_enter_virtual_mode(), no
-efi_leave_virtual_mode(), we should make EFI runtime memory area
-mapped to same virtual memory area in original kernel and kexeced
-kernel, so that the EFI runtime services can be used in kexeced
-kernel.
-
-[...]
-> --- linux-2.6.orig/arch/x86/kernel/efi_64.c
-> +++ linux-2.6/arch/x86/kernel/efi_64.c
-> @@ -46,8 +46,8 @@ static void __init early_mapping_set_exe
->  {
->        unsigned long num_pages;
+>> FEATURE as specified in ATA-7 is issued to the device and processing of
+>> the request queue is stopped thereafter until the specified timeout
+>> expires or user space asks to resume normal operation. This is supposed
+>> to prevent the heads of a hard drive from accidentally crashing onto the
+>> platter when a heavy shock is anticipated (like a falling laptop expected
+>> to hit the floor). Port resets are deferred whenever a device on that
+>> port is in the parked state.
+>> 
+>> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
 >
-> -       start &= PMD_MASK;
-> -       end = (end + PMD_SIZE - 1) & PMD_MASK;
-> +       start &= PAGE_MASK;
-> +       end = (end + PAGE_SIZE - 1) & PAGE_MASK;
->        num_pages = (end - start) >> PAGE_SHIFT;
->        if (executable)
->                set_memory_x((unsigned long)__va(start), num_pages);
+> applied
 
-early_mapping_set_exe() may be called before page allocator is
-available. Using PAGE_MASK may make set_memory_x() allocate new page,
-while using PMD_MASK will not.
+Hi Bart,
 
-Best Regards,
-Huang Ying
+may I ask you to apply yet another inter-diff? This is in order to
+address three issues:
+
+1. Make sure that no negative value is being passed to
+   jiffies_to_msecs() in ide_park_show().
+2. Drop the superfluous variable hwif in ide_special_rq().
+3. Skip initialisation of task and tf in ide_special_rq() if we are not
+   handling a (un)park request.
+
+#1 and #3 have been suggested to me by Peter Moulder off-list.
+
+Regards,
+
+Elias
+
+Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+---
+diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+index 09d10a5..1f5948e 100644
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -672,12 +672,16 @@ EXPORT_SYMBOL_GPL(ide_devset_execute);
+ 
+ static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
+ {
+-	ide_hwif_t *hwif = drive->hwif;
+ 	ide_task_t task;
+-	struct ide_taskfile *tf = &task.tf;
++	struct ide_taskfile *tf;
++	u8 cmd = rq->cmd[0];
+ 
+-	memset(&task, 0, sizeof(task));
+-	switch (rq->cmd[0]) {
++	if (cmd == REQ_PARK_HEADS || cmd == REQ_UNPARK_HEADS) {
++		memset(&task, 0, sizeof(task));
++		tf = &task.tf;
++	}
++
++	switch (cmd) {
+ 	case REQ_PARK_HEADS:
+ 		drive->sleep = *(unsigned long *)rq->special;
+ 		drive->dev_flags |= IDE_DFLAG_SLEEPING;
+@@ -710,9 +714,10 @@ static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
+ 		ide_end_request(drive, 0, 0);
+ 		return ide_stopped;
+ 	}
++
+ 	task.tf_flags |= IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
+ 	task.rq = rq;
+-	hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
++	drive->hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
+ 	return do_rw_taskfile(drive, &task);
+ }
+ 
+diff --git a/drivers/ide/ide-park.c b/drivers/ide/ide-park.c
+index 35fc3ee..02d7e35 100644
+--- a/drivers/ide/ide-park.c
++++ b/drivers/ide/ide-park.c
+@@ -61,15 +61,17 @@ ssize_t ide_park_show(struct device *dev, struct device_attribute *attr,
+ 		      char *buf)
+ {
+ 	ide_drive_t *drive = to_ide_device(dev);
++	unsigned long now;
+ 	unsigned int msecs;
+ 
+ 	if (drive->dev_flags & IDE_DFLAG_NO_UNLOAD)
+ 		return -EOPNOTSUPP;
+ 
+ 	spin_lock_irq(&ide_lock);
++	now = jiffies;
+ 	if (drive->dev_flags & IDE_DFLAG_PARKED &&
+-	    time_after(drive->sleep, jiffies))
+-		msecs = jiffies_to_msecs(drive->sleep - jiffies);
++	    time_after(drive->sleep, now))
++		msecs = jiffies_to_msecs(drive->sleep - now);
+ 	else
+ 		msecs = 0;
+ 	spin_unlock_irq(&ide_lock);
