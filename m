@@ -1,25 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbYJDIc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752644AbYJDIk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753031AbYJDIc4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 04:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYJDIct
+	id S1752644AbYJDIk1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 04:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYJDIkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 04:32:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46067 "EHLO mx3.mail.elte.hu"
+	Sat, 4 Oct 2008 04:40:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60066 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751740AbYJDIcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 04:32:48 -0400
-Date: Sat, 4 Oct 2008 10:32:42 +0200
+	id S1751176AbYJDIkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 04:40:16 -0400
+Date: Sat, 4 Oct 2008 10:40:02 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ftrace: Add a C-state tracer to help power optimization
-Message-ID: <20081004083242.GD27624@elte.hu>
-References: <20081003165533.249261b1@infradead.org> <alpine.DEB.1.10.0810032003140.17863@gandalf.stny.rr.com> <20081003223347.27aa25ba@infradead.org> <alpine.DEB.1.10.0810040141440.30107@gandalf.stny.rr.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Subject: Re: [PATCH 0/3] ring-buffer: less locking and only disable
+	preemption
+Message-ID: <20081004084002.GE27624@elte.hu>
+References: <20081004060057.660306328@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810040141440.30107@gandalf.stny.rr.com>
+In-Reply-To: <20081004060057.660306328@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,28 +41,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Steven Rostedt <rostedt@goodmis.org> wrote:
 
+> Ingo,
 > 
-> On Fri, 3 Oct 2008, Arjan van de Ven wrote:
-> 
-> > On Fri, 3 Oct 2008 20:32:51 -0400 (EDT)
-> > Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > 
-> > > Hi Arjan,
-> > > 
-> > > Very nice! I just have a few comments below.
-> > 
-> > since this is my first tracer.... I would suggest having a "golden
-> > example" one that people can copy (it seems I copied a less than
-> > perfect one ;-)... maybe a trace_example.c ?
-> 
-> Yeah, that would make sense to have.  People are starting to come
-> up with so many different tracers, I'm not sure what a golden
-> example would look like :-/
+> These patches need to be put through the ringer. Could you add them to 
+> your ring-buffer branch, so we can test them out before putting them 
+> into your master branch.
 
-i think starting with kernel/trace/trace_nop.c is the simplest: copy 
-that into a new plugin and make it show up in make oldconfig and make it 
-build. Then add ftrace_printk() lines initially - only specialize the 
-trace entries to that plugin later on.
+hey, in fact your latest iteration already tested out so well on a wide 
+range of boxes that i've merged it all into tip/tracing/core already.
+
+I'll reuse tip/tracing/ring-buffer for these latest 3 patches (merge it 
+up to tip/tracing/core and add these three patches) but it's a delta, 
+i.e. the whole ring-buffer approach is ready for prime time i think.
+
+Hm, do we do deallocation of the buffers already when we switch tracers?
+
+> The following patches bring the ring buffer closer to a lockless 
+> solution. They move the locking only to the actual moving the 
+> tail/write pointer from one page to the next. Interrupts are now 
+> enabled during most of the writes.
+
+very nice direction!
+
+> A lot of the locking protection is still within the ftrace 
+> infrastructure. The last patch takes some of that away.
+> 
+> The function tracer cannot be reentrant just due to the nature that it 
+> traces everything, and can cause recursion issues.
+
+Correct, and that's by far the yuckiest aspect of it. And there's 
+another aspect: NMIs. We've still got the tip/tracing/nmisafe angle with 
+these commits:
+
+ d979781: ftrace: mark lapic_wd_event() notrace
+ c2c27ba: ftrace: ignore functions that cannot be kprobe-ed
+ 431e946: ftrace: do not trace NMI contexts
+ 1eda930: x86, tracing, nmisafe: fix threadinfo_ -> TI_ rename fallout
+ 84c2ca9: sched: sched_clock() improvement: use in_nmi()
+ 0d84b78: x86 NMI-safe INT3 and Page Fault
+ a04464b: x86_64 page fault NMI-safe
+ b335389: Change avr32 active count bit
+ a581cbd: Change Alpha active count bit
+ eca0999: Stringify support commas
+
+but i'm not yet fully convinced about the NMI angle, the practical cross 
+section to random lowlevel x86 code is wider than any sched_clock() 
+impact for example. We might be best off avoiding it: force-disable the 
+NMI watchdog when we trace?
 
 	Ingo
