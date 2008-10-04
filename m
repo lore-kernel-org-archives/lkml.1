@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbYJDTX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYJDTXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755817AbYJDTX0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 15:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYJDTSe
+	id S1755886AbYJDTXk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 15:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbYJDTSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 15:18:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44673 "EHLO ogre.sisk.pl"
+	Sat, 4 Oct 2008 15:18:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44676 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754639AbYJDTSc convert rfc822-to-8bit (ORCPT
+	id S1754645AbYJDTSe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 15:18:32 -0400
+	Sat, 4 Oct 2008 15:18:34 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>
+       "Cyrill Gorcunov" <gorcunov@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Joshua Hoblitt" <j_kernel@hoblitt.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
 References: <0pOgGB.A.uLG.E475IB@wind>
 In-Reply-To: <0pOgGB.A.uLG.E475IB@wind>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +21,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <yWwteD.A.u5H.i575IB@wind>
-Subject: [Bug #11512] sort-of regression due to "kconfig: speed up all*config + randconfig"
+Message-ID: <yWwteD.A.M0H.c575IB@wind>
+Subject: [Bug #11543] kernel panic: softlockup in tick_periodic() ???
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat,  4 Oct 2008 19:32:52 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +37,13 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11512
-Subject		: sort-of regression due to "kconfig: speed up all*config + randconfig"
-Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
-Date		: 2008-09-05 22:50 (30 days old)
-References	: http://marc.info/?l=linux-kernel&m=122065498013858&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11543
+Subject		: kernel panic: softlockup in tick_periodic() ???
+Submitter	: Joshua Hoblitt <j_kernel@hoblitt.com>
+Date		: 2008-09-11 16:46 (24 days old)
+References	: http://marc.info/?l=linux-kernel&m=122117786124326&w=4
+Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+		  Cyrill Gorcunov <gorcunov@gmail.com>
+		  Ingo Molnar <mingo@elte.hu>
 
 
