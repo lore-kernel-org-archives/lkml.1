@@ -1,98 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbYJDLRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbYJDLmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbYJDLRr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 07:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbYJDLRi
+	id S1753328AbYJDLmB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 07:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYJDLlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 07:17:38 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:10799 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752294AbYJDLRi (ORCPT
+	Sat, 4 Oct 2008 07:41:53 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:35612 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751701AbYJDLlw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 07:17:38 -0400
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH] sched_rt.c: resch needed in rt_rq_enqueue() for the
-	root rt_rq
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dario Faggioli <raistlin@linux.it>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michael Trimarchi <trimarchimichael@yahoo.it>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1223048447.6714.46.camel@Palanthas>
-References: <1223048447.6714.46.camel@Palanthas>
-Content-Type: text/plain
-Date: Sat, 04 Oct 2008 13:17:45 +0200
-Message-Id: <1223119065.28938.22.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 4 Oct 2008 07:41:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=GhTxVCmpZ5/rdC5tOVw1LoSXKM4Uy8YfZ2AB1de76c+68o4toL+DimJpxAqXQ5lC9I
+         QAJo2RzjjXZIYr8lE79/uCpc1nLlFQ8GC6b/Dy0lALBsZ3TO3+dSRaiojJmJA62xaVE9
+         gndUcCDLSCaT1YpPkHnWv8gWLhl2cadHx1f+E=
+Message-ID: <c384c5ea0810040441u77ebf879i8c4a2be8675ca26c@mail.gmail.com>
+Date: Sat, 4 Oct 2008 13:41:50 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH] mtd: AT49BV6416 has swapped erase regions
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080930142207.72d5edaa@hskinnemo-gx745.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1222775733-6690-1-git-send-email-haavard.skinnemoen@atmel.com>
+	 <c384c5ea0809300502h48915058r78a6586968c1ac1a@mail.gmail.com>
+	 <20080930142207.72d5edaa@hskinnemo-gx745.norway.atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-03 at 17:40 +0200, Dario Faggioli wrote:
-> Hi all,
-> 
-> While working on the new version of the code for SCHED_SPORADIC I
-> noticed something strange in the present throttling mechanism. More
-> specifically in the throttling timer handler in sched_rt.c
-> (do_sched_rt_period_timer()) and in rt_rq_enqueue().
-> 
-> The problem is that, when unthrottling a runqueue, rt_rq_enqueue() only
-> asks for rescheduling if the runqueue has a sched_entity associated to
-> it (i.e., rt_rq->rt_se != NULL).
-> Now, if the runqueue is the root rq (which has a rt_se = NULL)
-> rescheduling does not take place, and it is delayed to some undefined
-> instant in the future.
-> 
-> This imply some random bandwidth usage by the RT tasks under throttling.
-> For instance, setting rt_runtime_us/rt_period_us = 950ms/1000ms an RT
-> task will get less than 95%. In our tests we got something varying
-> between 70% to 95%.
-> Using smaller time values, e.g., 95ms/100ms, things are even worse, and
-> I can see values also going down to 20-25%!!
-> 
-> The tests we performed are simply running 'yes' as a SCHED_FIFO task,
-> and checking the CPU usage with top, but we can investigate thoroughly
-> if you think it is needed.
-> 
-> Things go much better, for us, with the attached patch... Don't know if
-> it is the best approach, but it solved the issue for us.
+Hello Haavard, all,
 
-Its consistent with John Blackwood's change to the !group case
-(f3ade837), and looks good.
+this topic has now diverted to u-boot, as Linux is fixed.  I am
+posting in the existing thread to keep the information coherent.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+On Tue, Sep 30, 2008 at 2:22 PM, Haavard Skinnemoen
+<haavard.skinnemoen@atmel.com> wrote:
+> "Leon Woestenberg" <leon.woestenberg@gmail.com> wrote:
+>> Haavard,
+>> On Tue, Sep 30, 2008 at 1:55 PM, Haavard Skinnemoen
+>> <haavard.skinnemoen@atmel.com> wrote:
+>> > The CFI information read from AT49BV6416 lists the erase regions in the
+>> > wrong order, causing problems when trying to erase or update the first
+>> > or last 64K block.
+>> >
+>> Are there other Atmel designs with this bug or only the chip with this CFI ID?
+>
+> That's a good question. I guess there may be others in the same family
+> with the same bug. I don't really know.
+>
+> The replacement, AT49BV642D, does not have this bug.
+>
+>> I ask, because the check in u-boot is too generic; I found u-boot
+>> wrongly assumes wrong order for another Atmel part, not checking on a
+>> specific CFI ID.
+>
+> That's interesting...especially since u-boot only reads the low byte
+> of the JEDEC ID, so adding a fixup for one particular ID may match tons
+> of chips with 16-bit IDs.
+>
+> I'll have to check the latest u-boot and see if it breaks any of my
+> boards.
+>
+I just checked on a custom design, AP7000 with AT49BV320DT, which
+reports its top boot bit correctly.
+info->device_id == c4 for this part.
 
-Ingo, please pickup (might be 27.1 material as well).
+The u-boot flash_fixup_atmel() currently reverses geometry whenever
+the top boot bit is set, which seems wrong:
 
-Thanks Dario!
+I have to force this to zero to make that custom board work in this
+piece of code:
 
-> 
-> ---
-> Signed-off-by: Dario Faggioli <raistlin@linux.it>
-> Signed-off-by: Michael Trimarchi <trimarchimichael@yahoo.it>
-> ---
-> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> index 1113157..37f0721 100644
-> --- a/kernel/sched_rt.c
-> +++ b/kernel/sched_rt.c
-> @@ -102,12 +102,12 @@ static void dequeue_rt_entity(struct sched_rt_entity *rt_se);
->  
->  static void sched_rt_rq_enqueue(struct rt_rq *rt_rq)
->  {
-> +	struct task_struct *curr = rq_of_rt_rq(rt_rq)->curr;
->  	struct sched_rt_entity *rt_se = rt_rq->rt_se;
->  
-> -	if (rt_se && !on_rt_rq(rt_se) && rt_rq->rt_nr_running) {
-> -		struct task_struct *curr = rq_of_rt_rq(rt_rq)->curr;
-> -
-> -		enqueue_rt_entity(rt_se);
-> +	if (rt_rq->rt_nr_running) {
-> +		if (rt_se && !on_rt_rq(rt_se))
-> +			enqueue_rt_entity(rt_se);
->  		if (rt_rq->highest_prio < curr->prio)
->  			resched_task(curr);
->  	}
-> 
+/* Check the "top boot" bit in the PRI */
+if (info->ext_addr && !(flash_read_uchar(info, info->ext_addr + 6) & 1))
+  reverse_geometry = 1;
 
+I was hesitating to come up with a patch, because some of the check is
+#ifdef'd out, and I may have missed
+a u-boot convention that I should layout my sectors as
+bottom-boot-block in u-boot, and reverse_geometry if 'top'?
+
+Indeed the single byte ID check may need attention. I have to lookup
+the CFI specs to be sure.
+
+Regards,
+-- 
+Leon
