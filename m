@@ -1,172 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYJDXSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbYJDXVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755723AbYJDXSA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 19:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbYJDXRv
+	id S1755712AbYJDXVR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 19:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbYJDXVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 19:17:51 -0400
-Received: from nebensachen.de ([195.34.83.29]:44888 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754632AbYJDXRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 19:17:50 -0400
-X-Hashcash: 1:20:081004:bzolnier@gmail.com::0ewqGbf9YqOhYkBC:00000000000000000000000000000000000000000005dvS
-X-Hashcash: 1:20:081004:linux-ide@vger.kernel.org::G1MXF2EaPYjptIuD:0000000000000000000000000000000000005u55
-X-Hashcash: 1:20:081004:linux-kernel@vger.kernel.org::rDnbc+2raVVAG/0u:0000000000000000000000000000000001Mm+
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4 v2] ide: Implement disk shock protection support
-References: <87d4j2n3dn.fsf@denkblock.local>
-	<20080917163144.9870.59732.stgit@denkblock.local>
-	<200809181624.54248.bzolnier@gmail.com>
-	<87fxnczocc.fsf@denkblock.local> <87d4igqxlm.fsf@denkblock.local>
-Date: Sun, 05 Oct 2008 01:16:16 +0200
-In-Reply-To: <87d4igqxlm.fsf@denkblock.local> (Elias Oltmanns's message of
-	"Sat, 04 Oct 2008 15:49:25 +0200")
-Message-ID: <873ajcar3z.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Sat, 4 Oct 2008 19:21:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48003 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754722AbYJDXVF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 19:21:05 -0400
+Date: Sat, 4 Oct 2008 19:21:01 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 0/3] ring-buffer: less locking and only disable
+ preemption
+In-Reply-To: <20081004222713.GA1813@Krystal>
+Message-ID: <alpine.DEB.1.10.0810041916390.11060@gandalf.stny.rr.com>
+References: <20081004060057.660306328@goodmis.org> <20081004084002.GE27624@elte.hu> <alpine.DEB.1.10.0810041015330.4551@gandalf.stny.rr.com> <20081004144423.GA14918@elte.hu> <20081004174121.GA1337@elte.hu> <20081004222713.GA1813@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Elias Oltmanns <eo@nebensachen.de> wrote:
-> Elias Oltmanns <eo@nebensachen.de> wrote:
->> Hi Bart,
->>
->> may I ask you to apply yet another inter-diff? This is in order to
->> address three issues:
->>
->> 1. Make sure that no negative value is being passed to
->>    jiffies_to_msecs() in ide_park_show().
->> 2. Drop the superfluous variable hwif in ide_special_rq().
->> 3. Skip initialisation of task and tf in ide_special_rq() if we are not
->>    handling a (un)park request.
->
-> Well, #3 should have been done differently because we donn't want to
-> check for REQ_(UN)?PARK_HEADS more often than is necessary.
 
-While preparing the backport to 2.6.27, it has just occurred to me that
-we need to clear the IDE_DFLAG_PARKED flag in ide_disk_pre_reset()
-because this flag must not be set after *any* sort of access to the
-device.
+On Sat, 4 Oct 2008, Mathieu Desnoyers wrote:
+> > 
+> > there's a relatively simple method that would solve all these 
+> > impact-size problems.
+> > 
+> > We cannot stop NMIs (and MCEs, etc.), but we can make kernel code 
+> > modifications atomic, by adding the following thin layer ontop of it:
+> > 
+> >    #define MAX_CODE_SIZE 10
+> > 
+> >    int redo_len;
+> >    u8 *redo_vaddr;
+> > 
+> >    u8 redo_buffer[MAX_CODE_SIZE];
+> > 
+> >    atomic_t __read_mostly redo_pending;
+> > 
+> > and use it in do_nmi():
+> > 
+> >    if (unlikely(atomic_read(&redo_pending)))
+> > 	modify_code_redo();
+> > 
+> > i.e. when we modify code, we first fill in the redo_buffer[], redo_vaddr 
+> > and redo_len[], then we set redo_pending flag. Then we modify the kernel 
+> > code, and clear the redo_pending flag.
+> > 
+> > If an NMI (or MCE) handler intervenes, it will notice the pending 
+> > 'transaction' and will copy redo_buffer[] to the (redo_vaddr,len) 
+> > location and will continue.
+> > 
+> > So as far as non-maskable contexts are concerned, kernel code patching 
+> > becomes an atomic operation. do_nmi() has to be marked notrace but 
+> > that's all and easy to maintain.
+> > 
+> > Hm?
+> > 
+> 
+> The comment at the beginning of 
+> http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=blob;f=arch/x86/kernel/immediate.c;h=87a25db0efbd8f73d3d575e48541f2a179915da5;hb=b6148ea934f42e730571f41aa5a1a081a93995b5
 
-So, here is yet another revised version of the inter-diff. Just don't
-hurry to apply in case I have an enlightening dream tonight and want to
-change something more ;-).
+Mathieu, please stop pointing to git tree comments (especially those that
+are not in mainline).  If you have an actual technical PDF link, that 
+would be much better.
 
-Regards,
+> 
+> explains that code modification on x86 SMP systems is not only a matter
+> of atomicity, but also a matter of not changing the code underneath a
+> running CPU which is making assumptions that it won't change underneath
+> without issuing a synchronizing instruction before the new code is used
+> by the CPU. The scheme you propose here takes care of atomicity, but
+> does not take care of the synchronization problem. A sync_core() would
+> probably be required when such modification is detected.
+> 
+> Also, speaking of plain atomicity, you scheme does not seem to protect
+> against NMIs running on a different CPU, because the non-atomic change
+> could race with such NMI.
 
-Elias
+Ingo,
 
-Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
----
+Mathieu is correct in this regard. We do not neet to protect ourselves 
+from NMIs on the CPU that we execute the code on. We need to protect 
+ourselves from NMIs running on other CPUS.
 
- ide-io.c   |   47 +++++++++++++++++++++++++----------------------
- ide-iops.c |    1 +
- ide-park.c |    6 ++++--
- 3 files changed, 30 insertions(+), 24 deletions(-)
+-- Steve
 
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index 09d10a5..77c6eae 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -672,25 +672,32 @@ EXPORT_SYMBOL_GPL(ide_devset_execute);
- 
- static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
- {
--	ide_hwif_t *hwif = drive->hwif;
--	ide_task_t task;
--	struct ide_taskfile *tf = &task.tf;
-+	u8 cmd = rq->cmd[0];
-+
-+	if (cmd == REQ_PARK_HEADS || cmd == REQ_UNPARK_HEADS) {
-+		ide_task_t task;
-+		struct ide_taskfile *tf = &task.tf;
-+
-+		memset(&task, 0, sizeof(task));
-+		if (cmd == REQ_PARK_HEADS) {
-+			drive->sleep = *(unsigned long *)rq->special;
-+			drive->dev_flags |= IDE_DFLAG_SLEEPING;
-+			tf->command = ATA_CMD_IDLEIMMEDIATE;
-+			tf->feature = 0x44;
-+			tf->lbal = 0x4c;
-+			tf->lbam = 0x4e;
-+			tf->lbah = 0x55;
-+			task.tf_flags |= IDE_TFLAG_CUSTOM_HANDLER;
-+		} else		/* cmd == REQ_UNPARK_HEADS */
-+			tf->command = ATA_CMD_CHK_POWER;
-+
-+		task.tf_flags |= IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
-+		task.rq = rq;
-+		drive->hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
-+		return do_rw_taskfile(drive, &task);
-+	}
- 
--	memset(&task, 0, sizeof(task));
--	switch (rq->cmd[0]) {
--	case REQ_PARK_HEADS:
--		drive->sleep = *(unsigned long *)rq->special;
--		drive->dev_flags |= IDE_DFLAG_SLEEPING;
--		tf->command = ATA_CMD_IDLEIMMEDIATE;
--		tf->feature = 0x44;
--		tf->lbal = 0x4c;
--		tf->lbam = 0x4e;
--		tf->lbah = 0x55;
--		task.tf_flags |= IDE_TFLAG_CUSTOM_HANDLER;
--		break;
--	case REQ_UNPARK_HEADS:
--		tf->command = ATA_CMD_CHK_POWER;
--		break;
-+	switch (cmd) {
- 	case REQ_DEVSET_EXEC:
- 	{
- 		int err, (*setfunc)(ide_drive_t *, int) = rq->special;
-@@ -710,10 +717,6 @@ static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
- 		ide_end_request(drive, 0, 0);
- 		return ide_stopped;
- 	}
--	task.tf_flags |= IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
--	task.rq = rq;
--	hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
--	return do_rw_taskfile(drive, &task);
- }
- 
- static void ide_check_pm_state(ide_drive_t *drive, struct request *rq)
-diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
-index 0eb6284..b762deb 100644
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -1020,6 +1020,7 @@ static void ide_disk_pre_reset(ide_drive_t *drive)
- 	drive->special.b.recalibrate  = legacy;
- 
- 	drive->mult_count = 0;
-+	drive->dev_flags &= ~IDE_DFLAG_PARKED;
- 
- 	if ((drive->dev_flags & IDE_DFLAG_KEEP_SETTINGS) == 0 &&
- 	    (drive->dev_flags & IDE_DFLAG_USING_DMA) == 0)
-diff --git a/drivers/ide/ide-park.c b/drivers/ide/ide-park.c
-index 35fc3ee..02d7e35 100644
---- a/drivers/ide/ide-park.c
-+++ b/drivers/ide/ide-park.c
-@@ -61,15 +61,17 @@ ssize_t ide_park_show(struct device *dev, struct device_attribute *attr,
- 		      char *buf)
- {
- 	ide_drive_t *drive = to_ide_device(dev);
-+	unsigned long now;
- 	unsigned int msecs;
- 
- 	if (drive->dev_flags & IDE_DFLAG_NO_UNLOAD)
- 		return -EOPNOTSUPP;
- 
- 	spin_lock_irq(&ide_lock);
-+	now = jiffies;
- 	if (drive->dev_flags & IDE_DFLAG_PARKED &&
--	    time_after(drive->sleep, jiffies))
--		msecs = jiffies_to_msecs(drive->sleep - jiffies);
-+	    time_after(drive->sleep, now))
-+		msecs = jiffies_to_msecs(drive->sleep - now);
- 	else
- 		msecs = 0;
- 	spin_unlock_irq(&ide_lock);
