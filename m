@@ -1,61 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752745AbYJDGKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbYJDGXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752745AbYJDGKd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 02:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYJDGKY
+	id S1752674AbYJDGXh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 02:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYJDGX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 02:10:24 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41632 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203AbYJDGKX (ORCPT
+	Sat, 4 Oct 2008 02:23:29 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:30049 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203AbYJDGX2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 02:10:23 -0400
-Subject: RE: [PATCH 2/2]Add Variable Page Size and IA64 Support in Intel
-	IOMMU: IA64 Specific Part
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Yu, Fenghua" <fenghua.yu@intel.com>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Avi Kivity <avi@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	Sat, 4 Oct 2008 02:23:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=Jlv4sXvxG0KXEyEmI0gx/+dIlDKQoQAV2XjQpBHwp8BxIQdOnfF4gGT1+PrJrnlP4y
+         Ermg800qgkx6X4lrp0IMTtVPWGFE6k5vg/A+9WWkbnSLidfhL4OQBeN3r4aF7Ow/WMkR
+         +GdkyH+IbYUwvB6GXd1OQqBkEp48ZuV+HxB4w=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8844A6398@orsmsx505.amr.corp.intel.com>
-References: <20081001165750.GA21272@linux-os.sc.intel.com>
-	 <200810020951.08408.bjorn.helgaas@hp.com>
-	 <A6AD88C3F2289247BE726C37303E1EB88408AA3E@orsmsx505.amr.corp.intel.com>
-	 <200810030941.42800.bjorn.helgaas@hp.com>
-	 <A6AD88C3F2289247BE726C37303E1EB8844A6398@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Sat, 04 Oct 2008 07:09:57 +0100
-Message-Id: <1223100597.30832.37.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+       Huang Ying <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: 
+Date: Fri,  3 Oct 2008 23:22:48 -0700
+Message-Id: <1223101368-8765-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-03 at 17:53 -0700, Yu, Fenghua wrote:
-> >Architecturally, I'm surprised that ia64 would need to actually do a
-> >cache flush.  I would think the VT-d hardware would do coherent
-> accesses which would make the cache flush unnecessary.
-> 
-> VT-d hardware supports both non cache coherency and cache coherency by
-> bit Coherency in Extended Capabilities Register.
+Subject:[RFC PATCH] x86: make 64bit efi to use ioremap_cache for efi_ioremap
 
-But is the version without the cache coherency actually going to be
-_seen_ on IA64?
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-> Could you please point me to the doc that explicitly says that
-> architecturally ia64 doesn't need cache flush?
+---
+ arch/x86/kernel/efi.c       |    5 +----
+ arch/x86/kernel/efi_64.c    |   27 ++-------------------------
+ include/asm-x86/efi.h       |    8 ++------
+ include/asm-x86/fixmap_64.h |    3 ---
+ 4 files changed, 5 insertions(+), 38 deletions(-)
 
-For safety, we can always make the driver just refuse to initialise on
-IA64 if the cache coherency bit isn't set.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Index: linux-2.6/arch/x86/kernel/efi.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/efi.c
++++ linux-2.6/arch/x86/kernel/efi.c
+@@ -475,10 +475,7 @@ void __init efi_enter_virtual_mode(void)
+ 		size = md->num_pages << EFI_PAGE_SHIFT;
+ 		end = md->phys_addr + size;
+ 
+-		if (PFN_UP(end) <= max_low_pfn_mapped)
+-			va = __va(md->phys_addr);
+-		else
+-			va = efi_ioremap(md->phys_addr, size);
++		va = efi_ioremap(md->phys_addr, size);
+ 
+ 		md->virt_addr = (u64) (unsigned long) va;
+ 
+Index: linux-2.6/arch/x86/kernel/efi_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/efi_64.c
++++ linux-2.6/arch/x86/kernel/efi_64.c
+@@ -46,8 +46,8 @@ static void __init early_mapping_set_exe
+ {
+ 	unsigned long num_pages;
+ 
+-	start &= PMD_MASK;
+-	end = (end + PMD_SIZE - 1) & PMD_MASK;
++	start &= PAGE_MASK;
++	end = (end + PAGE_SIZE - 1) & PAGE_MASK;
+ 	num_pages = (end - start) >> PAGE_SHIFT;
+ 	if (executable)
+ 		set_memory_x((unsigned long)__va(start), num_pages);
+@@ -97,26 +97,3 @@ void __init efi_call_phys_epilog(void)
+ 	early_runtime_code_mapping_set_exec(0);
+ }
+ 
+-void __iomem *__init efi_ioremap(unsigned long phys_addr, unsigned long size)
+-{
+-	static unsigned pages_mapped __initdata;
+-	unsigned i, pages;
+-	unsigned long offset;
+-
+-	pages = PFN_UP(phys_addr + size) - PFN_DOWN(phys_addr);
+-	offset = phys_addr & ~PAGE_MASK;
+-	phys_addr &= PAGE_MASK;
+-
+-	if (pages_mapped + pages > MAX_EFI_IO_PAGES)
+-		return NULL;
+-
+-	for (i = 0; i < pages; i++) {
+-		__set_fixmap(FIX_EFI_IO_MAP_FIRST_PAGE - pages_mapped,
+-			     phys_addr, PAGE_KERNEL);
+-		phys_addr += PAGE_SIZE;
+-		pages_mapped++;
+-	}
+-
+-	return (void __iomem *)__fix_to_virt(FIX_EFI_IO_MAP_FIRST_PAGE - \
+-					     (pages_mapped - pages)) + offset;
+-}
+Index: linux-2.6/include/asm-x86/efi.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/efi.h
++++ linux-2.6/include/asm-x86/efi.h
+@@ -33,12 +33,8 @@ extern unsigned long asmlinkage efi_call
+ #define efi_call_virt6(f, a1, a2, a3, a4, a5, a6)	\
+ 	efi_call_virt(f, a1, a2, a3, a4, a5, a6)
+ 
+-#define efi_ioremap(addr, size)			ioremap_cache(addr, size)
+-
+ #else /* !CONFIG_X86_32 */
+ 
+-#define MAX_EFI_IO_PAGES	100
+-
+ extern u64 efi_call0(void *fp);
+ extern u64 efi_call1(void *fp, u64 arg1);
+ extern u64 efi_call2(void *fp, u64 arg1, u64 arg2);
+@@ -86,10 +82,10 @@ extern u64 efi_call6(void *fp, u64 arg1,
+ 	efi_call6((void *)(efi.systab->runtime->f), (u64)(a1), (u64)(a2), \
+ 		  (u64)(a3), (u64)(a4), (u64)(a5), (u64)(a6))
+ 
+-extern void __iomem *efi_ioremap(unsigned long addr, unsigned long size);
+-
+ #endif /* CONFIG_X86_32 */
+ 
++#define efi_ioremap(addr, size)			ioremap_cache(addr, size)
++
+ extern void efi_reserve_early(void);
+ extern void efi_call_phys_prelog(void);
+ extern void efi_call_phys_epilog(void);
+Index: linux-2.6/include/asm-x86/fixmap_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/fixmap_64.h
++++ linux-2.6/include/asm-x86/fixmap_64.h
+@@ -43,9 +43,6 @@ enum fixed_addresses {
+ 	FIX_APIC_BASE,	/* local (CPU) APIC) -- required for SMP or not */
+ 	FIX_IO_APIC_BASE_0,
+ 	FIX_IO_APIC_BASE_END = FIX_IO_APIC_BASE_0 + MAX_IO_APICS - 1,
+-	FIX_EFI_IO_MAP_LAST_PAGE,
+-	FIX_EFI_IO_MAP_FIRST_PAGE = FIX_EFI_IO_MAP_LAST_PAGE
+-				  + MAX_EFI_IO_PAGES - 1,
+ #ifdef CONFIG_PARAVIRT
+ 	FIX_PARAVIRT_BOOTMAP,
+ #endif
