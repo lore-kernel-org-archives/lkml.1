@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbYJDFz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752544AbYJDGCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbYJDFz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 01:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYJDFzS
+	id S1752544AbYJDGCX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 02:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbYJDGCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 01:55:18 -0400
-Received: from phunq.net ([64.81.85.152]:42897 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751057AbYJDFzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 01:55:17 -0400
-From: Daniel Phillips <phillips@phunq.net>
+	Sat, 4 Oct 2008 02:02:13 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60838 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbYJDGCN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 02:02:13 -0400
+Message-Id: <20081004060057.660306328@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Sat, 04 Oct 2008 02:00:57 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Subject: Tux3 Report: It's What Next time once again
-Date: Fri, 3 Oct 2008 22:55:12 -0700
-User-Agent: KMail/1.9.5
-Cc: tux3@tux3.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810032255.13117.phillips@phunq.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Subject: [PATCH 0/3] ring-buffer: less locking and only disable preemption
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today was one of those skate-in-the-dark kind of days here in Paradise, 
-but whereas the Tux3 cabal quite enjoys the occasional dimly lit 
-runabout in the concrete jungle, we make it a point not to keep you, 
-loyal readers, in the dark about upcoming Tux3 development directions.
+Ingo,
 
-The past three week's work made something of a liar of me, as we 
-completely ignored the task of integrating versioned pointers that I 
-had talked about earlier.  Instead, the Cabal decided that we would be 
-better served by putting the effort into extents, in the interest of 
-benchmarking well right from the start.
+These patches need to be put through the ringer. Could you add them
+to your ring-buffer branch, so we can test them out before putting
+them into your master branch.
 
-In fact, Tux3 will never actually have versioned pointers, but rather 
-versioned extents, a much more ambitious proposition and messy enough 
-that we now plan to defer that coding until some time after the initial 
-kernel port, which is now expected to land with atomic commit and 
-extended attributes but without versioning.  Another way of putting it: 
-I promised to cut corners by leaving something for later, and that 
-something is going to be versioning.  Tux3 will thus first arrive in 
-kernel as more or less a functional equivalent of Ext3 (with bigger 
-limits and shiny atom thingies) instead of something more exotic.
+The following patches bring the ring buffer closer to a lockless
+solution. They move the locking only to the actual moving the
+tail/write pointer from one page to the next. Interrupts are now
+enabled during most of the writes.
 
-Atomic commit is a biggish project in its own right.  As with xattr 
-atoms and certain aspects of the extent strategy, we forge into 
-unexplored territory here with some new ideas on how to handle this 
-tricky task robustly and efficiently.  The concept of forward logging, 
-which is just one part of the planned mechanism, was described in the 
-original Tux3 announcement:
+A lot of the locking protection is still within the ftrace infrastructure.
+The last patch takes some of that away.
 
-   http://lkml.org/lkml/2008/7/23/257
+The function tracer cannot be reentrant just due to the nature that
+it traces everything, and can cause recursion issues.
 
-Other pieces of the puzzle were described as part of the discussions 
-with Matt Dillon comparing the designs of Tux3 and Hammer[1]:
+-- Steve
 
-   http://tux3.org/pipermail/tux3/2008-July/000012.html
-   "Comparison to Hammer fs design"
-
-   http://tux3.org/pipermail/tux3/2008-July/000014.html
-   http://tux3.org/pipermail/tux3/2008-July/000018.html
-   "Two kinds of atomic commit"
-
-Many thanks to Matt for forcing me to be clear about certain essential 
-details.
-
-Now it is about time to put the pieces together to create a new 
-algorithm which one might call "Son of Phase Tree".  The end goal of 
-this effort is to approach media speed for both data and metadata 
-commits, while controlling read fragmentation effectively.
-
-Regards,
-
-Daniel
-
-[1] By the way, somebody should port Hammer to Linux.
