@@ -1,108 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbYJDWLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbYJDWVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754959AbYJDWLT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 18:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbYJDWLH
+	id S1755153AbYJDWVo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 18:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYJDWVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 18:11:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:4222 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753598AbYJDWLF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 18:11:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JACW6m+DIWdMB3RBuyGUcqG51L0y8uXqm/RN6FHurlDpJRgx0LCCMp0xxPpEEgKf07
-         RUXXyhp6zNmKJsfFYuFLpdTuw2GZQYpv+pbK7lUImZ4ewZc36z0qNotHiTibXkqlVczd
-         Th9EfPypOdyzsMx0nigaqy/GQZahN3116TFVY=
-Date: Sun, 5 Oct 2008 02:13:39 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       dave@linux.vnet.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Report the pagesize backing a VMA in /proc/pid/maps
-Message-ID: <20081004221339.GA20175@x200.localdomain>
-References: <1223052415-18956-1-git-send-email-mel@csn.ul.ie> <1223052415-18956-3-git-send-email-mel@csn.ul.ie>
+	Sat, 4 Oct 2008 18:21:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45491 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753609AbYJDWVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 18:21:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Backlund <tmb@mandriva.org>
+Subject: Re: [Bug #11629] quad G5 fails to shut down
+Date: Sun, 5 Oct 2008 00:26:02 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.DDH.r475IB@wind> <48E7D65F.1070909@mandriva.org>
+In-Reply-To: <48E7D65F.1070909@mandriva.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1223052415-18956-3-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810050026.02893.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 05:46:55PM +0100, Mel Gorman wrote:
-> This patch adds a new field for hugepage-backed memory regions to show the
-> pagesize in /proc/pid/maps.  While the information is available in smaps,
-> maps is more human-readable and does not incur the cost of calculating Pss. An
-> example of a /proc/self/maps output for an application using hugepages with
-> this patch applied is;
+On Saturday, 4 of October 2008, Thomas Backlund wrote:
+> Rafael J. Wysocki skrev:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.26.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11629
+> > Subject		: quad G5 fails to shut down
+> > Submitter	: Johannes Berg <johannes@sipsolutions.net>
+> > Date		: 2008-09-23 14:20 (12 days old)
+> > Handled-By	: Johannes Berg <johannes@sipsolutions.net>
+> > Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=11629#c8
+> > 
+> > 
 > 
-> 08048000-0804c000 r-xp 00000000 03:01 49135      /bin/cat
-> 0804c000-0804d000 rw-p 00003000 03:01 49135      /bin/cat
-> 08400000-08800000 rw-p 00000000 00:10 4055       /mnt/libhugetlbfs.tmp.QzPPTJ (deleted) (hpagesize=4096kB)
+> Merged in:
+> http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=61e9916eba35dfb76d38013a5aae9a59cc50877a
 
-> To be predictable for parsers, the patch adds the notion of reporting on VMA
-> attributes by appending one or more fields that look like "(attribute)". This
-> already happens when a file is deleted and the user sees (deleted) after the
-> filename. The expectation is that existing parsers will not break as those
-> that read the filename should be reading forward after the inode number
-> and stopping when it sees something that is not part of the filename.
-> Parsers that assume everything after / is a filename will get confused by
-> (hpagesize=XkB) but are already broken due to (deleted).
+Thanks, closed.
 
-Looks like procps will start showing hpagesize tag as a mapping name
-(apologies for pasting crappy code):
-
-
-
-static const char *mapping_name(proc_t *p, unsigned KLONG addr, unsigned KLONG len, const char *mapbuf, unsigned showpath, unsigned dev_major, unsigned dev_minor, unsigned long long inode){
-  const char *cp;
-
-  if(!dev_major && dev_minor==shm_minor && strstr(mapbuf,"/SYSV")){
-    static char shmbuf[64];
-    snprintf(shmbuf, sizeof shmbuf, "  [ shmid=0x%Lx ]", inode);
-    return shmbuf;
-  }
-
-  cp = strrchr(mapbuf,'/');
-  if(cp){
-    if(showpath) return strchr(mapbuf,'/');
-    return cp[1] ? cp+1 : cp;
-  }
-
-  cp = strchr(mapbuf,'/');
-  if(cp){
-    if(showpath) return cp;
-    return strrchr(cp,'/') + 1;  // it WILL succeed
-  }
-
-  cp = "  [ anon ]";
-  if( (p->start_stack >= addr) && (p->start_stack <= addr+len) )  cp = "  [ stack ]";
-  return cp;
-}
-
-static int one_proc(proc_t *p){
-
-	...
-
-  while(fgets(mapbuf,sizeof mapbuf,stdin)){
-
-	...
-
-    if(x_option){
-      const char *cp = mapping_name(p, start, diff, mapbuf, 0, dev_major, dev_minor, inode);
-      printf(
-        (sizeof(KLONG)==8)
-          ? "%016"KLF"x %7lu       -       -       - %s  %s\n"
-          :      "%08lx %7lu       -       -       - %s  %s\n",
-        start,
-        (unsigned long)(diff>>10),
-        flags,
-        cp
-      );
-    }
+Rafael
