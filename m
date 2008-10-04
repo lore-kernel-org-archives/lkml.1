@@ -1,157 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbYJDSQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYJDSR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbYJDSQm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 14:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbYJDSQd
+	id S1754611AbYJDSR6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 14:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYJDSRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 14:16:33 -0400
-Received: from smtp01.zero.jp ([210.157.5.231]:20279 "EHLO smtp.zero.jp"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753264AbYJDSQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 14:16:32 -0400
-Date: Sat, 04 Oct 2008 14:14:12 -0400 (EDT)
-Message-Id: <20081004.141412.71086616.k-ueda@ct.jp.nec.com>
-To: James.Bottomley@HansenPartnership.com
-Cc: dm-devel@redhat.com, michaelc@cs.wisc.edu, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, j-nomura@ce.jp.nec.com,
-       akpm@linux-foundation.org, k-ueda@ct.jp.nec.com
-Subject: Re: [dm-devel] Re: [PATCH 1/1] scsi: export busy state via
- q->lld_busy_fn()
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <1223070706.3230.54.camel@localhost.localdomain>
-References: <1223057696.3230.38.camel@localhost.localdomain>
-	<20081003.160623.48532879.k-ueda@ct.jp.nec.com>
-	<1223070706.3230.54.camel@localhost.localdomain>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 4 Oct 2008 14:17:50 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:46300 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752205AbYJDSRt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 14:17:49 -0400
+Date: Sat, 4 Oct 2008 14:17:47 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] ftrace: Add a C-state tracer to help power
+ optimization
+In-Reply-To: <20081004105447.0e48d6d4@infradead.org>
+Message-ID: <alpine.DEB.1.10.0810041410390.6571@gandalf.stny.rr.com>
+References: <20081004105447.0e48d6d4@infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi James,
 
-On Fri, 03 Oct 2008 16:51:46 -0500, James Bottomley wrote:
-> On Fri, 2008-10-03 at 16:06 -0400, Kiyoshi Ueda wrote:
-> > Hi James,
-> > 
-> > On Fri, 03 Oct 2008 13:14:56 -0500, James Bottomley wrote:
-> > > On Wed, 2008-10-01 at 14:50 -0400, Kiyoshi Ueda wrote:
-> > > > Hi James,
-> > > > 
-> > > > I hope the previous RFC patch(*) would be no problem, since I haven't
-> > > > gotten any negative comment.
-> > > >     (*) http://lkml.org/lkml/2008/9/25/262
-> > > > 
-> > > > So could you take this patch for 2.6.28 additionally?
-> > > > This patch implements a new interface of the block layer for
-> > > > request stacking drivers.
-> > > > There should be no effect on existing drivers' behavior.
-> > > > 
-> > > > This patch was created on top of the commit below of scsi-post-merge-2.6.
-> > > > ---------------------------------------------------------------------
-> > > > commit e49f03f37104c0e7cae7c455480069bada00932f
-> > > > Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > > Date:   Fri Sep 12 16:46:51 2008 -0500
-> > > > 
-> > > >     [SCSI] scsi_error: fix target reset handling
-> > > > ---------------------------------------------------------------------
-> > > > 
-> > > > And this patch depends on the following block layer patch, which
-> > > > is in Jens' for-2.6.28 of linux-2.6-block.
-> > > >     http://lkml.org/lkml/2008/9/29/142
-> > > > 
-> > > > Thanks,
-> > > > Kiyoshi Ueda
-> > > > 
-> > > > 
-> > > > Subject: [PATCH 1/1] scsi: export busy state via q->lld_busy_fn()
-> > > > 
-> > > > This patch implements q->lld_busy_fn() for scsi mid layer to export
-> > > > its busy state.
-> > > > 
-> > > > Please note that it checks the cached information (sdev->lld_busy)
-> > > > for efficiency, instead of checking the actual state of
-> > > > sdev/starget/shost everytime.
-> > > > 
-> > > > So the care must be taken not to leave sdev->lld_busy = 1 for
-> > > > the following cases:
-> > > >     - when there is no request in the sdev queue
-> > > >     - when scsi can't dispatch I/Os anymore and needs to kill I/Os
-> > > > Otherwise, request stacking drivers may not submit any request,
-> > > > and then, nobody sets back lld_busy = 0 and that causes deadlock.
-> > > > 
-> > > > OTOH, it has no major problem in setting sdev->lld_busy = 0 even when
-> > > > the starget/shost is actually busy, because newly submitted request
-> > > > will soon turn it to 1 in scsi_request_fn().
-> > > > 
-> > > > 
-> > > > Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> > > > Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> > > > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > > > Cc: Mike Christie <michaelc@cs.wisc.edu>
-> > > > Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > > ---
-> > > >  drivers/scsi/scsi.c        |    4 ++--
-> > > >  drivers/scsi/scsi_lib.c    |   20 +++++++++++++++++++-
-> > > >  include/scsi/scsi_device.h |   13 +++++++++++++
-> > > >  3 files changed, 34 insertions(+), 3 deletions(-)
-> > > > 
-> > > > Index: scsi-post-merge-2.6/drivers/scsi/scsi_lib.c
-> > > > ===================================================================
-> > > > --- scsi-post-merge-2.6.orig/drivers/scsi/scsi_lib.c
-> > > > +++ scsi-post-merge-2.6/drivers/scsi/scsi_lib.c
-> > > > @@ -480,6 +480,8 @@ void scsi_device_unbusy(struct scsi_devi
-> > > >  	spin_unlock(shost->host_lock);
-> > > >  	spin_lock(sdev->request_queue->queue_lock);
-> > > >  	sdev->device_busy--;
-> > > > +	if (sdev->device_busy < sdev->queue_depth && !sdev->device_blocked)
-> > > > +		sdev->lld_busy = 0;
-> > > >  	spin_unlock_irqrestore(sdev->request_queue->queue_lock, flags);
-> > > >  }
-> > > >  
-> > > > @@ -1535,6 +1537,13 @@ static void scsi_softirq_done(struct req
-> > > >  	}
-> > > >  }
-> > > >  
-> > > > +static int scsi_lld_busy(struct request_queue *q)
-> > > > +{
-> > > > +	struct scsi_device *sdev = q->queuedata;
-> > > > +
-> > > > +	return sdev ? sdev->lld_busy : 0;
-> > > > +}
-> > > 
-> > > Since you've moved to a functional approach, why is this lld_busy flag
-> > > still necessary?  Surely this function can just check the three blocked
-> > > conditions and the two overqueue ones at this point without ever having
-> > > to reach into any of the SCSI internals?
-> > 
-> > This flag is not necessary for the functionality, it's for efficiency.
-> > I could take the "everytime checking" approach above, but I think
-> > caching the busy state into the flag is more efficient, since:
-> > 
-> >   - The check function will be called from request stacking drivers
-> >     frequently (e.g. request-based dm calls it everytime before
-> >     an request is dispatched from the dm device.)
-> 
-> Hmm, well, so will the operations you've put into the stack, but for
-> every request, not just for stacked drivers.
-> 
-> >   - The scsi busy state checking needs queue lock and host lock
-> >     even while the scsi busy state doesn't changed from the previous
-> >     checking.
-> 
-> You don't need the locks ... you don't care if the values change as you
-> read them because this is just heuristic.  You do care that you get an
-> architectural guarantee that you read a consistent value (as in if the
-> variable is altering you read either the before or after) but this isn't
-> necessary as the algorithm is statistical: as long as it gets bogus
-> values infrequently the effects won't be noticeable different.
+My comments are more towards Ingo than to Arjan.
 
-Thank you for the good suggestion.
-I sent another patch-set: http://lkml.org/lkml/2008/10/4/85
+On Sat, 4 Oct 2008, Arjan van de Ven wrote:
+> +++ b/kernel/trace/Kconfig
+> @@ -134,6 +134,17 @@ config BOOT_TRACER
+>  	  be enabled if this tracer is selected since only one tracer
+>  	  should touch the tracing buffer at a time.
+>  
+> +config CSTATE_TRACER
+> +	bool "Trace C-state behavior"
+> +	depends on HAVE_FTRACE
 
-Thanks,
-Kiyoshi Ueda
+Ingo, here's the confusion again between the FTRACE infrastructure and
+the ftrace "function tracer". the HAVE_FTRACE should really be
+HAVE_FUNCTION_TRACER. The infrastructure of a lot of the ftrace tracers
+do not depend on the function tracer.
+
+The CSTATE_TRACER also does not depend on HAVE_FTRACE. Think we should 
+rename this? Otherwise more kernel developers will get confused by it. :-(
+
+> +	depends on DEBUG_KERNEL
+> +	depends on X86
+> +	select TRACING
+> +	help
+> +	  This tracer helps developers to analyize and optimize the kernels
+> +	  power management decisions, specifically the C-state behavior.
+> +
+> +
+>  config STACK_TRACER
+>  	bool "Trace max stack"
+>  	depends on HAVE_FTRACE
+> diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+> index a85dfba..2b85724 100644
+> --- a/kernel/trace/Makefile
+> +++ b/kernel/trace/Makefile
+> @@ -24,5 +24,6 @@ obj-$(CONFIG_NOP_TRACER) += trace_nop.o
+>  obj-$(CONFIG_STACK_TRACER) += trace_stack.o
+>  obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
+>  obj-$(CONFIG_BOOT_TRACER) += trace_boot.o
+> +obj-$(CONFIG_CSTATE_TRACER) += trace_cstate.o
+>  
+>  libftrace-y := ftrace.o
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index a921ba5..1ef1ded 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -117,6 +117,11 @@ struct trace_boot {
+>  	struct boot_trace	initcall;
+>  };
+>  
+> +struct trace_cstate {
+> +	struct trace_entry	ent;
+> +	struct cstate_trace	state_data;
+> +};
+> +
+>  /*
+>   * trace_flag_type is an enumeration that holds different
+>   * states when a trace occurs. These are:
+> diff --git a/kernel/trace/trace_cstate.c b/kernel/trace/trace_cstate.c
+> new file mode 100644
+> index 0000000..272c577
+> --- /dev/null
+> +++ b/kernel/trace/trace_cstate.c
+> @@ -0,0 +1,131 @@
+> +/*
+> + * ring buffer based C-state tracer
+> + *
+> + * Arjan van de Ven <arjan@linux.intel.com>
+> + * Copyright (C) 2009 Intel Corporation
+> + *
+> + * Much is borrowed from trace_boot.c which is
+> + * Copyright (C) 2008 Frederic Weisbecker <fweisbec@gmail.com>
+> + *
+> + */
+> +
+> +#include <linux/init.h>
+> +#include <linux/debugfs.h>
+> +#include <linux/ftrace.h>
+> +#include <linux/kallsyms.h>
+> +
+> +#include "trace.h"
+> +
+> +static struct trace_array *cstate_trace;
+> +static int trace_cstate_enabled;
+> +
+> +
+> +static void start_cstate_trace(void)
+> +{
+> +	trace_cstate_enabled = 1;
+> +}
+> +
+> +static void stop_cstate_trace(struct trace_array *tr)
+> +{
+> +	trace_cstate_enabled = 0;
+> +}
+> +
+> +static void cstate_trace_init(struct trace_array *tr)
+> +{
+> +	int cpu;
+> +	cstate_trace = tr;
+> +
+> +	trace_cstate_enabled = 1;
+> +
+> +	for_each_cpu_mask(cpu, cpu_possible_map)
+> +		tracing_reset(tr, cpu);
+> +}
+> +
+> +static void cstate_trace_ctrl_update(struct trace_array *tr)
+> +{
+> +	if (tr->ctrl)
+> +		start_cstate_trace();
+> +	else
+> +		stop_cstate_trace(tr);
+> +}
+> +
+> +static enum print_line_t cstate_print_line(struct trace_iterator *iter)
+> +{
+> +	int ret;
+> +	struct trace_entry *entry = iter->ent;
+> +	struct trace_cstate *field = (struct trace_cstate *)entry;
+
+Ingo, isn't the trace_assign_type in your latest tree?
+
+-- Steve
+
+> +	struct cstate_trace *it = &field->state_data;
+> +	struct trace_seq *s = &iter->seq;
+> +	struct timespec stamp = ktime_to_timespec(it->stamp);
+> +	struct timespec duration = ktime_to_timespec(
+> +					ktime_sub(it->end, it->stamp));
+> +
+> +	if (entry->type == TRACE_BOOT) {
+> +		ret = trace_seq_printf(s, "[%5ld.%09ld] Going to C%i on cpu %i for %ld.%09ld\n",
+> +					  stamp.tv_sec,
+> +					  stamp.tv_nsec,
+> +					  it->state, iter->cpu,
+> +					  duration.tv_sec,
+> +					  duration.tv_nsec);
+> +		if (!ret)
+> +			return TRACE_TYPE_PARTIAL_LINE;
+> +		return TRACE_TYPE_HANDLED;
+> +	}
+> +	return TRACE_TYPE_UNHANDLED;
+> +}
+> +
