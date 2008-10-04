@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbYJDFps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbYJDFz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbYJDFps (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 01:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYJDFpd
+	id S1752596AbYJDFz1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 01:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYJDFzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 01:45:33 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:65400 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbYJDFpb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 01:45:31 -0400
-Date: Sat, 4 Oct 2008 01:45:28 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Arjan van de Ven <arjan@infradead.org>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ftrace: Add a C-state tracer to help power
- optimization
-In-Reply-To: <20081003223347.27aa25ba@infradead.org>
-Message-ID: <alpine.DEB.1.10.0810040141440.30107@gandalf.stny.rr.com>
-References: <20081003165533.249261b1@infradead.org> <alpine.DEB.1.10.0810032003140.17863@gandalf.stny.rr.com> <20081003223347.27aa25ba@infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 4 Oct 2008 01:55:18 -0400
+Received: from phunq.net ([64.81.85.152]:42897 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751057AbYJDFzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 01:55:17 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: linux-kernel@vger.kernel.org
+Subject: Tux3 Report: It's What Next time once again
+Date: Fri, 3 Oct 2008 22:55:12 -0700
+User-Agent: KMail/1.9.5
+Cc: tux3@tux3.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810032255.13117.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Today was one of those skate-in-the-dark kind of days here in Paradise, 
+but whereas the Tux3 cabal quite enjoys the occasional dimly lit 
+runabout in the concrete jungle, we make it a point not to keep you, 
+loyal readers, in the dark about upcoming Tux3 development directions.
 
-On Fri, 3 Oct 2008, Arjan van de Ven wrote:
+The past three week's work made something of a liar of me, as we 
+completely ignored the task of integrating versioned pointers that I 
+had talked about earlier.  Instead, the Cabal decided that we would be 
+better served by putting the effort into extents, in the interest of 
+benchmarking well right from the start.
 
-> On Fri, 3 Oct 2008 20:32:51 -0400 (EDT)
-> Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > 
-> > Hi Arjan,
-> > 
-> > Very nice! I just have a few comments below.
-> 
-> since this is my first tracer.... I would suggest having a "golden
-> example" one that people can copy (it seems I copied a less than
-> perfect one ;-)... maybe a trace_example.c ?
+In fact, Tux3 will never actually have versioned pointers, but rather 
+versioned extents, a much more ambitious proposition and messy enough 
+that we now plan to defer that coding until some time after the initial 
+kernel port, which is now expected to land with atomic commit and 
+extended attributes but without versioning.  Another way of putting it: 
+I promised to cut corners by leaving something for later, and that 
+something is going to be versioning.  Tux3 will thus first arrive in 
+kernel as more or less a functional equivalent of Ext3 (with bigger 
+limits and shiny atom thingies) instead of something more exotic.
 
-Yeah, that would make sense to have.  People are starting to come
-up with so many different tracers, I'm not sure what a golden
-example would look like :-/
+Atomic commit is a biggish project in its own right.  As with xattr 
+atoms and certain aspects of the extent strategy, we forge into 
+unexplored territory here with some new ideas on how to handle this 
+tricky task robustly and efficiently.  The concept of forward logging, 
+which is just one part of the planned mechanism, was described in the 
+original Tux3 announcement:
 
-Some of my comments came about just noticing what you did and realized
-that there's other ways to do it. I didn't think about those other
-ways until I looked at your code ;-)
+   http://lkml.org/lkml/2008/7/23/257
 
-> 
-> I'll look into your comments tomorrow when I'm more awake.
+Other pieces of the puzzle were described as part of the discussions 
+with Matt Dillon comparing the designs of Tux3 and Hammer[1]:
 
-I'll comment more when I'm more awake. But that may not be until Monday.
-Putting in 16 hour days during the week, my wife puts her foot down and
-keeps me away from the computer during the weekend.
+   http://tux3.org/pipermail/tux3/2008-July/000012.html
+   "Comparison to Hammer fs design"
 
--- Steve
+   http://tux3.org/pipermail/tux3/2008-July/000014.html
+   http://tux3.org/pipermail/tux3/2008-July/000018.html
+   "Two kinds of atomic commit"
 
+Many thanks to Matt for forcing me to be clear about certain essential 
+details.
+
+Now it is about time to put the pieces together to create a new 
+algorithm which one might call "Son of Phase Tree".  The end goal of 
+this effort is to approach media speed for both data and metadata 
+commits, while controlling read fragmentation effectively.
+
+Regards,
+
+Daniel
+
+[1] By the way, somebody should port Hammer to Linux.
