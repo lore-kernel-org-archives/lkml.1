@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbYJDUGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbYJDURQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755077AbYJDUGA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 16:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYJDUFv
+	id S1754738AbYJDURQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 16:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYJDURA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 16:05:51 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:58308 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753556AbYJDUFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 16:05:49 -0400
-Date: Sat, 4 Oct 2008 22:05:47 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] drivers/s390/cio/chsc_sch.c: Correct use of ! and &
-Message-ID: <Pine.LNX.4.64.0810042205090.19286@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 4 Oct 2008 16:17:00 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:35284 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752376AbYJDUQ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 16:16:59 -0400
+Subject: Re: [Bug #11442] btusb hibernation/suspend breakage in current -git
+From: Marcel Holtmann <marcel@holtmann.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Oliver Neukum <oliver@neukum.org>
+In-Reply-To: <yWwteD.A.ab.L675IB@wind>
+References: <0pOgGB.A.uLG.E475IB@wind>  <yWwteD.A.ab.L675IB@wind>
+Content-Type: text/plain
+Date: Sat, 04 Oct 2008 22:17:11 +0200
+Message-Id: <1223151431.11272.54.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Hi Rafael,
 
-In commit e6bafba5b4765a5a252f1b8d31cbf6d2459da337, a bug was fixed that
-involved converting !x & y to !(x & y).  The code below shows the same
-pattern, and thus should perhaps be fixed in the same way.  In particular,
-the result of !scsw_stctl(&request->irb.scsw) & SCSW_STCTL_STATUS_PEND is
-always just !scsw_stctl(&request->irb.scsw).
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11442
+> Subject		: btusb hibernation/suspend breakage in current -git
+> Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
+> Date		: 2008-08-25 11:37 (41 days old)
+> References	: http://marc.info/?l=linux-bluetooth&m=121966402012074&w=4
+> Handled-By	: Oliver Neukum <oliver@neukum.org>
+> Patch		: http://marc.info/?l=linux-bluetooth&m=121967226027323&w=4
+> 		  http://bugzilla.kernel.org/show_bug.cgi?id=11442#c1
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+the patch is not the actual fix for it. It is just a band aid. As you
+confirmed, the double free patch fixes it. See my pull request, but it
+didn't make it into Linus' tree yet.
 
-// <smpl>
-@@ expression E; constant C; @@
-(
-  !E & !C
-|
-- !E & C
-+ !(E & C)
-)
-// </smpl>
+Regards
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+Marcel
 
----
- drivers/s390/cio/chsc_sch.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/drivers/s390/cio/chsc_sch.c b/drivers/s390/cio/chsc_sch.c
---- a/drivers/s390/cio/chsc_sch.c
-+++ b/drivers/s390/cio/chsc_sch.c
-@@ -261,7 +261,7 @@ static int chsc_examine_irb(struct chsc_
- {
- 	int backed_up;
- 
--	if (!scsw_stctl(&request->irb.scsw) & SCSW_STCTL_STATUS_PEND)
-+	if (!(scsw_stctl(&request->irb.scsw) & SCSW_STCTL_STATUS_PEND))
- 		return -EIO;
- 	backed_up = scsw_cstat(&request->irb.scsw) & SCHN_STAT_CHAIN_CHECK;
- 	request->irb.scsw.cmd.cstat &= ~SCHN_STAT_CHAIN_CHECK;
+Please pull from
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/holtmann/bluetooth-2.6.git master
+
+This will update the following files:
+
+ drivers/bluetooth/bpa10x.c |    2 --
+ drivers/bluetooth/btusb.c  |    7 ++++---
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+through these ChangeSets:
+
+Marcel Holtmann (2):
+    [Bluetooth] Fix double frees on error paths of btusb and bpa10x drivers
+    [Bluetooth] Add reset quirk for new Targus and Belkin dongles
+
+
