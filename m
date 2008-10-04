@@ -1,69 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYJDKup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbYJDLES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbYJDKup (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 06:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYJDKuh
+	id S1753251AbYJDLES (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 07:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYJDLEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 06:50:37 -0400
-Received: from pih-relay05.plus.net ([212.159.14.18]:57860 "EHLO
-	pih-relay05.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752246AbYJDKug (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 06:50:36 -0400
-Message-ID: <48E74A88.50904@yahoo.com>
-Date: Sat, 04 Oct 2008 11:50:48 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Sat, 4 Oct 2008 07:04:08 -0400
+Received: from www.tglx.de ([62.245.132.106]:46790 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751460AbYJDLEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 07:04:07 -0400
+Date: Sat, 4 Oct 2008 13:02:18 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jiri Kosina <jkosina@suse.cz>
+cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>, jesse.brandeburg@intel.com,
+       linux-kernel@vger.kernel.org, linux-netdev@vger.kernel.org,
+       kkeil@suse.de, agospoda@redhat.com, arjan@linux.intel.com,
+       david.graham@intel.com, bruce.w.allan@intel.com, john.ronciak@intel.com,
+       chris.jones@canonical.com, tim.gardner@intel.com, airlied@gmail.com,
+       Olaf Kirch <okir@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
+In-Reply-To: <alpine.LNX.1.10.0810041219130.26779@jikos.suse.cz>
+Message-ID: <alpine.LFD.2.00.0810041236250.4404@apollo>
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>  <200810021523.45884.jbarnes@virtuousgeek.org>  <20081003.134634.240211201.davem@davemloft.net>  <200810031429.22598.jbarnes@virtuousgeek.org>  <alpine.LNX.1.10.0810032338140.26779@jikos.suse.cz>
+ <4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com> <alpine.LNX.1.10.0810041219130.26779@jikos.suse.cz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Reading EeePC900 battery info causes stalls when using SLUB (was
- Re: How how   latent should non-preemptive scheduling be?)
-References: <20080922115749.GE14301@elte.hu> <48D88DB4.9020003@yahoo.com> <20080923115323.GA27240@elte.hu> <48D919A9.5000708@yahoo.com> <48D9460C.5040504@yahoo.com> <48D96725.1080909@yahoo.com> <20080927204834.GA31650@elte.hu> <48DFEF8A.3000502@yahoo.com> <20080929083709.GD18663@elte.hu> <48E16097.8060905@yahoo.com> <20080930112241.GC21367@elte.hu> <48E22720.9030603@yahoo.com>
-In-Reply-To: <48E22720.9030603@yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Plusnet-Relay: b85fb3b4067f4733e09588780a2fa90f
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sitsofe Wheeler wrote:
-> I have an EeePC 900 (Intel Celeron 900Mhz) and it seems to be
-> skipping while playing sound through various desktop apps with a
-> 2.6.27rc6 kernel. It is running off an SD card which really shows up
+On Sat, 4 Oct 2008, Jiri Kosina wrote:
+> On Fri, 3 Oct 2008, Jesse Brandeburg wrote:
+> > Our experience is different.  We are also testing with the "protection 
+> > patch" reverted.
+> > We see that the problem specifically comes and goes when
+> > removing/adding the use of set_memory_ro/set_memory_rw to the driver.
+> 
+> But if this patch (which is an obvious workaround, compared to the other 
+> patches which fix real bugs, right?) would be catching some malicious 
+> accessess to the mapped EEPROM, there should be stacktraces present in the 
+> kernel log, right?
 
-After weeks of head scratching as to why these latencies didn't occur
-using the xandros 2.6.21.4 kernel (but keeping the same userspace) when
-my own kernels would always show this problem I finally found the answer
-after reading
-http://tservice.net.ru/~s0mbre/blog/devel/other/2008_10_01 on kernel
-planet - SLUB can cause regressions compared to SLAB. Switching from 
-SLUB to SLAB made the problem more or less disappear (which I guess 
-makes sense given the large number of kmem_* calls that are made when 
-reading the battery).
+Exactly. The access to a ro region results in a fault. I have nowhere
+seen that trigger, but I can reproduce the trylock() WARN_ON, which
+confirms that there is concurrent access to the NVRAM registers. The
+backtrace pattern is similar to the one you have seen.
 
-My understanding with the memory allocators is that SLOB is the smallest 
-and simplest. Its forté is that it uses very little memory which makes 
-it ideal for embedded systems and is the easiest allocator to 
-understand. The downside is that it might tend towards memory 
-fragmentation the longer a system runs and is apparently a little bit 
-slower than SLAB. The SLAB allocator is something that the linux kernel 
-has had for many years and was a good performer until the pressures to 
-perform with large SMP systems started to come in to play (at which 
-point lots of memory would be used up on fixed structures - 
-http://lwn.net/Articles/229984/ ). SLUB is the newest allocator, scales 
-up well and has finer grained diagnostics that SLAB.
+There are two possible bad results from that concurrent access:
 
-Prior to today my understanding was that SLUB would be able to replace 
-SLAB in all scenarios and perform just as well or better. However now 
-I'm not so sure (SLAB appears to be less latent than SLUB). Other than 
-SLUB's newness are there cases where SLAB should be chosen instead of 
-SLUB (e.g. uniprocessor desktop systems with hundreds of megabytes of 
-RAM)? Will SLAB exist as an alternative to SLUB for certain setups?
+1) Task A issues command A
+				Task B issues command B
+   Task A writes data for A
+   which end up in B
 
--- 
-Sitsofe | http://sucs.org/~sits
+2) Task A acquires the software flag
+   ......
+
+				Task B acquires the software flag
+
+   Task A releases the software flag
+
+   The firmware accesses NVRAM  Task B accesses the NVRAM
+  
+Both are probably serious enough to result in random NVRAM corruption.
+There is no doubt: The missing serialization is a real bug.
+
+Your question why this just happens now, while the bug is there for
+ever, is definitely a good one. My opinion on that is that we just
+have been lucky or some minor modification somewhere else in the
+e1000e code or even in the generic/architecture code removed an
+accidental serializing effect.
+
+I was not able to reproduce the trylock warning on Fedora 8, but
+Fedora 10-Beta triggers it once in 50 boots. I'm not going to remove
+the mutex to verify whether it actually would corrupt the NVRAM :)
+
+In theory we should be able to reproduce the problem with older kernel
+versions as well. Maybe not the corruption, but we might see the
+mutex_trylock check trigger.
+
+Thanks,
+
+	tglx
