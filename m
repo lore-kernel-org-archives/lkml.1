@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbYJDFp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbYJDFps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752501AbYJDFp3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 01:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbYJDFpR
+	id S1752850AbYJDFps (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 01:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYJDFpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 01:45:17 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:35322 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750830AbYJDFpP (ORCPT
+	Sat, 4 Oct 2008 01:45:33 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:65400 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752600AbYJDFpb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 01:45:15 -0400
-Subject: Re: kexec with vmware esx 3.0.2
-From: Zachary Amsden <zach@vmware.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Alok Kataria <akataria@vmware.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>
-In-Reply-To: <86802c440810031645m5a09c243se072cbcc6f2a151d@mail.gmail.com>
-References: <86802c440810031408i60e2036ax805bfd997092cd86@mail.gmail.com>
-	 <1223068893.7330.117.camel@bodhitayantram.eng.vmware.com>
-	 <86802c440810031440o59359f30ka72230b4b0ff73e@mail.gmail.com>
-	 <1223070521.7330.122.camel@bodhitayantram.eng.vmware.com>
-	 <86802c440810031458s1ce79589s2448aa0869a74e21@mail.gmail.com>
-	 <1223071731.7330.127.camel@bodhitayantram.eng.vmware.com>
-	 <86802c440810031551g246232c9n520ef43c6881b8af@mail.gmail.com>
-	 <1223074735.7330.138.camel@bodhitayantram.eng.vmware.com>
-	 <86802c440810031645m5a09c243se072cbcc6f2a151d@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 22:41:25 -0700
-Message-Id: <1223098885.7330.157.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Sat, 4 Oct 2008 01:45:31 -0400
+Date: Sat, 4 Oct 2008 01:45:28 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace: Add a C-state tracer to help power
+ optimization
+In-Reply-To: <20081003223347.27aa25ba@infradead.org>
+Message-ID: <alpine.DEB.1.10.0810040141440.30107@gandalf.stny.rr.com>
+References: <20081003165533.249261b1@infradead.org> <alpine.DEB.1.10.0810032003140.17863@gandalf.stny.rr.com> <20081003223347.27aa25ba@infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-03 at 16:45 -0700, Yinghai Lu wrote:
-> On Fri, Oct 3, 2008 at 3:58 PM, Zachary Amsden <zach@vmware.com> wrote:
-> > On Fri, 2008-10-03 at 15:51 -0700, Yinghai Lu wrote:
-> >
-> >> ok, my question is: anyone tried to use kexec with vmware?
-> >
-> > Do you mean has anyone tried to use kexec in Linux running under VMware,
+
+On Fri, 3 Oct 2008, Arjan van de Ven wrote:
+
+> On Fri, 3 Oct 2008 20:32:51 -0400 (EDT)
+> Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> that should work
-
-It does.
-
-> > or do you mean has anyone tried to use kexec to start ESX?
+> > 
+> > Hi Arjan,
+> > 
+> > Very nice! I just have a few comments below.
 > 
-> yeah, that is strange request. hope it work..
+> since this is my first tracer.... I would suggest having a "golden
+> example" one that people can copy (it seems I copied a less than
+> perfect one ;-)... maybe a trace_example.c ?
 
-Well you're a braver soul than me.  If your hardware is really so horked
-you can't boot Linux without noacpi, I seriously doubt the vmkernel will
-run properly.  You might be able to kexec the Linux pre-bootstrapping
-bit, the the vmkernel is not even close to the same code lineage and has
-a limited and very fixed set of hardware requirements.  And you are
-talking about fixing up the MP table and interfering with the custom
-boot process?  I would not for any amount of money want to find out what
-kind of squirrels are hiding in that nest.
+Yeah, that would make sense to have.  People are starting to come
+up with so many different tracers, I'm not sure what a golden
+example would look like :-/
 
-I mean can you run Oracle on an overclocked budget brand laptop?  Well,
-maybe.
+Some of my comments came about just noticing what you did and realized
+that there's other ways to do it. I didn't think about those other
+ways until I looked at your code ;-)
 
-But you're talking about running an enterprise class application on
-dodgy hardware, and that is seriously stretching the realms of sanity.
+> 
+> I'll look into your comments tomorrow when I'm more awake.
 
-I kinda don't think this is really interesting to the folks on LKML, you
-could try asking over on the VMware forums.
+I'll comment more when I'm more awake. But that may not be until Monday.
+Putting in 16 hour days during the week, my wife puts her foot down and
+keeps me away from the computer during the weekend.
 
-Good luck,
-
-Zach
+-- Steve
 
