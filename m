@@ -1,438 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbYJDBhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbYJDC3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753753AbYJDBhy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 21:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbYJDBhe
+	id S1752582AbYJDC3v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 22:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYJDC3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 21:37:34 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:33904 "EHLO e3.ny.us.ibm.com"
+	Fri, 3 Oct 2008 22:29:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43945 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751571AbYJDBhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 21:37:33 -0400
-Date: Fri, 3 Oct 2008 20:37:13 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: James Morris <jmorris@redhat.com>
-Cc: David Howells <dhowells@redhat.com>, Andrew Morton <akpm@osdl.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/3] user namespaces: move user_ns from nsproxy into user
-	struct
-Message-ID: <20081004013713.GA2272@us.ibm.com>
-References: <20081004013644.GA24104@us.ibm.com>
+	id S1751939AbYJDC3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 22:29:37 -0400
+Message-ID: <48E6D481.7050407@kernel.org>
+Date: Sat, 04 Oct 2008 11:27:13 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081004013644.GA24104@us.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+       Tom Mortensen <tmmlkml@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
+       Gwendal Grignou <gwendal@google.com>,
+       Brian Rademacher <rad@radfiles.net>, linux-ide@vger.kernel.org,
+       linux-raid maillist <linux-raid@vger.kernel.org>,
+       Linux Kernel Maillist <linux-kernel@vger.kernel.org>,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>
+Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
+References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA>  <alpine.DEB.1.10.0809220828490.23159@p34.internal.lan>  <5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>  <alpine.DEB.1.10.0809220903400.23159@p34.internal.lan>  <4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA>  <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>  <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan>  <e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com>  <48DBAB81.8050900@tmr.com> <48E08E2D.6050905@kernel.org> <a52a95e30809301347s70b57ebfh280a6871329afd72@mail.gmail.com> <alpine.DEB.1.10.0809301715280.14600@p34.internal.lan> <alpine.LNX.2.00.0809301946020.16014@filesrv1.baby-dragons.com> <alpine.DEB.1.10.0810010403500.16900@p34.internal.lan> <alpine.DEB.1.10.0810010710520.22435@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0810010710520.22435@p34.internal.lan>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 04 Oct 2008 02:29:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we get the sysfs support needed to support fair user scheduling
-along with user namespaces, then we will need to be able to get the
-user namespace from the user struct.
+Justin Piszcz wrote:
+> [469680.004654] ata2.00: status: { DRDY }
+> [469680.004660] ata2: hard resetting link
+> [469680.309567] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> [469680.333461] ata2.00: configured for UDMA/133
+> [469680.333477] ata2: EH complete
+> [469680.333461] sd 1:0:0:0: [sdb] 586072368 512-byte hardware sectors
+> (300069 MB)
+> [469680.340461] sd 1:0:0:0: [sdb] Write Protect is off
+> [469680.340461] sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> [469680.345461] sd 1:0:0:0: [sdb] Write cache: enabled, read cache:
+> enabled, doesn't support DPO or FUA
 
-So we need the user_ns to be a part of struct user.  Once we can
-access it from tsk->user, we no longer have a use for
-tsk->nsproxy->user_ns.
+You're leaving the good part out.  Please always attach full kernel
+log.
 
-When a user_namespace is created, the user which created it is
-marked as its 'creator'.  The user_namespace pins the creator.
-Each userid in a user_ns pins the user_ns.  This keeps refcounting
-nice and simple.
+Thanks.
 
-At the same time, this patch simplifies the refcounting.  The current
-user and userns locking works as follows:
-
-	The task pins the user struct.
-
-	The task pins the nsproxy, the nsproxy pins the user_ns.
-
-	When a new user_ns is created, it creates a root user for
-	it, and pins it.  When the nsproxy releases the user_ns,
-	the userns tries to release all its user structs.
-
-	So you see that the refcounting "works" for now, but only
-	because the nsproxy (and therefore usr_ns) and user structs
-	will be freed at the same time - when the last task using
-	them is released.
-
-	Now we need to put the user_ns in the struct user.  You can
-	see that will mess up the refcounting.
-
-	Fortunately, once the user_ns is available from tsk->user,
-	we don't need it in nsproxy.
-
-	So here is how the refcounting *should* be done:
-
-	The task pins the user struct.
-
-	The user struct pins its user namespace.
-
-	The user namespace pins the struct user which created it.
-
-	A user namespace now doesn't need to release its userids,
-	because it is only released when its last user disappears.
-
-This patch makes those changes.
-
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
-
----
-
- include/linux/init_task.h      |    1 -
- include/linux/key.h            |    3 +++
- include/linux/nsproxy.h        |    1 -
- include/linux/sched.h          |    1 +
- include/linux/user_namespace.h |   10 ++++------
- kernel/fork.c                  |    3 +--
- kernel/nsproxy.c               |   10 ++--------
- kernel/sys.c                   |    4 ++--
- kernel/user.c                  |   42 ++++++++++------------------------------
- kernel/user_namespace.c        |   36 ++++++++++------------------------
- security/keys/process_keys.c   |    7 ++++++-
- 11 files changed, 39 insertions(+), 79 deletions(-)
-
-678772929a58271cb5daf44b973b2e69d7ac7d5d
-diff --git a/include/linux/init_task.h b/include/linux/init_task.h
-index 021d8e7..550058b 100644
---- a/include/linux/init_task.h
-+++ b/include/linux/init_task.h
-@@ -57,7 +57,6 @@ extern struct nsproxy init_nsproxy;
- 	.mnt_ns		= NULL,						\
- 	INIT_NET_NS(net_ns)                                             \
- 	INIT_IPC_NS(ipc_ns)						\
--	.user_ns	= &init_user_ns,				\
- }
- 
- #define INIT_SIGHAND(sighand) {						\
-diff --git a/include/linux/key.h b/include/linux/key.h
-index c45c962..861a383 100644
---- a/include/linux/key.h
-+++ b/include/linux/key.h
-@@ -277,6 +277,8 @@ extern ctl_table key_sysctls[];
-  * the userspace interface
-  */
- extern void switch_uid_keyring(struct user_struct *new_user);
-+extern void switch_uid_keyring_task(struct task_struct *tsk,
-+				struct user_struct *new_user);
- extern int copy_keys(unsigned long clone_flags, struct task_struct *tsk);
- extern int copy_thread_group_keys(struct task_struct *tsk);
- extern void exit_keys(struct task_struct *tsk);
-@@ -305,6 +307,7 @@ extern void key_init(void);
- #define key_ref_to_ptr(k)		({ NULL; })
- #define is_key_possessed(k)		0
- #define switch_uid_keyring(u)		do { } while(0)
-+#define switch_uid_keyring_task(t, u)	do { } while(0)
- #define __install_session_keyring(t, k)	({ NULL; })
- #define copy_keys(f,t)			0
- #define copy_thread_group_keys(t)	0
-diff --git a/include/linux/nsproxy.h b/include/linux/nsproxy.h
-index c8a768e..afad7de 100644
---- a/include/linux/nsproxy.h
-+++ b/include/linux/nsproxy.h
-@@ -27,7 +27,6 @@ struct nsproxy {
- 	struct ipc_namespace *ipc_ns;
- 	struct mnt_namespace *mnt_ns;
- 	struct pid_namespace *pid_ns;
--	struct user_namespace *user_ns;
- 	struct net 	     *net_ns;
- };
- extern struct nsproxy init_nsproxy;
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 1cf17d9..edf086f 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1720,6 +1720,7 @@ static inline struct user_struct *get_ui
- }
- extern void free_uid(struct user_struct *);
- extern void switch_uid(struct user_struct *);
-+extern void task_switch_uid(struct task_struct *tsk, struct user_struct *);
- extern void release_uids(struct user_namespace *ns);
- 
- #include <asm/current.h>
-diff --git a/include/linux/user_namespace.h b/include/linux/user_namespace.h
-index f9477c3..1b4959d 100644
---- a/include/linux/user_namespace.h
-+++ b/include/linux/user_namespace.h
-@@ -27,8 +27,7 @@ static inline struct user_namespace *get
- 	return ns;
- }
- 
--extern struct user_namespace *copy_user_ns(int flags,
--					   struct user_namespace *old_ns);
-+extern int create_new_userns(int flags, struct task_struct *tsk);
- extern void free_user_ns(struct kref *kref);
- 
- static inline void put_user_ns(struct user_namespace *ns)
-@@ -44,13 +43,12 @@ static inline struct user_namespace *get
- 	return &init_user_ns;
- }
- 
--static inline struct user_namespace *copy_user_ns(int flags,
--						  struct user_namespace *old_ns)
-+static inline int create_new_userns(int flags, struct task_struct *tsk)
- {
- 	if (flags & CLONE_NEWUSER)
--		return ERR_PTR(-EINVAL);
-+		return -EINVAL;
- 
--	return old_ns;
-+	return 0;
- }
- 
- static inline void put_user_ns(struct user_namespace *ns)
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 7ce2ebe..b5d4dc5 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -941,8 +941,7 @@ static struct task_struct *copy_process(
- 	retval = -EAGAIN;
- 	if (atomic_read(&p->user->processes) >=
- 			p->signal->rlim[RLIMIT_NPROC].rlim_cur) {
--		if (!capable(CAP_SYS_ADMIN) && !capable(CAP_SYS_RESOURCE) &&
--		    p->user != current->nsproxy->user_ns->root_user)
-+		if (!capable(CAP_SYS_ADMIN) && !capable(CAP_SYS_RESOURCE))
- 			goto bad_fork_free;
- 	}
- 
-diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
-index 1d3ef29..766c672 100644
---- a/kernel/nsproxy.c
-+++ b/kernel/nsproxy.c
-@@ -80,11 +80,9 @@ static struct nsproxy *create_new_namesp
- 		goto out_pid;
- 	}
- 
--	new_nsp->user_ns = copy_user_ns(flags, tsk->nsproxy->user_ns);
--	if (IS_ERR(new_nsp->user_ns)) {
--		err = PTR_ERR(new_nsp->user_ns);
-+	err = create_new_userns(flags, tsk);
-+	if (err)
- 		goto out_user;
--	}
- 
- 	new_nsp->net_ns = copy_net_ns(flags, tsk->nsproxy->net_ns);
- 	if (IS_ERR(new_nsp->net_ns)) {
-@@ -95,8 +93,6 @@ static struct nsproxy *create_new_namesp
- 	return new_nsp;
- 
- out_net:
--	if (new_nsp->user_ns)
--		put_user_ns(new_nsp->user_ns);
- out_user:
- 	if (new_nsp->pid_ns)
- 		put_pid_ns(new_nsp->pid_ns);
-@@ -173,8 +169,6 @@ void free_nsproxy(struct nsproxy *ns)
- 		put_ipc_ns(ns->ipc_ns);
- 	if (ns->pid_ns)
- 		put_pid_ns(ns->pid_ns);
--	if (ns->user_ns)
--		put_user_ns(ns->user_ns);
- 	put_net(ns->net_ns);
- 	kmem_cache_free(nsproxy_cachep, ns);
- }
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 038a7bc..d89ddd9 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -553,13 +553,13 @@ static int set_user(uid_t new_ruid, int 
- {
- 	struct user_struct *new_user;
- 
--	new_user = alloc_uid(current->nsproxy->user_ns, new_ruid);
-+	new_user = alloc_uid(current->user->user_ns, new_ruid);
- 	if (!new_user)
- 		return -EAGAIN;
- 
- 	if (atomic_read(&new_user->processes) >=
- 				current->signal->rlim[RLIMIT_NPROC].rlim_cur &&
--			new_user != current->nsproxy->user_ns->root_user) {
-+			!capable(CAP_SYS_RESOURCE) && !capable(CAP_SYS_ADMIN)) {
- 		free_uid(new_user);
- 		return -EAGAIN;
- 	}
-diff --git a/kernel/user.c b/kernel/user.c
-index ee841c7..d74a7a6 100644
---- a/kernel/user.c
-+++ b/kernel/user.c
-@@ -366,7 +366,7 @@ struct user_struct *find_user(uid_t uid)
- {
- 	struct user_struct *ret;
- 	unsigned long flags;
--	struct user_namespace *ns = current->nsproxy->user_ns;
-+	struct user_namespace *ns = current->user->user_ns;
- 
- 	spin_lock_irqsave(&uidhash_lock, flags);
- 	ret = uid_hash_find(uid, uidhashentry(ns, uid));
-@@ -455,7 +455,7 @@ out_unlock:
- 	return NULL;
- }
- 
--void switch_uid(struct user_struct *new_user)
-+void task_switch_uid(struct task_struct *tsk, struct user_struct *new_user)
- {
- 	struct user_struct *old_user;
- 
-@@ -464,12 +464,12 @@ void switch_uid(struct user_struct *new_
- 	 * cheaply with the new uid cache, so if it matters
- 	 * we should be checking for it.  -DaveM
- 	 */
--	old_user = current->user;
-+	old_user = tsk->user;
- 	atomic_inc(&new_user->processes);
- 	atomic_dec(&old_user->processes);
--	switch_uid_keyring(new_user);
--	current->user = new_user;
--	sched_switch_user(current);
-+	switch_uid_keyring_task(tsk, new_user);
-+	tsk->user = new_user;
-+	sched_switch_user(tsk);
- 
- 	/*
- 	 * We need to synchronize with __sigqueue_alloc()
-@@ -479,38 +479,16 @@ void switch_uid(struct user_struct *new_
- 	 * structure.
- 	 */
- 	smp_mb();
--	spin_unlock_wait(&current->sighand->siglock);
-+	spin_unlock_wait(&tsk->sighand->siglock);
- 
- 	free_uid(old_user);
--	suid_keys(current);
-+	suid_keys(tsk);
- }
- 
--#ifdef CONFIG_USER_NS
--void release_uids(struct user_namespace *ns)
-+void switch_uid(struct user_struct *new_user)
- {
--	int i;
--	unsigned long flags;
--	struct hlist_head *head;
--	struct hlist_node *nd;
--
--	spin_lock_irqsave(&uidhash_lock, flags);
--	/*
--	 * collapse the chains so that the user_struct-s will
--	 * be still alive, but not in hashes. subsequent free_uid()
--	 * will free them.
--	 */
--	for (i = 0; i < UIDHASH_SZ; i++) {
--		head = ns->uidhash_table + i;
--		while (!hlist_empty(head)) {
--			nd = head->first;
--			hlist_del_init(nd);
--		}
--	}
--	spin_unlock_irqrestore(&uidhash_lock, flags);
--
--	free_uid(ns->root_user);
-+	task_switch_uid(current, new_user);
- }
--#endif
- 
- static int __init uid_cache_init(void)
- {
-diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-index f9f7ad7..d59f193 100644
---- a/kernel/user_namespace.c
-+++ b/kernel/user_namespace.c
-@@ -15,14 +15,17 @@
-  * @old_ns: namespace to clone
-  * Return NULL on error (failure to kmalloc), new ns otherwise
-  */
--static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
-+int create_new_userns(int flags, struct task_struct *tsk)
- {
- 	struct user_namespace *ns;
- 	int n;
- 
-+	if (!(flags & CLONE_NEWUSER))
-+		return 0;
-+
- 	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
- 	if (!ns)
--		return ERR_PTR(-ENOMEM);
-+		return -ENOMEM;
- 
- 	kref_init(&ns->kref);
- 
-@@ -33,37 +36,19 @@ static struct user_namespace *clone_user
- 	ns->root_user = alloc_uid(ns, 0);
- 	if (!ns->root_user) {
- 		kfree(ns);
--		return ERR_PTR(-ENOMEM);
-+		return -ENOMEM;
- 	}
- 
- 	/* pin the creating user */
--	ns->creator = current->user;
-+	ns->creator = tsk->user;
- 	atomic_inc(&ns->creator->__count);
- 
--	/*
--	 * The alloc_uid() incremented the userns refcount,
--	 * so drop it again
--	 */
-+	/* alloc_uid() incremented the userns refcount.  drop it again */
- 	put_user_ns(ns);
- 
--	switch_uid(ns->root_user);
--	return ns;
--}
--
--struct user_namespace * copy_user_ns(int flags, struct user_namespace *old_ns)
--{
--	struct user_namespace *new_ns;
--
--	BUG_ON(!old_ns);
--	get_user_ns(old_ns);
--
--	if (!(flags & CLONE_NEWUSER))
--		return old_ns;
--
--	new_ns = clone_user_ns(old_ns);
-+	task_switch_uid(tsk, ns->root_user);
- 
--	put_user_ns(old_ns);
--	return new_ns;
-+	return 0;
- }
- 
- void free_user_ns(struct kref *kref)
-@@ -71,7 +56,6 @@ void free_user_ns(struct kref *kref)
- 	struct user_namespace *ns;
- 
- 	ns = container_of(kref, struct user_namespace, kref);
--	release_uids(ns);
- 	free_uid(ns->creator);
- 	kfree(ns);
- }
-diff --git a/security/keys/process_keys.c b/security/keys/process_keys.c
-index 5be6d01..8d1cfb2 100644
---- a/security/keys/process_keys.c
-+++ b/security/keys/process_keys.c
-@@ -119,7 +119,8 @@ error:
- /*
-  * deal with the UID changing
-  */
--void switch_uid_keyring(struct user_struct *new_user)
-+void switch_uid_keyring_task(struct task_struct *task,
-+				struct user_struct *new_user)
- {
- #if 0 /* do nothing for now */
- 	struct key *old;
-@@ -142,6 +143,10 @@ void switch_uid_keyring(struct user_stru
- 
- } /* end switch_uid_keyring() */
- 
-+void switch_uid_keyring(struct user_struct *new_user)
-+{
-+	switch_uid_keyring_task(current, new_user);
-+}
- /*****************************************************************************/
- /*
-  * install a fresh thread keyring, discarding the old one
 -- 
-1.1.6
+tejun
