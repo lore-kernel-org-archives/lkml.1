@@ -1,36 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbYJDGXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbYJDGYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752674AbYJDGXh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 02:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYJDGX3
+	id S1753120AbYJDGYM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 02:24:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYJDGYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 02:23:29 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:30049 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203AbYJDGX2 (ORCPT
+	Sat, 4 Oct 2008 02:24:00 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:11979 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbYJDGX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 02:23:28 -0400
+	Sat, 4 Oct 2008 02:23:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Jlv4sXvxG0KXEyEmI0gx/+dIlDKQoQAV2XjQpBHwp8BxIQdOnfF4gGT1+PrJrnlP4y
-         Ermg800qgkx6X4lrp0IMTtVPWGFE6k5vg/A+9WWkbnSLidfhL4OQBeN3r4aF7Ow/WMkR
-         +GdkyH+IbYUwvB6GXd1OQqBkEp48ZuV+HxB4w=
+        b=Lvs+516A1B5R2wJaq5VSHGPpWethqFfVat2FY8JKjLwYTm1chIN5L0vix/BnhdQuIO
+         efNB1RlsOwg6s/y7ZcR5wCB/VVxyf7jtruu8b3GsJ8YziYOvTt3gTxgnOqutoFzppXQ5
+         N0qrK0rxewlkcNMRISajEqfXf0Ni4W4hjOCGs=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Huang Ying <ying.huang@intel.com>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: 
-Date: Fri,  3 Oct 2008 23:22:48 -0700
-Message-Id: <1223101368-8765-1-git-send-email-yhlu.kernel@gmail.com>
+Subject: [RFC PATCH] x86: make 64bit efi to use ioremap_cache for efi_ioremap
+Date: Fri,  3 Oct 2008 23:23:20 -0700
+Message-Id: <1223101400-8819-1-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-Subject:[RFC PATCH] x86: make 64bit efi to use ioremap_cache for efi_ioremap
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
