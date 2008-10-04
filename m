@@ -1,119 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYJDA21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354AbYJDAdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbYJDA21 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Oct 2008 20:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYJDA2R
+	id S1754354AbYJDAdI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Oct 2008 20:33:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbYJDAcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Oct 2008 20:28:17 -0400
-Received: from mga11.intel.com ([192.55.52.93]:40277 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753254AbYJDA2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Oct 2008 20:28:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,359,1220252400"; 
-   d="scan'208";a="387364330"
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "akataria@vmware.com" <akataria@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
-       Zach Amsden <zach@vmware.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Date: Fri, 3 Oct 2008 17:27:53 -0700
-Subject: RE: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
-Thread-Topic: [RFC] CPUID usage for interaction between Hypervisors	and
-	Linux.
-Thread-Index: AcklsJCmACCHyGfiTueFVBzXAFLCyAAAU9IA
-Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A15DCBA325@orsmsx505.amr.corp.intel.com>
-References: <1222881242.9381.17.camel@alok-dev1>
-	 <48E3B19D.6060905@zytor.com> <1222882431.9381.23.camel@alok-dev1>
-	 <48E3BC21.4080803@goop.org> <1222895153.9381.69.camel@alok-dev1>
- <48E3FDD5.7040106@zytor.com>
- <0B53E02A2965CE4F9ADB38B34501A3A15D927EA4@orsmsx505.amr.corp.intel.com>
- <48E422CA.2010606@zytor.com>
- <0B53E02A2965CE4F9ADB38B34501A3A15DCBA221@orsmsx505.amr.corp.intel.com>
- <48E6AB15.8060405@zytor.com>
-In-Reply-To: <48E6AB15.8060405@zytor.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Fri, 3 Oct 2008 20:32:55 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57862 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753494AbYJDAcy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Oct 2008 20:32:54 -0400
+Date: Fri, 3 Oct 2008 20:32:51 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace: Add a C-state tracer to help power
+ optimization
+In-Reply-To: <20081003165533.249261b1@infradead.org>
+Message-ID: <alpine.DEB.1.10.0810032003140.17863@gandalf.stny.rr.com>
+References: <20081003165533.249261b1@infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m940SVdq021965
 
-On 10/3/2008 4:30:29 PM, H. Peter Anvin wrote:
-> Nakajima, Jun wrote:
-> > What it means their hypervisor returns the interface signature (i.e.
-> > "Hv#1"), and that defines the interface. If we use "Lv_1", for
-> > example, we can define the interface 0x40000002 through 0x400000FF for Linux.
-> > Since leaf 0x40000000 and 0x40000001 are separate, we can decouple
-> > the hypervisor vender from the interface it supports.
->
-> Right so far.
->
-> > This also allows a hypervisor to support multiple interfaces.
->
-> Wrong.
->
-> This isn't a two-way interface.  It's a one-way interface, and it
-> *SHOULD BE*; exposing different information depending on what is
-> running is a hack that is utterly tortorous at best.
 
-What I mean is that a hypervisor (with a single vender id) can support multiple interfaces, exposing a single interface to each guest that would expect a specific interface at runtime.
+Hi Arjan,
 
->
-> >
-> > In fact, both Xen and KVM are using the leaf 0x40000001 for
-> > different purposes today (Xen: Xen version number, KVM: KVM
-> > para-virtualization features). But I don't think this would break
-> > their existing binaries mainly because they would need to expose the interface explicitly now.
-> >
-> > > > > This further underscores my belief that using 0x400000xx for
-> > > > > anything "standards-based" at all is utterly futile, and that
-> > > > > this space should be treated as vendor identification and the
-> > > > > rest as vendor-specific. Any hope of creating a standard
-> > > > > that's actually usable needs to be outside this space, e.g. in
-> > > > > the 0x40SSSSxx space I proposed earlier.
-> > > > Actually I'm not sure I'm following your logic. Are you saying
-> > > > using that 0x400000xx for anything "standards-based" is utterly
-> > > > futile because Microsoft said "the range is hypervisor
-> > > > vendor-neutral"? Or you were not sure what they meant there. If
-> > > > we are not clear, we can ask them.
-> > > >
-> > > What I'm saying is that Microsoft is effectively squatting on the
-> > > 0x400000xx space with their definition.  As written, it's not even
-> > > clear that it will remain consistent between *their own*
-> > > hypervisors, even less anyone else's.
-> >
-> > I hope the above clarified your concern. You can google-search a
-> > more detailed public spec. Let me know if you want to know a specific URL.
-> >
->
-> No, it hasn't "clarified my concern" in any way.  It's exactly
-> *underscoring* it.  In other words, I consider 0x400000xx unusable for
-> anything that is standards-based.  The interfaces everyone is
-> currently using aren't designed to export multiple interfaces; they're
-> designed to tell the guest which *one* interface is exported.  That is
-> fine, we just need to go elsewhere.
->
->         -hpa
+Very nice! I just have a few comments below.
 
-What's the significance of supporting multiple interfaces to the same guest simultaneously, i.e. _runtime_? We don't want the guests to run on such a literarily Frankenstein machine. And practically, such testing/debugging would be good only for Halloween :-).
+On Fri, 3 Oct 2008, Arjan van de Ven wrote:
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index a921ba5..1ef1ded 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -117,6 +117,11 @@ struct trace_boot {
+>  	struct boot_trace	initcall;
+>  };
+>  
+> +struct trace_cstate {
+> +	struct trace_entry	ent;
+> +	struct cstate_trace	state_data;
+> +};
+> +
 
-The interface space can be distinct, but the contents are defined and implemented independently, thus you might find overlaps, inconsistency, etc. among the interfaces. And why is runtime "multiple interfaces" required for a standards-based interface?
+Can you please register this in the trace_assign_type macro.
 
-             .
-Jun Nakajima | Intel Open Source Technology Center
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+	IF_ASSIGN(var, ent, struct trace_cstate, TRACE_BOOT); \
+
+
+
+>  /*
+>   * trace_flag_type is an enumeration that holds different
+>   * states when a trace occurs. These are:
+> diff --git a/kernel/trace/trace_cstate.c b/kernel/trace/trace_cstate.c
+> new file mode 100644
+> index 0000000..fcd4e6e
+> --- /dev/null
+> +++ b/kernel/trace/trace_cstate.c
+
+
+> +static enum print_line_t cstate_print_line(struct trace_iterator *iter)
+> +{
+> +	int ret;
+> +	struct trace_entry *entry = iter->ent;
+> +	struct trace_cstate *field = (struct trace_cstate *)entry;
+
+And here, do not typecast. Use the trace_assign_type macro below.
+
+> +	struct cstate_trace *it = &field->state_data;
+> +	struct trace_seq *s = &iter->seq;
+> +	struct timespec stamp = ktime_to_timespec(it->stamp);
+
+Also note that iter->ts holds a timestamp counter from bootup in nanosecs.
+It currently uses the sched_clock to record, but may change later to 
+something a bit better.
+
+> +	struct timespec duration = ktime_to_timespec(
+> +					ktime_sub(it->end, it->stamp));
+
+
+	trace_assign_type(field, entry);
+
+The above will do a typecheck to force correct types.
+
+But, you may not need to do any of this. See below.
+
+> +
+> +	if (entry->type == TRACE_BOOT) {
+> +		ret = trace_seq_printf(s, "[%5ld.%09ld] Going to C%i on cpu %i for %ld.%09ld\n",
+> +					  stamp.tv_sec,
+> +					  stamp.tv_nsec,
+> +					  it->state, it->CPU,
+> +					  duration.tv_sec,
+> +					  duration.tv_nsec);
+> +		if (!ret)
+> +			return TRACE_TYPE_PARTIAL_LINE;
+> +		return TRACE_TYPE_HANDLED;
+> +	}
+> +	return TRACE_TYPE_UNHANDLED;
+> +}
+> +
+> +struct tracer cstate_tracer __read_mostly =
+> +{
+> +	.name		= "cstate",
+> +	.init		= cstate_trace_init,
+> +	.reset		= stop_cstate_trace,
+> +	.ctrl_update	= cstate_trace_ctrl_update,
+> +	.print_line	= cstate_print_line,
+
+Here you bypass the print_line altogether. You really don't even need
+to make a trace_cstate. You do not use any of the data in the entry field
+so you can simply just store your cstate_trace data directly into the 
+buffer.  The entry is only used for ftrace formatted prints.
+
+
+> +};
+> +
+> +static int init_cstate_trace(void)
+> +{
+> +	return register_tracer(&cstate_tracer);
+> +}
+> +device_initcall(init_cstate_trace);
+> +
+> +void trace_cstate(struct cstate_trace *it, int level)
+> +{
+> +	struct ring_buffer_event *event;
+> +	struct trace_cstate *entry;
+> +	struct trace_array_cpu *data;
+> +	unsigned long irq_flags;
+> +	struct trace_array *tr = cstate_trace;
+> +
+> +	if (!trace_cstate_enabled)
+> +		return;
+> +
+> +	it->state = level;
+> +	preempt_disable();
+> +	it->CPU = smp_processor_id();
+
+You don't need to copy the smp_processor_id. Since all the buffers are
+per_cpu, the cpu id is passed into your print_line via the iter
+structure.
+
+  iter->cpu is the cpu that this entry was recorded on.
+
+
+> +	data = tr->data[smp_processor_id()];
+
+You don't need the above 'data' structure, unless you want to use it
+to prevent being reentrant. But you currently dont.
+
+> +
+> +	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
+> +					 &irq_flags);
+> +	if (!event)
+> +		goto out;
+> +	entry	= ring_buffer_event_data(event);
+> +	tracing_generic_entry_update(&entry->ent, 0);
+> +	entry->ent.type = TRACE_BOOT;
+
+It doesn't look like you use any of the trace_entry structure. You can 
+just store your normal structure, since you bypass the output with you 
+print_line function.
+
+	struct cstate_trace *entry;
+
+	[...]
+
+	entry = ring_buffer_event_data(event);
+	*entry = *it;
+	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+	
+
+-- Steve
+
+> +	entry->state_data = *it;
+> +	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+> +
+> +	trace_wake_up();
+> +
+> + out:
+> +	preempt_enable();
+> +}
+> -- 
+> 1.5.5.1
+> 
+> 
+> -- 
+> Arjan van de Ven 	Intel Open Source Technology Centre
+> For development, discussion and tips for power savings, 
+> visit http://www.lesswatts.org
+> 
