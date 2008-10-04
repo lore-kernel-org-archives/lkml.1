@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbYJDIsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbYJDIxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753135AbYJDIsQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 04:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYJDIsA
+	id S1753004AbYJDIxU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 04:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYJDIxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 04:48:00 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:42783 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbYJDIr7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 04:47:59 -0400
-Subject: Re: USB disconnects every 30 seconds (2.6.27-rc8)
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dave Hansen <dave@sr71.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, gregkh <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-In-Reply-To: <1223075214.7798.5.camel@nimitz>
-References: <Pine.LNX.4.44L0.0810031608000.6462-100000@iolanthe.rowland.org>
-	 <1223075214.7798.5.camel@nimitz>
-Content-Type: text/plain
-Date: Sat, 04 Oct 2008 10:48:06 +0200
-Message-Id: <1223110086.11272.44.camel@violet.holtmann.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 4 Oct 2008 04:53:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53507 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751913AbYJDIxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 04:53:11 -0400
+Date: Sat, 4 Oct 2008 10:52:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 0/9] traps: x86: finalize unification of traps.c
+Message-ID: <20081004085251.GA8080@elte.hu>
+References: <1223064040-23170-1-git-send-email-heukelum@fastmail.fm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1223064040-23170-1-git-send-email-heukelum@fastmail.fm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
 
-> OK, here's output with both Thomas/Hugh's timing fix as well as the USB
-> snooping turned on.  The disconnects still happen, but I did get some
-> good snoop output:
+* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+
+> Hi Ingo,
 > 
-> Oct  3 16:01:59 nimitz kernel: [  180.273883] usb usb7: opened by process 6485: hald-addon-usb-
-> Oct  3 16:01:59 nimitz kernel: [  180.273894] usb usb7: usbdev_ioctl: CONNECTINFO
-> Oct  3 16:01:59 nimitz kernel: [  180.273935] usb usb7: opened by process 6485: hald-addon-usb-
-> 
-> grepping for hald:
-> dave@nimitz:~$ ps aux | grep hald
-> 111       6407  0.5  0.1   6340  4352 ?        Ss   15:59   0:00 /usr/sbin/hald
-> root      6411  0.0  0.0   3348  1152 ?        S    15:59   0:00 hald-runner
-> root      6485  0.1  0.0   2996  1140 ?        S    15:59   0:00 hald-addon-usb-csr: listening on 'MX700 Optical Mouse'
-> ...
-> 
-> If I kill off 'hald-addon-usb-csr', then the resets stop happening.
+> This series unifies traps_32.c and traps_64.c.
 
-the addon is for some weird handling of CSR based HID devices in their
-Bluetooth/USB HID proxy devices or so.
+wow, very nice! I've applied them to tip/x86/traps:
 
-Alan, that is the vendor request you saw. Don't ask me what exactly this
-one does. I really have no idea.
+f58f3d5: traps: x86: finalize unification of traps.c
+bf395d6: traps: x86: make traps_32.c and traps_64.c equal
+f156f35: traps: x86: various noop-changes preparing for unification of traps_xx.c
+70cfe30: traps: x86_64: use task_pid_nr(tsk) instead of tsk->pid in do_general_protection
+dc89ce0: traps: i386: expand clear_mem_error and remove from mach_traps.h
+6f8063f: traps: x86_64: make io_check_error equal to the one on i386
+d025445: traps: i386: use preempt_conditional_sti/cli in do_int3
+2180afa: traps: x86_64: make math_state_restore more like i386
+686cc4a: traps: x86: converge trap_init functions
 
-Regards
+thanks Alexander!
 
-Marcel
-
-
+	Ingo
