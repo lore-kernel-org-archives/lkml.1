@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYJEObT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYJEOxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbYJEObT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 10:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbYJEObK
+	id S1755553AbYJEOxS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 10:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbYJEOxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 10:31:10 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:2267 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753994AbYJEObJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 10:31:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=EVSQ4ODM0HpVEKIVxTeBJf/v6s7vYzF1bViRLYyr548C6vPQzcsUHPGnU2Ht+EdX1j
-         PxbL6X0EQnb+5YEJ3L0/uM/LtE1AWP6HTV67YqJn/IkrlVL2AzYj/fTfhTJVvcUMQwEM
-         bpm6q6TVJmfaF43h5VFmbTTMOQn478ayNcwXk=
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH v3] rfkill-input doesn't work until 5 minutes after boot
-Date: Sun, 5 Oct 2008 16:31:03 +0200
-User-Agent: KMail/1.9.9
-Cc: dmitry.torokhov@gmail.com, hmh@hmh.eng.br, sitsofe@yahoo.com,
-       linux-kernel@vger.kernel.org
-References: <20081004204342.GA29620@srcf.ucam.org> <20081005004334.GA31844@srcf.ucam.org> <20081005110226.GB4087@srcf.ucam.org>
-In-Reply-To: <20081005110226.GB4087@srcf.ucam.org>
+	Sun, 5 Oct 2008 10:53:03 -0400
+Received: from www.tglx.de ([62.245.132.106]:53718 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754151AbYJEOxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 10:53:01 -0400
+Date: Sun, 5 Oct 2008 16:52:24 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: <PING> Re: [patch x86/core] x86: allow number of additional
+ hotplug CPUs to be set at compile time
+In-Reply-To: <20081005102835.GA8947@elte.hu>
+Message-ID: <alpine.LFD.2.00.0810051626150.3398@apollo>
+References: <20081001191945.4182d0be@redhat.com> <87bpy3pdgs.fsf@basil.nowhere.org> <20081002152521.16c4835b@redhat.com> <20081002194409.GB8318@one.firstfloor.org> <20081002160907.68d79e0b@redhat.com> <20081002204018.GD8318@one.firstfloor.org>
+ <87ljx4nw09.fsf_-_@basil.nowhere.org> <20081004183014.769836ff@redhat.com> <20081005102835.GA8947@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810051631.03844.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 October 2008, Matthew Garrett wrote:
-> rfkill-input implements debounce as follows:
+On Sun, 5 Oct 2008, Ingo Molnar wrote:
+> * Chuck Ebbert <cebbert@redhat.com> wrote:
 > 
->         if (time_after(jiffies, task->last + msecs_to_jiffies(200))) {
+> > Yes, it works and I don't see how it could cause any problems.
+> > 
+> > Ingo, can we get this in 2.6.27? You can drop my original patch.
+> > 
+> > Tested-by: Chuck Ebbert <cebbert@redhat.com>
 > 
-> However, task->last is initialised to 0 while jiffies starts at -300*HZ. 
-> Any input within 5 minutes of kernel start is therefore ignored. Fix by 
-> initialising task->last correctly.
->
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> looks good, applied to tip/x86/core, thanks!
 
-I am not too happy about the multiple jiffies - HZ/5 statements
-regardless of the comment that it should be updated when new tasks are
-defined.
+No, this patch is horrible. 
 
-But on the other hand I haven't seen any real alternatives yet either,
-so I have no objections against this patch either.
+The correct check is num_present_cpus(). There is no need to make the
+weird additional_cpus hackery globally available.
 
-Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+Btw, additional_cpus has interesting properties. Providing a negative
+number < -1 on the kernel command line - happened due to a typo -
+explodes in early boot, which is not really surprising, but should be
+sanity checked.
+
+Thanks,
+
+	tglx
+---------------->
+Subject: x86: make UP alternatives switch depend on present cpus
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Sun, 05 Oct 2008 16:45:22 +0200
+
+num_possible_cpus() can be > 1 when disabled CPUs have been accounted.
+
+Disabled CPUs are not in the cpu_present_map, so we can use
+num_present_cpus() as a safe indicator to switch to UP alternatives.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index fb04e49..a84ac7b 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -444,7 +444,7 @@ void __init alternative_instructions(void)
+ 					    _text, _etext);
  
-> ---
-> 
-> Document the requirement to initialise the struct.
-> 
-> diff --git a/net/rfkill/rfkill-input.c b/net/rfkill/rfkill-input.c
-> index e5b6955..6c7baa0 100644
-> --- a/net/rfkill/rfkill-input.c
-> +++ b/net/rfkill/rfkill-input.c
-> @@ -103,6 +103,8 @@ static void rfkill_schedule_toggle(struct rfkill_task *task)
->  		.desired_state = RFKILL_STATE_UNBLOCKED,	\
->  	}
->  
-> +/* Remember to initialise these in rfkill_handler_init if you add any */
-> +
->  static DEFINE_RFKILL_TASK(rfkill_wlan, RFKILL_TYPE_WLAN);
->  static DEFINE_RFKILL_TASK(rfkill_bt, RFKILL_TYPE_BLUETOOTH);
->  static DEFINE_RFKILL_TASK(rfkill_uwb, RFKILL_TYPE_UWB);
-> @@ -255,6 +257,11 @@ static struct input_handler rfkill_handler = {
->  
->  static int __init rfkill_handler_init(void)
->  {
-> +	rfkill_wlan.last = jiffies - HZ/5;
-> +	rfkill_bt.last = jiffies - HZ/5;
-> +	rfkill_uwb.last = jiffies - HZ/5;
-> +	rfkill_wimax.last = jiffies - HZ/5;
-> +	rfkill_wwan.last = jiffies - HZ/5;
->  	return input_register_handler(&rfkill_handler);
->  }
->  
-> 
-
-
+ 		/* Only switch to UP mode if we don't immediately boot others */
+-		if (num_possible_cpus() == 1 || setup_max_cpus <= 1)
++		if (num_present_cpus() == 1 || setup_max_cpus <= 1)
+ 			alternatives_smp_switch(0);
+ 	}
+ #endif
