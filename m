@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760744AbYJEQd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbYJEQdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760744AbYJEQd3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759333AbYJEQY1
+	id S1760784AbYJEQdq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758533AbYJEQYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:24:27 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34337 "EHLO
+	Sun, 5 Oct 2008 12:24:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34339 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759320AbYJEQYZ (ORCPT
+	with ESMTP id S1759344AbYJEQYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:24:25 -0400
+	Sun, 5 Oct 2008 12:24:33 -0400
 From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 70/76] applicom: Fix an unchecked user ioctl range and an
-	error return
+Subject: [PATCH 71/76] serial-make-uart_ports-ioport-unsigned-long-fix
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:24:26 +0100
-Message-ID: <20081005162420.1997.6599.stgit@localhost.localdomain>
+Date: Sun, 05 Oct 2008 17:24:33 +0100
+Message-ID: <20081005162431.1997.50965.stgit@localhost.localdomain>
 In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
 References: <20081005160231.1997.10462.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -26,37 +25,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Closes bug #11408 by checking the card index range for command 0
-Fixes the ioctl to return ENOTTY which is correct for unknown ioctls
+From: Andrew Morton <akpm@linux-foundation.org>
 
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/applicom.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/serial/serial_core.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/applicom.c b/drivers/char/applicom.c
-index 31d08b6..b899d91 100644
---- a/drivers/char/applicom.c
-+++ b/drivers/char/applicom.c
-@@ -712,8 +712,7 @@ static int ac_ioctl(struct inode *inode, struct file *file, unsigned int cmd, un
- 	
- 	IndexCard = adgl->num_card-1;
- 	 
--	if(cmd != 0 && cmd != 6 &&
--	   ((IndexCard >= MAX_BOARD) || !apbs[IndexCard].RamIO)) {
-+	if(cmd != 6 && ((IndexCard >= MAX_BOARD) || !apbs[IndexCard].RamIO)) {
- 		static int warncount = 10;
- 		if (warncount) {
- 			printk( KERN_WARNING "APPLICOM driver IOCTL, bad board number %d\n",(int)IndexCard+1);
-@@ -832,8 +831,7 @@ static int ac_ioctl(struct inode *inode, struct file *file, unsigned int cmd, un
- 		}
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index f977c98..308588e 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -2154,12 +2154,11 @@ uart_report_port(struct uart_driver *drv, struct uart_port *port)
+ 
+ 	switch (port->iotype) {
+ 	case UPIO_PORT:
+-		snprintf(address, sizeof(address),
+-			 "I/O 0x%x", port->iobase);
++		snprintf(address, sizeof(address), "I/O 0x%lx", port->iobase);
  		break;
- 	default:
--		printk(KERN_INFO "APPLICOM driver ioctl, unknown function code %d\n",cmd) ;
--		ret = -EINVAL;
-+		ret = -ENOTTY;
+ 	case UPIO_HUB6:
+ 		snprintf(address, sizeof(address),
+-			 "I/O 0x%x offset 0x%x", port->iobase, port->hub6);
++			 "I/O 0x%lx offset 0x%x", port->iobase, port->hub6);
  		break;
- 	}
- 	Dummy = readb(apbs[IndexCard].RamIO + VERS);
+ 	case UPIO_MEM:
+ 	case UPIO_MEM32:
 
