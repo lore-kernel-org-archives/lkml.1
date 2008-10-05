@@ -1,47 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756959AbYJEXS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbYJEXSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756959AbYJEXS1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 19:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbYJEXST
+	id S1756064AbYJEXSt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 19:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbYJEXSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 19:18:19 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:63962 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754563AbYJEXSS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 19:18:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sdH+TJo47DILs/XdleuusHLvDHQZlP0lptbASrSXjoA2fx7Mxs6pqGeIhD6DJY8nJ/
-         5mjmzHZWcubDPm9cmhB9rbv+QuKaCHRrKBToD8KTYouhO9A8ErU3QIV7pxJw+CP/TYAR
-         cJ6gKM3mGdelJp+ND3Cz4Inz2Y1/j+yO8q/cY=
-Date: Mon, 6 Oct 2008 03:20:54 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Kees Cook <kees.cook@canonical.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] proc: show personality via /proc/pid/personality
-Message-ID: <20081005232053.GA19199@x200.localdomain>
-References: <20081002211424.GJ10632@outflux.net> <20081004145149.52c34ee7@infradead.org> <20081004220220.GK10632@outflux.net> <20081004164239.0c1483a4@infradead.org> <20081005004233.GL10632@outflux.net> <20081004174843.6fe48a8e@infradead.org> <20081005091120.GA21003@x200.localdomain> <20081005101438.GR10632@outflux.net>
+	Sun, 5 Oct 2008 19:18:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55494 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755552AbYJEXSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 19:18:37 -0400
+Date: Sun, 5 Oct 2008 19:18:22 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
+Subject: Re: [PATCH 2/3] Fix fsync livelock
+In-Reply-To: <20081005160724.54dd1a27@infradead.org>
+Message-ID: <Pine.LNX.4.64.0810051910580.663@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+ <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+ <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+ <20080923154905.50d4b0fa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
+ <20080923164623.ce82c1c2.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com>
+ <20081001225404.4e973465.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0810051814060.23248@hs20-bc2-1.build.redhat.com>
+ <20081005153306.7e644c9f@infradead.org> <Pine.LNX.4.64.0810051901190.31780@hs20-bc2-1.build.redhat.com>
+ <20081005160724.54dd1a27@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081005101438.GR10632@outflux.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 05, 2008 at 03:14:38AM -0700, Kees Cook wrote:
-> Make process personality flags visible in /proc.  Since a process's
-> personality is potentially sensitive (e.g. READ_IMPLIES_EXEC), make this
-> file only readable by the process owner.
+On Sun, 5 Oct 2008, Arjan van de Ven wrote:
 
-Applied to proc.git, and I moved show hook to fs/proc/base.c where most
-of this irregular stuff lives.
+> On Sun, 5 Oct 2008 19:02:57 -0400 (EDT)
+> Mikulas Patocka <mpatocka@redhat.com> wrote:
+> 
+> > > are you sure?
+> > > isn't the right fix to just walk the file pages only once?
+> > 
+> > It walks the pages only once --- and waits on each on them. But
+> > because new pages are contantly appearing under it, that "walk only
+> > once" becomes infinite loop (well, finite, until the whole disk is
+> > written).
+> 
+> well. fsync() promises that everything that's dirty at the time of the
+> call will hit the disk. That is not something you can compromise.
+> The only way out would be is to not allow new dirty during an fsync()...
+> which is imo even worse.
+> 
+> Submit them all in one go, then wait, should not be TOO bad. Unless a
+> lot was dirty already, but then you go back to "but it has to go to
+> disk".
 
-> Please revert the prior patch against the "status" file -- this is the
-> alternative.
+The problem here is that you have two processes --- one is writing, the 
+other is simultaneously syncing. The syncing process can't distinguish the 
+pages that were created before fsync() was invoked (it has to wait on 
+them) and the pages that were created while fsync() was running (it 
+doesn't have to wait on them) --- so it waits on them all. The result is 
+livelock, it waits indefinitely, because more and more pages are being 
+created.
 
-Sure.
+The patch changes it so that if it waits long enough, it stops the other 
+writers creating dirty pages.
+
+Or, how otherwise would you implement "Submit them all in one go, then 
+wait"? The current code is:
+you grab page 0, see it is under writeback, wait on it
+you grab page 1, see it is under writeback, wait on it
+you grab page 2, see it is under writeback, wait on it
+you grab page 3, see it is under writeback, wait on it
+...
+--- and the other process is just making more and more writeback pages 
+while your waiting routine run. So the waiting is indefinite.
+
+Mikulas
