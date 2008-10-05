@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbYJEQPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbYJEQQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757024AbYJEQPc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbYJEQIz
+	id S1757433AbYJEQQP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbYJEQJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:08:55 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48472 "EHLO
+	Sun, 5 Oct 2008 12:09:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48476 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756745AbYJEQIx (ORCPT
+	with ESMTP id S1756533AbYJEQJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:08:53 -0400
+	Sun, 5 Oct 2008 12:09:33 -0400
 From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 30/76] 8250: remove a few inlines of dubious value
+Subject: [PATCH 32/76] tty: ipw need reworking
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:08:53 +0100
-Message-ID: <20081005160846.1997.43165.stgit@localhost.localdomain>
+Date: Sun, 05 Oct 2008 17:09:33 +0100
+Message-ID: <20081005160921.1997.97571.stgit@localhost.localdomain>
 In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
 References: <20081005160231.1997.10462.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -25,59 +25,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: \\\"Will Newton\\\" <will.newton@gmail.com>
+This came in via another tree and unfortunately is rather broken on
+the tty side. Comment the apparent locking problems for someone who knows
+the driver to look at.
 
-Remove some inlines from various functions that are called once, are too
-big to inline, or are called only from slow path code.  This saves around
-300 bytes of code for me.
-
-Signed-off-by: Will Newton <will.newton@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Alan Cox <alan@redhat.com>
+Fix the termios and other ioctl handling. The driver was calling the wrong
+methods for what it wanted to do but the right ones existed so its a simple
+fix up.
 ---
 
- drivers/serial/8250.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/char/pcmcia/ipwireless/tty.c |   19 ++++++++++---------
+ 1 files changed, 10 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 9f5e60d..e898edf 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -540,7 +540,7 @@ static unsigned int serial_icr_read(struct uart_8250_port *up, int offset)
- /*
-  * FIFO support.
-  */
--static inline void serial8250_clear_fifos(struct uart_8250_port *p)
-+static void serial8250_clear_fifos(struct uart_8250_port *p)
- {
- 	if (p->capabilities & UART_CAP_FIFO) {
- 		serial_outp(p, UART_FCR, UART_FCR_ENABLE_FIFO);
-@@ -555,7 +555,7 @@ static inline void serial8250_clear_fifos(struct uart_8250_port *p)
-  * capability" bit enabled.  Note that on XR16C850s, we need to
-  * reset LCR to write to IER.
-  */
--static inline void serial8250_set_sleep(struct uart_8250_port *p, int sleep)
-+static void serial8250_set_sleep(struct uart_8250_port *p, int sleep)
- {
- 	if (p->capabilities & UART_CAP_SLEEP) {
- 		if (p->capabilities & UART_CAP_EFR) {
-@@ -1428,8 +1428,7 @@ static unsigned int check_modem_status(struct uart_8250_port *up)
- /*
-  * This handles the interrupt from one port.
-  */
--static inline void
--serial8250_handle_port(struct uart_8250_port *up)
-+static void serial8250_handle_port(struct uart_8250_port *up)
- {
- 	unsigned int status;
- 	unsigned long flags;
-@@ -1764,7 +1763,7 @@ static void serial8250_break_ctl(struct uart_port *port, int break_state)
- /*
-  *	Wait for transmitter & holding register to empty
-  */
--static inline void wait_for_xmitr(struct uart_8250_port *up, int bits)
-+static void wait_for_xmitr(struct uart_8250_port *up, int bits)
- {
- 	unsigned int status, tmout = 10000;
+diff --git a/drivers/char/pcmcia/ipwireless/tty.c b/drivers/char/pcmcia/ipwireless/tty.c
+index 3a23e76..569f2f7 100644
+--- a/drivers/char/pcmcia/ipwireless/tty.c
++++ b/drivers/char/pcmcia/ipwireless/tty.c
+@@ -276,6 +276,7 @@ static int ipw_write_room(struct tty_struct *linux_tty)
+ 	struct ipw_tty *tty = linux_tty->driver_data;
+ 	int room;
  
++	/* FIXME: Exactly how is the tty object locked here .. */
+ 	if (!tty)
+ 		return -ENODEV;
+ 
+@@ -397,6 +398,7 @@ static int set_control_lines(struct ipw_tty *tty, unsigned int set,
+ static int ipw_tiocmget(struct tty_struct *linux_tty, struct file *file)
+ {
+ 	struct ipw_tty *tty = linux_tty->driver_data;
++	/* FIXME: Exactly how is the tty object locked here .. */
+ 
+ 	if (!tty)
+ 		return -ENODEV;
+@@ -412,6 +414,7 @@ ipw_tiocmset(struct tty_struct *linux_tty, struct file *file,
+ 	     unsigned int set, unsigned int clear)
+ {
+ 	struct ipw_tty *tty = linux_tty->driver_data;
++	/* FIXME: Exactly how is the tty object locked here .. */
+ 
+ 	if (!tty)
+ 		return -ENODEV;
+@@ -433,6 +436,8 @@ static int ipw_ioctl(struct tty_struct *linux_tty, struct file *file,
+ 	if (!tty->open_count)
+ 		return -EINVAL;
+ 
++	/* FIXME: Exactly how is the tty object locked here .. */
++
+ 	switch (cmd) {
+ 	case TIOCGSERIAL:
+ 		return ipwireless_get_serial_info(tty, (void __user *) arg);
+@@ -467,13 +472,6 @@ static int ipw_ioctl(struct tty_struct *linux_tty, struct file *file,
+ 			}
+ 			return 0;
+ 
+-		case TCGETS:
+-		case TCGETA:
+-			return n_tty_ioctl(linux_tty, file, cmd, arg);
+-
+-		case TCFLSH:
+-			return n_tty_ioctl(linux_tty, file, cmd, arg);
+-
+ 		case FIONREAD:
+ 			{
+ 				int val = 0;
+@@ -482,10 +480,11 @@ static int ipw_ioctl(struct tty_struct *linux_tty, struct file *file,
+ 					return -EFAULT;
+ 			}
+ 			return 0;
++		case TCFLSH:
++			return tty_perform_flush(linux_tty, arg);
+ 		}
+ 	}
+-
+-	return -ENOIOCTLCMD;
++	return tty_mode_ioctl(linux_tty, file, cmd , arg);
+ }
+ 
+ static int add_tty(dev_node_t *nodesp, int j,
+@@ -588,6 +587,8 @@ void ipwireless_tty_free(struct ipw_tty *tty)
+ 				tty_hangup(ttyj->linux_tty);
+ 				/* Wait till the tty_hangup has completed */
+ 				flush_scheduled_work();
++				/* FIXME: Exactly how is the tty object locked here
++				   against a parallel ioctl etc */
+ 				mutex_lock(&ttyj->ipw_tty_mutex);
+ 			}
+ 			while (ttyj->open_count)
 
