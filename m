@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYJEOLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbYJEO2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbYJEOLU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 10:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYJEOLM
+	id S1754976AbYJEO2t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 10:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbYJEO2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 10:11:12 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:52708 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753847AbYJEOLL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 10:11:11 -0400
-Date: Sun, 5 Oct 2008 09:11:13 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] Btrfs mainline plans
-Message-ID: <20081005141113.GA6132@us.ibm.com>
-References: <1222717460.30627.56.camel@think.oraclecorp.com> <20081003001859.e30af6a5.akpm@linux-foundation.org> <20081005122405.GA12047@cs181140183.pp.htv.fi>
+	Sun, 5 Oct 2008 10:28:41 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:39034 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753959AbYJEO2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 10:28:40 -0400
+Date: Sun, 5 Oct 2008 17:28:19 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Steven Noonan <steven@uplinklabs.net>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, drzeus@drzeus.cx
+Subject: Re: [PATCH] sdhci: 'scratch' may be used uninitialized
+Message-ID: <20081005142819.GB12047@cs181140183.pp.htv.fi>
+References: <20081001083532.GE31009@elte.hu> <1222851025-30619-1-git-send-email-steven@uplinklabs.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20081005122405.GA12047@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1222851025-30619-1-git-send-email-steven@uplinklabs.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Adrian Bunk (bunk@kernel.org):
-> On Fri, Oct 03, 2008 at 12:18:59AM -0700, Andrew Morton wrote:
-> > On Mon, 29 Sep 2008 15:44:20 -0400 Chris Mason <chris.mason@oracle.com> wrote:
-> > 
-> > > But, the code is very actively developed, and I believe the best way to
-> > > develop Btrfs from here is to get it into the mainline kernel (with a
-> > > large warning label about the disk format) and attract more extensive
-> > > review of both the disk format and underlying code.
-> > 
-> > For the record...  I have been encouraging Chris to get btrfs into
-> > mainline soon.  Get it into linux-next asap and merge it into 2.6.29.
-> > 
-> > And do this even though the on-disk format is still changing - we emit a
-> > loud printk at mount time and if someone comes to depend upon some
-> > intermediate format, well, that's their tough luck.
-> > 
-> > My thinking here is that btrfs probably has a future, and that an early
-> > merge will accelerate its development and will broaden its developer base. 
-> > If it ends up failing for some reason, well, we can just delete it
-> > again.
-> > 
-> > For various reasons this approach often isn't appropriate as a general
-> > policy thing, but I do think that Linux has needed a new local
-> > filesystem for some time, and btrfs might be The One, and hence is
-> > worth a bit of special-case treatment.
+On Wed, Oct 01, 2008 at 01:50:25AM -0700, Steven Noonan wrote:
+> The variable 'scratch' is always initialized before it's used. The
+> conditional which is responsible for initialization of 'scratch' will
+> always evaluate 'true' when the first loop iteration occurs, and thus,
+> it's properly initialized. GCC doesn't see this, of course, so using
+> the uninitialized_var() macro seems to work for silencing this case.
 > 
-> Let's try to learn from the past:
+> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
+> ---
+>  drivers/mmc/host/sdhci.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> 6 days from today ext4 (another new local filesystem for Linux) 
-> celebrates the second birthday of it's inclusion into Linus' tree
-> as a similar special-case.
-> 
-> You claim "an early merge will accelerate its development and will 
-> broaden its developer base" for Btrfs.
-> 
-> Read the timeline Ted outlined back in June 2006 for ext4 [1].
-> When comparing with what happened in reality it kinda disproves
-> your "acceleration" point.
+> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+> index e3a8133..6257677 100644
+> --- a/drivers/mmc/host/sdhci.c
+> +++ b/drivers/mmc/host/sdhci.c
+> @@ -177,7 +177,7 @@ static void sdhci_read_block_pio(struct sdhci_host *host)
+>  {
+>  	unsigned long flags;
+>  	size_t blksize, len, chunk;
+> -	u32 scratch;
+> +	u32 uninitialized_var(scratch);
+>...
 
-OTOH, maybe it's just me, but I think there is more excitement around
-btrfs.  Myself I'm dying for snapshot support, and can't wait to try
-btrfs on a separate data/scratch partition (where i don't mind losing
-data).  btrfs and nilfs - yay.  Ext4?  <yawn>  That can make all the
-difference.
+With which gcc version?
 
--serge
+I'm not getting this warning with gcc 4.3, and IMHO it doesn't make 
+sense to clutter the source code with such workarounds for older gcc 
+versions (we officially support 6 years old compilers, and warning-free 
+compilations with all of them are not reasonably possible).
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
