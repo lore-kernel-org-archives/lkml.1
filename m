@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbYJEMSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYJEMYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbYJEMSS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 08:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbYJEMSK
+	id S1753847AbYJEMYh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 08:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbYJEMY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 08:18:10 -0400
-Received: from msr30.hinet.net ([168.95.4.130]:45741 "EHLO msr30.hinet.net"
+	Sun, 5 Oct 2008 08:24:28 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:44703 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753788AbYJEMSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 08:18:09 -0400
-Date: Sun, 5 Oct 2008 20:17:54 +0800
-From: Kanru Chen <koster@debian.org.tw>
-To: linux-kernel@vger.kernel.org
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-Message-ID: <20081005121753.GA18549@atom>
+	id S1753457AbYJEMY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 08:24:27 -0400
+Date: Sun, 5 Oct 2008 15:24:05 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] Btrfs mainline plans
+Message-ID: <20081005122405.GA12047@cs181140183.pp.htv.fi>
+References: <1222717460.30627.56.camel@think.oraclecorp.com> <20081003001859.e30af6a5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20081003001859.e30af6a5.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 03, 2008 at 12:18:59AM -0700, Andrew Morton wrote:
+> On Mon, 29 Sep 2008 15:44:20 -0400 Chris Mason <chris.mason@oracle.com> wrote:
+> 
+> > But, the code is very actively developed, and I believe the best way to
+> > develop Btrfs from here is to get it into the mainline kernel (with a
+> > large warning label about the disk format) and attract more extensive
+> > review of both the disk format and underlying code.
+> 
+> For the record...  I have been encouraging Chris to get btrfs into
+> mainline soon.  Get it into linux-next asap and merge it into 2.6.29.
+> 
+> And do this even though the on-disk format is still changing - we emit a
+> loud printk at mount time and if someone comes to depend upon some
+> intermediate format, well, that's their tough luck.
+> 
+> My thinking here is that btrfs probably has a future, and that an early
+> merge will accelerate its development and will broaden its developer base. 
+> If it ends up failing for some reason, well, we can just delete it
+> again.
+> 
+> For various reasons this approach often isn't appropriate as a general
+> policy thing, but I do think that Linux has needed a new local
+> filesystem for some time, and btrfs might be The One, and hence is
+> worth a bit of special-case treatment.
 
---8t9RHnE3ZwKMSgU+
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Let's try to learn from the past:
 
-On Sun, 5 Oct 2008 13:03:30 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+6 days from today ext4 (another new local filesystem for Linux) 
+celebrates the second birthday of it's inclusion into Linus' tree
+as a similar special-case.
 
-> The relevant fixes were pushed and are in the current -rc series kernels.
-> The tty mutex now locks the TIOCG/SWINSZ calls using the tty mutex lock
-> of the tty side of tty/pty pairs.
+You claim "an early merge will accelerate its development and will 
+broaden its developer base" for Btrfs.
 
-Thanks! I didn't notice that.
+Read the timeline Ted outlined back in June 2006 for ext4 [1].
+When comparing with what happened in reality it kinda disproves
+your "acceleration" point.
 
-Regards,
---=20
-   ~    Kanru Chen <koster@debian.org.tw>
-  'v'   http://stu.csie.ncnu.edu.tw/~kanru.96/
- // \\  GnuPG-Key ID: 365CC7A2
-/(   )\ Fingerprint: 3278 DFB4 BB28 6E8C 9E1F  1ECB B1B7 5B5F 365C C7A2
- ^`~'^
+cu
+Adrian
 
---8t9RHnE3ZwKMSgU+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+[1] http://lkml.org/lkml/2006/6/28/454
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+-- 
 
-iEYEARECAAYFAkjosHEACgkQsbdbXzZcx6J4QACfXB4ZxQXZf+FfRyvvathtDg75
-+B8AnAq+YC9XJGLugC5YFmIpw/BWRBsQ
-=oEa+
------END PGP SIGNATURE-----
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
---8t9RHnE3ZwKMSgU+--
