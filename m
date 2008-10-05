@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYJEKBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbYJEKCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbYJEKBU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 06:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbYJEKBG
+	id S1755704AbYJEKCx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 06:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYJEKCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 06:01:06 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37736 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753334AbYJEKBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 06:01:04 -0400
-Date: Sun, 5 Oct 2008 12:00:38 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Christoph Hellwig <hch@infradead.org>, Takashi Sato <t-sato@yk.jp.nec.com>,
-       Ric Wheeler <rwheeler@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-fsdevel@vger.kernel.org,
-       dm-devel@redhat.com, viro@ZenIV.linux.org.uk,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, axboe@kernel.dk,
-       mtk.manpages@googlemail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] Add timeout feature
-Message-ID: <20081005100037.GB2351@ucw.cz>
-References: <20080908205337t-sato@mail.jp.nec.com> <20080908171119.GB22521@infradead.org> <48DBFD42.6030307@redhat.com> <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp> <20080929141326.GA31781@infradead.org> <48E0E7D4.1090409@sandeen.net> <20080929143749.GA13286@infradead.org> <48E0EA0B.7000701@sandeen.net>
+	Sun, 5 Oct 2008 06:02:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:64822 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753660AbYJEKCn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 06:02:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references
+         :in-reply-to:content-type:content-transfer-encoding:from:sender;
+        b=SOaGR8EZ+vyl5vU3VTL0nHgX4qOTBGsHC9D8Cqtl++GRZIloAImYOIbdWFsrcS8qYH
+         C1uvtB3+Q3vJDzHBQr9Hvy76J4gydzLhkYhLErOQAxPyK6lVfVpTfWTKSACFmEQnPWHL
+         2VgNXdha9ov+qm1j91fIzrrAjcSqlCcwU2aRg=
+Message-ID: <48E890B9.6050307@gmail.com>
+Date: Sun, 05 Oct 2008 12:02:33 +0200
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48E0EA0B.7000701@sandeen.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Tejun Heo <tj@kernel.org>
+CC: linux-kernel@vger.kernel.org, lists@ku-gbr.de, bhalevy.lists@gmail.com
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org>
+In-Reply-To: <48DA0A2C.8010008@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: Benny Halevy <bhalevy@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-09-29 09:45:31, Eric Sandeen wrote:
-> Christoph Hellwig wrote:
-> > On Mon, Sep 29, 2008 at 09:36:04AM -0500, Eric Sandeen wrote:
-> >> Christoph Hellwig wrote:
-> >>> On Fri, Sep 26, 2008 at 05:52:35PM +0900, Takashi Sato wrote:
-> >>>> I think that your concern is that the freezer cannot recognize the occurrence
-> >>>> of a timeout and it continues the backup process and the backup data is
-> >>>> corrupted finally.
-> >>> What timeout should happen?  the freeze ioctl must not return until the
-> >>> filesystem is a clean state and all writes are blocked.
-> >> The suggestion was that *UN*freeze would return ETIMEDOUT if the
-> >> filesystem had already unfrozen itself, I think.  That way you know that
-> >> the snapshot you just took is worthless, at least.
-> > 
-> > But why would the filesystem every unfreeze itself?  That defeats the
-> > whole point of freezing it.
+On Sep. 24, 2008, 12:36 +0300, Tejun Heo <tj@kernel.org> wrote:
+> Please apply the attached patch and post the resulting log.  Please
+> don't forget to turn on KALLSYMS.
 > 
-> I agree.  Was just trying to clarify the above point.
+> Thanks.
 > 
-> But there have been what, 12 submissions now, with the unfreeze timeout
-> in place so it's a persistent theme ;)
-> 
-> Perhaps a demonstration of just how easy (or not easy) it is to deadlock
-> a filesystem by freezing the root might be in order, at least.
-> 
-> And even if it is relatively easy, I still maintain that it is the
-> administrator's role to not inflict damage on the machine being
-> administered.  There are a lot of potentially dangerous tools at root's
-> disposal; why this particular one needs a nanny I'm still not quite sure.
 
-Can you docuument what administrator must not do for freezing to be
-safe?
+With commit 4c1eb90a0908c0c60db2169dce08fb672e7582f1 (v2.6.27-rc8),
+I see no spurious EH complete events as I saw with 2.6.27-rc <= 7.
 
-What if so much dirty data accumulates on frozen filesystem that
-there's not enough memory for the unfreeze tool?
+Thanks,
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Benny
