@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759039AbYJEQWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758578AbYJEQYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759039AbYJEQWv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986AbYJEQTN
+	id S1758578AbYJEQYS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758732AbYJEQU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:19:13 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57936 "EHLO
+	Sun, 5 Oct 2008 12:20:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57951 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757859AbYJEQTK (ORCPT
+	with ESMTP id S1758051AbYJEQUz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:19:10 -0400
+	Sun, 5 Oct 2008 12:20:55 -0400
 From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 49/76] tty: Move parts of tty_init_dev into new functions
+Subject: [PATCH 53/76] tty: Finish fixing up the init_dev interface to use
+	ERR_PTR
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:19:10 +0100
-Message-ID: <20081005161828.1997.57279.stgit@localhost.localdomain>
+Date: Sun, 05 Oct 2008 17:20:55 +0100
+Message-ID: <20081005162052.1997.26838.stgit@localhost.localdomain>
 In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
 References: <20081005160231.1997.10462.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -25,182 +26,173 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Original suggestion and proposal from Sukadev Bhattiprolu.
 
-Move the 'find-tty' and 'fast-track-open' parts of init_dev() to
-separate functions.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/tty_io.c |  139 +++++++++++++++++++++++++++++++------------------
- 1 files changed, 87 insertions(+), 52 deletions(-)
+ drivers/char/pty.c    |    6 ++++--
+ drivers/char/tty_io.c |   52 ++++++++++++++++++++-----------------------------
+ include/linux/tty.h   |    4 ++--
+ 3 files changed, 27 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index fdcc43c..a540849 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1204,6 +1204,80 @@ static void tty_line_name(struct tty_driver *driver, int index, char *p)
- 	sprintf(p, "%s%d", driver->name, index + driver->name_base);
- }
+diff --git a/drivers/char/pty.c b/drivers/char/pty.c
+index 4e6490b..c984500 100644
+--- a/drivers/char/pty.c
++++ b/drivers/char/pty.c
+@@ -501,11 +501,13 @@ static int __ptmx_open(struct inode *inode, struct file *filp)
+ 		return index;
  
-+/*
-+ * 	find_tty() - find an existing tty, if any
-+ * 	@driver: the driver for the tty
-+ * 	@idx:	 the minor number
-+ *
-+ * 	Return the tty, if found or ERR_PTR() otherwise.
-+ *
-+ * 	Locking: tty_mutex must be held. If tty is found, the mutex must
-+ * 		 be held until the 'fast-open' is also done.
-+ */
-+struct tty_struct *find_tty(struct tty_driver *driver, int idx)
-+{
-+	struct tty_struct *tty;
-+
-+	/* check whether we're reopening an existing tty */
-+	if (driver->flags & TTY_DRIVER_DEVPTS_MEM) {
-+		tty = devpts_get_tty(idx);
-+		/*
-+		 * If we don't have a tty here on a slave open, it's because
-+		 * the master already started the close process and there's
-+		 * no relation between devpts file and tty anymore.
-+		 */
-+		if (!tty && driver->subtype == PTY_TYPE_SLAVE)
-+			return ERR_PTR(-EIO);
-+
-+		/*
-+		 * tty is safe on because we are called with tty_mutex held
-+		 * and release_dev() won't change tty->count or tty->flags
-+		 * without grabbing tty_mutex.
-+		 */
-+		if (tty && driver->subtype == PTY_TYPE_MASTER)
-+			tty = tty->link;
-+	} else
-+		tty = driver->ttys[idx];
-+	return tty;
-+}
-+
-+/*
-+ * 	fast_tty_open()	- fast re-open of an open tty
-+ * 	@tty	- the tty to open
-+ *
-+ * 	Return 0 on success, -errno on error.
-+ *
-+ * 	Locking: tty_mutex must be held from the time the tty was found
-+ * 		 till this open completes.
-+ */
-+static int fast_tty_open(struct tty_struct *tty)
-+{
-+	struct tty_driver *driver = tty->driver;
-+
-+	if (test_bit(TTY_CLOSING, &tty->flags))
-+		return -EIO;
-+
-+	if (driver->type == TTY_DRIVER_TYPE_PTY &&
-+	    driver->subtype == PTY_TYPE_MASTER) {
-+		/*
-+		 * special case for PTY masters: only one open permitted,
-+		 * and the slave side open count is incremented as well.
-+		 */
-+		if (tty->count)
-+			return -EIO;
-+
-+		tty->link->count++;
-+	}
-+	tty->count++;
-+	tty->driver = driver; /* N.B. why do this every time?? */
-+
-+	/* FIXME */
-+	if (!test_bit(TTY_LDISC, &tty->flags))
-+		printk(KERN_ERR "fast_tty_open: no ldisc\n");
-+
-+	return 0;
-+}
-+
- /**
-  *	tty_init_dev		-	initialise a tty device
-  *	@driver: tty driver we are opening a device on
-@@ -1238,29 +1312,21 @@ int tty_init_dev(struct tty_driver *driver, int idx,
- 	int retval = 0;
+ 	mutex_lock(&tty_mutex);
+-	retval = tty_init_dev(ptm_driver, index, &tty, 1);
++	tty = tty_init_dev(ptm_driver, index, 1);
+ 	mutex_unlock(&tty_mutex);
  
- 	/* check whether we're reopening an existing tty */
--	if (driver->flags & TTY_DRIVER_DEVPTS_MEM) {
--		tty = devpts_get_tty(idx);
--		/*
--		 * If we don't have a tty here on a slave open, it's because
--		 * the master already started the close process and there's
--		 * no relation between devpts file and tty anymore.
--		 */
--		if (!tty && driver->subtype == PTY_TYPE_SLAVE) {
--			retval = -EIO;
--			goto end_init;
--		}
--		/*
--		 * It's safe from now on because tty_init_dev() is called with
--		 * tty_mutex held and tty_release_dev() won't change tty->count
--		 * or tty->flags without having to grab tty_mutex
--		 */
--		if (tty && driver->subtype == PTY_TYPE_MASTER)
--			tty = tty->link;
--	} else {
--		tty = driver->ttys[idx];
-+	tty = find_tty(driver, idx);
+-	if (retval)
 +	if (IS_ERR(tty)) {
 +		retval = PTR_ERR(tty);
-+		goto end_init;
+ 		goto out;
 +	}
+ 
+ 	set_bit(TTY_PTY_LOCK, &tty->flags); /* LOCK THE SLAVE */
+ 	filp->private_data = tty;
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 888380f..b0ad488 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -1324,35 +1324,32 @@ static int tty_reopen(struct tty_struct *tty)
+  * relaxed for the (most common) case of reopening a tty.
+  */
+ 
+-int tty_init_dev(struct tty_driver *driver, int idx,
+-	struct tty_struct **ret_tty, int first_ok)
++struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx,
++								int first_ok)
+ {
+ 	struct tty_struct *tty, *o_tty;
+ 	struct ktermios *tp, **tp_loc, *o_tp, **o_tp_loc;
+ 	struct ktermios *ltp, **ltp_loc, *o_ltp, **o_ltp_loc;
+-	int retval = 0;
++	int retval;
+ 
+ 	/* check whether we're reopening an existing tty */
+ 	tty = tty_driver_lookup_tty(driver, idx);
+-	if (IS_ERR(tty)) {
+-		retval = PTR_ERR(tty);
+-		goto end_init;
+-	}
 +
-+	if (tty) {
-+		retval = fast_tty_open(tty);
-+		if (retval)
-+			return retval;
-+		*ret_tty = tty;
-+		return 0;
++	if (IS_ERR(tty))
++		return tty;
+ 
+ 	if (tty) {
+ 		retval = tty_reopen(tty);
+ 		if (retval)
+-			return retval;
+-		*ret_tty = tty;
+-		return 0;
++			return ERR_PTR(retval);
++		return tty;
  	}
--	if (tty) goto fast_track;
  
-+	/* Check if pty master is being opened multiple times */
+ 	/* Check if pty master is being opened multiple times */
  	if (driver->subtype == PTY_TYPE_MASTER &&
- 		(driver->flags & TTY_DRIVER_DEVPTS_MEM) && !first_ok) {
- 		retval = -EIO;
-@@ -1400,37 +1466,6 @@ int tty_init_dev(struct tty_driver *driver, int idx,
- 
- 	if (retval)
- 		goto release_mem_out;
--	goto success;
--
--	/*
--	 * This fast open can be used if the tty is already open.
--	 * No memory is allocated, and the only failures are from
--	 * attempting to open a closing tty or attempting multiple
--	 * opens on a pty master.
--	 */
--fast_track:
--	if (test_bit(TTY_CLOSING, &tty->flags)) {
+-		(driver->flags & TTY_DRIVER_DEVPTS_MEM) && !first_ok) {
 -		retval = -EIO;
 -		goto end_init;
 -	}
--	if (driver->type == TTY_DRIVER_TYPE_PTY &&
--	    driver->subtype == PTY_TYPE_MASTER) {
--		/*
--		 * special case for PTY masters: only one open permitted,
--		 * and the slave side open count is incremented as well.
--		 */
--		if (tty->count) {
--			retval = -EIO;
--			goto end_init;
--		}
--		tty->link->count++;
--	}
--	tty->count++;
--	tty->driver = driver; /* N.B. why do this every time?? */
--
--	/* FIXME */
--	if (!test_bit(TTY_LDISC, &tty->flags))
--		printk(KERN_ERR "tty_init_dev but no ldisc\n");
- success:
- 	*ret_tty = tty;
++		(driver->flags & TTY_DRIVER_DEVPTS_MEM) && !first_ok)
++		return ERR_PTR(-EIO);
++
+ 	/*
+ 	 * First time open is complex, especially for PTY devices.
+ 	 * This code guarantees that either everything succeeds and the
+@@ -1361,10 +1358,8 @@ int tty_init_dev(struct tty_driver *driver, int idx,
+ 	 * and locked termios may be retained.)
+ 	 */
  
+-	if (!try_module_get(driver->owner)) {
+-		retval = -ENODEV;
+-		goto end_init;
+-	}
++	if (!try_module_get(driver->owner))
++		return ERR_PTR(-ENODEV);
+ 
+ 	o_tty = NULL;
+ 	tp = o_tp = NULL;
+@@ -1475,7 +1470,8 @@ int tty_init_dev(struct tty_driver *driver, int idx,
+ 	tty_driver_kref_get(driver);
+ 	tty->count++;
+ 
+-	if (tty_driver_install_tty(driver, tty) < 0)
++	retval = tty_driver_install_tty(driver, tty);
++	if (retval < 0)
+ 		goto release_mem_out;
+ 
+ 	/*
+@@ -1485,14 +1481,9 @@ int tty_init_dev(struct tty_driver *driver, int idx,
+ 	 */
+ 
+ 	retval = tty_ldisc_setup(tty, o_tty);
+-
+ 	if (retval)
+ 		goto release_mem_out;
+-
+-	*ret_tty = tty;
+-	/* All paths come through here to release the mutex */
+-end_init:
+-	return retval;
++	return tty;
+ 
+ 	/* Release locally allocated memory ... nothing placed in slots */
+ free_mem_out:
+@@ -1507,8 +1498,7 @@ free_mem_out:
+ 
+ fail_no_mem:
+ 	module_put(driver->owner);
+-	retval = -ENOMEM;
+-	goto end_init;
++	return ERR_PTR(-ENOMEM);
+ 
+ 	/* call the tty release_tty routine to clean out this slot */
+ release_mem_out:
+@@ -1516,7 +1506,7 @@ release_mem_out:
+ 		printk(KERN_INFO "tty_init_dev: ldisc open failed, "
+ 				 "clearing slot %d\n", idx);
+ 	release_tty(tty, idx);
+-	goto end_init;
++	return ERR_PTR(retval);
+ }
+ 
+ void tty_free_termios(struct tty_struct *tty)
+@@ -1925,11 +1915,11 @@ retry_open:
+ 		return -ENODEV;
+ 	}
+ got_driver:
+-	retval = tty_init_dev(driver, index, &tty, 0);
++	tty = tty_init_dev(driver, index, 0);
+ 	mutex_unlock(&tty_mutex);
+ 	tty_driver_kref_put(driver);
+-	if (retval)
+-		return retval;
++	if (IS_ERR(tty))
++		return PTR_ERR(tty);
+ 
+ 	filp->private_data = tty;
+ 	file_move(filp, &tty->tty_files);
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index 6cc7ccc..54523a3 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -401,8 +401,8 @@ extern dev_t tty_devnum(struct tty_struct *tty);
+ extern void proc_clear_tty(struct task_struct *p);
+ extern struct tty_struct *get_current_tty(void);
+ extern void tty_default_fops(struct file_operations *fops);
+-extern int tty_init_dev(struct tty_driver *driver, int idx,
+-			struct tty_struct **ret_tty, int first_ok);
++extern struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx,
++								int first_ok);
+ extern void tty_release_dev(struct file *filp);
+ 
+ extern struct mutex tty_mutex;
 
