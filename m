@@ -1,90 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbYJEVu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYJEVvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756407AbYJEVu0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 17:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYJEVuR
+	id S1756661AbYJEVvS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 17:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbYJEVvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 17:50:17 -0400
-Received: from www.tglx.de ([62.245.132.106]:48302 "EHLO www.tglx.de"
+	Sun, 5 Oct 2008 17:51:05 -0400
+Received: from tundra.namei.org ([65.99.196.166]:41083 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754348AbYJEVuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 17:50:16 -0400
-Date: Sun, 5 Oct 2008 23:49:27 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Ingo Molnar <mingo@elte.hu>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: <PING> Re: [patch x86/core] x86: allow number of additional
- hotplug CPUs to be set at compile time
-In-Reply-To: <48E9261A.9060501@firstfloor.org>
-Message-ID: <alpine.LFD.2.00.0810052252520.3398@apollo>
-References: <20081001191945.4182d0be@redhat.com> <87bpy3pdgs.fsf@basil.nowhere.org> <20081002152521.16c4835b@redhat.com> <20081002194409.GB8318@one.firstfloor.org> <20081002160907.68d79e0b@redhat.com> <20081002204018.GD8318@one.firstfloor.org>
- <87ljx4nw09.fsf_-_@basil.nowhere.org> <20081004183014.769836ff@redhat.com> <20081005102835.GA8947@elte.hu> <alpine.LFD.2.00.0810051626150.3398@apollo> <20081005152025.GA27066@elte.hu> <alpine.LFD.2.00.0810051732380.3398@apollo>
- <48E9261A.9060501@firstfloor.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1754766AbYJEVvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 17:51:04 -0400
+Date: Mon, 6 Oct 2008 08:50:09 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: David Howells <dhowells@redhat.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] user namespaces: introduce user_struct->user_namespace
+ relationship
+In-Reply-To: <20081004013644.GA24104@us.ibm.com>
+Message-ID: <alpine.LRH.1.10.0810060846020.30516@tundra.namei.org>
+References: <20081004013644.GA24104@us.ibm.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Oct 2008, Andi Kleen wrote:
-> > 
-> > Please lets get rid of all this.
+On Fri, 3 Oct 2008, Serge E. Hallyn wrote:
+
+> Hi James,
 > 
-> The result is that there's no way to override a BIOS now that
-> doesn't declare the number of hotplug CPUs with the Linux hotplug
-> extension.
-> 
-> Completely trusting the BIOS seems like a bad idea.
-> 
-> So I think you still need the command line parameter back, otherwise there's no
-> way to override the BIOS.
-> 
-> -Andi (who wished you guys would check with the original author
-> before removing code you clearly don't understand)
+> here are 3 patches to fix up the user namespaces a bit in preparation
+> for real userns work to begin.  Andrew had suggested that these be
+> rebased on top of your -next tree because they will conflict with
+> the credentials work.  But it looks like much of the credentials stuff
+> isn't in your next branch.  If you'd prefer that I port these to
+> creds-next, please let me know.  I'll have to do it eventually :)
 
-Sigh, could you please start thinking first before you insult me ?
+creds-next is dead.
 
-Chucks problem is that the BIOS advertises
+Code ready for the next merge window is in the 'next' branch, while the 
+current creds code is in the 'creds-next-subsys' branch, which hasn't been 
+picked up in linux-next yet because of LPC and sfr's vacation.
 
-1 present CPU and 1 disabled CPU
+When do you expect these patches to be sent upstream?  Are they ready now 
+as an incremental change for 2.6.27?
 
-Now the current code does not switch to UP alternatives because the
-check in alternatives.c is:
 
-      if (num_possible_cpus() == 1 ...
-
-      which evaluates to false, due to:
-
-      num_possible_cpus = num_processors + additional_cpus
-
-      where additional_cpus = disabled_cpus when no command line
-      parameter is given, i.e. the default behaviour of the kernel.
-
-      and where num_processors = num_present_cpus()
-
-      so in Chucks case num_possible_cpus() == 2
-
-Your proposed solution is:
-
-     exporting additional_cpus  and change the check to:
-
-     if ((num_possible_cpus() - additional_cpus) == 1 ...
-
-This is simply stupid. We have the information already in
-num_present_cpus() and that's the correct check in the alternatives
-code.
-
-     if (num_present_cpus() == 1 ...
-
-This is not a question of trusting the BIOS: 
-
-If we can not trust present_cpu_map then additional_cpus does not help
-at all.
-
-additional_cpus is useless ballast.
-
-Thanks,
-
-	tglx - who refrains from adding a nasty insulting comment
+- James
+-- 
+James Morris
+<jmorris@namei.org>
