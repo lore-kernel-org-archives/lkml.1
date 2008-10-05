@@ -1,65 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbYJEHQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYJEIwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbYJEHQc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 03:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbYJEHQX
+	id S1754082AbYJEIwc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 04:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbYJEIwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 03:16:23 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:55723 "EHLO 2ka.mipt.ru"
+	Sun, 5 Oct 2008 04:52:24 -0400
+Received: from www.tglx.de ([62.245.132.106]:39933 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751734AbYJEHQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 03:16:22 -0400
-Date: Sun, 5 Oct 2008 11:14:26 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>
-Subject: Re: 2.6.27-rc8-git7: Reported regressions from 2.6.26
-Message-ID: <20081005071421.GA17685@2ka.mipt.ru>
-References: <0pOgGB.A.uLG.E475IB@wind>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0pOgGB.A.uLG.E475IB@wind>
-User-Agent: Mutt/1.5.9i
+	id S1752731AbYJEIwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 04:52:22 -0400
+Date: Sun, 5 Oct 2008 10:51:45 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+cc: Jiri Kosina <jkosina@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>, jesse.brandeburg@intel.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kkeil@suse.de,
+       agospoda@redhat.com, arjan@linux.intel.com, david.graham@intel.com,
+       bruce.w.allan@intel.com, john.ronciak@intel.com,
+       chris.jones@canonical.com, tim.gardner@canonical.com, airlied@gmail.com,
+       Olaf Kirch <okir@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
+In-Reply-To: <4807377b0810041824u5ea472d1q4cf5ff606bd23a11@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0810050959420.3398@apollo>
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>  <200810021523.45884.jbarnes@virtuousgeek.org>  <20081003.134634.240211201.davem@davemloft.net>  <200810031429.22598.jbarnes@virtuousgeek.org>  <alpine.LNX.1.10.0810032338140.26779@jikos.suse.cz>
+  <4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com>  <alpine.LNX.1.10.0810041219130.26779@jikos.suse.cz>  <alpine.LFD.2.00.0810041236250.4404@apollo> <4807377b0810041824u5ea472d1q4cf5ff606bd23a11@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Sat, 4 Oct 2008, Jesse Brandeburg wrote:
+> > Exactly. The access to a ro region results in a fault. I have nowhere
+> > seen that trigger, but I can reproduce the trylock() WARN_ON, which
+> > confirms that there is concurrent access to the NVRAM registers. The
+> > backtrace pattern is similar to the one you have seen.
+> 
+> are you still getting WARN_ON *with* all the mutex based fixes already applied?
 
-On Sat, Oct 04, 2008 at 07:28:42PM +0200, Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11308
-> Subject		: tbench regression on each kernel release from 2.6.22 -&gt; 2.6.28
-> Submitter	: Christoph Lameter <cl@linux-foundation.org>
-> Date		: 2008-08-11 18:36 (55 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121847986119495&w=4
-> 		  http://marc.info/?l=linux-kernel&m=122125737421332&w=4
+The WARN_ON triggers with current mainline. Is there any fixlet in
+Linus tree missing ?
 
-Just for the reference, this one regresses from the 2.6.23. Particular
-2.6.26-27 part can be partially fixed by disabling TSO/GSO, since tbench
-workload issues quite small packets, and system has no time to
-incorporate them into particulary big TSO/GSO frame to get advantage of
-this technology. The most noticeble perfromance drop was between 23 and
-24 kernels. I work on this issue.
- 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11207
-> Subject		: VolanoMark regression with 2.6.27-rc1
-> Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> Date		: 2008-07-31 3:20 (66 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121747464114335&w=4
-> Handled-By	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> 		  Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 		  Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> 		  Miao Xie <miaox@cn.fujitsu.com>
+> with the mutex patches in place (without protection patch) we are
+> still reproducing the issue, until we apply the set_memory_ro patch.
 
-This one is different, but any other benchmark related to network over
-loopback (and in some case over other media) performance degradation
-should be very likely handled by the above case.
+That does not make sense to me. If the memory_ro patch is providing
+_real_ protection then you _must_ run into an access violation. If not,
+then the patch just papers over the real problem in some mysterious
+way.
 
--- 
-	Evgeniy Polyakov
+The patch does:
+
++	set_memory_rw((unsigned long)hw->flash_address,
++	              hw->flash_len >> PAGE_SHIFT);
+ 	writew(val, hw->flash_address + reg);
++	set_memory_ro((unsigned long)hw->flash_address,
++	              hw->flash_len >> PAGE_SHIFT);
+
+This changes massively the timing of the flash access. Could this be
+the problem on the machine which needs the set_memory_ro patch to
+survive ?
+
+> I had no luck on friday setting a hardware breakpoint on memory access
+> with kgdb to catch the writer with a breakpoint.
+
+Well, why should you get a hardware breakpoint when the _ro protection
+does not trigger in the first place ?
+
+Granted there could be a _rw alias mapping, but then the problem must
+be still visible with the _ro patch applied.
+
+Thanks,
+
+	tglx
+
