@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbYJEWOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYJEWPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756566AbYJEWOW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 18:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbYJEWOO
+	id S1756708AbYJEWPS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 18:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbYJEWPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 18:14:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40440 "EHLO mx1.redhat.com"
+	Sun, 5 Oct 2008 18:15:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40458 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755059AbYJEWOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 18:14:12 -0400
-Date: Sun, 5 Oct 2008 18:14:02 -0400 (EDT)
+	id S1755166AbYJEWPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 18:15:01 -0400
+Date: Sun, 5 Oct 2008 18:14:50 -0400 (EDT)
 From: Mikulas Patocka <mpatocka@redhat.com>
 X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
 To: Andrew Morton <akpm@linux-foundation.org>
 cc: linux-kernel@vger.kernel.org, agk@redhat.com, mbroz@redhat.com,
        chris@arachsys.com
-Subject: [PATCH 1/3] bit mutexes
+Subject: [PATCH 2/3] Fix fsync livelock
 In-Reply-To: <20081001225404.4e973465.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0810051812010.23248@hs20-bc2-1.build.redhat.com>
+Message-ID: <Pine.LNX.4.64.0810051814060.23248@hs20-bc2-1.build.redhat.com>
 References: <20080911101616.GA24064@agk.fab.redhat.com>
  <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
  <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
@@ -32,251 +32,261 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A bit mutex implementation.
+Fix starvation in memory management.
 
-Bit mutex is a space-efficient mutex that consumes exactly one bit in
-the apropriate structure (if mutex debugging is turned off).  Bit mutex
-is implemented as a bit in unsigned long field. Other bits in the field
-may be used for other purposes, if test/set/clear_bit functions are used
-to manipulate them. There is no wait queue in the structure containing
-the bit mutex; hashed wait queues for waiting on bits are used.
+The bug happens when one process is doing sequential buffered writes to
+a block device (or file) and another process is attempting to execute
+sync(), fsync() or direct-IO on that device (or file). This syncing
+process will wait indefinitelly, until the first writing process
+finishes.
 
-Additional structure struct bit_mutex is needed, it contains lock
-debugging & dependency information. When the kernel is compiled without
-lock debugging, this structure is empty.
+For example, run these two commands:
+dd if=/dev/zero of=/dev/sda1 bs=65536 &
+dd if=/dev/sda1 of=/dev/null bs=4096 count=1 iflag=direct
 
-Bit mutexes are used with functions
-bit_mutex_init
-bit_mutex_lock
-bit_mutex_unlock
-bit_mutex_is_locked
-These functions take 3 arguments: pointer to the unsigned long field,
-the bit position and pointer to struct bit_mutex.
+The bug is caused by sequential walking of address space in
+write_cache_pages and wait_on_page_writeback_range: if some other
+process is constantly making dirty and writeback pages while these
+functions run, the functions will wait on every new page, resulting in
+indefinite wait.
+
+To fix the starvation, I declared a bit mutex starvation_barrier in
+struct address_space. The bit AS_STARVATION_BARRIER in
+address_space->flags is used for actual locking. When the mutex is
+taken, anyone making dirty pages on that address space should stop. The
+functions that walk address space sequentially first estimate a number
+of pages to process. If they process more than this amount (plus some
+small delta), it means that someone is making dirty pages under them ---
+they take the mutex and hold it until they finish. When the mutex is
+taken, the function balance_dirty_pages will wait and not allow more
+dirty pages being made.
+
+The mutex is not really used as a mutex, it does not prevent access to
+any critical section. It is used as a barrier that blocks new dirty
+pages from being created. I use mutex and not wait queue to make sure
+that the starvation can't happend the other way (if there were wait
+queue, excessive calls to write_cache_pages and
+wait_on_page_writeback_range would block balance_dirty_pages forever;
+with mutex it is guaranteed that every process eventually makes
+progress).
+
+The essential property of this patch is that if the starvation doesn't
+happen, no additional locks are taken and no atomic operations are
+performed. So the patch shouldn't damage performance.
+
+The indefinite starvation was observed in write_cache_pages and
+wait_on_page_writeback_range. Another possibility where it could happen
+is invalidate_inode_pages2_range.
+
+There are two more functions that walk all the pages in address space,
+but I think they don't need this starvation protection:
+truncate_inode_pages_range: it is called with i_mutex locked, so no new
+pages are created under it.
+__invalidate_mapping_pages: it skips locked, dirty and writeback pages,
+so there's no point in protecting the function against starving on them.
 
 Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 
 ---
- include/linux/bit-mutex.h |   98 ++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/wait.h      |    8 +++
- kernel/Makefile           |    2 
- kernel/bit-mutex-debug.c  |   55 +++++++++++++++++++++++++
- kernel/wait.c             |    7 +++
- 5 files changed, 169 insertions(+), 1 deletion(-)
+ fs/inode.c              |    1 +
+ include/linux/fs.h      |    3 +++
+ include/linux/pagemap.h |   14 ++++++++++++++
+ mm/filemap.c            |    5 +++++
+ mm/page-writeback.c     |   18 +++++++++++++++++-
+ mm/swap_state.c         |    1 +
+ mm/truncate.c           |   10 +++++++++-
+ 7 files changed, 50 insertions(+), 2 deletions(-)
 
-Index: linux-2.6.27-rc8-devel/include/linux/bit-mutex.h
+Index: linux-2.6.27-rc8-devel/fs/inode.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.27-rc8-devel/include/linux/bit-mutex.h	2008-10-05 19:58:30.000000000 +0200
-@@ -0,0 +1,98 @@
-+#ifndef __LINUX_BIT_MUTEX_H
-+#define __LINUX_BIT_MUTEX_H
+--- linux-2.6.27-rc8-devel.orig/fs/inode.c	2008-10-04 16:47:55.000000000 +0200
++++ linux-2.6.27-rc8-devel/fs/inode.c	2008-10-04 16:48:04.000000000 +0200
+@@ -216,6 +216,7 @@ void inode_init_once(struct inode *inode
+ 	spin_lock_init(&inode->i_data.private_lock);
+ 	INIT_RAW_PRIO_TREE_ROOT(&inode->i_data.i_mmap);
+ 	INIT_LIST_HEAD(&inode->i_data.i_mmap_nonlinear);
++	bit_mutex_init(&inode->i_data.flags, AS_STARVATION_BARRIER, &inode->i_data.starvation_barrier);
+ 	i_size_ordered_init(inode);
+ #ifdef CONFIG_INOTIFY
+ 	INIT_LIST_HEAD(&inode->inotify_watches);
+Index: linux-2.6.27-rc8-devel/include/linux/fs.h
+===================================================================
+--- linux-2.6.27-rc8-devel.orig/include/linux/fs.h	2008-10-04 16:47:54.000000000 +0200
++++ linux-2.6.27-rc8-devel/include/linux/fs.h	2008-10-04 16:49:54.000000000 +0200
+@@ -289,6 +289,7 @@ extern int dir_notify_enable;
+ #include <linux/init.h>
+ #include <linux/pid.h>
+ #include <linux/mutex.h>
++#include <linux/bit-mutex.h>
+ #include <linux/capability.h>
+ #include <linux/semaphore.h>
+ 
+@@ -539,6 +540,8 @@ struct address_space {
+ 	spinlock_t		private_lock;	/* for use by the address_space */
+ 	struct list_head	private_list;	/* ditto */
+ 	struct address_space	*assoc_mapping;	/* ditto */
 +
-+#include <linux/bitops.h>
-+#include <linux/lockdep.h>
-+#include <linux/wait.h>
-+#include <linux/sched.h>
++	struct bit_mutex	starvation_barrier;/* taken when fsync starves */
+ } __attribute__((aligned(sizeof(long))));
+ 	/*
+ 	 * On most architectures that alignment is already the case; but
+Index: linux-2.6.27-rc8-devel/include/linux/pagemap.h
+===================================================================
+--- linux-2.6.27-rc8-devel.orig/include/linux/pagemap.h	2008-10-04 16:47:54.000000000 +0200
++++ linux-2.6.27-rc8-devel/include/linux/pagemap.h	2008-10-04 16:48:04.000000000 +0200
+@@ -21,6 +21,7 @@
+ #define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
+ #define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
+ #define AS_MM_ALL_LOCKS	(__GFP_BITS_SHIFT + 2)	/* under mm_take_all_locks() */
++#define AS_STARVATION_BARRIER (__GFP_BITS_SHIFT + 3) /* an anti-starvation barrier */
+ 
+ static inline void mapping_set_error(struct address_space *mapping, int error)
+ {
+@@ -424,4 +425,17 @@ static inline int add_to_page_cache(stru
+ 	return error;
+ }
+ 
++#define starvation_protection_head(n)				\
++	long pages_to_process = (n);				\
++	pages_to_process += (pages_to_process >> 3) + 16;
 +
-+struct bit_mutex {
-+#ifdef CONFIG_DEBUG_MUTEXES
-+	unsigned long		*field;
-+	int 			bit;
-+	struct thread_info	*owner;
-+	const char		*name;
-+	void			*magic;
-+#endif
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+	struct lockdep_map	dep_map;
-+#endif
-+};
++#define starvation_protection_step(mapping)			\
++	if (pages_to_process >= 0)				\
++		if (!pages_to_process--)			\
++			bit_mutex_lock(&(mapping)->flags, AS_STARVATION_BARRIER, &(mapping)->starvation_barrier);
 +
-+#ifndef CONFIG_DEBUG_MUTEXES
++#define starvation_protection_end(mapping)			\
++	if (pages_to_process < 0)				\
++		bit_mutex_unlock(&(mapping)->flags, AS_STARVATION_BARRIER, &(mapping)->starvation_barrier);
 +
-+static inline void bit_mutex_init(unsigned long *field, int bit, struct bit_mutex *mtx)
-+{
-+	clear_bit(bit, field);
-+	smp_mb__after_clear_bit();
-+}
+ #endif /* _LINUX_PAGEMAP_H */
+Index: linux-2.6.27-rc8-devel/mm/filemap.c
+===================================================================
+--- linux-2.6.27-rc8-devel.orig/mm/filemap.c	2008-10-04 16:47:55.000000000 +0200
++++ linux-2.6.27-rc8-devel/mm/filemap.c	2008-10-04 16:48:04.000000000 +0200
+@@ -269,6 +269,7 @@ int wait_on_page_writeback_range(struct 
+ 	int nr_pages;
+ 	int ret = 0;
+ 	pgoff_t index;
++	starvation_protection_head(bdi_stat(mapping->backing_dev_info, BDI_WRITEBACK));
+ 
+ 	if (end < start)
+ 		return 0;
+@@ -288,6 +289,8 @@ int wait_on_page_writeback_range(struct 
+ 			if (page->index > end)
+ 				continue;
+ 
++			starvation_protection_step(mapping);
 +
-+static inline void bit_mutex_lock(unsigned long *field, int bit, struct bit_mutex *mtx)
-+{
-+	wait_on_bit_lock(field, bit, wait_action_schedule, TASK_UNINTERRUPTIBLE);
-+}
+ 			wait_on_page_writeback(page);
+ 			if (PageError(page))
+ 				ret = -EIO;
+@@ -296,6 +299,8 @@ int wait_on_page_writeback_range(struct 
+ 		cond_resched();
+ 	}
+ 
++	starvation_protection_end(mapping);
 +
-+static inline void bit_mutex_unlock(unsigned long *field, int bit, struct bit_mutex *mtx)
-+{
-+	smp_mb__before_clear_bit();
-+	clear_bit(bit, field);
-+	smp_mb__after_clear_bit();
-+	wake_up_bit(field, bit);
-+}
-+
-+static inline int bit_mutex_is_locked(unsigned long *field, int bit, struct bit_mutex *mtx)
-+{
-+	return test_bit(bit, field);
-+}
-+
-+#define __DEBUG_BIT_MUTEX_INITIALIZER(field, bit, mtx)
-+
-+#else
-+
-+void __bit_mutex_init(unsigned long *field, int bit, struct bit_mutex *mtx, const char *name, struct lock_class_key *key);
-+
-+#define bit_mutex_init(field, bit, mtx)				\
-+do {								\
-+	static struct lock_class_key __key;			\
-+	__bit_mutex_init(field, bit, mtx, #mtx, &__key);	\
-+} while (0)
-+
-+void __bit_mutex_lock(unsigned long *field, int bit, struct bit_mutex *mtx, int subclass);
-+
-+#define bit_mutex_lock(field, bit, mtx)				\
-+	__bit_mutex_lock(field, bit, mtx, 0)
-+
-+void __bit_mutex_unlock(unsigned long *field, int bit, struct bit_mutex *mtx, int subclass);
-+
-+#define bit_mutex_unlock(field, bit, mtx)			\
-+	__bit_mutex_unlock(field, bit, mtx, 0)
-+
-+int bit_mutex_is_locked(unsigned long *field, int bit, struct bit_mutex *mtx);
-+
-+#define __DEBUG_BIT_MUTEX_INITIALIZER(field_, bit_, mtx)	\
-+	.magic = &(mtx),					\
-+	.field = (field_),					\
-+	.bit = (bit_)
-+
-+#endif
-+
-+
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+
-+#define __DEP_MAP_BIT_MUTEX_INITIALIZER(field, bit, mtx)	\
-+	, .dep_map = { .name = #mtx }
-+
-+#else
-+
-+#define __DEP_MAP_BIT_MUTEX_INITIALIZER(field, bit, mtx)
-+
-+#endif
-+
-+
-+#define __BIT_MUTEX_INITIALIZER(field, bit, mtx)		\
-+	{							\
-+		__DEBUG_BIT_MUTEX_INITIALIZER(field, bit, mtx)	\
-+		__DEP_MAP_BIT_MUTEX_INITIALIZER(field, bit, mtx)\
+ 	/* Check for outstanding write errors */
+ 	if (test_and_clear_bit(AS_ENOSPC, &mapping->flags))
+ 		ret = -ENOSPC;
+Index: linux-2.6.27-rc8-devel/mm/page-writeback.c
+===================================================================
+--- linux-2.6.27-rc8-devel.orig/mm/page-writeback.c	2008-10-04 16:47:55.000000000 +0200
++++ linux-2.6.27-rc8-devel/mm/page-writeback.c	2008-10-04 16:48:04.000000000 +0200
+@@ -435,6 +435,14 @@ static void balance_dirty_pages(struct a
+ 
+ 	struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 
++	if (unlikely(bit_mutex_is_locked(&mapping->flags, AS_STARVATION_BARRIER,
++	    &mapping->starvation_barrier))) {
++		bit_mutex_lock(&mapping->flags, AS_STARVATION_BARRIER,
++			&mapping->starvation_barrier);
++		bit_mutex_unlock(&mapping->flags, AS_STARVATION_BARRIER,
++			&mapping->starvation_barrier);
 +	}
 +
-+#endif
-Index: linux-2.6.27-rc8-devel/include/linux/wait.h
-===================================================================
---- linux-2.6.27-rc8-devel.orig/include/linux/wait.h	2008-10-04 13:40:46.000000000 +0200
-+++ linux-2.6.27-rc8-devel/include/linux/wait.h	2008-10-04 13:41:21.000000000 +0200
-@@ -513,7 +513,13 @@ static inline int wait_on_bit_lock(void 
- 		return 0;
- 	return out_of_line_wait_on_bit_lock(word, bit, action, mode);
- }
--	
-+
-+/**
-+ * wait_action_schedule - this function can be passed to wait_on_bit or
-+ * wait_on_bit_lock and it will call just schedule().
-+ */
-+int wait_action_schedule(void *);
-+
- #endif /* __KERNEL__ */
+ 	for (;;) {
+ 		struct writeback_control wbc = {
+ 			.bdi		= bdi,
+@@ -876,6 +884,7 @@ int write_cache_pages(struct address_spa
+ 	pgoff_t end;		/* Inclusive */
+ 	int scanned = 0;
+ 	int range_whole = 0;
++	starvation_protection_head(bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE));
  
- #endif
-Index: linux-2.6.27-rc8-devel/kernel/wait.c
-===================================================================
---- linux-2.6.27-rc8-devel.orig/kernel/wait.c	2008-10-04 13:37:24.000000000 +0200
-+++ linux-2.6.27-rc8-devel/kernel/wait.c	2008-10-04 13:38:21.000000000 +0200
-@@ -251,3 +251,10 @@ wait_queue_head_t *bit_waitqueue(void *w
- 	return &zone->wait_table[hash_long(val, zone->wait_table_bits)];
+ 	if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 		wbc->encountered_congestion = 1;
+@@ -902,7 +911,11 @@ retry:
+ 
+ 		scanned = 1;
+ 		for (i = 0; i < nr_pages; i++) {
+-			struct page *page = pvec.pages[i];
++			struct page *page;
++
++			starvation_protection_step(mapping);
++
++			page = pvec.pages[i];
+ 
+ 			/*
+ 			 * At this point we hold neither mapping->tree_lock nor
+@@ -963,6 +976,9 @@ retry:
+ 
+ 	if (wbc->range_cont)
+ 		wbc->range_start = index << PAGE_CACHE_SHIFT;
++
++	starvation_protection_end(mapping);
++
+ 	return ret;
  }
- EXPORT_SYMBOL(bit_waitqueue);
-+
-+int wait_action_schedule(void *word)
-+{
-+	schedule();
-+	return 0;
-+}
-+EXPORT_SYMBOL(wait_action_schedule);
-Index: linux-2.6.27-rc8-devel/kernel/Makefile
+ EXPORT_SYMBOL(write_cache_pages);
+Index: linux-2.6.27-rc8-devel/mm/swap_state.c
 ===================================================================
---- linux-2.6.27-rc8-devel.orig/kernel/Makefile	2008-10-05 14:03:24.000000000 +0200
-+++ linux-2.6.27-rc8-devel/kernel/Makefile	2008-10-05 14:11:25.000000000 +0200
-@@ -17,6 +17,7 @@ ifdef CONFIG_FTRACE
- # Do not trace debug files and internal ftrace files
- CFLAGS_REMOVE_lockdep.o = -pg
- CFLAGS_REMOVE_lockdep_proc.o = -pg
-+CFLAGS_REMOVE_bit-mutex-debug.o = -pg
- CFLAGS_REMOVE_mutex-debug.o = -pg
- CFLAGS_REMOVE_rtmutex-debug.o = -pg
- CFLAGS_REMOVE_cgroup-debug.o = -pg
-@@ -29,6 +30,7 @@ obj-$(CONFIG_SYSCTL_SYSCALL_CHECK) += sy
- obj-$(CONFIG_STACKTRACE) += stacktrace.o
- obj-y += time/
- obj-$(CONFIG_DEBUG_MUTEXES) += mutex-debug.o
-+obj-$(CONFIG_DEBUG_MUTEXES) += bit-mutex-debug.o
- obj-$(CONFIG_LOCKDEP) += lockdep.o
- ifeq ($(CONFIG_PROC_FS),y)
- obj-$(CONFIG_LOCKDEP) += lockdep_proc.o
-Index: linux-2.6.27-rc8-devel/kernel/bit-mutex-debug.c
+--- linux-2.6.27-rc8-devel.orig/mm/swap_state.c	2008-10-04 16:47:55.000000000 +0200
++++ linux-2.6.27-rc8-devel/mm/swap_state.c	2008-10-04 17:14:03.000000000 +0200
+@@ -43,6 +43,7 @@ struct address_space swapper_space = {
+ 	.a_ops		= &swap_aops,
+ 	.i_mmap_nonlinear = LIST_HEAD_INIT(swapper_space.i_mmap_nonlinear),
+ 	.backing_dev_info = &swap_backing_dev_info,
++	.starvation_barrier = __BIT_MUTEX_INITIALIZER(&swapper_space.flags, AS_STARVATION_BARRIER, swapper_space.starvation_barrier),
+ };
+ 
+ #define INC_CACHE_INFO(x)	do { swap_cache_info.x++; } while (0)
+Index: linux-2.6.27-rc8-devel/mm/truncate.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.27-rc8-devel/kernel/bit-mutex-debug.c	2008-10-05 19:12:06.000000000 +0200
-@@ -0,0 +1,55 @@
-+#include <linux/module.h>
-+#include <linux/bitops.h>
-+#include <linux/debug_locks.h>
-+#include <linux/bit-mutex.h>
+--- linux-2.6.27-rc8-devel.orig/mm/truncate.c	2008-10-04 16:47:55.000000000 +0200
++++ linux-2.6.27-rc8-devel/mm/truncate.c	2008-10-04 16:48:04.000000000 +0200
+@@ -392,6 +392,7 @@ int invalidate_inode_pages2_range(struct
+ 	int ret2 = 0;
+ 	int did_range_unmap = 0;
+ 	int wrapped = 0;
++	starvation_protection_head(mapping->nrpages);
+ 
+ 	pagevec_init(&pvec, 0);
+ 	next = start;
+@@ -399,9 +400,13 @@ int invalidate_inode_pages2_range(struct
+ 		pagevec_lookup(&pvec, mapping, next,
+ 			min(end - next, (pgoff_t)PAGEVEC_SIZE - 1) + 1)) {
+ 		for (i = 0; i < pagevec_count(&pvec); i++) {
+-			struct page *page = pvec.pages[i];
++			struct page *page;
+ 			pgoff_t page_index;
+ 
++			starvation_protection_step(mapping);
 +
-+void __bit_mutex_init(unsigned long *field, int bit, struct bit_mutex *mtx, const char *name, struct lock_class_key *key)
-+{
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+	debug_check_no_locks_freed((void *)mtx, sizeof(*mtx));
-+	lockdep_init_map(&mtx->dep_map, name, key, 0);
-+#endif
-+	mtx->field = field;
-+	mtx->bit = bit;
-+	mtx->owner = NULL;
-+	mtx->magic = mtx;
-+	clear_bit(bit, field);
-+	smp_mb__after_clear_bit();
-+}
-+EXPORT_SYMBOL(__bit_mutex_init);
++			page = pvec.pages[i];
 +
-+void __bit_mutex_lock(unsigned long *field, int bit, struct bit_mutex *mtx, int subclass)
-+{
-+	DEBUG_LOCKS_WARN_ON(mtx->magic != mtx);
-+	DEBUG_LOCKS_WARN_ON(field != mtx->field);
-+	DEBUG_LOCKS_WARN_ON(bit != mtx->bit);
-+	mutex_acquire(&mtx->dep_map, subclass, 0, _RET_IP_);
-+	wait_on_bit_lock(field, bit, wait_action_schedule, TASK_UNINTERRUPTIBLE);
-+	lock_acquired(&mtx->dep_map);
-+	mtx->owner = current_thread_info();
-+}
-+EXPORT_SYMBOL(__bit_mutex_lock);
+ 			lock_page(page);
+ 			if (page->mapping != mapping) {
+ 				unlock_page(page);
+@@ -449,6 +454,9 @@ int invalidate_inode_pages2_range(struct
+ 		pagevec_release(&pvec);
+ 		cond_resched();
+ 	}
 +
-+void __bit_mutex_unlock(unsigned long *field, int bit, struct bit_mutex *mtx, int nested)
-+{
-+	DEBUG_LOCKS_WARN_ON(mtx->magic != mtx);
-+	DEBUG_LOCKS_WARN_ON(mtx->owner != current_thread_info());
-+	DEBUG_LOCKS_WARN_ON(mtx->field != field);
-+	DEBUG_LOCKS_WARN_ON(mtx->bit != bit);
-+	mtx->owner = NULL;
-+	mutex_release(&mtx->dep_map, nested, _RET_IP_);
-+	smp_mb__before_clear_bit();
-+	clear_bit(bit, field);
-+	smp_mb__after_clear_bit();
-+	wake_up_bit(field, bit);
-+}
-+EXPORT_SYMBOL(__bit_mutex_unlock);
++	starvation_protection_end(mapping);
 +
-+int bit_mutex_is_locked(unsigned long *field, int bit, struct bit_mutex *mtx)
-+{
-+	DEBUG_LOCKS_WARN_ON(mtx->magic != mtx);
-+	DEBUG_LOCKS_WARN_ON(field != mtx->field);
-+	DEBUG_LOCKS_WARN_ON(bit != mtx->bit);
-+	return test_bit(bit, field);
-+}
-+EXPORT_SYMBOL(bit_mutex_is_locked);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(invalidate_inode_pages2_range);
+
