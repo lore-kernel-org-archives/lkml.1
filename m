@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbYJEQYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbYJEQZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759412AbYJEQYw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879AbYJEQVN
+	id S1758722AbYJEQZq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbYJEQV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:21:13 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57955 "EHLO
+	Sun, 5 Oct 2008 12:21:27 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57959 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757557AbYJEQVL (ORCPT
+	with ESMTP id S1758757AbYJEQV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:21:11 -0400
+	Sun, 5 Oct 2008 12:21:26 -0400
 From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 55/76] Move tty lookup/reopen to caller
+Subject: [PATCH 57/76] Simplify devpts_get_tty()
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:21:11 +0100
-Message-ID: <20081005162109.1997.26345.stgit@localhost.localdomain>
+Date: Sun, 05 Oct 2008 17:21:26 +0100
+Message-ID: <20081005162125.1997.12639.stgit@localhost.localdomain>
 In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
 References: <20081005160231.1997.10462.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -27,76 +27,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 
-Move tty_driver_lookup_tty() and tty_reopen() from tty_init_dev()
-into tty_open() (one of the two callers of tty_init_dev()).  These
-calls are not really required in ptmx_open(), the other caller,
-since ptmx_open() would be setting up a new tty.
-
-Changelog[v2]:
-	- remove the lookup and reopen calls from ptmx_open
-	- merge with recent changes to ttydev tree
+As pointed out by H. Peter Anvin, since the inode for the pty is known,
+we don't need to look it up.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/tty_io.c |   31 ++++++++++++++++---------------
- 1 files changed, 16 insertions(+), 15 deletions(-)
+ fs/devpts/inode.c |   17 +++++------------
+ 1 files changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index e881e9e..36098ee 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1376,19 +1376,6 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx,
- 	struct tty_struct *tty;
- 	int retval;
+diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
+index 638db9b..b292ed7 100644
+--- a/fs/devpts/inode.c
++++ b/fs/devpts/inode.c
+@@ -27,6 +27,7 @@
+ #define DEVPTS_SUPER_MAGIC 0x1cd1
  
--	/* check whether we're reopening an existing tty */
--	tty = tty_driver_lookup_tty(driver, idx);
+ #define DEVPTS_DEFAULT_MODE 0600
++#define PTMX_MINOR	2
+ 
+ extern int pty_limit;			/* Config limit on Unix98 ptys */
+ static DEFINE_IDA(allocated_ptys);
+@@ -247,19 +248,11 @@ int devpts_pty_new(struct inode *ptmx_inode, struct tty_struct *tty)
+ 
+ struct tty_struct *devpts_get_tty(struct inode *pts_inode, int number)
+ {
+-	struct dentry *dentry = get_node(number);
+-	struct tty_struct *tty;
 -
--	if (IS_ERR(tty))
--		return tty;
--
--	if (tty) {
--		retval = tty_reopen(tty);
--		if (retval)
--			return ERR_PTR(retval);
--		return tty;
+-	tty = NULL;
+-	if (!IS_ERR(dentry)) {
+-		if (dentry->d_inode)
+-			tty = dentry->d_inode->i_private;
+-		dput(dentry);
 -	}
 -
- 	/* Check if pty master is being opened multiple times */
- 	if (driver->subtype == PTY_TYPE_MASTER &&
- 		(driver->flags & TTY_DRIVER_DEVPTS_MEM) && !first_ok)
-@@ -1790,7 +1777,7 @@ void tty_release_dev(struct file *filp)
+-	mutex_unlock(&devpts_root->d_inode->i_mutex);
++	BUG_ON(pts_inode->i_rdev == MKDEV(TTYAUX_MAJOR, PTMX_MINOR));
  
- static int __tty_open(struct inode *inode, struct file *filp)
- {
--	struct tty_struct *tty;
-+	struct tty_struct *tty = NULL;
- 	int noctty, retval;
- 	struct tty_driver *driver;
- 	int index;
-@@ -1847,7 +1834,21 @@ retry_open:
- 		return -ENODEV;
- 	}
- got_driver:
--	tty = tty_init_dev(driver, index, 0);
-+	if (!tty) {
-+		/* check whether we're reopening an existing tty */
-+		tty = tty_driver_lookup_tty(driver, index);
-+
-+		if (IS_ERR(tty))
-+			return PTR_ERR(tty);
-+	}
-+
-+	if (tty) {
-+		retval = tty_reopen(tty);
-+		if (retval)
-+			tty = ERR_PTR(retval);
-+	} else
-+		tty = tty_init_dev(driver, index, 0);
-+
- 	mutex_unlock(&tty_mutex);
- 	tty_driver_kref_put(driver);
- 	if (IS_ERR(tty))
+-	return tty;
++	if (pts_inode->i_sb->s_magic == DEVPTS_SUPER_MAGIC)
++		return (struct tty_struct *)pts_inode->i_private;
++	return NULL;
+ }
+ 
+ void devpts_pty_kill(struct tty_struct *tty)
 
