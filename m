@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbYJEJxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYJEJ4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755306AbYJEJxq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 05:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbYJEJxi
+	id S1755361AbYJEJ4S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 05:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbYJEJ4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 05:53:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48921 "EHLO mx2.mail.elte.hu"
+	Sun, 5 Oct 2008 05:56:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53524 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753205AbYJEJxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 05:53:38 -0400
-Date: Sun, 5 Oct 2008 11:53:26 +0200
+	id S1753092AbYJEJ4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 05:56:08 -0400
+Date: Sun, 5 Oct 2008 11:55:59 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] ftrace: Add a C-state tracer to help power
-	optimization
-Message-ID: <20081005095326.GD29909@elte.hu>
-References: <20081004105447.0e48d6d4@infradead.org> <alpine.DEB.1.10.0810041410390.6571@gandalf.stny.rr.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       alan-jenkins@tuffmail.co.uk
+Subject: Re: [PATCH -tip] Fastboot: fix initcalls disposition in
+	bootgraph.pl
+Message-ID: <20081005095559.GE29909@elte.hu>
+References: <48E7C594.4030400@gmail.com> <20081004131901.66720416@infradead.org> <c62985530810041328i282818cak8cd0ba36c450e3d6@mail.gmail.com> <20081004133940.44feb2a0@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810041410390.6571@gandalf.stny.rr.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081004133940.44feb2a0@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,40 +38,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
+> On Sat, 4 Oct 2008 22:28:49 +0200
+> "Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
 > 
-> My comments are more towards Ingo than to Arjan.
+> > I'm tracing all of the initcalls in my machine (even the modules).
+> > If you look at both svg sources, you will see all of the 5 initcalls
+> > displayed. But for the "before the patch" one, it depends on the
+> > software you are using to visualize it.
+> > With firefox you only see two of them. With the default gnome
+> > visualization software (don't remember its name)
+> > you can see all of them but in a very extensive image because a lot of
+> > rows are unused.
+> > 
+> > With the "after the patch one", there is no issues....
 > 
-> On Sat, 4 Oct 2008, Arjan van de Ven wrote:
-> > +++ b/kernel/trace/Kconfig
-> > @@ -134,6 +134,17 @@ config BOOT_TRACER
-> >  	  be enabled if this tracer is selected since only one tracer
-> >  	  should touch the tracing buffer at a time.
-> >  
-> > +config CSTATE_TRACER
-> > +	bool "Trace C-state behavior"
-> > +	depends on HAVE_FTRACE
+> fair enough
 > 
-> Ingo, here's the confusion again between the FTRACE infrastructure and 
-> the ftrace "function tracer". the HAVE_FTRACE should really be 
-> HAVE_FUNCTION_TRACER. The infrastructure of a lot of the ftrace 
-> tracers do not depend on the function tracer.
-> 
-> The CSTATE_TRACER also does not depend on HAVE_FTRACE. Think we should 
-> rename this? Otherwise more kernel developers will get confused by it. 
-> :-(
+> Acked-by: Arjan van de Ven <arjan@linux.intel.com>
 
-agreed, please send a rename patch to make it more consistent.
+applied to tip/tracing/core, thanks!
 
-> > +static enum print_line_t cstate_print_line(struct trace_iterator *iter)
-> > +{
-> > +	int ret;
-> > +	struct trace_entry *entry = iter->ent;
-> > +	struct trace_cstate *field = (struct trace_cstate *)entry;
-> 
-> Ingo, isn't the trace_assign_type in your latest tree?
-
-yeah, it is, and it should be used here instead of a direct cast.
+Frédéric, is the revert still needed, or is latest tip/master OK ?
 
 	Ingo
