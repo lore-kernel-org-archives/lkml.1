@@ -1,80 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYJEWRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbYJEWZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbYJEWRq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 18:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbYJEWRi
+	id S1756568AbYJEWZw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 18:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbYJEWZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 18:17:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40503 "EHLO mx1.redhat.com"
+	Sun, 5 Oct 2008 18:25:40 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49562 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755224AbYJEWRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 18:17:37 -0400
-Date: Sun, 5 Oct 2008 18:16:59 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, agk@redhat.com, mbroz@redhat.com,
-       chris@arachsys.com
-Subject: [PATCH 3/3] Fix fsync-vs-write misbehavior
-In-Reply-To: <20081001225404.4e973465.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0810051814540.23248@hs20-bc2-1.build.redhat.com>
-References: <20080911101616.GA24064@agk.fab.redhat.com>
- <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
- <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
- <20080923154905.50d4b0fa.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
- <20080923164623.ce82c1c2.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com>
- <20081001225404.4e973465.akpm@linux-foundation.org>
+	id S1754887AbYJEWZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 18:25:39 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: 2.6.27-rc8+ - first impressions
+Date: Mon, 6 Oct 2008 00:29:42 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <20081005183603.GA3263@amd.corenet.prv> <200810052119.13881.rjw@sisk.pl> <20081005211748.GA11576@amd.corenet.prv>
+In-Reply-To: <20081005211748.GA11576@amd.corenet.prv>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810060029.42471.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix violation of sync()/fsync() semantics. Previous code walked up to
-mapping->nrpages * 2 pages. Because pages could be created while
-__filemap_fdatawrite_range was in progress, it could lead to a
-misbehavior.  Example: there are two pages in address space with indices
-4, 5. Both are dirty.  Someone calls __filemap_fdatawrite_range, it sets
-.nr_to_write = 4.  Meanwhile, some other process creates dirty pages 0,
-1, 2, 3.  __filemap_fdatawrite_range writes pages 0, 1, 2, 3, finds out
-that it reached the limit and exits.
+On Sunday, 5 of October 2008, Dmitry Torokhov wrote:
+> On Sun, Oct 05, 2008 at 09:19:13PM +0200, Rafael J. Wysocki wrote:
+> > On Sunday, 5 of October 2008, Dmitry Torokhov wrote:
+> > > On Sun, Oct 05, 2008 at 08:59:49PM +0200, Rafael J. Wysocki wrote:
+> > > > On Sunday, 5 of October 2008, Dmitry Torokhov wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > Lats night I loaded 2.6.27-rc8-tip for the first time on my AMD Turion
+> > > > > 64 laptop that is normally runs with Fedora distribution kernel.
+> > > > > Compared to 2.6.25 the thing is broken - hdparm reports about 3MB/sec
+> > > > > speed, fans are constantly on, everything seems sluggish.
+> > > > > 
+> > > > > Booting with hpet=force (HPET is disabled in BIOS) hangs the box
+> > > > > somewhere in tty_init.
+> > > > 
+> > > > Is that an HP box, by chance?
+> > > > 
+> > > 
+> > > Yeah, HP nx6115.
+> > 
+> > Oh well.
+> > 
+> > Please send me the output of dmidecode from it.
+> > 
+> 
+> Here you go:
 
-Result: pages that were dirty before __filemap_fdatawrite_range was
-invoked were not written.
+Thanks.
 
-With starvation protection from the previous patch, this
-mapping->nrpages * 2 logic is no longer needed.
+Please see if the appended patch helps.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Rafael
 
+
+Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- mm/filemap.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/x86/kernel/acpi/boot.c |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-Index: linux-2.6.27-rc7-devel/mm/filemap.c
+Index: linux-2.6/arch/x86/kernel/acpi/boot.c
 ===================================================================
---- linux-2.6.27-rc7-devel.orig/mm/filemap.c	2008-09-24 14:47:01.000000000 +0200
-+++ linux-2.6.27-rc7-devel/mm/filemap.c	2008-09-24 15:01:23.000000000 +0200
-@@ -202,6 +202,11 @@ static int sync_page_killable(void *word
-  * opposed to a regular memory cleansing writeback.  The difference between
-  * these two operations is that if a dirty page/buffer is encountered, it must
-  * be waited upon, and not just skipped over.
-+ *
-+ * Because new pages dirty can be created while this is executing, that
-+ * mapping->nrpages * 2 condition is unsafe. If we are doing data integrity
-+ * write, we must write all the pages. AS_STARVATION bit will eventually prevent
-+ * creating more dirty pages to avoid starvation.
-  */
- int __filemap_fdatawrite_range(struct address_space *mapping, loff_t start,
- 				loff_t end, int sync_mode)
-@@ -209,7 +214,7 @@ int __filemap_fdatawrite_range(struct ad
- 	int ret;
- 	struct writeback_control wbc = {
- 		.sync_mode = sync_mode,
--		.nr_to_write = mapping->nrpages * 2,
-+		.nr_to_write = sync_mode == WB_SYNC_NONE ? mapping->nrpages * 2 : LONG_MAX,
- 		.range_start = start,
- 		.range_end = end,
- 	};
+--- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
++++ linux-2.6/arch/x86/kernel/acpi/boot.c
+@@ -1605,6 +1605,14 @@ static struct dmi_system_id __initdata a
+ 	 */
+ 	{
+ 	 .callback = dmi_ignore_irq0_timer_override,
++	 .ident = "HP nx6115 laptop",
++	 .matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6115"),
++		     },
++	 },
++	{
++	 .callback = dmi_ignore_irq0_timer_override,
+ 	 .ident = "HP NX6125 laptop",
+ 	 .matches = {
+ 		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+@@ -1619,6 +1627,14 @@ static struct dmi_system_id __initdata a
+ 		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6325"),
+ 		     },
+ 	 },
++	{
++	 .callback = dmi_ignore_irq0_timer_override,
++	 .ident = "HP 6715b laptop",
++	 .matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq 6715b"),
++		     },
++	 },
+ 	{}
+ };
+ 
