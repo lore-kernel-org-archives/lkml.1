@@ -1,58 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbYJEWBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbYJEWM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756300AbYJEWBf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 18:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbYJEWB1
+	id S1756352AbYJEWM1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 18:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbYJEWMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 18:01:27 -0400
-Received: from daves.isp2dial.com ([69.60.113.26]:33545 "EHLO
-	daves.isp2dial.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754701AbYJEWB1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 18:01:27 -0400
-X-Greylist: delayed 1204 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Oct 2008 18:01:26 EDT
-From: John Kelly <jak@isp2dial.com>
-To: linux-kernel@vger.kernel.org
-Subject: User credentials on a unix datagram socket
-Date: Sun, 05 Oct 2008 21:41:22 +0000
-Message-ID: <200810052141.m95LfL2c027165@isp2dial.com>
-X-Mailer: Forte Agent 1.93/32.576 English (American)
+	Sun, 5 Oct 2008 18:12:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51271 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755059AbYJEWMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 18:12:14 -0400
+Date: Sun, 5 Oct 2008 18:11:54 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, agk@redhat.com, mbroz@redhat.com,
+       chris@arachsys.com
+Subject: RFC: one-bit mutexes (was: Re: [PATCH 2/3] Memory management livelock)
+In-Reply-To: <20081001225404.4e973465.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0810051804040.23248@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+ <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+ <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+ <20080923154905.50d4b0fa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
+ <20080923164623.ce82c1c2.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com>
+ <20081001225404.4e973465.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Hard2Crack: 0.001
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The socket(7) man page seems to imply that user credentials cannot be
-sent on a unix datagram socket, unless socketpair() created it.
+Hi
 
-> SO_PEERCRED
->   Return the credentials of the foreign process connected to this socket.
->   This is only possible for connected AF_UNIX stream sockets and AF_UNIX
->   stream and datagram socket pairs created using socketpair(2);
+I removed the repeated code and create a new bit mutexes. They are 
+space-efficient mutexes that consume only one bit. See the next 3 patches.
 
+If you are concerned about the size of an inode, I can convert other 
+mutexes to bit mutexes: i_mutex and inotify_mutex. I could also create 
+bit_spinlock (one-bit spinlock that uses test_and_set_bit) and save space 
+for address_space->tree_lock, address_space->i_mmap_lock, 
+address_space->private_lock, inode->i_lock.
 
-But through trial and error, without reading any kernel source, I
-learned that you can send user credentials on a regular unix datagram
-socket which was not created with socketpair().
+Look at it and say what you think about the idea of condensing mutexes 
+into single bits.
 
-I'm unsure what SO_PEERCRED is intended for; I used SO_PASSCRED in my
-server code, and it works.  I'm glad it does.  Stream sockets would
-require a file descriptor for each client.  Ugh.  What I want to do is
-so much simpler with datagram sockets.
+Mikulas
 
-I have sample code at ftp://ftp.isp2dial.com/users/jak/src/test/uxdg/
-
-I hope someone will revise the man page and explain that you can pass
-user credentials on a unix datagram socket, even one not created with
-socketpair().
-
-This is a very useful feature.  Please keep it in the kernel!
-
-
--- 
-Webmail for Dialup Users
-http://www.isp2dial.com/freeaccounts.html
- 
+> 
+> > Subject: [PATCH 2/3] Memory management livelock
+> 
+> Please don't send multiple patches with identical titles - think up a
+> good, unique, meaningful title for each patch.
+> 
+> On Wed, 24 Sep 2008 14:52:18 -0400 (EDT) Mikulas Patocka <mpatocka@redhat.com> wrote:
+> 
+> > Avoid starvation when walking address space.
+> > 
+> > Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> > 
+> 
+> Please include a full changelog with each iteration of each patch.
+> 
+> That changelog should explain the reason for playing games with
+> bitlocks so Linus doesn't have kittens when he sees it.
+> 
+> >  include/linux/pagemap.h |    1 +
+> >  mm/filemap.c            |   20 ++++++++++++++++++++
+> >  mm/page-writeback.c     |   37 ++++++++++++++++++++++++++++++++++++-
+> >  mm/truncate.c           |   24 +++++++++++++++++++++++-
+> >  4 files changed, 80 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux-2.6.27-rc7-devel/include/linux/pagemap.h
+> > ===================================================================
+> > --- linux-2.6.27-rc7-devel.orig/include/linux/pagemap.h	2008-09-24 02:57:37.000000000 +0200
+> > +++ linux-2.6.27-rc7-devel/include/linux/pagemap.h	2008-09-24 02:59:04.000000000 +0200
+> > @@ -21,6 +21,7 @@
+> >  #define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
+> >  #define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
+> >  #define AS_MM_ALL_LOCKS	(__GFP_BITS_SHIFT + 2)	/* under mm_take_all_locks() */
+> > +#define AS_STARVATION	(__GFP_BITS_SHIFT + 3)	/* an anti-starvation barrier */
+> >  
+> >  static inline void mapping_set_error(struct address_space *mapping, int error)
+> >  {
+> > Index: linux-2.6.27-rc7-devel/mm/filemap.c
+> > ===================================================================
+> > --- linux-2.6.27-rc7-devel.orig/mm/filemap.c	2008-09-24 02:59:33.000000000 +0200
+> > +++ linux-2.6.27-rc7-devel/mm/filemap.c	2008-09-24 03:13:47.000000000 +0200
+> > @@ -269,10 +269,19 @@ int wait_on_page_writeback_range(struct 
+> >  	int nr_pages;
+> >  	int ret = 0;
+> >  	pgoff_t index;
+> > +	long pages_to_process;
+> >  
+> >  	if (end < start)
+> >  		return 0;
+> >  
+> > +	/*
+> > +	 * Estimate the number of pages to process. If we process significantly
+> > +	 * more than this, someone is making writeback pages under us.
+> > +	 * We must pull the anti-starvation plug.
+> > +	 */
+> > +	pages_to_process = bdi_stat(mapping->backing_dev_info, BDI_WRITEBACK);
+> > +	pages_to_process += (pages_to_process >> 3) + 16;
+> 
+> This sequence appears twice and it would probably be clearer to
+> implement it in a well-commented function.
+> 
+> >  	pagevec_init(&pvec, 0);
+> >  	index = start;
+> >  	while ((index <= end) &&
+> > @@ -288,6 +297,10 @@ int wait_on_page_writeback_range(struct 
+> >  			if (page->index > end)
+> >  				continue;
+> >  
+> > +			if (pages_to_process >= 0)
+> > +				if (!pages_to_process--)
+> > +					wait_on_bit_lock(&mapping->flags, AS_STARVATION, wait_action_schedule, TASK_UNINTERRUPTIBLE);
+> 
+> This is copied three times and perhaps also should be factored out.
+> 
+> Please note that an effort has been made to make mm/filemap.c look
+> presentable in an 80-col display.
+> 
+> >  			wait_on_page_writeback(page);
+> >  			if (PageError(page))
+> >  				ret = -EIO;
+> > @@ -296,6 +309,13 @@ int wait_on_page_writeback_range(struct 
+> >  		cond_resched();
+> >  	}
+> >  
+> > +	if (pages_to_process < 0) {
+> > +		smp_mb__before_clear_bit();
+> > +		clear_bit(AS_STARVATION, &mapping->flags);
+> > +		smp_mb__after_clear_bit();
+> > +		wake_up_bit(&mapping->flags, AS_STARVATION);
+> > +	}
+> 
+> This sequence is repeated three or four times and should be pulled out
+> into a well-commented function.  That comment should explain the logic
+> behind the use of these barriers, please.
+> 
+> 
