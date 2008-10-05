@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbYJEVqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbYJEVu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756411AbYJEVqO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 17:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbYJEVp6
+	id S1756407AbYJEVu0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 17:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYJEVuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 17:45:58 -0400
-Received: from shells.gnugeneration.com ([66.240.222.126]:43762 "HELO
-	shells.gnugeneration.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754650AbYJEVp6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 17:45:58 -0400
-From: swivel@shells.gnugeneration.com
-Date: Sun, 5 Oct 2008 16:45:57 -0500
-To: David Miller <davem@davemloft.net>
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: Honoring SO_RCVLOWAT in proto_ops.poll methods
-Message-ID: <20081005214556.GL18569@fc6222126.aspadmin.net>
-References: <20080921145134.GT2761@fc6222126.aspadmin.net> <20080921211337.74e8f1f1@lxorguk.ukuu.org.uk> <20080921220926.GA18569@fc6222126.aspadmin.net> <20081005.132722.203253085.davem@davemloft.net>
+	Sun, 5 Oct 2008 17:50:17 -0400
+Received: from www.tglx.de ([62.245.132.106]:48302 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754348AbYJEVuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 17:50:16 -0400
+Date: Sun, 5 Oct 2008 23:49:27 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Ingo Molnar <mingo@elte.hu>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: <PING> Re: [patch x86/core] x86: allow number of additional
+ hotplug CPUs to be set at compile time
+In-Reply-To: <48E9261A.9060501@firstfloor.org>
+Message-ID: <alpine.LFD.2.00.0810052252520.3398@apollo>
+References: <20081001191945.4182d0be@redhat.com> <87bpy3pdgs.fsf@basil.nowhere.org> <20081002152521.16c4835b@redhat.com> <20081002194409.GB8318@one.firstfloor.org> <20081002160907.68d79e0b@redhat.com> <20081002204018.GD8318@one.firstfloor.org>
+ <87ljx4nw09.fsf_-_@basil.nowhere.org> <20081004183014.769836ff@redhat.com> <20081005102835.GA8947@elte.hu> <alpine.LFD.2.00.0810051626150.3398@apollo> <20081005152025.GA27066@elte.hu> <alpine.LFD.2.00.0810051732380.3398@apollo>
+ <48E9261A.9060501@firstfloor.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081005.132722.203253085.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 05, 2008 at 01:27:22PM -0700, David Miller wrote:
+On Sun, 5 Oct 2008, Andi Kleen wrote:
+> > 
+> > Please lets get rid of all this.
 > 
-> Give this patch a try:
+> The result is that there's no way to override a BIOS now that
+> doesn't declare the number of hotplug CPUs with the Linux hotplug
+> extension.
 > 
-> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-> index 1ab341e..0e43875 100644
-> --- a/net/ipv4/tcp.c
-> +++ b/net/ipv4/tcp.c
-> @@ -384,13 +384,17 @@ unsigned int tcp_poll(struct file *file, struct socket *sock, poll_table *wait)
->  
->  	/* Connected? */
->  	if ((1 << sk->sk_state) & ~(TCPF_SYN_SENT | TCPF_SYN_RECV)) {
-> +		int target = sock_rcvlowat(sk, 0, INT_MAX);
-> +
-> +		if (tp->urg_seq == tp->copied_seq &&
-> +		    !sock_flag(sk, SOCK_URGINLINE) &&
-> +		    tp->urg_data)
-> +			target--;
-> +
->  		/* Potential race condition. If read of tp below will
->  		 * escape above sk->sk_state, we can be illegally awaken
->  		 * in SYN_* states. */
-> -		if ((tp->rcv_nxt != tp->copied_seq) &&
-> -		    (tp->urg_seq != tp->copied_seq ||
-> -		     tp->rcv_nxt != tp->copied_seq + 1 ||
-> -		     sock_flag(sk, SOCK_URGINLINE) || !tp->urg_data))
-> +		if (target >= tp->rcv_nxt - tp->copied_seq)
->  			mask |= POLLIN | POLLRDNORM;
->  
->  		if (!(sk->sk_shutdown & SEND_SHUTDOWN)) {
+> Completely trusting the BIOS seems like a bad idea.
+> 
+> So I think you still need the command line parameter back, otherwise there's no
+> way to override the BIOS.
+> 
+> -Andi (who wished you guys would check with the original author
+> before removing code you clearly don't understand)
 
+Sigh, could you please start thinking first before you insult me ?
 
-I will be testing this patch today.  At a glance it appears with this
-patch we're still not taking rcvlowat into consideration in recv()
-with MSG_PEEK flag set.  This should probably also be corrected, as
-mentioned in the thread previously.
+Chucks problem is that the BIOS advertises
 
-Regards,
-Vito Caputo
+1 present CPU and 1 disabled CPU
+
+Now the current code does not switch to UP alternatives because the
+check in alternatives.c is:
+
+      if (num_possible_cpus() == 1 ...
+
+      which evaluates to false, due to:
+
+      num_possible_cpus = num_processors + additional_cpus
+
+      where additional_cpus = disabled_cpus when no command line
+      parameter is given, i.e. the default behaviour of the kernel.
+
+      and where num_processors = num_present_cpus()
+
+      so in Chucks case num_possible_cpus() == 2
+
+Your proposed solution is:
+
+     exporting additional_cpus  and change the check to:
+
+     if ((num_possible_cpus() - additional_cpus) == 1 ...
+
+This is simply stupid. We have the information already in
+num_present_cpus() and that's the correct check in the alternatives
+code.
+
+     if (num_present_cpus() == 1 ...
+
+This is not a question of trusting the BIOS: 
+
+If we can not trust present_cpu_map then additional_cpus does not help
+at all.
+
+additional_cpus is useless ballast.
+
+Thanks,
+
+	tglx - who refrains from adding a nasty insulting comment
