@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYJEAvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbYJEBYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbYJEAvv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 20:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbYJEAvn
+	id S1755269AbYJEBYX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 21:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbYJEBYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 20:51:43 -0400
-Received: from l2mail1.panix.com ([166.84.1.75]:62039 "EHLO l2mail1.panix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754186AbYJEAvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 20:51:42 -0400
-X-Greylist: delayed 1325 seconds by postgrey-1.27 at vger.kernel.org; Sat, 04 Oct 2008 20:51:42 EDT
-Message-ID: <48E80A68.2000108@panix.com>
-Date: Sat, 04 Oct 2008 20:29:28 -0400
-From: berk walker <berk@panix.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Sat, 4 Oct 2008 21:24:12 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:43747 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753850AbYJEBYL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 21:24:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SEQTkpUziiPqYhRkU+7SDCTYmQ1RgxRiFcEU6XE76edD+XwEn7F0Q9dKnV2xYVKwVU
+         GLnllIY3ADi3UWCZWK1RUPnU3mjSQmpNcMkdpqcsKb+zOPd6Bes+kFqpTPM7EFLXtPev
+         bghMhaGfuXUMQSEXN3C1aYP5NRa+bkKl1oUsc=
+Message-ID: <4807377b0810041824u5ea472d1q4cf5ff606bd23a11@mail.gmail.com>
+Date: Sat, 4 Oct 2008 18:24:10 -0700
+From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
+Cc: "Jiri Kosina" <jkosina@suse.cz>, "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "David Miller" <davem@davemloft.net>, jesse.brandeburg@intel.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kkeil@suse.de,
+       agospoda@redhat.com, arjan@linux.intel.com, david.graham@intel.com,
+       bruce.w.allan@intel.com, john.ronciak@intel.com,
+       chris.jones@canonical.com, tim.gardner@canonical.com, airlied@gmail.com,
+       "Olaf Kirch" <okir@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0810041236250.4404@apollo>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: Tejun Heo <tj@kernel.org>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Tom Mortensen <tmmlkml@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
-       Gwendal Grignou <gwendal@google.com>,
-       Brian Rademacher <rad@radfiles.net>, linux-ide@vger.kernel.org,
-       linux-raid maillist <linux-raid@vger.kernel.org>,
-       Linux Kernel Maillist <linux-kernel@vger.kernel.org>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>
-Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
-References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA>  <alpine.DEB.1.10.0809220828490.23159@p34.internal.lan>  <5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>  <alpine.DEB.1.10.0809220903400.23159@p34.internal.lan>  <4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA>  <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>  <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan>  <e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com>  <48DBAB81.8050900@tmr.com> <48E08E2D.6050905@kernel.org> <a52a95e30809301347s70b57ebfh280a6871329afd72@mail.gmail.com> <alpine.DEB.1.10.0809301715280.14600@p34.internal.lan> <alpine.LNX.2.00.0809301946020.16014@filesrv1.baby-dragons.com> <alpine.DEB.1.10.0810010403500.16900@p34.internal.lan> <alpine.DEB.1.10.0810010710520.22435@p34.internal.lan> <48E6D481.7050407@kernel.org> <alpine.DEB.1.10.0810040410170.14969@p34.internal.lan> <alpine.DEB.1.10.0810042022540.25643@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0810042022540.25643@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
+	 <200810021523.45884.jbarnes@virtuousgeek.org>
+	 <20081003.134634.240211201.davem@davemloft.net>
+	 <200810031429.22598.jbarnes@virtuousgeek.org>
+	 <alpine.LNX.1.10.0810032338140.26779@jikos.suse.cz>
+	 <4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com>
+	 <alpine.LNX.1.10.0810041219130.26779@jikos.suse.cz>
+	 <alpine.LFD.2.00.0810041236250.4404@apollo>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
->
->
-> On Sat, 4 Oct 2008, Justin Piszcz wrote:
->
+On Sat, Oct 4, 2008 at 4:02 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Sat, 4 Oct 2008, Jiri Kosina wrote:
+>> On Fri, 3 Oct 2008, Jesse Brandeburg wrote:
+>> > Our experience is different.  We are also testing with the "protection
+>> > patch" reverted.
+>> > We see that the problem specifically comes and goes when
+>> > removing/adding the use of set_memory_ro/set_memory_rw to the driver.
 >>
->>
->> On Sat, 4 Oct 2008, Tejun Heo wrote:
->>
->>> Justin Piszcz wrote:
->>>
->>> You're leaving the good part out.  Please always attach full kernel
->>> log.
->>>
->>> Thanks.
->
-> Are there any specific / useful / debugging options one could turn 
-> on/enable to obtain more information during these events that would 
-> produce meaningful/useful output?
->
-> Justin.
->
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-I think that the log stated a lot.
+>> But if this patch (which is an obvious workaround, compared to the other
+>> patches which fix real bugs, right?) would be catching some malicious
+>> accessess to the mapped EEPROM, there should be stacktraces present in the
+>> kernel log, right?
 
-b-
+yes, but I think it is just changing timing, i don't see any backtraces either.
 
+> Exactly. The access to a ro region results in a fault. I have nowhere
+> seen that trigger, but I can reproduce the trylock() WARN_ON, which
+> confirms that there is concurrent access to the NVRAM registers. The
+> backtrace pattern is similar to the one you have seen.
+
+are you still getting WARN_ON *with* all the mutex based fixes already applied?
+
+with the mutex patches in place (without protection patch) we are
+still reproducing the issue, until we apply the set_memory_ro patch.
+I had no luck on friday setting a hardware breakpoint on memory access
+with kgdb to catch the writer with a breakpoint.
