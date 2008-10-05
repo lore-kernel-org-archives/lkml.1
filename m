@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbYJESSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYJESYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712AbYJESSs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 14:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbYJESSk
+	id S1756732AbYJESYR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 14:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbYJESYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 14:18:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39794 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754767AbYJESSj (ORCPT
+	Sun, 5 Oct 2008 14:24:01 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55097 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755140AbYJESYB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 14:18:39 -0400
-Date: Sun, 5 Oct 2008 11:18:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [kerneloops] regression in 2.6.27 wrt "lock_page" and the
- "hwclock" program
-In-Reply-To: <20081004215225.2444d54b.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0810051114480.3208@nehalem.linux-foundation.org>
-References: <20081004174433.14a5e093@infradead.org> <20081004215225.2444d54b.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 5 Oct 2008 14:24:01 -0400
+Date: Sun, 5 Oct 2008 19:22:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Frans Pop <elendil@planet.nl>
+Cc: Alan Cox <alan@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 14/19] parport: quickfix the proc registration bug
+Message-ID: <20081005192203.279b8dfc@lxorguk.ukuu.org.uk>
+In-Reply-To: <200810052010.29315.elendil@planet.nl>
+References: <20081005163302.3799.61899.stgit@localhost.localdomain>
+	<20081005163302.3799.61899.stgit@localhost.localdomain>
+	<20081005163758.3799.88465.stgit@localhost.localdomain>
+	<200810052010.29315.elendil@planet.nl>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 5 Oct 2008 20:10:28 +0200
+Frans Pop <elendil@planet.nl> wrote:
 
-
-On Sat, 4 Oct 2008, Andrew Morton wrote:
-> > Pid: 9591, comm: hwclock Tainted: G        W 2.6.27-0.372.rc8.fc10.i686 #1 
-> >  [<c0427a53>] __might_sleep+0xd1/0xd6 
-> >  [<c0479a8b>] lock_page+0x1a/0x34
-> >  [<c0479cfa>] find_lock_page+0x23/0x48
-> >  [<c047a215>] filemap_fault+0x9b/0x330
-> >  [<c0486493>] __do_fault+0x40/0x2e6
-> >  [<c0487d63>] handle_mm_fault+0x2ec/0x6d2
-> >  [<c06e8260>] do_page_fault+0x2e5/0x693
+> Alan Cox wrote:
+> > Ideally we should have a directory of drivers and a link to the 'active'
+> > driver. For now just show the first device which is effectively the
+> > existing semantics without a warning.
+> > 
+> > Signed-off-by: Alan Cox <alan@redhat.com>
 > 
-> Looks like `hwclock' disabled interrupts in userspace with sys_iopl()?
+> I tested this patch, but it did not fix the issue [1].
+> Should it still be included?
 
-We probably should enable interrupts in the page fault code. We already do
-
-	#ifdef CONFIG_X86_32
-	        /* It's safe to allow irq's after cr2 has been saved and the vmalloc
-	           fault has been handled. */
-	        if (regs->flags & (X86_EFLAGS_IF | X86_VM_MASK))
-	                local_irq_enable();
-
-	        /*
-	         * If we're in an interrupt, have no user context or are running in an
-	         * atomic region then we must not take the fault.
-	         */
-	        if (in_atomic() || !mm)
-	                goto bad_area_nosemaphore;
-	#endif
-	...
-
-so we have code to do so, it's just that we don't do it if the page fault 
-happened in an interrupt. But that's for the _kernel_ having interrupts 
-disabled and us needing to fix up the vmalloc area lazily (do we ever even 
-do that any more.. I dunno).
-
-So we could easily add a check for 'user_space_vm(regs)' instead of 
-checking the VM_MASK, and fix it that way. Hmm?
-
-		Linus
+It fixed it for me so its still in my test pile but yes I do need to look
+at what you saw to try and work out why
