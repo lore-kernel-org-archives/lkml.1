@@ -1,107 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbYJEPKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbYJEPMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755711AbYJEPKb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 11:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbYJEPKU
+	id S1755875AbYJEPMB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 11:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYJEPLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 11:10:20 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:53872 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752670AbYJEPKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 11:10:19 -0400
-Date: Sun, 5 Oct 2008 18:09:57 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       Theodore Tso <tytso@mit.edu>
-Subject: Re: [RFC] Btrfs mainline plans
-Message-ID: <20081005150957.GC12047@cs181140183.pp.htv.fi>
-References: <1222717460.30627.56.camel@think.oraclecorp.com> <20081003001859.e30af6a5.akpm@linux-foundation.org> <20081005122405.GA12047@cs181140183.pp.htv.fi> <20081005141113.GA6132@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20081005141113.GA6132@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 5 Oct 2008 11:11:53 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36263 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753543AbYJEPLx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 11:11:53 -0400
+Date: Sun, 5 Oct 2008 08:11:45 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [kerneloops] regression in 2.6.27 wrt "lock_page" and the
+ "hwclock" program
+Message-ID: <20081005081145.30ba921b@infradead.org>
+In-Reply-To: <20081004215225.2444d54b.akpm@linux-foundation.org>
+References: <20081004174433.14a5e093@infradead.org>
+	<20081004215225.2444d54b.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 05, 2008 at 09:11:13AM -0500, Serge E. Hallyn wrote:
-> Quoting Adrian Bunk (bunk@kernel.org):
-> > On Fri, Oct 03, 2008 at 12:18:59AM -0700, Andrew Morton wrote:
-> > > On Mon, 29 Sep 2008 15:44:20 -0400 Chris Mason <chris.mason@oracle.com> wrote:
-> > > 
-> > > > But, the code is very actively developed, and I believe the best way to
-> > > > develop Btrfs from here is to get it into the mainline kernel (with a
-> > > > large warning label about the disk format) and attract more extensive
-> > > > review of both the disk format and underlying code.
-> > > 
-> > > For the record...  I have been encouraging Chris to get btrfs into
-> > > mainline soon.  Get it into linux-next asap and merge it into 2.6.29.
-> > > 
-> > > And do this even though the on-disk format is still changing - we emit a
-> > > loud printk at mount time and if someone comes to depend upon some
-> > > intermediate format, well, that's their tough luck.
-> > > 
-> > > My thinking here is that btrfs probably has a future, and that an early
-> > > merge will accelerate its development and will broaden its developer base. 
-> > > If it ends up failing for some reason, well, we can just delete it
-> > > again.
-> > > 
-> > > For various reasons this approach often isn't appropriate as a general
-> > > policy thing, but I do think that Linux has needed a new local
-> > > filesystem for some time, and btrfs might be The One, and hence is
-> > > worth a bit of special-case treatment.
-> > 
-> > Let's try to learn from the past:
-> > 
-> > 6 days from today ext4 (another new local filesystem for Linux) 
-> > celebrates the second birthday of it's inclusion into Linus' tree
-> > as a similar special-case.
-> > 
-> > You claim "an early merge will accelerate its development and will 
-> > broaden its developer base" for Btrfs.
-> > 
-> > Read the timeline Ted outlined back in June 2006 for ext4 [1].
-> > When comparing with what happened in reality it kinda disproves
-> > your "acceleration" point.
+On Sat, 4 Oct 2008 21:52:25 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Sat, 4 Oct 2008 17:44:33 -0700 Arjan van de Ven
+> <arjan@infradead.org> wrote:
 > 
-> OTOH, maybe it's just me, but I think there is more excitement around
-> btrfs.  Myself I'm dying for snapshot support, and can't wait to try
-> btrfs on a separate data/scratch partition (where i don't mind losing
-> data).  btrfs and nilfs - yay.  Ext4?  <yawn>  That can make all the
-> difference.
+> > 
+> > Details: http://www.kerneloops.org/searchweek.php?search=lock_page
+> > 
+> > There's quite a few of this BUG, which seems to be an interaction
+> > between the "hwclock" program and something in 2.6.27. It's new
+> > in .27 and is currently the 8th ranked issue.....
+> > 
+> > BUG: sleeping function called from invalid context at
+> > include/linux/pagemap.h:294 in_atomic():0, irqs_disabled():1
+> > INFO: lockdep is turned off.
+> > irq event stamp: 0
+> > hardirqs last  enabled at (0): [<00000000>] 0x0
+> > hardirqs last disabled at (0): [<c042c3a4>]
+> > copy_process+0x2e7/0x115e softirqs last  enabled at (0):
+> > [<c042c3a4>] copy_process+0x2e7/0x115e softirqs last disabled at
+> > (0): [<00000000>] 0x0 Pid: 9591, comm: hwclock Tainted: G        W
+> > 2.6.27-0.372.rc8.fc10.i686 #1 [<c0427a53>] __might_sleep+0xd1/0xd6 
+> >  [<c0479a8b>] lock_page+0x1a/0x34
+> >  [<c0479cfa>] find_lock_page+0x23/0x48
+> >  [<c047a215>] filemap_fault+0x9b/0x330
+> >  [<c0486493>] __do_fault+0x40/0x2e6
+> >  [<c0487d63>] handle_mm_fault+0x2ec/0x6d2
+> >  [<c06e8260>] do_page_fault+0x2e5/0x693
+> > 
+> 
+> Looks like `hwclock' disabled interrupts in userspace with sys_iopl()?
 
-"accelerate its development and will broaden its developer base" is not 
-about users/testers but about people doing code development.
+static unsigned long   
+atomic(const char *name, unsigned long (*op)(unsigned long),
+       unsigned long arg)
+{
+  unsigned long v;
+  __asm__ volatile ("cli");
+  v = (*op)(arg);
+  __asm__ volatile ("sti");
+  return v;
+} 
 
-For people wanting to try WIP code you don't need it in mainline.
+looks like it (but only on 32 bit x86, not on 64 bit x86)
 
-Stable kernels will anyway usually contain months old code of the
-WIP filesystem that is not usable for testing, so for any meaningful
-testing you will still have to follow the btrfs tree and not mainline.
+> 
+> And then it took a pagefault, which is presumably a bug in hwclock.
+> 
+> That's all a bit antisocial of it.  I guess a suitable quickfix is to
+> remove the might_sleep() from lock_page() (which would be a good thing
+> from a text size POV anyway).
+> 
+> But there will of course be other sites which do possibly-sleeping
+> operations on the pagefault path.
+> 
+> Really, it's a bit stupid doing _any_ system calls (and a pagefault is
+> a syscall in disguise) with interrupts disabled.  The kernel makes no
+> guarantees that we'll honour it.  We could just enable interrupts on
+> pagefault entry - that'll teach 'em.
 
-This is not meant as a statement on the quality of ext4 or btrfs, or any 
-comparison of the development times of ext4 and btrfs, but for ext4 the 
-advantages Andrew thinks would happen with an early btrfs merge do not 
-seem to have happened.
+or save - enable - <run handlers> - restore sequence
 
-I just realize that I forgot to add Ted and the ext4 mailing list into 
-the Cc of my first email. Adding them to the Cc, so if I'm talking 
-nonsense about the experiences with ext4 they can correct me.
+it's horrible that we allowed this before, and the semantics are very
+fuzzy at best, but to go WARN_ON() for it might be a bit too much.
 
-> -serge
-
-cu
-Adrian
+(and yes someone really ought to fix hwclock; it's rather broken)
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
