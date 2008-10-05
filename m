@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYJEKSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYJEKU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYJEKSb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 06:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYJEKSX
+	id S1755359AbYJEKU0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 06:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYJEKUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 06:18:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53262 "EHLO mx2.mail.elte.hu"
+	Sun, 5 Oct 2008 06:20:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43833 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752240AbYJEKSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 06:18:23 -0400
-Date: Sun, 5 Oct 2008 12:18:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Noonan <steven@uplinklabs.net>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: drivers/pci/probe.c compile warnings on -tip
-Message-ID: <20081005101801.GI29909@elte.hu>
-References: <f488382f0810010102y551f4a3bs64524fa70ef04ca3@mail.gmail.com> <18659.21853.41967.715062@harpo.it.uu.se> <200810010851.15969.jbarnes@virtuousgeek.org> <f488382f0810042055o68778028t1bb0754126d6bb0@mail.gmail.com>
+	id S1753018AbYJEKUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 06:20:16 -0400
+Message-ID: <48E8947A.5020608@kernel.org>
+Date: Sun, 05 Oct 2008 19:18:34 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f488382f0810042055o68778028t1bb0754126d6bb0@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Benny Halevy <bhalevy@panasas.com>
+CC: linux-kernel@vger.kernel.org, lists@ku-gbr.de, bhalevy.lists@gmail.com
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org> <48E890B9.6050307@gmail.com>
+In-Reply-To: <48E890B9.6050307@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 05 Oct 2008 10:20:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Noonan <steven@uplinklabs.net> wrote:
-
-> > AFAICT, these are fixed in Linus' tree, maybe the x86 tree needs an 
-> > update?
-> >
+Benny Halevy wrote:
+> On Sep. 24, 2008, 12:36 +0300, Tejun Heo <tj@kernel.org> wrote:
+>> Please apply the attached patch and post the resulting log.  Please
+>> don't forget to turn on KALLSYMS.
+>>
+>> Thanks.
+>>
 > 
-> Hey Ingo, these warnings are still showing up on the latest -tip. Any 
-> idea why?
+> With commit 4c1eb90a0908c0c60db2169dce08fb672e7582f1 (v2.6.27-rc8),
+> I see no spurious EH complete events as I saw with 2.6.27-rc <= 7.
 
-yes, they got reintroduced via:
+You're on CK804, right?
 
-| From ca81beb4a340ee690803fcb1498f863d0e68843f Mon Sep 17 00:00:00 2001
-| From: Yinghai Lu <yhlu.kernel@gmail.com>
-| Date: Thu, 4 Sep 2008 20:57:15 +0200
-| Subject: [PATCH] pci: fix BAR print out
-
-which spread into a few topic branches:
-
-# irq/sparseirq: ca81beb: pci: fix BAR print out
-# irq/sparseirq: f430d990: Merge branch 'linus' into irq/sparseirq
-# timers/hpet-percpu: ca81beb: pci: fix BAR print out
-# x86/uv: ca81beb: pci: fix BAR print out
-# x86/uv: f430d990: Merge branch 'linus' into irq/sparseirq
-
-i suspect f430d990 is where the in-linus fix collided with the 
-in-irq/sparseirq fix. I'm inclined to revert it. Yinghai?
-
-	Ingo
+-- 
+tejun
