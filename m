@@ -1,143 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbYJEVX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756467AbYJEVY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756388AbYJEVX0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 17:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbYJEVXS
+	id S1756467AbYJEVY4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 17:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbYJEVYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 17:23:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:60243 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754791AbYJEVXR (ORCPT
+	Sun, 5 Oct 2008 17:24:48 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:23297 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754486AbYJEVYs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 17:23:17 -0400
+	Sun, 5 Oct 2008 17:24:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=XVvyOWlJJn9lNx8hCRBA3czfygzERAtAirgLVLKcfD7CuEp+U6IcN86phEjQFgMCad
-         dHy393jpTicQ0a/AvlUQlgLVlSBdfJUymV3tGI1y+Q3bbeqDhajcBsG0HGqJCPHZqNTa
-         JxLXlM3dz9n8jCh8h+3mvFjjDXkkQ+/y+fzAs=
-Message-ID: <7c86c4470810051423v2116193vc2e1b67ce480488d@mail.gmail.com>
-Date: Sun, 5 Oct 2008 23:23:15 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "David Gibson" <david@gibson.dropbear.id.au>, eranian@gmail.com,
-       linux-kernel@vger.kernel.org,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: perfmon3 interface overview
-In-Reply-To: <20081005055339.GC469@yookeroo.seuss>
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Gj8gVbP126B8pZuf7uQq2K/2d9ooPC6DP5zuF5w0hgADAe3vhRvqZKU032muT7J9jH
+         RMfbJYq003QVylQ+Z2NF2lxUpbRwClGoij2iWRgkSy/KCCPYBSCEg8Ux0YPC8TFMPeL2
+         DHn7L2ZUWq81Lw5D3xJF6/dQqIZiXN6oHmmM0=
+Date: Sun, 5 Oct 2008 17:24:39 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: IvDoorn@gmail.com, hmh@hmh.eng.br, sitsofe@yahoo.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] rfkill-input doesn't work until 5 minutes after boot
+Message-ID: <20081005212432.GC11576@amd.corenet.prv>
+References: <20081004204342.GA29620@srcf.ucam.org> <20081005004334.GA31844@srcf.ucam.org> <20081005110226.GB4087@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com>
-	 <7c86c4470809251448j65fb99f1nfdb3980e0716149a@mail.gmail.com>
-	 <20081003061713.GL3002@yookeroo.seuss>
-	 <7c86c4470810030354x6984372akfe18761da7504a0c@mail.gmail.com>
-	 <7c86c4470810030358m1a0fdcc5i5512a1c2a6696457@mail.gmail.com>
-	 <20081005055339.GC469@yookeroo.seuss>
+In-Reply-To: <20081005110226.GB4087@srcf.ucam.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+Hi Matthew,
 
-On Sun, Oct 5, 2008 at 7:53 AM, David Gibson
-<david@gibson.dropbear.id.au> wrote:
-> [snip]
->>  So you are suggesting something along the lines:
->>
->>    int pfm_read_pmrs(int fd, int flags, int type, void *tab, size_t sz);
->>    int pfm_write_pmrs(int fd, int flags, int type, void *tab, size_t sz);
->
-> Uh.. maybe.. there are actually several possible variants all of which
-> would meet the general idea I had in mind.
->
->>  I have already introduced a type flag (PFM_RWFL_PMD, PFM_RWFL_PMC).
->>  Why separate the type into its own parameter?
->
-> Combining the type into the flags is certainly a possibility.  I was
-> just a bit worried that if you eventually have enough actual flag
-> flags, in addition to the type values, you might start running out of
-> bits.
->
-I see, so you were just decoupling to double the number of available bits.
-I guess we have a minimum of 32 bits. It seems overkill to support up to
-32 'types'. We could force flags to uint64_t. But then we would have to do
-the same for all other syscalls to be consistent. Defining flags as long
-won't work because of 32-bit vs. 64-bit ABI compatibility issues.
+On Sun, Oct 05, 2008 at 12:02:26PM +0100, Matthew Garrett wrote:
+> rfkill-input implements debounce as follows:
+> 
+>         if (time_after(jiffies, task->last + msecs_to_jiffies(200))) {
+> 
+> However, task->last is initialised to 0 while jiffies starts at -300*HZ. 
+> Any input within 5 minutes of kernel start is therefore ignored. Fix by 
+> initialising task->last correctly.
+> 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> 
+
+I'd rather have something like below. It should probably go through
+David's (networking) tree. since it is in net/.
+
+-- 
+Dmitry
+
+Input: rfkill-input doesn't work until 5 minutes after boot
+
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+
+rfkill-input implements debounce as follows:
+
+        if (time_after(jiffies, task->last + msecs_to_jiffies(200))) {
+
+However, task->last is initialised to 0 while jiffies starts at -300*HZ.
+Any input within 5 minutes of kernel start is therefore ignored. Fix by
+initialising task->last at module load.
+
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+
+ net/rfkill/rfkill-input.c |   28 ++++++++++++++++++----------
+ 1 files changed, 18 insertions(+), 10 deletions(-)
 
 
-
-
->>  As for the freeform array, isn't that what people do not like because
->> of  void *
->>  and thus weak type checking?
->
-> Yeah; this is an interesting tradeoff of flexibility versus
-> predictability.  Actually, what I originally had in mind was
-> seperately passing both 'n' and a per-element size.  That provides a
-> bit more defined structure to the void * - it must be an array of n
-> identical, fixed-size elements.  The internal structure of each
-> element is defined only by type, but it is assumed to contain no
-> pointers to further chained structures (i.e. its safe for wrapper code
-> to do shallow copies of the array).
->
-
-Ok, that reminds me of the API of calloc(). It certainly forces you to
-think it terms of 'array of elements'. Yet it can be perverted very easily
-with the number of elements at 1.
-
->>  I will look at switching to size instead of count. I think it does
->>  make sense.
->
-> Yeah.  As I said I was originally thinking of keeping the 'n'
-> parameter, and adding an element size parameter.  But just having an
-> overall size is also a possibility - it gives less definition to the
-> internal structure but at least things can marshal or copy the whole
-> array parameter without having to know its internals.
->
-Yes, that it true. It also simplifies the checking on size. With count
-we had to check for multiply overflow because internall we had to
-check the size anyway.
-
-> [snip]
->> > > III) attaching and detaching
->> > >
->> > >   With v2.81:
->> > >      int pfm_load_context(int fd, pfarg_load_t *load);
->> > >      int pfm_unload_context(int fd);
->> > >
->> > >   With v3.0:
->> > >      int pfm_attach_session(int fd, int flags, int target);
->> > >      int pfm_detach_session(int fd, int flags);
->> >
->> > Couldn't you get rid of one more syscall here by making detach a
->> > special case of attach with a special "null" value for target, or a
->> > special flag?
->>
->>  We could combine the two and use the flag field to indicate attach/detach.
->>  The target is not a pointer but an int. Some people suggested I use an
->>  unsigned long instead. In anycase, we could not use 0 to indicate "detach"
->>  because CPU0 is a valid choice for system-wide. Thus we would have to
->>  pick another value to mean "nothing", e.g, -1.
->
-> Sorry, I didn't express myself well.  I realise it's an integer, and
-> didn't mean an actual NULL, but as you say a special integer value
-> with a function similar to NULL.  -1 is the most obvious choice.
->
-Yes, -1 would work.
-
-If I summarize our discussion. It seems we can define the API as follows:
-
-    int pfm_create_session(int fd, uint64_t flags, pfarg_sinfo_t *sif,
-[ char *smpl_name, void *smpl_arg, size_t arg_size]);
-    int pfm_read_pmrs(int fd, uint64_t flags, void *tab, size_t sz);
-    int pfm_write_pmrs(int fd, uint64_t flags, void *tab, size_t sz);
-    int pfm_attach_session(int fd, uint64_t flags, int target);   /*
-attach, detach with target=-1 */
-    int pfm_control_session(int fd, uint64_t flags);   /* for start/stop */
-    int pfm_control_sets(int fd, uint64_t flags, void *sets, size_t sz);
-
-Does this look reasonable?
+diff --git a/net/rfkill/rfkill-input.c b/net/rfkill/rfkill-input.c
+index e5b6955..775c6ba 100644
+--- a/net/rfkill/rfkill-input.c
++++ b/net/rfkill/rfkill-input.c
+@@ -109,21 +109,24 @@ static DEFINE_RFKILL_TASK(rfkill_uwb, RFKILL_TYPE_UWB);
+ static DEFINE_RFKILL_TASK(rfkill_wimax, RFKILL_TYPE_WIMAX);
+ static DEFINE_RFKILL_TASK(rfkill_wwan, RFKILL_TYPE_WWAN);
+ 
++static struct rfkill_task *rfkill_tasks[] = {
++	&rfkill_wlan,
++	&rfkill_bt,
++	&rfkill_uwb,
++	&rfkill_wimax,
++	&rfkill_wwan,
++};
++
+ static void rfkill_schedule_evsw_rfkillall(int state)
+ {
++	int i;
++
+ 	/* EVERY radio type. state != 0 means radios ON */
+ 	/* handle EPO (emergency power off) through shortcut */
+ 	if (state) {
+-		rfkill_schedule_set(&rfkill_wwan,
+-				    RFKILL_STATE_UNBLOCKED);
+-		rfkill_schedule_set(&rfkill_wimax,
+-				    RFKILL_STATE_UNBLOCKED);
+-		rfkill_schedule_set(&rfkill_uwb,
+-				    RFKILL_STATE_UNBLOCKED);
+-		rfkill_schedule_set(&rfkill_bt,
+-				    RFKILL_STATE_UNBLOCKED);
+-		rfkill_schedule_set(&rfkill_wlan,
+-				    RFKILL_STATE_UNBLOCKED);
++		for (i = 0; i < ARRAY_SIZE(rfkill_tasks); i++)
++			rfkill_schedule_set(rfkill_tasks[i],
++					    RFKILL_STATE_UNBLOCKED);
+ 	} else
+ 		rfkill_schedule_epo();
+ }
+@@ -255,6 +258,11 @@ static struct input_handler rfkill_handler = {
+ 
+ static int __init rfkill_handler_init(void)
+ {
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(rfkill_tasks); i++)
++		rfkill_tasks[i]->last = jiffies - HZ / 5;
++
+ 	return input_register_handler(&rfkill_handler);
+ }
+ 
