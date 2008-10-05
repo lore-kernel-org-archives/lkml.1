@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYJEKns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbYJEKx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754550AbYJEKns (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 06:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYJEKnk
+	id S1754552AbYJEKx0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 06:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYJEKxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 06:43:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34580 "EHLO hera.kernel.org"
+	Sun, 5 Oct 2008 06:53:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46948 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752589AbYJEKnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 06:43:39 -0400
-Message-ID: <48E899F9.9040206@kernel.org>
-Date: Sun, 05 Oct 2008 19:42:01 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	id S1752589AbYJEKxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 06:53:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [Bug #11696] 2.6.27-rc8 doubled times
+Date: Sun, 5 Oct 2008 12:57:11 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.itG.Y475IB@wind> <Pine.LNX.4.64.0810050414260.27517@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0810050414260.27517@blonde.site>
 MIME-Version: 1.0
-To: Benny Halevy <bhalevy@panasas.com>
-CC: linux-kernel@vger.kernel.org, lists@ku-gbr.de
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org> <48E890B9.6050307@gmail.com> <48E8947A.5020608@kernel.org> <48E89839.5030307@panasas.com>
-In-Reply-To: <48E89839.5030307@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 05 Oct 2008 10:43:28 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200810051257.11835.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benny Halevy wrote:
-> On Oct. 05, 2008, 12:18 +0200, Tejun Heo <tj@kernel.org> wrote:
->> Benny Halevy wrote:
->>> On Sep. 24, 2008, 12:36 +0300, Tejun Heo <tj@kernel.org> wrote:
->>>> Please apply the attached patch and post the resulting log.  Please
->>>> don't forget to turn on KALLSYMS.
->>>>
->>>> Thanks.
->>>>
->>> With commit 4c1eb90a0908c0c60db2169dce08fb672e7582f1 (v2.6.27-rc8),
->>> I see no spurious EH complete events as I saw with 2.6.27-rc <= 7.
->> You're on CK804, right?
->>
+On Sunday, 5 of October 2008, Hugh Dickins wrote:
+> On Sat, 4 Oct 2008, Rafael J. Wysocki wrote:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11696
+> > Subject		: 2.6.27-rc8 doubled times
+> > Submitter	: Hugh Dickins <hugh@veritas.com>
+> > Date		: 2008-10-03 10:21 (2 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=122302939313636&w=4
+> > Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+> > Patch		: http://marc.info/?l=linux-kernel&m=122307260621434&w=4
 > 
-> No, MCP55 actually:
-> 
-> $ lspci | grep IDE
-> 00:04.0 IDE interface: nVidia Corporation MCP55 IDE (rev a1)
-> 00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
-> 00:05.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+> Can now be closed, thanks Rafael: Linus has taken Thomas's
+> commit 07454bfff151d2465ada809bbaddf3548cc1097c
+> clockevents: check broadcast tick device not the clock events device
+> and I've just confirmed that the latest git indeed fixes the issue.
 
-Right, the commit fixes generic and CK804 while break nf2/3.  Can you
-also try the following patch?
+Thanks, closed.
 
-  http://article.gmane.org/gmane.linux.ide/34942/raw
-
--- 
-tejun
+Rafael
