@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYJEJe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754931AbYJEJfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbYJEJe3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 05:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYJEJeW
+	id S1754931AbYJEJfk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 05:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbYJEJfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 05:34:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:51627 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752872AbYJEJeV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 05:34:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=RkRKu8Y2p5zKXkKPSRIMdEmyHhWQYt45gbiJP8oL7pGgovuC/5WzGLyQyK85MlO8US
-         klHPFBHVmQV19xHey9eqVt0jZg3lRY6xtsodmPYYG3VfxQPKjv5pf2FBX5q58XsuTYeD
-         G+UihB+1iadQOi7hcWbTggwbURUpCOusz2SWQ=
-Message-ID: <48E88A15.1010205@panasas.com>
-Date: Sun, 05 Oct 2008 11:34:13 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Sun, 5 Oct 2008 05:35:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40659 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753135AbYJEJfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 05:35:32 -0400
+Date: Sun, 5 Oct 2008 11:35:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] dumpstack: x86: various small unification steps
+Message-ID: <20081005093523.GE16819@elte.hu>
+References: <1223154766-19350-1-git-send-email-heukelum@fastmail.fm>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/5 ver2] debug: BUILD_BUG_ON: error on non-const expressions
-References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com> <48BD626B.6070705@panasas.com> <200810021535.36302.rusty@rustcorp.com.au>
-In-Reply-To: <200810021535.36302.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1223154766-19350-1-git-send-email-heukelum@fastmail.fm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Wednesday 03 September 2008 01:57:31 Boaz Harrosh wrote:
->> +#define BUILD_BUG_ON(e) \
->> +       do { struct {int:-!!(e); } x __maybe_unused;} while(0)
+
+* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+
+> Hi Ingo,
 > 
-> Why did you hate the void cast again?  Simplest should 
-> be "(void)BUILD_BUG_ON_ZERO(e)".  But if not, it seems to me that it's 
-> cleaner to do:
-> 
-> #define BUILD_BUG_ON(e) \
-> 	do { } while(BUILD_BUG_ON_ZERO(e))
-> 
+> Here is the first round of unification of dumpstack_32.c
+> and dumpstack_64.c. The first patch can also be seen as
+> a clean-up of the traps.c-unification as I forgot to move
+> one function at the time. Anyhow, the series depends on
+> the traps unification.
 
-I have not checked this exact variant, but the problems I had
-is that wrong or non-const code was ignored by the compiler,
-which is what I tried to solve.
+great - i've created tip/x86/dumpstack for this and applied your patches 
+there. (that branch embedds tip/x86/core which already embedds 
+tip/x86/traps)
 
-> No chance of the compiler emitting unused vars.
-> 
+> B.T.W., I could reproduce the spontaneous reboot with the
+> traps unification with glibc. The change GATE_INTERRUPT -> 
+> GATE_TRAP fixed the crash there. Usually I test only with
+> a small klibc-based userspace, and there the reboot does
+> not happen. I guess the int 0x80 interface is less picky.
+> (Just to say that I do test the changes a bit ;) )
 
-There is no unused vars because the result is a zero-sized
-struct which will never emit any code.
+it also passed -tip testing still then so the changes are fine. 
 
-> Cheers,
-> Rusty.
-> 
+Generally if you see your commits show up and stay in tip/master it 
+means they get tested with a newly built random kernel about once every 
+two minutes or so.
 
-Is it that important? the code submitted does what is required
-to the letter, should we spend more effort on this?
+regarding klibc, that's interesting: is that the in-kernel klibc from 
+hpa? Which tree are you using to pull that into tip/master? (unless i 
+misunderstood what you are doing)
 
-Boaz
- 
+	Ingo
