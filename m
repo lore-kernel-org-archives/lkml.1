@@ -1,110 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbYJEQVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbYJEQVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756017AbYJEQVB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbYJEQRQ
+	id S1758113AbYJEQVe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758138AbYJEQRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:17:16 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49653 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757507AbYJEQRO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:17:14 -0400
-From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 45/76] pty: If the administrator creates a device for a ptmx
-	slave we should not error
-To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:17:14 +0100
-Message-ID: <20081005161644.1997.26914.stgit@localhost.localdomain>
-In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
-References: <20081005160231.1997.10462.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Sun, 5 Oct 2008 12:17:43 -0400
+Received: from www.tglx.de ([62.245.132.106]:59438 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758123AbYJEQRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 12:17:41 -0400
+Date: Sun, 5 Oct 2008 18:16:29 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Jiri Kosina <jkosina@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>, jesse.brandeburg@intel.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kkeil@suse.de,
+       agospoda@redhat.com, david.graham@intel.com, bruce.w.allan@intel.com,
+       john.ronciak@intel.com, chris.jones@canonical.com,
+       tim.gardner@canonical.com, airlied@gmail.com, Olaf Kirch <okir@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
+In-Reply-To: <20081005090226.1e9eaae6@linux.intel.com>
+Message-ID: <alpine.LFD.2.00.0810051809130.3398@apollo>
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com> <200810021523.45884.jbarnes@virtuousgeek.org> <20081003.134634.240211201.davem@davemloft.net> <200810031429.22598.jbarnes@virtuousgeek.org> <alpine.LNX.1.10.0810032338140.26779@jikos.suse.cz>
+ <4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com> <alpine.LNX.1.10.0810041219130.26779@jikos.suse.cz> <alpine.LFD.2.00.0810041236250.4404@apollo> <4807377b0810041824u5ea472d1q4cf5ff606bd23a11@mail.gmail.com> <alpine.LFD.2.00.0810050959420.3398@apollo>
+ <48E8D7A5.7060508@linux.intel.com> <alpine.LFD.2.00.0810051752210.3398@apollo> <20081005090226.1e9eaae6@linux.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The open path for ptmx slaves is via the ptmx device. Opening them any
-other way is not allowed. Vegard Nossum found that previously this was not
-the case and mknod foo c 128 42; cat foo would produce nasty diagnostics
+On Sun, 5 Oct 2008, Arjan van de Ven wrote:
+> On Sun, 5 Oct 2008 17:55:14 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Sun, 5 Oct 2008, Arjan van de Ven wrote:
+> > > Thomas Gleixner wrote:
+> > > > On Sat, 4 Oct 2008, Jesse Brandeburg wrote:
+> > > > > > Exactly. The access to a ro region results in a fault. I have
+> > > > > > nowhere seen that trigger, but I can reproduce the trylock()
+> > > > > > WARN_ON, which confirms that there is concurrent access to
+> > > > > > the NVRAM registers. The backtrace pattern is similar to the
+> > > > > > one you have seen.
+> > > > > are you still getting WARN_ON *with* all the mutex based fixes
+> > > > > already applied?
+> > > > 
+> > > > The WARN_ON triggers with current mainline. Is there any fixlet in
+> > > > Linus tree missing ?
+> > > > 
+> > > > > with the mutex patches in place (without protection patch) we
+> > > > > are still reproducing the issue, until we apply the
+> > > > > set_memory_ro patch.
+> > > > 
+> > > > That does not make sense to me. If the memory_ro patch is
+> > > > providing _real_ protection then you _must_ run into an access
+> > > > violation. If not, then the patch just papers over the real
+> > > > problem in some mysterious way.
+> > > > 
+> > > 
+> > > not if the bad code is doing copy_to_user .... (or similar)
+> > 
+> > You mean: copy_from_user :) This would require that the e1000e
+> > nvram region is writable via copy_from_user by an e1000e user space
+> > interface. A quick grep does not reviel such a horrible interface.
+> 
+> I meant a "copy_to_user" to a duff pointer, somewhere in the kernel.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
----
+Hmm, don't we check the *to address on copy_to_user ?
 
- drivers/char/tty_io.c |   18 ++++++++++++------
- 1 files changed, 12 insertions(+), 6 deletions(-)
+Thanks,
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index f40298e..2e96ce0 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1227,7 +1227,8 @@ static void tty_line_name(struct tty_driver *driver, int index, char *p)
-  *	init_dev		-	initialise a tty device
-  *	@driver: tty driver we are opening a device on
-  *	@idx: device index
-- *	@tty: returned tty structure
-+ *	@ret_tty: returned tty structure
-+ *	@first_ok: ok to open a new device (used by ptmx)
-  *
-  *	Prepare a tty device. This may not be a "new" clean device but
-  *	could also be an active device. The pty drivers require special
-@@ -1248,7 +1249,7 @@ static void tty_line_name(struct tty_driver *driver, int index, char *p)
-  */
- 
- static int init_dev(struct tty_driver *driver, int idx,
--	struct tty_struct **ret_tty)
-+	struct tty_struct **ret_tty, int first_ok)
- {
- 	struct tty_struct *tty, *o_tty;
- 	struct ktermios *tp, **tp_loc, *o_tp, **o_tp_loc;
-@@ -1279,6 +1280,11 @@ static int init_dev(struct tty_driver *driver, int idx,
- 	}
- 	if (tty) goto fast_track;
- 
-+	if (driver->subtype == PTY_TYPE_MASTER &&
-+		(driver->flags & TTY_DRIVER_DEVPTS_MEM) && !first_ok) {
-+		retval = -EIO;
-+		goto end_init;
-+	}
- 	/*
- 	 * First time open is complex, especially for PTY devices.
- 	 * This code guarantees that either everything succeeds and the
-@@ -1413,7 +1419,7 @@ static int init_dev(struct tty_driver *driver, int idx,
- 
- 	if (retval)
- 		goto release_mem_out;
--	 goto success;
-+	goto success;
- 
- 	/*
- 	 * This fast open can be used if the tty is already open.
-@@ -1795,7 +1801,7 @@ static void release_dev(struct file *filp)
- }
- 
- /**
-- *	tty_open		-	open a tty device
-+ *	__tty_open		-	open a tty device
-  *	@inode: inode of device file
-  *	@filp: file pointer to tty
-  *
-@@ -1874,7 +1880,7 @@ retry_open:
- 		return -ENODEV;
- 	}
- got_driver:
--	retval = init_dev(driver, index, &tty);
-+	retval = init_dev(driver, index, &tty, 0);
- 	mutex_unlock(&tty_mutex);
- 	if (retval)
- 		return retval;
-@@ -1971,7 +1977,7 @@ static int __ptmx_open(struct inode *inode, struct file *filp)
- 		return index;
- 
- 	mutex_lock(&tty_mutex);
--	retval = init_dev(ptm_driver, index, &tty);
-+	retval = init_dev(ptm_driver, index, &tty, 1);
- 	mutex_unlock(&tty_mutex);
- 
- 	if (retval)
+	tglx
 
