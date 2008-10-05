@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbYJEQSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbYJEQTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758268AbYJEQSd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbYJEQMI
+	id S1757403AbYJEQTK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbYJEQNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:12:08 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48540 "EHLO
+	Sun, 5 Oct 2008 12:13:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49590 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756413AbYJEQMF (ORCPT
+	with ESMTP id S1757439AbYJEQNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:12:05 -0400
+	Sun, 5 Oct 2008 12:13:32 -0400
 From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 39/76] tty: kref usage for isicom and moxa
+Subject: [PATCH 40/76] stallion: Use krefs
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:12:05 +0100
-Message-ID: <20081005161143.1997.1746.stgit@localhost.localdomain>
+Date: Sun, 05 Oct 2008 17:13:31 +0100
+Message-ID: <20081005161210.1997.73195.stgit@localhost.localdomain>
 In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
 References: <20081005160231.1997.10462.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -25,420 +25,762 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than blindly keep taking krefs we reorder the code in a few places
-to pass the tty down to the right place (which is important as from the user
-side it is not the case that tty == port->tty in all situations). For the irq
-and related paths use the krefs to stop the tty being freed under us.
+Use tty_port_init and krefs in the stallion drivers to protect us from devices
+going away underneath us. As with the other drives some rearranging is done to
+pass the tty structure down properly on the user side.
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/isicom.c |   61 +++++++++++++++++++++++++------------------------
- drivers/char/moxa.c   |   61 +++++++++++++++++++++++++++++++------------------
- 2 files changed, 69 insertions(+), 53 deletions(-)
+ drivers/char/Kconfig     |    4 +-
+ drivers/char/istallion.c |  107 +++++++++++++++++++++++++---------------------
+ drivers/char/stallion.c  |  105 ++++++++++++++++++++++++++++-----------------
+ 3 files changed, 123 insertions(+), 93 deletions(-)
 
-diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
-index 8f7cc19..7d30ee1 100644
---- a/drivers/char/isicom.c
-+++ b/drivers/char/isicom.c
-@@ -421,17 +421,16 @@ static void isicom_tx(unsigned long _data)
- 	if (retries >= 100)
- 		goto unlock;
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index caff851..700ff96 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -350,7 +350,7 @@ config STALDRV
  
-+	tty = tty_port_tty_get(&port->port);
-+	if (tty == NULL)
-+		goto put_unlock;
-+
- 	for (; count > 0; count--, port++) {
- 		/* port not active or tx disabled to force flow control */
- 		if (!(port->port.flags & ASYNC_INITIALIZED) ||
- 				!(port->status & ISI_TXOK))
- 			continue;
+ config STALLION
+ 	tristate "Stallion EasyIO or EC8/32 support"
+-	depends on STALDRV && BROKEN_ON_SMP && (ISA || EISA || PCI)
++	depends on STALDRV && (ISA || EISA || PCI)
+ 	help
+ 	  If you have an EasyIO or EasyConnection 8/32 multiport Stallion
+ 	  card, then this is for you; say Y.  Make sure to read
+@@ -361,7 +361,7 @@ config STALLION
  
--		tty = port->port.tty;
--
--		if (tty == NULL)
--			continue;
--
- 		txcount = min_t(short, TX_SIZE, port->xmit_cnt);
- 		if (txcount <= 0 || tty->stopped || tty->hw_stopped)
- 			continue;
-@@ -489,6 +488,8 @@ static void isicom_tx(unsigned long _data)
- 			tty_wakeup(tty);
- 	}
- 
-+put_unlock:
-+	tty_kref_put(tty);
- unlock:
- 	spin_unlock_irqrestore(&isi_card[card].card_lock, flags);
- 	/*	schedule another tx for hopefully in about 10ms	*/
-@@ -547,7 +548,7 @@ static irqreturn_t isicom_interrupt(int irq, void *dev_id)
- 		return IRQ_HANDLED;
- 	}
- 
--	tty = port->port.tty;
-+	tty = tty_port_tty_get(&port->port);
- 	if (tty == NULL) {
- 		word_count = byte_count >> 1;
- 		while (byte_count > 1) {
-@@ -588,7 +589,7 @@ static irqreturn_t isicom_interrupt(int irq, void *dev_id)
- 			}
- 
- 			if (port->port.flags & ASYNC_CTS_FLOW) {
--				if (port->port.tty->hw_stopped) {
-+				if (tty->hw_stopped) {
- 					if (header & ISI_CTS) {
- 						port->port.tty->hw_stopped = 0;
- 						/* start tx ing */
-@@ -597,7 +598,7 @@ static irqreturn_t isicom_interrupt(int irq, void *dev_id)
- 						tty_wakeup(tty);
- 					}
- 				} else if (!(header & ISI_CTS)) {
--					port->port.tty->hw_stopped = 1;
-+					tty->hw_stopped = 1;
- 					/* stop tx ing */
- 					port->status &= ~(ISI_TXOK | ISI_CTS);
- 				}
-@@ -660,24 +661,21 @@ static irqreturn_t isicom_interrupt(int irq, void *dev_id)
- 	}
- 	outw(0x0000, base+0x04); /* enable interrupts */
- 	spin_unlock(&card->card_lock);
-+	tty_kref_put(tty);
- 
- 	return IRQ_HANDLED;
- }
- 
--static void isicom_config_port(struct isi_port *port)
-+static void isicom_config_port(struct tty_struct *tty)
+ config ISTALLION
+ 	tristate "Stallion EC8/64, ONboard, Brumby support"
+-	depends on STALDRV && BROKEN_ON_SMP && (ISA || EISA || PCI)
++	depends on STALDRV && (ISA || EISA || PCI)
+ 	help
+ 	  If you have an EasyConnection 8/64, ONboard, Brumby or Stallion
+ 	  serial multiport card, say Y here. Make sure to read
+diff --git a/drivers/char/istallion.c b/drivers/char/istallion.c
+index 843a2af..96ee112 100644
+--- a/drivers/char/istallion.c
++++ b/drivers/char/istallion.c
+@@ -623,24 +623,25 @@ static int	stli_memioctl(struct inode *ip, struct file *fp, unsigned int cmd, un
+ static void	stli_brdpoll(struct stlibrd *brdp, cdkhdr_t __iomem *hdrp);
+ static void	stli_poll(unsigned long arg);
+ static int	stli_hostcmd(struct stlibrd *brdp, struct stliport *portp);
+-static int	stli_initopen(struct stlibrd *brdp, struct stliport *portp);
++static int	stli_initopen(struct tty_struct *tty, struct stlibrd *brdp, struct stliport *portp);
+ static int	stli_rawopen(struct stlibrd *brdp, struct stliport *portp, unsigned long arg, int wait);
+ static int	stli_rawclose(struct stlibrd *brdp, struct stliport *portp, unsigned long arg, int wait);
+-static int	stli_waitcarrier(struct stlibrd *brdp, struct stliport *portp, struct file *filp);
+-static int	stli_setport(struct stliport *portp);
++static int	stli_waitcarrier(struct tty_struct *tty, struct stlibrd *brdp,
++				struct stliport *portp, struct file *filp);
++static int	stli_setport(struct tty_struct *tty);
+ static int	stli_cmdwait(struct stlibrd *brdp, struct stliport *portp, unsigned long cmd, void *arg, int size, int copyback);
+ static void	stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigned long cmd, void *arg, int size, int copyback);
+ static void	__stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigned long cmd, void *arg, int size, int copyback);
+ static void	stli_dodelaycmd(struct stliport *portp, cdkctrl_t __iomem *cp);
+-static void	stli_mkasyport(struct stliport *portp, asyport_t *pp, struct ktermios *tiosp);
++static void	stli_mkasyport(struct tty_struct *tty, struct stliport *portp, asyport_t *pp, struct ktermios *tiosp);
+ static void	stli_mkasysigs(asysigs_t *sp, int dtr, int rts);
+ static long	stli_mktiocm(unsigned long sigvalue);
+ static void	stli_read(struct stlibrd *brdp, struct stliport *portp);
+ static int	stli_getserial(struct stliport *portp, struct serial_struct __user *sp);
+-static int	stli_setserial(struct stliport *portp, struct serial_struct __user *sp);
++static int	stli_setserial(struct tty_struct *tty, struct serial_struct __user *sp);
+ static int	stli_getbrdstats(combrd_t __user *bp);
+-static int	stli_getportstats(struct stliport *portp, comstats_t __user *cp);
+-static int	stli_portcmdstats(struct stliport *portp);
++static int	stli_getportstats(struct tty_struct *tty, struct stliport *portp, comstats_t __user *cp);
++static int	stli_portcmdstats(struct tty_struct *tty, struct stliport *portp);
+ static int	stli_clrportstats(struct stliport *portp, comstats_t __user *cp);
+ static int	stli_getportstruct(struct stliport __user *arg);
+ static int	stli_getbrdstruct(struct stlibrd __user *arg);
+@@ -731,12 +732,16 @@ static void stli_cleanup_ports(struct stlibrd *brdp)
  {
-+	struct isi_port *port = tty->driver_data;
- 	struct isi_board *card = port->card;
--	struct tty_struct *tty;
- 	unsigned long baud;
- 	unsigned long base = card->base;
- 	u16 channel_setup, channel = port->channel,
- 		shift_count = card->shift_count;
- 	unsigned char flow_ctrl;
+ 	struct stliport *portp;
+ 	unsigned int j;
++	struct tty_struct *tty;
  
--	tty = port->port.tty;
--
--	if (tty == NULL)
--		return;
- 	/* FIXME: Switch to new tty baud API */
- 	baud = C_BAUD(tty);
- 	if (baud & CBAUDEX) {
-@@ -690,7 +688,7 @@ static void isicom_config_port(struct isi_port *port)
- 
- 		/* 1,2,3,4 => 57.6, 115.2, 230, 460 kbps resp. */
- 		if (baud < 1 || baud > 4)
--			port->port.tty->termios->c_cflag &= ~CBAUDEX;
-+			tty->termios->c_cflag &= ~CBAUDEX;
- 		else
- 			baud += 15;
- 	}
-@@ -797,8 +795,9 @@ static inline void isicom_setup_board(struct isi_board *bp)
- 	spin_unlock_irqrestore(&bp->card_lock, flags);
- }
- 
--static int isicom_setup_port(struct isi_port *port)
-+static int isicom_setup_port(struct tty_struct *tty)
- {
-+	struct isi_port *port = tty->driver_data;
- 	struct isi_board *card = port->card;
- 	unsigned long flags;
- 
-@@ -808,8 +807,7 @@ static int isicom_setup_port(struct isi_port *port)
- 		return -ENOMEM;
- 
- 	spin_lock_irqsave(&card->card_lock, flags);
--	if (port->port.tty)
--		clear_bit(TTY_IO_ERROR, &port->port.tty->flags);
-+	clear_bit(TTY_IO_ERROR, &tty->flags);
- 	if (port->port.count == 1)
- 		card->count++;
- 
-@@ -823,7 +821,7 @@ static int isicom_setup_port(struct isi_port *port)
- 		InterruptTheCard(card->base);
- 	}
- 
--	isicom_config_port(port);
-+	isicom_config_port(tty);
- 	port->port.flags |= ASYNC_INITIALIZED;
- 	spin_unlock_irqrestore(&card->card_lock, flags);
- 
-@@ -934,8 +932,8 @@ static int isicom_open(struct tty_struct *tty, struct file *filp)
- 
- 	port->port.count++;
- 	tty->driver_data = port;
--	port->port.tty = tty;
--	error = isicom_setup_port(port);
-+	tty_port_tty_set(&port->port, tty);
-+	error = isicom_setup_port(tty);
- 	if (error == 0)
- 		error = block_til_ready(tty, filp, port);
- 	return error;
-@@ -955,15 +953,17 @@ static void isicom_shutdown_port(struct isi_port *port)
- 	struct isi_board *card = port->card;
- 	struct tty_struct *tty;
- 
--	tty = port->port.tty;
-+	tty = tty_port_tty_get(&port->port);
- 
--	if (!(port->port.flags & ASYNC_INITIALIZED))
-+	if (!(port->port.flags & ASYNC_INITIALIZED)) {
-+		tty_kref_put(tty);
- 		return;
-+	}
- 
- 	tty_port_free_xmit_buf(&port->port);
- 	port->port.flags &= ~ASYNC_INITIALIZED;
- 	/* 3rd October 2000 : Vinayak P Risbud */
--	port->port.tty = NULL;
-+	tty_port_tty_set(&port->port, NULL);
- 
- 	/*Fix done by Anil .S on 30-04-2001
- 	remote login through isi port has dtr toggle problem
-@@ -1243,9 +1243,10 @@ static int isicom_tiocmset(struct tty_struct *tty, struct file *file,
- 	return 0;
- }
- 
--static int isicom_set_serial_info(struct isi_port *port,
--	struct serial_struct __user *info)
-+static int isicom_set_serial_info(struct tty_struct *tty,
-+					struct serial_struct __user *info)
- {
-+	struct isi_port *port = tty->driver_data;
- 	struct serial_struct newinfo;
- 	int reconfig_port;
- 
-@@ -1276,7 +1277,7 @@ static int isicom_set_serial_info(struct isi_port *port,
- 	if (reconfig_port) {
- 		unsigned long flags;
- 		spin_lock_irqsave(&port->card->card_lock, flags);
--		isicom_config_port(port);
-+		isicom_config_port(tty);
- 		spin_unlock_irqrestore(&port->card->card_lock, flags);
- 	}
- 	unlock_kernel();
-@@ -1318,7 +1319,7 @@ static int isicom_ioctl(struct tty_struct *tty, struct file *filp,
- 		return isicom_get_serial_info(port, argp);
- 
- 	case TIOCSSERIAL:
--		return isicom_set_serial_info(port, argp);
-+		return isicom_set_serial_info(tty, argp);
- 
- 	default:
- 		return -ENOIOCTLCMD;
-@@ -1341,7 +1342,7 @@ static void isicom_set_termios(struct tty_struct *tty,
- 		return;
- 
- 	spin_lock_irqsave(&port->card->card_lock, flags);
--	isicom_config_port(port);
-+	isicom_config_port(tty);
- 	spin_unlock_irqrestore(&port->card->card_lock, flags);
- 
- 	if ((old_termios->c_cflag & CRTSCTS) &&
-@@ -1419,7 +1420,7 @@ static void isicom_hangup(struct tty_struct *tty)
- 
- 	port->port.count = 0;
- 	port->port.flags &= ~ASYNC_NORMAL_ACTIVE;
--	port->port.tty = NULL;
-+	tty_port_tty_set(&port->port, NULL);
- 	wake_up_interruptible(&port->port.open_wait);
- }
- 
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index d3d7864..5df4003 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -205,7 +205,7 @@ static int moxa_tiocmset(struct tty_struct *tty, struct file *file,
- static void moxa_poll(unsigned long);
- static void moxa_set_tty_param(struct tty_struct *, struct ktermios *);
- static void moxa_setup_empty_event(struct tty_struct *);
--static void moxa_shut_down(struct moxa_port *);
-+static void moxa_shut_down(struct tty_struct *);
- /*
-  * moxa board interface functions:
-  */
-@@ -217,7 +217,7 @@ static void MoxaPortLineCtrl(struct moxa_port *, int, int);
- static void MoxaPortFlowCtrl(struct moxa_port *, int, int, int, int, int);
- static int MoxaPortLineStatus(struct moxa_port *);
- static void MoxaPortFlushData(struct moxa_port *, int);
--static int MoxaPortWriteData(struct moxa_port *, const unsigned char *, int);
-+static int MoxaPortWriteData(struct tty_struct *, const unsigned char *, int);
- static int MoxaPortReadData(struct moxa_port *);
- static int MoxaPortTxQueue(struct moxa_port *);
- static int MoxaPortRxQueue(struct moxa_port *);
-@@ -332,6 +332,7 @@ static int moxa_ioctl(struct tty_struct *tty, struct file *file,
- 		for (i = 0; i < MAX_BOARDS; i++) {
- 			p = moxa_boards[i].ports;
- 			for (j = 0; j < MAX_PORTS_PER_BOARD; j++, p++, argm++) {
-+				struct tty_struct *ttyp;
- 				memset(&tmp, 0, sizeof(tmp));
- 				if (!moxa_boards[i].ready)
- 					goto copy;
-@@ -344,10 +345,12 @@ static int moxa_ioctl(struct tty_struct *tty, struct file *file,
- 				if (status & 4)
- 					tmp.dcd = 1;
- 
--				if (!p->port.tty || !p->port.tty->termios)
-+				ttyp = tty_port_tty_get(&p->port);
-+				if (!ttyp || !ttyp->termios)
- 					tmp.cflag = p->cflag;
- 				else
--					tmp.cflag = p->port.tty->termios->c_cflag;
-+					tmp.cflag = ttyp->termios->c_cflag;
-+				tty_kref_put(tty);
- copy:
- 				if (copy_to_user(argm, &tmp, sizeof(tmp))) {
- 					mutex_unlock(&moxa_openlock);
-@@ -880,8 +883,14 @@ static void moxa_board_deinit(struct moxa_board_conf *brd)
- 
- 	/* pci hot-un-plug support */
- 	for (a = 0; a < brd->numPorts; a++)
--		if (brd->ports[a].port.flags & ASYNC_INITIALIZED)
--			tty_hangup(brd->ports[a].port.tty);
-+		if (brd->ports[a].port.flags & ASYNC_INITIALIZED) {
-+			struct tty_struct *tty = tty_port_tty_get(
-+						&brd->ports[a].port);
-+			if (tty) {
+ 	for (j = 0; j < STL_MAXPORTS; j++) {
+ 		portp = brdp->ports[j];
+ 		if (portp != NULL) {
+-			if (portp->port.tty != NULL)
+-				tty_hangup(portp->port.tty);
++			tty = tty_port_tty_get(&portp->port);
++			if (tty != NULL) {
 +				tty_hangup(tty);
 +				tty_kref_put(tty);
 +			}
-+		}
- 	while (1) {
- 		opened = 0;
- 		for (a = 0; a < brd->numPorts; a++)
-@@ -1096,13 +1105,14 @@ static void __exit moxa_exit(void)
- module_init(moxa_init);
- module_exit(moxa_exit);
+ 			kfree(portp);
+ 		}
+ 	}
+@@ -824,7 +829,7 @@ static int stli_open(struct tty_struct *tty, struct file *filp)
+  *	requires several commands to the board we will need to wait for any
+  *	other open that is already initializing the port.
+  */
+-	portp->port.tty = tty;
++	tty_port_tty_set(&portp->port, tty);
+ 	tty->driver_data = portp;
+ 	portp->port.count++;
  
--static void moxa_close_port(struct moxa_port *ch)
-+static void moxa_close_port(struct tty_struct *tty)
+@@ -835,7 +840,7 @@ static int stli_open(struct tty_struct *tty, struct file *filp)
+ 
+ 	if ((portp->port.flags & ASYNC_INITIALIZED) == 0) {
+ 		set_bit(ST_INITIALIZING, &portp->state);
+-		if ((rc = stli_initopen(brdp, portp)) >= 0) {
++		if ((rc = stli_initopen(tty, brdp, portp)) >= 0) {
+ 			portp->port.flags |= ASYNC_INITIALIZED;
+ 			clear_bit(TTY_IO_ERROR, &tty->flags);
+ 		}
+@@ -864,7 +869,7 @@ static int stli_open(struct tty_struct *tty, struct file *filp)
+  *	then also we might have to wait for carrier.
+  */
+ 	if (!(filp->f_flags & O_NONBLOCK)) {
+-		if ((rc = stli_waitcarrier(brdp, portp, filp)) != 0)
++		if ((rc = stli_waitcarrier(tty, brdp, portp, filp)) != 0)
+ 			return rc;
+ 	}
+ 	portp->port.flags |= ASYNC_NORMAL_ACTIVE;
+@@ -930,7 +935,7 @@ static void stli_close(struct tty_struct *tty, struct file *filp)
+ 	stli_flushbuffer(tty);
+ 
+ 	tty->closing = 0;
+-	portp->port.tty = NULL;
++	tty_port_tty_set(&portp->port, NULL);
+ 
+ 	if (portp->openwaitcnt) {
+ 		if (portp->close_delay)
+@@ -952,9 +957,9 @@ static void stli_close(struct tty_struct *tty, struct file *filp)
+  *	this still all happens pretty quickly.
+  */
+ 
+-static int stli_initopen(struct stlibrd *brdp, struct stliport *portp)
++static int stli_initopen(struct tty_struct *tty,
++				struct stlibrd *brdp, struct stliport *portp)
  {
--	moxa_shut_down(ch);
-+	struct moxa_port *ch = tty->driver_data;
-+	moxa_shut_down(tty);
- 	MoxaPortFlushData(ch, 2);
- 	ch->port.flags &= ~ASYNC_NORMAL_ACTIVE;
--	ch->port.tty->driver_data = NULL;
--	ch->port.tty = NULL;
-+	tty->driver_data = NULL;
-+	tty_port_tty_set(&ch->port, NULL);
+-	struct tty_struct *tty;
+ 	asynotify_t nt;
+ 	asyport_t aport;
+ 	int rc;
+@@ -969,10 +974,7 @@ static int stli_initopen(struct stlibrd *brdp, struct stliport *portp)
+ 	    sizeof(asynotify_t), 0)) < 0)
+ 		return rc;
+ 
+-	tty = portp->port.tty;
+-	if (tty == NULL)
+-		return -ENODEV;
+-	stli_mkasyport(portp, &aport, tty->termios);
++	stli_mkasyport(tty, portp, &aport, tty->termios);
+ 	if ((rc = stli_cmdwait(brdp, portp, A_SETPORT, &aport,
+ 	    sizeof(asyport_t), 0)) < 0)
+ 		return rc;
+@@ -1161,22 +1163,21 @@ static int stli_cmdwait(struct stlibrd *brdp, struct stliport *portp, unsigned l
+  *	waiting for the command to complete - so must have user context.
+  */
+ 
+-static int stli_setport(struct stliport *portp)
++static int stli_setport(struct tty_struct *tty)
+ {
++	struct stliport *portp = tty->driver_data;
+ 	struct stlibrd *brdp;
+ 	asyport_t aport;
+ 
+ 	if (portp == NULL)
+ 		return -ENODEV;
+-	if (portp->port.tty == NULL)
+-		return -ENODEV;
+ 	if (portp->brdnr >= stli_nrbrds)
+ 		return -ENODEV;
+ 	brdp = stli_brds[portp->brdnr];
+ 	if (brdp == NULL)
+ 		return -ENODEV;
+ 
+-	stli_mkasyport(portp, &aport, portp->port.tty->termios);
++	stli_mkasyport(tty, portp, &aport, tty->termios);
+ 	return(stli_cmdwait(brdp, portp, A_SETPORT, &aport, sizeof(asyport_t), 0));
  }
  
- static int moxa_block_till_ready(struct tty_struct *tty, struct file *filp,
-@@ -1161,7 +1171,7 @@ static int moxa_open(struct tty_struct *tty, struct file *filp)
- 	ch = &brd->ports[port % MAX_PORTS_PER_BOARD];
- 	ch->port.count++;
- 	tty->driver_data = ch;
--	ch->port.tty = tty;
-+	tty_port_tty_set(&ch->port, tty);
- 	if (!(ch->port.flags & ASYNC_INITIALIZED)) {
- 		ch->statusflags = 0;
- 		moxa_set_tty_param(tty, tty->termios);
-@@ -1179,7 +1189,7 @@ static int moxa_open(struct tty_struct *tty, struct file *filp)
- 	if (retval) {
- 		if (ch->port.count) /* 0 means already hung up... */
- 			if (--ch->port.count == 0)
--				moxa_close_port(ch);
-+				moxa_close_port(tty);
- 	} else
- 		ch->port.flags |= ASYNC_NORMAL_ACTIVE;
- 	mutex_unlock(&moxa_openlock);
-@@ -1219,7 +1229,7 @@ static void moxa_close(struct tty_struct *tty, struct file *filp)
- 		tty_wait_until_sent(tty, 30 * HZ);	/* 30 seconds timeout */
+@@ -1187,7 +1188,8 @@ static int stli_setport(struct stliport *portp)
+  *	maybe because if we are clocal then we don't need to wait...
+  */
+ 
+-static int stli_waitcarrier(struct stlibrd *brdp, struct stliport *portp, struct file *filp)
++static int stli_waitcarrier(struct tty_struct *tty, struct stlibrd *brdp,
++				struct stliport *portp, struct file *filp)
+ {
+ 	unsigned long flags;
+ 	int rc, doclocal;
+@@ -1195,7 +1197,7 @@ static int stli_waitcarrier(struct stlibrd *brdp, struct stliport *portp, struct
+ 	rc = 0;
+ 	doclocal = 0;
+ 
+-	if (portp->port.tty->termios->c_cflag & CLOCAL)
++	if (tty->termios->c_cflag & CLOCAL)
+ 		doclocal++;
+ 
+ 	spin_lock_irqsave(&stli_lock, flags);
+@@ -1572,10 +1574,11 @@ static int stli_getserial(struct stliport *portp, struct serial_struct __user *s
+  *	just quietly ignore any requests to change irq, etc.
+  */
+ 
+-static int stli_setserial(struct stliport *portp, struct serial_struct __user *sp)
++static int stli_setserial(struct tty_struct *tty, struct serial_struct __user *sp)
+ {
+ 	struct serial_struct sio;
+ 	int rc;
++	struct stliport *portp = tty->driver_data;
+ 
+ 	if (copy_from_user(&sio, sp, sizeof(struct serial_struct)))
+ 		return -EFAULT;
+@@ -1594,7 +1597,7 @@ static int stli_setserial(struct stliport *portp, struct serial_struct __user *s
+ 	portp->closing_wait = sio.closing_wait;
+ 	portp->custom_divisor = sio.custom_divisor;
+ 
+-	if ((rc = stli_setport(portp)) < 0)
++	if ((rc = stli_setport(tty)) < 0)
+ 		return rc;
+ 	return 0;
+ }
+@@ -1685,17 +1688,17 @@ static int stli_ioctl(struct tty_struct *tty, struct file *file, unsigned int cm
+ 		rc = stli_getserial(portp, argp);
+ 		break;
+ 	case TIOCSSERIAL:
+-		rc = stli_setserial(portp, argp);
++		rc = stli_setserial(tty, argp);
+ 		break;
+ 	case STL_GETPFLAG:
+ 		rc = put_user(portp->pflag, (unsigned __user *)argp);
+ 		break;
+ 	case STL_SETPFLAG:
+ 		if ((rc = get_user(portp->pflag, (unsigned __user *)argp)) == 0)
+-			stli_setport(portp);
++			stli_setport(tty);
+ 		break;
+ 	case COM_GETPORTSTATS:
+-		rc = stli_getportstats(portp, argp);
++		rc = stli_getportstats(tty, portp, argp);
+ 		break;
+ 	case COM_CLRPORTSTATS:
+ 		rc = stli_clrportstats(portp, argp);
+@@ -1742,7 +1745,7 @@ static void stli_settermios(struct tty_struct *tty, struct ktermios *old)
+ 
+ 	tiosp = tty->termios;
+ 
+-	stli_mkasyport(portp, &aport, tiosp);
++	stli_mkasyport(tty, portp, &aport, tiosp);
+ 	stli_cmdwait(brdp, portp, A_SETPORT, &aport, sizeof(asyport_t), 0);
+ 	stli_mkasysigs(&portp->asig, ((tiosp->c_cflag & CBAUD) ? 1 : 0), -1);
+ 	stli_cmdwait(brdp, portp, A_SETSIGNALS, &portp->asig,
+@@ -1854,7 +1857,7 @@ static void stli_hangup(struct tty_struct *tty)
+ 	clear_bit(ST_TXBUSY, &portp->state);
+ 	clear_bit(ST_RXSTOP, &portp->state);
+ 	set_bit(TTY_IO_ERROR, &tty->flags);
+-	portp->port.tty = NULL;
++	tty_port_tty_set(&portp->port, NULL);
+ 	portp->port.flags &= ~ASYNC_NORMAL_ACTIVE;
+ 	portp->port.count = 0;
+ 	spin_unlock_irqrestore(&stli_lock, flags);
+@@ -1998,7 +2001,7 @@ static int stli_portinfo(struct stlibrd *brdp, struct stliport *portp, int portn
+ 	char *sp, *uart;
+ 	int rc, cnt;
+ 
+-	rc = stli_portcmdstats(portp);
++	rc = stli_portcmdstats(NULL, portp);
+ 
+ 	uart = "UNKNOWN";
+ 	if (brdp->state & BST_STARTED) {
+@@ -2188,7 +2191,7 @@ static void stli_read(struct stlibrd *brdp, struct stliport *portp)
+ 
+ 	if (test_bit(ST_RXSTOP, &portp->state))
+ 		return;
+-	tty = portp->port.tty;
++	tty = tty_port_tty_get(&portp->port);
+ 	if (tty == NULL)
+ 		return;
+ 
+@@ -2230,6 +2233,7 @@ static void stli_read(struct stlibrd *brdp, struct stliport *portp)
+ 		set_bit(ST_RXING, &portp->state);
+ 
+ 	tty_schedule_flip(tty);
++	tty_kref_put(tty);
+ }
+ 
+ /*****************************************************************************/
+@@ -2362,7 +2366,7 @@ static int stli_hostcmd(struct stlibrd *brdp, struct stliport *portp)
+ 	if (ap->notify) {
+ 		nt = ap->changed;
+ 		ap->notify = 0;
+-		tty = portp->port.tty;
++		tty = tty_port_tty_get(&portp->port);
+ 
+ 		if (nt.signal & SG_DCD) {
+ 			oldsigs = portp->sigs;
+@@ -2399,6 +2403,7 @@ static int stli_hostcmd(struct stlibrd *brdp, struct stliport *portp)
+ 				tty_schedule_flip(tty);
+ 			}
+ 		}
++		tty_kref_put(tty);
+ 
+ 		if (nt.data & DT_RXBUSY) {
+ 			donerx++;
+@@ -2535,14 +2540,15 @@ static void stli_poll(unsigned long arg)
+  *	the slave.
+  */
+ 
+-static void stli_mkasyport(struct stliport *portp, asyport_t *pp, struct ktermios *tiosp)
++static void stli_mkasyport(struct tty_struct *tty, struct stliport *portp,
++				asyport_t *pp, struct ktermios *tiosp)
+ {
+ 	memset(pp, 0, sizeof(asyport_t));
+ 
+ /*
+  *	Start of by setting the baud, char size, parity and stop bit info.
+  */
+-	pp->baudout = tty_get_baud_rate(portp->port.tty);
++	pp->baudout = tty_get_baud_rate(tty);
+ 	if ((tiosp->c_cflag & CBAUD) == B38400) {
+ 		if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
+ 			pp->baudout = 57600;
+@@ -2695,7 +2701,7 @@ static int stli_initports(struct stlibrd *brdp)
+ 			printk("STALLION: failed to allocate port structure\n");
+ 			continue;
+ 		}
+-
++		tty_port_init(&portp->port);
+ 		portp->magic = STLI_PORTMAGIC;
+ 		portp->portnr = i;
+ 		portp->brdnr = brdp->brdnr;
+@@ -4220,7 +4226,7 @@ static struct stliport *stli_getport(unsigned int brdnr, unsigned int panelnr,
+  *	what port to get stats for (used through board control device).
+  */
+ 
+-static int stli_portcmdstats(struct stliport *portp)
++static int stli_portcmdstats(struct tty_struct *tty, struct stliport *portp)
+ {
+ 	unsigned long	flags;
+ 	struct stlibrd	*brdp;
+@@ -4249,15 +4255,15 @@ static int stli_portcmdstats(struct stliport *portp)
+ 	stli_comstats.flags = portp->port.flags;
+ 
+ 	spin_lock_irqsave(&brd_lock, flags);
+-	if (portp->port.tty != NULL) {
+-		if (portp->port.tty->driver_data == portp) {
+-			stli_comstats.ttystate = portp->port.tty->flags;
++	if (tty != NULL) {
++		if (portp->port.tty == tty) {
++			stli_comstats.ttystate = tty->flags;
+ 			stli_comstats.rxbuffered = -1;
+-			if (portp->port.tty->termios != NULL) {
+-				stli_comstats.cflags = portp->port.tty->termios->c_cflag;
+-				stli_comstats.iflags = portp->port.tty->termios->c_iflag;
+-				stli_comstats.oflags = portp->port.tty->termios->c_oflag;
+-				stli_comstats.lflags = portp->port.tty->termios->c_lflag;
++			if (tty->termios != NULL) {
++				stli_comstats.cflags = tty->termios->c_cflag;
++				stli_comstats.iflags = tty->termios->c_iflag;
++				stli_comstats.oflags = tty->termios->c_oflag;
++				stli_comstats.lflags = tty->termios->c_lflag;
+ 			}
+ 		}
+ 	}
+@@ -4294,7 +4300,8 @@ static int stli_portcmdstats(struct stliport *portp)
+  *	what port to get stats for (used through board control device).
+  */
+ 
+-static int stli_getportstats(struct stliport *portp, comstats_t __user *cp)
++static int stli_getportstats(struct tty_struct *tty, struct stliport *portp,
++							comstats_t __user *cp)
+ {
+ 	struct stlibrd *brdp;
+ 	int rc;
+@@ -4312,7 +4319,7 @@ static int stli_getportstats(struct stliport *portp, comstats_t __user *cp)
+ 	if (!brdp)
+ 		return -ENODEV;
+ 
+-	if ((rc = stli_portcmdstats(portp)) < 0)
++	if ((rc = stli_portcmdstats(tty, portp)) < 0)
+ 		return rc;
+ 
+ 	return copy_to_user(cp, &stli_comstats, sizeof(comstats_t)) ?
+@@ -4427,7 +4434,7 @@ static int stli_memioctl(struct inode *ip, struct file *fp, unsigned int cmd, un
+ 
+ 	switch (cmd) {
+ 	case COM_GETPORTSTATS:
+-		rc = stli_getportstats(NULL, argp);
++		rc = stli_getportstats(NULL, NULL, argp);
+ 		done++;
+ 		break;
+ 	case COM_CLRPORTSTATS:
+diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
+index 19db1eb..81b3234 100644
+--- a/drivers/char/stallion.c
++++ b/drivers/char/stallion.c
+@@ -405,9 +405,9 @@ static unsigned int	stl_baudrates[] = {
+ 
+ static int	stl_memioctl(struct inode *ip, struct file *fp, unsigned int cmd, unsigned long arg);
+ static int	stl_brdinit(struct stlbrd *brdp);
+-static int	stl_getportstats(struct stlport *portp, comstats_t __user *cp);
++static int	stl_getportstats(struct tty_struct *tty, struct stlport *portp, comstats_t __user *cp);
+ static int	stl_clrportstats(struct stlport *portp, comstats_t __user *cp);
+-static int	stl_waitcarrier(struct stlport *portp, struct file *filp);
++static int	stl_waitcarrier(struct tty_struct *tty, struct stlport *portp, struct file *filp);
+ 
+ /*
+  *	CD1400 uart specific handling functions.
+@@ -612,8 +612,9 @@ static struct class *stallion_class;
+ static void stl_cd_change(struct stlport *portp)
+ {
+ 	unsigned int oldsigs = portp->sigs;
++	struct tty_struct *tty = tty_port_tty_get(&portp->port);
+ 
+-	if (!portp->port.tty)
++	if (!tty)
+ 		return;
+ 
+ 	portp->sigs = stl_getsignals(portp);
+@@ -623,7 +624,8 @@ static void stl_cd_change(struct stlport *portp)
+ 
+ 	if ((oldsigs & TIOCM_CD) && ((portp->sigs & TIOCM_CD) == 0))
+ 		if (portp->port.flags & ASYNC_CHECK_CD)
+-			tty_hangup(portp->port.tty);
++			tty_hangup(tty);
++	tty_kref_put(tty);
+ }
+ 
+ /*
+@@ -734,7 +736,7 @@ static int stl_open(struct tty_struct *tty, struct file *filp)
+  *	On the first open of the device setup the port hardware, and
+  *	initialize the per port data structure.
+  */
+-	portp->port.tty = tty;
++	tty_port_tty_set(&portp->port, tty);
+ 	tty->driver_data = portp;
+ 	portp->port.count++;
+ 
+@@ -774,7 +776,7 @@ static int stl_open(struct tty_struct *tty, struct file *filp)
+  *	then also we might have to wait for carrier.
+  */
+ 	if (!(filp->f_flags & O_NONBLOCK))
+-		if ((rc = stl_waitcarrier(portp, filp)) != 0)
++		if ((rc = stl_waitcarrier(tty, portp, filp)) != 0)
+ 			return rc;
+ 
+ 	portp->port.flags |= ASYNC_NORMAL_ACTIVE;
+@@ -789,7 +791,8 @@ static int stl_open(struct tty_struct *tty, struct file *filp)
+  *	maybe because if we are clocal then we don't need to wait...
+  */
+ 
+-static int stl_waitcarrier(struct stlport *portp, struct file *filp)
++static int stl_waitcarrier(struct tty_struct *tty, struct stlport *portp,
++							struct file *filp)
+ {
+ 	unsigned long	flags;
+ 	int		rc, doclocal;
+@@ -801,7 +804,7 @@ static int stl_waitcarrier(struct stlport *portp, struct file *filp)
+ 
+ 	spin_lock_irqsave(&stallion_lock, flags);
+ 
+-	if (portp->port.tty->termios->c_cflag & CLOCAL)
++	if (tty->termios->c_cflag & CLOCAL)
+ 		doclocal++;
+ 
+ 	portp->openwaitcnt++;
+@@ -949,7 +952,7 @@ static void stl_close(struct tty_struct *tty, struct file *filp)
+ 	tty_ldisc_flush(tty);
+ 
+ 	tty->closing = 0;
+-	portp->port.tty = NULL;
++	tty_port_tty_set(&portp->port, NULL);
+ 
+ 	if (portp->openwaitcnt) {
+ 		if (portp->close_delay)
+@@ -1183,8 +1186,9 @@ static int stl_getserial(struct stlport *portp, struct serial_struct __user *sp)
+  *	just quietly ignore any requests to change irq, etc.
+  */
+ 
+-static int stl_setserial(struct stlport *portp, struct serial_struct __user *sp)
++static int stl_setserial(struct tty_struct *tty, struct serial_struct __user *sp)
+ {
++	struct stlport *	portp = tty->driver_data;
+ 	struct serial_struct	sio;
+ 
+ 	pr_debug("stl_setserial(portp=%p,sp=%p)\n", portp, sp);
+@@ -1205,7 +1209,7 @@ static int stl_setserial(struct stlport *portp, struct serial_struct __user *sp)
+ 	portp->close_delay = sio.close_delay;
+ 	portp->closing_wait = sio.closing_wait;
+ 	portp->custom_divisor = sio.custom_divisor;
+-	stl_setport(portp, portp->port.tty->termios);
++	stl_setport(portp, tty->termios);
+ 	return 0;
+ }
+ 
+@@ -1282,10 +1286,10 @@ static int stl_ioctl(struct tty_struct *tty, struct file *file, unsigned int cmd
+ 		rc = stl_getserial(portp, argp);
+ 		break;
+ 	case TIOCSSERIAL:
+-		rc = stl_setserial(portp, argp);
++		rc = stl_setserial(tty, argp);
+ 		break;
+ 	case COM_GETPORTSTATS:
+-		rc = stl_getportstats(portp, argp);
++		rc = stl_getportstats(tty, portp, argp);
+ 		break;
+ 	case COM_CLRPORTSTATS:
+ 		rc = stl_clrportstats(portp, argp);
+@@ -1452,7 +1456,7 @@ static void stl_hangup(struct tty_struct *tty)
+ 		portp->tx.head = NULL;
+ 		portp->tx.tail = NULL;
+ 	}
+-	portp->port.tty = NULL;
++	tty_port_tty_set(&portp->port, NULL);
+ 	portp->port.flags &= ~ASYNC_NORMAL_ACTIVE;
+ 	portp->port.count = 0;
+ 	wake_up_interruptible(&portp->port.open_wait);
+@@ -1805,7 +1809,7 @@ static int __devinit stl_initports(struct stlbrd *brdp, struct stlpanel *panelp)
+ 				"(size=%Zd)\n", sizeof(struct stlport));
+ 			break;
+ 		}
+-
++		tty_port_init(&portp->port);
+ 		portp->magic = STL_PORTMAGIC;
+ 		portp->portnr = i;
+ 		portp->brdnr = panelp->brdnr;
+@@ -1832,6 +1836,7 @@ static void stl_cleanup_panels(struct stlbrd *brdp)
+ 	struct stlpanel *panelp;
+ 	struct stlport *portp;
+ 	unsigned int j, k;
++	struct tty_struct *tty;
+ 
+ 	for (j = 0; j < STL_MAXPANELS; j++) {
+ 		panelp = brdp->panels[j];
+@@ -1841,8 +1846,11 @@ static void stl_cleanup_panels(struct stlbrd *brdp)
+ 			portp = panelp->ports[k];
+ 			if (portp == NULL)
+ 				continue;
+-			if (portp->port.tty != NULL)
+-				stl_hangup(portp->port.tty);
++			tty = tty_port_tty_get(&portp->port);
++			if (tty != NULL) {
++				stl_hangup(tty);
++				tty_kref_put(tty);
++			}
+ 			kfree(portp->tx.buf);
+ 			kfree(portp);
+ 		}
+@@ -2498,7 +2506,7 @@ static struct stlport *stl_getport(int brdnr, int panelnr, int portnr)
+  *	what port to get stats for (used through board control device).
+  */
+ 
+-static int stl_getportstats(struct stlport *portp, comstats_t __user *cp)
++static int stl_getportstats(struct tty_struct *tty, struct stlport *portp, comstats_t __user *cp)
+ {
+ 	comstats_t	stl_comstats;
+ 	unsigned char	*head, *tail;
+@@ -2525,18 +2533,17 @@ static int stl_getportstats(struct stlport *portp, comstats_t __user *cp)
+ 	portp->stats.rxbuffered = 0;
+ 
+ 	spin_lock_irqsave(&stallion_lock, flags);
+-	if (portp->port.tty != NULL)
+-		if (portp->port.tty->driver_data == portp) {
+-			portp->stats.ttystate = portp->port.tty->flags;
+-			/* No longer available as a statistic */
+-			portp->stats.rxbuffered = 1; /*portp->port.tty->flip.count; */
+-			if (portp->port.tty->termios != NULL) {
+-				portp->stats.cflags = portp->port.tty->termios->c_cflag;
+-				portp->stats.iflags = portp->port.tty->termios->c_iflag;
+-				portp->stats.oflags = portp->port.tty->termios->c_oflag;
+-				portp->stats.lflags = portp->port.tty->termios->c_lflag;
+-			}
++	if (tty != NULL && portp->port.tty == tty) {
++		portp->stats.ttystate = tty->flags;
++		/* No longer available as a statistic */
++		portp->stats.rxbuffered = 1; /*tty->flip.count; */
++		if (tty->termios != NULL) {
++			portp->stats.cflags = tty->termios->c_cflag;
++			portp->stats.iflags = tty->termios->c_iflag;
++			portp->stats.oflags = tty->termios->c_oflag;
++			portp->stats.lflags = tty->termios->c_lflag;
+ 		}
++	}
+ 	spin_unlock_irqrestore(&stallion_lock, flags);
+ 
+ 	head = portp->tx.head;
+@@ -2640,7 +2647,7 @@ static int stl_memioctl(struct inode *ip, struct file *fp, unsigned int cmd, uns
+ 
+ 	switch (cmd) {
+ 	case COM_GETPORTSTATS:
+-		rc = stl_getportstats(NULL, argp);
++		rc = stl_getportstats(NULL, NULL, argp);
+ 		break;
+ 	case COM_CLRPORTSTATS:
+ 		rc = stl_clrportstats(NULL, argp);
+@@ -3243,7 +3250,7 @@ static void stl_cd1400flowctrl(struct stlport *portp, int state)
+ 
+ 	if (portp == NULL)
+ 		return;
+-	tty = portp->port.tty;
++	tty = tty_port_tty_get(&portp->port);
+ 	if (tty == NULL)
+ 		return;
+ 
+@@ -3288,6 +3295,7 @@ static void stl_cd1400flowctrl(struct stlport *portp, int state)
+ 
+ 	BRDDISABLE(portp->brdnr);
+ 	spin_unlock_irqrestore(&brd_lock, flags);
++	tty_kref_put(tty);
+ }
+ 
+ /*****************************************************************************/
+@@ -3305,7 +3313,7 @@ static void stl_cd1400sendflow(struct stlport *portp, int state)
+ 
+ 	if (portp == NULL)
+ 		return;
+-	tty = portp->port.tty;
++	tty = tty_port_tty_get(&portp->port);
+ 	if (tty == NULL)
+ 		return;
+ 
+@@ -3325,6 +3333,7 @@ static void stl_cd1400sendflow(struct stlport *portp, int state)
+ 	}
+ 	BRDDISABLE(portp->brdnr);
+ 	spin_unlock_irqrestore(&brd_lock, flags);
++	tty_kref_put(tty);
+ }
+ 
+ /*****************************************************************************/
+@@ -3478,6 +3487,7 @@ static void stl_cd1400txisr(struct stlpanel *panelp, int ioaddr)
+ 	int		len, stlen;
+ 	char		*head, *tail;
+ 	unsigned char	ioack, srer;
++	struct tty_struct *tty;
+ 
+ 	pr_debug("stl_cd1400txisr(panelp=%p,ioaddr=%x)\n", panelp, ioaddr);
+ 
+@@ -3504,8 +3514,11 @@ static void stl_cd1400txisr(struct stlpanel *panelp, int ioaddr)
+ 	if ((len == 0) || ((len < STL_TXBUFLOW) &&
+ 	    (test_bit(ASYI_TXLOW, &portp->istate) == 0))) {
+ 		set_bit(ASYI_TXLOW, &portp->istate);
+-		if (portp->port.tty)
+-			tty_wakeup(portp->port.tty);
++		tty = tty_port_tty_get(&portp->port);
++		if (tty) {
++			tty_wakeup(tty);
++			tty_kref_put(tty);
++		}
  	}
  
--	moxa_close_port(ch);
-+	moxa_close_port(tty);
- unlock:
- 	mutex_unlock(&moxa_openlock);
- }
-@@ -1234,7 +1244,7 @@ static int moxa_write(struct tty_struct *tty,
- 		return 0;
- 
- 	spin_lock_bh(&moxa_lock);
--	len = MoxaPortWriteData(ch, buf, count);
-+	len = MoxaPortWriteData(tty, buf, count);
- 	spin_unlock_bh(&moxa_lock);
- 
- 	ch->statusflags |= LOWWAIT;
-@@ -1409,7 +1419,7 @@ static void moxa_hangup(struct tty_struct *tty)
+ 	if (len == 0) {
+@@ -3569,7 +3582,7 @@ static void stl_cd1400rxisr(struct stlpanel *panelp, int ioaddr)
  		return;
  	}
- 	ch->port.count = 0;
--	moxa_close_port(ch);
-+	moxa_close_port(tty);
- 	mutex_unlock(&moxa_openlock);
+ 	portp = panelp->ports[(ioack >> 3)];
+-	tty = portp->port.tty;
++	tty = tty_port_tty_get(&portp->port);
  
- 	wake_up_interruptible(&ch->port.open_wait);
-@@ -1417,11 +1427,14 @@ static void moxa_hangup(struct tty_struct *tty)
+ 	if ((ioack & ACK_TYPMASK) == ACK_TYPRXGOOD) {
+ 		outb((RDCR + portp->uartaddr), ioaddr);
+@@ -3633,10 +3646,12 @@ static void stl_cd1400rxisr(struct stlpanel *panelp, int ioaddr)
+ 		}
+ 	} else {
+ 		printk("STALLION: bad RX interrupt ack value=%x\n", ioack);
++		tty_kref_put(tty);
+ 		return;
+ 	}
  
- static void moxa_new_dcdstate(struct moxa_port *p, u8 dcd)
+ stl_rxalldone:
++	tty_kref_put(tty);
+ 	outb((EOSRR + portp->uartaddr), ioaddr);
+ 	outb(0, (ioaddr + EREG_DATA));
+ }
+@@ -4175,7 +4190,7 @@ static void stl_sc26198flowctrl(struct stlport *portp, int state)
+ 
+ 	if (portp == NULL)
+ 		return;
+-	tty = portp->port.tty;
++	tty = tty_port_tty_get(&portp->port);
+ 	if (tty == NULL)
+ 		return;
+ 
+@@ -4226,6 +4241,7 @@ static void stl_sc26198flowctrl(struct stlport *portp, int state)
+ 
+ 	BRDDISABLE(portp->brdnr);
+ 	spin_unlock_irqrestore(&brd_lock, flags);
++	tty_kref_put(tty);
+ }
+ 
+ /*****************************************************************************/
+@@ -4244,7 +4260,7 @@ static void stl_sc26198sendflow(struct stlport *portp, int state)
+ 
+ 	if (portp == NULL)
+ 		return;
+-	tty = portp->port.tty;
++	tty = tty_port_tty_get(&portp->port);
+ 	if (tty == NULL)
+ 		return;
+ 
+@@ -4269,6 +4285,7 @@ static void stl_sc26198sendflow(struct stlport *portp, int state)
+ 	}
+ 	BRDDISABLE(portp->brdnr);
+ 	spin_unlock_irqrestore(&brd_lock, flags);
++	tty_kref_put(tty);
+ }
+ 
+ /*****************************************************************************/
+@@ -4408,6 +4425,7 @@ static void stl_sc26198intr(struct stlpanel *panelp, unsigned int iobase)
+ 
+ static void stl_sc26198txisr(struct stlport *portp)
  {
 +	struct tty_struct *tty;
- 	dcd = !!dcd;
- 
--	if (dcd != p->DCDState && p->port.tty && C_CLOCAL(p->port.tty)) {
--		if (!dcd)
--			tty_hangup(p->port.tty);
-+	if (dcd != p->DCDState) {
-+		tty = tty_port_tty_get(&p->port);
-+		if (tty && C_CLOCAL(tty) && !dcd)
-+			tty_hangup(tty);
-+		tty_kref_put(tty);
+ 	unsigned int	ioaddr;
+ 	unsigned char	mr0;
+ 	int		len, stlen;
+@@ -4422,8 +4440,11 @@ static void stl_sc26198txisr(struct stlport *portp)
+ 	if ((len == 0) || ((len < STL_TXBUFLOW) &&
+ 	    (test_bit(ASYI_TXLOW, &portp->istate) == 0))) {
+ 		set_bit(ASYI_TXLOW, &portp->istate);
+-		if (portp->port.tty)
+-			tty_wakeup(portp->port.tty);
++		tty = tty_port_tty_get(&portp->port);
++		if (tty) {
++			tty_wakeup(tty);
++			tty_kref_put(tty);
++		}
  	}
- 	p->DCDState = dcd;
- }
-@@ -1429,7 +1442,7 @@ static void moxa_new_dcdstate(struct moxa_port *p, u8 dcd)
- static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
- 		u16 __iomem *ip)
- {
--	struct tty_struct *tty = p->port.tty;
-+	struct tty_struct *tty = tty_port_tty_get(&p->port);
- 	void __iomem *ofsAddr;
- 	unsigned int inited = p->port.flags & ASYNC_INITIALIZED;
- 	u16 intr;
-@@ -1476,6 +1489,7 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
- 		tty_insert_flip_char(tty, 0, TTY_BREAK);
- 		tty_schedule_flip(tty);
+ 
+ 	if (len == 0) {
+@@ -4476,7 +4497,7 @@ static void stl_sc26198rxisr(struct stlport *portp, unsigned int iack)
+ 
+ 	pr_debug("stl_sc26198rxisr(portp=%p,iack=%x)\n", portp, iack);
+ 
+-	tty = portp->port.tty;
++	tty = tty_port_tty_get(&portp->port);
+ 	ioaddr = portp->ioaddr;
+ 	outb(GIBCR, (ioaddr + XP_ADDR));
+ 	len = inb(ioaddr + XP_DATA) + 1;
+@@ -4515,6 +4536,7 @@ static void stl_sc26198rxisr(struct stlport *portp, unsigned int iack)
+ 			stl_sc26198txunflow(portp, tty);
+ 		}
  	}
 +	tty_kref_put(tty);
- 
- 	if (intr & IntrLine)
- 		moxa_new_dcdstate(p, readb(ofsAddr + FlagStat) & DCD_state);
-@@ -1560,9 +1574,9 @@ static void moxa_setup_empty_event(struct tty_struct *tty)
- 	spin_unlock_bh(&moxa_lock);
  }
  
--static void moxa_shut_down(struct moxa_port *ch)
-+static void moxa_shut_down(struct tty_struct *tty)
- {
--	struct tty_struct *tp = ch->port.tty;
-+	struct moxa_port *ch = tty->driver_data;
+ /*****************************************************************************/
+@@ -4528,7 +4550,7 @@ static void stl_sc26198rxbadch(struct stlport *portp, unsigned char status, char
+ 	struct tty_struct	*tty;
+ 	unsigned int		ioaddr;
  
- 	if (!(ch->port.flags & ASYNC_INITIALIZED))
- 		return;
-@@ -1572,7 +1586,7 @@ static void moxa_shut_down(struct moxa_port *ch)
- 	/*
- 	 * If we're a modem control device and HUPCL is on, drop RTS & DTR.
- 	 */
--	if (C_HUPCL(tp))
-+	if (C_HUPCL(tty))
- 		MoxaPortLineCtrl(ch, 0, 0);
+-	tty = portp->port.tty;
++	tty = tty_port_tty_get(&portp->port);
+ 	ioaddr = portp->ioaddr;
  
- 	spin_lock_bh(&moxa_lock);
-@@ -1953,9 +1967,10 @@ static int MoxaPortLineStatus(struct moxa_port *port)
- 	return val;
+ 	if (status & SR_RXPARITY)
+@@ -4566,6 +4588,7 @@ static void stl_sc26198rxbadch(struct stlport *portp, unsigned char status, char
+ 		if (status == 0)
+ 			portp->stats.rxtotal++;
+ 	}
++	tty_kref_put(tty);
  }
  
--static int MoxaPortWriteData(struct moxa_port *port,
-+static int MoxaPortWriteData(struct tty_struct *tty,
- 		const unsigned char *buffer, int len)
- {
-+	struct moxa_port *port = tty->driver_data;
- 	void __iomem *baseAddr, *ofsAddr, *ofs;
- 	unsigned int c, total;
- 	u16 head, tail, tx_mask, spage, epage;
+ /*****************************************************************************/
 
