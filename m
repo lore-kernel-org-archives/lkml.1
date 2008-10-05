@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbYJEJvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbYJEJxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbYJEJvu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 05:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYJEJvm
+	id S1755306AbYJEJxq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 05:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbYJEJxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 05:51:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58551 "EHLO mx3.mail.elte.hu"
+	Sun, 5 Oct 2008 05:53:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48921 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753168AbYJEJvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 05:51:41 -0400
-Date: Sun, 5 Oct 2008 11:51:34 +0200
+	id S1753205AbYJEJxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 05:53:38 -0400
+Date: Sun, 5 Oct 2008 11:53:26 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] fix printk format typo in boot ftracer.
-Message-ID: <20081005095134.GC29909@elte.hu>
-References: <20081004134227.465fa20c@infradead.org> <c62985530810041358p1cc361b1te89894cedcd7e3b3@mail.gmail.com> <20081004172449.58e53afd@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] ftrace: Add a C-state tracer to help power
+	optimization
+Message-ID: <20081005095326.GD29909@elte.hu>
+References: <20081004105447.0e48d6d4@infradead.org> <alpine.DEB.1.10.0810041410390.6571@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081004172449.58e53afd@infradead.org>
+In-Reply-To: <alpine.DEB.1.10.0810041410390.6571@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,31 +35,40 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Sat, 4 Oct 2008 22:58:12 +0200
-> "Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
 > 
-> > > -               ret = trace_seq_printf(s, "[%5ld.%06ld] initcall %s
-> > > "
-> > > +               ret = trace_seq_printf(s, "[%5ld.%09ld] initcall %s
-> > > " "returned %d after %lld msecs\n",
-> > >                                          rettime.tv_sec,
-> > >                                          rettime.tv_nsec,
-> > 
-> > I picked these formats from the printk.c time formatting. But you're
-> > right, 09 would give us the whole nano precision.
+> My comments are more towards Ingo than to Arjan.
 > 
-> it's more than precision, it's correctness.
+> On Sat, 4 Oct 2008, Arjan van de Ven wrote:
+> > +++ b/kernel/trace/Kconfig
+> > @@ -134,6 +134,17 @@ config BOOT_TRACER
+> >  	  be enabled if this tracer is selected since only one tracer
+> >  	  should touch the tracing buffer at a time.
+> >  
+> > +config CSTATE_TRACER
+> > +	bool "Trace C-state behavior"
+> > +	depends on HAVE_FTRACE
 > 
-> doing "0.%02i" will do
-> 0.100  if you pass it 100 and
-> 0.10   if you pass it 10
+> Ingo, here's the confusion again between the FTRACE infrastructure and 
+> the ftrace "function tracer". the HAVE_FTRACE should really be 
+> HAVE_FUNCTION_TRACER. The infrastructure of a lot of the ftrace 
+> tracers do not depend on the function tracer.
 > 
-> and most off the time, except the first 0.1 seconds, you'll be passing
-> it 9 digits, but the first 0.1 seconds.. the %06 will just give really
-> incorrect results.
+> The CSTATE_TRACER also does not depend on HAVE_FTRACE. Think we should 
+> rename this? Otherwise more kernel developers will get confused by it. 
+> :-(
 
-applied to tip/tracing/core, thanks!
+agreed, please send a rename patch to make it more consistent.
+
+> > +static enum print_line_t cstate_print_line(struct trace_iterator *iter)
+> > +{
+> > +	int ret;
+> > +	struct trace_entry *entry = iter->ent;
+> > +	struct trace_cstate *field = (struct trace_cstate *)entry;
+> 
+> Ingo, isn't the trace_assign_type in your latest tree?
+
+yeah, it is, and it should be used here instead of a direct cast.
 
 	Ingo
