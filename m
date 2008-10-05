@@ -1,87 +1,422 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbYJEQ12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbYJEQ1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbYJEQ12 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758909AbYJEQWX
+	id S1759915AbYJEQ1o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbYJEQWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:22:23 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57971 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758908AbYJEQWW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:22:22 -0400
-From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 62/76] pty: simplify unix98 allocation
-To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:22:22 +0100
-Message-ID: <20081005162215.1997.71087.stgit@localhost.localdomain>
-In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
-References: <20081005160231.1997.10462.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sun, 5 Oct 2008 12:22:40 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:62761 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758198AbYJEQWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 12:22:38 -0400
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: [PATCH v2 1/7] atmel-mci: Implement tasklet as a state machine
+Date: Sun,  5 Oct 2008 18:21:24 +0200
+Message-Id: <1223223690-2637-2-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1223223690-2637-1-git-send-email-haavard.skinnemoen@atmel.com>
+References: <1223223690-2637-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-OriginalArrivalTime: 05 Oct 2008 16:21:15.0103 (UTC) FILETIME=[639906F0:01C92706]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need both termios and termios_locked so allocate them as one
+With the current system of completed/pending events, things may get
+handled in different order depending on which event triggers first. For
+example, if the data transfer is complete before the command, the stop
+command must be sent after the command is complete, not the data. This
+creates a bit of complexity around the stop command.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+By having the tasklet go through a sequence of clearly defined states,
+things always happen in a certain order even if the events come at
+different times, so the stop command can simply be sent when we exit the
+"sending data" state because we will never enter that state before the
+command has been sent successfully.
+
+Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 ---
+ drivers/mmc/host/atmel-mci.c |  249 ++++++++++++++++++++++++------------------
+ 1 files changed, 145 insertions(+), 104 deletions(-)
 
- drivers/char/pty.c |   18 +++++++-----------
- 1 files changed, 7 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/char/pty.c b/drivers/char/pty.c
-index 3c6b791..6d45827 100644
---- a/drivers/char/pty.c
-+++ b/drivers/char/pty.c
-@@ -488,7 +488,6 @@ static void pty_unix98_shutdown(struct tty_struct *tty)
- {
- 	/* We have our own method as we don't use the tty index */
- 	kfree(tty->termios);
--	kfree(tty->termios_locked);
- }
+diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
+index 0000896..d834e37 100644
+--- a/drivers/mmc/host/atmel-mci.c
++++ b/drivers/mmc/host/atmel-mci.c
+@@ -36,11 +36,17 @@
  
- /* We have no need to install and remove our tty objects as devpts does all
-@@ -509,20 +508,17 @@ static int pty_unix98_install(struct tty_driver *driver, struct tty_struct *tty)
- 	}
- 	initialize_tty_struct(o_tty, driver->other, idx);
- 
--	tty->termios = kmalloc(sizeof(struct ktermios), GFP_KERNEL);
-+	tty->termios = kzalloc(sizeof(struct ktermios[2]), GFP_KERNEL);
- 	if (tty->termios == NULL)
- 		goto free_mem_out;
- 	*tty->termios = driver->init_termios;
--	tty->termios_locked = kzalloc(sizeof(struct ktermios), GFP_KERNEL);
--	if (tty->termios_locked == NULL)
--		goto free_mem_out;
--	o_tty->termios = kmalloc(sizeof(struct ktermios), GFP_KERNEL);
-+	tty->termios_locked = tty->termios + 1;
+ enum {
+ 	EVENT_CMD_COMPLETE = 0,
+-	EVENT_DATA_ERROR,
+-	EVENT_DATA_COMPLETE,
+-	EVENT_STOP_SENT,
+-	EVENT_STOP_COMPLETE,
+ 	EVENT_XFER_COMPLETE,
++	EVENT_DATA_COMPLETE,
++	EVENT_DATA_ERROR,
++};
 +
-+	o_tty->termios = kzalloc(sizeof(struct ktermios[2]), GFP_KERNEL);
- 	if (o_tty->termios == NULL)
- 		goto free_mem_out;
- 	*o_tty->termios = driver->other->init_termios;
--	o_tty->termios_locked = kzalloc(sizeof(struct ktermios), GFP_KERNEL);
--	if (o_tty->termios_locked == NULL)
--		goto free_mem_out;
-+	o_tty->termios_locked = o_tty->termios + 1;
++enum atmel_mci_state {
++	STATE_SENDING_CMD = 0,
++	STATE_SENDING_DATA,
++	STATE_DATA_BUSY,
++	STATE_SENDING_STOP,
++	STATE_DATA_ERROR,
+ };
  
- 	tty_driver_kref_get(driver->other);
- 	if (driver->subtype == PTY_TYPE_MASTER)
-@@ -540,10 +536,10 @@ static int pty_unix98_install(struct tty_driver *driver, struct tty_struct *tty)
- 	pty_count++;
- 	return 0;
- free_mem_out:
--	pty_unix98_shutdown(o_tty);
-+	kfree(o_tty->termios);
- 	module_put(o_tty->driver->owner);
- 	free_tty_struct(o_tty);
--	pty_unix98_shutdown(tty);
-+	kfree(tty->termios);
- 	return -ENOMEM;
+ struct atmel_mci {
+@@ -56,7 +62,6 @@ struct atmel_mci {
+ 
+ 	u32			cmd_status;
+ 	u32			data_status;
+-	u32			stop_status;
+ 	u32			stop_cmdr;
+ 
+ 	u32			mode_reg;
+@@ -65,6 +70,7 @@ struct atmel_mci {
+ 	struct tasklet_struct	tasklet;
+ 	unsigned long		pending_events;
+ 	unsigned long		completed_events;
++	enum atmel_mci_state	state;
+ 
+ 	int			present;
+ 	int			detect_pin;
+@@ -79,18 +85,12 @@ struct atmel_mci {
+ 	struct platform_device	*pdev;
+ };
+ 
+-#define atmci_is_completed(host, event)				\
+-	test_bit(event, &host->completed_events)
+ #define atmci_test_and_clear_pending(host, event)		\
+ 	test_and_clear_bit(event, &host->pending_events)
+-#define atmci_test_and_set_completed(host, event)		\
+-	test_and_set_bit(event, &host->completed_events)
+ #define atmci_set_completed(host, event)			\
+ 	set_bit(event, &host->completed_events)
+ #define atmci_set_pending(host, event)				\
+ 	set_bit(event, &host->pending_events)
+-#define atmci_clear_pending(host, event)			\
+-	clear_bit(event, &host->pending_events)
+ 
+ /*
+  * The debugfs stuff below is mostly optimized away when
+@@ -258,6 +258,10 @@ static void atmci_init_debugfs(struct atmel_mci *host)
+ 	if (!node)
+ 		goto err;
+ 
++	node = debugfs_create_u32("state", S_IRUSR, root, (u32 *)&host->state);
++	if (!node)
++		goto err;
++
+ 	node = debugfs_create_x32("pending_events", S_IRUSR, root,
+ 				     (u32 *)&host->pending_events);
+ 	if (!node)
+@@ -378,8 +382,6 @@ static void atmci_start_command(struct atmel_mci *host,
+ 				struct mmc_command *cmd,
+ 				u32 cmd_flags)
+ {
+-	/* Must read host->cmd after testing event flags */
+-	smp_rmb();
+ 	WARN_ON(host->cmd);
+ 	host->cmd = cmd;
+ 
+@@ -472,6 +474,7 @@ static void atmci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 	host->mrq = mrq;
+ 	host->pending_events = 0;
+ 	host->completed_events = 0;
++	host->state = STATE_SENDING_CMD;
+ 
+ 	atmci_enable(host);
+ 
+@@ -596,8 +599,10 @@ static struct mmc_host_ops atmci_ops = {
+ };
+ 
+ static void atmci_command_complete(struct atmel_mci *host,
+-			struct mmc_command *cmd, u32 status)
++			struct mmc_command *cmd)
+ {
++	u32		status = host->cmd_status;
++
+ 	/* Read the response from the card (up to 16 bytes) */
+ 	cmd->resp[0] = mci_readl(host, RSPR);
+ 	cmd->resp[1] = mci_readl(host, RSPR);
+@@ -666,20 +671,32 @@ static void atmci_detect_change(unsigned long data)
+ 			 * commands or data transfers.
+ 			 */
+ 			mci_writel(host, CR, MCI_CR_SWRST);
++			mci_readl(host, SR);
+ 
+-			if (!atmci_is_completed(host, EVENT_CMD_COMPLETE))
+-				mrq->cmd->error = -ENOMEDIUM;
++			host->data = NULL;
++			host->cmd = NULL;
+ 
+-			if (mrq->data && !atmci_is_completed(host,
+-						EVENT_DATA_COMPLETE)) {
+-				host->data = NULL;
++			switch (host->state) {
++			case STATE_SENDING_CMD:
++				mrq->cmd->error = -ENOMEDIUM;
++				if (!mrq->data)
++					break;
++				/* fall through */
++			case STATE_SENDING_DATA:
+ 				mrq->data->error = -ENOMEDIUM;
+-			}
+-			if (mrq->stop && !atmci_is_completed(host,
+-						EVENT_STOP_COMPLETE))
++				break;
++			case STATE_DATA_BUSY:
++			case STATE_DATA_ERROR:
++				if (mrq->data->error == -EINPROGRESS)
++					mrq->data->error = -ENOMEDIUM;
++				if (!mrq->stop)
++					break;
++				/* fall through */
++			case STATE_SENDING_STOP:
+ 				mrq->stop->error = -ENOMEDIUM;
++				break;
++			}
+ 
+-			host->cmd = NULL;
+ 			atmci_request_end(host->mmc, mrq);
+ 		}
+ 
+@@ -693,81 +710,116 @@ static void atmci_tasklet_func(unsigned long priv)
+ 	struct atmel_mci	*host = mmc_priv(mmc);
+ 	struct mmc_request	*mrq = host->mrq;
+ 	struct mmc_data		*data = host->data;
++	struct mmc_command	*cmd = host->cmd;
++	enum atmel_mci_state	state = host->state;
++	enum atmel_mci_state	prev_state;
++	u32			status;
++
++	state = host->state;
+ 
+ 	dev_vdbg(&mmc->class_dev,
+-		"tasklet: pending/completed/mask %lx/%lx/%x\n",
+-		host->pending_events, host->completed_events,
++		"tasklet: state %u pending/completed/mask %lx/%lx/%x\n",
++		state, host->pending_events, host->completed_events,
+ 		mci_readl(host, IMR));
+ 
+-	if (atmci_test_and_clear_pending(host, EVENT_CMD_COMPLETE)) {
+-		/*
+-		 * host->cmd must be set to NULL before the interrupt
+-		 * handler sees EVENT_CMD_COMPLETE
+-		 */
+-		host->cmd = NULL;
+-		smp_wmb();
+-		atmci_set_completed(host, EVENT_CMD_COMPLETE);
+-		atmci_command_complete(host, mrq->cmd, host->cmd_status);
+-
+-		if (!mrq->cmd->error && mrq->stop
+-				&& atmci_is_completed(host, EVENT_XFER_COMPLETE)
+-				&& !atmci_test_and_set_completed(host,
+-					EVENT_STOP_SENT))
+-			send_stop_cmd(host->mmc, mrq->data);
+-	}
+-	if (atmci_test_and_clear_pending(host, EVENT_STOP_COMPLETE)) {
+-		/*
+-		 * host->cmd must be set to NULL before the interrupt
+-		 * handler sees EVENT_STOP_COMPLETE
+-		 */
+-		host->cmd = NULL;
+-		smp_wmb();
+-		atmci_set_completed(host, EVENT_STOP_COMPLETE);
+-		atmci_command_complete(host, mrq->stop, host->stop_status);
+-	}
+-	if (atmci_test_and_clear_pending(host, EVENT_DATA_ERROR)) {
+-		u32 status = host->data_status;
++	do {
++		prev_state = state;
+ 
+-		dev_vdbg(&mmc->class_dev, "data error: status=%08x\n", status);
++		switch (state) {
++		case STATE_SENDING_CMD:
++			if (!atmci_test_and_clear_pending(host,
++						EVENT_CMD_COMPLETE))
++				break;
+ 
+-		atmci_set_completed(host, EVENT_DATA_ERROR);
+-		atmci_set_completed(host, EVENT_DATA_COMPLETE);
++			host->cmd = NULL;
++			atmci_set_completed(host, EVENT_CMD_COMPLETE);
++			atmci_command_complete(host, mrq->cmd);
++			if (!mrq->data || cmd->error) {
++				atmci_request_end(mmc, host->mrq);
++				break;
++			}
+ 
+-		if (status & MCI_DTOE) {
+-			dev_dbg(&mmc->class_dev,
+-					"data timeout error\n");
+-			data->error = -ETIMEDOUT;
+-		} else if (status & MCI_DCRCE) {
+-			dev_dbg(&mmc->class_dev, "data CRC error\n");
+-			data->error = -EILSEQ;
+-		} else {
+-			dev_dbg(&mmc->class_dev,
+-					"data FIFO error (status=%08x)\n",
+-					status);
+-			data->error = -EIO;
+-		}
++			prev_state = state = STATE_SENDING_DATA;
++			/* fall through */
+ 
+-		if (host->present && data->stop
+-				&& atmci_is_completed(host, EVENT_CMD_COMPLETE)
+-				&& !atmci_test_and_set_completed(
+-					host, EVENT_STOP_SENT))
+-			send_stop_cmd(host->mmc, data);
++		case STATE_SENDING_DATA:
++			if (atmci_test_and_clear_pending(host,
++						EVENT_DATA_ERROR)) {
++				if (data->stop)
++					send_stop_cmd(host->mmc, data);
++				state = STATE_DATA_ERROR;
++				break;
++			}
+ 
+-		host->data = NULL;
+-	}
+-	if (atmci_test_and_clear_pending(host, EVENT_DATA_COMPLETE)) {
+-		atmci_set_completed(host, EVENT_DATA_COMPLETE);
++			if (!atmci_test_and_clear_pending(host,
++						EVENT_XFER_COMPLETE))
++				break;
+ 
+-		if (!atmci_is_completed(host, EVENT_DATA_ERROR)) {
+-			data->bytes_xfered = data->blocks * data->blksz;
+-			data->error = 0;
+-		}
++			atmci_set_completed(host, EVENT_XFER_COMPLETE);
++			prev_state = state = STATE_DATA_BUSY;
++			/* fall through */
+ 
+-		host->data = NULL;
+-	}
++		case STATE_DATA_BUSY:
++			if (!atmci_test_and_clear_pending(host,
++						EVENT_DATA_COMPLETE))
++				break;
++
++			host->data = NULL;
++			atmci_set_completed(host, EVENT_DATA_COMPLETE);
++			status = host->data_status;
++			if (unlikely(status & ATMCI_DATA_ERROR_FLAGS)) {
++				if (status & MCI_DTOE) {
++					dev_dbg(&mmc->class_dev,
++							"data timeout error\n");
++					data->error = -ETIMEDOUT;
++				} else if (status & MCI_DCRCE) {
++					dev_dbg(&mmc->class_dev,
++							"data CRC error\n");
++					data->error = -EILSEQ;
++				} else {
++					dev_dbg(&mmc->class_dev,
++						"data FIFO error (status=%08x)\n",
++						status);
++					data->error = -EIO;
++				}
++			} else {
++				data->bytes_xfered = data->blocks * data->blksz;
++				data->error = 0;
++			}
++
++			if (!data->stop) {
++				atmci_request_end(mmc, host->mrq);
++				prev_state = state;
++				break;
++			}
+ 
+-	if (host->mrq && !host->cmd && !host->data)
+-		atmci_request_end(mmc, host->mrq);
++			prev_state = state = STATE_SENDING_STOP;
++			if (!data->error)
++				send_stop_cmd(host->mmc, data);
++			/* fall through */
++
++		case STATE_SENDING_STOP:
++			if (!atmci_test_and_clear_pending(host,
++						EVENT_CMD_COMPLETE))
++				break;
++
++			host->cmd = NULL;
++			atmci_command_complete(host, mrq->stop);
++			atmci_request_end(mmc, host->mrq);
++			prev_state = state;
++			break;
++
++		case STATE_DATA_ERROR:
++			if (!atmci_test_and_clear_pending(host,
++						EVENT_XFER_COMPLETE))
++				break;
++
++			state = STATE_DATA_BUSY;
++			break;
++		}
++	} while (state != prev_state);
++
++	host->state = state;
  }
  
+ static void atmci_read_data_pio(struct atmel_mci *host)
+@@ -832,10 +884,7 @@ done:
+ 	mci_writel(host, IDR, MCI_RXRDY);
+ 	mci_writel(host, IER, MCI_NOTBUSY);
+ 	data->bytes_xfered += nbytes;
+-	atmci_set_completed(host, EVENT_XFER_COMPLETE);
+-	if (data->stop && atmci_is_completed(host, EVENT_CMD_COMPLETE)
+-			&& !atmci_test_and_set_completed(host, EVENT_STOP_SENT))
+-		send_stop_cmd(host->mmc, data);
++	atmci_set_pending(host, EVENT_XFER_COMPLETE);
+ }
+ 
+ static void atmci_write_data_pio(struct atmel_mci *host)
+@@ -903,10 +952,7 @@ done:
+ 	mci_writel(host, IDR, MCI_TXRDY);
+ 	mci_writel(host, IER, MCI_NOTBUSY);
+ 	data->bytes_xfered += nbytes;
+-	atmci_set_completed(host, EVENT_XFER_COMPLETE);
+-	if (data->stop && atmci_is_completed(host, EVENT_CMD_COMPLETE)
+-			&& !atmci_test_and_set_completed(host, EVENT_STOP_SENT))
+-		send_stop_cmd(host->mmc, data);
++	atmci_set_pending(host, EVENT_XFER_COMPLETE);
+ }
+ 
+ static void atmci_cmd_interrupt(struct mmc_host *mmc, u32 status)
+@@ -915,14 +961,8 @@ static void atmci_cmd_interrupt(struct mmc_host *mmc, u32 status)
+ 
+ 	mci_writel(host, IDR, MCI_CMDRDY);
+ 
+-	if (atmci_is_completed(host, EVENT_STOP_SENT)) {
+-		host->stop_status = status;
+-		atmci_set_pending(host, EVENT_STOP_COMPLETE);
+-	} else {
+-		host->cmd_status = status;
+-		atmci_set_pending(host, EVENT_CMD_COMPLETE);
+-	}
+-
++	host->cmd_status = status;
++	atmci_set_pending(host, EVENT_CMD_COMPLETE);
+ 	tasklet_schedule(&host->tasklet);
+ }
+ 
+@@ -951,8 +991,9 @@ static irqreturn_t atmci_interrupt(int irq, void *dev_id)
+ 			tasklet_schedule(&host->tasklet);
+ 		}
+ 		if (pending & MCI_NOTBUSY) {
+-			mci_writel(host, IDR, (MCI_NOTBUSY
+-					       | ATMCI_DATA_ERROR_FLAGS));
++			mci_writel(host, IDR,
++					ATMCI_DATA_ERROR_FLAGS | MCI_NOTBUSY);
++			host->data_status = status;
+ 			atmci_set_pending(host, EVENT_DATA_COMPLETE);
+ 			tasklet_schedule(&host->tasklet);
+ 		}
+-- 
+1.5.6.5
 
