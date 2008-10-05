@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbYJEQOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbYJEQOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757289AbYJEQOY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbYJEQIZ
+	id S1757692AbYJEQOl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbYJEQIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:08:25 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48466 "EHLO
+	Sun, 5 Oct 2008 12:08:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48468 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756431AbYJEQIX (ORCPT
+	with ESMTP id S1756634AbYJEQId (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:08:23 -0400
+	Sun, 5 Oct 2008 12:08:33 -0400
 From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 27/76] tty: use krefs to protect driver module counts
+Subject: [PATCH 28/76] Char: cyclades. remove bogus iomap
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:08:23 +0100
-Message-ID: <20081005160820.1997.76436.stgit@localhost.localdomain>
+Date: Sun, 05 Oct 2008 17:08:33 +0100
+Message-ID: <20081005160829.1997.9463.stgit@localhost.localdomain>
 In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
 References: <20081005160231.1997.10462.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -25,83 +25,83 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The tty layer keeps driver module counts that are used so the driver knows
-when it can be unloaded. For obvious reasons we want to tie that to the
-refcounting properly.
+From: Jiri Slaby <jirislaby@gmail.com>
 
-At this point the driver side itself isn't refcounted nicely but we can do
-that later and kref the drivers.
+readl/writel are not expected to accept iomap return value. Replace
+bogus mapping by standard ioremap.
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/tty_io.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
+ drivers/char/cyclades.c |   21 ++++++++++++---------
+ 1 files changed, 12 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 310e070..fa162c9 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1293,6 +1293,12 @@ static int init_dev(struct tty_driver *driver, int idx,
- 		o_tty = alloc_tty_struct();
- 		if (!o_tty)
- 			goto free_mem_out;
-+		if (!try_module_get(driver->other->owner)) {
-+			/* This cannot in fact currently happen */
-+			free_tty_struct(o_tty);
-+			o_tty = NULL;
-+			goto free_mem_out;
-+		}
- 		initialize_tty_struct(o_tty);
- 		o_tty->driver = driver->other;
- 		o_tty->ops = driver->ops;
-@@ -1411,8 +1417,10 @@ end_init:
- 	/* Release locally allocated memory ... nothing placed in slots */
- free_mem_out:
- 	kfree(o_tp);
--	if (o_tty)
-+	if (o_tty) {
-+		module_put(o_tty->driver->owner);
- 		free_tty_struct(o_tty);
-+	}
- 	kfree(ltp);
- 	kfree(tp);
- 	free_tty_struct(tty);
-@@ -1447,6 +1455,7 @@ release_mem_out:
- static void release_one_tty(struct kref *kref)
- {
- 	struct tty_struct *tty = container_of(kref, struct tty_struct, kref);
-+	struct tty_driver *driver = tty->driver;
- 	int devpts = tty->driver->flags & TTY_DRIVER_DEVPTS_MEM;
- 	struct ktermios *tp;
- 	int idx = tty->index;
-@@ -1471,6 +1480,7 @@ static void release_one_tty(struct kref *kref)
- 	tty->magic = 0;
- 	/* FIXME: locking on tty->driver->refcount */
- 	tty->driver->refcount--;
-+	module_put(driver->owner);
+diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+index fe6d774..5e5b1dc 100644
+--- a/drivers/char/cyclades.c
++++ b/drivers/char/cyclades.c
+@@ -4993,12 +4993,14 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
+ 			device_id == PCI_DEVICE_ID_CYCLOM_Y_Hi) {
+ 		card_name = "Cyclom-Y";
  
- 	file_list_lock();
- 	list_del_init(&tty->tty_files);
-@@ -1506,20 +1516,15 @@ EXPORT_SYMBOL(tty_kref_put);
-  *	of ttys that the driver keeps.
-  *		FIXME: should we require tty_mutex is held here ??
-  *
-- *	FIXME: We want to defer the module put of the driver to the
-- *	destructor.
-  */
- static void release_tty(struct tty_struct *tty, int idx)
- {
--	struct tty_driver *driver = tty->driver;
--
- 	/* This should always be true but check for the moment */
- 	WARN_ON(tty->index != idx);
+-		addr0 = pci_iomap(pdev, 0, CyPCI_Yctl);
++		addr0 = ioremap_nocache(pci_resource_start(pdev, 0),
++				CyPCI_Yctl);
+ 		if (addr0 == NULL) {
+ 			dev_err(&pdev->dev, "can't remap ctl region\n");
+ 			goto err_reg;
+ 		}
+-		addr2 = pci_iomap(pdev, 2, CyPCI_Ywin);
++		addr2 = ioremap_nocache(pci_resource_start(pdev, 2),
++				CyPCI_Ywin);
+ 		if (addr2 == NULL) {
+ 			dev_err(&pdev->dev, "can't remap base region\n");
+ 			goto err_unmap;
+@@ -5013,7 +5015,8 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
+ 	} else if (device_id == PCI_DEVICE_ID_CYCLOM_Z_Hi) {
+ 		struct RUNTIME_9060 __iomem *ctl_addr;
  
- 	if (tty->link)
- 		tty_kref_put(tty->link);
- 	tty_kref_put(tty);
--	module_put(driver->owner);
- }
+-		ctl_addr = addr0 = pci_iomap(pdev, 0, CyPCI_Zctl);
++		ctl_addr = addr0 = ioremap_nocache(pci_resource_start(pdev, 0),
++				CyPCI_Zctl);
+ 		if (addr0 == NULL) {
+ 			dev_err(&pdev->dev, "can't remap ctl region\n");
+ 			goto err_reg;
+@@ -5026,8 +5029,8 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
  
- /*
+ 		mailbox = (u32)readl(&ctl_addr->mail_box_0);
+ 
+-		addr2 = pci_iomap(pdev, 2, mailbox == ZE_V1 ?
+-				CyPCI_Ze_win : CyPCI_Zwin);
++		addr2 = ioremap_nocache(pci_resource_start(pdev, 2),
++				mailbox == ZE_V1 ? CyPCI_Ze_win : CyPCI_Zwin);
+ 		if (addr2 == NULL) {
+ 			dev_err(&pdev->dev, "can't remap base region\n");
+ 			goto err_unmap;
+@@ -5159,9 +5162,9 @@ err_null:
+ 	cy_card[card_no].base_addr = NULL;
+ 	free_irq(irq, &cy_card[card_no]);
+ err_unmap:
+-	pci_iounmap(pdev, addr0);
++	iounmap(addr0);
+ 	if (addr2)
+-		pci_iounmap(pdev, addr2);
++		iounmap(addr2);
+ err_reg:
+ 	pci_release_regions(pdev);
+ err_dis:
+@@ -5186,9 +5189,9 @@ static void __devexit cy_pci_remove(struct pci_dev *pdev)
+ 		cy_writew(cinfo->ctl_addr + 0x68,
+ 				readw(cinfo->ctl_addr + 0x68) & ~0x0900);
+ 
+-	pci_iounmap(pdev, cinfo->base_addr);
++	iounmap(cinfo->base_addr);
+ 	if (cinfo->ctl_addr)
+-		pci_iounmap(pdev, cinfo->ctl_addr);
++		iounmap(cinfo->ctl_addr);
+ 	if (cinfo->irq
+ #ifndef CONFIG_CYZ_INTR
+ 		&& !IS_CYC_Z(*cinfo)
 
