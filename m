@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761121AbYJEQfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761131AbYJEQfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761121AbYJEQfc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:35:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759263AbYJEQZk
+	id S1761131AbYJEQfv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbYJEQ14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:25:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34349 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758677AbYJEQZj (ORCPT
+	Sun, 5 Oct 2008 12:27:56 -0400
+Received: from vms172067pub.verizon.net ([206.46.172.67]:48586 "EHLO
+	vms172067pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758926AbYJEQ1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:25:39 -0400
-From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 76/76] ftdi: A few errors are err() that should be debug which
-	causes much spewage
+	Sun, 5 Oct 2008 12:27:54 -0400
+X-Greylist: delayed 3600 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Oct 2008 12:27:54 EDT
+Date: Sun, 05 Oct 2008 11:27:50 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: sata question
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:25:39 +0100
-Message-ID: <20081005162536.1997.95744.stgit@localhost.localdomain>
-In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
-References: <20081005160231.1997.10462.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Message-id: <200810051127.50809.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes #10783
+Greetings all;
 
-Signed-off-by: Alan Cox <alan@redhat.com>
----
+My new ASUS M2N-SLI delux mobo has copius sata ports, at least 8.  It is very 
+slow to boot, like 30 seconds between the end of the bios stuff and the "grub 
+stage 2 loading" popping up on screen.
 
- drivers/usb/serial/ftdi_sio.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+I suspect this may be due to the equivalent of the old scsi 'scan all luns' 
+function, and back in my amiga days there was a flag we could set that told 
+the kickstart that this was the last drive, don't check the rest.
 
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index 70a3719..c2ac129 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -860,7 +860,7 @@ static int update_mctrl(struct usb_serial_port *port, unsigned int set,
- 
- 	kfree(buf);
- 	if (rv < 0) {
--		err("%s Error from MODEM_CTRL urb: DTR %s, RTS %s",
-+		dbg("%s Error from MODEM_CTRL urb: DTR %s, RTS %s",
- 				__func__,
- 				(set & TIOCM_DTR) ? "HIGH" :
- 				(clear & TIOCM_DTR) ? "LOW" : "unchanged",
-@@ -2259,7 +2259,7 @@ static int ftdi_tiocmget(struct tty_struct *tty, struct file *file)
- 			   0, 0,
- 			   buf, 1, WDR_TIMEOUT);
- 		if (ret < 0) {
--			err("%s Could not get modem status of device - err: %d", __func__,
-+			dbg("%s Could not get modem status of device - err: %d", __func__,
- 			    ret);
- 			return ret;
- 		}
-@@ -2278,7 +2278,7 @@ static int ftdi_tiocmget(struct tty_struct *tty, struct file *file)
- 				   0, priv->interface,
- 				   buf, 2, WDR_TIMEOUT);
- 		if (ret < 0) {
--			err("%s Could not get modem status of device - err: %d", __func__,
-+			dbg("%s Could not get modem status of device - err: %d", __func__,
- 			    ret);
- 			return ret;
- 		}
+As I only have one sata drive, and it is not part of the operating system 
+itself, is there a similar flag I can set in the mbr of that drive that says 
+this is the last drive, don't spend time checking the rest of the addresses?
 
+Properly applied, that should speed up a reboot by at least 30 seconds I'd 
+think.  I have updated the bios to the newest stable.  There is one newer, 
+beta version.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Besides, it's good to force C programmers to use the toolbox 
+occasionally.  :-)
+             -- Larry Wall in <1991May31.181659.28817@jpl-devvax.jpl.nasa.gov>
