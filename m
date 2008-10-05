@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbYJEMmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYJENYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbYJEMmp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 08:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbYJEMmh
+	id S1754739AbYJENYa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 09:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYJENYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 08:42:37 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:21284 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753694AbYJEMmg (ORCPT
+	Sun, 5 Oct 2008 09:24:21 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:10465 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752025AbYJENYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 08:42:36 -0400
+	Sun, 5 Oct 2008 09:24:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=L+o+qOjc//GUrcRxtl14xbUOsSkz+LjRjQQosXdLcEeA7FzcKMV81Wib8mL97rnUK5
-         ryLUY18YLZG6rv80q8PGpeMK1jCWkfGtts6X5N2sM0IRyvRMXNFKIrFTtQb6zewKU0Us
-         hettUBB2ir4JoolI8zIl5ASXdnAqjdeVZ8QIA=
-Message-ID: <19f34abd0810050542k607221acs526b38aaba36b501@mail.gmail.com>
-Date: Sun, 5 Oct 2008 14:42:35 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: kmemcheck: Caught 32-bit read from uninitialized memory (f6038ec0)
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080929131411.GA26442@elte.hu>
+        b=ASdVG8XEarJX5VMqZnSpT5C/ZAFqIr4vEk4XRQdgAqOvb8f1N+1dG8dBrjljUkB/yE
+         Ub9u2XrQfhP/mvhf/r1Rh4b/lqG/be8lZt12hoYPXdm0prR6CDoS7ycUmB+ZDcmHToGx
+         zcCo4/9FU+LyuAakGIf2p7u/GdbHu6vx6I5t0=
+Message-ID: <3fedcc3b0810050624m19bfd701n82b70ca81887c3fc@mail.gmail.com>
+Date: Sun, 5 Oct 2008 11:24:19 -0200
+From: "Thiago Lacerda" <thiagotbl@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Questions about mmap
+In-Reply-To: <3fedcc3b0810050621y3f44417ag605ee75dd0389100@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080928180652.GA8500@localhost.localdomain>
-	 <20080929085512.GA2190@elte.hu>
-	 <19f34abd0809290213m54a2c485p5917fcd46747ad6@mail.gmail.com>
-	 <20080929092546.GB7735@elte.hu> <20080929094308.GA18887@elte.hu>
-	 <20080929111314.GA28154@elte.hu> <20080929115757.GA3430@elte.hu>
-	 <20080929131411.GA26442@elte.hu>
+References: <3fedcc3b0810050621y3f44417ag605ee75dd0389100@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 29, 2008 at 3:14 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> another crash is below - config attached.
->
->        Ingo
->
-> ----------------->
-> initcall 0xc08eabf0 returned 0 after 7 msecs
-> calling  0xc08eae70 @ 1
-> PnPBIOS: Scanning system for PnP BIOS support...
-> PnPBIOS: Found PnP BIOS installation structure at 0xc00fc550
-> PnPBIOS: PnP BIOS version 1.0, entry 0xf0000:0xc580, dseg 0xf0000
-> BUG: unable to handle kernel paging request at 0000c6ef
+Hi everyone,
+I'd like to share a hashtable among kernel and userspace.
+The hashtable resolves collision by chaining.
+I have the following structure:
 
-Thanks, I can reproduce it. And that's very interesting. Look at the
-faulting address and the line just above:
+typedef struct flow_t flow_t;
 
-    PnP BIOS version 1.0, entry 0xf0000:0xc580
+struct flow_t {
+   ...
+   ...
+   flow_t *next;
+   flow_t *prev;
+};
 
-When I run it, I get something similar:
-
-    PnPBIOS: PnP BIOS version 1.0, entry 0xf0000:0x67ba, dseg 0xf0000
-    BUG: unable to handle kernel paging request at 000068ac
-
-Enabling debug information also gives me the location of the crash. It
-happens in kmemcheck's opcode decoder, when we dereference regs->eip.
-Is it possible that PnPBIOS is executing some code which is located at
-these weird addresses (like 16-bit code) and requires a different
-segment register?
-
-Maybe we should just check regs->flags to make sure that we are not in
-VM86 mode or similar. Will experiment a bit with it. Thanks.
+typedef struct hashtable {
+   flow_t *hashBuckets[X]; // X is a natural number
+   unsigned int size;
+} Hastable;
 
 
-Vegard
+So, my question is: Can I mmap the hashtable struct and access
+directly from userspace? I'm afraid that this could turn on mess
+because of the array of pointers.
+If it's possible, does anyone know a piece of code that can match my
+problem? I've been googling and I just find codes dealing with structs
+itself, not pointers.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Best regards
+
+
+--
+Thiago de Barros Lacerda
+Computer Science Undergraduate Student - CIn/UFPE - 2004.2
+Researcher/Software Developer - GPRT - Networking and
+Telecommunications Research Group
