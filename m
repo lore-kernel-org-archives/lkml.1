@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYJEL5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbYJEMDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbYJEL5T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 07:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYJEL5G
+	id S1754847AbYJEMDT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 08:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbYJEMDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 07:57:06 -0400
-Received: from msr4.hinet.net ([168.95.4.104]:41026 "EHLO msr4.hinet.net"
+	Sun, 5 Oct 2008 08:03:00 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:43359 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753063AbYJEL5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 07:57:04 -0400
-X-Greylist: delayed 1019 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Oct 2008 07:56:56 EDT
-Date: Sun, 5 Oct 2008 19:39:44 +0800
-From: Kanru Chen <koster@debian.org.tw>
-To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
-Message-ID: <20081005113943.GA14320@atom>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ikeVEW9yuYc//A+q"
+	id S1753731AbYJEMC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 08:02:59 -0400
+Date: Sun, 5 Oct 2008 16:01:37 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>
+Subject: Re: 2.6.27-rc8-git7: Reported regressions from 2.6.26
+Message-ID: <20081005120136.GA22457@2ka.mipt.ru>
+References: <0pOgGB.A.uLG.E475IB@wind> <20081005071421.GA17685@2ka.mipt.ru> <200810051302.20896.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200810051302.20896.rjw@sisk.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Oct 05, 2008 at 01:02:20PM +0200, Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> > Just for the reference, this one regresses from the 2.6.23.
+> 
+> Still, tbench results from 2.6.26 are better than from 2.6.27-rc.
+> That's why it's still on the list, but if you think that's not relevant, please
+> let me know and I'll drop it.
 
---ikeVEW9yuYc//A+q
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I meant it continuously regresses from .23 including 26-27 timeframe.
+There were at least two changes in 26-27 which caused tbench regression
+in this particular time interval. One of them enabled TSO over loopback
+by default, so one can turn it off via ethtools or this patch:
+http://marc.info/?l=linux-netdev&m=122263663631600&w=2
 
-Hi Alan,
+another (hopefully) one I'm trying to find out, which is a bit complex
+and slow, since e1000 driver changes in the middle of the 26-27
+timeframe does not allow my testing machines to boot.
 
-Could you push a fix for this problem for .27 release? It seems many
-people encounter this if they compile with PREEMPT enabled and it's quite
-annoying.
+So, there is a regression (partially resolved), but it is only part of
+the problem.
 
-Regards,
---=20
-   ~    Kanru Chen <koster@debian.org.tw>
-  'v'   http://stu.csie.ncnu.edu.tw/~kanru.96/
- // \\  GnuPG-Key ID: 365CC7A2
-/(   )\ Fingerprint: 3278 DFB4 BB28 6E8C 9E1F  1ECB B1B7 5B5F 365C C7A2
- ^`~'^
-
---ikeVEW9yuYc//A+q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjop38ACgkQsbdbXzZcx6LlkgCfa7+wsbV1oKPwxX1WTiYPGyY8
-j04AnR8VYVmTSdsqNapwgky/08TZ5962
-=WmA1
------END PGP SIGNATURE-----
-
---ikeVEW9yuYc//A+q--
+-- 
+	Evgeniy Polyakov
