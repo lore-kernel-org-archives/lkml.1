@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbYJEQUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbYJEQVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbYJEQUQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757065AbYJEQPi
+	id S1756017AbYJEQVB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbYJEQRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:15:38 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49620 "EHLO
+	Sun, 5 Oct 2008 12:17:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49653 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757017AbYJEQPh (ORCPT
+	with ESMTP id S1757507AbYJEQRO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:15:37 -0400
+	Sun, 5 Oct 2008 12:17:14 -0400
 From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 43/76] tty: Redo current tty locking
+Subject: [PATCH 45/76] pty: If the administrator creates a device for a ptmx
+	slave we should not error
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:15:37 +0100
-Message-ID: <20081005161532.1997.19318.stgit@localhost.localdomain>
+Date: Sun, 05 Oct 2008 17:17:14 +0100
+Message-ID: <20081005161644.1997.26914.stgit@localhost.localdomain>
 In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
 References: <20081005160231.1997.10462.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -25,130 +26,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently it is sometimes locked by the tty mutex and sometimes by the
-sighand lock. The latter is in fact correct and now we can hand back referenced
-objects we can fix this up without problems around sleeping functions.
+The open path for ptmx slaves is via the ptmx device. Opening them any
+other way is not allowed. Vegard Nossum found that previously this was not
+the case and mknod foo c 128 42; cat foo would produce nasty diagnostics
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/tty_io.c    |   18 ++++--------------
- fs/dquot.c               |    2 --
- include/linux/tty.h      |    1 +
- security/selinux/hooks.c |    2 --
- 4 files changed, 5 insertions(+), 18 deletions(-)
+ drivers/char/tty_io.c |   18 ++++++++++++------
+ 1 files changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index b5f57d0..f40298e 100644
+index f40298e..2e96ce0 100644
 --- a/drivers/char/tty_io.c
 +++ b/drivers/char/tty_io.c
-@@ -739,13 +739,11 @@ void tty_vhangup_self(void)
- {
- 	struct tty_struct *tty;
+@@ -1227,7 +1227,8 @@ static void tty_line_name(struct tty_driver *driver, int index, char *p)
+  *	init_dev		-	initialise a tty device
+  *	@driver: tty driver we are opening a device on
+  *	@idx: device index
+- *	@tty: returned tty structure
++ *	@ret_tty: returned tty structure
++ *	@first_ok: ok to open a new device (used by ptmx)
+  *
+  *	Prepare a tty device. This may not be a "new" clean device but
+  *	could also be an active device. The pty drivers require special
+@@ -1248,7 +1249,7 @@ static void tty_line_name(struct tty_driver *driver, int index, char *p)
+  */
  
--	mutex_lock(&tty_mutex);
- 	tty = get_current_tty();
- 	if (tty) {
- 		tty_vhangup(tty);
- 		tty_kref_put(tty);
+ static int init_dev(struct tty_driver *driver, int idx,
+-	struct tty_struct **ret_tty)
++	struct tty_struct **ret_tty, int first_ok)
+ {
+ 	struct tty_struct *tty, *o_tty;
+ 	struct ktermios *tp, **tp_loc, *o_tp, **o_tp_loc;
+@@ -1279,6 +1280,11 @@ static int init_dev(struct tty_driver *driver, int idx,
  	}
--	mutex_unlock(&tty_mutex);
+ 	if (tty) goto fast_track;
+ 
++	if (driver->subtype == PTY_TYPE_MASTER &&
++		(driver->flags & TTY_DRIVER_DEVPTS_MEM) && !first_ok) {
++		retval = -EIO;
++		goto end_init;
++	}
+ 	/*
+ 	 * First time open is complex, especially for PTY devices.
+ 	 * This code guarantees that either everything succeeds and the
+@@ -1413,7 +1419,7 @@ static int init_dev(struct tty_driver *driver, int idx,
+ 
+ 	if (retval)
+ 		goto release_mem_out;
+-	 goto success;
++	goto success;
+ 
+ 	/*
+ 	 * This fast open can be used if the tty is already open.
+@@ -1795,7 +1801,7 @@ static void release_dev(struct file *filp)
  }
  
  /**
-@@ -801,11 +799,9 @@ void disassociate_ctty(int on_exit)
- 	struct pid *tty_pgrp = NULL;
- 
- 
--	mutex_lock(&tty_mutex);
- 	tty = get_current_tty();
- 	if (tty) {
- 		tty_pgrp = get_pid(tty->pgrp);
--		mutex_unlock(&tty_mutex);
- 		lock_kernel();
- 		if (on_exit && tty->driver->type != TTY_DRIVER_TYPE_PTY)
- 			tty_vhangup(tty);
-@@ -822,7 +818,6 @@ void disassociate_ctty(int on_exit)
- 			kill_pgrp(old_pgrp, SIGCONT, on_exit);
- 			put_pid(old_pgrp);
- 		}
--		mutex_unlock(&tty_mutex);
- 		return;
+- *	tty_open		-	open a tty device
++ *	__tty_open		-	open a tty device
+  *	@inode: inode of device file
+  *	@filp: file pointer to tty
+  *
+@@ -1874,7 +1880,7 @@ retry_open:
+ 		return -ENODEV;
  	}
- 	if (tty_pgrp) {
-@@ -837,7 +832,6 @@ void disassociate_ctty(int on_exit)
- 	current->signal->tty_old_pgrp = NULL;
- 	spin_unlock_irq(&current->sighand->siglock);
+ got_driver:
+-	retval = init_dev(driver, index, &tty);
++	retval = init_dev(driver, index, &tty, 0);
+ 	mutex_unlock(&tty_mutex);
+ 	if (retval)
+ 		return retval;
+@@ -1971,7 +1977,7 @@ static int __ptmx_open(struct inode *inode, struct file *filp)
+ 		return index;
  
--	mutex_lock(&tty_mutex);
- 	tty = get_current_tty();
- 	if (tty) {
- 		unsigned long flags;
-@@ -854,7 +848,6 @@ void disassociate_ctty(int on_exit)
- 		       " = NULL", tty);
- #endif
- 	}
--	mutex_unlock(&tty_mutex);
+ 	mutex_lock(&tty_mutex);
+-	retval = init_dev(ptm_driver, index, &tty);
++	retval = init_dev(ptm_driver, index, &tty, 1);
+ 	mutex_unlock(&tty_mutex);
  
- 	/* Now clear signal->tty under the lock */
- 	read_lock(&tasklist_lock);
-@@ -3180,14 +3173,11 @@ static void proc_set_tty(struct task_struct *tsk, struct tty_struct *tty)
- struct tty_struct *get_current_tty(void)
- {
- 	struct tty_struct *tty;
--	WARN_ON_ONCE(!mutex_is_locked(&tty_mutex));
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&current->sighand->siglock, flags);
- 	tty = tty_kref_get(current->signal->tty);
--	/*
--	 * session->tty can be changed/cleared from under us, make sure we
--	 * issue the load. The obtained pointer, when not NULL, is valid as
--	 * long as we hold tty_mutex.
--	 */
--	barrier();
-+	spin_unlock_irqrestore(&current->sighand->siglock, flags);
- 	return tty;
- }
- EXPORT_SYMBOL_GPL(get_current_tty);
-diff --git a/fs/dquot.c b/fs/dquot.c
-index 7417a6c..ad7e590 100644
---- a/fs/dquot.c
-+++ b/fs/dquot.c
-@@ -895,9 +895,7 @@ static void print_warning(struct dquot *dquot, const int warntype)
- 	    warntype == QUOTA_NL_BSOFTBELOW || !need_print_warning(dquot))
- 		return;
- 
--	mutex_lock(&tty_mutex);
- 	tty = get_current_tty();
--	mutex_unlock(&tty_mutex);
- 	if (!tty)
- 		return;
- 	tty_write_message(tty, dquot->dq_sb->s_id);
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index c30ed8d..e00393a 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -361,6 +361,7 @@ extern int is_ignored(int sig);
- extern int tty_signal(int sig, struct tty_struct *tty);
- extern void tty_hangup(struct tty_struct *tty);
- extern void tty_vhangup(struct tty_struct *tty);
-+extern void tty_vhangup_self(void);
- extern void tty_unhangup(struct file *filp);
- extern int tty_hung_up_p(struct file *filp);
- extern void do_SAK(struct tty_struct *tty);
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index c856db8..215cddd 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2120,9 +2120,7 @@ static inline void flush_unauthorized_files(struct files_struct *files)
- 	long j = -1;
- 	int drop_tty = 0;
- 
--	mutex_lock(&tty_mutex);
- 	tty = get_current_tty();
--	mutex_unlock(&tty_mutex);
- 	if (tty) {
- 		file_list_lock();
- 		file = list_entry(tty->tty_files.next, typeof(*file), f_u.fu_list);
+ 	if (retval)
 
