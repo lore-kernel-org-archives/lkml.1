@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbYJEMDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbYJEMD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbYJEMDT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 08:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbYJEMDA
+	id S1755429AbYJEMD4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 08:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYJEMDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 08:03:00 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:43359 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753731AbYJEMC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 08:02:59 -0400
-Date: Sun, 5 Oct 2008 16:01:37 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>
-Subject: Re: 2.6.27-rc8-git7: Reported regressions from 2.6.26
-Message-ID: <20081005120136.GA22457@2ka.mipt.ru>
-References: <0pOgGB.A.uLG.E475IB@wind> <20081005071421.GA17685@2ka.mipt.ru> <200810051302.20896.rjw@sisk.pl>
+	Sun, 5 Oct 2008 08:03:48 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42759 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753006AbYJEMDs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 08:03:48 -0400
+Date: Sun, 5 Oct 2008 13:03:30 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Kanru Chen <koster@debian.org.tw>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: TIOCGWINSZ retuns old pty size after receiving SIGWINCH
+Message-ID: <20081005130330.3cbb72d5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081005113943.GA14320@atom>
+References: <20081005113943.GA14320@atom>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810051302.20896.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 05, 2008 at 01:02:20PM +0200, Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> > Just for the reference, this one regresses from the 2.6.23.
+On Sun, 5 Oct 2008 19:39:44 +0800
+Kanru Chen <koster@debian.org.tw> wrote:
+
+> Hi Alan,
 > 
-> Still, tbench results from 2.6.26 are better than from 2.6.27-rc.
-> That's why it's still on the list, but if you think that's not relevant, please
-> let me know and I'll drop it.
+> Could you push a fix for this problem for .27 release? It seems many
+> people encounter this if they compile with PREEMPT enabled and it's quite
+> annoying.
 
-I meant it continuously regresses from .23 including 26-27 timeframe.
-There were at least two changes in 26-27 which caused tbench regression
-in this particular time interval. One of them enabled TSO over loopback
-by default, so one can turn it off via ethtools or this patch:
-http://marc.info/?l=linux-netdev&m=122263663631600&w=2
+The relevant fixes were pushed and are in the current -rc series kernels.
+The tty mutex now locks the TIOCG/SWINSZ calls using the tty mutex lock
+of the tty side of tty/pty pairs.
 
-another (hopefully) one I'm trying to find out, which is a bit complex
-and slow, since e1000 driver changes in the middle of the 26-27
-timeframe does not allow my testing machines to boot.
-
-So, there is a regression (partially resolved), but it is only part of
-the problem.
-
--- 
-	Evgeniy Polyakov
+Alan
