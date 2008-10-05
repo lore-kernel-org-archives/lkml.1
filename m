@@ -1,114 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYJELIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbYJELSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbYJELIW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 07:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbYJELIN
+	id S1754815AbYJELSh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 07:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbYJELSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 07:08:13 -0400
-Received: from mail.ukfsn.org ([77.75.108.10]:60343 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753490AbYJELIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 07:08:12 -0400
-Date: Sun, 5 Oct 2008 12:08:09 +0100
-From: Nick Warne <nick@ukfsn.org>
+	Sun, 5 Oct 2008 07:18:30 -0400
+Received: from gw-ca.panasas.com ([66.104.249.162]:12011 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753511AbYJELS3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 07:18:29 -0400
+Message-ID: <48E8A282.5060201@panasas.com>
+Date: Sun, 05 Oct 2008 13:18:26 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+MIME-Version: 1.0
 To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, D Bray <db1986@internetdog.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: New CD/DVD reports 'Can Play Audio    NO'
-Message-ID: <20081005120809.38eb4826@sauron.linicks.net>
-In-Reply-To: <48E82FDB.6020009@kernel.org>
-References: <20081004103355.407fc303@sauron.linicks.net>
-	<48E82FDB.6020009@kernel.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+CC: linux-kernel@vger.kernel.org, lists@ku-gbr.de
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org> <48E890B9.6050307@gmail.com> <48E8947A.5020608@kernel.org> <48E89839.5030307@panasas.com> <48E899F9.9040206@kernel.org>
+In-Reply-To: <48E899F9.9040206@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Oct 2008 11:17:21.0311 (UTC) FILETIME=[EF692AF0:01C926DB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 05 Oct 2008 12:09:15 +0900
-Tejun Heo <tj@kernel.org> wrote:
-
- 
-> > The drive is:
-> > 
-> > Vendor                      : Optiarc 
-> > Model                       : DVD RW AD-7200A 
-> > Revision                    : 1.06
-> > 
-
-> > I see this in /proc/sys/dev/cdrom/info:
-> > 
-> > drive name:             hdb     hda
-> > drive speed:            48      48
-> > drive # of slots:       1       1
-> > Can close tray:         1       1
-> > Can open tray:          1       1
-> > Can lock tray:          1       1
-> > Can change speed:       1       1
-> > Can select disk:        0       0
-> > Can read multisession:  1       1
-> > Can read MCN:           1       1
-> > Reports media changed:  1       1
-> > Can play audio:         0       1
-> > Can write CD-R:         1       1
-> > Can write CD-RW:        1       1
-> > Can read DVD:           1       1
-> > Can write DVD-R:        1       1
-> > Can write DVD-RAM:      1       1
-> > Can read MRW:           1       1
-> > Can write MRW:          1       1
-> > Can write RAM:          1       1
-
-> Can you try libata driver and see whether anything is different?
+On Oct. 05, 2008, 12:42 +0200, Tejun Heo <tj@kernel.org> wrote:
+> Benny Halevy wrote:
+>> On Oct. 05, 2008, 12:18 +0200, Tejun Heo <tj@kernel.org> wrote:
+>>> Benny Halevy wrote:
+>>>> On Sep. 24, 2008, 12:36 +0300, Tejun Heo <tj@kernel.org> wrote:
+>>>>> Please apply the attached patch and post the resulting log.  Please
+>>>>> don't forget to turn on KALLSYMS.
+>>>>>
+>>>>> Thanks.
+>>>>>
+>>>> With commit 4c1eb90a0908c0c60db2169dce08fb672e7582f1 (v2.6.27-rc8),
+>>>> I see no spurious EH complete events as I saw with 2.6.27-rc <= 7.
+>>> You're on CK804, right?
+>>>
+>> No, MCP55 actually:
+>>
+>> $ lspci | grep IDE
+>> 00:04.0 IDE interface: nVidia Corporation MCP55 IDE (rev a1)
+>> 00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+>> 00:05.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+> 
+> Right, the commit fixes generic and CK804 while break nf2/3.  Can you
+> also try the following patch?
+> 
+>   http://article.gmane.org/gmane.linux.ide/34942/raw
 > 
 
-/messages
-Oct  5 11:54:13 sauron kernel: ata5: PATA max UDMA/133 cmd 0x1f0 ctl
-0x3f6 bmdma 0xf400 irq 14
-Oct  5 11:54:13 sauron kernel: ata6: PATA max
-UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xf408 irq 15
-Oct  5 11:54:13 sauron kernel: ata5.00: ATAPI: TSSTcorp CDDVDW
-SH-S202J, SB00, max UDMA/66
-Oct  5 11:54:13 sauron kernel: ata5.01: ATAPI: Optiarc DVD RW AD-7200A,
-1.06, max UDMA/66
-Oct  5 11:54:13 sauron kernel: ata5.00: configured for UDMA/66
-Oct  5 11:54:13 sauron kernel: ata5.01: configured for
-UDMA/66
+Log looks clean with this patch as well.
 
-/syslog
-Oct  5 11:54:13 sauron kernel: sr0: scsi3-mmc drive: 48x/48x writer
-dvd-ram cd/rw xa/form2 cdda tray
-Oct  5 11:54:13 sauron kernel: sr1:
-scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
-
-/proc/sys/dev/cdrom/info
-
-drive name:             sr1     sr0
-drive speed:            48      48
-drive # of slots:       1       1
-Can close tray:         1       1
-Can open tray:          1       1
-Can lock tray:          1       1
-Can change speed:       1       1
-Can select disk:        0       0
-Can read multisession:  1       1
-Can read MCN:           1       1
-Reports media changed:  1       1
-Can play audio:         1       1
-Can write CD-R:         1       1
-Can write CD-RW:        1       1
-Can read DVD:           1       1
-Can write DVD-R:        1       1
-Can write DVD-RAM:      1       1
-Can read MRW:           1       1
-Can write MRW:          1       1
-Can write RAM:          1       1
-
-
-Works and plays fine!
-
-Nick
--- 
-Free Software Foundation Associate Member 5508
+Benny
