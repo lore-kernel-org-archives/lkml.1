@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbYJEQeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757097AbYJEQe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756608AbYJEQeK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758582AbYJEQYn
+	id S1757097AbYJEQe2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759395AbYJEQYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:24:43 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34341 "EHLO
+	Sun, 5 Oct 2008 12:24:49 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34343 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758269AbYJEQYl (ORCPT
+	with ESMTP id S1759388AbYJEQYs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:24:41 -0400
+	Sun, 5 Oct 2008 12:24:48 -0400
 From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 72/76] serial: allow 8250 to be used on sparc
+Subject: [PATCH 73/76] serial: fix device name reporting when minor space is
+	shared between drivers
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:24:41 +0100
-Message-ID: <20081005162438.1997.53881.stgit@localhost.localdomain>
+Date: Sun, 05 Oct 2008 17:24:48 +0100
+Message-ID: <20081005162446.1997.73482.stgit@localhost.localdomain>
 In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
 References: <20081005160231.1997.10462.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -25,154 +26,124 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
+From: David S. Miller <davem@davemloft.net>
 
-This requires three changes:
+The multiple drivers share the minor space occupied by a particular major
+number, the actual index within the device name's space is indicated by
+the tty_driver->name_base + uart_port->line
 
-1) Remove !SPARC restriction in Kconfig.
+Another usable formula is (uart_driver->minor - MINOR_BASE) + port->line
 
-2) Move Sparc specific serial drivers before 8250, so that serial
-   console devices don't change names on us, even if 8250 finds
-   devices.
-
-3) Since the Sparc specific serial drivers try to use the
-   same major/minor device namespace as 8250, some coordination
-   is necessary.  Use the sunserial_*() layer routines to allocate
-   minor number space within TTY_MAJOR when CONFIG_SPARC.
-
-   This has no effect on other platforms.
-
-Thanks to Josip Rodin for bringing up this issue and testing
-plus debugging various revisions of this patch.
+Use those to print the device names properly in such situations in
+serial_core.c and 8250.c
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- arch/sparc/include/asm/serial.h |    6 ++++++
- drivers/serial/8250.c           |   18 +++++++++++++++++-
- drivers/serial/Kconfig          |    1 -
- drivers/serial/Makefile         |   15 ++++++++++-----
- 4 files changed, 33 insertions(+), 7 deletions(-)
- create mode 100644 arch/sparc/include/asm/serial.h
+ drivers/serial/8250.c        |   22 +++++++++++++++-------
+ drivers/serial/serial_core.c |    7 +++++--
+ 2 files changed, 20 insertions(+), 9 deletions(-)
 
-diff --git a/arch/sparc/include/asm/serial.h b/arch/sparc/include/asm/serial.h
-new file mode 100644
-index 0000000..f90d61c
---- /dev/null
-+++ b/arch/sparc/include/asm/serial.h
-@@ -0,0 +1,6 @@
-+#ifndef __SPARC_SERIAL_H
-+#define __SPARC_SERIAL_H
-+
-+#define BASE_BAUD ( 1843200 / 16 )
-+
-+#endif /* __SPARC_SERIAL_H */
 diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index e898edf..c07afb2 100644
+index c07afb2..b43dad6 100644
 --- a/drivers/serial/8250.c
 +++ b/drivers/serial/8250.c
-@@ -44,6 +44,10 @@
+@@ -57,6 +57,13 @@ static unsigned int share_irqs = SERIAL8250_SHARE_IRQS;
  
- #include "8250.h"
+ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
  
-+#ifdef CONFIG_SPARC
-+#include "suncore.h"
-+#endif
++static struct uart_driver serial8250_reg;
++
++static int serial_index(struct uart_port *port)
++{
++	return (serial8250_reg.minor - 64) + port->line;
++}
 +
  /*
-  * Configuration:
-  *   share_irqs - whether we pass IRQF_SHARED to request_irq().  This option
-@@ -2721,7 +2725,6 @@ static struct uart_driver serial8250_reg = {
- 	.dev_name		= "ttyS",
- 	.major			= TTY_MAJOR,
- 	.minor			= 64,
--	.nr			= UART_NR,
- 	.cons			= SERIAL8250_CONSOLE,
- };
+  * Debugging.
+  */
+@@ -1001,7 +1008,7 @@ static void autoconfig(struct uart_8250_port *up, unsigned int probeflags)
+ 		return;
  
-@@ -3003,7 +3006,12 @@ static int __init serial8250_init(void)
- 		"%d ports, IRQ sharing %sabled\n", nr_uarts,
- 		share_irqs ? "en" : "dis");
+ 	DEBUG_AUTOCONF("ttyS%d: autoconf (0x%04x, 0x%p): ",
+-			up->port.line, up->port.iobase, up->port.membase);
++		       serial_index(&up->port), up->port.iobase, up->port.membase);
  
-+#ifdef CONFIG_SPARC
-+	ret = sunserial_register_minors(&serial8250_reg, UART_NR);
-+#else
-+	serial8250_reg.nr = UART_NR;
- 	ret = uart_register_driver(&serial8250_reg);
-+#endif
- 	if (ret)
- 		goto out;
+ 	/*
+ 	 * We really do need global IRQs disabled here - we're going to
+@@ -1136,8 +1143,8 @@ static void autoconfig(struct uart_8250_port *up, unsigned int probeflags)
+ 	if (up->capabilities != uart_config[up->port.type].flags) {
+ 		printk(KERN_WARNING
+ 		       "ttyS%d: detected caps %08x should be %08x\n",
+-			up->port.line, up->capabilities,
+-			uart_config[up->port.type].flags);
++		       serial_index(&up->port), up->capabilities,
++		       uart_config[up->port.type].flags);
+ 	}
  
-@@ -3028,7 +3036,11 @@ static int __init serial8250_init(void)
- put_dev:
- 	platform_device_put(serial8250_isa_devs);
- unreg_uart_drv:
-+#ifdef CONFIG_SPARC
-+	sunserial_unregister_minors(&serial8250_reg, UART_NR);
-+#else
- 	uart_unregister_driver(&serial8250_reg);
-+#endif
- out:
- 	return ret;
+ 	up->port.fifosize = uart_config[up->port.type].fifo_size;
+@@ -1902,7 +1909,8 @@ static int serial8250_startup(struct uart_port *port)
+ 	 */
+ 	if (!(up->port.flags & UPF_BUGGY_UART) &&
+ 	    (serial_inp(up, UART_LSR) == 0xff)) {
+-		printk("ttyS%d: LSR safety check engaged!\n", up->port.line);
++		printk(KERN_INFO "ttyS%d: LSR safety check engaged!\n",
++		       serial_index(&up->port));
+ 		return -ENODEV;
+ 	}
+ 
+@@ -1957,7 +1965,8 @@ static int serial8250_startup(struct uart_port *port)
+ 		 */
+ 		if (!(iir1 & UART_IIR_NO_INT) && (iir & UART_IIR_NO_INT)) {
+ 			up->bugs |= UART_BUG_THRE;
+-			pr_debug("ttyS%d - using backup timer\n", port->line);
++			pr_debug("ttyS%d - using backup timer\n",
++				 serial_index(port));
+ 		}
+ 	}
+ 
+@@ -2017,7 +2026,7 @@ static int serial8250_startup(struct uart_port *port)
+ 		if (!(up->bugs & UART_BUG_TXEN)) {
+ 			up->bugs |= UART_BUG_TXEN;
+ 			pr_debug("ttyS%d - enabling bad tx status workarounds\n",
+-				 port->line);
++				 serial_index(port));
+ 		}
+ 	} else {
+ 		up->bugs &= ~UART_BUG_TXEN;
+@@ -2678,7 +2687,6 @@ static int serial8250_console_early_setup(void)
+ 	return serial8250_find_port_for_earlycon();
  }
-@@ -3047,7 +3059,11 @@ static void __exit serial8250_exit(void)
- 	platform_driver_unregister(&serial8250_isa_driver);
- 	platform_device_unregister(isa_dev);
  
-+#ifdef CONFIG_SPARC
-+	sunserial_unregister_minors(&serial8250_reg, UART_NR);
-+#else
- 	uart_unregister_driver(&serial8250_reg);
-+#endif
+-static struct uart_driver serial8250_reg;
+ static struct console serial8250_console = {
+ 	.name		= "ttyS",
+ 	.write		= serial8250_console_write,
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index 308588e..6bdf336 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -2051,7 +2051,8 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
+ 					"transmitter\n",
+ 			       port->dev ? port->dev->bus_id : "",
+ 			       port->dev ? ": " : "",
+-			       drv->dev_name, port->line);
++			       drv->dev_name,
++			       drv->tty_driver->name_base + port->line);
+ 
+ 		ops->shutdown(port);
+ 	}
+@@ -2176,7 +2177,9 @@ uart_report_port(struct uart_driver *drv, struct uart_port *port)
+ 	printk(KERN_INFO "%s%s%s%d at %s (irq = %d) is a %s\n",
+ 	       port->dev ? port->dev->bus_id : "",
+ 	       port->dev ? ": " : "",
+-	       drv->dev_name, port->line, address, port->irq, uart_type(port));
++	       drv->dev_name,
++	       drv->tty_driver->name_base + port->line,
++	       address, port->irq, uart_type(port));
  }
  
- module_init(serial8250_init);
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 0db2045..31786b3 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -9,7 +9,6 @@ menu "Serial drivers"
- # The new 8250/16550 serial drivers
- config SERIAL_8250
- 	tristate "8250/16550 and compatible serial support"
--	depends on (BROKEN || !SPARC)
- 	select SERIAL_CORE
- 	---help---
- 	  This selects whether you want to include the driver for the standard
-diff --git a/drivers/serial/Makefile b/drivers/serial/Makefile
-index 1462eb3..0c17c8d 100644
---- a/drivers/serial/Makefile
-+++ b/drivers/serial/Makefile
-@@ -4,6 +4,16 @@
- 
- obj-$(CONFIG_SERIAL_CORE) += serial_core.o
- obj-$(CONFIG_SERIAL_21285) += 21285.o
-+
-+# These Sparc drivers have to appear before others such as 8250
-+# which share ttySx minor node space.  Otherwise console device
-+# names change and other unplesantries.
-+obj-$(CONFIG_SERIAL_SUNCORE) += suncore.o
-+obj-$(CONFIG_SERIAL_SUNHV) += sunhv.o
-+obj-$(CONFIG_SERIAL_SUNZILOG) += sunzilog.o
-+obj-$(CONFIG_SERIAL_SUNSU) += sunsu.o
-+obj-$(CONFIG_SERIAL_SUNSAB) += sunsab.o
-+
- obj-$(CONFIG_SERIAL_8250) += 8250.o
- obj-$(CONFIG_SERIAL_8250_PNP) += 8250_pnp.o
- obj-$(CONFIG_SERIAL_8250_GSC) += 8250_gsc.o
-@@ -31,12 +41,7 @@ obj-$(CONFIG_SERIAL_S3C2400) += s3c2400.o
- obj-$(CONFIG_SERIAL_S3C2410) += s3c2410.o
- obj-$(CONFIG_SERIAL_S3C2412) += s3c2412.o
- obj-$(CONFIG_SERIAL_S3C2440) += s3c2440.o
--obj-$(CONFIG_SERIAL_SUNCORE) += suncore.o
--obj-$(CONFIG_SERIAL_SUNHV) += sunhv.o
--obj-$(CONFIG_SERIAL_SUNZILOG) += sunzilog.o
- obj-$(CONFIG_SERIAL_IP22_ZILOG) += ip22zilog.o
--obj-$(CONFIG_SERIAL_SUNSU) += sunsu.o
--obj-$(CONFIG_SERIAL_SUNSAB) += sunsab.o
- obj-$(CONFIG_SERIAL_MUX) += mux.o
- obj-$(CONFIG_SERIAL_68328) += 68328serial.o
- obj-$(CONFIG_SERIAL_68360) += 68360serial.o
+ static void
 
