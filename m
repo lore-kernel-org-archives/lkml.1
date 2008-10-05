@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbYJEUbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYJEUkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755519AbYJEUbU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 16:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbYJEUbK
+	id S1756002AbYJEUkL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 16:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbYJEUj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 16:31:10 -0400
-Received: from www.sr71.net ([198.145.64.142]:51733 "EHLO blackbird.sr71.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754048AbYJEUbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 16:31:09 -0400
-Subject: Re: USB disconnects every 30 seconds (2.6.27-rc8)
-From: Dave Hansen <dave@sr71.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, gregkh <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0810051509110.32325-100000@netrider.rowland.org>
-References: <Pine.LNX.4.44L0.0810051509110.32325-100000@netrider.rowland.org>
-Content-Type: text/plain
-Date: Sun, 05 Oct 2008 13:31:07 -0700
-Message-Id: <1223238667.10597.3.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 5 Oct 2008 16:39:57 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46493 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754124AbYJEUj5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 16:39:57 -0400
+Message-ID: <48E9261A.9060501@firstfloor.org>
+Date: Sun, 05 Oct 2008 22:39:54 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.14 (X11/20060911)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@elte.hu>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: <PING> Re: [patch x86/core] x86: allow number of additional hotplug
+ CPUs to be set at compile time
+References: <20081001191945.4182d0be@redhat.com> <87bpy3pdgs.fsf@basil.nowhere.org> <20081002152521.16c4835b@redhat.com> <20081002194409.GB8318@one.firstfloor.org> <20081002160907.68d79e0b@redhat.com> <20081002204018.GD8318@one.firstfloor.org> <87ljx4nw09.fsf_-_@basil.nowhere.org> <20081004183014.769836ff@redhat.com> <20081005102835.GA8947@elte.hu> <alpine.LFD.2.00.0810051626150.3398@apollo> <20081005152025.GA27066@elte.hu> <alpine.LFD.2.00.0810051732380.3398@apollo>
+In-Reply-To: <alpine.LFD.2.00.0810051732380.3398@apollo>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-10-05 at 15:16 -0400, Alan Stern wrote:
-> That file is the usbmon log from back on Friday.  I need to see the
-> usbmon log you get with the timing fix installed.  Was that not clear?  
-> Without the log, I can't tell why the disconnects continue to occur
-> even though the timing fix should have eliminated them.
 
-It looks like I didn't properly apply the timing fix when I said I did
-last time.  With Thomas/Hugh's fix applied, I don't see the disconnects
-any more.  I'll keep an eye out and let everyone know if they reappear.
+> 
+> Please lets get rid of all this.
 
-Thanks for all the excellent debugging, everyone!
+The result is that there's no way to override a BIOS now that
+doesn't declare the number of hotplug CPUs with the Linux hotplug
+extension.
 
--- Dave
+Completely trusting the BIOS seems like a bad idea.
+
+So I think you still need the command line parameter back, otherwise there's no
+way to override the BIOS.
+
+-Andi (who wished you guys would check with the original author
+before removing code you clearly don't understand)
 
