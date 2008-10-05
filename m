@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbYJEGA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbYJEG0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbYJEGA6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 02:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYJEGAv
+	id S1753769AbYJEG0p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 02:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYJEG0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 02:00:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:61201 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751887AbYJEGAu (ORCPT
+	Sun, 5 Oct 2008 02:26:37 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:52216 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbYJEG0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 02:00:50 -0400
+	Sun, 5 Oct 2008 02:26:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references:x-google-sender-auth;
-        b=Qp46ETBlj0aAo4wcm1jeQYfcCXMiX+L8s/XVQ45RpmJMWNRKKieFchUgGnRHLrQEfs
-         4iMKHuOJ1ctsjDNqHWeQjNb2lVvlye9ooJLIRkfavg3TdIWOb0SO/EZXqOnH9NAPYG63
-         JjeA5s0LYmpwucg0QCIAiy4m8XAIIFL1GeV4I=
-Message-ID: <2f11576a0810042300t26b3556ax304771b4f893468@mail.gmail.com>
-Date: Sun, 5 Oct 2008 15:00:49 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: [PATCH 2/2] Report the pagesize backing a VMA in /proc/pid/maps
-Cc: "Mel Gorman" <mel@csn.ul.ie>, akpm@linux-foundation.org,
-       dave@linux.vnet.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081004221339.GA20175@x200.localdomain>
+        b=GTtVJE8J0EVIttRIvSiL61zS0ozARtcFNlbtJz4WHvtLELCqnga1+AzEYyb3xEJtbs
+         1qne1YLmqkSL22LO3NTlHvduBHT9ZLbHrhx8qP8eFGJmeVhQqLSj7oxk+F7qgXhrq6Df
+         /SREk/vNt1Vc4SJpsRYWWKMZziGsdquS8Mpws=
+Message-ID: <4b6fba110810042326i140b967ay1873fc0fdd0a4347@mail.gmail.com>
+Date: Sun, 5 Oct 2008 02:26:34 -0400
+From: "Daniel Rosenthal" <danielrosenthal@acm.org>
+To: roger.gammans@gmail.com, tytso@mit.edu
+Subject: Re: copy of "The Extended 3 Filesystem" paper?
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <5ef2a8660810031500j4c4bf8cas3e28292433897a3f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1223052415-18956-1-git-send-email-mel@csn.ul.ie>
-	 <1223052415-18956-3-git-send-email-mel@csn.ul.ie>
-	 <20081004221339.GA20175@x200.localdomain>
-X-Google-Sender-Auth: 83b8e468f215bf36
+References: <4b6fba110810031427s5296511cx135616cff632790b@mail.gmail.com>
+	 <5ef2a8660810031500j4c4bf8cas3e28292433897a3f@mail.gmail.com>
+X-Google-Sender-Auth: 6242b1569293b0d1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
->> This patch adds a new field for hugepage-backed memory regions to show the
->> pagesize in /proc/pid/maps.  While the information is available in smaps,
->> maps is more human-readable and does not incur the cost of calculating Pss. An
->> example of a /proc/self/maps output for an application using hugepages with
->> this patch applied is;
->>
->> 08048000-0804c000 r-xp 00000000 03:01 49135      /bin/cat
->> 0804c000-0804d000 rw-p 00003000 03:01 49135      /bin/cat
->> 08400000-08800000 rw-p 00000000 00:10 4055       /mnt/libhugetlbfs.tmp.QzPPTJ (deleted) (hpagesize=4096kB)
+On Fri, Oct 3, 2008 at 6:00 PM, Roger Gammans <roger.gammans@gmail.com> wrote:
 >
->> To be predictable for parsers, the patch adds the notion of reporting on VMA
->> attributes by appending one or more fields that look like "(attribute)". This
->> already happens when a file is deleted and the user sees (deleted) after the
->> filename. The expectation is that existing parsers will not break as those
->> that read the filename should be reading forward after the inode number
->> and stopping when it sees something that is not part of the filename.
->> Parsers that assume everything after / is a filename will get confused by
->> (hpagesize=XkB) but are already broken due to (deleted).
+> I've  got something which appears to be an HTML transcript of sct's
+> presentation here.
 >
-> Looks like procps will start showing hpagesize tag as a mapping name
-> (apologies for pasting crappy code):
+> I'll send it to you if you want. Unless someone raises an objection.
+>
+> Roger
+>
 
-Administrator expect mapping name is just file name when vma is
-hugepage via mmap.
-So, I feel Mel's code is nicer.
+Is it different from:
+http://olstrans.sourceforge.net/release/OLS2000-ext3/OLS2000-ext3.html
 
-Thanks.
+If so, sure, that would help.  If not, the transcript above actually
+appears to contain answers to many of the questions I had.
+
+I also found some documentation in the kernel Documentation/DocBook
+directory from an email you sent in 2002 (
+http://lkml.org/lkml/2002/3/22/97 ).  I did not see this the first
+time around because there does not seem to be much info about DocBook
+in Documentation/ other than the DocBook directory itself, and it
+doesn't seem to be easy to stumble across on the web unless you know
+to look for it.  I've compiled and posted the HTML DocBook on my
+website:
+
+http://ww2.cs.fsu.edu/~rosentha/linux/current/docs/DocBook/
+
+I also posted the whole Documentation directory at
+http://ww2.cs.fsu.edu/~rosentha/linux/current/docs/ .  I hope this
+helps somebody else avoid a lot more grief than I did.  If somebody
+can tell me what packages I need to compile the pdfdocs, I can post
+those too.
+
+
+On Fri, Oct 3, 2008 at 6:06 PM, Theodore Tso <tytso@mit.edu> wrote:
+>
+> I don't have a copy of that paper paper myself, but most of the
+> information is probably contained in the 1998 Linux Expo paper, which
+> is available here:
+>
+>   http://ext4.wiki.kernel.org/index.php/Publications
+>
+> If you come across other ext4 papers, please feel free to add it to
+> the wiki.
+>                                                - Ted
+>
+
+Thanks for the link.  Do you mind if I add a link to the transcript
+linked to above, though not really a publication? (I'm talking about
+http://olstrans.sourceforge.net/release/OLS2000-ext3/OLS2000-ext3.html
+)
+
+
+Thanks for the help,
+Daniel
