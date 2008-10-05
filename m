@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYJEAYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbYJEAZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbYJEAYD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 20:24:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbYJEAXu
+	id S1755081AbYJEAZL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 20:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbYJEAY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 20:23:50 -0400
-Received: from lucidpixels.com ([75.144.35.66]:50440 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753399AbYJEAXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 20:23:49 -0400
-Date: Sat, 4 Oct 2008 20:23:48 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Tejun Heo <tj@kernel.org>
-cc: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Tom Mortensen <tmmlkml@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
-       Gwendal Grignou <gwendal@google.com>,
-       Brian Rademacher <rad@radfiles.net>, linux-ide@vger.kernel.org,
-       linux-raid maillist <linux-raid@vger.kernel.org>,
-       Linux Kernel Maillist <linux-kernel@vger.kernel.org>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>
-Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
-In-Reply-To: <alpine.DEB.1.10.0810040410170.14969@p34.internal.lan>
-Message-ID: <alpine.DEB.1.10.0810042022540.25643@p34.internal.lan>
-References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA>  <alpine.DEB.1.10.0809220828490.23159@p34.internal.lan>  <5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>  <alpine.DEB.1.10.0809220903400.23159@p34.internal.lan>  <4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA>
-  <alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>  <alpine.DEB.1.10.0809220926240.23159@p34.internal.lan>  <e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com>  <48DBAB81.8050900@tmr.com> <48E08E2D.6050905@kernel.org>
- <a52a95e30809301347s70b57ebfh280a6871329afd72@mail.gmail.com> <alpine.DEB.1.10.0809301715280.14600@p34.internal.lan> <alpine.LNX.2.00.0809301946020.16014@filesrv1.baby-dragons.com> <alpine.DEB.1.10.0810010403500.16900@p34.internal.lan>
- <alpine.DEB.1.10.0810010710520.22435@p34.internal.lan> <48E6D481.7050407@kernel.org> <alpine.DEB.1.10.0810040410170.14969@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 4 Oct 2008 20:24:59 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51523 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753047AbYJEAY6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Oct 2008 20:24:58 -0400
+Date: Sat, 4 Oct 2008 17:24:49 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "=?UTF-8?B?RnLDqWTDqXJpYw==?= Weisbecker" <fweisbec@gmail.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch] fix printk format typo in boot ftracer.
+Message-ID: <20081004172449.58e53afd@infradead.org>
+In-Reply-To: <c62985530810041358p1cc361b1te89894cedcd7e3b3@mail.gmail.com>
+References: <20081004134227.465fa20c@infradead.org>
+	<c62985530810041358p1cc361b1te89894cedcd7e3b3@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 4 Oct 2008 22:58:12 +0200
+"Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
+
+> > -               ret = trace_seq_printf(s, "[%5ld.%06ld] initcall %s
+> > "
+> > +               ret = trace_seq_printf(s, "[%5ld.%09ld] initcall %s
+> > " "returned %d after %lld msecs\n",
+> >                                          rettime.tv_sec,
+> >                                          rettime.tv_nsec,
+> 
+> I picked these formats from the printk.c time formatting. But you're
+> right, 09 would give us the whole nano precision.
+
+it's more than precision, it's correctness.
+
+doing "0.%02i" will do
+0.100  if you pass it 100 and
+0.10   if you pass it 10
+
+and most off the time, except the first 0.1 seconds, you'll be passing
+it 9 digits, but the first 0.1 seconds.. the %06 will just give really
+incorrect results.
 
 
-On Sat, 4 Oct 2008, Justin Piszcz wrote:
 
->
->
-> On Sat, 4 Oct 2008, Tejun Heo wrote:
->
->> Justin Piszcz wrote:
->> 
->> You're leaving the good part out.  Please always attach full kernel
->> log.
->> 
->> Thanks.
-
-Are there any specific / useful / debugging options one could turn 
-on/enable to obtain more information during these events that would 
-produce meaningful/useful output?
-
-Justin.
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
