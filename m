@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbYJETET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757047AbYJETEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbYJETET (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 15:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbYJETEH
+	id S1757047AbYJETEj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 15:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbYJETE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 15:04:07 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:62801 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755553AbYJETEF (ORCPT
+	Sun, 5 Oct 2008 15:04:28 -0400
+Received: from fhw-relay07.plus.net ([212.159.14.148]:42845 "EHLO
+	fhw-relay07.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755777AbYJETE2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 15:04:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=V1iCW+q0Gxjq4CoAvXR9RbTTs9HDvEE/E3lfwwf2mf/7+4oPyaIBV+5tp9BDnIvSRq
-         /lE5dEA84cxtcBZB7w9EddsIA2FylJ3gCAsaVOrQx/sWjoqlXoz6bMA9NXRQnnViLHOs
-         SzV6H6qUM0XvMKxMWjmq2mbxVjigy6lAwg+OM=
-Message-ID: <19f34abd0810051204u241659b4j6a9ef2ab3616d3fc@mail.gmail.com>
-Date: Sun, 5 Oct 2008 21:04:04 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -tip] kmemcheck: fix crash in PnP BIOS calls
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081005191555.5715da29@lxorguk.ukuu.org.uk>
+	Sun, 5 Oct 2008 15:04:28 -0400
+Message-ID: <48E90FC9.2060903@yahoo.com>
+Date: Sun, 05 Oct 2008 20:04:41 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: dmitry.torokhov@gmail.com, IvDoorn@gmail.com, hmh@hmh.eng.br,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] rfkill-input doesn't work until 5 minutes after boot
+References: <20081004204342.GA29620@srcf.ucam.org> <20081005004334.GA31844@srcf.ucam.org> <20081005110226.GB4087@srcf.ucam.org>
+In-Reply-To: <20081005110226.GB4087@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081005172504.GB24825@localhost.localdomain>
-	 <20081005191555.5715da29@lxorguk.ukuu.org.uk>
+X-Plusnet-Relay: 19a1a3323532f2ac8e454a066c486487
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Matthew Garrett wrote:
+> rfkill-input implements debounce as follows:
+> 
+>         if (time_after(jiffies, task->last + msecs_to_jiffies(200))) {
+> 
+> However, task->last is initialised to 0 while jiffies starts at -300*HZ. 
+> Any input within 5 minutes of kernel start is therefore ignored. Fix by 
+> initialising task->last correctly.
 
-On Sun, Oct 5, 2008 at 8:15 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> It turns out that BIOS calls are made with a different code segment. So
->> when kmemcheck tries to dereference the EIP/RIP (using the kernel data
->> segment register), we get the unhandled page fault.
->>
->> I think we can solve this by verifying (in the page fault handler) that
->> the faulting code is using the kernel CS.
->
-> That isn't an entirely safe assumption and some services such as BIOS32
-> are 32bit. Would it be better wrap BIOS calls with a kmemcheck wrapper
-> which changes the way kmemcheck works/dumps stuff and also gives you a
-> hook after BIOS calls to do stuff like corruption scans or change
-> detection on kernel pages ?
+This patch also works for me.
 
-Thanks for the heads-up.
-
-I think BIOS32 in particular is safe. I was looking at for instance
-check_pcibios() in arch/x86/pci/pcbios.c. It doesn't change any
-segment registers, so it means that whatever the actual code address
-is, we should be able to dereference it (i.e. inspect the BIOS code)
-without taking additional page faults.
-
-And this is really all we need; BIOS code running with the kernel
-segments can even access kernel memory and kmemcheck will be able to
-catch those reads/writes just fine. I'm not sure if the BIOS code can
-change segments (it would need to switch LDT/GDTs, I think), and even
-if it did, I find it unlikely that it would directly access kernel
-memory using these new segment registers. Do you happen to know of any
-such cases?
-
-
-Vegard
+Tested-by: Sitsofe Wheeler <sitsofe@yahoo.com>
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Sitsofe | http://sucs.org/~sits/
