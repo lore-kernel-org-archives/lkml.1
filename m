@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbYJEFyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbYJEGA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752530AbYJEFyR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 01:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYJEFxs
+	id S1753899AbYJEGA6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 02:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYJEGAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 01:53:48 -0400
-Received: from ozlabs.org ([203.10.76.45]:34441 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751979AbYJEFxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 01:53:47 -0400
-Date: Sun, 5 Oct 2008 16:44:33 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: eranian@gmail.com
-Cc: linux-kernel@vger.kernel.org,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: perfmon3 interface overview
-Message-ID: <20081005054433.GB469@yookeroo.seuss>
-Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
-	eranian@gmail.com, linux-kernel@vger.kernel.org,
-	perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-References: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com> <7c86c4470809251448j65fb99f1nfdb3980e0716149a@mail.gmail.com> <20081003061713.GL3002@yookeroo.seuss> <7c86c4470810030354x6984372akfe18761da7504a0c@mail.gmail.com> <7c86c4470810030358m1a0fdcc5i5512a1c2a6696457@mail.gmail.com> <7c86c4470810030412l34d3dc13mef10c9320884d635@mail.gmail.com> <20081004060506.GO30184@yookeroo.seuss> <7c86c4470810040020u126dfc1eg7d6db13078239e7e@mail.gmail.com>
+	Sun, 5 Oct 2008 02:00:51 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:61201 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751887AbYJEGAu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 02:00:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Qp46ETBlj0aAo4wcm1jeQYfcCXMiX+L8s/XVQ45RpmJMWNRKKieFchUgGnRHLrQEfs
+         4iMKHuOJ1ctsjDNqHWeQjNb2lVvlye9ooJLIRkfavg3TdIWOb0SO/EZXqOnH9NAPYG63
+         JjeA5s0LYmpwucg0QCIAiy4m8XAIIFL1GeV4I=
+Message-ID: <2f11576a0810042300t26b3556ax304771b4f893468@mail.gmail.com>
+Date: Sun, 5 Oct 2008 15:00:49 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>
+Subject: Re: [PATCH 2/2] Report the pagesize backing a VMA in /proc/pid/maps
+Cc: "Mel Gorman" <mel@csn.ul.ie>, akpm@linux-foundation.org,
+       dave@linux.vnet.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081004221339.GA20175@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <7c86c4470810040020u126dfc1eg7d6db13078239e7e@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <1223052415-18956-1-git-send-email-mel@csn.ul.ie>
+	 <1223052415-18956-3-git-send-email-mel@csn.ul.ie>
+	 <20081004221339.GA20175@x200.localdomain>
+X-Google-Sender-Auth: 83b8e468f215bf36
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 04, 2008 at 09:20:00AM +0200, stephane eranian wrote:
-> David,
-> 
-> On Sat, Oct 4, 2008 at 8:05 AM, David Gibson
-> <david@gibson.dropbear.id.au> wrote:
-> >>
-> >> If we wanted to go even further, we could combine start/stop, attach/detach
-> >> into  a single syscall:
-> >
-> > Well, you could.  But the attach/detach take a parameter which
-> > start/stop don't, making it a less obvious merge to make.
-> >
-> Unless you make the 3rd argument optional and hide this in a
-> user library. This is how this is handled for pfm_create_session()
-> for instance. The library would define this as follows:
-> 
->    int pfm_control_session(int fd, int flags, ...);
-> 
-> Based upon flags, it would use va_arg() to get to the 3rd argument and
-> pass it to the syscall which implements the version below. A dummy value
-> would be passed with the flags is not equal to PFM_CTFL_ATTACH.
+Hi
 
-Yeah, that's what I'm saying.  You could do it, but it feels like
-you're forcing it, at least to me.  As you say it starts to look a bit
-like ioctl() again.
+>> This patch adds a new field for hugepage-backed memory regions to show the
+>> pagesize in /proc/pid/maps.  While the information is available in smaps,
+>> maps is more human-readable and does not incur the cost of calculating Pss. An
+>> example of a /proc/self/maps output for an application using hugepages with
+>> this patch applied is;
+>>
+>> 08048000-0804c000 r-xp 00000000 03:01 49135      /bin/cat
+>> 0804c000-0804d000 rw-p 00003000 03:01 49135      /bin/cat
+>> 08400000-08800000 rw-p 00000000 00:10 4055       /mnt/libhugetlbfs.tmp.QzPPTJ (deleted) (hpagesize=4096kB)
+>
+>> To be predictable for parsers, the patch adds the notion of reporting on VMA
+>> attributes by appending one or more fields that look like "(attribute)". This
+>> already happens when a file is deleted and the user sees (deleted) after the
+>> filename. The expectation is that existing parsers will not break as those
+>> that read the filename should be reading forward after the inode number
+>> and stopping when it sees something that is not part of the filename.
+>> Parsers that assume everything after / is a filename will get confused by
+>> (hpagesize=XkB) but are already broken due to (deleted).
+>
+> Looks like procps will start showing hpagesize tag as a mapping name
+> (apologies for pasting crappy code):
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Administrator expect mapping name is just file name when vma is
+hugepage via mmap.
+So, I feel Mel's code is nicer.
+
+Thanks.
