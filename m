@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbYJEK6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbYJEK7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870AbYJEK6K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 06:58:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYJEK5y
+	id S1755244AbYJEK7R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 06:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYJEK7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 06:57:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46975 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752620AbYJEK5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 06:57:53 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: 2.6.27-rc8-git7: Reported regressions from 2.6.26
-Date: Sun, 5 Oct 2008 13:02:20 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>
-References: <0pOgGB.A.uLG.E475IB@wind> <20081005071421.GA17685@2ka.mipt.ru>
-In-Reply-To: <20081005071421.GA17685@2ka.mipt.ru>
+	Sun, 5 Oct 2008 06:59:04 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:35646 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752933AbYJEK7D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 06:59:03 -0400
+Date: Sun, 5 Oct 2008 11:58:49 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dmitry.torokhov@gmail.com, IvDoorn@gmail.com, hmh@hmh.eng.br,
+       sitsofe@yahoo.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] rfkill-input doesn't work until 5 minutes after boot
+Message-ID: <20081005105849.GA4087@srcf.ucam.org>
+References: <20081004204342.GA29620@srcf.ucam.org> <20081005004334.GA31844@srcf.ucam.org> <20081004214341.f4052ce8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810051302.20896.rjw@sisk.pl>
+In-Reply-To: <20081004214341.f4052ce8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 5 of October 2008, Evgeniy Polyakov wrote:
-> Hi.
-> 
-> On Sat, Oct 04, 2008 at 07:28:42PM +0200, Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11308
-> > Subject		: tbench regression on each kernel release from 2.6.22 -&gt; 2.6.28
-> > Submitter	: Christoph Lameter <cl@linux-foundation.org>
-> > Date		: 2008-08-11 18:36 (55 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121847986119495&w=4
-> > 		  http://marc.info/?l=linux-kernel&m=122125737421332&w=4
-> 
-> Just for the reference, this one regresses from the 2.6.23.
+On Sat, Oct 04, 2008 at 09:43:41PM -0700, Andrew Morton wrote:
 
-Still, tbench results from 2.6.26 are better than from 2.6.27-rc.
-That's why it's still on the list, but if you think that's not relevant, please
-let me know and I'll drop it.
+> Jiffies wraparound is 49.7 days at HZ=1000.
 
-Thanks,
-Rafael
+Damn those pesky 32-bit systems.
+
+> If someone adds a new rfkill_foo there's a risk that they'll forget to
+> make the corresponding change here.  A comment at the definition sites
+> would help.
+
+Sure.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
