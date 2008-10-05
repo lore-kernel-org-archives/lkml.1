@@ -1,59 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbYJEPGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbYJEPKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755758AbYJEPGu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 11:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYJEPGk
+	id S1755711AbYJEPKb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 11:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbYJEPKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 11:06:40 -0400
-Received: from mga05.intel.com ([192.55.52.89]:54193 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754066AbYJEPGj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 11:06:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,363,1220252400"; 
-   d="scan'208";a="623576894"
-Message-ID: <48E8D7A5.7060508@linux.intel.com>
-Date: Sun, 05 Oct 2008 08:05:09 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Sun, 5 Oct 2008 11:10:20 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53872 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752670AbYJEPKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 11:10:19 -0400
+Date: Sun, 5 Oct 2008 18:09:57 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: [RFC] Btrfs mainline plans
+Message-ID: <20081005150957.GC12047@cs181140183.pp.htv.fi>
+References: <1222717460.30627.56.camel@think.oraclecorp.com> <20081003001859.e30af6a5.akpm@linux-foundation.org> <20081005122405.GA12047@cs181140183.pp.htv.fi> <20081005141113.GA6132@us.ibm.com>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Jiri Kosina <jkosina@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>, jesse.brandeburg@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kkeil@suse.de,
-       agospoda@redhat.com, david.graham@intel.com, bruce.w.allan@intel.com,
-       john.ronciak@intel.com, chris.jones@canonical.com,
-       tim.gardner@canonical.com, airlied@gmail.com, Olaf Kirch <okir@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
-References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>  <200810021523.45884.jbarnes@virtuousgeek.org>  <20081003.134634.240211201.davem@davemloft.net>  <200810031429.22598.jbarnes@virtuousgeek.org>  <alpine.LNX.1.10.0810032338140.26779@jikos.suse.cz>  <4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com>  <alpine.LNX.1.10.0810041219130.26779@jikos.suse.cz>  <alpine.LFD.2.00.0810041236250.4404@apollo> <4807377b0810041824u5ea472d1q4cf5ff606bd23a11@mail.gmail.com> <alpine.LFD.2.00.0810050959420.3398@apollo>
-In-Reply-To: <alpine.LFD.2.00.0810050959420.3398@apollo>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20081005141113.GA6132@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Sat, 4 Oct 2008, Jesse Brandeburg wrote:
->>> Exactly. The access to a ro region results in a fault. I have nowhere
->>> seen that trigger, but I can reproduce the trylock() WARN_ON, which
->>> confirms that there is concurrent access to the NVRAM registers. The
->>> backtrace pattern is similar to the one you have seen.
->> are you still getting WARN_ON *with* all the mutex based fixes already applied?
+On Sun, Oct 05, 2008 at 09:11:13AM -0500, Serge E. Hallyn wrote:
+> Quoting Adrian Bunk (bunk@kernel.org):
+> > On Fri, Oct 03, 2008 at 12:18:59AM -0700, Andrew Morton wrote:
+> > > On Mon, 29 Sep 2008 15:44:20 -0400 Chris Mason <chris.mason@oracle.com> wrote:
+> > > 
+> > > > But, the code is very actively developed, and I believe the best way to
+> > > > develop Btrfs from here is to get it into the mainline kernel (with a
+> > > > large warning label about the disk format) and attract more extensive
+> > > > review of both the disk format and underlying code.
+> > > 
+> > > For the record...  I have been encouraging Chris to get btrfs into
+> > > mainline soon.  Get it into linux-next asap and merge it into 2.6.29.
+> > > 
+> > > And do this even though the on-disk format is still changing - we emit a
+> > > loud printk at mount time and if someone comes to depend upon some
+> > > intermediate format, well, that's their tough luck.
+> > > 
+> > > My thinking here is that btrfs probably has a future, and that an early
+> > > merge will accelerate its development and will broaden its developer base. 
+> > > If it ends up failing for some reason, well, we can just delete it
+> > > again.
+> > > 
+> > > For various reasons this approach often isn't appropriate as a general
+> > > policy thing, but I do think that Linux has needed a new local
+> > > filesystem for some time, and btrfs might be The One, and hence is
+> > > worth a bit of special-case treatment.
+> > 
+> > Let's try to learn from the past:
+> > 
+> > 6 days from today ext4 (another new local filesystem for Linux) 
+> > celebrates the second birthday of it's inclusion into Linus' tree
+> > as a similar special-case.
+> > 
+> > You claim "an early merge will accelerate its development and will 
+> > broaden its developer base" for Btrfs.
+> > 
+> > Read the timeline Ted outlined back in June 2006 for ext4 [1].
+> > When comparing with what happened in reality it kinda disproves
+> > your "acceleration" point.
 > 
-> The WARN_ON triggers with current mainline. Is there any fixlet in
-> Linus tree missing ?
-> 
->> with the mutex patches in place (without protection patch) we are
->> still reproducing the issue, until we apply the set_memory_ro patch.
-> 
-> That does not make sense to me. If the memory_ro patch is providing
-> _real_ protection then you _must_ run into an access violation. If not,
-> then the patch just papers over the real problem in some mysterious
-> way.
-> 
+> OTOH, maybe it's just me, but I think there is more excitement around
+> btrfs.  Myself I'm dying for snapshot support, and can't wait to try
+> btrfs on a separate data/scratch partition (where i don't mind losing
+> data).  btrfs and nilfs - yay.  Ext4?  <yawn>  That can make all the
+> difference.
 
-not if the bad code is doing copy_to_user .... (or similar)
+"accelerate its development and will broaden its developer base" is not 
+about users/testers but about people doing code development.
+
+For people wanting to try WIP code you don't need it in mainline.
+
+Stable kernels will anyway usually contain months old code of the
+WIP filesystem that is not usable for testing, so for any meaningful
+testing you will still have to follow the btrfs tree and not mainline.
+
+This is not meant as a statement on the quality of ext4 or btrfs, or any 
+comparison of the development times of ext4 and btrfs, but for ext4 the 
+advantages Andrew thinks would happen with an early btrfs merge do not 
+seem to have happened.
+
+I just realize that I forgot to add Ted and the ext4 mailing list into 
+the Cc of my first email. Adding them to the Cc, so if I'm talking 
+nonsense about the experiences with ext4 they can correct me.
+
+> -serge
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
