@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbYJEAnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbYJEAou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755789AbYJEAnr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 20:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYJEAnj
+	id S1755311AbYJEAou (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 20:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYJEAom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 20:43:39 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:53606 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754193AbYJEAni (ORCPT
+	Sat, 4 Oct 2008 20:44:42 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48980 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751893AbYJEAol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 20:43:38 -0400
-Date: Sun, 5 Oct 2008 01:43:34 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: dmitry.torokhov@gmail.com, IvDoorn@gmail.com, hmh@hmh.eng.br
-Cc: sitsofe@yahoo.com, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] rfkill-input doesn't work until 5 minutes after boot
-Message-ID: <20081005004334.GA31844@srcf.ucam.org>
-References: <20081004204342.GA29620@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081004204342.GA29620@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Sat, 4 Oct 2008 20:44:41 -0400
+Date: Sat, 4 Oct 2008 17:44:33 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: [kerneloops] regression in 2.6.27 wrt "lock_page" and the "hwclock"
+ program
+Message-ID: <20081004174433.14a5e093@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rfkill-input implements debounce as follows:
 
-        if (time_after(jiffies, task->last + msecs_to_jiffies(200))) {
+Details: http://www.kerneloops.org/searchweek.php?search=lock_page
 
-However, task->last is initialised to 0 while jiffies starts at -300*HZ. 
-Any input within 5 minutes of kernel start is therefore ignored. Fix by 
-initialising task->last correctly.
+There's quite a few of this BUG, which seems to be an interaction between the "hwclock" program and something in 2.6.27.
+It's new in .27 and is currently the 8th ranked issue.....
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+BUG: sleeping function called from invalid context at
+include/linux/pagemap.h:294 in_atomic():0, irqs_disabled():1
+INFO: lockdep is turned off.
+irq event stamp: 0
+hardirqs last  enabled at (0): [<00000000>] 0x0
+hardirqs last disabled at (0): [<c042c3a4>] copy_process+0x2e7/0x115e
+softirqs last  enabled at (0): [<c042c3a4>] copy_process+0x2e7/0x115e
+softirqs last disabled at (0): [<00000000>] 0x0
+Pid: 9591, comm: hwclock Tainted: G        W 2.6.27-0.372.rc8.fc10.i686 #1 
+ [<c0427a53>] __might_sleep+0xd1/0xd6 
+ [<c0479a8b>] lock_page+0x1a/0x34
+ [<c0479cfa>] find_lock_page+0x23/0x48
+ [<c047a215>] filemap_fault+0x9b/0x330
+ [<c0486493>] __do_fault+0x40/0x2e6
+ [<c0487d63>] handle_mm_fault+0x2ec/0x6d2
+ [<c06e8260>] do_page_fault+0x2e5/0x693
 
----
-
-Set the last event value at module load time, since otherwise we'll have 
-a window of failure if someone loads the module in a few hundred million 
-years. I look forward to being rewarded by the post-humans for caring so 
-much about them.
-
-diff --git a/net/rfkill/rfkill-input.c b/net/rfkill/rfkill-input.c
-index e5b6955..86197bb 100644
---- a/net/rfkill/rfkill-input.c
-+++ b/net/rfkill/rfkill-input.c
-@@ -255,6 +255,11 @@ static struct input_handler rfkill_handler = {
- 
- static int __init rfkill_handler_init(void)
- {
-+	rfkill_wlan.last = jiffies - HZ/5;
-+	rfkill_bt.last = jiffies - HZ/5;
-+	rfkill_uwb.last = jiffies - HZ/5;
-+	rfkill_wimax.last = jiffies - HZ/5;
-+	rfkill_wwan.last = jiffies - HZ/5;
- 	return input_register_handler(&rfkill_handler);
- }
- 
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
