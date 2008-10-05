@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbYJEAmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbYJEAnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059AbYJEAmt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 20:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYJEAml
+	id S1755380AbYJEAnU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 20:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYJEAnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 20:42:41 -0400
-Received: from smtp.outflux.net ([198.145.64.163]:47156 "EHLO
-	vinyl.outflux.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753825AbYJEAml (ORCPT
+	Sat, 4 Oct 2008 20:43:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54564 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754135AbYJEAnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 20:42:41 -0400
-Date: Sat, 4 Oct 2008 17:42:33 -0700
-From: Kees Cook <kees.cook@canonical.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] proc: add "personality" to process status file
-Message-ID: <20081005004233.GL10632@outflux.net>
-References: <20081002211424.GJ10632@outflux.net> <20081004145149.52c34ee7@infradead.org> <20081004220220.GK10632@outflux.net> <20081004164239.0c1483a4@infradead.org>
+	Sat, 4 Oct 2008 20:43:07 -0400
+Message-ID: <48E80D80.2090900@zytor.com>
+Date: Sat, 04 Oct 2008 17:42:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081004164239.0c1483a4@infradead.org>
-Organization: Canonical
-X-HELO: www.outflux.net
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86: mtrr_cleanup: print out correct type
+References: <1223157033-30217-1-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1223157033-30217-1-git-send-email-yhlu.kernel@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 04, 2008 at 04:42:39PM -0700, Arjan van de Ven wrote:
-> On Sat, 4 Oct 2008 15:02:20 -0700
-> Kees Cook <kees.cook@canonical.com> wrote:
-> > Nothing else seemed appropriate, but I could make a brand new proc
-> > file, if that's sensible.  "status_private" ?
+Yinghai Lu wrote:
 > 
-> how about a file called "personality" that has each set bit as an ascii
-> version ?
-> (one per line maybe)
+> Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
+> +++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+> @@ -1273,12 +1273,14 @@ static int __init mtrr_cleanup(unsigned
+>  		size_base = to_size_factor(size_base, &size_factor),
+>  		start_base = range_state[i].base_pfn << (PAGE_SHIFT - 10);
+>  		start_base = to_size_factor(start_base, &start_factor),
+> +		type = range_state[i].type;
+>  
+>  		printk(KERN_DEBUG "reg %d, base: %ld%cB, range: %ld%cB, type %s\n",
+>  			i, start_base, start_factor,
+>  			size_base, size_factor,
+>  			(type == MTRR_TYPE_UNCACHABLE) ? "UC" :
+> -			    ((type == MTRR_TYPE_WRBACK) ? "WB" : "Other")
+> +			    ((type == MTRR_TYPE_WRPROT) ? "WPROT" :
+> +			     ((type == MTRR_TYPE_WRBACK) ? "WB" : "Other"))
+>  			);
 
-Well, it's a one-to-many due to how the personality types are defined,
-so doing a bitfield-to-ASCII-names conversion wouldn't really work out:
+If you're going to abbreviate, please use the standard abbreviations as 
+documented in the manuals.  The abbreviation for write protect is WP.
 
-        PER_SCOSVR3 =           0x0003 | STICKY_TIMEOUTS |
-                                         WHOLE_SECONDS | SHORT_INODE,
-        PER_OSR5 =              0x0003 | STICKY_TIMEOUTS | WHOLE_SECONDS,
-...
-        PER_BSD =               0x0006,
-        PER_SUNOS =             0x0006 | STICKY_TIMEOUTS,
-
-But I can certainly just make it a stand-alone file with just the
-bitfield.  Or, I can still do the conversion and ignore PER_OSR5 and
-PER_SUNOS.
-
--Kees
-
--- 
-Kees Cook
-Ubuntu Security Team
+	-hpa
