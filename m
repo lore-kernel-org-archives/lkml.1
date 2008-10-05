@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbYJEKFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbYJEKHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755737AbYJEKFS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 06:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbYJEKFG
+	id S1755679AbYJEKHZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 06:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYJEKHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 06:05:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56810 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753374AbYJEKFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 06:05:04 -0400
-Date: Sun, 5 Oct 2008 12:04:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: huang ying <huang.ying.caritas@gmail.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] x86: make 64bit efi to use ioremap_cache for
-	efi_ioremap
-Message-ID: <20081005100444.GG29909@elte.hu>
-References: <1223101400-8819-1-git-send-email-yhlu.kernel@gmail.com> <851fc09e0810040235g2ab97bdai612c0a2829f83f5c@mail.gmail.com> <86802c440810041044m5b950721s8700bb6cd2fe75d@mail.gmail.com> <851fc09e0810050156y114007e4hbdf3e6c5562004d3@mail.gmail.com>
+	Sun, 5 Oct 2008 06:07:11 -0400
+Received: from smtp.outflux.net ([198.145.64.163]:42142 "EHLO
+	vinyl.outflux.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753378AbYJEKHK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 06:07:10 -0400
+Date: Sun, 5 Oct 2008 03:07:01 -0700
+From: Kees Cook <kees.cook@canonical.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: add "personality" to process status file
+Message-ID: <20081005100701.GQ10632@outflux.net>
+References: <20081002211424.GJ10632@outflux.net> <20081004145149.52c34ee7@infradead.org> <20081004220220.GK10632@outflux.net> <20081004164239.0c1483a4@infradead.org> <20081005004233.GL10632@outflux.net> <20081004174843.6fe48a8e@infradead.org> <20081005091120.GA21003@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <851fc09e0810050156y114007e4hbdf3e6c5562004d3@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20081005091120.GA21003@x200.localdomain>
+Organization: Canonical
+X-HELO: www.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* huang ying <huang.ying.caritas@gmail.com> wrote:
-
-> On Sun, Oct 5, 2008 at 1:44 AM, Yinghai Lu <yinghai@kernel.org> wrote:
-> > On Sat, Oct 4, 2008 at 2:35 AM, huang ying <huang.ying.caritas@gmail.com> wrote:
-> [...]
-> >> Using __va and efi_ioremap() here is to make EFI support compatible
-> >> with kexec. Because EFI provide only efi_enter_virtual_mode(), no
-> >> efi_leave_virtual_mode(), we should make EFI runtime memory area
-> >> mapped to same virtual memory area in original kernel and kexeced
-> >> kernel, so that the EFI runtime services can be used in kexeced
-> >> kernel.
-> >
-> > so need to make efi range all under direct-mapping like E820-RAM?
+On Sun, Oct 05, 2008 at 01:11:20PM +0400, Alexey Dobriyan wrote:
+> On Sat, Oct 04, 2008 at 05:48:43PM -0700, Arjan van de Ven wrote:
+> > On Sat, 4 Oct 2008 17:42:33 -0700
+> > Kees Cook <kees.cook@canonical.com> wrote:
+> > 
+> > > On Sat, Oct 04, 2008 at 04:42:39PM -0700, Arjan van de Ven wrote:
+> > > > On Sat, 4 Oct 2008 15:02:20 -0700
+> > > > Kees Cook <kees.cook@canonical.com> wrote:
+> > > > > Nothing else seemed appropriate, but I could make a brand new proc
+> > > > > file, if that's sensible.  "status_private" ?
+> > > > 
+> > > > how about a file called "personality" that has each set bit as an
+> > > > ascii version ?
+> > > > (one per line maybe)
+> > > 
+> > > Well, it's a one-to-many due to how the personality types are defined,
+> > > so doing a bitfield-to-ASCII-names conversion wouldn't really work
+> > > out:
+> > > 
+> > >         PER_SCOSVR3 =           0x0003 | STICKY_TIMEOUTS |
+> > >                                          WHOLE_SECONDS | SHORT_INODE,
+> > >         PER_OSR5 =              0x0003 | STICKY_TIMEOUTS |
+> > > WHOLE_SECONDS, ...
+> > >         PER_BSD =               0x0006,
+> > >         PER_SUNOS =             0x0006 | STICKY_TIMEOUTS,
+> > > 
+> > > But I can certainly just make it a stand-alone file with just the
+> > > bitfield.  Or, I can still do the conversion and ignore PER_OSR5 and
+> > > PER_SUNOS.
+> > 
+> > well.. if "you" as kernel can't really make out what it is, how is poor
+> > userspace supposed to do it ?
 > 
-> Some EFI runtime range is just some RAM area used by EFI runtime 
-> services, they can be direct-mapped. Some EFI runtime range may be IO 
-> MEM range used by EFI runtime services, it is possible that these IO 
-> MEM range can not be direct-mapped. So I implement efi_ioremap() to 
-> deal with them.
+> Kernel should just print with %lx and leave pretty-printing to
+> luserspace.
 
-hm, but in the "some RAM area" case, that area should not be listed in 
-the e820 map (or any EFI memory map), and hence it should never be 
-mapped directly. I.e. you should be able to just standardize on 
-ioremap() and have no parallel facility for this.
+I would tend to agree with this -- I don't want to fill the kernel with
+string-dumping case statements.  (Though I have a different patch that
+does this, if anyone actually wants it.)
 
-	Ingo
+> And name should be /proc/*/personality (obviously :-)
+> 
+> Assuming anybody cares about personalities at all.
+
+I do.  :)
+
+-- 
+Kees Cook
+Ubuntu Security Team
