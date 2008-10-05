@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761086AbYJEQe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbYJEQeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761086AbYJEQe6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758560AbYJEQZc
+	id S1760960AbYJEQeo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757973AbYJEQZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:25:32 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34347 "EHLO
+	Sun, 5 Oct 2008 12:25:24 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34345 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756258AbYJEQZb (ORCPT
+	with ESMTP id S1758652AbYJEQZW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:25:31 -0400
+	Sun, 5 Oct 2008 12:25:22 -0400
 From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 75/76] usb: fix pl2303 initialization
+Subject: [PATCH 74/76] tty: tty_io.c shadows sparse fix
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:25:31 +0100
-Message-ID: <20081005162528.1997.50026.stgit@localhost.localdomain>
+Date: Sun, 05 Oct 2008 17:25:23 +0100
+Message-ID: <20081005162454.1997.78278.stgit@localhost.localdomain>
 In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
 References: <20081005160231.1997.10462.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -27,51 +27,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jason Wessel <jason.wessel@windriver.com>
 
-This patch removes the private check for the termios_initialized for
-the pl2303 usb driver.  It forced the baud to 9600 on the first call
-to pl2303_set_termios()
-
-Based on the tty changes in the 2.6.27 kernel, the termios passed to
-the *_set_termios functions is always populated the first time.
-
-This means there is no need to privately initialize the settings the
-first time, and doing so will not allow the use of the kernel
-parameter "console=ttyUSB0,115200" as an example.
+drivers/char/tty_io.c:1413:17: warning: symbol 'buf' shadows an earlier one
+drivers/char/tty_io.c:1379:20: originally declared here
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/usb/serial/pl2303.c |   11 -----------
- 1 files changed, 0 insertions(+), 11 deletions(-)
+ drivers/char/tty_io.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/usb/serial/pl2303.c b/drivers/usb/serial/pl2303.c
-index ba74424..9084378 100644
---- a/drivers/usb/serial/pl2303.c
-+++ b/drivers/usb/serial/pl2303.c
-@@ -154,7 +154,6 @@ struct pl2303_private {
- 	wait_queue_head_t delta_msr_wait;
- 	u8 line_control;
- 	u8 line_status;
--	u8 termios_initialized;
- 	enum pl2303_type type;
- };
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 502cad6..7053d63 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -1026,19 +1026,19 @@ static inline ssize_t do_tty_write(
  
-@@ -526,16 +525,6 @@ static void pl2303_set_termios(struct tty_struct *tty,
+ 	/* write_buf/write_cnt is protected by the atomic_write_lock mutex */
+ 	if (tty->write_cnt < chunk) {
+-		unsigned char *buf;
++		unsigned char *buf_chunk;
  
- 	dbg("%s -  port %d", __func__, port->number);
+ 		if (chunk < 1024)
+ 			chunk = 1024;
  
--	spin_lock_irqsave(&priv->lock, flags);
--	if (!priv->termios_initialized) {
--		*(tty->termios) = tty_std_termios;
--		tty->termios->c_cflag = B9600 | CS8 | CREAD | HUPCL | CLOCAL;
--		tty->termios->c_ispeed = 9600;
--		tty->termios->c_ospeed = 9600;
--		priv->termios_initialized = 1;
--	}
--	spin_unlock_irqrestore(&priv->lock, flags);
--
- 	/* The PL2303 is reported to lose bytes if you change
- 	   serial settings even to the same values as before. Thus
- 	   we actually need to filter in this specific case */
+-		buf = kmalloc(chunk, GFP_KERNEL);
+-		if (!buf) {
++		buf_chunk = kmalloc(chunk, GFP_KERNEL);
++		if (!buf_chunk) {
+ 			ret = -ENOMEM;
+ 			goto out;
+ 		}
+ 		kfree(tty->write_buf);
+ 		tty->write_cnt = chunk;
+-		tty->write_buf = buf;
++		tty->write_buf = buf_chunk;
+ 	}
+ 
+ 	/* Do the write .. */
 
