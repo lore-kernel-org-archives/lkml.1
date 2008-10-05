@@ -1,94 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbYJEDzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbYJEEoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbYJEDzb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 23:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYJEDzX
+	id S1752877AbYJEEoF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 00:44:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbYJEEn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 23:55:23 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:48021 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbYJEDzX (ORCPT
+	Sun, 5 Oct 2008 00:43:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43550 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750850AbYJEEn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 23:55:23 -0400
-Message-ID: <f488382f0810042055o68778028t1bb0754126d6bb0@mail.gmail.com>
-Date: Sat, 4 Oct 2008 20:55:21 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
-Subject: Re: drivers/pci/probe.c compile warnings on -tip
-Cc: "Mikael Pettersson" <mikpe@it.uu.se>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Hugh Dickins" <hugh@veritas.com>
-In-Reply-To: <200810010851.15969.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 5 Oct 2008 00:43:56 -0400
+Date: Sat, 4 Oct 2008 21:43:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: dmitry.torokhov@gmail.com, IvDoorn@gmail.com, hmh@hmh.eng.br,
+       sitsofe@yahoo.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] rfkill-input doesn't work until 5 minutes after boot
+Message-Id: <20081004214341.f4052ce8.akpm@linux-foundation.org>
+In-Reply-To: <20081005004334.GA31844@srcf.ucam.org>
+References: <20081004204342.GA29620@srcf.ucam.org>
+	<20081005004334.GA31844@srcf.ucam.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f488382f0810010102y551f4a3bs64524fa70ef04ca3@mail.gmail.com>
-	 <18659.21853.41967.715062@harpo.it.uu.se>
-	 <200810010851.15969.jbarnes@virtuousgeek.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 1, 2008 at 8:51 AM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Wednesday, October 1, 2008 3:47 am Mikael Pettersson wrote:
->> Steven Noonan writes:
->>  > I was hunting down some warnings I got when compiling -tip, and with
->>  > one of them, I'm not sure what would be a proper way to handle it.
->>  >
->>  > If CONFIG_PHYS_ADDR_T_64BIT is not enabled, these warnings show up:
->>  >
->>  > drivers/pci/probe.c: In function '__pci_read_base':
->>  > drivers/pci/probe.c:308: warning: format '%llx' expects type 'long
->>  > long unsigned int', but argument 4 has type 'resource_size_t'
->>  > drivers/pci/probe.c:308: warning: format '%llx' expects type 'long
->>  > long unsigned int', but argument 5 has type 'resource_size_t'
->>  > drivers/pci/probe.c:320: warning: format '%llx' expects type 'long
->>  > long unsigned int', but argument 5 has type 'resource_size_t'
->>  > drivers/pci/probe.c:320: warning: format '%llx' expects type 'long
->>  > long unsigned int', but argument 6 has type 'resource_size_t'
->>  > drivers/pci/probe.c: In function 'pci_read_bridge_bases':
->>  > drivers/pci/probe.c:392: warning: format '%llx' expects type 'long
->>  > long unsigned int', but argument 3 has type 'resource_size_t'
->>  > drivers/pci/probe.c:392: warning: format '%llx' expects type 'long
->>  > long unsigned int', but argument 4 has type 'resource_size_t'
->>  > drivers/pci/probe.c:405: warning: format '%llx' expects type 'long
->>  > long unsigned int', but argument 3 has type 'resource_size_t'
->>  > drivers/pci/probe.c:405: warning: format '%llx' expects type 'long
->>  > long unsigned int', but argument 4 has type 'resource_size_t'
->>  > drivers/pci/probe.c:443: warning: format '%llx' expects type 'long
->>  > long unsigned int', but argument 4 has type 'resource_size_t'
->>  > drivers/pci/probe.c:443: warning: format '%llx' expects type 'long
->>  > long unsigned int', but argument 5 has type 'resource_size_t'
->>  >
->>  >
->>  > Each of the lines is something like this:
->>  >
->>  > printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
->>  > pci_name(dev), pos, res->start, res->end);
->>  >
->>  > res->start and res->end are resource_size_t (which is phys_addr_t),
->>  > and are sized either 32-bit or 64-bit, based on whether
->>  > CONFIG_PHYS_ADDR_T_64BIT is set.
->>
->> Oh not those again. Similar warnings in 27-rc's drivers/pci
->> were fixed recently, but apparently someone out there likes
->> to create new ones.
->>
->> The fix is to cast the resource_size_t arguments to unsigned long long.
->> With "%llx" that's the /only/ valid argument type.
->>
->> Also note that these warnings aren't harmless. On 32-bit machines
->> with parameters passed on the stack the mismatch in size between
->> 32-bit resource_size_t and the 64-bit %llx causes undefined
->> behaviour as printk mis-enumerates its parameters.
->
-> AFAICT, these are fixed in Linus' tree, maybe the x86 tree needs an update?
->
+On Sun, 5 Oct 2008 01:43:34 +0100 Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-Hey Ingo, these warnings are still showing up on the latest -tip. Any idea why?
+> rfkill-input implements debounce as follows:
+> 
+>         if (time_after(jiffies, task->last + msecs_to_jiffies(200))) {
+> 
+> However, task->last is initialised to 0 while jiffies starts at -300*HZ. 
+> Any input within 5 minutes of kernel start is therefore ignored. Fix by 
+> initialising task->last correctly.
+> 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> 
+> ---
+> 
+> Set the last event value at module load time, since otherwise we'll have 
+> a window of failure if someone loads the module in a few hundred million 
+> years. I look forward to being rewarded by the post-humans for caring so 
+> much about them.
 
-- Steven
+Jiffies wraparound is 49.7 days at HZ=1000.
+
+> diff --git a/net/rfkill/rfkill-input.c b/net/rfkill/rfkill-input.c
+> index e5b6955..86197bb 100644
+> --- a/net/rfkill/rfkill-input.c
+> +++ b/net/rfkill/rfkill-input.c
+> @@ -255,6 +255,11 @@ static struct input_handler rfkill_handler = {
+>  
+>  static int __init rfkill_handler_init(void)
+>  {
+> +	rfkill_wlan.last = jiffies - HZ/5;
+> +	rfkill_bt.last = jiffies - HZ/5;
+> +	rfkill_uwb.last = jiffies - HZ/5;
+> +	rfkill_wimax.last = jiffies - HZ/5;
+> +	rfkill_wwan.last = jiffies - HZ/5;
+>  	return input_register_handler(&rfkill_handler);
+>  }
+
+If someone adds a new rfkill_foo there's a risk that they'll forget to
+make the corresponding change here.  A comment at the definition sites
+would help.
+
+
+Or, better, do something like
+
+static struct rfkill_task rfkill_tasks[] = {
+	DEFINE_RFKILL_TASK(RFKILL_TYPE_WLAN),
+	...
+};
+
+#define rfkill_wlan	rfkill_tasks[0]
+...
+
+	for (i = 0; i < ARRAY_SIZE(rfkill_tasks); i++)
+		...
+
+
+but the new definition of DEFINE_RFKILL_TASK gets tricky.
