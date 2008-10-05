@@ -1,422 +1,391 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbYJEQ1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbYJEQ20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759915AbYJEQ1o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbYJEQWk
+	id S1760009AbYJEQ20 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757760AbYJEQWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:22:40 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:62761 "EHLO bagnes.atmel.com"
+	Sun, 5 Oct 2008 12:22:44 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:62762 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758198AbYJEQWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758975AbYJEQWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 5 Oct 2008 12:22:38 -0400
 From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 To: Pierre Ossman <drzeus-list@drzeus.cx>
 Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org,
        Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: [PATCH v2 1/7] atmel-mci: Implement tasklet as a state machine
-Date: Sun,  5 Oct 2008 18:21:24 +0200
-Message-Id: <1223223690-2637-2-git-send-email-haavard.skinnemoen@atmel.com>
+Subject: [PATCH v2 3/7] atmel-mci: Platform code for supporting multiple mmc slots
+Date: Sun,  5 Oct 2008 18:21:26 +0200
+Message-Id: <1223223690-2637-4-git-send-email-haavard.skinnemoen@atmel.com>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1223223690-2637-1-git-send-email-haavard.skinnemoen@atmel.com>
+In-Reply-To: <1223223690-2637-3-git-send-email-haavard.skinnemoen@atmel.com>
 References: <1223223690-2637-1-git-send-email-haavard.skinnemoen@atmel.com>
-X-OriginalArrivalTime: 05 Oct 2008 16:21:15.0103 (UTC) FILETIME=[639906F0:01C92706]
+ <1223223690-2637-2-git-send-email-haavard.skinnemoen@atmel.com>
+ <1223223690-2637-3-git-send-email-haavard.skinnemoen@atmel.com>
+X-OriginalArrivalTime: 05 Oct 2008 16:21:15.0150 (UTC) FILETIME=[63A032E0:01C92706]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the current system of completed/pending events, things may get
-handled in different order depending on which event triggers first. For
-example, if the data transfer is complete before the command, the stop
-command must be sent after the command is complete, not the data. This
-creates a bit of complexity around the stop command.
+Add the necessary platform infrastructure to support multiple mmc/sdcard
+slots all at once through a single controller. Currently, the driver
+will use the first valid slot it finds and stick with that, but later
+patches will add support for switching between several slots on the fly.
 
-By having the tasklet go through a sequence of clearly defined states,
-things always happen in a certain order even if the events come at
-different times, so the stop command can simply be sent when we exit the
-"sending data" state because we will never enter that state before the
-command has been sent successfully.
+Extend the platform data structure with per-slot information: MMC/SDcard
+bus width and card detect/write protect pins. This will affect the pin
+muxing as well as the capabilities announced to the mmc core.
+
+Note that board code is now required to supply a mci_platform_data
+struct to at32_add_device_mci().
 
 Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 ---
- drivers/mmc/host/atmel-mci.c |  249 ++++++++++++++++++++++++------------------
- 1 files changed, 145 insertions(+), 104 deletions(-)
+ arch/avr32/boards/atngw100/setup.c      |    7 ++-
+ arch/avr32/boards/atstk1000/atstk1002.c |   18 +++++---
+ arch/avr32/boards/atstk1000/atstk1003.c |   12 +++++-
+ arch/avr32/boards/atstk1000/atstk1004.c |   12 +++++-
+ arch/avr32/include/asm/atmel-mci.h      |   22 +++++++++-
+ arch/avr32/mach-at32ap/at32ap700x.c     |   74 +++++++++++++++++++++++--------
+ drivers/mmc/host/atmel-mci-regs.h       |    6 ++-
+ drivers/mmc/host/atmel-mci.c            |   24 ++++++++--
+ 8 files changed, 138 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-index 0000896..d834e37 100644
---- a/drivers/mmc/host/atmel-mci.c
-+++ b/drivers/mmc/host/atmel-mci.c
-@@ -36,11 +36,17 @@
- 
- enum {
- 	EVENT_CMD_COMPLETE = 0,
--	EVENT_DATA_ERROR,
--	EVENT_DATA_COMPLETE,
--	EVENT_STOP_SENT,
--	EVENT_STOP_COMPLETE,
- 	EVENT_XFER_COMPLETE,
-+	EVENT_DATA_COMPLETE,
-+	EVENT_DATA_ERROR,
-+};
-+
-+enum atmel_mci_state {
-+	STATE_SENDING_CMD = 0,
-+	STATE_SENDING_DATA,
-+	STATE_DATA_BUSY,
-+	STATE_SENDING_STOP,
-+	STATE_DATA_ERROR,
+diff --git a/arch/avr32/boards/atngw100/setup.c b/arch/avr32/boards/atngw100/setup.c
+index b8286f1..f308520 100644
+--- a/arch/avr32/boards/atngw100/setup.c
++++ b/arch/avr32/boards/atngw100/setup.c
+@@ -53,8 +53,11 @@ static struct spi_board_info spi0_board_info[] __initdata = {
  };
  
- struct atmel_mci {
-@@ -56,7 +62,6 @@ struct atmel_mci {
- 
- 	u32			cmd_status;
- 	u32			data_status;
--	u32			stop_status;
- 	u32			stop_cmdr;
- 
- 	u32			mode_reg;
-@@ -65,6 +70,7 @@ struct atmel_mci {
- 	struct tasklet_struct	tasklet;
- 	unsigned long		pending_events;
- 	unsigned long		completed_events;
-+	enum atmel_mci_state	state;
- 
- 	int			present;
- 	int			detect_pin;
-@@ -79,18 +85,12 @@ struct atmel_mci {
- 	struct platform_device	*pdev;
+ static struct mci_platform_data __initdata mci0_data = {
+-	.detect_pin	= GPIO_PIN_PC(25),
+-	.wp_pin		= GPIO_PIN_PE(0),
++	.slot[0] = {
++		.bus_width	= 4,
++		.detect_pin	= GPIO_PIN_PC(25),
++		.wp_pin		= GPIO_PIN_PE(0),
++	},
  };
- 
--#define atmci_is_completed(host, event)				\
--	test_bit(event, &host->completed_events)
- #define atmci_test_and_clear_pending(host, event)		\
- 	test_and_clear_bit(event, &host->pending_events)
--#define atmci_test_and_set_completed(host, event)		\
--	test_and_set_bit(event, &host->completed_events)
- #define atmci_set_completed(host, event)			\
- 	set_bit(event, &host->completed_events)
- #define atmci_set_pending(host, event)				\
- 	set_bit(event, &host->pending_events)
--#define atmci_clear_pending(host, event)			\
--	clear_bit(event, &host->pending_events)
  
  /*
-  * The debugfs stuff below is mostly optimized away when
-@@ -258,6 +258,10 @@ static void atmci_init_debugfs(struct atmel_mci *host)
- 	if (!node)
- 		goto err;
+diff --git a/arch/avr32/boards/atstk1000/atstk1002.c b/arch/avr32/boards/atstk1000/atstk1002.c
+index dfc3443..4fedbc4 100644
+--- a/arch/avr32/boards/atstk1000/atstk1002.c
++++ b/arch/avr32/boards/atstk1000/atstk1002.c
+@@ -264,16 +264,20 @@ void __init setup_board(void)
  
-+	node = debugfs_create_u32("state", S_IRUSR, root, (u32 *)&host->state);
-+	if (!node)
-+		goto err;
+ #ifndef CONFIG_BOARD_ATSTK100X_SW2_CUSTOM
+ 
++static struct mci_platform_data __initdata mci0_data = {
++	.slot[0] = {
++		.bus_width	= 4,
 +
- 	node = debugfs_create_x32("pending_events", S_IRUSR, root,
- 				     (u32 *)&host->pending_events);
- 	if (!node)
-@@ -378,8 +382,6 @@ static void atmci_start_command(struct atmel_mci *host,
- 				struct mmc_command *cmd,
- 				u32 cmd_flags)
+ /* MMC card detect requires MACB0 *NOT* be used */
+ #ifdef CONFIG_BOARD_ATSTK1002_SW6_CUSTOM
+-static struct mci_platform_data __initdata mci0_data = {
+-	.detect_pin	= GPIO_PIN_PC(14),	/* gpio30/sdcd */
+-	.wp_pin		= GPIO_PIN_PC(15),	/* gpio31/sdwp */
+-};
+-#define MCI_PDATA	&mci0_data
++		.detect_pin	= GPIO_PIN_PC(14), /* gpio30/sdcd */
++		.wp_pin		= GPIO_PIN_PC(15), /* gpio31/sdwp */
+ #else
+-#define MCI_PDATA	NULL
++		.detect_pin	= -ENODEV,
++		.wp_pin		= -ENODEV,
+ #endif	/* SW6 for sd{cd,wp} routing */
++	},
++};
+ 
+ #endif	/* SW2 for MMC signal routing */
+ 
+@@ -326,7 +330,7 @@ static int __init atstk1002_init(void)
+ 	at32_add_device_spi(1, spi1_board_info, ARRAY_SIZE(spi1_board_info));
+ #endif
+ #ifndef CONFIG_BOARD_ATSTK100X_SW2_CUSTOM
+-	at32_add_device_mci(0, MCI_PDATA);
++	at32_add_device_mci(0, &mci0_pdata);
+ #endif
+ #ifdef CONFIG_BOARD_ATSTK1002_SW5_CUSTOM
+ 	set_hw_addr(at32_add_device_eth(1, &eth_data[1]));
+diff --git a/arch/avr32/boards/atstk1000/atstk1003.c b/arch/avr32/boards/atstk1000/atstk1003.c
+index 0cf6641..acc6123 100644
+--- a/arch/avr32/boards/atstk1000/atstk1003.c
++++ b/arch/avr32/boards/atstk1000/atstk1003.c
+@@ -66,6 +66,16 @@ static struct spi_board_info spi1_board_info[] __initdata = { {
+ } };
+ #endif
+ 
++#ifndef CONFIG_BOARD_ATSTK100X_SW2_CUSTOM
++static struct mci_platform_data __initdata mci0_data = {
++	.slot[0] = {
++		.bus_width	= 4,
++		.detect_pin	= -ENODEV,
++		.wp_pin		= -ENODEV,
++	},
++};
++#endif
++
+ #ifdef CONFIG_BOARD_ATSTK1000_EXTDAC
+ static void __init atstk1003_setup_extdac(void)
  {
--	/* Must read host->cmd after testing event flags */
--	smp_rmb();
- 	WARN_ON(host->cmd);
- 	host->cmd = cmd;
+@@ -154,7 +164,7 @@ static int __init atstk1003_init(void)
+ 	at32_add_device_spi(1, spi1_board_info, ARRAY_SIZE(spi1_board_info));
+ #endif
+ #ifndef CONFIG_BOARD_ATSTK100X_SW2_CUSTOM
+-	at32_add_device_mci(0, NULL);
++	at32_add_device_mci(0, &mci0_data);
+ #endif
+ 	at32_add_device_usba(0, NULL);
+ #ifndef CONFIG_BOARD_ATSTK100X_SW3_CUSTOM
+diff --git a/arch/avr32/boards/atstk1000/atstk1004.c b/arch/avr32/boards/atstk1000/atstk1004.c
+index 50a5273..d6a2d02 100644
+--- a/arch/avr32/boards/atstk1000/atstk1004.c
++++ b/arch/avr32/boards/atstk1000/atstk1004.c
+@@ -71,6 +71,16 @@ static struct spi_board_info spi1_board_info[] __initdata = { {
+ } };
+ #endif
  
-@@ -472,6 +474,7 @@ static void atmci_request(struct mmc_host *mmc, struct mmc_request *mrq)
- 	host->mrq = mrq;
- 	host->pending_events = 0;
- 	host->completed_events = 0;
-+	host->state = STATE_SENDING_CMD;
++#ifndef CONFIG_BOARD_ATSTK100X_SW2_CUSTOM
++static struct mci_platform_data __initdata mci0_data = {
++	.slot[0] = {
++		.bus_width	= 4,
++		.detect_pin	= -ENODEV,
++		.wp_pin		= -ENODEV,
++	},
++};
++#endif
++
+ #ifdef CONFIG_BOARD_ATSTK1000_EXTDAC
+ static void __init atstk1004_setup_extdac(void)
+ {
+@@ -137,7 +147,7 @@ static int __init atstk1004_init(void)
+ 	at32_add_device_spi(1, spi1_board_info, ARRAY_SIZE(spi1_board_info));
+ #endif
+ #ifndef CONFIG_BOARD_ATSTK100X_SW2_CUSTOM
+-	at32_add_device_mci(0, NULL);
++	at32_add_device_mci(0, &mci0_data);
+ #endif
+ 	at32_add_device_lcdc(0, &atstk1000_lcdc_data,
+ 			     fbmem_start, fbmem_size, 0);
+diff --git a/arch/avr32/include/asm/atmel-mci.h b/arch/avr32/include/asm/atmel-mci.h
+index c2ea6e1..d38c64c 100644
+--- a/arch/avr32/include/asm/atmel-mci.h
++++ b/arch/avr32/include/asm/atmel-mci.h
+@@ -1,9 +1,29 @@
+ #ifndef __ASM_AVR32_ATMEL_MCI_H
+ #define __ASM_AVR32_ATMEL_MCI_H
  
- 	atmci_enable(host);
- 
-@@ -596,8 +599,10 @@ static struct mmc_host_ops atmci_ops = {
+-struct mci_platform_data {
++/**
++ * struct mci_slot_pdata - board-specific per-slot configuration
++ * @bus_width: Number of data lines wired up the slot
++ * @detect_pin: GPIO pin wired to the card detect switch
++ * @wp_pin: GPIO pin wired to the write protect sensor
++ *
++ * If a given slot is not present on the board, @bus_width should be
++ * set to 0. The other fields are ignored in this case.
++ *
++ * Any pins that aren't available should be set to a negative value.
++ */
++struct mci_slot_pdata {
++	unsigned int		bus_width;
+ 	int			detect_pin;
+ 	int			wp_pin;
  };
  
- static void atmci_command_complete(struct atmel_mci *host,
--			struct mmc_command *cmd, u32 status)
-+			struct mmc_command *cmd)
++/**
++ * struct mci_platform_data - board-specific MMC/SDcard configuration
++ * @slot: Per-slot configuration data.
++ */
++struct mci_platform_data {
++	struct mci_slot_pdata	slot[2];
++};
++
+ #endif /* __ASM_AVR32_ATMEL_MCI_H */
+diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
+index e01dbe4..9967d5a 100644
+--- a/arch/avr32/mach-at32ap/at32ap700x.c
++++ b/arch/avr32/mach-at32ap/at32ap700x.c
+@@ -1272,10 +1272,13 @@ static struct clk atmel_mci0_pclk = {
+ struct platform_device *__init
+ at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
  {
-+	u32		status = host->cmd_status;
+-	struct mci_platform_data	_data;
+ 	struct platform_device		*pdev;
+ 
+-	if (id != 0)
++	if (id != 0 || !data)
++		return NULL;
 +
- 	/* Read the response from the card (up to 16 bytes) */
- 	cmd->resp[0] = mci_readl(host, RSPR);
- 	cmd->resp[1] = mci_readl(host, RSPR);
-@@ -666,20 +671,32 @@ static void atmci_detect_change(unsigned long data)
- 			 * commands or data transfers.
- 			 */
- 			mci_writel(host, CR, MCI_CR_SWRST);
-+			mci_readl(host, SR);
++	/* Must have at least one usable slot */
++	if (!data->slot[0].bus_width && !data->slot[1].bus_width)
+ 		return NULL;
  
--			if (!atmci_is_completed(host, EVENT_CMD_COMPLETE))
--				mrq->cmd->error = -ENOMEDIUM;
-+			host->data = NULL;
-+			host->cmd = NULL;
+ 	pdev = platform_device_alloc("atmel_mci", id);
+@@ -1286,28 +1289,61 @@ at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
+ 				ARRAY_SIZE(atmel_mci0_resource)))
+ 		goto fail;
  
--			if (mrq->data && !atmci_is_completed(host,
--						EVENT_DATA_COMPLETE)) {
--				host->data = NULL;
-+			switch (host->state) {
-+			case STATE_SENDING_CMD:
-+				mrq->cmd->error = -ENOMEDIUM;
-+				if (!mrq->data)
-+					break;
-+				/* fall through */
-+			case STATE_SENDING_DATA:
- 				mrq->data->error = -ENOMEDIUM;
--			}
--			if (mrq->stop && !atmci_is_completed(host,
--						EVENT_STOP_COMPLETE))
-+				break;
-+			case STATE_DATA_BUSY:
-+			case STATE_DATA_ERROR:
-+				if (mrq->data->error == -EINPROGRESS)
-+					mrq->data->error = -ENOMEDIUM;
-+				if (!mrq->stop)
-+					break;
-+				/* fall through */
-+			case STATE_SENDING_STOP:
- 				mrq->stop->error = -ENOMEDIUM;
-+				break;
-+			}
+-	if (!data) {
+-		data = &_data;
+-		memset(data, -1, sizeof(struct mci_platform_data));
+-		data->detect_pin = GPIO_PIN_NONE;
+-		data->wp_pin = GPIO_PIN_NONE;
+-	}
  
--			host->cmd = NULL;
- 			atmci_request_end(host->mmc, mrq);
- 		}
+ 	if (platform_device_add_data(pdev, data,
+ 				sizeof(struct mci_platform_data)))
+ 		goto fail;
  
-@@ -693,81 +710,116 @@ static void atmci_tasklet_func(unsigned long priv)
+-	select_peripheral(PA(10), PERIPH_A, 0);	/* CLK	 */
+-	select_peripheral(PA(11), PERIPH_A, 0);	/* CMD	 */
+-	select_peripheral(PA(12), PERIPH_A, 0);	/* DATA0 */
+-	select_peripheral(PA(13), PERIPH_A, 0);	/* DATA1 */
+-	select_peripheral(PA(14), PERIPH_A, 0);	/* DATA2 */
+-	select_peripheral(PA(15), PERIPH_A, 0);	/* DATA3 */
++	/* CLK line is common to both slots */
++	select_peripheral(PA(10), PERIPH_A, 0);
+ 
+-	if (gpio_is_valid(data->detect_pin))
+-		at32_select_gpio(data->detect_pin, 0);
+-	if (gpio_is_valid(data->wp_pin))
+-		at32_select_gpio(data->wp_pin, 0);
++	switch (data->slot[0].bus_width) {
++	case 4:
++		select_peripheral(PA(13), PERIPH_A, 0);	/* DATA1 */
++		select_peripheral(PA(14), PERIPH_A, 0);	/* DATA2 */
++		select_peripheral(PA(15), PERIPH_A, 0);	/* DATA3 */
++		/* fall through */
++	case 1:
++		select_peripheral(PA(11), PERIPH_A, 0);	/* CMD	 */
++		select_peripheral(PA(12), PERIPH_A, 0);	/* DATA0 */
++
++		if (gpio_is_valid(data->slot[0].detect_pin))
++			at32_select_gpio(data->slot[0].detect_pin, 0);
++		if (gpio_is_valid(data->slot[0].wp_pin))
++			at32_select_gpio(data->slot[0].wp_pin, 0);
++		break;
++	case 0:
++		/* Slot is unused */
++		break;
++	default:
++		goto fail;
++	}
++
++	switch (data->slot[1].bus_width) {
++	case 4:
++		select_peripheral(PB(8),  PERIPH_B, 0);	/* DATA1 */
++		select_peripheral(PB(9),  PERIPH_B, 0);	/* DATA2 */
++		select_peripheral(PB(10), PERIPH_B, 0);	/* DATA3 */
++		/* fall through */
++	case 1:
++		select_peripheral(PB(6),  PERIPH_B, 0); /* CMD	 */
++		select_peripheral(PB(7),  PERIPH_B, 0); /* DATA0 */
++
++		if (gpio_is_valid(data->slot[1].detect_pin))
++			at32_select_gpio(data->slot[1].detect_pin, 0);
++		if (gpio_is_valid(data->slot[1].wp_pin))
++			at32_select_gpio(data->slot[1].wp_pin, 0);
++		break;
++	case 0:
++		/* Slot is unused */
++		break;
++	default:
++		if (!data->slot[0].bus_width)
++			goto fail;
++
++		data->slot[1].bus_width = 0;
++		break;
++	}
+ 
+ 	atmel_mci0_pclk.dev = &pdev->dev;
+ 
+diff --git a/drivers/mmc/host/atmel-mci-regs.h b/drivers/mmc/host/atmel-mci-regs.h
+index 26bd80e..b58364e 100644
+--- a/drivers/mmc/host/atmel-mci-regs.h
++++ b/drivers/mmc/host/atmel-mci-regs.h
+@@ -25,8 +25,10 @@
+ #define MCI_SDCR		0x000c	/* SD Card / SDIO */
+ # define MCI_SDCSEL_SLOT_A	(  0 <<  0)	/* Select SD slot A */
+ # define MCI_SDCSEL_SLOT_B	(  1 <<  0)	/* Select SD slot A */
+-# define MCI_SDCBUS_1BIT	(  0 <<  7)	/* 1-bit data bus */
+-# define MCI_SDCBUS_4BIT	(  1 <<  7)	/* 4-bit data bus */
++# define MCI_SDCSEL_MASK	(  3 <<  0)
++# define MCI_SDCBUS_1BIT	(  0 <<  6)	/* 1-bit data bus */
++# define MCI_SDCBUS_4BIT	(  2 <<  6)	/* 4-bit data bus */
++# define MCI_SDCBUS_MASK	(  3 <<  6)
+ #define MCI_ARGR		0x0010	/* Command Argument */
+ #define MCI_CMDR		0x0014	/* Command */
+ # define MCI_CMDR_CMDNB(x)	((x) <<  0)	/* Command Opcode */
+diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
+index 14ab28d..8170905 100644
+--- a/drivers/mmc/host/atmel-mci.c
++++ b/drivers/mmc/host/atmel-mci.c
+@@ -508,9 +508,10 @@ static void atmci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ {
  	struct atmel_mci	*host = mmc_priv(mmc);
- 	struct mmc_request	*mrq = host->mrq;
- 	struct mmc_data		*data = host->data;
-+	struct mmc_command	*cmd = host->cmd;
-+	enum atmel_mci_state	state = host->state;
-+	enum atmel_mci_state	prev_state;
-+	u32			status;
+ 
++	host->sdc_reg &= ~MCI_SDCBUS_MASK;
+ 	switch (ios->bus_width) {
+ 	case MMC_BUS_WIDTH_1:
+-		host->sdc_reg = 0;
++		host->sdc_reg |= MCI_SDCBUS_1BIT;
+ 		break;
+ 	case MMC_BUS_WIDTH_4:
+ 		host->sdc_reg = MCI_SDCBUS_4BIT;
+@@ -1014,9 +1015,11 @@ static irqreturn_t atmci_detect_interrupt(int irq, void *dev_id)
+ static int __init atmci_probe(struct platform_device *pdev)
+ {
+ 	struct mci_platform_data	*pdata;
++	struct mci_slot_pdata		*slot;
+ 	struct atmel_mci *host;
+ 	struct mmc_host *mmc;
+ 	struct resource *regs;
++	u32 sdc_reg;
+ 	int irq;
+ 	int ret;
+ 
+@@ -1030,6 +1033,17 @@ static int __init atmci_probe(struct platform_device *pdev)
+ 	if (irq < 0)
+ 		return irq;
+ 
++	/* TODO: Allow using several slots at once */
++	if (pdata->slot[0].bus_width) {
++		sdc_reg = MCI_SDCSEL_SLOT_A;
++		slot = &pdata->slot[0];
++	} else if (pdata->slot[1].bus_width) {
++		sdc_reg = MCI_SDCSEL_SLOT_B;
++		slot = &pdata->slot[1];
++	} else {
++		return -EINVAL;
++	}
 +
-+	state = host->state;
+ 	mmc = mmc_alloc_host(sizeof(struct atmel_mci), &pdev->dev);
+ 	if (!mmc)
+ 		return -ENOMEM;
+@@ -1037,8 +1051,9 @@ static int __init atmci_probe(struct platform_device *pdev)
+ 	host = mmc_priv(mmc);
+ 	host->pdev = pdev;
+ 	host->mmc = mmc;
+-	host->detect_pin = pdata->detect_pin;
+-	host->wp_pin = pdata->wp_pin;
++	host->detect_pin = slot->detect_pin;
++	host->wp_pin = slot->wp_pin;
++	host->sdc_reg = sdc_reg;
  
- 	dev_vdbg(&mmc->class_dev,
--		"tasklet: pending/completed/mask %lx/%lx/%x\n",
--		host->pending_events, host->completed_events,
-+		"tasklet: state %u pending/completed/mask %lx/%lx/%x\n",
-+		state, host->pending_events, host->completed_events,
- 		mci_readl(host, IMR));
+ 	host->mck = clk_get(&pdev->dev, "mci_clk");
+ 	if (IS_ERR(host->mck)) {
+@@ -1062,7 +1077,8 @@ static int __init atmci_probe(struct platform_device *pdev)
+ 	mmc->f_min = (host->bus_hz + 511) / 512;
+ 	mmc->f_max = host->bus_hz / 2;
+ 	mmc->ocr_avail	= MMC_VDD_32_33 | MMC_VDD_33_34;
+-	mmc->caps |= MMC_CAP_4_BIT_DATA;
++	if (slot->bus_width >= 4)
++		mmc->caps |= MMC_CAP_4_BIT_DATA;
  
--	if (atmci_test_and_clear_pending(host, EVENT_CMD_COMPLETE)) {
--		/*
--		 * host->cmd must be set to NULL before the interrupt
--		 * handler sees EVENT_CMD_COMPLETE
--		 */
--		host->cmd = NULL;
--		smp_wmb();
--		atmci_set_completed(host, EVENT_CMD_COMPLETE);
--		atmci_command_complete(host, mrq->cmd, host->cmd_status);
--
--		if (!mrq->cmd->error && mrq->stop
--				&& atmci_is_completed(host, EVENT_XFER_COMPLETE)
--				&& !atmci_test_and_set_completed(host,
--					EVENT_STOP_SENT))
--			send_stop_cmd(host->mmc, mrq->data);
--	}
--	if (atmci_test_and_clear_pending(host, EVENT_STOP_COMPLETE)) {
--		/*
--		 * host->cmd must be set to NULL before the interrupt
--		 * handler sees EVENT_STOP_COMPLETE
--		 */
--		host->cmd = NULL;
--		smp_wmb();
--		atmci_set_completed(host, EVENT_STOP_COMPLETE);
--		atmci_command_complete(host, mrq->stop, host->stop_status);
--	}
--	if (atmci_test_and_clear_pending(host, EVENT_DATA_ERROR)) {
--		u32 status = host->data_status;
-+	do {
-+		prev_state = state;
- 
--		dev_vdbg(&mmc->class_dev, "data error: status=%08x\n", status);
-+		switch (state) {
-+		case STATE_SENDING_CMD:
-+			if (!atmci_test_and_clear_pending(host,
-+						EVENT_CMD_COMPLETE))
-+				break;
- 
--		atmci_set_completed(host, EVENT_DATA_ERROR);
--		atmci_set_completed(host, EVENT_DATA_COMPLETE);
-+			host->cmd = NULL;
-+			atmci_set_completed(host, EVENT_CMD_COMPLETE);
-+			atmci_command_complete(host, mrq->cmd);
-+			if (!mrq->data || cmd->error) {
-+				atmci_request_end(mmc, host->mrq);
-+				break;
-+			}
- 
--		if (status & MCI_DTOE) {
--			dev_dbg(&mmc->class_dev,
--					"data timeout error\n");
--			data->error = -ETIMEDOUT;
--		} else if (status & MCI_DCRCE) {
--			dev_dbg(&mmc->class_dev, "data CRC error\n");
--			data->error = -EILSEQ;
--		} else {
--			dev_dbg(&mmc->class_dev,
--					"data FIFO error (status=%08x)\n",
--					status);
--			data->error = -EIO;
--		}
-+			prev_state = state = STATE_SENDING_DATA;
-+			/* fall through */
- 
--		if (host->present && data->stop
--				&& atmci_is_completed(host, EVENT_CMD_COMPLETE)
--				&& !atmci_test_and_set_completed(
--					host, EVENT_STOP_SENT))
--			send_stop_cmd(host->mmc, data);
-+		case STATE_SENDING_DATA:
-+			if (atmci_test_and_clear_pending(host,
-+						EVENT_DATA_ERROR)) {
-+				if (data->stop)
-+					send_stop_cmd(host->mmc, data);
-+				state = STATE_DATA_ERROR;
-+				break;
-+			}
- 
--		host->data = NULL;
--	}
--	if (atmci_test_and_clear_pending(host, EVENT_DATA_COMPLETE)) {
--		atmci_set_completed(host, EVENT_DATA_COMPLETE);
-+			if (!atmci_test_and_clear_pending(host,
-+						EVENT_XFER_COMPLETE))
-+				break;
- 
--		if (!atmci_is_completed(host, EVENT_DATA_ERROR)) {
--			data->bytes_xfered = data->blocks * data->blksz;
--			data->error = 0;
--		}
-+			atmci_set_completed(host, EVENT_XFER_COMPLETE);
-+			prev_state = state = STATE_DATA_BUSY;
-+			/* fall through */
- 
--		host->data = NULL;
--	}
-+		case STATE_DATA_BUSY:
-+			if (!atmci_test_and_clear_pending(host,
-+						EVENT_DATA_COMPLETE))
-+				break;
-+
-+			host->data = NULL;
-+			atmci_set_completed(host, EVENT_DATA_COMPLETE);
-+			status = host->data_status;
-+			if (unlikely(status & ATMCI_DATA_ERROR_FLAGS)) {
-+				if (status & MCI_DTOE) {
-+					dev_dbg(&mmc->class_dev,
-+							"data timeout error\n");
-+					data->error = -ETIMEDOUT;
-+				} else if (status & MCI_DCRCE) {
-+					dev_dbg(&mmc->class_dev,
-+							"data CRC error\n");
-+					data->error = -EILSEQ;
-+				} else {
-+					dev_dbg(&mmc->class_dev,
-+						"data FIFO error (status=%08x)\n",
-+						status);
-+					data->error = -EIO;
-+				}
-+			} else {
-+				data->bytes_xfered = data->blocks * data->blksz;
-+				data->error = 0;
-+			}
-+
-+			if (!data->stop) {
-+				atmci_request_end(mmc, host->mrq);
-+				prev_state = state;
-+				break;
-+			}
- 
--	if (host->mrq && !host->cmd && !host->data)
--		atmci_request_end(mmc, host->mrq);
-+			prev_state = state = STATE_SENDING_STOP;
-+			if (!data->error)
-+				send_stop_cmd(host->mmc, data);
-+			/* fall through */
-+
-+		case STATE_SENDING_STOP:
-+			if (!atmci_test_and_clear_pending(host,
-+						EVENT_CMD_COMPLETE))
-+				break;
-+
-+			host->cmd = NULL;
-+			atmci_command_complete(host, mrq->stop);
-+			atmci_request_end(mmc, host->mrq);
-+			prev_state = state;
-+			break;
-+
-+		case STATE_DATA_ERROR:
-+			if (!atmci_test_and_clear_pending(host,
-+						EVENT_XFER_COMPLETE))
-+				break;
-+
-+			state = STATE_DATA_BUSY;
-+			break;
-+		}
-+	} while (state != prev_state);
-+
-+	host->state = state;
- }
- 
- static void atmci_read_data_pio(struct atmel_mci *host)
-@@ -832,10 +884,7 @@ done:
- 	mci_writel(host, IDR, MCI_RXRDY);
- 	mci_writel(host, IER, MCI_NOTBUSY);
- 	data->bytes_xfered += nbytes;
--	atmci_set_completed(host, EVENT_XFER_COMPLETE);
--	if (data->stop && atmci_is_completed(host, EVENT_CMD_COMPLETE)
--			&& !atmci_test_and_set_completed(host, EVENT_STOP_SENT))
--		send_stop_cmd(host->mmc, data);
-+	atmci_set_pending(host, EVENT_XFER_COMPLETE);
- }
- 
- static void atmci_write_data_pio(struct atmel_mci *host)
-@@ -903,10 +952,7 @@ done:
- 	mci_writel(host, IDR, MCI_TXRDY);
- 	mci_writel(host, IER, MCI_NOTBUSY);
- 	data->bytes_xfered += nbytes;
--	atmci_set_completed(host, EVENT_XFER_COMPLETE);
--	if (data->stop && atmci_is_completed(host, EVENT_CMD_COMPLETE)
--			&& !atmci_test_and_set_completed(host, EVENT_STOP_SENT))
--		send_stop_cmd(host->mmc, data);
-+	atmci_set_pending(host, EVENT_XFER_COMPLETE);
- }
- 
- static void atmci_cmd_interrupt(struct mmc_host *mmc, u32 status)
-@@ -915,14 +961,8 @@ static void atmci_cmd_interrupt(struct mmc_host *mmc, u32 status)
- 
- 	mci_writel(host, IDR, MCI_CMDRDY);
- 
--	if (atmci_is_completed(host, EVENT_STOP_SENT)) {
--		host->stop_status = status;
--		atmci_set_pending(host, EVENT_STOP_COMPLETE);
--	} else {
--		host->cmd_status = status;
--		atmci_set_pending(host, EVENT_CMD_COMPLETE);
--	}
--
-+	host->cmd_status = status;
-+	atmci_set_pending(host, EVENT_CMD_COMPLETE);
- 	tasklet_schedule(&host->tasklet);
- }
- 
-@@ -951,8 +991,9 @@ static irqreturn_t atmci_interrupt(int irq, void *dev_id)
- 			tasklet_schedule(&host->tasklet);
- 		}
- 		if (pending & MCI_NOTBUSY) {
--			mci_writel(host, IDR, (MCI_NOTBUSY
--					       | ATMCI_DATA_ERROR_FLAGS));
-+			mci_writel(host, IDR,
-+					ATMCI_DATA_ERROR_FLAGS | MCI_NOTBUSY);
-+			host->data_status = status;
- 			atmci_set_pending(host, EVENT_DATA_COMPLETE);
- 			tasklet_schedule(&host->tasklet);
- 		}
+ 	mmc->max_hw_segs = 64;
+ 	mmc->max_phys_segs = 64;
 -- 
 1.5.6.5
 
