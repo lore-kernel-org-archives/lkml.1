@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbYJEEqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbYJEEwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753375AbYJEEqR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 00:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYJEEqF
+	id S1753544AbYJEEwm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 00:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYJEEwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 00:46:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37049 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751361AbYJEEqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 00:46:04 -0400
-Message-ID: <48E84608.5080108@kernel.org>
-Date: Sun, 05 Oct 2008 13:43:52 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Stefan Lippers-Hollmann <s.L-H@gmx.de>, linux-kernel@vger.kernel.org,
-       jgarzik@redhat.com, pchen@nvidia.com, stable@kernel.org
-Subject: Re: patch sata_nv-disable-hardreset-for-generic.patch added to	2.6.26-stable
- tree
-References: <20081001234424.C72C114543E5@imap.suse.de> <200810041827.04721.s.L-H@gmx.de> <20081005025401.GA22549@suse.de> <48E83272.7040709@kernel.org> <20081005034800.GA7802@suse.de>
-In-Reply-To: <20081005034800.GA7802@suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 5 Oct 2008 00:52:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38942 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750817AbYJEEwe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 00:52:34 -0400
+Date: Sat, 4 Oct 2008 21:52:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [kerneloops] regression in 2.6.27 wrt "lock_page" and the
+ "hwclock" program
+Message-Id: <20081004215225.2444d54b.akpm@linux-foundation.org>
+In-Reply-To: <20081004174433.14a5e093@infradead.org>
+References: <20081004174433.14a5e093@infradead.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 05 Oct 2008 04:45:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
->> It's currently a mess.  Please take a look at the following message for
->> the whole story.
->>
->>   http://article.gmane.org/gmane.linux.ide/34942
->>
->> It's interesting how they fixed hardreset of the chipset step-by-step. :-(
+On Sat, 4 Oct 2008 17:44:33 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+
 > 
-> Ick, you are right, what a mess.
+> Details: http://www.kerneloops.org/searchweek.php?search=lock_page
 > 
-> Do you want that patch in 2.6.26-stable now?  Or just don't worry about
-> it?
+> There's quite a few of this BUG, which seems to be an interaction between the "hwclock" program and something in 2.6.27.
+> It's new in .27 and is currently the 8th ranked issue.....
+> 
+> BUG: sleeping function called from invalid context at
+> include/linux/pagemap.h:294 in_atomic():0, irqs_disabled():1
+> INFO: lockdep is turned off.
+> irq event stamp: 0
+> hardirqs last  enabled at (0): [<00000000>] 0x0
+> hardirqs last disabled at (0): [<c042c3a4>] copy_process+0x2e7/0x115e
+> softirqs last  enabled at (0): [<c042c3a4>] copy_process+0x2e7/0x115e
+> softirqs last disabled at (0): [<00000000>] 0x0
+> Pid: 9591, comm: hwclock Tainted: G        W 2.6.27-0.372.rc8.fc10.i686 #1 
+>  [<c0427a53>] __might_sleep+0xd1/0xd6 
+>  [<c0479a8b>] lock_page+0x1a/0x34
+>  [<c0479cfa>] find_lock_page+0x23/0x48
+>  [<c047a215>] filemap_fault+0x9b/0x330
+>  [<c0486493>] __do_fault+0x40/0x2e6
+>  [<c0487d63>] handle_mm_fault+0x2ec/0x6d2
+>  [<c06e8260>] do_page_fault+0x2e5/0x693
+> 
 
-2.6.26-stable should be fixed but given the series of breakages I
-wanna be a bit cautious before proceeding.  Just give me a few more
-days so that I can confirm the posted patch fixes the problem for both
-generic and nf2/3 flavors.  I'll forward the final patch against
--stable to you then.
+Looks like `hwclock' disabled interrupts in userspace with sys_iopl()?
 
-Thanks.
+And then it took a pagefault, which is presumably a bug in hwclock.
 
--- 
-tejun
+That's all a bit antisocial of it.  I guess a suitable quickfix is to
+remove the might_sleep() from lock_page() (which would be a good thing
+from a text size POV anyway).
+
+But there will of course be other sites which do possibly-sleeping
+operations on the pagefault path.
+
+Really, it's a bit stupid doing _any_ system calls (and a pagefault is
+a syscall in disguise) with interrupts disabled.  The kernel makes no
+guarantees that we'll honour it.  We could just enable interrupts on
+pagefault entry - that'll teach 'em.
+
