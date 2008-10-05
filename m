@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYJEP4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYJEP5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755909AbYJEP4b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 11:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYJEP4X
+	id S1755984AbYJEP5P (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 11:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbYJEP44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 11:56:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36525 "EHLO mx3.mail.elte.hu"
+	Sun, 5 Oct 2008 11:56:56 -0400
+Received: from www.tglx.de ([62.245.132.106]:52033 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754315AbYJEP4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 11:56:23 -0400
-Date: Sun, 5 Oct 2008 17:56:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: <PING> Re: [patch x86/core] x86: allow number of additional
-	hotplug CPUs to be set at compile time
-Message-ID: <20081005155614.GA5356@elte.hu>
-References: <20081002152521.16c4835b@redhat.com> <20081002194409.GB8318@one.firstfloor.org> <20081002160907.68d79e0b@redhat.com> <20081002204018.GD8318@one.firstfloor.org> <87ljx4nw09.fsf_-_@basil.nowhere.org> <20081004183014.769836ff@redhat.com> <20081005102835.GA8947@elte.hu> <alpine.LFD.2.00.0810051626150.3398@apollo> <20081005152025.GA27066@elte.hu> <alpine.LFD.2.00.0810051732380.3398@apollo>
+	id S1754315AbYJEP4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 11:56:55 -0400
+Date: Sun, 5 Oct 2008 17:55:14 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Jiri Kosina <jkosina@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>, jesse.brandeburg@intel.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kkeil@suse.de,
+       agospoda@redhat.com, david.graham@intel.com, bruce.w.allan@intel.com,
+       john.ronciak@intel.com, chris.jones@canonical.com,
+       tim.gardner@canonical.com, airlied@gmail.com, Olaf Kirch <okir@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
+In-Reply-To: <48E8D7A5.7060508@linux.intel.com>
+Message-ID: <alpine.LFD.2.00.0810051752210.3398@apollo>
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>  <200810021523.45884.jbarnes@virtuousgeek.org>  <20081003.134634.240211201.davem@davemloft.net>  <200810031429.22598.jbarnes@virtuousgeek.org>  <alpine.LNX.1.10.0810032338140.26779@jikos.suse.cz>
+  <4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com>  <alpine.LNX.1.10.0810041219130.26779@jikos.suse.cz>  <alpine.LFD.2.00.0810041236250.4404@apollo> <4807377b0810041824u5ea472d1q4cf5ff606bd23a11@mail.gmail.com> <alpine.LFD.2.00.0810050959420.3398@apollo>
+ <48E8D7A5.7060508@linux.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0810051732380.3398@apollo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> > and no way can any of this go into v2.6.27: this is fragile code 
-> > with a lot of historic baggage and the original error is non-fatal 
-> > to begin with. It can easily be backported to .27.1 if testing shows 
-> > that it has no other adverse side-effects.
+On Sun, 5 Oct 2008, Arjan van de Ven wrote:
+> Thomas Gleixner wrote:
+> > On Sat, 4 Oct 2008, Jesse Brandeburg wrote:
+> > > > Exactly. The access to a ro region results in a fault. I have nowhere
+> > > > seen that trigger, but I can reproduce the trylock() WARN_ON, which
+> > > > confirms that there is concurrent access to the NVRAM registers. The
+> > > > backtrace pattern is similar to the one you have seen.
+> > > are you still getting WARN_ON *with* all the mutex based fixes already
+> > > applied?
+> > 
+> > The WARN_ON triggers with current mainline. Is there any fixlet in
+> > Linus tree missing ?
+> > 
+> > > with the mutex patches in place (without protection patch) we are
+> > > still reproducing the issue, until we apply the set_memory_ro patch.
+> > 
+> > That does not make sense to me. If the memory_ro patch is providing
+> > _real_ protection then you _must_ run into an access violation. If not,
+> > then the patch just papers over the real problem in some mysterious
+> > way.
+> > 
 > 
-> Please lets get rid of all this.
-> 
-> Thanks,
-> 
-> 	tglx
-> ---------------->
-> >From 344707c1f43dd0d080828497aacb60c0cc0a8c13 Mon Sep 17 00:00:00 2001
-> From: Thomas Gleixner <tglx@linutronix.de>
-> Date: Sun, 5 Oct 2008 17:27:56 +0200
-> Subject: [PATCH] x86, smpboot: remove additional_cpus
-> 
-> remove remainder of additional_cpus logic. We now just listen to the
-> disabled_cpus value like we did for years. disabled_cpus is always >=
-> 0 so no need for an extra check.
->
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> not if the bad code is doing copy_to_user .... (or similar)
 
-applied to tip/x86/core - thanks Thomas!
+You mean: copy_from_user :) This would require that the e1000e
+nvram region is writable via copy_from_user by an e1000e user space
+interface. A quick grep does not reviel such a horrible interface.
 
-	Ingo
+Thanks,
+
+	tglx
