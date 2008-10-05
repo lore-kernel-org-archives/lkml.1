@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757866AbYJEQoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762073AbYJEQo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757866AbYJEQoQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760501AbYJEQjS
+	id S1762073AbYJEQo7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759491AbYJEQkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:39:18 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54317 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761428AbYJEQjQ (ORCPT
+	Sun, 5 Oct 2008 12:40:17 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:54748 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761584AbYJEQkP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:39:16 -0400
-From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 19/19] fdomain_cs: Sort out modules with duplicate description
-To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:39:16 +0100
-Message-ID: <20081005163913.3799.50660.stgit@localhost.localdomain>
-In-Reply-To: <20081005163302.3799.61899.stgit@localhost.localdomain>
+	Sun, 5 Oct 2008 12:40:15 -0400
+Subject: Re: [PATCH 02/19] pcmcia: IRQ_TYPE_EXCLUSIVE is long obsoleted
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Alan Cox <alan@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081005163526.3799.57100.stgit@localhost.localdomain>
 References: <20081005163302.3799.61899.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	 <20081005163526.3799.57100.stgit@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 05 Oct 2008 18:40:31 +0200
+Message-Id: <1223224831.11272.107.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The PCMCIA one provides its own description so in PCMCIA mode we should use
-that.
+Hi Alan,
 
-Signed-off-by: Alan Cox <alan@redhat.com>
----
+> Switch more drivers to dynamic sharing after checking their IRQ handlers
+> use dev_id and are robust
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> 
+> ---
+> 
+>  drivers/bluetooth/bluecard_cs.c   |    2 +-
+>  drivers/bluetooth/bt3c_cs.c       |    6 ++++--
+>  drivers/bluetooth/btuart_cs.c     |    6 ++++--
+>  drivers/bluetooth/dtl1_cs.c       |    7 +++++--
+>  drivers/char/pcmcia/synclink_cs.c |    2 +-
+>  drivers/parport/parport_cs.c      |    2 +-
+>  6 files changed, 16 insertions(+), 9 deletions(-)
+> 
 
- drivers/scsi/fdomain.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
 
-diff --git a/drivers/scsi/fdomain.c b/drivers/scsi/fdomain.c
-index 31afaa7..32eef66 100644
---- a/drivers/scsi/fdomain.c
-+++ b/drivers/scsi/fdomain.c
-@@ -290,9 +290,11 @@
- #include <scsi/scsi_ioctl.h>
- #include "fdomain.h"
- 
-+#ifndef PCMCIA
- MODULE_AUTHOR("Rickard E. Faith");
- MODULE_DESCRIPTION("Future domain SCSI driver");
- MODULE_LICENSE("GPL");
-+#endif
- 
-   
- #define VERSION          "$Revision: 5.51 $"
+I am fine if the changes for drivers/bluetooth/ go in via you.
+
+Regards
+
+Marcel
+
 
