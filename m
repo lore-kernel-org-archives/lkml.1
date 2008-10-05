@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbYJEBb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbYJEBmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbYJEBb1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Oct 2008 21:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYJEBbT
+	id S1755604AbYJEBmr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Oct 2008 21:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbYJEBmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Oct 2008 21:31:19 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:45299 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754111AbYJEBbS (ORCPT
+	Sat, 4 Oct 2008 21:42:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:37155 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754290AbYJEBmj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Oct 2008 21:31:18 -0400
-Message-ID: <48E818C0.3080109@kernel.org>
-Date: Sat, 04 Oct 2008 18:30:40 -0700
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Sat, 4 Oct 2008 21:42:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=jO42bhR1wDJEDEF4IiQo+/sALcxoGdUuXVRUdjFbINdM5c9X71RgkldfWaIoy0j8y/
+         DDN81q3qtBiX8mS2jrxyychCOs8ve2UAJPOVS5ELnDHzwutMOq/le0bHQzO5udK8Kz/9
+         ELO4Q/zOE0sD+J1w7wl4+ZlDKeMuQekIp3SUs=
+Message-ID: <86802c440810041842i4950f22h5df16b1c256a698f@mail.gmail.com>
+Date: Sat, 4 Oct 2008 18:42:37 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/3] x86: mtrr_cleanup: print out correct type
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <48E80D80.2090900@zytor.com>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Eric Paris <eparis@redhat.com>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, selinux@tycho.nsa.gov
-Subject: Re: [PATCH] capability: WARN when invalid capability is requested
- rather than BUG/panic
-References: <1222782946.28251.63.camel@localhost.localdomain> <alpine.LRH.1.10.0810010008130.2068@tundra.namei.org> <1222785389.28251.83.camel@localhost.localdomain> <20080930153820.GA28616@us.ibm.com> <1222790843.28251.92.camel@localhost.localdomain> <20080930162830.GB31779@us.ibm.com>
-In-Reply-To: <20080930162830.GB31779@us.ibm.com>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1223157033-30217-1-git-send-email-yhlu.kernel@gmail.com>
+	 <48E80D80.2090900@zytor.com>
+X-Google-Sender-Auth: 4ab9b6e495c73893
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Sat, Oct 4, 2008 at 5:42 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>>
+>> Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
+>> +++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+>> @@ -1273,12 +1273,14 @@ static int __init mtrr_cleanup(unsigned
+>>                size_base = to_size_factor(size_base, &size_factor),
+>>                start_base = range_state[i].base_pfn << (PAGE_SHIFT - 10);
+>>                start_base = to_size_factor(start_base, &start_factor),
+>> +               type = range_state[i].type;
+>>                  printk(KERN_DEBUG "reg %d, base: %ld%cB, range: %ld%cB,
+>> type %s\n",
+>>                        i, start_base, start_factor,
+>>                        size_base, size_factor,
+>>                        (type == MTRR_TYPE_UNCACHABLE) ? "UC" :
+>> -                           ((type == MTRR_TYPE_WRBACK) ? "WB" : "Other")
+>> +                           ((type == MTRR_TYPE_WRPROT) ? "WPROT" :
+>> +                            ((type == MTRR_TYPE_WRBACK) ? "WB" :
+>> "Other"))
+>>                        );
+>
+> If you're going to abbreviate, please use the standard abbreviations as
+> documented in the manuals.  The abbreviation for write protect is WP.
+>
+ok, will use WP.
 
-Serge E. Hallyn wrote:
-> Andrew Morgan, any opinions?
-
-[Sorry to get to this late.]
-
-I'd prefer:
-
-3) BUG_ON(!cap_valid(flag)) (garbage in BUG out, no panic)
-
-It seems absurd to be guessing what a buggy driver might be wanting -
-open source or not.
-
->> idea of mutating the inputs and then making the security decision based
->> on that mutation rather than on the original inputs (and yes, I realize
->> that exactly what 2.6.24 was doing)
-
-and let's call it another bug fixed.
-
->>> Though I still think it's not unreasonable to simply ask for the driver
->>> to be fixed.
->> I'm not going to argue that the driver needs fixed and that is the real
->> problem.  I know its been filed with them and the response was that
->> there is no support for linux.  I have today tried to poke the path I
->> know of between Red Hat and them to ask them to take a look.
-
-if distributions want to silently work around it (with some sort of
-variant of 4 or perhaps 2) until the vendor of this driver has time to
-fix it, then that doesn't seem unreasonable. But it seems to me that the
-upstream kernel shouldn't institutionalize this sort of nonsense.
-
-Cheers
-
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFI6Bi9+bHCR3gb8jsRArIBAKCuODkju29dCosHWPiXZVKoNP0FSwCaAzPx
-EWihO1+F0qd0BFZarm/CFKM=
-=HJik
------END PGP SIGNATURE-----
+YH
