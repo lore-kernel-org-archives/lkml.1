@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757047AbYJETEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbYJETHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757047AbYJETEj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 15:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbYJETE2
+	id S1756909AbYJETHV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 15:07:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbYJETHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 15:04:28 -0400
-Received: from fhw-relay07.plus.net ([212.159.14.148]:42845 "EHLO
-	fhw-relay07.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755777AbYJETE2 (ORCPT
+	Sun, 5 Oct 2008 15:07:08 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:53638 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755391AbYJETHG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 15:04:28 -0400
-Message-ID: <48E90FC9.2060903@yahoo.com>
-Date: Sun, 05 Oct 2008 20:04:41 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Sun, 5 Oct 2008 15:07:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OW4dpzJzKVuW9Kw6X556YmGEJ7F9jkaMLVQwvQzQvQ9Ozmqq1OPDP/049ElokMATNz
+         ycC7JV9G59gt26U4ur34mkkYmoAqBiLrQQaPcBcgqe8zHltA+AwxDs4V+4YdzvCdJzx3
+         /i9dB2m7Mc1brfSHgVz7+5Xg7CaSCRzllLmk0=
+Date: Sun, 5 Oct 2008 15:06:59 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc8+ - first impressions
+Message-ID: <20081005190658.GC3263@amd.corenet.prv>
+References: <20081005183603.GA3263@amd.corenet.prv> <200810052059.49942.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: dmitry.torokhov@gmail.com, IvDoorn@gmail.com, hmh@hmh.eng.br,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] rfkill-input doesn't work until 5 minutes after boot
-References: <20081004204342.GA29620@srcf.ucam.org> <20081005004334.GA31844@srcf.ucam.org> <20081005110226.GB4087@srcf.ucam.org>
-In-Reply-To: <20081005110226.GB4087@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 19a1a3323532f2ac8e454a066c486487
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810052059.49942.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> rfkill-input implements debounce as follows:
+On Sun, Oct 05, 2008 at 08:59:49PM +0200, Rafael J. Wysocki wrote:
+> On Sunday, 5 of October 2008, Dmitry Torokhov wrote:
+> > Hi,
+> > 
+> > Lats night I loaded 2.6.27-rc8-tip for the first time on my AMD Turion
+> > 64 laptop that is normally runs with Fedora distribution kernel.
+> > Compared to 2.6.25 the thing is broken - hdparm reports about 3MB/sec
+> > speed, fans are constantly on, everything seems sluggish.
+> > 
+> > Booting with hpet=force (HPET is disabled in BIOS) hangs the box
+> > somewhere in tty_init.
 > 
->         if (time_after(jiffies, task->last + msecs_to_jiffies(200))) {
+> Is that an HP box, by chance?
 > 
-> However, task->last is initialised to 0 while jiffies starts at -300*HZ. 
-> Any input within 5 minutes of kernel start is therefore ignored. Fix by 
-> initialising task->last correctly.
 
-This patch also works for me.
-
-Tested-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+Yeah, HP nx6115.
 
 -- 
-Sitsofe | http://sucs.org/~sits/
+Dmitry
