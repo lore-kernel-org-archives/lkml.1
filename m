@@ -1,72 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYJEWoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbYJEWpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbYJEWoa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 18:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbYJEWoW
+	id S1756786AbYJEWpw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 18:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbYJEWpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 18:44:22 -0400
-Received: from nudl.linbit.com ([212.69.162.21]:59098 "EHLO mail.linbit.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754954AbYJEWoW convert rfc822-to-8bit (ORCPT
+	Sun, 5 Oct 2008 18:45:44 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36041 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755103AbYJEWpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 18:44:22 -0400
-X-Greylist: delayed 1820 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Oct 2008 18:44:21 EDT
-Date: Mon, 6 Oct 2008 00:13:57 +0200
-From: Martin Gerhard Loschwitz <martin.loschwitz@linbit.com>
-To: linux-kernel@vger.kernel.org
-Cc: kkeil@suse.de
-Subject: Linux 2.6.27-rc8 and hfcplus / mISDN detection problem
-Message-ID: <20081005221357.GA15296@madkiss.org>
+	Sun, 5 Oct 2008 18:45:43 -0400
+Message-ID: <48E94390.2080209@firstfloor.org>
+Date: Mon, 06 Oct 2008 00:45:36 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.14 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@elte.hu>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: <PING> Re: [patch x86/core] x86: allow number of additional hotplug
+ CPUs to be set at compile time
+References: <20081001191945.4182d0be@redhat.com> <87bpy3pdgs.fsf@basil.nowhere.org> <20081002152521.16c4835b@redhat.com> <20081002194409.GB8318@one.firstfloor.org> <20081002160907.68d79e0b@redhat.com> <20081002204018.GD8318@one.firstfloor.org> <87ljx4nw09.fsf_-_@basil.nowhere.org> <20081004183014.769836ff@redhat.com> <20081005102835.GA8947@elte.hu> <alpine.LFD.2.00.0810051626150.3398@apollo> <20081005152025.GA27066@elte.hu> <alpine.LFD.2.00.0810051732380.3398@apollo> <48E9261A.9060501@firstfloor.org> <alpine.LFD.2.00.0810052252520.3398@apollo>
+In-Reply-To: <alpine.LFD.2.00.0810052252520.3398@apollo>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-i'm happy to see that mISDN made it into the mainline kernel -- i just tried
-to use 2.6.27-rc8 with mISDN yesterday, and noticed that the hfcplus-module
-does no longer detect my beroNet HFC-4S ISDN card. The "old" mISDN just works
-flawlessly with that card.
+> Your proposed solution is:
+> 
+>      exporting additional_cpus  and change the check to:
+> 
+>      if ((num_possible_cpus() - additional_cpus) == 1 ...
+> 
+> This is simply stupid. We have the information already in
+> num_present_cpus() and that's the correct check in the alternatives
+> code.
 
-This is the lspci-output:
+Yes that is correct.  Using present_cpus is cleaner than
+my version patch  (although it wasn't quite at a "mess" level imho).
+No argument on that. But that  is not what my emails were about.
 
-02:00.0 ISDN controller: Cologne Chip Designs GmbH ISDN network Controller [HFC-4S] (rev 01)
-	Subsystem: Cologne Chip Designs GmbH Device b762
-	Flags: medium devsel, IRQ 169
-	I/O ports at 2000 [size=8]
-	Memory at de100000 (32-bit, non-prefetchable) [disabled] [size=4K]
-	Capabilities: [40] Power Management version 2
-	Kernel driver in use: hfc_multi
-	Kernel modules: hfcmulti, ipmi_si
+They were about the removal of the additional_cpus=... parameter
+which was unfortunately done too.
 
-With 2.6.18 and mISDN 1.1.8, the card gets detected without any problems:
+additional_cpus is used for more than just alternatives processing.
+It is also used to size the possible map and declare additional
+hotplug CPUs.
 
-HFC-multi: card manufacturer: 'Cologne Chip AG' card name: 'HFC-4S Beronet Card PCIe' clock: double
-ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 16 (level, low) -> IRQ 169
-HFC-4S#1: defined at IOBASE 0x2000 IRQ 169 HZ 250 leds-type 2
-HFC_multi: resetting HFC with chip ID=0xc revision=1
-hfcpci_probe: DIPs(0x8f) jumpers(0x0)
-1 devices registered
+Please read the Documentation cpu-hotplug-spec I referred to earlier
+for background. Or Documentation/cpu-hotplug.txt which has it too.
 
-However, in 2.6.27-rc8, the kernel only tells me that I should "contact
-my vendor for a driver". I guess that maybe somewhen during the various
-cleanups, there was one PCI-ID too much removed, but I did not find out
-how to put it back in. 
+additional_cpus is used to tell Linux that there are more (or less)
+CPUs hotpluggable than the BIOS declares at boot time. This is needed
+because the way the BIOS is declaring it is a Linux extension, not standard.
+But even if it was standard it would be good policy to be able
+to override it because as we all know BIOS can be wrong, as in
+declare far too many.
 
-Can somebody help me out with a patch, maybe, to re-active the support for
-this card?
+But now that option is gone so this needed override isn't there
 
-Please CC me in replies as I am not subscribed to the list.
+> additional_cpus is useless ballast.
 
-Thanks in advance
+For the alternatives heuristics yes. For hotplug no.
 
-Martin G. Loschwitz
+Only when you assume that all hotpluggable BIOS implement
+the "cpu-hotplug-spec" Linux extension and always declare
+hotplug correctly. That's quite dubious.
 
-: Martin Loschwitz                        Tel +43-1-8178292-63 :                                                                                                                                                                                                     
-: LINBIT Information Technologies GmbH    Fax +43-1-8178292-82 :                                                                                                                                                                                                                    
-: Vivenotgasse 48, A-1120 Vienna/Europe  http://www.linbit.com :
+> 	tglx - who refrains from adding a nasty insulting comment
+
+Feel free to speak your mind if the facts are correct.
+
+-Andi
+
