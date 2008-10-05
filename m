@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYJEKU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbYJEK26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359AbYJEKU0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 06:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYJEKUR
+	id S1755141AbYJEK26 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 06:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbYJEK2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 06:20:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43833 "EHLO hera.kernel.org"
+	Sun, 5 Oct 2008 06:28:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40498 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753018AbYJEKUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 06:20:16 -0400
-Message-ID: <48E8947A.5020608@kernel.org>
-Date: Sun, 05 Oct 2008 19:18:34 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	id S1752992AbYJEK2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 06:28:49 -0400
+Date: Sun, 5 Oct 2008 12:28:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: <PING> Re: [patch x86/core] x86: allow number of additional
+	hotplug CPUs to be set at compile time
+Message-ID: <20081005102835.GA8947@elte.hu>
+References: <20081001191945.4182d0be@redhat.com> <87bpy3pdgs.fsf@basil.nowhere.org> <20081002152521.16c4835b@redhat.com> <20081002194409.GB8318@one.firstfloor.org> <20081002160907.68d79e0b@redhat.com> <20081002204018.GD8318@one.firstfloor.org> <87ljx4nw09.fsf_-_@basil.nowhere.org> <20081004183014.769836ff@redhat.com>
 MIME-Version: 1.0
-To: Benny Halevy <bhalevy@panasas.com>
-CC: linux-kernel@vger.kernel.org, lists@ku-gbr.de, bhalevy.lists@gmail.com
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org> <48E890B9.6050307@gmail.com>
-In-Reply-To: <48E890B9.6050307@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 05 Oct 2008 10:20:00 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081004183014.769836ff@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benny Halevy wrote:
-> On Sep. 24, 2008, 12:36 +0300, Tejun Heo <tj@kernel.org> wrote:
->> Please apply the attached patch and post the resulting log.  Please
->> don't forget to turn on KALLSYMS.
->>
->> Thanks.
->>
+
+* Chuck Ebbert <cebbert@redhat.com> wrote:
+
+> Yes, it works and I don't see how it could cause any problems.
 > 
-> With commit 4c1eb90a0908c0c60db2169dce08fb672e7582f1 (v2.6.27-rc8),
-> I see no spurious EH complete events as I saw with 2.6.27-rc <= 7.
+> Ingo, can we get this in 2.6.27? You can drop my original patch.
+> 
+> Tested-by: Chuck Ebbert <cebbert@redhat.com>
 
-You're on CK804, right?
+looks good, applied to tip/x86/core, thanks!
 
--- 
-tejun
+it's too late for v2.6.27 (and not a serious regression anyway), but i 
+marked it for .27.1 backporting.
+
+Your other patch still makes sense - as additional_cpus is an existing 
+boot parameter it can be specified at .config time as well. You should 
+not enable it in a distro kernel though, if you intend to support real 
+hotplug CPU hardware. (which is extremely rare btw.)
+
+	Ingo
