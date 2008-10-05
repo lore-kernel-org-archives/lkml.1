@@ -1,98 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbYJEVB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYJEVK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbYJEVB5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 17:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYJEVBt
+	id S1756070AbYJEVK4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 17:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbYJEVKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 17:01:49 -0400
-Received: from 1wt.eu ([62.212.114.60]:4624 "EHLO 1wt.eu"
+	Sun, 5 Oct 2008 17:10:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:52474 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754571AbYJEVBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 17:01:48 -0400
-Date: Sun, 5 Oct 2008 23:01:44 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Klaus Ethgen <Klaus@Ethgen.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [KERNEL] Re: Kernel freeze on 2.4.36.7
-Message-ID: <20081005210144.GA7980@1wt.eu>
-References: <20081005154113.GA8387@ikki.ethgen.de> <20081005171818.GJ24654@1wt.eu> <20081005204247.GA3781@ikki.ethgen.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754634AbYJEVKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 17:10:47 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch 3/4] cpu alloc: The allocator
+Date: Mon, 6 Oct 2008 07:10:43 +1000
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, jeremy@goop.org, ebiederm@xmission.com,
+       travis@sgi.com, herbert@gondor.apana.org.au, xemul@openvz.org,
+       penberg@cs.helsinki.fi
+References: <20080929193500.470295078@quilx.com> <20081003003342.4d592c1f.akpm@linux-foundation.org> <48E614A0.60209@linux-foundation.org>
+In-Reply-To: <48E614A0.60209@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081005204247.GA3781@ikki.ethgen.de>
-User-Agent: Mutt/1.5.11
+Message-Id: <200810060810.43511.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 05, 2008 at 09:42:54PM +0100, Klaus Ethgen wrote:
-> Am So den  5. Okt 2008 um 18:18 schrieb Willy Tarreau:
-> > > I got a new barcode scanner and plugged it into USB. The scanner works
-> > > well until I remove it. In that second I get a trace and the kernel
-> > > freeze.
-> > 
-> > Does it happen everytime you unplug it or only once in a while ?
-> 
-> Everytime.
+On Friday 03 October 2008 22:48:32 Christoph Lameter wrote:
+> Andrew Morton wrote:
+> > But I'd have though that it would be possible to only allocate the
+> > storage for online CPUs.  That would be a pretty significant win for
+> > some system configurations?
+>
+> We  have tried that but currently the kernel (core and in particular arch
+> code) keeps state for all possible cpus in percpu segments. Would require
+> more extensive cleanup of numerous arches to do.
 
-OK, that's better (not for you of course).
+It shouldn't be a big win, since possible ~= online for most systems.  And 
+having all the per-cpu users register online and offline cpu callbacks is 
+error prone and a PITA.
 
-> Well, thats not that true. It WAS everytime until I close all
-> applications and did sync several times before I unplug the device. When
-> I wait a view seconds after the sync the freeze is reproducible.
-
-Sounds like the application directly attaches to the device itself and
-we have some internal pointer becoming NULL when the device disappears.
-
-> > Also, have you ever been running and older 2.4 kernel not causing this
-> > problem ?
-> 
-> I did buy the scanner only days ago. I did not use older kernels since
-> then. (I have to compile some if it is needed.)
-
-OK, so we'll assume it's not a regression and has always been like that,
-which is the most likely.
-
-> > > The message when I unplug it:
-> > >  Unable to handle kernel NULL pointer dereference at virtual address 00000048
-> > >  ...
-> > 
-> > Does the same problem happen when you plug/unplug a USB keyboard on the
-> > same machine ?
-> 
-> Yes. I just tested it and my machine was frozen.
-
-Good too. It should be easier to reproduce.
-
-> > > Please pardon that I do not type the complete kernel dump as I know no
-> > > way to log it to a text file in this case where the system freeze. But
-> > > on request I can send the picture I made with my camera.
-> > 
-> > Yes, it would help a lot. That along with your kernel config and an
-> > lsmod and dmesg outputs before the problem. Ideally, you should pass
-> > the messages output through ksymoops with all modules loaded as before
-> > the problem happens.
-> 
-> It should be on this mail.
-
-OK. I see an nvidia module. Would this machine happen to run under X ?
-If so, did you configure X so that it directly references the HID devices ?
-
-Also, could you tell us a bit more about the application, and how you have
-to proceed to avoid the problem ? Eg: quit the application then X, etc...
-
-> > If you want to more easily capture your messages, you can connect
-> > another machine to your serial port and boot with "console=ttyS0".
-> 
-> Thats not possible as I did not compile the serial console into the
-> kernel.
-
-OK. Before I ask you to do so, could you send me privately your System.map,
-a copy of /proc/ksyms and your vmlinux (not vmlinuz) ? Oh, and if you're
-running X, please also send your X config file, just in case.
-
-Maybe we can find the faulty function there.
-
-Regards,
-Willy
-
+Rusty.
