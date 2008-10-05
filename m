@@ -1,68 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbYJEO2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYJEObT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754976AbYJEO2t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 10:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbYJEO2l
+	id S1755500AbYJEObT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 10:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbYJEObK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 10:28:41 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:39034 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753959AbYJEO2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 10:28:40 -0400
-Date: Sun, 5 Oct 2008 17:28:19 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Steven Noonan <steven@uplinklabs.net>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, drzeus@drzeus.cx
-Subject: Re: [PATCH] sdhci: 'scratch' may be used uninitialized
-Message-ID: <20081005142819.GB12047@cs181140183.pp.htv.fi>
-References: <20081001083532.GE31009@elte.hu> <1222851025-30619-1-git-send-email-steven@uplinklabs.net>
+	Sun, 5 Oct 2008 10:31:10 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:2267 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753994AbYJEObJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 10:31:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=EVSQ4ODM0HpVEKIVxTeBJf/v6s7vYzF1bViRLYyr548C6vPQzcsUHPGnU2Ht+EdX1j
+         PxbL6X0EQnb+5YEJ3L0/uM/LtE1AWP6HTV67YqJn/IkrlVL2AzYj/fTfhTJVvcUMQwEM
+         bpm6q6TVJmfaF43h5VFmbTTMOQn478ayNcwXk=
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH v3] rfkill-input doesn't work until 5 minutes after boot
+Date: Sun, 5 Oct 2008 16:31:03 +0200
+User-Agent: KMail/1.9.9
+Cc: dmitry.torokhov@gmail.com, hmh@hmh.eng.br, sitsofe@yahoo.com,
+       linux-kernel@vger.kernel.org
+References: <20081004204342.GA29620@srcf.ucam.org> <20081005004334.GA31844@srcf.ucam.org> <20081005110226.GB4087@srcf.ucam.org>
+In-Reply-To: <20081005110226.GB4087@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1222851025-30619-1-git-send-email-steven@uplinklabs.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810051631.03844.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 01, 2008 at 01:50:25AM -0700, Steven Noonan wrote:
-> The variable 'scratch' is always initialized before it's used. The
-> conditional which is responsible for initialization of 'scratch' will
-> always evaluate 'true' when the first loop iteration occurs, and thus,
-> it's properly initialized. GCC doesn't see this, of course, so using
-> the uninitialized_var() macro seems to work for silencing this case.
+On Sunday 05 October 2008, Matthew Garrett wrote:
+> rfkill-input implements debounce as follows:
 > 
-> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
+>         if (time_after(jiffies, task->last + msecs_to_jiffies(200))) {
+> 
+> However, task->last is initialised to 0 while jiffies starts at -300*HZ. 
+> Any input within 5 minutes of kernel start is therefore ignored. Fix by 
+> initialising task->last correctly.
+>
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+
+I am not too happy about the multiple jiffies - HZ/5 statements
+regardless of the comment that it should be updated when new tasks are
+defined.
+
+But on the other hand I haven't seen any real alternatives yet either,
+so I have no objections against this patch either.
+
+Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+ 
 > ---
->  drivers/mmc/host/sdhci.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-> index e3a8133..6257677 100644
-> --- a/drivers/mmc/host/sdhci.c
-> +++ b/drivers/mmc/host/sdhci.c
-> @@ -177,7 +177,7 @@ static void sdhci_read_block_pio(struct sdhci_host *host)
+> Document the requirement to initialise the struct.
+> 
+> diff --git a/net/rfkill/rfkill-input.c b/net/rfkill/rfkill-input.c
+> index e5b6955..6c7baa0 100644
+> --- a/net/rfkill/rfkill-input.c
+> +++ b/net/rfkill/rfkill-input.c
+> @@ -103,6 +103,8 @@ static void rfkill_schedule_toggle(struct rfkill_task *task)
+>  		.desired_state = RFKILL_STATE_UNBLOCKED,	\
+>  	}
+>  
+> +/* Remember to initialise these in rfkill_handler_init if you add any */
+> +
+>  static DEFINE_RFKILL_TASK(rfkill_wlan, RFKILL_TYPE_WLAN);
+>  static DEFINE_RFKILL_TASK(rfkill_bt, RFKILL_TYPE_BLUETOOTH);
+>  static DEFINE_RFKILL_TASK(rfkill_uwb, RFKILL_TYPE_UWB);
+> @@ -255,6 +257,11 @@ static struct input_handler rfkill_handler = {
+>  
+>  static int __init rfkill_handler_init(void)
 >  {
->  	unsigned long flags;
->  	size_t blksize, len, chunk;
-> -	u32 scratch;
-> +	u32 uninitialized_var(scratch);
->...
+> +	rfkill_wlan.last = jiffies - HZ/5;
+> +	rfkill_bt.last = jiffies - HZ/5;
+> +	rfkill_uwb.last = jiffies - HZ/5;
+> +	rfkill_wimax.last = jiffies - HZ/5;
+> +	rfkill_wwan.last = jiffies - HZ/5;
+>  	return input_register_handler(&rfkill_handler);
+>  }
+>  
+> 
 
-With which gcc version?
-
-I'm not getting this warning with gcc 4.3, and IMHO it doesn't make 
-sense to clutter the source code with such workarounds for older gcc 
-versions (we officially support 6 years old compilers, and warning-free 
-compilations with all of them are not reasonably possible).
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
