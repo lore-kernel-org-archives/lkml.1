@@ -1,88 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbYJERio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbYJERlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbYJERio (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 13:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYJERig
+	id S1756254AbYJERlv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 13:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYJERln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 13:38:36 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58864 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754092AbYJERig (ORCPT
+	Sun, 5 Oct 2008 13:41:43 -0400
+Received: from smtp-out28.alice.it ([85.33.2.28]:2275 "EHLO
+	smtp-out28.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753867AbYJERln (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 13:38:36 -0400
-Date: Sun, 5 Oct 2008 10:38:26 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [kerneloops] regression in 2.6.27 wrt "lock_page" and the
- "hwclock" program
-Message-ID: <20081005103826.6771540a@infradead.org>
-In-Reply-To: <20081005102742.de8353b4.akpm@linux-foundation.org>
-References: <20081004174433.14a5e093@infradead.org>
-	<20081004215225.2444d54b.akpm@linux-foundation.org>
-	<20081005081145.30ba921b@infradead.org>
-	<20081005102742.de8353b4.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 5 Oct 2008 13:41:43 -0400
+From: Matteo Croce <rootkit85@yahoo.it>
+To: hpa@zytor.com
+Subject: Machine Check Exception
+Date: Sun, 5 Oct 2008 19:41:24 +0200
+User-Agent: KMail/1.10.1 (Linux/2.6.27-rc8; KDE/4.1.2; x86_64; ; )
+X-Face: 0AUq?,0sKh2O65+R5#[nTCS'~}"m)9|g3Tsi=g7A9q69S+=M!BY)
+ =?utf-8?q?Zdmwo2u!i=5CUylx=26=27D+=0A=09=5B7u=26z1=27s=7E=5B=3F+=24=27w?=
+ =?utf-8?q?O6+?="'WWcr5Jy,]}8namg8NP:9<E,o^21xGB~/HRhB(u^@
+ =?utf-8?q?ZB=2EXLP0swe=0A=09r9M=7EL?=<b1=^'4cv*_N1tNJ$`9Ot*KL/;8oXFdrT@r|-Ki2wCQI"R(X(
+ =?utf-8?q?73r=3A=3BmnNPoA2a=5D=7EZ=0A=092n2sUh?=,B|bt;ys*hv.QR>a]{m
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200810051941.25132.rootkit85@yahoo.it>
+X-OriginalArrivalTime: 05 Oct 2008 17:41:38.0688 (UTC) FILETIME=[9EADB000:01C92711]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Oct 2008 10:27:42 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> > static unsigned long   
-> > atomic(const char *name, unsigned long (*op)(unsigned long),
-> >        unsigned long arg)
-> > {
-> >   unsigned long v;
-> >   __asm__ volatile ("cli");
-> >   v = (*op)(arg);
-> >   __asm__ volatile ("sti");
-> >   return v;
-> > } 
-> > 
-> > looks like it (but only on 32 bit x86, not on 64 bit x86)
-> 
-> I suspect this is new in hwclock?  We do a might_sleep() in
-> lock_page() in 2.6.25 and in 2.6.26.
+Hi,
 
-this quote was from the F9 hwclock.. which shipped with 2.6.25.
-Hum.
+while bugging the wireless devs about a freeze i've discovered an hardware 
+bug:
 
-> > > Really, it's a bit stupid doing _any_ system calls (and a
-> > > pagefault is a syscall in disguise) with interrupts disabled.
-> > > The kernel makes no guarantees that we'll honour it.  We could
-> > > just enable interrupts on pagefault entry - that'll teach 'em.
-> > 
-> > or save - enable - <run handlers> - restore sequence
-> 
-> hwclock is buggy either way - 
+HARDWARE ERROR. This is *NOT* a software problem!
+Please contact your hardware vendor
+CPU 0 4 northbridge   Northbridge Watchdog error
+       bit57 = processor context corrupt
+       bit61 = error uncorrected
+  bus error 'generic participation, request timed out
+      generic error mem transaction
+      generic access, level generic'
+STATUS b200000000070f0f MCGSTATUS 4
 
-not arguing with that ;-)
-All code doing cli/sti in userland is buggy period. No excuses possible.
+this is triggered byt the ath9k wireless driver when booting with smp > 1
+here is the kernel bug report:
+http://bugzilla.kernel.org/show_bug.cgi?id=11527#c68
 
-> it's trying to disable interrupts but
-> it's calling into the kernel, which will reenable interrupts, thus
-> losing any protection which hwclock was trying to attain.
-> 
-> Plus there's this little thing called "smp".  I bet it doesn't disable
-> interrupts on all CPUs.
-
-I get the impression from the code that it really wants a "don't
-schedule me out" rather than "this is a lock".
-it can do better.
-On Alpha it implements a seq-lock kind of thing instead.
-(and on x86-64 .. it implements NOTHING)
+here I asked support in the official AMD forum:
+http://forums.amd.com/forum/messageview.cfm?catid=22&threadid=101051
 
 
+I ask you this as you are the "CPU ERRATA WORKAROUNDS" man,
+and I CC people which are listed in the "X86 ARCHITECTURE (32-BIT AND 64-BIT)"
+entry.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Best Regards,
+Matteo Croce
