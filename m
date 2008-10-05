@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbYJEKep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbYJEKl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbYJEKep (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 06:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYJEKeh
+	id S1754084AbYJEKl6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 06:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYJEKlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 06:34:37 -0400
-Received: from gw-ca.panasas.com ([66.104.249.162]:13429 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751831AbYJEKeh (ORCPT
+	Sun, 5 Oct 2008 06:41:50 -0400
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:5046 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbYJEKlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 06:34:37 -0400
-Message-ID: <48E89839.5030307@panasas.com>
-Date: Sun, 05 Oct 2008 12:34:33 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 3.0a1 (X11/2008050714)
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: linux-kernel@vger.kernel.org, lists@ku-gbr.de
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org> <48E890B9.6050307@gmail.com> <48E8947A.5020608@kernel.org>
-In-Reply-To: <48E8947A.5020608@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Oct 2008 10:33:28.0982 (UTC) FILETIME=[CE6BA360:01C926D5]
+	Sun, 5 Oct 2008 06:41:49 -0400
+Date: Sun, 5 Oct 2008 12:39:36 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] dumpstack: x86: various small unification steps
+Message-ID: <20081005103936.GA15118@mailshack.com>
+References: <1223154766-19350-1-git-send-email-heukelum@fastmail.fm> <20081005093523.GE16819@elte.hu> <20081005094615.GA27621@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081005094615.GA27621@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Sun, 05 Oct 2008 12:41:31 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.34; VDF: 7.0.6.243; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct. 05, 2008, 12:18 +0200, Tejun Heo <tj@kernel.org> wrote:
-> Benny Halevy wrote:
->> On Sep. 24, 2008, 12:36 +0300, Tejun Heo <tj@kernel.org> wrote:
->>> Please apply the attached patch and post the resulting log.  Please
->>> don't forget to turn on KALLSYMS.
->>>
->>> Thanks.
->>>
->> With commit 4c1eb90a0908c0c60db2169dce08fb672e7582f1 (v2.6.27-rc8),
->> I see no spurious EH complete events as I saw with 2.6.27-rc <= 7.
-> 
-> You're on CK804, right?
-> 
+After "dumpstack: x86: various small unification steps", the
+assembler gives the following compile error. The error is in
+dumpstack_64.c.
 
-No, MCP55 actually:
+{standard input}: Assembler messages:
+{standard input}:720: Error: Incorrect register `%rbx' used with `l' suffix
+{standard input}:1340: Error: Incorrect register `%r12' used with `l' suffix
 
-$ lspci | grep IDE
-00:04.0 IDE interface: nVidia Corporation MCP55 IDE (rev a1)
-00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
-00:05.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+Indeed the suffix in get_bp() was wrong.
+
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+
+---
+
+On Sun, Oct 05, 2008 at 11:46:15AM +0200, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > great - i've created tip/x86/dumpstack for this and applied your 
+> > patches there. (that branch embedds tip/x86/core which already embedds 
+> > tip/x86/traps)
+> 
+> -tip testing found a 64-bit build failure:
+> 
+> {standard input}: Assembler messages:
+> {standard input}:720: Error: Incorrect register `%rbx' used with `l' suffix
+> {standard input}:1340: Error: Incorrect register `%r12' used with `l' suffix
+> 
+> reproducer config attached.
+> 
+> 	Ingo
+
+Hi Ingo,
+
+"dumpstack: x86: various small unification steps" contained
+another copy/paste/forgot-to-edit bug. I should have gone
+to bed instead of rushing the patch set out.
+
+Greetings,
+    Alexander
+
+diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
+index 13379a9..086cc81 100644
+--- a/arch/x86/kernel/dumpstack_64.c
++++ b/arch/x86/kernel/dumpstack_64.c
+@@ -17,7 +17,7 @@
+ #include <asm/stacktrace.h>
+ 
+ #define STACKSLOTS_PER_LINE 4
+-#define get_bp(bp) asm("movl %%rbp, %0" : "=r" (bp) :)
++#define get_bp(bp) asm("movq %%rbp, %0" : "=r" (bp) :)
+ 
+ int panic_on_unrecovered_nmi;
+ int kstack_depth_to_print = 3 * STACKSLOTS_PER_LINE;
