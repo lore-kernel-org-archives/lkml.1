@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbYJEQJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbYJEQKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935AbYJEQJv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 12:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbYJEQGm
+	id S1756654AbYJEQKT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 12:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbYJEQGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 12:06:42 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54862 "EHLO
+	Sun, 5 Oct 2008 12:06:51 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54864 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756337AbYJEQGl (ORCPT
+	with ESMTP id S1756009AbYJEQGt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 12:06:41 -0400
+	Sun, 5 Oct 2008 12:06:49 -0400
 From: Alan Cox <alan@redhat.com>
-Subject: [PATCH 15/76] uml: small cleanups and note bugs to be dealt with by
-	uml authors...
+Subject: [PATCH 16/76] Char: merge ip2main and ip2base
 To: linux-kernel@vger.kernel.org
-Date: Sun, 05 Oct 2008 17:06:41 +0100
-Message-ID: <20081005160636.1997.14973.stgit@localhost.localdomain>
+Date: Sun, 05 Oct 2008 17:06:49 +0100
+Message-ID: <20081005160646.1997.89851.stgit@localhost.localdomain>
 In-Reply-To: <20081005160231.1997.10462.stgit@localhost.localdomain>
 References: <20081005160231.1997.10462.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -26,23 +25,299 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jiri Slaby <jirislaby@gmail.com>
+
+It's pretty useless to have one setup() function separated along with
+module_init() which only calls a function from ip2main anyway. Get rid
+of ip2base.
+
+Remove also checks of always-true now.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- arch/um/drivers/line.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/char/ip2/Makefile  |    2 -
+ drivers/char/ip2/ip2base.c |  108 --------------------------------------------
+ drivers/char/ip2/ip2main.c |   92 +++++++++++++++++++++++++++++++------
+ 3 files changed, 77 insertions(+), 125 deletions(-)
+ delete mode 100644 drivers/char/ip2/ip2base.c
 
-diff --git a/arch/um/drivers/line.c b/arch/um/drivers/line.c
-index d741f35..14a102e 100644
---- a/arch/um/drivers/line.c
-+++ b/arch/um/drivers/line.c
-@@ -275,6 +275,8 @@ int line_ioctl(struct tty_struct *tty, struct file * file,
- 	case TIOCGLTC:
- 	case TIOCSLTC:
- #endif
-+	/* Note: these are out of date as we now have TCGETS2 etc but this
-+	   whole lot should probably go away */
- 	case TCGETS:
- 	case TCSETSF:
- 	case TCSETSW:
+diff --git a/drivers/char/ip2/Makefile b/drivers/char/ip2/Makefile
+index 939618f..bc397d9 100644
+--- a/drivers/char/ip2/Makefile
++++ b/drivers/char/ip2/Makefile
+@@ -4,5 +4,5 @@
+ 
+ obj-$(CONFIG_COMPUTONE)         += ip2.o
+ 
+-ip2-objs			:= ip2base.o ip2main.o
++ip2-objs			:= ip2main.o
+ 
+diff --git a/drivers/char/ip2/ip2base.c b/drivers/char/ip2/ip2base.c
+deleted file mode 100644
+index 8155e24..0000000
+--- a/drivers/char/ip2/ip2base.c
++++ /dev/null
+@@ -1,108 +0,0 @@
+-// ip2.c
+-// This is a dummy module to make the firmware available when needed
+-// and allows it to be unloaded when not. Rumor is the __initdata 
+-// macro doesn't always works on all platforms so we use this kludge.
+-// If not compiled as a module it just makes fip_firm avaliable then
+-//  __initdata should work as advertized
+-//
+-
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/wait.h>
+-
+-#ifndef __init
+-#define __init
+-#endif
+-#ifndef __initfunc
+-#define __initfunc(a) a
+-#endif
+-#ifndef __initdata
+-#define __initdata
+-#endif
+-
+-#include "ip2types.h"		
+-
+-int
+-ip2_loadmain(int *, int *); // ref into ip2main.c
+-
+-/* Note: Add compiled in defaults to these arrays, not to the structure
+-	in ip2.h any longer.  That structure WILL get overridden
+-	by these values, or command line values, or insmod values!!!  =mhw=
+-*/
+-static int io[IP2_MAX_BOARDS]= { 0, 0, 0, 0 };
+-static int irq[IP2_MAX_BOARDS] = { -1, -1, -1, -1 }; 
+-
+-static int poll_only = 0;
+-
+-MODULE_AUTHOR("Doug McNash");
+-MODULE_DESCRIPTION("Computone IntelliPort Plus Driver");
+-module_param_array(irq, int, NULL, 0);
+-MODULE_PARM_DESC(irq,"Interrupts for IntelliPort Cards");
+-module_param_array(io, int, NULL, 0);
+-MODULE_PARM_DESC(io,"I/O ports for IntelliPort Cards");
+-module_param(poll_only, bool, 0);
+-MODULE_PARM_DESC(poll_only,"Do not use card interrupts");
+-
+-
+-static int __init ip2_init(void)
+-{
+-	if( poll_only ) {
+-		/* Hard lock the interrupts to zero */
+-		irq[0] = irq[1] = irq[2] = irq[3] = 0;
+-	}
+-
+-	return ip2_loadmain(io, irq);
+-}
+-module_init(ip2_init);
+-
+-MODULE_LICENSE("GPL");
+-
+-#ifndef MODULE
+-/******************************************************************************
+- *	ip2_setup:
+- *		str: kernel command line string
+- *
+- *	Can't autoprobe the boards so user must specify configuration on
+- *	kernel command line.  Sane people build it modular but the others
+- *	come here.
+- *
+- *	Alternating pairs of io,irq for up to 4 boards.
+- *		ip2=io0,irq0,io1,irq1,io2,irq2,io3,irq3
+- *
+- *		io=0 => No board
+- *		io=1 => PCI
+- *		io=2 => EISA
+- *		else => ISA I/O address
+- *
+- *		irq=0 or invalid for ISA will revert to polling mode
+- *
+- *		Any value = -1, do not overwrite compiled in value.
+- *
+- ******************************************************************************/
+-static int __init ip2_setup(char *str)
+-{
+-	int	ints[10];	/* 4 boards, 2 parameters + 2 */
+-	int	i, j;
+-
+-	str = get_options (str, ARRAY_SIZE(ints), ints);
+-
+-	for( i = 0, j = 1; i < 4; i++ ) {
+-		if( j > ints[0] ) {
+-			break;
+-		}
+-		if( ints[j] >= 0 ) {
+-			io[i] = ints[j];
+-		}
+-		j++;
+-		if( j > ints[0] ) {
+-			break;
+-		}
+-		if( ints[j] >= 0 ) {
+-			irq[i] = ints[j];
+-		}
+-		j++;
+-	}
+-	return 1;
+-}
+-__setup("ip2=", ip2_setup);
+-#endif /* !MODULE */
+diff --git a/drivers/char/ip2/ip2main.c b/drivers/char/ip2/ip2main.c
+index 689f9dc..79bca61 100644
+--- a/drivers/char/ip2/ip2main.c
++++ b/drivers/char/ip2/ip2main.c
+@@ -157,9 +157,6 @@ static char *pcVersion = "1.2.14";
+ static char *pcDriver_name   = "ip2";
+ static char *pcIpl    		 = "ip2ipl";
+ 
+-// cheezy kludge or genius - you decide?
+-int ip2_loadmain(int *, int *);
+-
+ /***********************/
+ /* Function Prototypes */
+ /***********************/
+@@ -287,6 +284,7 @@ static int tracewrap;
+ 
+ MODULE_AUTHOR("Doug McNash");
+ MODULE_DESCRIPTION("Computone IntelliPort Plus Driver");
++MODULE_LICENSE("GPL");
+ 
+ static int poll_only = 0;
+ 
+@@ -297,6 +295,22 @@ static int iindx;
+ static char rirqs[IP2_MAX_BOARDS];
+ static int Valid_Irqs[] = { 3, 4, 5, 7, 10, 11, 12, 15, 0};
+ 
++/* Note: Add compiled in defaults to these arrays, not to the structure
++	in ip2.h any longer.  That structure WILL get overridden
++	by these values, or command line values, or insmod values!!!  =mhw=
++*/
++static int io[IP2_MAX_BOARDS];
++static int irq[IP2_MAX_BOARDS] = { -1, -1, -1, -1 };
++
++MODULE_AUTHOR("Doug McNash");
++MODULE_DESCRIPTION("Computone IntelliPort Plus Driver");
++module_param_array(irq, int, NULL, 0);
++MODULE_PARM_DESC(irq, "Interrupts for IntelliPort Cards");
++module_param_array(io, int, NULL, 0);
++MODULE_PARM_DESC(io, "I/O ports for IntelliPort Cards");
++module_param(poll_only, bool, 0);
++MODULE_PARM_DESC(poll_only, "Do not use card interrupts");
++
+ /* for sysfs class support */
+ static struct class *ip2_class;
+ 
+@@ -494,8 +508,53 @@ static const struct firmware *ip2_request_firmware(void)
+ 	return fw;
+ }
+ 
+-int
+-ip2_loadmain(int *iop, int *irqp)
++#ifndef MODULE
++/******************************************************************************
++ *	ip2_setup:
++ *		str: kernel command line string
++ *
++ *	Can't autoprobe the boards so user must specify configuration on
++ *	kernel command line.  Sane people build it modular but the others
++ *	come here.
++ *
++ *	Alternating pairs of io,irq for up to 4 boards.
++ *		ip2=io0,irq0,io1,irq1,io2,irq2,io3,irq3
++ *
++ *		io=0 => No board
++ *		io=1 => PCI
++ *		io=2 => EISA
++ *		else => ISA I/O address
++ *
++ *		irq=0 or invalid for ISA will revert to polling mode
++ *
++ *		Any value = -1, do not overwrite compiled in value.
++ *
++ ******************************************************************************/
++static int __init ip2_setup(char *str)
++{
++	int j, ints[10];	/* 4 boards, 2 parameters + 2 */
++	unsigned int i;
++
++	str = get_options(str, ARRAY_SIZE(ints), ints);
++
++	for (i = 0, j = 1; i < 4; i++) {
++		if (j > ints[0])
++			break;
++		if (ints[j] >= 0)
++			io[i] = ints[j];
++		j++;
++		if (j > ints[0])
++			break;
++		if (ints[j] >= 0)
++			irq[i] = ints[j];
++		j++;
++	}
++	return 1;
++}
++__setup("ip2=", ip2_setup);
++#endif /* !MODULE */
++
++static int ip2_loadmain(void)
+ {
+ 	int i, j, box;
+ 	int err = 0;
+@@ -505,6 +564,11 @@ ip2_loadmain(int *iop, int *irqp)
+ 	static struct pci_dev *pci_dev_i = NULL;
+ 	const struct firmware *fw = NULL;
+ 
++	if (poll_only) {
++		/* Hard lock the interrupts to zero */
++		irq[0] = irq[1] = irq[2] = irq[3] = poll_only = 0;
++	}
++
+ 	ip2trace (ITRC_NO_PORT, ITRC_INIT, ITRC_ENTER, 0 );
+ 
+ 	/* process command line arguments to modprobe or
+@@ -512,14 +576,11 @@ ip2_loadmain(int *iop, int *irqp)
+ 	/* irqp and iop should ALWAYS be specified now...  But we check
+ 		them individually just to be sure, anyways... */
+ 	for ( i = 0; i < IP2_MAX_BOARDS; ++i ) {
+-		if (iop) {
+-			ip2config.addr[i] = iop[i];
+-			if (irqp) {
+-				if( irqp[i] >= 0 ) {
+-					ip2config.irq[i] = irqp[i];
+-				} else {
+-					ip2config.irq[i] = 0;
+-				}
++		ip2config.addr[i] = io[i];
++		if (irq[i] >= 0)
++			ip2config.irq[i] = irq[i];
++		else
++			ip2config.irq[i] = 0;
+ 	// This is a little bit of a hack.  If poll_only=1 on command
+ 	// line back in ip2.c OR all IRQs on all specified boards are
+ 	// explicitly set to 0, then drop to poll only mode and override
+@@ -531,9 +592,7 @@ ip2_loadmain(int *iop, int *irqp)
+ 	// to -1, is to use 0 as a hard coded, do not probe.
+ 	//
+ 	//	/\/\|=mhw=|\/\/
+-				poll_only |= irqp[i];
+-			}
+-		}
++		poll_only |= irq[i];
+ 	}
+ 	poll_only = !poll_only;
+ 
+@@ -783,6 +842,7 @@ out_chrdev:
+ out:
+ 	return err;
+ }
++module_init(ip2_loadmain);
+ 
+ /******************************************************************************/
+ /* Function:   ip2_init_board()                                               */
 
